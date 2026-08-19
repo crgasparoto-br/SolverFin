@@ -181,12 +181,12 @@ const PROVIDER_QUANTITATIVE_CLAIM = new RegExp(
 export function generateFinancialInsights(
   input: GenerateFinancialInsightsInput,
 ): FinancialInsight[] {
-  const currency = normalizeCurrency(input.currency);
+  const currency = resolveInsightCurrency(input);
   const scoped = input.transactions.filter(
     (transaction) =>
       transaction.organizationId === input.organizationId &&
       transaction.financialProfileId === input.financialProfileId &&
-      transaction.currency === currency &&
+      normalizeCurrency(transaction.currency) === currency &&
       transaction.status !== "voided",
   );
   const realized = scoped.filter((transaction) => REALIZED_STATUSES.has(transaction.status));
@@ -469,7 +469,7 @@ function buildBudgetInsights(
     (budget) =>
       budget.organizationId === input.organizationId &&
       budget.financialProfileId === input.financialProfileId &&
-      budget.currency === currency &&
+      normalizeCurrency(budget.currency) === currency &&
       budget.periodStartOn <= input.currentPeriod.endOn &&
       budget.periodEndOn >= input.currentPeriod.startOn,
   );
@@ -534,7 +534,10 @@ function buildMonthlySummary(
   if (previous.length === 0) {
     limitations.push("Nao ha periodo anterior com dados realizados para uma comparacao completa.");
   }
-  if ((input.budgets ?? []).filter((budget) => budget.currency === currency).length === 0) {
+  if (
+    (input.budgets ?? []).filter((budget) => normalizeCurrency(budget.currency) === currency).length ===
+    0
+  ) {
     limitations.push("Nenhum orcamento na moeda analisada foi informado para este periodo.");
   }
 
@@ -837,9 +840,47 @@ function buildSubscriptionExplanation(distinctMonths: number): string {
   return `Foram encontradas despesas de valor semelhante em ${distinctMonths} meses consecutivos para o mesmo merchant.`;
 }
 
-function normalizeCurrency(currency: string | undefined): string {
-  const normalized = (currency ?? "BRL").trim().toUpperCase();
-  return /^[A-Z]{3}$/.test(normalized) ? normalized : "BRL";
+function resolveInsightCurrency(input: GenerateFinancialInsightsInput): string {
+  if (input.currency !== undefined) {
+    return normalizeCurrency(input.currency);
+  }
+
+  const currencies = new Set<string>();
+  for (const transaction of input.transactions) {
+    if (
+      transaction.organizationId === input.organizationId &&
+      transaction.financialProfileId === input.financialProfileId &&
+      transaction.status !== "voided"
+    ) {
+      currencies.add(normalizeCurrency(transaction.currency));
+    }
+  }
+  for (const budget of input.budgets ?? []) {
+    if (
+      budget.organizationId === input.organizationId &&
+      budget.financialProfileId === input.financialProfileId
+    ) {
+      currencies.add(normalizeCurrency(budget.currency));
+    }
+  }
+
+  if (currencies.size === 1) {
+    return [...currencies][0] as string;
+  }
+
+  throw new Error(
+    currencies.size === 0
+      ? "Financial insights require an explicit currency when no native-currency data is available."
+      : "Financial insights require an explicit currency when multiple native currencies are present.",
+  );
+}
+
+function normalizeCurrency(currency: string): string {
+  const normalized = currency.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(normalized)) {
+    throw new Error("Financial insight currency must use ISO 4217 format.");
+  }
+  return normalized;
 }
 
 function formatMoney(amountMinor: number, currency: string): string {
