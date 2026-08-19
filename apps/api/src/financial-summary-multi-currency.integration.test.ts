@@ -29,7 +29,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for the integration test.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for the integration test.",
+  );
 
   const baseline = await buildFinancialSummary(CONTEXT, REFERENCE);
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
@@ -141,7 +144,9 @@ async function main(): Promise<void> {
   assert.equal("expensesMinor" in summary, false);
   assert.equal("plannedCommitmentsMinor" in summary, false);
 
-  const issueItems = summary.recentItems.filter((item) => item.description.includes(`issue 595 ${suffix}`));
+  const issueItems = summary.recentItems.filter((item) =>
+    item.description.includes(`issue 595 ${suffix}`),
+  );
   assert.equal(issueItems.some((item) => item.currency === "BRL"), true);
   assert.equal(issueItems.some((item) => item.currency === "USD"), true);
 }
@@ -172,7 +177,10 @@ function assertBlockDelta(
   );
 }
 
-function blockFor(summary: DashboardSummary, currency: string): DashboardCurrencyBlock {
+function blockFor(
+  summary: DashboardSummary,
+  currency: string,
+): DashboardCurrencyBlock {
   return (
     summary.currencyBlocks.find((block) => block.currency === currency) ?? {
       currency,
