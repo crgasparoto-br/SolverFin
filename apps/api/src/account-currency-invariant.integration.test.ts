@@ -27,10 +27,7 @@ void main()
   .finally(closePool);
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for the integration test.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for the integration test.");
 
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
   const account = await createAccountForContext(CONTEXT, {
@@ -55,16 +52,11 @@ async function main(): Promise<void> {
     });
     transactionId = transaction.id;
 
-    const beforeRejectedChanges = await buildFinancialSummary(
-      CONTEXT,
-      REFERENCE,
-    );
+    const beforeRejectedChanges = await buildFinancialSummary(CONTEXT, REFERENCE);
 
     await assert.rejects(
       () => updateAccountForContext(CONTEXT, account.id, { currency: "USD" }),
-      (error: unknown) =>
-        error instanceof AccountError &&
-        error.code === "ACCOUNT_CURRENCY_LOCKED",
+      (error: unknown) => error instanceof AccountError && error.code === "ACCOUNT_CURRENCY_LOCKED",
     );
 
     await assert.rejects(
@@ -81,18 +73,9 @@ async function main(): Promise<void> {
     const persisted = await getAccountForContext(CONTEXT, account.id);
     assert.equal(persisted.currency, "BRL");
 
-    const afterRejectedChanges = await buildFinancialSummary(
-      CONTEXT,
-      REFERENCE,
-    );
-    assert.deepEqual(
-      afterRejectedChanges.currencyBlocks,
-      beforeRejectedChanges.currencyBlocks,
-    );
-    assert.deepEqual(
-      afterRejectedChanges.recentItems,
-      beforeRejectedChanges.recentItems,
-    );
+    const afterRejectedChanges = await buildFinancialSummary(CONTEXT, REFERENCE);
+    assert.deepEqual(afterRejectedChanges.currencyBlocks, beforeRejectedChanges.currencyBlocks);
+    assert.deepEqual(afterRejectedChanges.recentItems, beforeRejectedChanges.recentItems);
   } finally {
     if (transactionId) {
       await query(`delete from "Transaction" where "id" = $1`, [transactionId]);

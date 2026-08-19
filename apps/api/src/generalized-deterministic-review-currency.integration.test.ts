@@ -56,19 +56,8 @@ async function main(): Promise<void> {
   }
 }
 
-async function insertTarget(
-  id: string,
-  accountId: string,
-  description: string,
-): Promise<void> {
-  const parameters = [
-    id,
-    ORGANIZATION_ID,
-    PERSONAL_PROFILE_ID,
-    accountId,
-    description,
-    USER_ID,
-  ];
+async function insertTarget(id: string, accountId: string, description: string): Promise<void> {
+  const parameters = [id, ORGANIZATION_ID, PERSONAL_PROFILE_ID, accountId, description, USER_ID];
   await query(
     `insert into "Transaction"
       ("id", "organizationId", "financialProfileId", "accountId", "kind", "status", "source",
@@ -151,11 +140,7 @@ async function readTransactionStatus(id: string): Promise<string | undefined> {
   return rows[0]?.status;
 }
 
-async function cleanup(
-  sourceId: string,
-  targetId: string,
-  targetAccountId: string,
-): Promise<void> {
+async function cleanup(sourceId: string, targetId: string, targetAccountId: string): Promise<void> {
   const candidateRows = await query<{ id: string }>(
     `select "id" from "AiSuggestion" where "sourceSuggestionId" = $1`,
     [sourceId],
