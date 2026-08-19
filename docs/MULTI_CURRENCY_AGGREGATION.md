@@ -14,14 +14,14 @@ Este documento registra o recorte executado pela issue #595 para aplicar a ADR 0
 
 ## Inventario
 
-| Area | Contrato observado | Estado apos #595 |
-| --- | --- | --- |
-| Resumo financeiro / Dashboard | `GET /api/financial-summary` | Migrado para `currencyBlocks`; itens recentes carregam `currency`; escalares legados so existem em resposta mono-moeda. |
-| Relatorios | `GET /api/reports/category-evolution` | Ja estava aderente: `currencyBlocks` ordenados e totais por moeda. |
-| Orcamentos | `summarizeBudgetUsageForContext`, `summarizeBudgetUsage`, `summarizeBudgetDashboard` | Uso filtra a moeda do orcamento; dashboard de dominio separa a mesma categoria por moeda; itens sem orcamento preservam moeda nativa. |
-| Insights | `generateFinancialInsights` e scanner da API | Scanner continua executando uma moeda por vez. O calculo generico nao possui fallback BRL: usa moeda explicita, infere somente quando os dados escopados possuem uma unica moeda ou falha quando a moeda e ambigua/ausente. |
-| Assistente financeiro | `financial-assistant-data` | Ja estava aderente: lista moedas nativas, exige clarificacao quando ha mais de uma e filtra todas as consultas agregadas pela moeda resolvida. |
-| Lancamentos | `/api/transactions` e `Transaction` | Nao expoe total agregado transversal; cada lancamento possui `currency`. Consumidores nao devem somar moedas no cliente. |
+| Area                          | Contrato observado                                                                   | Estado apos #595                                                                                                                                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resumo financeiro / Dashboard | `GET /api/financial-summary`                                                         | Migrado para `currencyBlocks`; itens recentes carregam `currency`; escalares legados so existem em resposta mono-moeda.                                                                                                 |
+| Relatorios                    | `GET /api/reports/category-evolution`                                                | Ja estava aderente: `currencyBlocks` ordenados e totais por moeda.                                                                                                                                                      |
+| Orcamentos                    | `summarizeBudgetUsageForContext`, `summarizeBudgetUsage`, `summarizeBudgetDashboard` | Uso filtra a moeda do orcamento; dashboard de dominio separa a mesma categoria por moeda; itens sem orcamento preservam moeda nativa.                                                                                   |
+| Insights                      | `generateFinancialInsights` e scanner da API                                         | Scanner continua executando uma moeda por vez. O calculo generico nao possui fallback BRL: usa moeda explicita, infere somente quando os dados escopados possuem uma unica moeda ou falha quando a moeda e ambigua/ausente. |
+| Assistente financeiro         | `financial-assistant-data`                                                           | Ja estava aderente: lista moedas nativas, exige clarificacao quando ha mais de uma e filtra todas as consultas agregadas pela moeda resolvida.                                                                          |
+| Lancamentos                   | `/api/transactions` e `Transaction`                                                  | Nao expoe total agregado transversal; cada lancamento possui `currency`. Consumidores nao devem somar moedas no cliente.                                                                                                |
 
 ## Resumo financeiro
 
