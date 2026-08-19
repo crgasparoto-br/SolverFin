@@ -148,7 +148,8 @@ export async function buildFinancialSummary(
     ]);
 
   const currencies = new Set<string>();
-  for (const row of openingBalanceRows) currencies.add(normalizeCurrencyCode(row.currency));
+  for (const row of openingBalanceRows)
+    currencies.add(normalizeCurrencyCode(row.currency));
   for (const row of cashMovementRows) currencies.add(normalizeCurrencyCode(row.currency));
   for (const row of monthTotals) currencies.add(normalizeCurrencyCode(row.currency));
   for (const row of plannedTotals) currencies.add(normalizeCurrencyCode(row.currency));
@@ -195,7 +196,8 @@ export async function buildFinancialSummary(
     occurredOn: row.occurredOn.toISOString().slice(0, 10),
     status: row.status.toLowerCase(),
   }));
-  const singleCurrency = currencyBlocks.length === 1 ? currencyBlocks[0] : undefined;
+  const singleCurrency =
+    currencyBlocks.length === 1 ? currencyBlocks[0] : undefined;
 
   return {
     currencyBlocks,
@@ -213,7 +215,10 @@ export async function buildFinancialSummary(
   };
 }
 
-function sumCurrencyTotals(rows: readonly CurrencyTotalRow[], currency: string): number {
+function sumCurrencyTotals(
+  rows: readonly CurrencyTotalRow[],
+  currency: string,
+): number {
   return rows
     .filter((row) => normalizeCurrencyCode(row.currency) === currency)
     .reduce((total, row) => total + Number(row.total ?? 0), 0);
