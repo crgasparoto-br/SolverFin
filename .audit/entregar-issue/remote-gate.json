@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "6733418cdaa28125550cd49ec2b7d43a64028d59",
+  "pull_request": 628,
+  "branch": "feat/595-multi-currency-aggregation",
+  "status": "passed",
+  "observed": "All material-candidate GitHub Actions workflows reached terminal success before refreeze.",
+  "merge_performed": false
+}

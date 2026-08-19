@@ -1,9 +1,26 @@
 {
-  "material_head_sha": "25aa48a0246867bb9d767c8b9ae658bd1b0afbcc",
-  "observation_mode": "delivery-snapshot",
-  "observed_once": true,
-  "workflow_runs": [
-    {"id": 32204801171, "name": "CI", "status": "in_progress", "conclusion": null},
-    {"id": 32204801166, "name": "Statement visual validation", "status": "in_progress", "conclusion": null}
+  "schema_version": 1,
+  "material_head_sha": "6733418cdaa28125550cd49ec2b7d43a64028d59",
+  "status": "passed",
+  "workflows": [
+    {
+      "run_id": 32246901591,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {"job_id": 96049529196, "name": "Validate monorepo", "conclusion": "success", "passed_steps": ["Check formatting", "Lint", "Typecheck", "Test", "Build"]},
+        {"job_id": 96049529416, "name": "Integration API + PostgreSQL", "conclusion": "success"}
+      ]
+    },
+    {
+      "run_id": 32246901620,
+      "name": "Statement visual validation",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {"job_id": 96049529159, "name": "Chrome visual validation", "conclusion": "success", "passed_steps": ["Prepare database and production web build", "Validate core interfaces in Chrome", "Verify secret-free evidence", "Upload visual evidence"]}
+      ]
+    }
   ]
 }

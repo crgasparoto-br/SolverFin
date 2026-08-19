@@ -1,55 +1,15 @@
-material_head_sha=25aa48a0246867bb9d767c8b9ae658bd1b0afbcc
+material_head_sha=6733418cdaa28125550cd49ec2b7d43a64028d59
 base_sha=c623341f729099f72c96c3908e52d0098f0a3ebd
-pr=628
-
-apps/api/src/repositories/dashboard.ts
-- account opening balances grouped by upper(currency)
-- cash movements grouped by upper(movement.currency)
-- realized month totals grouped by upper(movement.currency), kind, status
-- planned totals grouped by upper(movement.currency), kind, status
-- currencyBlocks sorted by currency code
-- scalar compatibility emitted only when currencyBlocks.length === 1
-- recentItems include normalized currency
-
-apps/api/src/financial-summary-multi-currency.integration.test.ts
-- BRL delta expected: available=10800 income=1100 expenses=300 planned=500
-- USD delta expected: available=21800 income=2200 expenses=400 planned=700
-- mixed response asserts scalar compatibility fields absent
-- recent issue items assert both BRL and USD currencies
-
-packages/domain/src/budgets.ts
-- summarizeBudgetUsage passes budget.currency to sumActualAmount
-- sumActualAmount requires transaction.categoryId and transaction.currency to match budget
-- unbudgeted dashboard key combines currency and categoryId
-- dashboard summaries sorted currency then category
-
-apps/api/src/repositories/budgets.ts
-- persisted usage query filters organizationId, financialProfileId, categoryId, occurredOn period and upper(currency)=upper($6)
-
-packages/ai/src/insights.ts
-- explicit currency is strict ISO 4217 input
-- absent currency is inferred only when scoped native data has exactly one currency
-- zero currencies or multiple currencies without explicit filter throws
-
-packages/ai/src/insights-currency-contract.test.ts
-- single USD source expects USD, never BRL
-- BRL+USD without explicit currency expects error
-- explicit USD mixed source expects 5500 and excludes BRL source
-- invalid explicit currency expects ISO 4217 error
-
-apps/web/src/dev-server/dashboard-page.ts
-- canonical consumer input is currencyBlocks
-- each block is rendered independently
-- each metric formatter receives block.currency
-- recent item formatter receives item.currency
-
-apps/web/src/dev-server/dashboard-page-currency.test.ts
-- asserts BRL section occurs before USD section
-- asserts exactly two currency-summary sections
-- asserts recent item metadata includes USD
-
-scope/filter preservation
-- dashboard aggregate SQL retains organizationId + financialProfileId predicates in every aggregate query and current-month/current-date predicates.
-- budget persisted usage retains organizationId + financialProfileId + categoryId + occurredOn period predicates and adds currency predicate.
-- reports and financial-assistant aggregate implementations were inventoried as already currency-safe and are not modified by PR 628, preserving their existing account/card/period filters.
-- PR 628 changed-file inventory contains no workflow files and no destructive file deletions.
+pull_request=628
+issue=595
+verification=exact-material-head source inspection plus completed GitHub Actions
+- financial summary groups opening balances, cash movement, monthly income/expense and planned commitments by normalized native currency before constructing currencyBlocks.
+- financial-summary multi-currency integration coverage creates BRL and USD accounts and verifies distinct numeric deltas for each block, not only labels.
+- mixed-currency summary responses omit scalar compatibility fields; recent items carry their own currency.
+- mono-currency scalar compatibility is copied only from the sole currency block and never synthesizes BRL for empty or mixed responses.
+- budget usage filters realized transactions by both category and budget currency; unbudgeted dashboard entries key category plus currency.
+- insight calculation requires explicit currency when mixed native currencies are present and never falls back to BRL for ambiguous or absent data.
+- dashboard consumption renders currencyBlocks explicitly; the SSR style gate fixture now supplies currencyBlocks: [] and recentItems: [], preserving the strict production contract instead of adding a UI fallback.
+- profile, account/card and period filters remain in their existing query/domain boundaries while currency partitioning is added.
+- owner documentation records native-currency partitioning, deterministic ordering, mono-only compatibility and no automatic FX conversion.
+- GitHub Actions material SHA 6733418cdaa28125550cd49ec2b7d43a64028d59 completed successfully: Validate monorepo, Integration API + PostgreSQL, and Chrome visual validation all green; formatting, lint, typecheck, test and build passed.

@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-19T01:41:31.638712+00:00",
+  "created_at": "2026-08-19T11:36:44.932278+00:00",
   "identity": {
-    "head_sha": "25aa48a0246867bb9d767c8b9ae658bd1b0afbcc",
-    "material_head_sha": "25aa48a0246867bb9d767c8b9ae658bd1b0afbcc",
+    "head_sha": "6733418cdaa28125550cd49ec2b7d43a64028d59",
+    "material_head_sha": "6733418cdaa28125550cd49ec2b7d43a64028d59",
     "base_sha": "c623341f729099f72c96c3908e52d0098f0a3ebd",
-    "merge_preview_sha": "bb610646680c73fc28f3fc6b12bc3797467c1c12",
-    "material_merge_preview_sha": "bb610646680c73fc28f3fc6b12bc3797467c1c12"
+    "merge_preview_sha": "f839f4a04e4778badc814c6c938970c7a0f488bf",
+    "material_merge_preview_sha": "f839f4a04e4778badc814c6c938970c7a0f488bf"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -20,28 +20,16 @@
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
-      ".audit/entregar-issue/applicability-ledger.json",
-      ".audit/entregar-issue/cycle-history.json",
-      ".audit/entregar-issue/documentation-impact.json",
       ".audit/entregar-issue/evidence-ci-snapshot.json",
-      ".audit/entregar-issue/evidence-documentation-scan.txt",
       ".audit/entregar-issue/evidence-inherited-controls.txt",
-      ".audit/entregar-issue/evidence-provenance.json",
       ".audit/entregar-issue/evidence-static-contract.txt",
-      ".audit/entregar-issue/evidence-summary.json",
-      ".audit/entregar-issue/execution-context.json",
-      ".audit/entregar-issue/gate-report.json",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
-      ".audit/entregar-issue/learning-closure.json",
       ".audit/entregar-issue/remote-gate.json",
       ".audit/entregar-issue/requirement-attack-matrix.json",
       ".audit/entregar-issue/requirement-closure.json",
-      ".audit/entregar-issue/risk-profile.json",
       ".audit/entregar-issue/risk-saturation.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE-594.txt",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE-597.txt",
       ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt"
     ]
   },
@@ -61,11 +49,26 @@
     "validate_independent_rejection_closure.py": "d83e69bbee9981586a33c942bd472cd713659fa44bae7ca805f1f745d74ce73b"
   },
   "artifacts": {
-    "specification_snapshot": {"name": "specification-snapshot.json","sha256": "9a8b9dc4ae0824395de7cfe90105c50e4c6e0bee8d41c9301a13e0b615551f5a"},
-    "requirement_closure": {"name": "requirement-closure.json","sha256": "754da1512938995737fcb8a042c162d73a7811973790a8ba638de96ec222d92a"},
-    "requirement_attack_matrix": {"name": "requirement-attack-matrix.json","sha256": "450052d41c4e3572e53fc6ef06aa324753998b33868ccdd0fb79d4971cfe435e"},
-    "risk_saturation": {"name": "risk-saturation.json","sha256": "9b3a094de1a079024454e22fd45f4535ed2430136554b838b3c8b0073ba6ca83"},
-    "inherited_controls": {"name": "inherited-controls.json","sha256": "5de00d41e2c492f2cb1a5f45dc4ffa7ffea3c93aa139ad18cca90e0a56179a0d"}
+    "specification_snapshot": {
+      "name": "specification-snapshot.json",
+      "sha256": "8bb72658ada339130fceaea51251ab6953e8611929b176a20999694a6015e253"
+    },
+    "requirement_closure": {
+      "name": "requirement-closure.json",
+      "sha256": "ccc50d35197973dd5ef622ebf96db135ef8dfa84a5fff4bd79703a36edf7bf77"
+    },
+    "requirement_attack_matrix": {
+      "name": "requirement-attack-matrix.json",
+      "sha256": "a2b2f7c821d6fed37f94c30dab7bca32b438f1246ed5726e3324e8f452304c60"
+    },
+    "risk_saturation": {
+      "name": "risk-saturation.json",
+      "sha256": "84de89ca0978e00088a2b4c07461a18c7d4c9c9ba6fbca356ec619a7007fe9c7"
+    },
+    "inherited_controls": {
+      "name": "inherited-controls.json",
+      "sha256": "3696f6653862f9d77abfd90b1cc99cbf3fd5c6de26f88f8cdcb7d1a0abd13dfb"
+    }
   },
   "previous_independent_rejection": false
 }
