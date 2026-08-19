@@ -120,8 +120,8 @@ async function main(): Promise<void> {
   const summary = await buildFinancialSummary(CONTEXT, REFERENCE);
   assert.deepEqual(
     summary.currencyBlocks.map((block) => block.currency),
-    [...summary.currencyBlocks.map((block) => block.currency)].sort((left, right) =>
-      left.localeCompare(right),
+    [...summary.currencyBlocks.map((block) => block.currency)].sort(
+      (left, right) => left.localeCompare(right),
     ),
   );
 
@@ -168,10 +168,12 @@ function assertBlockDelta(
   const before = blockFor(baseline, currency);
   assert.deepEqual(
     {
-      availableBalanceMinor: current.availableBalanceMinor - before.availableBalanceMinor,
+      availableBalanceMinor:
+        current.availableBalanceMinor - before.availableBalanceMinor,
       incomeMinor: current.incomeMinor - before.incomeMinor,
       expensesMinor: current.expensesMinor - before.expensesMinor,
-      plannedCommitmentsMinor: current.plannedCommitmentsMinor - before.plannedCommitmentsMinor,
+      plannedCommitmentsMinor:
+        current.plannedCommitmentsMinor - before.plannedCommitmentsMinor,
     },
     expected,
   );
