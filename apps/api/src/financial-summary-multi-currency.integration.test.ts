@@ -182,14 +182,15 @@ function blockFor(
   const found = summary.currencyBlocks.find(
     (block) => block.currency === currency,
   );
+  if (found !== undefined) {
+    return found;
+  }
 
-  return (
-    found ?? {
-      currency,
-      availableBalanceMinor: 0,
-      incomeMinor: 0,
-      expensesMinor: 0,
-      plannedCommitmentsMinor: 0,
-    }
-  );
+  return {
+    currency,
+    availableBalanceMinor: 0,
+    incomeMinor: 0,
+    expensesMinor: 0,
+    plannedCommitmentsMinor: 0,
+  };
 }
