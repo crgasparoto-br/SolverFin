@@ -16,7 +16,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "rm -rf ../../.tmp-tests/ai && tsc -p tsconfig.test.json && node ../../.tmp-tests/ai/index.test.js && node ../../.tmp-tests/ai/provider-executor.test.js && node ../../.tmp-tests/ai/field-allowlist.test.js && node ../../.tmp-tests/ai/openai-provider.test.js && node ../../.tmp-tests/ai/provider-runtime-regression.test.js && node ../../.tmp-tests/ai/extraction.test.js && node ../../.tmp-tests/ai/bank-message-parser.test.js && node ../../.tmp-tests/ai/bank-message-provider-minimization.test.js && node ../../.tmp-tests/ai/assistant.test.js && node ../../.tmp-tests/ai/insights.test.js && node ../../.tmp-tests/ai/insights-boundaries.test.js",
+    "test": "rm -rf ../../.tmp-tests/ai && tsc -p tsconfig.test.json && node ../../.tmp-tests/ai/index.test.js && node ../../.tmp-tests/ai/provider-executor.test.js && node ../../.tmp-tests/ai/field-allowlist.test.js && node ../../.tmp-tests/ai/openai-provider.test.js && node ../../.tmp-tests/ai/provider-runtime-regression.test.js && node ../../.tmp-tests/ai/extraction.test.js && node ../../.tmp-tests/ai/bank-message-parser.test.js && node ../../.tmp-tests/ai/bank-message-provider-minimization.test.js && node ../../.tmp-tests/ai/assistant.test.js && node ../../.tmp-tests/ai/insights.test.js && node ../../.tmp-tests/ai/insights-boundaries.test.js && node ../../.tmp-tests/ai/insights-currency-contract.test.js",
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
