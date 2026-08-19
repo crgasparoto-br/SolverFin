@@ -281,7 +281,8 @@ export function summarizeBudgetDashboard(
     periodStartOn: period.periodStartOn,
     periodEndOn: period.periodEndOn,
   }).filter(
-    (budget) => currencyFilter === undefined || budget.currency === currencyFilter,
+    (budget) =>
+      currencyFilter === undefined || budget.currency === currencyFilter,
   );
   const summaries = scopedBudgets.map((budget) =>
     buildBudgetUsageSummary(
@@ -423,7 +424,8 @@ function sumActualAmount(
     .filter((transaction) => isBudgetTransaction(transaction, periodStartOn, periodEndOn))
     .filter(
       (transaction) =>
-        transaction.categoryId === categoryId && transaction.currency === currency,
+        transaction.categoryId === categoryId &&
+        transaction.currency === currency,
     )
     .reduce((total, transaction) => total + transaction.amountMinor, 0);
 }
@@ -456,11 +458,17 @@ function sumUnbudgetedActualAmounts(
       continue;
     }
 
-    if (currencyFilter !== undefined && transaction.currency !== currencyFilter) {
+    if (
+      currencyFilter !== undefined &&
+      transaction.currency !== currencyFilter
+    ) {
       continue;
     }
 
-    const key = budgetCategoryCurrencyKey(transaction.categoryId, transaction.currency);
+    const key = budgetCategoryCurrencyKey(
+      transaction.categoryId,
+      transaction.currency,
+    );
     if (budgetedCategoryCurrencies.has(key)) {
       continue;
     }
@@ -469,14 +477,18 @@ function sumUnbudgetedActualAmounts(
     totals.set(key, {
       categoryId: transaction.categoryId,
       currency: transaction.currency,
-      actualAmountMinor: (current?.actualAmountMinor ?? 0) + transaction.amountMinor,
+      actualAmountMinor:
+        (current?.actualAmountMinor ?? 0) + transaction.amountMinor,
     });
   }
 
   return totals;
 }
 
-function budgetCategoryCurrencyKey(categoryId: EntityId, currency: string): string {
+function budgetCategoryCurrencyKey(
+  categoryId: EntityId,
+  currency: string,
+): string {
   return `${currency}\u0000${categoryId}`;
 }
 
