@@ -26,28 +26,7 @@ export async function renderDashboardPage(token: string): Promise<string> {
         <h1>Resumo financeiro</h1>
       </div>
     </section>
-    <section class="summary-grid" aria-label="Indicadores principais">
-      ${renderMetricCard(
-        "Disponível estimado",
-        summary.data.availableBalanceMinor,
-        "Saldo das contas ativas",
-      )}
-      ${renderMetricCard(
-        "Receitas do mês",
-        summary.data.incomeMinor,
-        "Entradas postadas no mês atual",
-      )}
-      ${renderMetricCard(
-        "Despesas do mês",
-        summary.data.expensesMinor,
-        "Saídas postadas no mês atual",
-      )}
-      ${renderMetricCard(
-        "Compromissos previstos",
-        summary.data.plannedCommitmentsMinor,
-        "Lançamentos planejados no mês",
-      )}
-    </section>
+    ${renderCurrencySummaries(summary.data.currencyBlocks)}
     <section class="panel next-actions" aria-label="Próximas ações">
       <div class="section-heading">
         <h2>Próximas ações</h2>
@@ -90,16 +69,69 @@ interface FinancialSummaryItem {
   description: string;
   kind: string;
   amountMinor: number;
+  currency: string;
   occurredOn: string;
   status: string;
 }
 
-interface FinancialSummary {
+interface FinancialSummaryCurrencyBlock {
+  currency: string;
   availableBalanceMinor: number;
   incomeMinor: number;
   expensesMinor: number;
   plannedCommitmentsMinor: number;
+}
+
+interface FinancialSummary {
+  currencyBlocks: FinancialSummaryCurrencyBlock[];
   recentItems: FinancialSummaryItem[];
+}
+
+function renderCurrencySummaries(blocks: readonly FinancialSummaryCurrencyBlock[]): string {
+  if (blocks.length === 0) {
+    return renderEmptyState(
+      "Nenhum total financeiro disponível.",
+      "Registre lançamentos ou contas para acompanhar os valores deste perfil.",
+    );
+  }
+
+  return blocks
+    .map(
+      (block) => `
+        <section class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
+          <div class="section-heading currency-heading">
+            <h2>${escapeHtml(block.currency)}</h2>
+          </div>
+          <div class="summary-grid">
+            ${renderMetricCard(
+              "Disponível estimado",
+              block.availableBalanceMinor,
+              "Saldo das contas ativas",
+              block.currency,
+            )}
+            ${renderMetricCard(
+              "Receitas do mês",
+              block.incomeMinor,
+              "Entradas postadas no mês atual",
+              block.currency,
+            )}
+            ${renderMetricCard(
+              "Despesas do mês",
+              block.expensesMinor,
+              "Saídas postadas no mês atual",
+              block.currency,
+            )}
+            ${renderMetricCard(
+              "Compromissos previstos",
+              block.plannedCommitmentsMinor,
+              "Lançamentos planejados no mês",
+              block.currency,
+            )}
+          </div>
+        </section>
+      `,
+    )
+    .join("");
 }
 
 function renderNextActions(
@@ -174,8 +206,8 @@ function renderRecentItems(items: FinancialSummaryItem[]): string {
       .map(
         (item) => `
           <article class="row">
-            <div><strong>${escapeHtml(item.description)}</strong><span>${escapeHtml(item.kind)} - ${escapeHtml(item.status)} - ${formatDate(item.occurredOn)}</span></div>
-            <strong>${formatMoney(item.amountMinor)}</strong>
+            <div><strong>${escapeHtml(item.description)}</strong><span>${escapeHtml(item.kind)} - ${escapeHtml(item.status)} - ${escapeHtml(item.currency)} - ${formatDate(item.occurredOn)}</span></div>
+            <strong>${formatMoney(item.amountMinor, item.currency)}</strong>
           </article>
         `,
       )
@@ -210,8 +242,13 @@ function renderNextActionRow(
   `;
 }
 
-function renderMetricCard(title: string, amountMinor: number, subtitle: string): string {
-  return `<article class="metric-card"><span>${escapeHtml(title)}</span><strong>${formatMoney(amountMinor)}</strong><p>${escapeHtml(subtitle)}</p></article>`;
+function renderMetricCard(
+  title: string,
+  amountMinor: number,
+  subtitle: string,
+  currency: string,
+): string {
+  return `<article class="metric-card"><span>${escapeHtml(title)}</span><strong>${formatMoney(amountMinor, currency)}</strong><p>${escapeHtml(subtitle)}</p></article>`;
 }
 
 function renderEmptyState(title: string, description: string): string {
@@ -222,8 +259,8 @@ function nearestDueDate(dates: string[]): string {
   return dates.slice().sort((left, right) => left.localeCompare(right))[0] ?? "";
 }
 
-function formatMoney(amountMinor: number): string {
-  return formatMinorCurrency(amountMinor);
+function formatMoney(amountMinor: number, currency: string): string {
+  return formatMinorCurrency(amountMinor, { currency });
 }
 
 function formatDate(date: string): string {
@@ -237,6 +274,8 @@ function dashboardStyles(): string {
     .dashboard-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
     .secondary-link { background: var(--surface); border: 1px solid var(--line); color: var(--primary); }
     .secondary-link:hover { background: var(--primary-soft); border-color: #c8dde5; }
+    .currency-summary { display: grid; gap: 8px; }
+    .currency-heading h2 { color: var(--primary); font-size: 0.875rem; letter-spacing: 0.04em; margin: 0; }
     .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .metric-card { display: grid; gap: 6px; min-width: 0; padding: 14px 16px; }
     .metric-card span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
