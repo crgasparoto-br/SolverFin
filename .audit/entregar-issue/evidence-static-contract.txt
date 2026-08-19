@@ -1,15 +1,12 @@
-material_head_sha=6733418cdaa28125550cd49ec2b7d43a64028d59
-base_sha=c623341f729099f72c96c3908e52d0098f0a3ebd
-pull_request=628
-issue=595
-verification=exact-material-head source inspection plus completed GitHub Actions
-- financial summary groups opening balances, cash movement, monthly income/expense and planned commitments by normalized native currency before constructing currencyBlocks.
-- financial-summary multi-currency integration coverage creates BRL and USD accounts and verifies distinct numeric deltas for each block, not only labels.
-- mixed-currency summary responses omit scalar compatibility fields; recent items carry their own currency.
-- mono-currency scalar compatibility is copied only from the sole currency block and never synthesizes BRL for empty or mixed responses.
-- budget usage filters realized transactions by both category and budget currency; unbudgeted dashboard entries key category plus currency.
-- insight calculation requires explicit currency when mixed native currencies are present and never falls back to BRL for ambiguous or absent data.
-- dashboard consumption renders currencyBlocks explicitly; the SSR style gate fixture now supplies currencyBlocks: [] and recentItems: [], preserving the strict production contract instead of adding a UI fallback.
-- profile, account/card and period filters remain in their existing query/domain boundaries while currency partitioning is added.
-- owner documentation records native-currency partitioning, deterministic ordering, mono-only compatibility and no automatic FX conversion.
-- GitHub Actions material SHA 6733418cdaa28125550cd49ec2b7d43a64028d59 completed successfully: Validate monorepo, Integration API + PostgreSQL, and Chrome visual validation all green; formatting, lint, typecheck, test and build passed.
+material_head_sha=49d8bba08e2421bd79592c6194651f7d77070296
+previous_certified_material_head_sha=6733418cdaa28125550cd49ec2b7d43a64028d59
+validation_mode=post-write-refreeze-delta
+remote_ci_snapshot=CI:in_progress:32278924424;statement_visual_validation:in_progress:32278924403
+no_ci_success_claimed=true
+- Canonical issue source is byte-identical to the prior handoff source (sha256 555b030b1633768c1965ff804a8f9f11d194c36cc5261a5d9578d20fa0d69832).
+- Prior material-head controls established native BRL/USD partitioning; compare from the prior material head shows the original financial-summary/dashboard currencyBlocks implementation was not removed by the post-handoff delta.
+- Post-handoff material changes strengthen account/transaction native-currency consistency at domain, repository and database boundaries and add discriminant mismatch tests/migrations.
+- Parent CI at 4221c422497af412be23ac7379b36790fa435d35 exposed two actionable fixture/gate defects: Prettier in account-currency-invariant.integration.test.ts and a USD transaction inserted into a seeded BRL account in financial-insight-scan.integration.test.ts.
+- Current material commit 49d8bba08e2421bd79592c6194651f7d77070296 fixes formatting and gives the USD test transaction a same-profile USD account; it preserves the mixed-currency test instead of relabeling it to BRL.
+- Current CI has been collected once in delivery-snapshot mode and is still in progress; terminal handoff does not treat that pending state as a pass.
+- Static contract revalidation confirms currency remains an explicit financial-data property; no UI formatter/default is introduced as calculation source by the remediation delta.

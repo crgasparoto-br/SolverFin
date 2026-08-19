@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-19T11:36:44.932278+00:00",
+  "created_at": "2026-08-19T17:09:59.715571+00:00",
   "identity": {
-    "head_sha": "6733418cdaa28125550cd49ec2b7d43a64028d59",
-    "material_head_sha": "6733418cdaa28125550cd49ec2b7d43a64028d59",
+    "head_sha": "49d8bba08e2421bd79592c6194651f7d77070296",
+    "material_head_sha": "49d8bba08e2421bd79592c6194651f7d77070296",
     "base_sha": "c623341f729099f72c96c3908e52d0098f0a3ebd",
-    "merge_preview_sha": "f839f4a04e4778badc814c6c938970c7a0f488bf",
-    "material_merge_preview_sha": "f839f4a04e4778badc814c6c938970c7a0f488bf"
+    "merge_preview_sha": "4f78f42a502f878a396257ea653e3aff15bc2fc9",
+    "material_merge_preview_sha": "4f78f42a502f878a396257ea653e3aff15bc2fc9"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -20,11 +20,14 @@
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
+      ".audit/entregar-issue/audit-escape-closure.json",
+      ".audit/entregar-issue/audit-escape-pattern-catalog.json",
       ".audit/entregar-issue/evidence-ci-snapshot.json",
       ".audit/entregar-issue/evidence-inherited-controls.txt",
       ".audit/entregar-issue/evidence-static-contract.txt",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
+      ".audit/entregar-issue/learning-closure.json",
       ".audit/entregar-issue/remote-gate.json",
       ".audit/entregar-issue/requirement-attack-matrix.json",
       ".audit/entregar-issue/requirement-closure.json",
@@ -36,12 +39,12 @@
   "contract_version": "2026-08-18.1",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "fbc4a9a27f24ab544eb359f25a9127be4d287ef3df5db7f6aca5bc5cdd50cb26"
+    "skill_sha256": "7d9676cd3bdc439f99d838e5f8e91bbbe5d8f27aa05f6eddc35f62c71572e280"
   },
   "validators": {
     "validate_specification_coverage.py": "ece443365cc37a7548676a194e9355e5d0a13cfdea11a861375a4493e7e9a943",
     "validate_handoff_readiness.py": "9d9fca04309647441defbfcba8f081ce35ec7a58e186372303485913fb1468aa",
-    "validate_requirement_attack_matrix.py": "7041ec9c0d0c7de3f7e9c0480c7a952fda2f7a8e68d8efd5c4e895b5f12d40a4",
+    "validate_requirement_attack_matrix.py": "fe448a9f4c536b09678f940f7d49d0676460c311755d1b873d1276aafe2d26af",
     "validate_evidence_freshness.py": "8a20cb7547d03e49b30e6c5713d61c9350a553e46c81ebeef6111137e165aaf8",
     "validate_risk_saturation.py": "fc6286588f136290beba1e15927803fab82e1e0f092771234048748ad2345300",
     "validate_inherited_controls.py": "fc9e91372df5d37cb9dbc875611b0cbe0c6281cb1a70ef8b972fbbe030889ee9",
@@ -51,24 +54,32 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "8bb72658ada339130fceaea51251ab6953e8611929b176a20999694a6015e253"
+      "sha256": "c8cabf6381b45713921fa154305c346599bd998f870d3501d888c3f10c0c05ce"
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "ccc50d35197973dd5ef622ebf96db135ef8dfa84a5fff4bd79703a36edf7bf77"
+      "sha256": "b9fca7207b87f24e944cb71d096be484b474d36d4f976f18c9ea017544f41a8f"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "a2b2f7c821d6fed37f94c30dab7bca32b438f1246ed5726e3324e8f452304c60"
+      "sha256": "cb98d9482ea293f5fe12076e24f3e8f7017ee3ed55350446f8f252b817fb207f"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "84de89ca0978e00088a2b4c07461a18c7d4c9c9ba6fbca356ec619a7007fe9c7"
+      "sha256": "621417926737c3c1f9da03b7a5cc5ab5ddf5d4a1b717470ffcd78ed9ee88ee8d"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "3696f6653862f9d77abfd90b1cc99cbf3fd5c6de26f88f8cdcb7d1a0abd13dfb"
+      "sha256": "85fb224bcba3cfc59a2f17c9b9292753f85007df36bea3b4bac0210ff2ba5e80"
+    },
+    "audit_escape_closure": {
+      "name": "audit-escape-closure.json",
+      "sha256": "569670c8f825028fa114c92c984c32199bd5725c88875ea62df0e0050c51730c"
+    },
+    "learning_closure": {
+      "name": "learning-closure.json",
+      "sha256": "265c42a45225837f6176f96a50c671e3d8ad237e2ddbaa35272aa3511c1c2775"
     }
   },
-  "previous_independent_rejection": false
+  "previous_independent_rejection": true
 }

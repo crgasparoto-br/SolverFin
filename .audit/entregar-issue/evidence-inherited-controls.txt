@@ -1,8 +1,8 @@
-material_head_sha=6733418cdaa28125550cd49ec2b7d43a64028d59
-cumulative_control_revalidation=source-inspection
-- Issue #595 changes financial-summary currency partitioning, budget currency scoping, insight currency resolution, dashboard consumption, tests, owner documentation, and the SSR contract fixture.
-- Transaction creation, group editing, installment production, void/reactivation, reconciliation state transitions, and their temporal source fields are not product-code mutation targets in this CI remediation.
-- financial-summary-settlement.integration.test.ts remains adapted only to read the BRL currency block; its settlement/effectiveOn scenario and expected cash/economic deltas remain represented.
-- The SSR remediation updates only the test/gate fixture to the new financial-summary contract; it does not weaken Dashboard contract validation or add a runtime fallback.
-- New multi-currency current-state documentation matches dashboard.ts currencyBlocks production and dashboard-page.ts explicit consumption; scalar compatibility is documented only for exactly one currency.
-controls=AUDIT-CUMULATIVE-CONTROLS-001,AUDIT-CUMULATIVE-ESCAPES-001,AUDIT-RESULT-CHILD-SEMANTICS-001,NEG-BOUNDARY,NEG-COALESCE,NEG-DOC,NEG-IMPORT-HISTORY,TEMP-CARD-PURCHASE-HISTORY-001,TEMP-CARD-SETTLEMENT-001,TEMP-CREATE-SOURCE-001,TEMP-DATE-ONLY-UTC-001,TEMP-FUTURE-PROJECTION-001,TEMP-GROUP-REPORT-PERIOD-001,TEMP-INSTALLMENT-CONTRACT-001,TEMP-INSTALLMENT-PRODUCER-001,TEMP-MUTATION-INDEPENDENCE-001,TEMP-REALIZED-REPORT-PERIOD-001,TEMP-REFERENCE-LIVENESS-001,TEMP-TRANSITION-ATOMICITY-001,TEMP-TRANSITION-PARITY-001,TEMP-TRANSITION-PARITY-TRANSFER,TEMP-VOID-HISTORY-001,TEMP-VOID-NO-EFFECT-001,TEMP-VOID-REACTIVATION-001,TEMP-WEB-PRODUCER-SOURCE-001,TEMP-WEB-RECURRING-EDIT-SOURCE-001,DOC-SEMANTIC-DRIFT-001
+material_head_sha=49d8bba08e2421bd79592c6194651f7d77070296
+revalidation=exact-current-delta-inspection
+previous_material_head_sha=6733418cdaa28125550cd49ec2b7d43a64028d59
+- All cumulative control IDs from the previous handoff are preserved.
+- The post-handoff delta does not alter the unrelated temporal/import/group/card contracts guarded by those controls.
+- Currency-related changes fail closed on account/transaction mismatch and therefore strengthen, rather than bypass, the financial semantic boundary.
+- HANDOFF-DRIFT-001 proves that a ready certificate bound to an older material SHA cannot authorize handoff-only recovery after material remote-head drift.
+- Current remote CI is pending and is not used as evidence for these control outcomes.
