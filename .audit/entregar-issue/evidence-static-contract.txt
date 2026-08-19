@@ -1,12 +1,17 @@
-material_head_sha=884ffa3a11893e72a5a0dca2a195e4447b0163f3
-previous_certified_material_head_sha=49d8bba08e2421bd79592c6194651f7d77070296
-validation_mode=post-ci-refreeze-delta
-remote_ci_snapshot=CI:completed:success:32284542310;statement_visual_validation:completed:success:32284542319
-- Canonical issue source is byte-identical to the prior handoff source (sha256 555b030b1633768c1965ff804a8f9f11d194c36cc5261a5d9578d20fa0d69832).
-- The prior certified aggregate implementation and documentation remain unchanged by the CI-remediation material delta; only two API integration-test files changed after the prior material freeze.
-- generalized-deterministic-review-currency.integration.test.ts now creates a same-profile USD account for the USD target transaction, preserving the deliberate BRL-vs-USD negative case without violating the account/transaction native-currency invariant.
-- account-currency-invariant.integration.test.ts changed only to match the repository Prettier contract (printWidth 100); the currency-lock assertions and database mismatch rejection remain intact.
-- No production implementation, migration, API contract, UI, or documentation file was changed by the CI-remediation commits.
-- CI run 32284542310 completed successfully at this material head, including formatting, lint, typecheck, tests, build, Prisma/migration/seed checks, and API integration tests.
-- Statement visual validation run 32284542319 completed successfully at this material head, including Chrome core-interface validation and secret-free evidence checks.
-- Static contract revalidation confirms currency remains an explicit financial-data property; no UI formatter/default is introduced as calculation source by the remediation delta.
+material_head_sha=a74a7c04bb9165144f55b762f860f387144a2991
+material_merge_preview_sha=c4bc94a1b36809ad03ce4472f87dfe3b110cb261
+previous_certified_material_head_sha=884ffa3a11893e72a5a0dca2a195e4447b0163f3
+validation_mode=post-write-refreeze-current-head
+ci_run=32291484553:completed:success
+visual_run=32291484513:completed:success
+integration_job=96193084977:completed:success
+- GitHub Actions associated CI run 32291484553 with material head a74a7c04bb9165144f55b762f860f387144a2991 and checked out PR merge c4bc94a1b36809ad03ce4472f87dfe3b110cb261.
+- The Integration API + PostgreSQL job compiled and executed every .integration.test.js file; the log explicitly reached financial-summary-multi-currency.integration.test.js and ended with "111 compiled test file(s) passed".
+- The current financial-summary multi-currency test creates BRL and USD data in profile 33333333-3333-4333-8333-333333333331 and deliberately different EUR data in sibling profile 33333333-3333-4333-8333-333333333332 under the same organization.
+- The sibling summary observes its own EUR transaction, while the primary summary asserts the sibling EUR block is unchanged from baseline and the sibling description is absent. This rejects cross-profile leakage while preserving the same-organization discriminant.
+- The same integration test asserts deterministic currencyBlocks ordering, distinct BRL and USD block deltas, absence of mixed scalar totals, and explicit currency on recent items.
+- buildFinancialSummary queries Account and Transaction by both organizationId and financialProfileId, groups monetary totals by upper(currency), sorts the resulting currencyBlocks, and emits legacy scalar fields only when exactly one block exists.
+- The current material delta after the previous certified head is limited to delivery artifacts plus the profile-isolation integration test; no production implementation, migration, public API implementation, or documentation changed after the previous material freeze.
+- CI job Validate monorepo passed formatting, lint, typecheck, tests, build, Prisma validation/migrations and seed checks on this PR candidate; Integration API + PostgreSQL independently passed the database-backed integration suite.
+- Statement visual validation run 32291484513 completed successfully for the same head association. It is supplemental because the current post-freeze material change is an API integration test, not a visual product change.
+- Currency remains sourced from financial records and contracts. No formatter/default currency source was introduced by the current material delta.

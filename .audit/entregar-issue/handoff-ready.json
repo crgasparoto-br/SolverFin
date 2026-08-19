@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-19T18:20:27.011163+00:00",
+  "created_at": "2026-08-19T20:00:21.334369+00:00",
   "identity": {
-    "head_sha": "884ffa3a11893e72a5a0dca2a195e4447b0163f3",
-    "material_head_sha": "884ffa3a11893e72a5a0dca2a195e4447b0163f3",
+    "head_sha": "a74a7c04bb9165144f55b762f860f387144a2991",
+    "material_head_sha": "a74a7c04bb9165144f55b762f860f387144a2991",
     "base_sha": "c623341f729099f72c96c3908e52d0098f0a3ebd",
-    "merge_preview_sha": "6ae7c5140a144a0cf10d2a4fc9da298c510e216f",
-    "material_merge_preview_sha": "6ae7c5140a144a0cf10d2a4fc9da298c510e216f"
+    "merge_preview_sha": "c4bc94a1b36809ad03ce4472f87dfe3b110cb261",
+    "material_merge_preview_sha": "c4bc94a1b36809ad03ce4472f87dfe3b110cb261"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -21,7 +21,6 @@
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/audit-escape-closure.json",
-      ".audit/entregar-issue/audit-escape-pattern-catalog.json",
       ".audit/entregar-issue/evidence-ci-snapshot.json",
       ".audit/entregar-issue/evidence-inherited-controls.txt",
       ".audit/entregar-issue/evidence-static-contract.txt",
@@ -39,12 +38,12 @@
   "contract_version": "2026-08-18.1",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "2ab49e41f53e9d41bcc21249dfb13f4a7ff134c9b87814e574ced44d1fde68f7"
+    "skill_sha256": "a396a5b9d21655f787d04a3de2670f093d6a5c81f1430ee8a29e172744da0fce"
   },
   "validators": {
     "validate_specification_coverage.py": "4eb93ff6a8f451d824adc4ad8faf9fd92a24f92bb42e93666a804f1e74f39aea",
     "validate_handoff_readiness.py": "f6c538e5f6df8865e8b946c51f5ef152d1d1734012bc50f5c4ea840446a418aa",
-    "validate_requirement_attack_matrix.py": "fe448a9f4c536b09678f940f7d49d0676460c311755d1b873d1276aafe2d26af",
+    "validate_requirement_attack_matrix.py": "cce39121a991fe540cd1cf787d5609bb4ffe291990bc0cd8d25f6fa72aa7cc62",
     "validate_evidence_freshness.py": "8a20cb7547d03e49b30e6c5713d61c9350a553e46c81ebeef6111137e165aaf8",
     "validate_risk_saturation.py": "fc6286588f136290beba1e15927803fab82e1e0f092771234048748ad2345300",
     "validate_inherited_controls.py": "9b36648552b8e701c1259e04ea1c07229d47853a446e7bfeadb99b6d25bac9db",
@@ -54,31 +53,31 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "c8cabf6381b45713921fa154305c346599bd998f870d3501d888c3f10c0c05ce"
+      "sha256": "d6e7e5e4ff08ceab7c459ab447f41cb54816dbf44be2b515225e82e9b8d632b2"
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "b9fca7207b87f24e944cb71d096be484b474d36d4f976f18c9ea017544f41a8f"
+      "sha256": "7ac6d5b4283a071ec9dd376d7ec335a80f6e7d705f9368e9816740a3f1635785"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "a8436c99644644f7bf77dc953f649fd42d0caf2875ac109fff92669143327c6c"
+      "sha256": "91b7f00024643e41f8418a783f800ed280e857482e3547ac6bf8f9555f493dca"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "1a9bd1c83dc0b378c1cbae949748b56d090630756c70678ef7ebc34c8661c5b7"
+      "sha256": "8b6b27781bd9cab3245b842d5ea9768a4b81ffdd46a15697cec424ca9e9059bb"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "7f1fc48b85ed51f92749278cee76329e91cd3e1c8775b409a08a313ef8c3239a"
+      "sha256": "2ac7d7b0b6535c42b29dd47a32c0d46b4ce14eff4c13bd8b5ccd7473d7020512"
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure.json",
-      "sha256": "b2b6876fc88e27949c58f1422bdbca8cc4c85bab5ee30ff4696bc8a9787e8c42"
+      "sha256": "23297d21f837100889363300b1a512370811a02ac95a8f74b5c02507a69b383a"
     },
     "learning_closure": {
       "name": "learning-closure.json",
-      "sha256": "265c42a45225837f6176f96a50c671e3d8ad237e2ddbaa35272aa3511c1c2775"
+      "sha256": "557077e681ce50650a93493d9b3b23c0e22f747ec8d44aae05e6ac33a5bb849e"
     }
   },
   "previous_independent_rejection": true
