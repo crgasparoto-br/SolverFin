@@ -123,6 +123,7 @@ export interface SummarizeBudgetDashboardInput {
   transactions: readonly Transaction[];
   periodStartOn: ISODate;
   periodEndOn?: ISODate;
+  /** Optional native-currency filter. Omitting it preserves separate summaries per currency. */
   currency?: string;
 }
 
@@ -263,6 +264,7 @@ export function summarizeBudgetUsage(input: SummarizeBudgetUsageInput): BudgetUs
     budget.categoryId,
     budget.periodStartOn,
     budget.periodEndOn,
+    budget.currency,
   );
 
   return buildBudgetUsageSummary(budget, actualAmountMinor);
@@ -272,11 +274,13 @@ export function summarizeBudgetDashboard(
   input: SummarizeBudgetDashboardInput,
 ): BudgetUsageSummary[] {
   const period = normalizePeriod(input.periodStartOn, input.periodEndOn);
+  const currencyFilter =
+    input.currency === undefined ? undefined : normalizeExplicitCurrency(input.currency);
   const scopedBudgets = listBudgets(input.context, input.budgets, {
     status: "active",
     periodStartOn: period.periodStartOn,
     periodEndOn: period.periodEndOn,
-  });
+  }).filter((budget) => currencyFilter === undefined || budget.currency === currencyFilter);
   const summaries = scopedBudgets.map((budget) =>
     buildBudgetUsageSummary(
       budget,
@@ -286,34 +290,41 @@ export function summarizeBudgetDashboard(
         budget.categoryId,
         budget.periodStartOn,
         budget.periodEndOn,
+        budget.currency,
       ),
     ),
   );
-  const budgetedCategoryIds = new Set(scopedBudgets.map((budget) => budget.categoryId));
+  const budgetedCategoryCurrencies = new Set(
+    scopedBudgets.map((budget) => budgetCategoryCurrencyKey(budget.categoryId, budget.currency)),
+  );
   const unbudgetedAmounts = sumUnbudgetedActualAmounts(
     input.context,
     input.transactions,
-    budgetedCategoryIds,
+    budgetedCategoryCurrencies,
     period.periodStartOn,
     period.periodEndOn,
+    currencyFilter,
   );
 
-  for (const [categoryId, actualAmountMinor] of unbudgetedAmounts) {
+  for (const item of unbudgetedAmounts.values()) {
     summaries.push({
-      categoryId,
+      categoryId: item.categoryId,
       periodStartOn: period.periodStartOn,
       periodEndOn: period.periodEndOn,
       plannedAmountMinor: 0,
-      actualAmountMinor,
-      remainingAmountMinor: -actualAmountMinor,
-      usedPercent: actualAmountMinor > 0 ? 100 : 0,
+      actualAmountMinor: item.actualAmountMinor,
+      remainingAmountMinor: -item.actualAmountMinor,
+      usedPercent: item.actualAmountMinor > 0 ? 100 : 0,
       alertThresholdPercent: DEFAULT_ALERT_THRESHOLD_PERCENT,
       status: "unbudgeted",
-      currency: normalizeCurrency(input.currency),
+      currency: item.currency,
     });
   }
 
-  return summaries;
+  return summaries.sort(
+    (left, right) =>
+      left.currency.localeCompare(right.currency) || left.categoryId.localeCompare(right.categoryId),
+  );
 }
 
 function buildOptionalBudgetUpdate(payload: UpdateBudgetPayload): Partial<Budget> {
@@ -401,38 +412,63 @@ function sumActualAmount(
   categoryId: EntityId,
   periodStartOn: ISODate,
   periodEndOn: ISODate,
+  currency: string,
 ): number {
   return listTenantScopedResources(context, transactions)
     .filter((transaction) => isBudgetTransaction(transaction, periodStartOn, periodEndOn))
-    .filter((transaction) => transaction.categoryId === categoryId)
+    .filter(
+      (transaction) => transaction.categoryId === categoryId && transaction.currency === currency,
+    )
     .reduce((total, transaction) => total + transaction.amountMinor, 0);
+}
+
+interface UnbudgetedCurrencyAmount {
+  categoryId: EntityId;
+  currency: string;
+  actualAmountMinor: number;
 }
 
 function sumUnbudgetedActualAmounts(
   context: TenantContext,
   transactions: readonly Transaction[],
-  budgetedCategoryIds: ReadonlySet<EntityId>,
+  budgetedCategoryCurrencies: ReadonlySet<string>,
   periodStartOn: ISODate,
   periodEndOn: ISODate,
-): Map<EntityId, number> {
-  const totals = new Map<EntityId, number>();
+  currencyFilter: string | undefined,
+): Map<string, UnbudgetedCurrencyAmount> {
+  const totals = new Map<string, UnbudgetedCurrencyAmount>();
 
   for (const transaction of listTenantScopedResources(context, transactions)) {
     if (!isBudgetTransaction(transaction, periodStartOn, periodEndOn)) {
       continue;
     }
 
-    if (transaction.categoryId === undefined || budgetedCategoryIds.has(transaction.categoryId)) {
+    if (transaction.categoryId === undefined || transaction.currency.trim().length === 0) {
       continue;
     }
 
-    totals.set(
-      transaction.categoryId,
-      (totals.get(transaction.categoryId) ?? 0) + transaction.amountMinor,
-    );
+    if (currencyFilter !== undefined && transaction.currency !== currencyFilter) {
+      continue;
+    }
+
+    const key = budgetCategoryCurrencyKey(transaction.categoryId, transaction.currency);
+    if (budgetedCategoryCurrencies.has(key)) {
+      continue;
+    }
+
+    const current = totals.get(key);
+    totals.set(key, {
+      categoryId: transaction.categoryId,
+      currency: transaction.currency,
+      actualAmountMinor: (current?.actualAmountMinor ?? 0) + transaction.amountMinor,
+    });
   }
 
   return totals;
+}
+
+function budgetCategoryCurrencyKey(categoryId: EntityId, currency: string): string {
+  return `${currency}\u0000${categoryId}`;
 }
 
 function isBudgetTransaction(
@@ -540,6 +576,10 @@ function validateDate(date: ISODate): ISODate {
 }
 
 function normalizeCurrency(currency = "BRL"): string {
+  return normalizeExplicitCurrency(currency);
+}
+
+function normalizeExplicitCurrency(currency: string): string {
   const normalizedCurrency = currency.trim().toUpperCase();
 
   if (!/^[A-Z]{3}$/.test(normalizedCurrency)) {
