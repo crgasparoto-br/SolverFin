@@ -152,8 +152,10 @@ export async function buildFinancialSummary(
     currencies.add(normalizeCurrencyCode(row.currency));
   for (const row of cashMovementRows)
     currencies.add(normalizeCurrencyCode(row.currency));
-  for (const row of monthTotals) currencies.add(normalizeCurrencyCode(row.currency));
-  for (const row of plannedTotals) currencies.add(normalizeCurrencyCode(row.currency));
+  for (const row of monthTotals)
+    currencies.add(normalizeCurrencyCode(row.currency));
+  for (const row of plannedTotals)
+    currencies.add(normalizeCurrencyCode(row.currency));
 
   const currencyBlocks = [...currencies]
     .sort((left, right) => left.localeCompare(right))
