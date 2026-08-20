@@ -86,7 +86,7 @@ A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas
 | Compra de cartao x liquidacao sem dupla contabilizacao        | Feito     | #593, `docs/CARDS.md`, `docs/API_REPORTS.md`         |
 | Saldo/metricas coerentes com a semantica financeira           | Feito     | #594, `docs/API_FINANCIAL_SUMMARY.md`                |
 | Agregacao multi-moedas explicita                              | Feito     | #595, `docs/MULTI_CURRENCY_AGGREGATION.md`, ADR 0013 |
-| Contrato para consolidacao cambial auditavel futura           | Planejado | #589, ADR 0013                                       |
+| Contrato para consolidacao cambial auditavel futura           | Feito     | #596, `docs/CURRENCY_CONVERSION.md`, ADR 0013        |
 | Datas financeiras formalizadas                                | Feito     | #597, `docs/TRANSACTION_DATES.md`                    |
 | Invariantes financeiros ponta a ponta                         | Planejado | #589                                                 |
 | Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`                        |
