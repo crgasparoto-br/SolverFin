@@ -102,7 +102,7 @@ export function createReferenceCurrencyPreference(input: {
     updatedAt: validateIsoDateTime(
       input.updatedAt,
       "REFERENCE_CURRENCY_PREFERENCE_INVALID",
-      "Reference currency preference updatedAt must be a valid ISO date-time.",
+      "Reference currency preference updatedAt must be an unambiguous ISO date-time with an explicit timezone.",
     ),
   };
 }
@@ -118,7 +118,7 @@ export function resolveReferenceCurrencyAvailability(input: {
   const evaluatedAt = validateIsoDateTime(
     input.evaluatedAt,
     "EXCHANGE_RATE_EXPIRY_INVALID",
-    "Currency conversion evaluation time must be a valid ISO date-time.",
+    "Currency conversion evaluation time must be an unambiguous ISO date-time with an explicit timezone.",
   );
 
   if (nativeCurrency === referenceCurrency) {
@@ -233,7 +233,7 @@ export function createConvertedReferenceCurrencyAmount(input: {
   const evaluatedAt = validateIsoDateTime(
     input.evaluatedAt,
     "EXCHANGE_RATE_EXPIRY_INVALID",
-    "Currency conversion evaluation time must be a valid ISO date-time.",
+    "Currency conversion evaluation time must be an unambiguous ISO date-time with an explicit timezone.",
   );
   assertExchangeRatePair(exchangeRate, native.currency, referenceCurrency);
   assertQuoteNotBeforeReference(exchangeRate, evaluatedAt);
@@ -285,12 +285,12 @@ function normalizeExchangeRateQuote(input: ExchangeRateQuote): ExchangeRateQuote
   const referenceAt = validateIsoDateTime(
     input.referenceAt,
     "EXCHANGE_RATE_REFERENCE_INVALID",
-    "Exchange-rate referenceAt must be a valid ISO date-time.",
+    "Exchange-rate referenceAt must be an unambiguous ISO date-time with an explicit timezone.",
   );
   const expiresAt = validateIsoDateTime(
     input.expiresAt,
     "EXCHANGE_RATE_EXPIRY_INVALID",
-    "Exchange-rate expiresAt must be a valid ISO date-time.",
+    "Exchange-rate expiresAt must be an unambiguous ISO date-time with an explicit timezone.",
   );
   const source = input.source.trim();
 
@@ -375,11 +375,34 @@ function validateIsoDateTime(
   message: string,
 ): ISODateTime {
   const normalizedValue = value.trim();
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})$/.exec(
+    normalizedValue,
+  );
+
+  if (!match || Number.isNaN(Date.parse(normalizedValue))) {
+    throw new CurrencyConversionContractError(errorCode, message);
+  }
+
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  const calendarProbe = new Date(Date.UTC(year, month - 1, day));
 
   if (
-    !normalizedValue ||
-    !normalizedValue.includes("T") ||
-    Number.isNaN(Date.parse(normalizedValue))
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    hour > 23 ||
+    minute > 59 ||
+    second > 59 ||
+    calendarProbe.getUTCFullYear() !== year ||
+    calendarProbe.getUTCMonth() !== month - 1 ||
+    calendarProbe.getUTCDate() !== day
   ) {
     throw new CurrencyConversionContractError(errorCode, message);
   }
