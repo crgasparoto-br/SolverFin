@@ -93,10 +93,7 @@ export type CurrencyConversionContractErrorCode =
 export class CurrencyConversionContractError extends Error {
   public readonly code: CurrencyConversionContractErrorCode;
 
-  public constructor(
-    code: CurrencyConversionContractErrorCode,
-    message: string,
-  ) {
+  public constructor(code: CurrencyConversionContractErrorCode, message: string) {
     super(message);
     this.name = "CurrencyConversionContractError";
     this.code = code;
@@ -179,10 +176,7 @@ export function createConvertedReferenceCurrencyValue(input: {
     );
   }
 
-  if (
-    quote.sourceCurrency !== native.currency ||
-    quote.targetCurrency !== converted.currency
-  ) {
+  if (quote.sourceCurrency !== native.currency || quote.targetCurrency !== converted.currency) {
     throw new CurrencyConversionContractError(
       "CONVERSION_QUOTE_PAIR_MISMATCH",
       "Exchange-rate metadata must describe the same source and target currencies as the value.",
@@ -221,20 +215,14 @@ export function createUnavailableReferenceCurrencyValue(input: {
       ? null
       : normalizeCurrencyCode(input.referenceCurrency);
 
-  if (
-    input.reason === "reference_currency_unconfigured" &&
-    referenceCurrency !== null
-  ) {
+  if (input.reason === "reference_currency_unconfigured" && referenceCurrency !== null) {
     throw new CurrencyConversionContractError(
       "CONVERSION_REASON_INVALID",
       "An unconfigured reference currency cannot include a target currency.",
     );
   }
 
-  if (
-    input.reason !== "reference_currency_unconfigured" &&
-    referenceCurrency === null
-  ) {
+  if (input.reason !== "reference_currency_unconfigured" && referenceCurrency === null) {
     throw new CurrencyConversionContractError(
       "CONVERSION_REASON_INVALID",
       "Quote-related unavailability requires the requested reference currency.",
@@ -273,9 +261,7 @@ function normalizeMonetaryAmount(value: MonetaryAmount): MonetaryAmount {
   };
 }
 
-function normalizeExchangeRateMetadata(
-  metadata: ExchangeRateMetadata,
-): ExchangeRateMetadata {
+function normalizeExchangeRateMetadata(metadata: ExchangeRateMetadata): ExchangeRateMetadata {
   const sourceCurrency = normalizeCurrencyCode(metadata.sourceCurrency);
   const targetCurrency = normalizeCurrencyCode(metadata.targetCurrency);
   const rate = metadata.rate.trim();
