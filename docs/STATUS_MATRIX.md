@@ -81,22 +81,22 @@ As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas
 
 A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas #589, #590 e #591 e respectivas subissues; cada capacidade abaixo deve refletir apenas o estado verificavel do seu proprio recorte.
 
-| Capacidade estrutural                                         | Estado    | Contrato principal                                   |
-| ------------------------------------------------------------- | --------- | ---------------------------------------------------- |
-| Compra de cartao x liquidacao sem dupla contabilizacao        | Feito     | #593, `docs/CARDS.md`, `docs/API_REPORTS.md`         |
-| Saldo/metricas coerentes com a semantica financeira           | Feito     | #594, `docs/API_FINANCIAL_SUMMARY.md`                |
-| Agregacao multi-moedas explicita                              | Feito     | #595, `docs/MULTI_CURRENCY_AGGREGATION.md`, ADR 0013 |
-| Contrato para consolidacao cambial auditavel futura           | Planejado | #589, ADR 0013                                       |
-| Datas financeiras formalizadas                                | Feito     | #597, `docs/TRANSACTION_DATES.md`                    |
-| Invariantes financeiros ponta a ponta                         | Planejado | #589                                                 |
-| Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`                        |
-| View-models/presenters para separar UI de calculos            | Planejado | #590, ADR 0014                                       |
-| Retirada gradual de pos-processamento textual de HTML         | Planejado | #590, ADR 0014                                       |
-| Dashboard migrado para cockpit de decisao                     | Planejado | #591                                                 |
-| Extrato migrado para novo padrao                              | Planejado | #591                                                 |
-| Cartoes/Faturas migrados para hierarquia cartao-fatura        | Planejado | #591                                                 |
-| Relatorios com resumo/visualizacao antes da matriz detalhada  | Planejado | #591                                                 |
-| Demais superficies convergentes aos arquetipos compartilhados | Planejado | #591                                                 |
+| Capacidade estrutural                                         | Estado    | Contrato principal                                                     |
+| ------------------------------------------------------------- | --------- | ---------------------------------------------------------------------- |
+| Compra de cartao x liquidacao sem dupla contabilizacao        | Feito     | #593, `docs/CARDS.md`, `docs/API_REPORTS.md`                           |
+| Saldo/metricas coerentes com a semantica financeira           | Feito     | #594, `docs/API_FINANCIAL_SUMMARY.md`                                  |
+| Agregacao multi-moedas explicita                              | Feito     | #595, `docs/MULTI_CURRENCY_AGGREGATION.md`, ADR 0013                   |
+| Contrato para consolidacao cambial auditavel futura           | Feito     | #596, `docs/CURRENCY_CONVERSION_CONTRACT.md`, ADR 0015                 |
+| Datas financeiras formalizadas                                | Feito     | #597, `docs/TRANSACTION_DATES.md`                                      |
+| Invariantes financeiros ponta a ponta                         | Planejado | #589                                                                   |
+| Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`                                          |
+| View-models/presenters para separar UI de calculos            | Planejado | #590, ADR 0014                                                         |
+| Retirada gradual de pos-processamento textual de HTML         | Planejado | #590, ADR 0014                                                         |
+| Dashboard migrado para cockpit de decisao                     | Planejado | #591                                                                   |
+| Extrato migrado para novo padrao                              | Planejado | #591                                                                   |
+| Cartoes/Faturas migrados para hierarquia cartao-fatura        | Planejado | #591                                                                   |
+| Relatorios com resumo/visualizacao antes da matriz detalhada  | Planejado | #591                                                                   |
+| Demais superficies convergentes aos arquetipos compartilhados | Planejado | #591                                                                   |
 
 ### Regras de transicao da Fase 3
 
