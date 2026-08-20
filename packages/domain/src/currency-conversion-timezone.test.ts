@@ -1,5 +1,6 @@
 import {
   CurrencyConversionContractError,
+  createConvertedReferenceCurrencyAmount,
   createReferenceCurrencyPreference,
   resolveReferenceCurrencyAvailability,
   type ExchangeRateQuote,
@@ -18,6 +19,7 @@ testReferenceCurrencyPreferenceRejectsTimezoneLessTimestamp();
 testQuoteReferenceRejectsTimezoneLessTimestamp();
 testQuoteExpiryRejectsTimezoneLessTimestamp();
 testEvaluationRejectsTimezoneLessTimestamp();
+testConvertedFactoryRejectsTimezoneLessEvaluation();
 testImpossibleCalendarDateIsRejected();
 testExplicitOffsetProducesDeterministicAvailability();
 
@@ -77,6 +79,20 @@ function testEvaluationRejectsTimezoneLessTimestamp(): void {
         nativeCurrency: "USD",
         referenceCurrency: "BRL",
         quoteResult: { status: "available", quote: baseQuote },
+        evaluatedAt: "2026-08-20T15:00:00",
+      }),
+    "EXCHANGE_RATE_EXPIRY_INVALID",
+  );
+}
+
+function testConvertedFactoryRejectsTimezoneLessEvaluation(): void {
+  assertCurrencyContractError(
+    () =>
+      createConvertedReferenceCurrencyAmount({
+        native: { amountMinor: 2000, currency: "USD" },
+        referenceCurrency: "BRL",
+        convertedAmountMinor: 10500,
+        exchangeRate: baseQuote,
         evaluatedAt: "2026-08-20T15:00:00",
       }),
     "EXCHANGE_RATE_EXPIRY_INVALID",
