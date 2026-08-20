@@ -1,195 +1,34 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/tmp/solverfin-596-audit/.audit/entregar-issue/specification-snapshot.json",
-    "sha256": "168e7e55b01cf53d31a7087a8e0aa22bfc6a05cc4b2949f59fa5fb77f4e42d50"
+    "path": "/tmp/solverfin-596-resume/.audit/entregar-issue/specification-snapshot.json",
+    "sha256": "3d15db63127678d9e0abfea423a5309037d23f6044c95a700b2c18df1a86da99"
   },
   "primary_issue_source_id": "SRC-ISSUE",
   "obligations": [
-    {
-      "id": "OBL-001",
-      "candidate_key": "c86b7057ccba02e13b5c7b176e5f2b30fe471168e61d5d260a7436fe28891675",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55",
-      "source_line": 7,
-      "source_text": "Definir o contrato que permitirá futuramente apresentar valores consolidados convertidos em uma moeda de referência, sem alterar a moeda nativa dos registros e sem conversão implícita.",
-      "flags": [
-        "negative"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-001"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "The shared domain contract preserves native amounts, requires explicit reference currency and auditable quote metadata, and fails closed when conversion evidence is missing or invalid."
-    },
-    {
-      "id": "OBL-002",
-      "candidate_key": "c9b61cd32832683089f2de528ef84314647d15cd59f47e852bab70e5d4d03222",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55",
-      "source_line": 21,
-      "source_text": "contrato é consumível por Dashboard, Relatórios e futuras projeções;",
-      "flags": [
-        "semantic-effect"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-002"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "The documented native/converted/unavailable representation and shared domain export define one reusable contract for Dashboard, Reports and future projections without activating conversion."
-    },
-    {
-      "id": "OBL-003",
-      "candidate_key": "4ecd65aaea111bc19a3ae7c7ee5fb3062ec29be9d1b1d5c905abb2b35638c804",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55",
-      "source_line": 25,
-      "source_text": "escolher ou implementar provider de câmbio;",
-      "flags": [],
-      "disposition": "not-applicable",
-      "requirement_ids": [],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": "excluded-by-explicit-out-of-scope",
-      "rationale": "The source lists selecting or implementing an FX provider under Fora de escopo; this delivery intentionally adds no provider or external integration."
-    }
+    {"id":"OBL-001","candidate_key":"c86b7057ccba02e13b5c7b176e5f2b30fe471168e61d5d260a7436fe28891675","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":7,"source_text":"Definir o contrato que permitirá futuramente apresentar valores consolidados convertidos em uma moeda de referência, sem alterar a moeda nativa dos registros e sem conversão implícita.","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-001"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"The shared contract preserves native values and requires explicit, auditable conversion semantics instead of implicit cross-currency aggregation."},
+    {"id":"OBL-002","candidate_key":"f494e2488932264736d9e4c061cab7e583a5f90d5d18034af3345f5c5ab69e5d","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":10,"source_text":"definir responsabilidade e ciclo de vida da eventual moeda de referência do perfil;","flags":[],"disposition":"covered","requirement_ids":["REQ-002"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"The contract documents an optional reference-currency preference with absent, defined, changed, and removed lifecycle states without persistence in this issue."},
+    {"id":"OBL-003","candidate_key":"680d6384466e97a09fa72b45d13205305074f7fca1ba73a149fdb808f816093e","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":11,"source_text":"definir o shape do valor convertido: origem, destino, taxa, data/instante de referência e fonte;","flags":["aftermath","review-surface"],"disposition":"covered","requirement_ids":["REQ-003"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"ExchangeRateQuote and converted values expose source currency, target currency, decimal rate, reference instant, expiry, and source metadata."},
+    {"id":"OBL-004","candidate_key":"5a0f34be9b0a8a4427dd10eae25d0abeaf385784d1d8e7df033c11273ecc0929","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":12,"source_text":"definir comportamento quando cotação estiver ausente, expirada ou indisponível;","flags":[],"disposition":"covered","requirement_ids":["REQ-004"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"The shared availability contract distinguishes missing, expired, and unavailable quotes and fails closed without a converted amount."},
+    {"id":"OBL-005","candidate_key":"a97ca4802040139a3ddb85a93aa6822dbbd68e53bd219963accb9935f6795928","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":13,"source_text":"definir como APIs e UI distinguem valor nativo de valor convertido;","flags":["aftermath"],"disposition":"covered","requirement_ids":["REQ-005"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"The shared discriminated union exposes native, converted, and unavailable states for API/view-model consumers without local inference."},
+    {"id":"OBL-006","candidate_key":"fd933985d0669691f2edcadf5269aea579da29d73354d3cc70fe1a50128b593b","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":14,"source_text":"registrar ADR complementar se houver escolha de schema persistente ou provider.","flags":[],"disposition":"not-applicable","requirement_ids":[],"inventory_ids":[],"assertion_ids":[],"scope_decision":"conditional-trigger-not-present","rationale":"The conditional ADR obligation is not triggered because this issue selects neither persistent schema nor an FX provider; ADR 0013 remains sufficient."},
+    {"id":"OBL-007","candidate_key":"97f922674150318a1dc948fe300042320cf237eee81948ac953037e6502d56ff","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":17,"source_text":"não existe suposição universal de BRL;","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-006"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Reference currency is explicit and optional; no BRL or other universal fallback is introduced."},
+    {"id":"OBL-008","candidate_key":"c836133fedff92de90296e4723a2f16658ede809731c1529b85ad606829b827e","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":18,"source_text":"moeda de referência não altera a moeda nativa do registro;","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-007"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Every converted representation retains the original native amount and currency alongside the reference currency."},
+    {"id":"OBL-009","candidate_key":"c994731e7e57c10addd5d1f0a87db63f15c7b2e0a3cc1660c251d8de0a75ee62","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":19,"source_text":"conversão exige metadados auditáveis;","flags":[],"disposition":"covered","requirement_ids":["REQ-008"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Converted values require auditable quote metadata including pair, rate, reference instant, expiry, and source."},
+    {"id":"OBL-010","candidate_key":"a4927725753a13ce4e848f109b236b67c930b5d18ac7216f03da1fcbb35bb02d","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":20,"source_text":"ausência de cotação não vira 1:1 nem zero;","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-009"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Missing/unavailable/expired quotes never synthesize parity 1:1 or a zero converted amount."},
+    {"id":"OBL-011","candidate_key":"c9b61cd32832683089f2de528ef84314647d15cd59f47e852bab70e5d4d03222","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":21,"source_text":"contrato é consumível por Dashboard, Relatórios e futuras projeções;","flags":["semantic-effect"],"disposition":"covered","requirement_ids":["REQ-010"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Dashboard, Reports, and future projections are directed to one consumer-neutral shared representation."},
+    {"id":"OBL-012","candidate_key":"e2374aac175f96ff5453b8cf72e348e918faffaee00ff4065536bb4b29a9e932","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":22,"source_text":"não há integração externa nesta issue.","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-011"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"No provider, external network integration, migration, or runtime FX lookup is introduced by the material candidate."},
+    {"id":"OBL-013","candidate_key":"4ecd65aaea111bc19a3ae7c7ee5fb3062ec29be9d1b1d5c905abb2b35638c804","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":25,"source_text":"escolher ou implementar provider de câmbio;","flags":[],"disposition":"not-applicable","requirement_ids":[],"inventory_ids":[],"assertion_ids":[],"scope_decision":"excluded-by-explicit-out-of-scope","rationale":"Selecting or implementing an FX provider is explicitly outside this issue and no provider is introduced."},
+    {"id":"OBL-014","candidate_key":"e040669163512286a811a3a4d4d6d221201dafdb0eeefe9d9cbb36d98cb7c809","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":26,"source_text":"persistir histórico completo de câmbio;","flags":["review-surface"],"disposition":"not-applicable","requirement_ids":[],"inventory_ids":[],"assertion_ids":[],"scope_decision":"excluded-by-explicit-out-of-scope","rationale":"Persisting complete exchange-rate history is explicitly outside this issue and no persistence change is introduced."},
+    {"id":"OBL-015","candidate_key":"b36619accc4976b631a822baef7d3ba36af3ccde1cf2c631e752a3fd4b8f7380","source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","source_line":27,"source_text":"consolidar UI de patrimônio.","flags":[],"disposition":"not-applicable","requirement_ids":[],"inventory_ids":[],"assertion_ids":[],"scope_decision":"excluded-by-explicit-out-of-scope","rationale":"Consolidating the wealth UI is explicitly outside this issue and no UI route/component is changed."}
   ],
-  "source_coverage": [
-    {
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55",
-      "candidate_count": 3,
-      "obligation_ids": [
-        "OBL-001",
-        "OBL-002",
-        "OBL-003"
-      ],
-      "unmapped_candidate_keys": []
-    }
-  ],
+  "source_coverage": [{"source_id":"SRC-ISSUE","source_sha256":"0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55","candidate_count":15,"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015"],"unmapped_candidate_keys":[]}],
   "domain_inventories": [],
   "observable_assertions": [],
-  "structural_invariant_closures": {
-    "status": "passed",
-    "applicability_reason": "The reference-currency contract relates native currency, reference currency and exchange-rate source/target dimensions, so incompatible pair propagation and implicit conversion require adversarial closure.",
-    "entries": [
-      {
-        "id": "REL-SEM-FX-001",
-        "obligation_ids": [
-          "OBL-001"
-        ],
-        "family": "relational-integrity",
-        "plausible_wrong_implementation": "A converted value accepts an exchange-rate quote whose source or destination currency conflicts with the linked native/reference currencies, or fabricates a same-currency 1:1 conversion.",
-        "positive_evidence": ".audit/entregar-issue/evidence-static-contract.txt",
-        "negative_control_evidence": ".audit/entregar-issue/evidence-static-contract.txt",
-        "status": "passed"
-      }
-    ],
-    "unresolved_invariants": []
-  },
-  "read_model_closures": {
-    "status": "not-applicable",
-    "applicability_reason": "The issue defines a future conversion representation and validation contract; it does not add or modify a historical read model, timeline, pagination or versioned record query.",
-    "entries": [],
-    "unconsumed_outputs": [],
-    "unmapped_required_fields": []
-  },
-  "canonical_source_consistency": {
-    "status": "not-applicable",
-    "applicability_reason": "No duplicate runtime catalog or canonical data source is introduced; the new subpath is the single shared domain representation while existing native currencyBlocks remain unchanged.",
-    "entries": [],
-    "unverified_surfaces": [],
-    "missing_divergent_tests": []
-  },
-  "documentation_consistency": {
-    "status": "passed",
-    "applicability_reason": "The candidate changes the normative project status of the #596 contract from planned to implemented, so living documentation was reconciled against ADR 0013 and existing native-only API contracts.",
-    "old_contract_terms": [
-      "Contrato para consolidacao cambial auditavel futura: Planejado",
-      "future conversion contract not yet materialized"
-    ],
-    "new_contract_terms": [
-      "Contrato para consolidacao cambial auditavel futura: Feito",
-      "docs/CURRENCY_CONVERSION.md",
-      "native | converted | unavailable"
-    ],
-    "occurrences": [
-      {
-        "path": "docs/STATUS_MATRIX.md",
-        "classification": "current-contract",
-        "result": "updated from Planejado to Feito for #596 in the material candidate"
-      },
-      {
-        "path": "docs/CURRENCY_CONVERSION.md",
-        "classification": "current-contract",
-        "result": "defines reference currency, auditable quote and unavailable states without provider activation"
-      },
-      {
-        "path": "docs/EVOLUTION_STRATEGY.md",
-        "classification": "current-contract",
-        "result": "compatible outside-diff guidance: explicit conversion only and auditable metadata"
-      },
-      {
-        "path": "docs/ARCHITECTURE.md",
-        "classification": "current-contract",
-        "result": "compatible outside-diff multi-currency invariant"
-      },
-      {
-        "path": "docs/adr/0013-multi-currency-financial-aggregation.md",
-        "classification": "current-contract",
-        "result": "compatible accepted architectural decision"
-      },
-      {
-        "path": "docs/API_FINANCIAL_SUMMARY.md",
-        "classification": "current-contract",
-        "result": "compatible native currencyBlocks contract remains active"
-      },
-      {
-        "path": "docs/API_REPORTS.md",
-        "classification": "current-contract",
-        "result": "compatible native currencyBlocks contract remains active"
-      }
-    ],
-    "unresolved_contradictions": [],
-    "searched_outside_diff": true,
-    "search_evidence": [
-      ".audit/entregar-issue/evidence-documentation-consistency.txt"
-    ]
-  },
-  "scope_reduction_review": {
-    "status": "passed",
-    "matches": [
-      {
-        "source": "Fora de escopo",
-        "decision": "preserved",
-        "detail": "No FX provider, external integration, quote history persistence, asset consolidation UI, migration or productive rounding algorithm was introduced."
-      }
-    ]
-  },
-  "pass_c": {
-    "status": "passed",
-    "requirement_ids": [
-      "REQ-001",
-      "REQ-002"
-    ],
-    "obligation_ids": [
-      "OBL-001",
-      "OBL-002",
-      "OBL-003"
-    ],
-    "evidence": [
-      ".audit/entregar-issue/evidence-static-contract.txt",
-      ".audit/entregar-issue/evidence-documentation-consistency.txt"
-    ],
-    "rederived_without_pr_description": true,
-    "reviewed_user_visible_semantics": true,
-    "reviewed_producer_consumer_parity": true,
-    "reviewed_all_specification_sources": true
-  }
+  "structural_invariant_closures": {"status":"passed","applicability_reason":"Currency source/target/native/reference fields are linked semantic values; native preservation and fail-closed conversion are structural invariants.","entries":[{"id":"REL-SEM-FX-001","obligation_ids":["OBL-001","OBL-003","OBL-007","OBL-008","OBL-009","OBL-010"],"family":"relational-integrity","plausible_wrong_implementation":"A converted value could discard native money, accept an incompatible currency pair, or fabricate same-currency parity while still returning a superficially valid payload.","positive_evidence":".audit/entregar-issue/evidence-static-contract.txt","negative_control_evidence":".audit/entregar-issue/evidence-static-contract.txt","status":"passed"}],"unresolved_invariants":[]},
+  "read_model_closures": {"status":"passed","applicability_reason":"The specification explicitly mentions exchange-rate history as out of scope, so the closure verifies that no historical read model or persistence contract is introduced.","entries":[{"id":"READ-FX-HISTORY-001","obligation_ids":["OBL-014"],"status":"passed","result":"No quote-history storage, versioned query, pagination, or historical API is introduced; the obligation remains explicitly out of scope."}],"unconsumed_outputs":[],"unmapped_required_fields":[]},
+  "canonical_source_consistency": {"status":"not-applicable","applicability_reason":"The issue adds a single shared domain subpath and documentation contract; it does not create duplicated runtime catalogs or persisted canonical datasets.","entries":[],"unverified_surfaces":[],"missing_divergent_tests":[]},
+  "documentation_consistency": {"status":"passed","applicability_reason":"Living status, documentation index, ADR 0013, and the conversion contract consistently distinguish an implemented contract from a still-unimplemented provider/productive conversion.","old_contract_terms":["reference-currency consolidation planned","future conversion contract not yet materialized"],"new_contract_terms":["reference-currency contract implemented","native | converted | unavailable","referenceAt <= evaluatedAt <= expiresAt","no provider activation"],"occurrences":[{"path":"docs/STATUS_MATRIX.md","classification":"current-contract","result":"Issue 596 contract is marked Feito without claiming productive FX conversion."},{"path":"docs/README.md","classification":"current-contract","result":"Documentation index exposes the currency conversion contract."},{"path":"docs/CURRENCY_CONVERSION.md","classification":"current-contract","result":"Normative contract defines explicit auditable conversion and preserves native values."},{"path":"docs/adr/0013-multi-currency-financial-aggregation.md","classification":"current-contract","result":"ADR requires explicit conversion and audit metadata and does not choose provider or default reference currency."},{"path":"docs/MULTI_CURRENCY_AGGREGATION.md","classification":"current-contract","result":"Native currencyBlocks remain canonical until explicit conversion is activated."}],"unresolved_contradictions":[],"searched_outside_diff":true,"search_evidence":[".audit/entregar-issue/evidence-documentation-consistency.txt"]},
+  "scope_reduction_review": {"status":"passed","matches":[{"source":"conditional ADR clause","decision":"not-triggered","detail":"No persistent schema or provider is chosen, so no complementary ADR is required."},{"source":"Fora de escopo","decision":"preserved","detail":"No provider, quote-history persistence, or wealth-UI consolidation is introduced."}]},
+  "pass_c": {"status":"passed","requirement_ids":["REQ-001","REQ-002","REQ-003","REQ-004","REQ-005","REQ-006","REQ-007","REQ-008","REQ-009","REQ-010","REQ-011"],"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015"],"evidence":[".audit/entregar-issue/evidence-static-contract.txt",".audit/entregar-issue/evidence-documentation-consistency.txt",".audit/entregar-issue/evidence-specification-atomization.txt"],"rederived_without_pr_description":true,"reviewed_user_visible_semantics":true,"reviewed_producer_consumer_parity":true,"reviewed_all_specification_sources":true}
 }

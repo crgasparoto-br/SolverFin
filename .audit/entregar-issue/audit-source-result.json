@@ -1,0 +1,18 @@
+{
+  "rejection_id": "audit-rejection:8928adf8-51cf-40f2-b293-df6b38dac26a",
+  "head_sha": "f22fecae57497f2397ad9bd77e2232092ac908c7",
+  "published_handoff_head_sha": "14e837b4e45d5cfeaa415af358f05b33bc120ba8",
+  "findings": [
+    {
+      "id": "A-001",
+      "status": "open",
+      "disposition": "blocking",
+      "actionable": true,
+      "remediation_mode": "systemic-remediation",
+      "category": "control-propagation-gap",
+      "escape_class": "code-growth-evidence-schema-drift",
+      "summary": "CODE-GROWTH-001 terminal validation accepted a reduced report that the independent preflight rejected because the canonical policy object was missing."
+    }
+  ],
+  "recommendations": []
+}

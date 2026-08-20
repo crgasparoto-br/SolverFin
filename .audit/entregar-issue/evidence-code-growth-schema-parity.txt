@@ -1,0 +1,11 @@
+CODE-GROWTH-SCHEMA-PARITY-001
+material_head=f22fecae57497f2397ad9bd77e2232092ac908c7
+canonical_contract=contracts/code-growth-report.schema.json
+prevention=entregar-issue validates the canonical schema before handoff
+detection=auditar-issue validates the generated copy of the same schema before independent refutation
+negative_missing_policy=passed (both validators reject)
+negative_wrong_typed_policy=passed (both validators reject)
+positive_canonical_report=passed (both validators accept)
+focused_tests=12/12 passed
+controller_contracts=valid
+skill_genericity=passed for entregar-issue and auditar-issue

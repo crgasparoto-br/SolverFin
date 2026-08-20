@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "f22fecae57497f2397ad9bd77e2232092ac908c7",
+  "base": "d167f9c787c8577abd9d12e11a1d33d77acb9b86",
+  "policy": {
+    "soft_limit_lines": 700,
+    "hard_limit_lines": 1200,
+    "max_growth_lines": 100,
+    "legacy_growth_lines": 60,
+    "legacy_growth_ratio": 0.08,
+    "include_tests": false,
+    "repository_max_lines": null,
+    "repository_limit_source": null
+  },
+  "files": [
+    {
+      "path": "packages/domain/src/currency-conversion.ts",
+      "baseline_lines": 0,
+      "current_lines": 396,
+      "growth_lines": 396,
+      "status": "ok",
+      "reasons": []
+    }
+  ],
+  "blocking_files": [],
+  "warning_files": [],
+  "remediation": null
+}

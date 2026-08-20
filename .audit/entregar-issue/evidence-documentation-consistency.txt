@@ -1,22 +1,6 @@
-subject_sha=f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f
-base_sha=d167f9c787c8577abd9d12e11a1d33d77acb9b86
-search_scope=repository living documentation, including files outside the material diff
-search_terms=consolidacao cambial|moeda de referencia|multi-moedas|conversao explicita|ADR 0013
-
-observed_current_claims:
-- docs/STATUS_MATRIX.md: material candidate changes the #596 capability from Planejado to Feito and names docs/CURRENCY_CONVERSION.md plus ADR 0013 as contract owners.
-- docs/CURRENCY_CONVERSION.md: explicitly states the contract is defined without provider, external quote integration, productive conversion, persistence, endpoint, or UI activation.
-- docs/EVOLUTION_STRATEGY.md (outside diff): already states a profile reference currency may be introduced by its own issue, never authorizes implicit conversion, and requires source/destination/rate/reference/source metadata.
-- docs/ARCHITECTURE.md (outside diff): already states cross-currency aggregation requires explicit auditable conversion and otherwise remains partitioned.
-- docs/adr/0013-multi-currency-financial-aggregation.md (outside diff): remains the accepted architectural decision for explicit multi-currency aggregation and future auditable conversion.
-- docs/API_FINANCIAL_SUMMARY.md and docs/API_REPORTS.md (outside diff): current production endpoints remain currencyBlocks/native-only; no converted aggregate is activated by this candidate.
-
-classifications:
-- STATUS_MATRIX planned claim: contradiction in base, resolved by material candidate.
-- CURRENCY_CONVERSION: current-contract.
-- EVOLUTION_STRATEGY: current-contract, compatible.
-- ARCHITECTURE: current-contract, compatible.
-- ADR 0013: current-contract, compatible.
-- API_FINANCIAL_SUMMARY/API_REPORTS: current-contract, compatible because the new contract is future-facing and does not activate conversion.
-
-unresolved_contradictions=[]
+material_head_sha=f22fecae57497f2397ad9bd77e2232092ac908c7
+docs/CURRENCY_CONVERSION.md blob=59512532eb270823c7b7df4acb280e29b27362a1 defines optional reference-currency lifecycle; auditable quote shape; native/converted/unavailable states; Dashboard/Reports/projections reuse; and no provider, persistence, endpoint, UI, or productive conversion.
+docs/STATUS_MATRIX.md blob=cd5776bb415c6da84b9497731a6c37004dd2dc5c marks the future auditable consolidation contract as Feito while later productive capabilities remain planned.
+docs/adr/0013-multi-currency-financial-aggregation.md blob=5b167db74512f38ba548832d4e5ce77a2e9bdb2b requires explicit conversion with source/destination/rate/reference/source audit data and does not choose provider or default reference currency.
+docs/MULTI_CURRENCY_AGGREGATION.md blob=d3a8851cb4a1e0857a3f319e77ca5a6aa6eeaf3f keeps currencyBlocks canonical until explicit conversion exists.
+No contradictory current normative claim was found in the canonical documents inspected for issue 596.

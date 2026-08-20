@@ -1,15 +1,16 @@
-material_head_sha=f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f
-focused_typecheck=tsc -p tsconfig.json
-focused_typecheck_exit=0
-focused_behavior_test=tsc -p tsconfig.test.json && node .tmp/currency-conversion.test.js
-focused_behavior_test_exit=0
-static_contract_checks=quote_missing|quote_expired|quote_unavailable|same-currency rejection|no fetch|no axios
-static_contract_checks_exit=0
-remote_blob_hashes_expected:
-cc12d7bd00671f5c424be85a221c2ebc4a03d7b4 packages/domain/src/currency-conversion.ts
-07a1a91488adc595b31321a51dc831b26b527db4 packages/domain/src/currency-conversion.test.ts
-2fda49eafcb552ca610841b5235328a8ad8604b5 packages/domain/package.json
-9f2693e1893b5aa8b993b45d223ed81b262b6a9c docs/CURRENCY_CONVERSION.md
-cd5776bb415c6da84b9497731a6c37004dd2dc5c docs/STATUS_MATRIX.md
-a8699fdb326bf2e946dc1dd760af0c60b869a931 docs/README.md
-material_diff=6 files; 840 additions; 2 deletions; ahead_by=7; behind_by=0
+material_head_sha=f22fecae57497f2397ad9bd77e2232092ac908c7
+base_sha=d167f9c787c8577abd9d12e11a1d33d77acb9b86
+source_blob_sha=544e8ae3469fa6d7a4427f87179bb74ce1ecb703 path=packages/domain/src/currency-conversion.ts
+test_blob_sha=09d4893549bb7309b91d3348ad2216a14557a7d6 path=packages/domain/src/currency-conversion.test.ts
+document_blob_sha=59512532eb270823c7b7df4acb280e29b27362a1 path=docs/CURRENCY_CONVERSION.md
+ci_run=32359412410 conclusion=success; Validate monorepo and Integration API + PostgreSQL passed on exact material head
+visual_run=32359412394 conclusion=success
+Observed contract controls on exact material head:
+- reference currency preference is explicit and normalizes a provided three-letter code; absence is represented by the caller not creating a preference, so no BRL fallback exists
+- native values remain present beside converted values and same-currency values stay native without fabricated exchange-rate evidence
+- ExchangeRateQuote carries sourceCurrency, targetCurrency, rate, referenceAt, expiresAt, and source
+- missing and unavailable quote states return unavailable without converted value; after expiresAt returns quote_expired
+- before referenceAt is rejected; referenceAt and expiresAt boundaries are inclusive; the direct converted-value factory enforces the same time window
+- source/target currency mismatch, zero rate, and same-currency fabricated conversion are rejected
+- the module exposes no provider/network client, persistence adapter, migration, endpoint, or UI implementation
+quantitative_quote_shape_check required_fields=6 observed_fields=6 fields=sourceCurrency,targetCurrency,rate,referenceAt,expiresAt,source source_blob_sha=544e8ae3469fa6d7a4427f87179bb74ce1ecb703
