@@ -23,6 +23,8 @@ O SolverFin adota os seguintes invariantes:
 8. APIs, dominio, relatorios, view-models e componentes de UI devem transportar moeda sem depender de hardcode de BRL.
 9. Testes relevantes devem incluir cenarios com pelo menos duas moedas e controlar explicitamente o comportamento sem cotacao disponivel.
 
+A ADR 0015 detalha a responsabilidade da moeda de referencia e o shape auditavel da conversao futura sem ativar provider cambial produtivo.
+
 ## Consequencias
 
 ### Positivas
@@ -49,7 +51,7 @@ Este ADR nao escolhe:
 - tratamento fiscal/contabil de ganho cambial;
 - estrategia de hedge ou recomendacao financeira.
 
-Esses pontos exigem issues/ADRs proprias quando entrarem no escopo.
+Esses pontos exigem issues/ADRs proprias quando entrarem no escopo. A ADR 0015 resolve apenas o contrato e o ownership da moeda de referencia; provider, politica temporal e default de novos perfis continuam nao definidos.
 
 ## Regras de migracao
 
@@ -78,3 +80,5 @@ A implementacao desta decisao deve comprovar, quando aplicavel:
 - `docs/ARCHITECTURE.md`
 - `docs/REPORTS.md`
 - `docs/API_REPORTS.md`
+- `docs/CURRENCY_CONVERSION_CONTRACT.md`
+- `docs/adr/0015-reference-currency-and-fx-conversion-contract.md`
