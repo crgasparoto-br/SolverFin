@@ -22,8 +22,13 @@ testSameCurrencyUsesNativeRepresentationWithoutQuote();
 testMissingQuoteFailsClosedWithoutConvertedValue();
 testUnavailableQuoteFailsClosedWithoutConvertedValue();
 testExpiredQuoteFailsClosedWithoutConvertedValue();
+testQuoteBeforeReferenceIsRejected();
+testQuoteReferenceBoundaryIsAvailable();
+testQuoteExpiryBoundaryIsAvailable();
 testAvailableQuotePreservesAuditableMetadata();
 testConvertedValuePreservesNativeAndConvertedAmounts();
+testExpiredQuoteCannotCreateConvertedValue();
+testFutureReferenceCannotCreateConvertedValue();
 testSourceCurrencyMismatchIsRejected();
 testTargetCurrencyMismatchIsRejected();
 testZeroRateIsRejected();
@@ -120,6 +125,41 @@ function testExpiredQuoteFailsClosedWithoutConvertedValue(): void {
   assertEqual(availability.reason, "quote_expired", "expired quote reason");
 }
 
+function testQuoteBeforeReferenceIsRejected(): void {
+  assertCurrencyContractError(
+    () =>
+      resolveReferenceCurrencyAvailability({
+        nativeCurrency: "USD",
+        referenceCurrency: "BRL",
+        quoteResult: { status: "available", quote: activeUsdToBrlQuote },
+        evaluatedAt: "2026-08-20T11:59:59.999Z",
+      }),
+    "EXCHANGE_RATE_NOT_YET_VALID",
+  );
+}
+
+function testQuoteReferenceBoundaryIsAvailable(): void {
+  const availability = resolveReferenceCurrencyAvailability({
+    nativeCurrency: "USD",
+    referenceCurrency: "BRL",
+    quoteResult: { status: "available", quote: activeUsdToBrlQuote },
+    evaluatedAt: activeUsdToBrlQuote.referenceAt,
+  });
+
+  assertEqual(availability.kind, "quote_available", "referenceAt boundary is inclusive");
+}
+
+function testQuoteExpiryBoundaryIsAvailable(): void {
+  const availability = resolveReferenceCurrencyAvailability({
+    nativeCurrency: "USD",
+    referenceCurrency: "BRL",
+    quoteResult: { status: "available", quote: activeUsdToBrlQuote },
+    evaluatedAt: activeUsdToBrlQuote.expiresAt,
+  });
+
+  assertEqual(availability.kind, "quote_available", "expiresAt boundary is inclusive");
+}
+
 function testAvailableQuotePreservesAuditableMetadata(): void {
   const availability = resolveReferenceCurrencyAvailability({
     nativeCurrency: "usd",
@@ -152,6 +192,7 @@ function testConvertedValuePreservesNativeAndConvertedAmounts(): void {
     referenceCurrency: "BRL",
     convertedAmountMinor: 10500,
     exchangeRate: activeUsdToBrlQuote,
+    evaluatedAt: "2026-08-20T17:00:00.000Z",
   });
 
   assertEqual(amount.kind, "converted", "converted amount kind");
@@ -164,6 +205,34 @@ function testConvertedValuePreservesNativeAndConvertedAmounts(): void {
   assertEqual(amount.converted.currency, "BRL", "converted currency explicit");
   assertEqual(amount.referenceCurrency, "BRL", "reference currency explicit");
   assertEqual(amount.exchangeRate.rate, "5.2500", "conversion evidence preserved");
+}
+
+function testExpiredQuoteCannotCreateConvertedValue(): void {
+  assertCurrencyContractError(
+    () =>
+      createConvertedReferenceCurrencyAmount({
+        native: { amountMinor: 2000, currency: "USD" },
+        referenceCurrency: "BRL",
+        convertedAmountMinor: 10500,
+        exchangeRate: activeUsdToBrlQuote,
+        evaluatedAt: "2026-08-20T18:00:00.001Z",
+      }),
+    "EXCHANGE_RATE_EXPIRED",
+  );
+}
+
+function testFutureReferenceCannotCreateConvertedValue(): void {
+  assertCurrencyContractError(
+    () =>
+      createConvertedReferenceCurrencyAmount({
+        native: { amountMinor: 2000, currency: "USD" },
+        referenceCurrency: "BRL",
+        convertedAmountMinor: 10500,
+        exchangeRate: activeUsdToBrlQuote,
+        evaluatedAt: "2026-08-20T11:59:59.999Z",
+      }),
+    "EXCHANGE_RATE_NOT_YET_VALID",
+  );
 }
 
 function testSourceCurrencyMismatchIsRejected(): void {
@@ -187,6 +256,7 @@ function testTargetCurrencyMismatchIsRejected(): void {
         referenceCurrency: "EUR",
         convertedAmountMinor: 1800,
         exchangeRate: activeUsdToBrlQuote,
+        evaluatedAt: "2026-08-20T13:00:00.000Z",
       }),
     "EXCHANGE_RATE_CURRENCY_MISMATCH",
   );
@@ -221,6 +291,7 @@ function testSameCurrencyCannotBeFabricatedAsConversion(): void {
           targetCurrency: "BRL",
           rate: "1",
         },
+        evaluatedAt: "2026-08-20T13:00:00.000Z",
       }),
     "CONVERSION_NOT_REQUIRED",
   );

@@ -75,6 +75,8 @@ export type CurrencyConversionContractErrorCode =
   | "EXCHANGE_RATE_INVALID"
   | "EXCHANGE_RATE_REFERENCE_INVALID"
   | "EXCHANGE_RATE_EXPIRY_INVALID"
+  | "EXCHANGE_RATE_NOT_YET_VALID"
+  | "EXCHANGE_RATE_EXPIRED"
   | "EXCHANGE_RATE_SOURCE_REQUIRED"
   | "EXCHANGE_RATE_CURRENCY_MISMATCH"
   | "REFERENCE_CURRENCY_MISMATCH"
@@ -147,6 +149,7 @@ export function resolveReferenceCurrencyAvailability(input: {
 
   const quote = normalizeExchangeRateQuote(input.quoteResult.quote);
   assertExchangeRatePair(quote, nativeCurrency, referenceCurrency);
+  assertQuoteNotBeforeReference(quote, evaluatedAt);
 
   if (Date.parse(evaluatedAt) > Date.parse(quote.expiresAt)) {
     return {
@@ -214,6 +217,7 @@ export function createConvertedReferenceCurrencyAmount(input: {
   referenceCurrency: string;
   convertedAmountMinor: number;
   exchangeRate: ExchangeRateQuote;
+  evaluatedAt: ISODateTime;
 }): ReferenceCurrencyAmount {
   const native = normalizeMoneyAmount(input.native);
   const referenceCurrency = normalizeCurrencyCode(input.referenceCurrency);
@@ -226,7 +230,14 @@ export function createConvertedReferenceCurrencyAmount(input: {
   }
 
   const exchangeRate = normalizeExchangeRateQuote(input.exchangeRate);
+  const evaluatedAt = validateIsoDateTime(
+    input.evaluatedAt,
+    "EXCHANGE_RATE_EXPIRY_INVALID",
+    "Currency conversion evaluation time must be a valid ISO date-time.",
+  );
   assertExchangeRatePair(exchangeRate, native.currency, referenceCurrency);
+  assertQuoteNotBeforeReference(exchangeRate, evaluatedAt);
+  assertQuoteNotExpired(exchangeRate, evaluatedAt);
 
   const converted: MoneyAmount = {
     amountMinor: validateAmountMinor(input.convertedAmountMinor),
@@ -323,6 +334,24 @@ function assertExchangeRatePair(
     throw new CurrencyConversionContractError(
       "EXCHANGE_RATE_CURRENCY_MISMATCH",
       "Exchange-rate currencies must match the native and reference currencies.",
+    );
+  }
+}
+
+function assertQuoteNotBeforeReference(quote: ExchangeRateQuote, evaluatedAt: ISODateTime): void {
+  if (Date.parse(evaluatedAt) < Date.parse(quote.referenceAt)) {
+    throw new CurrencyConversionContractError(
+      "EXCHANGE_RATE_NOT_YET_VALID",
+      "Exchange rate cannot be used before its referenceAt instant.",
+    );
+  }
+}
+
+function assertQuoteNotExpired(quote: ExchangeRateQuote, evaluatedAt: ISODateTime): void {
+  if (Date.parse(evaluatedAt) > Date.parse(quote.expiresAt)) {
+    throw new CurrencyConversionContractError(
+      "EXCHANGE_RATE_EXPIRED",
+      "Exchange rate cannot be used after its expiresAt instant.",
     );
   }
 }
