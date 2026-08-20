@@ -109,6 +109,30 @@ export async function updateAccountForContext(
   payload: UpdateAccountPayload,
 ): Promise<Account> {
   const currentAccount = getAccountDomain(context, await findAccountRow(context, accountId));
+  const requestedCurrency = payload.currency?.trim().toUpperCase();
+  const validCurrencyChangeToIneligible =
+    requestedCurrency !== undefined &&
+    /^[A-Z]{3}$/.test(requestedCurrency) &&
+    requestedCurrency !== currentAccount.currency &&
+    requestedCurrency !== "BRL";
+  const statusChangeToIneligible =
+    payload.status !== undefined &&
+    payload.status !== currentAccount.status &&
+    payload.status !== "active";
+
+  if (
+    (validCurrencyChangeToIneligible || statusChangeToIneligible) &&
+    (await accountHasActiveRemuneration(context, accountId))
+  ) {
+    throw accountError(
+      "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
+      validCurrencyChangeToIneligible
+        ? "Desative a remuneração pelo CDI antes de alterar a moeda da conta."
+        : "Desative a remuneração pelo CDI antes de arquivar a conta.",
+      409,
+    );
+  }
+
   const hasTransactions = await accountHasTransactions(context, accountId);
   const updatedAccount = updateAccountDomain({
     context,
@@ -117,24 +141,6 @@ export async function updateAccountForContext(
     payload,
     hasTransactions,
   });
-
-  const currencyBecameIneligible =
-    currentAccount.currency !== updatedAccount.currency && updatedAccount.currency !== "BRL";
-  const statusBecameIneligible =
-    currentAccount.status !== updatedAccount.status && updatedAccount.status !== "active";
-
-  if (
-    (currencyBecameIneligible || statusBecameIneligible) &&
-    (await accountHasActiveRemuneration(context, accountId))
-  ) {
-    throw accountError(
-      "ACCOUNT_REMUNERATION_MUST_BE_DISABLED",
-      currencyBecameIneligible
-        ? "Desative a remuneração pelo CDI antes de alterar a moeda da conta."
-        : "Desative a remuneração pelo CDI antes de arquivar a conta.",
-      409,
-    );
-  }
 
   await persistAccountUpdate(updatedAccount);
 

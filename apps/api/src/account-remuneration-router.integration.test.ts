@@ -212,10 +212,11 @@ async function main(): Promise<void> {
   );
   assert.equal(disableAgainResponse.statusCode, 200);
 
-  const allowedCurrencyChange = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
+  const lockedCurrencyChange = await apiRequest(token, "PATCH", `/api/accounts/${account.id}`, {
     currency: "USD",
   });
-  assert.equal(allowedCurrencyChange.statusCode, 200);
+  assert.equal(lockedCurrencyChange.statusCode, 400);
+  assert.equal(readError(lockedCurrencyChange).code, "ACCOUNT_CURRENCY_LOCKED");
 
   await assertConcurrentAccountEligibility(token, suffix);
 

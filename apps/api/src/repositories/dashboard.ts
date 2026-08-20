@@ -8,25 +8,41 @@ export interface DashboardSummaryItem {
   description: string;
   kind: "income" | "expense" | "transfer";
   amountMinor: number;
+  currency: string;
   occurredOn: string;
   status: string;
 }
 
-export interface DashboardSummary {
-  currency: "BRL";
+export interface DashboardCurrencyBlock {
+  currency: string;
   availableBalanceMinor: number;
   incomeMinor: number;
   expensesMinor: number;
   plannedCommitmentsMinor: number;
-  recentItems: DashboardSummaryItem[];
-  generatedAt: string;
 }
 
-interface TotalRow {
+export interface DashboardSummary {
+  currencyBlocks: DashboardCurrencyBlock[];
+  recentItems: DashboardSummaryItem[];
+  generatedAt: string;
+  /**
+   * Compatibility fields are emitted only when the summary has exactly one currency block.
+   * Multi-currency and empty responses never expose a synthetic scalar aggregate.
+   */
+  currency?: string;
+  availableBalanceMinor?: number;
+  incomeMinor?: number;
+  expensesMinor?: number;
+  plannedCommitmentsMinor?: number;
+}
+
+interface CurrencyTotalRow {
+  currency: string;
   total: string | null;
 }
 
 interface KindTotalRow {
+  currency: string;
   kind: string;
   status: string;
   total: string;
@@ -37,6 +53,7 @@ interface RecentTransactionRow {
   description: string;
   kind: string;
   amountMinor: number;
+  currency: string;
   occurredOn: Date;
   status: string;
 }
@@ -48,13 +65,15 @@ export async function buildFinancialSummary(
   const referenceDate = toDateOnly(now);
   const [openingBalanceRows, cashMovementRows, monthTotals, plannedTotals, recentRows] =
     await Promise.all([
-      query<TotalRow>(
-        `select coalesce(sum("openingBalanceMinor"), 0)::text as total from "Account"
-         where "organizationId" = $1 and "financialProfileId" = $2 and "status" = 'ACTIVE'`,
+      query<CurrencyTotalRow>(
+        `select upper("currency") as "currency", coalesce(sum("openingBalanceMinor"), 0)::text as total
+           from "Account"
+          where "organizationId" = $1 and "financialProfileId" = $2 and "status" = 'ACTIVE'
+          group by upper("currency")`,
         [context.organizationId, context.financialProfileId],
       ),
-      query<TotalRow>(
-        `select coalesce(sum(
+      query<CurrencyTotalRow>(
+        `select upper(movement."currency") as "currency", coalesce(sum(
            case
              when movement."kind" = 'INCOME' and source_account."id" is not null
                then movement."amountMinor"
@@ -81,11 +100,13 @@ export async function buildFinancialSummary(
             and movement."financialProfileId" = $2
             and movement."status" in ('POSTED', 'RECONCILED')
             and movement."effectiveOn" is not null
-            and movement."effectiveOn" <= $3::date`,
+            and movement."effectiveOn" <= $3::date
+          group by upper(movement."currency")`,
         [context.organizationId, context.financialProfileId, referenceDate],
       ),
       query<KindTotalRow>(
-        `select movement."kind", movement."status", sum(movement."amountMinor")::text as total
+        `select upper(movement."currency") as "currency", movement."kind", movement."status",
+                sum(movement."amountMinor")::text as total
            from "Transaction" movement
           where movement."organizationId" = $1
             and movement."financialProfileId" = $2
@@ -99,11 +120,12 @@ export async function buildFinancialSummary(
                  and invoice."financialProfileId" = $2
                  and invoice."paymentTransactionId" = movement."id"
             )
-          group by movement."kind", movement."status"`,
+          group by upper(movement."currency"), movement."kind", movement."status"`,
         [context.organizationId, context.financialProfileId, referenceDate],
       ),
       query<KindTotalRow>(
-        `select movement."kind", movement."status", sum(movement."amountMinor")::text as total
+        `select upper(movement."currency") as "currency", movement."kind", movement."status",
+                sum(movement."amountMinor")::text as total
            from "Transaction" movement
           where movement."organizationId" = $1
             and movement."financialProfileId" = $2
@@ -111,48 +133,112 @@ export async function buildFinancialSummary(
             and movement."status" in ('PLANNED', 'SUGGESTED')
             and movement."effectiveOn" is null
             and date_trunc('month', movement."plannedOn") = date_trunc('month', $3::date)
-          group by movement."kind", movement."status"`,
+          group by upper(movement."currency"), movement."kind", movement."status"`,
         [context.organizationId, context.financialProfileId, referenceDate],
       ),
       query<RecentTransactionRow>(
-        `select "id", "description", "kind", "amountMinor", "occurredOn", "status" from "Transaction"
-         where "organizationId" = $1 and "financialProfileId" = $2 and "status" != 'VOIDED'
-         order by "occurredOn" desc, "createdAt" desc
-         limit 8`,
+        `select "id", "description", "kind", "amountMinor", upper("currency") as "currency",
+                "occurredOn", "status"
+           from "Transaction"
+          where "organizationId" = $1 and "financialProfileId" = $2 and "status" != 'VOIDED'
+          order by "occurredOn" desc, "createdAt" desc
+          limit 8`,
         [context.organizationId, context.financialProfileId],
       ),
     ]);
 
-  const openingBalance = Number(openingBalanceRows[0]?.total ?? 0);
-  const cashMovement = Number(cashMovementRows[0]?.total ?? 0);
-  const monthIncome = sumByKindAndStatus(monthTotals, "INCOME", ["POSTED", "RECONCILED"]);
-  const monthExpense = sumByKindAndStatus(monthTotals, "EXPENSE", ["POSTED", "RECONCILED"]);
-  const monthPlanned = sumByKindAndStatus(plannedTotals, "EXPENSE", ["PLANNED", "SUGGESTED"]);
+  const currencies = new Set<string>();
+  for (const row of openingBalanceRows) {
+    currencies.add(normalizeCurrencyCode(row.currency));
+  }
+  for (const row of cashMovementRows) {
+    currencies.add(normalizeCurrencyCode(row.currency));
+  }
+  for (const row of monthTotals) {
+    currencies.add(normalizeCurrencyCode(row.currency));
+  }
+  for (const row of plannedTotals) {
+    currencies.add(normalizeCurrencyCode(row.currency));
+  }
 
-  return {
-    currency: "BRL",
-    availableBalanceMinor: openingBalance + cashMovement,
-    incomeMinor: monthIncome,
-    expensesMinor: monthExpense,
-    plannedCommitmentsMinor: monthPlanned,
-    recentItems: recentRows.map((row) => ({
-      id: row.id,
-      description: row.description,
-      kind: row.kind.toLowerCase() as DashboardSummaryItem["kind"],
-      amountMinor: row.amountMinor,
-      occurredOn: row.occurredOn.toISOString().slice(0, 10),
-      status: row.status.toLowerCase(),
-    })),
+  const currencyBlocks = [...currencies]
+    .sort((left, right) => left.localeCompare(right))
+    .map((currency) => {
+      const openingBalance = sumCurrencyTotals(openingBalanceRows, currency);
+      const cashMovement = sumCurrencyTotals(cashMovementRows, currency);
+      const monthIncome = sumByKindAndStatus(monthTotals, currency, "INCOME", [
+        "POSTED",
+        "RECONCILED",
+      ]);
+      const monthExpense = sumByKindAndStatus(monthTotals, currency, "EXPENSE", [
+        "POSTED",
+        "RECONCILED",
+      ]);
+      const monthPlanned = sumByKindAndStatus(plannedTotals, currency, "EXPENSE", [
+        "PLANNED",
+        "SUGGESTED",
+      ]);
+
+      return {
+        currency,
+        availableBalanceMinor: openingBalance + cashMovement,
+        incomeMinor: monthIncome,
+        expensesMinor: monthExpense,
+        plannedCommitmentsMinor: monthPlanned,
+      };
+    });
+
+  const recentItems = recentRows.map((row) => ({
+    id: row.id,
+    description: row.description,
+    kind: row.kind.toLowerCase() as DashboardSummaryItem["kind"],
+    amountMinor: row.amountMinor,
+    currency: normalizeCurrencyCode(row.currency),
+    occurredOn: row.occurredOn.toISOString().slice(0, 10),
+    status: row.status.toLowerCase(),
+  }));
+  const summary: DashboardSummary = {
+    currencyBlocks,
+    recentItems,
     generatedAt: now.toISOString(),
   };
+
+  if (currencyBlocks.length === 1) {
+    const [singleCurrency] = currencyBlocks;
+    if (singleCurrency !== undefined) {
+      summary.currency = singleCurrency.currency;
+      summary.availableBalanceMinor = singleCurrency.availableBalanceMinor;
+      summary.incomeMinor = singleCurrency.incomeMinor;
+      summary.expensesMinor = singleCurrency.expensesMinor;
+      summary.plannedCommitmentsMinor = singleCurrency.plannedCommitmentsMinor;
+    }
+  }
+
+  return summary;
+}
+
+function sumCurrencyTotals(rows: readonly CurrencyTotalRow[], currency: string): number {
+  return rows
+    .filter((row) => normalizeCurrencyCode(row.currency) === currency)
+    .reduce((total, row) => total + Number(row.total ?? 0), 0);
 }
 
 function sumByKindAndStatus(
   rows: readonly KindTotalRow[],
+  currency: string,
   kind: string,
   statuses: readonly string[],
 ): number {
   return rows
-    .filter((row) => row.kind === kind && statuses.includes(row.status))
+    .filter(
+      (row) =>
+        normalizeCurrencyCode(row.currency) === currency &&
+        row.kind === kind &&
+        statuses.includes(row.status),
+    )
     .reduce((total, row) => total + Number(row.total), 0);
+}
+
+function normalizeCurrencyCode(currency: string): string {
+  return currency.trim().toUpperCase();
 }

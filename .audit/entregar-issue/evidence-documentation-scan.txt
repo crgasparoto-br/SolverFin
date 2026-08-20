@@ -1,0 +1,7 @@
+material_head_sha=25aa48a0246867bb9d767c8b9ae658bd1b0afbcc
+- docs/API_FINANCIAL_SUMMARY.md documents canonical currencyBlocks, mono compatibility, multi response, and empty response without synthetic BRL.
+- docs/API_BUDGETS_GOALS_ALERTS.md documents budget usage restricted to native budget currency and no cross-currency consolidation.
+- docs/MULTI_CURRENCY_AGGREGATION.md inventories summary, reports, budgets, insights, assistant, and transactions.
+- docs/STATUS_MATRIX.md marks explicit multi-currency aggregation as Feito for #595 while future FX consolidation remains Planejado.
+- docs/README.md indexes docs/MULTI_CURRENCY_AGGREGATION.md as live financial-domain documentation.
+- apps/api/src/server.ts dispatches handleMvpApiRequest only for MVP_PATHS session/auth/users/me paths; synthetic financial-summary code in mvp.ts is not reachable as the production financial-summary route.

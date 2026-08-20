@@ -15,10 +15,15 @@ describe("dev-server dashboard page", () => {
 
       if (url.pathname === "/api/financial-summary") {
         return jsonResponse({
-          availableBalanceMinor: 500000,
-          incomeMinor: 300000,
-          expensesMinor: 150000,
-          plannedCommitmentsMinor: 20000,
+          currencyBlocks: [
+            {
+              currency: "BRL",
+              availableBalanceMinor: 500000,
+              incomeMinor: 300000,
+              expensesMinor: 150000,
+              plannedCommitmentsMinor: 20000,
+            },
+          ],
           recentItems: [],
         });
       }
@@ -88,10 +93,15 @@ describe("dev-server dashboard page", () => {
 
       if (url.pathname === "/api/financial-summary") {
         return jsonResponse({
-          availableBalanceMinor: 500000,
-          incomeMinor: 300000,
-          expensesMinor: 150000,
-          plannedCommitmentsMinor: 0,
+          currencyBlocks: [
+            {
+              currency: "BRL",
+              availableBalanceMinor: 500000,
+              incomeMinor: 300000,
+              expensesMinor: 150000,
+              plannedCommitmentsMinor: 0,
+            },
+          ],
           recentItems: [],
         });
       }

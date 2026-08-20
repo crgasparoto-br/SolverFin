@@ -30,6 +30,7 @@ void main()
 async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for integration tests.");
   const categoryId = randomUUID();
+  const usdAccountId = randomUUID();
   const marker = randomUUID();
   const transactionIds = [
     randomUUID(),
@@ -43,6 +44,7 @@ async function main(): Promise<void> {
 
   try {
     await insertCategory(categoryId, marker);
+    await insertAccount(usdAccountId, "USD", marker);
     await insertExpense(
       transactionIds[0]!,
       categoryId,
@@ -96,6 +98,7 @@ async function main(): Promise<void> {
       "USD",
       "POSTED",
       marker,
+      usdAccountId,
     );
 
     const first = await ensureFinancialInsightsForContext(context, NOW);
@@ -135,7 +138,7 @@ async function main(): Promise<void> {
     assert.equal(readEvidence(replacementPayload, "valor_anterior_ou_planejado"), 10000);
     assert.equal(readEvidence(replacementPayload, "valor_atual"), 17000);
   } finally {
-    await cleanup(transactionIds, categoryId, existingInsightIds);
+    await cleanup(transactionIds, categoryId, existingInsightIds, usdAccountId);
   }
 }
 
@@ -148,6 +151,16 @@ async function insertCategory(id: string, marker: string): Promise<void> {
   );
 }
 
+async function insertAccount(id: string, currency: string, marker: string): Promise<void> {
+  await query(
+    `insert into "Account"
+      ("id", "organizationId", "financialProfileId", "name", "kind", "status", "currency",
+       "openingBalanceMinor", "maskedIdentifier", "institutionKey", "createdAt", "updatedAt")
+     values ($1, $2, $3, $4, 'CHECKING', 'ACTIVE', $5, 0, $6, 'solverfin_demo', now(), now())`,
+    [id, ORGANIZATION_ID, PERSONAL_PROFILE_ID, `Insight USD ${marker}`, currency, `usd-${marker}`],
+  );
+}
+
 async function insertExpense(
   id: string,
   categoryId: string,
@@ -156,6 +169,7 @@ async function insertExpense(
   currency: string,
   status: string,
   marker: string,
+  accountId = CHECKING_ACCOUNT_ID,
 ): Promise<void> {
   await query(
     `insert into "Transaction"
@@ -166,7 +180,7 @@ async function insertExpense(
       id,
       ORGANIZATION_ID,
       PERSONAL_PROFILE_ID,
-      CHECKING_ACCOUNT_ID,
+      accountId,
       categoryId,
       status,
       amountMinor,
@@ -245,6 +259,7 @@ async function cleanup(
   transactionIds: readonly string[],
   categoryId: string,
   existingInsightIds: ReadonlySet<string>,
+  usdAccountId: string,
 ): Promise<void> {
   const rows = await query<{ id: string }>(
     `select "id" from "AiSuggestion" where "organizationId" = $1 and "financialProfileId" = $2 and "kind" = 'INSIGHT'`,
@@ -258,5 +273,6 @@ async function cleanup(
     await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [createdInsightIds]);
   }
   await query(`delete from "Transaction" where "id" = any($1::uuid[])`, [transactionIds]);
+  await query(`delete from "Account" where "id" = $1`, [usdAccountId]);
   await query(`delete from "Category" where "id" = $1`, [categoryId]);
 }

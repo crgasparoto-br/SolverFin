@@ -6,6 +6,7 @@ import { buildAiSuggestionPayload } from "@solverfin/domain/ai-suggestion-payloa
 
 import { closePool, query } from "./db.js";
 import { scanPendingDeterministicReviewSuggestionsForContext } from "./generalized-deterministic-review-scan.js";
+import { createAccountForContext } from "./repositories/accounts.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const ORGANIZATION_ID = "22222222-2222-4222-8222-222222222222";
@@ -33,9 +34,15 @@ async function main(): Promise<void> {
   const targetId = randomUUID();
   const now = new Date().toISOString();
   const description = `Moeda divergente ${marker}`;
+  const targetAccount = await createAccountForContext(context, {
+    name: `Conta USD temporaria ${marker}`,
+    kind: "checking",
+    currency: "USD",
+    openingBalanceMinor: 0,
+  });
 
   try {
-    await insertTarget(targetId, description);
+    await insertTarget(targetId, targetAccount.id, description);
     await insertSource(sourceId, description, now, marker);
 
     await scanPendingDeterministicReviewSuggestionsForContext(context);
@@ -45,19 +52,12 @@ async function main(): Promise<void> {
     assert.equal(await readSuggestionStatus(sourceId), "PENDING_REVIEW");
     assert.equal(await readTransactionStatus(targetId), "POSTED");
   } finally {
-    await cleanup(sourceId, targetId);
+    await cleanup(sourceId, targetId, targetAccount.id);
   }
 }
 
-async function insertTarget(id: string, description: string): Promise<void> {
-  const parameters = [
-    id,
-    ORGANIZATION_ID,
-    PERSONAL_PROFILE_ID,
-    CHECKING_ACCOUNT_ID,
-    description,
-    USER_ID,
-  ];
+async function insertTarget(id: string, accountId: string, description: string): Promise<void> {
+  const parameters = [id, ORGANIZATION_ID, PERSONAL_PROFILE_ID, accountId, description, USER_ID];
   await query(
     `insert into "Transaction"
       ("id", "organizationId", "financialProfileId", "accountId", "kind", "status", "source",
@@ -140,7 +140,7 @@ async function readTransactionStatus(id: string): Promise<string | undefined> {
   return rows[0]?.status;
 }
 
-async function cleanup(sourceId: string, targetId: string): Promise<void> {
+async function cleanup(sourceId: string, targetId: string, targetAccountId: string): Promise<void> {
   const candidateRows = await query<{ id: string }>(
     `select "id" from "AiSuggestion" where "sourceSuggestionId" = $1`,
     [sourceId],
@@ -151,4 +151,5 @@ async function cleanup(sourceId: string, targetId: string): Promise<void> {
   await query(`delete from "AuditLogEntry" where "entityId" = any($1::uuid[])`, [entityIds]);
   await query(`delete from "AiSuggestion" where "id" = any($1::uuid[])`, [suggestionIds]);
   await query(`delete from "Transaction" where "id" = $1`, [targetId]);
+  await query(`delete from "Account" where "id" = $1`, [targetAccountId]);
 }

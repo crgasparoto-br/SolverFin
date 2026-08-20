@@ -175,10 +175,7 @@ function fixtureApiResponse(input) {
     [
       "/api/financial-summary",
       {
-        availableBalanceMinor: 0,
-        incomeMinor: 0,
-        expensesMinor: 0,
-        plannedCommitmentsMinor: 0,
+        currencyBlocks: [],
         recentItems: [],
       },
     ],

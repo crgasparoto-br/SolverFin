@@ -10,7 +10,7 @@ import {
   payInvoiceForContext,
   registerCardPurchaseForContext,
 } from "./repositories/cards.js";
-import { buildFinancialSummary } from "./repositories/dashboard.js";
+import { buildFinancialSummary, type DashboardSummary } from "./repositories/dashboard.js";
 import { createTransactionForContext } from "./repositories/transactions.js";
 
 const CONTEXT: TenantContext = {
@@ -211,14 +211,28 @@ async function assertSummaryDelta(
 ): Promise<void> {
   const summary = await buildFinancialSummary(CONTEXT, reference);
   assert.equal(summary.generatedAt, reference.toISOString());
+  const current = brlBlock(summary);
+  const before = brlBlock(baseline);
 
   assert.deepEqual(
     {
-      availableBalanceMinor: summary.availableBalanceMinor - baseline.availableBalanceMinor,
-      incomeMinor: summary.incomeMinor - baseline.incomeMinor,
-      expensesMinor: summary.expensesMinor - baseline.expensesMinor,
-      plannedCommitmentsMinor: summary.plannedCommitmentsMinor - baseline.plannedCommitmentsMinor,
+      availableBalanceMinor: current.availableBalanceMinor - before.availableBalanceMinor,
+      incomeMinor: current.incomeMinor - before.incomeMinor,
+      expensesMinor: current.expensesMinor - before.expensesMinor,
+      plannedCommitmentsMinor: current.plannedCommitmentsMinor - before.plannedCommitmentsMinor,
     },
     expected,
+  );
+}
+
+function brlBlock(summary: DashboardSummary) {
+  return (
+    summary.currencyBlocks.find((block) => block.currency === "BRL") ?? {
+      currency: "BRL",
+      availableBalanceMinor: 0,
+      incomeMinor: 0,
+      expensesMinor: 0,
+      plannedCommitmentsMinor: 0,
+    }
   );
 }
