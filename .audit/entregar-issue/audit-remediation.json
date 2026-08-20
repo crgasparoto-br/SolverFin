@@ -2,42 +2,36 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
-  "remediation_mode": "systemic-remediation",
+  "remediation_mode": "targeted-remediation",
   "status": "closed",
-  "candidate_head_sha": "f22fecae57497f2397ad9bd77e2232092ac908c7",
+  "candidate_head_sha": "d6395869c6c2d5fb4dd7c9d99810213eb235ec42",
   "source": {
-    "rejection_id": "audit-rejection:8928adf8-51cf-40f2-b293-df6b38dac26a",
+    "rejection_id": "audit-rejection:9a292356-7374-41e8-b8c2-41148f2c67ee",
     "audited_head_sha": "f22fecae57497f2397ad9bd77e2232092ac908c7",
-    "audit_report_sha256": "a9c98548325a669f1354f144785b2fbd3872aeb99ed9a69cb5163f1e0ec28659"
+    "audit_report_sha256": "3f50e8988a7867e8710dd7ea09807805e61746fb1367bce2f438f858fe2fcaf7"
   },
   "items": [
     {
       "source_kind": "finding",
       "source_id": "A-001",
-      "remediation_mode": "systemic-remediation",
+      "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "changed_files": [
-        "skills://entregar-issue/contracts/code-growth-report.schema.json",
-        "skills://entregar-issue/scripts/validate_code_growth_report.py",
-        "skills://auditar-issue/contracts/code-growth-report.schema.json",
-        "skills://auditar-issue/scripts/check_code_growth_evidence.py",
-        ".audit/entregar-issue/code-growth.json",
-        ".audit/entregar-issue/audit-escape-closure.json",
-        ".audit/entregar-issue/learning-closure.json",
-        ".audit/entregar-issue/audit-escape-pattern-catalog.json",
-        ".audit/entregar-issue/inherited-controls.json"
+        "packages/domain/src/currency-conversion.ts",
+        "packages/domain/src/currency-conversion-timezone.test.ts",
+        "docs/CURRENCY_CONVERSION.md"
       ],
       "evidence": [
-        "One canonical CODE-GROWTH-001 JSON schema now governs delivery and independent preflight.",
-        "Missing policy and wrong-typed policy are rejected by both validators.",
-        "The canonical code-growth report was regenerated for the unchanged material head."
+        "ISODateTime validation now requires Z or an explicit numeric timezone offset and rejects impossible calendar dates.",
+        "Availability and direct converted-value factory both reject timezone-less evaluatedAt.",
+        "The independent-audit literal explicit-offset case is invariant under TZ=UTC and TZ=America/Sao_Paulo.",
+        "Documentation makes the timezone requirement normative without activating productive FX integration."
       ],
       "validations": [
-        "focused code-growth delivery/audit tests: 12/12 passed",
-        "controller_cli.py validate-contracts: contracts-valid",
-        "validate_skill_genericity.py: passed for both skills",
-        "validate_code_growth_report.py: canonical report READY",
-        "check_code_growth_evidence.py: canonical report READY"
+        "focused TypeScript compile and currency-conversion tests passed on equivalent exact material content",
+        "TEMP-FX-INSTANT-CANONICAL-001 passed under TZ=UTC and TZ=America/Sao_Paulo",
+        "CODE-GROWTH-001 passed for the current executable module inventory",
+        "GitHub CI run 32428953640 and visual run 32428953613 completed successfully on the current material SHA"
       ]
     }
   ]

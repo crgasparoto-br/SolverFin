@@ -1,8 +1,6 @@
-material_head_sha=f22fecae57497f2397ad9bd77e2232092ac908c7
-control=HANDOFF-DRIFT-001 status=passed family=structural-contract surface=handoff-material-identity dimension=certified-material-vs-current-lineage
-observed=Fresh result-only publication must be a direct child of material head f22fecae57497f2397ad9bd77e2232092ac908c7; synthetic material-path and parent-lineage drift probes are classified post-write-refreeze before release.
-control=ATOMIC-SPEC-COVERAGE-001 status=passed family=structural-contract surface=specification-atomization dimension=normative-bullet-to-obligation
-observed=The exact 33-line source snapshot has 15 normative candidates in objective/scope/acceptance/out-of-scope sections; all 15 have explicit obligations and each of the 11 covered obligations maps to a distinct requirement. Reference-list bullets are excluded.
-prevention=entregar-issue section-aware normative bullet atomization focused contract test passed
-detection=auditar-issue connector preflight requires atomic_obligation_coverage_passed after independent normative-section rederivation focused contract test passed
-contracts=controller_cli validate-contracts contracts-valid
+material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
+status=passed
+- HANDOFF-DRIFT-001 revalidated for direct result-only child semantics on the current material candidate
+- ATOMIC-SPEC-COVERAGE-001 revalidated against 15 normative candidates and 15 closure obligations
+- CODE-GROWTH-SCHEMA-PARITY-001 preserved from the earlier independent rejection remediation and revalidated against the current code-growth report
+- TEMP-FX-INSTANT-CANONICAL-001 is executed in the current attack matrix to close rejection audit-rejection:9a292356-7374-41e8-b8c2-41148f2c67ee

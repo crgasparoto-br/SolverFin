@@ -1,17 +1,17 @@
 {
-  "rejection_id": "audit-rejection:8928adf8-51cf-40f2-b293-df6b38dac26a",
+  "rejection_id": "audit-rejection:9a292356-7374-41e8-b8c2-41148f2c67ee",
   "head_sha": "f22fecae57497f2397ad9bd77e2232092ac908c7",
-  "published_handoff_head_sha": "14e837b4e45d5cfeaa415af358f05b33bc120ba8",
+  "published_handoff_head_sha": "8c7d5dc4eb04efe073dd517af896ed4d823ca925",
   "findings": [
     {
       "id": "A-001",
       "status": "open",
       "disposition": "blocking",
       "actionable": true,
-      "remediation_mode": "systemic-remediation",
-      "category": "control-propagation-gap",
-      "escape_class": "code-growth-evidence-schema-drift",
-      "summary": "CODE-GROWTH-001 terminal validation accepted a reduced report that the independent preflight rejected because the canonical policy object was missing."
+      "remediation_mode": "targeted-remediation",
+      "category": "other",
+      "escape_class": "timezone-ambiguous-instant-validation",
+      "summary": "ISODateTime validation accepted timezone-less and impossible dates, making FX quote validity dependent on process timezone."
     }
   ],
   "recommendations": []

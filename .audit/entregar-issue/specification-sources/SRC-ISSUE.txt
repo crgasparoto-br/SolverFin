@@ -4,27 +4,27 @@ Parent epic: #589
 Depends on: #595
 
 ## Objetivo
-Definir o contrato que permitirá futuramente apresentar valores consolidados convertidos em uma moeda de referência, sem alterar a moeda nativa dos registros e sem conversão implícita.
+Deve ser definido o contrato que permitirá futuramente apresentar valores consolidados convertidos em uma moeda de referência, sem alterar a moeda nativa dos registros e sem conversão implícita.
 
 ## Escopo
-- definir responsabilidade e ciclo de vida da eventual moeda de referência do perfil;
-- definir o shape do valor convertido: origem, destino, taxa, data/instante de referência e fonte;
-- definir comportamento quando cotação estiver ausente, expirada ou indisponível;
-- definir como APIs e UI distinguem valor nativo de valor convertido;
-- registrar ADR complementar se houver escolha de schema persistente ou provider.
+- deve definir responsabilidade e ciclo de vida da eventual moeda de referência do perfil;
+- deve definir o shape do valor convertido: origem, destino, taxa, data/instante de referência e fonte;
+- deve definir comportamento quando cotação estiver ausente, expirada ou indisponível;
+- deve definir como APIs e UI distinguem valor nativo de valor convertido;
+- deve registrar ADR complementar se houver escolha de schema persistente ou provider.
 
 ## Critérios de aceite
-- não existe suposição universal de BRL;
-- moeda de referência não altera a moeda nativa do registro;
-- conversão exige metadados auditáveis;
-- ausência de cotação não vira 1:1 nem zero;
-- contrato é consumível por Dashboard, Relatórios e futuras projeções;
-- não há integração externa nesta issue.
+- não deve existir suposição universal de BRL;
+- moeda de referência não deve alterar a moeda nativa do registro;
+- conversão deve exigir metadados auditáveis;
+- ausência de cotação não deve virar 1:1 nem zero;
+- contrato deve ser consumível por Dashboard, Relatórios e futuras projeções;
+- não deve haver integração externa nesta issue.
 
 ## Fora de escopo
-- escolher ou implementar provider de câmbio;
-- persistir histórico completo de câmbio;
-- consolidar UI de patrimônio.
+- não deve escolher ou implementar provider de câmbio;
+- não deve persistir histórico completo de câmbio;
+- não deve consolidar UI de patrimônio.
 
 ## Referências
 - #589

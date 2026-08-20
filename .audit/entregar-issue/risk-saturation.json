@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "head_sha": "f22fecae57497f2397ad9bd77e2232092ac908c7",
+  "head_sha": "d6395869c6c2d5fb4dd7c9d99810213eb235ec42",
   "families": [
     {
       "family": "authorization",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Derived from current requirement attack matrix and closure.",
       "control_ids": [
         "CTRL-REF-LIFECYCLE-001"
       ],
       "dimensions": [
         {
           "surface": "reference-currency-profile-responsibility",
-          "reason": "Reference-currency choice is an explicit profile-level presentation responsibility with lifecycle states and no global fallback.",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
           "control_ids": [
             "CTRL-REF-LIFECYCLE-001"
           ],
@@ -24,7 +24,7 @@
     {
       "family": "tenant-isolation",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current requirement, changed runtime surface or inherited active control makes this family material for the contract-only remediation.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -32,7 +32,7 @@
     {
       "family": "public-boundary",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current requirement, changed runtime surface or inherited active control makes this family material for the contract-only remediation.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -40,7 +40,7 @@
     {
       "family": "reference-liveness",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current requirement, changed runtime surface or inherited active control makes this family material for the contract-only remediation.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -48,16 +48,25 @@
     {
       "family": "temporal-consistency",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Derived from current requirement attack matrix and closure.",
       "control_ids": [
-        "TEMP-FX-QUOTE-WINDOW-001"
+        "TEMP-FX-QUOTE-WINDOW-001",
+        "TEMP-FX-INSTANT-CANONICAL-001"
       ],
       "dimensions": [
         {
           "surface": "quote-availability-state",
-          "reason": "Quote usability depends on missing/unavailable/expired state and the referenceAt/evaluatedAt/expiresAt validity window.",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
           "control_ids": [
             "TEMP-FX-QUOTE-WINDOW-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "quote-instant-canonicalization",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "TEMP-FX-INSTANT-CANONICAL-001"
           ],
           "status": "passed"
         }
@@ -67,7 +76,7 @@
     {
       "family": "temporal-destination",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current requirement, changed runtime surface or inherited active control makes this family material for the contract-only remediation.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -75,7 +84,7 @@
     {
       "family": "concurrency-atomicity",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current requirement, changed runtime surface or inherited active control makes this family material for the contract-only remediation.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -83,7 +92,7 @@
     {
       "family": "idempotency",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current requirement, changed runtime surface or inherited active control makes this family material for the contract-only remediation.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -91,7 +100,7 @@
     {
       "family": "rollback",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current requirement, changed runtime surface or inherited active control makes this family material for the contract-only remediation.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -99,7 +108,7 @@
     {
       "family": "historical-immutability",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current requirement, changed runtime surface or inherited active control makes this family material for the contract-only remediation.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -107,96 +116,24 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Derived from current requirement attack matrix and closure.",
       "control_ids": [
-        "ATOMIC-SPEC-COVERAGE-001",
-        "CTRL-CONSUMER-CONTRACT-001",
-        "CTRL-CONSUMER-STATE-001",
         "CTRL-FX-RELATION-001",
-        "CTRL-NATIVE-PRESERVE-001",
-        "CTRL-NO-BRL-FALLBACK-001",
-        "CTRL-NO-EXTERNAL-INTEGRATION-001",
-        "CTRL-NO-SYNTHETIC-FX-001",
-        "CTRL-QUOTE-AUDIT-001",
+        "ATOMIC-SPEC-COVERAGE-001",
+        "HANDOFF-DRIFT-ATTACK-003",
         "CTRL-QUOTE-SHAPE-001",
-        "HANDOFF-DRIFT-ATTACK-003"
+        "CTRL-CONSUMER-STATE-001",
+        "CTRL-NO-BRL-FALLBACK-001",
+        "CTRL-NATIVE-PRESERVE-001",
+        "CTRL-QUOTE-AUDIT-001",
+        "CTRL-NO-SYNTHETIC-FX-001",
+        "CTRL-CONSUMER-CONTRACT-001",
+        "CTRL-NO-EXTERNAL-INTEGRATION-001"
       ],
       "dimensions": [
         {
-          "surface": "consumer-contract-usability",
-          "reason": "Dashboard, Reports and future projections must consume one shared representation rather than invent local conversion rules.",
-          "control_ids": [
-            "CTRL-CONSUMER-CONTRACT-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "consumer-state-discriminator",
-          "reason": "APIs and UI consumers need an explicit state discriminator rather than numeric inference.",
-          "control_ids": [
-            "CTRL-CONSUMER-STATE-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "external-integration-absence",
-          "reason": "This contract-only issue must not introduce provider/network/runtime FX integration.",
-          "control_ids": [
-            "CTRL-NO-EXTERNAL-INTEGRATION-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "fail-closed-no-synthetic-conversion",
-          "reason": "Absent quote evidence must never become parity 1:1 or zero-valued conversion.",
-          "control_ids": [
-            "CTRL-NO-SYNTHETIC-FX-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-material-identity",
-          "reason": "Prior delivery escapes require result-only evidence to remain bound to the exact material head.",
-          "control_ids": [
-            "HANDOFF-DRIFT-ATTACK-003"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "native-value-preservation",
-          "reason": "Conversion must not rewrite or discard the original native amount/currency.",
-          "control_ids": [
-            "CTRL-NATIVE-PRESERVE-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "no-default-reference-currency",
-          "reason": "No universal BRL or presentation default may define reference currency.",
-          "control_ids": [
-            "CTRL-NO-BRL-FALLBACK-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "quote-auditability",
-          "reason": "Every converted value must retain auditable rate provenance and validity metadata.",
-          "control_ids": [
-            "CTRL-QUOTE-AUDIT-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "quote-metadata-completeness",
-          "reason": "Converted-value evidence must carry complete source/destination/rate/reference/source metadata.",
-          "control_ids": [
-            "CTRL-QUOTE-SHAPE-001"
-          ],
-          "status": "passed"
-        },
-        {
           "surface": "relational-semantic-integrity",
-          "reason": "Native/reference currencies and quote source/target currencies are linked and must reject incompatible values.",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
           "control_ids": [
             "CTRL-FX-RELATION-001"
           ],
@@ -204,9 +141,81 @@
         },
         {
           "surface": "specification-atomization",
-          "reason": "The audited escape requires every normative list item to survive as an explicit obligation.",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
           "control_ids": [
             "ATOMIC-SPEC-COVERAGE-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-material-identity",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "HANDOFF-DRIFT-ATTACK-003"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "quote-metadata-completeness",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "CTRL-QUOTE-SHAPE-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "consumer-state-discriminator",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "CTRL-CONSUMER-STATE-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "no-default-reference-currency",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "CTRL-NO-BRL-FALLBACK-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "native-value-preservation",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "CTRL-NATIVE-PRESERVE-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "quote-auditability",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "CTRL-QUOTE-AUDIT-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "fail-closed-no-synthetic-conversion",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "CTRL-NO-SYNTHETIC-FX-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "consumer-contract-usability",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "CTRL-CONSUMER-CONTRACT-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "external-integration-absence",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
+          "control_ids": [
+            "CTRL-NO-EXTERNAL-INTEGRATION-001"
           ],
           "status": "passed"
         }
@@ -216,14 +225,14 @@
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Derived from current requirement attack matrix and closure.",
       "control_ids": [
         "CTRL-DOC-CLAIMS-001"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Living documentation must match the implemented contract without implying provider activation.",
+          "reason": "Current material risk surface requires a discriminant exact-head control.",
           "control_ids": [
             "CTRL-DOC-CLAIMS-001"
           ],

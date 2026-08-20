@@ -1,16 +1,22 @@
-material_head_sha=f22fecae57497f2397ad9bd77e2232092ac908c7
+material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
 base_sha=d167f9c787c8577abd9d12e11a1d33d77acb9b86
-source_blob_sha=544e8ae3469fa6d7a4427f87179bb74ce1ecb703 path=packages/domain/src/currency-conversion.ts
-test_blob_sha=09d4893549bb7309b91d3348ad2216a14557a7d6 path=packages/domain/src/currency-conversion.test.ts
-document_blob_sha=59512532eb270823c7b7df4acb280e29b27362a1 path=docs/CURRENCY_CONVERSION.md
-ci_run=32359412410 conclusion=success; Validate monorepo and Integration API + PostgreSQL passed on exact material head
-visual_run=32359412394 conclusion=success
-Observed contract controls on exact material head:
-- reference currency preference is explicit and normalizes a provided three-letter code; absence is represented by the caller not creating a preference, so no BRL fallback exists
-- native values remain present beside converted values and same-currency values stay native without fabricated exchange-rate evidence
-- ExchangeRateQuote carries sourceCurrency, targetCurrency, rate, referenceAt, expiresAt, and source
-- missing and unavailable quote states return unavailable without converted value; after expiresAt returns quote_expired
-- before referenceAt is rejected; referenceAt and expiresAt boundaries are inclusive; the direct converted-value factory enforces the same time window
-- source/target currency mismatch, zero rate, and same-currency fabricated conversion are rejected
-- the module exposes no provider/network client, persistence adapter, migration, endpoint, or UI implementation
-quantitative_quote_shape_check required_fields=6 observed_fields=6 fields=sourceCurrency,targetCurrency,rate,referenceAt,expiresAt,source source_blob_sha=544e8ae3469fa6d7a4427f87179bb74ce1ecb703
+source_blob_sha=8e91a71e4ecb57231aa286b5e4109fed388b8e6e path=packages/domain/src/currency-conversion.ts
+original_test_blob_sha=09d4893549bb7309b91d3348ad2216a14557a7d6 path=packages/domain/src/currency-conversion.test.ts
+timezone_test_blob_sha=1bbe5fd9140a4e140a2847444c227c3d3136fef2 path=packages/domain/src/currency-conversion-timezone.test.ts
+document_blob_sha=52eee92ac979cc4b9e581324b8148a83a839d201 path=docs/CURRENCY_CONVERSION.md
+focused_validation=passed exact_material_content; TypeScript compile plus currency-conversion tests and timezone regression tests
+timezone_matrix=passed TZ=UTC and TZ=America/Sao_Paulo on equivalent exact material content
+remote_ci_run=32428953640 status=completed conclusion=success
+remote_visual_run=32428953613 status=completed conclusion=success
+Observed contract controls on exact material head content:
+- reference currency remains explicit and has no BRL fallback
+- native values remain present beside converted values and same-currency values stay native
+- ExchangeRateQuote carries sourceCurrency,targetCurrency,rate,referenceAt,expiresAt,source
+- timezone-less updatedAt/referenceAt/expiresAt/evaluatedAt are rejected
+- impossible civil dates such as 2026-02-30T12:00:00.000Z are rejected
+- the independent-audit literal offset case 12:00-03:00..13:00-03:00 evaluated at 15:30Z is quote_available in both tested process timezones
+- direct converted-value factory rejects timezone-less evaluatedAt, preventing a bypass of availability checks
+- missing/unavailable/expired states fail closed and no parity/zero conversion is synthesized
+- source/target currency mismatch, zero rate and same-currency fabricated conversion remain rejected
+- no provider/network client, persistence adapter, migration, endpoint or UI implementation is introduced
+quantitative_quote_shape_check required_fields=6 observed_fields=6 fields=sourceCurrency,targetCurrency,rate,referenceAt,expiresAt,source source_blob_sha=8e91a71e4ecb57231aa286b5e4109fed388b8e6e

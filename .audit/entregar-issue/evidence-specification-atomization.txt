@@ -1,11 +1,9 @@
-material_head_sha=f22fecae57497f2397ad9bd77e2232092ac908c7
-specification_source=SRC-ISSUE source_sha256=0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55 line_count=33
-operational_amendment=ATOMIC-SPEC-COVERAGE-001
-The corrected generic extractor treats every list item in normative sections (Scope/Escopo, Acceptance criteria/Criterios de aceite, Requirements/Requisitos, Invariants/Invariantes, Out of scope/Fora de escopo) as an independent obligation candidate, while reference lists remain excluded.
-Current issue rederivation produced exactly 15 candidates at source lines 7,10,11,12,13,14,17,18,19,20,21,22,25,26,27 and requirement-closure.json contains exactly those 15 candidate keys with no unmapped candidates.
-prevention_file=/home/oai/skills/entregar-issue/scripts/orchestrator_gate/specification.py sha256=f629ffe40d14c0c13a3a8a3b83a848477f72a50f59072ce1016b5c4d352e106e
-detection_file=/home/oai/skills/auditar-issue/scripts/check_connector_preflight.py sha256=457f9281de2e47b7f980550ca1f6fbb95daaee574b2b609982800f908e5e9ded
-focused_delivery_tests=17 passed=17 failed=0 suites=test_internal_delegation_ownership,test_single_invocation_controller,test_throughput_quality_contract,test_atomic_obligation_saturation
-focused_audit_tests=12 passed=12 failed=0 suite=test_connector_preflight
-controller_contract_validation=contracts-valid
-ecosystem_fast_report=/tmp/solverfin-596-resume/skill-ecosystem-report-final.json test_files=16 passed=16 failed=0
+material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
+source_id=SRC-ISSUE
+source_sha256=32d0a0d6b8f4e542fb908449425eb114655bb0d298fbda89904c82ad7ec0fb73
+status=passed
+procedure=Enumerate every normative bullet under objective, scope, acceptance criteria and out-of-scope headings, while excluding reference-only bullets, then compare one-to-one with requirement-closure obligations.
+observed=15 normative candidates and 15 explicit obligations; 11 covered obligations map to REQ-001 through REQ-011 and four conditional/out-of-scope obligations carry explicit dispositions.
+sibling_case_scope=plain scope bullets preserved as atomic obligations
+sibling_case_acceptance=negative acceptance bullets preserved as atomic obligations
+sibling_case_references=non-normative reference list excluded

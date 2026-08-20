@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "f22fecae57497f2397ad9bd77e2232092ac908c7",
+  "subject_sha": "d6395869c6c2d5fb4dd7c9d99810213eb235ec42",
   "base": "d167f9c787c8577abd9d12e11a1d33d77acb9b86",
   "policy": {
     "soft_limit_lines": 700,
@@ -18,8 +18,8 @@
     {
       "path": "packages/domain/src/currency-conversion.ts",
       "baseline_lines": 0,
-      "current_lines": 396,
-      "growth_lines": 396,
+      "current_lines": 419,
+      "growth_lines": 419,
       "status": "ok",
       "reasons": []
     }

@@ -1,6 +1,9 @@
-material_head_sha=f22fecae57497f2397ad9bd77e2232092ac908c7
-docs/CURRENCY_CONVERSION.md blob=59512532eb270823c7b7df4acb280e29b27362a1 defines optional reference-currency lifecycle; auditable quote shape; native/converted/unavailable states; Dashboard/Reports/projections reuse; and no provider, persistence, endpoint, UI, or productive conversion.
-docs/STATUS_MATRIX.md blob=cd5776bb415c6da84b9497731a6c37004dd2dc5c marks the future auditable consolidation contract as Feito while later productive capabilities remain planned.
-docs/adr/0013-multi-currency-financial-aggregation.md blob=5b167db74512f38ba548832d4e5ce77a2e9bdb2b requires explicit conversion with source/destination/rate/reference/source audit data and does not choose provider or default reference currency.
-docs/MULTI_CURRENCY_AGGREGATION.md blob=d3a8851cb4a1e0857a3f319e77ca5a6aa6eeaf3f keeps currencyBlocks canonical until explicit conversion exists.
-No contradictory current normative claim was found in the canonical documents inspected for issue 596.
+material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
+contract=docs/CURRENCY_CONVERSION.md blob=52eee92ac979cc4b9e581324b8148a83a839d201
+status=passed
+- documentation now states that updatedAt, referenceAt, expiresAt and evaluatedAt are unambiguous instants
+- Z or explicit +/-HH:MM offset is required
+- timezone-less strings and impossible civil dates are invalid
+- timezone configuration of the executing process must not change quote availability
+- productive FX provider, persistence, migration, endpoint and UI activation remain outside this issue
+- docs/STATUS_MATRIX.md and ADR 0013 remain compatible with the clarified contract: contract implemented, productive conversion/provider not activated
