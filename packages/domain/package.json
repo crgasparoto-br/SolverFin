@@ -8,7 +8,8 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
-    "./ai-suggestion-payloads": "./dist/ai-suggestion-payloads.js"
+    "./ai-suggestion-payloads": "./dist/ai-suggestion-payloads.js",
+    "./currency-conversion": "./dist/currency-conversion.js"
   },
   "scripts": {
     "lint": "eslint .",
