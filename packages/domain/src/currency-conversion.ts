@@ -375,9 +375,8 @@ function validateIsoDateTime(
   message: string,
 ): ISODateTime {
   const normalizedValue = value.trim();
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})$/.exec(
-    normalizedValue,
-  );
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})$/.exec(normalizedValue);
 
   if (!match || Number.isNaN(Date.parse(normalizedValue))) {
     throw new CurrencyConversionContractError(errorCode, message);
