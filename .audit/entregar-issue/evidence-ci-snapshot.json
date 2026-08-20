@@ -1,1 +1,38 @@
-{"schema_version":1,"material_head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","material_merge_preview_sha":"c4bc94a1b36809ad03ce4472f87dfe3b110cb261","status":"success","workflows":[{"run_id":32291484553,"name":"CI","status":"completed","conclusion":"success"},{"run_id":32291484513,"name":"Statement visual validation","status":"completed","conclusion":"success"}],"jobs":[{"job_id":96193084703,"name":"Validate monorepo","status":"completed","conclusion":"success"},{"job_id":96193084977,"name":"Integration API + PostgreSQL","status":"completed","conclusion":"success","observed_tests":["financial-summary-multi-currency.integration.test.js","account-currency-invariant.integration.test.js","generalized-deterministic-review-currency.integration.test.js","transaction-currency-invariant.integration.test.js"],"suite_result":"111 compiled test file(s) passed"}],"collection_policy":"single-delivery-snapshot-current-material-head","collections_for_material_sha":1}
+{
+  "schema_version": 1,
+  "head_sha": "26726e3cbcab9c2f09b6d4cda81adef5df8bedbf",
+  "ci": {
+    "run_id": 32325925125,
+    "validate_monorepo": "success",
+    "integration_api_postgresql": "success",
+    "validate_steps": [
+      "format:check",
+      "lint",
+      "typecheck",
+      "prisma generate",
+      "migrations",
+      "seed",
+      "test",
+      "build"
+    ],
+    "integration_steps": [
+      "generate prisma client",
+      "build packages",
+      "migrations",
+      "seed",
+      "api integration tests",
+      "import statement consistency"
+    ]
+  },
+  "visual": {
+    "run_id": 32325925149,
+    "chrome_visual_validation": "success",
+    "steps": [
+      "prepare database and production web build",
+      "start SolverFin",
+      "validate core interfaces in Chrome",
+      "assert visual evidence secret-free",
+      "upload visual evidence"
+    ]
+  }
+}
