@@ -55,6 +55,8 @@ Semantica dos campos:
 - `expiresAt`: instante limite de uso da cotacao para uma nova conversao;
 - `source`: identificador nao vazio e auditavel da origem da cotacao.
 
+Todos os campos `ISODateTime` deste contrato (`updatedAt`, `referenceAt`, `expiresAt` e `evaluatedAt`) representam instantes inequivocos. A serializacao deve incluir `Z` ou offset numerico explicito no formato `+/-HH:MM`; strings sem timezone e datas civis impossiveis sao invalidas. Assim, a disponibilidade de uma mesma cotacao nao pode mudar conforme o timezone configurado no processo que executa o dominio.
+
 A taxa deve representar unidades da moeda de destino por unidade da moeda de origem. A camada que futuramente calcular `convertedAmountMinor` deve declarar sua politica de casas decimais e arredondamento antes de uso produtivo; esta issue nao escolhe algoritmo de conversao ou arredondamento porque nenhuma conversao e executada agora.
 
 `expiresAt` torna o comportamento de expiracao verificavel sem escolher nesta issue uma politica global diaria, intraday ou por provider. A futura fonte de cotacao sera responsavel por fornecer o prazo de validade conforme a politica que vier a ser aprovada.
@@ -201,6 +203,9 @@ A implementacao compartilhada deve provar:
 - `missing`, `expired` e `unavailable` nao geram valor convertido;
 - uma cotacao nao pode ser usada antes de `referenceAt` nem depois de `expiresAt`;
 - as bordas `referenceAt` e `expiresAt` sao inclusivas;
+- `updatedAt`, `referenceAt`, `expiresAt` e `evaluatedAt` sem timezone explicito sao rejeitados;
+- datas civis impossiveis sao rejeitadas em vez de normalizadas silenciosamente;
+- a mesma entrada com `Z`/offset explicito produz o mesmo estado sob diferentes timezones do processo;
 - o factory de valor `converted` aplica a mesma janela temporal da etapa de disponibilidade;
 - taxa zero/invalida e rejeitada;
 - cotacao com moeda de origem diferente da moeda nativa e rejeitada;
