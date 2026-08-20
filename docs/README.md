@@ -44,6 +44,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`TRANSACTION_DATES.md`](./TRANSACTION_DATES.md): contrato canonico de `occurredOn`, `plannedOn`, `effectiveOn`, precedencias por uso e transicoes de estado.
 - [`API_FINANCIAL_SUMMARY.md`](./API_FINANCIAL_SUMMARY.md): saldo disponivel, resultado economico mensal, compromissos e semantica de liquidacao no resumo financeiro.
 - [`MULTI_CURRENCY_AGGREGATION.md`](./MULTI_CURRENCY_AGGREGATION.md): inventario e contrato transversal de agregacao financeira separada por moeda.
+- [`CURRENCY_CONVERSION_CONTRACT.md`](./CURRENCY_CONVERSION_CONTRACT.md): moeda de referencia do perfil, shape auditavel de conversao e estados de indisponibilidade para consolidacao cambial futura.
 - [`API_TRANSACTIONS.md`](./API_TRANSACTIONS.md): contrato dos lancamentos usados como fonte financeira canonica.
 - [`API_REPORTS.md`](./API_REPORTS.md): endpoint agregado de evolucao por categoria, periodos, moedas e hierarquia.
 - [`API_TRANSACTION_GROUP_ACTIONS.md`](./API_TRANSACTION_GROUP_ACTIONS.md): edicao, clonagem, exclusao logica e conciliacao de agrupamentos.
@@ -82,6 +83,7 @@ ADRs registram decisoes duradouras. Crie ou atualize ADRs quando a mudanca alter
 - [`adr/0012-separate-account-agency-identifiers.md`](./adr/0012-separate-account-agency-identifiers.md)
 - [`adr/0013-multi-currency-financial-aggregation.md`](./adr/0013-multi-currency-financial-aggregation.md): multi-moedas e proibicao de agregacao implicita entre moedas.
 - [`adr/0014-incremental-component-ui-architecture.md`](./adr/0014-incremental-component-ui-architecture.md): migracao incremental da interface para componentes, view-models e arquetipos reutilizaveis.
+- [`adr/0015-reference-currency-and-fx-conversion-contract.md`](./adr/0015-reference-currency-and-fx-conversion-contract.md): escopo da moeda de referencia e contrato auditavel para conversao cambial futura.
 
 ## Regras de manutencao documental
 
