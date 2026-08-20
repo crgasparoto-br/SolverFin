@@ -319,10 +319,7 @@ function assertExchangeRatePair(
   nativeCurrency: string,
   referenceCurrency: string,
 ): void {
-  if (
-    quote.sourceCurrency !== nativeCurrency ||
-    quote.targetCurrency !== referenceCurrency
-  ) {
+  if (quote.sourceCurrency !== nativeCurrency || quote.targetCurrency !== referenceCurrency) {
     throw new CurrencyConversionContractError(
       "EXCHANGE_RATE_CURRENCY_MISMATCH",
       "Exchange-rate currencies must match the native and reference currencies.",
