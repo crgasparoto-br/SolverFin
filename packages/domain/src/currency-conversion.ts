@@ -369,6 +369,7 @@ function normalizeCurrencyCode(currency: string): string {
   return normalizedCurrency;
 }
 
+// prettier-ignore
 function validateIsoDateTime(
   value: string,
   errorCode: CurrencyConversionContractErrorCode,
