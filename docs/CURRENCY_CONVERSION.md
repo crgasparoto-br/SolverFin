@@ -74,7 +74,9 @@ type ExchangeRateLookupResult =
 - `unavailable`: a fonte existe conceitualmente, mas nao conseguiu fornecer uma cotacao utilizavel;
 - `available`: a cotacao foi obtida e ainda precisa passar pelas validacoes de par, taxa, instante, origem e expiracao.
 
-Uma cotacao `available` com `evaluatedAt > expiresAt` produz `quote_expired`. Ela nao pode ser usada apenas porque existia anteriormente.
+Uma cotacao `available` so e utilizavel quando `referenceAt <= evaluatedAt <= expiresAt`. Antes de `referenceAt`, o contrato rejeita o uso porque a evidencia ainda nao e valida; depois de `expiresAt`, a disponibilidade passa a `quote_expired`.
+
+O mesmo intervalo temporal e obrigatorio na criacao direta de um valor `converted`: `createConvertedReferenceCurrencyAmount` exige `evaluatedAt` e rejeita cotacao futura ou expirada. Assim, chamar o factory diretamente nao permite contornar a verificacao feita por `resolveReferenceCurrencyAvailability`.
 
 ## Valor nativo, convertido ou indisponivel
 
@@ -118,9 +120,10 @@ O contrato exige coerencia relacional:
 - `native.currency === exchangeRate.sourceCurrency`;
 - `referenceCurrency === converted.currency`;
 - `referenceCurrency === exchangeRate.targetCurrency`;
-- `native.currency !== referenceCurrency` para um valor com `kind = converted`.
+- `native.currency !== referenceCurrency` para um valor com `kind = converted`;
+- `exchangeRate.referenceAt <= evaluatedAt <= exchangeRate.expiresAt` no instante em que o valor convertido e criado.
 
-O helper de dominio valida essa representacao, mas deliberadamente nao calcula a conversao.
+O helper de dominio valida essa representacao, inclusive a janela temporal da cotacao, mas deliberadamente nao calcula a conversao.
 
 ### Indisponivel
 
@@ -196,6 +199,9 @@ A implementacao compartilhada deve provar:
 - a moeda de referencia e sempre explicita e nao possui fallback BRL;
 - mesma moeda retorna representacao nativa, sem cotacao 1:1 fabricada;
 - `missing`, `expired` e `unavailable` nao geram valor convertido;
+- uma cotacao nao pode ser usada antes de `referenceAt` nem depois de `expiresAt`;
+- as bordas `referenceAt` e `expiresAt` sao inclusivas;
+- o factory de valor `converted` aplica a mesma janela temporal da etapa de disponibilidade;
 - taxa zero/invalida e rejeitada;
 - cotacao com moeda de origem diferente da moeda nativa e rejeitada;
 - cotacao com moeda de destino diferente da moeda de referencia e rejeitada;
