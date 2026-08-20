@@ -27,3 +27,4 @@ Use ADR quando uma decisão muda stack, boundary, privacidade, tenant, auditoria
 - [0012 - Separar agência e conta no cadastro de conta](./0012-separate-account-agency-identifiers.md)
 - [0013 - Multi-moedas e agregação financeira explícita](./0013-multi-currency-financial-aggregation.md)
 - [0014 - Arquitetura incremental de interface por componentes e view-models](./0014-incremental-component-ui-architecture.md)
+- [0015 - Moeda de referência e contrato de conversão cambial](./0015-reference-currency-and-fx-conversion-contract.md)
