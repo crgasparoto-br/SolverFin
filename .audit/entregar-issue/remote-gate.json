@@ -1,1 +1,16 @@
-{"schema_version":1,"material_head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","material_merge_preview_sha":"c4bc94a1b36809ad03ce4472f87dfe3b110cb261","pull_request":628,"branch":"feat/595-multi-currency-aggregation","status":"success","observed":"CI run 32291484553 and Statement visual validation run 32291484513 completed successfully for the current PR head association; the API integration job reached financial-summary-multi-currency and ended with 111 compiled integration files passed.","merge_performed":false}
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "pull_request": 630,
+  "base_ref": "main",
+  "base_sha": "d167f9c787c8577abd9d12e11a1d33d77acb9b86",
+  "head_ref": "feat/596-reference-currency-contract",
+  "material_head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+  "merge_preview_sha": "75d5673b204eb87c2ac62b946e1773c661b65349",
+  "mergeable": true,
+  "status": "passed",
+  "ci": {
+    "CI": "success",
+    "Statement visual validation": "success"
+  }
+}

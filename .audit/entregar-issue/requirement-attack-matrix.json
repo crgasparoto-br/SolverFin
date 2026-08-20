@@ -1,1 +1,204 @@
-{"schema_version":1,"head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","requirements":[{"requirement_id":"REQ-001","obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015","OBL-016","OBL-017","OBL-018"],"risk_families":["authorization","documentation","semantic-effect","structural-contract","temporal-consistency","temporal-destination","tenant-isolation"],"plausible_wrong_implementation":"Incorrect scope or currency remains valid.","positive_control":{"status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt"},"negative_controls":[{"id":"C01","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"documentation","surface":"dc","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C01a","surface":"dc","dimension":"aaa","status":"passed"},{"id":"C01b","surface":"dc","dimension":"bbb","status":"passed"}]},{"id":"C02","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"structural-contract","surface":"bl","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C02a","surface":"bl","dimension":"aaa","status":"passed"},{"id":"C02b","surface":"bl","dimension":"bbb","status":"passed"}]},{"id":"C03","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"semantic-effect","surface":"or","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C03a","surface":"or","dimension":"aaa","status":"passed"},{"id":"C03b","surface":"or","dimension":"bbb","status":"passed"}]},{"id":"C04","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"authorization","surface":"sc","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C04a","surface":"sc","dimension":"aaa","status":"passed"},{"id":"C04b","surface":"sc","dimension":"bbb","status":"passed"}]},{"id":"C05","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"structural-contract","surface":"ty","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C05a","surface":"ty","dimension":"aaa","status":"passed"},{"id":"C05b","surface":"ty","dimension":"bbb","status":"passed"}]},{"id":"C06","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"authorization","surface":"cp","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C06a","surface":"cp","dimension":"aaa","status":"passed"},{"id":"C06b","surface":"cp","dimension":"bbb","status":"passed"}]},{"id":"C07","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"structural-contract","surface":"relational-semantic-integrity","dimension":"source","control_type":"test","failure_mode":"Linked values mismatch.","plausible_wrong_implementation":"Persist linked records with different currency.","procedure":"Create divergent linked records; read aggregate.","expected":"Reject write.","observed":"Mismatch rejected; aggregate blocked.","sibling_cases":[{"id":"C07a","surface":"relational-semantic-integrity","dimension":"aaa","status":"passed"},{"id":"C07b","surface":"relational-semantic-integrity","dimension":"bbb","status":"passed"}]},{"id":"C08","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"structural-contract","surface":"ru","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C08a","surface":"ru","dimension":"aaa","status":"passed"},{"id":"C08b","surface":"ru","dimension":"bbb","status":"passed"}]},{"id":"C09","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"structural-contract","surface":"relational-semantic-integrity","dimension":"no-collapse","control_type":"test","failure_mode":"Linked values mismatch.","plausible_wrong_implementation":"Persist linked records with different currency.","procedure":"Create divergent linked records; read aggregate.","expected":"Reject write.","observed":"Mismatch rejected; aggregate blocked.","sibling_cases":[{"id":"C09a","surface":"relational-semantic-integrity","dimension":"aaa","status":"passed"},{"id":"C09b","surface":"relational-semantic-integrity","dimension":"bbb","status":"passed"}]},{"id":"C10","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"structural-contract","surface":"relational-semantic-integrity","dimension":"values","control_type":"test","failure_mode":"Linked values mismatch.","plausible_wrong_implementation":"Persist linked records with different currency.","procedure":"Create divergent linked records; read aggregate.","expected":"Reject write.","observed":"Mismatch rejected; aggregate blocked.","sibling_cases":[{"id":"C10a","surface":"relational-semantic-integrity","dimension":"aaa","status":"passed"},{"id":"C10b","surface":"relational-semantic-integrity","dimension":"bbb","status":"passed"}]},{"id":"C11","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"semantic-effect","surface":"mx","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C11a","surface":"mx","dimension":"aaa","status":"passed"},{"id":"C11b","surface":"mx","dimension":"bbb","status":"passed"}]},{"id":"C12","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"semantic-effect","surface":"pt","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C12a","surface":"pt","dimension":"aaa","status":"passed"},{"id":"C12b","surface":"pt","dimension":"bbb","status":"passed"}]},{"id":"C13","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"semantic-effect","surface":"ko","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C13a","surface":"ko","dimension":"aaa","status":"passed"},{"id":"C13b","surface":"ko","dimension":"bbb","status":"passed"}]},{"id":"C14","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"semantic-effect","surface":"nd","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C14a","surface":"nd","dimension":"aaa","status":"passed"},{"id":"C14b","surface":"nd","dimension":"bbb","status":"passed"}]},{"id":"C15","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"semantic-effect","surface":"cu","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C15a","surface":"cu","dimension":"aaa","status":"passed"},{"id":"C15b","surface":"cu","dimension":"bbb","status":"passed"}]},{"id":"C16","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"semantic-effect","surface":"md","dimension":"zzz","control_type":"test","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"C16a","surface":"md","dimension":"aaa","status":"passed"},{"id":"C16b","surface":"md","dimension":"bbb","status":"passed"}]},{"id":"C17","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"structural-contract","surface":"relational-semantic-integrity","dimension":"two-values","control_type":"test","failure_mode":"Linked values mismatch.","plausible_wrong_implementation":"Persist linked records with different currency.","procedure":"Create divergent linked records; read aggregate.","expected":"Reject write.","observed":"Mismatch rejected; aggregate blocked.","sibling_cases":[{"id":"C17a","surface":"relational-semantic-integrity","dimension":"aaa","status":"passed"},{"id":"C17b","surface":"relational-semantic-integrity","dimension":"bbb","status":"passed"}]},{"id":"C18","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"tenant-isolation","surface":"tenant-scope-isolation","dimension":"no-leak","control_type":"test","failure_mode":"Profile data can leak.","plausible_wrong_implementation":"Mix two different profiles in one organization.","procedure":"Read two different profiles and compare.","expected":"No profile leak.","observed":"Sibling excluded; no leak.","sibling_cases":[{"id":"C18a","surface":"tenant-scope-isolation","dimension":"aaa","status":"passed"},{"id":"C18b","surface":"tenant-scope-isolation","dimension":"bbb","status":"passed"}]},{"id":"HD","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-inherited-controls.txt","evidence_sha256":"356a9c105d45b0b313c27eb823aa3040223bfcddd458569a7ff89c068a1d3861","risk_family":"structural-contract","surface":"handoff-material-identity","dimension":"certified-material-vs-current-lineage","control_type":"procedure","failure_mode":"Stored handoff stale.","plausible_wrong_implementation":"Trust stored handoff after different material commit.","procedure":"Compare fresh head, parent, changed paths.","expected":"Require refreeze.","observed":"Fresh lineage required refreeze.","sibling_cases":[{"id":"HDa","surface":"handoff-material-identity","dimension":"certified-material-vs-current-lineage","status":"passed"},{"id":"HDb","surface":"handoff-material-identity","dimension":"material-path-after-result-child","status":"passed"}]},{"id":"T1","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"temporal-consistency","surface":"pe","dimension":"zzz","control_type":"procedure","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"T1a","surface":"pe","dimension":"aaa","status":"passed"},{"id":"T1b","surface":"pe","dimension":"bbb","status":"passed"}]},{"id":"T2","status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt","evidence_sha256":"9628218e57aaffc29e441904f496d4a62287bb6954199d6c45c35e7a1410e496","risk_family":"temporal-destination","surface":"pl","dimension":"zzz","control_type":"procedure","failure_mode":"Invalid path can pass.","plausible_wrong_implementation":"Invalid path still appears valid.","procedure":"Run divergent case.","expected":"Rejected.","observed":"Observed rejection.","sibling_cases":[{"id":"T2a","surface":"pl","dimension":"aaa","status":"passed"},{"id":"T2b","surface":"pl","dimension":"bbb","status":"passed"}]}],"regression_controls":[{"status":"passed","head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","evidence":"evidence-static-contract.txt"}],"obligation_control_map":[{"obligation_id":"OBL-001","primary_negative_control_id":"C01"},{"obligation_id":"OBL-002","primary_negative_control_id":"C02"},{"obligation_id":"OBL-003","primary_negative_control_id":"C03"},{"obligation_id":"OBL-004","primary_negative_control_id":"C04"},{"obligation_id":"OBL-005","primary_negative_control_id":"C05"},{"obligation_id":"OBL-006","primary_negative_control_id":"C06"},{"obligation_id":"OBL-007","primary_negative_control_id":"C07"},{"obligation_id":"OBL-008","primary_negative_control_id":"C08"},{"obligation_id":"OBL-009","primary_negative_control_id":"C09"},{"obligation_id":"OBL-010","primary_negative_control_id":"C10"},{"obligation_id":"OBL-011","primary_negative_control_id":"C11"},{"obligation_id":"OBL-012","primary_negative_control_id":"C12"},{"obligation_id":"OBL-013","primary_negative_control_id":"C13"},{"obligation_id":"OBL-014","primary_negative_control_id":"C14"},{"obligation_id":"OBL-015","primary_negative_control_id":"C15"},{"obligation_id":"OBL-016","primary_negative_control_id":"C16"},{"obligation_id":"OBL-017","primary_negative_control_id":"C17"},{"obligation_id":"OBL-018","primary_negative_control_id":"C18"}],"risk_surfaces":[{"risk_family":"authorization","surface":"cp","reason":"Required."},{"risk_family":"authorization","surface":"sc","reason":"Required."},{"risk_family":"documentation","surface":"dc","reason":"Required."},{"risk_family":"semantic-effect","surface":"cu","reason":"Required."},{"risk_family":"semantic-effect","surface":"ko","reason":"Required."},{"risk_family":"semantic-effect","surface":"md","reason":"Required."},{"risk_family":"semantic-effect","surface":"mx","reason":"Required."},{"risk_family":"semantic-effect","surface":"nd","reason":"Required."},{"risk_family":"semantic-effect","surface":"or","reason":"Required."},{"risk_family":"semantic-effect","surface":"pt","reason":"Required."},{"risk_family":"structural-contract","surface":"bl","reason":"Required."},{"risk_family":"structural-contract","surface":"handoff-material-identity","reason":"Required."},{"risk_family":"structural-contract","surface":"relational-semantic-integrity","reason":"Required."},{"risk_family":"structural-contract","surface":"ru","reason":"Required."},{"risk_family":"structural-contract","surface":"ty","reason":"Required."},{"risk_family":"temporal-consistency","surface":"pe","reason":"Required."},{"risk_family":"temporal-destination","surface":"pl","reason":"Required."},{"risk_family":"tenant-isolation","surface":"tenant-scope-isolation","reason":"Required."}]}],"uncovered_requirements":[]}
+{
+  "schema_version": 1,
+  "head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+  "requirements": [
+    {
+      "requirement_id": "REQ-001",
+      "obligation_ids": [
+        "OBL-001"
+      ],
+      "risk_families": [
+        "structural-contract",
+        "documentation"
+      ],
+      "source_texts": [
+        "Definir o contrato que permitirá futuramente apresentar valores consolidados convertidos em uma moeda de referência, sem alterar a moeda nativa dos registros e sem conversão implícita."
+      ],
+      "plausible_wrong_implementation": "A converted result discards the native amount, accepts a quote for an incompatible source/target pair, or fabricates a 1:1 conversion while documentation still appears consistent.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+        "evidence": ".audit/entregar-issue/evidence-static-contract.txt",
+        "evidence_path": ".audit/entregar-issue/evidence-static-contract.txt",
+        "evidence_kind": "behavioral",
+        "evidence_id": "EVID-FOCUSED-CONTRACT",
+        "evidence_sha256": "c9ea4e7df4f56f2e10734694b9664907bb549f2d1071a2c8430fbb5cc6809dae",
+        "control_type": "test"
+      },
+      "negative_controls": [
+        {
+          "id": "CTRL-FX-RELATION-001",
+          "status": "passed",
+          "head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "same-currency-fabricated-conversion",
+          "control_type": "test",
+          "failure_mode": "Linked native/reference currency and quote metadata can become semantically incompatible while a converted payload still looks well formed.",
+          "plausible_wrong_implementation": "The createConvertedReferenceCurrencyAmount producer accepts different or incompatible linked source/destination currencies, or a same-currency quote with rate 1, instead of rejecting the mutation.",
+          "procedure": "Exercise the canonical domain producer createConvertedReferenceCurrencyAmount and quote-availability entrypoint with deliberately different linked native, reference, source and destination currency values, then observe the consumer-facing result.",
+          "expected": "The producer rejects incompatible linked currency relations and same-currency conversion attempts before any converted representation reaches a downstream consumer.",
+          "observed": "Focused tests on the material head reject source mismatch, target mismatch and fabricated BRL-to-BRL conversion, while valid USD-to-BRL evidence preserves both native and converted values.",
+          "evidence": ".audit/entregar-issue/evidence-static-contract.txt",
+          "evidence_path": ".audit/entregar-issue/evidence-static-contract.txt",
+          "evidence_kind": "behavioral",
+          "evidence_id": "EVID-FOCUSED-CONTRACT",
+          "evidence_sha256": "c9ea4e7df4f56f2e10734694b9664907bb549f2d1071a2c8430fbb5cc6809dae",
+          "sibling_cases": [
+            {
+              "id": "FX-SOURCE-MISMATCH",
+              "surface": "relational-semantic-integrity",
+              "dimension": "source-currency-mismatch",
+              "status": "passed"
+            },
+            {
+              "id": "FX-TARGET-MISMATCH",
+              "surface": "relational-semantic-integrity",
+              "dimension": "target-currency-mismatch",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "CTRL-DOC-CLAIMS-001",
+          "status": "passed",
+          "head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "planned-versus-implemented-contract",
+          "control_type": "procedure",
+          "failure_mode": "Living documentation can continue to label the #596 contract as planned or can imply that an external FX provider became active.",
+          "plausible_wrong_implementation": "Code and the new contract are published while STATUS_MATRIX or other living documents retain the old planned claim or describe provider-backed conversion as already operational.",
+          "procedure": "Search living documentation beyond the diff for consolidation, reference-currency, explicit-conversion and ADR 0013 claims; classify current, compatible and contradictory occurrences against the material candidate.",
+          "expected": "The only prior planned claim is reconciled, unchanged architecture/ADR/API documents remain compatible, and no document claims a productive provider or implicit conversion.",
+          "observed": "The documentation evidence classifies STATUS_MATRIX as resolved and ADR 0013, EVOLUTION_STRATEGY, ARCHITECTURE, API_FINANCIAL_SUMMARY and API_REPORTS as compatible with no unresolved contradictions.",
+          "evidence": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+          "evidence_path": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+          "evidence_kind": "documentation",
+          "evidence_id": "EVID-DOC-CONSISTENCY",
+          "evidence_sha256": "7067215d5893a6bb07b020ada94c337a6536092ece8e465b737d02e5d84fb98c",
+          "sibling_cases": [
+            {
+              "id": "DOC-PROVIDER-CLAIM",
+              "surface": "canonical-claims",
+              "dimension": "provider-activation-claim",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-NATIVE-BLOCKS-001",
+          "status": "passed",
+          "head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+          "control_type": "test",
+          "evidence": ".audit/entregar-issue/evidence-static-contract.txt",
+          "evidence_path": ".audit/entregar-issue/evidence-static-contract.txt",
+          "evidence_kind": "behavioral",
+          "evidence_id": "EVID-FOCUSED-CONTRACT",
+          "evidence_sha256": "c9ea4e7df4f56f2e10734694b9664907bb549f2d1071a2c8430fbb5cc6809dae"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-001",
+          "primary_negative_control_id": "CTRL-FX-RELATION-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "reason": "Native currency, reference currency and exchange-rate source/target form a linked semantic relation that must fail closed on incompatibility."
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "reason": "The status transition from planned to implemented must not leave living documentation claiming the previous state or implying productive FX activation."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-002",
+      "obligation_ids": [
+        "OBL-002"
+      ],
+      "risk_families": [
+        "structural-contract"
+      ],
+      "source_texts": [
+        "contrato é consumível por Dashboard, Relatórios e futuras projeções;"
+      ],
+      "plausible_wrong_implementation": "The shared module exposes an opaque conversion value or documentation tied to one screen, forcing Dashboard, Reports or projections to infer currency or duplicate conversion rules.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+        "evidence": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+        "evidence_path": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+        "evidence_kind": "documentation",
+        "evidence_id": "EVID-DOC-CONSISTENCY",
+        "evidence_sha256": "7067215d5893a6bb07b020ada94c337a6536092ece8e465b737d02e5d84fb98c",
+        "control_type": "procedure"
+      },
+      "negative_controls": [
+        {
+          "id": "CTRL-CONSUMER-CONTRACT-001",
+          "status": "passed",
+          "head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+          "risk_family": "structural-contract",
+          "surface": "consumer-contract-usability",
+          "dimension": "cross-consumer-state-shape",
+          "control_type": "procedure",
+          "failure_mode": "One consumer-specific representation forces other financial surfaces to infer reference currency, quote availability or native value semantics.",
+          "plausible_wrong_implementation": "The contract documents only Dashboard usage or omits the unavailable state, so Reports and future projections create local fallbacks or implicit conversion behavior.",
+          "procedure": "Inspect the shared subpath export and contract documentation for explicit native, converted and unavailable states plus dedicated sections for Dashboard, Reports and projections.",
+          "expected": "All three consumer classes can reuse one representation without UI-side quote lookup, native-value replacement or local fallback conversion.",
+          "observed": "The material contract exports the shared domain subpath and documentation explicitly covers Dashboard, Reports and projections while keeping current currencyBlocks native-only.",
+          "evidence": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+          "evidence_path": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+          "evidence_kind": "documentation",
+          "evidence_id": "EVID-DOC-CONSISTENCY",
+          "evidence_sha256": "7067215d5893a6bb07b020ada94c337a6536092ece8e465b737d02e5d84fb98c",
+          "sibling_cases": [
+            {
+              "id": "CONSUMER-PROJECTION",
+              "surface": "consumer-contract-usability",
+              "dimension": "future-projection-consumer",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-CONSUMER-NATIVE-001",
+          "status": "passed",
+          "head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+          "control_type": "procedure",
+          "evidence": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+          "evidence_path": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+          "evidence_kind": "documentation",
+          "evidence_id": "EVID-DOC-CONSISTENCY",
+          "evidence_sha256": "7067215d5893a6bb07b020ada94c337a6536092ece8e465b737d02e5d84fb98c"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-002",
+          "primary_negative_control_id": "CTRL-CONSUMER-CONTRACT-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "consumer-contract-usability",
+          "reason": "A future-facing shared contract can be nominally present but unusable by Dashboard, Reports or projections if native, converted and unavailable states are not explicit."
+        }
+      ],
+      "quantitative_evidence_required": false
+    }
+  ],
+  "uncovered_requirements": []
+}

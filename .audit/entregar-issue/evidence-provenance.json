@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+  "base_sha": "d167f9c787c8577abd9d12e11a1d33d77acb9b86",
+  "evidence": [
+    {
+      "evidence_id": "EVID-FOCUSED-CONTRACT",
+      "kind": "behavioral",
+      "path": ".audit/entregar-issue/evidence-static-contract.txt",
+      "sha256": "c9ea4e7df4f56f2e10734694b9664907bb549f2d1071a2c8430fbb5cc6809dae",
+      "subject_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+      "freshness_policy": "exact-material-head",
+      "producer": "entregar-issue connector-only focused TypeScript validation",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-DOC-CONSISTENCY",
+      "kind": "documentation",
+      "path": ".audit/entregar-issue/evidence-documentation-consistency.txt",
+      "sha256": "7067215d5893a6bb07b020ada94c337a6536092ece8e465b737d02e5d84fb98c",
+      "subject_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+      "freshness_policy": "exact-material-head",
+      "producer": "entregar-issue connector-only living-documentation reconciliation",
+      "status": "passed"
+    }
+  ]
+}

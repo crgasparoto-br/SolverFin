@@ -1,0 +1,22 @@
+subject_sha=f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f
+base_sha=d167f9c787c8577abd9d12e11a1d33d77acb9b86
+search_scope=repository living documentation, including files outside the material diff
+search_terms=consolidacao cambial|moeda de referencia|multi-moedas|conversao explicita|ADR 0013
+
+observed_current_claims:
+- docs/STATUS_MATRIX.md: material candidate changes the #596 capability from Planejado to Feito and names docs/CURRENCY_CONVERSION.md plus ADR 0013 as contract owners.
+- docs/CURRENCY_CONVERSION.md: explicitly states the contract is defined without provider, external quote integration, productive conversion, persistence, endpoint, or UI activation.
+- docs/EVOLUTION_STRATEGY.md (outside diff): already states a profile reference currency may be introduced by its own issue, never authorizes implicit conversion, and requires source/destination/rate/reference/source metadata.
+- docs/ARCHITECTURE.md (outside diff): already states cross-currency aggregation requires explicit auditable conversion and otherwise remains partitioned.
+- docs/adr/0013-multi-currency-financial-aggregation.md (outside diff): remains the accepted architectural decision for explicit multi-currency aggregation and future auditable conversion.
+- docs/API_FINANCIAL_SUMMARY.md and docs/API_REPORTS.md (outside diff): current production endpoints remain currencyBlocks/native-only; no converted aggregate is activated by this candidate.
+
+classifications:
+- STATUS_MATRIX planned claim: contradiction in base, resolved by material candidate.
+- CURRENCY_CONVERSION: current-contract.
+- EVOLUTION_STRATEGY: current-contract, compatible.
+- ARCHITECTURE: current-contract, compatible.
+- ADR 0013: current-contract, compatible.
+- API_FINANCIAL_SUMMARY/API_REPORTS: current-contract, compatible because the new contract is future-facing and does not activate conversion.
+
+unresolved_contradictions=[]

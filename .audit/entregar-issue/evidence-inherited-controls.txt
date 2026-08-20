@@ -1,11 +1,16 @@
-material_head_sha=a74a7c04bb9165144f55b762f860f387144a2991
-material_merge_preview_sha=c4bc94a1b36809ad03ce4472f87dfe3b110cb261
-revalidation=exact-current-ci-plus-material-delta-inspection
-previous_material_head_sha=884ffa3a11893e72a5a0dca2a195e4447b0163f3
-- The complete inherited control ID set and source-audit lineage from the previous handoff are preserved in inherited-controls.json.
-- The only product/test path changed after the previous certified material head is apps/api/src/financial-summary-multi-currency.integration.test.ts; the change adds a divergent sibling profile and explicit no-leak assertions rather than weakening any inherited production boundary.
-- Current CI run 32291484553 is green and the API integration job 96193084977 reached the full database-backed suite, including account-currency-invariant, financial-summary-multi-currency, financial-summary-settlement, generalized-deterministic-review-currency, transaction-currency-invariant and the inherited temporal/group/import families.
-- The integration log ends with 111 compiled integration test files passed, so inherited controls backed by those canonical suites were reached on the current candidate rather than merely declared.
-- HANDOFF-DRIFT-001 is exercised by the present recovery: the stored certificate names 884ffa3a11893e72a5a0dca2a195e4447b0163f3, fresh remote lineage names a74a7c04bb9165144f55b762f860f387144a2991, and the official recovery classifier selected post-write-refreeze.
-- The new tenant/profile discriminant proves the primary profile excludes a deliberately large EUR sibling record while the sibling profile can observe that record itself; this closes the issue acceptance clause requiring tenant/profile isolation.
-- No inherited control is retired. Current exact-head evidence is refreshed because a material test commit invalidated the prior handoff identity.
+Target: crgasparoto-br/SolverFin issue #596, PR #630
+Material head: f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f
+Observed remote PR head before handoff publication: f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f
+Material parent audit package classification: foreign-target (inherited from issue #595 / PR #628); it is not reused as correctness evidence for #596.
+
+Current-target policy:
+- unrelated historical controls from the foreign target are retained only as cumulative lineage and explicitly retired as not applicable to the #596 contract;
+- HANDOFF-DRIFT-001 remains active as a generic structural guard because this delivery itself must prove material-head stability and terminal result-only lineage;
+- the authoritative post-publication execution is validate_terminal_handoff.py, which must compare a fresh remote current_head_sha with the published handoff child before audit release.
+
+Pre-publication observation:
+- PR #630 is open and mergeable;
+- current head equals the frozen material head;
+- CI run 4312 completed/success;
+- Statement visual validation run 2828 completed/success;
+- no material write has been observed after f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f before handoff publication.
