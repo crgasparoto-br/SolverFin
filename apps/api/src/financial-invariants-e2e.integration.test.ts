@@ -177,10 +177,7 @@ async function invariantInstallmentPurchaseIsDistributedAcrossInvoices(): Promis
     purchase.installments.map((installment) => installment.amountMinor),
     [3_334, 3_333, 3_333],
   );
-  assert.deepEqual(
-    invoices.map((invoice) => invoice.totalAmountMinor),
-    [3_334, 3_333, 3_333],
-  );
+  assert.deepEqual(invoices.map((invoice) => invoice.totalAmountMinor), [3_334, 3_333, 3_333]);
   assert.deepEqual(
     purchase.installments.map((installment) => installment.dueOn),
     invoices.map((invoice) => invoice.dueOn),
@@ -548,9 +545,8 @@ async function readAssistantExpense(
   now: Date,
 ): Promise<number> {
   const resolution = await resolveFinancialAssistantData(context, question, now);
-  assert.equal(resolution.kind, "evidence");
   if (resolution.kind !== "evidence") {
-    assert.fail(`Expected evidence resolution, received ${resolution.kind}.`);
+    assert.fail("Expected evidence resolution.");
   }
   assert.equal(resolution.filters.currency, "USD");
   assert.deepEqual(
