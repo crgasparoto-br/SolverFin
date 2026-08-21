@@ -1,0 +1,94 @@
+import assert from "node:assert/strict";
+
+import {
+  MAX_SUPPORTED_MONEY_MINOR,
+  MoneyRangeError,
+  parseSafeMoneyMinor,
+} from "@solverfin/domain/money";
+
+import { closePool, getPool } from "./db.js";
+
+void main()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(closePool);
+
+async function main(): Promise<void> {
+  assert.ok(process.env.DATABASE_URL);
+
+  const expectedColumns = new Set([
+    "Account.openingBalanceMinor",
+    "Budget.plannedAmountMinor",
+    "Card.creditLimitMinor",
+    "CardInstrument.creditLimitMinor",
+    "Installment.amountMinor",
+    "Invoice.totalAmountMinor",
+    "PayableReceivable.amountMinor",
+    "Recurrence.amountMinor",
+    "Transaction.amountMinor",
+  ]);
+  const metadata = await getPool().query<{ table_name: string; column_name: string; data_type: string }>(
+    `select table_name, column_name, data_type
+       from information_schema.columns
+      where (table_name, column_name) in (
+        ('Account', 'openingBalanceMinor'),
+        ('Budget', 'plannedAmountMinor'),
+        ('Card', 'creditLimitMinor'),
+        ('CardInstrument', 'creditLimitMinor'),
+        ('Installment', 'amountMinor'),
+        ('Invoice', 'totalAmountMinor'),
+        ('PayableReceivable', 'amountMinor'),
+        ('Recurrence', 'amountMinor'),
+        ('Transaction', 'amountMinor')
+      )`,
+  );
+
+  assert.equal(metadata.rowCount, expectedColumns.size);
+  for (const row of metadata.rows) {
+    assert.equal(row.data_type, "bigint", `${row.table_name}.${row.column_name} must be BIGINT`);
+    expectedColumns.delete(`${row.table_name}.${row.column_name}`);
+  }
+  assert.deepEqual([...expectedColumns], []);
+
+  const client = await getPool().connect();
+  try {
+    await client.query("BEGIN");
+    const accountResult = await client.query<{ id: string }>(
+      `select "id" from "Account" order by "createdAt" asc limit 1`,
+    );
+    const account = accountResult.rows[0];
+    assert.ok(account, "integration seed must provide at least one account");
+
+    const aboveInt32 = 3_000_000_000;
+    await client.query(
+      `update "Account" set "openingBalanceMinor" = $1::bigint where "id" = $2`,
+      [String(aboveInt32), account.id],
+    );
+    const persisted = await client.query<{ openingBalanceMinor: number }>(
+      `select "openingBalanceMinor" from "Account" where "id" = $1`,
+      [account.id],
+    );
+    assert.equal(persisted.rows[0]?.openingBalanceMinor, aboveInt32);
+    assert.equal(typeof persisted.rows[0]?.openingBalanceMinor, "number");
+
+    const aggregate = await client.query<{ total: string }>(
+      `select sum(value)::text as total
+         from (values
+           (3000000000000000::bigint),
+           (3000000000000000::bigint),
+           (3000000000000000::bigint)
+         ) as money(value)`,
+    );
+    assert.equal(parseSafeMoneyMinor(aggregate.rows[0]?.total ?? ""), 9_000_000_000_000_000);
+
+    assert.throws(
+      () => parseSafeMoneyMinor(String(BigInt(MAX_SUPPORTED_MONEY_MINOR) + 1n)),
+      MoneyRangeError,
+    );
+  } finally {
+    await client.query("ROLLBACK");
+    client.release();
+  }
+}
