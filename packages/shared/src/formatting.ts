@@ -41,9 +41,26 @@ export function formatMinorCurrency(
     throw new RangeError("amountMinor must be a safe integer before currency formatting.");
   }
 
-  return createSolverFinCurrencyFormatter(options).format(amountMinor / 100);
+  const exactDecimal = minorUnitsToExactDecimal(amountMinor);
+  const formatter = createSolverFinCurrencyFormatter(options);
+  // ECMA-402 accepts a decimal StringNumericLiteral and preserves its exact
+  // mathematical value. TypeScript's Intl declaration is narrower, so keep the
+  // cast isolated here instead of converting the decimal back to a Number.
+  const formatExact = formatter.format as unknown as (value: string) => string;
+
+  return formatExact(exactDecimal);
 }
 
 export function formatDateOnly(date: string, options: SolverFinDateFormatterOptions = {}): string {
   return createSolverFinDateFormatter(options).format(new Date(`${date}T00:00:00.000Z`));
+}
+
+function minorUnitsToExactDecimal(amountMinor: number): string {
+  const value = BigInt(amountMinor);
+  const negative = value < 0n;
+  const absolute = negative ? -value : value;
+  const major = absolute / 100n;
+  const fraction = (absolute % 100n).toString().padStart(2, "0");
+
+  return `${negative ? "-" : ""}${major}.${fraction}`;
 }
