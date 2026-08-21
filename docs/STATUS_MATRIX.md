@@ -100,7 +100,7 @@ A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas
 
 ### Suite de invariantes financeiros E2E (#598)
 
-A suite `apps/api/src/financial-invariants-e2e.integration.test.ts` roda dentro do gate `pnpm test:integration` contra os repositorios reais da API e PostgreSQL. Cada cenario usa dados ficticios, escopo explicito de organizacao/perfil, datas financeiras fixas e um identificador proprio no erro:
+A suite `apps/api/src/financial-invariants-e2e.integration.test.ts` roda dentro do gate `npm run test:integration` contra os repositorios reais da API e PostgreSQL. Cada cenario usa dados ficticios, escopo explicito de organizacao/perfil, datas financeiras fixas e um identificador proprio no erro:
 
 - `FIN-E2E-001`: compra de cartao -> fechamento -> pagamento reduz caixa sem contabilizar a liquidacao como nova despesa economica;
 - `FIN-E2E-002`: compra parcelada distribui exatamente o valor total entre a fatura corrente e as futuras;
