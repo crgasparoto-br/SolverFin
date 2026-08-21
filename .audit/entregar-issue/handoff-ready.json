@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-21T14:33:15.648039+00:00",
+  "created_at": "2026-08-21T15:02:39.807661+00:00",
   "identity": {
     "head_sha": "33955a3de2c12d53703229ebdd2f63e5ce7bb5c7",
     "material_head_sha": "33955a3de2c12d53703229ebdd2f63e5ce7bb5c7",
@@ -70,90 +70,63 @@
       "sha256": "b8aee539ec5daed6f1824c4a84f92d718958f6307acacb3ec07aa992df21e448",
       "logical_sha256": "b8aee539ec5daed6f1824c4a84f92d718958f6307acacb3ec07aa992df21e448",
       "logical_size": 536,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
       "sha256": "6f85ee899e771788a25d06e07b10b2c1f5460a63ab30c9c7d08142312422b244",
       "logical_sha256": "6f85ee899e771788a25d06e07b10b2c1f5460a63ab30c9c7d08142312422b244",
       "logical_size": 6188,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
       "sha256": "f0a938cd0e0c569080082f50286eb5fba46d693aa463bead8dd24d595d994028",
       "logical_sha256": "f0a938cd0e0c569080082f50286eb5fba46d693aa463bead8dd24d595d994028",
       "logical_size": 16128,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
       "sha256": "ee8a16a61ba769328b3d2a09c95783b6b7eed7cd0c737a1c1f0568dc5d448e75",
       "logical_sha256": "ee8a16a61ba769328b3d2a09c95783b6b7eed7cd0c737a1c1f0568dc5d448e75",
       "logical_size": 3586,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "30598b8b612cc53da18460de50d951a6c87445934bc8e217d3b6b7546c9c0361",
-      "logical_sha256": "30598b8b612cc53da18460de50d951a6c87445934bc8e217d3b6b7546c9c0361",
-      "logical_size": 2800,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "sha256": "27dca78da07969cad4af114c487ebfd6ef0c12d1e73209aab74a8f0a56f59497",
+      "logical_sha256": "27dca78da07969cad4af114c487ebfd6ef0c12d1e73209aab74a8f0a56f59497",
+      "logical_size": 15095,
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure.json",
       "sha256": "c447a84cc7e2bc3af05bffdf198d9520eb1f53f8b744274b952ed0d885202785",
       "logical_sha256": "c447a84cc7e2bc3af05bffdf198d9520eb1f53f8b744274b952ed0d885202785",
       "logical_size": 9042,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "learning_closure": {
       "name": "learning-closure.json",
       "sha256": "0bbadb5b3dc30008c287cc1d3d388f62135d5bc5332c13d92dd7c5cbcdd113b3",
       "logical_sha256": "0bbadb5b3dc30008c287cc1d3d388f62135d5bc5332c13d92dd7c5cbcdd113b3",
       "logical_size": 2507,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "audit_remediation": {
       "name": "audit-remediation.json",
       "sha256": "220c8a52320200b8ab2bf3e970cb7a6ca2ff1a378a02ba99eefacd4a0ae71f2d",
       "logical_sha256": "220c8a52320200b8ab2bf3e970cb7a6ca2ff1a378a02ba99eefacd4a0ae71f2d",
       "logical_size": 1464,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "audit_source_result": {
       "name": "audit-source-result.json",
       "sha256": "31c395cecbcae3de05ff29f0f0a37a0c954814163a6718d2aea5d0320d8b49c1",
       "logical_sha256": "31c395cecbcae3de05ff29f0f0a37a0c954814163a6718d2aea5d0320d8b49c1",
       "logical_size": 965,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     }
   },
   "previous_independent_rejection": true
