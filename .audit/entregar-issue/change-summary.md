@@ -1,7 +1,12 @@
-# Change summary — Issue 598 audit remediation
+# Issue 599 change summary
 
-- Product/material head remains `4afa527b062913a62df15e615dfbb58b61a7c3b1`; no functional code or product documentation changed.
-- Rebuilt specification snapshot and requirement closure as one coherent 20-obligation set, including the 15 atomic scenario/acceptance bullets.
-- Closed independent rejection `audit-rejection:8fb7c0f3-b779-4be7-a385-4a9170b450f6` with certificate/artifact and source-path parity controls.
-- Repacked large audit artifacts deterministically and revalidated all cumulative controls/escapes.
-- Terminal publication is restricted to `.audit/entregar-issue/*`.
+Material candidate: `b2083301225d93a57877d0448c4b45f3c72c4446`
+Base: `6ef67c78db224d87559086ec53b6258e49de9aef`
+PR: #636
+
+- Widened all nine persisted monetary minor-unit fields from PostgreSQL INTEGER / Prisma Int to BIGINT / BigInt.
+- Enforced the public exact JSON-number range with database CHECK constraints and a fail-closed pg int8 parser.
+- Added domain helpers for exact safe-integer parsing and aggregation, and removed lossy dashboard Number coercion.
+- Made currency formatting exact at Number.MAX_SAFE_INTEGER by formatting an exact decimal StringNumericLiteral instead of dividing by 100 as binary floating point.
+- Added unit, integration and rendered-statement tests for values above the former signed-32-bit ceiling, exact safe boundaries, unsafe rejection and large aggregates.
+- Added ADR 0015 and indexed it.

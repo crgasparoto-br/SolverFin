@@ -1,6 +1,0 @@
-material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
-status=passed
-- HANDOFF-DRIFT-001 revalidated for direct result-only child semantics on the current material candidate
-- ATOMIC-SPEC-COVERAGE-001 revalidated against 15 normative candidates and 15 closure obligations
-- CODE-GROWTH-SCHEMA-PARITY-001 preserved from the earlier independent rejection remediation and revalidated against the current code-growth report
-- TEMP-FX-INSTANT-CANONICAL-001 is executed in the current attack matrix to close rejection audit-rejection:9a292356-7374-41e8-b8c2-41148f2c67ee

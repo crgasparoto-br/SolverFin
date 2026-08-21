@@ -1,5 +1,0 @@
-subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
-control=AUDIT-ESCAPE-REVALIDATION
-validation=14 focused skill tests passed for terminal handoff drift, atomic specification coverage and handoff contract generation.
-validation_additional=9 focused tests passed for independent-rejection handoff and learning generalization.
-observed=previous generic escape classes remain covered by the current delivery controls; the new contract-version drift class is covered by producer defaulting and consumer fail-closed validation.

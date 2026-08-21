@@ -1,12 +1,19 @@
-# Verification summary — Issue 598 audit remediation
+# Verification summary — Issue 599
 
-- `validate_specification_coverage.py`: READY (20 obligations; 19 covered occurrences mapped to 16 requirement IDs; visual layout explicitly out of scope).
-- `validate_requirement_attack_matrix.py`: READY.
-- `validate_risk_saturation.py`: READY.
-- `validate_inherited_controls.py`: READY with cumulative previous snapshot.
-- `validate_audit_escape_lineage.py`: READY with 10 cumulative escapes.
-- `validate_learning_closure.py`: READY.
-- `validate_independent_rejection_closure.py`: READY for rejection `audit-rejection:8fb7c0f3-b779-4be7-a385-4a9170b450f6`.
-- `validate_handoff_readiness.py`: READY.
-- Canonical `audit_artifact_io` reconstructs all four `base64-shards-v1` artifacts successfully.
-- Functional implementation remains unchanged; prior remote CI and the nine `FIN-E2E-001..009` invariants remain the product evidence for material head lineage.
+Material SHA: `b2083301225d93a57877d0448c4b45f3c72c4446`
+
+Internal entregar-issue gates executed against the material SHA:
+
+- canonical specification coverage: READY;
+- requirement attack matrix: READY;
+- risk saturation: READY;
+- inherited controls: READY;
+- handoff readiness: READY;
+- explicit runtime adversarial probe confirmed that Number.MAX_SAFE_INTEGER / 100 would format BRL one cent low; formatter was corrected before freeze and a regression test was added.
+
+Remote GitHub Actions snapshot for this material SHA:
+
+- CI run 32525430837: queued;
+- Statement visual validation run 32525431004: queued.
+
+Queued remote checks are recorded as pending and are not represented as green.

@@ -1,0 +1,39 @@
+# [Fase 3A] Avaliar e migrar precisão monetária para faixa segura de longo prazo
+
+Parent epic: #589
+
+## Objetivo
+
+Eliminar ou mitigar o limite estrutural de valores monetários armazenados em `Int` quando a faixa atual puder ser insuficiente para saldos, agregados ou contextos empresariais futuros.
+
+## Contexto
+
+Valores em centavos baseados em inteiro de 32 bits possuem teto operacional limitado para montantes individuais. O SolverFin deve suportar evolução para perfis empresariais e múltiplas moedas sem depender de overflow implícito.
+
+## Escopo
+
+- inventariar campos monetários persistidos e tipos compartilhados;
+- definir faixa mínima suportada e estratégia (`BigInt`, `Decimal` ou alternativa justificada);
+- avaliar impacto em Prisma, `pg`, JSON/API e TypeScript;
+- criar plano/migração segura e compatível quando a mudança for necessária;
+- adicionar testes de limites e agregados grandes.
+
+## Critérios de aceite
+
+- [ ] faixa monetária suportada fica explicitamente documentada;
+- [ ] não há perda de precisão ou coerção silenciosa em API/JSON;
+- [ ] schema e código usam uma representação coerente quando migrados;
+- [ ] migrations preservam dados existentes;
+- [ ] testes cobrem limites superiores e agregações grandes;
+- [ ] decisão é registrada em ADR se alterar a representação monetária persistente.
+
+## Fora de escopo
+
+- números de ponto flutuante para dinheiro;
+- conversão cambial.
+
+## Referências
+
+- #589
+- ADR 0013
+- `prisma/schema.prisma`

@@ -1,1 +1,13 @@
-{"schema_version":1,"subject_sha":"4afa527b062913a62df15e615dfbb58b61a7c3b1","status":"validated","changed_documentation":["docs/STATUS_MATRIX.md"],"broad_documentation_change_required":false,"notes":"This remediation changes no product documentation; the existing #598 invariant inventory remains consistent with the unchanged material implementation."}
+{
+  "schema_version": 1,
+  "issue": 599,
+  "material_head_sha": "b2083301225d93a57877d0448c4b45f3c72c4446",
+  "status": "updated",
+  "categories": ["architecture", "persistence", "money-contract", "rollout"],
+  "updated_paths": [
+    "docs/adr/0015-safe-monetary-minor-unit-range.md",
+    "docs/adr/README.md"
+  ],
+  "decision": "Persistent monetary representation changed, so ADR 0015 records supported range, pg/JSON/TypeScript boundary behavior, exact aggregation rules and mixed-version rollout constraints.",
+  "unresolved_documentation_findings": []
+}

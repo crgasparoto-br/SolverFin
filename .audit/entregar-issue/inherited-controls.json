@@ -1,1 +1,8 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"inherited-controls","compression":"gzip","encoded_size":5596,"encoded_sha256":"26e5110af9a415380f28f234acd8327bd62a28f2087acd3811411cc6a116411c","decoded_size":32474,"decoded_sha256":"380e4373e3319ffc4ac8281d9be911d7d6067979b8425ffa6b6ba4bb14844864","parts":[{"path":"inherited-controls.parts/part-000.b64","size":4000,"sha256":"22805d4cb7716e4e120ce872e16f9bb4f0a5d8beef670b7374607d59d15d5a3e"},{"path":"inherited-controls.parts/part-001.b64","size":1596,"sha256":"73b1504e035a70cb3374ecb6103e2074648fab91754b63105b41c713407eb022"}]}
+{
+  "schema_version": 1,
+  "head_sha": "b2083301225d93a57877d0448c4b45f3c72c4446",
+  "source_audits": [],
+  "controls": [],
+  "retired_controls": [],
+  "unresolved_controls": []
+}
