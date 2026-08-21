@@ -13,11 +13,15 @@ Manter uma moldura comum para as telas financeiras, com navegacao, estados prote
 - `app-shell/routes.ts`: fonte canonica das rotas, acesso, visibilidade e estado de implementacao;
 - `app-shell/access.ts`: avaliacao de acesso para loading, login obrigatorio, perfil ausente, erro e rota pronta;
 - `app-shell/navigation.ts`: grupos de navegacao e prioridade mobile;
+- `design-system/tokens.ts`: fonte canonica dos valores semanticos do design system;
+- `design-system/styles.ts`: serializacao dos tokens canonicos em custom properties `--sf-*` e primitivas executaveis;
 - `dev-server.ts`: despacho HTTP real das rotas e composicao dos pos-processamentos antes de `sendHtml`;
 - `dev-server/shell.ts`: documento HTML e shell autenticado compartilhado;
-- `dev-server/shared-styles.ts`: tokens, reset, shell visual e primitivas recorrentes;
+- `dev-server/shared-styles.ts`: consumidor da publicacao canonica, aliases CSS de compatibilidade, reset, shell visual e primitivas recorrentes;
 - `dev-server/ssr-style-contract.ts`: manifesto tipado que relaciona cada rota disponivel ao renderer, HTML representativo, provedores de cabecalho, provedores de pagina/auxiliares, blocos inseridos no runtime e gatilhos condicionais;
 - `scripts/validate-web-ssr-styles.mjs`: portao executavel que sobe o servidor em porta efemera, requisita cada renderer coberto e valida o HTML final servido.
+
+Valores semanticos compartilhados nao pertencem a `shared-styles.ts`. Variaveis legadas publicadas pelo shell podem existir para compatibilidade com renderers ainda nao migrados, mas devem apontar para `--sf-*` derivados de `tokens.ts`, sem manter um segundo mapa literal sincronizado por convencao.
 
 ## Rotas disponiveis
 

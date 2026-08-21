@@ -1,41 +1,76 @@
-import { solverFinDesignTokens } from "./tokens.js";
+import { solverFinDesignTokens, type SolverFinDesignTokens } from "./tokens.js";
 
-function buildCssVariables(): string {
-  const colorVariables = Object.entries(solverFinDesignTokens.colors)
-    .map(([name, value]) => `  --sf-color-${toKebabCase(name)}: ${value};`)
-    .join("\n");
-  const spacingVariables = Object.entries(solverFinDesignTokens.spacing)
-    .map(([name, value]) => `  --sf-space-${name}: ${value};`)
-    .join("\n");
-  const radiusVariables = Object.entries(solverFinDesignTokens.radii)
-    .map(([name, value]) => `  --sf-radius-${name}: ${value};`)
-    .join("\n");
-  const shadowVariables = Object.entries(solverFinDesignTokens.shadows)
-    .map(([name, value]) => `  --sf-shadow-${toKebabCase(name)}: ${value};`)
-    .join("\n");
-  const motionVariables = Object.entries(solverFinDesignTokens.motion)
-    .map(([name, value]) => `  --sf-motion-${name}: ${value};`)
-    .join("\n");
-
-  return [colorVariables, spacingVariables, radiusVariables, shadowVariables, motionVariables].join(
-    "\n",
-  );
-}
+type TokenScalar = string | number;
 
 function toKebabCase(value: string): string {
   return value.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
-export const solverFinDesignSystemCss = `
+function serializeVariables(
+  prefix: string,
+  values: Readonly<Record<string, TokenScalar>>,
+): string {
+  return Object.entries(values)
+    .map(([name, value]) => `  --sf-${prefix}-${toKebabCase(name)}: ${value};`)
+    .join("\n");
+}
+
+function semanticStateVariables(tokens: SolverFinDesignTokens): string {
+  return Object.entries(tokens.semanticStates)
+    .flatMap(([state, values]) => [
+      `  --sf-state-${state}-foreground: ${values.foreground};`,
+      `  --sf-state-${state}-surface: ${values.surface};`,
+      `  --sf-state-${state}-border: ${values.border};`,
+      `  --sf-state-${state}-marker: "${values.marker}";`,
+    ])
+    .join("\n");
+}
+
+export function buildSolverFinCssVariables(
+  tokens: SolverFinDesignTokens = solverFinDesignTokens,
+): string {
+  return [
+    serializeVariables("color", tokens.colors),
+    serializeVariables("space", tokens.spacing),
+    serializeVariables("radius", tokens.radii),
+    serializeVariables("shadow", tokens.shadows),
+    serializeVariables("motion", tokens.motion),
+    serializeVariables("breakpoint", tokens.breakpoints),
+    serializeVariables("font-size", tokens.typography.sizes),
+    serializeVariables("font-weight", tokens.typography.weights),
+    serializeVariables("line-height", tokens.typography.lineHeights),
+    serializeVariables("layout", tokens.layout),
+    serializeVariables("density", tokens.density),
+    semanticStateVariables(tokens),
+    `  --sf-font-family: ${tokens.typography.fontFamily};`,
+  ].join("\n");
+}
+
+export function createSolverFinDesignSystemCss(
+  tokens: SolverFinDesignTokens = solverFinDesignTokens,
+): string {
+  return `
 :root {
-${buildCssVariables()}
-  --sf-font-family: ${solverFinDesignTokens.typography.fontFamily};
+${buildSolverFinCssVariables(tokens)}
 }
 
 .sf-app-surface {
   background: var(--sf-color-background);
   color: var(--sf-color-text);
   font-family: var(--sf-font-family);
+}
+
+.sf-page-container {
+  margin-inline: auto;
+  max-width: var(--sf-layout-content-max-width);
+  padding-inline: var(--sf-layout-gutter-desktop);
+  width: 100%;
+}
+
+.sf-responsive-grid {
+  display: grid;
+  gap: var(--sf-layout-grid-gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--sf-layout-grid-min-column)), 1fr));
 }
 
 .sf-focus-ring:focus-visible {
@@ -48,11 +83,11 @@ ${buildCssVariables()}
   border-radius: var(--sf-radius-md);
   cursor: pointer;
   display: inline-flex;
-  font-weight: 700;
+  font-weight: var(--sf-font-weight-bold);
   gap: var(--sf-space-2);
   justify-content: center;
   letter-spacing: 0;
-  min-height: 2.5rem;
+  min-height: var(--sf-density-interactive-target-min);
   padding: 0 var(--sf-space-4);
   transition: background var(--sf-motion-fast), border-color var(--sf-motion-fast), color var(--sf-motion-fast), box-shadow var(--sf-motion-fast);
 }
@@ -76,13 +111,13 @@ ${buildCssVariables()}
 
 .sf-field {
   display: grid;
-  gap: 0.375rem;
+  gap: var(--sf-space-2);
 }
 
 .sf-label {
   color: var(--sf-color-text);
-  font-size: 0.875rem;
-  font-weight: 700;
+  font-size: var(--sf-font-size-md);
+  font-weight: var(--sf-font-weight-bold);
 }
 
 .sf-control {
@@ -90,8 +125,8 @@ ${buildCssVariables()}
   border: 1px solid var(--sf-color-border);
   border-radius: var(--sf-radius-md);
   color: var(--sf-color-text);
-  min-height: 2.75rem;
-  padding: 0 0.875rem;
+  min-height: var(--sf-density-interactive-target-min);
+  padding: 0 var(--sf-density-panel-padding-block);
   transition: border-color var(--sf-motion-fast), box-shadow var(--sf-motion-fast);
 }
 
@@ -101,7 +136,7 @@ ${buildCssVariables()}
 
 .sf-help-text {
   color: var(--sf-color-muted-text);
-  font-size: 0.75rem;
+  font-size: var(--sf-font-size-xs);
 }
 
 .sf-table-wrap {
@@ -112,7 +147,7 @@ ${buildCssVariables()}
 
 .sf-table {
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: var(--sf-font-size-md);
   width: 100%;
 }
 
@@ -125,7 +160,7 @@ ${buildCssVariables()}
 .sf-table th,
 .sf-table td {
   border-top: 1px solid var(--sf-color-border);
-  padding: 0.75rem 1rem;
+  padding: var(--sf-density-table-cell-block) var(--sf-density-table-cell-inline);
   vertical-align: top;
 }
 
@@ -136,4 +171,35 @@ ${buildCssVariables()}
   padding: var(--sf-space-8);
   text-align: center;
 }
+
+.sf-semantic-state {
+  align-items: start;
+  background: var(--sf-state-surface);
+  border: 1px solid var(--sf-state-border);
+  border-inline-start-width: var(--sf-space-1);
+  color: var(--sf-state-foreground);
+  display: grid;
+  gap: var(--sf-space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: var(--sf-space-2) var(--sf-space-3);
+}
+
+.sf-semantic-state::before {
+  content: var(--sf-state-marker);
+  font-weight: var(--sf-font-weight-bold);
+}
+
+${Object.keys(tokens.semanticStates)
+  .map(
+    (state) => `.sf-semantic-state[data-state="${state}"] {
+  --sf-state-foreground: var(--sf-state-${state}-foreground);
+  --sf-state-surface: var(--sf-state-${state}-surface);
+  --sf-state-border: var(--sf-state-${state}-border);
+  --sf-state-marker: var(--sf-state-${state}-marker);
+}`,
+  )
+  .join("\n\n")}
 `;
+}
+
+export const solverFinDesignSystemCss = createSolverFinDesignSystemCss();
