@@ -1,13 +1,73 @@
 {
   "schema_version": 1,
-  "issue": 599,
-  "material_head_sha": "b2083301225d93a57877d0448c4b45f3c72c4446",
-  "status": "updated",
-  "categories": ["architecture", "persistence", "money-contract", "rollout"],
-  "updated_paths": [
-    "docs/adr/0015-safe-monetary-minor-unit-range.md",
-    "docs/adr/README.md"
+  "context": {
+    "repository": "crgasparoto-br/SolverFin",
+    "base_sha": "6ef67c78db224d87559086ec53b6258e49de9aef",
+    "material_head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
+    "branch": "feat/599-safe-monetary-range",
+    "pull_request": 636,
+    "mode": "implementation"
+  },
+  "categories": [
+    "data",
+    "architecture",
+    "api",
+    "tests",
+    "operation"
   ],
-  "decision": "Persistent monetary representation changed, so ADR 0015 records supported range, pg/JSON/TypeScript boundary behavior, exact aggregation rules and mixed-version rollout constraints.",
-  "unresolved_documentation_findings": []
+  "canonical_sources": [
+    {
+      "path": "docs/adr/0015-safe-monetary-minor-unit-range.md",
+      "status": "verified",
+      "reason": "Canonical persisted monetary representation and rollout decision."
+    },
+    {
+      "path": "docs/adr/README.md",
+      "status": "verified",
+      "reason": "ADR index updated."
+    },
+    {
+      "path": "docs/API_ACCOUNT_REMUNERATION.md",
+      "status": "verified",
+      "reason": "Existing multifile Prisma and remuneration trigger claims remain compatible."
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "status": "verified",
+      "reason": "Primary persisted monetary fields."
+    },
+    {
+      "path": "prisma/account-remuneration.prisma",
+      "status": "verified",
+      "reason": "Additional remuneration monetary fields discovered by multifile inventory."
+    }
+  ],
+  "old_contract_terms": [
+    "PostgreSQL INTEGER",
+    "Prisma Int",
+    "signed 32-bit monetary ceiling"
+  ],
+  "new_contract_terms": [
+    "PostgreSQL BIGINT",
+    "Prisma BigInt @db.BigInt",
+    "Number.MIN_SAFE_INTEGER..Number.MAX_SAFE_INTEGER"
+  ],
+  "repository_wide_search": {
+    "mechanism": "GitHub connector search plus Prisma directory enumeration at material lineage",
+    "classified_occurrences": [
+      "legacy 32-bit fixture replaced in transactions-page-long-values.test.ts",
+      "no current documentation claim found asserting nine persisted monetary fields",
+      "API_ACCOUNT_REMUNERATION already documents multifile Prisma and trigger behavior"
+    ]
+  },
+  "unresolved_contradictions": [],
+  "validations": [
+    "specification coverage READY",
+    "requirement attack matrix READY",
+    "risk saturation READY",
+    "inherited controls READY",
+    "handoff readiness READY"
+  ],
+  "last_scanned_head": "45b779e6e760ea02f7dafe24c794290e7845ed39",
+  "write_owner": "entregar-issue"
 }

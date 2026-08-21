@@ -1,19 +1,15 @@
-# Verification summary — Issue 599
+# Issue 599 — internal verification
 
-Material SHA: `b2083301225d93a57877d0448c4b45f3c72c4446`
+Material head: `45b779e6e760ea02f7dafe24c794290e7845ed39`
 
-Internal entregar-issue gates executed against the material SHA:
+Official `entregar-issue` gates passed on the material head:
 
-- canonical specification coverage: READY;
+- specification coverage: READY;
 - requirement attack matrix: READY;
 - risk saturation: READY;
 - inherited controls: READY;
-- handoff readiness: READY;
-- explicit runtime adversarial probe confirmed that Number.MAX_SAFE_INTEGER / 100 would format BRL one cent low; formatter was corrected before freeze and a regression test was added.
+- handoff readiness: READY.
 
-Remote GitHub Actions snapshot for this material SHA:
+The previous material SHA `d10f7b3…` proved PostgreSQL integration and statement visual validation green after the trigger/multifile fix. Its only remaining CI failure was Prettier in three tests; `45b779e…` is a formatting-only child for those files. Per delivery-snapshot policy, the workflow state for `45b779e…` was observed once while in progress and was not polled.
 
-- CI run 32525430837: queued;
-- Statement visual validation run 32525431004: queued.
-
-Queued remote checks are recorded as pending and are not represented as green.
+No independent audit is claimed in this context.

@@ -2,12 +2,13 @@
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
   "issue": 599,
+  "material_head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
   "sources": [
     {
       "id": "SRC-ISSUE-599",
-      "kind": "issue-body",
-      "path": "specification-sources/SRC-ISSUE-599.txt",
-      "sha256": "5a57df6e09665f7ebf7f87c4bed2960f680174fc1a3532c1a1f2672f50a286ec"
+      "path": ".audit/entregar-issue/specification-sources/SRC-ISSUE-599.txt",
+      "sha256": "5a57df6e09665f7ebf7f87c4bed2960f680174fc1a3532c1a1f2672f50a286ec",
+      "required": true
     }
   ]
 }

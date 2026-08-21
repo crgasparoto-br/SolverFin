@@ -1,12 +1,10 @@
-# Issue 599 change summary
+# Issue 599 — change summary
 
-Material candidate: `b2083301225d93a57877d0448c4b45f3c72c4446`
-Base: `6ef67c78db224d87559086ec53b6258e49de9aef`
-PR: #636
-
-- Widened all nine persisted monetary minor-unit fields from PostgreSQL INTEGER / Prisma Int to BIGINT / BigInt.
-- Enforced the public exact JSON-number range with database CHECK constraints and a fail-closed pg int8 parser.
-- Added domain helpers for exact safe-integer parsing and aggregation, and removed lossy dashboard Number coercion.
-- Made currency formatting exact at Number.MAX_SAFE_INTEGER by formatting an exact decimal StringNumericLiteral instead of dividing by 100 as binary floating point.
-- Added unit, integration and rendered-statement tests for values above the former signed-32-bit ceiling, exact safe boundaries, unsafe rejection and large aggregates.
-- Added ADR 0015 and indexed it.
+- Material head: `45b779e6e760ea02f7dafe24c794290e7845ed39`
+- Persisted monetary inventory: 11 fields across both Prisma schema files.
+- Persistence: exact `INTEGER -> BIGINT` widening with safe-JSON-range checks.
+- Runtime: explicit PostgreSQL `int8` parser and guarded aggregates.
+- Presentation: exact minor-unit formatting without binary division loss.
+- Migration lifecycle: remuneration adjustment trigger is dropped only for the type change and recreated canonically.
+- Tests: boundaries, large aggregates, DB round-trip, DB rejection, trigger survival and UI values above 32-bit.
+- Remote snapshot: CI and statement visual runs were in progress on the final material head; no polling was performed.
