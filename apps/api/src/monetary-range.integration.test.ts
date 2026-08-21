@@ -73,6 +73,26 @@ async function main(): Promise<void> {
     assert.equal(persisted.rows[0]?.openingBalanceMinor, aboveInt32);
     assert.equal(typeof persisted.rows[0]?.openingBalanceMinor, "number");
 
+    await client.query(
+      `update "Account" set "openingBalanceMinor" = $1::bigint where "id" = $2`,
+      [String(MAX_SUPPORTED_MONEY_MINOR), account.id],
+    );
+    const boundary = await client.query<{ openingBalanceMinor: number }>(
+      `select "openingBalanceMinor" from "Account" where "id" = $1`,
+      [account.id],
+    );
+    assert.equal(boundary.rows[0]?.openingBalanceMinor, MAX_SUPPORTED_MONEY_MINOR);
+
+    await client.query("SAVEPOINT unsafe_money_range");
+    await assert.rejects(
+      client.query(
+        `update "Account" set "openingBalanceMinor" = $1::bigint where "id" = $2`,
+        [String(BigInt(MAX_SUPPORTED_MONEY_MINOR) + 1n), account.id],
+      ),
+      /AccountOpeningBalanceMinorSafeRange/,
+    );
+    await client.query("ROLLBACK TO SAVEPOINT unsafe_money_range");
+
     const aggregate = await client.query<{ total: string }>(
       `select sum(value)::text as total
          from (values
