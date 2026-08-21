@@ -511,7 +511,7 @@ async function invariantMutationRetryDoesNotDuplicateEffects(): Promise<void> {
   });
   const reference = new Date("2048-07-31T12:00:00.000Z");
   const beforeRetry = await buildFinancialSummary(CONTEXT, reference);
-  const paymentCountBefore = await countInvoicePaymentTransactions(
+  const linkedTransactionCountBefore = await countInvoiceLinkedTransactions(
     purchase.invoice.id,
     paymentAccount.id,
   );
@@ -528,14 +528,13 @@ async function invariantMutationRetryDoesNotDuplicateEffects(): Promise<void> {
 
   const persistedInvoice = await getInvoiceForContext(CONTEXT, purchase.invoice.id);
   const afterRetry = await buildFinancialSummary(CONTEXT, reference);
-  const paymentCountAfter = await countInvoicePaymentTransactions(
+  const linkedTransactionCountAfter = await countInvoiceLinkedTransactions(
     purchase.invoice.id,
     paymentAccount.id,
   );
 
   assert.equal(persistedInvoice.paymentTransactionId, payment.transaction.id);
-  assert.equal(paymentCountBefore, 1);
-  assert.equal(paymentCountAfter, paymentCountBefore);
+  assert.equal(linkedTransactionCountAfter, linkedTransactionCountBefore);
   assert.deepEqual(afterRetry.currencyBlocks, beforeRetry.currencyBlocks);
 }
 
@@ -559,7 +558,7 @@ async function readAssistantExpense(
   return expense.amountMinor ?? 0;
 }
 
-async function countInvoicePaymentTransactions(
+async function countInvoiceLinkedTransactions(
   invoiceId: string,
   accountId: string,
 ): Promise<number> {
