@@ -348,15 +348,22 @@ try {
       const before = await countTransactions();
       const originalConfirm = window.confirm;
       window.confirm = () => true;
+      const statusNode = document.querySelector("[data-group-action-status]");
       document.querySelector('[data-group-action="clone"]').click();
-      await new Promise((resolve) => setTimeout(resolve, 180));
+      const deadline = Date.now() + 5_000;
+      while (Date.now() < deadline && !/Grupo clonado/.test(statusNode?.textContent || "")) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      if (!/Grupo clonado/.test(statusNode?.textContent || "")) {
+        throw new Error("Timed out waiting for group clone completion: " + (statusNode?.textContent || ""));
+      }
       const after = await countTransactions();
       const result = {
         before,
         after,
         memberCount: JSON.parse(document.querySelector('script[data-group="${created.postedGroupId}"]').textContent).members.length,
         modalOpen: document.querySelector("[data-group-modal]").open,
-        message: document.querySelector("[data-group-action-status]").textContent
+        message: statusNode.textContent
       };
       window.confirm = originalConfirm;
       return result;
