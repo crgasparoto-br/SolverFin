@@ -353,7 +353,7 @@ model Account {
   kind                AccountKind
   status              RecordStatus @default(ACTIVE)
   currency            String       @default("BRL") @db.Char(3)
-  openingBalanceMinor Int          @default(0)
+  openingBalanceMinor BigInt       @default(0) @db.BigInt
   agencyIdentifier    String?      @db.VarChar(80)
   accountIdentifier   String?      @db.VarChar(80)
   maskedIdentifier    String?      @db.VarChar(80)
@@ -387,7 +387,7 @@ model Card {
   status             CardStatus @default(ACTIVE)
   closingDay         Int
   dueDay             Int
-  creditLimitMinor   Int?
+  creditLimitMinor   BigInt?    @db.BigInt
   maskedIdentifier   String?    @db.VarChar(80)
   institutionKey     String?    @db.VarChar(80)
   brandKey           String?    @db.VarChar(80)
@@ -421,7 +421,7 @@ model CardInstrument {
   isDefault          Boolean              @default(false)
   name               String?              @db.VarChar(160)
   maskedIdentifier   String?              @db.VarChar(80)
-  creditLimitMinor   Int?
+  creditLimitMinor   BigInt?               @db.BigInt
   createdByUserId    String?              @db.Uuid
   updatedByUserId    String?              @db.Uuid
   createdAt          DateTime             @default(now())
@@ -483,7 +483,7 @@ model Transaction {
   kind                 TransactionKind
   status               TransactionStatus @default(PLANNED)
   source               TransactionSource @default(MANUAL)
-  amountMinor          Int
+  amountMinor          BigInt             @db.BigInt
   currency             String            @default("BRL") @db.Char(3)
   occurredOn           DateTime          @db.Date
   plannedOn            DateTime          @db.Date
@@ -562,7 +562,7 @@ model Recurrence {
   interval           Int                 @default(1)
   startOn            DateTime            @db.Date
   endOn              DateTime?           @db.Date
-  amountMinor        Int
+  amountMinor        BigInt               @db.BigInt
   currency           String              @default("BRL") @db.Char(3)
   description        String              @db.VarChar(240)
   createdByUserId    String?             @db.Uuid
@@ -596,7 +596,7 @@ model Installment {
   sequenceNumber     Int
   totalInstallments  Int
   dueOn              DateTime          @db.Date
-  amountMinor        Int
+  amountMinor        BigInt             @db.BigInt
   currency           String            @default("BRL") @db.Char(3)
   createdByUserId    String?           @db.Uuid
   updatedByUserId    String?           @db.Uuid
@@ -642,7 +642,7 @@ model Invoice {
   periodStartOn        DateTime      @db.Date
   periodEndOn          DateTime      @db.Date
   dueOn                DateTime      @db.Date
-  totalAmountMinor     Int           @default(0)
+  totalAmountMinor     BigInt         @default(0) @db.BigInt
   currency             String        @default("BRL") @db.Char(3)
   paidAt               DateTime?
   createdByUserId      String?       @db.Uuid
@@ -669,7 +669,7 @@ model Budget {
   status                RecordStatus @default(ACTIVE)
   periodStartOn         DateTime     @db.Date
   periodEndOn           DateTime     @db.Date
-  plannedAmountMinor    Int
+  plannedAmountMinor    BigInt        @db.BigInt
   currency              String       @default("BRL") @db.Char(3)
   alertThresholdPercent Int?
   createdByUserId       String?      @db.Uuid
@@ -694,7 +694,7 @@ model PayableReceivable {
   settlementTransactionId String?                 @unique @db.Uuid
   kind                    PayableReceivableKind
   status                  PayableReceivableStatus @default(PENDING)
-  amountMinor             Int
+  amountMinor             BigInt                  @db.BigInt
   currency                String                  @default("BRL") @db.Char(3)
   dueOn                   DateTime                @db.Date
   description             String                  @db.VarChar(240)

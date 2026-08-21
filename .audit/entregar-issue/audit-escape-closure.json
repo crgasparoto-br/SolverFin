@@ -1,1 +1,111 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"audit-escape-closure","compression":"gzip","encoded_size":4576,"encoded_sha256":"16c642a5f884f148367ea723164ca9629853335bfa71d364e463a5c05c308618","decoded_size":21649,"decoded_sha256":"34020bda37af96764f2d2006e686d596b1848f8ac5319ba49402622547fb8895","parts":[{"path":"audit-escape-closure.parts/part-000.b64","size":4000,"sha256":"db132ef1fddeafb22865c51f78c3936afeb130d2b3e316d5e31972fa0ddf43c3"},{"path":"audit-escape-closure.parts/part-001.b64","size":576,"sha256":"b7862bb5bb2b4ab3ee215198b4677d2f5265b84d040a8a8cfa2d18898426e009"}]}
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "AUDIT-ESCAPE-HANDOFF-SCOPE-001",
+      "escape_class": "handoff-scope-lineage-drift",
+      "source_audit": {
+        "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
+        "finding_id": "A-001"
+      },
+      "plausible_wrong_implementation": "Reuse a historical issue start SHA after a published handoff so the certified issue-local path set includes unrelated audit-package churn.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "The remediation start is the previously published handoff, and the immutable remediation compare contains one product-test path."
+      },
+      "sibling_cases": [
+        {
+          "id": "historical-start-overreach",
+          "surface": "handoff-scope",
+          "dimension": "stale-start-sha",
+          "status": "passed",
+          "evidence": "The rejected certificate demonstrated that an older start SHA over-attributed audit-package paths."
+        },
+        {
+          "id": "post-handoff-material-write",
+          "surface": "handoff-topology",
+          "dimension": "material-write-after-handoff",
+          "status": "passed",
+          "evidence": "The current remediation correctly entered post-write-refreeze after changing the test."
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Reset work_item_start_sha to the rejected published handoff before recomputing the remediation delta."
+      },
+      "detection_change": {
+        "evidence": "Require immutable compare equality with the certificate issue_changed_paths and direct-parent result-only topology."
+      },
+      "revalidated_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+      "status": "passed",
+      "required_risk_families": [
+        "structural-contract",
+        "documentation"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "schema-runtime-coherence",
+          "dimension": "adversarial-boundary"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "documented-range-contract",
+          "dimension": "adversarial-boundary"
+        }
+      ]
+    },
+    {
+      "escape_id": "AUDIT-ESCAPE-FORMAT-GATE-001",
+      "escape_class": "required-gate-format-drift",
+      "source_audit": {
+        "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
+        "finding_id": "A-002"
+      },
+      "plausible_wrong_implementation": "Publish a terminal handoff while format:check is red and downstream lint, typecheck, test, and build have never been reached.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "The exact failing test file was remediated without modifying production behavior, and final CI is treated as a required gate before handoff."
+      },
+      "sibling_cases": [
+        {
+          "id": "format-red-downstream-skipped",
+          "surface": "ci-gate",
+          "dimension": "sequential-abort",
+          "status": "passed",
+          "evidence": "The failed run showed lint, typecheck, test, and build skipped after format:check."
+        },
+        {
+          "id": "integration-green-not-global-green",
+          "surface": "ci-gate",
+          "dimension": "partial-green",
+          "status": "passed",
+          "evidence": "The PostgreSQL integration job was green while Validate monorepo was red, so partial success is not promoted to delivery readiness."
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Use the supported prettier-ignore boundary only around the integration fixture body that the formatter repeatedly rejected."
+      },
+      "detection_change": {
+        "evidence": "Observe a fresh workflow snapshot for the final material SHA and require downstream gate reachability before terminal handoff."
+      },
+      "revalidated_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+      "status": "passed",
+      "required_risk_families": [
+        "structural-contract",
+        "public-boundary"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "upper-boundary"
+        },
+        {
+          "risk_family": "public-boundary",
+          "surface": "runtime-money-boundary",
+          "dimension": "adversarial-boundary"
+        }
+      ]
+    }
+  ]
+}

@@ -9,7 +9,8 @@
   "exports": {
     ".": "./dist/index.js",
     "./ai-suggestion-payloads": "./dist/ai-suggestion-payloads.js",
-    "./currency-conversion": "./dist/currency-conversion.js"
+    "./currency-conversion": "./dist/currency-conversion.js",
+    "./money": "./dist/money.js"
   },
   "scripts": {
     "lint": "eslint .",

@@ -1,31 +1,20 @@
 {
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
-  "issue": 598,
-  "created_at": "2026-08-21T17:48:09.970224+00:00",
-  "primary_source_id": "SRC-ISSUE",
+  "issue": 599,
+  "created_at": "2026-08-21T21:41:39.226759+00:00",
+  "primary_source_id": "SRC-ISSUE-599",
   "sources": [
     {
-      "id": "SRC-ISSUE",
+      "id": "SRC-ISSUE-599",
       "kind": "issue-body",
-      "path": "specification-sources/SRC-ISSUE.txt",
-      "locator": "/tmp/solverfin632/rebuilt/issue.md",
-      "sha256": "b1ca2fa151064943022bdb72ed8526b3f7f731b92f63c02a0a53e7fde044d752",
+      "path": "specification-sources/SRC-ISSUE-599.txt",
+      "locator": "/tmp/solverfin599-audit/input/issue-599.md",
+      "sha256": "5a57df6e09665f7ebf7f87c4bed2960f680174fc1a3532c1a1f2672f50a286ec",
       "textual": true,
       "extract_source_id": null,
       "required": true,
-      "line_count": 32
-    },
-    {
-      "id": "SRC-ISSUE-ATOMIC",
-      "kind": "other-text",
-      "path": "specification-sources/SRC-ISSUE-ATOMIC.txt",
-      "locator": "/tmp/solverfin632/rebuilt/issue-atomic.txt",
-      "sha256": "9b43c1550d84e54d98a321b36ede48b9fa496d8272b27c945691f22dc379326d",
-      "textual": true,
-      "extract_source_id": null,
-      "required": true,
-      "line_count": 15
+      "line_count": 39
     }
   ]
 }

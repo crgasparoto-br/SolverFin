@@ -1,9 +1,0 @@
-subject_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
-expected_parent_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
-expected_parent_count=1
-policy=result-only-child
-material_paths_allowed=false
-control=AUDIT-RESULT-CHILD-SEMANTICS-001,HANDOFF-DRIFT-001
-procedure=Construct the terminal commit directly from the frozen material tree and restrict its delta to the certificate allowlist; after ref movement, re-read the remote head and compare the complete material-to-head delta.
-observed=The publication plan uses the frozen material tree as base and contains only .audit/entregar-issue result paths; terminal validation must re-check the actual remote parent and complete delta before release to independent audit.
-status=passed

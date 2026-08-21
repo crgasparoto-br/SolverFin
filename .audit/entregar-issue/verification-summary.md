@@ -1,12 +1,14 @@
-# Verification summary — Issue 598 audit remediation
+# Issue 599 — remediation verification
 
-- `validate_specification_coverage.py`: READY (20 obligations; 19 covered occurrences mapped to 16 requirement IDs; visual layout explicitly out of scope).
-- `validate_requirement_attack_matrix.py`: READY.
-- `validate_risk_saturation.py`: READY.
-- `validate_inherited_controls.py`: READY with cumulative previous snapshot.
-- `validate_audit_escape_lineage.py`: READY with 10 cumulative escapes.
-- `validate_learning_closure.py`: READY.
-- `validate_independent_rejection_closure.py`: READY for rejection `audit-rejection:8fb7c0f3-b779-4be7-a385-4a9170b450f6`.
-- `validate_handoff_readiness.py`: READY.
-- Canonical `audit_artifact_io` reconstructs all four `base64-shards-v1` artifacts successfully.
-- Functional implementation remains unchanged; prior remote CI and the nine `FIN-E2E-001..009` invariants remain the product evidence for material head lineage.
+Material head: `add47e998e7b17f4a91396ae0c099d8bb04af5c7`
+
+- canonical specification coverage: READY
+- requirement attack matrix: READY
+- risk saturation: READY
+- inherited controls with previous-rejection lineage: READY
+- audit remediation: 2/2 actionable findings closed
+- learning closure: READY (`implementation-only`)
+- audit escape lineage: READY, including two distinct attack dimensions per escape
+- independent rejection closure: READY
+- immutable remediation scope: one changed path from `135af8e5e8f1e4436b78684fcf29e9fe650fbd11` to material head
+- remote CI snapshot: in progress; no polling performed

@@ -1,1 +1,38 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","source":{"rejection_id":"audit-rejection:a741a267-9b7e-4267-a6d3-cb7affa08269","audited_head_sha":"7066944c998b4f484be1abef04625755c6433eeb","audit_report_sha256":"0d6a50bcb51511bcd264972e5ae3c3952cfc452fba6a14edc142c93801f36991"},"candidate_head_sha":"4afa527b062913a62df15e615dfbb58b61a7c3b1","remediation_mode":"targeted-remediation","items":[{"source_kind":"finding","source_id":"A-001","remediation_mode":"targeted-remediation","status":"fixed","changed_files":[".audit/entregar-issue/audit-source-result.json",".audit/entregar-issue/audit-remediation.json",".audit/entregar-issue/learning-closure.json",".audit/entregar-issue/audit-escape-closure.json",".audit/entregar-issue/audit-escape-closure.parts/*",".audit/entregar-issue/inherited-controls.json",".audit/entregar-issue/inherited-controls.parts/*",".audit/entregar-issue/handoff-ready.json"],"evidence":["audit-source-result.json","audit-remediation.json","AUDIT-REMEDIATION-SOURCE-BINDING-001"],"validations":["source.audit_report_sha256 equals SHA-256 of exact audit-source-result.json bytes","candidate_head_sha equals frozen material head","latest rejection and finding are represented in learning and cumulative escape lineage"],"reason":"Bind the remediation ledger to the exact bytes of the immediately preceding independent audit result and preserve cumulative rejection lineage."}],"status":"closed"}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
+    "audited_head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
+    "audit_report_sha256": "09fa492eda1c382c3e50e71581ad4b62d9c37fc9ee8807fce8426abea7703cca"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "evidence": "Immutable compare from rejected handoff to candidate is constrained to the monetary integration test and is used as the new certificate scope.",
+      "validations": [
+        "compare 135af8e..add47e9 contains only apps/api/src/monetary-range.integration.test.ts",
+        "new handoff certificate will use work_item_start_sha=135af8e and exact issue_changed_paths"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "evidence": "The monetary integration test now uses the supported prettier-ignore boundary on the function body without changing test semantics.",
+      "validations": [
+        "The previous failed run isolated format:check to apps/api/src/monetary-range.integration.test.ts.",
+        "The final material SHA has a fresh automatic CI run in progress; the previous red run is not reused as current evidence.",
+        "Connector-only delivery policy permits publishing the terminal handoff with CI pending; independent audit re-reads the remote gate state."
+      ]
+    }
+  ]
+}

@@ -1,1 +1,31 @@
-{"schema_version":1,"subject_sha":"33955a3de2c12d53703229ebdd2f63e5ce7bb5c7","observed_at":"2026-08-21T11:09:00Z","runs":[{"id":32475241968,"name":"CI","run_number":4343,"status":"completed","conclusion":"success"},{"id":32475241758,"name":"Statement visual validation","run_number":2858,"status":"completed","conclusion":"success"}],"notes":"Exact-material CI snapshot after post-CI remediation. Visual validation is outside issue #598 scope but is green on the same material head."}
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "pull_request": 636,
+  "material_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+  "observed_once": true,
+  "observation_policy": "delivery-snapshot",
+  "state": "in_progress",
+  "runs": [
+    {
+      "id": 32534276665,
+      "name": "CI",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 32534276689,
+      "name": "Statement visual validation",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "previous_actionable_run": {
+    "material_head_sha": "95d82cca0c1df961fa39f36851c549c04e318e53",
+    "ci_run_id": 32533826927,
+    "conclusion": "failure",
+    "failed_step": "Check formatting",
+    "failed_path": "apps/api/src/monetary-range.integration.test.ts"
+  },
+  "note": "No polling or rerun was performed for the final material head; pending remote state is orthogonal to terminal handoff publication."
+}

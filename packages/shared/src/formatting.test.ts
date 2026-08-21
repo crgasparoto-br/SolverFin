@@ -10,6 +10,8 @@ import {
 
 usesPtBrFormattingConfig();
 formatsMinorCurrencyAsBrazilianReal();
+formatsSafeIntegerBoundaryWithoutPrecisionLoss();
+rejectsUnsafeMinorCurrency();
 allowsExplicitCurrencyWithPtBrLocale();
 formatsDateOnlyWithConfiguredTimeZone();
 
@@ -24,6 +26,15 @@ function usesPtBrFormattingConfig(): void {
 
 function formatsMinorCurrencyAsBrazilianReal(): void {
   assert.match(formatMinorCurrency(123456), /^R\$\s1\.234,56$/u);
+}
+
+function formatsSafeIntegerBoundaryWithoutPrecisionLoss(): void {
+  assert.match(formatMinorCurrency(Number.MAX_SAFE_INTEGER), /^R\$\s90\.071\.992\.547\.409,91$/u);
+  assert.match(formatMinorCurrency(Number.MIN_SAFE_INTEGER), /^-R\$\s90\.071\.992\.547\.409,91$/u);
+}
+
+function rejectsUnsafeMinorCurrency(): void {
+  assert.throws(() => formatMinorCurrency(Number.MAX_SAFE_INTEGER + 1), RangeError);
 }
 
 function allowsExplicitCurrencyWithPtBrLocale(): void {

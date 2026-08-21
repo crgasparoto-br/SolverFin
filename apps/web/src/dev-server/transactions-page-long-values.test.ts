@@ -2,15 +2,15 @@ import assert from "node:assert/strict";
 
 import { renderTransactionsPage } from "./transactions-page.js";
 
-const MAX_PERSISTED_AMOUNT_MINOR = 2_147_483_647;
+const LARGE_PERSISTED_AMOUNT_MINOR = 3_000_000_000;
 const MEDIUM_AMOUNT_MINOR = 99_999_999;
 const LARGE_AMOUNT_MINOR = 999_999_999;
 const aggregateIncomeCount = 47;
 const transactions = [
-  transaction("max-income", "income", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-01"),
-  transaction("balance-to-zero", "expense", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-02"),
-  transaction("negative-balance", "expense", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-03"),
-  transaction("back-to-zero", "income", MAX_PERSISTED_AMOUNT_MINOR, "2026-07-04"),
+  transaction("max-income", "income", LARGE_PERSISTED_AMOUNT_MINOR, "2026-07-01"),
+  transaction("balance-to-zero", "expense", LARGE_PERSISTED_AMOUNT_MINOR, "2026-07-02"),
+  transaction("negative-balance", "expense", LARGE_PERSISTED_AMOUNT_MINOR, "2026-07-03"),
+  transaction("back-to-zero", "income", LARGE_PERSISTED_AMOUNT_MINOR, "2026-07-04"),
   transaction("zero-value", "income", 0, "2026-07-05"),
   transaction("medium-income", "income", MEDIUM_AMOUNT_MINOR, "2026-07-06"),
   transaction("medium-expense", "expense", MEDIUM_AMOUNT_MINOR, "2026-07-07"),
@@ -20,7 +20,7 @@ const transactions = [
     transaction(
       `aggregate-income-${index + 1}`,
       "income",
-      MAX_PERSISTED_AMOUNT_MINOR,
+      LARGE_PERSISTED_AMOUNT_MINOR,
       "2026-07-10",
     ),
   ),
@@ -29,17 +29,19 @@ const negativeSummaryTransactions = [
   transaction(
     "negative-summary",
     "expense",
-    MAX_PERSISTED_AMOUNT_MINOR,
+    LARGE_PERSISTED_AMOUNT_MINOR,
     "2026-07-01",
     "account-negative",
   ),
 ];
 
 assert.ok(
-  transactions.every(
-    (item) => item.amountMinor >= 0 && item.amountMinor <= MAX_PERSISTED_AMOUNT_MINOR,
-  ),
-  "every persisted fixture must remain inside the signed 32-bit Int limit",
+  transactions.every((item) => Number.isSafeInteger(item.amountMinor) && item.amountMinor >= 0),
+  "every persisted fixture must remain inside the SolverFin safe JSON integer range",
+);
+assert.ok(
+  transactions.some((item) => item.amountMinor > 2_147_483_647),
+  "fixtures must prove values above the former signed 32-bit persistence ceiling",
 );
 
 const originalFetch = globalThis.fetch;
@@ -100,11 +102,11 @@ const mediumIncomeRow = extractRow(html, "medium-income");
 const largeIncomeRow = extractRow(html, "large-income");
 const aggregateFinalRow = extractRow(html, `aggregate-income-${aggregateIncomeCount}`);
 
-assert.match(maxIncomeRow, /col-amount[^>]*>R\$\s*21\.474\.836,47<\/strong>/);
+assert.match(maxIncomeRow, /col-amount[^>]*>R\$\s*30\.000\.000,00<\/strong>/);
 assert.match(zeroBalanceRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
 assert.match(
   negativeBalanceRow,
-  /data-balance-minor="-2147483647">(?:-R\$\s*21\.474\.836,47|R\$\s*-21\.474\.836,47)<\/strong>/,
+  /data-balance-minor="-3000000000">(?:-R\$\s*30\.000\.000,00|R\$\s*-30\.000\.000,00)<\/strong>/,
 );
 assert.match(backToZeroRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
 assert.match(zeroValueRow, /col-amount[^>]*>R\$\s*0,00<\/strong>/);
@@ -112,39 +114,39 @@ assert.match(zeroValueRow, /data-balance-minor="0">R\$\s*0,00<\/strong>/);
 assert.match(mediumIncomeRow, /col-amount[^>]*>R\$\s*999\.999,99<\/strong>/);
 assert.match(largeIncomeRow, /col-amount[^>]*>R\$\s*9\.999\.999,99<\/strong>/);
 
-const expectedAggregateBalanceMinor = aggregateIncomeCount * MAX_PERSISTED_AMOUNT_MINOR;
-assert.equal(expectedAggregateBalanceMinor, 100_931_731_409);
+const expectedAggregateBalanceMinor = aggregateIncomeCount * LARGE_PERSISTED_AMOUNT_MINOR;
+assert.equal(expectedAggregateBalanceMinor, 141_000_000_000);
 assert.match(
   aggregateFinalRow,
   new RegExp(
-    `data-balance-minor="${expectedAggregateBalanceMinor}">R\\$\\s*1\\.009\\.317\\.314,09<\\/strong>`,
+    `data-balance-minor="${expectedAggregateBalanceMinor}">R\\$\\s*1\\.410\\.000\\.000,00<\\/strong>`,
   ),
 );
 
 const expectedIncomeMinor =
-  (aggregateIncomeCount + 2) * MAX_PERSISTED_AMOUNT_MINOR +
+  (aggregateIncomeCount + 2) * LARGE_PERSISTED_AMOUNT_MINOR +
   MEDIUM_AMOUNT_MINOR +
   LARGE_AMOUNT_MINOR;
 const expectedExpenseMinor =
-  2 * MAX_PERSISTED_AMOUNT_MINOR + MEDIUM_AMOUNT_MINOR + LARGE_AMOUNT_MINOR;
-assert.equal(expectedIncomeMinor, 106_326_698_701);
-assert.equal(expectedExpenseMinor, 5_394_967_292);
+  2 * LARGE_PERSISTED_AMOUNT_MINOR + MEDIUM_AMOUNT_MINOR + LARGE_AMOUNT_MINOR;
+assert.equal(expectedIncomeMinor, 148_099_999_998);
+assert.equal(expectedExpenseMinor, 7_099_999_998);
 
 const summaryBalance = extractElement(html, "section", "summary-balance");
 assert.match(summaryBalance, /Saldo atual/);
-assert.match(summaryBalance, /R\$\s*1\.009\.317\.314,09/);
+assert.match(summaryBalance, /R\$\s*1\.410\.000\.000,00/);
 
 const receipts = extractSummaryTotal(html, "Receitas");
-assert.match(receipts, /R\$\s*1\.063\.266\.987,01/);
+assert.match(receipts, /R\$\s*1\.480\.999\.999,98/);
 
 const expenses = extractSummaryTotal(html, "Despesas");
-assert.match(expenses, /(?:-R\$\s*53\.949\.672,92|R\$\s*-53\.949\.672,92)/);
+assert.match(expenses, /(?:-R\$\s*70\.999\.999,98|R\$\s*-70\.999\.999,98)/);
 
 const unreconciled = extractStatusLine(html, "Não conciliados");
-assert.match(unreconciled, /<strong>R\$\s*1\.117\.216\.659,93<\/strong>/);
+assert.match(unreconciled, /<strong>R\$\s*1\.551\.999\.999,96<\/strong>/);
 
 const negativeSummaryBalance = extractElement(negativeSummaryHtml, "section", "summary-balance");
-assert.match(negativeSummaryBalance, /(?:-R\$\s*21\.474\.836,47|R\$\s*-21\.474\.836,47)/);
+assert.match(negativeSummaryBalance, /(?:-R\$\s*30\.000\.000,00|R\$\s*-30\.000\.000,00)/);
 
 assert.match(
   html,

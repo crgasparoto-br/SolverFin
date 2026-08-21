@@ -1,1 +1,42 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"inherited-controls","compression":"gzip","encoded_size":5596,"encoded_sha256":"26e5110af9a415380f28f234acd8327bd62a28f2087acd3811411cc6a116411c","decoded_size":32474,"decoded_sha256":"380e4373e3319ffc4ac8281d9be911d7d6067979b8425ffa6b6ba4bb14844864","parts":[{"path":"inherited-controls.parts/part-000.b64","size":4000,"sha256":"22805d4cb7716e4e120ce872e16f9bb4f0a5d8beef670b7374607d59d15d5a3e"},{"path":"inherited-controls.parts/part-001.b64","size":1596,"sha256":"73b1504e035a70cb3374ecb6103e2074648fab91754b63105b41c713407eb022"}]}
+{
+  "schema_version": 1,
+  "head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+  "source_audits": [
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
+      "finding_ids": [
+        "A-001",
+        "A-002"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "id": "CTRL-HANDOFF-SCOPE-EXACT-001",
+      "status": "passed",
+      "head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+      "subject_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+      "control_type": "gate",
+      "evidence": ".audit/entregar-issue/evidence-controls.md",
+      "evidence_sha256": "746b02f9febfbaeb35908dcf6de6d9f2ba6e7687f9954cfa3a7575af800e58ff",
+      "procedure": "Compare the rejected published handoff SHA to the remediation material head and enumerate every changed repository path.",
+      "expected": "The remediation delta contains only the intended monetary integration test path.",
+      "observed": "The immutable remediation compare is one-path-only and excludes inherited audit-package churn."
+    },
+    {
+      "id": "CTRL-REQUIRED-GATE-REACHABILITY-001",
+      "status": "passed",
+      "head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+      "subject_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+      "control_type": "procedure",
+      "evidence": ".audit/entregar-issue/evidence-controls.md",
+      "evidence_sha256": "746b02f9febfbaeb35908dcf6de6d9f2ba6e7687f9954cfa3a7575af800e58ff",
+      "procedure": "Treat a red sequential format gate as blocking and do not count downstream skipped steps as executed or passed.",
+      "expected": "A terminal handoff is not published from a material SHA whose required Validate monorepo gate is known red.",
+      "observed": "The prior red run was used to create a new material remediation commit instead of publishing another terminal handoff."
+    }
+  ],
+  "retired_controls": [],
+  "unresolved_controls": []
+}
