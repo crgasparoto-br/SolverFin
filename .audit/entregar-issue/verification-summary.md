@@ -1,21 +1,17 @@
-# Verification summary - issue #598
+# Verification summary — issue #598
 
-Material head: `478ec624ff18ce88858bf77c33f9886014d5bb44`
+Status: internally ready for independent audit after post-CI refreeze.
 
-Controller checks to be rerun on this exact material:
-- canonical specification coverage
-- requirement attack matrix
-- risk saturation
-- inherited-control monotonicity
-- terminal handoff identity/allowlist
+Material head: `33955a3de2c12d53703229ebdd2f63e5ce7bb5c7`
 
-Focused remediation evidence:
-- predecessor material `88116871f5e28668f6cc7daa1902b5e18119c880` executed FIN-E2E-001 through FIN-E2E-009 successfully against PostgreSQL;
-- the next integration test failed because the E2E suite left fixture rows, exposing an order-dependence defect in the suite itself;
-- current material wraps the suite in `try/finally` and removes only FIN-E2E fixture data in FK-safe order;
-- Validate monorepo had also identified formatting only in the suite file, so formatter-sensitive constructs were normalized.
+Evidence:
+- canonical specification coverage: passed;
+- requirement attack matrix: passed;
+- risk saturation: passed;
+- cumulative inherited-control lineage: passed;
+- GitHub Actions CI run 4343: success;
+- Integration API + PostgreSQL: success, including FIN-E2E-001 through FIN-E2E-009;
+- Statement visual validation run 2858: success;
+- no merge performed.
 
-Remote delivery snapshot:
-- one GitHub Actions collection for `478ec624ff18ce88858bf77c33f9886014d5bb44` observed CI run 32468163121 and Statement visual validation run 32468163141 both `in_progress`; no polling, rerun, or dispatch was performed.
-
-Official executable gate remains `npm run test:integration` / `Integration API + PostgreSQL`; final workflow conclusions were not observed in this delivery snapshot.
+The certificate is intentionally bound to the material head and will be published in a direct result-only child.

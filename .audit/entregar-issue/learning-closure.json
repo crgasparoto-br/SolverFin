@@ -1,1 +1,60 @@
-{"schema_version":1,"classification":"systemic-escape","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:8928adf8-51cf-40f2-b293-df6b38dac26a","finding_ids":["A-001"],"audit_report_sha256":"a9c98548325a669f1354f144785b2fbd3872aeb99ed9a69cb5163f1e0ec28659"},"generalized_learning":{"escape_class":"code-growth-evidence-schema-drift","generalized_failure_pattern":"A producer and an independent consumer can validate different structural subsets of the same certified evidence artifact, allowing a reduced object to pass the producer gate and fail only after handoff.","plausible_wrong_implementation":"Validate only pass status, subject identity and blocker list at publication while the independent consumer additionally requires a policy object or other canonical structural fields.","trigger_signals":["certified evidence consumed by multiple skills","producer and auditor have separate validators","result-only remediation rewrites evidence","schema fields can be omitted without changing pass status"],"risk_families":["structural-contract"],"reusable_control":"CODE-GROWTH-SCHEMA-PARITY-001: validate one canonical evidence schema at production, terminal handoff and independent preflight, with negative cases for missing and wrong-typed required fields.","prevention_rule":"Evidence producers and terminal validators must validate the complete canonical schema before publishing a certified artifact; reduced remediation forms are rejected.","detection_rule":"Independent preflight must use a generated copy of the same canonical schema before semantic refutation, and contract tests must detect schema-copy drift.","transfer_cases":[{"id":"TRANSFER-CERTIFIED-EVIDENCE-MISSING-REQUIRED-OBJECT","surface":"producer-terminal-boundary","status":"passed","procedure":"Remove a required nested object from a synthetic certified evidence report and validate producer plus terminal consumer.","observed":"Both validators reject the synthetic reduced report."},{"id":"TRANSFER-CERTIFIED-EVIDENCE-WRONG-REQUIRED-TYPE","surface":"independent-consumer-boundary","status":"passed","procedure":"Replace a required nested object with an incompatible type and validate terminal plus independent consumer.","observed":"Both validators reject the synthetic wrong-typed report."}],"promotion_status":"promoted"},"skill_changes":[{"role":"prevention","skill":"entregar-issue","status":"passed","evidence":"Canonical schema plus terminal validator and generic negative contract tests are installed and passing."},{"role":"detection","skill":"auditar-issue","status":"passed","evidence":"Generated schema copy plus independent preflight validator and matching generic negative tests are installed and passing."}]}
+{
+  "schema_version": 1,
+  "classification": "systemic-escape",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:9f774c64-3d32-4723-9460-7bc30a7698f4",
+    "finding_ids": [
+      "A-001"
+    ],
+    "audit_report_sha256": "31c395cecbcae3de05ff29f0f0a37a0c954814163a6718d2aea5d0320d8b49c1"
+  },
+  "generalized_learning": {
+    "escape_class": "handoff-contract-version-drift",
+    "generalized_failure_pattern": "A producer can emit an internally consistent handoff using an obsolete contract revision that the current independent consumer must reject.",
+    "plausible_wrong_implementation": "Treat any syntactically valid ready certificate as compatible without comparing its contract revision to the active consumer contract.",
+    "trigger_signals": [
+      "versioned handoff certificate",
+      "producer/consumer contract boundary",
+      "independent audit preflight"
+    ],
+    "risk_families": [
+      "structural-contract"
+    ],
+    "reusable_control": {
+      "id": "HANDOFF-CONTRACT-PARITY-001",
+      "purpose": "Require exact producer/consumer contract-version parity before audit handoff."
+    },
+    "prevention_rule": "The handoff builder must default to and emit the active delivery contract revision, never a remembered historical constant.",
+    "detection_rule": "The independent preflight must compare certificate contract_version to its own active contract and fail closed on mismatch.",
+    "transfer_cases": [
+      {
+        "id": "synthetic-producer-old-version",
+        "surface": "certificate-builder",
+        "status": "passed",
+        "procedure": "Generate a legacy-version fixture and verify the current producer path emits only the active contract."
+      },
+      {
+        "id": "synthetic-consumer-version-mismatch",
+        "surface": "audit-preflight",
+        "status": "passed",
+        "procedure": "Present an obsolete ready certificate to the current validator and require rejection."
+      }
+    ],
+    "promotion_status": "promoted"
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "status": "passed",
+      "change": "Current entregar-issue build_handoff_certificate defaults to contract 2026-08-20.3.",
+      "evidence": "evidence-handoff-contract-parity.txt"
+    },
+    {
+      "role": "detection",
+      "status": "passed",
+      "change": "Current auditar-issue handoff validation rejects certificate contract mismatch.",
+      "evidence": "evidence-handoff-contract-parity.txt"
+    }
+  ]
+}
