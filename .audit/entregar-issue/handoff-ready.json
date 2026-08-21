@@ -1,33 +1,37 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-19T20:00:21.334369+00:00",
+  "created_at": "2026-08-20T23:56:33.187205+00:00",
   "identity": {
-    "head_sha": "a74a7c04bb9165144f55b762f860f387144a2991",
-    "material_head_sha": "a74a7c04bb9165144f55b762f860f387144a2991",
-    "base_sha": "c623341f729099f72c96c3908e52d0098f0a3ebd",
-    "merge_preview_sha": "c4bc94a1b36809ad03ce4472f87dfe3b110cb261",
-    "material_merge_preview_sha": "c4bc94a1b36809ad03ce4472f87dfe3b110cb261"
+    "head_sha": "d6395869c6c2d5fb4dd7c9d99810213eb235ec42",
+    "material_head_sha": "d6395869c6c2d5fb4dd7c9d99810213eb235ec42",
+    "base_sha": "d167f9c787c8577abd9d12e11a1d33d77acb9b86",
+    "merge_preview_sha": "70a24909b345ed8098d14faf63c792dcb10556fc",
+    "material_merge_preview_sha": "70a24909b345ed8098d14faf63c792dcb10556fc"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "work_item_kind": "issue",
-    "work_item_number": 595,
-    "pull_request": 628,
+    "work_item_number": 596,
+    "pull_request": 630,
     "base_ref": "main",
-    "head_ref": "feat/595-multi-currency-aggregation"
+    "head_ref": "feat/596-reference-currency-contract"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
-      ".audit/entregar-issue/audit-escape-closure.json",
-      ".audit/entregar-issue/evidence-ci-snapshot.json",
+      ".audit/entregar-issue/audit-remediation.json",
+      ".audit/entregar-issue/audit-source-result.json",
+      ".audit/entregar-issue/code-growth.json",
+      ".audit/entregar-issue/evidence-code-growth-schema-parity.txt",
+      ".audit/entregar-issue/evidence-documentation-consistency.txt",
       ".audit/entregar-issue/evidence-inherited-controls.txt",
+      ".audit/entregar-issue/evidence-provenance.json",
+      ".audit/entregar-issue/evidence-specification-atomization.txt",
       ".audit/entregar-issue/evidence-static-contract.txt",
+      ".audit/entregar-issue/evidence-temporal-instant-canonical.txt",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
-      ".audit/entregar-issue/learning-closure.json",
-      ".audit/entregar-issue/remote-gate.json",
       ".audit/entregar-issue/requirement-attack-matrix.json",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/risk-saturation.json",
@@ -35,50 +39,70 @@
       ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt"
     ]
   },
-  "contract_version": "2026-08-18.1",
+  "contract_version": "2026-08-20.3",
+  "evidence_profile": "critical",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "a396a5b9d21655f787d04a3de2670f093d6a5c81f1430ee8a29e172744da0fce"
+    "skill_sha256": "44f07f709f516bf37ea81c67864393493c0cabdf6a672515139c4cff0ff213aa"
   },
   "validators": {
     "validate_specification_coverage.py": "4eb93ff6a8f451d824adc4ad8faf9fd92a24f92bb42e93666a804f1e74f39aea",
-    "validate_handoff_readiness.py": "f6c538e5f6df8865e8b946c51f5ef152d1d1734012bc50f5c4ea840446a418aa",
+    "validate_handoff_readiness.py": "ef19c5fdc5045dfbd856d69ec000ddd347b6b938558bd5e2a466f5f608b8bc03",
     "validate_requirement_attack_matrix.py": "cce39121a991fe540cd1cf787d5609bb4ffe291990bc0cd8d25f6fa72aa7cc62",
     "validate_evidence_freshness.py": "8a20cb7547d03e49b30e6c5713d61c9350a553e46c81ebeef6111137e165aaf8",
     "validate_risk_saturation.py": "fc6286588f136290beba1e15927803fab82e1e0f092771234048748ad2345300",
-    "validate_inherited_controls.py": "9b36648552b8e701c1259e04ea1c07229d47853a446e7bfeadb99b6d25bac9db",
+    "validate_inherited_controls.py": "d76aff2b5745f6d8d34adf805d51dc112e960bcc7ac06028982d872f284a2976",
     "validate_learning_closure.py": "488e0c5ce2c9d85c1427b1205ba87945acb9d37cca2763ac194fa2f040900872",
-    "validate_independent_rejection_closure.py": "d83e69bbee9981586a33c942bd472cd713659fa44bae7ca805f1f745d74ce73b"
+    "validate_independent_rejection_closure.py": "d83e69bbee9981586a33c942bd472cd713659fa44bae7ca805f1f745d74ce73b",
+    "validate_code_growth_report.py": "96c5b2a8559ab788e872abd408796f6e12a45e148cff2ba5889238aae443e48b",
+    "validate_standard_evidence.py": "7e506ab745a68d6dff6781c11bc7b6f90c22470206b4d8218ca2aa660d71562b"
   },
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "d6e7e5e4ff08ceab7c459ab447f41cb54816dbf44be2b515225e82e9b8d632b2"
+      "sha256": "efd81b135fb3ff0e8c5cdb6f9445799936c06cae15ef7953c6034d4aab12fef6"
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "7ac6d5b4283a071ec9dd376d7ec335a80f6e7d705f9368e9816740a3f1635785"
+      "sha256": "7911700563fbfa83f7b823923ea2bf4fdb637ddc5336d08fd440d5ed116ac277"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "91b7f00024643e41f8418a783f800ed280e857482e3547ac6bf8f9555f493dca"
+      "sha256": "173226ebbaffd61223120ede0efb6be6b6645086528453a60f8258d89f6de050"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "8b6b27781bd9cab3245b842d5ea9768a4b81ffdd46a15697cec424ca9e9059bb"
+      "sha256": "f6d4b12c1453ce6863a3c0d73bc505cd839530273b8a2e8c98d99e23af7098d3"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "2ac7d7b0b6535c42b29dd47a32c0d46b4ce14eff4c13bd8b5ccd7473d7020512"
+      "sha256": "c3becb1d28721db3a7a2d6229c0958e39c82d07f3b7ee3c84ad66a5583865ee2"
     },
-    "audit_escape_closure": {
-      "name": "audit-escape-closure.json",
-      "sha256": "23297d21f837100889363300b1a512370811a02ac95a8f74b5c02507a69b383a"
+    "evidence_provenance": {
+      "name": "evidence-provenance.json",
+      "sha256": "216f3904dc7722a8a045b7d1819e897bbed741d83b4a2bc3a75054050dda8c42"
     },
-    "learning_closure": {
-      "name": "learning-closure.json",
-      "sha256": "557077e681ce50650a93493d9b3b23c0e22f747ec8d44aae05e6ac33a5bb849e"
+    "audit_remediation": {
+      "name": "audit-remediation.json",
+      "sha256": "642ae0fd7613bf0a77497dc20c99810dfef16c6e70ff83efca1375f242a64a3a"
+    },
+    "audit_source_result": {
+      "name": "audit-source-result.json",
+      "sha256": "3f50e8988a7867e8710dd7ea09807805e61746fb1367bce2f438f858fe2fcaf7"
+    },
+    "code_growth": {
+      "name": "code-growth.json",
+      "sha256": "e83786a6d35b03da7d981b8e45b746890d06245ed935aa77dfb582ca2e6dbf8f"
     }
   },
-  "previous_independent_rejection": true
+  "previous_independent_rejection": true,
+  "remediation_mode": "targeted-remediation",
+  "readiness_validation_reused": true,
+  "controls": {
+    "code_growth": {
+      "applicable": true,
+      "control_id": "CODE-GROWTH-001",
+      "artifact": "code_growth"
+    }
+  }
 }

@@ -1,47 +1,33 @@
+# [Fase 3A] Definir contrato de moeda de referência e consolidação cambial
+
 Parent epic: #589
+Depends on: #595
 
 ## Objetivo
-
-Aplicar a ADR 0013 aos endpoints e serviços financeiros que retornam totais, impedindo soma silenciosa entre moedas e removendo fallbacks genéricos de BRL.
+Deve ser definido o contrato que permitirá futuramente apresentar valores consolidados convertidos em uma moeda de referência, sem alterar a moeda nativa dos registros e sem conversão implícita.
 
 ## Escopo
-
-- inventariar agregadores de saldo, transações, relatórios, orçamentos, insights e assistente;
-- definir resposta mono-moeda e multi-moedas com blocos por `currency`;
-- reutilizar como precedência o padrão `currencyBlocks` já documentado em `docs/API_REPORTS.md` para contratos agregados novos ou migrados, salvo quando o documento dono de um endpoint existente exigir explicitamente outra forma por compatibilidade pública;
-- quando `currencyBlocks` for aplicável, ordenar os blocos de forma determinística pelo código da moeda, como no contrato de Relatórios;
-- preservar filtros por perfil/conta/cartão/período;
-- atualizar tipos compartilhados e validação runtime quando aplicável;
-- manter compatibilidade deliberada somente onde houver contrato explícito no documento dono do endpoint; compatibilidade não autoriza somar moedas distintas ou inferir BRL;
-- atualizar documentação dos endpoints afetados antes de considerar a migração de cada contrato concluída.
-
-## Invariantes estruturais
-
-- **must_be_single_source:** a moeda de cada total deve vir dos dados/contratos financeiros que compõem o agregado; `SOLVERFIN_FORMAT_CURRENCY`, formatter de UI ou outro default de apresentação não pode definir a moeda do cálculo.
-- **must_reuse:** contratos agregados que já usam `currencyBlocks` devem preservar esse vocabulário e sua ordenação; contratos novos/migrados devem reutilizá-lo salvo incompatibilidade pública documentada no contrato dono.
-- **must_not_behave:** um recorte contendo BRL e USD não pode produzir um único `amountMinor`/total rotulado como BRL, USD ou moeda default sem conversão explícita.
-- **forbidden_implementation:** não corrigir apenas a label/moeda exibida mantendo uma soma cruzada internamente. Uma implementação assim passaria em testes que verificam somente o código da moeda; o controle deve validar separadamente os valores de cada bloco com montantes distintos em pelo menos duas moedas.
+- deve definir responsabilidade e ciclo de vida da eventual moeda de referência do perfil;
+- deve definir o shape do valor convertido: origem, destino, taxa, data/instante de referência e fonte;
+- deve definir comportamento quando cotação estiver ausente, expirada ou indisponível;
+- deve definir como APIs e UI distinguem valor nativo de valor convertido;
+- deve registrar ADR complementar se houver escolha de schema persistente ou provider.
 
 ## Critérios de aceite
-
-- [ ] BRL + USD nunca retorna um total único sem conversão;
-- [ ] respostas multi-moedas são deterministicamente particionadas por moeda;
-- [ ] contratos que adotam `currencyBlocks` preservam a ordenação determinística por código de moeda;
-- [ ] nenhum endpoint genérico atribui `BRL` a resultado misto ou usa default de formatter como fonte do cálculo;
-- [ ] consumidores conseguem identificar moeda sem inferência por contexto;
-- [ ] cada endpoint migrado possui contrato documentado para recorte mono-moeda, multi-moedas e ausência de dados, preservando compatibilidade somente quando explicitamente justificada;
-- [ ] testes incluem ao menos duas moedas no mesmo perfil e verificam os valores de cada partição, não apenas a label;
-- [ ] tenant/perfil continuam isolados em todos os cenários.
+- não deve existir suposição universal de BRL;
+- moeda de referência não deve alterar a moeda nativa do registro;
+- conversão deve exigir metadados auditáveis;
+- ausência de cotação não deve virar 1:1 nem zero;
+- contrato deve ser consumível por Dashboard, Relatórios e futuras projeções;
+- não deve haver integração externa nesta issue.
 
 ## Fora de escopo
-
-- obter cotação externa;
-- converter moedas automaticamente.
+- não deve escolher ou implementar provider de câmbio;
+- não deve persistir histórico completo de câmbio;
+- não deve consolidar UI de patrimônio.
 
 ## Referências
-
 - #589
+- #595
 - ADR 0013
-- `docs/API_REPORTS.md`
-- `docs/FINANCIAL_ASSISTANT.md`
-- `packages/shared/src/formatting.ts`
+- docs/EVOLUTION_STRATEGY.md

@@ -1,0 +1,9 @@
+material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
+contract=docs/CURRENCY_CONVERSION.md blob=52eee92ac979cc4b9e581324b8148a83a839d201
+status=passed
+- documentation now states that updatedAt, referenceAt, expiresAt and evaluatedAt are unambiguous instants
+- Z or explicit +/-HH:MM offset is required
+- timezone-less strings and impossible civil dates are invalid
+- timezone configuration of the executing process must not change quote availability
+- productive FX provider, persistence, migration, endpoint and UI activation remain outside this issue
+- docs/STATUS_MATRIX.md and ADR 0013 remain compatible with the clarified contract: contract implemented, productive conversion/provider not activated

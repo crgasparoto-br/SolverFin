@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 596,
+  "primary_source_id": "SRC-ISSUE",
+  "sources": [
+    {
+      "id": "SRC-ISSUE",
+      "kind": "issue-body",
+      "path": "specification-sources/SRC-ISSUE.txt",
+      "sha256": "0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55",
+      "required": true
+    }
+  ]
+}

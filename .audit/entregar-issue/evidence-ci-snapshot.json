@@ -1,1 +1,31 @@
-{"schema_version":1,"material_head_sha":"a74a7c04bb9165144f55b762f860f387144a2991","material_merge_preview_sha":"c4bc94a1b36809ad03ce4472f87dfe3b110cb261","status":"success","workflows":[{"run_id":32291484553,"name":"CI","status":"completed","conclusion":"success"},{"run_id":32291484513,"name":"Statement visual validation","status":"completed","conclusion":"success"}],"jobs":[{"job_id":96193084703,"name":"Validate monorepo","status":"completed","conclusion":"success"},{"job_id":96193084977,"name":"Integration API + PostgreSQL","status":"completed","conclusion":"success","observed_tests":["financial-summary-multi-currency.integration.test.js","account-currency-invariant.integration.test.js","generalized-deterministic-review-currency.integration.test.js","transaction-currency-invariant.integration.test.js"],"suite_result":"111 compiled test file(s) passed"}],"collection_policy":"single-delivery-snapshot-current-material-head","collections_for_material_sha":1}
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "pull_request": 630,
+  "material_head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
+  "observed_at": "2026-08-20T04:44:00Z",
+  "source": "github-connector-delivery-snapshot",
+  "workflows": [
+    {
+      "id": 32330431692,
+      "name": "CI",
+      "run_number": 4312,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {"name": "Integration API + PostgreSQL", "status": "completed", "conclusion": "success"},
+        {"name": "Validate monorepo", "status": "completed", "conclusion": "success"}
+      ]
+    },
+    {
+      "id": 32330431699,
+      "name": "Statement visual validation",
+      "run_number": 2828,
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {"name": "Chrome visual validation", "status": "completed", "conclusion": "success"}
+      ]
+    }
+  ]
+}

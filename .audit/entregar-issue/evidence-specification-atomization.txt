@@ -1,0 +1,9 @@
+material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
+source_id=SRC-ISSUE
+source_sha256=32d0a0d6b8f4e542fb908449425eb114655bb0d298fbda89904c82ad7ec0fb73
+status=passed
+procedure=Enumerate every normative bullet under objective, scope, acceptance criteria and out-of-scope headings, while excluding reference-only bullets, then compare one-to-one with requirement-closure obligations.
+observed=15 normative candidates and 15 explicit obligations; 11 covered obligations map to REQ-001 through REQ-011 and four conditional/out-of-scope obligations carry explicit dispositions.
+sibling_case_scope=plain scope bullets preserved as atomic obligations
+sibling_case_acceptance=negative acceptance bullets preserved as atomic obligations
+sibling_case_references=non-normative reference list excluded

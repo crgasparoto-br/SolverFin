@@ -1,0 +1,6 @@
+material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
+control_id=CODE-GROWTH-SCHEMA-PARITY-001
+status=passed
+procedure=Validate the current CODE-GROWTH-001 report against the canonical delivery schema and preserve the previously promoted negative contract that missing or wrong-typed policy objects are rejected by producer and independent consumer validators.
+expected=Canonical report contains a policy object and passes structural validation; reduced or wrong-typed policy variants remain invalid.
+observed=Current report includes the canonical policy object and the shared validator accepts it; inherited schema-parity control remains active on the current material head.

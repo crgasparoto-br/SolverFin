@@ -1,17 +1,22 @@
-material_head_sha=a74a7c04bb9165144f55b762f860f387144a2991
-material_merge_preview_sha=c4bc94a1b36809ad03ce4472f87dfe3b110cb261
-previous_certified_material_head_sha=884ffa3a11893e72a5a0dca2a195e4447b0163f3
-validation_mode=post-write-refreeze-current-head
-ci_run=32291484553:completed:success
-visual_run=32291484513:completed:success
-integration_job=96193084977:completed:success
-- GitHub Actions associated CI run 32291484553 with material head a74a7c04bb9165144f55b762f860f387144a2991 and checked out PR merge c4bc94a1b36809ad03ce4472f87dfe3b110cb261.
-- The Integration API + PostgreSQL job compiled and executed every .integration.test.js file; the log explicitly reached financial-summary-multi-currency.integration.test.js and ended with "111 compiled test file(s) passed".
-- The current financial-summary multi-currency test creates BRL and USD data in profile 33333333-3333-4333-8333-333333333331 and deliberately different EUR data in sibling profile 33333333-3333-4333-8333-333333333332 under the same organization.
-- The sibling summary observes its own EUR transaction, while the primary summary asserts the sibling EUR block is unchanged from baseline and the sibling description is absent. This rejects cross-profile leakage while preserving the same-organization discriminant.
-- The same integration test asserts deterministic currencyBlocks ordering, distinct BRL and USD block deltas, absence of mixed scalar totals, and explicit currency on recent items.
-- buildFinancialSummary queries Account and Transaction by both organizationId and financialProfileId, groups monetary totals by upper(currency), sorts the resulting currencyBlocks, and emits legacy scalar fields only when exactly one block exists.
-- The current material delta after the previous certified head is limited to delivery artifacts plus the profile-isolation integration test; no production implementation, migration, public API implementation, or documentation changed after the previous material freeze.
-- CI job Validate monorepo passed formatting, lint, typecheck, tests, build, Prisma validation/migrations and seed checks on this PR candidate; Integration API + PostgreSQL independently passed the database-backed integration suite.
-- Statement visual validation run 32291484513 completed successfully for the same head association. It is supplemental because the current post-freeze material change is an API integration test, not a visual product change.
-- Currency remains sourced from financial records and contracts. No formatter/default currency source was introduced by the current material delta.
+material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
+base_sha=d167f9c787c8577abd9d12e11a1d33d77acb9b86
+source_blob_sha=8e91a71e4ecb57231aa286b5e4109fed388b8e6e path=packages/domain/src/currency-conversion.ts
+original_test_blob_sha=09d4893549bb7309b91d3348ad2216a14557a7d6 path=packages/domain/src/currency-conversion.test.ts
+timezone_test_blob_sha=1bbe5fd9140a4e140a2847444c227c3d3136fef2 path=packages/domain/src/currency-conversion-timezone.test.ts
+document_blob_sha=52eee92ac979cc4b9e581324b8148a83a839d201 path=docs/CURRENCY_CONVERSION.md
+focused_validation=passed exact_material_content; TypeScript compile plus currency-conversion tests and timezone regression tests
+timezone_matrix=passed TZ=UTC and TZ=America/Sao_Paulo on equivalent exact material content
+remote_ci_run=32428953640 status=completed conclusion=success
+remote_visual_run=32428953613 status=completed conclusion=success
+Observed contract controls on exact material head content:
+- reference currency remains explicit and has no BRL fallback
+- native values remain present beside converted values and same-currency values stay native
+- ExchangeRateQuote carries sourceCurrency,targetCurrency,rate,referenceAt,expiresAt,source
+- timezone-less updatedAt/referenceAt/expiresAt/evaluatedAt are rejected
+- impossible civil dates such as 2026-02-30T12:00:00.000Z are rejected
+- the independent-audit literal offset case 12:00-03:00..13:00-03:00 evaluated at 15:30Z is quote_available in both tested process timezones
+- direct converted-value factory rejects timezone-less evaluatedAt, preventing a bypass of availability checks
+- missing/unavailable/expired states fail closed and no parity/zero conversion is synthesized
+- source/target currency mismatch, zero rate and same-currency fabricated conversion remain rejected
+- no provider/network client, persistence adapter, migration, endpoint or UI implementation is introduced
+quantitative_quote_shape_check required_fields=6 observed_fields=6 fields=sourceCurrency,targetCurrency,rate,referenceAt,expiresAt,source source_blob_sha=8e91a71e4ecb57231aa286b5e4109fed388b8e6e
