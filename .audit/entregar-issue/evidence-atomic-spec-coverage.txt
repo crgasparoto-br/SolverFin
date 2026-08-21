@@ -1,0 +1,11 @@
+subject_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
+canonical_issue_candidates=5
+mechanical_atomic_required_bullets=15
+total_closure_obligations=20
+covered_obligations=19
+out_of_scope_obligations=1
+semantic_requirements=16
+scenario_requirements=9
+acceptance_requirements=6
+control=ATOMIC-SPEC-COVERAGE-001
+observed=Every required scenario and acceptance bullet has its own atomic obligation; the only non-covered candidate is the explicit visual-layout out-of-scope line.

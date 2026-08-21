@@ -1,0 +1,7 @@
+subject_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
+expected_parent_count=1
+expected_parent_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
+expected_additional_parents=0
+expected_delta=.audit/entregar-issue/* only
+control=AUDIT-RESULT-CHILD-SEMANTICS-001
+observed=The current delivery contract requires the terminal result commit to be a direct single-parent child of the frozen material head; terminal Git verification is performed after publication.

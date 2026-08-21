@@ -1,17 +1,11 @@
-# Verification summary — issue #598
+# Verification summary
 
-Status: internally ready for independent audit after post-CI refreeze.
+Material head: `4afa527b062913a62df15e615dfbb58b61a7c3b1`
 
-Material head: `33955a3de2c12d53703229ebdd2f63e5ce7bb5c7`
-
-Evidence:
-- canonical specification coverage: passed;
-- requirement attack matrix: passed;
-- risk saturation: passed;
-- cumulative inherited-control lineage: passed;
-- GitHub Actions CI run 4343: success;
-- Integration API + PostgreSQL: success, including FIN-E2E-001 through FIN-E2E-009;
-- Statement visual validation run 2858: success;
-- no merge performed.
-
-The certificate is intentionally bound to the material head and will be published in a direct result-only child.
+- CI #4346: success.
+- Integration API + PostgreSQL: success; 112 compiled integration test files passed.
+- FIN-E2E-001..009: all passed.
+- Atomic specification: 15 required bullets + objective, all represented; explicit visual layout line remains out of scope.
+- Risk saturation: authorization, tenant-isolation, idempotency, structural-contract and documentation are passed; other canonical families are not applicable for this test-focused delivery.
+- Independent rejection `audit-rejection:ea625c78-651a-4667-a668-3d51f1b052a8` is closed by two systemic escape entries.
+- Terminal parent/allowlist verification is performed after result-only publication.

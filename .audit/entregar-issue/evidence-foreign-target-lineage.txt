@@ -1,10 +1,3 @@
-subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
-repository=crgasparoto-br/SolverFin
-work_item_kind=issue
-work_item_number=598
-pull_request=631
-base_ref=main
-head_ref=feat/598-financial-invariants-e2e
-binding=current-target
-recovery=post-write-refreeze
-reason=The prior certificate belonged to the same target but certified material 478ec624ff18ce88858bf77c33f9886014d5bb44; material writes after that freeze require a new certificate for 33955a3de2c12d53703229ebdd2f63e5ce7bb5c7.
+subject_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
+status=preserved
+observed=Historical inherited control identifiers unrelated to the current canonical risk surface remain explicitly retired; atomic specification coverage and result-only topology controls are reactivated because their classes are material to this remediation.

@@ -1,5 +1,4 @@
-subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
-control=DOC-SEMANTIC-DRIFT-001
-STATUS_MATRIX records the Phase 3A invariant suite as Feito and lists #598 / FIN-E2E coverage.
-Previously inspected EVOLUTION_STRATEGY and ARCHITECTURE remain compatible with that current-state claim.
-No unresolved stale planned claim for #598 was identified in the canonical documentation surfaces reviewed for this delivery.
+subject_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
+path=docs/STATUS_MATRIX.md
+status=passed
+observed=The Phase 3 matrix marks financial E2E invariants as Feito and lists FIN-E2E-001 through FIN-E2E-009.

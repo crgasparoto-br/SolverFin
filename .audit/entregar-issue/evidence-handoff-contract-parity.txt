@@ -1,11 +1,5 @@
-subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
-control=HANDOFF-CONTRACT-PARITY-001
-prior_rejected_certificate_contract=2026-08-18.1
-current_delivery_contract=2026-08-20.3
-current_auditor_contract=2026-08-20.3
-prevention=build_handoff_certificate.py defaults to the current delivery contract and records it in the certificate.
-detection=validate_handoff_certificate.py rejects any certificate whose contract_version differs from the requested auditor contract.
-focused_validation_1=tests/test_handoff_certificate_contract.py: 4 passed
-focused_validation_2=tests/test_independent_rejection_handoff_contract.py + tests/test_learning_generalization.py: 9 passed
-focused_validation_3=tests/test_universal_post_write_handoff_guard.py + tests/test_atomic_obligation_saturation.py + tests/test_handoff_certificate_contract.py: 14 passed
-observed=the current producer and consumer contracts agree on 2026-08-20.3 and the rejected legacy version is fail-closed by the current validator.
+subject_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
+contract_version=2026-08-20.3
+producer_rule=emit active contract version
+consumer_rule=reject stale contract version before audit expenditure
+observed=Producer and consumer contract are aligned on 2026-08-20.3; stale versions remain invalid.

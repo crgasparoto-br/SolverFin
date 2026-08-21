@@ -1,1 +1,19 @@
-{"schema_version":1,"subject_sha":"33955a3de2c12d53703229ebdd2f63e5ce7bb5c7","observed_at":"2026-08-21T11:09:00Z","runs":[{"id":32475241968,"name":"CI","run_number":4343,"status":"completed","conclusion":"success"},{"id":32475241758,"name":"Statement visual validation","run_number":2858,"status":"completed","conclusion":"success"}],"notes":"Exact-material CI snapshot after post-CI remediation. Visual validation is outside issue #598 scope but is green on the same material head."}
+{
+  "material_head_sha": "4afa527b062913a62df15e615dfbb58b61a7c3b1",
+  "runs": [
+    {
+      "id": 32495603024,
+      "name": "CI",
+      "run_number": 4346,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 32495602979,
+      "name": "Statement visual validation",
+      "run_number": 2861,
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}
