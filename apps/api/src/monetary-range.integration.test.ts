@@ -55,7 +55,11 @@ async function main(): Promise<void> {
 
   assert.equal(metadata.rowCount, expectedColumns.size);
   for (const row of metadata.rows) {
-    assert.equal(row.data_type, "bigint", `${row.table_name}.${row.column_name} must be BIGINT`);
+    assert.equal(
+      row.data_type,
+      "bigint",
+      `${row.table_name}.${row.column_name} must be BIGINT`,
+    );
     expectedColumns.delete(`${row.table_name}.${row.column_name}`);
   }
   assert.deepEqual([...expectedColumns], []);
