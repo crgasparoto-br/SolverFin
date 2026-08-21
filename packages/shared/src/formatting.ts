@@ -37,6 +37,10 @@ export function formatMinorCurrency(
   amountMinor: number,
   options: SolverFinCurrencyFormatterOptions = {},
 ): string {
+  if (!Number.isSafeInteger(amountMinor)) {
+    throw new RangeError("amountMinor must be a safe integer before currency formatting.");
+  }
+
   return createSolverFinCurrencyFormatter(options).format(amountMinor / 100);
 }
 
