@@ -1,14 +1,21 @@
 {
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
-  "issue": 596,
+  "issue": 598,
   "primary_source_id": "SRC-ISSUE",
   "sources": [
     {
       "id": "SRC-ISSUE",
       "kind": "issue-body",
       "path": "specification-sources/SRC-ISSUE.txt",
-      "sha256": "0f1402b84689a0ca2aaba83775d467ed29a2719de835240a4bd67a8eb8ae1e55",
+      "sha256": "b1ca2fa151064943022bdb72ed8526b3f7f731b92f63c02a0a53e7fde044d752",
+      "required": true
+    },
+    {
+      "id": "SRC-ISSUE-ATOMIC",
+      "kind": "other-text",
+      "path": "specification-sources/SRC-ISSUE-ATOMIC.txt",
+      "sha256": "9b43c1550d84e54d98a321b36ede48b9fa496d8272b27c945691f22dc379326d",
       "required": true
     }
   ]

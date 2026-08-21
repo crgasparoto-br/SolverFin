@@ -1,0 +1,8 @@
+subject_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
+transport=base64-shards-v1
+artifacts=requirement-attack-matrix,risk-saturation,inherited-controls,audit-escape-closure
+checks=manifest-path-safety,part-size,part-sha256,encoded-size,encoded-sha256,strict-base64,gzip,decoded-size,decoded-sha256,json
+control=LARGE-ARTIFACT-INTEGRITY-001
+procedure=Load every sharded audit artifact through audit_artifact_io after its final repack; any missing byte, extra byte, hash mismatch, invalid Base64, gzip failure or logical hash mismatch blocks handoff.
+observed=All four logical artifacts reconstruct successfully through the canonical loader after final control updates.
+status=passed
