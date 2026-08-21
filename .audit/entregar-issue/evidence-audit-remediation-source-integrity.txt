@@ -1,0 +1,12 @@
+control=AUDIT-REMEDIATION-SOURCE-INTEGRITY-001
+subject_sha=4afa527b062913a62df15e615dfbb58b61a7c3b1
+source_report_sha256=670c177107f541bcce508298e65da612936ae47666c6f8000e14b495f096800d
+procedure=Run the canonical validate_audit_remediation.py against the exact audit-source-result bytes with the fixed ledger, then repeat with source.audit_report_sha256 removed and with a deliberately wrong digest.
+expected=fixed ledger returns READY; missing and wrong source hashes both return BLOCK without changing product state.
+fixed_exit=0
+fixed_output=READY: 1 actionable audit items closed on 4afa527b062913a62df15e615dfbb58b61a7c3b1
+missing_hash_exit=2
+missing_hash_output=BLOCK: audit remediation audit_report_sha256 differs from source bytes
+wrong_hash_exit=2
+wrong_hash_output=BLOCK: audit remediation audit_report_sha256 differs from source bytes
+status=passed
