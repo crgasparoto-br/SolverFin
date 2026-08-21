@@ -147,14 +147,13 @@ async function cleanupFinancialInvariantFixtures(): Promise<void> {
     [CONTEXT.organizationId, profileIds, cardIds, accountIds],
   );
   const fixtureEntityIds = fixtureEntities.map((row) => row.id);
-  const params = [CONTEXT.organizationId, profileIds, cardIds, accountIds, fixtureEntityIds];
 
   await query(
     `delete from "AuditLogEntry"
       where "organizationId" = $1
         and "financialProfileId" = any($2::uuid[])
-        and "entityId" = any($5::uuid[])`,
-    params,
+        and "entityId" = any($3::uuid[])`,
+    [CONTEXT.organizationId, profileIds, fixtureEntityIds],
   );
   await query(
     `update "Invoice"
@@ -162,7 +161,7 @@ async function cleanupFinancialInvariantFixtures(): Promise<void> {
       where "organizationId" = $1
         and "financialProfileId" = any($2::uuid[])
         and "cardId" = any($3::uuid[])`,
-    params,
+    [CONTEXT.organizationId, profileIds, cardIds],
   );
   await query(
     `delete from "Transaction"
@@ -174,35 +173,35 @@ async function cleanupFinancialInvariantFixtures(): Promise<void> {
           or "accountId" = any($4::uuid[])
           or "destinationAccountId" = any($4::uuid[])
         )`,
-    params,
+    [CONTEXT.organizationId, profileIds, cardIds, accountIds],
   );
   await query(
     `delete from "Installment"
       where "organizationId" = $1
         and "financialProfileId" = any($2::uuid[])
         and "cardId" = any($3::uuid[])`,
-    params,
+    [CONTEXT.organizationId, profileIds, cardIds],
   );
   await query(
     `delete from "Invoice"
       where "organizationId" = $1
         and "financialProfileId" = any($2::uuid[])
         and "cardId" = any($3::uuid[])`,
-    params,
+    [CONTEXT.organizationId, profileIds, cardIds],
   );
   await query(
     `delete from "Card"
       where "organizationId" = $1
         and "financialProfileId" = any($2::uuid[])
         and "id" = any($3::uuid[])`,
-    params,
+    [CONTEXT.organizationId, profileIds, cardIds],
   );
   await query(
     `delete from "Account"
       where "organizationId" = $1
         and "financialProfileId" = any($2::uuid[])
-        and "id" = any($4::uuid[])`,
-    params,
+        and "id" = any($3::uuid[])`,
+    [CONTEXT.organizationId, profileIds, accountIds],
   );
 }
 
