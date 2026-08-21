@@ -1,29 +1,31 @@
 {
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
-  "material_head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
+  "pull_request": 636,
+  "material_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
   "observed_once": true,
   "observation_policy": "delivery-snapshot",
+  "state": "in_progress",
   "runs": [
     {
-      "id": 32530256444,
+      "id": 32534276665,
       "name": "CI",
       "status": "in_progress",
       "conclusion": null
     },
     {
-      "id": 32530256453,
+      "id": 32534276689,
       "name": "Statement visual validation",
       "status": "in_progress",
       "conclusion": null
     }
   ],
-  "prior_material_evidence": {
-    "d10f7b3599566e77d950e4e62c2d523a16e9faed": {
-      "integration_api_postgresql": "success",
-      "statement_visual_validation": "success",
-      "ci_validate_monorepo": "failure-format-only"
-    }
+  "previous_actionable_run": {
+    "material_head_sha": "95d82cca0c1df961fa39f36851c549c04e318e53",
+    "ci_run_id": 32533826927,
+    "conclusion": "failure",
+    "failed_step": "Check formatting",
+    "failed_path": "apps/api/src/monetary-range.integration.test.ts"
   },
-  "note": "No polling or rerun performed for material head; pending remote state is orthogonal to terminal handoff."
+  "note": "No polling or rerun was performed for the final material head; pending remote state is orthogonal to terminal handoff publication."
 }

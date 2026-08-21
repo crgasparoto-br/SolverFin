@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
+  "head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
+  "published_handoff_head_sha": "135af8e5e8f1e4436b78684fcf29e9fe650fbd11",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue_number": 599,
+  "pull_request_number": 636,
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "severity": "blocking",
+      "remediation_mode": "targeted-remediation",
+      "actionable": true,
+      "summary": "Certified issue scope did not equal the immutable issue-local compare."
+    },
+    {
+      "id": "A-002",
+      "disposition": "blocking",
+      "status": "open",
+      "severity": "blocking",
+      "remediation_mode": "targeted-remediation",
+      "actionable": true,
+      "summary": "Validate monorepo failed at format:check for the monetary integration test."
+    }
+  ],
+  "recommendations": []
+}

@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-21T21:51:46.413941+00:00",
+  "created_at": "2026-08-21T22:48:32.373760+00:00",
   "identity": {
-    "head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
-    "material_head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
+    "head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
+    "material_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
     "base_sha": "6ef67c78db224d87559086ec53b6258e49de9aef",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
@@ -21,37 +21,27 @@
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "6ef67c78db224d87559086ec53b6258e49de9aef",
-    "material_head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
+    "work_item_start_sha": "135af8e5e8f1e4436b78684fcf29e9fe650fbd11",
+    "material_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
     "issue_changed_paths": [
-      "apps/api/src/db-safe-integer.test.ts",
-      "apps/api/src/db-safe-integer.ts",
-      "apps/api/src/db.ts",
-      "apps/api/src/monetary-range.integration.test.ts",
-      "apps/api/src/repositories/dashboard.ts",
-      "apps/web/src/dev-server/transactions-page-long-values.test.ts",
-      "docs/adr/0015-safe-monetary-minor-unit-range.md",
-      "docs/adr/README.md",
-      "packages/domain/package.json",
-      "packages/domain/src/money.test.ts",
-      "packages/domain/src/money.ts",
-      "packages/shared/src/formatting.test.ts",
-      "packages/shared/src/formatting.ts",
-      "prisma/account-remuneration.prisma",
-      "prisma/migrations/20260821210000_expand_monetary_minor_units_to_bigint/migration.sql",
-      "prisma/schema.prisma"
+      "apps/api/src/monetary-range.integration.test.ts"
     ],
-    "issue_delta_sha256": "6eef00502ad889b601d89c04b5feab18806f563d85f02bdc8e519e059dc3c5e6"
+    "issue_delta_sha256": "85fe9ef998c7fd62fc83524581414f032450233eb100b6abc3e3f35bfc626414"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
+      ".audit/entregar-issue/audit-escape-closure.json",
+      ".audit/entregar-issue/audit-remediation.json",
+      ".audit/entregar-issue/audit-source-result.json",
       ".audit/entregar-issue/change-summary.md",
       ".audit/entregar-issue/documentation-impact.json",
       ".audit/entregar-issue/evidence-ci-snapshot.json",
       ".audit/entregar-issue/evidence-controls.md",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
+      ".audit/entregar-issue/learning-closure.json",
+      ".audit/entregar-issue/remote-gate.json",
       ".audit/entregar-issue/requirement-attack-matrix.json",
       ".audit/entregar-issue/requirement-attack-matrix.parts/part-000.b64",
       ".audit/entregar-issue/requirement-closure.json",
@@ -60,7 +50,6 @@
       ".audit/entregar-issue/risk-saturation.parts/part-000.b64",
       ".audit/entregar-issue/source-manifest.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE-599.txt",
       ".audit/entregar-issue/verification-summary.md"
     ]
   },
@@ -92,10 +81,7 @@
       "sha256": "7ec0e90026fb1a66d5bfc77702d4041fb63b2fb5e5410761c01ef2b6ee8118be",
       "logical_sha256": "7ec0e90026fb1a66d5bfc77702d4041fb63b2fb5e5410761c01ef2b6ee8118be",
       "logical_size": 574,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
+      "artifact_transport": {"format": "plain-json", "version": 1}
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
@@ -103,76 +89,41 @@
       "logical_sha256": "1f1c1d3163decc1f52490247eea289394556a6a557d8b094fd528a8e45d039ad",
       "logical_size": 14133,
       "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 4232,
-        "decoded_size": 14133,
+        "format": "base64-shards-v1", "version": 1, "compression": "gzip", "encoded_size": 4232, "decoded_size": 14133,
         "decoded_sha256": "1f1c1d3163decc1f52490247eea289394556a6a557d8b094fd528a8e45d039ad",
         "encoded_sha256": "1cd0bf54c6c1b69362f748d3776af60deca7ddeb7a1d7b021b009806c1925aa6",
-        "parts": [
-          {
-            "path": "requirement-closure.parts/part-000.b64",
-            "size": 4232,
-            "sha256": "1cd0bf54c6c1b69362f748d3776af60deca7ddeb7a1d7b021b009806c1925aa6"
-          }
-        ]
+        "parts": [{"path": "requirement-closure.parts/part-000.b64", "size": 4232, "sha256": "1cd0bf54c6c1b69362f748d3776af60deca7ddeb7a1d7b021b009806c1925aa6"}]
       }
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "efdbac21d555a9f587e0947dc9bfe677317beec42c6e312d9b14f432d15c1676",
-      "logical_sha256": "c49af5349d180021c294ac220af79e0ff8678a5086dcdbccd71ed1496e2f2ea3",
+      "sha256": "45a49c4186b5c4a935e1247d59f60bd5cc7f51334ae0b5622818a1ad11b22873",
+      "logical_sha256": "32b846de45123b7bb9e02b43ef8ebc6d5987e1267d7504f85e02b1fb3e84d1c5",
       "logical_size": 24256,
       "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 3812,
-        "decoded_size": 24256,
-        "decoded_sha256": "c49af5349d180021c294ac220af79e0ff8678a5086dcdbccd71ed1496e2f2ea3",
-        "encoded_sha256": "2e68d0dbb89c43f03217be5083aa92d85bf64d11eeb91b4316e65b3a55ba95bb",
-        "parts": [
-          {
-            "path": "requirement-attack-matrix.parts/part-000.b64",
-            "size": 3812,
-            "sha256": "2e68d0dbb89c43f03217be5083aa92d85bf64d11eeb91b4316e65b3a55ba95bb"
-          }
-        ]
+        "format": "base64-shards-v1", "version": 1, "compression": "gzip", "encoded_size": 3812, "decoded_size": 24256,
+        "decoded_sha256": "32b846de45123b7bb9e02b43ef8ebc6d5987e1267d7504f85e02b1fb3e84d1c5",
+        "encoded_sha256": "73e5dce96525267691fd9a096c2d4f7ec141d3a216c18832a14eb2ca9cab82ec",
+        "parts": [{"path": "requirement-attack-matrix.parts/part-000.b64", "size": 3812, "sha256": "73e5dce96525267691fd9a096c2d4f7ec141d3a216c18832a14eb2ca9cab82ec"}]
       }
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "be89579ef168f265d165e7ab5b65a6b6e7264eff9e4afb165f2acd11848dbc0e",
-      "logical_sha256": "fe666e3784c9f40c78fbae88ff2e9a53afe91bf4a48fd86f71fd9042dd872524",
+      "sha256": "240fba15fe52a2ccdb41e7a69af5a288807de99331193502a70d8017757fff4b",
+      "logical_sha256": "a68a30bc18186606d60c2f1166dc9ade11bbdd8a159b857ef5ac9d387fddba70",
       "logical_size": 5413,
       "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 1080,
-        "decoded_size": 5413,
-        "decoded_sha256": "fe666e3784c9f40c78fbae88ff2e9a53afe91bf4a48fd86f71fd9042dd872524",
-        "encoded_sha256": "e267aa3ebccd20b626647f955d21ed17b7e5bdb6f0188e0c7561a55a4a40b4cf",
-        "parts": [
-          {
-            "path": "risk-saturation.parts/part-000.b64",
-            "size": 1080,
-            "sha256": "e267aa3ebccd20b626647f955d21ed17b7e5bdb6f0188e0c7561a55a4a40b4cf"
-          }
-        ]
+        "format": "base64-shards-v1", "version": 1, "compression": "gzip", "encoded_size": 1080, "decoded_size": 5413,
+        "decoded_sha256": "a68a30bc18186606d60c2f1166dc9ade11bbdd8a159b857ef5ac9d387fddba70",
+        "encoded_sha256": "d4b93f0150a174e4d51f8c8bf7af7f6f4c7b2f22b2f62c4cfd03ef4311aa2bfd",
+        "parts": [{"path": "risk-saturation.parts/part-000.b64", "size": 1080, "sha256": "d4b93f0150a174e4d51f8c8bf7af7f6f4c7b2f22b2f62c4cfd03ef4311aa2bfd"}]
       }
     },
-    "inherited_controls": {
-      "name": "inherited-controls.json",
-      "sha256": "0a124d42398aa2a3020bd5e7d097d6503a4eef3dab1ddcf47d69155dc06f444f",
-      "logical_sha256": "0a124d42398aa2a3020bd5e7d097d6503a4eef3dab1ddcf47d69155dc06f444f",
-      "logical_size": 180,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    }
+    "inherited_controls": {"name": "inherited-controls.json", "sha256": "06f7d5e55a7ca86a2bcd19490808e48b85ef729c8bc635240547b194d798c439", "logical_sha256": "06f7d5e55a7ca86a2bcd19490808e48b85ef729c8bc635240547b194d798c439", "logical_size": 1946, "artifact_transport": {"format": "plain-json", "version": 1}},
+    "audit_escape_closure": {"name": "audit-escape-closure.json", "sha256": "954c1124b76e91a6b5bb7321e411ca60b5164538cb40b47f3ef03c16a153d879", "logical_sha256": "954c1124b76e91a6b5bb7321e411ca60b5164538cb40b47f3ef03c16a153d879", "logical_size": 4470, "artifact_transport": {"format": "plain-json", "version": 1}},
+    "learning_closure": {"name": "learning-closure.json", "sha256": "c6d4c8cac87bd31b4fcf4b4d019b58e323aafe8e6c888e50d08ea968e92c31ed", "logical_sha256": "c6d4c8cac87bd31b4fcf4b4d019b58e323aafe8e6c888e50d08ea968e92c31ed", "logical_size": 578, "artifact_transport": {"format": "plain-json", "version": 1}},
+    "audit_remediation": {"name": "audit-remediation.json", "sha256": "52d3116165a067cbef3413156c2ca51f835f68800eb8564bc2cd6df57f725b6d", "logical_sha256": "52d3116165a067cbef3413156c2ca51f835f68800eb8564bc2cd6df57f725b6d", "logical_size": 1784, "artifact_transport": {"format": "plain-json", "version": 1}},
+    "audit_source_result": {"name": "audit-source-result.json", "sha256": "09fa492eda1c382c3e50e71581ad4b62d9c37fc9ee8807fce8426abea7703cca", "logical_sha256": "09fa492eda1c382c3e50e71581ad4b62d9c37fc9ee8807fce8426abea7703cca", "logical_size": 1017, "artifact_transport": {"format": "plain-json", "version": 1}}
   },
-  "previous_independent_rejection": false
+  "previous_independent_rejection": true
 }
