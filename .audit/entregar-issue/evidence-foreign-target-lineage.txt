@@ -1,4 +1,4 @@
-subject_sha=88116871f5e28668f6cc7daa1902b5e18119c880
-material-parent inherited-controls is the prior #598 handoff package at 317d2aa3d82f8ae6d2518b03a7433acf5f63a20f; it is preserved as predecessor lineage, not reused as fresh proof.
+subject_sha=478ec624ff18ce88858bf77c33f9886014d5bb44
+material-parent inherited-controls comes from the prior #598 handoff 1aad312793eda93dd77666490cb362185ebc8371, whose material subject was 88116871f5e28668f6cc7daa1902b5e18119c880; that package is preserved only as predecessor lineage, not reused as fresh proof.
 Its 30 retired IDs originated from the earlier foreign #596 target and remain explicitly retired/not-applicable for #598.
 No retired foreign control is used to satisfy a #598 requirement, attack, or risk-saturation dimension.
