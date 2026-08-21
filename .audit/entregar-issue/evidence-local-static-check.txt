@@ -1,8 +1,9 @@
-subject_sha=478ec624ff18ce88858bf77c33f9886014d5bb44
-environment=connector-only, no repository checkout/dependency installation available
-check=tsc --noEmit --noResolve --module NodeNext --moduleResolution NodeNext --target ES2022 --skipLibCheck /tmp/financial-invariants-e2e.integration.test.ts
-observed=only unresolved imports / missing Node typings in isolated environment; no local syntax diagnostic beyond unavailable dependencies
-formatting=authored TypeScript has final LF, explicit Prettier-shaped wrapping, and zero lines above repository printWidth=100
-predecessor_ci=88116871f5e28668f6cc7daa1902b5e18119c880 passed FIN-E2E-001..009; then financial-summary-multi-currency failed because the suite left fixture state, while Validate monorepo reported formatting only for the suite file
-remediation=all nine invariants run inside try/finally cleanup; cleanup is tenant/profile scoped, targets only FIN-E2E fixture identities and uses FK-safe ordering; formatter-sensitive constructs were normalized
-full executable gate=single GitHub Actions snapshot for this material SHA observed CI and Statement visual validation in_progress; no polling, rerun, or dispatch performed
+subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
+source=GitHub Actions CI run 4343
+format=passed
+lint=passed
+typecheck=passed
+test=passed
+build=passed
+integration=passed
+note=No local checkout/dependencies were available; executable evidence is the exact-material GitHub Actions run already observed by corrigir-ci.

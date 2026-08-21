@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-21T09:36:19.615469+00:00",
+  "created_at": "2026-08-21T11:23:16.920622+00:00",
   "identity": {
-    "head_sha": "478ec624ff18ce88858bf77c33f9886014d5bb44",
-    "material_head_sha": "478ec624ff18ce88858bf77c33f9886014d5bb44",
+    "head_sha": "33955a3de2c12d53703229ebdd2f63e5ce7bb5c7",
+    "material_head_sha": "33955a3de2c12d53703229ebdd2f63e5ce7bb5c7",
     "base_sha": "901fe39e8c2e6756dc551ff739d710394b985b02",
-    "merge_preview_sha": null,
-    "material_merge_preview_sha": null
+    "merge_preview_sha": "bb9e2cb6947118b7415f2939cb66191df691e8ba",
+    "material_merge_preview_sha": "bb9e2cb6947118b7415f2939cb66191df691e8ba"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -55,23 +55,23 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "89f1454403dfd8bcc227543b99f04154afd8e236437710cefb7519ac4d1c4a3f"
+      "sha256": "4e998cf291976fd532d7a01c8b0e9eacae649c40aee7e2350c07d2fbfc3708c8"
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "380815dd07f3f508487c2bef8d153faa853817deead7d348fa54bf5c0e4e0005"
+      "sha256": "798f21497c07bf2764d5cf10454ed603f1f619192f7122c1b12605a25ea764df"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "3ff0572ed70e4a0c31efb897e0117cf6d36a733dc1245be7aff0152959847f55"
+      "sha256": "bd12e9339fb28912c64ae84fadb3061d8ee7f98537375b79e77cdae34694ec85"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "27092a0a027ffc6c536ffc3e93a14d5315d44f2f28a0c952bc2b07e63d73b5c2"
+      "sha256": "9d37dbd741920ecb168dab338f8c00d65bd18944fb898c48c68b9d75e0270f4b"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "28fa122736f905c9d990e4edbfb900d9f0f576628a1c7d65a9096a6307389b05"
+      "sha256": "ceb704072d6f1e2c967663ee214c35600c393dcaa21fdf64bd67cdd796220da9"
     }
   },
   "previous_independent_rejection": false
