@@ -48,10 +48,7 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(
-    process.env.DATABASE_URL,
-    "DATABASE_URL is required for the financial E2E suite.",
-  );
+  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for the financial E2E suite.");
 
   try {
     await runInvariant(
@@ -205,11 +202,7 @@ async function cleanupFinancialInvariantFixtures(): Promise<void> {
   );
 }
 
-async function runInvariant(
-  id: string,
-  name: string,
-  action: () => Promise<void>,
-): Promise<void> {
+async function runInvariant(id: string, name: string, action: () => Promise<void>): Promise<void> {
   try {
     await action();
     console.log(`[${id}] PASS ${name}`);
@@ -528,8 +521,14 @@ async function invariantMixedCurrencyProfileNeverProducesSingleAggregate(): Prom
     expensesMinor: 700,
     plannedCommitmentsMinor: 0,
   });
-  assert.equal(summary.currencyBlocks.some((block) => block.currency === "BRL"), true);
-  assert.equal(summary.currencyBlocks.some((block) => block.currency === "USD"), true);
+  assert.equal(
+    summary.currencyBlocks.some((block) => block.currency === "BRL"),
+    true,
+  );
+  assert.equal(
+    summary.currencyBlocks.some((block) => block.currency === "USD"),
+    true,
+  );
   assert.equal("currency" in summary, false);
   assert.equal("availableBalanceMinor" in summary, false);
   assert.equal("incomeMinor" in summary, false);
