@@ -15,6 +15,7 @@ void main()
   })
   .finally(closePool);
 
+// prettier-ignore
 async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL);
 
