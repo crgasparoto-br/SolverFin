@@ -1,4 +1,4 @@
-subject_sha=317d2aa3d82f8ae6d2518b03a7433acf5f63a20f
+subject_sha=88116871f5e28668f6cc7daa1902b5e18119c880
 source=apps/api/src/financial-invariants-e2e.integration.test.ts
 FIN-E2E-001 card purchase/close/pay: purchase economic expense once; payment cash effect without new expense.
 FIN-E2E-002 installment purchase: 10000 => 3334+3333+3333 across three invoices.
@@ -8,6 +8,6 @@ FIN-E2E-005 void: same persisted id/amount/currency/description, status voided, 
 FIN-E2E-006 planned -> reconciled: same id; planned 1200 becomes realized 1200 without duplicate future commitment.
 FIN-E2E-007 BRL+USD: independent currencyBlocks and no scalar aggregate fields.
 FIN-E2E-008 USD filter: current-profile USD delta 1700 ignores same-profile BRL 2600 and sibling-profile USD 900000.
-FIN-E2E-009 invoice payment retry: CARD_INVOICE_ALREADY_PAID; one payment row; unchanged summary.
+FIN-E2E-009 invoice payment retry: CARD_INVOICE_ALREADY_PAID; paymentTransactionId remains stable; invoice-linked transaction count is unchanged; summary is unchanged.
 financial dates=fixed literals 2040-2048; names=randomized only for collision avoidance; assertions use immediate baselines.
-remediation=removed impossible post-assert narrowing branch identified by TypeScript on predecessor SHA; behavior assertions unchanged.
+predecessor_ci=317d2aa3d82f8ae6d2518b03a7433acf5f63a20f passed FIN-E2E-001..008 and exposed an over-specific FIN-E2E-009 test assumption (broad invoice-linked count was 2, not 1); the control now asserts no count growth rather than a fictional absolute count.

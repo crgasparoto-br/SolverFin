@@ -1,31 +1,24 @@
 {
   "schema_version": 1,
-  "repository": "crgasparoto-br/SolverFin",
-  "pull_request": 630,
-  "material_head_sha": "f3737b1aabf0b31e43bae56e3e358dca6c5c3f5f",
-  "observed_at": "2026-08-20T04:44:00Z",
-  "source": "github-connector-delivery-snapshot",
-  "workflows": [
+  "subject_sha": "88116871f5e28668f6cc7daa1902b5e18119c880",
+  "ci_mode": "delivery-snapshot",
+  "workflow_runs": [
     {
-      "id": 32330431692,
-      "name": "CI",
-      "run_number": 4312,
-      "status": "completed",
-      "conclusion": "success",
-      "jobs": [
-        {"name": "Integration API + PostgreSQL", "status": "completed", "conclusion": "success"},
-        {"name": "Validate monorepo", "status": "completed", "conclusion": "success"}
-      ]
+      "id": 32438437527,
+      "name": "Statement visual validation",
+      "status": "in_progress",
+      "conclusion": null
     },
     {
-      "id": 32330431699,
-      "name": "Statement visual validation",
-      "run_number": 2828,
-      "status": "completed",
-      "conclusion": "success",
-      "jobs": [
-        {"name": "Chrome visual validation", "status": "completed", "conclusion": "success"}
-      ]
+      "id": 32438437538,
+      "name": "CI",
+      "status": "in_progress",
+      "conclusion": null
     }
-  ]
+  ],
+  "status": "pending",
+  "collection_count": 1,
+  "predecessor_failure_sha": "317d2aa3d82f8ae6d2518b03a7433acf5f63a20f",
+  "predecessor_failure_classification": "actionable-delivery-remediated",
+  "note": "Single allowed remote collection for this material SHA observed both workflows in progress; no polling, rerun, or dispatch performed."
 }

@@ -1,8 +1,8 @@
-subject_sha=317d2aa3d82f8ae6d2518b03a7433acf5f63a20f
+subject_sha=88116871f5e28668f6cc7daa1902b5e18119c880
 old_terms=Planejado | Invariantes financeiros ponta a ponta
 new_terms=Feito | #598 | FIN-E2E-001..FIN-E2E-009
 search exact old phrase => docs/STATUS_MATRIX.md only
 search "#598 Planejado" => no occurrences
 canonical updated source=docs/STATUS_MATRIX.md
-formatting=Phase 3 table normalized to current longest third-column content without altering claims
+formatting=Phase 3 table remains normalized; no documentation claim changed in the FIN-E2E-009 remediation
 unresolved_contradictions=[]

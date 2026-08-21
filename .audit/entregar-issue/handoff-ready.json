@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-21T01:31:44.919641+00:00",
+  "created_at": "2026-08-21T02:05:30.851649+00:00",
   "identity": {
-    "head_sha": "317d2aa3d82f8ae6d2518b03a7433acf5f63a20f",
-    "material_head_sha": "317d2aa3d82f8ae6d2518b03a7433acf5f63a20f",
+    "head_sha": "88116871f5e28668f6cc7daa1902b5e18119c880",
+    "material_head_sha": "88116871f5e28668f6cc7daa1902b5e18119c880",
     "base_sha": "901fe39e8c2e6756dc551ff739d710394b985b02",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
@@ -59,19 +59,19 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "865a638cb4d97246d1a5ae4fa481d29308f5619522685dad8de7bbe1b6e40ae9"
+      "sha256": "afa683fc86dc3b3d82c65aa5473e1568fd7b34fa7af640173fc8c697854a4327"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "826182a13c8f78f43e896236f5a61ab7827e7895ac711b3af180df055b470fdc"
+      "sha256": "97167539a5add305190893ce9e224e2307cfd65169670fea500c31afb3b9cc30"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "ac4c2991f0e6b41e26f21bd8821dbdb79fad34ffa127ed5d963451a65f9ef453"
+      "sha256": "8525b885c33337ffe7a6f0bfce9d844503d034f0ce59db1125a171d3093b4d3d"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "49ec7f4399c61db35eaab5eebfc0854142880c6ff45942e81b40503325fd0fde"
+      "sha256": "f0bb151e0552ddf714bd7cc68bf386a6ca9dc25fa7128aa6d580ef3cb190a09b"
     }
   },
   "previous_independent_rejection": false

@@ -1,4 +1,4 @@
-subject_sha=317d2aa3d82f8ae6d2518b03a7433acf5f63a20f
-material-parent inherited-controls belongs to the prior #596 delivery target and is not reused as active evidence for #598.
-All prior active and retired IDs are retained only as cumulative lineage and explicitly retired/not-applicable for the new #598 target.
-No prior control is used to satisfy a #598 requirement, attack, or risk-saturation dimension.
+subject_sha=88116871f5e28668f6cc7daa1902b5e18119c880
+material-parent inherited-controls is the prior #598 handoff package at 317d2aa3d82f8ae6d2518b03a7433acf5f63a20f; it is preserved as predecessor lineage, not reused as fresh proof.
+Its 30 retired IDs originated from the earlier foreign #596 target and remain explicitly retired/not-applicable for #598.
+No retired foreign control is used to satisfy a #598 requirement, attack, or risk-saturation dimension.
