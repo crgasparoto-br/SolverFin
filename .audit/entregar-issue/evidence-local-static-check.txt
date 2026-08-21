@@ -1,0 +1,9 @@
+subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
+source=GitHub Actions CI run 4343
+format=passed
+lint=passed
+typecheck=passed
+test=passed
+build=passed
+integration=passed
+note=No local checkout/dependencies were available; executable evidence is the exact-material GitHub Actions run already observed by corrigir-ci.

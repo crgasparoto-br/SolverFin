@@ -1,0 +1,1 @@
+{"schema_version":1,"subject_sha":"4afa527b062913a62df15e615dfbb58b61a7c3b1","status":"validated","changed_documentation":["docs/STATUS_MATRIX.md"],"broad_documentation_change_required":false,"notes":"This remediation changes no product documentation; the existing #598 invariant inventory remains consistent with the unchanged material implementation."}

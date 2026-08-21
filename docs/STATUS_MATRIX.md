@@ -81,22 +81,38 @@ As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas
 
 A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas #589, #590 e #591 e respectivas subissues; cada capacidade abaixo deve refletir apenas o estado verificavel do seu proprio recorte.
 
-| Capacidade estrutural                                         | Estado    | Contrato principal                                   |
-| ------------------------------------------------------------- | --------- | ---------------------------------------------------- |
-| Compra de cartao x liquidacao sem dupla contabilizacao        | Feito     | #593, `docs/CARDS.md`, `docs/API_REPORTS.md`         |
-| Saldo/metricas coerentes com a semantica financeira           | Feito     | #594, `docs/API_FINANCIAL_SUMMARY.md`                |
-| Agregacao multi-moedas explicita                              | Feito     | #595, `docs/MULTI_CURRENCY_AGGREGATION.md`, ADR 0013 |
-| Contrato para consolidacao cambial auditavel futura           | Feito     | #596, `docs/CURRENCY_CONVERSION.md`, ADR 0013        |
-| Datas financeiras formalizadas                                | Feito     | #597, `docs/TRANSACTION_DATES.md`                    |
-| Invariantes financeiros ponta a ponta                         | Planejado | #589                                                 |
-| Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`                        |
-| View-models/presenters para separar UI de calculos            | Planejado | #590, ADR 0014                                       |
-| Retirada gradual de pos-processamento textual de HTML         | Planejado | #590, ADR 0014                                       |
-| Dashboard migrado para cockpit de decisao                     | Planejado | #591                                                 |
-| Extrato migrado para novo padrao                              | Planejado | #591                                                 |
-| Cartoes/Faturas migrados para hierarquia cartao-fatura        | Planejado | #591                                                 |
-| Relatorios com resumo/visualizacao antes da matriz detalhada  | Planejado | #591                                                 |
-| Demais superficies convergentes aos arquetipos compartilhados | Planejado | #591                                                 |
+| Capacidade estrutural                                         | Estado    | Contrato principal                                                |
+| ------------------------------------------------------------- | --------- | ----------------------------------------------------------------- |
+| Compra de cartao x liquidacao sem dupla contabilizacao        | Feito     | #593, `docs/CARDS.md`, `docs/API_REPORTS.md`                      |
+| Saldo/metricas coerentes com a semantica financeira           | Feito     | #594, `docs/API_FINANCIAL_SUMMARY.md`                             |
+| Agregacao multi-moedas explicita                              | Feito     | #595, `docs/MULTI_CURRENCY_AGGREGATION.md`, ADR 0013              |
+| Contrato para consolidacao cambial auditavel futura           | Feito     | #596, `docs/CURRENCY_CONVERSION.md`, ADR 0013                     |
+| Datas financeiras formalizadas                                | Feito     | #597, `docs/TRANSACTION_DATES.md`                                 |
+| Invariantes financeiros ponta a ponta                         | Feito     | #598, `apps/api/src/financial-invariants-e2e.integration.test.ts` |
+| Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`                                     |
+| View-models/presenters para separar UI de calculos            | Planejado | #590, ADR 0014                                                    |
+| Retirada gradual de pos-processamento textual de HTML         | Planejado | #590, ADR 0014                                                    |
+| Dashboard migrado para cockpit de decisao                     | Planejado | #591                                                              |
+| Extrato migrado para novo padrao                              | Planejado | #591                                                              |
+| Cartoes/Faturas migrados para hierarquia cartao-fatura        | Planejado | #591                                                              |
+| Relatorios com resumo/visualizacao antes da matriz detalhada  | Planejado | #591                                                              |
+| Demais superficies convergentes aos arquetipos compartilhados | Planejado | #591                                                              |
+
+### Suite de invariantes financeiros E2E (#598)
+
+A suite `apps/api/src/financial-invariants-e2e.integration.test.ts` roda dentro do gate `npm run test:integration` contra os repositorios reais da API e PostgreSQL. Cada cenario usa dados ficticios, escopo explicito de organizacao/perfil, datas financeiras fixas e um identificador proprio no erro:
+
+- `FIN-E2E-001`: compra de cartao -> fechamento -> pagamento reduz caixa sem contabilizar a liquidacao como nova despesa economica;
+- `FIN-E2E-002`: compra parcelada distribui exatamente o valor total entre a fatura corrente e as futuras;
+- `FIN-E2E-003`: receita e despesa de conta alteram saldo e resultado uma unica vez;
+- `FIN-E2E-004`: transferencia entre contas do mesmo perfil preserva resultado economico liquido e saldo agregado;
+- `FIN-E2E-005`: estorno por exclusao logica preserva o lancamento rastreavel e remove seu efeito financeiro sem inverter indevidamente o sinal;
+- `FIN-E2E-006`: compromisso `planned` conciliado deixa de ser futuro e passa a realizado sem dupla contabilizacao;
+- `FIN-E2E-007`: perfil com BRL e USD permanece separado em `currencyBlocks`, sem escalar unico sintetico;
+- `FIN-E2E-008`: filtro explicito de USD considera somente a moeda e o perfil solicitados, ignorando BRL do mesmo perfil e USD de perfil irmao;
+- `FIN-E2E-009`: retry de pagamento de fatura ja liquidada e rejeitado sem criar nova transacao nem alterar o resumo financeiro.
+
+Os cenarios calculam deltas a partir de um baseline obtido imediatamente antes de cada mutacao relevante; assim, nao dependem da ordem dos demais testes nem de um banco previamente vazio. O relogio do teste nao define competencia, planejamento ou efetivacao: todas as datas financeiras usadas nas expectativas sao literais e controladas.
 
 ### Regras de transicao da Fase 3
 

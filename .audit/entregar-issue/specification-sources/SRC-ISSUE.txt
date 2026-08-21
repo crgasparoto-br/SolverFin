@@ -1,33 +1,32 @@
-# [Fase 3A] Definir contrato de moeda de referência e consolidação cambial
+# [Fase 3A] Criar suíte E2E de invariantes financeiros e multi-moedas
 
 Parent epic: #589
-Depends on: #595
+Depends on: #593, #594, #595, #597
 
 ## Objetivo
-Deve ser definido o contrato que permitirá futuramente apresentar valores consolidados convertidos em uma moeda de referência, sem alterar a moeda nativa dos registros e sem conversão implícita.
+Criar uma suíte de cenários ponta a ponta que valide invariantes financeiros de alto risco independentemente da implementação interna.
 
-## Escopo
-- deve definir responsabilidade e ciclo de vida da eventual moeda de referência do perfil;
-- deve definir o shape do valor convertido: origem, destino, taxa, data/instante de referência e fonte;
-- deve definir comportamento quando cotação estiver ausente, expirada ou indisponível;
-- deve definir como APIs e UI distinguem valor nativo de valor convertido;
-- deve registrar ADR complementar se houver escolha de schema persistente ou provider.
+## Cenários mínimos
+- compra de cartão -> fechamento -> pagamento sem dupla despesa;
+- compra parcelada distribuída entre faturas;
+- receita e despesa de conta alterando saldo uma única vez;
+- transferência sem alterar resultado econômico líquido;
+- estorno/reembolso preservando rastreabilidade e sinal correto;
+- compromisso planned materializado/conciliado sem duplicidade;
+- perfil com BRL e USD sem agregado único;
+- filtro por moeda sem vazamento entre perfis;
+- repetição/retry de mutações financeiras sem efeitos duplicados.
 
 ## Critérios de aceite
-- não deve existir suposição universal de BRL;
-- moeda de referência não deve alterar a moeda nativa do registro;
-- conversão deve exigir metadados auditáveis;
-- ausência de cotação não deve virar 1:1 nem zero;
-- contrato deve ser consumível por Dashboard, Relatórios e futuras projeções;
-- não deve haver integração externa nesta issue.
+- cenários executam contra contratos públicos/repositórios reais adequados ao nível do teste;
+- falha informa qual invariante foi violado;
+- dados são fictícios e tenant-scoped;
+- suíte entra no gate automatizado apropriado;
+- testes não dependem de ordem ou relógio não controlado;
+- documentação lista os invariantes protegidos.
 
 ## Fora de escopo
-- não deve escolher ou implementar provider de câmbio;
-- não deve persistir histórico completo de câmbio;
-- não deve consolidar UI de patrimônio.
+- validar layout visual;
+- testes de provider externo.
 
-## Referências
-- #589
-- #595
-- ADR 0013
-- docs/EVOLUTION_STRATEGY.md
+Refs #589, ADR 0013, docs/EVOLUTION_STRATEGY.md

@@ -1,0 +1,15 @@
+subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
+source=apps/api/src/financial-invariants-e2e.integration.test.ts
+ci_workflow=CI run 4343 (32475241968) completed success on material head 33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
+integration_job=Integration API + PostgreSQL completed success; Run API integration tests and import statement consistency both passed.
+FIN-E2E-001 card purchase/close/pay: purchase economic expense once; payment cash effect without new expense.
+FIN-E2E-002 installment purchase: exact split across three invoices.
+FIN-E2E-003 account income/expense: available balance delta applied once.
+FIN-E2E-004 internal transfer: zero aggregate economic-result delta.
+FIN-E2E-005 void/refund: traceability retained and economic effect removed.
+FIN-E2E-006 planned -> reconciled: same identity without duplicate future commitment.
+FIN-E2E-007 BRL+USD: independent currency blocks and no scalar mixed-currency aggregate.
+FIN-E2E-008 currency/profile isolation: sibling profile value excluded.
+FIN-E2E-009 invoice payment retry: payment identity/count/summary unchanged after rejected retry.
+isolation=fixture cleanup is organization/profile-scoped and FK-safe; the prior PostgreSQL parameter mismatch was corrected and the exact-material integration workflow passed.
+temporal=financial dates are fixed literals; assertions use immediate baselines rather than runner wall clock.

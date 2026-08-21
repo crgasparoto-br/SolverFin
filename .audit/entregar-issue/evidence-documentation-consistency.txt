@@ -1,9 +1,5 @@
-material_head_sha=d6395869c6c2d5fb4dd7c9d99810213eb235ec42
-contract=docs/CURRENCY_CONVERSION.md blob=52eee92ac979cc4b9e581324b8148a83a839d201
-status=passed
-- documentation now states that updatedAt, referenceAt, expiresAt and evaluatedAt are unambiguous instants
-- Z or explicit +/-HH:MM offset is required
-- timezone-less strings and impossible civil dates are invalid
-- timezone configuration of the executing process must not change quote availability
-- productive FX provider, persistence, migration, endpoint and UI activation remain outside this issue
-- docs/STATUS_MATRIX.md and ADR 0013 remain compatible with the clarified contract: contract implemented, productive conversion/provider not activated
+subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
+control=DOC-SEMANTIC-DRIFT-001
+STATUS_MATRIX records the Phase 3A invariant suite as Feito and lists #598 / FIN-E2E coverage.
+Previously inspected EVOLUTION_STRATEGY and ARCHITECTURE remain compatible with that current-state claim.
+No unresolved stale planned claim for #598 was identified in the canonical documentation surfaces reviewed for this delivery.

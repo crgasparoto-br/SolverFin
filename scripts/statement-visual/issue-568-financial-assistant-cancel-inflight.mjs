@@ -136,23 +136,42 @@ async function ensureConversation(cdp) {
     cdp,
     `(() => document.querySelector('[data-financial-assistant]')?.getAttribute('data-conversation-id') || '')()`,
   );
-  if (existing) return existing;
-  await evaluate(
-    cdp,
-    `(() => {
-      const button = document.querySelector('[data-assistant-new]');
-      if (!(button instanceof HTMLButtonElement)) throw new Error('New-context button not found.');
-      button.click();
-    })()`,
-  );
+  if (!existing) {
+    await evaluate(
+      cdp,
+      `(() => {
+        const button = document.querySelector('[data-assistant-new]');
+        if (!(button instanceof HTMLButtonElement)) throw new Error('New-context button not found.');
+        button.click();
+      })()`,
+    );
+    await waitFor(
+      () =>
+        evaluate(
+          cdp,
+          `(() => Boolean(document.querySelector('[data-financial-assistant]')?.getAttribute('data-conversation-id')))()`,
+        ),
+      5_000,
+      "new assistant conversation",
+    );
+  }
   await waitFor(
     () =>
       evaluate(
         cdp,
-        `(() => Boolean(document.querySelector('[data-financial-assistant]')?.getAttribute('data-conversation-id')))()`,
+        `(() => {
+          const root = document.querySelector('[data-financial-assistant]');
+          const submit = document.querySelector('[data-assistant-submit]');
+          return Boolean(
+            root &&
+            root.getAttribute('aria-busy') !== 'true' &&
+            submit instanceof HTMLButtonElement &&
+            !submit.disabled
+          );
+        })()`,
       ),
     5_000,
-    "new assistant conversation",
+    "assistant composer ready",
   );
   return evaluate(
     cdp,
