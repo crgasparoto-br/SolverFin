@@ -1,0 +1,13 @@
+subject_sha=317d2aa3d82f8ae6d2518b03a7433acf5f63a20f
+source=apps/api/src/financial-invariants-e2e.integration.test.ts
+FIN-E2E-001 card purchase/close/pay: purchase economic expense once; payment cash effect without new expense.
+FIN-E2E-002 installment purchase: 10000 => 3334+3333+3333 across three invoices.
+FIN-E2E-003 account income/expense: +5000/-2000 => +3000 available delta exactly once.
+FIN-E2E-004 internal transfer: zero aggregate available/income/expense/planned delta.
+FIN-E2E-005 void: same persisted id/amount/currency/description, status voided, summary returns to baseline.
+FIN-E2E-006 planned -> reconciled: same id; planned 1200 becomes realized 1200 without duplicate future commitment.
+FIN-E2E-007 BRL+USD: independent currencyBlocks and no scalar aggregate fields.
+FIN-E2E-008 USD filter: current-profile USD delta 1700 ignores same-profile BRL 2600 and sibling-profile USD 900000.
+FIN-E2E-009 invoice payment retry: CARD_INVOICE_ALREADY_PAID; one payment row; unchanged summary.
+financial dates=fixed literals 2040-2048; names=randomized only for collision avoidance; assertions use immediate baselines.
+remediation=removed impossible post-assert narrowing branch identified by TypeScript on predecessor SHA; behavior assertions unchanged.

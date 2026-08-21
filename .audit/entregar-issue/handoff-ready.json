@@ -1,108 +1,78 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-20T23:56:33.187205+00:00",
+  "created_at": "2026-08-21T01:31:44.919641+00:00",
   "identity": {
-    "head_sha": "d6395869c6c2d5fb4dd7c9d99810213eb235ec42",
-    "material_head_sha": "d6395869c6c2d5fb4dd7c9d99810213eb235ec42",
-    "base_sha": "d167f9c787c8577abd9d12e11a1d33d77acb9b86",
-    "merge_preview_sha": "70a24909b345ed8098d14faf63c792dcb10556fc",
-    "material_merge_preview_sha": "70a24909b345ed8098d14faf63c792dcb10556fc"
+    "head_sha": "317d2aa3d82f8ae6d2518b03a7433acf5f63a20f",
+    "material_head_sha": "317d2aa3d82f8ae6d2518b03a7433acf5f63a20f",
+    "base_sha": "901fe39e8c2e6756dc551ff739d710394b985b02",
+    "merge_preview_sha": null,
+    "material_merge_preview_sha": null
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "work_item_kind": "issue",
-    "work_item_number": 596,
-    "pull_request": 630,
+    "work_item_number": 598,
+    "pull_request": 631,
     "base_ref": "main",
-    "head_ref": "feat/596-reference-currency-contract"
+    "head_ref": "feat/598-financial-invariants-e2e"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
-      ".audit/entregar-issue/audit-remediation.json",
-      ".audit/entregar-issue/audit-source-result.json",
-      ".audit/entregar-issue/code-growth.json",
-      ".audit/entregar-issue/evidence-code-growth-schema-parity.txt",
+      ".audit/entregar-issue/change-summary.md",
+      ".audit/entregar-issue/documentation-impact.json",
+      ".audit/entregar-issue/evidence-ci-snapshot.json",
       ".audit/entregar-issue/evidence-documentation-consistency.txt",
-      ".audit/entregar-issue/evidence-inherited-controls.txt",
-      ".audit/entregar-issue/evidence-provenance.json",
-      ".audit/entregar-issue/evidence-specification-atomization.txt",
-      ".audit/entregar-issue/evidence-static-contract.txt",
-      ".audit/entregar-issue/evidence-temporal-instant-canonical.txt",
+      ".audit/entregar-issue/evidence-foreign-target-lineage.txt",
+      ".audit/entregar-issue/evidence-local-static-check.txt",
+      ".audit/entregar-issue/evidence-static-financial-invariants.txt",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
       ".audit/entregar-issue/requirement-attack-matrix.json",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/risk-saturation.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt"
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
+      ".audit/entregar-issue/verification-summary.md"
     ]
   },
-  "contract_version": "2026-08-20.3",
-  "evidence_profile": "critical",
+  "contract_version": "2026-08-18.1",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "44f07f709f516bf37ea81c67864393493c0cabdf6a672515139c4cff0ff213aa"
+    "skill_sha256": "c9bf71d10e416fc432920d5b50a1f077eec34f5bd55f55c3cc726b415815469e"
   },
   "validators": {
     "validate_specification_coverage.py": "4eb93ff6a8f451d824adc4ad8faf9fd92a24f92bb42e93666a804f1e74f39aea",
-    "validate_handoff_readiness.py": "ef19c5fdc5045dfbd856d69ec000ddd347b6b938558bd5e2a466f5f608b8bc03",
+    "validate_handoff_readiness.py": "e05ab47b90c8cc1e9645f5357d989b05245c66f0f33679519610d70f529da01e",
     "validate_requirement_attack_matrix.py": "cce39121a991fe540cd1cf787d5609bb4ffe291990bc0cd8d25f6fa72aa7cc62",
     "validate_evidence_freshness.py": "8a20cb7547d03e49b30e6c5713d61c9350a553e46c81ebeef6111137e165aaf8",
     "validate_risk_saturation.py": "fc6286588f136290beba1e15927803fab82e1e0f092771234048748ad2345300",
     "validate_inherited_controls.py": "d76aff2b5745f6d8d34adf805d51dc112e960bcc7ac06028982d872f284a2976",
     "validate_learning_closure.py": "488e0c5ce2c9d85c1427b1205ba87945acb9d37cca2763ac194fa2f040900872",
-    "validate_independent_rejection_closure.py": "d83e69bbee9981586a33c942bd472cd713659fa44bae7ca805f1f745d74ce73b",
-    "validate_code_growth_report.py": "96c5b2a8559ab788e872abd408796f6e12a45e148cff2ba5889238aae443e48b",
-    "validate_standard_evidence.py": "7e506ab745a68d6dff6781c11bc7b6f90c22470206b4d8218ca2aa660d71562b"
+    "validate_independent_rejection_closure.py": "d83e69bbee9981586a33c942bd472cd713659fa44bae7ca805f1f745d74ce73b"
   },
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "efd81b135fb3ff0e8c5cdb6f9445799936c06cae15ef7953c6034d4aab12fef6"
+      "sha256": "24a3f6c9a60c318ea9897ded39f3ea52d84968edd8110ae5be9479d19c2cdabb"
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "7911700563fbfa83f7b823923ea2bf4fdb637ddc5336d08fd440d5ed116ac277"
+      "sha256": "865a638cb4d97246d1a5ae4fa481d29308f5619522685dad8de7bbe1b6e40ae9"
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "173226ebbaffd61223120ede0efb6be6b6645086528453a60f8258d89f6de050"
+      "sha256": "826182a13c8f78f43e896236f5a61ab7827e7895ac711b3af180df055b470fdc"
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "f6d4b12c1453ce6863a3c0d73bc505cd839530273b8a2e8c98d99e23af7098d3"
+      "sha256": "ac4c2991f0e6b41e26f21bd8821dbdb79fad34ffa127ed5d963451a65f9ef453"
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "c3becb1d28721db3a7a2d6229c0958e39c82d07f3b7ee3c84ad66a5583865ee2"
-    },
-    "evidence_provenance": {
-      "name": "evidence-provenance.json",
-      "sha256": "216f3904dc7722a8a045b7d1819e897bbed741d83b4a2bc3a75054050dda8c42"
-    },
-    "audit_remediation": {
-      "name": "audit-remediation.json",
-      "sha256": "642ae0fd7613bf0a77497dc20c99810dfef16c6e70ff83efca1375f242a64a3a"
-    },
-    "audit_source_result": {
-      "name": "audit-source-result.json",
-      "sha256": "3f50e8988a7867e8710dd7ea09807805e61746fb1367bce2f438f858fe2fcaf7"
-    },
-    "code_growth": {
-      "name": "code-growth.json",
-      "sha256": "e83786a6d35b03da7d981b8e45b746890d06245ed935aa77dfb582ca2e6dbf8f"
+      "sha256": "49ec7f4399c61db35eaab5eebfc0854142880c6ff45942e81b40503325fd0fde"
     }
   },
-  "previous_independent_rejection": true,
-  "remediation_mode": "targeted-remediation",
-  "readiness_validation_reused": true,
-  "controls": {
-    "code_growth": {
-      "applicable": true,
-      "control_id": "CODE-GROWTH-001",
-      "artifact": "code_growth"
-    }
-  }
+  "previous_independent_rejection": false
 }

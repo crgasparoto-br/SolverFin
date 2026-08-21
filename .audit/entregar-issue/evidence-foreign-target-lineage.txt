@@ -1,0 +1,4 @@
+subject_sha=317d2aa3d82f8ae6d2518b03a7433acf5f63a20f
+material-parent inherited-controls belongs to the prior #596 delivery target and is not reused as active evidence for #598.
+All prior active and retired IDs are retained only as cumulative lineage and explicitly retired/not-applicable for the new #598 target.
+No prior control is used to satisfy a #598 requirement, attack, or risk-saturation dimension.
