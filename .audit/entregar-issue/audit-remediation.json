@@ -2,14 +2,13 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
-  "remediation_mode": "targeted-remediation",
-  "status": "closed",
-  "candidate_head_sha": "d6395869c6c2d5fb4dd7c9d99810213eb235ec42",
   "source": {
-    "rejection_id": "audit-rejection:9a292356-7374-41e8-b8c2-41148f2c67ee",
-    "audited_head_sha": "f22fecae57497f2397ad9bd77e2232092ac908c7",
-    "audit_report_sha256": "3f50e8988a7867e8710dd7ea09807805e61746fb1367bce2f438f858fe2fcaf7"
+    "rejection_id": "audit-rejection:9f774c64-3d32-4723-9460-7bc30a7698f4",
+    "audit_report_sha256": "31c395cecbcae3de05ff29f0f0a37a0c954814163a6718d2aea5d0320d8b49c1",
+    "audited_head_sha": "2a678bd6175da2ecfe84791c731f39badabe6c0f"
   },
+  "candidate_head_sha": "33955a3de2c12d53703229ebdd2f63e5ce7bb5c7",
+  "remediation_mode": "targeted-remediation",
   "items": [
     {
       "source_kind": "finding",
@@ -17,22 +16,24 @@
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "changed_files": [
-        "packages/domain/src/currency-conversion.ts",
-        "packages/domain/src/currency-conversion-timezone.test.ts",
-        "docs/CURRENCY_CONVERSION.md"
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/inherited-controls.json",
+        ".audit/entregar-issue/audit-remediation.json",
+        ".audit/entregar-issue/audit-source-result.json",
+        ".audit/entregar-issue/audit-escape-closure.json",
+        ".audit/entregar-issue/learning-closure.json"
       ],
       "evidence": [
-        "ISODateTime validation now requires Z or an explicit numeric timezone offset and rejects impossible calendar dates.",
-        "Availability and direct converted-value factory both reject timezone-less evaluatedAt.",
-        "The independent-audit literal explicit-offset case is invariant under TZ=UTC and TZ=America/Sao_Paulo.",
-        "Documentation makes the timezone requirement normative without activating productive FX integration."
+        "evidence-handoff-contract-parity.txt",
+        "focused skill contract tests"
       ],
       "validations": [
-        "focused TypeScript compile and currency-conversion tests passed on equivalent exact material content",
-        "TEMP-FX-INSTANT-CANONICAL-001 passed under TZ=UTC and TZ=America/Sao_Paulo",
-        "CODE-GROWTH-001 passed for the current executable module inventory",
-        "GitHub CI run 32428953640 and visual run 32428953613 completed successfully on the current material SHA"
-      ]
+        "validate_audit_remediation.py",
+        "validate_handoff_readiness.py",
+        "validate_handoff_certificate.py"
+      ],
+      "reason": "No functional product change is required; the stale handoff contract is rebuilt with the current contract and exact material identity."
     }
-  ]
+  ],
+  "status": "closed"
 }
