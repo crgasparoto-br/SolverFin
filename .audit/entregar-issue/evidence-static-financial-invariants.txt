@@ -1,14 +1,15 @@
-subject_sha=478ec624ff18ce88858bf77c33f9886014d5bb44
+subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
 source=apps/api/src/financial-invariants-e2e.integration.test.ts
+ci_workflow=CI run 4343 (32475241968) completed success on material head 33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
+integration_job=Integration API + PostgreSQL completed success; Run API integration tests and import statement consistency both passed.
 FIN-E2E-001 card purchase/close/pay: purchase economic expense once; payment cash effect without new expense.
-FIN-E2E-002 installment purchase: 10000 => 3334+3333+3333 across three invoices.
-FIN-E2E-003 account income/expense: +5000/-2000 => +3000 available delta exactly once.
-FIN-E2E-004 internal transfer: zero aggregate available/income/expense/planned delta.
-FIN-E2E-005 void: same persisted id/amount/currency/description, status voided, summary returns to baseline.
-FIN-E2E-006 planned -> reconciled: same id; planned 1200 becomes realized 1200 without duplicate future commitment.
-FIN-E2E-007 BRL+USD: independent currencyBlocks and no scalar aggregate fields.
-FIN-E2E-008 USD filter: current-profile USD delta 1700 ignores same-profile BRL 2600 and sibling-profile USD 900000.
-FIN-E2E-009 invoice payment retry: CARD_INVOICE_ALREADY_PAID; paymentTransactionId remains stable; invoice-linked transaction count is unchanged; summary is unchanged.
-isolation=main wraps the nine invariants in try/finally; cleanup scopes to the fixture organization/profiles and FIN-E2E-named accounts/cards plus their linked transactions/installments/invoices/audit rows, nulling Invoice.paymentTransactionId before the circular-FK deletion sequence.
-financial dates=fixed literals 2040-2048; names=randomized only for collision avoidance; assertions use immediate baselines.
-predecessor_ci=88116871f5e28668f6cc7daa1902b5e18119c880 executed FIN-E2E-001..009 all PASS against PostgreSQL; the later financial-summary-multi-currency failure exposed cross-test fixture leakage/order dependence, and the current material adds scoped cleanup.
+FIN-E2E-002 installment purchase: exact split across three invoices.
+FIN-E2E-003 account income/expense: available balance delta applied once.
+FIN-E2E-004 internal transfer: zero aggregate economic-result delta.
+FIN-E2E-005 void/refund: traceability retained and economic effect removed.
+FIN-E2E-006 planned -> reconciled: same identity without duplicate future commitment.
+FIN-E2E-007 BRL+USD: independent currency blocks and no scalar mixed-currency aggregate.
+FIN-E2E-008 currency/profile isolation: sibling profile value excluded.
+FIN-E2E-009 invoice payment retry: payment identity/count/summary unchanged after rejected retry.
+isolation=fixture cleanup is organization/profile-scoped and FK-safe; the prior PostgreSQL parameter mismatch was corrected and the exact-material integration workflow passed.
+temporal=financial dates are fixed literals; assertions use immediate baselines rather than runner wall clock.

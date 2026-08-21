@@ -1,8 +1,5 @@
-subject_sha=478ec624ff18ce88858bf77c33f9886014d5bb44
-old_terms=Planejado | Invariantes financeiros ponta a ponta
-new_terms=Feito | #598 | FIN-E2E-001..FIN-E2E-009
-search exact old phrase => docs/STATUS_MATRIX.md only
-search "#598 Planejado" => no occurrences
-canonical updated source=docs/STATUS_MATRIX.md
-formatting=Phase 3 table remains normalized; no documentation claim changed in the fixture-isolation remediation
-unresolved_contradictions=[]
+subject_sha=33955a3de2c12d53703229ebdd2f63e5ce7bb5c7
+control=DOC-SEMANTIC-DRIFT-001
+STATUS_MATRIX records the Phase 3A invariant suite as Feito and lists #598 / FIN-E2E coverage.
+Previously inspected EVOLUTION_STRATEGY and ARCHITECTURE remain compatible with that current-state claim.
+No unresolved stale planned claim for #598 was identified in the canonical documentation surfaces reviewed for this delivery.
