@@ -55,11 +55,7 @@ async function main(): Promise<void> {
 
   assert.equal(metadata.rowCount, expectedColumns.size);
   for (const row of metadata.rows) {
-    assert.equal(
-      row.data_type,
-      "bigint",
-      `${row.table_name}.${row.column_name} must be BIGINT`,
-    );
+    assert.equal(row.data_type, "bigint", `${row.table_name}.${row.column_name} must be BIGINT`);
     expectedColumns.delete(`${row.table_name}.${row.column_name}`);
   }
   assert.deepEqual([...expectedColumns], []);
@@ -126,10 +122,7 @@ async function main(): Promise<void> {
            (3000000000000000::bigint)
          ) as money(value)`,
     );
-    assert.equal(
-      parseSafeMoneyMinor(aggregate.rows[0]?.total ?? ""),
-      9_000_000_000_000_000,
-    );
+    assert.equal(parseSafeMoneyMinor(aggregate.rows[0]?.total ?? ""), 9_000_000_000_000_000);
 
     assert.throws(
       () => parseSafeMoneyMinor(String(BigInt(MAX_SUPPORTED_MONEY_MINOR) + 1n)),

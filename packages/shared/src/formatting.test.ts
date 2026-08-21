@@ -29,21 +29,12 @@ function formatsMinorCurrencyAsBrazilianReal(): void {
 }
 
 function formatsSafeIntegerBoundaryWithoutPrecisionLoss(): void {
-  assert.match(
-    formatMinorCurrency(Number.MAX_SAFE_INTEGER),
-    /^R\$\s90\.071\.992\.547\.409,91$/u,
-  );
-  assert.match(
-    formatMinorCurrency(Number.MIN_SAFE_INTEGER),
-    /^-R\$\s90\.071\.992\.547\.409,91$/u,
-  );
+  assert.match(formatMinorCurrency(Number.MAX_SAFE_INTEGER), /^R\$\s90\.071\.992\.547\.409,91$/u);
+  assert.match(formatMinorCurrency(Number.MIN_SAFE_INTEGER), /^-R\$\s90\.071\.992\.547\.409,91$/u);
 }
 
 function rejectsUnsafeMinorCurrency(): void {
-  assert.throws(
-    () => formatMinorCurrency(Number.MAX_SAFE_INTEGER + 1),
-    RangeError,
-  );
+  assert.throws(() => formatMinorCurrency(Number.MAX_SAFE_INTEGER + 1), RangeError);
 }
 
 function allowsExplicitCurrencyWithPtBrLocale(): void {
