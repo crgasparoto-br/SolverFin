@@ -2,7 +2,9 @@ import "./load-env.js";
 
 import { AsyncLocalStorage } from "node:async_hooks";
 
-import { Pool, type QueryResultRow } from "pg";
+import { Pool, types, type QueryResultRow } from "pg";
+
+import { parsePostgresBigIntAsSafeNumber, POSTGRES_INT8_OID } from "./db-safe-integer.js";
 
 export type QueryExecutor = <TRow extends QueryResultRow = QueryResultRow>(
   text: string,
@@ -20,6 +22,8 @@ const payloadlessLegacyFixturePattern =
 const approvedSuggestionFixtureRestorePattern =
   /^update\s+"AiSuggestion"\s+set\s+"status"\s*=\s*'PENDING_REVIEW',\s*"targetEntityId"\s*=\s*null,\s*"reviewedAt"\s*=\s*null,\s*"updatedAt"\s*=\s*now\(\)\s+where\s+"id"\s*=\s*\$1\s+and\s+"sourceEntityId"\s*=\s*\$2\s*;?$/i;
 let pool: Pool | undefined;
+
+types.setTypeParser(POSTGRES_INT8_OID, parsePostgresBigIntAsSafeNumber);
 
 export function getPool(): Pool {
   pool ??= new Pool({ connectionString: requireDatabaseUrl() });
