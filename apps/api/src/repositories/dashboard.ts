@@ -1,4 +1,5 @@
 import type { TenantContext } from "@solverfin/domain";
+import { addSafeMoneyMinor } from "@solverfin/domain/money";
 
 import { query } from "../db.js";
 import { toDateOnly } from "./repository-date-utils.js";
@@ -181,7 +182,10 @@ export async function buildFinancialSummary(
 
       return {
         currency,
-        availableBalanceMinor: openingBalance + cashMovement,
+        availableBalanceMinor: addSafeMoneyMinor(
+          [openingBalance, cashMovement],
+          `dashboard available balance for ${currency}`,
+        ),
         incomeMinor: monthIncome,
         expensesMinor: monthExpense,
         plannedCommitmentsMinor: monthPlanned,
@@ -218,9 +222,12 @@ export async function buildFinancialSummary(
 }
 
 function sumCurrencyTotals(rows: readonly CurrencyTotalRow[], currency: string): number {
-  return rows
-    .filter((row) => normalizeCurrencyCode(row.currency) === currency)
-    .reduce((total, row) => total + Number(row.total ?? 0), 0);
+  return addSafeMoneyMinor(
+    rows
+      .filter((row) => normalizeCurrencyCode(row.currency) === currency)
+      .map((row) => row.total ?? "0"),
+    `dashboard aggregate for ${currency}`,
+  );
 }
 
 function sumByKindAndStatus(
@@ -229,14 +236,17 @@ function sumByKindAndStatus(
   kind: string,
   statuses: readonly string[],
 ): number {
-  return rows
-    .filter(
-      (row) =>
-        normalizeCurrencyCode(row.currency) === currency &&
-        row.kind === kind &&
-        statuses.includes(row.status),
-    )
-    .reduce((total, row) => total + Number(row.total), 0);
+  return addSafeMoneyMinor(
+    rows
+      .filter(
+        (row) =>
+          normalizeCurrencyCode(row.currency) === currency &&
+          row.kind === kind &&
+          statuses.includes(row.status),
+      )
+      .map((row) => row.total),
+    `dashboard ${kind.toLowerCase()} aggregate for ${currency}`,
+  );
 }
 
 function normalizeCurrencyCode(currency: string): string {
