@@ -63,11 +63,11 @@ model AccountRemuneration {
   competenceOn             DateTime  @db.Date
   processedOn              DateTime  @db.Date
   status                   String    @default("CREATED") @db.VarChar(48)
-  balanceBaseMinor         Int
+  balanceBaseMinor         BigInt    @db.BigInt
   dailyRatePercent         Decimal   @db.Decimal(18, 12)
   remunerationPercent      Decimal   @db.Decimal(9, 4)
   appliedDailyRatePercent  Decimal   @db.Decimal(18, 12)
-  originalAmountMinor      Int
+  originalAmountMinor      BigInt    @db.BigInt
   manuallyAdjusted         Boolean   @default(false)
   adjustedAt               DateTime? @db.Timestamp(3)
   adjustedByUserId         String?   @db.Uuid

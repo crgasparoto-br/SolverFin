@@ -11,10 +11,22 @@ import {
 } from "./money.js";
 
 test("accepts the complete safe JSON integer boundary", () => {
-  assert.equal(assertSafeMoneyMinor(MAX_SUPPORTED_MONEY_MINOR), MAX_SUPPORTED_MONEY_MINOR);
-  assert.equal(assertSafeMoneyMinor(MIN_SUPPORTED_MONEY_MINOR), MIN_SUPPORTED_MONEY_MINOR);
-  assert.equal(parseSafeMoneyMinor(String(MAX_SUPPORTED_MONEY_MINOR)), MAX_SUPPORTED_MONEY_MINOR);
-  assert.equal(parseSafeMoneyMinor(String(MIN_SUPPORTED_MONEY_MINOR)), MIN_SUPPORTED_MONEY_MINOR);
+  assert.equal(
+    assertSafeMoneyMinor(MAX_SUPPORTED_MONEY_MINOR),
+    MAX_SUPPORTED_MONEY_MINOR,
+  );
+  assert.equal(
+    assertSafeMoneyMinor(MIN_SUPPORTED_MONEY_MINOR),
+    MIN_SUPPORTED_MONEY_MINOR,
+  );
+  assert.equal(
+    parseSafeMoneyMinor(String(MAX_SUPPORTED_MONEY_MINOR)),
+    MAX_SUPPORTED_MONEY_MINOR,
+  );
+  assert.equal(
+    parseSafeMoneyMinor(String(MIN_SUPPORTED_MONEY_MINOR)),
+    MIN_SUPPORTED_MONEY_MINOR,
+  );
 });
 
 test("rejects values outside the exact JSON number range", () => {
@@ -23,13 +35,20 @@ test("rejects values outside the exact JSON number range", () => {
 
   assert.throws(() => parseSafeMoneyMinor(above), MoneyRangeError);
   assert.throws(() => parseSafeMoneyMinor(below), MoneyRangeError);
-  assert.throws(() => assertSafeMoneyMinor(Number.MAX_SAFE_INTEGER + 1), MoneyRangeError);
+  assert.throws(
+    () => assertSafeMoneyMinor(Number.MAX_SAFE_INTEGER + 1),
+    MoneyRangeError,
+  );
   assert.throws(() => parseSafeMoneyMinor("1.5"), MoneyRangeError);
 });
 
 test("large aggregates remain exact and fail closed on overflow", () => {
   assert.equal(
-    addSafeMoneyMinor([3_000_000_000_000_000, 3_000_000_000_000_000, 3_000_000_000_000_000]),
+    addSafeMoneyMinor([
+      3_000_000_000_000_000,
+      3_000_000_000_000_000,
+      3_000_000_000_000_000,
+    ]),
     9_000_000_000_000_000,
   );
 

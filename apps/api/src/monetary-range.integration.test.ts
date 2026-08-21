@@ -20,6 +20,8 @@ async function main(): Promise<void> {
 
   const expectedColumns = new Set([
     "Account.openingBalanceMinor",
+    "AccountRemuneration.balanceBaseMinor",
+    "AccountRemuneration.originalAmountMinor",
     "Budget.plannedAmountMinor",
     "Card.creditLimitMinor",
     "CardInstrument.creditLimitMinor",
@@ -29,11 +31,17 @@ async function main(): Promise<void> {
     "Recurrence.amountMinor",
     "Transaction.amountMinor",
   ]);
-  const metadata = await getPool().query<{ table_name: string; column_name: string; data_type: string }>(
+  const metadata = await getPool().query<{
+    table_name: string;
+    column_name: string;
+    data_type: string;
+  }>(
     `select table_name, column_name, data_type
        from information_schema.columns
       where (table_name, column_name) in (
         ('Account', 'openingBalanceMinor'),
+        ('AccountRemuneration', 'balanceBaseMinor'),
+        ('AccountRemuneration', 'originalAmountMinor'),
         ('Budget', 'plannedAmountMinor'),
         ('Card', 'creditLimitMinor'),
         ('CardInstrument', 'creditLimitMinor'),
@@ -47,10 +55,27 @@ async function main(): Promise<void> {
 
   assert.equal(metadata.rowCount, expectedColumns.size);
   for (const row of metadata.rows) {
-    assert.equal(row.data_type, "bigint", `${row.table_name}.${row.column_name} must be BIGINT`);
+    assert.equal(
+      row.data_type,
+      "bigint",
+      `${row.table_name}.${row.column_name} must be BIGINT`,
+    );
     expectedColumns.delete(`${row.table_name}.${row.column_name}`);
   }
   assert.deepEqual([...expectedColumns], []);
+
+  const triggerMetadata = await getPool().query<{ trigger_name: string }>(
+    `select trigger_name
+       from information_schema.triggers
+      where event_object_table = 'Transaction'
+        and event_manipulation = 'UPDATE'
+        and trigger_name = 'Transaction_account_remuneration_adjustment_trigger'`,
+  );
+  assert.equal(
+    triggerMetadata.rowCount,
+    1,
+    "account-remuneration adjustment trigger must survive the monetary widening",
+  );
 
   const client = await getPool().connect();
   try {
@@ -101,7 +126,10 @@ async function main(): Promise<void> {
            (3000000000000000::bigint)
          ) as money(value)`,
     );
-    assert.equal(parseSafeMoneyMinor(aggregate.rows[0]?.total ?? ""), 9_000_000_000_000_000);
+    assert.equal(
+      parseSafeMoneyMinor(aggregate.rows[0]?.total ?? ""),
+      9_000_000_000_000_000,
+    );
 
     assert.throws(
       () => parseSafeMoneyMinor(String(BigInt(MAX_SUPPORTED_MONEY_MINOR) + 1n)),

@@ -40,7 +40,10 @@ function formatsSafeIntegerBoundaryWithoutPrecisionLoss(): void {
 }
 
 function rejectsUnsafeMinorCurrency(): void {
-  assert.throws(() => formatMinorCurrency(Number.MAX_SAFE_INTEGER + 1), RangeError);
+  assert.throws(
+    () => formatMinorCurrency(Number.MAX_SAFE_INTEGER + 1),
+    RangeError,
+  );
 }
 
 function allowsExplicitCurrencyWithPtBrLocale(): void {
