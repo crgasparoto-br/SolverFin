@@ -48,56 +48,169 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for the financial E2E suite.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for the financial E2E suite.",
+  );
 
-  await runInvariant(
-    "FIN-E2E-001",
-    "compra de cartao, fechamento e pagamento nao duplicam despesa",
-    invariantCardPurchaseSettlementDoesNotDoubleCountExpense,
+  try {
+    await runInvariant(
+      "FIN-E2E-001",
+      "compra de cartao, fechamento e pagamento nao duplicam despesa",
+      invariantCardPurchaseSettlementDoesNotDoubleCountExpense,
+    );
+    await runInvariant(
+      "FIN-E2E-002",
+      "compra parcelada distribui exatamente o total entre faturas",
+      invariantInstallmentPurchaseIsDistributedAcrossInvoices,
+    );
+    await runInvariant(
+      "FIN-E2E-003",
+      "receita e despesa de conta alteram saldo uma unica vez",
+      invariantAccountIncomeAndExpenseAffectBalanceOnce,
+    );
+    await runInvariant(
+      "FIN-E2E-004",
+      "transferencia interna nao altera resultado economico liquido",
+      invariantTransferDoesNotChangeEconomicResult,
+    );
+    await runInvariant(
+      "FIN-E2E-005",
+      "estorno preserva rastreabilidade e remove o sinal financeiro original",
+      invariantVoidPreservesTraceAndReversesFinancialEffect,
+    );
+    await runInvariant(
+      "FIN-E2E-006",
+      "compromisso planejado conciliado nao permanece duplicado como futuro",
+      invariantPlannedCommitmentMaterializesWithoutDuplication,
+    );
+    await runInvariant(
+      "FIN-E2E-007",
+      "perfil BRL e USD permanece particionado sem agregado unico",
+      invariantMixedCurrencyProfileNeverProducesSingleAggregate,
+    );
+    await runInvariant(
+      "FIN-E2E-008",
+      "filtro explicito de moeda preserva isolamento de perfil",
+      invariantCurrencyFilterDoesNotLeakAcrossProfiles,
+    );
+    await runInvariant(
+      "FIN-E2E-009",
+      "retry de mutacao financeira nao cria efeitos duplicados",
+      invariantMutationRetryDoesNotDuplicateEffects,
+    );
+  } finally {
+    await cleanupFinancialInvariantFixtures();
+  }
+}
+
+async function cleanupFinancialInvariantFixtures(): Promise<void> {
+  const profileIds = [CONTEXT.financialProfileId, SIBLING_CONTEXT.financialProfileId];
+  const accounts = await query<{ id: string }>(
+    `select "id" from "Account"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "name" like 'FIN-E2E-%'`,
+    [CONTEXT.organizationId, profileIds],
   );
-  await runInvariant(
-    "FIN-E2E-002",
-    "compra parcelada distribui exatamente o total entre faturas",
-    invariantInstallmentPurchaseIsDistributedAcrossInvoices,
+  const cards = await query<{ id: string }>(
+    `select "id" from "Card"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "name" like 'FIN-E2E-%'`,
+    [CONTEXT.organizationId, profileIds],
   );
-  await runInvariant(
-    "FIN-E2E-003",
-    "receita e despesa de conta alteram saldo uma unica vez",
-    invariantAccountIncomeAndExpenseAffectBalanceOnce,
+  const accountIds = accounts.map((row) => row.id);
+  const cardIds = cards.map((row) => row.id);
+  const fixtureEntities = await query<{ id: string }>(
+    `select "id" from "Transaction"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and (
+          "description" like 'FIN-E2E-%'
+          or "cardId" = any($3::uuid[])
+          or "accountId" = any($4::uuid[])
+          or "destinationAccountId" = any($4::uuid[])
+        )
+     union
+     select "id" from "Installment"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "cardId" = any($3::uuid[])
+     union
+     select "id" from "Invoice"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "cardId" = any($3::uuid[])
+     union select unnest($3::uuid[]) as "id"
+     union select unnest($4::uuid[]) as "id"`,
+    [CONTEXT.organizationId, profileIds, cardIds, accountIds],
   );
-  await runInvariant(
-    "FIN-E2E-004",
-    "transferencia interna nao altera resultado economico liquido",
-    invariantTransferDoesNotChangeEconomicResult,
+  const fixtureEntityIds = fixtureEntities.map((row) => row.id);
+  const params = [CONTEXT.organizationId, profileIds, cardIds, accountIds, fixtureEntityIds];
+
+  await query(
+    `delete from "AuditLogEntry"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "entityId" = any($5::uuid[])`,
+    params,
   );
-  await runInvariant(
-    "FIN-E2E-005",
-    "estorno preserva rastreabilidade e remove o sinal financeiro original",
-    invariantVoidPreservesTraceAndReversesFinancialEffect,
+  await query(
+    `update "Invoice"
+        set "paymentTransactionId" = null
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "cardId" = any($3::uuid[])`,
+    params,
   );
-  await runInvariant(
-    "FIN-E2E-006",
-    "compromisso planejado conciliado nao permanece duplicado como futuro",
-    invariantPlannedCommitmentMaterializesWithoutDuplication,
+  await query(
+    `delete from "Transaction"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and (
+          "description" like 'FIN-E2E-%'
+          or "cardId" = any($3::uuid[])
+          or "accountId" = any($4::uuid[])
+          or "destinationAccountId" = any($4::uuid[])
+        )`,
+    params,
   );
-  await runInvariant(
-    "FIN-E2E-007",
-    "perfil BRL e USD permanece particionado sem agregado unico",
-    invariantMixedCurrencyProfileNeverProducesSingleAggregate,
+  await query(
+    `delete from "Installment"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "cardId" = any($3::uuid[])`,
+    params,
   );
-  await runInvariant(
-    "FIN-E2E-008",
-    "filtro explicito de moeda preserva isolamento de perfil",
-    invariantCurrencyFilterDoesNotLeakAcrossProfiles,
+  await query(
+    `delete from "Invoice"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "cardId" = any($3::uuid[])`,
+    params,
   );
-  await runInvariant(
-    "FIN-E2E-009",
-    "retry de mutacao financeira nao cria efeitos duplicados",
-    invariantMutationRetryDoesNotDuplicateEffects,
+  await query(
+    `delete from "Card"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "id" = any($3::uuid[])`,
+    params,
+  );
+  await query(
+    `delete from "Account"
+      where "organizationId" = $1
+        and "financialProfileId" = any($2::uuid[])
+        and "id" = any($4::uuid[])`,
+    params,
   );
 }
 
-async function runInvariant(id: string, name: string, action: () => Promise<void>): Promise<void> {
+async function runInvariant(
+  id: string,
+  name: string,
+  action: () => Promise<void>,
+): Promise<void> {
   try {
     await action();
     console.log(`[${id}] PASS ${name}`);
@@ -177,7 +290,10 @@ async function invariantInstallmentPurchaseIsDistributedAcrossInvoices(): Promis
     purchase.installments.map((installment) => installment.amountMinor),
     [3_334, 3_333, 3_333],
   );
-  assert.deepEqual(invoices.map((invoice) => invoice.totalAmountMinor), [3_334, 3_333, 3_333]);
+  assert.deepEqual(
+    invoices.map((invoice) => invoice.totalAmountMinor),
+    [3_334, 3_333, 3_333],
+  );
   assert.deepEqual(
     purchase.installments.map((installment) => installment.dueOn),
     invoices.map((invoice) => invoice.dueOn),
