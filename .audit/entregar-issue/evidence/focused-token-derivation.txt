@@ -1,0 +1,10 @@
+material_head_sha=5a6a42c8fcdc98ef89adeceb7a35706dba93d2ba
+check=TypeScript compile of token publication path
+tsc_exit=0
+PASS changed primary reaches SSR
+PASS legacy primary is alias
+PASS no competing old primary alias
+PASS changed layout reaches SSR
+PASS mobile breakpoint derives from token
+PASS semantic states have non-color marker
+PASS new interactive primitive target is 44px

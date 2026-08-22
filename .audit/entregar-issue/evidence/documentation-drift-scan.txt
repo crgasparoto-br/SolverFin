@@ -1,0 +1,4 @@
+material_head_sha=5a6a42c8fcdc98ef89adeceb7a35706dba93d2ba
+documentation_delta=DESIGN_SYSTEM and APP_SHELL now name tokens.ts as canonical executable source and shared-styles.ts as consumer/compatibility alias publisher.
+outside_diff_sources_reviewed=PRODUCT.md; EVOLUTION_STRATEGY.md; ARCHITECTURE.md; BRAND.md; ADR 0014; .github/copilot-instructions.md
+observed=no competing current normative ownership claim found; ADR 0014 already establishes incremental component/token direction, so no new ADR is needed.
