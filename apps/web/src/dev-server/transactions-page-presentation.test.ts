@@ -100,7 +100,10 @@ assert.match(html, /\.statement-layout \.summary-totals\s*\{\s*grid-template-col
 assert.match(html, /\.statement-layout \.status-line strong\s*\{[\s\S]*grid-column:\s*1 \/ -1/);
 assert.match(html, /\.statement-table \.statement-row\s*\{[\s\S]*min-width:\s*70rem/);
 assert.match(html, /\.statement-table \.col-amount,[\s\S]*min-width:\s*max-content/);
-assert.match(html, /\.main-area\s*>\s*main\s*\{[\s\S]*max-width:\s*1800px/);
+assert.match(
+  html,
+  /\.main-area\s*>\s*main\s*\{[\s\S]*max-width:\s*var\(--sf-layout-content-max-width\)/,
+);
 assert.match(html, /body\s*\{[\s\S]*overflow-x:\s*hidden/);
 assert.match(html, /@media \(min-width: 761px\) and \(max-width: 900px\)/);
 assert.match(html, /\.account-filter \.filter-form\s*\{\s*grid-template-columns:\s*1fr/);
