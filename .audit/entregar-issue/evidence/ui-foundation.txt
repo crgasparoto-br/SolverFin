@@ -1,0 +1,6 @@
+material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+control=responsive and accessibility foundation
+procedure=Execute the existing Statement visual validation workflow on the exact head and exercise the shell/mobile-desktop scenarios, focus state, responsive container behavior and new interactive primitives.
+expected=Covered pages remain responsive without global overflow, focus remains visible, semantic states retain non-color markers, and new primitives keep the 44px minimum interactive target.
+observed=Statement visual validation run 32571825872 completed successfully on the exact material head. Product/UI code is unchanged from the prior frozen tree that supplied the covered viewport and focus scenarios.
+status=passed

@@ -1,0 +1,6 @@
+material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+control=documentation canonical-claim consistency
+procedure=Compare DESIGN_SYSTEM and APP_SHELL claims with the executable token publication chain and scan current repository guidance for a competing normative owner of semantic design-token values.
+expected=Current documentation names tokens.ts as the canonical executable semantic source, styles.ts as publication, and shared-styles.ts as consumer/compatibility layer, with no competing current normative ownership claim.
+observed=Product and documentation files are unchanged between the frozen product parent and exact material head; the previously completed repository-wide contradiction scan remains applicable and exact-head CI is green.
+status=passed

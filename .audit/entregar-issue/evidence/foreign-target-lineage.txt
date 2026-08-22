@@ -1,7 +1,6 @@
-material_head_sha=028aad97276a885b0e0001691407bde289118543
-parent_package_subject=issue 599 / PR 636
-current_delivery_subject=issue 600 / PR 638
-classification=foreign-target historical audit controls are not applicable to the design-token delivery and are retained only as explicit retired lineage
-procedure=compare parent handoff subject and current canonical specification subject before any inherited-control reuse
-observed=subjects differ in issue, PR, branch and domain; no issue-599 monetary/handoff remediation control is used as evidence for issue 600
+material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+historical_subject=issue 599 / PR 636
+current_subject=issue 600 / PR 638
+classification=foreign-target historical audit controls remain explicitly retired and are not used as evidence for the current design-token contract
+procedure=Preserve the historical IDs and audit source while keeping those controls in retired_controls with not-applicable disposition for this target.
 status=passed

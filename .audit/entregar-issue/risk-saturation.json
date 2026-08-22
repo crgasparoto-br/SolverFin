@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "028aad97276a885b0e0001691407bde289118543",
+  "head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
   "families": [
     {
       "family": "authorization",
@@ -52,22 +52,11 @@
     },
     {
       "family": "concurrency-atomicity",
-      "applicable": true,
-      "reason": "Exact-head canonical-token divergence controls prove there is no second semantic write to synchronize.",
-      "control_ids": [
-        "NC-001-C"
-      ],
-      "dimensions": [
-        {
-          "surface": "competing-source-update",
-          "reason": "A later token edit must be atomic with executable publication because there is no second semantic source to synchronize.",
-          "control_ids": [
-            "NC-001-C"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
     },
     {
       "family": "idempotency",
@@ -96,53 +85,55 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "Exact-head canonical-source and relational-alias controls cover the material design-token surfaces.",
+      "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-001-CAN",
-        "NC-001-REL",
-        "NC-002-CAN",
-        "NC-004-CAN",
-        "NC-004-REL",
-        "NC-005-CAN",
-        "NC-006-CAN",
-        "NC-007-CAN",
-        "NC-008-CAN",
-        "NC-008-REL",
-        "NC-009-CAN",
-        "NC-010-CAN",
-        "NC-011-CAN",
-        "NC-012-CAN",
-        "NC-013-CAN",
-        "NC-013-REL"
+        "FOREIGN-TARGET-LINEAGE-001",
+        "REQ-001-NEG-01",
+        "REQ-001-NEG-02",
+        "REQ-008-NEG-01",
+        "REQ-011-NEG-01",
+        "REQ-012-NEG-01",
+        "REQ-012-NEG-02",
+        "REQ-017-NEG-01",
+        "REQ-017-NEG-02",
+        "SPEC-LIST-COVERAGE-001"
       ],
       "dimensions": [
         {
           "surface": "canonical-source-consistency",
-          "reason": "Runtime publication must consume the canonical token definition instead of a manually synchronized copy.",
+          "reason": "Equivalent runtime, seed, import or maintenance paths can drift when they do not consume the same canonical product definition.",
           "control_ids": [
-            "NC-001-CAN",
-            "NC-002-CAN",
-            "NC-004-CAN",
-            "NC-005-CAN",
-            "NC-006-CAN",
-            "NC-007-CAN",
-            "NC-008-CAN",
-            "NC-009-CAN",
-            "NC-010-CAN",
-            "NC-011-CAN",
-            "NC-012-CAN",
-            "NC-013-CAN"
+            "REQ-001-NEG-01",
+            "REQ-011-NEG-01",
+            "REQ-012-NEG-01",
+            "REQ-017-NEG-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "foreign-target-lineage",
+          "reason": "Historical audit controls from another work-item can contaminate current saturation unless target mismatch and evidence exclusion are both explicit.",
+          "control_ids": [
+            "FOREIGN-TARGET-LINEAGE-001"
           ],
           "status": "passed"
         },
         {
           "surface": "relational-semantic-integrity",
-          "reason": "Canonical token values and linked SSR aliases must remain semantically compatible through derivation rather than independent writes.",
+          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
           "control_ids": [
-            "NC-001-REL",
-            "NC-004-REL",
-            "NC-008-REL",
-            "NC-013-REL"
+            "REQ-001-NEG-02",
+            "REQ-008-NEG-01",
+            "REQ-012-NEG-02",
+            "REQ-017-NEG-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "specification-translation-coverage",
+          "reason": "Normative list items can disappear during specification translation before coverage validation sees them.",
+          "control_ids": [
+            "SPEC-LIST-COVERAGE-001"
           ],
           "status": "passed"
         }
@@ -152,18 +143,16 @@
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Current canonical documentation was re-read and the repository-wide contradiction scan remains applicable with no documentary delta after that scan.",
+      "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-003-DOC",
-        "NC-014-DOC"
+        "REQ-018-NEG-02"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Living design-system documentation must not retain a competing ownership claim after executable ownership changes.",
+          "reason": "Documentation can retain an obsolete ownership claim even when implementation tests remain green.",
           "control_ids": [
-            "NC-003-DOC",
-            "NC-014-DOC"
+            "REQ-018-NEG-02"
           ],
           "status": "passed"
         }
