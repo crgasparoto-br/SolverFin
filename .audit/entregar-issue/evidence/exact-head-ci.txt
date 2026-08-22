@@ -1,0 +1,8 @@
+material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+ci_run=32571825863
+ci_status=completed
+ci_conclusion=success
+visual_run=32571825872
+visual_status=completed
+visual_conclusion=success
+observed=GitHub Actions re-executed the CI and Statement visual validation workflows on the exact material head after the prior result-only publication; both completed successfully.

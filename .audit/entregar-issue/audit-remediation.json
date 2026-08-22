@@ -2,37 +2,54 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
-  "status": "closed",
-  "candidate_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
-  "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
-    "audited_head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
-    "audit_report_sha256": "09fa492eda1c382c3e50e71581ad4b62d9c37fc9ee8807fce8426abea7703cca"
+    "rejection_id": "audit-rejection:4a51b2d1-9df2-45f5-9470-0192fb52dc34",
+    "audit_report_sha256": "566c11ec8ad41ca9736151fd2af6a67fe9878a8abccbb31121c9ec9f577f21b5",
+    "audited_head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7"
   },
+  "candidate_head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+  "remediation_mode": "mixed-remediation",
   "items": [
     {
       "source_kind": "finding",
       "source_id": "A-001",
-      "remediation_mode": "targeted-remediation",
+      "remediation_mode": "systemic-remediation",
       "status": "fixed",
-      "evidence": "Immutable compare from rejected handoff to candidate is constrained to the monetary integration test and is used as the new certificate scope.",
+      "changed_files": [
+        "skill:entregar-issue",
+        "skill:auditar-issue",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/requirement-attack-matrix.json",
+        ".audit/entregar-issue/audit-escape-closure.json",
+        ".audit/entregar-issue/learning-closure.json",
+        ".audit/entregar-issue/inherited-controls.json"
+      ],
+      "evidence": [
+        "evidence/specification-coverage-remediation.txt"
+      ],
       "validations": [
-        "compare 135af8e..add47e9 contains only apps/api/src/monetary-range.integration.test.ts",
-        "new handoff certificate will use work_item_start_sha=135af8e and exact issue_changed_paths"
+        "18 canonical obligations extracted and covered",
+        "producer coverage validator passes",
+        "independent normative-section detector focused tests pass",
+        "prevention and detection skill genericity validators pass"
       ]
     },
     {
-      "source_kind": "finding",
-      "source_id": "A-002",
+      "source_kind": "recommendation",
+      "source_id": "REC-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "evidence": "The monetary integration test now uses the supported prettier-ignore boundary on the function body without changing test semantics.",
+      "changed_files": [
+        "pull-request:638/body"
+      ],
+      "evidence": [
+        "evidence/pr-body-remediation.txt"
+      ],
       "validations": [
-        "The previous failed run isolated format:check to apps/api/src/monetary-range.integration.test.ts.",
-        "The final material SHA has a fresh automatic CI run in progress; the previous red run is not reused as current evidence.",
-        "Connector-only delivery policy permits publishing the terminal handoff with CI pending; independent audit re-reads the remote gate state."
+        "GitHub returned updated PR body with current material SHA",
+        "PR head remained unchanged during metadata update"
       ]
     }
-  ]
+  ],
+  "status": "closed"
 }

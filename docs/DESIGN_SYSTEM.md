@@ -2,7 +2,7 @@
 
 Este documento registra a base visual atual e a direcao de evolucao das telas web/PWA do SolverFin.
 
-A base conceitual fica em `apps/web/src/design-system/`. A aplicacao SSR executavel materializa tokens, shell e primitivas principalmente em `apps/web/src/dev-server/shared-styles.ts`. O runtime atual nao depende de React, Storybook ou outro framework, e a ADR 0014 determina que a componentizacao deve evoluir sem exigir uma troca de framework.
+A fonte canonica dos valores semanticos do design system e `apps/web/src/design-system/tokens.ts`. `apps/web/src/design-system/styles.ts` serializa esses tokens para CSS executavel, e a aplicacao SSR materializa essa publicacao no shell por `apps/web/src/dev-server/shared-styles.ts`. O runtime atual nao depende de React, Storybook ou outro framework, e a ADR 0014 determina que a componentizacao deve evoluir sem exigir uma troca de framework.
 
 ## Direcao visual
 
@@ -26,6 +26,8 @@ Principios:
 
 O SSR usa CSS como strings TypeScript, renderers por rota e provedores/pos-processadores registrados no contrato SSR. Esse mecanismo continua valido como baseline executavel enquanto as rotas ainda dependem dele.
 
+A fundacao visual compartilhada, entretanto, ja possui um caminho canonico unico: valores semanticos nascem em `tokens.ts`, sao publicados como custom properties `--sf-*` por `styles.ts` e chegam ao SSR por `sharedShellStyles()`. Variaveis legadas como `--primary`, `--surface` e `--radius` permanecem apenas como aliases de compatibilidade para `--sf-*`; elas nao podem voltar a declarar valores semanticos independentes.
+
 ### Estado-alvo
 
 A interface deve convergir para tokens, componentes executaveis, layouts reutilizaveis, view-models e arquetipos de tela. Pos-processamento de HTML por regex/string deixa de ser mecanismo normal para novas features e passa a ser legado de transicao.
@@ -34,33 +36,53 @@ A migracao e rota a rota. Nenhuma etapa pode remover cobertura SSR, acessibilida
 
 ## Tokens
 
-`apps/web/src/design-system/tokens.ts` define a referencia conceitual de:
+`apps/web/src/design-system/tokens.ts` e a **fonte de verdade executavel** dos valores semanticos compartilhados. Ele cobre:
 
-- cores principais e de suporte alinhadas a `docs/BRAND.md`;
+- cores principais, superficies, bordas, estados e interacoes alinhadas a `docs/BRAND.md`;
 - escala de espacamento;
 - raios contidos;
-- tipografia sans-serif;
-- sombras para foco, dialog e toast;
+- tipografia sans-serif, tamanhos, pesos e alturas de linha;
+- sombras/elevacao para superficies, foco, dialog e toast;
 - tempos de movimento curtos;
-- breakpoints iniciais.
+- breakpoints de layout e compatibilidade do shell;
+- largura maxima, gutters e grid responsivo;
+- densidade, incluindo altura minima de novas primitivas interativas.
 
-A evolucao da fundacao deve tornar tambem explicitos:
+`apps/web/src/design-system/styles.ts` e a camada de publicacao. `buildSolverFinCssVariables()` serializa os valores canonicos em `--sf-*`, e `createSolverFinDesignSystemCss()` compoe as primitivas compartilhadas. Para media queries, que nao podem consumir custom properties como limite, o renderer interpola diretamente os breakpoints recebidos do mesmo objeto de tokens.
 
-- densidade de componentes e tabelas;
-- largura maxima e gutters de pagina;
-- grid responsivo;
-- escala tipografica para hierarquia financeira;
-- tamanhos minimos de alvos interativos;
-- camadas/elevacao com uso semantico;
-- tokens de valor positivo, negativo, neutro, atencao e informacao sem depender apenas de cor.
+### Layout e densidade
 
-Na aplicacao SSR, `sharedShellStyles()` publica os tokens efetivamente consumidos pelas paginas, incluindo `--primary`, superficies, estados semanticos, raios, sombras e foco. Alteracoes visuais devem manter coerencia entre a referencia conceitual e o CSS executavel.
+A fundacao operacional publica:
+
+- `contentMaxWidth`, gutters mobile/desktop e `gridGap`/`gridMinColumn` para `PageContainer` e grid responsivo;
+- `interactiveTargetMin` de 44 px para novas primitivas `sf-*`;
+- alturas compactas separadas para controles legados enquanto a migracao rota a rota estiver em andamento;
+- padding de controles, paineis e celulas de tabela como tokens de densidade.
+
+O alvo de 44 px e o contrato para novas primitivas interativas. Controles SSR legados que hoje usam 30-36 px mantem tokens de compatibilidade explicitos ate a migracao correspondente; nao se deve copiar essas medidas compactas para componentes novos.
+
+### Estados semanticos
+
+Os estados `positive`, `negative`, `neutral`, `attention` e `information` possuem foreground, surface, border e marcador canonicos. A primitiva `.sf-semantic-state` combina cor com borda lateral e marcador textual/visual distinto, portanto o significado nao depende somente de cor.
+
+O marcador visual nao substitui texto acessivel. Consumidores devem manter rotulo ou mensagem visivel que explique o estado; iconografia/marker e cor sao reforcos de reconhecimento.
+
+### Regra de fonte unica
+
+Alterar um valor semantico compartilhado deve exigir uma edicao somente em `tokens.ts`. E proibido:
+
+- repetir o mesmo hex, raio, sombra, breakpoint ou medida semantica em `shared-styles.ts` para "manter sincronizado";
+- manter dois mapas de tokens independentes e confiar em convencao ou teste de igualdade;
+- introduzir escala local de espacamento, tipografia ou raio em componente novo quando a escala compartilhada atende;
+- publicar um novo alias legado com valor literal concorrente.
+
+E permitido manter valores estritamente locais quando nao representam um token compartilhado (por exemplo, uma dimensao intrinseca de um asset). Quando um valor local passa a se repetir ou expressar uma regra transversal, ele deve migrar para `tokens.ts`.
 
 ## Provedores de estilos SSR atuais
 
 A composicao SSR atual e organizada por responsabilidade:
 
-- `shared-shell`: tokens, reset, shell autenticado e primitivas recorrentes, fornecido por `sharedShellStyles()`;
+- `shared-shell`: publicacao dos tokens canonicos, aliases de compatibilidade, reset, shell autenticado e primitivas recorrentes, fornecido por `sharedShellStyles()`;
 - `shared-dialog`: estrutura compartilhada de dialogos, fornecida por `sharedDialogStyles()` quando a rota usa modal;
 - `page:<routeId>`: regras especificas do renderer da rota, com fragmentos CSS discriminantes registrados no contrato;
 - `aux:recurrences-section`: regras auxiliares de recorrencias, registradas separadamente do CSS principal das paginas que as consomem;
@@ -197,7 +219,8 @@ Textos visiveis devem explicar o que a pessoa pode fazer, revisar ou corrigir. E
 - Tabelas/listas devem ter estado vazio com orientacao de proxima acao.
 - Dialogs devem prender foco quando abertos e permitir fechamento por Escape quando nao forem bloqueantes.
 - Toasts confirmam resultado; erros de formulario devem aparecer perto do campo quando possivel.
-- Nao duplique tokens ou shell completo em um renderer quando um provedor compartilhado ja existir.
+- Consuma escalas compartilhadas de espacamento, tipografia, raio, elevacao, layout e densidade antes de criar uma medida local.
+- Nao duplique valores de tokens ou shell completo em um renderer quando um provedor compartilhado ja existir.
 - Nao crie um novo pos-processador de HTML por regex/string para resolver layout ou composicao de feature nova; prefira componente/layout/view-model.
 - Ao migrar uma rota, remova ou deprecie os provedores runtime que deixaram de ser necessarios e atualize o contrato SSR na mesma mudanca.
 - Ao criar uma rota `status: "available"`, mantenha cobertura SSR/visual equivalente desde a primeira entrega.
@@ -213,6 +236,8 @@ npm run validate:ssr-styles --workspace @solverfin/web
 ```
 
 O portao tambem faz parte de `npm run build` e `npm run validate`.
+
+`apps/web/src/dev-server/shared-styles.test.ts` possui o controle estrutural da fonte unica: ele cria uma copia do objeto de tokens com valores de referencia alterados e exige que a saida SSR publique os novos valores sem editar `shared-styles.ts`. Esse teste deve falhar se o shell voltar a manter valor literal concorrente para o alias coberto.
 
 Mudancas de componente ou tela devem incluir verificacao proporcional ao risco de:
 

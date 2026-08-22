@@ -1,16 +1,65 @@
 {
   "schema_version": 1,
-  "classification": "implementation-only",
+  "classification": "systemic-escape",
   "source_event": {
-    "kind": "independent-audit-rejection",
-    "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:4a51b2d1-9df2-45f5-9470-0192fb52dc34",
     "finding_ids": [
-      "A-001",
-      "A-002"
-    ]
+      "A-001"
+    ],
+    "audit_report_sha256": "566c11ec8ad41ca9736151fd2af6a67fe9878a8abccbb31121c9ec9f577f21b5"
   },
   "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "Existing generic delivery rules already require exact issue-local scope, post-write refreeze after material changes, and required-gate closure; this rejection exposed execution drift rather than a missing reusable rule."
-  }
+    "escape_class": "normative-list-requirement-translation-loss",
+    "generalized_failure_pattern": "A requirement extractor filters Markdown list items by a narrow lexical heuristic before coverage validation, so legitimate obligations can disappear and the validator can still report complete coverage against the truncated candidate set.",
+    "plausible_wrong_implementation": "Treat only list items whose first verb matches a maintained keyword set as obligations and reuse that same derived candidate set as the denominator for completeness.",
+    "trigger_signals": [
+      "normative Markdown headings",
+      "bulleted or checklist requirements",
+      "lexical obligation heuristics",
+      "coverage computed from extracted candidates"
+    ],
+    "risk_families": [
+      "structural-contract"
+    ],
+    "reusable_control": {
+      "id": "SPEC-LIST-COVERAGE-001",
+      "procedure": "Independently enumerate list items under normative headings, exclude explicit non-normative headings, and compare source identity tuples against the closure; removal of any normative item must fail the gate."
+    },
+    "prevention_rule": "Under a normative Markdown section, treat each list item as a requirement candidate independently of its opening verb; explicit non-normative sections must be excluded by section semantics rather than lexical coincidence.",
+    "detection_rule": "The audit preflight must rederive normative list-item coverage with an implementation independent from the producer extractor and fail before saturation when any source-line tuple is absent from the closure.",
+    "transfer_cases": [
+      {
+        "id": "synthetic-scope-list",
+        "surface": "markdown-scope",
+        "status": "passed",
+        "observed": "A normative scope list with uncommon imperative verbs is fully retained while an explicit non-normative section is excluded."
+      },
+      {
+        "id": "synthetic-requirements-list",
+        "surface": "markdown-requirements",
+        "status": "passed",
+        "observed": "An independent consumer rejects a closure with one missing list item under a requirements heading."
+      }
+    ],
+    "promotion_status": "promoted"
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "skill": "entregar-issue",
+      "before_sha256": "a8f294655eddf5458f9a571100a19bd3c32daf17c77f56396cc71fc36125a9b9",
+      "after_sha256": "6e6742147e5bd664fb3848cdba094024f58d808e57a2b28e3bb7bb7183ade397",
+      "package_sha256": "25df00f17fd9b13f7d7409311aa790672cff4b469525bda05e085a7d2f077274",
+      "status": "passed"
+    },
+    {
+      "role": "detection",
+      "skill": "auditar-issue",
+      "before_sha256": "78adc86dd61afd6e67df82fe6fb87f3ba8477b477907671aa8ec558cbf72b303",
+      "after_sha256": "657d39489a3a813aab56498754f7d022cc89673ce9280b2d83605b42fd1604eb",
+      "package_sha256": "5588cbced9ee65ce6a2dfa92d1018734af9656e3a217d7741cf78b3934a281e3",
+      "status": "passed"
+    }
+  ]
 }

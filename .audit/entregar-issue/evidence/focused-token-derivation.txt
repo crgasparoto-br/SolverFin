@@ -1,0 +1,13 @@
+material_head_sha=028aad97276a885b0e0001691407bde289118543
+ci_run=32570943032
+check=Exact-head CI executes shared-styles token-derivation controls and full web test/build path
+typecheck=PASS
+test=PASS
+build=PASS
+PASS changed primary reaches SSR through sharedShellStyles(changedTokens)
+PASS legacy primary remains alias var(--sf-color-primary)
+PASS no competing literal primary alias is accepted by the exact-head test
+PASS changed contentMaxWidth reaches SSR through --sf-layout-content-max-width
+PASS mobile breakpoint derives from tokens.breakpoints.shellCompact
+PASS semantic states expose non-color markers
+PASS new sf-button/sf-control interactive target is 2.75rem (44px)

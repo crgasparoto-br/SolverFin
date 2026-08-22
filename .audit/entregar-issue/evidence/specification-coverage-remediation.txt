@@ -1,0 +1,17 @@
+material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+source=issue specification markdown
+control_id=SPEC-LIST-COVERAGE-001
+recovered_candidates=4
+candidate_count=18
+recovered_1=consolidar cores semanticas, tipografia, espacamento, raios, elevacao, motion e breakpoints
+recovered_2=definir largura maxima, gutters, grid responsivo e densidade
+recovered_3=definir tamanhos minimos de alvo interativo e estados de foco
+recovered_4=eliminar duplicacoes evidentes de tokens em renderers afetados
+negative_scope=Fora de escopo and Referencias list items are excluded by explicit section classification
+prevention_test=tests/test_requirement_closure.py -> focused run passed (7 tests in the closure file; combined focused suite 11 passed)
+detection_test=auditar-issue normative coverage, delivery saturation and re-audit lineage focused suite -> 15 passed
+prevention_skill_root_sha256=6e6742147e5bd664fb3848cdba094024f58d808e57a2b28e3bb7bb7183ade397
+detection_skill_root_sha256=657d39489a3a813aab56498754f7d022cc89673ce9280b2d83605b42fd1604eb
+prevention_skill_zip_sha256=25df00f17fd9b13f7d7409311aa790672cff4b469525bda05e085a7d2f077274
+detection_skill_zip_sha256=5588cbced9ee65ce6a2dfa92d1018734af9656e3a217d7741cf78b3934a281e3
+status=passed

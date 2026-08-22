@@ -1,0 +1,46 @@
+Parent epic: #590
+
+## Objetivo
+
+Transformar a base conceitual de tokens do SolverFin em um contrato visual operacional, consistente entre shell, componentes e telas.
+
+## Fonte canônica
+
+`apps/web/src/design-system/tokens.ts`, já documentado como referência conceitual em `docs/DESIGN_SYSTEM.md`, passa a ser a **fonte canônica dos valores de design token**. A camada SSR executável (`sharedShellStyles()` e equivalentes) deve consumir/derivar esses valores; CSS custom properties podem continuar sendo a forma de publicação no HTML, mas não podem manter valores semânticos concorrentes editados manualmente em uma segunda fonte.
+
+## Escopo
+
+- consolidar cores semânticas, tipografia, espaçamento, raios, elevação, motion e breakpoints;
+- definir largura máxima, gutters, grid responsivo e densidade;
+- definir tamanhos mínimos de alvo interativo e estados de foco;
+- eliminar duplicações evidentes de tokens em renderers afetados;
+- tornar `apps/web/src/design-system/tokens.ts` consumível pela materialização SSR em vez de exigir manutenção manual equivalente em `sharedShellStyles()`;
+- documentar usos e anti-padrões.
+
+## Invariantes estruturais
+
+- **must_be_single_source:** o valor semântico de um token pertence a `apps/web/src/design-system/tokens.ts`; a publicação CSS/SSR deriva dessa fonte.
+- **must_not_behave:** alterar um token não pode exigir editar manualmente o mesmo valor em `tokens.ts` e em outro módulo para a aplicação refletir a mudança.
+- **forbidden_implementation:** manter dois mapas independentes “sincronizados por convenção”. Isso pode passar nos testes enquanto os valores coincidem e divergir no próximo ajuste; o controle deve alterar pelo menos um token de teste/referência e comprovar que a saída executável deriva da mesma fonte sem segunda edição.
+
+## Critérios de aceite
+
+- [ ] `apps/web/src/design-system/tokens.ts` é a fonte de verdade dos valores semânticos compartilhados;
+- [ ] a materialização SSR consome/deriva a fonte canônica e não replica manualmente os mesmos valores;
+- [ ] componentes novos não precisam redefinir escalas locais para espaçamento/tipografia/raio;
+- [ ] estados positivo, negativo, neutro, atenção e informação não dependem só de cor;
+- [ ] breakpoints e gutters suportam mobile e desktop das telas-piloto;
+- [ ] alterações preservam contraste/foco;
+- [ ] existe teste/validação que falha se a publicação executável deixar de refletir a fonte canônica;
+- [ ] `docs/DESIGN_SYSTEM.md` reflete a implementação real.
+
+## Fora de escopo
+
+- redesign completo de rotas;
+- troca de framework.
+
+## Referências
+
+- #590
+- ADR 0014
+- `docs/DESIGN_SYSTEM.md`

@@ -4,6 +4,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
+import { solverFinDesignTokens, type SolverFinDesignTokens } from "../design-system/tokens.js";
+import { createSolverFinDesignSystemCss } from "../design-system/styles.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import { solverFinSsrStyleContracts } from "./ssr-style-contract.js";
 
@@ -27,22 +29,83 @@ const legacyNeutralAliases = [
 ] as const;
 
 describe("shared shell styles", () => {
-  it("defines the design tokens and shell chrome used across SSR pages", () => {
+  it("publishes the canonical design-system variables before legacy shell aliases", () => {
     const css = sharedShellStyles();
 
-    assert.match(css, /--primary: #0f3d4c/);
+    assert.ok(css.includes(createSolverFinDesignSystemCss()));
+    assert.match(css, /--sf-color-primary:\s*#0F3D4C/);
+    assert.match(css, /--primary:\s*var\(--sf-color-primary\)/);
+    assert.match(css, /--radius:\s*var\(--sf-radius-md\)/);
+    assert.match(css, /--shadow-focus:\s*var\(--sf-shadow-focus\)/);
     assert.match(css, /\.app-shell/);
     assert.match(css, /\.sidebar/);
     assert.match(css, /\.topbar/);
   });
 
+  it("derives executable SSR output from a changed canonical token without a second edit", () => {
+    const changedTokens: SolverFinDesignTokens = {
+      ...solverFinDesignTokens,
+      colors: {
+        ...solverFinDesignTokens.colors,
+        primary: "#123456",
+      },
+      layout: {
+        ...solverFinDesignTokens.layout,
+        contentMaxWidth: "99rem",
+      },
+    };
+
+    const css = sharedShellStyles(changedTokens);
+
+    assert.match(css, /--sf-color-primary:\s*#123456/);
+    assert.match(css, /--sf-layout-content-max-width:\s*99rem/);
+    assert.doesNotMatch(css, /--primary:\s*#0F3D4C/i);
+    assert.match(css, /--primary:\s*var\(--sf-color-primary\)/);
+    assert.match(css, /max-width:\s*var\(--sf-layout-content-max-width\)/);
+  });
+
+  it("publishes layout, density, motion and responsive foundation tokens", () => {
+    const css = sharedShellStyles();
+
+    assert.match(css, /--sf-density-interactive-target-min:\s*2\.75rem/);
+    assert.match(css, /--sf-layout-gutter-mobile:\s*0\.875rem/);
+    assert.match(css, /--sf-layout-gutter-desktop:\s*1\.25rem/);
+    assert.match(css, /--sf-layout-grid-gap:\s*1rem/);
+    assert.match(css, /--sf-motion-fast:\s*120ms ease-out/);
+    assert.ok(
+      css.includes(`@media (max-width: ${solverFinDesignTokens.breakpoints.shellCompact})`),
+    );
+    assert.match(css, /--sf-breakpoint-dialog-stack:\s*56\.25rem/);
+  });
+
+  it("gives positive, negative, neutral, attention and information states a non-color marker", () => {
+    const css = createSolverFinDesignSystemCss();
+
+    for (const state of ["positive", "negative", "neutral", "attention", "information"] as const) {
+      assert.match(css, new RegExp(`\\.sf-semantic-state\\[data-state="${state}"\\]`));
+      assert.match(css, new RegExp(`--sf-state-${state}-marker:`));
+    }
+
+    assert.match(css, /\.sf-semantic-state::before\s*\{[^}]*content:\s*var\(--sf-state-marker\)/s);
+    assert.match(css, /border-inline-start-width:\s*var\(--sf-space-1\)/);
+  });
+
   it("uses the light statement hover palette for neutral controls globally", () => {
     const css = sharedShellStyles();
 
-    assert.match(css, /--neutral-control-hover:\s*#f1f7f9/);
-    assert.match(css, /--neutral-control-border-hover:\s*#a5cbd6/);
-    assert.match(css, /--neutral-control-active-hover:\s*#dceef3/);
-    assert.match(css, /--neutral-control-text-hover:\s*#0f3d4c/);
+    assert.match(css, /--neutral-control-hover:\s*var\(--sf-color-neutral-control-hover\)/);
+    assert.match(
+      css,
+      /--neutral-control-border-hover:\s*var\(--sf-color-neutral-control-border-hover\)/,
+    );
+    assert.match(
+      css,
+      /--neutral-control-active-hover:\s*var\(--sf-color-neutral-control-active-hover\)/,
+    );
+    assert.match(
+      css,
+      /--neutral-control-text-hover:\s*var\(--sf-color-neutral-control-text-hover\)/,
+    );
     assert.match(css, /button\[aria-pressed\][^{]+:hover:not\(:disabled\)/);
     assert.match(css, /button\[aria-selected\][^{]+:focus-visible/);
     assert.match(css, /button\[aria-haspopup="listbox"\][^{]+:hover:not\(:disabled\)/);
@@ -114,7 +177,7 @@ describe("shared shell styles", () => {
     );
     assert.match(
       css,
-      /\.danger-action:hover:not\(:disabled\),\s*\.danger-action:focus-visible \{ background: #fecaca; \}/,
+      /\.danger-action:hover:not\(:disabled\),\s*\.danger-action:focus-visible \{ background: var\(--sf-color-danger-border\); \}/,
     );
   });
 
@@ -127,7 +190,7 @@ describe("shared shell styles", () => {
     assert.match(css, /:not\(\.danger-icon-button\):focus-visible/);
     assert.match(
       css,
-      /\.danger-icon-button:hover:not\(:disabled\),\s*\.danger-icon-button:focus-visible \{\s*background: var\(--danger-bg\);\s*border-color: #fecaca;\s*color: var\(--danger\);\s*\}/,
+      /\.danger-icon-button:hover:not\(:disabled\),\s*\.danger-icon-button:focus-visible \{\s*background: var\(--danger-bg\);\s*border-color: var\(--sf-color-danger-border\);\s*color: var\(--danger\);\s*\}/,
     );
   });
 
@@ -137,11 +200,12 @@ describe("shared shell styles", () => {
     assert.match(css, /\[hidden\]\s*\{\s*display:\s*none\s*!important;\s*\}/);
   });
 
-  it("applies the authenticated content width globally", () => {
+  it("applies the authenticated content width through the canonical layout token", () => {
     const css = sharedShellStyles();
 
     assert.match(css, /\.main-area\s*>\s*main\s*\{/);
-    assert.match(css, /max-width:\s*1800px/);
+    assert.match(css, /--sf-layout-content-max-width:\s*112\.5rem/);
+    assert.match(css, /max-width:\s*var\(--sf-layout-content-max-width\)/);
     assert.match(css, /width:\s*100%/);
     assert.match(css, /overflow-x:\s*hidden/);
   });

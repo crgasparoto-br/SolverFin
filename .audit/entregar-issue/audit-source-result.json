@@ -2,31 +2,39 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
-  "head_sha": "45b779e6e760ea02f7dafe24c794290e7845ed39",
-  "published_handoff_head_sha": "135af8e5e8f1e4436b78684fcf29e9fe650fbd11",
-  "repository": "crgasparoto-br/SolverFin",
-  "issue_number": 599,
-  "pull_request_number": 636,
+  "rejection_id": "audit-rejection:4a51b2d1-9df2-45f5-9470-0192fb52dc34",
+  "head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+  "identity": {
+    "material_head_sha": "028aad97276a885b0e0001691407bde289118543",
+    "published_handoff_head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+    "base_sha": "387b4f00e59004856781da187bd436bcba8b9352",
+    "pull_request": 638,
+    "issue": 600
+  },
   "findings": [
     {
       "id": "A-001",
+      "title": "Normative scope bullets were omitted from requirement closure and attack saturation",
       "disposition": "blocking",
       "status": "open",
-      "severity": "blocking",
-      "remediation_mode": "targeted-remediation",
       "actionable": true,
-      "summary": "Certified issue scope did not equal the immutable issue-local compare."
-    },
-    {
-      "id": "A-002",
-      "disposition": "blocking",
-      "status": "open",
-      "severity": "blocking",
-      "remediation_mode": "targeted-remediation",
-      "actionable": true,
-      "summary": "Validate monorepo failed at format:check for the monetary integration test."
+      "remediation_mode": "systemic-remediation",
+      "escape_class": "silent-translation-loss",
+      "affected_requirements": [
+        "REQ-002",
+        "REQ-003",
+        "REQ-004",
+        "REQ-005"
+      ],
+      "requested": "Represent and adversarially cover every material normative list item from the specification before declaring critical-package saturation."
     }
   ],
-  "recommendations": []
+  "recommendations": [
+    {
+      "id": "REC-001",
+      "title": "Refresh stale material SHA in pull-request validation narrative",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation"
+    }
+  ]
 }

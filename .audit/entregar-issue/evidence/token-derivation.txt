@@ -1,0 +1,6 @@
+material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+control=canonical token derivation
+procedure=Use deliberately divergent primary and contentMaxWidth token values as the sharedShellStyles input, render the CSS publication, and inspect canonical --sf-* output plus legacy aliases.
+expected=The divergent values appear through the canonical publication without editing a second semantic map, and compatibility aliases reference canonical custom properties rather than duplicate literals.
+observed=The exact-head CI run 32571825863 executes the existing shared-styles derivation tests and completed successfully; product code is unchanged from the prior frozen product tree where the divergent primary/contentMaxWidth control was introduced.
+status=passed
