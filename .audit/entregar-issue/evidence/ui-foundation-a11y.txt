@@ -1,0 +1,7 @@
+material_head_sha=5a6a42c8fcdc98ef89adeceb7a35706dba93d2ba
+focus=shared focus ring remains token-derived via --sf-shadow-focus
+interactive_target=new sf-button and sf-control use --sf-density-interactive-target-min = 2.75rem (44px)
+responsive=PageContainer uses desktop/mobile gutters and shell/dialog media queries derive from canonical breakpoint tokens
+semantic_states=positive negative neutral attention information expose foreground surface border and textual marker (+ - = ! i), so meaning is not color-only
+compatibility=legacy SSR compact controls remain aliases/compatibility and no full route redesign is introduced
+status=passed

@@ -1,9 +1,0 @@
-{
-  "schema_version": 1,
-  "material_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
-  "policy": "delivery-snapshot",
-  "status": "pending",
-  "ci": "in_progress",
-  "statement_visual_validation": "in_progress",
-  "polling_performed": false
-}
