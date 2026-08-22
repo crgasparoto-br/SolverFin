@@ -4,10 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
-import {
-  solverFinDesignTokens,
-  type SolverFinDesignTokens,
-} from "../design-system/tokens.js";
+import { solverFinDesignTokens, type SolverFinDesignTokens } from "../design-system/tokens.js";
 import { createSolverFinDesignSystemCss } from "../design-system/styles.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import { solverFinSsrStyleContracts } from "./ssr-style-contract.js";
@@ -75,7 +72,9 @@ describe("shared shell styles", () => {
     assert.match(css, /--sf-layout-gutter-desktop:\s*1\.25rem/);
     assert.match(css, /--sf-layout-grid-gap:\s*1rem/);
     assert.match(css, /--sf-motion-fast:\s*120ms ease-out/);
-    assert.ok(css.includes(`@media (max-width: ${solverFinDesignTokens.breakpoints.shellCompact})`));
+    assert.ok(
+      css.includes(`@media (max-width: ${solverFinDesignTokens.breakpoints.shellCompact})`),
+    );
     assert.ok(css.includes(`@media (max-width: ${solverFinDesignTokens.breakpoints.dialogStack})`));
   });
 
@@ -95,9 +94,18 @@ describe("shared shell styles", () => {
     const css = sharedShellStyles();
 
     assert.match(css, /--neutral-control-hover:\s*var\(--sf-color-neutral-control-hover\)/);
-    assert.match(css, /--neutral-control-border-hover:\s*var\(--sf-color-neutral-control-border-hover\)/);
-    assert.match(css, /--neutral-control-active-hover:\s*var\(--sf-color-neutral-control-active-hover\)/);
-    assert.match(css, /--neutral-control-text-hover:\s*var\(--sf-color-neutral-control-text-hover\)/);
+    assert.match(
+      css,
+      /--neutral-control-border-hover:\s*var\(--sf-color-neutral-control-border-hover\)/,
+    );
+    assert.match(
+      css,
+      /--neutral-control-active-hover:\s*var\(--sf-color-neutral-control-active-hover\)/,
+    );
+    assert.match(
+      css,
+      /--neutral-control-text-hover:\s*var\(--sf-color-neutral-control-text-hover\)/,
+    );
     assert.match(css, /button\[aria-pressed\][^{]+:hover:not\(:disabled\)/);
     assert.match(css, /button\[aria-selected\][^{]+:focus-visible/);
     assert.match(css, /button\[aria-haspopup="listbox"\][^{]+:hover:not\(:disabled\)/);

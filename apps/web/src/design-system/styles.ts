@@ -6,10 +6,7 @@ function toKebabCase(value: string): string {
   return value.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
-function serializeVariables(
-  prefix: string,
-  values: Readonly<Record<string, TokenScalar>>,
-): string {
+function serializeVariables(prefix: string, values: Readonly<Record<string, TokenScalar>>): string {
   return Object.entries(values)
     .map(([name, value]) => `  --sf-${prefix}-${toKebabCase(name)}: ${value};`)
     .join("\n");

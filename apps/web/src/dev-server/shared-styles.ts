@@ -6,9 +6,7 @@ import { createSolverFinDesignSystemCss } from "../design-system/styles.js";
  * the authenticated shell chrome (sidebar/topbar/nav/logout) and recurring primitives.
  * Page modules compose this with their own page-specific rules instead of redefining the shell.
  */
-export function sharedShellStyles(
-  tokens: SolverFinDesignTokens = solverFinDesignTokens,
-): string {
+export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesignTokens): string {
   return `
     ${createSolverFinDesignSystemCss(tokens)}
     :root {
@@ -450,9 +448,7 @@ export function sharedShellStyles(
 /**
  * CSS for the native <dialog>-based create/edit modal pattern.
  */
-export function sharedDialogStyles(
-  tokens: SolverFinDesignTokens = solverFinDesignTokens,
-): string {
+export function sharedDialogStyles(tokens: SolverFinDesignTokens = solverFinDesignTokens): string {
   return `
     .master-dialog {
       border: 1px solid var(--line);
