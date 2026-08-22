@@ -60,6 +60,9 @@ const html = shellModule.renderAuthenticatedShellDocument({
 });
 
 assert.match(html, /<!doctype html>/i);
-assert.match(html, /<style>[\s\S]*--primary:\s*#0f3d4c[\s\S]*\.build-smoke-page/);
+assert.match(
+  html,
+  /<style>[\s\S]*--sf-color-primary:\s*#0F3D4C[\s\S]*--primary:\s*var\(--sf-color-primary\)[\s\S]*\.build-smoke-page/,
+);
 assert.match(html, /<nav[^>]*aria-label="Menu principal"[\s\S]*?<svg\b/);
 assert.match(html, /<button[^>]*data-logout[^>]*>[\s\S]*?<svg\b/);
