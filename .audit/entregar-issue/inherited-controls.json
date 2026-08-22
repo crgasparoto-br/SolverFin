@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+  "head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
   "source_audits": [
     {
       "kind": "independent-rejection",
@@ -22,42 +22,42 @@
     {
       "id": "SPEC-LIST-COVERAGE-001",
       "status": "passed",
-      "head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-      "subject_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+      "head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "subject_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
       "control_type": "test",
       "risk_family": "structural-contract",
       "surface": "specification-translation-coverage",
       "dimension": "normative-section-list-item",
       "attack_control_id": "SPEC-LIST-COVERAGE-001",
-      "evidence": "evidence/specification-coverage-remediation.txt",
-      "evidence_sha256": "d4bfa4bc1e3ae1bb27eb8f98e3f7e7e3a27f6c4c1a7966fe578309fd544bb851",
-      "procedure": "Parse normative Markdown list items without depending on an opening-verb allowlist, then independently compare source-line tuples against the requirement closure and fail when one item disappears.",
-      "expected": "Every normative list item reaches the closure, explicit non-normative sections remain excluded, and independent detection blocks any silent omission.",
-      "observed": "Focused prevention and independent-detection fixtures passed for Portuguese and English normative sections, and the current issue snapshot now yields 18 covered obligations including the four formerly omitted list items."
+      "evidence": ".audit/entregar-issue/evidence/issue-603-validation.txt",
+      "evidence_sha256": "12bea965bed3ff47786696252f200f6bf5908992f0c272ffdfcc9911f6404c73",
+      "procedure": "Parse the issue #603 normative Markdown list items without relying on a narrow opening-verb allowlist, then compare source-line obligations against requirement closure and fail on omission.",
+      "expected": "Every normative Scope and Acceptance Criteria list item reaches the issue #603 closure, while explicit non-normative sections remain excluded.",
+      "observed": "On material head 8fc10d84bf6aefdc21af8e4d7551a71776b3ca24, the specification coverage gate matched all 12 extracted issue #603 obligations to covered requirements with zero missing list items."
     }
   ],
   "retired_controls": [
     {
       "id": "CTRL-HANDOFF-SCOPE-EXACT-001",
       "disposition": "not-applicable",
-      "reason": "This historical control belongs to a foreign monetary-delivery target and remains explicitly retired for the current design-token delivery.",
-      "subject_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-      "evidence": "evidence/foreign-target-lineage.txt",
-      "evidence_sha256": "69723364387d32c58fe506f2ce3ebd53ed7d0c8961560dc68956386a0afa9e59",
-      "procedure": "Compare the historical control subject with the current work-item and pull-request target before allowing any inherited-control reuse.",
-      "expected": "A control from a different target stays retired and cannot satisfy a current requirement or risk-family gate.",
-      "observed": "Historical source is issue 599 / PR 636 while the current delivery is issue 600 / PR 638; no foreign control is active evidence for the current contract."
+      "reason": "This historical monetary-delivery control remains foreign to issue #603 and does not satisfy any current view-model boundary requirement.",
+      "subject_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "evidence": ".audit/entregar-issue/evidence/issue-603-validation.txt",
+      "evidence_sha256": "12bea965bed3ff47786696252f200f6bf5908992f0c272ffdfcc9911f6404c73",
+      "procedure": "Compare the historical control target with issue #603 and PR #639 before allowing it to satisfy a current requirement or risk-family gate.",
+      "expected": "A control bound to an unrelated historical delivery remains retired and cannot count as evidence for the current view-model boundary.",
+      "observed": "The historical control remains unrelated to issue #603 / PR #639; it is retained only as cumulative lineage and is not used by any current requirement."
     },
     {
       "id": "CTRL-REQUIRED-GATE-REACHABILITY-001",
       "disposition": "not-applicable",
-      "reason": "This historical control belongs to a foreign monetary-delivery target and remains explicitly retired for the current design-token delivery.",
-      "subject_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-      "evidence": "evidence/foreign-target-lineage.txt",
-      "evidence_sha256": "69723364387d32c58fe506f2ce3ebd53ed7d0c8961560dc68956386a0afa9e59",
-      "procedure": "Compare the historical control subject with the current work-item and pull-request target before allowing any inherited-control reuse.",
-      "expected": "A control from a different target stays retired and cannot satisfy a current requirement or risk-family gate.",
-      "observed": "Historical source is issue 599 / PR 636 while the current delivery is issue 600 / PR 638; no foreign control is active evidence for the current contract."
+      "reason": "This historical monetary-delivery control remains foreign to issue #603 and does not satisfy any current view-model boundary requirement.",
+      "subject_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "evidence": ".audit/entregar-issue/evidence/issue-603-validation.txt",
+      "evidence_sha256": "12bea965bed3ff47786696252f200f6bf5908992f0c272ffdfcc9911f6404c73",
+      "procedure": "Compare the historical control target with issue #603 and PR #639 before allowing it to satisfy a current requirement or risk-family gate.",
+      "expected": "A control bound to an unrelated historical delivery remains retired and cannot count as evidence for the current view-model boundary.",
+      "observed": "The historical control remains unrelated to issue #603 / PR #639; it is retained only as cumulative lineage and is not used by any current requirement."
     }
   ],
   "unresolved_controls": []

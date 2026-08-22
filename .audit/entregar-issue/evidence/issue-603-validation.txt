@@ -1,0 +1,26 @@
+Repository: crgasparoto-br/SolverFin
+Issue: 603
+PR: 639
+Material head: 8fc10d84bf6aefdc21af8e4d7551a71776b3ca24
+Base: a755e44322cf0a15fb1d608febc7d43e79e69b4a
+
+Material diff facts:
+- screen-view-model.ts defines ScreenViewModel<TContent> as loading|success|empty|error and MoneyViewModel as amountMinor + currency.
+- dashboard-page.ts loads API responses, calls presentDashboard(), then renders DashboardScreenViewModel; display formatting consumes MoneyViewModel.
+- dashboard-presenter.ts maps /api/financial-summary monetary values directly into MoneyViewModel and preserves filters plus per-resource provenance.
+- dashboard-presenter.test.ts asserts exact USD amountMinor pass-through, filter/provenance retention, optional-source degradation, and mandatory-summary typed error.
+- screen-view-model.test.ts asserts all four discriminated states without parsing HTML or regex output.
+- docs/frontend-view-model-presenters.md documents loader -> presenter -> ScreenViewModel -> renderer and forbids financial arithmetic/fallback currency in presenters.
+- PR diff contains only Dashboard foundation, shared view-model/presenter files, tests and documentation; Extrato and Cartoes are not migrated by this issue.
+
+Remote exact-material-head evidence collected on 2026-08-22:
+- GitHub Actions CI run 32586342220: completed/success.
+- GitHub Actions Statement visual validation run 32586342196: completed/success.
+- Prior CI job inspection on the same SHA showed format, lint, typecheck, tests, build and API/PostgreSQL integration completed successfully.
+
+Adversarial observations:
+- A renderer that still consumed FinancialSummaryCurrencyBlock directly would fail the structural diff expectation because dashboard-page.ts now accepts DashboardCurrencySummaryViewModel and DashboardRecentItemViewModel.
+- A presenter that recomputed or silently converted money would fail dashboard-presenter.test.ts exact amountMinor/currency assertions (USD values are deliberately non-BRL).
+- A nullable/sentinel-state implementation would fail screen-view-model.test.ts because loading, success, empty and error are explicit discriminants.
+- An optional source failure that discarded provenance would fail dashboard-presenter.test.ts, which records pending-review availability=unavailable while retaining success.
+- A global pilot migration would be visible as changes to statement/cards renderers; the issue-local material diff changes only the six certified #603 paths.
