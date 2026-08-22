@@ -1,5 +1,11 @@
+material_head_sha=028aad97276a885b0e0001691407bde289118543
+merge_preview_sha=af018cff98ac24290b298e6c5a4df0357f4a61ef
 base_sha=387b4f00e59004856781da187bd436bcba8b9352
-material_head_sha=5a6a42c8fcdc98ef89adeceb7a35706dba93d2ba
-changed_paths=apps/web/src/design-system/styles.ts,apps/web/src/design-system/tokens.ts,apps/web/src/dev-server/shared-styles.test.ts,apps/web/src/dev-server/shared-styles.ts,docs/APP_SHELL.md,docs/DESIGN_SYSTEM.md
-remote_compare=ahead_by=1 behind_by=0 total_commits=1
-ci_snapshot=CI queued; Statement visual validation in_progress; no rerun or polling performed
+pull_request=638
+branch=feat/600-design-token-foundation-ready
+ci_run=32570943032
+ci_validate_monorepo=success
+ci_integration_api_postgres=success
+visual_run=32570943029
+visual_chrome_validation=success
+status=frozen-pending-result-only-child

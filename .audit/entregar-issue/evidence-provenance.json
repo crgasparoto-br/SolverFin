@@ -1,1 +1,17 @@
-{"schema_version":1,"material_head_sha":"5a6a42c8fcdc98ef89adeceb7a35706dba93d2ba","base_sha":"387b4f00e59004856781da187bd436bcba8b9352","evidence":[{"evidence_id":"EV-Q-001","kind":"quantitative","path":"evidence/focused-token-derivation.txt","sha256":"b13aca1343fd5528b6b488301a84f08001993f930812b2c9711d09f2c187d48a","subject_sha":"5a6a42c8fcdc98ef89adeceb7a35706dba93d2ba","freshness_policy":"exact-material-head","producer":"focused token derivation gate on the exact published material content","status":"passed"}]}
+{
+  "schema_version": 1,
+  "material_head_sha": "028aad97276a885b0e0001691407bde289118543",
+  "base_sha": "387b4f00e59004856781da187bd436bcba8b9352",
+  "evidence": [
+    {
+      "evidence_id": "EV-Q-001",
+      "kind": "quantitative",
+      "path": "evidence/focused-token-derivation.txt",
+      "sha256": "75012248ac95d70c92c1ef318768db0ac3a50b5fda93a9215c754a2a3af6a812",
+      "subject_sha": "028aad97276a885b0e0001691407bde289118543",
+      "freshness_policy": "exact-material-head",
+      "producer": "exact-head divergent token derivation control: primary=#123456 and contentMaxWidth=99rem, executed by CI test suite",
+      "status": "passed"
+    }
+  ]
+}

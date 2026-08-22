@@ -1,3 +1,5 @@
-material_head_sha=5a6a42c8fcdc98ef89adeceb7a35706dba93d2ba
-scan=canonical shared token literals outside tokens.ts in touched runtime modules
-expected=no matches; literals belong to tokens.ts and test fixtures only
+material_head_sha=028aad97276a885b0e0001691407bde289118543
+canonical_source=apps/web/src/design-system/tokens.ts
+consumer_chain=apps/web/src/design-system/styles.ts -> apps/web/src/dev-server/shared-styles.ts
+observed=shared shell legacy variables alias --sf-* values; token-derivation tests execute on exact head
+status=passed

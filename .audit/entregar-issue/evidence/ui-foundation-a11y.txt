@@ -1,7 +1,17 @@
-material_head_sha=5a6a42c8fcdc98ef89adeceb7a35706dba93d2ba
+material_head_sha=028aad97276a885b0e0001691407bde289118543
+merge_preview_sha=af018cff98ac24290b298e6c5a4df0357f4a61ef
+visual_workflow_run=32570943029
+visual_job=Chrome visual validation
+visual_job_status=success
+visual_artifact_id=9475348143
+visual_artifact_head_sha=028aad97276a885b0e0001691407bde289118543
+visual_artifact_digest=sha256:a3cd4a8a5b28b5a0bfa23ce1f99a2664679a85baf2f304fe47b58b88af9938dd
+visual_report_note=REPORT.md records GITHUB_SHA af018cff98ac24290b298e6c5a4df0357f4a61ef, the pull_request merge preview executed by Actions; artifact metadata binds head_sha to material 028aad97276a885b0e0001691407bde289118543.
+scenarios=authenticated statement at 390, 768, 1366, 1920 and 2560 widths; dashboard, cards and accounts at mobile and desktop; keyboard/focus tooltip cases
+observed=visual report says no failures; 2560 statement main measured 1800px centered; no global overflow in covered shell pages
 focus=shared focus ring remains token-derived via --sf-shadow-focus
 interactive_target=new sf-button and sf-control use --sf-density-interactive-target-min = 2.75rem (44px)
 responsive=PageContainer uses desktop/mobile gutters and shell/dialog media queries derive from canonical breakpoint tokens
 semantic_states=positive negative neutral attention information expose foreground surface border and textual marker (+ - = ! i), so meaning is not color-only
-compatibility=legacy SSR compact controls remain aliases/compatibility and no full route redesign is introduced
+artifact_safety=secret-free assertion passed before upload
 status=passed
