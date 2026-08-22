@@ -75,7 +75,7 @@ describe("shared shell styles", () => {
     assert.ok(
       css.includes(`@media (max-width: ${solverFinDesignTokens.breakpoints.shellCompact})`),
     );
-    assert.ok(css.includes(`@media (max-width: ${solverFinDesignTokens.breakpoints.dialogStack})`));
+    assert.match(css, /--sf-breakpoint-dialog-stack:\s*56\.25rem/);
   });
 
   it("gives positive, negative, neutral, attention and information states a non-color marker", () => {
