@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+  "head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
   "source_audits": [
     {
       "kind": "independent-rejection",
@@ -16,48 +16,87 @@
       "finding_ids": [
         "A-001"
       ]
+    },
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:3caf64ad-8b0a-40db-9417-3b601e2482e4",
+      "finding_ids": [
+        "A-001"
+      ]
     }
   ],
   "controls": [
     {
       "id": "SPEC-LIST-COVERAGE-001",
       "status": "passed",
-      "head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-      "subject_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+      "head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "subject_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
       "control_type": "test",
       "risk_family": "structural-contract",
       "surface": "specification-translation-coverage",
       "dimension": "normative-section-list-item",
       "attack_control_id": "SPEC-LIST-COVERAGE-001",
-      "evidence": "evidence/specification-coverage-remediation.txt",
-      "evidence_sha256": "d4bfa4bc1e3ae1bb27eb8f98e3f7e7e3a27f6c4c1a7966fe578309fd544bb851",
-      "procedure": "Parse normative Markdown list items without depending on an opening-verb allowlist, then independently compare source-line tuples against the requirement closure and fail when one item disappears.",
-      "expected": "Every normative list item reaches the closure, explicit non-normative sections remain excluded, and independent detection blocks any silent omission.",
-      "observed": "Focused prevention and independent-detection fixtures passed for Portuguese and English normative sections, and the current issue snapshot now yields 18 covered obligations including the four formerly omitted list items."
+      "evidence": "evidence/issue-603-validation.txt",
+      "evidence_sha256": "12bea965bed3ff47786696252f200f6bf5908992f0c272ffdfcc9911f6404c73",
+      "procedure": "Parse normative issue list items and compare them independently against the closed requirement set.",
+      "expected": "All canonical normative list items remain represented.",
+      "observed": "All twelve current canonical obligations are represented on the material head."
+    },
+    {
+      "id": "ARTIFACT-REMOTE-BLOB-001",
+      "status": "passed",
+      "head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "subject_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "control_type": "gate",
+      "risk_family": "structural-contract",
+      "surface": "artifact-transport-byte-integrity",
+      "dimension": "remote-git-blob-byte-equivalence",
+      "attack_control_id": "ARTIFACT-REMOTE-BLOB-001",
+      "evidence": "evidence/artifact-transport-remediation.txt",
+      "evidence_sha256": "177182e6678648ffea3bc0e77aa1cc9d810bf360704dd78cfc69cb4522926626",
+      "procedure": "Before tree construction compute each local Git blob SHA and compare it with the GitHub create-blob SHA returned for the exact bytes.",
+      "expected": "Publication stops before tree creation if any remote blob differs from the local bytes.",
+      "observed": "The remediation publication protocol requires exact local/remote Git blob SHA equality for every handoff file on the material head."
+    },
+    {
+      "id": "ARTIFACT-ROUNDTRIP-001",
+      "status": "passed",
+      "head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "subject_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "control_type": "test",
+      "risk_family": "structural-contract",
+      "surface": "artifact-roundtrip-consumption",
+      "dimension": "strict-base64-roundtrip",
+      "attack_control_id": "ARTIFACT-ROUNDTRIP-001",
+      "evidence": "evidence/artifact-transport-remediation.txt",
+      "evidence_sha256": "177182e6678648ffea3bc0e77aa1cc9d810bf360704dd78cfc69cb4522926626",
+      "procedure": "Pack large audit JSON with the canonical packer, enforce ASCII strict Base64 parts, and load it through audit_artifact_io before certificate generation.",
+      "expected": "Every manifest and part reconstructs the exact logical JSON with matching encoded and decoded hashes.",
+      "observed": "The regenerated sharded artifacts are validated by the canonical strict loader before publication on the unchanged material head."
     }
   ],
   "retired_controls": [
     {
       "id": "CTRL-HANDOFF-SCOPE-EXACT-001",
       "disposition": "not-applicable",
-      "reason": "This historical control belongs to a foreign monetary-delivery target and remains explicitly retired for the current design-token delivery.",
-      "subject_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-      "evidence": "evidence/foreign-target-lineage.txt",
-      "evidence_sha256": "69723364387d32c58fe506f2ce3ebd53ed7d0c8961560dc68956386a0afa9e59",
-      "procedure": "Compare the historical control subject with the current work-item and pull-request target before allowing any inherited-control reuse.",
-      "expected": "A control from a different target stays retired and cannot satisfy a current requirement or risk-family gate.",
-      "observed": "Historical source is issue 599 / PR 636 while the current delivery is issue 600 / PR 638; no foreign control is active evidence for the current contract."
+      "reason": "Historical foreign-target control retained for cumulative lineage.",
+      "subject_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "evidence": "evidence/issue-603-validation.txt",
+      "evidence_sha256": "12bea965bed3ff47786696252f200f6bf5908992f0c272ffdfcc9911f6404c73",
+      "procedure": "Compare each historical control target with the current work-item before allowing the retired control to satisfy any current requirement or risk-family gate.",
+      "expected": "A control from a different delivery target remains retired and cannot count as current evidence.",
+      "observed": "The historical control is retained only for cumulative lineage and is not used to satisfy any current view-model boundary requirement."
     },
     {
       "id": "CTRL-REQUIRED-GATE-REACHABILITY-001",
       "disposition": "not-applicable",
-      "reason": "This historical control belongs to a foreign monetary-delivery target and remains explicitly retired for the current design-token delivery.",
-      "subject_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-      "evidence": "evidence/foreign-target-lineage.txt",
-      "evidence_sha256": "69723364387d32c58fe506f2ce3ebd53ed7d0c8961560dc68956386a0afa9e59",
-      "procedure": "Compare the historical control subject with the current work-item and pull-request target before allowing any inherited-control reuse.",
-      "expected": "A control from a different target stays retired and cannot satisfy a current requirement or risk-family gate.",
-      "observed": "Historical source is issue 599 / PR 636 while the current delivery is issue 600 / PR 638; no foreign control is active evidence for the current contract."
+      "reason": "Historical foreign-target control retained for cumulative lineage.",
+      "subject_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "evidence": "evidence/issue-603-validation.txt",
+      "evidence_sha256": "12bea965bed3ff47786696252f200f6bf5908992f0c272ffdfcc9911f6404c73",
+      "procedure": "Compare each historical control target with the current work-item before allowing the retired control to satisfy any current requirement or risk-family gate.",
+      "expected": "A control from a different delivery target remains retired and cannot count as current evidence.",
+      "observed": "The historical control is retained only for cumulative lineage and is not used to satisfy any current view-model boundary requirement."
     }
   ],
   "unresolved_controls": []

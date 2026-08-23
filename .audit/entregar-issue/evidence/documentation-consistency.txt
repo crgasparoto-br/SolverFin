@@ -1,6 +1,22 @@
-material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
-control=documentation canonical-claim consistency
-procedure=Compare DESIGN_SYSTEM and APP_SHELL claims with the executable token publication chain and scan current repository guidance for a competing normative owner of semantic design-token values.
-expected=Current documentation names tokens.ts as the canonical executable semantic source, styles.ts as publication, and shared-styles.ts as consumer/compatibility layer, with no competing current normative ownership claim.
-observed=Product and documentation files are unchanged between the frozen product parent and exact material head; the previously completed repository-wide contradiction scan remains applicable and exact-head CI is green.
-status=passed
+Material head: 8fc10d84bf6aefdc21af8e4d7551a71776b3ca24
+Repository: crgasparoto-br/SolverFin
+Scope: issue #603 frontend view-model/presenter boundary
+
+Repository-wide/documentation discovery performed against the material head and its unchanged architecture sources:
+- code search for "view-model presenter" returned docs/adr/0014-incremental-component-ui-architecture.md and docs/STATUS_MATRIX.md outside the PR diff;
+- code search for "renderer financial" returned docs/ARCHITECTURE.md, docs/APP_SHELL.md and relevant SSR renderer sources outside the PR diff;
+- docs/ARCHITECTURE.md states that new work prefers structured composition and view-models, while legacy SSR remains supported until route migration;
+- ADR 0014 states that presentation does not calculate balance, invoice, budget, exchange or other financial rules, that explicit screen states are modeled, and that Dashboard -> Extrato -> Cartoes is the preferred pilot order.
+
+Old/transition claim examined:
+- legacy SSR renderers may still contain route-local formatting/normalization and remain supported until their migration issue.
+
+New/current claim introduced by #603:
+- migrated screens use loader -> presenter -> ScreenViewModel -> renderer; monetary fields preserve explicit currency; financial calculations remain upstream in domain/API.
+
+Classification:
+- docs/adr/0014-incremental-component-ui-architecture.md: current-contract, consistent.
+- docs/ARCHITECTURE.md: current-contract/compatibility, consistent; explicitly preserves legacy SSR during incremental migration.
+- docs/frontend-view-model-presenters.md: current-contract introduced by this PR, consistent with ADR 0014.
+
+Unresolved contradictions: none found in the examined canonical architecture/documentation surfaces.

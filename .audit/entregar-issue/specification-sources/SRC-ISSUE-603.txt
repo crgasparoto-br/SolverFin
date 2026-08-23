@@ -1,0 +1,35 @@
+# [Fase 3B] Introduzir boundary de view-models entre dados financeiros e renderização
+
+Parent epic: #590
+
+## Objetivo
+
+Separar preparação de dados/estados da renderização visual, evitando que páginas calculem ou reinterpretam regras financeiras.
+
+## Escopo
+
+- definir padrão de view-model/presenter compatível com SSR atual;
+- mover normalização de estados de tela, labels, agrupamentos puramente de apresentação e links para o boundary apropriado;
+- consumir valores financeiros já calculados por domínio/API;
+- preservar moeda, filtros e proveniência no view-model;
+- aplicar inicialmente às telas-piloto sem refactor global.
+
+## Critérios de aceite
+
+- [ ] renderer recebe um modelo explícito de estado da tela;
+- [ ] cálculos de saldo/fatura/orçamento/câmbio não são realizados no renderer;
+- [ ] estados loading/vazio/erro/sucesso são tipados/modelados;
+- [ ] moeda permanece obrigatória nos campos monetários do view-model;
+- [ ] testes do presenter/view-model são independentes de regex sobre HTML;
+- [ ] padrão é documentado para uso nas migrações.
+
+## Fora de escopo
+
+- trocar API inteira por GraphQL/tRPC;
+- framework frontend novo.
+
+## Referências
+
+- #590
+- ADR 0014
+- `docs/ARCHITECTURE.md`

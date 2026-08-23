@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+  "head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
   "families": [
     {
       "family": "authorization",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -13,7 +13,7 @@
     {
       "family": "tenant-isolation",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -21,23 +21,34 @@
     {
       "family": "public-boundary",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
     },
     {
       "family": "reference-liveness",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "The current closure, attack matrix, inherited controls, or audit-escape lineage makes this canonical risk family material.",
+      "control_ids": [
+        "NEG-002"
+      ],
+      "dimensions": [
+        {
+          "surface": "ssr-contract-compatibility",
+          "reason": "This surface directly distinguishes the required contract from a plausible shortcut.",
+          "control_ids": [
+            "NEG-002"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "temporal-consistency",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -45,7 +56,7 @@
     {
       "family": "temporal-destination",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -53,7 +64,7 @@
     {
       "family": "concurrency-atomicity",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -61,7 +72,7 @@
     {
       "family": "idempotency",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -69,7 +80,7 @@
     {
       "family": "rollback",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -77,7 +88,7 @@
     {
       "family": "historical-immutability",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No canonical obligation, active inherited control, or audit-escape dimension requires this family for the current delivery.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -85,53 +96,68 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "The current closure, attack matrix, inherited controls, or audit-escape lineage makes this canonical risk family material.",
       "control_ids": [
-        "FOREIGN-TARGET-LINEAGE-001",
-        "REQ-001-NEG-01",
-        "REQ-001-NEG-02",
-        "REQ-008-NEG-01",
-        "REQ-011-NEG-01",
-        "REQ-012-NEG-01",
-        "REQ-012-NEG-02",
-        "REQ-017-NEG-01",
-        "REQ-017-NEG-02",
+        "ARTIFACT-REMOTE-BLOB-001",
+        "ARTIFACT-ROUNDTRIP-001",
+        "AUDIT-FOREIGN-LINEAGE-001",
+        "NEG-001",
+        "NEG-003",
+        "NEG-004",
+        "NEG-005",
+        "NEG-006",
+        "NEG-007",
+        "NEG-008",
+        "NEG-009",
+        "NEG-010",
+        "NEG-011",
         "SPEC-LIST-COVERAGE-001"
       ],
       "dimensions": [
         {
-          "surface": "canonical-source-consistency",
-          "reason": "Equivalent runtime, seed, import or maintenance paths can drift when they do not consume the same canonical product definition.",
+          "surface": "artifact-roundtrip-consumption",
+          "reason": "A manifest can be syntactically valid while its declared Base64 parts cannot reconstruct the logical JSON.",
           "control_ids": [
-            "REQ-001-NEG-01",
-            "REQ-011-NEG-01",
-            "REQ-012-NEG-01",
-            "REQ-017-NEG-01"
+            "ARTIFACT-ROUNDTRIP-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "artifact-transport-byte-integrity",
+          "reason": "Connector publication can rewrite sharded artifact bytes while local evidence still looks valid.",
+          "control_ids": [
+            "ARTIFACT-REMOTE-BLOB-001"
           ],
           "status": "passed"
         },
         {
           "surface": "foreign-target-lineage",
-          "reason": "Historical audit controls from another work-item can contaminate current saturation unless target mismatch and evidence exclusion are both explicit.",
+          "reason": "Historical audit evidence can be accidentally reused across unrelated delivery targets.",
           "control_ids": [
-            "FOREIGN-TARGET-LINEAGE-001"
+            "AUDIT-FOREIGN-LINEAGE-001"
           ],
           "status": "passed"
         },
         {
-          "surface": "relational-semantic-integrity",
-          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "surface": "presenter-boundary-integrity",
+          "reason": "This surface directly distinguishes the required contract from a plausible shortcut.",
           "control_ids": [
-            "REQ-001-NEG-02",
-            "REQ-008-NEG-01",
-            "REQ-012-NEG-02",
-            "REQ-017-NEG-02"
+            "NEG-001",
+            "NEG-003",
+            "NEG-004",
+            "NEG-005",
+            "NEG-006",
+            "NEG-007",
+            "NEG-008",
+            "NEG-009",
+            "NEG-010",
+            "NEG-011"
           ],
           "status": "passed"
         },
         {
           "surface": "specification-translation-coverage",
-          "reason": "Normative list items can disappear during specification translation before coverage validation sees them.",
+          "reason": "Normative list obligations can disappear during translation to requirement closure.",
           "control_ids": [
             "SPEC-LIST-COVERAGE-001"
           ],
@@ -143,16 +169,16 @@
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "The current closure, attack matrix, inherited controls, or audit-escape lineage makes this canonical risk family material.",
       "control_ids": [
-        "REQ-018-NEG-02"
+        "DOC-SEMANTIC-603"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Documentation can retain an obsolete ownership claim even when implementation tests remain green.",
+          "reason": "This surface directly distinguishes the required contract from a plausible shortcut.",
           "control_ids": [
-            "REQ-018-NEG-02"
+            "DOC-SEMANTIC-603"
           ],
           "status": "passed"
         }
