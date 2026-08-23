@@ -1,16 +1,6 @@
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
-export type SemanticTone =
-  | "positive"
-  | "negative"
-  | "neutral"
-  | "attention"
-  | "information";
-export type SurfaceState =
-  | "loading"
-  | "empty"
-  | "error"
-  | "unavailable"
-  | "permission";
+export type SemanticTone = "positive" | "negative" | "neutral" | "attention" | "information";
+export type SurfaceState = "loading" | "empty" | "error" | "unavailable" | "permission";
 
 export interface ButtonProps {
   label: string;
@@ -176,12 +166,7 @@ export function renderButton(props: ButtonProps): string {
   const variant = props.variant ?? "primary";
   const type = props.type ?? "button";
   const disabled = props.disabled === true || props.busy === true;
-  const classes = classNames(
-    "sf-button",
-    `sf-button-${variant}`,
-    "sf-focus-ring",
-    props.className,
-  );
+  const classes = classNames("sf-button", `sf-button-${variant}`, "sf-focus-ring", props.className);
 
   return `<button class="${escapeHtml(classes)}" type="${type}"${attribute("name", props.name)}${attribute("value", props.value)}${attribute("form", props.form)}${booleanAttribute("disabled", disabled)}${props.busy === true ? ' aria-busy="true"' : ""}><span class="sf-button-label">${escapeHtml(props.label)}</span></button>`;
 }
@@ -203,9 +188,7 @@ export function renderIconButton(props: IconButtonProps): string {
 
 export function renderCard(props: CardProps): string {
   const classes = classNames("sf-card", props.className);
-  const title = props.title
-    ? `<h2 class="sf-card-title">${escapeHtml(props.title)}</h2>`
-    : "";
+  const title = props.title ? `<h2 class="sf-card-title">${escapeHtml(props.title)}</h2>` : "";
   const footer = props.footerHtml
     ? `<footer class="sf-card-footer">${props.footerHtml}</footer>`
     : "";
@@ -272,9 +255,7 @@ export function renderStatePanel(props: StatePanelProps): string {
   return `<section class="sf-state-panel" data-state="${props.state}" role="${role}" aria-live="${live}"${props.state === "loading" ? ' aria-busy="true"' : ""}><div class="sf-state-panel-marker" aria-hidden="true"></div><div class="sf-state-panel-content"><strong class="sf-state-panel-title">${escapeHtml(props.title)}</strong>${description}${action}</div></section>`;
 }
 
-export function renderEmptyState(
-  props: Omit<StatePanelProps, "state">,
-): string {
+export function renderEmptyState(props: Omit<StatePanelProps, "state">): string {
   return renderStatePanel({ ...props, state: "empty" });
 }
 
@@ -282,21 +263,15 @@ export function renderLoading(props: Omit<StatePanelProps, "state">): string {
   return renderStatePanel({ ...props, state: "loading" });
 }
 
-export function renderRecoverableError(
-  props: Omit<StatePanelProps, "state">,
-): string {
+export function renderRecoverableError(props: Omit<StatePanelProps, "state">): string {
   return renderStatePanel({ ...props, state: "error" });
 }
 
-export function renderUnavailableState(
-  props: Omit<StatePanelProps, "state">,
-): string {
+export function renderUnavailableState(props: Omit<StatePanelProps, "state">): string {
   return renderStatePanel({ ...props, state: "unavailable" });
 }
 
-export function renderPermissionState(
-  props: Omit<StatePanelProps, "state">,
-): string {
+export function renderPermissionState(props: Omit<StatePanelProps, "state">): string {
   return renderStatePanel({ ...props, state: "permission" });
 }
 
@@ -330,16 +305,13 @@ export function renderDialog(props: DialogProps): string {
     ? `<footer class="sf-dialog-actions">${props.actionsHtml}</footer>`
     : "";
 
-  const dialogClasses = classNames(
-    "sf-dialog",
-    kind === "drawer" ? "sf-drawer" : undefined,
-  );
+  const dialogClasses = classNames("sf-dialog", kind === "drawer" ? "sf-drawer" : undefined);
   const closeButton = renderIconButton({
     label: props.closeLabel ?? "Fechar",
     icon: "×",
     variant: "ghost",
     className: "sf-dialog-close",
-  }).replace("<button ", '<button data-sf-dialog-close ');
+  }).replace("<button ", "<button data-sf-dialog-close ");
 
   return `<dialog class="${dialogClasses}" id="${escapeHtml(props.id)}" aria-labelledby="${escapeHtml(titleId)}"${attribute("aria-describedby", descriptionId)}><div class="sf-dialog-panel"><header class="sf-dialog-header"><div class="sf-dialog-heading"><h2 id="${escapeHtml(titleId)}">${escapeHtml(props.title)}</h2>${description}</div>${closeButton}</header><div class="sf-dialog-body">${props.bodyHtml}</div>${actions}</div></dialog>`;
 }
@@ -407,9 +379,7 @@ export function renderDetailLayout(props: DetailLayoutProps): string {
 }
 
 export function renderFormLayout(props: FormLayoutProps): string {
-  const error = props.errorHtml
-    ? `<div class="sf-form-layout-error">${props.errorHtml}</div>`
-    : "";
+  const error = props.errorHtml ? `<div class="sf-form-layout-error">${props.errorHtml}</div>` : "";
   const actions = props.actionsHtml
     ? `<div class="sf-form-layout-actions">${props.actionsHtml}</div>`
     : "";
