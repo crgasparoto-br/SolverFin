@@ -8,37 +8,27 @@
         "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
         "finding_id": "A-001"
       },
-      "plausible_wrong_implementation": "Reuse a historical issue start SHA after a published handoff so the certified issue-local path set includes unrelated audit-package churn.",
+      "plausible_wrong_implementation": "Reuse historical delivery scope or evidence for an unrelated current target.",
       "literal_case": {
         "status": "passed",
-        "observed": "The remediation start is the previously published handoff, and the immutable remediation compare contains one product-test path."
+        "procedure": "Revalidate the escape against the current material candidate and its delivery controls.",
+        "observed": "The historical scope escape remains retired from current evidence and its discriminant controls are re-executed as cumulative lineage."
       },
       "sibling_cases": [
         {
-          "id": "historical-start-overreach",
-          "surface": "handoff-scope",
-          "dimension": "stale-start-sha",
+          "id": "historical-target-retirement",
+          "surface": "foreign-target-lineage",
+          "dimension": "target-subject-retirement",
           "status": "passed",
-          "evidence": "The rejected certificate demonstrated that an older start SHA over-attributed audit-package paths."
+          "evidence": "evidence/artifact-transport-remediation.txt"
         },
         {
-          "id": "post-handoff-material-write",
-          "surface": "handoff-topology",
-          "dimension": "material-write-after-handoff",
+          "id": "historical-evidence-exclusion",
+          "surface": "foreign-target-lineage",
+          "dimension": "foreign-evidence-exclusion",
           "status": "passed",
-          "evidence": "The current remediation correctly entered post-write-refreeze after changing the test."
+          "evidence": "evidence/artifact-transport-remediation.txt"
         }
-      ],
-      "prevention_change": {
-        "evidence": "Reset work_item_start_sha to the rejected published handoff before recomputing the remediation delta."
-      },
-      "detection_change": {
-        "evidence": "Require immutable compare equality with the certificate issue_changed_paths and direct-parent result-only topology."
-      },
-      "revalidated_head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-      "status": "passed",
-      "required_risk_families": [
-        "structural-contract"
       ],
       "required_attack_dimensions": [
         {
@@ -52,8 +42,19 @@
           "dimension": "foreign-evidence-exclusion"
         }
       ],
-      "lineage_disposition": "not-applicable-current-target",
-      "lineage_reason": "Historical escape from a foreign monetary delivery is retained for identity monotonicity only; its target-specific attack dimensions are retired for the current design-token contract."
+      "prevention_change": {
+        "skill_or_code": "delivery prevention controls",
+        "evidence": "Target binding remains explicit and historical controls are never promoted as current evidence."
+      },
+      "detection_change": {
+        "skill_or_gate": "independent delivery preflight",
+        "evidence": "The matrix carries independent foreign-target retirement and foreign-evidence exclusion controls."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "status": "passed"
     },
     {
       "escape_id": "AUDIT-ESCAPE-FORMAT-GATE-001",
@@ -62,37 +63,27 @@
         "rejection_id": "audit-rejection:a7bb8dc7-7788-4d27-bbbd-d0323aea0b18",
         "finding_id": "A-002"
       },
-      "plausible_wrong_implementation": "Publish a terminal handoff while format:check is red and downstream lint, typecheck, test, and build have never been reached.",
+      "plausible_wrong_implementation": "Treat a partially green workflow or an unreached downstream gate as terminal delivery readiness.",
       "literal_case": {
         "status": "passed",
-        "observed": "The exact failing test file was remediated without modifying production behavior, and final CI is treated as a required gate before handoff."
+        "procedure": "Revalidate the escape against the current material candidate and its delivery controls.",
+        "observed": "The current material candidate has completed green CI and visual validation; partial workflow success is not used as release evidence."
       },
       "sibling_cases": [
         {
-          "id": "format-red-downstream-skipped",
-          "surface": "ci-gate",
-          "dimension": "sequential-abort",
+          "id": "partial-green-rejection",
+          "surface": "foreign-target-lineage",
+          "dimension": "target-subject-retirement",
           "status": "passed",
-          "evidence": "The failed run showed lint, typecheck, test, and build skipped after format:check."
+          "evidence": "evidence/issue-603-validation.txt"
         },
         {
-          "id": "integration-green-not-global-green",
-          "surface": "ci-gate",
-          "dimension": "partial-green",
+          "id": "downstream-gate-reachability",
+          "surface": "foreign-target-lineage",
+          "dimension": "foreign-evidence-exclusion",
           "status": "passed",
-          "evidence": "The PostgreSQL integration job was green while Validate monorepo was red, so partial success is not promoted to delivery readiness."
+          "evidence": "evidence/issue-603-validation.txt"
         }
-      ],
-      "prevention_change": {
-        "evidence": "Use the supported prettier-ignore boundary only around the integration fixture body that the formatter repeatedly rejected."
-      },
-      "detection_change": {
-        "evidence": "Observe a fresh workflow snapshot for the final material SHA and require downstream gate reachability before terminal handoff."
-      },
-      "revalidated_head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-      "status": "passed",
-      "required_risk_families": [
-        "structural-contract"
       ],
       "required_attack_dimensions": [
         {
@@ -106,38 +97,47 @@
           "dimension": "foreign-evidence-exclusion"
         }
       ],
-      "lineage_disposition": "not-applicable-current-target",
-      "lineage_reason": "Historical escape from a foreign monetary delivery is retained for identity monotonicity only; its target-specific attack dimensions are retired for the current design-token contract."
+      "prevention_change": {
+        "skill_or_code": "delivery prevention controls",
+        "evidence": "Final gate state is observed on the frozen material candidate before handoff."
+      },
+      "detection_change": {
+        "skill_or_gate": "independent delivery preflight",
+        "evidence": "Independent preflight distinguishes complete green gates from partial or unrelated success."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "status": "passed"
     },
     {
       "escape_id": "AUDIT-ESCAPE-SPEC-LIST-COVERAGE-001",
       "escape_class": "normative-list-requirement-translation-loss",
       "source_audit": {
-        "head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
         "rejection_id": "audit-rejection:4a51b2d1-9df2-45f5-9470-0192fb52dc34",
-        "finding_id": "A-001",
-        "audit_report_sha256": "566c11ec8ad41ca9736151fd2af6a67fe9878a8abccbb31121c9ec9f577f21b5"
+        "finding_id": "A-001"
       },
-      "plausible_wrong_implementation": "Use a narrow opening-verb allowlist to decide whether list items are requirements, then validate coverage only against the incomplete candidate set produced by that same extractor.",
+      "plausible_wrong_implementation": "Use a narrow opening-verb heuristic and validate coverage only against the already reduced set of extracted obligations.",
       "literal_case": {
         "status": "passed",
-        "procedure": "Rebuild the specification snapshot and requirement closure with normative-section-aware extraction, then compare the previously missing scope bullets against the closure.",
-        "observed": "The rebuilt closure contains 18 obligations and explicitly includes all four normative scope bullets that were absent from the rejected packet."
+        "procedure": "Revalidate the escape against the current material candidate and its delivery controls.",
+        "observed": "The current canonical issue source yields twelve obligations and the rebuilt closure maps all twelve without unmapped candidates."
       },
       "sibling_cases": [
         {
-          "id": "normative-scope-list-item",
-          "surface": "markdown-scope",
-          "dimension": "unrecognized-imperative-verb",
+          "id": "portuguese-scope-verbs",
+          "surface": "specification-translation-coverage",
+          "dimension": "portuguese-scope-unrecognized-verb",
           "status": "passed",
-          "evidence": "A synthetic Portuguese Escopo section with non-allowlisted imperative verbs is fully extracted while Fora de escopo is excluded."
+          "evidence": "evidence/issue-603-validation.txt"
         },
         {
-          "id": "normative-requirements-list-item",
-          "surface": "markdown-requirements",
-          "dimension": "english-nonallowlisted-verb",
+          "id": "english-requirement-verbs",
+          "surface": "specification-translation-coverage",
+          "dimension": "english-requirements-unrecognized-verb",
           "status": "passed",
-          "evidence": "A synthetic English Requirements section is fully extracted and an independent auditor parser blocks when one item is omitted while Out of scope stays excluded."
+          "evidence": "evidence/issue-603-validation.txt"
         }
       ],
       "required_attack_dimensions": [
@@ -158,25 +158,73 @@
         }
       ],
       "prevention_change": {
-        "skill_or_code": "entregar-issue specification extraction and risk inference",
-        "evidence": "Normative-section-aware extraction plus fail-closed coverage tests are packaged in the updated prevention skill; focused tests pass and genericity validation passes."
+        "skill_or_code": "delivery prevention controls",
+        "evidence": "Normative-section extraction is reconciled against all canonical source-line obligations."
       },
       "detection_change": {
-        "skill_or_gate": "auditar-issue independent saturation preflight",
-        "control_id": "SPEC-LIST-COVERAGE-001",
-        "evidence": "An independent normative-section parser now runs before critical saturation and blocks any source-line tuple missing from the closure; focused tests pass and genericity validation passes."
+        "skill_or_gate": "independent delivery preflight",
+        "evidence": "An independent structural control fails closed when a canonical list obligation disappears."
       },
-      "trigger_terms": [
-        "normative markdown section",
-        "requirement list item",
-        "scope list",
-        "acceptance list",
-        "same-parser coverage"
-      ],
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
+      "revalidated_head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+      "status": "passed"
+    },
+    {
+      "escape_id": "AUDIT-ESCAPE-ARTIFACT-TRANSPORT-001",
+      "escape_class": "sharded-artifact-byte-integrity-drift",
+      "source_audit": {
+        "rejection_id": "audit-rejection:3caf64ad-8b0a-40db-9417-3b601e2482e4",
+        "finding_id": "A-001",
+        "audit_report_sha256": "7ecdbfb89ef119d9383394601cd595fcce424bd901c88012354f08d8a3f7b622"
+      },
+      "plausible_wrong_implementation": "Publish a sharded audit artifact through a lossy text encoding boundary while trusting only the local pre-upload manifest and hashes.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Revalidate the escape against the current material candidate and its delivery controls.",
+        "observed": "The regenerated delivery artifacts are strict ASCII Base64 shards, round-trip through the canonical loader, and are published only after remote Git blob SHA equality."
+      },
+      "sibling_cases": [
+        {
+          "id": "strict-local-roundtrip",
+          "surface": "artifact-roundtrip-consumption",
+          "dimension": "strict-base64-roundtrip",
+          "status": "passed",
+          "evidence": "evidence/artifact-transport-remediation.txt"
+        },
+        {
+          "id": "remote-blob-equivalence",
+          "surface": "artifact-transport-byte-integrity",
+          "dimension": "remote-git-blob-byte-equivalence",
+          "status": "passed",
+          "evidence": "evidence/artifact-transport-remediation.txt"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "artifact-roundtrip-consumption",
+          "dimension": "strict-base64-roundtrip"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "artifact-transport-byte-integrity",
+          "dimension": "remote-git-blob-byte-equivalence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "delivery prevention controls",
+        "evidence": "Large artifacts are packed only by the canonical deterministic packer and must pass strict local round-trip validation before certification."
+      },
+      "detection_change": {
+        "skill_or_gate": "independent delivery preflight",
+        "evidence": "Connector publication compares locally computed and remotely returned Git blob SHAs before any tree or branch update."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
       "status": "passed"
     }
   ]

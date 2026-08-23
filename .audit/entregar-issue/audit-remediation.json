@@ -3,12 +3,12 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:4a51b2d1-9df2-45f5-9470-0192fb52dc34",
-    "audit_report_sha256": "566c11ec8ad41ca9736151fd2af6a67fe9878a8abccbb31121c9ec9f577f21b5",
-    "audited_head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7"
+    "rejection_id": "audit-rejection:3caf64ad-8b0a-40db-9417-3b601e2482e4",
+    "audit_report_sha256": "7ecdbfb89ef119d9383394601cd595fcce424bd901c88012354f08d8a3f7b622",
+    "audited_head_sha": "61372af79feff3d20ea5b612351c106d556fa258"
   },
-  "candidate_head_sha": "d1ead8f125d54efb16d726b4a05ac46806acd1f7",
-  "remediation_mode": "mixed-remediation",
+  "candidate_head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+  "remediation_mode": "systemic-remediation",
   "items": [
     {
       "source_kind": "finding",
@@ -16,38 +16,19 @@
       "remediation_mode": "systemic-remediation",
       "status": "fixed",
       "changed_files": [
-        "skill:entregar-issue",
-        "skill:auditar-issue",
-        ".audit/entregar-issue/requirement-closure.json",
         ".audit/entregar-issue/requirement-attack-matrix.json",
+        ".audit/entregar-issue/requirement-attack-matrix.parts/part-000.b64",
         ".audit/entregar-issue/audit-escape-closure.json",
         ".audit/entregar-issue/learning-closure.json",
         ".audit/entregar-issue/inherited-controls.json"
       ],
       "evidence": [
-        "evidence/specification-coverage-remediation.txt"
+        "evidence/artifact-transport-remediation.txt"
       ],
       "validations": [
-        "18 canonical obligations extracted and covered",
-        "producer coverage validator passes",
-        "independent normative-section detector focused tests pass",
-        "prevention and detection skill genericity validators pass"
-      ]
-    },
-    {
-      "source_kind": "recommendation",
-      "source_id": "REC-001",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "changed_files": [
-        "pull-request:638/body"
-      ],
-      "evidence": [
-        "evidence/pr-body-remediation.txt"
-      ],
-      "validations": [
-        "GitHub returned updated PR body with current material SHA",
-        "PR head remained unchanged during metadata update"
+        "strict Base64 ASCII validation",
+        "canonical audit_artifact_io round-trip",
+        "local/remote Git blob SHA equivalence before publication"
       ]
     }
   ],

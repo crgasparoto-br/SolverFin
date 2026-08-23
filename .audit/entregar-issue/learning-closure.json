@@ -3,43 +3,39 @@
   "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:4a51b2d1-9df2-45f5-9470-0192fb52dc34",
+    "rejection_id": "audit-rejection:3caf64ad-8b0a-40db-9417-3b601e2482e4",
     "finding_ids": [
       "A-001"
     ],
-    "audit_report_sha256": "566c11ec8ad41ca9736151fd2af6a67fe9878a8abccbb31121c9ec9f577f21b5"
+    "audit_report_sha256": "7ecdbfb89ef119d9383394601cd595fcce424bd901c88012354f08d8a3f7b622"
   },
   "generalized_learning": {
-    "escape_class": "normative-list-requirement-translation-loss",
-    "generalized_failure_pattern": "A requirement extractor filters Markdown list items by a narrow lexical heuristic before coverage validation, so legitimate obligations can disappear and the validator can still report complete coverage against the truncated candidate set.",
-    "plausible_wrong_implementation": "Treat only list items whose first verb matches a maintained keyword set as obligations and reuse that same derived candidate set as the denominator for completeness.",
+    "escape_class": "sharded-artifact-byte-integrity-drift",
+    "generalized_failure_pattern": "A structured artifact is validated locally, then crosses a text or connector boundary that rewrites bytes while the delivery continues to trust the pre-transfer manifest.",
+    "plausible_wrong_implementation": "Create or transmit encoded shards through a lossy character conversion and certify the local digest without proving the bytes stored by the destination.",
     "trigger_signals": [
-      "normative Markdown headings",
-      "bulleted or checklist requirements",
-      "lexical obligation heuristics",
-      "coverage computed from extracted candidates"
+      "sharded artifact",
+      "base64 transport",
+      "connector publication",
+      "text transcoding boundary",
+      "remote blob creation"
     ],
     "risk_families": [
       "structural-contract"
     ],
-    "reusable_control": {
-      "id": "SPEC-LIST-COVERAGE-001",
-      "procedure": "Independently enumerate list items under normative headings, exclude explicit non-normative headings, and compare source identity tuples against the closure; removal of any normative item must fail the gate."
-    },
-    "prevention_rule": "Under a normative Markdown section, treat each list item as a requirement candidate independently of its opening verb; explicit non-normative sections must be excluded by section semantics rather than lexical coincidence.",
-    "detection_rule": "The audit preflight must rederive normative list-item coverage with an implementation independent from the producer extractor and fail before saturation when any source-line tuple is absent from the closure.",
+    "reusable_control": "For every encoded shard, require strict local round-trip plus local-versus-remote Git blob identity before constructing the published tree.",
+    "prevention_rule": "Pack encoded artifacts with one deterministic implementation and keep shard bytes in an ASCII-safe representation across connector calls.",
+    "detection_rule": "Fail publication when any encoded part is non-ASCII, fails strict Base64 decoding, fails manifest round-trip, or produces a different remote blob identity.",
     "transfer_cases": [
       {
-        "id": "synthetic-scope-list",
-        "surface": "markdown-scope",
-        "status": "passed",
-        "observed": "A normative scope list with uncommon imperative verbs is fully retained while an explicit non-normative section is excluded."
+        "surface": "connector-text-upload",
+        "dimension": "remote-byte-equivalence",
+        "status": "passed"
       },
       {
-        "id": "synthetic-requirements-list",
-        "surface": "markdown-requirements",
-        "status": "passed",
-        "observed": "An independent consumer rejects a closure with one missing list item under a requirements heading."
+        "surface": "filesystem-reencoding",
+        "dimension": "strict-roundtrip-after-storage",
+        "status": "passed"
       }
     ],
     "promotion_status": "promoted"
@@ -47,19 +43,15 @@
   "skill_changes": [
     {
       "role": "prevention",
-      "skill": "entregar-issue",
-      "before_sha256": "a8f294655eddf5458f9a571100a19bd3c32daf17c77f56396cc71fc36125a9b9",
-      "after_sha256": "6e6742147e5bd664fb3848cdba094024f58d808e57a2b28e3bb7bb7183ade397",
-      "package_sha256": "25df00f17fd9b13f7d7409311aa790672cff4b469525bda05e085a7d2f077274",
-      "status": "passed"
+      "status": "passed",
+      "change": "Canonical deterministic sharding plus ASCII-only strict Base64 validation is mandatory before certificate construction.",
+      "evidence": "evidence/artifact-transport-remediation.txt"
     },
     {
       "role": "detection",
-      "skill": "auditar-issue",
-      "before_sha256": "78adc86dd61afd6e67df82fe6fb87f3ba8477b477907671aa8ec558cbf72b303",
-      "after_sha256": "657d39489a3a813aab56498754f7d022cc89673ce9280b2d83605b42fd1604eb",
-      "package_sha256": "5588cbced9ee65ce6a2dfa92d1018734af9656e3a217d7741cf78b3934a281e3",
-      "status": "passed"
+      "status": "passed",
+      "change": "Connector publication blocks unless every create-blob SHA equals the locally computed Git blob SHA and logical round-trip remains valid.",
+      "evidence": "evidence/artifact-transport-remediation.txt"
     }
   ]
 }

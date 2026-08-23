@@ -1,37 +1,74 @@
-import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
+import { formatMinorCurrency } from "@solverfin/shared";
 
-import { apiGet, type ApiFailure, type ApiSuccess } from "./api.js";
+import { apiGet } from "./api.js";
+import {
+  presentDashboard,
+  type DashboardContentViewModel,
+  type DashboardCurrencySummaryViewModel,
+  type DashboardFinancialSummary,
+  type DashboardMetricViewModel,
+  type DashboardOpenInvoice,
+  type DashboardRecentItemViewModel,
+  type DashboardScreenViewModel,
+  type DashboardTransaction,
+} from "./dashboard-presenter.js";
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
+import type { MoneyViewModel } from "./screen-view-model.js";
 
 export async function renderDashboardPage(token: string): Promise<string> {
   const [summary, transactions, pendingReview, openInvoices] = await Promise.all([
-    apiGet<FinancialSummary>(token, "/api/financial-summary"),
+    apiGet<DashboardFinancialSummary>(token, "/api/financial-summary"),
     apiGet<{ transactions: DashboardTransaction[] }>(token, "/api/transactions?status=all"),
     apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
-    apiGet<{ invoices: OpenInvoice[] }>(token, "/api/invoices?status=open"),
+    apiGet<{ invoices: DashboardOpenInvoice[] }>(token, "/api/invoices?status=open"),
   ]);
 
-  if (!summary.ok) {
-    return renderAuthenticatedPage(
-      `<section class="panel"><p class="error">${escapeHtml(summary.error)}</p></section>`,
-    );
-  }
+  return renderDashboard(
+    presentDashboard({
+      summary,
+      transactions,
+      pendingReview,
+      openInvoices,
+      filters: {},
+    }),
+  );
+}
 
-  return renderAuthenticatedPage(`
+function renderDashboard(model: DashboardScreenViewModel): string {
+  switch (model.status) {
+    case "loading":
+      return renderAuthenticatedPage(
+        '<section class="panel" aria-busy="true"><p class="muted">Carregando resumo financeiro...</p></section>',
+      );
+    case "error":
+      return renderAuthenticatedPage(
+        `<section class="panel"><p class="error">${escapeHtml(model.error.message)}</p></section>`,
+      );
+    case "empty":
+      return renderAuthenticatedPage(
+        `<section class="panel">${renderEmptyState(model.empty.title, model.empty.description)}</section>`,
+      );
+    case "success":
+      return renderAuthenticatedPage(renderDashboardContent(model.content));
+  }
+}
+
+function renderDashboardContent(content: DashboardContentViewModel): string {
+  return `
     <section class="dashboard-heading">
       <div>
         <p class="eyebrow">Visão geral financeira</p>
         <h1>Resumo financeiro</h1>
       </div>
     </section>
-    ${renderCurrencySummaries(summary.data.currencyBlocks)}
+    ${renderCurrencySummaries(content.currencySummaries)}
     <section class="panel next-actions" aria-label="Próximas ações">
       <div class="section-heading">
         <h2>Próximas ações</h2>
       </div>
-      ${renderNextActions(transactions, pendingReview, openInvoices)}
+      ${renderNextActions(content.nextActions)}
       <div class="quick-links" aria-label="Atalhos da rotina">
         <a class="button-link secondary-link" href="/lancamentos" title="Ver extrato da conta">${icon("receipt", 14)} Extrato</a>
         <a class="button-link secondary-link" href="/cartoes" title="Ver cartões de crédito">${icon("credit-card", 14)} Cartões</a>
@@ -43,51 +80,13 @@ export async function renderDashboardPage(token: string): Promise<string> {
         <h2>Itens recentes</h2>
       </div>
       <div class="rows">
-        ${renderRecentItems(summary.data.recentItems)}
+        ${renderRecentItems(content.recentItems)}
       </div>
     </section>
-  `);
+  `;
 }
 
-interface DashboardTransaction {
-  id: string;
-  description: string;
-  kind: "income" | "expense" | "transfer";
-  status: string;
-  amountMinor: number;
-  occurredOn: string;
-  plannedOn?: string;
-  invoiceId?: string;
-  installmentId?: string;
-}
-
-interface OpenInvoice {
-  dueOn: string;
-}
-
-interface FinancialSummaryItem {
-  description: string;
-  kind: string;
-  amountMinor: number;
-  currency: string;
-  occurredOn: string;
-  status: string;
-}
-
-interface FinancialSummaryCurrencyBlock {
-  currency: string;
-  availableBalanceMinor: number;
-  incomeMinor: number;
-  expensesMinor: number;
-  plannedCommitmentsMinor: number;
-}
-
-interface FinancialSummary {
-  currencyBlocks: FinancialSummaryCurrencyBlock[];
-  recentItems: FinancialSummaryItem[];
-}
-
-function renderCurrencySummaries(blocks: readonly FinancialSummaryCurrencyBlock[]): string {
+function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
   if (blocks.length === 0) {
     return renderEmptyState(
       "Nenhum total financeiro disponível.",
@@ -103,30 +102,7 @@ function renderCurrencySummaries(blocks: readonly FinancialSummaryCurrencyBlock[
             <h2>${escapeHtml(block.currency)}</h2>
           </div>
           <div class="summary-grid">
-            ${renderMetricCard(
-              "Disponível estimado",
-              block.availableBalanceMinor,
-              "Saldo das contas ativas",
-              block.currency,
-            )}
-            ${renderMetricCard(
-              "Receitas do mês",
-              block.incomeMinor,
-              "Entradas postadas no mês atual",
-              block.currency,
-            )}
-            ${renderMetricCard(
-              "Despesas do mês",
-              block.expensesMinor,
-              "Saídas postadas no mês atual",
-              block.currency,
-            )}
-            ${renderMetricCard(
-              "Compromissos previstos",
-              block.plannedCommitmentsMinor,
-              "Lançamentos planejados no mês",
-              block.currency,
-            )}
+            ${block.metrics.map(renderMetricCard).join("")}
           </div>
         </section>
       `,
@@ -134,49 +110,7 @@ function renderCurrencySummaries(blocks: readonly FinancialSummaryCurrencyBlock[
     .join("");
 }
 
-function renderNextActions(
-  transactionsResult: ApiSuccess<{ transactions: DashboardTransaction[] }> | ApiFailure,
-  pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
-  openInvoices: ApiSuccess<{ invoices: OpenInvoice[] }> | ApiFailure,
-): string {
-  const plannedTransactions = transactionsResult.ok
-    ? transactionsResult.data.transactions.filter(isPlannedCommitment)
-    : [];
-  const reviewCount = pendingReview.ok ? pendingReview.data.messages.length : 0;
-  const invoices = openInvoices.ok ? openInvoices.data.invoices : [];
-  const plannedCount = plannedTransactions.length;
-  const reviewPlural = reviewCount === 1 ? "m" : "ns";
-  const invoicePlural = invoices.length === 1 ? "" : "s";
-  const plannedPlural = plannedCount === 1 ? "" : "s";
-  const plannedDueDates = plannedTransactions.map(getTransactionDueDate);
-
-  const actions = [
-    plannedCount > 0
-      ? renderNextActionRow(
-          `${plannedCount} lançamento${plannedPlural} previsto${plannedPlural} no Extrato`,
-          `Próximo vencimento em ${formatDate(nearestDueDate(plannedDueDates))}.`,
-          "/lancamentos",
-          "Ver extrato",
-        )
-      : "",
-    reviewCount > 0
-      ? renderNextActionRow(
-          `${reviewCount} ite${reviewPlural} aguardando revisão na inbox`,
-          "Confirme ou ajuste as sugestões antes de usá-las como lançamento.",
-          "/inbox",
-          "Abrir inbox",
-        )
-      : "",
-    invoices.length > 0
-      ? renderNextActionRow(
-          `${invoices.length} fatura${invoicePlural} de cartão em aberto`,
-          `Próximo vencimento em ${formatDate(nearestDueDate(invoices.map((item) => item.dueOn)))}.`,
-          "/cartoes",
-          "Ver cartões",
-        )
-      : "",
-  ].filter((row) => row !== "");
-
+function renderNextActions(actions: DashboardContentViewModel["nextActions"]): string {
   if (actions.length === 0) {
     return renderEmptyState(
       "Nenhuma pendência agora.",
@@ -184,30 +118,21 @@ function renderNextActions(
     );
   }
 
-  return `<div class="rows next-action-rows">${actions.join("")}</div>`;
+  return `<div class="rows next-action-rows">${actions
+    .map((action) =>
+      renderNextActionRow(action.title, action.description, action.href, action.linkLabel),
+    )
+    .join("")}</div>`;
 }
 
-function isPlannedCommitment(transaction: DashboardTransaction): boolean {
-  return (
-    (transaction.status === "planned" || transaction.status === "suggested") &&
-    (transaction.kind === "income" || transaction.kind === "expense") &&
-    transaction.invoiceId === undefined &&
-    transaction.installmentId === undefined
-  );
-}
-
-function getTransactionDueDate(transaction: DashboardTransaction): string {
-  return transaction.plannedOn ?? transaction.occurredOn;
-}
-
-function renderRecentItems(items: FinancialSummaryItem[]): string {
+function renderRecentItems(items: readonly DashboardRecentItemViewModel[]): string {
   return (
     items
       .map(
         (item) => `
           <article class="row">
-            <div><strong>${escapeHtml(item.description)}</strong><span>${escapeHtml(item.kind)} - ${escapeHtml(item.status)} - ${escapeHtml(item.currency)} - ${formatDate(item.occurredOn)}</span></div>
-            <strong>${formatMoney(item.amountMinor, item.currency)}</strong>
+            <div><strong>${escapeHtml(item.description)}</strong><span>${escapeHtml(item.kind)} - ${escapeHtml(item.status)} - ${escapeHtml(item.amount.currency)} - ${escapeHtml(item.occurredOnLabel)}</span></div>
+            <strong>${formatMoney(item.amount)}</strong>
           </article>
         `,
       )
@@ -242,29 +167,16 @@ function renderNextActionRow(
   `;
 }
 
-function renderMetricCard(
-  title: string,
-  amountMinor: number,
-  subtitle: string,
-  currency: string,
-): string {
-  return `<article class="metric-card"><span>${escapeHtml(title)}</span><strong>${formatMoney(amountMinor, currency)}</strong><p>${escapeHtml(subtitle)}</p></article>`;
+function renderMetricCard(metric: DashboardMetricViewModel): string {
+  return `<article class="metric-card"><span>${escapeHtml(metric.title)}</span><strong>${formatMoney(metric.amount)}</strong><p>${escapeHtml(metric.subtitle)}</p></article>`;
 }
 
 function renderEmptyState(title: string, description: string): string {
   return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
 }
 
-function nearestDueDate(dates: string[]): string {
-  return dates.slice().sort((left, right) => left.localeCompare(right))[0] ?? "";
-}
-
-function formatMoney(amountMinor: number, currency: string): string {
-  return formatMinorCurrency(amountMinor, { currency });
-}
-
-function formatDate(date: string): string {
-  return formatDateOnly(date);
+function formatMoney(value: MoneyViewModel): string {
+  return formatMinorCurrency(value.amountMinor, { currency: value.currency });
 }
 
 function dashboardStyles(): string {

@@ -1,0 +1,21 @@
+Material head: 8fc10d84bf6aefdc21af8e4d7551a71776b3ca24
+Rejection: audit-rejection:3caf64ad-8b0a-40db-9417-3b601e2482e4
+Control class: sharded audit artifact byte integrity
+
+Literal failure closed:
+- regenerate requirement-attack-matrix.json from canonical issue obligations and exact-head evidence;
+- pack large JSON only through pack_large_audit_artifact.py;
+- require every .b64 part to be ASCII-only and strict RFC 4648 Base64;
+- require audit_artifact_io.load_json_artifact() to reconstruct the logical JSON with matching size and SHA-256.
+
+Sibling control A - manifest/part integrity:
+- verify each declared part exists, byte length and SHA-256 match the manifest, encoded_size/encoded_sha256 match the concatenated Base64, and decoded_size/decoded_sha256 match the JSON logical bytes.
+
+Sibling control B - remote Git blob identity:
+- before publishing the result-only tree, compute the Git blob SHA from the exact local UTF-8/ASCII bytes for every handoff file;
+- create the corresponding GitHub blob and require GitHub's returned blob SHA to equal the locally computed Git blob SHA before constructing the tree.
+
+Expected terminal result:
+- no lossy text transcoding can enter the published sharded artifact unnoticed;
+- a remote byte change causes blob-SHA mismatch before branch publication;
+- a local/base64 corruption causes strict round-trip validation to fail before certificate generation.
