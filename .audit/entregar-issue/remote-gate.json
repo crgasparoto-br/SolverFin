@@ -1,9 +1,12 @@
 {
   "schema_version": 1,
-  "material_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
-  "policy": "delivery-snapshot",
-  "status": "pending",
-  "ci": "in_progress",
-  "statement_visual_validation": "in_progress",
-  "polling_performed": false
+  "material_head_sha": "d8cd7762db7c4c8ac3cacd7dea36ff156b117618",
+  "observed_at": "2026-08-23T22:37:39Z",
+  "mode": "delivery-snapshot",
+  "combined_statuses": [],
+  "workflow_runs": [
+    {"id": 32671161662, "name": "CI", "status": "queued", "conclusion": null, "run_number": 4386},
+    {"id": 32671161664, "name": "Statement visual validation", "status": "in_progress", "conclusion": null, "run_number": 2897}
+  ],
+  "interpretation": "pending-remote-validation; no polling or rerun performed"
 }

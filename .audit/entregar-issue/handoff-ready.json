@@ -1,68 +1,68 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-23T13:20:52.852872+00:00",
+  "created_at": "2026-08-23T22:43:42.526155+00:00",
   "identity": {
-    "head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
-    "material_head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
-    "base_sha": "a755e44322cf0a15fb1d608febc7d43e79e69b4a",
-    "merge_preview_sha": "18f18bc30025066fce53bd3d83ad093a7d882c7d",
-    "material_merge_preview_sha": "18f18bc30025066fce53bd3d83ad093a7d882c7d"
+    "head_sha": "d8cd7762db7c4c8ac3cacd7dea36ff156b117618",
+    "material_head_sha": "d8cd7762db7c4c8ac3cacd7dea36ff156b117618",
+    "base_sha": "d7f7c39de0e6bca152f655cbc5d354a595d82a0f",
+    "merge_preview_sha": null,
+    "material_merge_preview_sha": null
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 603,
-    "pull_request_number": 639,
-    "work_item_kind": "issue",
-    "work_item_number": 603,
-    "pull_request": 639,
+    "issue_number": 601,
+    "pull_request_number": 640,
+    "work_item_kind": "pr",
+    "work_item_number": 640,
+    "pull_request": 640,
     "base_ref": "main",
-    "head_ref": "feat/603-view-model-boundary"
+    "head_ref": "feat/601-ui-layout-primitives"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "a755e44322cf0a15fb1d608febc7d43e79e69b4a",
-    "material_head_sha": "8fc10d84bf6aefdc21af8e4d7551a71776b3ca24",
+    "work_item_start_sha": "d7f7c39de0e6bca152f655cbc5d354a595d82a0f",
+    "material_head_sha": "d8cd7762db7c4c8ac3cacd7dea36ff156b117618",
     "issue_changed_paths": [
-      "apps/web/src/dev-server/dashboard-page.ts",
-      "apps/web/src/dev-server/dashboard-presenter.test.ts",
-      "apps/web/src/dev-server/dashboard-presenter.ts",
-      "apps/web/src/dev-server/screen-view-model.test.ts",
-      "apps/web/src/dev-server/screen-view-model.ts",
-      "docs/frontend-view-model-presenters.md"
+      "apps/web/src/design-system/index.ts",
+      "apps/web/src/design-system/primitives.test.ts",
+      "apps/web/src/design-system/primitives.ts",
+      "apps/web/src/design-system/styles.ts",
+      "docs/UI_PRIMITIVES.md"
     ],
-    "issue_delta_sha256": "9104d2b7a777c36dcf602fb23b673d561760f5a811187903843c3ce1461e470b"
+    "issue_delta_sha256": "322b1de5fbe9f9663adcf603b2efafe0e46adb262f5b4c9b9c708b514f618109"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
-      ".audit/entregar-issue/audit-escape-closure.json",
-      ".audit/entregar-issue/audit-remediation.json",
-      ".audit/entregar-issue/audit-source-result.json",
-      ".audit/entregar-issue/evidence/artifact-transport-remediation.txt",
-      ".audit/entregar-issue/evidence/documentation-consistency.txt",
-      ".audit/entregar-issue/evidence/issue-603-validation.txt",
+      ".audit/entregar-issue/change-summary.md",
+      ".audit/entregar-issue/design-interface-result.json",
+      ".audit/entregar-issue/documentation-impact.json",
+      ".audit/entregar-issue/evidence/documentation-scan.txt",
+      ".audit/entregar-issue/evidence/focused-validation.txt",
+      ".audit/entregar-issue/evidence/material-diff.txt",
+      ".audit/entregar-issue/evidence/pass-c-review.txt",
+      ".audit/entregar-issue/evidence/visual-limitation.txt",
       ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/inherited-controls.json",
-      ".audit/entregar-issue/learning-closure.json",
-      ".audit/entregar-issue/requirement-attack-matrix.json",
-      ".audit/entregar-issue/requirement-attack-matrix.parts/part-000.b64",
+      ".audit/entregar-issue/remote-gate.json",
       ".audit/entregar-issue/requirement-closure.json",
-      ".audit/entregar-issue/requirement-closure.parts/part-000.b64",
-      ".audit/entregar-issue/risk-saturation.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE-603.txt"
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE-601.txt",
+      ".audit/entregar-issue/standard-evidence.json"
     ]
   },
   "contract_version": "2026-08-20.3",
+  "evidence_profile": "standard",
+  "remediation_mode": null,
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "6e6742147e5bd664fb3848cdba094024f58d808e57a2b28e3bb7bb7183ade397"
+    "skill_sha256": "603076f5928f3a050cad513eefeb762e05878e4c6ababb699b38264e94006ce3"
   },
   "validators": {
     "validate_specification_coverage.py": "01709833e61dfcf4cbb81b25f75b52c486dc65e9d498df19a35da7062f7a196b",
-    "validate_handoff_readiness.py": "28a675483775a7f6597192c1aeb1ab648845c87453d61065213c46ab9fd9a44e",
-    "validate_requirement_attack_matrix.py": "4a1e1e4494c54405bbd12d91e84ff60719449905acf9e3dbd0f49e32349aecd5",
+    "validate_handoff_readiness.py": "f0461d2b5201823011e85063f170fc6d09dd9067e2e0f145a543def3cc493abc",
+    "validate_standard_evidence.py": "87a82707220b15407cf39b956c7c5c05b6030edee3a87561b0cd0aec3328f588",
+    "validate_requirement_attack_matrix.py": "96d6d1a31a2387ae9e4e0f59cc2f384580abc2b21293dc37381fab66707fba99",
     "validate_evidence_freshness.py": "e85849415ea701c39ead5eb7203d2264092fece959479e69c0b37b67a56c7d04",
     "validate_risk_saturation.py": "5016cc0fb23264babd2c904e58ff9d41a266e1d764ef675bcd416503754c57ac",
     "validate_inherited_controls.py": "183f6530f41e1d516505bb19cd315148425f7647d74f4be021a582217f96b146",
@@ -79,9 +79,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "99e10e81837775fd1fbc22740232b1e2a0300fab532baa4b7bc5150e8ad202a8",
-      "logical_sha256": "99e10e81837775fd1fbc22740232b1e2a0300fab532baa4b7bc5150e8ad202a8",
-      "logical_size": 580,
+      "sha256": "0c67751065d44a09e51a6589f5a027dae5bbeb74e031b5f036b0861c9070c9d2",
+      "logical_sha256": "0c67751065d44a09e51a6589f5a027dae5bbeb74e031b5f036b0861c9070c9d2",
+      "logical_size": 457,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -89,108 +89,24 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "ada4369e1e46972b68d2576dc6851edeef21e221f160253b92222d562441f307",
-      "logical_sha256": "f22426663968d016cc5630c215e20a6a423db249c3be0bb460044d24ffa9cd05",
-      "logical_size": 12020,
-      "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 3740,
-        "decoded_size": 12020,
-        "decoded_sha256": "f22426663968d016cc5630c215e20a6a423db249c3be0bb460044d24ffa9cd05",
-        "encoded_sha256": "cc6b9f513a488d75e98dd373445f3ba1ef0dec57029414ade839faceeccdec66",
-        "parts": [
-          {
-            "path": "requirement-closure.parts/part-000.b64",
-            "size": 3740,
-            "sha256": "cc6b9f513a488d75e98dd373445f3ba1ef0dec57029414ade839faceeccdec66"
-          }
-        ]
-      }
-    },
-    "requirement_attack_matrix": {
-      "name": "requirement-attack-matrix.json",
-      "sha256": "2eca832da05f972c9a0f4b55bda79d7ffc1d91398cd775baf73b91b306dd934a",
-      "logical_sha256": "efc62fcc2c224fcb85e32febbf90d29fcecb8f1a7b0c9d122e8b9ac3c0fe320a",
-      "logical_size": 43708,
-      "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 5024,
-        "decoded_size": 43708,
-        "decoded_sha256": "efc62fcc2c224fcb85e32febbf90d29fcecb8f1a7b0c9d122e8b9ac3c0fe320a",
-        "encoded_sha256": "fb85d477bf3702f11df280711b412987efc41417f9c6485a2158020f73f8c617",
-        "parts": [
-          {
-            "path": "requirement-attack-matrix.parts/part-000.b64",
-            "size": 5024,
-            "sha256": "fb85d477bf3702f11df280711b412987efc41417f9c6485a2158020f73f8c617"
-          }
-        ]
-      }
-    },
-    "risk_saturation": {
-      "name": "risk-saturation.json",
-      "sha256": "6ca2796aa2abe3b2e0592ca6590211ccb2b06f3eeb9ec8f9c6bb71ac589a0fd7",
-      "logical_sha256": "6ca2796aa2abe3b2e0592ca6590211ccb2b06f3eeb9ec8f9c6bb71ac589a0fd7",
-      "logical_size": 6370,
+      "sha256": "e134674630808ba3b10be2fe05c10c20ae5b410ce083bdf4da47d2a15da97eac",
+      "logical_sha256": "e134674630808ba3b10be2fe05c10c20ae5b410ce083bdf4da47d2a15da97eac",
+      "logical_size": 10716,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
       }
     },
-    "inherited_controls": {
-      "name": "inherited-controls.json",
-      "sha256": "91eda43f630c7cab079edf36de2628b5b3c3c2f2e01259c0d361d566822a78ea",
-      "logical_sha256": "91eda43f630c7cab079edf36de2628b5b3c3c2f2e01259c0d361d566822a78ea",
-      "logical_size": 5371,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_escape_closure": {
-      "name": "audit-escape-closure.json",
-      "sha256": "53600b09af01333507ef73b35ba37e924f43e26236bc0fb50824b7981f7a54a9",
-      "logical_sha256": "53600b09af01333507ef73b35ba37e924f43e26236bc0fb50824b7981f7a54a9",
-      "logical_size": 9647,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "learning_closure": {
-      "name": "learning-closure.json",
-      "sha256": "1105376f14b4b688c11ca870410ebe61218b7cdd2ef77b62042890e9517f9d31",
-      "logical_sha256": "1105376f14b4b688c11ca870410ebe61218b7cdd2ef77b62042890e9517f9d31",
-      "logical_size": 2510,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_remediation": {
-      "name": "audit-remediation.json",
-      "sha256": "9f9c859f6f960ae216590e8b39bdc91b977bd840845c7adb7ec9bce0af6b9806",
-      "logical_sha256": "9f9c859f6f960ae216590e8b39bdc91b977bd840845c7adb7ec9bce0af6b9806",
-      "logical_size": 1288,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_source_result": {
-      "name": "audit-source-result.json",
-      "sha256": "7ecdbfb89ef119d9383394601cd595fcce424bd901c88012354f08d8a3f7b622",
-      "logical_sha256": "7ecdbfb89ef119d9383394601cd595fcce424bd901c88012354f08d8a3f7b622",
-      "logical_size": 772,
+    "standard_evidence": {
+      "name": "standard-evidence.json",
+      "sha256": "afa1cf88d12b555cc41d9f10323afc0468f22e27169512d852f293ef70c4d9e4",
+      "logical_sha256": "afa1cf88d12b555cc41d9f10323afc0468f22e27169512d852f293ef70c4d9e4",
+      "logical_size": 5667,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
       }
     }
   },
-  "previous_independent_rejection": true
+  "previous_independent_rejection": false
 }
