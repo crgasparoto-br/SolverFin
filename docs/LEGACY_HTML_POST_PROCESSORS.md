@@ -4,7 +4,7 @@
 
 Este documento governa a retirada incremental dos adapters que recebem HTML já renderizado e o transformam por string/regex no despacho central de `apps/web/src/dev-server.ts`.
 
-A fonte canônica executável é `apps/web/src/dev-server/legacy-html-post-processors.ts`. O inventário abaixo descreve o baseline da issue #604; o código tipado define IDs, rota, ordem, classificação, critério de substituição e fallback/acessibilidade de cada etapa.
+A fonte canônica executável é `apps/web/src/dev-server/legacy-html-post-processors.ts`. O inventário abaixo descreve o baseline da issue #604; o código tipado define IDs, rota, ordem, dono, classificação, critério de substituição e fallback/acessibilidade de cada etapa.
 
 O escopo é deliberadamente o pipeline residual do roteador SSR. Funções internas de renderização que geram strings HTML continuam sendo renderers; elas não passam a ser classificadas como pós-processadores apenas por trabalharem com strings.
 
@@ -16,10 +16,13 @@ Um adapter legado pode permanecer apenas enquanto tiver:
 
 - ID e rota no inventário canônico;
 - ordem explícita no pipeline;
+- dono de domínio responsável pela migração;
 - responsabilidade delimitada;
 - caminho de migração;
 - critério objetivo de substituição;
 - contrato de fallback e acessibilidade.
+
+Os valores de `owner` representam o domínio web responsável pelo adapter (`web-accounts-cards`, `web-categories`, `web-cards`, `web-statement` ou `web-inbox`). A retirada ou transferência de responsabilidade deve atualizar o owner no mesmo change set para que não exista legado sem responsável explícito.
 
 `LEGACY_HTML_POST_PROCESSOR_BUDGET` começa em **13**. A expectativa é monotônica: cada migração concluída remove a etapa correspondente e reduz o orçamento. Aumentar esse número exige uma alteração explícita do contrato e não é o caminho normal para uma feature nova.
 
@@ -31,21 +34,21 @@ Um adapter legado pode permanecer apenas enquanto tiver:
 
 ## Inventário do baseline
 
-| Rota              | Ordem | ID                                | Responsabilidade                                             | Migração                |
-| ----------------- | ----: | --------------------------------- | ------------------------------------------------------------ | ----------------------- |
-| `/contas-cartoes` |     1 | `accounts-cards-tabs`             | Completar filtros, estilos e runtime das abas após o render. | `component-props-slots` |
-| `/contas-cartoes` |     2 | `accounts-cards-standardization`  | Normalizar markup/classes da master.                         | `component-props-slots` |
-| `/contas-cartoes` |     3 | `accounts-cards-action-menus`     | Montar menus de ações, estilos e runtime.                    | `component-props-slots` |
-| `/categorias`     |     1 | `categories-icons-tooltips`       | Decorar categorias com ícones e tooltips.                    | `component-props-slots` |
-| `/cartoes`        |     1 | `card-list-sorting`               | Reordenar a lista de cartões.                                | `view-model-schema`     |
-| `/cartoes`        |     2 | `card-instrument-subtotals`       | Inserir subtotais por instrumento.                           | `view-model-schema`     |
-| `/cartoes`        |     3 | `cards-interface`                 | Completar estrutura/runtime da interface.                    | `component-props-slots` |
-| `/cartoes`        |     4 | `cards-interface-finalizer`       | Aplicar ajustes finais dependentes do markup.                | `component-props-slots` |
-| `/lancamentos`    |     1 | `statement-list-sorting`          | Reordenar linhas/apresentação do extrato.                    | `view-model-schema`     |
-| `/lancamentos`    |     2 | `account-remuneration-disclosure` | Adicionar disclosure de remuneração.                         | `view-model-schema`     |
-| `/lancamentos`    |     3 | `statement-insight-context`       | Acoplar contexto de insights ao extrato.                     | `view-model-schema`     |
-| `/inbox`          |     1 | `inbox-structured-payload`        | Buscar e acoplar payload estruturado aos itens.              | `view-model-schema`     |
-| `/inbox`          |     2 | `inbox-list-layout`               | Reorganizar layout/lista final.                              | `component-props-slots` |
+| Rota              | Ordem | Dono                 | ID                                | Responsabilidade                                             | Migração                |
+| ----------------- | ----: | -------------------- | --------------------------------- | ------------------------------------------------------------ | ----------------------- |
+| `/contas-cartoes` |     1 | `web-accounts-cards` | `accounts-cards-tabs`             | Completar filtros, estilos e runtime das abas após o render. | `component-props-slots` |
+| `/contas-cartoes` |     2 | `web-accounts-cards` | `accounts-cards-standardization`  | Normalizar markup/classes da master.                         | `component-props-slots` |
+| `/contas-cartoes` |     3 | `web-accounts-cards` | `accounts-cards-action-menus`     | Montar menus de ações, estilos e runtime.                    | `component-props-slots` |
+| `/categorias`     |     1 | `web-categories`     | `categories-icons-tooltips`       | Decorar categorias com ícones e tooltips.                    | `component-props-slots` |
+| `/cartoes`        |     1 | `web-cards`          | `card-list-sorting`               | Reordenar a lista de cartões.                                | `view-model-schema`     |
+| `/cartoes`        |     2 | `web-cards`          | `card-instrument-subtotals`       | Inserir subtotais por instrumento.                           | `view-model-schema`     |
+| `/cartoes`        |     3 | `web-cards`          | `cards-interface`                 | Completar estrutura/runtime da interface.                    | `component-props-slots` |
+| `/cartoes`        |     4 | `web-cards`          | `cards-interface-finalizer`       | Aplicar ajustes finais dependentes do markup.                | `component-props-slots` |
+| `/lancamentos`    |     1 | `web-statement`      | `statement-list-sorting`          | Reordenar linhas/apresentação do extrato.                    | `view-model-schema`     |
+| `/lancamentos`    |     2 | `web-statement`      | `account-remuneration-disclosure` | Adicionar disclosure de remuneração.                         | `view-model-schema`     |
+| `/lancamentos`    |     3 | `web-statement`      | `statement-insight-context`       | Acoplar contexto de insights ao extrato.                     | `view-model-schema`     |
+| `/inbox`          |     1 | `web-inbox`          | `inbox-structured-payload`        | Buscar e acoplar payload estruturado aos itens.              | `view-model-schema`     |
+| `/inbox`          |     2 | `web-inbox`          | `inbox-list-layout`               | Reorganizar layout/lista final.                              | `component-props-slots` |
 
 Os critérios completos de substituição e os fallbacks ficam no inventário TypeScript para que testes e revisão trabalhem sobre a mesma fonte.
 
@@ -67,14 +70,16 @@ A Inbox preserva a mesma regra mesmo tendo uma primeira etapa assíncrona: o pay
 
 O gate falha quando:
 
-- existe import direto de módulo `*-enhancement`, `*-standardization` ou `*-finalizer` no roteador sem entrada canônica;
-- existe entrada canônica sem import correspondente;
+- uma entrada do inventário deixa de ter import correspondente no roteador;
 - o orçamento diverge da quantidade inventariada;
-- IDs ou ordens deixam de ser determinísticos;
+- IDs, owners ou ordens deixam de ser determinísticos;
 - uma rota inventariada deixa de passar por `applyLegacyHtmlPostProcessorPipeline()`;
-- uma função residual é invocada fora do `transform` explícito do pipeline.
+- uma função residual inventariada deixa de ser invocada exatamente uma vez no `transform` explícito do pipeline;
+- qualquer função, independentemente do nome do arquivo ou do export, consome HTML produzido por `render*`/pipeline fora de `applyLegacyHtmlPostProcessorPipeline()` e `sendHtml()`;
+- o HTML base de um pipeline legado deixa de vir diretamente de um renderer;
+- a lista de IDs passada ao pipeline diverge do inventário da rota.
 
-Assim, adicionar mais pós-processamento textual deixa de ser uma extensão silenciosa: qualquer exceção exige alterar inventário/orçamento de forma auditável.
+O controle estrutural inclui casos negativos sintéticos para nomes neutros como `newHtmlPostProcessor` e `rewriteFinalHtml`, evitando que uma simples mudança de nomenclatura contorne a catraca. Assim, adicionar mais pós-processamento textual deixa de ser uma extensão silenciosa: qualquer exceção exige alterar inventário/orçamento e o contrato estrutural de forma auditável.
 
 ## Critério de remoção por cluster
 
@@ -85,7 +90,7 @@ Uma etapa pode sair do inventário quando, na mesma mudança:
 3. acessibilidade e responsividade continuam cobertas quando aplicáveis;
 4. o adapter deixa de ser importado e chamado pelo roteador;
 5. `LEGACY_HTML_POST_PROCESSOR_BUDGET` é reduzido;
-6. este documento é atualizado para refletir o legado restante;
+6. este documento é atualizado para refletir o legado restante e o ownership residual;
 7. se o adapter removido fornecia CSS/runtime registrado no contrato SSR, `apps/web/src/dev-server/ssr-style-contract.ts` e seus testes são atualizados na mesma mudança.
 
 A remoção não deve criar modo SSR especial novo. O fluxo normal continua sendo o alvo de validação.

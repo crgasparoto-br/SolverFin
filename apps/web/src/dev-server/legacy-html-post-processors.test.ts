@@ -5,6 +5,7 @@ import {
   applyLegacyHtmlPostProcessorPipeline,
   LEGACY_HTML_POST_PROCESSOR_BUDGET,
   LEGACY_HTML_POST_PROCESSOR_INVENTORY,
+  type LegacyHtmlPostProcessorOwner,
   type LegacyHtmlPostProcessorRoute,
 } from "./legacy-html-post-processors.js";
 
@@ -13,6 +14,14 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
 
   const ids = LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
+
+  const expectedOwnerByRoute: Record<LegacyHtmlPostProcessorRoute, LegacyHtmlPostProcessorOwner> = {
+    "/contas-cartoes": "web-accounts-cards",
+    "/categorias": "web-categories",
+    "/cartoes": "web-cards",
+    "/lancamentos": "web-statement",
+    "/inbox": "web-inbox",
+  };
 
   const routes = new Set(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route));
   for (const route of routes) {
@@ -27,6 +36,7 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
   }
 
   for (const entry of LEGACY_HTML_POST_PROCESSOR_INVENTORY) {
+    assert.equal(entry.owner, expectedOwnerByRoute[entry.route]);
     assert.match(entry.responsibility, /\S/);
     assert.match(entry.replacementCriterion, /\S/);
     assert.match(entry.fallbackAccessibility, /\S/);

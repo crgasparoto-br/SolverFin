@@ -10,10 +10,18 @@ export type LegacyHtmlPostProcessorMigration =
   | "view-model-schema"
   | "temporary-processor";
 
+export type LegacyHtmlPostProcessorOwner =
+  | "web-accounts-cards"
+  | "web-categories"
+  | "web-cards"
+  | "web-statement"
+  | "web-inbox";
+
 export interface LegacyHtmlPostProcessorInventoryEntry {
   id: string;
   route: LegacyHtmlPostProcessorRoute;
   order: number;
+  owner: LegacyHtmlPostProcessorOwner;
   module: string;
   exportName: string;
   responsibility: string;
@@ -29,6 +37,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "accounts-cards-tabs",
     route: "/contas-cartoes",
     order: 1,
+    owner: "web-accounts-cards",
     module: "./accounts-cards-enhancement.js",
     exportName: "enhanceAccountsCardsTabs",
     responsibility: "Completa filtros, estilos e runtime das abas de contas/cartoes apos o render.",
@@ -42,6 +51,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "accounts-cards-standardization",
     route: "/contas-cartoes",
     order: 2,
+    owner: "web-accounts-cards",
     module: "./accounts-cards-standardization.js",
     exportName: "standardizeAccountsCardsPage",
     responsibility: "Normaliza markup e classes da master de contas/cartoes depois do render.",
@@ -55,6 +65,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "accounts-cards-action-menus",
     route: "/contas-cartoes",
     order: 3,
+    owner: "web-accounts-cards",
     module: "./accounts-cards-action-menu-enhancement.js",
     exportName: "enhanceAccountsCardsActionMenus",
     responsibility: "Adiciona menu de acoes, estilos e runtime sobre a estrutura ja renderizada.",
@@ -68,6 +79,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "categories-icons-tooltips",
     route: "/categorias",
     order: 1,
+    owner: "web-categories",
     module: "./categories-icons-enhancement.js",
     exportName: "enhanceCategoriesIconsAndTooltips",
     responsibility: "Decora categorias com icones e tooltips a partir do HTML final.",
@@ -81,6 +93,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "card-list-sorting",
     route: "/cartoes",
     order: 1,
+    owner: "web-cards",
     module: "./list-sorting-enhancement.js",
     exportName: "enhanceCardListSorting",
     responsibility: "Reordena visualmente a lista de cartoes depois da geracao do documento.",
@@ -94,6 +107,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "card-instrument-subtotals",
     route: "/cartoes",
     order: 2,
+    owner: "web-cards",
     module: "./card-instrument-subtotals-enhancement.js",
     exportName: "enhanceCardInstrumentSubtotals",
     responsibility: "Calcula/insere subtotais de instrumentos sobre grupos ja renderizados.",
@@ -107,6 +121,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "cards-interface",
     route: "/cartoes",
     order: 3,
+    owner: "web-cards",
     module: "./cards-interface-enhancement.js",
     exportName: "enhanceCardsInterface",
     responsibility:
@@ -121,6 +136,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "cards-interface-finalizer",
     route: "/cartoes",
     order: 4,
+    owner: "web-cards",
     module: "./cards-interface-finalizer.js",
     exportName: "finalizeCardsInterface",
     responsibility: "Faz ajustes finais dependentes do markup concreto da tela de cartoes.",
@@ -134,6 +150,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "statement-list-sorting",
     route: "/lancamentos",
     order: 1,
+    owner: "web-statement",
     module: "./list-sorting-enhancement.js",
     exportName: "enhanceStatementListSorting",
     responsibility: "Reordena linhas do extrato e injeta apresentacao associada depois do render.",
@@ -147,6 +164,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "account-remuneration-disclosure",
     route: "/lancamentos",
     order: 2,
+    owner: "web-statement",
     module: "./account-remuneration-disclosure-enhancement.js",
     exportName: "enhanceAccountRemunerationDisclosure",
     responsibility:
@@ -161,6 +179,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "statement-insight-context",
     route: "/lancamentos",
     order: 3,
+    owner: "web-statement",
     module: "./statement-insight-context-enhancement.js",
     exportName: "enhanceStatementInsightContext",
     responsibility: "Acopla contexto de insights ao extrato com base no documento final e na URL.",
@@ -174,6 +193,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "inbox-structured-payload",
     route: "/inbox",
     order: 1,
+    owner: "web-inbox",
     module: "./inbox-structured-payload-enhancement.js",
     exportName: "enhanceInboxWithStructuredPayloads",
     responsibility:
@@ -188,6 +208,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     id: "inbox-list-layout",
     route: "/inbox",
     order: 2,
+    owner: "web-inbox",
     module: "./inbox-list-layout-enhancement.js",
     exportName: "enhanceInboxListLayout",
     responsibility: "Reorganiza layout/lista da Inbox depois da composicao do HTML final.",
