@@ -109,7 +109,8 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     order: 3,
     module: "./cards-interface-enhancement.js",
     exportName: "enhanceCardsInterface",
-    responsibility: "Complementa estrutura, estilos e runtime da interface de cartoes apos o render.",
+    responsibility:
+      "Complementa estrutura, estilos e runtime da interface de cartoes apos o render.",
     migration: "component-props-slots",
     replacementCriterion:
       "Componentes de cartao/fatura emitem diretamente estados, acoes e hooks de runtime usados pela interface final.",
@@ -148,7 +149,8 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     order: 2,
     module: "./account-remuneration-disclosure-enhancement.js",
     exportName: "enhanceAccountRemunerationDisclosure",
-    responsibility: "Adiciona affordance e memoria de calculo de remuneracao sobre linhas ja renderizadas.",
+    responsibility:
+      "Adiciona affordance e memoria de calculo de remuneracao sobre linhas ja renderizadas.",
     migration: "view-model-schema",
     replacementCriterion:
       "Dados de remuneracao e disclosure chegam no ViewModel da linha e o componente renderiza a affordance diretamente.",
@@ -174,7 +176,8 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
     order: 1,
     module: "./inbox-structured-payload-enhancement.js",
     exportName: "enhanceInboxWithStructuredPayloads",
-    responsibility: "Busca payloads estruturados e os acopla a itens da Inbox depois que a pagina foi renderizada.",
+    responsibility:
+      "Busca payloads estruturados e os acopla a itens da Inbox depois que a pagina foi renderizada.",
     migration: "view-model-schema",
     replacementCriterion:
       "Payloads estruturados sao resolvidos antes da renderizacao e fazem parte do ViewModel/contrato de cada item da Inbox.",
@@ -196,8 +199,7 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
   },
 ] as const satisfies readonly LegacyHtmlPostProcessorInventoryEntry[];
 
-export type LegacyHtmlPostProcessorId =
-  (typeof LEGACY_HTML_POST_PROCESSOR_INVENTORY)[number]["id"];
+export type LegacyHtmlPostProcessorId = (typeof LEGACY_HTML_POST_PROCESSOR_INVENTORY)[number]["id"];
 
 export interface LegacyHtmlPostProcessorStep {
   id: LegacyHtmlPostProcessorId;
@@ -209,9 +211,7 @@ export async function applyLegacyHtmlPostProcessorPipeline(
   html: string,
   steps: readonly LegacyHtmlPostProcessorStep[],
 ): Promise<string> {
-  const expectedIds = LEGACY_HTML_POST_PROCESSOR_INVENTORY.filter(
-    (entry) => entry.route === route,
-  )
+  const expectedIds = LEGACY_HTML_POST_PROCESSOR_INVENTORY.filter((entry) => entry.route === route)
     .map((entry) => entry)
     .sort((left, right) => left.order - right.order)
     .map((entry) => entry.id);

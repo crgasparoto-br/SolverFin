@@ -31,21 +31,21 @@ Um adapter legado pode permanecer apenas enquanto tiver:
 
 ## Inventário do baseline
 
-| Rota | Ordem | ID | Responsabilidade | Migração |
-| --- | ---: | --- | --- | --- |
-| `/contas-cartoes` | 1 | `accounts-cards-tabs` | Completar filtros, estilos e runtime das abas após o render. | `component-props-slots` |
-| `/contas-cartoes` | 2 | `accounts-cards-standardization` | Normalizar markup/classes da master. | `component-props-slots` |
-| `/contas-cartoes` | 3 | `accounts-cards-action-menus` | Montar menus de ações, estilos e runtime. | `component-props-slots` |
-| `/categorias` | 1 | `categories-icons-tooltips` | Decorar categorias com ícones e tooltips. | `component-props-slots` |
-| `/cartoes` | 1 | `card-list-sorting` | Reordenar a lista de cartões. | `view-model-schema` |
-| `/cartoes` | 2 | `card-instrument-subtotals` | Inserir subtotais por instrumento. | `view-model-schema` |
-| `/cartoes` | 3 | `cards-interface` | Completar estrutura/runtime da interface. | `component-props-slots` |
-| `/cartoes` | 4 | `cards-interface-finalizer` | Aplicar ajustes finais dependentes do markup. | `component-props-slots` |
-| `/lancamentos` | 1 | `statement-list-sorting` | Reordenar linhas/apresentação do extrato. | `view-model-schema` |
-| `/lancamentos` | 2 | `account-remuneration-disclosure` | Adicionar disclosure de remuneração. | `view-model-schema` |
-| `/lancamentos` | 3 | `statement-insight-context` | Acoplar contexto de insights ao extrato. | `view-model-schema` |
-| `/inbox` | 1 | `inbox-structured-payload` | Buscar e acoplar payload estruturado aos itens. | `view-model-schema` |
-| `/inbox` | 2 | `inbox-list-layout` | Reorganizar layout/lista final. | `component-props-slots` |
+| Rota              | Ordem | ID                                | Responsabilidade                                             | Migração                |
+| ----------------- | ----: | --------------------------------- | ------------------------------------------------------------ | ----------------------- |
+| `/contas-cartoes` |     1 | `accounts-cards-tabs`             | Completar filtros, estilos e runtime das abas após o render. | `component-props-slots` |
+| `/contas-cartoes` |     2 | `accounts-cards-standardization`  | Normalizar markup/classes da master.                         | `component-props-slots` |
+| `/contas-cartoes` |     3 | `accounts-cards-action-menus`     | Montar menus de ações, estilos e runtime.                    | `component-props-slots` |
+| `/categorias`     |     1 | `categories-icons-tooltips`       | Decorar categorias com ícones e tooltips.                    | `component-props-slots` |
+| `/cartoes`        |     1 | `card-list-sorting`               | Reordenar a lista de cartões.                                | `view-model-schema`     |
+| `/cartoes`        |     2 | `card-instrument-subtotals`       | Inserir subtotais por instrumento.                           | `view-model-schema`     |
+| `/cartoes`        |     3 | `cards-interface`                 | Completar estrutura/runtime da interface.                    | `component-props-slots` |
+| `/cartoes`        |     4 | `cards-interface-finalizer`       | Aplicar ajustes finais dependentes do markup.                | `component-props-slots` |
+| `/lancamentos`    |     1 | `statement-list-sorting`          | Reordenar linhas/apresentação do extrato.                    | `view-model-schema`     |
+| `/lancamentos`    |     2 | `account-remuneration-disclosure` | Adicionar disclosure de remuneração.                         | `view-model-schema`     |
+| `/lancamentos`    |     3 | `statement-insight-context`       | Acoplar contexto de insights ao extrato.                     | `view-model-schema`     |
+| `/inbox`          |     1 | `inbox-structured-payload`        | Buscar e acoplar payload estruturado aos itens.              | `view-model-schema`     |
+| `/inbox`          |     2 | `inbox-list-layout`               | Reorganizar layout/lista final.                              | `component-props-slots` |
 
 Os critérios completos de substituição e os fallbacks ficam no inventário TypeScript para que testes e revisão trabalhem sobre a mesma fonte.
 

@@ -15,8 +15,7 @@ const [devServerSource, inventorySource] = await Promise.all([
 ]);
 
 const failures = [];
-const legacyModulePattern =
-  /^\.\/dev-server\/.+(?:enhancement|standardization|finalizer)\.js$/;
+const legacyModulePattern = /^\.\/dev-server\/.+(?:enhancement|standardization|finalizer)\.js$/;
 const importPattern = /import\s*\{([\s\S]*?)\}\s*from\s*"([^"]+)";/g;
 const importedProcessors = [];
 
