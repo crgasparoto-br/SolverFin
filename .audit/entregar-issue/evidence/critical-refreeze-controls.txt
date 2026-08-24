@@ -1,33 +1,11 @@
-Critical cumulative post-CI refreeze controls for SolverFin PR 640 / issue 601
-material_head_sha: 78cc26801eb6828900cd7409c3697181c2c2d94b
-previous_certified_material_head_sha: abc4de4254e9b7e06e6155f2b297aaee94b59f59
-independent_rejection_id: audit-rejection:8d6421f0-8be9-4e75-a47b-2e796f3311e1
-
-1. Target binding and recovery classification
-The existing handoff subject matches repository crgasparoto-br/SolverFin, issue 601, PR 640, base main and head feat/601-ui-layout-primitives. The governed-handoff latch is therefore active.
-The installed recovery classifier returned recovery_scope=post-write-refreeze because the current head 78cc26801eb6828900cd7409c3697181c2c2d94b is materially downstream of the certified abc4de4254e9b7e06e6155f2b297aaee94b59f59 head.
-
-2. Canonical specification coverage
-validate_specification_coverage.py returned READY for the issue 601 snapshot and closure, covering all 15 canonical obligations mapped to REQ-001..REQ-006.
-The issue source hash remains ef47dd5894861f446740974acf40bb4e161294d3be554d7cd2f13bf8268d5954.
-
-3. Exact-head repository gates
-GitHub Actions for material head 78cc26801eb6828900cd7409c3697181c2c2d94b are terminal successful:
-- CI run 4400 (id 32702552559): completed / success. Validate monorepo passed format, lint, typecheck, test and build; Integration API + PostgreSQL passed.
-- Statement visual validation run 2911 (id 32702552541): completed / success.
-No rerun, dispatch, cancellation or manual approval was used.
-
-4. UI/layout behavioral closure
-The exact-head CI and Chrome visual workflow exercise the shared primitive implementation and visual fixture on the current material head. The established controls PRIMITIVE-API-001, DOC-PRIMITIVES-001, SHARED-LAYOUT-REUSE-001, AUTH-PERMISSION-001, KEYBOARD-FOCUS-001, RESPONSIVE-LAYOUT-001 and SSR-DETERMINISM-001 remain passed on 78cc26801eb6828900cd7409c3697181c2c2d94b.
-
-5. Strict artifact transport round-trip
-The current requirement-closure bytes have sha256 9755b91968ffa25e64873fd1ceb3d3c638ba23c221b30045c6e41a69fe128108. Canonical base64-shards-v1 packing produced decoded_sha256 9755b91968ffa25e64873fd1ceb3d3c638ba23c221b30045c6e41a69fe128108 and semantic round-trip equality through audit_artifact_io.load_json_artifact.
-
-6. Connector byte-integrity publication preflight
-Every prepared result artifact blob is computed locally using the Git object blob identity and compared with the GitHub create_blob response before the result tree is committed. A mismatch aborts publication. The evidence and final certificate blobs are checked by the same publication procedure before the ref is moved.
-
-7. Foreign-target lineage discrimination
-Historical cumulative controls remain lineage only. The current specification snapshot and certificate subject bind issue 601 / PR 640; no artifact from another issue or PR is allowed to satisfy current-target readiness.
-
-8. Post-freeze write discrimination
-The old certificate for abc4de4254e9b7e06e6155f2b297aaee94b59f59 is stale after material CI-remediation commits. The new freeze identity is 78cc26801eb6828900cd7409c3697181c2c2d94b, and the terminal handoff must be a direct result-only child of that exact material head.
+material_head_sha=24fe1f2d211db950f1643d06de6778bdb35ee0b2
+rejection_id=audit-rejection:e51517e4-3020-4576-a1b2-275bab4cd456
+finding=A-001 canonical design token source bypass
+literal_case=PASS: styles.ts uses var(--sf-color-dialog-backdrop); tokens.ts owns dialogBackdrop
+sibling_token_mutation=PASS: canonical-token-source.test.ts injects alternate dialogBackdrop and generated CSS changes
+sibling_literal_regression=PASS: test rejects hardcoded rgba(6, 25, 35, 0.52) backdrop background
+ci=PASS: GitHub Actions CI #4403 completed success on exact material head
+visual=PASS: Statement visual validation #2914 completed success on exact material head
+control=DS-TOKEN-SOURCE-001
+risk_family=structural-contract
+surface=canonical-design-token-source
