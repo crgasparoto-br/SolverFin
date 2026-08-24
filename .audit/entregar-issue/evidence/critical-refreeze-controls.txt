@@ -1,0 +1,32 @@
+Critical cumulative refreeze controls for SolverFin PR 640 / issue 601
+material_head_sha: abc4de4254e9b7e06e6155f2b297aaee94b59f59
+independent_rejection_id: audit-rejection:8d6421f0-8be9-4e75-a47b-2e796f3311e1
+
+1. Recovery classifier
+Observed classify_handoff_recovery.py preserve the auditor floor and return recovery_scope=post-write-refreeze for the stale certificate whose material head was d8cd7762db7c4c8ac3cacd7dea36ff156b117618 while the fresh candidate was abc4de4254e9b7e06e6155f2b297aaee94b59f59.
+The transfer test suite tests/test_handoff_recovery_classifier.py passed 9/9 on the installed entregar-issue skill.
+
+2. Canonical specification coverage
+validate_specification_coverage.py returned READY for the rebuilt issue 601 snapshot and closure, covering 15 canonical obligations mapped to REQ-001..REQ-006.
+The transfer suite tests/test_requirement_closure.py passed 7/7.
+
+3. Exact-head repository gates
+GitHub Actions snapshot for material head abc4de4254e9b7e06e6155f2b297aaee94b59f59:
+- CI run 4390 (id 32673741004): completed / success.
+- Statement visual validation run 2901 (id 32673741009): completed / success.
+No rerun, dispatch, cancellation, or polling was performed.
+
+4. UI/layout behavioral closure
+The exact-head CI exercises the shared primitive tests covering exported executable APIs, two representative shared layout compositions, five operational states, native dialog/focus lifecycle, responsive/overflow contracts, and deterministic SSR. docs/UI_PRIMITIVES.md remains the documented API/state contract.
+
+5. Strict artifact transport round-trip
+The current requirement-closure logical bytes (sha256 9755b91968ffa25e64873fd1ceb3d3c638ba23c221b30045c6e41a69fe128108) were packed through audit_artifact_io.pack_json_artifact into base64-shards-v1 and read back through the canonical loader. The reconstructed bytes were byte-identical. Encoded shard sha256: 791c7452e34985f5819e8fabfbd5e33df26fd7f32222bf82f8e0c1b91e86704a.
+
+6. Connector byte integrity and result-only boundary
+For the first refreeze publication attempt from material head abc4de4254e9b7e06e6155f2b297aaee94b59f59, all 12 local git blob hashes exactly matched the GitHub create_blob responses before tree construction. The published commit e721f1398c9c64b0467a675d33e734b55250a7ea was a direct child of abc4de4254e9b7e06e6155f2b297aaee94b59f59 and compare abc4de42..e721f139 contained only the 12 declared .audit result paths. The package is being superseded only because the installed terminal guard requires critical cumulative artifacts for any prior independent rejection.
+
+7. Foreign-target lineage discrimination
+The material parent contains historical audit artifacts for a different target (issue 603 / PR 639). They are retained only as cumulative lineage controls and are not used as evidence for issue 601 behavior. The current specification snapshot binds repository crgasparoto-br/SolverFin, issue 601 and PR 640, and the current result-only certificate binds the same target.
+
+8. Post-freeze write discrimination
+Formatting commit 5153fd8f493ad7cb2eb7182a0b2423768f527b45 and test adjustment commit abc4de4254e9b7e06e6155f2b297aaee94b59f59 were treated as material drift after the old freeze rather than result-only changes. The new material identity is therefore abc4de4254e9b7e06e6155f2b297aaee94b59f59; no certificate may treat d8cd7762db7c4c8ac3cacd7dea36ff156b117618 as current.

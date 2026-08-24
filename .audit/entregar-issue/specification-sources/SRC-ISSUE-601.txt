@@ -1,5 +1,3 @@
-[Fase 3B] Criar primitivas executáveis de UI e layout
-
 Parent epic: #590
 Depends on: #600
 
