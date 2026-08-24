@@ -13,33 +13,17 @@ import {
   renderPageHeader,
   renderText,
 } from "../../apps/web/dist/design-system/primitives.js";
-import {
-  createSolverFinDesignSystemCss,
-} from "../../apps/web/dist/design-system/styles.js";
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { createSolverFinDesignSystemCss } from "../../apps/web/dist/design-system/styles.js";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
-if (!chromePath)
-  throw new Error(
-    "CHROME_BIN is required for issue 601 UI primitive validation.",
-  );
+if (!chromePath) throw new Error("CHROME_BIN is required for issue 601 UI primitive validation.");
 
 await mkdir(outputDir, { recursive: true });
 const html = fixtureHtml();
-await writeFile(
-  join(outputDir, "issue-601-ui-primitives-fixture.html"),
-  html,
-);
+await writeFile(join(outputDir, "issue-601-ui-primitives-fixture.html"), html);
 const browser = await launchChrome({ baseUrl, chromePath });
 const evidence = {
   commit: process.env.GITHUB_SHA ?? "local",
@@ -57,19 +41,12 @@ try {
   await sleep(100);
 
   evidence.desktop = await inspectLayout();
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-601-ui-primitives-desktop.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-601-ui-primitives-desktop.png"));
   assert.equal(evidence.desktop.documentFits, true);
   assert.equal(evidence.desktop.containerFits, true);
   assert.equal(evidence.desktop.titleWraps, true);
 
-  evidence.dialog = await exerciseModal(
-    "sample-dialog-trigger",
-    "sample-dialog",
-    "dialog",
-  );
+  evidence.dialog = await exerciseModal("sample-dialog-trigger", "sample-dialog", "dialog");
   evidence.drawer = await exerciseModal(
     "sample-drawer-trigger",
     "sample-drawer",
@@ -80,10 +57,7 @@ try {
   await setViewport(browser.cdp, 360, 800);
   await sleep(100);
   evidence.mobile = await inspectLayout();
-  await screenshot(
-    browser.cdp,
-    join(outputDir, "issue-601-ui-primitives-mobile.png"),
-  );
+  await screenshot(browser.cdp, join(outputDir, "issue-601-ui-primitives-mobile.png"));
   assert.equal(evidence.mobile.documentFits, true);
   assert.equal(evidence.mobile.containerFits, true);
   assert.equal(evidence.mobile.detailSingleColumn, true);
@@ -126,10 +100,7 @@ async function exerciseModal(triggerId, modalId, kind, previousTriggerId) {
     `document.getElementById(${JSON.stringify(modalId)}).open === true`,
   );
   assert.equal(opened, true);
-  await screenshot(
-    browser.cdp,
-    join(outputDir, `issue-601-ui-primitives-${kind}-open.png`),
-  );
+  await screenshot(browser.cdp, join(outputDir, `issue-601-ui-primitives-${kind}-open.png`));
 
   await pressKey("Escape");
   const closed = await evaluate(
@@ -203,9 +174,7 @@ async function pressKey(key) {
 
 function fixtureHtml() {
   const long =
-    "LongUnbrokenIssue601TitleThatMustWrapWithoutHorizontalDocumentOverflow1234567890".repeat(
-      6,
-    );
+    "LongUnbrokenIssue601TitleThatMustWrapWithoutHorizontalDocumentOverflow1234567890".repeat(6);
   const columns = Array.from({ length: 8 }, (_, index) => ({
     id: `c${index}`,
     header: `Column ${index + 1}`,
@@ -213,10 +182,7 @@ function fixtureHtml() {
       `<span style="display:inline-block;min-width:10rem">${renderText(row[`c${index}`])}</span>`,
   }));
   const row = Object.fromEntries(
-    columns.map((column, index) => [
-      column.id,
-      `Cell ${index + 1} long content`,
-    ]),
+    columns.map((column, index) => [column.id, `Cell ${index + 1} long content`]),
   );
   const table = renderDataTable({
     caption: "Responsive issue 601 table",
@@ -225,10 +191,7 @@ function fixtureHtml() {
     rowKey: () => "row",
   });
   const trigger = (id, label) =>
-    renderDialogTrigger({ dialogId: id, label }).replace(
-      "<button ",
-      `<button id="${id}-trigger" `,
-    );
+    renderDialogTrigger({ dialogId: id, label }).replace("<button ", `<button id="${id}-trigger" `);
   const dialog = renderDialog({
     id: "sample-dialog",
     title: "Dialog",
