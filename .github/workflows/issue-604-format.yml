@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - issue-604-legacy-html-post-processors
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
