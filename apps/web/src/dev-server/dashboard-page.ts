@@ -1,5 +1,4 @@
-import { formatMinorCurrency } from "@solverfin/shared";
-
+import { renderMoney } from "../design-system/money.js";
 import { apiGet } from "./api.js";
 import {
   presentDashboard,
@@ -15,7 +14,6 @@ import {
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
-import type { MoneyViewModel } from "./screen-view-model.js";
 
 export async function renderDashboardPage(token: string): Promise<string> {
   const [summary, transactions, pendingReview, openInvoices] = await Promise.all([
@@ -132,7 +130,7 @@ function renderRecentItems(items: readonly DashboardRecentItemViewModel[]): stri
         (item) => `
           <article class="row">
             <div><strong>${escapeHtml(item.description)}</strong><span>${escapeHtml(item.kind)} - ${escapeHtml(item.status)} - ${escapeHtml(item.amount.currency)} - ${escapeHtml(item.occurredOnLabel)}</span></div>
-            <strong>${formatMoney(item.amount)}</strong>
+            <strong>${renderMoney(item.amount)}</strong>
           </article>
         `,
       )
@@ -168,15 +166,11 @@ function renderNextActionRow(
 }
 
 function renderMetricCard(metric: DashboardMetricViewModel): string {
-  return `<article class="metric-card"><span>${escapeHtml(metric.title)}</span><strong>${formatMoney(metric.amount)}</strong><p>${escapeHtml(metric.subtitle)}</p></article>`;
+  return `<article class="metric-card"><span>${escapeHtml(metric.title)}</span><strong>${renderMoney(metric.amount)}</strong><p>${escapeHtml(metric.subtitle)}</p></article>`;
 }
 
 function renderEmptyState(title: string, description: string): string {
   return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
-}
-
-function formatMoney(value: MoneyViewModel): string {
-  return formatMinorCurrency(value.amountMinor, { currency: value.currency });
 }
 
 function dashboardStyles(): string {
@@ -190,8 +184,8 @@ function dashboardStyles(): string {
     .currency-heading h2 { color: var(--primary); font-size: 0.875rem; letter-spacing: 0.04em; margin: 0; }
     .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .metric-card { display: grid; gap: 6px; min-width: 0; padding: 14px 16px; }
-    .metric-card span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-    .metric-card strong { color: var(--primary); font-size: 1.25rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+    .metric-card > span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .metric-card > strong { color: var(--primary); font-size: 1.25rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
     .metric-card p { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
     .next-actions { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
@@ -200,7 +194,7 @@ function dashboardStyles(): string {
     .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; min-width: 0; padding: 8px 0; }
     .row:first-child { border-top: 0; padding-top: 0; }
     .row div { display: grid; gap: 2px; min-width: 0; }
-    .row span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
+    .row div > span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
     .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
     .row > strong { text-align: right; white-space: nowrap; }
     @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
