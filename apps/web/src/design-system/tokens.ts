@@ -1,5 +1,6 @@
 export const solverFinColors = {
   primary: "#0F3D4C",
+  onPrimary: "#FFFFFF",
   primarySoft: "#E8F3F6",
   primaryHover: "#0A2E3A",
   secondary: "#16A34A",
@@ -21,6 +22,7 @@ export const solverFinColors = {
   successSurface: "#DCFCE7",
   successBorder: "#BBF7D0",
   danger: "#DC2626",
+  onDanger: "#FFFFFF",
   dangerSurface: "#FEE2E2",
   dangerBorder: "#FECACA",
   warning: "#F59E0B",

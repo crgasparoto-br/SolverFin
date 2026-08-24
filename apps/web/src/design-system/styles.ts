@@ -102,7 +102,7 @@ ${buildSolverFinCssVariables(tokens)}
 .sf-button-primary {
   background: var(--sf-color-primary);
   border: 1px solid transparent;
-  color: white;
+  color: var(--sf-color-on-primary);
 }
 
 .sf-button-secondary,
@@ -131,14 +131,14 @@ ${buildSolverFinCssVariables(tokens)}
 .sf-button-danger {
   background: var(--sf-color-danger);
   border: 1px solid transparent;
-  color: white;
+  color: var(--sf-color-on-danger);
 }
 
 .sf-button-danger:hover:not(:disabled),
 .sf-button-danger:focus-visible {
   background: var(--sf-color-danger);
   border-color: var(--sf-color-danger-border);
-  color: white;
+  color: var(--sf-color-on-danger);
 }
 
 .sf-icon-button {
