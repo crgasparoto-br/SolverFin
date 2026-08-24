@@ -1,0 +1,49 @@
+Parent epic: #590
+Depends on: #595, #600
+
+## Objetivo
+
+Criar uma primitiva financeira de apresentação para valores monetários que exija moeda explícita e impeça inferência silenciosa de BRL.
+
+## Escopo
+
+- definir contrato de entrada para valor e `currency`;
+- reutilizar a infraestrutura compartilhada de formatação (`packages/shared/src/formatting.ts`) e o locale atual do SolverFin, mas sempre passando `currency` explicitamente ao formatter;
+- não usar `SOLVERFIN_FORMAT_CURRENCY`/fallback BRL como fonte da moeda da primitiva;
+- formatar moeda/locale sem perder desambiguação necessária;
+- representar indisponível/ausente sem converter para zero;
+- suportar contexto futuro de valor nativo x convertido sem executar conversão no componente;
+- substituir formatações monetárias duplicadas nas rotas piloto conforme migração.
+
+## Invariantes estruturais
+
+- **must_reuse:** a primitiva deve reutilizar o formatter/locale compartilhado existente em vez de criar uma convenção de locale paralela.
+- **must_not_depend_on:** `Money` não pode depender do default `SOLVERFIN_FORMAT_CURRENCY = BRL`; a moeda é entrada obrigatória do valor monetário.
+- **must_not_behave:** moeda ausente não vira BRL e valor ausente não vira zero.
+- **forbidden_implementation:** chamar `formatMinorCurrency(amount)` sem `currency`. Essa implementação passa em todos os testes BRL e falha silenciosamente em USD/EUR; o controle deve incluir chamada sem moeda rejeitada/indisponível e cenários BRL, USD e EUR com valores iguais para provar que a moeda vem do contrato de entrada.
+
+## Critérios de aceite
+
+- [ ] `Money` não aceita/inventa moeda ausente em contexto monetário válido;
+- [ ] a implementação reutiliza o locale/formatter compartilhado e informa a moeda explicitamente;
+- [ ] BRL, USD e EUR são exibidos de forma inequívoca nos testes;
+- [ ] componente não soma nem converte valores;
+- [ ] valor nativo e convertido podem ser diferenciados por contrato quando a capacidade existir;
+- [ ] acessibilidade não depende apenas de símbolo visual;
+- [ ] testes cobrem positivo, negativo, zero, valor grande, indisponível e ausência de moeda;
+- [ ] teste negativo prova que o fallback BRL de `packages/shared/src/formatting.ts` não mascara moeda ausente na primitiva.
+
+## Fora de escopo
+
+- provider/taxa de câmbio;
+- lógica de agregação;
+- introduzir preferência de locale por perfil nesta issue.
+
+## Referências
+
+- #590
+- #595
+- ADR 0013
+- ADR 0014
+- `docs/DESIGN_SYSTEM.md`
+- `packages/shared/src/formatting.ts`
