@@ -35,9 +35,7 @@ describe("Money primitive", () => {
   it("covers positive, negative, zero and the largest safe minor-unit value", () => {
     for (const amountMinor of [12_345, -12_345, 0, Number.MAX_SAFE_INTEGER]) {
       const markup = renderMoney({ amountMinor, currency: "BRL" });
-      assert.ok(
-        markup.includes(formatMinorCurrency(amountMinor, { currency: "BRL" })),
-      );
+      assert.ok(markup.includes(formatMinorCurrency(amountMinor, { currency: "BRL" })));
       assert.match(markup, /data-money-availability="available"/);
     }
   });
@@ -69,16 +67,8 @@ describe("Money primitive", () => {
 
   it("distinguishes native and converted presentation without converting the amount", () => {
     const amountMinor = 9_876;
-    const native = renderMoney({
-      amountMinor,
-      currency: "EUR",
-      context: "native",
-    });
-    const converted = renderMoney({
-      amountMinor,
-      currency: "EUR",
-      context: "converted",
-    });
+    const native = renderMoney({ amountMinor, currency: "EUR", context: "native" });
+    const converted = renderMoney({ amountMinor, currency: "EUR", context: "converted" });
     const formatted = formatMinorCurrency(amountMinor, { currency: "EUR" });
 
     assert.ok(native.includes(formatted));
@@ -86,10 +76,7 @@ describe("Money primitive", () => {
     assert.match(native, /data-money-context="native"/);
     assert.doesNotMatch(native, />Convertido<\/small>/);
     assert.match(converted, /data-money-context="converted"/);
-    assert.match(
-      converted,
-      /aria-label="Valor convertido">Convertido<\/small>/,
-    );
+    assert.match(converted, /aria-label="Valor convertido">Convertido<\/small>/);
   });
 
   it("normalizes an explicit ISO-like currency code but never supplies one", () => {
