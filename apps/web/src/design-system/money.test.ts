@@ -35,24 +35,30 @@ describe("Money primitive", () => {
     },
   );
 
-  it("covers positive, negative, zero and the largest safe minor-unit value", () => {
-    for (const amountMinor of [12_345, -12_345, 0, Number.MAX_SAFE_INTEGER]) {
-      const markup = renderMoney({ amountMinor, currency: "BRL" });
-      assert.ok(
-        markup.includes(formatMinorCurrency(amountMinor, { currency: "BRL" })),
-      );
-      assert.match(markup, /data-money-availability="available"/);
-    }
-  });
+  it(
+    "covers positive, negative, zero and the largest safe minor-unit value",
+    () => {
+      for (const amountMinor of [12_345, -12_345, 0, Number.MAX_SAFE_INTEGER]) {
+        const markup = renderMoney({ amountMinor, currency: "BRL" });
+        assert.ok(
+          markup.includes(formatMinorCurrency(amountMinor, { currency: "BRL" })),
+        );
+        assert.match(markup, /data-money-availability="available"/);
+      }
+    },
+  );
 
-  it("represents unavailable values without silently turning them into zero", () => {
-    const markup = renderMoney({ amountMinor: null, currency: "USD" });
+  it(
+    "represents unavailable values without silently turning them into zero",
+    () => {
+      const markup = renderMoney({ amountMinor: null, currency: "USD" });
 
-    assert.match(markup, /data-money-availability="unavailable"/);
-    assert.match(markup, /Indisponível/);
-    assert.match(markup, />USD<\/small>/);
-    assert.doesNotMatch(markup, /0,00/);
-  });
+      assert.match(markup, /data-money-availability="unavailable"/);
+      assert.match(markup, /Indisponível/);
+      assert.match(markup, />USD<\/small>/);
+      assert.doesNotMatch(markup, /0,00/);
+    },
+  );
 
   it(
     "rejects missing currency before the shared BRL fallback can mask the error",
@@ -68,16 +74,23 @@ describe("Money primitive", () => {
     },
   );
 
-  it("rejects a missing amount and requires null for the unavailable state", () => {
-    const missingAmount = { currency: "BRL" } as unknown as MoneyProps;
-    assert.throws(() => renderMoney(missingAmount), /requires amountMinor/);
-  });
+  it(
+    "rejects a missing amount and requires null for the unavailable state",
+    () => {
+      const missingAmount = { currency: "BRL" } as unknown as MoneyProps;
+      assert.throws(() => renderMoney(missingAmount), /requires amountMinor/);
+    },
+  );
 
   it(
     "distinguishes native and converted presentation without converting the amount",
     () => {
       const amountMinor = 9_876;
-      const native = renderMoney({ amountMinor, currency: "EUR", context: "native" });
+      const native = renderMoney({
+        amountMinor,
+        currency: "EUR",
+        context: "native",
+      });
       const converted = renderMoney({
         amountMinor,
         currency: "EUR",
@@ -97,12 +110,15 @@ describe("Money primitive", () => {
     },
   );
 
-  it("normalizes an explicit ISO-like currency code but never supplies one", () => {
-    const markup = renderMoney({ amountMinor: 100, currency: "usd" });
-    assert.match(markup, /data-currency="USD"/);
-    assert.throws(
-      () => renderMoney({ amountMinor: 100, currency: "US" }),
-      /three-letter currency code/,
-    );
-  });
+  it(
+    "normalizes an explicit ISO-like currency code but never supplies one",
+    () => {
+      const markup = renderMoney({ amountMinor: 100, currency: "usd" });
+      assert.match(markup, /data-currency="USD"/);
+      assert.throws(
+        () => renderMoney({ amountMinor: 100, currency: "US" }),
+        /three-letter currency code/,
+      );
+    },
+  );
 });
