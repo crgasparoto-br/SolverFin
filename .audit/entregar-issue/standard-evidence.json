@@ -1,55 +1,115 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "6bb1e0a9ecbfe323ef7fd8eb69a270f988065a16",
+  "head_sha": "a19f5acc873fbf1bfaa2dd858d472625d4f330f6",
   "requirements": [
     {
       "requirement_id": "REQ-001",
-      "positive_evidence": ["At material SHA 6bb1e0a9ecbfe323ef7fd8eb69a270f988065a16, apps/web/src/design-system/money.ts defines amountMinor:number|null and explicit currency:string; CI #4416 completed successfully."],
-      "primary_negative_control": {"id": "NC-REQ-001", "status": "passed", "procedure": "Execute the Money regression tests that omit amountMinor and omit currency.", "expected": "Both malformed monetary calls fail closed rather than inventing a value or currency.", "observed": "The current test suite passed in CI #4416; the tests assert requires amountMinor and explicit three-letter currency errors."},
-      "regression_evidence": ["apps/web/src/design-system/money.test.ts covers missing amount and missing currency at the current material SHA."]
+      "positive_evidence": [
+        "apps/web/src/dev-server/legacy-html-post-processors.ts defines 13 typed inventory entries with route, order, responsibility, migration strategy, replacement criterion and fallback/accessibility.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-INV-BUDGET",
+        "status": "passed",
+        "procedure": "Execute the canonical inventory/static guard with the exact-head CI suite; the guard compares imported residual processors against inventory and budget and rejects duplicates/stale/unregistered entries.",
+        "expected": "A missing, duplicate, stale, or unregistered residual processor fails the gate.",
+        "observed": "CI run 32763972103 passed with inventory length equal to budget 13 and all residual imports registered."
+      },
+      "regression_evidence": [
+        "legacy-html-post-processors.test.ts asserts unique IDs, contiguous route order, non-empty responsibility/replacement/fallback fields and the five expected routes.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ]
     },
     {
       "requirement_id": "REQ-002",
-      "positive_evidence": ["Current money.ts imports formatMinorCurrency from @solverfin/shared and calls formatMinorCurrency(props.amountMinor, { currency }); CI #4416 passed tests, typecheck and build."],
-      "primary_negative_control": {"id": "NC-REQ-002", "status": "passed", "procedure": "Inspect current money.ts for a parallel Intl.NumberFormat path and execute BRL/USD/EUR regression coverage.", "expected": "No parallel formatter exists and Money delegates to the shared formatter with explicit currency.", "observed": "Current source contains the shared import/call and no parallel Intl.NumberFormat; CI #4416 passed the regression suite."},
-      "regression_evidence": ["packages/shared/src/formatting.ts remains the canonical formatting source consumed by Money."]
+      "positive_evidence": [
+        "dev-server.ts routes /contas-cartoes, /categorias, /cartoes, /lancamentos and /inbox through applyLegacyHtmlPostProcessorPipeline in the preserved route order.",
+        "legacy-html-post-processors.test.ts proves async /inbox ordering as payload then layout.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-ORDER-MISMATCH",
+        "status": "passed",
+        "procedure": "Run the test that passes a reordered /cartoes adapter sequence to applyLegacyHtmlPostProcessorPipeline.",
+        "expected": "The pipeline rejects before any transform executes.",
+        "observed": "The test expects Legacy HTML post-processor order mismatch and asserts calls remains empty; exact-head CI passed."
+      },
+      "regression_evidence": [
+        "The normal SSR router still renders then applies the canonical pipeline and calls sendHtml without introducing a new SSR mode.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ]
     },
     {
       "requirement_id": "REQ-003",
-      "positive_evidence": ["The current Money implementation requires currency before calling the shared formatter, preventing the legacy BRL fallback from supplying the primitive currency."],
-      "primary_negative_control": {"id": "NC-REQ-003", "status": "passed", "procedure": "Run the regression that demonstrates formatMinorCurrency(amount) can fall back to BRL while renderMoney without currency must throw.", "expected": "Money rejects missing currency before the shared fallback can mask the error.", "observed": "The negative regression is present in money.test.ts and the current test suite passed in CI #4416."},
-      "regression_evidence": ["money.test.ts fails if Money is changed to call formatMinorCurrency(amountMinor) without currency."]
+      "positive_evidence": [
+        "scripts/validate-legacy-html-post-processors.mjs scans dev-server.ts for enhancement/standardization/finalizer imports and requires one canonical inventory entry and one explicit pipeline transform invocation per residual processor.",
+        "package.json includes legacy-html-post-processors:check in npm test.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-UNREGISTERED-IMPORT",
+        "status": "passed",
+        "procedure": "Run the static guard over dev-server.ts and the canonical inventory.",
+        "expected": "Any new direct residual HTML processor import/call outside the canonical inventory/pipeline fails.",
+        "observed": "Exact-head CI passed the guard with no unregistered imports or out-of-pipeline invocations."
+      },
+      "regression_evidence": [
+        "The budget is a ratchet at 13 and the guard requires explicit contract changes rather than silent processor growth.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ]
     },
     {
       "requirement_id": "REQ-004",
-      "positive_evidence": ["Current Money markup includes explicit data-currency plus a visible/accessibility currency code, and tests cover BRL, USD and EUR with equal amounts."],
-      "primary_negative_control": {"id": "NC-REQ-004", "status": "passed", "procedure": "Render equal monetary amounts for BRL, USD and EUR and assert the currency code is present in visible/accessibility markup.", "expected": "Currency identity is not left to an ambiguous symbol alone.", "observed": "Current regression coverage passed in CI #4416 and Chrome visual validation #2926 also completed successfully."},
-      "regression_evidence": ["money.test.ts asserts data-currency, aria-label and visible currency code for BRL/USD/EUR."]
+      "positive_evidence": [
+        "docs/LEGACY_HTML_POST_PROCESSORS.md defines the cluster-removal procedure and explicitly requires updating apps/web/src/dev-server/ssr-style-contract.ts and tests when a removed adapter supplied CSS/runtime registered in the SSR contract."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-SSR-CONTRACT-REMOVAL",
+        "status": "passed",
+        "procedure": "Review the canonical removal checklist against the issue obligation and ensure provider-removal requires SSR style contract/test update in the same change.",
+        "expected": "Provider-backed adapter removal cannot be considered complete without the SSR contract update.",
+        "observed": "The documented removal criterion explicitly contains this mandatory same-change requirement."
+      },
+      "regression_evidence": [
+        "No provider is removed by PR #642, so no current ssr-style-contract material change is required; the obligation is preserved as a future removal gate."
+      ]
     },
     {
       "requirement_id": "REQ-005",
-      "positive_evidence": ["renderMoney treats amountMinor:null as an explicit unavailable state and renders Indisponível rather than a numeric amount."],
-      "primary_negative_control": {"id": "NC-REQ-005", "status": "passed", "procedure": "Render amountMinor:null and assert the output does not contain a formatted zero.", "expected": "Unavailable values remain unavailable and are never coerced to zero.", "observed": "The current negative regression passed in CI #4416."},
-      "regression_evidence": ["money.test.ts covers unavailable separately from numeric zero."]
+      "positive_evidence": [
+        "legacy-html-post-processors.test.ts validates canonical behavior including async ordering and pre-transform rejection of invalid sequences.",
+        "scripts/validate-legacy-html-post-processors.mjs validates real dev-server integration rather than only helper internals.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-RESIDUAL-DEPENDENCY",
+        "status": "passed",
+        "procedure": "Run the static guard that counts pipeline invocations by route and requires every residual processor call to appear exactly once inside a transform callback.",
+        "expected": "Invisible residual direct dependency or a route bypassing the pipeline fails the gate.",
+        "observed": "Exact-head CI passed with five inventoried routes and one explicit runtime invocation per residual processor."
+      },
+      "regression_evidence": [
+        "The existing workspace test suite executed under CI run 32763972103 and completed successfully on the material head.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ]
     },
     {
       "requirement_id": "REQ-006",
-      "positive_evidence": ["Current Money exposes native|converted context while both paths preserve the same supplied amount and currency; no exchange-rate provider or aggregation logic exists in money.ts."],
-      "primary_negative_control": {"id": "NC-REQ-006", "status": "passed", "procedure": "Render the same EUR amount once as native and once as converted and compare formatted monetary values.", "expected": "Only presentation semantics may differ; Money must not sum or convert the value.", "observed": "The regression asserts identical formatted EUR output and passed in CI #4416."},
-      "regression_evidence": ["money.test.ts distinguishes native and converted context without changing the value."]
-    },
-    {
-      "requirement_id": "REQ-007",
-      "positive_evidence": ["At the current material SHA, dashboard-page.ts imports renderMoney and uses it for metric cards and recent monetary items instead of retaining a duplicate local monetary formatter."],
-      "primary_negative_control": {"id": "NC-REQ-007", "status": "passed", "procedure": "Inspect the current Dashboard render sites for direct monetary formatting bypasses in the migrated pilot route.", "expected": "The pilot route consumes the Money primitive rather than a duplicate local formatter.", "observed": "Current dashboard-page.ts uses renderMoney at both monetary render sites; CI #4416 and visual validation #2926 passed."},
-      "regression_evidence": ["Dashboard Money adoption remains typechecked and production-built by CI #4416."]
-    },
-    {
-      "requirement_id": "REQ-008",
-      "positive_evidence": ["Current money.test.ts covers positive, negative, zero, Number.MAX_SAFE_INTEGER, unavailable, missing amount, missing currency, native/converted context and currency normalization."],
-      "primary_negative_control": {"id": "NC-REQ-008", "status": "passed", "procedure": "Execute the required scenario matrix including the missing-currency fallback discrimination case.", "expected": "All explicitly required monetary scenarios remain executable regressions.", "observed": "CI #4416 completed the repository test suite successfully at material SHA 6bb1e0a9ecbfe323ef7fd8eb69a270f988065a16."},
-      "regression_evidence": ["apps/web/src/design-system/money.test.ts is included in the current green test suite."]
+      "positive_evidence": [
+        "docs/LEGACY_HTML_POST_PROCESSORS.md records the current baseline of 13 residual adapters by route/order and mandates reducing the budget and updating the document after each completed migration.",
+        "GitHub Actions CI run 32763972103 completed success on exact material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6; npm test includes legacy-html-post-processors:check and workspace tests."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-DOC-STALE-BASELINE",
+        "status": "passed",
+        "procedure": "Cross-check the documented baseline and ratchet rule against the executable inventory and budget on the material head.",
+        "expected": "The documentation and executable residual inventory describe the same 13-adapter baseline and migration rule.",
+        "observed": "The document lists 13 entries across the same five routes and states LEGACY_HTML_POST_PROCESSOR_BUDGET begins at 13 and must decrease on removals."
+      },
+      "regression_evidence": [
+        "The dedicated documentation describes remaining legacy, canonical source, transition rules and cluster removal checklist for subsequent migrations."
+      ]
     }
   ]
 }

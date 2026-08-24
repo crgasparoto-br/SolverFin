@@ -1,1 +1,330 @@
-{"schema_version":3,"specification_snapshot":{"path":"/tmp/solverfin-602-audit/specification-snapshot.json","sha256":"db99739b3e77987485b445afd8027d508fecfc7835423f8a45623b62e2752382"},"primary_issue_source_id":"SRC-ISSUE-602","obligations":[{"id":"OBL-001","candidate_key":"84508f8b45288a18271e4a2c66ad0e4ad3fa547a26f8635b1bb1099251b0a088","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":10,"source_text":"definir contrato de entrada para valor e `currency`;","flags":[],"disposition":"covered","requirement_ids":["REQ-001"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-002","candidate_key":"809156bd7067b8920eb153440960f5b1561ddf19b38c8dfdc9a3c176e2018ff2","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":11,"source_text":"reutilizar a infraestrutura compartilhada de formatação (`packages/shared/src/formatting.ts`) e o locale atual do SolverFin, mas sempre passando `currency` explicitamente ao formatter;","flags":["exhaustive","freshness","structural"],"disposition":"covered","requirement_ids":["REQ-002"],"inventory_ids":["INV-001"],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-003","candidate_key":"e762cc67f0b60bda9629ae745bcf7d3b1f713eecd0725e6ba7c07a0ba04cfb31","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":12,"source_text":"não usar `SOLVERFIN_FORMAT_CURRENCY`/fallback BRL como fonte da moeda da primitiva;","flags":["negative","forbidden-implementation"],"disposition":"covered","requirement_ids":["REQ-003"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-004","candidate_key":"0b061a9d5231d36992d5ae22e5c1ec75a62ba510a2c2699c175fab4cb2f9a247","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":13,"source_text":"formatar moeda/locale sem perder desambiguação necessária;","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-004"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-005","candidate_key":"34af45ecb912524f6fcf2f998bdc06a4bb3eba50922808d35e6c0a3a0e251c12","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":14,"source_text":"representar indisponível/ausente sem converter para zero;","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-005"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-006","candidate_key":"2a017b9a44ce2fb95f7de84d8be079386b9ce2e18ee74cf3c924032cda3519ae","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":15,"source_text":"suportar contexto futuro de valor nativo x convertido sem executar conversão no componente;","flags":["negative","temporal","temporal-destination","aftermath"],"disposition":"covered","requirement_ids":["REQ-006"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-007","candidate_key":"3ba936a51d39900733616a96b2209854057772a21dc7687f94d3c66700879129","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":16,"source_text":"substituir formatações monetárias duplicadas nas rotas piloto conforme migração.","flags":[],"disposition":"covered","requirement_ids":["REQ-007"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-008","candidate_key":"ef453cfacc0436023a63222de509926f918496447c410055798e4b73db493408","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":20,"source_text":"**must_reuse:** a primitiva deve reutilizar o formatter/locale compartilhado existente em vez de criar uma convenção de locale paralela.","flags":["structural"],"disposition":"covered","requirement_ids":["REQ-002"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-009","candidate_key":"6af8d56aca4027e1e3497f224ccdb540af9f578250335614cb6dbe23958bffac","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":21,"source_text":"**must_not_depend_on:** `Money` não pode depender do default `SOLVERFIN_FORMAT_CURRENCY = BRL`; a moeda é entrada obrigatória do valor monetário.","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-003"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-010","candidate_key":"a5c046a832af91cc7eb453eb7b5b70e85a50fae7440c17ea224b6be1e367d57a","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":22,"source_text":"**must_not_behave:** moeda ausente não vira BRL e valor ausente não vira zero.","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-003"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-011","candidate_key":"1b634cb0a17899bdb2f73390fa4bc10c989db385ae7881e8fc5a1a1787e66f11","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":23,"source_text":"**forbidden_implementation:** chamar `formatMinorCurrency(amount)` sem `currency`. Essa implementação passa em todos os testes BRL e falha silenciosamente em USD/EUR; o controle deve incluir chamada sem moeda rejeitada/indisponível e cenários BRL, USD e EUR com valores iguais para provar que a moeda vem do contrato de entrada.","flags":["exhaustive","negative"],"disposition":"covered","requirement_ids":["REQ-003"],"inventory_ids":["INV-002"],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-012","candidate_key":"4cf669cc5dfafeff95a0fe31a479b2cff23fa3003b382d4c606e6ae2e54a1030","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":27,"source_text":"[ ] `Money` não aceita/inventa moeda ausente em contexto monetário válido;","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-001"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-013","candidate_key":"3fa3ebc1610ced9f476fc9b2b0a16833e0e3e08498d15e1e524c68eb0613a549","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":28,"source_text":"[ ] a implementação reutiliza o locale/formatter compartilhado e informa a moeda explicitamente;","flags":["structural"],"disposition":"covered","requirement_ids":["REQ-002"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-014","candidate_key":"af98a50dca187b318f702a2de149f96f728b0ea05c6d837a0006ab0eb0246b5a","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":29,"source_text":"[ ] BRL, USD e EUR são exibidos de forma inequívoca nos testes;","flags":[],"disposition":"covered","requirement_ids":["REQ-004"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-015","candidate_key":"c3b0db498752b93e54c462c5268774741a1d032bd60daa2ea759c660522e0dcb","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":30,"source_text":"[ ] componente não soma nem converte valores;","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-006"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-016","candidate_key":"ed4295fcbeb68380dd8320ff25d332dfdbfffba20752300a28faf319381e003f","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":31,"source_text":"[ ] valor nativo e convertido podem ser diferenciados por contrato quando a capacidade existir;","flags":["aftermath"],"disposition":"covered","requirement_ids":["REQ-006"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-017","candidate_key":"ee2b68484825081c1da167d0329473e6deed6946e8164f1c3a692996acae5ed8","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":32,"source_text":"[ ] acessibilidade não depende apenas de símbolo visual;","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-004"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-018","candidate_key":"e4ad18172d02c062e793479241238a4e7d96feba4ce5b833b8ab4b451c7826ab","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":33,"source_text":"[ ] testes cobrem positivo, negativo, zero, valor grande, indisponível e ausência de moeda;","flags":[],"disposition":"covered","requirement_ids":["REQ-008"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""},{"id":"OBL-019","candidate_key":"e20a558438d26e83c4dc7b772d5412ea63670a5ae2660439bf6f6dc81fc7b211","source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","source_line":34,"source_text":"[ ] teste negativo prova que o fallback BRL de `packages/shared/src/formatting.ts` não mascara moeda ausente na primitiva.","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-003"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":""}],"source_coverage":[{"source_id":"SRC-ISSUE-602","source_sha256":"597d6f66ca20e500178c90a39e9a602c9df402d552476f5d939cb36f2972ff5a","candidate_count":19,"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015","OBL-016","OBL-017","OBL-018","OBL-019"],"unmapped_candidate_keys":[]}],"domain_inventories":[{"id":"INV-001","name":"Money canonical formatting path","closed_world":true,"producer_sources":["packages/shared/src/formatting.ts"],"consumer_sources":["apps/web/src/design-system/money.ts","apps/web/src/dev-server/dashboard-page.ts"],"values":[{"value":"formatMinorCurrency","producer_evidence":["EV-SHARED-FORMATTER"],"consumer_evidence":["EV-MONEY-IMPLEMENTATION"],"scenario_ids":["SC-SHARED-PATH"]},{"value":"pt-BR shared locale","producer_evidence":["EV-SHARED-FORMATTER"],"consumer_evidence":["EV-FOCUSED-HARNESS"],"scenario_ids":["SC-SHARED-PATH"]},{"value":"explicit props.currency","producer_evidence":["EV-MONEY-IMPLEMENTATION"],"consumer_evidence":["EV-DASHBOARD-MIGRATION"],"scenario_ids":["SC-BRL-USD-EUR"]}],"unmapped_values":[],"fallback_policy":"none","rationale":"Canonical issue #602 inventory."},{"id":"INV-002","name":"Forbidden fallback discrimination cases","closed_world":true,"producer_sources":["apps/web/src/design-system/money.test.ts"],"consumer_sources":["apps/web/src/design-system/money.ts"],"values":[{"value":"missing currency rejected","producer_evidence":["EV-MONEY-TESTS"],"consumer_evidence":["EV-FOCUSED-HARNESS"],"scenario_ids":["SC-MISSING-CURRENCY"]},{"value":"BRL equal amount","producer_evidence":["EV-MONEY-TESTS"],"consumer_evidence":["EV-FOCUSED-HARNESS"],"scenario_ids":["SC-BRL-USD-EUR"]},{"value":"USD equal amount","producer_evidence":["EV-MONEY-TESTS"],"consumer_evidence":["EV-FOCUSED-HARNESS"],"scenario_ids":["SC-BRL-USD-EUR"]},{"value":"EUR equal amount","producer_evidence":["EV-MONEY-TESTS"],"consumer_evidence":["EV-FOCUSED-HARNESS"],"scenario_ids":["SC-BRL-USD-EUR"]}],"unmapped_values":[],"fallback_policy":"none","rationale":"Canonical issue #602 inventory."}],"observable_assertions":[],"structural_invariant_closures":{"status":"passed","applicability_reason":"The issue explicitly requires shared formatter reuse and forbids dependence on the legacy BRL fallback.","entries":[{"id":"SIC-001","kind":"structural","requirement_ids":["REQ-002"],"obligation_ids":["OBL-002","OBL-008","OBL-013"],"plausible_wrong_implementation":"Create a separate locale/currency formatter inside Money instead of reusing the shared SolverFin formatting path.","canonical_path":"packages/shared/src/formatting.ts::formatMinorCurrency(amountMinor, { currency })","competing_paths":["new Intl.NumberFormat(...) inside Money"],"evidence_ids":["EV-MONEY-IMPLEMENTATION","EV-SHARED-FORMATTER","EV-FOCUSED-HARNESS"],"scenario_ids":["SC-SHARED-PATH"],"negative_control_evidence":["EV-STATIC-NO-PARALLEL-FORMATTER"]},{"id":"SIC-002","kind":"forbidden-implementation","requirement_ids":["REQ-003"],"obligation_ids":["OBL-003","OBL-009","OBL-010","OBL-011","OBL-019"],"plausible_wrong_implementation":"Call formatMinorCurrency(amountMinor) without currency so BRL tests pass while USD and EUR are silently mislabeled.","canonical_path":"apps/web/src/design-system/money.ts::renderMoney -> formatMinorCurrency(amountMinor, { currency })","competing_paths":["formatMinorCurrency(amountMinor) legacy fallback"],"evidence_ids":["EV-MONEY-TESTS","EV-FOCUSED-HARNESS"],"scenario_ids":["SC-MISSING-CURRENCY","SC-BRL-USD-EUR"],"negative_control_evidence":["EV-FALLBACK-DISCRIMINATION"]}],"unresolved_invariants":[]},"read_model_closures":{"status":"not-applicable","applicability_reason":"No read-model contract in issue #602.","entries":[],"unconsumed_outputs":[],"unmapped_required_fields":[]},"canonical_source_consistency":{"status":"passed","applicability_reason":"Currency source consistency is required by issue #602.","entries":[{"id":"CSC-001","semantic_field":"currency used by Money formatting","canonical_source":"MoneyProps.currency supplied by the caller","alternative_sources":["SOLVERFIN_FORMAT_CURRENCY legacy BRL fallback"],"surfaces":["Money primitive","Dashboard monetary values"],"evidence_ids":["EV-MONEY-IMPLEMENTATION","EV-DASHBOARD-MIGRATION","EV-FOCUSED-HARNESS"],"scenario_ids":["SC-MISSING-CURRENCY","SC-BRL-USD-EUR"],"negative_control_evidence":["EV-FALLBACK-DISCRIMINATION"],"divergent_fixture":{"canonical_value":"USD","alternative_values":["BRL legacy fallback"]}}],"unverified_surfaces":[],"missing_divergent_tests":[]},"documentation_consistency":{"status":"passed","applicability_reason":"Existing design-system documentation already defines the current Money contract.","old_contract_terms":["SOLVERFIN_FORMAT_CURRENCY"],"new_contract_terms":["Money explicit currency"],"occurrences":[{"path":"packages/shared/src/formatting.ts","line":2,"text":"SOLVERFIN_FORMAT_CURRENCY = \"BRL\"","term":"SOLVERFIN_FORMAT_CURRENCY","classification":"compatibility","evidence_ids":["EV-SHARED-FORMATTER"]},{"path":"docs/DESIGN_SYSTEM.md","line":1,"text":"Money requires explicit currency and unavailable values are not zero.","term":"Money explicit currency","classification":"current-contract","evidence_ids":["EV-DESIGN-SYSTEM-DOC"]}],"unresolved_contradictions":[],"searched_outside_diff":true,"search_evidence":["Repository-wide search for formatMinorCurrency call sites and review of docs/DESIGN_SYSTEM.md, ADR 0013, ADR 0014 and ADR 0015."]},"scope_reduction_review":{"status":"passed","matches":[]},"pass_c":{"status":"passed","requirement_ids":["REQ-001","REQ-002","REQ-003","REQ-004","REQ-005","REQ-006","REQ-007","REQ-008"],"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015","OBL-016","OBL-017","OBL-018","OBL-019"],"evidence":["EV-MONEY-IMPLEMENTATION","EV-MONEY-TESTS","EV-DASHBOARD-MIGRATION","EV-FOCUSED-HARNESS","EV-SHARED-FORMATTER","EV-DESIGN-SYSTEM-DOC"],"rederived_without_pr_description":true,"reviewed_user_visible_semantics":true,"reviewed_producer_consumer_parity":true,"reviewed_all_specification_sources":true}}
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/tmp/solverfin-604-recovery/specification-snapshot.json",
+    "sha256": "a02e97f7ad836b40fdfc3c8d0a868d2b1dc97fd1131782a8d9b02e1779d4225a"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-604",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "098524a2286db04f52577adf06ef155b1deae2b8cee6b3b00024cd5516ea150a",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 10,
+      "source_text": "inventariar pos-processadores por rota e responsabilidade;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "a6b34a928ecaf75a3ec8fe3e9d53d6ac19a14df93fc811d93b6542c7a7b92e49",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 11,
+      "source_text": "classificar cada modulo como manter temporariamente, substituir por componente/layout/view-model ou remover;",
+      "flags": [
+        "exhaustive"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "c0ef387cfa5f578d5d26e3db58e0c6a51d13eaa381964fd3550e660207570533",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 12,
+      "source_text": "definir ordem de composicao durante a transicao;",
+      "flags": [
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "bf9656e1da4d7ae24c29a485aa31f4187be823d917c7d80aca60143390ec1590",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 13,
+      "source_text": "impedir novos pos-processadores textuais como padrao para features novas;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "b82981a843b21cb12b902efc225bb3117865652e2d63009025a11826b74a59cd",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 14,
+      "source_text": "atualizar `ssr-style-contract` quando provedores runtime forem removidos;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "c32b05aef212a8d93ea1db62db0fc57a18fc437a6b213a40d2ef6e0f80bc18dd",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 15,
+      "source_text": "criar controles de regressao para evitar dependencia residual invisivel.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "91877718ac2bd8704959f8d59c843f8fb79a4e6001c5be4f296871571c9d3a5a",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 19,
+      "source_text": "[ ] inventario possui dono/rota/responsabilidade de cada enhancement relevante;",
+      "flags": [
+        "exhaustive"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "7e775a4d63a50505116aa76c1a2d1669ea87fee0d3ac9533aec85ec08a7f33c5",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 20,
+      "source_text": "[ ] existe criterio objetivo para considerar um pos-processador substituido;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "0ac367e3028631561f8610dff08c6a8e6bfc4ac0079f933b4d4ce84251123b72",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 21,
+      "source_text": "[ ] remocao de um modulo nao reduz cobertura da rota;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "c4b627c4923b29322eedd44aebd6e3e3ee70935fae5cce9b5b7a4d0fa3237fcb",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 22,
+      "source_text": "[ ] SSR normal continua funcional sem modo especial novo desnecessario;",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "a4681dca018273604bb2f10b14e552899ad91be91bfa1027b6108c14de009102",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 23,
+      "source_text": "[ ] testes validam o comportamento final, nao apenas a transformacao textual intermediaria;",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "4ca094e2c240b51a9323299004d94059471241d6cd0c789a689406d3b191e968",
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "source_line": 24,
+      "source_text": "[ ] documentacao identifica o legado restante depois de cada migracao.",
+      "flags": [
+        "exhaustive",
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-604",
+      "source_sha256": "966d5a7c528c15560a3dc7b252fa2332779fa917e31f07e86f2f43f007d11e51",
+      "candidate_count": 12,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "The canonical issue does not impose a structural implementation-form invariant recognized by this gate.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "The issue does not define historical read-model, pagination, authorship, versioning, or supersession obligations.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "The issue does not define competing canonical business data sources that require producer-consumer reconciliation.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "The issue explicitly governs remaining legacy behavior and requires documentation to identify residual processors after migrations.",
+    "old_contract_terms": [
+      "ad-hoc direct HTML post-processing in dev-server.ts"
+    ],
+    "new_contract_terms": [
+      "canonical legacy post-processor inventory",
+      "ratcheting residual budget",
+      "cluster removal criteria"
+    ],
+    "occurrences": [
+      {
+        "path": "docs/LEGACY_HTML_POST_PROCESSORS.md",
+        "status": "updated"
+      }
+    ],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "CI exact-head npm test includes the legacy-html-post-processors static contract; PR diff updates the dedicated legacy migration document."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-001",
+      "REQ-002",
+      "REQ-003",
+      "REQ-004",
+      "REQ-005",
+      "REQ-006"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+        "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012"
+    ],
+    "evidence": [
+      "Issue #604 body re-derived independently from the PR description; exact-head implementation, tests, documentation and CI run 32763972103 were reviewed."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

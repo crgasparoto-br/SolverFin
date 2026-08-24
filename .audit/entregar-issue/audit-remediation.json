@@ -1,1 +1,39 @@
-{"schema_version":1,"status":"closed","candidate_head_sha":"a87dcd92cf0b4e20bb02222a3576ed5bf5130aba","source_rejection_id":"audit-rejection:78f9317f-7753-430f-9781-cd4c682e08c0","remediation_mode":"targeted-remediation","items":[{"finding_id":"A-001","status":"fixed","cause":"The prior result-only package regenerated inherited-controls.json from active controls and silently lost two already-retired lineage IDs.","changed_files":[".audit/entregar-issue/inherited-controls.json",".audit/entregar-issue/audit-escape-closure.json",".audit/entregar-issue/learning-closure.json",".audit/entregar-issue/audit-remediation.json",".audit/entregar-issue/audit-source-result.json",".audit/entregar-issue/evidence/critical-refreeze-controls.txt",".audit/entregar-issue/handoff-ready.json"],"controls":["AUDIT-CUMULATIVE-LINEAGE-001"]}],"validations":[{"kind":"cumulative-lineage","status":"passed","evidence":"Both historical retired control IDs are restored with superseded dispositions and replacements."},{"kind":"audit-escape","status":"passed","escape_id":"AUDIT-ESCAPE-CUMULATIVE-LINEAGE-001"}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:b2d291e7-6606-4991-872e-ed66f3cbb689",
+    "audit_report_sha256": "6ba77bdf0769c1b237543ee1972b535c25f4640bff8ec94c40a2ac817397096a",
+    "audited_head_sha": "a19f5acc873fbf1bfaa2dd858d472625d4f330f6"
+  },
+  "candidate_head_sha": "a19f5acc873fbf1bfaa2dd858d472625d4f330f6",
+  "remediation_mode": "targeted-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "changed_files": [
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/standard-evidence.json",
+        ".audit/entregar-issue/audit-source-result.json",
+        ".audit/entregar-issue/audit-remediation.json",
+        ".audit/entregar-issue/audit-escape-closure.json",
+        ".audit/entregar-issue/learning-closure.json",
+        ".audit/entregar-issue/handoff-ready.json"
+      ],
+      "evidence": [
+        "The stale handoff certificate was proven inherited from the immutable base by identical Git blob SHA while its subject remained issue 602 / PR 641; the issue 604 specification snapshot is current.",
+        "A fresh issue 604 closure and standard evidence packet were rebuilt from the canonical issue source and exact material head."
+      ],
+      "validations": [
+        "validate_specification_coverage.py: READY",
+        "validate_standard_evidence.py: READY",
+        "31 entregar-issue target-binding/terminal-handoff/recovery classifier tests passed"
+      ]
+    }
+  ],
+  "status": "closed"
+}
