@@ -13,7 +13,9 @@ import {
   renderPageHeader,
   renderText,
 } from "../../apps/web/dist/design-system/primitives.js";
-import { createSolverFinDesignSystemCss } from "../../apps/web/dist/design-system/styles.js";
+import {
+  createSolverFinDesignSystemCss,
+} from "../../apps/web/dist/design-system/styles.js";
 import {
   evaluate,
   launchChrome,
@@ -28,7 +30,9 @@ const outputDir =
   process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 if (!chromePath)
-  throw new Error("CHROME_BIN is required for issue 601 UI primitive validation.");
+  throw new Error(
+    "CHROME_BIN is required for issue 601 UI primitive validation.",
+  );
 
 await mkdir(outputDir, { recursive: true });
 const html = fixtureHtml();
@@ -241,7 +245,10 @@ function fixtureHtml() {
         title: long,
         actionsHtml: `${trigger("sample-dialog", "Open dialog")}${trigger("sample-drawer", "Open drawer")}`,
       }) +
-      renderDetailLayout({ masterHtml: renderText("Master"), detailHtml: table }) +
+      renderDetailLayout({
+        masterHtml: renderText("Master"),
+        detailHtml: table,
+      }) +
       dialog +
       drawer,
   });
