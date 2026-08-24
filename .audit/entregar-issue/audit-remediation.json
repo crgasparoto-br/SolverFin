@@ -3,11 +3,11 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:b2d291e7-6606-4991-872e-ed66f3cbb689",
-    "audit_report_sha256": "6ba77bdf0769c1b237543ee1972b535c25f4640bff8ec94c40a2ac817397096a",
+    "rejection_id": "audit-rejection:ef362c6b-f57d-4653-9eee-07cf32776eb0",
+    "audit_report_sha256": "ade1f0ec0e32dd6a3810f02a4dde9362aacad714b654739739cd5395bfd45232",
     "audited_head_sha": "a19f5acc873fbf1bfaa2dd858d472625d4f330f6"
   },
-  "candidate_head_sha": "a19f5acc873fbf1bfaa2dd858d472625d4f330f6",
+  "candidate_head_sha": "5c902a58b58dd4406b3986ad079fd989720f5a82",
   "remediation_mode": "targeted-remediation",
   "items": [
     {
@@ -16,22 +16,39 @@
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "changed_files": [
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/standard-evidence.json",
-        ".audit/entregar-issue/audit-source-result.json",
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/audit-escape-closure.json",
-        ".audit/entregar-issue/learning-closure.json",
-        ".audit/entregar-issue/handoff-ready.json"
+        "apps/web/src/dev-server/legacy-html-post-processors.ts",
+        "apps/web/src/dev-server/legacy-html-post-processors.test.ts",
+        "docs/LEGACY_HTML_POST_PROCESSORS.md",
+        "scripts/validate-legacy-html-post-processors.mjs"
       ],
       "evidence": [
-        "The stale handoff certificate was proven inherited from the immutable base by identical Git blob SHA while its subject remained issue 602 / PR 641; the issue 604 specification snapshot is current.",
-        "A fresh issue 604 closure and standard evidence packet were rebuilt from the canonical issue source and exact material head."
+        "The canonical inventory now has a typed owner field on all 13 entries, using route-domain ownership labels.",
+        "The focused owner-route control observed all 13 entries with the expected domain owner; removing one owner makes the static gate exit 1 before handoff."
       ],
       "validations": [
-        "validate_specification_coverage.py: READY",
-        "validate_standard_evidence.py: READY",
-        "31 entregar-issue target-binding/terminal-handoff/recovery classifier tests passed"
+        "OWNER-ROUTE-001 passed for all 13 inventory entries.",
+        "Missing-owner negative mutation failed the guard with exit 1.",
+        "TypeScript noEmit compilation of legacy-html-post-processors.ts passed in the connector-only validation workspace."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "changed_files": [
+        "scripts/validate-legacy-html-post-processors.mjs",
+        "docs/LEGACY_HTML_POST_PROCESSORS.md"
+      ],
+      "evidence": [
+        "The guard no longer discovers legacy processors from enhancement/standardization/finalizer filename suffixes; registered processors are resolved from the canonical inventory and all rendered-HTML consumers are checked structurally.",
+        "The structural guard rejects neutral names that consume rendered HTML outside the canonical pipeline and rejects wrappers inserted before the pipeline input."
+      ],
+      "validations": [
+        "Canonical 13-adapter/5-route synthetic harness passed.",
+        "rewriteFinalHtml post-pipeline mutation failed with structural HTML-flow violation and exit 1.",
+        "newHtmlPostProcessor pre-pipeline mutation failed with two structural HTML-flow violations and exit 1.",
+        "node --check passed for validate-legacy-html-post-processors.mjs."
       ]
     }
   ],

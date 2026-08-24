@@ -11,10 +11,10 @@
       },
       "plausible_wrong_implementation": "Treat a valid handoff certificate inherited from the base as readiness evidence for a different current issue merely because the file exists.",
       "literal_case": {
-        "procedure": "Compare the current head handoff certificate against the immutable base and resolve the certificate subject independently from the current issue/PR identity.",
+        "procedure": "Compare the current target package with the immutable base package and resolve repository/issue/PR subject independently before reusing evidence.",
         "status": "passed",
-        "evidence": "GitHub showed handoff-ready.json at the PR head and immutable base with the same blob SHA 3d72478798e767578f9fb767512a96893d588f48, while the current specification snapshot is issue 604 and the inherited certificate subject is issue 602 / PR 641.",
-        "observed": "At current material head a19f5acc873fbf1bfaa2dd858d472625d4f330f6 the stale certificate is rejected as delivery evidence and a fresh current-target package is required."
+        "evidence": "The current issue remains #604 / PR #642 while the immutable base eb089692 contains the older issue #602 / PR #641 certificate; the current delivery continues with a rebuilt issue-604 package rather than reusing the base artifact.",
+        "observed": "At material head 5c902a58b58dd4406b3986ad079fd989720f5a82 the target remains issue 604 / PR 642 and a fresh result-only handoff is required after this material remediation."
       },
       "sibling_cases": [
         {
@@ -22,14 +22,14 @@
           "surface": "delivery-target-binding",
           "dimension": "foreign-target",
           "status": "passed",
-          "evidence": "Installed entregar-issue regression suite test_delivery_target_binding.py passed in the recovery run."
+          "evidence": "The material remediation was based on the current issue-604 package and did not reuse or mutate the immutable base issue-602 certificate as evidence."
         },
         {
           "id": "partial-current-target-no-certificate",
           "surface": "terminal-handoff",
           "dimension": "partial-current-target",
           "status": "passed",
-          "evidence": "Installed entregar-issue regression suites test_terminal_handoff_contract.py and test_handoff_recovery_classifier.py passed in the recovery run."
+          "evidence": "Material write 5c902a58 invalidated the prior certificate and the controller is rebuilding the terminal handoff instead of treating the old child as current."
         }
       ],
       "required_attack_dimensions": [
@@ -46,12 +46,12 @@
       ],
       "prevention_change": {
         "skill_or_code": "existing entregar-issue delivery-target-binding/terminal-handoff policy reapplied to this delivery",
-        "evidence": "The recovery does not reuse foreign artifacts and reconstructs the current issue 604 package from the canonical specification and exact-head evidence."
+        "evidence": "The current result package is rebuilt after material remediation and will be published only as a direct result-only child."
       },
       "detection_change": {
-        "skill_or_gate": "delivery_target_binding.py + validate_terminal_handoff.py",
+        "skill_or_gate": "delivery target binding + terminal handoff validation",
         "control_id": "DELIVERY-TARGET-BINDING-001",
-        "evidence": "31 generic delivery-target, terminal-handoff, and recovery classifier regression tests passed in the installed skill."
+        "evidence": "Remote identity reads keep issue 604 / PR 642 / branch issue-604-legacy-html-post-processors bound to the current material head."
       },
       "trigger_terms": [
         "inherited handoff",
@@ -62,7 +62,134 @@
       "required_risk_families": [
         "delivery-state"
       ],
-      "revalidated_head_sha": "a19f5acc873fbf1bfaa2dd858d472625d4f330f6",
+      "revalidated_head_sha": "5c902a58b58dd4406b3986ad079fd989720f5a82",
+      "status": "passed"
+    },
+    {
+      "escape_id": "AUDIT-ESCAPE-INVENTORY-OWNER-001",
+      "escape_class": "atomic-contract-field-omission",
+      "source_audit": {
+        "head_sha": "a19f5acc873fbf1bfaa2dd858d472625d4f330f6",
+        "rejection_id": "audit-rejection:ef362c6b-f57d-4653-9eee-07cf32776eb0",
+        "finding_id": "A-001"
+      },
+      "plausible_wrong_implementation": "Mark a compound inventory requirement as covered when route and responsibility are present but another explicitly required metadata field is absent.",
+      "literal_case": {
+        "procedure": "Inspect the executable inventory and require every entry to carry explicit ownership in addition to route and responsibility.",
+        "status": "passed",
+        "evidence": "Material head 5c902a58 defines LegacyHtmlPostProcessorOwner and owner on all 13 entries; OWNER-ROUTE-001 observed all 13 route-domain bindings.",
+        "observed": "All 13 residual adapters now have explicit domain ownership and the inventory test asserts owner-by-route."
+      },
+      "sibling_cases": [
+        {
+          "id": "inventory-owner-missing",
+          "surface": "inventory-required-metadata",
+          "dimension": "required-field-presence",
+          "status": "passed",
+          "evidence": "Removing one owner from the exact candidate inventory fixture made validate-legacy-html-post-processors.mjs exit 1 because only 12 complete entries remained against budget 13."
+        },
+        {
+          "id": "inventory-owner-route-binding",
+          "surface": "inventory-required-metadata",
+          "dimension": "route-owner-binding",
+          "status": "passed",
+          "evidence": "OWNER-ROUTE-001 parsed the candidate inventory and passed only after all 13 entries matched the canonical domain owner for their route."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "inventory-required-metadata",
+          "dimension": "required-field-presence"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "inventory-required-metadata",
+          "dimension": "route-owner-binding"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "typed canonical inventory plus explicit owner contract",
+        "evidence": "LegacyHtmlPostProcessorInventoryEntry now requires owner and the documentation defines the ownership labels and transfer rule."
+      },
+      "detection_change": {
+        "skill_or_gate": "legacy-html-post-processors inventory test and static guard",
+        "control_id": "INVENTORY-OWNER-001",
+        "evidence": "The TypeScript inventory test asserts owner by route and the static parser requires owner before an entry counts toward the budget."
+      },
+      "trigger_terms": [
+        "inventory owner",
+        "required metadata",
+        "compound inventory requirement"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "5c902a58b58dd4406b3986ad079fd989720f5a82",
+      "status": "passed"
+    },
+    {
+      "escape_id": "AUDIT-ESCAPE-HTML-FLOW-NAMING-001",
+      "escape_class": "naming-dependent-structural-guard-bypass",
+      "source_audit": {
+        "head_sha": "a19f5acc873fbf1bfaa2dd858d472625d4f330f6",
+        "rejection_id": "audit-rejection:ef362c6b-f57d-4653-9eee-07cf32776eb0",
+        "finding_id": "A-002"
+      },
+      "plausible_wrong_implementation": "Detect prohibited behavior only when a module or function follows known naming suffixes, allowing the same behavior under a neutral name.",
+      "literal_case": {
+        "procedure": "Route rendered HTML through a neutral rewriteFinalHtml consumer outside the canonical pipeline and require the gate to reject it without relying on module naming.",
+        "status": "passed",
+        "evidence": "The focused mutation rewriteFinalHtml(html) produced 'structural HTML-flow violation' and validator exit 1 with the candidate guard.",
+        "observed": "The guard now tracks rendered-HTML flow structurally and rejects non-render/non-send consumers outside the canonical pipeline."
+      },
+      "sibling_cases": [
+        {
+          "id": "neutral-post-processor-name",
+          "surface": "html-flow-boundary",
+          "dimension": "filename-independent-consumer-detection",
+          "status": "passed",
+          "evidence": "A newHtmlPostProcessor wrapper around renderCategoriesPage was rejected with two structural HTML-flow violations and exit 1."
+        },
+        {
+          "id": "pre-pipeline-wrapper",
+          "surface": "pipeline-input-boundary",
+          "dimension": "direct-renderer-input",
+          "status": "passed",
+          "evidence": "The embedded structural self-test rejects rewriteFinalHtml(await renderSyntheticPage(...)) as pipeline input; the canonical 13-adapter/5-route harness passes."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "html-flow-boundary",
+          "dimension": "filename-independent-consumer-detection"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "pipeline-input-boundary",
+          "dimension": "direct-renderer-input"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "structural HTML-flow validation in validate-legacy-html-post-processors.mjs",
+        "evidence": "The guard derives registered processors from the canonical inventory and uses the TypeScript AST to track rendered HTML consumers instead of matching filename suffixes."
+      },
+      "detection_change": {
+        "skill_or_gate": "legacy-html-post-processors structural self-tests",
+        "control_id": "HTML-FLOW-NAMING-001",
+        "evidence": "The gate contains synthetic neutral-name and pre-pipeline-wrapper cases that must be rejected every time npm test runs the contract check."
+      },
+      "trigger_terms": [
+        "filename heuristic",
+        "neutral module name",
+        "rendered HTML consumer",
+        "post processor bypass"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "5c902a58b58dd4406b3986ad079fd989720f5a82",
       "status": "passed"
     }
   ]

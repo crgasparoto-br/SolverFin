@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/tmp/solverfin-604-recovery/specification-snapshot.json",
+    "path": "specification-snapshot.json",
     "sha256": "a02e97f7ad836b40fdfc3c8d0a868d2b1dc97fd1131782a8d9b02e1779d4225a"
   },
   "primary_issue_source_id": "SRC-ISSUE-604",
@@ -18,10 +18,7 @@
       "requirement_ids": [
         "REQ-001"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-002",
@@ -37,10 +34,7 @@
       "requirement_ids": [
         "REQ-001"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-003",
@@ -56,10 +50,7 @@
       "requirement_ids": [
         "REQ-002"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-004",
@@ -73,10 +64,7 @@
       "requirement_ids": [
         "REQ-003"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-005",
@@ -90,10 +78,7 @@
       "requirement_ids": [
         "REQ-004"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-006",
@@ -107,10 +92,7 @@
       "requirement_ids": [
         "REQ-005"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-007",
@@ -126,10 +108,7 @@
       "requirement_ids": [
         "REQ-001"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-008",
@@ -143,10 +122,7 @@
       "requirement_ids": [
         "REQ-001"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-009",
@@ -160,10 +136,7 @@
       "requirement_ids": [
         "REQ-005"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-010",
@@ -179,10 +152,7 @@
       "requirement_ids": [
         "REQ-002"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-011",
@@ -198,10 +168,7 @@
       "requirement_ids": [
         "REQ-005"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     },
     {
       "id": "OBL-012",
@@ -218,10 +185,7 @@
       "requirement_ids": [
         "REQ-006"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Covered by the issue #604 implementation and exact-head CI evidence."
+      "rationale": "Closed by the issue #604 implementation and current exact-material-head remediation evidence."
     }
   ],
   "source_coverage": [
@@ -246,38 +210,36 @@
       "unmapped_candidate_keys": []
     }
   ],
-  "domain_inventories": [],
-  "observable_assertions": [],
   "structural_invariant_closures": {
     "status": "not-applicable",
-    "applicability_reason": "The canonical issue does not impose a structural implementation-form invariant recognized by this gate.",
+    "applicability_reason": "The canonical issue does not prescribe a structural implementation form beyond the behavioral migration guard.",
     "entries": [],
     "unresolved_invariants": []
   },
   "read_model_closures": {
     "status": "not-applicable",
-    "applicability_reason": "The issue does not define historical read-model, pagination, authorship, versioning, or supersession obligations.",
+    "applicability_reason": "The issue defines no historical read model, pagination, authorship, versioning, or supersession contract.",
     "entries": [],
     "unconsumed_outputs": [],
     "unmapped_required_fields": []
   },
   "canonical_source_consistency": {
     "status": "not-applicable",
-    "applicability_reason": "The issue does not define competing canonical business data sources that require producer-consumer reconciliation.",
+    "applicability_reason": "The issue defines no competing canonical business data sources that require reconciliation.",
     "entries": [],
     "unverified_surfaces": [],
     "missing_divergent_tests": []
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "The issue explicitly governs remaining legacy behavior and requires documentation to identify residual processors after migrations.",
+    "applicability_reason": "The issue explicitly governs legacy HTML post-processors and requires documentation of the residual migration baseline.",
     "old_contract_terms": [
-      "ad-hoc direct HTML post-processing in dev-server.ts"
+      "naming-dependent direct HTML post-processing guard",
+      "inventory without explicit owner"
     ],
     "new_contract_terms": [
-      "canonical legacy post-processor inventory",
-      "ratcheting residual budget",
-      "cluster removal criteria"
+      "structural HTML-flow guard",
+      "explicit domain owner per residual adapter"
     ],
     "occurrences": [
       {
@@ -288,7 +250,7 @@
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "CI exact-head npm test includes the legacy-html-post-processors static contract; PR diff updates the dedicated legacy migration document."
+      "Repository search found no separate owner/responsibility registry and the canonical legacy document was updated with the new owner and structural-guard contract."
     ]
   },
   "scope_reduction_review": {
@@ -309,7 +271,7 @@
       "OBL-001",
       "OBL-002",
       "OBL-003",
-        "OBL-004",
+      "OBL-004",
       "OBL-005",
       "OBL-006",
       "OBL-007",
@@ -320,7 +282,7 @@
       "OBL-012"
     ],
     "evidence": [
-      "Issue #604 body re-derived independently from the PR description; exact-head implementation, tests, documentation and CI run 32763972103 were reviewed."
+      "Canonical issue source re-derived and both independent-audit findings closed on material head 5c902a58b58dd4406b3986ad079fd989720f5a82."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

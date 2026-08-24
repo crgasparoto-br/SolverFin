@@ -3,14 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:b2d291e7-6606-4991-872e-ed66f3cbb689",
+    "rejection_id": "audit-rejection:ef362c6b-f57d-4653-9eee-07cf32776eb0",
     "finding_ids": [
-      "A-001"
+      "A-001",
+      "A-002"
     ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The installed delivery controller already contains generic inherited-base target binding, fresh-handoff reconstruction, and terminal handoff guards with regression coverage; this rejection was caused by failing to apply those existing controls to this delivery, not by a missing reusable rule."
+    "reason": "The installed delivery controller already requires atomic requirement closure, discriminant negative controls, sibling cases, and structural-invariant evidence. The escape came from local evidence that aggregated a compound inventory requirement and from an implementation-specific filename heuristic, so the repository controls were strengthened without introducing a new permanent Skill rule."
   },
   "skill_changes": []
 }
