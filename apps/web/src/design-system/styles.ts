@@ -394,7 +394,7 @@ ${Object.keys(tokens.semanticStates)
 }
 
 .sf-dialog::backdrop {
-  background: rgba(6, 25, 35, 0.52);
+  background: var(--sf-color-dialog-backdrop);
 }
 
 .sf-dialog-panel {

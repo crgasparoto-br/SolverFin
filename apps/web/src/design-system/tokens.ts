@@ -31,6 +31,7 @@ export const solverFinColors = {
   informationSurface: "#E0F2FE",
   informationBorder: "#BAE6FD",
   darkSurface: "#061923",
+  dialogBackdrop: "rgba(6, 25, 35, 0.52)",
 } as const;
 
 export const solverFinSpacing = {
