@@ -43,6 +43,7 @@ try {
   await import("./statement-visual/issue-568-financial-assistant.mjs");
   await import("./statement-visual/issue-568-financial-assistant-cancel-inflight.mjs");
   await import("./statement-visual/issue-568-financial-assistant-zoom-200-reflow.mjs");
+  await import("./statement-visual/issue-601-ui-primitives.mjs");
 } catch (error) {
   await mkdir(outputDir, { recursive: true });
   const message = error instanceof Error ? (error.stack ?? error.message) : String(error);
