@@ -34,21 +34,34 @@ describe("canonical design token source", () => {
         onDanger: alternateDangerForeground,
       },
     });
+    const primaryRule = [
+      ".sf-button-primary {",
+      "  background: var(--sf-color-primary);",
+      "  border: 1px solid transparent;",
+      "  color: var(--sf-color-on-primary);",
+      "}",
+    ].join("\n");
+    const dangerRule = [
+      ".sf-button-danger {",
+      "  background: var(--sf-color-danger);",
+      "  border: 1px solid transparent;",
+      "  color: var(--sf-color-on-danger);",
+      "}",
+    ].join("\n");
+    const dangerInteractionRule = [
+      ".sf-button-danger:hover:not(:disabled),",
+      ".sf-button-danger:focus-visible {",
+      "  background: var(--sf-color-danger);",
+      "  border-color: var(--sf-color-danger-border);",
+      "  color: var(--sf-color-on-danger);",
+      "}",
+    ].join("\n");
 
-    assert.match(css, /--sf-color-on-primary:\s*#F0F1F2;/);
-    assert.match(css, /--sf-color-on-danger:\s*#010203;/);
-    assert.match(
-      css,
-      /\.sf-button-primary\s*\{[^}]*color:\s*var\(--sf-color-on-primary\);/s,
-    );
-    assert.match(
-      css,
-      /\.sf-button-danger\s*\{[^}]*color:\s*var\(--sf-color-on-danger\);/s,
-    );
-    assert.match(
-      css,
-      /\.sf-button-danger:hover:not\(:disabled\),[\s\S]*?\.sf-button-danger:focus-visible\s*\{[^}]*color:\s*var\(--sf-color-on-danger\);/s,
-    );
+    assert.ok(css.includes("--sf-color-on-primary: #F0F1F2;"));
+    assert.ok(css.includes("--sf-color-on-danger: #010203;"));
+    assert.ok(css.includes(primaryRule));
+    assert.ok(css.includes(dangerRule));
+    assert.ok(css.includes(dangerInteractionRule));
     assert.doesNotMatch(css, /color:\s*white\b/i);
   });
 });
