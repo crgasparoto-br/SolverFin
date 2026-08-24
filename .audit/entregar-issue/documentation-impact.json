@@ -1,22 +1,18 @@
 {
   "schema_version": 1,
-  "context": {
-    "repository": "crgasparoto-br/SolverFin",
-    "material_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
-    "branch": "feat/599-safe-monetary-range",
-    "pull_request": 636,
-    "mode": "remediation"
-  },
-  "status": "verified-no-new-documentation-change",
-  "canonical_sources": [
-    "docs/adr/0015-safe-monetary-minor-unit-range.md",
-    "docs/adr/README.md"
+  "material_head_sha": "d8cd7762db7c4c8ac3cacd7dea36ff156b117618",
+  "status": "updated",
+  "changed_documentation": ["docs/UI_PRIMITIVES.md"],
+  "reviewed_existing_sources": [
+    "AGENTS.md",
+    "README.md",
+    "docs/ARCHITECTURE.md",
+    "docs/EVOLUTION_STRATEGY.md",
+    "docs/BRAND.md",
+    "docs/DESIGN_SYSTEM.md",
+    "docs/APP_SHELL.md",
+    "docs/adr/0014-incremental-component-ui-architecture.md",
+    ".github/copilot-instructions.md"
   ],
-  "remediation_changed_paths": [
-    "apps/api/src/monetary-range.integration.test.ts"
-  ],
-  "decision": "The remediation changes only test formatting control; ADR 0015 and the monetary contract remain unchanged.",
-  "unresolved_contradictions": [],
-  "last_scanned_head": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
-  "write_owner": "entregar-issue"
+  "unresolved_contradictions": []
 }

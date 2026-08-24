@@ -1,0 +1,40 @@
+Parent epic: #590
+Depends on: #600
+
+## Objetivo
+
+Criar primitivas executáveis e reutilizáveis para substituir estruturas repetidas de markup/CSS entre renderers.
+
+## Escopo
+
+Implementar, conforme necessidade real das telas-piloto, contratos reutilizáveis equivalentes a:
+
+- `Button` / `IconButton`;
+- `Card` / `MetricCard`;
+- `DataTable` ou lista responsiva;
+- `EmptyState`, `Loading`, `Alert` e erro recuperável;
+- `Dialog`, `Drawer`, `Tabs`, `Badge`, `Toast`;
+- `PageContainer`, `PageHeader`, `FilterBar`, `SummaryGrid`, `DetailLayout`, `FormLayout`.
+
+Os nomes finais podem seguir convenções locais; o requisito é evitar duplicação estrutural por rota.
+
+## Critérios de aceite
+
+- [ ] primitivas possuem API explícita e estados documentados;
+- [ ] pelo menos duas rotas podem reutilizar os componentes estruturais sem copiar markup/CSS;
+- [ ] loading, vazio, erro, indisponibilidade e permissão são representáveis;
+- [ ] componentes interativos possuem teclado/foco adequados;
+- [ ] layout suporta conteúdo longo e viewport reduzida;
+- [ ] SSR continua determinístico e testável.
+
+## Fora de escopo
+
+- framework frontend novo;
+- regras financeiras dentro dos componentes.
+
+## Referências
+
+- #590
+- #600
+- ADR 0014
+- `docs/DESIGN_SYSTEM.md`

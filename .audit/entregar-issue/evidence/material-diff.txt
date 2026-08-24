@@ -1,0 +1,11 @@
+Material diff identity
+base/work_item_start_sha: d7f7c39de0e6bca152f655cbc5d354a595d82a0f
+material_head_sha: d8cd7762db7c4c8ac3cacd7dea36ff156b117618
+commit count: 1
+changed paths: 5
+- apps/web/src/design-system/index.ts
+- apps/web/src/design-system/primitives.test.ts
+- apps/web/src/design-system/primitives.ts
+- apps/web/src/design-system/styles.ts
+- docs/UI_PRIMITIVES.md
+No route renderer, financial-domain module, dependency manifest, migration or runtime deployment configuration changed.

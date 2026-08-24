@@ -70,7 +70,7 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
   assert.match(html, /statement-layout/);
   assert.match(html, /grid-template-columns:\s*minmax\(260px,\s*320px\)\s+minmax\(0,1fr\)/);
   assert.match(html, /Resumo da Conta/);
-  assert.doesNotMatch(html, /summary-grid/);
+  assert.doesNotMatch(html, /class="[^"]*summary-grid[^"]*"/);
   assert.match(
     html,
     /data-action data-method="PATCH" data-path="\/api\/transactions\/transaction-1"/,

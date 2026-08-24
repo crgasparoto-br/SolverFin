@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "skill": "design-interface",
+  "status": "passed-with-runtime-visual-limitation",
+  "input_fingerprint": "issue-601|d7f7c39de0e6bca152f655cbc5d354a595d82a0f|d8cd7762db7c4c8ac3cacd7dea36ff156b117618|ui-foundation",
+  "reused": false,
+  "changed_files": [
+    "apps/web/src/design-system/primitives.ts",
+    "apps/web/src/design-system/primitives.test.ts",
+    "apps/web/src/design-system/styles.ts",
+    "apps/web/src/design-system/index.ts",
+    "docs/UI_PRIMITIVES.md"
+  ],
+  "data": {
+    "covered_classes": ["summary/dashboard-like composition", "tabular/statement-like composition", "modal/drawer interaction", "reduced viewport/reflow"],
+    "visual_evidence": [],
+    "focused_validations": ["strict TypeScript production compile", "9/9 focused Node tests", "responsive/focus/overflow CSS assertions"],
+    "limitations": ["headless Chromium unavailable in current runtime; no screenshot was accepted"]
+  },
+  "controller_hints": {
+    "material_write": true,
+    "code_growth_recheck": true,
+    "invalidate_stages": ["hygiene"],
+    "resume_from": "hygiene",
+    "requires_refreeze": true
+  }
+}

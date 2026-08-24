@@ -1,0 +1,13 @@
+Pass C re-derivation for issue #601 (without PR description)
+Material head: d8cd7762db7c4c8ac3cacd7dea36ff156b117618
+Canonical source reviewed: specification-sources/SRC-ISSUE-601.txt
+
+Reviewed all 15 extracted source obligations against the materialized implementation and focused evidence.
+- API/state surface: executable SSR renderers and docs cover the listed UI/layout responsibilities.
+- Structural reuse: two representative route-class compositions reuse PageContainer/PageHeader and shared layouts; no route migration is claimed by this foundation.
+- Explicit operational states: loading, empty, recoverable error, unavailable and permission are separate renderable states.
+- Interaction semantics: native buttons/links/dialog; visible focus CSS; showModal/Escape/native modal semantics; opener focus restoration.
+- Reflow/long content: shared CSS has canonical mobile breakpoint, overflow wrapping and controlled DataTable overflow.
+- SSR determinism: pure render functions; same-input equality asserted in focused suite.
+- Producer/consumer parity: render APIs are exported through design-system/index.ts and styles are emitted by the same createSolverFinDesignSystemCss() already consumed by sharedShellStyles().
+- Scope boundaries: no new frontend framework and no financial calculation was introduced in the primitive layer.

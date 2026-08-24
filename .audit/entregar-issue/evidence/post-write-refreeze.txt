@@ -1,0 +1,8 @@
+classification=post-write-refreeze
+material_head_sha=24fe1f2d211db950f1643d06de6778bdb35ee0b2
+previous_published_head=f2aa62a1ceb372c62880e8499bc058126b485425
+rejection_id=audit-rejection:e51517e4-3020-4576-a1b2-275bab4cd456
+material_change=canonical dialog backdrop token + discriminating token-mutation test + formatting-only newline follow-up
+ci_run=4403 success
+visual_run=2914 success
+result=READY_FOR_REFREEZE
