@@ -36,16 +36,20 @@ for (const match of devServerSource.matchAll(importPattern)) {
 
 const inventoryEntryPattern =
   /\{\s*id:\s*"([^"]+)"[\s\S]*?route:\s*"([^"]+)"[\s\S]*?order:\s*(\d+)[\s\S]*?owner:\s*"([^"]+)"[\s\S]*?module:\s*"([^"]+)"[\s\S]*?exportName:\s*"([^"]+)"/g;
-const inventoryEntries = [...inventorySource.matchAll(inventoryEntryPattern)].map((match) => ({
-  id: match[1],
-  route: match[2],
-  order: Number(match[3]),
-  owner: match[4],
-  modulePath: `./dev-server/${match[5].replace(/^\.\//, "")}`,
-  exportName: match[6],
-}));
+const inventoryEntries = [...inventorySource.matchAll(inventoryEntryPattern)].map(
+  (match) => ({
+    id: match[1],
+    route: match[2],
+    order: Number(match[3]),
+    owner: match[4],
+    modulePath: `./dev-server/${match[5].replace(/^\.\//, "")}`,
+    exportName: match[6],
+  }),
+);
 
-const budgetMatch = inventorySource.match(/LEGACY_HTML_POST_PROCESSOR_BUDGET\s*=\s*(\d+)/);
+const budgetMatch = inventorySource.match(
+  /LEGACY_HTML_POST_PROCESSOR_BUDGET\s*=\s*(\d+)/,
+);
 const budget = budgetMatch ? Number(budgetMatch[1]) : Number.NaN;
 if (!Number.isInteger(budget)) {
   failures.push("LEGACY_HTML_POST_PROCESSOR_BUDGET is missing or invalid");
@@ -62,7 +66,10 @@ for (const entry of inventoryEntries) {
 }
 
 const importedByKey = new Map(
-  importedBindings.map((entry) => [`${entry.modulePath}#${entry.exportName}`, entry]),
+  importedBindings.map((entry) => [
+    `${entry.modulePath}#${entry.exportName}`,
+    entry,
+  ]),
 );
 const inventoryKeys = inventoryEntries.map(
   (entry) => `${entry.modulePath}#${entry.exportName}`,
@@ -94,7 +101,9 @@ for (const route of routes) {
     `applyLegacyHtmlPostProcessorPipeline\\(\\s*"${escapeRegExp(route)}"`,
   );
   if (!routePattern.test(devServerSource)) {
-    failures.push(`${route} is inventoried but does not use applyLegacyHtmlPostProcessorPipeline`);
+    failures.push(
+      `${route} is inventoried but does not use applyLegacyHtmlPostProcessorPipeline`,
+    );
   }
 }
 
@@ -108,10 +117,14 @@ if (pipelineInvocationCount !== routes.length) {
 }
 
 for (const entry of inventoryEntries) {
-  const imported = importedByKey.get(`${entry.modulePath}#${entry.exportName}`);
+  const key = `${entry.modulePath}#${entry.exportName}`;
+  const imported = importedByKey.get(key);
   if (!imported) continue;
 
-  const callPattern = new RegExp(`\\b${escapeRegExp(imported.localName)}\\s*\\(`, "g");
+  const callPattern = new RegExp(
+    `\\b${escapeRegExp(imported.localName)}\\s*\\(`,
+    "g",
+  );
   const callCount = (devServerSource.match(callPattern) ?? []).length;
   if (callCount !== 1) {
     failures.push(
@@ -153,6 +166,7 @@ function validateHtmlFlowArchitecture(source, entries) {
   );
   const violations = [];
   const expectedIdsByRoute = new Map();
+
   for (const entry of entries) {
     const ids = expectedIdsByRoute.get(entry.route) ?? [];
     ids.push(entry.id);
@@ -161,21 +175,39 @@ function validateHtmlFlowArchitecture(source, entries) {
 
   for (const statement of sourceFile.statements) {
     if (ts.isFunctionDeclaration(statement) && statement.body) {
-      analyzeBlock(statement.body, new Set(), violations, expectedIdsByRoute, sourceFile);
+      analyzeBlock(
+        statement.body,
+        new Set(),
+        violations,
+        expectedIdsByRoute,
+        sourceFile,
+      );
     }
   }
 
   return violations;
 }
 
-function analyzeBlock(block, inheritedTaint, violations, expectedIdsByRoute, sourceFile) {
+function analyzeBlock(
+  block,
+  inheritedTaint,
+  violations,
+  expectedIdsByRoute,
+  sourceFile,
+) {
   const tainted = new Set(inheritedTaint);
 
   for (const statement of block.statements) {
     if (ts.isVariableStatement(statement)) {
       for (const declaration of statement.declarationList.declarations) {
         if (!declaration.initializer) continue;
-        inspectExpression(declaration.initializer, tainted, violations, expectedIdsByRoute, sourceFile);
+        inspectExpression(
+          declaration.initializer,
+          tainted,
+          violations,
+          expectedIdsByRoute,
+          sourceFile,
+        );
         if (
           ts.isIdentifier(declaration.name) &&
           expressionProducesHtml(declaration.initializer, tainted)
@@ -187,12 +219,24 @@ function analyzeBlock(block, inheritedTaint, violations, expectedIdsByRoute, sou
     }
 
     if (ts.isExpressionStatement(statement)) {
-      inspectExpression(statement.expression, tainted, violations, expectedIdsByRoute, sourceFile);
+      inspectExpression(
+        statement.expression,
+        tainted,
+        violations,
+        expectedIdsByRoute,
+        sourceFile,
+      );
       continue;
     }
 
     if (ts.isIfStatement(statement)) {
-      inspectExpression(statement.expression, tainted, violations, expectedIdsByRoute, sourceFile);
+      inspectExpression(
+        statement.expression,
+        tainted,
+        violations,
+        expectedIdsByRoute,
+        sourceFile,
+      );
       analyzeNestedStatement(
         statement.thenStatement,
         tainted,
@@ -213,38 +257,98 @@ function analyzeBlock(block, inheritedTaint, violations, expectedIdsByRoute, sou
     }
 
     if (ts.isTryStatement(statement)) {
-      analyzeBlock(statement.tryBlock, tainted, violations, expectedIdsByRoute, sourceFile);
+      analyzeBlock(
+        statement.tryBlock,
+        tainted,
+        violations,
+        expectedIdsByRoute,
+        sourceFile,
+      );
       if (statement.catchClause?.block) {
-        analyzeBlock(statement.catchClause.block, tainted, violations, expectedIdsByRoute, sourceFile);
+        analyzeBlock(
+          statement.catchClause.block,
+          tainted,
+          violations,
+          expectedIdsByRoute,
+          sourceFile,
+        );
       }
       if (statement.finallyBlock) {
-        analyzeBlock(statement.finallyBlock, tainted, violations, expectedIdsByRoute, sourceFile);
+        analyzeBlock(
+          statement.finallyBlock,
+          tainted,
+          violations,
+          expectedIdsByRoute,
+          sourceFile,
+        );
       }
       continue;
     }
 
     if (ts.isBlock(statement)) {
-      analyzeBlock(statement, tainted, violations, expectedIdsByRoute, sourceFile);
+      analyzeBlock(
+        statement,
+        tainted,
+        violations,
+        expectedIdsByRoute,
+        sourceFile,
+      );
     }
   }
 }
 
-function analyzeNestedStatement(statement, tainted, violations, expectedIdsByRoute, sourceFile) {
+function analyzeNestedStatement(
+  statement,
+  tainted,
+  violations,
+  expectedIdsByRoute,
+  sourceFile,
+) {
   if (ts.isBlock(statement)) {
-    analyzeBlock(statement, new Set(tainted), violations, expectedIdsByRoute, sourceFile);
+    analyzeBlock(
+      statement,
+      new Set(tainted),
+      violations,
+      expectedIdsByRoute,
+      sourceFile,
+    );
     return;
   }
 
   const syntheticBlock = ts.factory.createBlock([statement], true);
-  analyzeBlock(syntheticBlock, new Set(tainted), violations, expectedIdsByRoute, sourceFile);
+  analyzeBlock(
+    syntheticBlock,
+    new Set(tainted),
+    violations,
+    expectedIdsByRoute,
+    sourceFile,
+  );
 }
 
-function inspectExpression(expression, tainted, violations, expectedIdsByRoute, sourceFile) {
+function inspectExpression(
+  expression,
+  tainted,
+  violations,
+  expectedIdsByRoute,
+  sourceFile,
+) {
   const node = unwrapExpression(expression);
 
   if (ts.isBinaryExpression(node)) {
-    inspectExpression(node.left, tainted, violations, expectedIdsByRoute, sourceFile);
-    inspectExpression(node.right, tainted, violations, expectedIdsByRoute, sourceFile);
+    inspectExpression(
+      node.left,
+      tainted,
+      violations,
+      expectedIdsByRoute,
+      sourceFile,
+    );
+    inspectExpression(
+      node.right,
+      tainted,
+      violations,
+      expectedIdsByRoute,
+      sourceFile,
+    );
     return;
   }
 
@@ -252,7 +356,13 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
 
   const name = getCallName(node.expression);
   if (name === "applyLegacyHtmlPostProcessorPipeline") {
-    validatePipelineCall(node, tainted, violations, expectedIdsByRoute, sourceFile);
+    validatePipelineCall(
+      node,
+      tainted,
+      violations,
+      expectedIdsByRoute,
+      sourceFile,
+    );
     return;
   }
 
@@ -268,11 +378,23 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
   }
 
   for (const argument of node.arguments) {
-    inspectExpression(argument, tainted, violations, expectedIdsByRoute, sourceFile);
+    inspectExpression(
+      argument,
+      tainted,
+      violations,
+      expectedIdsByRoute,
+      sourceFile,
+    );
   }
 }
 
-function validatePipelineCall(call, tainted, violations, expectedIdsByRoute, sourceFile) {
+function validatePipelineCall(
+  call,
+  tainted,
+  violations,
+  expectedIdsByRoute,
+  sourceFile,
+) {
   const routeArgument = unwrapExpression(call.arguments[0]);
   const route = ts.isStringLiteralLike(routeArgument) ? routeArgument.text : null;
   const input = call.arguments[1];
@@ -280,9 +402,14 @@ function validatePipelineCall(call, tainted, violations, expectedIdsByRoute, sou
 
   if (input) {
     const inputNode = unwrapExpression(input);
-    if (ts.isCallExpression(inputNode) && !isRendererName(getCallName(inputNode.expression))) {
+    if (
+      ts.isCallExpression(inputNode) &&
+      !isRendererName(getCallName(inputNode.expression))
+    ) {
+      const inputName =
+        getCallName(inputNode.expression) ?? inputNode.getText(sourceFile);
       violations.push(
-        `structural HTML-flow violation: legacy pipeline input must be produced directly by a renderer, received ${getCallName(inputNode.expression) ?? inputNode.getText(sourceFile)}`,
+        `structural HTML-flow violation: legacy pipeline input must be produced directly by a renderer, received ${inputName}`,
       );
     }
     inspectExpression(input, tainted, violations, expectedIdsByRoute, sourceFile);
@@ -317,13 +444,16 @@ function validatePipelineCall(call, tainted, violations, expectedIdsByRoute, sou
 
 function expressionProducesHtml(expression, tainted) {
   const node = unwrapExpression(expression);
-
   if (ts.isIdentifier(node)) return tainted.has(node.text);
   if (!ts.isCallExpression(node)) return false;
 
   const name = getCallName(node.expression);
-  if (name === "applyLegacyHtmlPostProcessorPipeline" || isRendererName(name)) return true;
-  return node.arguments.some((argument) => expressionProducesHtml(argument, tainted));
+  if (name === "applyLegacyHtmlPostProcessorPipeline" || isRendererName(name)) {
+    return true;
+  }
+  return node.arguments.some((argument) =>
+    expressionProducesHtml(argument, tainted),
+  );
 }
 
 function unwrapExpression(expression) {
@@ -415,10 +545,15 @@ function runStructuralGuardSelfTests() {
       sendHtml(response, 200, html);
     }
   `;
-  const allowedFailures = validateHtmlFlowArchitecture(allowedSource, syntheticInventory);
+  const allowedFailures = validateHtmlFlowArchitecture(
+    allowedSource,
+    syntheticInventory,
+  );
   const failures = [];
   if (allowedFailures.length > 0) {
-    failures.push(`structural guard self-test rejected canonical flow: ${allowedFailures.join(" | ")}`);
+    failures.push(
+      `structural guard self-test rejected canonical flow: ${allowedFailures.join(" | ")}`,
+    );
   }
 
   for (const testCase of expectedFailureFragments) {
