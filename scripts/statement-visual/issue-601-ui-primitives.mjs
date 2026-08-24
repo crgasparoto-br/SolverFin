@@ -11,6 +11,7 @@ import {
   renderDrawer,
   renderMetricCard,
   renderPageContainer,
+  createSolverFinUiInteractionsScript,
   renderPageHeader,
   renderSolverFinUiInteractionsScriptTag,
   renderSummaryGrid,
@@ -28,15 +29,17 @@ const scenarios = [];
 if (!chromePath) throw new Error("CHROME_BIN is required for issue 601 UI primitive validation.");
 
 await mkdir(outputDir, { recursive: true });
+const html = buildFixtureHtml();
+const fixturePath = join(outputDir, "issue-601-ui-primitives-fixture.html");
+await writeFile(fixturePath, html);
 const browser = await launchChrome({ baseUrl, chromePath });
 let fatalError;
 
 try {
-  const html = buildFixtureHtml();
-  const fixtureUrl = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
-
   await setViewport(browser.cdp, 1280, 900);
-  await navigate(browser.cdp, fixtureUrl);
+  await navigate(browser.cdp, "about:blank");
+  await evaluate(browser.cdp, `(() => { document.open(); document.write(${JSON.stringify(html)}); document.close(); return document.readyState; })()`);
+  await evaluate(browser.cdp, createSolverFinUiInteractionsScript());
   await sleep(120);
 
   const desktop = await inspectLayout(browser.cdp);
@@ -110,6 +113,7 @@ if (failures.length > 0) {
   console.log("Issue 601 UI primitives browser validation passed.");
 }
 
+
 async function exerciseModal(triggerId, modalId, kind, previousTriggerId) {
   await evaluate(
     browser.cdp,
@@ -162,7 +166,7 @@ async function exerciseModal(triggerId, modalId, kind, previousTriggerId) {
   check(closedState.focusRestored, `${kind} did not restore focus to its opener.`, closedState);
 
   scenarios.push({
-    id: `${kind}-keyboard-focus`,
+    id: `${kind}-keyboard-focus ,
     route: "standalone issue-601 primitive fixture",
     viewport: "1280x900",
     interaction: ["Tab", "Enter", "Escape"],
@@ -203,9 +207,9 @@ async function inspectLayout(cdp) {
         const rect = element.getBoundingClientRect();
         return rect.left >= -1 && rect.right <= viewportWidth + 1;
       };
-      const titleStyle = title ? getComputedStyle(title) : null;
-      const titleRect = title?.getBoundingClientRect();
-      const lineHeight = titleStyle ? Number.parseFloat(titleStyle.lineHeight) : 0;
+      const titleRange = title ? document.createRange() : null;
+      if (titleRange && title) titleRange.selectNodeContents(title);
+      const titleLineCount = titleRange ? titleRange.getClientRects().length : 0;
       const detailColumns = detail ? getComputedStyle(detail).gridTemplateColumns.trim() : "";
       const tableWrapStyle = tableWrap ? getComputedStyle(tableWrap) : null;
       return {
@@ -213,7 +217,8 @@ async function inspectLayout(cdp) {
         documentWidth: document.documentElement.scrollWidth,
         documentFitsViewport: document.documentElement.scrollWidth <= viewportWidth + 1,
         pageContainerFitsViewport: rectFits(root),
-        headerTitleWraps: Boolean(titleRect && lineHeight > 0 && titleRect.height > lineHeight * 1.5),
+        headerTitleLineCount: titleLineCount,
+        headerTitleWraps: titleLineCount > 1,
         detailLayoutColumns: detailColumns,
         detailLayoutSingleColumn: detailColumns.length > 0 && detailColumns.split(/\\s+/).length === 1,
         tableWrapFitsViewport: rectFits(tableWrap),
@@ -237,19 +242,27 @@ async function inspectLayout(cdp) {
 async function pressKey(key) {
   const code = key;
   const keyCode = key === "Tab" ? 9 : key === "Enter" ? 13 : key === "Escape" ? 27 : 0;
+  const common = {
+    key,
+    code,
+    windowsVirtualKeyCode: keyCode,
+    nativeVirtualKeyCode: keyCode,
+  };
   await browser.cdp.send("Input.dispatchKeyEvent", {
     type: "rawKeyDown",
-    key,
-    code,
-    windowsVirtualKeyCode: keyCode,
-    nativeVirtualKeyCode: keyCode,
+    ...common,
   });
+  if (key === "Enter") {
+    await browser.cdp.send("Input.dispatchKeyEvent", {
+      type: "char",
+      ...common,
+      text: "\r",
+      unmodifiedText: "\r",
+    });
+  }
   await browser.cdp.send("Input.dispatchKeyEvent", {
     type: "keyUp",
-    key,
-    code,
-    windowsVirtualKeyCode: keyCode,
-    nativeVirtualKeyCode: keyCode,
+    ...common,
   });
   await sleep(100);
 }
