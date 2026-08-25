@@ -47,6 +47,29 @@ function selectShape(shape, key) {
   return { html: mapPaths(shape.html, select), renderer: mapPaths(shape.renderer, select) };
 }
 
+function shiftArrayShape(shape, offset) {
+  const shift = (path) => {
+    const [head, ...tail] = path.split(".");
+    const index = Number(head);
+    if (!Number.isInteger(index) || index < 0) return path;
+    const shifted = String(index + offset);
+    return tail.length > 0 ? `${shifted}.${tail.join(".")}` : shifted;
+  };
+  return { html: mapPaths(shape.html, shift), renderer: mapPaths(shape.renderer, shift) };
+}
+
+function inferArraySpan(shape) {
+  let maxIndex = -1;
+  for (const paths of [shape.html, shape.renderer]) {
+    for (const path of paths) {
+      const [head] = path.split(".");
+      const index = Number(head);
+      if (Number.isInteger(index) && index >= 0) maxIndex = Math.max(maxIndex, index);
+    }
+  }
+  return maxIndex + 1;
+}
+
 class Scope {
   constructor(parent = null) {
     this.parent = parent;
@@ -223,15 +246,21 @@ function evaluateObject(node, scope) {
 
 function evaluateArray(node, scope) {
   let shape = emptyShape();
-  node.elements.forEach((element, index) => {
-    if (ts.isOmittedExpression(element)) return;
-    shape = mergeShapes(
-      shape,
-      ts.isSpreadElement(element)
-        ? evaluate(element.expression, scope)
-        : prefixShape(evaluate(element, scope), String(index)),
-    );
-  });
+  let offset = 0;
+  for (const element of node.elements) {
+    if (ts.isOmittedExpression(element)) {
+      offset += 1;
+      continue;
+    }
+    if (ts.isSpreadElement(element)) {
+      const spreadShape = evaluate(element.expression, scope);
+      shape = mergeShapes(shape, shiftArrayShape(spreadShape, offset));
+      offset += inferArraySpan(spreadShape);
+      continue;
+    }
+    shape = mergeShapes(shape, prefixShape(evaluate(element, scope), String(offset)));
+    offset += 1;
+  }
   return shape;
 }
 
@@ -388,6 +417,8 @@ function runSelfTests() {
     ["renderer alias chain", 'async function h(){const a=renderPage;const b=a;helper(await b())}'],
     ["renderer stored in object", 'async function h(){const rs={page:renderPage};const html=await rs.page();html.replace(/x/g,"y")}'],
     ["renderer stored in array", 'async function h(){const rs=[renderPage];helper(await rs[0]())}'],
+    ["renderer shifted array spread", 'async function h(){const rs=[renderPage];const copy=[null,...rs];helper(await copy[1]())}'],
+    ["renderer array destructuring", 'async function h(){const rs=[renderPage];const [page]=rs;helper(await page())}'],
     ["renderer recovered by destructuring", 'async function h(){const rs={page:renderPage};const {page}=rs;const html=await page();html.replace(/x/g,"y")}'],
     ["renderer container spread", 'async function h(){const rs={page:renderPage};const copy={...rs};helper(await copy.page())}'],
     ["renderer assignment through property", 'async function h(){const rs={};rs.page=renderPage;const html=await rs.page();html.replace(/x/g,"y")}'],
