@@ -1,9 +1,1 @@
-{
-  "schema_version": 1,
-  "kind": "independent-audit-result",
-  "rejection_id": "audit-rejection:6d1cde4d-398d-45ba-9e99-20720c5b0ecd",
-  "audited_head_sha": "8a601975cd0a548890de2f7d4ca415ebc2215c46",
-  "finding_ids": ["A-001", "A-002"],
-  "result": "rejected",
-  "summary": "Structural HTML-flow guard missed equivalent function-container and aggregate/lexical propagation forms, and documentation overstated the exercised structural coverage."
-}
+{"schema_version":1,"kind":"independent-audit-result","status":"rejected","rejection_id":"audit-rejection:3d686ed1-a105-4594-b2c8-9c1618daa15d","source_head_sha":"15c0aac3cb2b0844ec0494f698e1055543bee169","findings":[{"id":"A-001","disposition":"blocking","remediation_mode":"systemic-remediation","summary":"Structural HTML-flow guard missed compound assignment, renderer aliases and assignment destructuring; documentation overclaimed coverage."}]}

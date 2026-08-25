@@ -1,20 +1,13 @@
-SolverFin issue 604 / PR 642 systemic remediation evidence
-material_head_sha=262b3da5536bdc84779dcf8af50e2edcfc3426c3
-work_item_start_sha=8a601975cd0a548890de2f7d4ca415ebc2215c46
-latest_rejection_id=audit-rejection:6d1cde4d-398d-45ba-9e99-20720c5b0ecd
-latest_findings=A-001,A-002
-
-Exact material controls:
-- lexical guard blob is the exact byte payload published in material head; local sha256=08e5fc556149a880557d6f87e3206ea0dc06578521c10fe89dc85a254985ffa3.
-- discriminant harness executed the exact lexical guard against synthetic production-shaped sources.
-- rejected as required: neutral-name consumer, native replace, concatenation, template interpolation, loop container, computed member, pre-pipeline wrapper, arrow function, class method, closure capture, object spread alias, array alias, object destructuring.
-- accepted as required: canonical renderer -> applyLegacyHtmlPostProcessorPipeline -> sendHtml flow and lexical shadowing of an outer tainted binding.
-- aggregate harness output sha256=0429a41b443955bd9ce25fd839fe95b8c0f557c9f57311ea0dd8037432b6b987.
-
-Remote delivery snapshot:
-- parent material 80445825ebd3736edcaa1b34dbc040a7c6f025ff: CI #4442 failed only at prettier --check for the two guard files; Integration API + PostgreSQL succeeded; Statement visual validation #2951 succeeded.
-- final material 262b3da5536bdc84779dcf8af50e2edcfc3426c3: this invocation's single delivery-snapshot query found CI #4443 completed/success and Statement visual validation #2952 completed/success. CI Validate monorepo passed formatting, lint, typecheck, migrations, seed, test and build; Integration API + PostgreSQL also passed. No polling, rerun or dispatch was performed.
-
-Documentation control:
-- docs/LEGACY_HTML_POST_PROCESSORS.md describes the two-layer guard (structural + lexical scopes), including function-like containers, captured closures, direct/computed properties, spread aliases, destructuring, arrays, canonical allowed flow and shadowing.
-- the broad claim that final rendered HTML cannot be silently post-processed outside the canonical pipeline is now backed by discriminant controls across function-container, lexical-scope and aggregate-reference dimensions.
+material_head_sha=41d88bf161a6e73c710871a1c4dc1640c3835de8
+work_item_start_sha=15c0aac3cb2b0844ec0494f698e1055543bee169
+changed_paths=docs/LEGACY_HTML_POST_PROCESSORS.md,package.json,scripts/validate-legacy-html-post-processors-flow-regressions.mjs
+remote_ci_snapshot=CI #4445 and visual #2954 were observed in_progress on intermediate material b4f2f703; final material 41d88bf had pending-no-run at its single allowed snapshot and no polling was performed.
+self_test_status=passed
+self_test_cases=compound assignment scalar/property; renderer alias/direct chain; object/array assignment destructuring; neutral-name/pre-pipeline; loop/computed; concat/template; closure; arrow/class; object spread/array/declaration destructuring; canonical allowed; shadowing allowed
+mutation_status=passed
+mutation_compound=disabling PlusEquals detector caused both compound-assignment self-tests to fail
+mutation_renderer_alias=disabling renderer alias propagation caused direct and chained alias self-tests to fail
+mutation_assignment_destructuring=disabling assignment destructuring propagation caused object and array assignment self-tests to fail
+documentation_claim=guardrail text enumerates exercised surfaces and explicitly avoids universal syntax claims
+target_binding_status=passed; live target remains crgasparoto-br/SolverFin issue 604 PR 642 base main head issue-604-legacy-html-post-processors.
+terminal_handoff_prepublication=planned as direct result-only child of final material with only certificate allowlisted .audit/entregar-issue paths; terminal validator must pass before publication and again after fresh remote read.
