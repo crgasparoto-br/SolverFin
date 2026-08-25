@@ -79,7 +79,7 @@ O gate falha quando:
 - o HTML base de um pipeline legado deixa de vir diretamente de um renderer;
 - a lista de IDs passada ao pipeline diverge do inventário da rota.
 
-O walker estrutural cobre declarações e expressões de função, arrow functions, métodos, construtores e accessors. A propagação de origem do HTML acompanha identificadores, propriedades diretas ou computadas de objetos, aliases de objeto e destructuring antes de avaliar chamadas, concatenações e templates. Os self-tests variam essas formas junto com `return`, loops, `replace`/`replaceAll`, nomes neutros e o fluxo canônico permitido.
+O guardrail combina o walker estrutural principal com uma segunda passagem lexical por bindings/escopos. Em conjunto, elas cobrem declarações e expressões de função, arrow functions, métodos, construtores e accessors, inclusive closures que capturam HTML renderizado do escopo externo. A propagação acompanha identificadores, propriedades diretas ou computadas de objetos, aliases diretos ou por spread, destructuring e posições de arrays antes de avaliar chamadas, concatenações e templates. Os self-tests variam essas formas junto com `return`, loops, `replace`/`replaceAll`, nomes neutros, shadowing de parâmetro permitido e o fluxo canônico permitido.
 
 Assim, adicionar mais pós-processamento textual deixa de ser uma extensão silenciosa: qualquer exceção exige alterar inventário/orçamento e o contrato estrutural de forma auditável.
 
