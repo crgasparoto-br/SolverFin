@@ -1,17 +1,1 @@
-{
-  "schema_version": 1,
-  "classification": "implementation-only",
-  "source_event": {
-    "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:ef362c6b-f57d-4653-9eee-07cf32776eb0",
-    "finding_ids": [
-      "A-001",
-      "A-002"
-    ]
-  },
-  "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "The installed delivery controller already requires atomic requirement closure, discriminant negative controls, sibling cases, and structural-invariant evidence. The escape came from local evidence that aggregated a compound inventory requirement and from an implementation-specific filename heuristic, so the repository controls were strengthened without introducing a new permanent Skill rule."
-  },
-  "skill_changes": []
-}
+{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:6f9a835b-d6fa-41fa-adaf-805e9add9f40","finding_ids":["A-002"],"audit_report_sha256":"1db0ee15b6686093f57ff4aff91f74a6d42b6be76ad84bb9cccd2e64b7f1eac7"},"generalized_learning":{"promotion_status":"not-required","reason":"The installed controller already requires structural-invariant attacks, audit-escape sibling cases and discriminant negative controls. The new rejection exposed an implementation-specific AST taint propagation omission in the repository guard; prevention and detection were strengthened locally with method-receiver, binary-concatenation and template-interpolation controls."},"skill_changes":[]}
