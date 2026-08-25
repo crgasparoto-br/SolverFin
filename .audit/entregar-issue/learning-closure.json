@@ -1,16 +1,66 @@
 {
   "schema_version": 1,
-  "classification": "implementation-only",
+  "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:cfabb38d-601f-4ed4-9f6a-9d64632d31f7",
+    "rejection_id": "audit-rejection:04bbed5c-9e7d-4e69-aa93-ddfd397155bc",
     "finding_ids": [
-      "A-001",
-      "A-002"
+      "A-001"
     ]
   },
   "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "The repository already had the appropriate fail-closed formatting/parser and documentation parity gates; this rejection was caused by a local malformed synthetic fixture. The correction adds exact-head parser/self-test and mutation evidence without introducing a new reusable global Skill rule."
-  }
+    "promotion_status": "promoted",
+    "escape_class": "exact-gate-evidence-substitution",
+    "generalized_failure_pattern": "A remediation can be declared closed using proxy checks even though the exact gate that rejected the candidate was never executed successfully.",
+    "plausible_wrong_implementation": "Use syntax validity, focused tests, or inferred formatter rules as a substitute for the repository formatter/style gate.",
+    "trigger_signals": [
+      "formatter/style rejection",
+      "proxy validation",
+      "gate not reached",
+      "remediation closure"
+    ],
+    "risk_families": [
+      "structural-contract"
+    ],
+    "reusable_control": {
+      "id": "FORMAT-EXACT-001",
+      "procedure": "Require exact-tool execution or terminal same-candidate CI evidence that the rejecting formatter/style gate was reached and passed."
+    },
+    "prevention_rule": "Do not close a formatter/style remediation from syntax, self-tests, inferred configuration, or another gate; require the exact repository gate on the remediated candidate.",
+    "detection_rule": "During re-audit, distinguish declared, reached, and passed and reject closure unless the exact formatter/style gate was reached and passed on the frozen candidate.",
+    "transfer_cases": [
+      {
+        "id": "T1",
+        "surface": "source-formatter",
+        "status": "passed",
+        "evidence": "synthetic exact formatter closure contract test"
+      },
+      {
+        "id": "T2",
+        "surface": "generated-artifact-style-gate",
+        "status": "passed",
+        "evidence": "synthetic reached-vs-declared audit contract test"
+      }
+    ]
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "skill": "entregar-issue",
+      "status": "passed",
+      "path": "references/implementation-workflow.md",
+      "before_sha256": "433c7eabda0c612f57dedc6e2e334727afe95c08c440b6b9dca93d393eb222ba",
+      "after_sha256": "8d6b72a4cbfdc58ef2e0861d705d18f678fd8e13fc02c7b3cd613fd64ada5667",
+      "validation": "test_formatter_remediation_gate.py and validate_skill_genericity.py passed"
+    },
+    {
+      "role": "detection",
+      "skill": "auditar-issue",
+      "status": "passed",
+      "path": "references/gate-preflight.md",
+      "before_sha256": "cf992009784267b84032459052dc621acb90fe30e60744659eefcb0016073a41",
+      "after_sha256": "d3d26322dbf55aa5729e1b355b20e2a3fb7d506b4d0dd878af523c06e1bb69e6",
+      "validation": "test_formatter_remediation_audit_gate.py and validate_skill_genericity.py passed"
+    }
+  ]
 }

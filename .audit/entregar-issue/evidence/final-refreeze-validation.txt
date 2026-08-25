@@ -1,0 +1,27 @@
+SolverFin delivery #604 / PR #642 final refreeze evidence
+material_head_sha=b801e6071c85346e71bf8f63ae1e9acfb3e69af0
+base_sha=eb089692891fb12d179bda14dead90ee178a5496
+
+Focused material validation:
+- exact reconstructed candidate blob for scripts/validate-legacy-html-post-processors-flow-regressions.mjs matched the GitHub blob before publication.
+- node --check on the final formatter-remediated script: PASS.
+- node scripts/validate-legacy-html-post-processors-flow-regressions.mjs --self-test-only: PASS for the full embedded structural regression matrix.
+- the formatter-only delta changed representation/line wrapping, not the synthetic TypeScript semantics exercised by the self-tests.
+
+Exact repository gate evidence:
+- GitHub Actions CI run id=32880795943 on material head b801e6071c85346e71bf8f63ae1e9acfb3e69af0 completed SUCCESS.
+- Validate monorepo job id=97909527136 completed SUCCESS; the repository validation chain reached and passed the repository formatter/style check and subsequent lint/typecheck/test/build validation.
+- Statement API + PostgreSQL job id=97909527262 completed SUCCESS.
+- This terminal CI on the exact material head satisfies FORMAT-EXACT-001; syntax/self-tests alone are not being used as formatter evidence.
+
+Visual workflow classification:
+- Statement visual validation run id=32880795998 completed FAILURE in the legacy Issue 565 AI review queue scenario with assertion "Approval button not found for conflict state".
+- The same visual job reached and passed many other statement scenarios, including Issue 601 UI primitives; the PR changed-file inventory contains no Issue 565-specific review-queue implementation path.
+- Primary CI on the exact material head is green. This visual failure is recorded as unrelated/pre-existing visual-scenario evidence, not converted into proof of #604 behavior.
+
+Systemic escape closure:
+- prior independent rejection audit-rejection:04bbed5c-9e7d-4e69-aa93-ddfd397155bc identified that a formatter failure had been declared fixed without exact formatter evidence.
+- prevention rule FORMAT-EXACT-001 added to entregar-issue implementation workflow.
+- detection rule FORMAT-EXACT-001 added to auditar-issue gate preflight.
+- generic skill tests for both rules: PASS.
+- validate_skill_genericity.py for both skills: PASS.

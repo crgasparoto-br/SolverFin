@@ -3,24 +3,16 @@
   "contract_version": "2026-08-20.3",
   "kind": "independent-rejection",
   "status": "rejected",
-  "rejection_id": "audit-rejection:cfabb38d-601f-4ed4-9f6a-9d64632d31f7",
-  "head_sha": "e42188fbfc00bcd90bb25ce5f2e05072edf7c7ae",
+  "rejection_id": "audit-rejection:04bbed5c-9e7d-4e69-aa93-ddfd397155bc",
+  "head_sha": "ee1feecd08880722d91cb01ab33d614f7449e551",
   "findings": [
     {
       "id": "A-001",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "summary": "HTML-flow regression validator contained an unparsable nested template fixture, causing formatting to fail before downstream gates."
-    },
-    {
-      "id": "A-002",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "summary": "Documentation claimed executed structural coverage while the regression validator could not start."
+      "remediation_mode": "systemic-remediation",
+      "summary": "Mandatory formatter/style gate remained red after a prior remediation had been declared fixed, so downstream validation was not proven."
     }
   ],
   "recommendations": []
