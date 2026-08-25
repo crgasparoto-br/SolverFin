@@ -28,7 +28,7 @@
     "db:migrate": "node scripts/prepare-local-env.mjs && prisma migrate dev --schema ./prisma",
     "db:deploy": "prisma migrate deploy --schema ./prisma",
     "db:reset": "node scripts/prepare-local-env.mjs && prisma migrate reset --schema ./prisma",
-    "db:seed": "npm run build:packages && node scripts/prepare-local-env.mjs && npm run db:deploy && node scripts/seed-demo.mjs && node scripts/seed-default-categories.mjs",
+    "db:seed": "npm run build:packages && node scripts/prepare-local-env.mjs && node scripts/seed-demo.mjs && node scripts/seed-default-categories.mjs",
     "db:seed:categories:user": "npm run build:packages && node scripts/seed-default-categories-for-user.mjs",
     "db:repair:default-categories": "npm run build:packages && node scripts/prepare-local-env.mjs && node scripts/seed-default-categories.mjs",
     "db:repair:default-categories:user": "npm run build:packages && node scripts/prepare-local-env.mjs && node scripts/seed-default-categories-for-user.mjs",
