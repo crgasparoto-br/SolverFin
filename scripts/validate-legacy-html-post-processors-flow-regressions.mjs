@@ -295,9 +295,7 @@ function evaluate(expression, scope) {
 
   if (ts.isElementAccessExpression(node)) {
     const key = getElementKey(node.argumentExpression);
-    return key === null
-      ? emptyShape()
-      : selectShape(evaluate(node.expression, scope), key);
+    return key === null ? emptyShape() : selectShape(evaluate(node.expression, scope), key);
   }
 
   if (ts.isObjectLiteralExpression(node)) return evaluateObject(node, scope);
@@ -326,10 +324,7 @@ function evaluate(expression, scope) {
   }
 
   if (ts.isConditionalExpression(node)) {
-    return mergeShapes(
-      evaluate(node.whenTrue, scope),
-      evaluate(node.whenFalse, scope),
-    );
+    return mergeShapes(evaluate(node.whenTrue, scope), evaluate(node.whenFalse, scope));
   }
 
   return emptyShape();
@@ -343,19 +338,13 @@ function evaluateObject(node, scope) {
       continue;
     }
     if (ts.isShorthandPropertyAssignment(property)) {
-      shape = mergeShapes(
-        shape,
-        prefixShape(evaluate(property.name, scope), property.name.text),
-      );
+      shape = mergeShapes(shape, prefixShape(evaluate(property.name, scope), property.name.text));
       continue;
     }
     if (!ts.isPropertyAssignment(property)) continue;
     const key = getPropertyName(property.name);
     if (key === null) continue;
-    shape = mergeShapes(
-      shape,
-      prefixShape(evaluate(property.initializer, scope), key),
-    );
+    shape = mergeShapes(shape, prefixShape(evaluate(property.initializer, scope), key));
   }
   return shape;
 }
@@ -374,10 +363,7 @@ function evaluateArray(node, scope) {
       offset += inferArraySpan(spreadShape);
       continue;
     }
-    shape = mergeShapes(
-      shape,
-      prefixShape(evaluate(element, scope), String(offset)),
-    );
+    shape = mergeShapes(shape, prefixShape(evaluate(element, scope), String(offset)));
     offset += 1;
   }
   shape.arraySpan = offset;
@@ -422,11 +408,7 @@ function assignTarget(target, shape, scope) {
   if (ts.isObjectLiteralExpression(node)) {
     for (const property of node.properties) {
       if (ts.isShorthandPropertyAssignment(property)) {
-        assignTarget(
-          property.name,
-          selectShape(shape, property.name.text),
-          scope,
-        );
+        assignTarget(property.name, selectShape(shape, property.name.text), scope);
         continue;
       }
       if (ts.isPropertyAssignment(property)) {
@@ -479,17 +461,12 @@ function isRendererCallable(expression, scope) {
   }
 
   if (ts.isPropertyAccessExpression(node)) {
-    return hasRenderer(
-      selectShape(evaluate(node.expression, scope), node.name.text),
-    );
+    return hasRenderer(selectShape(evaluate(node.expression, scope), node.name.text));
   }
 
   if (ts.isElementAccessExpression(node)) {
     const key = getElementKey(node.argumentExpression);
-    return (
-      key !== null &&
-      hasRenderer(selectShape(evaluate(node.expression, scope), key))
-    );
+    return key !== null && hasRenderer(selectShape(evaluate(node.expression, scope), key));
   }
 
   return isRendererName(getCallName(node));
@@ -535,10 +512,7 @@ function getCallName(expression) {
 
 function getCallReceiver(expression) {
   const node = unwrapExpression(expression);
-  if (
-    ts.isPropertyAccessExpression(node) ||
-    ts.isElementAccessExpression(node)
-  ) {
+  if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
     return node.expression;
   }
   return null;
@@ -553,11 +527,7 @@ function getElementKey(expression) {
 }
 
 function getPropertyName(name) {
-  if (
-    ts.isIdentifier(name) ||
-    ts.isStringLiteralLike(name) ||
-    ts.isNumericLiteral(name)
-  ) {
+  if (ts.isIdentifier(name) || ts.isStringLiteralLike(name) || ts.isNumericLiteral(name)) {
     return name.text;
   }
   return null;
@@ -834,9 +804,7 @@ function runSelfTests() {
   for (const [label, source] of allowedCases) {
     const observed = validateHtmlFlowRegressions(source);
     if (observed.length > 0) {
-      failures.push(
-        `flow-regression self-test rejected ${label}: ${observed.join(" | ")}`,
-      );
+      failures.push(`flow-regression self-test rejected ${label}: ${observed.join(" | ")}`);
     }
   }
 
