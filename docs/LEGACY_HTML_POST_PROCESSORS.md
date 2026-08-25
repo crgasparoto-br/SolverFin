@@ -79,7 +79,9 @@ O gate falha quando:
 - o HTML base de um pipeline legado deixa de vir diretamente de um renderer;
 - a lista de IDs passada ao pipeline diverge do inventário da rota.
 
-O controle estrutural inclui casos negativos sintéticos para nomes neutros como `newHtmlPostProcessor` e `rewriteFinalHtml`, evitando que uma simples mudança de nomenclatura contorne a catraca. Assim, adicionar mais pós-processamento textual deixa de ser uma extensão silenciosa: qualquer exceção exige alterar inventário/orçamento e o contrato estrutural de forma auditável.
+O walker estrutural cobre declarações e expressões de função, arrow functions, métodos, construtores e accessors. A propagação de origem do HTML acompanha identificadores, propriedades diretas ou computadas de objetos, aliases de objeto e destructuring antes de avaliar chamadas, concatenações e templates. Os self-tests variam essas formas junto com `return`, loops, `replace`/`replaceAll`, nomes neutros e o fluxo canônico permitido.
+
+Assim, adicionar mais pós-processamento textual deixa de ser uma extensão silenciosa: qualquer exceção exige alterar inventário/orçamento e o contrato estrutural de forma auditável.
 
 ## Critério de remoção por cluster
 
