@@ -64,9 +64,7 @@ for (const entry of inventoryEntries) {
 const importedByKey = new Map(
   importedBindings.map((entry) => [`${entry.modulePath}#${entry.exportName}`, entry]),
 );
-const inventoryKeys = inventoryEntries.map(
-  (entry) => `${entry.modulePath}#${entry.exportName}`,
-);
+const inventoryKeys = inventoryEntries.map((entry) => `${entry.modulePath}#${entry.exportName}`);
 
 for (const key of inventoryKeys) {
   if (!importedByKey.has(key)) {
@@ -310,9 +308,7 @@ function validatePipelineCall(call, tainted, violations, expectedIdsByRoute, sou
   for (const element of steps.elements) {
     if (!ts.isObjectLiteralExpression(element)) continue;
     const idProperty = element.properties.find(
-      (property) =>
-        ts.isPropertyAssignment(property) &&
-        getPropertyName(property.name) === "id",
+      (property) => ts.isPropertyAssignment(property) && getPropertyName(property.name) === "id",
     );
     if (!idProperty || !ts.isPropertyAssignment(idProperty)) continue;
     const initializer = unwrapExpression(idProperty.initializer);
