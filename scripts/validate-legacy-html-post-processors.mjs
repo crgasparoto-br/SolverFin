@@ -253,8 +253,35 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
   const node = unwrapExpression(expression);
 
   if (ts.isBinaryExpression(node)) {
+    if (
+      node.operatorToken.kind === ts.SyntaxKind.PlusToken &&
+      (expressionProducesHtml(node.left, tainted) || expressionProducesHtml(node.right, tainted))
+    ) {
+      violations.push(
+        "structural HTML-flow violation: string concatenation rewrites rendered HTML outside applyLegacyHtmlPostProcessorPipeline",
+      );
+    }
     inspectExpression(node.left, tainted, violations, expectedIdsByRoute, sourceFile);
     inspectExpression(node.right, tainted, violations, expectedIdsByRoute, sourceFile);
+    return;
+  }
+
+  if (ts.isTemplateExpression(node)) {
+    if (node.templateSpans.some((span) => expressionProducesHtml(span.expression, tainted))) {
+      violations.push(
+        "structural HTML-flow violation: template literal rewrites rendered HTML outside applyLegacyHtmlPostProcessorPipeline",
+      );
+    }
+    for (const span of node.templateSpans) {
+      inspectExpression(span.expression, tainted, violations, expectedIdsByRoute, sourceFile);
+    }
+    return;
+  }
+
+  if (ts.isConditionalExpression(node)) {
+    inspectExpression(node.condition, tainted, violations, expectedIdsByRoute, sourceFile);
+    inspectExpression(node.whenTrue, tainted, violations, expectedIdsByRoute, sourceFile);
+    inspectExpression(node.whenFalse, tainted, violations, expectedIdsByRoute, sourceFile);
     return;
   }
 
@@ -267,9 +294,10 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
   }
 
   if (name !== "sendHtml" && !isRendererName(name)) {
-    const consumesHtml = node.arguments.some((argument) =>
-      expressionProducesHtml(argument, tainted),
-    );
+    const receiver = getCallReceiver(node.expression);
+    const consumesHtml =
+      (receiver ? expressionProducesHtml(receiver, tainted) : false) ||
+      node.arguments.some((argument) => expressionProducesHtml(argument, tainted));
     if (consumesHtml) {
       violations.push(
         `structural HTML-flow violation: ${name ?? "anonymous call"} consumes rendered HTML outside applyLegacyHtmlPostProcessorPipeline`,
@@ -277,6 +305,10 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
     }
   }
 
+  const receiver = getCallReceiver(node.expression);
+  if (receiver) {
+    inspectExpression(receiver, tainted, violations, expectedIdsByRoute, sourceFile);
+  }
   for (const argument of node.arguments) {
     inspectExpression(argument, tainted, violations, expectedIdsByRoute, sourceFile);
   }
@@ -327,10 +359,27 @@ function expressionProducesHtml(expression, tainted) {
   const node = unwrapExpression(expression);
 
   if (ts.isIdentifier(node)) return tainted.has(node.text);
+  if (ts.isBinaryExpression(node)) {
+    return (
+      node.operatorToken.kind === ts.SyntaxKind.PlusToken &&
+      (expressionProducesHtml(node.left, tainted) || expressionProducesHtml(node.right, tainted))
+    );
+  }
+  if (ts.isTemplateExpression(node)) {
+    return node.templateSpans.some((span) => expressionProducesHtml(span.expression, tainted));
+  }
+  if (ts.isConditionalExpression(node)) {
+    return (
+      expressionProducesHtml(node.whenTrue, tainted) ||
+      expressionProducesHtml(node.whenFalse, tainted)
+    );
+  }
   if (!ts.isCallExpression(node)) return false;
 
   const name = getCallName(node.expression);
   if (name === "applyLegacyHtmlPostProcessorPipeline" || isRendererName(name)) return true;
+  const receiver = getCallReceiver(node.expression);
+  if (receiver && expressionProducesHtml(receiver, tainted)) return true;
   return node.arguments.some((argument) => expressionProducesHtml(argument, tainted));
 }
 
@@ -352,6 +401,11 @@ function getCallName(expression) {
   if (ts.isIdentifier(node)) return node.text;
   if (ts.isPropertyAccessExpression(node)) return node.name.text;
   return null;
+}
+
+function getCallReceiver(expression) {
+  const node = unwrapExpression(expression);
+  return ts.isPropertyAccessExpression(node) ? node.expression : null;
 }
 
 function getPropertyName(name) {
@@ -393,6 +447,50 @@ function runStructuralGuardSelfTests() {
         async function handleRequest() {
           const rendered = await renderSyntheticPage(token);
           const rewritten = rewriteFinalHtml(rendered);
+          sendHtml(response, 200, rewritten);
+        }
+      `,
+    },
+    {
+      label: "native replace",
+      fragment: "replace consumes rendered HTML",
+      source: `
+        async function handleRequest() {
+          const rendered = await renderSyntheticPage(token);
+          const rewritten = rendered.replace(/foo/g, "bar");
+          sendHtml(response, 200, rewritten);
+        }
+      `,
+    },
+    {
+      label: "native replaceAll",
+      fragment: "replaceAll consumes rendered HTML",
+      source: `
+        async function handleRequest() {
+          const rendered = await renderSyntheticPage(token);
+          const rewritten = rendered.replaceAll("foo", "bar");
+          sendHtml(response, 200, rewritten);
+        }
+      `,
+    },
+    {
+      label: "string concatenation",
+      fragment: "string concatenation rewrites rendered HTML",
+      source: `
+        async function handleRequest() {
+          const rendered = await renderSyntheticPage(token);
+          const rewritten = rendered + "<div>extra</div>";
+          sendHtml(response, 200, rewritten);
+        }
+      `,
+    },
+    {
+      label: "template literal",
+      fragment: "template literal rewrites rendered HTML",
+      source: `
+        async function handleRequest() {
+          const rendered = await renderSyntheticPage(token);
+          const rewritten = \`\${rendered}<div>extra</div>\`;
           sendHtml(response, 200, rewritten);
         }
       `,
