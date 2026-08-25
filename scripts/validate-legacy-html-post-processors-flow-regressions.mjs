@@ -87,9 +87,7 @@ function visitNode(node, scope, violations) {
   if (ts.isVariableDeclaration(node)) {
     if (node.initializer) visitNode(node.initializer, scope, violations);
     const shape = node.initializer ? evaluate(node.initializer, scope) : new Set();
-    const rendererAlias = Boolean(
-      node.initializer && isRendererReference(node.initializer, scope),
-    );
+    const rendererAlias = Boolean(node.initializer && isRendererReference(node.initializer, scope));
     declarePattern(node.name, shape, rendererAlias, scope);
     return;
   }
