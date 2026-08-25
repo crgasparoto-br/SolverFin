@@ -114,6 +114,23 @@ function visitNode(node, scope, violations) {
       }
       return;
     }
+
+    if (
+      node.operatorToken.kind === ts.SyntaxKind.PlusToken &&
+      (hasTaint(evaluate(node.left, scope)) || hasTaint(evaluate(node.right, scope)))
+    ) {
+      violations.add(
+        "flow regression violation: + rewrites rendered HTML outside the legacy pipeline",
+      );
+    }
+  }
+
+  if (ts.isTemplateExpression(node)) {
+    if (node.templateSpans.some((span) => hasTaint(evaluate(span.expression, scope)))) {
+      violations.add(
+        "flow regression violation: template literal rewrites rendered HTML outside the legacy pipeline",
+      );
+    }
   }
 
   if (ts.isCallExpression(node)) {
@@ -501,6 +518,105 @@ function runSelfTests() {
         let html;
         [html] = values;
         helper(html);
+      }`,
+    ],
+    [
+      "neutral-name consumer",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const rewritten = neutralConsumer(rendered);
+        sendHtml(response, 200, rewritten);
+      }`,
+    ],
+    [
+      "pre-pipeline wrapper",
+      `async function handle() {
+        const rewritten = rewriteFinalHtml(await renderSyntheticPage());
+        sendHtml(response, 200, rewritten);
+      }`,
+    ],
+    [
+      "loop-contained rewrite",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        for (const token of ["foo"]) {
+          rendered.replace(token, "bar");
+        }
+      }`,
+    ],
+    [
+      "computed member rewrite",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        rendered["replace"](/foo/g, "bar");
+      }`,
+    ],
+    [
+      "direct concatenation",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const rewritten = rendered + "<aside>new feature</aside>";
+        sendHtml(response, 200, rewritten);
+      }`,
+    ],
+    [
+      "template rewrite",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const rewritten = `<main>${rendered}</main>`;
+        sendHtml(response, 200, rewritten);
+      }`,
+    ],
+    [
+      "closure capture",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        function nested() {
+          return rendered.replace(/foo/g, "bar");
+        }
+        return nested();
+      }`,
+    ],
+    [
+      "arrow function container",
+      `const handle = async () => {
+        const rendered = await renderSyntheticPage();
+        rendered.replace(/foo/g, "bar");
+      };`,
+    ],
+    [
+      "class method container",
+      `class Handler {
+        async run() {
+          const rendered = await renderSyntheticPage();
+          rendered.replace(/foo/g, "bar");
+        }
+      }`,
+    ],
+    [
+      "object spread alias",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const box = { html: rendered };
+        const copy = { ...box };
+        copy.html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "array alias",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const values = [rendered];
+        values[0].replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "declaration destructuring",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const box = { html: rendered };
+        const { html } = box;
+        html.replace(/foo/g, "bar");
       }`,
     ],
   ];
