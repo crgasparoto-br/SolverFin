@@ -159,99 +159,64 @@ function validateHtmlFlowArchitecture(source, entries) {
 
   for (const statement of sourceFile.statements) {
     if (ts.isFunctionDeclaration(statement) && statement.body) {
-      analyzeBlock(statement.body, new Set(), violations, expectedIdsByRoute, sourceFile);
+      analyzeFunctionBody(statement.body, violations, expectedIdsByRoute, sourceFile);
     }
   }
 
   return violations;
 }
 
-function analyzeBlock(block, inheritedTaint, violations, expectedIdsByRoute, sourceFile) {
-  const tainted = new Set(inheritedTaint);
+function analyzeFunctionBody(body, violations, expectedIdsByRoute, sourceFile) {
+  const tainted = collectTaintedIdentifiers(body);
 
-  for (const statement of block.statements) {
-    if (ts.isVariableStatement(statement)) {
-      for (const declaration of statement.declarationList.declarations) {
-        if (!declaration.initializer) continue;
-        inspectExpression(
-          declaration.initializer,
-          tainted,
-          violations,
-          expectedIdsByRoute,
-          sourceFile,
-        );
-        if (
-          ts.isIdentifier(declaration.name) &&
-          expressionProducesHtml(declaration.initializer, tainted)
-        ) {
-          tainted.add(declaration.name.text);
-        }
-      }
-      continue;
-    }
+  const visit = (node) => {
+    inspectSyntaxNode(node, tainted, violations, expectedIdsByRoute, sourceFile);
+    ts.forEachChild(node, visit);
+  };
 
-    if (ts.isExpressionStatement(statement)) {
-      inspectExpression(statement.expression, tainted, violations, expectedIdsByRoute, sourceFile);
-      continue;
-    }
-
-    if (ts.isIfStatement(statement)) {
-      inspectExpression(statement.expression, tainted, violations, expectedIdsByRoute, sourceFile);
-      analyzeNestedStatement(
-        statement.thenStatement,
-        tainted,
-        violations,
-        expectedIdsByRoute,
-        sourceFile,
-      );
-      if (statement.elseStatement) {
-        analyzeNestedStatement(
-          statement.elseStatement,
-          tainted,
-          violations,
-          expectedIdsByRoute,
-          sourceFile,
-        );
-      }
-      continue;
-    }
-
-    if (ts.isTryStatement(statement)) {
-      analyzeBlock(statement.tryBlock, tainted, violations, expectedIdsByRoute, sourceFile);
-      if (statement.catchClause?.block) {
-        analyzeBlock(
-          statement.catchClause.block,
-          tainted,
-          violations,
-          expectedIdsByRoute,
-          sourceFile,
-        );
-      }
-      if (statement.finallyBlock) {
-        analyzeBlock(statement.finallyBlock, tainted, violations, expectedIdsByRoute, sourceFile);
-      }
-      continue;
-    }
-
-    if (ts.isBlock(statement)) {
-      analyzeBlock(statement, tainted, violations, expectedIdsByRoute, sourceFile);
-    }
-  }
+  visit(body);
 }
 
-function analyzeNestedStatement(statement, tainted, violations, expectedIdsByRoute, sourceFile) {
-  if (ts.isBlock(statement)) {
-    analyzeBlock(statement, new Set(tainted), violations, expectedIdsByRoute, sourceFile);
-    return;
+function collectTaintedIdentifiers(body) {
+  const tainted = new Set();
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    const visit = (node) => {
+      if (
+        ts.isVariableDeclaration(node) &&
+        ts.isIdentifier(node.name) &&
+        node.initializer &&
+        expressionProducesHtml(node.initializer, tainted) &&
+        !tainted.has(node.name.text)
+      ) {
+        tainted.add(node.name.text);
+        changed = true;
+      }
+
+      if (
+        ts.isBinaryExpression(node) &&
+        node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        ts.isIdentifier(node.left) &&
+        expressionProducesHtml(node.right, tainted) &&
+        !tainted.has(node.left.text)
+      ) {
+        tainted.add(node.left.text);
+        changed = true;
+      }
+
+      ts.forEachChild(node, visit);
+    };
+
+    visit(body);
   }
 
-  const syntheticBlock = ts.factory.createBlock([statement], true);
-  analyzeBlock(syntheticBlock, new Set(tainted), violations, expectedIdsByRoute, sourceFile);
+  return tainted;
 }
 
-function inspectExpression(expression, tainted, violations, expectedIdsByRoute, sourceFile) {
-  const node = unwrapExpression(expression);
-
+function inspectSyntaxNode(node, tainted, violations, expectedIdsByRoute, sourceFile) {
   if (ts.isBinaryExpression(node)) {
     if (
       node.operatorToken.kind === ts.SyntaxKind.PlusToken &&
@@ -261,8 +226,6 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
         "structural HTML-flow violation: string concatenation rewrites rendered HTML outside applyLegacyHtmlPostProcessorPipeline",
       );
     }
-    inspectExpression(node.left, tainted, violations, expectedIdsByRoute, sourceFile);
-    inspectExpression(node.right, tainted, violations, expectedIdsByRoute, sourceFile);
     return;
   }
 
@@ -272,16 +235,6 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
         "structural HTML-flow violation: template literal rewrites rendered HTML outside applyLegacyHtmlPostProcessorPipeline",
       );
     }
-    for (const span of node.templateSpans) {
-      inspectExpression(span.expression, tainted, violations, expectedIdsByRoute, sourceFile);
-    }
-    return;
-  }
-
-  if (ts.isConditionalExpression(node)) {
-    inspectExpression(node.condition, tainted, violations, expectedIdsByRoute, sourceFile);
-    inspectExpression(node.whenTrue, tainted, violations, expectedIdsByRoute, sourceFile);
-    inspectExpression(node.whenFalse, tainted, violations, expectedIdsByRoute, sourceFile);
     return;
   }
 
@@ -289,7 +242,7 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
 
   const name = getCallName(node.expression);
   if (name === "applyLegacyHtmlPostProcessorPipeline") {
-    validatePipelineCall(node, tainted, violations, expectedIdsByRoute, sourceFile);
+    validatePipelineCall(node, violations, expectedIdsByRoute, sourceFile);
     return;
   }
 
@@ -304,17 +257,9 @@ function inspectExpression(expression, tainted, violations, expectedIdsByRoute, 
       );
     }
   }
-
-  const receiver = getCallReceiver(node.expression);
-  if (receiver) {
-    inspectExpression(receiver, tainted, violations, expectedIdsByRoute, sourceFile);
-  }
-  for (const argument of node.arguments) {
-    inspectExpression(argument, tainted, violations, expectedIdsByRoute, sourceFile);
-  }
 }
 
-function validatePipelineCall(call, tainted, violations, expectedIdsByRoute, sourceFile) {
+function validatePipelineCall(call, violations, expectedIdsByRoute, sourceFile) {
   const routeArgument = unwrapExpression(call.arguments[0]);
   const route = ts.isStringLiteralLike(routeArgument) ? routeArgument.text : null;
   const input = call.arguments[1];
@@ -327,7 +272,6 @@ function validatePipelineCall(call, tainted, violations, expectedIdsByRoute, sou
         `structural HTML-flow violation: legacy pipeline input must be produced directly by a renderer, received ${getCallName(inputNode.expression) ?? inputNode.getText(sourceFile)}`,
       );
     }
-    inspectExpression(input, tainted, violations, expectedIdsByRoute, sourceFile);
   }
 
   if (!route || !expectedIdsByRoute.has(route)) return;
@@ -400,12 +344,19 @@ function getCallName(expression) {
   const node = unwrapExpression(expression);
   if (ts.isIdentifier(node)) return node.text;
   if (ts.isPropertyAccessExpression(node)) return node.name.text;
+  if (ts.isElementAccessExpression(node)) {
+    const argument = unwrapExpression(node.argumentExpression);
+    if (ts.isStringLiteralLike(argument)) return argument.text;
+  }
   return null;
 }
 
 function getCallReceiver(expression) {
   const node = unwrapExpression(expression);
-  return ts.isPropertyAccessExpression(node) ? node.expression : null;
+  if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
+    return node.expression;
+  }
+  return null;
 }
 
 function getPropertyName(name) {
@@ -470,6 +421,43 @@ function runStructuralGuardSelfTests() {
           const rendered = await renderSyntheticPage(token);
           const rewritten = rendered.replaceAll("foo", "bar");
           sendHtml(response, 200, rewritten);
+        }
+      `,
+    },
+    {
+      label: "return-contained native replace",
+      fragment: "replace consumes rendered HTML",
+      source: `
+        async function handleRequest() {
+          return sendHtml(
+            response,
+            200,
+            (await renderSyntheticPage(token)).replace(/foo/g, "bar"),
+          );
+        }
+      `,
+    },
+    {
+      label: "computed native replace",
+      fragment: "replace consumes rendered HTML",
+      source: `
+        async function handleRequest() {
+          const rendered = await renderSyntheticPage(token);
+          const rewritten = rendered["replace"](/foo/g, "bar");
+          sendHtml(response, 200, rewritten);
+        }
+      `,
+    },
+    {
+      label: "loop-contained native replace",
+      fragment: "replace consumes rendered HTML",
+      source: `
+        async function handleRequest() {
+          const rendered = await renderSyntheticPage(token);
+          for (const marker of markers) {
+            const rewritten = rendered.replace(marker, "bar");
+            sendHtml(response, 200, rewritten);
+          }
         }
       `,
     },
