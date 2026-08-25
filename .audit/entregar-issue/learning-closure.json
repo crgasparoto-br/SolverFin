@@ -3,43 +3,44 @@
   "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:04bbed5c-9e7d-4e69-aa93-ddfd397155bc",
+    "rejection_id": "audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810",
     "finding_ids": [
       "A-001"
     ]
   },
   "generalized_learning": {
     "promotion_status": "promoted",
-    "escape_class": "exact-gate-evidence-substitution",
-    "generalized_failure_pattern": "A remediation can be declared closed using proxy checks even though the exact gate that rejected the candidate was never executed successfully.",
-    "plausible_wrong_implementation": "Use syntax validity, focused tests, or inferred formatter rules as a substitute for the repository formatter/style gate.",
+    "escape_class": "semantic-provenance-container-propagation",
+    "generalized_failure_pattern": "A provenance-aware guard can track direct aliases but lose semantic origin or callable provenance when the value is transported through structural containers, allowing a protected origin to be recovered and used without the intended restriction.",
+    "plausible_wrong_implementation": "Track provenance only on direct identifiers and fail to preserve it through object properties, arrays, spreads, destructuring, property assignment or index access.",
     "trigger_signals": [
-      "formatter/style rejection",
-      "proxy validation",
-      "gate not reached",
-      "remediation closure"
+      "provenance-aware guard",
+      "container transport",
+      "object or array alias",
+      "spread or destructuring",
+      "callable recovered from container"
     ],
     "risk_families": [
       "structural-contract"
     ],
     "reusable_control": {
-      "id": "FORMAT-EXACT-001",
-      "procedure": "Require exact-tool execution or terminal same-candidate CI evidence that the rejecting formatter/style gate was reached and passed."
+      "id": "PROV-CONTAINER-001",
+      "procedure": "For any semantic provenance tracked by a guard, execute adversarial transport through object properties, array indexes including shifted spreads, object/array destructuring, container spreads and property/index assignment, then remove one propagation edge and require the matching negative control to fail."
     },
-    "prevention_rule": "Do not close a formatter/style remediation from syntax, self-tests, inferred configuration, or another gate; require the exact repository gate on the remediated candidate.",
-    "detection_rule": "During re-audit, distinguish declared, reached, and passed and reject closure unless the exact formatter/style gate was reached and passed on the frozen candidate.",
+    "prevention_rule": "Model semantic provenance independently from value taint and preserve each relevant provenance dimension across structural containers, spreads, destructuring and static property/index assignment before evaluating protected use.",
+    "detection_rule": "Do not accept direct-alias coverage as sufficient; re-audit object property retrieval, array index retrieval including shifted spread, object/array destructuring, container spread and property/index assignment with at least one discriminating propagation mutation.",
     "transfer_cases": [
       {
         "id": "T1",
-        "surface": "source-formatter",
+        "surface": "capability-object-container",
         "status": "passed",
-        "evidence": "synthetic exact formatter closure contract test"
+        "evidence": "synthetic object property, spread and destructuring provenance contract test"
       },
       {
         "id": "T2",
-        "surface": "generated-artifact-style-gate",
+        "surface": "taint-array-destructuring",
         "status": "passed",
-        "evidence": "synthetic reached-vs-declared audit contract test"
+        "evidence": "synthetic array index, shifted spread and destructuring provenance contract test"
       }
     ]
   },
@@ -48,19 +49,19 @@
       "role": "prevention",
       "skill": "entregar-issue",
       "status": "passed",
-      "path": "references/implementation-workflow.md",
-      "before_sha256": "433c7eabda0c612f57dedc6e2e334727afe95c08c440b6b9dca93d393eb222ba",
-      "after_sha256": "8d6b72a4cbfdc58ef2e0861d705d18f678fd8e13fc02c7b3cd613fd64ada5667",
-      "validation": "test_formatter_remediation_gate.py and validate_skill_genericity.py passed"
+      "path": "references/audit-escape-closure.md",
+      "before_sha256": "95f16698632c5089939819f31159a54c1250c9f6d502946d0797ac70d16d2544",
+      "after_sha256": "0c8b627f7fecb0c9f6a23559d5848ef2814db5e56c4c5b3befc7f29e7e3b0c86",
+      "validation": "test_provenance_container_escape_contract.py passed; ecosystem fast profile completed with failed=0"
     },
     {
       "role": "detection",
       "skill": "auditar-issue",
       "status": "passed",
-      "path": "references/gate-preflight.md",
-      "before_sha256": "cf992009784267b84032459052dc621acb90fe30e60744659eefcb0016073a41",
-      "after_sha256": "d3d26322dbf55aa5729e1b355b20e2a3fb7d506b4d0dd878af523c06e1bb69e6",
-      "validation": "test_formatter_remediation_audit_gate.py and validate_skill_genericity.py passed"
+      "path": "references/audit-escape-feedback.md",
+      "before_sha256": "0071c0cbb3f38546373d60a15d3f3c5c07bc789a82cd4a3c2a18b7604d244d2e",
+      "after_sha256": "1ba1f2131e4850553ae7ed15168c033429f7d6f1467b199b85a6348cf83d103a",
+      "validation": "test_provenance_container_escape_feedback.py passed; ecosystem fast profile completed with failed=0"
     }
   ]
 }

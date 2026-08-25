@@ -1,27 +1,28 @@
-SolverFin delivery #604 / PR #642 final refreeze evidence
-material_head_sha=b801e6071c85346e71bf8f63ae1e9acfb3e69af0
-base_sha=eb089692891fb12d179bda14dead90ee178a5496
+Final refreeze validation for material head 7d50cefddb5385ddd222b998a311f68c83ee05ca
+Repository: crgasparoto-br/SolverFin
+Issue: 604
+PR: 642
+Base: eb089692891fb12d179bda14dead90ee178a5496
 
-Focused material validation:
-- exact reconstructed candidate blob for scripts/validate-legacy-html-post-processors-flow-regressions.mjs matched the GitHub blob before publication.
-- node --check on the final formatter-remediated script: PASS.
-- node scripts/validate-legacy-html-post-processors-flow-regressions.mjs --self-test-only: PASS for the full embedded structural regression matrix.
-- the formatter-only delta changed representation/line wrapping, not the synthetic TypeScript semantics exercised by the self-tests.
+Remote exact-head validation:
+- GitHub Actions CI run 32900676339: completed / success on head 7d50cefddb5385ddd222b998a311f68c83ee05ca.
+- Validate monorepo: environment, Prisma, seed syntax, Check formatting, lint, typecheck, migrations, tests and build all reached and passed.
+- Integration API + PostgreSQL: build, migrations, seed, integration tests and import consistency all reached and passed.
+- Statement visual validation run 32900676276: completed / success on the same head.
+- The repository formatter gate is the canonical `prettier . --check`; the current guard blob 8ffc2cad75a2e39fbd4e84fbc68b12d9140eb4a5 is the exact Prettier 3.8.4 output captured during remediation and the exact-head Check formatting step passed.
 
-Exact repository gate evidence:
-- GitHub Actions CI run id=32880795943 on material head b801e6071c85346e71bf8f63ae1e9acfb3e69af0 completed SUCCESS.
-- Validate monorepo job id=97909527136 completed SUCCESS; the repository validation chain reached and passed the repository formatter/style check and subsequent lint/typecheck/test/build validation.
-- Statement API + PostgreSQL job id=97909527262 completed SUCCESS.
-- This terminal CI on the exact material head satisfies FORMAT-EXACT-001; syntax/self-tests alone are not being used as formatter evidence.
+Latest independent rejection closure:
+- rejection_id: audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810
+- finding: A-001
+- The guard models renderer provenance independently from HTML provenance and propagates it through object properties, array indexes, shifted array spreads, object spreads, object/array destructuring declarations and assignments, and property/index assignment.
+- Exact-head embedded self-tests cover renderer stored in object, renderer stored in array, shifted array spread, spread followed by renderer, array destructuring, object destructuring, container spread and property assignment, plus canonical positive controls.
+- Earlier class-specific mutation checks on the same semantic implementation (before formatter-only byte normalization) demonstrated that removing property/element renderer retrieval makes the object/array/container/property cases fail and removing object destructuring propagation makes the destructuring case fail. The final material delta after those checks was formatter-only; exact-head CI re-executed the embedded controls.
 
-Visual workflow classification:
-- Statement visual validation run id=32880795998 completed FAILURE in the legacy Issue 565 AI review queue scenario with assertion "Approval button not found for conflict state".
-- The same visual job reached and passed many other statement scenarios, including Issue 601 UI primitives; the PR changed-file inventory contains no Issue 565-specific review-queue implementation path.
-- Primary CI on the exact material head is green. This visual failure is recorded as unrelated/pre-existing visual-scenario evidence, not converted into proof of #604 behavior.
+Systemic escape remediation:
+- Generic reusable control: PROV-CONTAINER-001.
+- Prevention Skill entregar-issue references/audit-escape-closure.md: 95f16698632c5089939819f31159a54c1250c9f6d502946d0797ac70d16d2544 -> 0c8b627f7fecb0c9f6a23559d5848ef2814db5e56c4c5b3befc7f29e7e3b0c86.
+- Detection Skill auditar-issue references/audit-escape-feedback.md: 0071c0cbb3f38546373d60a15d3f3c5c07bc789a82cd4a3c2a18b7604d244d2e -> 1ba1f2131e4850553ae7ed15168c033429f7d6f1467b199b85a6348cf83d103a.
+- Generic contract tests test_provenance_container_escape_contract.py and test_provenance_container_escape_feedback.py passed.
+- Ecosystem fast report /tmp/solverfin642-skill-ecosystem-report.json completed with failed=0 after synchronizing generated contract manifests through the canonical contract.
 
-Systemic escape closure:
-- prior independent rejection audit-rejection:04bbed5c-9e7d-4e69-aa93-ddfd397155bc identified that a formatter failure had been declared fixed without exact formatter evidence.
-- prevention rule FORMAT-EXACT-001 added to entregar-issue implementation workflow.
-- detection rule FORMAT-EXACT-001 added to auditar-issue gate preflight.
-- generic skill tests for both rules: PASS.
-- validate_skill_genericity.py for both skills: PASS.
+No merge was performed.
