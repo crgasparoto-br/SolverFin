@@ -66,7 +66,11 @@ A Inbox preserva a mesma regra mesmo tendo uma primeira etapa assíncrona: o pay
 
 ## Guardrail de CI
 
-`scripts/validate-legacy-html-post-processors.mjs` roda em `npm test` e verifica o despacho real de `dev-server.ts`.
+O script `legacy-html-post-processors:check`, executado por `npm test`, combina três passes complementares:
+
+- `scripts/validate-legacy-html-post-processors.mjs` valida inventário, orçamento, despacho real e estrutura do pipeline;
+- `scripts/validate-legacy-html-post-processors-lexical.mjs` acompanha bindings/escopos e aliases de valores HTML;
+- `scripts/validate-legacy-html-post-processors-flow-regressions.mjs` mantém controles adversariais para formas equivalentes que já escaparam dos walkers principais.
 
 O gate falha quando:
 
@@ -75,13 +79,13 @@ O gate falha quando:
 - IDs, owners ou ordens deixam de ser determinísticos;
 - uma rota inventariada deixa de passar por `applyLegacyHtmlPostProcessorPipeline()`;
 - uma função residual inventariada deixa de ser invocada exatamente uma vez no `transform` explícito do pipeline;
-- qualquer função, independentemente do nome do arquivo ou do export, consome HTML produzido por `render*`/pipeline fora de `applyLegacyHtmlPostProcessorPipeline()` e `sendHtml()`;
+- HTML produzido por renderer/pipeline é consumido fora de `applyLegacyHtmlPostProcessorPipeline()` e `sendHtml()` nas superfícies explicitamente exercitadas pelos passes estruturais;
 - o HTML base de um pipeline legado deixa de vir diretamente de um renderer;
 - a lista de IDs passada ao pipeline diverge do inventário da rota.
 
-O guardrail combina o walker estrutural principal com uma segunda passagem lexical por bindings/escopos. Em conjunto, elas cobrem declarações e expressões de função, arrow functions, métodos, construtores e accessors, inclusive closures que capturam HTML renderizado do escopo externo. A propagação acompanha identificadores, propriedades diretas ou computadas de objetos, aliases diretos ou por spread, destructuring e posições de arrays antes de avaliar chamadas, concatenações e templates. Os self-tests variam essas formas junto com `return`, loops, `replace`/`replaceAll`, nomes neutros, shadowing de parâmetro permitido e o fluxo canônico permitido.
+A cobertura estrutural exercitada inclui declarações e expressões de função, arrow functions, métodos, construtores e accessors, closures, aliases de valores por objetos/arrays/spread/destructuring, propriedades diretas ou computadas, concatenação `+`, templates e chamadas sobre HTML renderizado. O passe adversarial adicional cobre `+=` em binding ou propriedade, alias direto ou encadeado de função `render*` e destructuring feito por assignment, com casos de objeto e array. Os self-tests mantêm também controles permitidos para o fluxo canônico e para shadowing legítimo de identificadores parecidos com renderer.
 
-Assim, adicionar mais pós-processamento textual deixa de ser uma extensão silenciosa: qualquer exceção exige alterar inventário/orçamento e o contrato estrutural de forma auditável.
+Nas superfícies acima, adicionar pós-processamento textual fora do pipeline deixa de ser uma extensão silenciosa: qualquer exceção exige alterar inventário/orçamento e o contrato estrutural de forma auditável. A documentação deve continuar enumerando apenas superfícies comprovadas por controles executáveis, sem tratar o walker como prova universal para qualquer sintaxe futura.
 
 ## Critério de remoção por cluster
 
