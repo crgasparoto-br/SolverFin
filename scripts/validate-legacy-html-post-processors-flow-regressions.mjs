@@ -561,11 +561,13 @@ function runSelfTests() {
     ],
     [
       "template rewrite",
-      `async function handle() {
-        const rendered = await renderSyntheticPage();
-        const rewritten = \`<main>\${rendered}</main>\`;
-        sendHtml(response, 200, rewritten);
-      }`,
+      [
+        "async function handle() {",
+        "  const rendered = await renderSyntheticPage();",
+        "  const rewritten = `<main>${rendered}</main>`;",
+        "  sendHtml(response, 200, rewritten);",
+        "}",
+      ].join("\n"),
     ],
     [
       "closure capture",
