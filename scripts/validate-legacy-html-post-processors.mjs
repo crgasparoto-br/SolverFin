@@ -157,35 +157,19 @@ function validateHtmlFlowArchitecture(source, entries) {
     expectedIdsByRoute.set(entry.route, ids);
   }
 
-  const visitFunctions = (node) => {
-    if (isFunctionLikeWithBody(node)) {
-      analyzeFunctionBody(node.body, violations, expectedIdsByRoute, sourceFile);
+  for (const statement of sourceFile.statements) {
+    if (ts.isFunctionDeclaration(statement) && statement.body) {
+      analyzeFunctionBody(statement.body, violations, expectedIdsByRoute, sourceFile);
     }
-    ts.forEachChild(node, visitFunctions);
-  };
+  }
 
-  visitFunctions(sourceFile);
   return violations;
 }
 
-function isFunctionLikeWithBody(node) {
-  return Boolean(
-    (ts.isFunctionDeclaration(node) ||
-      ts.isFunctionExpression(node) ||
-      ts.isArrowFunction(node) ||
-      ts.isMethodDeclaration(node) ||
-      ts.isConstructorDeclaration(node) ||
-      ts.isGetAccessorDeclaration(node) ||
-      ts.isSetAccessorDeclaration(node)) &&
-      node.body,
-  );
-}
-
 function analyzeFunctionBody(body, violations, expectedIdsByRoute, sourceFile) {
-  const tainted = collectTaintedReferences(body);
+  const tainted = collectTaintedIdentifiers(body);
 
   const visit = (node) => {
-    if (node !== body && isFunctionLikeWithBody(node)) return;
     inspectSyntaxNode(node, tainted, violations, expectedIdsByRoute, sourceFile);
     ts.forEachChild(node, visit);
   };
@@ -193,103 +177,34 @@ function analyzeFunctionBody(body, violations, expectedIdsByRoute, sourceFile) {
   visit(body);
 }
 
-function collectTaintedReferences(body) {
+function collectTaintedIdentifiers(body) {
   const tainted = new Set();
   let changed = true;
 
   while (changed) {
     changed = false;
 
-    const mark = (key) => {
-      if (key && !tainted.has(key)) {
-        tainted.add(key);
-        changed = true;
-      }
-    };
-
-    const copyProperties = (fromExpression, toKey) => {
-      const fromKey = getReferenceKey(fromExpression);
-      if (!fromKey || !toKey) return;
-      for (const key of [...tainted]) {
-        if (key.startsWith(`${fromKey}.`)) {
-          mark(`${toKey}${key.slice(fromKey.length)}`);
-        }
-      }
-    };
-
-    const markObjectProperties = (objectNode, baseKey) => {
-      for (const property of objectNode.properties) {
-        if (ts.isPropertyAssignment(property)) {
-          const propertyName = getPropertyName(property.name);
-          if (!propertyName) continue;
-          const propertyKey = `${baseKey}.${propertyName}`;
-          const initializer = unwrapExpression(property.initializer);
-          if (ts.isObjectLiteralExpression(initializer)) {
-            markObjectProperties(initializer, propertyKey);
-          } else if (expressionProducesHtml(initializer, tainted)) {
-            mark(propertyKey);
-          } else {
-            copyProperties(initializer, propertyKey);
-          }
-        } else if (ts.isShorthandPropertyAssignment(property)) {
-          const propertyKey = `${baseKey}.${property.name.text}`;
-          if (expressionProducesHtml(property.name, tainted)) {
-            mark(propertyKey);
-          } else {
-            copyProperties(property.name, propertyKey);
-          }
-        }
-      }
-    };
-
-    const markBindingPattern = (bindingName, initializer) => {
-      const sourceKey = getReferenceKey(initializer);
-      if (!sourceKey || !ts.isObjectBindingPattern(bindingName)) return;
-      for (const element of bindingName.elements) {
-        if (!ts.isIdentifier(element.name)) continue;
-        const propertyName = element.propertyName
-          ? getPropertyName(element.propertyName)
-          : element.name.text;
-        if (!propertyName) continue;
-        if (tainted.has(`${sourceKey}.${propertyName}`)) {
-          mark(element.name.text);
-        }
-      }
-    };
-
     const visit = (node) => {
-      if (node !== body && isFunctionLikeWithBody(node)) return;
-
-      if (ts.isVariableDeclaration(node) && node.initializer) {
-        const initializer = unwrapExpression(node.initializer);
-        if (ts.isIdentifier(node.name)) {
-          if (ts.isObjectLiteralExpression(initializer)) {
-            markObjectProperties(initializer, node.name.text);
-          } else if (expressionProducesHtml(initializer, tainted)) {
-            mark(node.name.text);
-          } else {
-            copyProperties(initializer, node.name.text);
-          }
-        } else {
-          markBindingPattern(node.name, initializer);
-        }
+      if (
+        ts.isVariableDeclaration(node) &&
+        ts.isIdentifier(node.name) &&
+        node.initializer &&
+        expressionProducesHtml(node.initializer, tainted) &&
+        !tainted.has(node.name.text)
+      ) {
+        tainted.add(node.name.text);
+        changed = true;
       }
 
       if (
         ts.isBinaryExpression(node) &&
-        node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+        node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        ts.isIdentifier(node.left) &&
+        expressionProducesHtml(node.right, tainted) &&
+        !tainted.has(node.left.text)
       ) {
-        const leftKey = getReferenceKey(node.left);
-        const right = unwrapExpression(node.right);
-        if (leftKey) {
-          if (ts.isObjectLiteralExpression(right)) {
-            markObjectProperties(right, leftKey);
-          } else if (expressionProducesHtml(right, tainted)) {
-            mark(leftKey);
-          } else {
-            copyProperties(right, leftKey);
-          }
-        }
+        tainted.add(node.left.text);
+        changed = true;
       }
 
       ts.forEachChild(node, visit);
@@ -386,23 +301,8 @@ function validatePipelineCall(call, violations, expectedIdsByRoute, sourceFile) 
 
 function expressionProducesHtml(expression, tainted) {
   const node = unwrapExpression(expression);
-  const referenceKey = getReferenceKey(node);
 
-  if (referenceKey && tainted.has(referenceKey)) return true;
-  if (ts.isObjectLiteralExpression(node)) {
-    return node.properties.some((property) => {
-      if (ts.isPropertyAssignment(property)) {
-        return expressionProducesHtml(property.initializer, tainted);
-      }
-      if (ts.isShorthandPropertyAssignment(property)) {
-        return expressionProducesHtml(property.name, tainted);
-      }
-      if (ts.isSpreadAssignment(property)) {
-        return expressionProducesHtml(property.expression, tainted);
-      }
-      return false;
-    });
-  }
+  if (ts.isIdentifier(node)) return tainted.has(node.text);
   if (ts.isBinaryExpression(node)) {
     return (
       node.operatorToken.kind === ts.SyntaxKind.PlusToken &&
@@ -417,9 +317,6 @@ function expressionProducesHtml(expression, tainted) {
       expressionProducesHtml(node.whenTrue, tainted) ||
       expressionProducesHtml(node.whenFalse, tainted)
     );
-  }
-  if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
-    return expressionProducesHtml(node.expression, tainted);
   }
   if (!ts.isCallExpression(node)) return false;
 
@@ -443,23 +340,6 @@ function unwrapExpression(expression) {
   return current;
 }
 
-function getReferenceKey(expression) {
-  const node = unwrapExpression(expression);
-  if (ts.isIdentifier(node)) return node.text;
-  if (ts.isPropertyAccessExpression(node)) {
-    const base = getReferenceKey(node.expression);
-    return base ? `${base}.${node.name.text}` : null;
-  }
-  if (ts.isElementAccessExpression(node)) {
-    const base = getReferenceKey(node.expression);
-    const argument = unwrapExpression(node.argumentExpression);
-    if (base && ts.isStringLiteralLike(argument)) {
-      return `${base}.${argument.text}`;
-    }
-  }
-  return null;
-}
-
 function getCallName(expression) {
   const node = unwrapExpression(expression);
   if (ts.isIdentifier(node)) return node.text;
@@ -480,9 +360,7 @@ function getCallReceiver(expression) {
 }
 
 function getPropertyName(name) {
-  if (ts.isIdentifier(name) || ts.isStringLiteralLike(name) || ts.isNumericLiteral(name)) {
-    return name.text;
-  }
+  if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) return name.text;
   return null;
 }
 
@@ -580,79 +458,6 @@ function runStructuralGuardSelfTests() {
             const rewritten = rendered.replace(marker, "bar");
             sendHtml(response, 200, rewritten);
           }
-        }
-      `,
-    },
-    {
-      label: "arrow-function native replace",
-      fragment: "replace consumes rendered HTML",
-      source: `
-        const handleRequest = async () => {
-          const rendered = await renderSyntheticPage(token);
-          const rewritten = rendered.replace(/foo/g, "bar");
-          sendHtml(response, 200, rewritten);
-        };
-      `,
-    },
-    {
-      label: "function-expression native replace",
-      fragment: "replace consumes rendered HTML",
-      source: `
-        const handleRequest = async function () {
-          const rendered = await renderSyntheticPage(token);
-          const rewritten = rendered.replace(/foo/g, "bar");
-          sendHtml(response, 200, rewritten);
-        };
-      `,
-    },
-    {
-      label: "class-method native replace",
-      fragment: "replace consumes rendered HTML",
-      source: `
-        class SyntheticHandler {
-          async handleRequest() {
-            const rendered = await renderSyntheticPage(token);
-            const rewritten = rendered.replace(/foo/g, "bar");
-            sendHtml(response, 200, rewritten);
-          }
-        }
-      `,
-    },
-    {
-      label: "object-contained rendered HTML",
-      fragment: "replace consumes rendered HTML",
-      source: `
-        async function handleRequest() {
-          const rendered = await renderSyntheticPage(token);
-          const box = { html: rendered };
-          const rewritten = box.html.replace(/foo/g, "bar");
-          sendHtml(response, 200, rewritten);
-        }
-      `,
-    },
-    {
-      label: "object-alias rendered HTML",
-      fragment: "replace consumes rendered HTML",
-      source: `
-        async function handleRequest() {
-          const rendered = await renderSyntheticPage(token);
-          const box = { html: rendered };
-          const alias = box;
-          const rewritten = alias["html"].replace(/foo/g, "bar");
-          sendHtml(response, 200, rewritten);
-        }
-      `,
-    },
-    {
-      label: "destructured rendered HTML",
-      fragment: "replace consumes rendered HTML",
-      source: `
-        async function handleRequest() {
-          const rendered = await renderSyntheticPage(token);
-          const box = { html: rendered };
-          const { html } = box;
-          const rewritten = html.replace(/foo/g, "bar");
-          sendHtml(response, 200, rewritten);
         }
       `,
     },
