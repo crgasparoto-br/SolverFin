@@ -1,1 +1,71 @@
-{"schema_version":1,"classification":"systemic-escape","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:6f732331-884f-4a4e-98a6-bc17c66c8193","finding_ids":["A-001"]},"generalized_learning":{"escape_class":"partial-structural-walker-coverage","generalized_failure_pattern":"A custom AST/IR/data-flow detector can appear structurally sound while silently omitting semantically equivalent syntax containers or reference forms.","plausible_wrong_implementation":"Patch only the literal syntax that escaped instead of proving complete operation x container x reference-form coverage.","trigger_signals":["custom AST walker","manual node-kind dispatch","structural prohibition implemented by syntax traversal","taint/data-flow visitor"],"risk_families":["structural-contract"],"reusable_control":{"id":"STRUCT-WALK-COVERAGE-001","procedure":"Vary forbidden operation semantics, AST/IR container placement and access/reference form independently, and retain a canonical allowed control.","expected":"All semantically prohibited siblings are rejected without rejecting the canonical allowed path."},"prevention_rule":"Prefer complete recursive AST/IR traversal and require an explicit operation x container x reference-form matrix before closing a structural guard.","detection_rule":"Adversarial review must move the same forbidden behavior into alternate containers and computed/aliased references rather than varying only function names or operations.","transfer_cases":[{"surface":"syntax-container","case":"Move a prohibited mutation from an expression statement into a return or loop while preserving semantics.","status":"passed"},{"surface":"reference-form","case":"Change direct member access to a computed or aliased reference while preserving semantics.","status":"passed"}],"promotion_status":"promoted"},"skill_changes":[{"role":"prevention","skill":"entregar-issue","path":"references/structural-invariant-gate.md","control_id":"STRUCT-WALK-COVERAGE-001","status":"passed","validation":"Focused contract test passed and genericity validator is READY."},{"role":"detection","skill":"auditar-issue","path":"references/adversarial-control-design.md","control_id":"STRUCT-WALK-COVERAGE-001","status":"passed","validation":"Focused adversarial contract test passed and genericity validator is READY."}]}
+{
+  "schema_version": 1,
+  "classification": "systemic-escape",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:6d1cde4d-398d-45ba-9e99-20720c5b0ecd",
+    "finding_ids": [
+      "A-001",
+      "A-002"
+    ]
+  },
+  "generalized_learning": {
+    "escape_class": "partial-structural-flow-scope-propagation",
+    "generalized_failure_pattern": "A structural/data-flow detector can appear comprehensive while omitting semantically equivalent execution containers, lexical scope transitions, aggregate aliases, or documentation claims that exceed the exercised surface set.",
+    "plausible_wrong_implementation": "Patch only the literal escaped syntax instead of proving operation x execution-container x lexical-scope x aggregate-reference coverage and claim parity.",
+    "trigger_signals": [
+      "custom AST or IR walker",
+      "manual data-flow propagation",
+      "structural prohibition",
+      "lexical aliases or closures",
+      "broad guardrail documentation claim"
+    ],
+    "risk_families": [
+      "structural-contract",
+      "documentation"
+    ],
+    "reusable_control": {
+      "id": "STRUCT-FLOW-SCOPE-PROPAGATION-001",
+      "procedure": "Vary a forbidden value-flow operation across execution container, lexical capture/shadowing and aggregate/reference shape, while retaining a canonical allowed control and matching documentation claim.",
+      "expected": "All prohibited semantic siblings are rejected, intentional shadowing/canonical flow stay accepted, and documentation states only exercised coverage."
+    },
+    "prevention_rule": "Structural-flow implementations must enumerate semantic propagation surfaces (execution containers, lexical scope and aggregate/reference shapes) before implementation and include negative controls for each material surface.",
+    "detection_rule": "Adversarial review must move the same forbidden flow across function kind, closure capture/shadowing and object/array alias forms, then compare broad documentation claims against the exercised surface matrix.",
+    "transfer_cases": [
+      {
+        "surface": "execution-container",
+        "case": "Move the same forbidden flow from a declaration into an arrow or class method without changing semantics.",
+        "status": "passed"
+      },
+      {
+        "surface": "aggregate-reference",
+        "case": "Route the same forbidden value through object spread, array position or destructuring before consumption.",
+        "status": "passed"
+      },
+      {
+        "surface": "lexical-scope",
+        "case": "Capture the value in a closure and contrast with an intentionally shadowed safe binding.",
+        "status": "passed"
+      }
+    ],
+    "promotion_status": "promoted"
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "skill": "entregar-issue",
+      "path": "references/structural-invariant-gate.md",
+      "control_id": "STRUCT-FLOW-SCOPE-PROPAGATION-001",
+      "status": "passed",
+      "validation": "Focused contract test passed and genericity validator is READY."
+    },
+    {
+      "role": "detection",
+      "skill": "auditar-issue",
+      "path": "references/adversarial-control-design.md",
+      "control_id": "STRUCT-FLOW-SCOPE-PROPAGATION-001",
+      "status": "passed",
+      "validation": "Focused adversarial contract test passed and genericity validator is READY."
+    }
+  ]
+}

@@ -1,1 +1,20 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","source":{"rejection_id":"audit-rejection:6f732331-884f-4a4e-98a6-bc17c66c8193","audited_head_sha":"73924d2a6a8d797d4d1a951f1e0660c7cfc5f938"},"candidate_head_sha":"3c3326d926173a2aa8ce3466e17ffab8d0df2d4d","remediation_mode":"systemic-remediation","items":[{"source_kind":"finding","source_id":"A-001","remediation_mode":"systemic-remediation","status":"fixed","changed_files":["scripts/validate-legacy-html-post-processors.mjs"],"evidence":["The guard now recursively traverses syntax descendants with ts.forEachChild instead of enumerating a partial statement list.","Direct and computed member calls share receiver/name handling, and exact-head self-tests cover return, loop and computed-member siblings.","Reusable prevention and detection control STRUCT-WALK-COVERAGE-001 was promoted in the delivery and audit Skills."],"validations":["Canonical specification coverage READY.","Requirement attack matrix READY.","Risk saturation READY.","Focused prevention Skill test passed.","Focused detection Skill test passed.","Both Skill genericity validators READY.","CI run 4439 completed success on exact material head.","Statement visual validation run 2948 completed success on exact material head."]}],"status":"closed"}
+{
+  "schema_version": 1,
+  "rejection_id": "audit-rejection:6d1cde4d-398d-45ba-9e99-20720c5b0ecd",
+  "material_head_sha": "262b3da5536bdc84779dcf8af50e2edcfc3426c3",
+  "remediation_mode": "systemic-remediation",
+  "status": "closed",
+  "findings": [
+    {
+      "finding_id": "A-001",
+      "status": "closed",
+      "remediation": "Added a scope-aware lexical HTML-flow guard wired into npm test. Exact-material probes reject arrow/class containers, closure capture, object spread, arrays, destructuring, computed access and prior neutral/operator/container variants while accepting canonical flow and safe shadowing."
+    },
+    {
+      "finding_id": "A-002",
+      "status": "closed",
+      "remediation": "Aligned the canonical legacy HTML post-processor documentation with the two-layer structural/lexical guard and bound the claim to cross-surface exact-material controls."
+    }
+  ],
+  "evidence": "evidence/systemic-remediation-controls.txt"
+}

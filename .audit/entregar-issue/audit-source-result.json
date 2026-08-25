@@ -1,1 +1,9 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","rejection_id":"audit-rejection:6f732331-884f-4a4e-98a6-bc17c66c8193","head_sha":"73924d2a6a8d797d4d1a951f1e0660c7cfc5f938","published_head_sha":"1f79488063e18dc36a825eddbb15e76b4788ad49","status":"rejected","reason":"blocking-findings","findings":[{"id":"A-001","severity":"blocking","category":"structural-contract","title":"Structural guard permits hidden textual post-processing through uncovered AST containers/access forms","remediation_mode":"systemic-remediation","actionable":true}],"recommendations":[]}
+{
+  "schema_version": 1,
+  "kind": "independent-audit-result",
+  "rejection_id": "audit-rejection:6d1cde4d-398d-45ba-9e99-20720c5b0ecd",
+  "audited_head_sha": "8a601975cd0a548890de2f7d4ca415ebc2215c46",
+  "finding_ids": ["A-001", "A-002"],
+  "result": "rejected",
+  "summary": "Structural HTML-flow guard missed equivalent function-container and aggregate/lexical propagation forms, and documentation overstated the exercised structural coverage."
+}

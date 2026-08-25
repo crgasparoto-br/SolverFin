@@ -1,28 +1,20 @@
-SolverFin PR 642 / issue 604 systemic remediation evidence
-material_head_sha=3c3326d926173a2aa8ce3466e17ffab8d0df2d4d
+SolverFin issue 604 / PR 642 systemic remediation evidence
+material_head_sha=262b3da5536bdc84779dcf8af50e2edcfc3426c3
+work_item_start_sha=8a601975cd0a548890de2f7d4ca415ebc2215c46
+latest_rejection_id=audit-rejection:6d1cde4d-398d-45ba-9e99-20720c5b0ecd
+latest_findings=A-001,A-002
 
-Product guard changes on exact material head:
-- validateHtmlFlowArchitecture traverses function bodies recursively with ts.forEachChild.
-- taint collection reaches identifiers produced by renderer/pipeline expressions across nested syntax.
-- getCallName/getCallReceiver accept direct property access and ElementAccessExpression string members.
-- embedded structural self-tests cover native replace/replaceAll, return-contained replace, computed-member replace, loop-contained replace, concatenation, template interpolation, neutral-name consumers, pre-pipeline wrappers, plus canonical allowed flow.
+Exact material controls:
+- lexical guard blob is the exact byte payload published in material head; local sha256=08e5fc556149a880557d6f87e3206ea0dc06578521c10fe89dc85a254985ffa3.
+- discriminant harness executed the exact lexical guard against synthetic production-shaped sources.
+- rejected as required: neutral-name consumer, native replace, concatenation, template interpolation, loop container, computed member, pre-pipeline wrapper, arrow function, class method, closure capture, object spread alias, array alias, object destructuring.
+- accepted as required: canonical renderer -> applyLegacyHtmlPostProcessorPipeline -> sendHtml flow and lexical shadowing of an outer tainted binding.
+- aggregate harness output sha256=0429a41b443955bd9ce25fd839fe95b8c0f557c9f57311ea0dd8037432b6b987.
 
-Systemic prevention/detection controls:
-- entregar-issue structural-invariant-gate.md includes reusable control STRUCT-WALK-COVERAGE-001 requiring operation x AST container/position x access/reference form plus an allowed canonical control.
-- auditar-issue adversarial-control-design.md includes the same reusable control and adversarial matrix.
-- pytest test_structural_walker_coverage_contract.py: 1 passed.
-- pytest test_structural_walker_adversarial_contract.py: 1 passed.
-- validate_skill_genericity.py: READY for entregar-issue.
-- validate_skill_genericity.py: READY for auditar-issue.
+Remote delivery snapshot:
+- parent material 80445825ebd3736edcaa1b34dbc040a7c6f025ff: CI #4442 failed only at prettier --check for the two guard files; Integration API + PostgreSQL succeeded; Statement visual validation #2951 succeeded.
+- final material 262b3da5536bdc84779dcf8af50e2edcfc3426c3: this invocation's single delivery-snapshot query found CI #4443 completed/success and Statement visual validation #2952 completed/success. CI Validate monorepo passed formatting, lint, typecheck, migrations, seed, test and build; Integration API + PostgreSQL also passed. No polling, rerun or dispatch was performed.
 
-Remote exact-head snapshot, read-only:
-- CI run 4439 / run id 32833019802: completed success.
-- Statement visual validation run 2948 / run id 32833019234: completed success.
-
-Independent rejection closed by this cycle:
-- rejection_id=audit-rejection:6f732331-884f-4a4e-98a6-bc17c66c8193
-- finding=A-001
-- remediation_mode=systemic-remediation
-- literal case: prohibited rewrite nested in ReturnStatement.
-- sibling case: prohibited rewrite through computed member access rendered["replace"].
-- sibling case: prohibited rewrite inside loop container.
+Documentation control:
+- docs/LEGACY_HTML_POST_PROCESSORS.md describes the two-layer guard (structural + lexical scopes), including function-like containers, captured closures, direct/computed properties, spread aliases, destructuring, arrays, canonical allowed flow and shadowing.
+- the broad claim that final rendered HTML cannot be silently post-processed outside the canonical pipeline is now backed by discriminant controls across function-container, lexical-scope and aggregate-reference dimensions.
