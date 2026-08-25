@@ -1,0 +1,18 @@
+SolverFin issue 604 / PR 642 - independent audit remediation evidence
+material_head_sha=ec522e8972a0e6dd551e72ef7095a50a0aaa3348
+source_rejection_id=audit-rejection:cfabb38d-601f-4ed4-9f6a-9d64632d31f7
+script_git_blob_expected=23270ff69dc69ec978920f32e0968612a79a9817
+script_git_blob_observed=23270ff69dc69ec978920f32e0968612a79a9817
+script_sha256=4746e704ae0f6da9e1a9f30a6b1e87f37f74c98fb3294d0bfc623826bd5a8c9c
+node_check=PASS
+self_test_only=PASS
+self_test_output=SolverFin HTML-flow regression self-tests OK.
+template_detector_mutation=PASS_DISCRIMINANT
+mutation_exit_code=1
+mutation_expected_message=flow-regression self-test did not reject template rewrite
+mutation_output_sha256=5d86cdeae5dace14a2569e269fc2f5ffd694bf80e8210257c8937609470bc04c
+documentation_blob=dbdaf3c5ec3128b7ea7d3327fc4ae8dca8ba6ac0
+documentation_claim_check=PASS: documented template, +=, renderer-alias, assignment-destructuring, canonical-pipeline and shadowing surfaces are exercised by the exact-head self-test matrix.
+target_binding=PASS: crgasparoto-br/SolverFin issue 604 PR 642 base main head issue-604-legacy-html-post-processors.
+material_runtime_delta=PASS: latest remediation changes only scripts/validate-legacy-html-post-processors-flow-regressions.mjs; no runtime route, inventory, pipeline or SSR provider source changed.
+ci_snapshot=OBSERVED_ONCE: CI run 32871647669 in_progress; Statement visual validation run 32871647674 in_progress. Pending remote state is not treated as green evidence.

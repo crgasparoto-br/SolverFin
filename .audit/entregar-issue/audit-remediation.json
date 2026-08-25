@@ -1,1 +1,46 @@
-{"schema_version":1,"source_rejection_id":"audit-rejection:3d686ed1-a105-4594-b2c8-9c1618daa15d","material_head_sha":"41d88bf161a6e73c710871a1c4dc1640c3835de8","status":"closed","items":[{"finding_id":"A-001","status":"closed","remediation_mode":"systemic-remediation","changes":["Add final-material executable controls for += on identifiers/properties.","Track direct/chained renderer callable aliases.","Propagate taint through object/array destructuring assignments.","Reexecute cumulative structural siblings and mutation checks.","Scope canonical documentation to explicitly exercised surfaces."],"evidence":["evidence/systemic-remediation-controls.txt","evidence/flow-regression-self-tests.txt","evidence/flow-regression-mutation-checks.txt"]}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:cfabb38d-601f-4ed4-9f6a-9d64632d31f7",
+    "audit_report_sha256": "ddd54e829ecd79e3158ce501ee4482082122d2ec431b36ec0b5470f113be3cfe",
+    "audited_head_sha": "e42188fbfc00bcd90bb25ce5f2e05072edf7c7ae"
+  },
+  "candidate_head_sha": "ec522e8972a0e6dd551e72ef7095a50a0aaa3348",
+  "remediation_mode": "targeted-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "changed_files": [
+        "scripts/validate-legacy-html-post-processors-flow-regressions.mjs"
+      ],
+      "evidence": [
+        "evidence/latest-audit-remediation.txt"
+      ],
+      "validations": [
+        "node --check exact GitHub blob: passed",
+        "exact-head cumulative self-test matrix: passed",
+        "template-detector mutation control: expected failure observed"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "changed_files": [],
+      "evidence": [
+        "evidence/latest-audit-remediation.txt"
+      ],
+      "validations": [
+        "exact-head cumulative self-test matrix: passed",
+        "canonical documentation claim parity checked against reached controls"
+      ]
+    }
+  ],
+  "status": "closed"
+}
