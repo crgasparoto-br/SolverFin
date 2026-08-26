@@ -1,1 +1,10 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","status":"rejected","result":"REPROVADA","rejection_id":"audit-rejection:78f9317f-7753-430f-9781-cd4c682e08c0","head_sha":"e5ca0c8241fef7021463b7e7dc1d7214bb7e74be","material_head_sha":"a87dcd92cf0b4e20bb02222a3576ed5bf5130aba","findings":[{"id":"A-001","disposition":"blocking","status":"closed","actionable":true,"remediation_mode":"targeted-remediation","audit_escape":true,"escape_class":"cumulative-audit-control-lineage-loss","title":"Inherited retired-control lineage was truncated","evidence":"The published inherited-controls.json omitted CTRL-HANDOFF-SCOPE-EXACT-001 and CTRL-REQUIRED-GATE-REACHABILITY-001 from the cumulative retired-control ledger."}],"recommendations":[]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "kind": "independent-rejection",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810",
+  "head_sha": "2d5706170f5087e56844f355b0672e0f61de86b4",
+  "findings": [{"id":"A-001","disposition":"blocking","status":"open","actionable":true,"remediation_mode":"systemic-remediation","summary":"Renderer-function provenance was not preserved through object/array containers, property/index retrieval, spreads and destructuring before invocation."}],
+  "recommendations": []
+}

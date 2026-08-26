@@ -1,0 +1,42 @@
+SolverFin issue 604 / PR 642 - final remediation/refreeze evidence
+material_head_sha=e5ec3dc64b2ff344b28c5f203fc386845fdfcc66
+base_sha=eb089692891fb12d179bda14dead90ee178a5496
+branch=issue-604-legacy-html-post-processors
+
+Independent rejection carried forward:
+- rejection_id=audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810
+- finding=A-001
+- escape_class=semantic-provenance-container-propagation
+
+Material remediation:
+- scripts/validate-legacy-html-post-processors-flow-regressions.mjs
+  * preserves renderer provenance through array rest by slicing/renumbering array shapes;
+  * preserves renderer provenance through object rest by carrying non-excluded keys;
+  * handles rest in declaration and assignment forms;
+  * resolves statically computable object property names;
+  * adds rejected controls for array/object rest, computed properties/destructuring, and mutation discriminants.
+- scripts/validate-legacy-html-post-processors-lexical.mjs
+  * applies the same rest/computed propagation model to rendered-HTML taint;
+  * preserves array span/offset across spreads so rest/index recovery remains exact;
+  * adds declaration/assignment rest, computed-key, shifted-spread and mutation controls.
+
+Cumulative scope check:
+- compare 7d50cefddb5385ddd222b998a311f68c83ee05ca..e5ec3dc64b2ff344b28c5f203fc386845fdfcc66 shows no application/runtime behavior file changed outside the two guard scripts; the remaining differences are prior/stale delivery-result artifacts that are being recertified in the result-only child.
+- therefore previously certified product-route behavior remains content-identical while the exact guards covering residual HTML dependency were strengthened.
+
+Exact-head remote validation:
+- GitHub Actions CI run 32917666846 / run #4467: completed success on e5ec3dc64b2ff344b28c5f203fc386845fdfcc66.
+- Validate monorepo job 98024655837: environment example, Prisma schema, demo seed check, Check formatting, Lint, Typecheck, Prisma client, migrations, seed, Test and Build all completed success.
+- The repository Test step includes legacy-html-post-processors:check, so the flow-regression and lexical self-test matrices executed on the exact material head.
+- Integration API + PostgreSQL job 98024655970: build packages, migrations, seed, API integration tests and import-statement consistency all completed success.
+- Statement visual validation run 32917666834 / run #2976: completed success on the same material head.
+
+Discriminating closure for A-001:
+- literal: renderer recovered after array-rest destructuring remains provenance-bearing and a post-render rewrite is rejected.
+- sibling 1: object-rest destructuring carries remaining renderer provenance.
+- sibling 2: array/object rest assignment carries provenance, not only declaration binding.
+- sibling 3: static computed property definitions/destructuring retain the same provenance as direct property syntax.
+- sibling 4: shifted array spread preserves index/span before a later rest/index recovery.
+- mutation controls explicitly model the prior wrong behavior (selecting the rest binding/index directly) and require that model not to recognize the recovered protected value, while the new slice/omit propagation does recognize it.
+
+Result: systemic remediation is closed on the exact material head; independent audit is still a separate context and is not claimed here.

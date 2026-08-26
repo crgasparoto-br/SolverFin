@@ -1,1 +1,37 @@
-{"schema_version":1,"status":"closed","candidate_head_sha":"a87dcd92cf0b4e20bb02222a3576ed5bf5130aba","source_rejection_id":"audit-rejection:78f9317f-7753-430f-9781-cd4c682e08c0","remediation_mode":"targeted-remediation","items":[{"finding_id":"A-001","status":"fixed","cause":"The prior result-only package regenerated inherited-controls.json from active controls and silently lost two already-retired lineage IDs.","changed_files":[".audit/entregar-issue/inherited-controls.json",".audit/entregar-issue/audit-escape-closure.json",".audit/entregar-issue/learning-closure.json",".audit/entregar-issue/audit-remediation.json",".audit/entregar-issue/audit-source-result.json",".audit/entregar-issue/evidence/critical-refreeze-controls.txt",".audit/entregar-issue/handoff-ready.json"],"controls":["AUDIT-CUMULATIVE-LINEAGE-001"]}],"validations":[{"kind":"cumulative-lineage","status":"passed","evidence":"Both historical retired control IDs are restored with superseded dispositions and replacements."},{"kind":"audit-escape","status":"passed","escape_id":"AUDIT-ESCAPE-CUMULATIVE-LINEAGE-001"}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810",
+    "audited_head_sha": "2d5706170f5087e56844f355b0672e0f61de86b4"
+  },
+  "candidate_head_sha": "e5ec3dc64b2ff344b28c5f203fc386845fdfcc66",
+  "remediation_mode": "systemic-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "systemic-remediation",
+      "status": "fixed",
+      "changed_files": [
+        "scripts/validate-legacy-html-post-processors-flow-regressions.mjs",
+        "scripts/validate-legacy-html-post-processors-lexical.mjs"
+      ],
+      "evidence": [
+        "evidence/final-refreeze-validation.txt"
+      ],
+      "validations": [
+        "renderer provenance through array/object rest declarations and assignments: covered",
+        "static computed property definitions/destructuring: covered",
+        "shifted array spread span/index propagation: covered",
+        "discriminating former-rest-propagation mutation controls: passed",
+        "GitHub Actions CI 32917666846 on exact material head: success",
+        "exact repository formatter, lint, typecheck, test and build gates: passed",
+        "Statement visual validation 32917666834 on exact material head: success",
+        "PROV-CONTAINER-001 prevention and detection skill controls remain cumulative"
+      ]
+    }
+  ],
+  "status": "closed"
+}

@@ -1,0 +1,13 @@
+material_head_sha=41d88bf161a6e73c710871a1c4dc1640c3835de8
+work_item_start_sha=15c0aac3cb2b0844ec0494f698e1055543bee169
+changed_paths=docs/LEGACY_HTML_POST_PROCESSORS.md,package.json,scripts/validate-legacy-html-post-processors-flow-regressions.mjs
+remote_ci_snapshot=CI #4445 and visual #2954 were observed in_progress on intermediate material b4f2f703; final material 41d88bf had pending-no-run at its single allowed snapshot and no polling was performed.
+self_test_status=passed
+self_test_cases=compound assignment scalar/property; renderer alias/direct chain; object/array assignment destructuring; neutral-name/pre-pipeline; loop/computed; concat/template; closure; arrow/class; object spread/array/declaration destructuring; canonical allowed; shadowing allowed
+mutation_status=passed
+mutation_compound=disabling PlusEquals detector caused both compound-assignment self-tests to fail
+mutation_renderer_alias=disabling renderer alias propagation caused direct and chained alias self-tests to fail
+mutation_assignment_destructuring=disabling assignment destructuring propagation caused object and array assignment self-tests to fail
+documentation_claim=guardrail text enumerates exercised surfaces and explicitly avoids universal syntax claims
+target_binding_status=passed; live target remains crgasparoto-br/SolverFin issue 604 PR 642 base main head issue-604-legacy-html-post-processors.
+terminal_handoff_prepublication=planned as direct result-only child of final material with only certificate allowlisted .audit/entregar-issue paths; terminal validator must pass before publication and again after fresh remote read.

@@ -25,6 +25,7 @@ import { sendHtml, sendJson } from "./dev-server/http.js";
 import { enhanceInboxListLayout } from "./dev-server/inbox-list-layout-enhancement.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { enhanceInboxWithStructuredPayloads } from "./dev-server/inbox-structured-payload-enhancement.js";
+import { applyLegacyHtmlPostProcessorPipeline } from "./dev-server/legacy-html-post-processors.js";
 import {
   enhanceCardListSorting,
   enhanceStatementListSorting,
@@ -182,9 +183,25 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/contas-cartoes" && token) {
-    const html = enhanceAccountsCardsTabs(await renderAccountsCardsPage(token));
-    const standardizedHtml = standardizeAccountsCardsPage(html);
-    sendHtml(response, 200, enhanceAccountsCardsActionMenus(standardizedHtml));
+    const html = await applyLegacyHtmlPostProcessorPipeline(
+      "/contas-cartoes",
+      await renderAccountsCardsPage(token),
+      [
+        {
+          id: "accounts-cards-tabs",
+          transform: (currentHtml) => enhanceAccountsCardsTabs(currentHtml),
+        },
+        {
+          id: "accounts-cards-standardization",
+          transform: (currentHtml) => standardizeAccountsCardsPage(currentHtml),
+        },
+        {
+          id: "accounts-cards-action-menus",
+          transform: (currentHtml) => enhanceAccountsCardsActionMenus(currentHtml),
+        },
+      ],
+    );
+    sendHtml(response, 200, html);
     return;
   }
 
@@ -194,7 +211,17 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/categorias" && token) {
-    sendHtml(response, 200, enhanceCategoriesIconsAndTooltips(await renderCategoriesPage(token)));
+    const html = await applyLegacyHtmlPostProcessorPipeline(
+      "/categorias",
+      await renderCategoriesPage(token),
+      [
+        {
+          id: "categories-icons-tooltips",
+          transform: (currentHtml) => enhanceCategoriesIconsAndTooltips(currentHtml),
+        },
+      ],
+    );
+    sendHtml(response, 200, html);
     return;
   }
 
@@ -208,11 +235,29 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       await materializeLocally("card", token, url);
     }
 
-    const html = await renderCardsPageWithMonthNavigation(token, url);
-    const sortedHtml = enhanceCardListSorting(html, url);
-    const groupedHtml = enhanceCardInstrumentSubtotals(sortedHtml);
-    const enhancedHtml = enhanceCardsInterface(groupedHtml);
-    sendHtml(response, 200, finalizeCardsInterface(enhancedHtml));
+    const html = await applyLegacyHtmlPostProcessorPipeline(
+      "/cartoes",
+      await renderCardsPageWithMonthNavigation(token, url),
+      [
+        {
+          id: "card-list-sorting",
+          transform: (currentHtml) => enhanceCardListSorting(currentHtml, url),
+        },
+        {
+          id: "card-instrument-subtotals",
+          transform: (currentHtml) => enhanceCardInstrumentSubtotals(currentHtml),
+        },
+        {
+          id: "cards-interface",
+          transform: (currentHtml) => enhanceCardsInterface(currentHtml),
+        },
+        {
+          id: "cards-interface-finalizer",
+          transform: (currentHtml) => finalizeCardsInterface(currentHtml),
+        },
+      ],
+    );
+    sendHtml(response, 200, html);
     return;
   }
 
@@ -226,16 +271,44 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       await materializeLocally("account", token, url);
     }
 
-    const html = await renderTransactionsPage(token, url);
-    const sortedHtml = enhanceStatementListSorting(html, url);
-    const disclosedHtml = enhanceAccountRemunerationDisclosure(sortedHtml);
-    sendHtml(response, 200, enhanceStatementInsightContext(disclosedHtml, url));
+    const html = await applyLegacyHtmlPostProcessorPipeline(
+      "/lancamentos",
+      await renderTransactionsPage(token, url),
+      [
+        {
+          id: "statement-list-sorting",
+          transform: (currentHtml) => enhanceStatementListSorting(currentHtml, url),
+        },
+        {
+          id: "account-remuneration-disclosure",
+          transform: (currentHtml) => enhanceAccountRemunerationDisclosure(currentHtml),
+        },
+        {
+          id: "statement-insight-context",
+          transform: (currentHtml) => enhanceStatementInsightContext(currentHtml, url),
+        },
+      ],
+    );
+    sendHtml(response, 200, html);
     return;
   }
 
   if (url.pathname === "/inbox" && token) {
-    const html = await enhanceInboxWithStructuredPayloads(await renderInboxPage(token), token);
-    sendHtml(response, 200, enhanceInboxListLayout(html, url));
+    const html = await applyLegacyHtmlPostProcessorPipeline(
+      "/inbox",
+      await renderInboxPage(token),
+      [
+        {
+          id: "inbox-structured-payload",
+          transform: (currentHtml) => enhanceInboxWithStructuredPayloads(currentHtml, token),
+        },
+        {
+          id: "inbox-list-layout",
+          transform: (currentHtml) => enhanceInboxListLayout(currentHtml, url),
+        },
+      ],
+    );
+    sendHtml(response, 200, html);
     return;
   }
 
