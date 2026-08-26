@@ -137,7 +137,10 @@ async function finalize() {
     scenarios: results,
   };
 
-  await writeFile(join(outputDir, "visual-gate-index.json"), `${JSON.stringify(index, null, 2)}\n`);
+  await writeFile(
+    join(outputDir, "visual-gate-index.json"),
+    `${JSON.stringify(index, null, 2)}\n`,
+  );
   await writeFile(join(outputDir, "VISUAL-GATE.md"), renderMarkdown(index));
   if (failures.length > 0) {
     await writeFile(
