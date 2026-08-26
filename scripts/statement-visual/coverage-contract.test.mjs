@@ -8,6 +8,12 @@ import {
   pilotRoutes,
   visualScenarioModules,
 } from "./coverage-contract.mjs";
+import {
+  buildExecutionResult,
+  buildVisualScenarioExecutions,
+  formatExecutionContext,
+  getVisualScenarioModules,
+} from "./issue-606-remediation-contract.mjs";
 import { validateCoverageContract } from "../validate-statement-visual-coverage.mjs";
 
 test("canonical visual coverage contract is internally consistent", () => {
@@ -20,7 +26,9 @@ test("equivalent route/state/layout/interaction/data fingerprints are rejected",
   duplicate.id = "duplicate-fingerprint-control";
   duplicate.module = "scripts/statement-visual/duplicate-fingerprint-control.mjs";
   duplicate.coverage = [structuredClone(visualScenarioModules[0].coverage[0])];
-  const result = validateCoverageContract({ scenarios: [...visualScenarioModules, duplicate] });
+  const result = validateCoverageContract({
+    scenarios: [...getVisualScenarioModules(visualScenarioModules), duplicate],
+  });
   assert.ok(
     result.errors.some((error) => error.includes("Equivalent visual fingerprint duplicated")),
   );
@@ -33,17 +41,57 @@ test("critical component coverage cannot disappear silently", () => {
   assert.ok(result.errors.some((error) => error.includes("MissingCriticalPrimitive")));
 });
 
-test("a migrated pilot requires its own alternate-state browser evidence", () => {
-  const pilots = pilotRoutes.map((pilot) =>
-    pilot.route === "/dashboard" ? { ...pilot, adoption: "migrated" } : pilot,
+test("a foundation fixture cannot substitute a pilot route alternate state", () => {
+  const scenarios = getVisualScenarioModules(visualScenarioModules).filter(
+    (scenario) => scenario.id !== "dashboard-empty-state",
   );
-  const result = validateCoverageContract({ pilots });
+  const dashboardPilot = pilotRoutes.find((pilot) => pilot.route === "/dashboard");
+  assert.ok(dashboardPilot);
+
+  const result = validateCoverageContract({ scenarios, pilots: [dashboardPilot] });
   assert.ok(
     result.errors.some(
       (error) =>
-        error.includes("Migrated pilot route requires route-specific") &&
+        error.includes("requires route-specific empty/error/alternate coverage") &&
         error.includes("/dashboard"),
     ),
+  );
+});
+
+test("a secondary coverage failure keeps its exact route and state identity", () => {
+  const executions = buildVisualScenarioExecutions(getVisualScenarioModules(visualScenarioModules));
+  const emptyReportExecution = executions.find(
+    (execution) =>
+      execution.sourceScenarioId === "reports-category-evolution" &&
+      execution.coverage[0]?.state === "empty",
+  );
+  assert.ok(emptyReportExecution);
+
+  const failure = buildExecutionResult(
+    emptyReportExecution,
+    { code: 1, signal: null, error: null },
+    "exit=1",
+  );
+  assert.equal(failure.result, "failed");
+  assert.equal(failure.route, "/relatorios");
+  assert.equal(failure.state, "empty");
+  assert.match(formatExecutionContext(emptyReportExecution), /state=empty/);
+  assert.doesNotMatch(formatExecutionContext(emptyReportExecution), /state=normal/);
+});
+
+test("new multi-coverage scenarios fail closed without a focused execution override", () => {
+  const first = structuredClone(visualScenarioModules[0].coverage[0]);
+  const second = { ...structuredClone(first), state: "empty", dataProfile: "empty-control" };
+  assert.throws(
+    () =>
+      buildVisualScenarioExecutions([
+        {
+          id: "unmapped-multi-coverage-control",
+          module: "scripts/statement-visual/unmapped-control.mjs",
+          coverage: [first, second],
+        },
+      ]),
+    /requires an explicit one-record execution module override/,
   );
 });
 

@@ -10,6 +10,10 @@ import {
   pilotRoutes,
   visualScenarioModules,
 } from "./statement-visual/coverage-contract.mjs";
+import {
+  buildVisualScenarioExecutions,
+  getVisualScenarioModules,
+} from "./statement-visual/issue-606-remediation-contract.mjs";
 
 const ALTERNATIVE_STATES = new Set([
   "alternate",
@@ -30,7 +34,7 @@ const REQUIRED_COVERAGE_FIELDS = [
 ];
 
 export function validateCoverageContract({
-  scenarios = visualScenarioModules,
+  scenarios = getVisualScenarioModules(visualScenarioModules),
   pilots = pilotRoutes,
   criticalComponents = criticalStructuralComponents,
   legacyBaselineIds = legacyProcessorBaselineIds,
@@ -58,6 +62,19 @@ export function validateCoverageContract({
     modules.add(scenario.module);
     if (!Array.isArray(scenario.coverage) || scenario.coverage.length === 0) {
       errors.push(`Scenario ${scenario.id} has no coverage records.`);
+    }
+  }
+
+  let executions = [];
+  try {
+    executions = buildVisualScenarioExecutions(scenarios);
+  } catch (error) {
+    errors.push(`Could not build one-record visual executions: ${serializeError(error)}.`);
+  }
+
+  for (const execution of executions) {
+    if (!Array.isArray(execution.coverage) || execution.coverage.length !== 1) {
+      errors.push(`Execution ${execution.id} is not bound to exactly one coverage record.`);
     }
   }
 
@@ -127,23 +144,9 @@ export function validateCoverageContract({
     const hasRouteAlternative = routeRecords.some((record) => {
       return ALTERNATIVE_STATES.has(record.state);
     });
-    const hasFoundationAlternative = records.some((record) => {
-      return (
-        record.realBrowser === true &&
-        ALTERNATIVE_STATES.has(record.state) &&
-        record.archetypeSupport?.includes(pilot.archetype)
-      );
-    });
-
-    if (pilot.adoption === "migrated") {
-      if (!hasRouteAlternative) {
-        errors.push(
-          `Migrated pilot route requires route-specific empty/error/alternate coverage: ${pilot.route}.`,
-        );
-      }
-    } else if (!hasRouteAlternative && !hasFoundationAlternative) {
+    if (!hasRouteAlternative) {
       errors.push(
-        `Pilot route ${pilot.route} lacks route or foundation alternate-state coverage for ${pilot.archetype}.`,
+        `Pilot route requires route-specific empty/error/alternate coverage: ${pilot.route}.`,
       );
     }
   }
@@ -162,7 +165,7 @@ export function validateCoverageContract({
     }
   }
 
-  return { errors, records };
+  return { errors, records, scenarios, executions };
 }
 
 export async function validateRepositoryCoverageContract({ root = process.cwd() } = {}) {
@@ -171,13 +174,18 @@ export async function validateRepositoryCoverageContract({ root = process.cwd() 
   const currentLegacyIds = [...legacySource.matchAll(/\bid:\s*"([^"]+)"/g)].map(
     (match) => match[1],
   );
-  const result = validateCoverageContract({ currentLegacyIds });
+  const scenarios = getVisualScenarioModules(visualScenarioModules);
+  const result = validateCoverageContract({ scenarios, currentLegacyIds });
 
-  for (const scenario of visualScenarioModules) {
+  const modulePaths = new Set([
+    ...scenarios.map((scenario) => scenario.module),
+    ...result.executions.map((execution) => execution.module),
+  ]);
+  for (const modulePath of modulePaths) {
     try {
-      await access(`${root}/${scenario.module}`, fsConstants.R_OK);
+      await access(`${root}/${modulePath}`, fsConstants.R_OK);
     } catch {
-      result.errors.push(`Registered visual scenario module does not exist: ${scenario.module}.`);
+      result.errors.push(`Registered visual execution module does not exist: ${modulePath}.`);
     }
   }
 
@@ -196,7 +204,7 @@ function serializeError(error) {
 async function main() {
   const result = await validateRepositoryCoverageContract();
   console.log(
-    `Visual coverage contract passed: ${visualScenarioModules.length} modules, ${result.records.length} coverage fingerprints, ${pilotRoutes.length} pilot routes.`,
+    `Visual coverage contract passed: ${result.scenarios.length} modules, ${result.executions.length} one-record executions, ${result.records.length} coverage fingerprints, ${pilotRoutes.length} pilot routes.`,
   );
 }
 

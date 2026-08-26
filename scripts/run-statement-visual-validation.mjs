@@ -6,11 +6,20 @@ import {
   flattenCoverageRecords,
   visualScenarioModules,
 } from "./statement-visual/coverage-contract.mjs";
+import {
+  buildExecutionEnvironment,
+  buildExecutionResult,
+  buildVisualScenarioExecutions,
+  formatExecutionContext,
+  getVisualScenarioModules,
+} from "./statement-visual/issue-606-remediation-contract.mjs";
 import { validateRepositoryCoverageContract } from "./validate-statement-visual-coverage.mjs";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 await mkdir(outputDir, { recursive: true });
 
+const registeredScenarios = getVisualScenarioModules(visualScenarioModules);
+const executionScenarios = buildVisualScenarioExecutions(registeredScenarios);
 const results = [];
 const failures = [];
 let contractValidation;
@@ -21,7 +30,9 @@ try {
 } catch (error) {
   const failure = {
     scenarioId: "coverage-contract",
+    sourceScenarioId: "coverage-contract",
     module: "scripts/validate-statement-visual-coverage.mjs",
+    coverageIndex: 0,
     route: "contract://visual-gate",
     state: "contract",
     layout: "n/a",
@@ -35,7 +46,7 @@ try {
 }
 
 if (contractReady) {
-  for (const scenario of visualScenarioModules) {
+  for (const scenario of executionScenarios) {
     const startedAt = new Date().toISOString();
     const result = await runScenario(scenario);
     results.push({ ...result, startedAt, finishedAt: new Date().toISOString() });
@@ -51,12 +62,11 @@ if (contractReady) {
 }
 
 async function runScenario(scenario) {
-  const primary = scenario.coverage[0];
-  const context = formatContext(scenario, primary);
+  const context = formatExecutionContext(scenario);
   console.log(`[visual-gate] START ${context}`);
   const child = spawn(process.execPath, [scenario.module], {
     cwd: process.cwd(),
-    env: process.env,
+    env: buildExecutionEnvironment(scenario),
     stdio: "inherit",
   });
 
@@ -69,35 +79,21 @@ async function runScenario(scenario) {
     });
   });
 
-  if (outcome.error || outcome.code !== 0) {
-    const message = outcome.error
+  const failed = outcome.error || outcome.code !== 0;
+  const message = failed
+    ? outcome.error
       ? serializeError(outcome.error)
-      : `exit=${outcome.code ?? "null"}${outcome.signal ? ` signal=${outcome.signal}` : ""}`;
-    console.error(`[visual-gate] FAIL ${context} :: ${message}`);
-    return {
-      scenarioId: scenario.id,
-      module: scenario.module,
-      route: primary.route,
-      state: primary.state,
-      layout: primary.layout,
-      interaction: primary.interaction,
-      result: "failed",
-      message,
-      coverage: scenario.coverage.map(toEvidenceCoverage),
-    };
-  }
+      : `exit=${outcome.code ?? "null"}${outcome.signal ? ` signal=${outcome.signal}` : ""}`
+    : undefined;
+  const result = buildExecutionResult(scenario, outcome, message);
+  result.coverage = scenario.coverage.map(toEvidenceCoverage);
 
-  console.log(`[visual-gate] PASS ${context}`);
-  return {
-    scenarioId: scenario.id,
-    module: scenario.module,
-    route: primary.route,
-    state: primary.state,
-    layout: primary.layout,
-    interaction: primary.interaction,
-    result: "passed",
-    coverage: scenario.coverage.map(toEvidenceCoverage),
-  };
+  if (failed) {
+    console.error(`[visual-gate] FAIL ${context} :: ${message}`);
+  } else {
+    console.log(`[visual-gate] PASS ${context}`);
+  }
+  return result;
 }
 
 function toEvidenceCoverage(record) {
@@ -117,13 +113,9 @@ function toEvidenceCoverage(record) {
   };
 }
 
-function formatContext(scenario, coverage) {
-  return `scenario=${scenario.id} route=${coverage.route} state=${coverage.state} layout=${coverage.layout} interaction=${coverage.interaction}`;
-}
-
 async function finalize() {
   const index = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     commit: process.env.GITHUB_SHA ?? "local",
     artifactName:
@@ -131,12 +123,15 @@ async function finalize() {
         ? `statement-visual-evidence-${process.env.GITHUB_SHA}`
         : "statement-visual-evidence-local",
     contract: {
-      modules: visualScenarioModules.length,
+      modules: registeredScenarios.length,
+      executionUnits: executionScenarios.length,
       coverageFingerprints: contractValidation?.records.length ?? 0,
     },
     failures: failures.map((failure) => ({
       scenarioId: failure.scenarioId,
+      sourceScenarioId: failure.sourceScenarioId,
       module: failure.module,
+      coverageIndex: failure.coverageIndex,
       route: failure.route,
       state: failure.state,
       layout: failure.layout,
@@ -157,7 +152,7 @@ async function finalize() {
       `${failures
         .map(
           (failure) =>
-            `[${failure.scenarioId}] route=${failure.route} state=${failure.state} layout=${failure.layout} interaction=${failure.interaction} :: ${failure.message}`,
+            `[${failure.scenarioId}] sourceScenario=${failure.sourceScenarioId} route=${failure.route} state=${failure.state} layout=${failure.layout} interaction=${failure.interaction} :: ${failure.message}`,
         )
         .join("\n")}\n`,
     );
@@ -165,11 +160,11 @@ async function finalize() {
 
   if (failures.length > 0) {
     const failureSummary =
-      `[visual-gate] ${failures.length} scenario(s) failed. ` +
+      `[visual-gate] ${failures.length} coverage scenario(s) failed. ` +
       `See ${outputDir}/visual-gate-index.json.`;
     console.error(failureSummary);
   } else {
-    console.log(`[visual-gate] ${results.length} registered scenario modules passed.`);
+    console.log(`[visual-gate] ${results.length} registered coverage executions passed.`);
   }
 }
 
@@ -177,10 +172,10 @@ function renderMarkdown(index) {
   const rows = index.scenarios
     .map(
       (scenario) =>
-        `| ${scenario.scenarioId} | ${scenario.route} | ${scenario.state} | ${scenario.layout} | ${scenario.interaction} | ${scenario.result} |`,
+        `| ${scenario.scenarioId} | ${scenario.sourceScenarioId} | ${scenario.route} | ${scenario.state} | ${scenario.layout} | ${scenario.interaction} | ${scenario.result} |`,
     )
     .join("\n");
-  return `# Visual gate evidence\n\n- Commit: \`${index.commit}\`\n- Artifact: \`${index.artifactName}\`\n- Registered modules: ${index.contract.modules}\n- Coverage fingerprints: ${index.contract.coverageFingerprints}\n- Failures: ${index.failures.length}\n\n| Scenario | Route | State | Layout | Interaction | Result |\n| --- | --- | --- | --- | --- | --- |\n${rows}\n`;
+  return `# Visual gate evidence\n\n- Commit: \`${index.commit}\`\n- Artifact: \`${index.artifactName}\`\n- Registered modules: ${index.contract.modules}\n- Execution units: ${index.contract.executionUnits}\n- Coverage fingerprints: ${index.contract.coverageFingerprints}\n- Failures: ${index.failures.length}\n\n| Scenario | Source scenario | Route | State | Layout | Interaction | Result |\n| --- | --- | --- | --- | --- | --- | --- |\n${rows}\n`;
 }
 
 function serializeError(error) {
