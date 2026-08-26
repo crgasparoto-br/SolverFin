@@ -1,0 +1,47 @@
+Parent epic: #590
+Depends on: #600, #601
+
+## Objetivo
+
+Definir padrões de composição para as classes principais de tela do SolverFin, reduzindo variação arbitrária entre rotas.
+
+## Arquétipos mínimos
+
+1. cockpit/dashboard;
+2. listagem/extrato;
+3. master-detail;
+4. cadastro/configuração;
+5. análise/relatório;
+6. revisão/inbox.
+
+## Escopo
+
+Para cada arquétipo definir:
+
+- hierarquia e ordem de informação;
+- ação primária e ações secundárias;
+- regiões de filtros/busca;
+- estados loading/vazio/erro/sucesso;
+- estratégia desktop/mobile;
+- comportamento de detalhe/modal/drawer;
+- requisitos de moeda quando houver valores financeiros;
+- exemplos fictícios e critérios de uso.
+
+## Critérios de aceite
+
+- [ ] cada tela-piloto pode ser mapeada para um arquétipo sem exceção ad hoc relevante;
+- [ ] padrões são implementáveis pelas primitives de #601;
+- [ ] hierarquia visual não depende de cards para toda informação;
+- [ ] estados e responsividade são explícitos;
+- [ ] documentação evita prescrever estética subjetiva não testável.
+
+## Fora de escopo
+
+- mockup pixel-perfect de todas as rotas;
+- criação de nova rota.
+
+## Referências
+
+- #590
+- `docs/EVOLUTION_STRATEGY.md`
+- `docs/DESIGN_SYSTEM.md`
