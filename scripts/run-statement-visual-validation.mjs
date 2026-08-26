@@ -8,8 +8,7 @@ import {
 } from "./statement-visual/coverage-contract.mjs";
 import { validateRepositoryCoverageContract } from "./validate-statement-visual-coverage.mjs";
 
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 await mkdir(outputDir, { recursive: true });
 
 const results = [];
@@ -58,9 +57,7 @@ async function runScenario(scenario) {
 
   const outcome = await new Promise((resolve) => {
     child.once("error", (error) => resolve({ code: null, signal: null, error }));
-    child.once("exit", (code, signal) =>
-      resolve({ code, signal, error: null }),
-    );
+    child.once("exit", (code, signal) => resolve({ code, signal, error: null }));
   });
 
   if (outcome.error || outcome.code !== 0) {
@@ -140,10 +137,7 @@ async function finalize() {
     scenarios: results,
   };
 
-  await writeFile(
-    join(outputDir, "visual-gate-index.json"),
-    `${JSON.stringify(index, null, 2)}\n`,
-  );
+  await writeFile(join(outputDir, "visual-gate-index.json"), `${JSON.stringify(index, null, 2)}\n`);
   await writeFile(join(outputDir, "VISUAL-GATE.md"), renderMarkdown(index));
   if (failures.length > 0) {
     await writeFile(

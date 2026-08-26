@@ -80,6 +80,19 @@ try {
 
 function assertFoundation(value, width) {
   assert.equal(value.viewportWidth, width);
+  assert.ok(
+    value.contentViewportWidth > 0 && value.contentViewportWidth <= value.viewportWidth,
+    `Invalid content viewport at ${width}px`,
+  );
+  assert.equal(
+    value.contentViewportWidth + value.verticalScrollbarWidth,
+    value.viewportWidth,
+    `Viewport accounting mismatch at ${width}px`,
+  );
+  assert.ok(
+    value.verticalScrollbarWidth >= 0 && value.verticalScrollbarWidth < 40,
+    `Unexpected vertical scrollbar width at ${width}px`,
+  );
   assert.equal(value.documentFits, true, `Foundation states overflow at ${width}px`);
   assert.deepEqual(value.states.sort(), ["empty", "error", "loading", "permission", "unavailable"]);
   assert.equal(value.loadingBusy, "true");
@@ -96,6 +109,7 @@ async function inspectFoundation(cdp) {
   return evaluate(
     cdp,
     `(() => {
+      const root = document.documentElement;
       const states = Array.from(document.querySelectorAll('.sf-state-panel')).map((node) => node.dataset.state).filter(Boolean);
       const interactive = Array.from(document.querySelectorAll('button'));
       const heights = interactive.map((node) => node.getBoundingClientRect().height).filter((height) => height > 0);
@@ -107,8 +121,10 @@ async function inspectFoundation(cdp) {
         return columns ? columns.split(/\\s+/).length : 0;
       };
       return {
-        viewportWidth: document.documentElement.clientWidth,
-        documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        viewportWidth: window.innerWidth,
+        contentViewportWidth: root.clientWidth,
+        verticalScrollbarWidth: window.innerWidth - root.clientWidth,
+        documentFits: root.scrollWidth <= root.clientWidth + 1,
         states,
         loadingBusy: document.querySelector('[data-state="loading"]')?.getAttribute('aria-busy') ?? null,
         errorRole: document.querySelector('[data-state="error"]')?.getAttribute('role') ?? null,
