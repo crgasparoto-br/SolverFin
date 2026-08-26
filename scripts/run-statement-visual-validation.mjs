@@ -184,5 +184,5 @@ function renderMarkdown(index) {
 }
 
 function serializeError(error) {
-  return error instanceof Error ? error.stack ?? error.message : String(error);
+  return error instanceof Error ? (error.stack ?? error.message) : String(error);
 }
