@@ -1,0 +1,11 @@
+material_head_sha=a9ee217cca966ab4d149a2572e4d2a34b7e64be7
+remote_blob_sha=ce2b2da4c7c10f362ed804603ce555f71d0d8be9
+local_git_blob_sha=ce2b2da4c7c10f362ed804603ce555f71d0d8be9
+archetypes=6
+pilot_mappings=7
+max_line_length=99
+money_explicit_currency=present
+subjective_aesthetic_negative_control=present
+cards_not_universal=present
+scope_reduction_boundary_line=338
+result=PASS
