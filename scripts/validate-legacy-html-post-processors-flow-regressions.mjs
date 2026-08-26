@@ -71,6 +71,36 @@ function selectShape(shape, key) {
   };
 }
 
+function omitShapeKeys(shape, keys) {
+  const excluded = new Set(keys);
+  const keep = (path) => {
+    if (!path) return null;
+    const [head] = path.split(".");
+    return excluded.has(head) ? null : path;
+  };
+  return {
+    html: mapPaths(shape.html, keep),
+    renderer: mapPaths(shape.renderer, keep),
+    arraySpan: null,
+  };
+}
+
+function sliceArrayShape(shape, startIndex) {
+  const slice = (path) => {
+    if (!path) return null;
+    const [head, ...tail] = path.split(".");
+    const index = Number(head);
+    if (!Number.isInteger(index) || index < startIndex) return null;
+    const shifted = String(index - startIndex);
+    return tail.length > 0 ? `${shifted}.${tail.join(".")}` : shifted;
+  };
+  return {
+    html: mapPaths(shape.html, slice),
+    renderer: mapPaths(shape.renderer, slice),
+    arraySpan: Math.max(0, inferArraySpan(shape) - startIndex),
+  };
+}
+
 function shiftArrayShape(shape, offset) {
   const shift = (path) => {
     const [head, ...tail] = path.split(".");
@@ -377,13 +407,19 @@ function declarePattern(pattern, shape, scope) {
   }
 
   if (ts.isObjectBindingPattern(pattern)) {
+    const excludedKeys = [];
     for (const element of pattern.elements) {
+      if (element.dotDotDotToken) {
+        declarePattern(element.name, omitShapeKeys(shape, excludedKeys), scope);
+        continue;
+      }
       const key = element.propertyName
         ? getPropertyName(element.propertyName)
         : ts.isIdentifier(element.name)
           ? element.name.text
           : null;
       if (key === null) continue;
+      excludedKeys.push(key);
       declarePattern(element.name, selectShape(shape, key), scope);
     }
     return;
@@ -392,7 +428,10 @@ function declarePattern(pattern, shape, scope) {
   if (ts.isArrayBindingPattern(pattern)) {
     pattern.elements.forEach((element, index) => {
       if (!ts.isBindingElement(element)) return;
-      declarePattern(element.name, selectShape(shape, String(index)), scope);
+      const selected = element.dotDotDotToken
+        ? sliceArrayShape(shape, index)
+        : selectShape(shape, String(index));
+      declarePattern(element.name, selected, scope);
     });
   }
 }
@@ -406,14 +445,21 @@ function assignTarget(target, shape, scope) {
   }
 
   if (ts.isObjectLiteralExpression(node)) {
+    const excludedKeys = [];
     for (const property of node.properties) {
+      if (ts.isSpreadAssignment(property)) {
+        assignTarget(property.expression, omitShapeKeys(shape, excludedKeys), scope);
+        continue;
+      }
       if (ts.isShorthandPropertyAssignment(property)) {
+        excludedKeys.push(property.name.text);
         assignTarget(property.name, selectShape(shape, property.name.text), scope);
         continue;
       }
       if (ts.isPropertyAssignment(property)) {
         const key = getPropertyName(property.name);
         if (key !== null) {
+          excludedKeys.push(key);
           assignTarget(property.initializer, selectShape(shape, key), scope);
         }
       }
@@ -423,7 +469,9 @@ function assignTarget(target, shape, scope) {
 
   if (ts.isArrayLiteralExpression(node)) {
     node.elements.forEach((element, index) => {
-      if (ts.isOmittedExpression(element) || ts.isSpreadElement(element)) {
+      if (ts.isOmittedExpression(element)) return;
+      if (ts.isSpreadElement(element)) {
+        assignTarget(element.expression, sliceArrayShape(shape, index), scope);
         return;
       }
       assignTarget(element, selectShape(shape, String(index)), scope);
@@ -527,6 +575,9 @@ function getElementKey(expression) {
 }
 
 function getPropertyName(name) {
+  if (ts.isComputedPropertyName(name)) {
+    return getElementKey(name.expression);
+  }
   if (ts.isIdentifier(name) || ts.isStringLiteralLike(name) || ts.isNumericLiteral(name)) {
     return name.text;
   }
@@ -594,6 +645,14 @@ function runSelfTests() {
       }`,
     ],
     [
+      "renderer stored in static computed object property",
+      `async function handle() {
+        const renderers = { ["page"]: renderSyntheticPage };
+        const html = await renderers["page"]();
+        html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
       "renderer stored in array",
       `async function handle() {
         const renderers = [renderSyntheticPage];
@@ -625,12 +684,37 @@ function runSelfTests() {
       }`,
     ],
     [
+      "renderer array rest destructuring",
+      `async function handle() {
+        const renderers = [() => "plain", renderSyntheticPage];
+        const [, ...rest] = renderers;
+        const html = await rest[0]();
+        html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
       "renderer recovered by destructuring",
       `async function handle() {
         const renderers = { page: renderSyntheticPage };
         const { page } = renderers;
         const html = await page();
         html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "renderer recovered by computed destructuring",
+      `async function handle() {
+        const renderers = { page: renderSyntheticPage };
+        const { ["page"]: page } = renderers;
+        helper(await page());
+      }`,
+    ],
+    [
+      "renderer object rest destructuring",
+      `async function handle() {
+        const renderers = { ignored: () => "plain", page: renderSyntheticPage };
+        const { ignored, ...rest } = renderers;
+        helper(await rest.page());
       }`,
     ],
     [
@@ -648,6 +732,25 @@ function runSelfTests() {
         renderers.page = renderSyntheticPage;
         const html = await renderers.page();
         html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "renderer array rest assignment",
+      `async function handle() {
+        const renderers = [() => "plain", renderSyntheticPage];
+        let rest;
+        [, ...rest] = renderers;
+        helper(await rest[0]());
+      }`,
+    ],
+    [
+      "renderer object rest assignment",
+      `async function handle() {
+        const renderers = { ignored: () => "plain", page: renderSyntheticPage };
+        let ignored;
+        let rest;
+        ({ ignored, ...rest } = renderers);
+        helper(await rest.page());
       }`,
     ],
     [
@@ -777,6 +880,39 @@ function runSelfTests() {
     if (validateHtmlFlowRegressions(source).length === 0) {
       failures.push(`flow-regression self-test did not reject ${label}`);
     }
+  }
+
+  const arrayRestMutationShape = emptyShape(2);
+  arrayRestMutationShape.renderer.add("1");
+  const legacyArrayRestShape = selectShape(arrayRestMutationShape, "1");
+  if (hasRenderer(selectShape(legacyArrayRestShape, "0"))) {
+    failures.push("flow-regression mutation control no longer distinguishes legacy array-rest propagation");
+  }
+  if (!hasRenderer(selectShape(sliceArrayShape(arrayRestMutationShape, 1), "0"))) {
+    failures.push("flow-regression array-rest propagation did not retain renderer provenance");
+  }
+
+  const objectRestMutationShape = emptyShape();
+  objectRestMutationShape.renderer.add("page");
+  const legacyObjectRestShape = selectShape(objectRestMutationShape, "rest");
+  if (hasRenderer(selectShape(legacyObjectRestShape, "page"))) {
+    failures.push("flow-regression mutation control no longer distinguishes legacy object-rest propagation");
+  }
+  if (!hasRenderer(selectShape(omitShapeKeys(objectRestMutationShape, ["ignored"]), "page"))) {
+    failures.push("flow-regression object-rest propagation did not retain renderer provenance");
+  }
+
+  const computedSource = ts.createSourceFile(
+    "computed.ts",
+    `const renderers = { ["page"]: renderSyntheticPage };`,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  const computedDeclaration = computedSource.statements[0]?.declarationList?.declarations?.[0];
+  const computedProperty = computedDeclaration?.initializer?.properties?.[0];
+  if (!computedProperty || getPropertyName(computedProperty.name) !== "page") {
+    failures.push("flow-regression static computed property name was not resolved");
   }
 
   const allowedCases = [

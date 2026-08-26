@@ -5,7 +5,7 @@ import ts from "typescript";
 
 const repositoryRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const devServerPath = join(repositoryRoot, "apps/web/src/dev-server.ts");
-const devServerSource = await readFile(devServerPath, "utf8");
+const selfTestOnly = process.argv.includes("--self-test-only");
 
 function validateLexicalHtmlFlow(source) {
   const sourceFile = ts.createSourceFile(
@@ -226,14 +226,22 @@ function evaluateObject(node, scope) {
 
 function evaluateArray(node, scope) {
   const shape = new Set();
-  node.elements.forEach((element, index) => {
-    if (ts.isOmittedExpression(element)) return;
-    if (ts.isSpreadElement(element)) {
-      mergeInto(shape, evaluate(element.expression, scope));
-      return;
+  let offset = 0;
+  for (const element of node.elements) {
+    if (ts.isOmittedExpression(element)) {
+      offset += 1;
+      continue;
     }
-    mergeInto(shape, prefixShape(evaluate(element, scope), String(index)));
-  });
+    if (ts.isSpreadElement(element)) {
+      const spreadShape = evaluate(element.expression, scope);
+      mergeInto(shape, shiftArrayShape(spreadShape, offset));
+      offset += inferArraySpan(spreadShape);
+      continue;
+    }
+    mergeInto(shape, prefixShape(evaluate(element, scope), String(offset)));
+    offset += 1;
+  }
+  shape.arraySpan = offset;
   return shape;
 }
 
@@ -244,7 +252,12 @@ function declarePattern(pattern, shape, scope) {
   }
 
   if (ts.isObjectBindingPattern(pattern)) {
+    const excludedKeys = [];
     for (const element of pattern.elements) {
+      if (element.dotDotDotToken) {
+        declarePattern(element.name, omitShapeKeys(shape, excludedKeys), scope);
+        continue;
+      }
       let key = null;
       if (element.propertyName) {
         key = getPropertyName(element.propertyName);
@@ -252,6 +265,7 @@ function declarePattern(pattern, shape, scope) {
         key = element.name.text;
       }
       if (key === null) continue;
+      excludedKeys.push(key);
       declarePattern(element.name, selectShape(shape, key), scope);
     }
     return;
@@ -260,18 +274,58 @@ function declarePattern(pattern, shape, scope) {
   if (ts.isArrayBindingPattern(pattern)) {
     pattern.elements.forEach((element, index) => {
       if (!ts.isBindingElement(element)) return;
-      declarePattern(element.name, selectShape(shape, String(index)), scope);
+      const selected = element.dotDotDotToken
+        ? sliceArrayShape(shape, index)
+        : selectShape(shape, String(index));
+      declarePattern(element.name, selected, scope);
     });
   }
 }
 
 function assignTarget(target, shape, scope) {
-  if (ts.isIdentifier(target)) {
-    scope.assign(target.text, shape);
+  const node = unwrapExpression(target);
+
+  if (ts.isIdentifier(node)) {
+    scope.assign(node.text, shape);
     return;
   }
 
-  const path = getStaticAccessPath(target);
+  if (ts.isObjectLiteralExpression(node)) {
+    const excludedKeys = [];
+    for (const property of node.properties) {
+      if (ts.isSpreadAssignment(property)) {
+        assignTarget(property.expression, omitShapeKeys(shape, excludedKeys), scope);
+        continue;
+      }
+      if (ts.isShorthandPropertyAssignment(property)) {
+        excludedKeys.push(property.name.text);
+        assignTarget(property.name, selectShape(shape, property.name.text), scope);
+        continue;
+      }
+      if (ts.isPropertyAssignment(property)) {
+        const key = getPropertyName(property.name);
+        if (key !== null) {
+          excludedKeys.push(key);
+          assignTarget(property.initializer, selectShape(shape, key), scope);
+        }
+      }
+    }
+    return;
+  }
+
+  if (ts.isArrayLiteralExpression(node)) {
+    node.elements.forEach((element, index) => {
+      if (ts.isOmittedExpression(element)) return;
+      if (ts.isSpreadElement(element)) {
+        assignTarget(element.expression, sliceArrayShape(shape, index), scope);
+        return;
+      }
+      assignTarget(element, selectShape(shape, String(index)), scope);
+    });
+    return;
+  }
+
+  const path = getStaticAccessPath(node);
   if (!path) return;
   const [root, ...segments] = path;
   const owner = scope.owner(root) ?? scope;
@@ -313,7 +367,63 @@ function selectShape(shape, key) {
       selected.add(path.slice(key.length + 1));
     }
   }
+  selected.arraySpan = null;
   return selected;
+}
+
+function omitShapeKeys(shape, keys) {
+  const excluded = new Set(keys);
+  const remaining = new Set();
+  for (const path of shape) {
+    if (!path) continue;
+    const [head] = path.split(".");
+    if (!excluded.has(head)) remaining.add(path);
+  }
+  remaining.arraySpan = null;
+  return remaining;
+}
+
+function sliceArrayShape(shape, startIndex) {
+  const sliced = new Set();
+  for (const path of shape) {
+    if (!path) continue;
+    const [head, ...tail] = path.split(".");
+    const index = Number(head);
+    if (!Number.isInteger(index) || index < startIndex) continue;
+    const shifted = String(index - startIndex);
+    sliced.add(tail.length > 0 ? `${shifted}.${tail.join(".")}` : shifted);
+  }
+  sliced.arraySpan = Math.max(0, inferArraySpan(shape) - startIndex);
+  return sliced;
+}
+
+function shiftArrayShape(shape, offset) {
+  const shiftedShape = new Set();
+  for (const path of shape) {
+    const [head, ...tail] = path.split(".");
+    const index = Number(head);
+    if (!Number.isInteger(index) || index < 0) {
+      shiftedShape.add(path);
+      continue;
+    }
+    const shifted = String(index + offset);
+    shiftedShape.add(tail.length > 0 ? `${shifted}.${tail.join(".")}` : shifted);
+  }
+  shiftedShape.arraySpan = null;
+  return shiftedShape;
+}
+
+function inferArraySpan(shape) {
+  if (Number.isInteger(shape?.arraySpan)) return shape.arraySpan;
+  let maxIndex = -1;
+  for (const path of shape ?? []) {
+    const [head] = path.split(".");
+    const index = Number(head);
+    if (Number.isInteger(index) && index >= 0) {
+      maxIndex = Math.max(maxIndex, index);
+    }
+  }
+  return maxIndex + 1;
 }
 
 function prefixShape(shape, key) {
@@ -322,6 +432,7 @@ function prefixShape(shape, key) {
   for (const path of shape) {
     prefixed.add(path ? `${key}.${path}` : key);
   }
+  prefixed.arraySpan = null;
   return prefixed;
 }
 
@@ -336,7 +447,9 @@ function mergeInto(target, source) {
 }
 
 function cloneShape(shape) {
-  return new Set(shape ?? []);
+  const cloned = new Set(shape ?? []);
+  cloned.arraySpan = Number.isInteger(shape?.arraySpan) ? shape.arraySpan : null;
+  return cloned;
 }
 
 function hasTaint(shape) {
@@ -383,6 +496,9 @@ function getElementKey(expression) {
 }
 
 function getPropertyName(name) {
+  if (ts.isComputedPropertyName(name)) {
+    return getElementKey(name.expression);
+  }
   if (ts.isIdentifier(name) || ts.isStringLiteralLike(name) || ts.isNumericLiteral(name)) {
     return name.text;
   }
@@ -433,6 +549,14 @@ function runSelfTests() {
       }`,
     ],
     [
+      "static computed object intermediary",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const box = { ["html"]: rendered };
+        box["html"].replace(/foo/g, "bar");
+      }`,
+    ],
+    [
       "closure capture",
       `async function handle() {
         const rendered = await renderSyntheticPage();
@@ -460,12 +584,78 @@ function runSelfTests() {
       }`,
     ],
     [
+      "shifted array spread",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const values = [rendered];
+        const copy = ["plain", ...values];
+        copy[1].replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "array spread preserves trailing span",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const values = [rendered, "plain"];
+        const copy = [...values, rendered];
+        copy[2].replace(/foo/g, "bar");
+      }`,
+    ],
+    [
       "destructuring",
       `async function handle() {
         const rendered = await renderSyntheticPage();
         const box = { html: rendered };
         const { html } = box;
         html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "computed destructuring",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const box = { html: rendered };
+        const { ["html"]: html } = box;
+        html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "object rest destructuring",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const box = { ignored: "plain", html: rendered };
+        const { ignored, ...rest } = box;
+        rest.html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "array rest destructuring",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const values = ["plain", rendered];
+        const [, ...rest] = values;
+        rest[0].replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "object rest assignment",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const box = { ignored: "plain", html: rendered };
+        let ignored;
+        let rest;
+        ({ ignored, ...rest } = box);
+        rest.html.replace(/foo/g, "bar");
+      }`,
+    ],
+    [
+      "array rest assignment",
+      `async function handle() {
+        const rendered = await renderSyntheticPage();
+        const values = ["plain", rendered];
+        let rest;
+        [, ...rest] = values;
+        rest[0].replace(/foo/g, "bar");
       }`,
     ],
     [
@@ -482,6 +672,25 @@ function runSelfTests() {
     if (observed.length === 0) {
       failures.push(`lexical self-test did not reject ${label}`);
     }
+  }
+
+  const arrayRestMutationShape = new Set(["1"]);
+  arrayRestMutationShape.arraySpan = 2;
+  const legacyArrayRestShape = selectShape(arrayRestMutationShape, "1");
+  if (hasTaint(selectShape(legacyArrayRestShape, "0"))) {
+    failures.push("lexical mutation control no longer distinguishes legacy array-rest propagation");
+  }
+  if (!hasTaint(selectShape(sliceArrayShape(arrayRestMutationShape, 1), "0"))) {
+    failures.push("lexical array-rest propagation did not retain HTML provenance");
+  }
+
+  const objectRestMutationShape = new Set(["html"]);
+  const legacyObjectRestShape = selectShape(objectRestMutationShape, "rest");
+  if (hasTaint(selectShape(legacyObjectRestShape, "html"))) {
+    failures.push("lexical mutation control no longer distinguishes legacy object-rest propagation");
+  }
+  if (!hasTaint(selectShape(omitShapeKeys(objectRestMutationShape, ["ignored"]), "html"))) {
+    failures.push("lexical object-rest propagation did not retain HTML provenance");
   }
 
   const allowed = validateLexicalHtmlFlow(`
@@ -516,13 +725,19 @@ function runSelfTests() {
   return failures;
 }
 
-const failures = validateLexicalHtmlFlow(devServerSource);
+const failures = [];
+if (!selfTestOnly) {
+  const devServerSource = await readFile(devServerPath, "utf8");
+  failures.push(...validateLexicalHtmlFlow(devServerSource));
+}
 failures.push(...runSelfTests());
 
 if (failures.length > 0) {
   console.error("SolverFin lexical HTML-flow guard failed:");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exitCode = 1;
+} else if (selfTestOnly) {
+  console.log("SolverFin lexical HTML-flow self-tests OK.");
 } else {
   console.log("SolverFin lexical HTML-flow guard OK.");
 }
