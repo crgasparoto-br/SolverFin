@@ -687,7 +687,9 @@ function runSelfTests() {
   const objectRestMutationShape = new Set(["html"]);
   const legacyObjectRestShape = selectShape(objectRestMutationShape, "rest");
   if (hasTaint(selectShape(legacyObjectRestShape, "html"))) {
-    failures.push("lexical mutation control no longer distinguishes legacy object-rest propagation");
+    failures.push(
+      "lexical mutation control no longer distinguishes legacy object-rest propagation",
+    );
   }
   if (!hasTaint(selectShape(omitShapeKeys(objectRestMutationShape, ["ignored"]), "html"))) {
     failures.push("lexical object-rest propagation did not retain HTML provenance");

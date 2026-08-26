@@ -886,7 +886,9 @@ function runSelfTests() {
   arrayRestMutationShape.renderer.add("1");
   const legacyArrayRestShape = selectShape(arrayRestMutationShape, "1");
   if (hasRenderer(selectShape(legacyArrayRestShape, "0"))) {
-    failures.push("flow-regression mutation control no longer distinguishes legacy array-rest propagation");
+    failures.push(
+      "flow-regression mutation control no longer distinguishes legacy array-rest propagation",
+    );
   }
   if (!hasRenderer(selectShape(sliceArrayShape(arrayRestMutationShape, 1), "0"))) {
     failures.push("flow-regression array-rest propagation did not retain renderer provenance");
@@ -896,7 +898,9 @@ function runSelfTests() {
   objectRestMutationShape.renderer.add("page");
   const legacyObjectRestShape = selectShape(objectRestMutationShape, "rest");
   if (hasRenderer(selectShape(legacyObjectRestShape, "page"))) {
-    failures.push("flow-regression mutation control no longer distinguishes legacy object-rest propagation");
+    failures.push(
+      "flow-regression mutation control no longer distinguishes legacy object-rest propagation",
+    );
   }
   if (!hasRenderer(selectShape(omitShapeKeys(objectRestMutationShape, ["ignored"]), "page"))) {
     failures.push("flow-regression object-rest propagation did not retain renderer provenance");
