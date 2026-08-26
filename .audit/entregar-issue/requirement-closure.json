@@ -1,1 +1,387 @@
-{"schema_version":3,"specification_snapshot":{"path":"/tmp/solverfin-605-work/.audit/entregar-issue/specification-snapshot.json","sha256":"7794d78e1d00c70a7674c16ab98fac225173e41d27490e986f4a357dfb10101f"},"primary_issue_source_id":"SRC-ISSUE","obligations":[{"id":"OBL-001","candidate_key":"28a7cacb40876ccca9a594674402418c1b1bcc6afb147a3af802029c2aeb8706","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":21,"source_text":"hierarquia e ordem de informa\u00e7\u00e3o;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-01"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-002","candidate_key":"e20f94c9de9c9b10440189f7da19184bb5e397ec135fcc12730a7a1469cc9d1e","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":22,"source_text":"a\u00e7\u00e3o prim\u00e1ria e a\u00e7\u00f5es secund\u00e1rias;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-02"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-003","candidate_key":"2c092f19373ab3edc97f82b95b72e43195970138e2c65f5f98af70c4a5456ed2","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":23,"source_text":"regi\u00f5es de filtros/busca;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-03"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-004","candidate_key":"1b1566dd5ee0f76d749dec304785bc3cc0fcbefca0f8c5ec4d3736ed6e69a5dc","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":24,"source_text":"estados loading/vazio/erro/sucesso;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-04"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-005","candidate_key":"c7d0754483ea580a10a80ebbbc126b90072562356e5f399672597616881343cf","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":25,"source_text":"estrat\u00e9gia desktop/mobile;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-05"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-006","candidate_key":"64619b3d0c73f2e88803f2196182d1b8ebd03cd257a9cee1b40c02e02d92dce2","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":26,"source_text":"comportamento de detalhe/modal/drawer;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-06"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-007","candidate_key":"2edb7ede53a73e584a753f8e6307a0e1d86ffe6496cc38f6f600d2f03c8a11ac","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":27,"source_text":"requisitos de moeda quando houver valores financeiros;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-07"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-008","candidate_key":"8d8d3c117d8ba19fd1ae1fe0d75f892c224e00c25de3573526291e54c6a45ceb","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":28,"source_text":"exemplos fict\u00edcios e crit\u00e9rios de uso.","flags":[],"disposition":"covered","requirement_ids":["REQ-605-08"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-009","candidate_key":"c8d3916b283c6724ed703a99d69dc6513a5191df8bcabaa6544cfe0f6d614131","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":32,"source_text":"[ ] cada tela-piloto pode ser mapeada para um arqu\u00e9tipo sem exce\u00e7\u00e3o ad hoc relevante;","flags":["exhaustive","negative"],"disposition":"covered","requirement_ids":["REQ-605-09"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-010","candidate_key":"25380bc9d0c83b650c15f75066df875d0a2f745ef0e9e2f6cff924ec1057f9b2","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":33,"source_text":"[ ] padr\u00f5es s\u00e3o implement\u00e1veis pelas primitives de #601;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-10"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-011","candidate_key":"1669d568e5b537cad8a5abfd26ed864acd94226a77a1b957646e6d0b862cb554","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":34,"source_text":"[ ] hierarquia visual n\u00e3o depende de cards para toda informa\u00e7\u00e3o;","flags":["exhaustive","negative"],"disposition":"covered","requirement_ids":["REQ-605-11"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-012","candidate_key":"23bdf43ef7c24b9a057bf12c1850ebcb0bbc97917d39552b79f98ccf52e4b634","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":35,"source_text":"[ ] estados e responsividade s\u00e3o expl\u00edcitos;","flags":[],"disposition":"covered","requirement_ids":["REQ-605-12"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."},{"id":"OBL-013","candidate_key":"76c941d1b5498767bda44e8ff7bd8e10006265a1615f0e80266c056b03292c36","source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","source_line":36,"source_text":"[ ] documenta\u00e7\u00e3o evita prescrever est\u00e9tica subjetiva n\u00e3o test\u00e1vel.","flags":["negative"],"disposition":"covered","requirement_ids":["REQ-605-13"],"inventory_ids":[],"assertion_ids":[],"scope_decision":null,"rationale":"Covered by docs/SCREEN_ARCHETYPES.md and verified in the frozen documentation contract."}],"source_coverage":[{"source_id":"SRC-ISSUE","source_sha256":"146631ded120884607a0ac2141383c33809e9e29fe8440cf45eb7a75e70ba843","candidate_count":13,"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013"],"unmapped_candidate_keys":[]}],"domain_inventories":[],"observable_assertions":[],"structural_invariant_closures":{"status":"not-applicable","applicability_reason":"No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.","entries":[],"unresolved_invariants":[]},"read_model_closures":{"status":"not-applicable","applicability_reason":"The issue defines reusable screen composition documentation and no runtime read-model, history, versioning, collection, or pagination contract.","entries":[],"unconsumed_outputs":[],"unmapped_required_fields":[]},"canonical_source_consistency":{"status":"not-applicable","applicability_reason":"The issue does not define competing runtime sources for a semantic field; it defines composition rules and references existing primitives.","entries":[],"unverified_surfaces":[],"missing_divergent_tests":[]},"documentation_consistency":{"status":"not-applicable","applicability_reason":"The change adds the missing archetype contract and does not rename, retire, redirect, authorize, provision, or change availability of an existing route or behavior.","old_contract_terms":[],"new_contract_terms":[],"occurrences":[],"unresolved_contradictions":[],"searched_outside_diff":true,"search_evidence":["Reviewed docs/DESIGN_SYSTEM.md, docs/UI_PRIMITIVES.md and docs/product/INTERFACE_INVENTORY.md via repository connector before implementation."]},"scope_reduction_review":{"status":"passed","matches":[{"path":"docs/SCREEN_ARCHETYPES.md","line":338,"text":"## Fora de escopo","disposition":"canonical-decision","decision_source_id":"SRC-ISSUE","rationale":"The section reproduces and tightens the canonical issue boundary; it does not defer any in-scope obligation."}]},"pass_c":{"status":"passed","requirement_ids":["REQ-605-01","REQ-605-02","REQ-605-03","REQ-605-04","REQ-605-05","REQ-605-06","REQ-605-07","REQ-605-08","REQ-605-09","REQ-605-10","REQ-605-11","REQ-605-12","REQ-605-13"],"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013"],"evidence":["docs/SCREEN_ARCHETYPES.md","local structural validation: screen-archetypes-contract PASS","repository sources reviewed: DESIGN_SYSTEM, UI_PRIMITIVES, INTERFACE_INVENTORY","pilot issue contracts reviewed: #608-#614"],"rederived_without_pr_description":true,"reviewed_user_visible_semantics":true,"reviewed_producer_consumer_parity":true,"reviewed_all_specification_sources":true}}
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/mnt/data/issue606/handoff606/specification-snapshot.json",
+    "sha256": "fcd8c1cb2042744b466036af4a06547e330cc1da5d07cc35f1ec3ca6cf7d0fac"
+  },
+  "primary_issue_source_id": "SRC-ISSUE",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "e574144691525b55e1ddd65424b59bb0c96125d0c379452c4c44556435f7b3b7",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 6,
+      "source_text": "Evoluir a validação visual atual para proteger a nova fundação por classes de fluxo/componente, reduzindo dependência de asserts sobre transformação textual intermediária.",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-01"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "43a325c4539a808d5a4e1f3a03837049d4d588564f683a64f74f39d94719c74f",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 10,
+      "source_text": "mapear cobertura visual atual para componentes/arquetipos;",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-01"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "82ae97c035df6dcdd92f36c6aef5c66db4e5febecb664244806bb6ed6d2126d2",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 11,
+      "source_text": "definir cenários representativos por rota/estado/layout/interação;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-01"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "c320f4cba95f084791ad1394e664e0e2682df6b760009f7e160b01d51593ec54",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d4d42dea99fd2560d7c0e294b01558884ba8d4d",
+      "source_line": 12,
+      "source_text": "manter desktop/mobile quando houver composição distinta;",
+      "flags": [
+        "exhaustive",
+        "observable"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-02"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "8ff41fe56ec09639298c318c5d37a3b3170b67abd6f6d4b7d7807d2a1a5a9dde",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 13,
+      "source_text": "cobrir teclado/foco, reflow/zoom, conteúdo longo e overflow nos componentes de risco;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-03"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "f8be2647e999230e50dac6b98ddc11a9c47b5f91ef611cf509232e7408d108b9",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 14,
+      "source_text": "preservar evidência visual por SHA;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-04"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "58895d72a7b272db1d5e116eacb899597c90ed09d46b5cf075c1aae57d124e5a",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 15,
+      "source_text": "evitar duplicação de cenários com fingerprint equivalente.",
+      "flags": [
+        "exhaustive",
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-05"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "40ee9bee5cf4c69926ee73264eb0bbb705b02094b7e8ad4b7b967a28e1a6ed5c",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 19,
+      "source_text": "[ ] componentes estruturais críticos possuem pelo menos um fluxo real coberto;",
+      "flags": [
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-06"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "85f69f46d20f1d6678a3a6bbd05be313051d937c2408e58d5840d1de0ef74ae6",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 20,
+      "source_text": "[ ] telas-piloto possuem cenários normal, vazio/erro relevante e mobile quando necessário;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-07"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "f84268d53d40e85c7b4d9edf9444507651120eaee6d0dee7e7104ce5b14a3cac",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 21,
+      "source_text": "[ ] teclado/foco e reflow são validados em pontos representativos;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-03"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "87a6fce73193216755c3d84111f3ef9d1c46cf729b6f5306c174e40c2c84c1c9",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 22,
+      "source_text": "[ ] retirada de provider/enhancement legado só ocorre com cobertura equivalente;",
+      "flags": [
+        "exhaustive",
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-08"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "80fce3ad88e19aa4b15c41554eccdd6565d3067f9efe780d57edd2ffa4ad0557",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 23,
+      "source_text": "[ ] CI publica evidência rastreável no SHA candidato;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-04"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "181ee1fc885f395222327dbd709841ec5891f9e1a8676053ced17935f040ed55",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "source_line": 24,
+      "source_text": "[ ] falhas apontam rota/cenário/estado de forma acionável.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-606-09"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implemented and linked to focused repository evidence for issue #606."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "98535bf400812c49a0ac4bbd18d4d42dea99fd2560d7c0e294b0155884ba8d4d",
+      "candidate_count": 13,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "The acceptance contract requires critical structural components to retain real-flow browser coverage.",
+    "entries": [
+      {
+        "id": "STRUCT-606-01",
+        "kind": "coverage-preservation",
+        "requirement_ids": [
+          "REQ-606-06"
+        ],
+        "obligation_ids": [
+          "OBL-008"
+        ],
+        "evidence_ids": [
+          "STD-REQ-606-06"
+        ],
+        "negative_control_evidence": [
+          "NEG-CRITICAL-COMPONENT-MISSING"
+        ],
+        "scenario_ids": [
+          "ui-primitives",
+          "foundation-states"
+        ],
+        "plausible_wrong_implementation": "Remove one critical primitive from the coverage registry while leaving the rest of the visual suite green."
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "Issue #606 changes visual validation infrastructure and does not introduce a read model, history, pagination, or versioned data projection.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "The issue does not require multiple product surfaces to consume one canonical financial source; it governs test coverage metadata and execution.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "The issue changes the operational visual gate and legacy-retirement contract, so documentation claims were aligned with the new canonical runner and coverage registry.",
+    "old_contract_terms": [
+      "workflow-local visual script list",
+      "manual visual evidence guidance"
+    ],
+    "new_contract_terms": [
+      "visualScenarioModules",
+      "visual coverage fingerprints",
+      "statement-visual-evidence-<sha>"
+    ],
+    "occurrences": [
+      {
+        "path": "docs/VISUAL_VALIDATION.md",
+        "classification": "canonical-current"
+      },
+      {
+        "path": "docs/quality/accessibility-performance.md",
+        "classification": "updated-current"
+      },
+      {
+        "path": ".github/workflows/statement-visual-validation.yml",
+        "classification": "executable-current"
+      }
+    ],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "Repository documentation and workflow sources governing visual validation were inspected during implementation; no unresolved competing gate list remains in the changed contract."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-606-01",
+      "REQ-606-02",
+      "REQ-606-03",
+      "REQ-606-04",
+      "REQ-606-05",
+      "REQ-606-06",
+      "REQ-606-07",
+      "REQ-606-08",
+      "REQ-606-09"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013"
+    ],
+    "evidence": [
+      "Re-read the frozen issue #606 source independently of the PR description.",
+      "Compared every scope and acceptance line with the material diff and focused validation evidence.",
+      "Reviewed the visual registry, runner, workflow, legacy-retirement mapping, docs, and negative controls."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}
