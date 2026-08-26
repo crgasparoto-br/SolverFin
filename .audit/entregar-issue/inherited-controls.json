@@ -1,11 +1,20 @@
 {
   "schema_version": 1,
-  "head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
+  "head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
   "source_audits": [
     {
       "kind": "independent-audit-outcome",
       "rejection_id": "audit-rejection:pr644-ci-format-20260826",
       "finding_id": "A-001",
+      "outcome": "rejected"
+    },
+    {
+      "kind": "independent-audit-outcome",
+      "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
+      "finding_ids": [
+        "A-001",
+        "A-002"
+      ],
       "outcome": "rejected"
     }
   ],
@@ -13,14 +22,14 @@
     {
       "id": "INHERITED-DELIVERY-FORMAT-GATE-001",
       "status": "passed",
-      "head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
-      "subject_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
+      "head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+      "subject_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
       "control_type": "gate",
-      "procedure": "Require canonical repository formatting validation against the final material candidate before a ready handoff can be published.",
-      "expected": "Any changed file rejected by the formatter keeps the candidate out of ready state.",
-      "observed": "The current candidate contains canonicalized versions of both previously rejected visual-gate scripts and the inherited control remains active for exact-head validation.",
-      "evidence": "evidence/format-gate-remediation.txt",
-      "evidence_sha256": "df9f72cef44824b0c1108474593ff2c6411dd4d5c46057a8bce92cf903c51aff",
+      "procedure": "Require canonical repository formatting validation to remain bound to the final material candidate and preserve pending or failed status without promotion.",
+      "expected": "A formatter-rejected candidate remains blocking, while an unobserved candidate remains explicitly pending rather than falsely green.",
+      "observed": "The exact material tree references the two blob SHAs emitted by the fail-closed Prettier 3.6.2 diagnostic and restores the canonical prettier . --check command; final remote gate state is recorded separately.",
+      "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt",
+      "evidence_sha256": "4c6880f9a49d7989041a2c3130896d369a43baba6e4e5e2184d5b9bd6ab71945",
       "attack_control_id": "DELIVERY-FORMAT-GATE-001",
       "risk_family": "structural-contract",
       "surface": "delivery-format-gate",
@@ -29,18 +38,50 @@
     {
       "id": "INHERITED-HANDOFF-GATE-COMPLETENESS-001",
       "status": "passed",
-      "head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
-      "subject_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
+      "head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+      "subject_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
       "control_type": "gate",
-      "procedure": "Inventory canonical final-candidate gates before readiness and reject handoff if any required gate is absent or unresolved.",
-      "expected": "Focused checks alone never substitute for the complete final-gate inventory.",
-      "observed": "The current remediation keeps a distinct handoff-completeness attack active alongside the literal formatting-gate control.",
-      "evidence": "evidence/handoff-gate-completeness.txt",
-      "evidence_sha256": "0541c1839143b38078f6ddc93e5bbc0e40ae0111578b5a2e0e9c6b80fa5298e6",
+      "procedure": "Inventory canonical final-candidate gates before audit readiness and keep remote CI state separate from internal structural closure.",
+      "expected": "Focused checks never substitute for the canonical gate inventory or manufacture a release-ready conclusion.",
+      "observed": "The terminal package keeps exact source-format proof, visual-contract proof, remote workflow state, and result-only publication as separate mandatory controls.",
+      "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt",
+      "evidence_sha256": "1fd38e64480db0e9a53bdad2c7623b2f8f24a8ded45715318c8676be8f596304",
       "attack_control_id": "HANDOFF-GATE-COMPLETENESS-001",
       "risk_family": "structural-contract",
       "surface": "handoff-gate-completeness",
       "dimension": "canonical-final-gate-inventory"
+    },
+    {
+      "id": "INHERITED-VIEWPORT-METRIC-CONTRACT-001",
+      "status": "passed",
+      "head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+      "subject_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+      "control_type": "scenario",
+      "procedure": "Keep device viewport width distinct from content viewport width and preserve both measurements in the foundation visual scenario.",
+      "expected": "Scrollbar consumption cannot make a correctly emulated device width fail the viewport identity assertion.",
+      "observed": "The exact material candidate retains window.innerWidth, root.clientWidth, and verticalScrollbarWidth as separate values after the successful ancestor visual execution.",
+      "evidence": ".audit/entregar-issue/evidence/critical-controls.txt",
+      "evidence_sha256": "4c6880f9a49d7989041a2c3130896d369a43baba6e4e5e2184d5b9bd6ab71945",
+      "attack_control_id": "VIEWPORT-METRIC-CONTRACT-001",
+      "risk_family": "semantic-effect",
+      "surface": "viewport-coordinate-system",
+      "dimension": "device-vs-content-width"
+    },
+    {
+      "id": "INHERITED-VIEWPORT-OVERFLOW-ACCOUNTING-001",
+      "status": "passed",
+      "head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+      "subject_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+      "control_type": "scenario",
+      "procedure": "Retain scrollbar-width accounting and the independent horizontal-overflow invariant when correcting viewport identity assertions.",
+      "expected": "The viewport fix cannot pass by weakening or deleting the document-fit assertion.",
+      "observed": "The exact material candidate retains contentViewportWidth plus verticalScrollbarWidth equality and root.scrollWidth versus root.clientWidth document-fit logic.",
+      "evidence": ".audit/entregar-issue/evidence/critical-controls.txt",
+      "evidence_sha256": "4c6880f9a49d7989041a2c3130896d369a43baba6e4e5e2184d5b9bd6ab71945",
+      "attack_control_id": "VIEWPORT-OVERFLOW-ACCOUNTING-001",
+      "risk_family": "semantic-effect",
+      "surface": "overflow-accounting",
+      "dimension": "scrollbar-width-accounting"
     }
   ],
   "retired_controls": [],

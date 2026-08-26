@@ -38,10 +38,10 @@
         "control_id": "HANDOFF-GATE-COMPLETENESS-001",
         "evidence": "evidence/handoff-gate-completeness.txt"
       },
-      "revalidated_head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
+      "revalidated_head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
       "literal_case": {
         "status": "passed",
-        "observed": "Active remediation evidence is bound to the current exact-head candidate d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9 and no ancestor green result is substituted."
+        "observed": "The material candidate keeps canonical formatting as a blocking gate and records its remote state without substituting an ancestor result."
       },
       "required_risk_families": [
         "structural-contract"
@@ -64,6 +64,134 @@
         "handoff readiness",
         "focused checks"
       ]
+    },
+    {
+      "escape_id": "ESC-LATEST-CANONICAL-GATE-HANDOFF-001",
+      "escape_class": "canonical-gate-handoff-state-mismatch",
+      "status": "passed",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
+        "finding_id": "A-001"
+      },
+      "plausible_wrong_implementation": "Publish a ready handoff after a focused remediation while the canonical repository formatting gate for the material candidate is still failed or unobserved.",
+      "literal_case": {
+        "procedure": "Keep the canonical formatter requirement active for the exact material candidate and represent missing remote evidence as pending rather than green.",
+        "status": "passed",
+        "evidence": "evidence/format-gate-remediation.txt",
+        "observed": "The material tree contains exactly the two Prettier-produced source blobs from the fail-closed diagnostic and the canonical format:check command is restored; remote final state is recorded independently."
+      },
+      "sibling_cases": [
+        {
+          "id": "CGH-S1",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check",
+          "status": "passed",
+          "evidence": "evidence/format-gate-remediation.txt"
+        },
+        {
+          "id": "CGH-S2",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory",
+          "status": "passed",
+          "evidence": "evidence/handoff-gate-completeness.txt"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "canonical final-gate binding applied by the delivery controller",
+        "evidence": "evidence/handoff-gate-completeness.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "critical handoff readiness checks retain canonical gate state as independent evidence",
+        "control_id": "HANDOFF-GATE-COMPLETENESS-001",
+        "evidence": "evidence/handoff-gate-completeness.txt"
+      },
+      "trigger_terms": [
+        "canonical repository gate",
+        "ready handoff",
+        "pending remote evidence",
+        "exact material candidate"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7"
+    },
+    {
+      "escape_id": "ESC-LATEST-VIEWPORT-METRIC-001",
+      "escape_class": "coordinate-system-contract-mismatch",
+      "status": "passed",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
+        "finding_id": "A-002"
+      },
+      "plausible_wrong_implementation": "Compare a content-box viewport measurement against a device viewport contract and misclassify the scrollbar width as a rendering failure.",
+      "literal_case": {
+        "procedure": "Observe the device viewport width and the content viewport width separately, account explicitly for scrollbar width, and preserve the no-horizontal-overflow invariant.",
+        "status": "passed",
+        "evidence": "evidence/critical-controls.txt",
+        "observed": "The material candidate retains separate device and content viewport metrics, explicit scrollbar accounting, and the original document-fit assertion; the real-browser visual workflow already passed after this semantic correction."
+      },
+      "sibling_cases": [
+        {
+          "id": "VPM-S1",
+          "surface": "viewport-coordinate-system",
+          "dimension": "device-vs-content-width",
+          "status": "passed",
+          "evidence": "evidence/critical-controls.txt"
+        },
+        {
+          "id": "VPM-S2",
+          "surface": "overflow-accounting",
+          "dimension": "scrollbar-width-accounting",
+          "status": "passed",
+          "evidence": "evidence/critical-controls.txt"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "viewport-coordinate-system",
+          "dimension": "device-vs-content-width"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "overflow-accounting",
+          "dimension": "scrollbar-width-accounting"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "visual assertion contract distinguishes device and content coordinate systems",
+        "evidence": "evidence/critical-controls.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "real-browser visual scenario verifies coordinate accounting and overflow together",
+        "control_id": "VIEWPORT-OVERFLOW-ACCOUNTING-001",
+        "evidence": "evidence/critical-controls.txt"
+      },
+      "trigger_terms": [
+        "viewport width",
+        "content width",
+        "scrollbar accounting",
+        "coordinate system"
+      ],
+      "required_risk_families": [
+        "semantic-effect"
+      ],
+      "revalidated_head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7"
     }
   ]
 }

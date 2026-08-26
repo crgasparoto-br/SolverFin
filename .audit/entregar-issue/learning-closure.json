@@ -3,42 +3,38 @@
   "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:pr644-ci-format-20260826",
-    "finding_ids": [
-      "A-001"
-    ]
+    "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
+    "finding_ids": ["A-001", "A-002"]
   },
   "generalized_learning": {
     "promotion_status": "promoted",
-    "escape_class": "final-candidate-gate-omission",
-    "generalized_failure_pattern": "A delivery can satisfy focused checks yet remain non-releasable when a canonical repository gate is omitted before freeze.",
-    "plausible_wrong_implementation": "Freeze after targeted syntax and behavior checks while assuming canonical repository gates will be equivalent.",
+    "escape_class": "candidate-evidence-semantic-contract-mismatch",
+    "generalized_failure_pattern": "A candidate can appear internally healthy when evidence is bound to the wrong semantic contract or to an incomplete canonical-gate state, even though the literal check looks plausible.",
+    "plausible_wrong_implementation": "Treat a nearby metric or a focused validation as equivalent to the canonical contract, then publish readiness without proving the exact semantic boundary and final gate inventory.",
     "trigger_signals": [
-      "focused checks before freeze",
-      "repository-wide canonical gate",
-      "result-only handoff"
+      "focused validation substituted for canonical gate",
+      "two related measurements use different coordinate or identity domains",
+      "ready state produced while final evidence is pending or stale"
     ],
-    "risk_families": [
-      "structural-contract"
-    ],
+    "risk_families": ["structural-contract", "semantic-effect"],
     "reusable_control": {
-      "id": "FINAL-CANDIDATE-CANONICAL-GATE-001",
-      "procedure": "Run or observe every applicable canonical repository gate against the final material candidate and block ready state on candidate-caused failure."
+      "id": "EXACT-SEMANTIC-CONTRACT-AND-GATE-001",
+      "procedure": "Bind each material assertion to its exact semantic domain and bind readiness to the complete canonical gate inventory; represent unavailable final evidence as pending instead of inferring equivalence."
     },
-    "prevention_rule": "A ready handoff must not be published until applicable canonical repository gates are bound to the final material candidate.",
-    "detection_rule": "Independent audit must attribute any canonical gate failure to candidate-changed paths before approving release.",
+    "prevention_rule": "Do not replace an exact semantic metric or canonical final gate with a nearby proxy, ancestor result, or focused check when constructing a ready candidate.",
+    "detection_rule": "Adversarial verification must vary the semantic domain and gate state independently and prove that proxy metrics or incomplete evidence cannot satisfy the final contract.",
     "transfer_cases": [
       {
         "id": "T1",
-        "surface": "source-formatting",
+        "surface": "coordinate-domain-accounting",
         "status": "passed",
-        "evidence": "Formatter-rejected changed sources remain blocking."
+        "evidence": "A synthetic layout check distinguishes outer viewport width from content-box width and accounts for excluded scrollbar width explicitly."
       },
       {
         "id": "T2",
-        "surface": "schema-or-build-gate",
+        "surface": "canonical-gate-readiness",
         "status": "passed",
-        "evidence": "Any candidate-caused canonical build or schema gate remains blocking."
+        "evidence": "A synthetic delivery check keeps readiness non-green when the exact final canonical gate is pending, failed, or only observed on an ancestor."
       }
     ]
   },
@@ -46,12 +42,14 @@
     {
       "role": "prevention",
       "skill": "entregar-issue",
-      "status": "passed"
+      "status": "passed",
+      "change": "Applied the existing exact-material and canonical-gate readiness contract to the current remediation; no repository-specific rule was promoted."
     },
     {
       "role": "detection",
       "skill": "auditar-issue",
-      "status": "passed"
+      "status": "passed",
+      "change": "Retained independent validation of semantic evidence and canonical gate state as the detection boundary for the next audit."
     }
   ]
 }

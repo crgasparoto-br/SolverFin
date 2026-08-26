@@ -1,1 +1,11 @@
-Exact-candidate controls cover visual registry semantics, formatting-gate closure, SHA binding, and regression behavior.
+Issue 606 / PR 644 critical internal evidence
+Material head: 4398704e6090e7c7f90203aed5ec5925ebe004c7
+
+- A fail-closed diagnostic candidate 9bf983bbc4a5dffee39fcf4a36a15d908f57b9ae executed the repository's installed Prettier 3.6.2 with --write and then git diff --exit-code.
+- The diagnostic formatter produced exactly two source edits: parenthesize the nullish-coalescing expression in serializeError() in scripts/run-statement-visual-validation.mjs and in the main().catch() error formatter in scripts/validate-statement-visual-coverage.mjs.
+- The formatted blobs emitted by that CI are 8e73ec3b77f1a8e9458f685ea8b1f73f4a2bdc22 and 7d3a1d0eef5970bfca8a10c49c1057e8245bdbc5; the final material tree references exactly those two blobs.
+- package.json was restored to its original canonical blob 9c6bcbadb641a2621135e0305905a519507b98d7, so format:check is again prettier . --check and the diagnostic instrumentation is absent from the final candidate.
+- Both final JavaScript sources pass node --check in the constrained runtime.
+- The viewport correction remains intact: window.innerWidth represents the device viewport, root.clientWidth represents content viewport, scrollbar width is accounted separately, and the document-fit overflow invariant remains active.
+- The single exact-head remote snapshot for 4398704e6090e7c7f90203aed5ec5925ebe004c7 observed CI run 33016419557 in_progress and Statement visual validation run 33016419477 in_progress. No rerun, dispatch, cancel, manual approval, or polling was performed.
+- The prior official Statement visual validation workflow passed after the viewport semantic correction on the material lineage; exact-head terminal workflow conclusions remain pending and are not claimed green.

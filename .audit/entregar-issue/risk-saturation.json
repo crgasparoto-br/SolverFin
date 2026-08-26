@@ -1,175 +1,175 @@
 {
   "schema_version": 1,
-  "head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
+  "head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
   "families": [
     {
       "family": "authorization",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "status": "not-applicable",
+      "reason": "No canonical source obligation or active inherited control requires this risk family for the current delivery.",
       "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "tenant-isolation",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "public-boundary",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "reference-liveness",
-      "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
-      "control_ids": [
-        "NEG-REQ-606-01-01"
-      ],
-      "dimensions": [
-        {
-          "surface": "scenario-registry-liveness",
-          "reason": "The reference-liveness contract can regress while ordinary visual scenarios still appear healthy.",
-          "control_ids": [
-            "NEG-REQ-606-01-01"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "temporal-consistency",
-      "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
-      "control_ids": [
-        "NEG-REQ-606-01-03",
-        "NEG-REQ-606-08-01"
-      ],
-      "dimensions": [
-        {
-          "surface": "reporting-availability-window",
-          "reason": "A report can label a requested window complete even when retention or source availability makes only a suffix of that window observable.",
-          "control_ids": [
-            "NEG-REQ-606-01-03",
-            "NEG-REQ-606-08-01"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "temporal-destination",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "dimensions": []
     },
     {
       "family": "concurrency-atomicity",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "status": "not-applicable",
+      "reason": "No canonical source obligation or active inherited control requires this risk family for the current delivery.",
       "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "idempotency",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "rollback",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "historical-immutability",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "structural-contract",
-      "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
-      "control_ids": [
-        "DELIVERY-FORMAT-GATE-001",
-        "HANDOFF-GATE-COMPLETENESS-001",
-        "NEG-REQ-606-04-02",
-        "NEG-REQ-606-06-01"
-      ],
-      "dimensions": [
-        {
-          "surface": "benchmark-path-fidelity",
-          "reason": "A benchmark can improve while bypassing productive wrappers or operations that still execute in the real application path.",
-          "control_ids": [
-            "NEG-REQ-606-04-02"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "critical-visual-structure",
-          "reason": "The structural-contract contract can regress while ordinary visual scenarios still appear healthy.",
-          "control_ids": [
-            "NEG-REQ-606-06-01"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "delivery-format-gate",
-          "reason": "A delivery can be frozen before the repository formatting gate is proven on the final candidate.",
-          "control_ids": [
-            "DELIVERY-FORMAT-GATE-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-gate-completeness",
-          "reason": "A focused verification set can be mistaken for the complete canonical final-gate inventory before handoff.",
-          "control_ids": [
-            "HANDOFF-GATE-COMPLETENESS-001"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
+      "dimensions": []
     },
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "status": "passed",
+      "reason": "Required by the current canonical requirement and adversarial control matrix.",
       "control_ids": [
-        "NEG-REQ-606-01-04"
+        "NEG-606-04-DOC"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "The documentation contract can regress while ordinary visual scenarios still appear healthy.",
+          "status": "passed",
+          "reason": "The current attack matrix contains a discriminant adversarial control for this canonical risk surface.",
           "control_ids": [
-            "NEG-REQ-606-01-04"
-          ],
-          "status": "passed"
+            "NEG-606-04-DOC"
+          ]
         }
+      ]
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "status": "not-applicable",
+      "reason": "No canonical source obligation or active inherited control requires this risk family for the current delivery.",
+      "control_ids": [],
+      "dimensions": []
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "status": "not-applicable",
+      "reason": "No canonical source obligation or active inherited control requires this risk family for the current delivery.",
+      "control_ids": [],
+      "dimensions": []
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "status": "not-applicable",
+      "reason": "No canonical source obligation or active inherited control requires this risk family for the current delivery.",
+      "control_ids": [],
+      "dimensions": []
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Required by the current canonical requirement and adversarial control matrix.",
+      "control_ids": [
+        "NEG-606-01-LIVE"
       ],
-      "status": "passed"
+      "dimensions": [
+        {
+          "surface": "coverage-source-liveness",
+          "status": "passed",
+          "reason": "The current attack matrix contains a discriminant adversarial control for this canonical risk surface.",
+          "control_ids": [
+            "NEG-606-01-LIVE"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "status": "not-applicable",
+      "reason": "No canonical source obligation or active inherited control requires this risk family for the current delivery.",
+      "control_ids": [],
+      "dimensions": []
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Required by the current canonical requirement and adversarial control matrix.",
+      "control_ids": [
+        "DELIVERY-FORMAT-GATE-001",
+        "HANDOFF-GATE-COMPLETENESS-001",
+        "NEG-606-04-PATH",
+        "NEG-606-06"
+      ],
+      "dimensions": [
+        {
+          "surface": "benchmark-path-fidelity",
+          "status": "passed",
+          "reason": "The current attack matrix contains a discriminant adversarial control for this canonical risk surface.",
+          "control_ids": [
+            "NEG-606-04-PATH"
+          ]
+        },
+        {
+          "surface": "critical-component-coverage",
+          "status": "passed",
+          "reason": "The current attack matrix contains a discriminant adversarial control for this canonical risk surface.",
+          "control_ids": [
+            "NEG-606-06"
+          ]
+        },
+        {
+          "surface": "delivery-format-gate",
+          "status": "passed",
+          "reason": "The current attack matrix contains a discriminant adversarial control for this canonical risk surface.",
+          "control_ids": [
+            "DELIVERY-FORMAT-GATE-001"
+          ]
+        },
+        {
+          "surface": "handoff-gate-completeness",
+          "status": "passed",
+          "reason": "The current attack matrix contains a discriminant adversarial control for this canonical risk surface.",
+          "control_ids": [
+            "HANDOFF-GATE-COMPLETENESS-001"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "status": "passed",
+      "reason": "Required by the current canonical requirement and adversarial control matrix.",
+      "control_ids": [
+        "NEG-606-01-TIME",
+        "NEG-606-08"
+      ],
+      "dimensions": [
+        {
+          "surface": "reporting-availability-window",
+          "status": "passed",
+          "reason": "The current attack matrix contains a discriminant adversarial control for this canonical risk surface.",
+          "control_ids": [
+            "NEG-606-01-TIME",
+            "NEG-606-08"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "status": "not-applicable",
+      "reason": "No canonical source obligation or active inherited control requires this risk family for the current delivery.",
+      "control_ids": [],
+      "dimensions": []
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "status": "not-applicable",
+      "reason": "No canonical source obligation or active inherited control requires this risk family for the current delivery.",
+      "control_ids": [],
+      "dimensions": []
     }
   ],
   "material_families_missing_controls": []

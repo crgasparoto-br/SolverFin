@@ -1,22 +1,26 @@
 {
   "schema_version": 1,
   "kind": "independent-rejection",
-  "rejection_id": "audit-rejection:pr644-ci-format-20260826",
+  "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
   "status": "rejected",
   "validity": "independent",
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 606,
     "pull_request_number": 644,
-    "published_head_sha": "c05d6d3ca1db4e287e6808e57e1e5134acb7826d",
-    "material_head_sha": "f285b9d163d790a1a7b8bbf4cec9cb684bd636b3"
+    "audited_published_head_sha": "ea29883bd8573c63b48d303fd0f62d8032d64894",
+    "audited_material_head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9"
   },
   "findings": [
     {
       "id": "A-001",
-      "disposition": "blocking",
-      "title": "CI official falha no candidato",
-      "evidence": "format:check rejected scripts/run-statement-visual-validation.mjs and scripts/validate-statement-visual-coverage.mjs; later CI stages were not reached."
+      "classification": "systemic",
+      "summary": "Canonical repository formatting failed on the visual gate runner and coverage validator while the prior handoff was marked ready."
+    },
+    {
+      "id": "A-002",
+      "classification": "targeted",
+      "summary": "The foundation visual assertion compared content viewport width against the requested device viewport width, misclassifying scrollbar width as a viewport failure."
     }
   ]
 }

@@ -1,9 +1,29 @@
 {
   "schema_version": 1,
-  "material_head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
-  "observed_at": "2026-08-26T16:10:00Z",
-  "state": "no-runs",
-  "runs": [],
-  "policy": "single-observe-only-snapshot",
-  "note": "One permitted workflow snapshot returned no PR-triggered runs for the new material SHA; no polling, rerun or dispatch was performed."
+  "material_head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+  "mode": "delivery-snapshot",
+  "status": "pending",
+  "observed_workflow_runs": [
+    {
+      "id": 33016419557,
+      "name": "CI",
+      "status": "in_progress",
+      "conclusion": null,
+      "run_number": 4484
+    },
+    {
+      "id": 33016419477,
+      "name": "Statement visual validation",
+      "status": "in_progress",
+      "conclusion": null,
+      "run_number": 2987
+    }
+  ],
+  "remote_action_mode": "observe-only",
+  "manual_rerun": false,
+  "manual_dispatch": false,
+  "manual_cancel": false,
+  "manual_approval": false,
+  "polling_after_snapshot": false,
+  "note": "Single exact-head snapshot collected after final material freeze. Both workflows were in_progress; no later remote observation is substituted."
 }

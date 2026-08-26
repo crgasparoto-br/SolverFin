@@ -1,1 +1,6 @@
-Exact-head systemic control: handoff readiness inventories canonical final-candidate gates so a focused-check-only delivery cannot be certified as complete.
+Terminal handoff control for Issue 606 / PR 644
+Material head 4398704e6090e7c7f90203aed5ec5925ebe004c7 is intentionally separated from the future result-only handoff child.
+The exact Prettier output was obtained fail-closed from repository CI and applied byte-for-byte while restoring the canonical format:check command.
+The latest independent rejection audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a is represented in learning, remediation, inherited-control, and escape lineage.
+The single exact-head delivery snapshot observed CI run 33016419557 in_progress and Statement visual validation run 33016419477 in_progress. No remote action or follow-up polling was performed.
+Readiness is based on critical local closure plus exact formatter output proof; remote workflow completion is recorded as pending, not green.
