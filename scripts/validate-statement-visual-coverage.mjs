@@ -38,7 +38,8 @@ export function validateCoverageContract({
       errors.push(`Scenario ${scenario.id ?? "<unknown>"} without module.`);
     }
     if (scenarioIds.has(scenario.id)) errors.push(`Duplicate scenario id: ${scenario.id}.`);
-    if (modules.has(scenario.module)) errors.push(`Duplicate scenario module: ${scenario.module}.`);
+    if (modules.has(scenario.module))
+      errors.push(`Duplicate scenario module: ${scenario.module}.`);
     scenarioIds.add(scenario.id);
     modules.add(scenario.module);
     if (!Array.isArray(scenario.coverage) || scenario.coverage.length === 0) {
@@ -98,7 +99,9 @@ export function validateCoverageContract({
       errors.push(`Pilot route lacks mobile coverage: ${pilot.route}.`);
     }
 
-    const hasRouteAlternative = routeRecords.some((record) => ALTERNATIVE_STATES.has(record.state));
+    const hasRouteAlternative = routeRecords.some(
+      (record) => ALTERNATIVE_STATES.has(record.state),
+    );
     const hasFoundationAlternative = records.some(
       (record) =>
         record.realBrowser === true &&
