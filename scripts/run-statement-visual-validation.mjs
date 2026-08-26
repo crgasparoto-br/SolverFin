@@ -33,16 +33,21 @@ try {
   process.exitCode = 1;
   contractReady = false;
 }
+
 if (contractReady) {
   for (const scenario of visualScenarioModules) {
     const startedAt = new Date().toISOString();
     const result = await runScenario(scenario);
     results.push({ ...result, startedAt, finishedAt: new Date().toISOString() });
-    if (result.result === "failed") failures.push(result);
+    if (result.result === "failed") {
+      failures.push(result);
+    }
   }
 
   await finalize();
-  if (failures.length > 0) process.exitCode = 1;
+  if (failures.length > 0) {
+    process.exitCode = 1;
+  }
 }
 
 async function runScenario(scenario) {
@@ -56,8 +61,12 @@ async function runScenario(scenario) {
   });
 
   const outcome = await new Promise((resolve) => {
-    child.once("error", (error) => resolve({ code: null, signal: null, error }));
-    child.once("exit", (code, signal) => resolve({ code, signal, error: null }));
+    child.once("error", (error) => {
+      resolve({ code: null, signal: null, error });
+    });
+    child.once("exit", (code, signal) => {
+      resolve({ code, signal, error: null });
+    });
   });
 
   if (outcome.error || outcome.code !== 0) {
@@ -137,11 +146,11 @@ async function finalize() {
     scenarios: results,
   };
 
-  await writeFile(
-    join(outputDir, "visual-gate-index.json"),
-    `${JSON.stringify(index, null, 2)}\n`,
-  );
+  const indexPath = join(outputDir, "visual-gate-index.json");
+  const indexContents = `${JSON.stringify(index, null, 2)}\n`;
+  await writeFile(indexPath, indexContents);
   await writeFile(join(outputDir, "VISUAL-GATE.md"), renderMarkdown(index));
+
   if (failures.length > 0) {
     await writeFile(
       join(outputDir, "fatal-error.log"),
@@ -155,9 +164,10 @@ async function finalize() {
   }
 
   if (failures.length > 0) {
-    console.error(
-      `[visual-gate] ${failures.length} scenario(s) failed. See ${outputDir}/visual-gate-index.json.`,
-    );
+    const failureSummary =
+      `[visual-gate] ${failures.length} scenario(s) failed. ` +
+      `See ${outputDir}/visual-gate-index.json.`;
+    console.error(failureSummary);
   } else {
     console.log(`[visual-gate] ${results.length} registered scenario modules passed.`);
   }

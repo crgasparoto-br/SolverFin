@@ -20,6 +20,15 @@ const ALTERNATIVE_STATES = new Set([
   "unavailable",
 ]);
 
+const REQUIRED_COVERAGE_FIELDS = [
+  "route",
+  "audience",
+  "state",
+  "layout",
+  "interaction",
+  "dataProfile",
+];
+
 export function validateCoverageContract({
   scenarios = visualScenarioModules,
   pilots = pilotRoutes,
@@ -33,13 +42,18 @@ export function validateCoverageContract({
   const modules = new Set();
 
   for (const scenario of scenarios) {
-    if (!scenario.id || typeof scenario.id !== "string") errors.push("Scenario without id.");
+    if (!scenario.id || typeof scenario.id !== "string") {
+      errors.push("Scenario without id.");
+    }
     if (!scenario.module || typeof scenario.module !== "string") {
       errors.push(`Scenario ${scenario.id ?? "<unknown>"} without module.`);
     }
-    if (scenarioIds.has(scenario.id)) errors.push(`Duplicate scenario id: ${scenario.id}.`);
-    if (modules.has(scenario.module))
+    if (scenarioIds.has(scenario.id)) {
+      errors.push(`Duplicate scenario id: ${scenario.id}.`);
+    }
+    if (modules.has(scenario.module)) {
       errors.push(`Duplicate scenario module: ${scenario.module}.`);
+    }
     scenarioIds.add(scenario.id);
     modules.add(scenario.module);
     if (!Array.isArray(scenario.coverage) || scenario.coverage.length === 0) {
@@ -56,11 +70,12 @@ export function validateCoverageContract({
 
   const fingerprints = new Map();
   for (const record of records) {
-    for (const key of ["route", "audience", "state", "layout", "interaction", "dataProfile"]) {
+    for (const key of REQUIRED_COVERAGE_FIELDS) {
       if (!record[key] || typeof record[key] !== "string") {
         errors.push(`Scenario ${record.scenarioId} has invalid coverage field ${key}.`);
       }
     }
+
     const previous = fingerprints.get(record.fingerprint);
     if (previous) {
       errors.push(
@@ -72,23 +87,33 @@ export function validateCoverageContract({
   }
 
   for (const component of criticalComponents) {
-    const covered = records.some(
-      (record) => record.realBrowser === true && record.components?.includes(component),
-    );
-    if (!covered)
+    const covered = records.some((record) => {
+      return record.realBrowser === true && record.components?.includes(component);
+    });
+    if (!covered) {
       errors.push(`Critical structural component lacks real-browser coverage: ${component}.`);
+    }
   }
 
   const hasKeyboardFocus = records.some((record) => /keyboard|focus/.test(record.interaction));
   const hasZoomReflow = records.some((record) => record.layout === "zoom-200-reflow");
-  const hasLongContent = records.some(
-    (record) => record.state === "long-content" || /long-content/.test(record.dataProfile),
-  );
+  const hasLongContent = records.some((record) => {
+    return record.state === "long-content" || /long-content/.test(record.dataProfile);
+  });
   const hasOverflow = records.some((record) => /overflow/.test(record.interaction));
-  if (!hasKeyboardFocus) errors.push("Representative keyboard/focus coverage is missing.");
-  if (!hasZoomReflow) errors.push("Representative 200% zoom/reflow coverage is missing.");
-  if (!hasLongContent) errors.push("Representative long-content coverage is missing.");
-  if (!hasOverflow) errors.push("Representative overflow coverage is missing.");
+
+  if (!hasKeyboardFocus) {
+    errors.push("Representative keyboard/focus coverage is missing.");
+  }
+  if (!hasZoomReflow) {
+    errors.push("Representative 200% zoom/reflow coverage is missing.");
+  }
+  if (!hasLongContent) {
+    errors.push("Representative long-content coverage is missing.");
+  }
+  if (!hasOverflow) {
+    errors.push("Representative overflow coverage is missing.");
+  }
 
   for (const pilot of pilots) {
     const routeRecords = records.filter((record) => record.route === pilot.route);
@@ -99,15 +124,16 @@ export function validateCoverageContract({
       errors.push(`Pilot route lacks mobile coverage: ${pilot.route}.`);
     }
 
-    const hasRouteAlternative = routeRecords.some(
-      (record) => ALTERNATIVE_STATES.has(record.state),
-    );
-    const hasFoundationAlternative = records.some(
-      (record) =>
+    const hasRouteAlternative = routeRecords.some((record) => {
+      return ALTERNATIVE_STATES.has(record.state);
+    });
+    const hasFoundationAlternative = records.some((record) => {
+      return (
         record.realBrowser === true &&
         ALTERNATIVE_STATES.has(record.state) &&
-        record.archetypeSupport?.includes(pilot.archetype),
-    );
+        record.archetypeSupport?.includes(pilot.archetype)
+      );
+    });
 
     if (pilot.adoption === "migrated") {
       if (!hasRouteAlternative) {
@@ -174,9 +200,15 @@ async function main() {
   );
 }
 
-const invokedDirectly =
-  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
-if (invokedDirectly) {
+function isDirectExecution() {
+  const entrypoint = process.argv[1];
+  if (!entrypoint) {
+    return false;
+  }
+  return import.meta.url === pathToFileURL(entrypoint).href;
+}
+
+if (isDirectExecution()) {
   main().catch((error) => {
     console.error(error instanceof Error ? error.stack ?? error.message : String(error));
     process.exitCode = 1;
