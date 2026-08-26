@@ -1,0 +1,1 @@
+Exact-head remediation: the final candidate source files were normalized to the repository formatter contract before handoff; node syntax checks pass, and the canonical format gate remains mandatory for remote validation.

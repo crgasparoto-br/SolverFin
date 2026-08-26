@@ -1,1 +1,176 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"risk-saturation","compression":"gzip","encoded_size":1856,"encoded_sha256":"db29e024d0df5afe05e4c2c9b19125ddefbdc41a38af0a8365272646a8385d27","decoded_size":9493,"decoded_sha256":"cb6beedf4de14b777826b188a8ae6842166924c2650ec1a74cbd52dcef133422","parts":[{"path":"risk-saturation.parts/part-000.b64","size":1856,"sha256":"db29e024d0df5afe05e4c2c9b19125ddefbdc41a38af0a8365272646a8385d27"}]}
+{
+  "schema_version": 1,
+  "head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-606-01-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "scenario-registry-liveness",
+          "reason": "The reference-liveness contract can regress while ordinary visual scenarios still appear healthy.",
+          "control_ids": [
+            "NEG-REQ-606-01-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-606-01-03",
+        "NEG-REQ-606-08-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "reporting-availability-window",
+          "reason": "A report can label a requested window complete even when retention or source availability makes only a suffix of that window observable.",
+          "control_ids": [
+            "NEG-REQ-606-01-03",
+            "NEG-REQ-606-08-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "DELIVERY-FORMAT-GATE-001",
+        "HANDOFF-GATE-COMPLETENESS-001",
+        "NEG-REQ-606-04-02",
+        "NEG-REQ-606-06-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "benchmark-path-fidelity",
+          "reason": "A benchmark can improve while bypassing productive wrappers or operations that still execute in the real application path.",
+          "control_ids": [
+            "NEG-REQ-606-04-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "critical-visual-structure",
+          "reason": "The structural-contract contract can regress while ordinary visual scenarios still appear healthy.",
+          "control_ids": [
+            "NEG-REQ-606-06-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "delivery-format-gate",
+          "reason": "A delivery can be frozen before the repository formatting gate is proven on the final candidate.",
+          "control_ids": [
+            "DELIVERY-FORMAT-GATE-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-gate-completeness",
+          "reason": "A focused verification set can be mistaken for the complete canonical final-gate inventory before handoff.",
+          "control_ids": [
+            "HANDOFF-GATE-COMPLETENESS-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-606-01-04"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "The documentation contract can regress while ordinary visual scenarios still appear healthy.",
+          "control_ids": [
+            "NEG-REQ-606-01-04"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

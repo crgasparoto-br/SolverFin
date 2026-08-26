@@ -1,1 +1,69 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"audit-escape-closure","compression":"gzip","encoded_size":5580,"encoded_sha256":"5a2c9e0f2160d3a6e2ca973246325f13d74c20c900d8364044529d6ce6413944","decoded_size":31850,"decoded_sha256":"6b385b436f83aa2d4eece3b8cb42a128b17a5dd3ec1b2014b33a9539471baa05","parts":[{"path":"audit-escape-closure.parts/part-000.b64","size":5580,"sha256":"5a2c9e0f2160d3a6e2ca973246325f13d74c20c900d8364044529d6ce6413944"}]}
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-DELIVERY-FORMAT-GATE-001",
+      "escape_class": "final-candidate-gate-omission",
+      "status": "passed",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr644-ci-format-20260826",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Run focused syntax and behavioral checks, freeze the candidate, and omit the canonical repository formatting gate.",
+      "sibling_cases": [
+        {
+          "id": "ESC-S1",
+          "surface": "delivery-format-gate",
+          "dimension": "formatter-gate-omission",
+          "status": "passed",
+          "evidence": "evidence/format-gate-remediation.txt"
+        },
+        {
+          "id": "ESC-S2",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory",
+          "status": "passed",
+          "evidence": "evidence/handoff-gate-completeness.txt"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "delivery controller final-gate inventory",
+        "evidence": "evidence/handoff-gate-completeness.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal readiness validation",
+        "control_id": "HANDOFF-GATE-COMPLETENESS-001",
+        "evidence": "evidence/handoff-gate-completeness.txt"
+      },
+      "revalidated_head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
+      "literal_case": {
+        "status": "passed",
+        "observed": "Active remediation evidence is bound to the current exact-head candidate d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9 and no ancestor green result is substituted."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory"
+        }
+      ],
+      "trigger_terms": [
+        "final candidate",
+        "canonical gate",
+        "handoff readiness",
+        "focused checks"
+      ]
+    }
+  ]
+}

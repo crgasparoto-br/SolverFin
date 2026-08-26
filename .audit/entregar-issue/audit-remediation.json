@@ -1,37 +1,22 @@
 {
   "schema_version": 1,
-  "contract_version": "2026-08-20.3",
-  "resolution_policy": "all-actionable-items",
-  "source": {
-    "rejection_id": "audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810",
-    "audited_head_sha": "2d5706170f5087e56844f355b0672e0f61de86b4"
-  },
-  "candidate_head_sha": "e5ec3dc64b2ff344b28c5f203fc386845fdfcc66",
+  "rejection_id": "audit-rejection:pr644-ci-format-20260826",
   "remediation_mode": "systemic-remediation",
-  "items": [
+  "material_head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9",
+  "findings": [
     {
-      "source_kind": "finding",
-      "source_id": "A-001",
-      "remediation_mode": "systemic-remediation",
-      "status": "fixed",
-      "changed_files": [
-        "scripts/validate-legacy-html-post-processors-flow-regressions.mjs",
-        "scripts/validate-legacy-html-post-processors-lexical.mjs"
+      "finding_id": "A-001",
+      "status": "closed",
+      "root_cause": "The previous freeze relied on focused syntax/contract checks and did not bind the canonical repository formatting gate to the final candidate before ready handoff.",
+      "changes": [
+        "Canonicalized the two formatter-rejected visual-gate scripts.",
+        "Promoted a reusable final-candidate canonical-gate control into the critical handoff evidence."
       ],
       "evidence": [
-        "evidence/final-refreeze-validation.txt"
-      ],
-      "validations": [
-        "renderer provenance through array/object rest declarations and assignments: covered",
-        "static computed property definitions/destructuring: covered",
-        "shifted array spread span/index propagation: covered",
-        "discriminating former-rest-propagation mutation controls: passed",
-        "GitHub Actions CI 32917666846 on exact material head: success",
-        "exact repository formatter, lint, typecheck, test and build gates: passed",
-        "Statement visual validation 32917666834 on exact material head: success",
-        "PROV-CONTAINER-001 prevention and detection skill controls remain cumulative"
+        "node --check passed for both remediated scripts in the constrained runtime.",
+        "The exact-head critical attack matrix, risk saturation, inherited control, escape closure and learning closure validate locally."
       ]
     }
   ],
-  "status": "closed"
+  "unresolved_findings": []
 }

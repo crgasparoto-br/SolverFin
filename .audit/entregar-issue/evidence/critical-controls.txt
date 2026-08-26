@@ -1,0 +1,1 @@
+Exact-candidate controls cover visual registry semantics, formatting-gate closure, SHA binding, and regression behavior.

@@ -1,10 +1,22 @@
 {
   "schema_version": 1,
-  "contract_version": "2026-08-20.3",
   "kind": "independent-rejection",
+  "rejection_id": "audit-rejection:pr644-ci-format-20260826",
   "status": "rejected",
-  "rejection_id": "audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810",
-  "head_sha": "2d5706170f5087e56844f355b0672e0f61de86b4",
-  "findings": [{"id":"A-001","disposition":"blocking","status":"open","actionable":true,"remediation_mode":"systemic-remediation","summary":"Renderer-function provenance was not preserved through object/array containers, property/index retrieval, spreads and destructuring before invocation."}],
-  "recommendations": []
+  "validity": "independent",
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 606,
+    "pull_request_number": 644,
+    "published_head_sha": "c05d6d3ca1db4e287e6808e57e1e5134acb7826d",
+    "material_head_sha": "f285b9d163d790a1a7b8bbf4cec9cb684bd636b3"
+  },
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "title": "CI official falha no candidato",
+      "evidence": "format:check rejected scripts/run-statement-visual-validation.mjs and scripts/validate-statement-visual-coverage.mjs; later CI stages were not reached."
+    }
+  ]
 }
