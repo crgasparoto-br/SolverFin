@@ -26,7 +26,8 @@ import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
-if (!chromePath) throw new Error("CHROME_BIN is required for issue 606 foundation-state validation.");
+if (!chromePath)
+  throw new Error("CHROME_BIN is required for issue 606 foundation-state validation.");
 
 await mkdir(outputDir, { recursive: true });
 const html = fixtureHtml();
@@ -103,53 +104,140 @@ async function inspectFoundation(cdp) {
       const columnCount = (element) => {
         if (!element) return 0;
         const columns = getComputedStyle(element).gridTemplateColumns.trim();
-        return columns ? columns.split(/\\ÊËÊK›[™İˆÂˆNÂˆ™]\›ˆÂˆšY]ÜÜÚYˆØİ[Y[™Øİ[Y[[[Y[˜ÛY[ÚYˆØİ[Y[š]ÎˆØİ[Y[™Øİ[Y[[[Y[œØÜ›ÛÚYHØİ[Y[™Øİ[Y[[[Y[˜ÛY[ÚY
-ÈKˆİ]\ËˆØY[™Ğ\ŞNˆØİ[Y[œ]Y\TÙ[XİÜŠ	ÖÙ]K\İ]OH›ØY[™È—IÊOË™Ù]]šX]J	Ø\šXKX\ŞIÊHÏÈ[ˆ\œ›Ü”›ÛNˆØİ[Y[œ]Y\TÙ[XİÜŠ	ÖÙ]K\İ]OH™\œ›Üˆ—IÊOË™Ù]]šX]J	Ü›ÛIÊHÏÈ[ˆXœÓX™[ˆØİ[Y[œ]Y\TÙ[XİÜŠ	ËœÙ‹]XœÉÊOË™Ù]]šX]J	Ø\šXK[X™[	ÊHÏÈ[ˆXİ]™UXˆØİ[Y[œ]Y\TÙ[XİÜŠ	ËœÙ‹]X–Ø\šXKXİ\œ™[HœYÙH—IÊOË^ÛÛ[Ëš[J
-HÏÈ[ˆ\Ğ˜YÙNˆ›ÛÛX[ŠØİ[Y[œ]Y\TÙ[XİÜŠ	ËœÙ‹X˜YÙIÊJKˆ\Ğ[\ˆ›ÛÛX[ŠØİ[Y[œ]Y\TÙ[XİÜŠ	ËœÙ‹X[\	ÊJKˆ\ÕØ\İˆ›ÛÛX[ŠØİ[Y[œ]Y\TÙ[XİÜŠ	ËœÙ‹]Ø\İ	ÊJKˆZ[š[][R[\˜Xİ]™RZYÚˆZYÚË›[™İÈX]›Z[Š‹‹šZYÚÊHˆˆİ[[X\TÚ[™ÛPÛÛ[[ˆÛÛ[[Ûİ[
-İ[[X\JHOOHKˆ›Ü›TÚ[™ÛPÛÛ[[ˆÛÛ[[Ûİ[
-›Ü›JHHKˆNÂˆJJ
-Xˆ
-NÂŸB‚˜\Ş[˜È[˜İ[Ûˆ™\šYRÙ^X›Ø\™›Øİ\ÊÙ
-HÂˆ]ØZ]]˜[X]JˆÙˆ
+        return columns ? columns.split(/\\s+/).length : 0;
+      };
+      return {
+        viewportWidth: document.documentElement.clientWidth,
+        documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        states,
+        loadingBusy: document.querySelector('[data-state="loading"]')?.getAttribute('aria-busy') ?? null,
+        errorRole: document.querySelector('[data-state="error"]')?.getAttribute('role') ?? null,
+        tabsLabel: document.querySelector('.sf-tabs')?.getAttribute('aria-label') ?? null,
+        activeTab: document.querySelector('.sf-tab[aria-current="page"]')?.textContent?.trim() ?? null,
+        hasBadge: Boolean(document.querySelector('.sf-badge')),
+        hasAlert: Boolean(document.querySelector('.sf-alert')),
+        hasToast: Boolean(document.querySelector('.sf-toast')),
+        minimumInteractiveHeight: heights.length ? Math.min(...heights) : 0,
+        summarySingleColumn: columnCount(summary) === 1,
+        formSingleColumn: columnCount(form) <= 1,
+      };
+    })()`,
+  );
+}
 
+async function verifyKeyboardFocus(cdp) {
+  await evaluate(
+    cdp,
+    `(() => {
+      const target = document.getElementById('issue-606-retry');
+      const sentinel = document.createElement('button');
+      sentinel.type = 'button';
+      sentinel.id = 'issue-606-sentinel';
+      sentinel.setAttribute('aria-label', 'Sentinela de foco');
+      sentinel.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;padding:0;border:0';
+      target.before(sentinel);
+      sentinel.focus();
+      return true;
+    })()`,
+  );
+  await pressTab(cdp);
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const active = document.activeElement;
+      document.getElementById('issue-606-sentinel')?.remove();
+      return {
+        focusedId: active?.id ?? '',
+        focusVisible: active instanceof HTMLElement && active.matches(':focus-visible'),
+      };
+    })()`,
+  );
+  return result;
+}
 
-HOˆÂˆÛÛœİ\™Ù]HØİ[Y[™Ù][[Y[RY
-	Ú\ÜİYKMŒ‹\™]IÊNÂˆÛÛœİÙ[[™[HØİ[Y[˜Ü™X]Q[[Y[
-	Ø]Û‰ÊNÂˆÙ[[™[\HH	Ø]Û‰ÎÂˆÙ[[™[šYH	Ú\ÜİYKMŒ‹\Ù[[™[	ÎÂˆÙ[[™[œÙ]]šX]J	Ø\šXK[X™[	Ë	ÔÙ[[™[HH›ØÛÉÊNÂˆÙ[[™[œİ[K˜ÜÜÕ^H	ÜÜÚ][Û™š^YÛYŒİÜŒİÚYŒ\ÚZYÚŒ\ÛÜXÚ]NŒÜY[™ÎŒØ›Ü™\Œ	ÎÂˆ\™Ù]˜™Y›Ü™JÙ[[™[
-NÂˆÙ[[™[™›Øİ\Ê
-NÂˆ™]\›ˆYNÂˆJJ
-Xˆ
-NÂˆ]ØZ]™\ÜÕXŠÙ
-NÂˆÛÛœİ™\İ[H]ØZ]]˜[X]JˆÙˆ
+async function pressTab(cdp) {
+  const event = {
+    key: "Tab",
+    code: "Tab",
+    windowsVirtualKeyCode: 9,
+    nativeVirtualKeyCode: 9,
+  };
+  await cdp.send("Input.dispatchKeyEvent", { type: "rawKeyDown", ...event });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...event });
+  await sleep(80);
+}
 
+function fixtureHtml() {
+  const retry = renderButton({ label: "Tentar novamente", variant: "secondary" }).replace(
+    "<button ",
+    '<button id="issue-606-retry" ',
+  );
+  const statePanels = [
+    renderLoading({ title: "Carregando dados", description: "Mantendo o contexto da tela." }),
+    renderEmptyState({
+      title: "Nenhum item neste recorte",
+      description: "Ajuste os filtros para revisar outro periodo.",
+    }),
+    renderRecoverableError({
+      title: "Nao foi possivel atualizar",
+      description: "Tente novamente sem perder os filtros.",
+      actionHtml: retry,
+    }),
+    renderUnavailableState({
+      title: "Dados temporariamente indisponiveis",
+      description: "As demais informacoes continuam acessiveis.",
+    }),
+    renderPermissionState({
+      title: "Acesso nao permitido",
+      description: "Escolha um contexto financeiro ao qual voce tenha acesso.",
+    }),
+  ].join("");
 
-HOˆÂˆÛÛœİXİ]™HHØİ[Y[˜Xİ]™Q[[Y[ÂˆØİ[Y[™Ù][[Y[RY
-	Ú\ÜİYKMŒ‹\Ù[[™[	ÊOËœ™[[İ™J
-NÂˆ™]\›ˆÂˆ›Øİ\ÙYYˆXİ]™OËšYÏÈ	ÉËˆ›Øİ\Õš\ÚX›NˆXİ]™H[œİ[˜Ù[ÙˆS[[Y[	‰ˆXİ]™K›X]Ú\Ê	Î™›Øİ\Ë]š\ÚX›IÊKˆNÂˆJJ
-Xˆ
-NÂˆ™]\›ˆ™\İ[ÂŸB‚˜\Ş[˜È[˜İ[Ûˆ™\ÜÕXŠÙ
-HÂˆÛÛœİ]™[HÂˆÙ^Nˆ•Xˆ‹ˆÛÙNˆ•Xˆ‹ˆÚ[™İÜÕš\X[Ù^PÛÙNˆKˆ˜]]™Uš\X[Ù^PÛÙNˆKˆNÂˆ]ØZ]ÙœÙ[™
-’[œ]™\Ü]ÚÙ^Q]™[‹È\Nˆœ˜]ÒÙ^QİÛˆ‹‹‹™]™[JNÂˆ]ØZ]ÙœÙ[™
-’[œ]™\Ü]ÚÙ^Q]™[‹È\NˆšÙ^U\‹‹‹™]™[JNÂˆ]ØZ]ÛY\
-
-NÂŸB‚™[˜İ[Ûˆš^\™R[
+  const summary = renderSummaryGrid({
+    childrenHtml:
+      renderMetricCard({ label: "Itens revisados", value: "12", detail: "Exemplo ficticio" }) +
+      renderMetricCard({ label: "Pendencias", value: "3", tone: "attention" }),
+  });
+  const filter = renderFilterBar({
+    label: "Filtros da validacao",
+    childrenHtml: renderButton({ label: "Aplicar filtro", variant: "secondary" }),
+  });
+  const tabs = renderTabs({
+    label: "Secoes da validacao",
+    items: [
+      { label: "Resumo", href: "#resumo", active: true },
+      { label: "Detalhes", href: "#detalhes" },
+    ],
+  });
+  const form = renderFormLayout({
+    fieldsHtml:
+      '<label>Descricao<input class="sf-input sf-focus-ring" value="Exemplo ficticio" /></label>',
+    actionsHtml: renderButton({ label: "Salvar exemplo" }),
+    errorHtml: renderAlert({ tone: "negative", title: "Revise o campo destacado" }),
+  });
+  const content = renderPageContainer({
+    childrenHtml:
+      renderPageHeader({
+        title: "Estados operacionais da fundacao",
+        description: "Validacao em navegador real de estados, layout e foco.",
+      }) +
+      tabs +
+      filter +
+      summary +
+      renderBadge({ label: "Em revisao", tone: "attention" }) +
+      renderAlert({
+        tone: "information",
+        title: "Contexto preservado",
+        description: "Os estados abaixo usam a mesma fundacao visual.",
+      }) +
+      statePanels +
+      form +
+      renderToast({
+        title: "Exemplo salvo",
+        description: "Feedback ficticio de sucesso.",
+        tone: "positive",
+      }),
+  });
 
-HÂˆÛÛœİ™]HH™[™\]ÛŠÈX™[ˆ•[\ˆ›İ˜[Y[H‹˜\šX[ˆœÙXÛÛ™\HˆJKœ™\XÙJˆ]Ûˆ‹ˆ	Ï]ÛˆYHš\ÜİYKMŒ‹\™]Hˆ	Ëˆ
-NÂˆÛÛœİİ]T[™[ÈHÂˆ™[™\“ØY[™ÊÈ]NˆØ\œ™YØ[™ÈYÜÈ‹\ØÜš\[Ûˆ“X[[™ÈÈÛÛ^ÈH[KˆˆJKˆ™[™\‘[\Tİ]JÈ]Nˆ“™[š[H][H™\İH™XÛÜH‹\ØÜš\[ÛˆZ\İHÜÈš[›ÜÈ\˜H™]š\Ø\ˆİ]›È\š[ÙËˆˆJKˆ™[™\”™XÛİ™\˜X›Q\œ›ÜŠÈ]Nˆ“˜[È›ÚHÜÜÚ]™[]X[^˜\ˆ‹\ØÜš\[Ûˆ•[H›İ˜[Y[HÙ[H\™\ˆÜÈš[›ÜËˆ‹Xİ[Û’[ˆ™]HJKˆ™[™\•[˜]˜Z[X›Tİ]JÈ]Nˆ‘YÜÈ[\Ü˜\šX[Y[H[™\ÜÛš]™Z\È‹\ØÜš\[Ûˆ\È[XZ\È[™›Ü›XXÛÙ\ÈÛÛ[X[HXÙ\ÜÚ]™Z\ËˆˆJKˆ™[™\”\›Z\ÜÚ[Û”İ]JÈ]NˆXÙ\ÜÛÈ˜[È\›Z]YÈ‹\ØÜš\[Ûˆ‘\ØÛÛH[HÛÛ^Èš[˜[˜ÙZ\›È[È]X[›ØÙH[šHXÙ\ÜÛËˆˆJKˆKš›Ú[ŠˆŠNÂ‚ˆÛÛœİİ[[X\HH™[™\”İ[[X\QÜšY
-ÂˆÚ[™[’[‚ˆ™[™\“Y]šXĞØ\™
-ÈX™[ˆ’][œÈ™]š\ØYÜÈ‹˜[YNˆŒLˆ‹]Z[ˆ‘^[\ÈšXİXÚ[ÈˆJH
-Âˆ™[™\“Y]šXĞØ\™
-ÈX™[ˆ”[™[˜ÚX\È‹˜[YNˆŒÈ‹Û™Nˆ˜][[ÛˆˆJKˆJNÂˆÛÛœİš[\ˆH™[™\‘š[\˜\ŠÂˆX™[ˆ‘š[›ÜÈH˜[YXØ[È‹ˆÚ[™[’[ˆ™[™\]ÛŠÈX™[ˆ\XØ\ˆš[›È‹˜\šX[ˆœÙXÛÛ™\HˆJKˆJNÂˆÛÛœİXœÈH™[™\•XœÊÂˆX™[ˆ”ÙXÛÙ\ÈH˜[YXØ[È‹ˆ][\ÎˆÂˆÈX™[ˆ”™\İ[[È‹™YˆˆÜ™\İ[[È‹Xİ]™NˆYHKˆÈX™[ˆ‘][\È‹™YˆˆÙ][\ÈˆKˆKˆJNÂˆÛÛœİ›Ü›HH™[™\‘›Ü›S^[İ]
-ÂˆšY[Ò[ˆ	ÏX™[‘\ØÜšXØ[Ï[œ]Û\ÜÏHœÙ‹Z[œ]Ù‹Y›Øİ\Ë\š[™Èˆ˜[YOH‘^[\ÈšXİXÚ[ÈˆÏÛX™[‰ËˆXİ[ÛœÒ[ˆ™[™\]ÛŠÈX™[ˆ”Ø[˜\ˆ^[\ÈˆJKˆ\œ›Ü’[ˆ™[™\[\
-ÈÛ™Nˆ›™YØ]]™H‹]Nˆ”™]š\ÙHÈØ[\È\İXØYÈˆJKˆJNÂˆÛÛœİÛÛ[H™[™\”YÙPÛÛZ[™\ŠÂˆÚ[™[’[‚ˆ™[™\”YÙRXY\ŠÈ]Nˆ‘\İYÜÈÜ\˜XÚ[Û˜Z\ÈH[™XØ[È‹\ØÜš\[Ûˆ•˜[YXØ[È[H˜]™YØYÜˆ™X[H\İYÜË^[İ]H›ØÛËˆˆJH
-ÂˆXœÈ
-Âˆš[\ˆ
-Âˆİ[[X\H
-Âˆ™[™\˜YÙJÈX™[ˆ‘[H™]š\Ø[È‹Û™Nˆ˜][[ÛˆˆJH
-Âˆ™[™\[\
-ÈÛ™Nˆš[™›Ü›X][Ûˆ‹]NˆÛÛ^È™\Ù\˜YÈ‹\ØÜš\[Ûˆ“ÜÈ\İYÜÈX˜Z^È\Ø[HHY\ÛXH[™XØ[Èš\İX[ˆˆJH
-Âˆİ]T[™[È
-Âˆ›Ü›H
-Âˆ™[™\•Ø\İ
-È]Nˆ‘^[\ÈØ[›È‹\ØÜš\[Ûˆ‘™YY˜XÚÈšXİXÚ[ÈHİXÙ\ÜÛËˆ‹Û™NˆœÜÚ]]™HˆJKˆJNÂ‚ˆ™]\›ˆYØİ\H[[[™ÏHœP”ˆXYY]HÚ\œÙ]H]‹NY]H˜[YOHšY]ÜÜˆÛÛ[HÚYY]šXÙK]ÚY[š]X[\ØØ[OLHİ[OŠØ›Ş\Ú^š[™Î˜›Ü™\‹X›ŞX›Ù^ÛX\™Ú[ŒIØÜ™X]TÛÛ™\‘š[‘\ÚYÛ”Ş\İ[PÜÜÊ
-_OÜİ[OÚXY›ÙHÛ\ÜÏHœÙ‹X\\İ\™˜XÙH‰ØÛÛ[OØ›ÙOÚ[˜ÂŸB
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}body{margin:0}${createSolverFinDesignSystemCss()}</style></head><body class="sf-app-surface">${content}</body></html>`;
+}

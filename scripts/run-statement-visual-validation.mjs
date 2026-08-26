@@ -2,7 +2,10 @@ import { spawn } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { flattenCoverageRecords, visualScenarioModules } from "./statement-visual/coverage-contract.mjs";
+import {
+  flattenCoverageRecords,
+  visualScenarioModules,
+} from "./statement-visual/coverage-contract.mjs";
 import { validateRepositoryCoverageContract } from "./validate-statement-visual-coverage.mjs";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -139,12 +142,19 @@ async function finalize() {
   if (failures.length > 0) {
     await writeFile(
       join(outputDir, "fatal-error.log"),
-      `${failures.map((failure) => `[${failure.scenarioId}] route=${failure.route} state=${failure.state} layout=${failure.layout} interaction=${failure.interaction} :: ${failure.message}`).join("\n")}\n`,
+      `${failures
+        .map(
+          (failure) =>
+            `[${failure.scenarioId}] route=${failure.route} state=${failure.state} layout=${failure.layout} interaction=${failure.interaction} :: ${failure.message}`,
+        )
+        .join("\n")}\n`,
     );
   }
 
   if (failures.length > 0) {
-    console.error(`[visual-gate] ${failures.length} scenario(s) failed. See ${outputDir}/visual-gate-index.json.`);
+    console.error(
+      `[visual-gate] ${failures.length} scenario(s) failed. See ${outputDir}/visual-gate-index.json.`,
+    );
   } else {
     console.log(`[visual-gate] ${results.length} registered scenario modules passed.`);
   }

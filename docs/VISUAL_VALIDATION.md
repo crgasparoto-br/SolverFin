@@ -58,18 +58,18 @@ Quando a issue de migracao marcar a rota como `adoption: "migrated"`, o gate pas
 
 Coberturas representativas atuais incluem:
 
-| Classe | Evidencia principal |
-| --- | --- |
-| primitives estruturais, conteudo longo, dialog/drawer, foco e overflow | `issue-601-ui-primitives.mjs` |
-| loading, vazio, erro recuperavel, indisponibilidade, permissao e demais primitives de estado | `issue-606-foundation-states.mjs` |
-| Dashboard e Extrato responsivos | `main.mjs` |
-| Cartoes normal/mobile, vazio por filtro e modal | `cards-interface.mjs` |
-| Cartoes em 1366x768, conteudo longo e teclado | `cards-interface-adversarial.mjs` |
-| Contas e Cartoes desktop/mobile, tabs, menus e modais | `accounts-cards-interface.mjs` |
-| Relatorios normal/mobile/vazio/erro e foco da matriz | `reports-category-evolution.mjs` |
-| Orcamentos normal desktop/mobile | `issue-606-budgets-pilot.mjs` |
-| Inbox desktop/mobile e teclado | `inbox-interface-refinement.mjs` e `inbox-interface-accessibility.mjs` |
-| reflow/zoom a 200% | `issue-568-financial-assistant-zoom-200-reflow.mjs` |
+| Classe                                                                                       | Evidencia principal                                                    |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| primitives estruturais, conteudo longo, dialog/drawer, foco e overflow                       | `issue-601-ui-primitives.mjs`                                          |
+| loading, vazio, erro recuperavel, indisponibilidade, permissao e demais primitives de estado | `issue-606-foundation-states.mjs`                                      |
+| Dashboard e Extrato responsivos                                                              | `main.mjs`                                                             |
+| Cartoes normal/mobile, vazio por filtro e modal                                              | `cards-interface.mjs`                                                  |
+| Cartoes em 1366x768, conteudo longo e teclado                                                | `cards-interface-adversarial.mjs`                                      |
+| Contas e Cartoes desktop/mobile, tabs, menus e modais                                        | `accounts-cards-interface.mjs`                                         |
+| Relatorios normal/mobile/vazio/erro e foco da matriz                                         | `reports-category-evolution.mjs`                                       |
+| Orcamentos normal desktop/mobile                                                             | `issue-606-budgets-pilot.mjs`                                          |
+| Inbox desktop/mobile e teclado                                                               | `inbox-interface-refinement.mjs` e `inbox-interface-accessibility.mjs` |
+| reflow/zoom a 200%                                                                           | `issue-568-financial-assistant-zoom-200-reflow.mjs`                    |
 
 O objetivo nao e produzir screenshot de toda combinacao. A amostra deve mudar quando rota, estado, layout, interacao, audiencia ou perfil de dados representar risco diferente.
 

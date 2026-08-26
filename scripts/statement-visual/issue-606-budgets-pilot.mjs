@@ -35,8 +35,16 @@ try {
     const measurements = await evaluate(browser.cdp, measurementExpression());
     assert.equal(measurements.pathname, "/orcamentos");
     assert.equal(measurements.hasMain, true, `Budgets has no main landmark at ${viewport.name}`);
-    assert.equal(measurements.hasHeading, true, `Budgets has no visible heading at ${viewport.name}`);
-    assert.equal(measurements.documentFits, true, `Budgets overflows horizontally at ${viewport.name}`);
+    assert.equal(
+      measurements.hasHeading,
+      true,
+      `Budgets has no visible heading at ${viewport.name}`,
+    );
+    assert.equal(
+      measurements.documentFits,
+      true,
+      `Budgets overflows horizontally at ${viewport.name}`,
+    );
     assert.equal(
       measurements.essentialOutsideViewport.length,
       0,

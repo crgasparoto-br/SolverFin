@@ -21,7 +21,9 @@ test("equivalent route/state/layout/interaction/data fingerprints are rejected",
   duplicate.module = "scripts/statement-visual/duplicate-fingerprint-control.mjs";
   duplicate.coverage = [structuredClone(visualScenarioModules[0].coverage[0])];
   const result = validateCoverageContract({ scenarios: [...visualScenarioModules, duplicate] });
-  assert.ok(result.errors.some((error) => error.includes("Equivalent visual fingerprint duplicated")));
+  assert.ok(
+    result.errors.some((error) => error.includes("Equivalent visual fingerprint duplicated")),
+  );
 });
 
 test("critical component coverage cannot disappear silently", () => {

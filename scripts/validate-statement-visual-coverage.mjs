@@ -74,7 +74,8 @@ export function validateCoverageContract({
     const covered = records.some(
       (record) => record.realBrowser === true && record.components?.includes(component),
     );
-    if (!covered) errors.push(`Critical structural component lacks real-browser coverage: ${component}.`);
+    if (!covered)
+      errors.push(`Critical structural component lacks real-browser coverage: ${component}.`);
   }
 
   const hasKeyboardFocus = records.some((record) => /keyboard|focus/.test(record.interaction));
@@ -138,7 +139,9 @@ export function validateCoverageContract({
 export async function validateRepositoryCoverageContract({ root = process.cwd() } = {}) {
   const legacySourcePath = `${root}/apps/web/src/dev-server/legacy-html-post-processors.ts`;
   const legacySource = await readFile(legacySourcePath, "utf8");
-  const currentLegacyIds = [...legacySource.matchAll(/\bid:\s*"([^"]+)"/g)].map((match) => match[1]);
+  const currentLegacyIds = [...legacySource.matchAll(/\bid:\s*"([^"]+)"/g)].map(
+    (match) => match[1],
+  );
   const result = validateCoverageContract({ currentLegacyIds });
 
   for (const scenario of visualScenarioModules) {
@@ -168,7 +171,8 @@ async function main() {
   );
 }
 
-const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+const invokedDirectly =
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (invokedDirectly) {
   main().catch((error) => {
     console.error(error instanceof Error ? error.stack ?? error.message : String(error));
