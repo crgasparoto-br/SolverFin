@@ -1,463 +1,353 @@
 # Arquetipos reutilizaveis de tela
 
-Este documento define o contrato de composicao das principais classes de tela do SolverFin. Ele complementa `docs/DESIGN_SYSTEM.md` e usa as primitives executaveis descritas em `docs/UI_PRIMITIVES.md`.
+Este documento define o contrato de composicao das principais classes de tela do SolverFin.
+Ele complementa `docs/DESIGN_SYSTEM.md` e usa as primitives de `docs/UI_PRIMITIVES.md`.
 
-O objetivo e reduzir variacao estrutural entre rotas sem transformar preferencia estetica em requisito. A escolha do arquetipo parte da tarefa dominante do usuario, e nao do nome da rota ou da quantidade de dados exibidos.
+A escolha do arquetipo parte da tarefa dominante do usuario. Nome de rota, volume de dados ou
+preferencia estetica nao criam um arquetipo novo.
 
 ## Regras comuns
 
-### Como escolher o arquetipo
+### Escolha e composicao
 
-1. identificar a decisao ou tarefa dominante da tela;
-2. escolher um unico arquetipo primario;
-3. usar padroes locais de outro arquetipo apenas dentro de uma regiao subordinada, sem criar uma composicao paralela;
-4. preservar ordem, estados e comportamento responsivo do arquetipo primario;
-5. registrar uma excecao somente quando houver requisito funcional que nao possa ser expresso pelas primitives existentes.
+1. Identificar a decisao ou tarefa dominante.
+2. Escolher um unico arquetipo primario.
+3. Usar padroes de outro arquetipo apenas em regioes subordinadas.
+4. Preservar ordem, estados e comportamento responsivo do arquetipo primario.
+5. Tratar como lacuna da fundacao requisito que nao caiba nas primitives existentes.
 
-Uma lista dentro do painel de detalhe de uma tela master-detail, por exemplo, continua sendo uma regiao subordinada da tela master-detail. Isso nao cria um setimo arquetipo.
+Uma lista dentro do detalhe de um master-detail continua subordinada ao master-detail. Isso nao
+cria excecao ad hoc nem um setimo arquetipo.
 
-### Estrutura compartilhada
+A estrutura usa, quando aplicavel, `renderPageContainer`, `renderPageHeader`, `renderFilterBar`,
+`renderSummaryGrid`, `renderDetailLayout` e `renderFormLayout`.
 
-Quando aplicavel, a composicao parte de `renderPageContainer` e `renderPageHeader`. Filtros usam `renderFilterBar`; resumos podem usar `renderSummaryGrid` quando houver um conjunto pequeno de indicadores que mudem decisao; relacoes mestre-detalhe usam `renderDetailLayout`; formularios usam `renderFormLayout`.
-
-Cards sao reservados a agrupamentos semanticos reais, indicadores destacados ou superficies que precisam de fronteira propria. Pares label/valor, listas, tabelas, definicoes e secoes podem ser usados diretamente quando forem mais adequados. Nenhum arquetipo exige transformar toda informacao em card.
+Cards ficam reservados a agrupamentos semanticos ou poucos indicadores que alterem decisao.
+Listas, tabelas, secoes, definicoes e pares label/valor podem aparecer diretamente.
 
 ### Acoes
 
-Cada escopo visual deve ter no maximo uma acao primaria evidente. Acoes secundarias ficam proximas do contexto que afetam ou em menu apropriado. Telas somente leitura nao inventam uma acao primaria apenas para preencher o cabecalho.
-
-Acoes destrutivas nao competem visualmente com a acao primaria e devem aparecer em zona ou menu separado quando houver risco de acionamento acidental.
+Cada escopo visual possui no maximo uma acao primaria evidente. Acoes secundarias ficam proximas
+do contexto que afetam. Telas somente leitura nao inventam uma acao primaria. Acoes destrutivas
+ficam separadas da manutencao comum.
 
 ### Estados
 
-Os arquetipos devem representar, quando aplicavel:
+Quando aplicavel, toda tela representa:
 
-- loading, mantendo titulo e contexto suficientes para a pessoa entender o que esta sendo carregado;
-- vazio, explicando o que falta e a proxima acao possivel quando existir;
-- erro recuperavel, com mensagem orientada a acao e retry quando a operacao puder ser repetida;
-- sucesso, por feedback proporcional como `renderToast`, mensagem inline ou atualizacao evidente do estado;
-- indisponibilidade e permissao, sem transformar falha de acesso em vazio;
-- dados parciais, quando o contrato da rota permitir resultado util incompleto, com alerta explicito sobre o que falta.
+- loading, mantendo titulo e contexto suficientes para orientar a pessoa;
+- vazio, distinguindo ausencia real de dados de filtro sem resultado;
+- erro recuperavel, preservando contexto e oferecendo retry quando possivel;
+- sucesso, por estado visivel, mensagem inline ou `renderToast`;
+- indisponibilidade e permissao, sem converter falha de acesso em vazio;
+- dados parciais, identificando explicitamente o que esta indisponivel.
 
-A interface nao deve exibir um estado vazio intermediario enquanto ainda esta carregando.
+A interface nao exibe vazio intermediario enquanto ainda esta carregando.
 
 ### Desktop e mobile
 
-A ordem semantica deve ser a mesma em desktop e mobile. A versao mobile pode empilhar regioes, reduzir densidade, transformar detalhe lateral em drawer/pagina e permitir overflow controlado de tabela, mas nao deve esconder contexto, moeda, status ou acao necessaria para concluir a tarefa.
+A ordem semantica e a mesma em desktop e mobile. Mobile pode empilhar regioes, reduzir densidade,
+transformar detalhe lateral em drawer/pagina e usar overflow controlado em tabelas. Contexto,
+status, moeda e acao necessaria nao podem desaparecer por causa do viewport.
 
-Conteudo longo deve reflowar sem sobrepor acoes. Alvos interativos, foco visivel e navegacao por teclado seguem o contrato do design system e das primitives.
+Conteudo longo deve reflowar sem sobrepor acoes. Foco, teclado e alvos interativos seguem o
+design system e as primitives.
 
 ### Dialog, drawer e pagina
 
-- dialog: acao curta, foco unico e poucos dados;
-- drawer: inspecao ou edicao contextual quando manter a referencia da lista ou do mestre ajuda a tarefa;
-- pagina: tarefa longa, multiplas secoes, URL propria ou acao de maior risco.
+- Dialog: acao curta, foco unico e poucos dados.
+- Drawer: inspecao ou edicao contextual em que manter a lista ou mestre ajuda a tarefa.
+- Pagina: tarefa longa, varias secoes, URL propria ou operacao de maior risco.
 
-No mobile, drawer e dialog devem usar a largura segura definida pela fundacao e preservar foco/fechamento das primitives compartilhadas. Nao criar controller modal especifico por rota.
+No mobile, dialog e drawer usam o comportamento responsivo e de foco das primitives existentes.
+Nao criar controller modal especifico por rota.
 
 ### Valores financeiros e moeda
 
-Todo valor monetario usa o contrato `Money` com moeda explicita. Nao inferir BRL pela ausencia de moeda e nao transformar valor indisponivel em zero.
-
-Valores de moedas distintas ficam separados por moeda, salvo quando existir conversao explicita fornecida por contrato de dominio. Valor nativo e valor convertido devem ser identificaveis como papeis diferentes. O arquetipo nunca soma, converte ou recalcula valores financeiros.
+Todo valor monetario usa `Money` com moeda explicita. Ausencia de moeda nao vira BRL e valor
+indisponivel nao vira zero. Moedas distintas ficam separadas, salvo quando uma conversao explicita
+do dominio for fornecida. O arquetipo nao soma, converte nem recalcula valores financeiros.
 
 ## A1 - Cockpit / dashboard
 
-### Quando usar
+**Quando usar:** entender situacao, mudanca, horizonte e necessidade de acao. Exemplos:
+`/dashboard` e `/orcamentos` quando o foco e acompanhamento operacional.
 
-Usar quando a tarefa dominante e entender rapidamente situacao, mudanca, horizonte e necessidade de acao. Exemplos principais: `/dashboard` e, com foco operacional por periodo/categoria, `/orcamentos`.
+**Hierarquia:** titulo/periodo/contexto; filtros globais; poucos indicadores decisivos; tendencia
+ou comparacao; alertas e excecoes; detalhe; exportacao/metodologia como secundarias.
 
-### Hierarquia
+**Acoes:** a principal corresponde ao proximo passo dominante. Drilldown e contextual.
+Exportacao e configuracao permanecem secundarias.
 
-1. titulo, periodo e contexto relevante;
-2. filtros globais essenciais;
-3. poucos indicadores que alterem decisao;
-4. tendencia, comparacao ou composicao;
-5. alertas, excecoes e itens que exigem acao;
-6. detalhe em lista ou tabela;
-7. acoes secundarias, exportacao ou metodologia.
+**Filtros e busca:** filtros globais aparecem antes do conjunto que afetam. Filtro local fica
+junto da visualizacao. Busca aparece somente quando existe colecao pesquisavel relevante.
 
-### Acoes
+**Estados:** loading preserva periodo/contexto; vazio distingue ausencia de dados de filtro sem
+resultado; erro mantem filtros; dado parcial mostra blocos validos e identifica o que faltou.
 
-A acao primaria deve corresponder ao proximo passo dominante do contexto. Drilldown de indicador e acao contextual, nao substituto de uma acao primaria global. Exportacao e configuracao ficam como secundarias.
+**Desktop/mobile:** desktop pode usar `renderSummaryGrid` para poucos indicadores. Mobile empilha
+as regioes na mesma ordem de decisao e nao esconde alertas ou acoes essenciais.
 
-### Filtros e busca
+**Detalhe:** drilldown curto pode usar drawer; analise extensa usa pagina ou rota canonica; dialog
+fica reservado a acao curta.
 
-Filtros globais ficam antes do conjunto que afetam. Filtro local fica junto da visualizacao correspondente. Busca so aparece quando existe colecao pesquisavel relevante.
+**Moeda:** indicadores monetarios exibem moeda explicita. Totais de moedas diferentes ficam
+separados. Nao produzir saldo geral unico sem conversao de dominio.
 
-### Estados
+**Primitives:** `renderPageContainer`, `renderPageHeader`, `renderFilterBar`,
+`renderSummaryGrid`, `renderMetricCard`, `renderAlert`, `renderDataTable` e `renderDrawer`.
 
-Loading preserva periodo/contexto. Vazio distingue ausencia real de dados de filtro sem resultado. Erro recuperavel mantem os filtros atuais. Dados parciais exibem o que esta valido e sinalizam explicitamente o bloco indisponivel.
+**Exemplo ficticio:** "Perfil Exemplo" mostra periodo, saldos BRL e USD separados, variacao,
+compromissos proximos e alerta que navega ao Extrato filtrado.
 
-### Desktop e mobile
-
-Desktop pode usar `renderSummaryGrid` para poucos indicadores e manter visualizacao/detalhe em regioes subsequentes. Mobile empilha na mesma ordem de decisao; indicadores nao essenciais nao devem empurrar alertas importantes para uma regiao inacessivel ou escondida.
-
-### Detalhe, dialog, drawer ou pagina
-
-Drilldown curto pode abrir drawer para manter o cockpit como referencia. Analise extensa usa pagina/rota canonica. Dialog fica reservado a acao curta, nao a leitura de series ou tabelas grandes.
-
-### Moeda
-
-Indicadores monetarios exibem moeda explicita. Totais por moedas diferentes ficam em blocos separados. Nao produzir um unico saldo geral sem contrato de conversao.
-
-### Primitives
-
-`renderPageContainer`, `renderPageHeader`, `renderFilterBar`, `renderSummaryGrid`, `renderMetricCard` apenas para KPIs selecionados, `renderAlert`, `renderDataTable`, `renderDrawer` e estados compartilhados.
-
-### Exemplo ficticio
-
-Um dashboard de "Perfil Exemplo" mostra periodo atual, saldos BRL e USD em grupos separados, uma variacao do periodo, compromissos proximos e um alerta que leva ao Extrato filtrado. O detalhe completo dos lancamentos permanece no Extrato.
-
-### Criterios observaveis
-
-- situacao, mudanca e necessidade de acao aparecem antes do detalhe bruto;
-- o mesmo valor nao e repetido em card, grafico e tabela sem funcao diferente;
-- moedas distintas nao sao somadas implicitamente;
-- a tela continua compreensivel sem transformar toda medida em card.
+**Criterios de uso:** situacao e acao aparecem antes do detalhe; o mesmo valor nao e repetido sem
+funcao diferente; moedas nao sao somadas implicitamente; cards nao viram layout universal.
 
 ## A2 - Listagem / extrato
 
-### Quando usar
+**Quando usar:** localizar, filtrar, comparar e agir sobre registros repetitivos. Exemplo:
+`/lancamentos`.
 
-Usar quando a tarefa dominante e localizar, filtrar, comparar e agir sobre registros repetitivos. Exemplo principal: `/lancamentos`.
+**Hierarquia:** titulo/contexto/conta/moeda; acao primaria; busca/filtros/ordenacao; lista ou
+tabela; paginacao ou agrupamento; acoes de linha/massa; detalhe contextual.
 
-### Hierarquia
+**Acoes:** criacao ou registro pode ser primaria. Acoes de linha e massa ficam ligadas ao item ou
+selecao e nao competem com a acao principal da pagina.
 
-1. titulo, contexto da colecao, conta/perfil e moeda quando aplicavel;
-2. acao primaria;
-3. busca, filtros, ordenacao e filtros ativos;
-4. lista ou tabela;
-5. agrupamento/paginacao/carregamento progressivo;
-6. acoes de linha e selecao em massa;
-7. detalhe contextual.
+**Filtros e busca:** `renderFilterBar` fica junto da lista. Filtros ativos permanecem visiveis e
+limpaveis. Ordenacao relevante deve ser previsivel e reproduzivel.
 
-### Acoes
+**Estados:** loading nao inventa linhas finais; vazio distingue "nenhum registro" de "nenhum
+resultado"; erro preserva filtros e oferece retry; sucesso fica evidente antes de limpar contexto.
 
-Criacao ou registro pode ser a acao primaria quando fizer parte da jornada. Acoes de linha e massa ficam associadas a selecao/registro; nao devem competir com a acao primaria da pagina.
+**Desktop/mobile:** desktop prioriza leitura compacta. Mobile usa lista responsiva ou overflow
+controlado quando colunas forem essenciais. Data, status, valor/moeda e acao nao desaparecem.
 
-### Filtros e busca
+**Detalhe:** inspecao ou edicao curta usa drawer quando manter a lista ajuda; dialog confirma acao
+curta; tarefa extensa ou com URL propria usa pagina.
 
-Usar `renderFilterBar` proximo da lista. Filtros ativos devem permanecer identificaveis e limpaveis. Ordenacao temporal relevante deve ser previsivel e reproduzivel.
+**Moeda:** contexto da conta e moeda de cada valor ficam inequivocos. Subtotal de moedas
+diferentes nao e combinado sem conversao explicita.
 
-### Estados
+**Primitives:** `renderPageContainer`, `renderPageHeader`, `renderFilterBar`, `renderDataTable`,
+`renderBadge`, `renderDrawer`, `renderDialog`, botoes e estados compartilhados.
 
-Loading usa estrutura da colecao sem inventar linhas finais. Vazio distingue "nenhum registro" de "nenhum resultado para estes filtros". Erro de carregamento oferece retry quando aplicavel e preserva filtros. Sucesso de acao nao remove silenciosamente a selecao antes de o resultado ficar evidente.
+**Exemplo ficticio:** o Extrato da "Conta Exemplo BRL" mostra periodo, busca, filtros ativos e
+lancamentos por data; o detalhe abre sem perder filtros ou contexto.
 
-### Desktop e mobile
-
-Desktop prioriza tabela/lista escaneavel. Mobile pode usar lista responsiva ou overflow horizontal controlado quando a natureza tabular exigir colunas. Data, identificacao, status, valor/moeda e acao principal nao podem desaparecer por causa do viewport.
-
-### Detalhe, dialog, drawer ou pagina
-
-Inspecao e edicao curta usam drawer quando manter a lista ajuda. Dialog serve a confirmacao/acao curta. Tarefa extensa ou que exija URL propria usa pagina.
-
-### Moeda
-
-O contexto da conta e a moeda de cada valor devem ser inequivocos. Registros de moedas diferentes nao produzem subtotal combinado sem conversao explicita.
-
-### Primitives
-
-`renderPageContainer`, `renderPageHeader`, `renderFilterBar`, `renderDataTable` ou lista responsiva, `renderBadge`, `renderDrawer`, `renderDialog`, botoes e estados compartilhados.
-
-### Exemplo ficticio
-
-O Extrato da "Conta Exemplo BRL" mostra periodo, busca por descricao, filtros ativos e lancamentos agrupados por data. Selecionar um item abre detalhe contextual sem perder os filtros da lista.
-
-### Criterios observaveis
-
-- registros repetitivos permanecem compactos e escaneaveis;
-- filtros ativos e contexto da conta continuam visiveis durante detalhe/retry;
-- vazio por filtro nao e apresentado como ausencia total de dados;
-- cards grandes nao substituem a lista de registros.
+**Criterios de uso:** registros permanecem escaneaveis; filtros/contexto sobrevivem a detalhe e
+retry; vazio por filtro nao vira ausencia total; cards grandes nao substituem a colecao.
 
 ## A3 - Master-detail
 
-### Quando usar
+**Quando usar:** selecionar recurso mestre e trabalhar com dados ou filhos relacionados sem perder
+o contexto. Exemplos: `/cartoes` e `/contas-cartoes`.
 
-Usar quando a pessoa seleciona um recurso mestre e trabalha com dados/filhos relacionados sem perder esse contexto. Exemplos principais: `/cartoes` e `/contas-cartoes`.
+**Hierarquia:** titulo/colecao mestre; seletor de mestres; mestre selecionado e acoes; resumo;
+detalhe/filhos; historico e zona destrutiva. Em Cartoes: `cartao -> fatura -> compras`.
+Pagamento da fatura e liquidacao da fatura, nao uma segunda compra.
 
-### Hierarquia
+**Acoes:** a principal depende do mestre selecionado. Criar mestre pode ser acao da colecao.
+Acoes destrutivas ficam separadas da manutencao comum.
 
-1. titulo e contexto da colecao mestre;
-2. lista/seletor de mestres com identificacao e status;
-3. mestre selecionado e suas acoes;
-4. resumo dos dados relevantes;
-5. secoes de detalhe, filhos ou linha do tempo;
-6. historico, configuracoes secundarias e acoes destrutivas.
+**Filtros e busca:** busca do mestre fica na regiao mestre. Filtros de filhos ficam no detalhe e
+nao alteram silenciosamente a selecao do mestre.
 
-Em Cartoes, a hierarquia local e `cartao -> fatura -> compras`; pagamento de fatura e uma acao/liquidacao do contexto da fatura, nao uma segunda compra.
+**Estados:** loading da colecao e do detalhe sao distintos; colecao vazia orienta criacao quando
+permitida; mestre sem filhos e vazio local; erro do detalhe nao apaga o mestre.
 
-### Acoes
+**Desktop/mobile:** desktop usa `renderDetailLayout` quando houver largura. Mobile colapsa para
+uma coluna e mantem a selecao identificavel. A relacao nao depende apenas da posicao lado a lado.
 
-A acao primaria depende do mestre selecionado e deve permanecer associada a ele. Criar novo mestre pode ser acao de colecao. Acoes destrutivas ficam separadas de manutencao comum.
+**Detalhe:** o detalhe faz parte do arquetipo. Edicao curta pode usar drawer/dialog; formulario
+longo ou operacao de maior risco usa pagina.
 
-### Filtros e busca
+**Moeda:** moeda do mestre financeiro aparece antes dos valores de detalhe. Fatura, compras,
+limites e saldos nao herdam moeda implicita.
 
-Busca/filtro do mestre fica na regiao mestre. Filtros de filhos ficam no detalhe e nao alteram silenciosamente a selecao do mestre.
+**Primitives:** `renderPageContainer`, `renderPageHeader`, `renderDetailLayout`,
+`renderDataTable`, `renderTabs`, `renderBadge`, `renderDrawer`, `renderDialog` e
+`renderFormLayout`.
 
-### Estados
+**Exemplo ficticio:** "Cartao Exemplo USD" fica selecionado; o detalhe mostra fatura atual,
+fechamento, vencimento e compras; trocar a fatura mantem o cartao identificado.
 
-Loading distingue carregamento da lista mestre e carregamento do detalhe. Colecao vazia orienta criacao quando permitida. Mestre sem filhos e estado vazio local. Erro no detalhe nao deve apagar a lista mestre nem parecer que o recurso deixou de existir.
-
-### Desktop e mobile
-
-Desktop usa `renderDetailLayout` com mestre e detalhe quando houver largura. Mobile colapsa para uma coluna; a selecao atual permanece identificavel e o detalhe pode abrir como drawer/pagina conforme extensao. Nao depender apenas de posicao lado a lado para indicar relacao.
-
-### Detalhe, dialog, drawer ou pagina
-
-O proprio detalhe e parte do arquetipo. Edicao curta pode usar drawer/dialog. Formulario longo ou operacao de maior risco usa pagina. Filhos extensos podem navegar para rota canonica mantendo contexto por parametros suportados.
-
-### Moeda
-
-Moeda do mestre financeiro deve estar visivel antes dos valores de detalhe. Fatura, compras, limites e saldos nao podem herdar uma moeda implicita quando o contrato exige moeda explicita.
-
-### Primitives
-
-`renderPageContainer`, `renderPageHeader`, `renderDetailLayout`, `renderDataTable`, `renderTabs` quando houver categorias reais de detalhe, `renderBadge`, `renderDrawer`, `renderDialog`, `renderFormLayout` e estados compartilhados.
-
-### Exemplo ficticio
-
-Em Cartoes, "Cartao Exemplo USD" fica selecionado; o detalhe mostra a fatura atual, fechamento, vencimento e compras. Trocar a fatura muda apenas a regiao de fatura/compras, mantendo o cartao identificado.
-
-### Criterios observaveis
-
-- o recurso mestre selecionado permanece inequivoco durante a tarefa;
-- erro/vazio em filhos nao apaga o mestre;
-- acoes pertencem claramente a colecao, mestre ou filho correto;
-- relacoes nao dependem somente de duas colunas em desktop.
+**Criterios de uso:** mestre selecionado permanece inequivoco; erro/vazio em filhos nao apaga o
+mestre; acoes pertencem ao nivel correto; relacao mestre-filho continua clara no mobile.
 
 ## A4 - Cadastro / configuracao
 
-### Quando usar
+**Quando usar:** criar, editar ou configurar dados e preferencias. Exemplos existentes:
+`/configuracoes` e `/categorias`.
 
-Usar quando a tarefa dominante e criar, editar ou configurar dados e preferencias. Exemplos existentes: `/configuracoes` e, para manutencao de classificacoes, `/categorias`.
+**Hierarquia:** titulo/consequencia; navegacao por categoria quando real; identificacao; campos
+principais; opcoes secundarias; revisao; salvar/cancelar ou feedback; zona de risco.
 
-### Hierarquia
+**Acoes:** salvar/aplicar e primaria quando a mudanca nao for imediata. Se cada controle persistir
+imediatamente, o estado de salvamento fica visivel e nao existe botao sem efeito real.
 
-1. titulo e consequencia/contexto da alteracao;
-2. navegacao por categoria quando houver grupos independentes;
-3. identificacao e campos essenciais;
-4. dados principais agrupados por significado;
-5. opcoes secundarias/avancadas;
-6. revisao de consequencias importantes;
-7. salvar/cancelar ou feedback de persistencia;
-8. zona de risco separada.
+**Filtros e busca:** busca aparece somente para catalogo grande. Navegacao por categoria nao e
+chamada de filtro quando muda o escopo da configuracao.
 
-### Acoes
+**Estados:** loading preserva categoria; erro de campo fica junto do controle; erro de submissao
+nao esconde erro local; sucesso confirma persistencia; permissao negada nao vira formulario vazio.
 
-Salvar/aplicar e a acao primaria quando a mudanca nao for imediata. Se cada controle persistir imediatamente, o estado de salvamento deve ser visivel e nao deve existir botao "Salvar" sem efeito real. Cancelar e destrutivas sao secundarios.
+**Desktop/mobile:** formulario segue uma ordem unica. Duas colunas servem apenas a campos curtos e
+independentes. Campos longos, ajuda e erros refluem em uma coluna.
 
-### Filtros e busca
+**Detalhe:** dialog serve a cadastro curto; drawer a edicao contextual; configuracao extensa,
+multipla categoria ou risco elevado usa pagina.
 
-Busca so e usada quando existe um catalogo grande de configuracoes. Navegacao por categoria nao deve ser disfarçada como filtro se muda o escopo da configuracao.
+**Moeda:** configuracao com valor financeiro exige moeda explicita. Preferencia de exibicao nao
+substitui a moeda do dado de dominio.
 
-### Estados
+**Primitives:** `renderPageContainer`, `renderPageHeader`, `renderFormLayout`, `renderTabs`,
+controles existentes, `renderAlert`, `renderDialog`, `renderDrawer`, botoes e `renderToast`.
 
-Loading preserva a categoria atual. Erros de campo aparecem proximos ao controle; erro de submissao usa o resumo recuperavel sem esconder erros locais. Sucesso confirma persistencia. Permissao negada e indisponibilidade nao aparecem como formulario vazio.
+**Exemplo ficticio:** "Perfil Exemplo" agrupa campos relacionados e informa se a mudanca e
+imediata; uma zona de risco separada concentra a acao destrutiva.
 
-### Desktop e mobile
-
-Formularios seguem ordem unica de leitura. Duas colunas so sao aceitaveis para campos curtos e independentes; campos longos, mensagens e erros refluem em uma coluna. Mobile mantem labels, ajuda e acoes proximas dos campos correspondentes.
-
-### Detalhe, dialog, drawer ou pagina
-
-Dialog serve a cadastro curto e independente. Drawer serve a edicao contextual de item selecionado. Configuracao extensa, multipla categoria ou risco elevado usa pagina.
-
-### Moeda
-
-Configuracao que inclui valor financeiro exige moeda como dado explicito. Preferencia de exibicao nao substitui a moeda do dado de dominio.
-
-### Primitives
-
-`renderPageContainer`, `renderPageHeader`, `renderFormLayout`, `renderTabs` apenas para categorias reais, inputs/selects existentes, `renderAlert`, `renderDialog`, `renderDrawer`, botoes, toast e estados compartilhados.
-
-### Exemplo ficticio
-
-Em Configuracoes, a categoria "Perfil Exemplo" mostra campos relacionados e indica se a mudanca e imediata. Uma zona de risco separada concentra uma acao destrutiva, sem competir com a manutencao comum.
-
-### Criterios observaveis
-
-- campos sao agrupados por significado, nao por conveniencia visual;
-- dependencia entre campos aparece antes do controle dependente;
-- feedback informa se a alteracao foi salva, aplicada ou rejeitada;
-- zona de risco nao se mistura com configuracao rotineira.
+**Criterios de uso:** campos sao agrupados por significado; dependencias aparecem antes do campo
+dependente; feedback informa persistencia; zona de risco nao se mistura com manutencao rotineira.
 
 ## A5 - Analise / relatorio
 
-### Quando usar
+**Quando usar:** compreender tendencia, comparacao, composicao ou resultado antes do detalhe
+bruto. Exemplo: `/relatorios`.
 
-Usar quando a tarefa dominante e compreender tendencia, comparacao, composicao ou resultado antes de consultar dados detalhados. Exemplo principal: `/relatorios`.
+**Hierarquia:** titulo/periodo/escopo; filtros reproduziveis; resumo ou conclusao; visualizacao;
+destaques/excecoes; matriz/tabela detalhada; metodologia/exportacao como secundarias.
 
-### Hierarquia
+**Acoes:** aplicar filtros pode ser primaria quando necessario para gerar o resultado. Drilldown e
+exportacao sao secundarios. Relatorio somente leitura nao ganha mutacao artificial.
 
-1. titulo, periodo, escopo e fonte/contexto;
-2. filtros reproduziveis;
-3. resumo ou conclusao suportada pelos dados;
-4. visualizacao de tendencia/comparacao/composicao;
-5. destaques, excecoes ou observacoes relevantes;
-6. matriz/tabela detalhada;
-7. metodologia/exportacao como secundaria.
+**Filtros e busca:** filtros permanecem identificaveis e reproduziveis. Busca pertence ao detalhe
+tabular quando ajuda a localizar uma linha.
 
-### Acoes
+**Estados:** loading preserva parametros; vazio explica a combinacao sem dados; erro preserva
+filtros; dado parcial identifica a secao ausente; sucesso e o resultado atualizado.
 
-A acao primaria pode ser aplicar/atualizar filtros quando isso for necessario para gerar o relatorio. Drilldown e exportacao sao secundarias. Relatorio somente leitura nao ganha mutacao artificial.
+**Desktop/mobile:** visualizacoes refluem sem largura fixa. Tabela usa headers semanticos e
+overflow controlado. Mobile empilha resumo, visualizacao e detalhe na mesma ordem logica.
 
-### Filtros e busca
+**Detalhe:** drilldown curto pode usar drawer; exploracao extensa usa rota/filtro canonico; dialog
+pode explicar metodologia curta sem esconder dado essencial.
 
-Filtros devem permanecer visiveis ou resumidos de forma reproduzivel no resultado. Busca pertence ao detalhe tabular quando ajuda a localizar linha, nao a todo relatorio por padrao.
+**Moeda:** analise monetaria separa blocos por moeda. Consolidacao cambial aparece somente quando
+o dominio fornece conversao e distingue valor nativo de convertido.
 
-### Estados
+**Primitives:** `renderPageContainer`, `renderPageHeader`, `renderFilterBar`,
+`renderSummaryGrid`, `renderAlert`, `renderDataTable`, `renderDrawer`, `renderDialog` e `Money`.
 
-Loading preserva parametros. Vazio explica qual combinacao nao retornou dados. Erro recuperavel preserva os filtros. Dados parciais identificam a secao ausente. Sucesso e o proprio resultado atualizado; toast e reservado a acoes como exportacao.
+**Exemplo ficticio:** um Relatorio Exemplo mostra filtros aplicados, resumos BRL e USD separados,
+comparacao temporal e depois a tabela de categorias que sustenta a leitura.
 
-### Desktop e mobile
-
-Visualizacoes refluem sem exigir leitura por largura fixa. Tabela detalhada usa headers semanticos e overflow controlado. Mobile pode empilhar resumo, visualizacao e detalhe, preservando a mesma ordem logica.
-
-### Detalhe, dialog, drawer ou pagina
-
-Drilldown curto pode usar drawer; exploracao extensa deve navegar para rota/filtro canonico. Metodologia curta pode usar dialog, mas nao deve esconder dados essenciais para interpretar o resultado.
-
-### Moeda
-
-Analises monetarias separam blocos por moeda por padrao. Consolidacao cambial so aparece quando o contrato fornece conversao explicita e metadados suficientes para distinguir valor nativo e convertido.
-
-### Primitives
-
-`renderPageContainer`, `renderPageHeader`, `renderFilterBar`, `renderSummaryGrid` quando houver poucos resumos, `renderAlert`, `renderDataTable`, `renderDrawer`, `renderDialog`, `Money` e estados compartilhados.
-
-### Exemplo ficticio
-
-Um Relatorio Exemplo para janeiro mostra filtros aplicados, resumo por BRL e USD em secoes separadas, uma comparacao temporal e, depois, a tabela de categorias que sustenta a leitura.
-
-### Criterios observaveis
-
-- a matriz detalhada nao e a primeira representacao quando existe resumo util;
-- filtros do resultado podem ser identificados e reproduzidos;
-- visualizacao existe para responder pergunta analitica, nao apenas decorar dados;
-- moedas distintas permanecem separadas sem conversao implicita.
+**Criterios de uso:** matriz nao vem primeiro quando existe resumo util; filtros sao reproduziveis;
+visualizacao responde pergunta analitica; moedas ficam separadas sem conversao implicita.
 
 ## A6 - Revisao / inbox
 
-### Quando usar
+**Quando usar:** triar itens pendentes, examinar evidencia e tomar decisao humana. Exemplo:
+`/inbox`.
 
-Usar quando a tarefa dominante e triar itens pendentes, examinar evidencia e tomar uma decisao humana. Exemplo principal: `/inbox`.
+**Hierarquia:** titulo/contagem; filtros/ordenacao; fila compacta; item selecionado e evidencia;
+acao primaria de decisao; acoes secundarias, historico e justificativas.
 
-### Hierarquia
+**Acoes:** decisao do item fica junto da evidencia. Acoes de fila, selecao em massa e filtros
+ficam separadas da decisao do item.
 
-1. titulo, contagem e contexto da fila;
-2. filtros/ordenacao por estado, origem ou prioridade quando suportados;
-3. fila compacta com status e sinais necessarios a triagem;
-4. item selecionado e evidencia;
-5. acao primaria de decisao;
-6. acoes secundarias, historico e justificativas.
+**Filtros e busca:** filtros pertencem a fila e mantem estado visivel. Busca aparece quando ajuda a
+localizar item. Trocar filtro nao aplica decisao ao item aberto.
 
-### Acoes
+**Estados:** loading da fila e da evidencia sao distintos; fila vazia informa ausencia de
+pendencias no recorte; item obsoleto/concorrente usa estado proprio; falha de evidencia nao
+autoriza decisao que dependa dela.
 
-A decisao principal do item selecionado deve ser clara e reversibilidade/efeito deve seguir o contrato do dominio. Acoes de fila, selecao em massa e filtros ficam separadas da decisao do item.
+**Desktop/mobile:** desktop pode usar fila e painel de revisao. Mobile usa uma coluna, drawer ou
+pagina. Status, origem, evidencia e decisao continuam acessiveis por teclado e sem hover
+obrigatorio.
 
-### Filtros e busca
+**Detalhe:** drawer atende revisao contextual curta; pagina atende evidencia ou historico extensos;
+dialog fica restrito a confirmacao curta e nao substitui a superficie de evidencia.
 
-Filtros pertencem a fila e devem manter estado visivel. Busca e apropriada quando ajuda a localizar item por identificador/conteudo suportado. Trocar filtro nao deve aplicar decisao ao item aberto.
+**Moeda:** evidencia financeira mostra valor e moeda explicitos. Itens em moedas diferentes nao
+aparecem como equivalentes sem conversao de dominio.
 
-### Estados
+**Primitives:** `renderPageContainer`, `renderPageHeader`, `renderFilterBar`, `renderDataTable`,
+`renderDetailLayout`, `renderBadge`, `renderAlert`, `renderDrawer`, `renderDialog` e botoes.
 
-Loading separa fila e evidencia. Fila vazia informa que nao ha itens pendentes no recorte atual. Item obsoleto/concorrente deve apresentar estado proprio quando o dominio o expuser, em vez de fingir sucesso. Erro de evidencia nao autoriza decisao sem os dados obrigatorios.
+**Exemplo ficticio:** a Inbox de "Importacoes Exemplo" mostra origem, evidencia e status do item;
+se ele ficar obsoleto durante a revisao, a tela solicita recarregar em vez de confirmar.
 
-### Desktop e mobile
-
-Desktop pode usar lista + painel de revisao; mobile usa fluxo em uma coluna, drawer ou pagina para o item. Status, origem, evidencia essencial e acoes de decisao devem continuar acessiveis por teclado e sem depender de hover.
-
-### Detalhe, dialog, drawer ou pagina
-
-Drawer funciona para revisao contextual de baixa complexidade. Pagina e adequada quando a evidencia ou historico for extenso. Dialog fica restrito a confirmacao curta; nao substitui a superficie de evidencia.
-
-### Moeda
-
-Quando a evidencia inclui valor financeiro, exibir valor e moeda explicitos. Se o item comparar dados em moedas diferentes, nao apresentar equivalencia sem conversao de dominio.
-
-### Primitives
-
-`renderPageContainer`, `renderPageHeader`, `renderFilterBar`, lista responsiva ou `renderDataTable`, `renderDetailLayout` quando apropriado, `renderBadge`, `renderAlert`, `renderDrawer`, `renderDialog`, botoes e estados compartilhados.
-
-### Exemplo ficticio
-
-A Inbox mostra uma fila de "Importacoes Exemplo". Selecionar um item revela origem, evidencia e status; a decisao principal fica junto da evidencia. Se o item ficar obsoleto durante a revisao, a tela solicita recarregar em vez de confirmar silenciosamente.
-
-### Criterios observaveis
-
-- fila, evidencia e decisao pertencem a regioes distinguiveis;
-- estado obsoleto/concorrente nao e tratado como sucesso;
-- a decisao nao fica disponivel quando falta evidencia obrigatoria;
-- a operacao continua possivel por teclado e em viewport reduzida.
+**Criterios de uso:** fila, evidencia e decisao sao distinguiveis; obsolescencia nao vira sucesso;
+decisao nao fica disponivel sem evidencia obrigatoria; fluxo segue operavel por teclado/mobile.
 
 ## Mapeamento das telas-piloto
 
-| Rota | Entrega | Tarefa dominante | Arquetipo primario | Composicao local permitida |
-| --- | --- | --- | --- | --- |
-| `/dashboard` | #608 | entender situacao, mudanca, horizonte e necessidade de acao | A1 Cockpit/dashboard | listas/drilldowns subordinados |
-| `/lancamentos` | #609 | localizar, filtrar e agir sobre lancamentos | A2 Listagem/extrato | drawer de detalhe e formularios curtos |
-| `/cartoes` | #610 | selecionar cartao/fatura e operar compras no contexto correto | A3 Master-detail | lista de compras e formularios contextuais |
-| `/relatorios` | #611 | analisar resumo, visualizacao e evidencia detalhada | A5 Analise/relatorio | tabela e drilldown subordinados |
-| `/contas-cartoes` | #612 | selecionar instrumento mestre e manter seu detalhe | A3 Master-detail | cadastro/edicao contextual |
-| `/orcamentos` | #613 | acompanhar planejado x realizado por periodo/categoria | A1 Cockpit/dashboard | lista/drilldown e cadastro contextual |
-| `/inbox` | #614 | triar evidencia e tomar decisao | A6 Revisao/inbox | master-detail responsivo para item selecionado |
+- `/dashboard` (#608): A1 Cockpit/dashboard. Listas e drilldowns ficam subordinados.
+- `/lancamentos` (#609): A2 Listagem/extrato. Drawer e formularios curtos sao locais.
+- `/cartoes` (#610): A3 Master-detail. Compras ficam no contexto cartao/fatura.
+- `/relatorios` (#611): A5 Analise/relatorio. Tabela e drilldown sao subordinados.
+- `/contas-cartoes` (#612): A3 Master-detail. Cadastro e edicao podem ser contextuais.
+- `/orcamentos` (#613): A1 Cockpit/dashboard. Lista, drilldown e cadastro ficam locais.
+- `/inbox` (#614): A6 Revisao/inbox. O item pode usar master-detail responsivo.
 
-Esse mapeamento nao depende da implementacao das issues #608-#614. Ele define o contrato que essas migracoes devem consumir. A4 Cadastro/configuracao ja possui aplicacao direta em rotas existentes como `/configuracoes` e `/categorias`, sem exigir nova rota.
+Esse mapeamento nao depende da conclusao das issues #608-#614. Ele define o contrato que essas
+migracoes devem consumir. A4 ja se aplica a `/configuracoes` e `/categorias`, sem nova rota.
 
-## Matriz de implementabilidade com as primitives
+## Implementabilidade com as primitives
 
-| Necessidade | Primitive/contrato existente |
-| --- | --- |
-| container, largura e gutters | `renderPageContainer` |
-| titulo, contexto e acoes | `renderPageHeader` |
-| filtros e busca | `renderFilterBar` + controles existentes |
-| poucos resumos/KPIs | `renderSummaryGrid` + `renderMetricCard` |
-| registros repetitivos | `renderDataTable` ou lista responsiva composta |
-| mestre e detalhe | `renderDetailLayout` |
-| cadastro/edicao | `renderFormLayout` + controles existentes |
-| status | `renderBadge` / `renderAlert` |
-| loading | `renderLoading` |
-| vazio | `renderEmptyState` |
-| erro recuperavel | `renderRecoverableError` |
-| indisponibilidade | `renderUnavailableState` |
-| permissao | `renderPermissionState` |
-| feedback de sucesso | `renderToast` ou feedback inline |
-| acao contextual curta | `renderDialog` |
-| detalhe/edicao contextual | `renderDrawer` |
-| navegacao por categorias reais | `renderTabs` |
-| valor financeiro | `Money` com `currency` explicita |
+- Container e gutters: `renderPageContainer`.
+- Titulo, contexto e acoes: `renderPageHeader`.
+- Filtros e busca: `renderFilterBar` e controles existentes.
+- Poucos resumos: `renderSummaryGrid` e `renderMetricCard`.
+- Registros repetitivos: `renderDataTable` ou lista responsiva composta.
+- Mestre e detalhe: `renderDetailLayout`.
+- Cadastro e edicao: `renderFormLayout` e controles existentes.
+- Status e alerta: `renderBadge` e `renderAlert`.
+- Loading: `renderLoading`.
+- Vazio: `renderEmptyState`.
+- Erro recuperavel: `renderRecoverableError`.
+- Indisponibilidade: `renderUnavailableState`.
+- Permissao: `renderPermissionState`.
+- Feedback de sucesso: `renderToast` ou feedback inline.
+- Acao curta: `renderDialog`.
+- Detalhe ou edicao contextual: `renderDrawer`.
+- Categorias reais: `renderTabs`.
+- Valor financeiro: `Money` com `currency` explicita.
 
-Nenhum arquetipo exige uma primitive estrutural nova para ser implementado. Se uma migracao futura encontrar requisito que nao caiba nesta matriz, a lacuna deve ser tratada como evolucao da fundacao, nao como markup/CSS duplicado na rota.
+Nenhum arquetipo exige primitive estrutural nova. Requisito futuro que nao caiba nesse conjunto
+deve evoluir a fundacao em vez de duplicar markup ou CSS por rota.
 
 ## Criterios de uso e anti-padroes verificaveis
 
 Uma tela esta conforme quando:
 
-- possui um arquetipo primario identificavel pela tarefa dominante;
-- ordem de informacao, estados e comportamento mobile seguem o contrato desse arquetipo;
+- possui arquetipo primario identificavel pela tarefa dominante;
+- ordem, estados e comportamento mobile seguem esse arquetipo;
 - primitives compartilhadas expressam a estrutura recorrente;
 - valores monetarios tem moeda explicita e nao ha soma multi-moeda implicita;
-- cards sao usados por agrupamento semantico, nao como layout obrigatorio de todo conteudo;
-- dialog, drawer e pagina sao escolhidos pela extensao/contexto da tarefa;
+- cards sao usados por agrupamento semantico, nao como layout universal;
+- dialog, drawer e pagina sao escolhidos pela extensao e contexto da tarefa;
 - exemplos, fixtures e evidencias usam dados ficticios.
 
-Nao sao criterios de conformidade palavras como "bonito", "moderno", "premium", "clean" ou "elegante". Qualidade deve ser avaliada por ordem, legibilidade, operabilidade, estados, responsividade, acessibilidade e aderencia aos contratos acima.
+"Bonito", "moderno", "premium", "clean" e "elegante" nao sao criterios de conformidade.
+Qualidade deve ser avaliada por ordem, legibilidade, operabilidade, estados, responsividade,
+acessibilidade e aderencia aos contratos acima.
 
 ## Fora de escopo
 
-- mockup pixel-perfect de todas as rotas;
-- criacao de nova rota;
-- regra financeira, soma ou conversao dentro do arquetipo;
-- escolha ou troca de framework frontend;
-- duplicacao de controller modal, tokens ou CSS estrutural por rota.
+- Mockup pixel-perfect de todas as rotas.
+- Criacao de nova rota.
+- Regra financeira, soma ou conversao dentro do arquetipo.
+- Escolha ou troca de framework frontend.
+- Duplicacao de controller modal, tokens ou CSS estrutural por rota.
 
 ## Fontes relacionadas
 
-- issue #605 e epic #590;
-- `docs/DESIGN_SYSTEM.md`;
-- `docs/UI_PRIMITIVES.md`;
-- `docs/product/INTERFACE_INVENTORY.md`;
-- `docs/EVOLUTION_STRATEGY.md`;
+- Issue #605 e epic #590.
+- `docs/DESIGN_SYSTEM.md`.
+- `docs/UI_PRIMITIVES.md`.
+- `docs/product/INTERFACE_INVENTORY.md`.
+- `docs/EVOLUTION_STRATEGY.md`.
 - ADR 0013 e ADR 0014.
