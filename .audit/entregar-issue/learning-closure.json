@@ -12,12 +12,13 @@
     "promotion_status": "promoted",
     "escape_class": "semantic-provenance-container-propagation",
     "generalized_failure_pattern": "A provenance-aware guard can track direct aliases but lose semantic origin or callable provenance when the value is transported through structural containers, allowing a protected origin to be recovered and used without the intended restriction.",
-    "plausible_wrong_implementation": "Track provenance only on direct identifiers and fail to preserve it through object properties, arrays, spreads, destructuring, property assignment or index access.",
+    "plausible_wrong_implementation": "Track provenance only on direct identifiers and ordinary object/array paths, but fail to preserve it when rest bindings or assignments re-shape a container, when a statically computable property key is expressed in computed syntax, or when a spread shifts array indexes.",
     "trigger_signals": [
       "provenance-aware guard",
       "container transport",
-      "object or array alias",
-      "spread or destructuring",
+      "rest binding or assignment",
+      "static computed property key",
+      "shifted array spread",
       "callable recovered from container"
     ],
     "risk_families": [
@@ -25,22 +26,22 @@
     ],
     "reusable_control": {
       "id": "PROV-CONTAINER-001",
-      "procedure": "For any semantic provenance tracked by a guard, execute adversarial transport through object properties, array indexes including shifted spreads, object/array destructuring, container spreads and property/index assignment, then remove one propagation edge and require the matching negative control to fail."
+      "procedure": "For any semantic provenance tracked by a guard, execute adversarial transport through object properties, array indexes and shifted spreads, direct and static computed keys, ordinary destructuring, object/array rest declarations and assignments, container spreads and property/index assignment; mutate at least one rest/reindex propagation edge and require the corresponding negative control to fail."
     },
-    "prevention_rule": "Model semantic provenance independently from value taint and preserve each relevant provenance dimension across structural containers, spreads, destructuring and static property/index assignment before evaluating protected use.",
-    "detection_rule": "Do not accept direct-alias coverage as sufficient; re-audit object property retrieval, array index retrieval including shifted spread, object/array destructuring, container spread and property/index assignment with at least one discriminating propagation mutation.",
+    "prevention_rule": "Model semantic provenance independently from value taint and preserve each relevant provenance dimension across structural containers, spread index shifts, ordinary and rest destructuring/assignment, and direct or statically computed property/index access before protected use.",
+    "detection_rule": "Do not accept direct-alias or ordinary-destructuring coverage as sufficient; re-audit rest declarations and assignments, computed static keys, shifted spreads, property/index recovery and at least one discriminating mutation of the re-shaping propagation rule.",
     "transfer_cases": [
       {
         "id": "T1",
-        "surface": "capability-object-container",
+        "surface": "capability-object-rest",
         "status": "passed",
-        "evidence": "synthetic object property, spread and destructuring provenance contract test"
+        "evidence": "synthetic object-rest and static-computed-key provenance controls"
       },
       {
         "id": "T2",
-        "surface": "taint-array-destructuring",
+        "surface": "taint-array-rest-reindex",
         "status": "passed",
-        "evidence": "synthetic array index, shifted spread and destructuring provenance contract test"
+        "evidence": "synthetic shifted-spread plus array-rest reindex provenance controls"
       }
     ]
   },

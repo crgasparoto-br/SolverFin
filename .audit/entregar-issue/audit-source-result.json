@@ -5,15 +5,6 @@
   "status": "rejected",
   "rejection_id": "audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810",
   "head_sha": "2d5706170f5087e56844f355b0672e0f61de86b4",
-  "findings": [
-    {
-      "id": "A-001",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "systemic-remediation",
-      "summary": "Renderer-function provenance was not preserved through object/array containers, property/index retrieval, spreads and destructuring before invocation."
-    }
-  ],
+  "findings": [{"id":"A-001","disposition":"blocking","status":"open","actionable":true,"remediation_mode":"systemic-remediation","summary":"Renderer-function provenance was not preserved through object/array containers, property/index retrieval, spreads and destructuring before invocation."}],
   "recommendations": []
 }
