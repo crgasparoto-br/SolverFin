@@ -4,6 +4,8 @@ import { pathToFileURL } from "node:url";
 
 import {
   criticalStructuralComponents,
+  criticalStructuralRealFlowComponents,
+  criticalStructuralRealFlowCoverage,
   flattenCoverageRecords,
   legacyProcessorBaselineIds,
   legacyProcessorRetirementCoverage,
@@ -33,10 +35,16 @@ const REQUIRED_COVERAGE_FIELDS = [
   "dataProfile",
 ];
 
+export function isRealApplicationFlowRoute(route) {
+  return typeof route === "string" && (route.startsWith("/") || route.startsWith("shell://"));
+}
+
 export function validateCoverageContract({
   scenarios = getVisualScenarioModules(visualScenarioModules),
   pilots = pilotRoutes,
   criticalComponents = criticalStructuralComponents,
+  criticalRealFlowComponents = criticalStructuralRealFlowComponents,
+  criticalRealFlowCoverage = criticalStructuralRealFlowCoverage,
   legacyBaselineIds = legacyProcessorBaselineIds,
   legacyCoverage = legacyProcessorRetirementCoverage,
   currentLegacyIds = legacyProcessorBaselineIds,
@@ -108,7 +116,54 @@ export function validateCoverageContract({
       return record.realBrowser === true && record.components?.includes(component);
     });
     if (!covered) {
-      errors.push(`Critical structural component lacks real-browser coverage: ${component}.`);
+      errors.push(`Critical foundation component lacks real-browser coverage: ${component}.`);
+    }
+  }
+
+  const criticalComponentSet = new Set(criticalComponents);
+  for (const component of criticalRealFlowComponents) {
+    if (!criticalComponentSet.has(component)) {
+      errors.push(`Real-flow structural component is not registered as critical: ${component}.`);
+      continue;
+    }
+
+    const mappedScenarioIds = criticalRealFlowCoverage[component];
+    if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) {
+      errors.push(`Critical structural component lacks real application-flow mapping: ${component}.`);
+      continue;
+    }
+
+    const coveredByRealFlow = mappedScenarioIds.some((scenarioId) => {
+      if (!scenarioIds.has(scenarioId)) return false;
+      return records.some(
+        (record) =>
+          record.scenarioId === scenarioId &&
+          record.realBrowser === true &&
+          isRealApplicationFlowRoute(record.route),
+      );
+    });
+
+    if (!coveredByRealFlow) {
+      errors.push(
+        `Critical structural component lacks real application-flow coverage: ${component}. ` +
+          `Mapped scenarios: ${mappedScenarioIds.join(", ")}.`,
+      );
+    }
+  }
+
+  for (const [component, mappedScenarioIds] of Object.entries(criticalRealFlowCoverage)) {
+    if (!criticalRealFlowComponents.includes(component)) {
+      errors.push(`Real application-flow mapping references a non-structural component: ${component}.`);
+    }
+    if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) {
+      continue;
+    }
+    for (const scenarioId of mappedScenarioIds) {
+      if (!scenarioIds.has(scenarioId)) {
+        errors.push(
+          `Critical structural component ${component} references unknown real-flow scenario ${scenarioId}.`,
+        );
+      }
     }
   }
 

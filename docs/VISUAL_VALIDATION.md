@@ -4,7 +4,7 @@ Este documento define o contrato operacional do gate visual do SolverFin durante
 
 ## Fonte executavel
 
-- `scripts/statement-visual/coverage-contract.mjs`: registro canonico dos modulos Chrome, classes de cobertura, rotas-piloto e guards de retirada do legado.
+- `scripts/statement-visual/coverage-contract.mjs`: registro canonico dos modulos Chrome, classes de cobertura, rotas-piloto, mapeamento de componentes estruturais para fluxos reais e guards de retirada do legado.
 - `scripts/statement-visual/issue-606-remediation-contract.mjs`: acrescenta as evidencias de rota exigidas pela #606 e decompoe cenarios compostos em execucoes de um unico registro de cobertura.
 - `scripts/validate-statement-visual-coverage.mjs`: valida o contrato antes de abrir o navegador.
 - `scripts/statement-visual/coverage-contract.test.mjs`: controles negativos do proprio gate.
@@ -29,6 +29,17 @@ Cada evidencia representativa declara, no minimo:
 O fingerprint ignora o nome do arquivo e o ID do teste. Ele e derivado de `route + audience + state + layout + interaction + dataProfile`. Dois registros semanticamente equivalentes produzem o mesmo fingerprint e fazem o gate falhar. Diferencas de modulo ou nome nao justificam screenshots duplicados.
 
 A unidade executavel e ainda mais estrita: cada processo Chrome do runner corresponde a exatamente um registro de cobertura. `route`, `state`, `layout` e `interaction` usados no log, no indice e no artefato sao derivados desse mesmo registro. Um cenario composto nao pode usar o primeiro item da lista como rotulo de uma falha ocorrida em outro estado.
+
+### Componente isolado nao e fluxo real
+
+O contrato mantem duas provas complementares e nao intercambiaveis:
+
+1. **cobertura da fundacao em navegador real**: uma fixture `component://...` pode provar API, estados, responsividade, teclado/foco e overflow da primitive de forma isolada;
+2. **cobertura estrutural em fluxo real**: componentes classificados em `criticalStructuralRealFlowComponents` precisam apontar, por `criticalStructuralRealFlowCoverage`, para pelo menos um cenario que execute uma rota real (`/...`) ou o shell autenticado (`shell://...`).
+
+`realBrowser: true` sozinho nao transforma uma fixture em fluxo real. Um registro `component://...` continua util para a fundacao, mas nunca quita o criterio de aceite "componente estrutural critico possui pelo menos um fluxo real coberto". O gate tambem rejeita um mapeamento para rota real quando o registro correspondente nao declara execucao em navegador real.
+
+O mapeamento de fluxo real permanece no mesmo registro canonico de cobertura para evitar uma segunda fonte de verdade. Os controles negativos exercitam, no minimo, uma fixture de primitive, uma fixture de estado e um registro de rota marcado sem navegador real.
 
 ## Evidencia por SHA
 
@@ -57,14 +68,15 @@ A Fase 3B nao depende da conclusao das migracoes #608 a #614. Para toda rota-pil
 2. mobile quando a composicao muda;
 3. pelo menos um estado alternativo relevante `empty/error/recoverable-error/permission/unavailable/alternate` na propria rota.
 
-A fixture `component://foundation-states` continua obrigatoria para provar os componentes compartilhados da fundacao, mas nao substitui evidencia de estado da tela-piloto. O campo `adoption` descreve o estagio da migracao; ele nao reduz o criterio de aceite visual da rota.
+A fixture `component://foundation-states` continua obrigatoria para provar os componentes compartilhados da fundacao, mas nao substitui evidencia de estado da tela-piloto nem cobertura estrutural em fluxo real. O campo `adoption` descreve o estagio da migracao; ele nao reduz o criterio de aceite visual da rota.
 
 Coberturas representativas atuais incluem:
 
 | Classe                                                                                       | Evidencia principal                                                    |
 | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| primitives estruturais, conteudo longo, dialog/drawer, foco e overflow                       | `issue-601-ui-primitives.mjs`                                          |
+| primitives isoladas, conteudo longo, dialog/drawer, foco e overflow                          | `issue-601-ui-primitives.mjs`                                          |
 | loading, vazio, erro recuperavel, indisponibilidade, permissao e demais primitives de estado | `issue-606-foundation-states.mjs`                                      |
+| componentes estruturais em fluxos reais                                                      | mapeamento `criticalStructuralRealFlowCoverage`                         |
 | Dashboard e Extrato responsivos                                                              | execucoes focadas por `issue-606-core-pages-execution.mjs`             |
 | Dashboard vazio em perfil novo                                                               | `issue-606-dashboard-empty.mjs`                                        |
 | Cartoes normal/mobile e vazio por filtro                                                     | execucoes focadas por `issue-606-cards-execution.mjs`                  |
@@ -72,6 +84,8 @@ Coberturas representativas atuais incluem:
 | Contas e Cartoes desktop/mobile, tabs, menus e modais                                        | `accounts-cards-interface.mjs`                                         |
 | Contas e Cartoes vazio em perfil novo                                                        | `issue-606-accounts-cards-empty.mjs`                                   |
 | Relatorios normal/mobile/vazio/erro                                                          | execucoes focadas por `issue-606-reports-execution.mjs`                |
+| Configuracoes, formulario e dialog em fluxo real                                             | `settings-interface.mjs`                                               |
+| shell autenticado desktop/mobile                                                             | `sidebar-navigation.mjs`                                               |
 | Orcamentos normal desktop/mobile                                                             | `issue-606-budgets-pilot.mjs`                                          |
 | Orcamentos vazio em perfil novo                                                              | `issue-606-budgets-empty.mjs`                                          |
 | Inbox desktop/mobile e teclado                                                               | `inbox-interface-refinement.mjs` e `inbox-interface-accessibility.mjs` |
@@ -88,6 +102,7 @@ Remover um adapter do inventario de `apps/web/src/dev-server/legacy-html-post-pr
 - um adapter atual ou historico perder seu mapeamento de cobertura;
 - o mapeamento apontar para um cenario inexistente;
 - qualquer rota-piloto perder o seu estado alternativo proprio;
+- um componente estrutural critico perder todos os seus fluxos reais registrados;
 - um cenario composto novo nao declarar como cada registro sera executado isoladamente.
 
 Esse gate complementa, e nao substitui, `legacy-html-post-processors:check` e o contrato SSR.

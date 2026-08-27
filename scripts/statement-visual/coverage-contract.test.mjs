@@ -3,6 +3,8 @@ import test from "node:test";
 
 import {
   criticalStructuralComponents,
+  criticalStructuralRealFlowComponents,
+  criticalStructuralRealFlowCoverage,
   legacyProcessorBaselineIds,
   legacyProcessorRetirementCoverage,
   pilotRoutes,
@@ -40,6 +42,68 @@ test("critical component coverage cannot disappear silently", () => {
     criticalComponents: [...criticalStructuralComponents, "MissingCriticalPrimitive"],
   });
   assert.ok(result.errors.some((error) => error.includes("MissingCriticalPrimitive")));
+});
+
+test("a component fixture cannot satisfy critical structural real-flow coverage", () => {
+  const result = validateCoverageContract({
+    criticalComponents: ["PageContainer"],
+    criticalRealFlowComponents: ["PageContainer"],
+    criticalRealFlowCoverage: { PageContainer: ["ui-primitives"] },
+  });
+  assert.ok(
+    result.errors.some(
+      (error) =>
+        error.includes("lacks real application-flow coverage: PageContainer") &&
+        error.includes("ui-primitives"),
+    ),
+  );
+});
+
+test("a state fixture cannot impersonate a real structural filter flow", () => {
+  const result = validateCoverageContract({
+    criticalComponents: ["FilterBar"],
+    criticalRealFlowComponents: ["FilterBar"],
+    criticalRealFlowCoverage: { FilterBar: ["foundation-states"] },
+  });
+  assert.ok(
+    result.errors.some(
+      (error) =>
+        error.includes("lacks real application-flow coverage: FilterBar") &&
+        error.includes("foundation-states"),
+    ),
+  );
+});
+
+test("a route-shaped record without real-browser execution cannot satisfy structural coverage", () => {
+  const scenarios = getVisualScenarioModules(visualScenarioModules).map((scenario) => {
+    if (scenario.id !== "core-pages") return structuredClone(scenario);
+    return {
+      ...structuredClone(scenario),
+      coverage: scenario.coverage.map((record) => ({ ...structuredClone(record), realBrowser: false })),
+    };
+  });
+  const result = validateCoverageContract({
+    scenarios,
+    criticalComponents: ["PageContainer"],
+    criticalRealFlowComponents: ["PageContainer"],
+    criticalRealFlowCoverage: { PageContainer: ["core-pages"] },
+  });
+  assert.ok(
+    result.errors.some((error) =>
+      error.includes("lacks real application-flow coverage: PageContainer"),
+    ),
+  );
+});
+
+test("canonical structural real-flow mappings cover only critical components", () => {
+  assert.deepEqual(
+    [...criticalStructuralRealFlowComponents].sort(),
+    Object.keys(criticalStructuralRealFlowCoverage).sort(),
+  );
+  for (const component of criticalStructuralRealFlowComponents) {
+    assert.ok(criticalStructuralComponents.includes(component));
+    assert.ok(criticalStructuralRealFlowCoverage[component].length > 0);
+  }
 });
 
 test("a foundation fixture cannot substitute a pilot route alternate state", () => {

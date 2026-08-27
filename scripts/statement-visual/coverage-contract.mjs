@@ -24,6 +24,39 @@ export const criticalStructuralComponents = [
   "Toast",
 ];
 
+// Subconjunto estrutural que, por contrato da #606, precisa de pelo menos um
+// fluxo real da aplicacao. Os demais componentes continuam obrigatorios na
+// fundacao em navegador real, mas podem ser provados por fixture isolada de
+// estado/componente enquanto ainda nao forem adotados por uma rota-piloto.
+export const criticalStructuralRealFlowComponents = [
+  "PageContainer",
+  "PageHeader",
+  "FilterBar",
+  "SummaryGrid",
+  "DataTable",
+  "DetailLayout",
+  "FormLayout",
+  "Dialog",
+  "Drawer",
+  "Tabs",
+];
+
+// Mapeamento canonico componente -> cenarios que exercitam o contrato
+// estrutural em uma rota/shell real. Fixtures component:// nunca podem quitar
+// este mapeamento, mesmo que usem Chrome real e renderizem a primitive.
+export const criticalStructuralRealFlowCoverage = {
+  PageContainer: ["core-pages"],
+  PageHeader: ["core-pages"],
+  FilterBar: ["reports-category-evolution"],
+  SummaryGrid: ["reports-category-evolution"],
+  DataTable: ["core-pages", "reports-category-evolution"],
+  DetailLayout: ["accounts-cards-interface"],
+  FormLayout: ["settings-interface"],
+  Dialog: ["accounts-cards-interface", "settings-interface"],
+  Drawer: ["sidebar-navigation"],
+  Tabs: ["accounts-cards-interface"],
+};
+
 export const pilotRoutes = [
   { route: "/dashboard", archetype: "A1", migrationIssue: 608, adoption: "foundation" },
   { route: "/lancamentos", archetype: "A2", migrationIssue: 609, adoption: "foundation" },
