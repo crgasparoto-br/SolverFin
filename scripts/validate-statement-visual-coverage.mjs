@@ -35,6 +35,12 @@ const REQUIRED_COVERAGE_FIELDS = [
   "dataProfile",
 ];
 
+const SEMANTIC_BINDING_INTERACTIONS = new Set([
+  "overflow-and-focus",
+  "keyboard-focus-overflow",
+  "filters-modal",
+]);
+
 export function isRealApplicationFlowRoute(route) {
   return typeof route === "string" && (route.startsWith("/") || route.startsWith("shell://"));
 }
@@ -84,6 +90,17 @@ export function validateCoverageContract({
     if (!Array.isArray(execution.coverage) || execution.coverage.length !== 1) {
       errors.push(`Execution ${execution.id} is not bound to exactly one coverage record.`);
     }
+    const interaction = execution.coverage?.[0]?.interaction;
+    const usesFocusedOverride = execution.sourceModule && execution.sourceModule !== execution.module;
+    if (
+      usesFocusedOverride &&
+      SEMANTIC_BINDING_INTERACTIONS.has(interaction) &&
+      execution.requiredAssertions.length === 0
+    ) {
+      errors.push(
+        `Execution ${execution.id} declares high-risk interaction ${interaction} without semantic assertions.`,
+      );
+    }
   }
 
   let records = [];
@@ -98,6 +115,14 @@ export function validateCoverageContract({
     for (const key of REQUIRED_COVERAGE_FIELDS) {
       if (!record[key] || typeof record[key] !== "string") {
         errors.push(`Scenario ${record.scenarioId} has invalid coverage field ${key}.`);
+      }
+    }
+
+    for (const field of ["components", "requiredAssertions", "legacyProcessorIds"]) {
+      if (!Array.isArray(record[field])) {
+        errors.push(`Scenario ${record.scenarioId} has invalid ${field} contract.`);
+      } else if (new Set(record[field]).size !== record[field].length) {
+        errors.push(`Scenario ${record.scenarioId} has duplicate values in ${field}.`);
       }
     }
 
@@ -141,13 +166,14 @@ export function validateCoverageContract({
         (record) =>
           record.scenarioId === scenarioId &&
           record.realBrowser === true &&
-          isRealApplicationFlowRoute(record.route),
+          isRealApplicationFlowRoute(record.route) &&
+          record.components?.includes(component),
       );
     });
 
     if (!coveredByRealFlow) {
       errors.push(
-        `Critical structural component lacks real application-flow coverage: ${component}. ` +
+        `Critical structural component lacks explicit real application-flow evidence: ${component}. ` +
           `Mapped scenarios: ${mappedScenarioIds.join(", ")}.`,
       );
     }
@@ -159,9 +185,7 @@ export function validateCoverageContract({
         `Real application-flow mapping references a non-structural component: ${component}.`,
       );
     }
-    if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) {
-      continue;
-    }
+    if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) continue;
     for (const scenarioId of mappedScenarioIds) {
       if (!scenarioIds.has(scenarioId)) {
         errors.push(
@@ -178,18 +202,10 @@ export function validateCoverageContract({
   });
   const hasOverflow = records.some((record) => /overflow/.test(record.interaction));
 
-  if (!hasKeyboardFocus) {
-    errors.push("Representative keyboard/focus coverage is missing.");
-  }
-  if (!hasZoomReflow) {
-    errors.push("Representative 200% zoom/reflow coverage is missing.");
-  }
-  if (!hasLongContent) {
-    errors.push("Representative long-content coverage is missing.");
-  }
-  if (!hasOverflow) {
-    errors.push("Representative overflow coverage is missing.");
-  }
+  if (!hasKeyboardFocus) errors.push("Representative keyboard/focus coverage is missing.");
+  if (!hasZoomReflow) errors.push("Representative 200% zoom/reflow coverage is missing.");
+  if (!hasLongContent) errors.push("Representative long-content coverage is missing.");
+  if (!hasOverflow) errors.push("Representative overflow coverage is missing.");
 
   for (const pilot of pilots) {
     const routeRecords = records.filter((record) => record.route === pilot.route);
@@ -200,9 +216,7 @@ export function validateCoverageContract({
       errors.push(`Pilot route lacks mobile coverage: ${pilot.route}.`);
     }
 
-    const hasRouteAlternative = routeRecords.some((record) => {
-      return ALTERNATIVE_STATES.has(record.state);
-    });
+    const hasRouteAlternative = routeRecords.some((record) => ALTERNATIVE_STATES.has(record.state));
     if (!hasRouteAlternative) {
       errors.push(
         `Pilot route requires route-specific empty/error/alternate coverage: ${pilot.route}.`,
@@ -220,6 +234,15 @@ export function validateCoverageContract({
     for (const scenarioId of mappedScenarioIds) {
       if (!scenarioIds.has(scenarioId)) {
         errors.push(`Legacy processor ${id} references unknown visual scenario ${scenarioId}.`);
+        continue;
+      }
+      const hasResponsibilityClaim = records.some(
+        (record) => record.scenarioId === scenarioId && record.legacyProcessorIds?.includes(id),
+      );
+      if (!hasResponsibilityClaim) {
+        errors.push(
+          `Legacy processor ${id} mapped scenario ${scenarioId} lacks an explicit equivalent-responsibility claim.`,
+        );
       }
     }
   }
@@ -269,9 +292,7 @@ async function main() {
 
 function isDirectExecution() {
   const entrypoint = process.argv[1];
-  if (!entrypoint) {
-    return false;
-  }
+  if (!entrypoint) return false;
   return import.meta.url === pathToFileURL(entrypoint).href;
 }
 

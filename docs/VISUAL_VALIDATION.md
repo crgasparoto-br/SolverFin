@@ -5,10 +5,12 @@ Este documento define o contrato operacional do gate visual do SolverFin durante
 ## Fonte executavel
 
 - `scripts/statement-visual/coverage-contract.mjs`: registro canonico dos modulos Chrome, classes de cobertura, rotas-piloto, mapeamento de componentes estruturais para fluxos reais e guards de retirada do legado.
-- `scripts/statement-visual/issue-606-remediation-contract.mjs`: acrescenta as evidencias de rota exigidas pela #606 e decompoe cenarios compostos em execucoes de um unico registro de cobertura.
+- `scripts/statement-visual/issue-606-remediation-contract.mjs`: acrescenta as evidencias de rota exigidas pela #606, enriquece os registros com componentes/responsabilidades/assertions e decompoe cenarios compostos em execucoes de um unico registro de cobertura.
+- `scripts/statement-visual/semantic-proof.mjs`: contrato de prova semantica que vincula a identidade da unidade executada às assertions realmente observadas.
+- `scripts/statement-visual/issue-606-semantic-interactions.mjs`: executor focado das interacoes compostas de maior risco (foco/overflow e filtros/modal).
 - `scripts/validate-statement-visual-coverage.mjs`: valida o contrato antes de abrir o navegador.
-- `scripts/statement-visual/coverage-contract.test.mjs`: controles negativos do proprio gate.
-- `scripts/run-statement-visual-validation.mjs`: executa cada unidade de cobertura em processo isolado e agrega o resultado.
+- `scripts/statement-visual/coverage-contract.test.mjs`: controles negativos e mutation tests do proprio gate.
+- `scripts/run-statement-visual-validation.mjs`: executa cada unidade de cobertura em processo isolado, valida a prova semantica quando exigida e agrega o resultado.
 - `.github/workflows/statement-visual-validation.yml`: ambiente oficial com Chrome e PostgreSQL efemero.
 
 Um novo cenario visual deve entrar no registro canonico. Nao adicione uma segunda lista de scripts diretamente no workflow. Se um modulo canonico declarar mais de um registro de cobertura, ele precisa de decomposicao explicita para execucoes focadas; o gate falha fechado quando nao existe esse mapeamento.
@@ -24,29 +26,42 @@ Cada evidencia representativa declara, no minimo:
 - layout/viewport class;
 - interacao principal;
 - perfil de dados ficticios;
-- componentes estruturais exercitados quando o objetivo for a fundacao.
+- componentes estruturais exercitados quando o objetivo for a fundacao;
+- `requiredAssertions` quando um executor focado precisa comprovar semantica de interacao composta;
+- `legacyProcessorIds` quando um fluxo e creditado como substituto de uma responsabilidade legada.
 
 O fingerprint ignora o nome do arquivo e o ID do teste. Ele e derivado de `route + audience + state + layout + interaction + dataProfile`. Dois registros semanticamente equivalentes produzem o mesmo fingerprint e fazem o gate falhar. Diferencas de modulo ou nome nao justificam screenshots duplicados.
 
 A unidade executavel e ainda mais estrita: cada processo Chrome do runner corresponde a exatamente um registro de cobertura. `route`, `state`, `layout` e `interaction` usados no log, no indice e no artefato sao derivados desse mesmo registro. Um cenario composto nao pode usar o primeiro item da lista como rotulo de uma falha ocorrida em outro estado.
+
+### Prova semantica de interacao
+
+Metadata nao e evidencia por si so. Quando uma unidade usa um executor focado para uma interacao composta de maior risco, o registro declara `requiredAssertions` e o executor so emite `semantic-proof` depois de executar as verificacoes correspondentes. O runner rejeita a unidade quando:
+
+- a prova nao existe ou esta em versao invalida;
+- `scenario/sourceScenario/route/state` da prova divergem da unidade corrente;
+- alguma assertion obrigatoria nao foi observada.
+
+Assim, manter `interaction: "filters-modal"` sem exercitar `modal`, ou manter `overflow-and-focus` sem exercitar foco, nao pode continuar verde apenas porque o processo Chrome terminou com exit code zero. Os mutation tests preservam metadata/IDs e removem uma capability para demonstrar o fail-closed.
 
 ### Componente isolado nao e fluxo real
 
 O contrato mantem duas provas complementares e nao intercambiaveis:
 
 1. **cobertura da fundacao em navegador real**: uma fixture `component://...` pode provar API, estados, responsividade, teclado/foco e overflow da primitive de forma isolada;
-2. **cobertura estrutural em fluxo real**: componentes classificados em `criticalStructuralRealFlowComponents` precisam apontar, por `criticalStructuralRealFlowCoverage`, para pelo menos um cenario que execute uma rota real (`/...`) ou o shell autenticado (`shell://...`).
+2. **cobertura estrutural em fluxo real**: componentes classificados em `criticalStructuralRealFlowComponents` precisam apontar, por `criticalStructuralRealFlowCoverage`, para pelo menos um cenario que execute uma rota real (`/...`) ou o shell autenticado (`shell://...`) e cujo registro declare explicitamente o componente creditado.
 
-`realBrowser: true` sozinho nao transforma uma fixture em fluxo real. Um registro `component://...` continua util para a fundacao, mas nunca quita o criterio de aceite "componente estrutural critico possui pelo menos um fluxo real coberto". O gate tambem rejeita um mapeamento para rota real quando o registro correspondente nao declara execucao em navegador real.
+`realBrowser: true` sozinho nao transforma uma fixture em fluxo real. Um registro `component://...` continua util para a fundacao, mas nunca quita o criterio de aceite "componente estrutural critico possui pelo menos um fluxo real coberto". O gate tambem rejeita um mapeamento para rota real quando o registro correspondente nao declara execucao em navegador real ou remove o componente mantendo apenas o ID do cenario.
 
-O mapeamento de fluxo real permanece no mesmo registro canonico de cobertura para evitar uma segunda fonte de verdade. Os controles negativos exercitam, no minimo, uma fixture de primitive, uma fixture de estado e um registro de rota marcado sem navegador real.
+O mapeamento de fluxo real permanece no mesmo registro canonico de cobertura para evitar uma segunda fonte de verdade. Os controles negativos exercitam, no minimo, uma fixture de primitive, uma fixture de estado, um registro de rota marcado sem navegador real e uma mutacao que remove a declaracao do componente mantendo o mapping.
 
 ## Evidencia por SHA
 
 O runner grava em `artifacts/statement-visual/`:
 
 - evidencias proprias de cada cenario, incluindo screenshots e JSON/Markdown quando o modulo as produz;
-- `visual-gate-index.json`, com o SHA, o resultado e os fingerprints cobertos;
+- `semantic-proofs/*.json` para unidades que exigem assertions semanticas;
+- `visual-gate-index.json`, com o SHA, o resultado, os fingerprints e o status da prova semantica;
 - `VISUAL-GATE.md`, resumo navegavel dos cenarios executados;
 - `fatal-error.log` quando houver falha agregada.
 
@@ -58,7 +73,7 @@ O runner registra o contexto antes e depois de cada unidade de cobertura. Uma fa
 
 `scenario`, `sourceScenario`, `route`, `state`, `layout`, `interaction` e `module`.
 
-Os modulos continuam donos das assercoes detalhadas e dos screenshots. O runner nao substitui o diagnostico local; ele garante que o primeiro erro do processo nao esconda qual classe de cobertura falhou e continua colhendo os demais bloqueadores independentes.
+Falha de prova semantica acrescenta as assertions obrigatorias/observadas e o motivo da divergencia. Os modulos continuam donos das assercoes detalhadas e dos screenshots. O runner nao substitui o diagnostico local; ele garante que o primeiro erro do processo nao esconda qual classe de cobertura falhou e continua colhendo os demais bloqueadores independentes.
 
 ## Fundacao e rotas-piloto
 
@@ -76,14 +91,17 @@ Coberturas representativas atuais incluem:
 | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | primitives isoladas, conteudo longo, dialog/drawer, foco e overflow                          | `issue-601-ui-primitives.mjs`                                          |
 | loading, vazio, erro recuperavel, indisponibilidade, permissao e demais primitives de estado | `issue-606-foundation-states.mjs`                                      |
-| componentes estruturais em fluxos reais                                                      | mapeamento `criticalStructuralRealFlowCoverage`                        |
-| Dashboard e Extrato responsivos                                                              | execucoes focadas por `issue-606-core-pages-execution.mjs`             |
+| componentes estruturais em fluxos reais                                                      | mapeamento + `components` no registro de cobertura                     |
+| Extrato foco + overflow                                                                      | `issue-606-semantic-interactions.mjs`                                  |
+| Dashboard e demais core pages responsivos                                                    | `issue-606-core-pages-execution.mjs`                                   |
 | Dashboard vazio em perfil novo                                                               | `issue-606-dashboard-empty.mjs`                                        |
-| Cartoes normal/mobile e vazio por filtro                                                     | execucoes focadas por `issue-606-cards-execution.mjs`                  |
+| Cartoes filtros + modal                                                                      | `issue-606-semantic-interactions.mjs`                                  |
+| Cartoes vazio por filtro                                                                     | `issue-606-cards-execution.mjs`                                        |
 | Cartoes em 1366x768, conteudo longo e teclado                                                | `cards-interface-adversarial.mjs`                                      |
 | Contas e Cartoes desktop/mobile, tabs, menus e modais                                        | `accounts-cards-interface.mjs`                                         |
 | Contas e Cartoes vazio em perfil novo                                                        | `issue-606-accounts-cards-empty.mjs`                                   |
-| Relatorios normal/mobile/vazio/erro                                                          | execucoes focadas por `issue-606-reports-execution.mjs`                |
+| Relatorios foco + overflow                                                                   | `issue-606-semantic-interactions.mjs`                                  |
+| Relatorios vazio/erro                                                                        | `issue-606-reports-execution.mjs`                                      |
 | Configuracoes, formulario e dialog em fluxo real                                             | `settings-interface.mjs`                                               |
 | shell autenticado desktop/mobile                                                             | `sidebar-navigation.mjs`                                               |
 | Orcamentos normal desktop/mobile                                                             | `issue-606-budgets-pilot.mjs`                                          |
@@ -95,15 +113,18 @@ O objetivo nao e produzir screenshot de toda combinacao. A amostra deve mudar qu
 
 ## Retirada de pos-processadores HTML
 
-`legacyProcessorBaselineIds` preserva os IDs que existiam no baseline da #604. `legacyProcessorRetirementCoverage` vincula cada responsabilidade legada a pelo menos um fluxo Chrome final.
+`legacyProcessorBaselineIds` preserva os IDs que existiam no baseline da #604. `legacyProcessorRetirementCoverage` vincula cada responsabilidade legada a pelo menos um fluxo Chrome final, e o registro desse fluxo precisa declarar o mesmo ID em `legacyProcessorIds` para assumir explicitamente a responsabilidade equivalente.
 
 Remover um adapter do inventario de `apps/web/src/dev-server/legacy-html-post-processors.ts` nao remove esse guard. A evidencia de substituicao deve permanecer registrada. O contrato falha se:
 
 - um adapter atual ou historico perder seu mapeamento de cobertura;
 - o mapeamento apontar para um cenario inexistente;
+- o cenario mapeado deixar de declarar explicitamente a responsabilidade equivalente;
 - qualquer rota-piloto perder o seu estado alternativo proprio;
 - um componente estrutural critico perder todos os seus fluxos reais registrados;
 - um cenario composto novo nao declarar como cada registro sera executado isoladamente.
+
+Mutation tests removem responsabilidades de superficies irmas mantendo o mapping para provar que simples existencia do ID/cenario nao satisfaz equivalencia.
 
 Esse gate complementa, e nao substitui, `legacy-html-post-processors:check` e o contrato SSR.
 

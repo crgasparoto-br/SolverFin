@@ -13,12 +13,18 @@ import {
   formatExecutionContext,
   getVisualScenarioModules,
 } from "./statement-visual/issue-606-remediation-contract.mjs";
+import {
+  readSemanticProof,
+  validateSemanticProof,
+} from "./statement-visual/semantic-proof.mjs";
 import { validateRepositoryCoverageContract } from "./validate-statement-visual-coverage.mjs";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const semanticProofDir = join(outputDir, "semantic-proofs");
 const candidateCommit =
   process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
 await mkdir(outputDir, { recursive: true });
+await mkdir(semanticProofDir, { recursive: true });
 
 const registeredScenarios = getVisualScenarioModules(visualScenarioModules);
 const executionScenarios = buildVisualScenarioExecutions(registeredScenarios);
@@ -52,49 +58,74 @@ if (contractReady) {
     const startedAt = new Date().toISOString();
     const result = await runScenario(scenario);
     results.push({ ...result, startedAt, finishedAt: new Date().toISOString() });
-    if (result.result === "failed") {
-      failures.push(result);
-    }
+    if (result.result === "failed") failures.push(result);
   }
 
   await finalize();
-  if (failures.length > 0) {
-    process.exitCode = 1;
-  }
+  if (failures.length > 0) process.exitCode = 1;
 }
 
 async function runScenario(scenario) {
   const context = formatExecutionContext(scenario);
   console.log(`[visual-gate] START ${context}`);
+  const proofPath = join(semanticProofDir, `${slug(scenario.id)}.json`);
   const child = spawn(process.execPath, [scenario.module], {
     cwd: process.cwd(),
-    env: buildExecutionEnvironment(scenario),
+    env: {
+      ...buildExecutionEnvironment(scenario),
+      ...(scenario.requiredAssertions.length > 0
+        ? { STATEMENT_VISUAL_PROOF_FILE: proofPath }
+        : {}),
+    },
     stdio: "inherit",
   });
 
   const outcome = await new Promise((resolve) => {
-    child.once("error", (error) => {
-      resolve({ code: null, signal: null, error });
-    });
-    child.once("exit", (code, signal) => {
-      resolve({ code, signal, error: null });
-    });
+    child.once("error", (error) => resolve({ code: null, signal: null, error }));
+    child.once("exit", (code, signal) => resolve({ code, signal, error: null }));
   });
 
-  const failed = outcome.error || outcome.code !== 0;
+  let semanticProof = {
+    status: scenario.requiredAssertions.length > 0 ? "not-observed" : "not-required",
+    requiredAssertions: scenario.requiredAssertions,
+    observedAssertions: [],
+    errors: [],
+  };
+
+  if (!outcome.error && outcome.code === 0 && scenario.requiredAssertions.length > 0) {
+    try {
+      const proof = await readSemanticProof(proofPath);
+      const validation = validateSemanticProof(scenario, proof);
+      semanticProof = {
+        status: validation.errors.length === 0 ? "passed" : "failed",
+        ...validation,
+        proofPath,
+      };
+    } catch (error) {
+      semanticProof = {
+        ...semanticProof,
+        status: "failed",
+        errors: [`Could not read semantic proof: ${serializeError(error)}`],
+        proofPath,
+      };
+    }
+  }
+
+  const semanticOk = semanticProof.status === "not-required" || semanticProof.status === "passed";
+  const failed = Boolean(outcome.error) || outcome.code !== 0 || !semanticOk;
   const message = failed
     ? outcome.error
       ? serializeError(outcome.error)
-      : `exit=${outcome.code ?? "null"}${outcome.signal ? ` signal=${outcome.signal}` : ""}`
+      : outcome.code !== 0
+        ? `exit=${outcome.code ?? "null"}${outcome.signal ? ` signal=${outcome.signal}` : ""}`
+        : semanticProof.errors.join("; ")
     : undefined;
-  const result = buildExecutionResult(scenario, outcome, message);
+  const result = buildExecutionResult(scenario, { ...outcome, semanticOk }, message);
   result.coverage = scenario.coverage.map(toEvidenceCoverage);
+  result.semanticProof = semanticProof;
 
-  if (failed) {
-    console.error(`[visual-gate] FAIL ${context} :: ${message}`);
-  } else {
-    console.log(`[visual-gate] PASS ${context}`);
-  }
+  if (failed) console.error(`[visual-gate] FAIL ${context} :: ${message}`);
+  else console.log(`[visual-gate] PASS ${context}`);
   return result;
 }
 
@@ -111,13 +142,15 @@ function toEvidenceCoverage(record) {
     interaction: record.interaction,
     dataProfile: record.dataProfile,
     components: record.components,
+    requiredAssertions: record.requiredAssertions,
+    legacyProcessorIds: record.legacyProcessorIds,
     fingerprint: flattened.fingerprint,
   };
 }
 
 async function finalize() {
   const index = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     generatedAt: new Date().toISOString(),
     commit: candidateCommit,
     artifactName:
@@ -144,8 +177,7 @@ async function finalize() {
   };
 
   const indexPath = join(outputDir, "visual-gate-index.json");
-  const indexContents = `${JSON.stringify(index, null, 2)}\n`;
-  await writeFile(indexPath, indexContents);
+  await writeFile(indexPath, `${JSON.stringify(index, null, 2)}\n`);
   await writeFile(join(outputDir, "VISUAL-GATE.md"), renderMarkdown(index));
 
   if (failures.length > 0) {
@@ -161,10 +193,9 @@ async function finalize() {
   }
 
   if (failures.length > 0) {
-    const failureSummary =
-      `[visual-gate] ${failures.length} coverage scenario(s) failed. ` +
-      `See ${outputDir}/visual-gate-index.json.`;
-    console.error(failureSummary);
+    console.error(
+      `[visual-gate] ${failures.length} coverage scenario(s) failed. See ${outputDir}/visual-gate-index.json.`,
+    );
   } else {
     console.log(`[visual-gate] ${results.length} registered coverage executions passed.`);
   }
@@ -174,10 +205,14 @@ function renderMarkdown(index) {
   const rows = index.scenarios
     .map(
       (scenario) =>
-        `| ${scenario.scenarioId} | ${scenario.sourceScenarioId} | ${scenario.route} | ${scenario.state} | ${scenario.layout} | ${scenario.interaction} | ${scenario.result} |`,
+        `| ${scenario.scenarioId} | ${scenario.sourceScenarioId} | ${scenario.route} | ${scenario.state} | ${scenario.layout} | ${scenario.interaction} | ${scenario.semanticProof.status} | ${scenario.result} |`,
     )
     .join("\n");
-  return `# Visual gate evidence\n\n- Commit: \`${index.commit}\`\n- Artifact: \`${index.artifactName}\`\n- Registered modules: ${index.contract.modules}\n- Execution units: ${index.contract.executionUnits}\n- Coverage fingerprints: ${index.contract.coverageFingerprints}\n- Failures: ${index.failures.length}\n\n| Scenario | Source scenario | Route | State | Layout | Interaction | Result |\n| --- | --- | --- | --- | --- | --- | --- |\n${rows}\n`;
+  return `# Visual gate evidence\n\n- Commit: \`${index.commit}\`\n- Artifact: \`${index.artifactName}\`\n- Registered modules: ${index.contract.modules}\n- Execution units: ${index.contract.executionUnits}\n- Coverage fingerprints: ${index.contract.coverageFingerprints}\n- Failures: ${index.failures.length}\n\n| Scenario | Source scenario | Route | State | Layout | Interaction | Semantic proof | Result |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n${rows}\n`;
+}
+
+function slug(value) {
+  return String(value).replace(/[^a-zA-Z0-9_.-]+/g, "-");
 }
 
 function serializeError(error) {

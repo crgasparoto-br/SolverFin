@@ -1,7 +1,98 @@
+const SEMANTIC_INTERACTION_MODULE =
+  "scripts/statement-visual/issue-606-semantic-interactions.mjs";
+
 const MULTI_COVERAGE_EXECUTION_MODULES = new Map([
-  ["core-pages", "scripts/statement-visual/issue-606-core-pages-execution.mjs"],
-  ["reports-category-evolution", "scripts/statement-visual/issue-606-reports-execution.mjs"],
-  ["cards-interface", "scripts/statement-visual/issue-606-cards-execution.mjs"],
+  [
+    "core-pages",
+    [
+      SEMANTIC_INTERACTION_MODULE,
+      "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+      "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+      "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+    ],
+  ],
+  [
+    "reports-category-evolution",
+    [
+      SEMANTIC_INTERACTION_MODULE,
+      "scripts/statement-visual/issue-606-reports-execution.mjs",
+      "scripts/statement-visual/issue-606-reports-execution.mjs",
+    ],
+  ],
+  [
+    "cards-interface",
+    [SEMANTIC_INTERACTION_MODULE, "scripts/statement-visual/issue-606-cards-execution.mjs"],
+  ],
+]);
+
+const RECORD_ENRICHMENTS = new Map([
+  [
+    "core-pages:0",
+    {
+      requiredAssertions: ["focus", "overflow"],
+      components: ["PageContainer", "PageHeader", "DataTable"],
+      legacyProcessorIds: ["statement-list-sorting", "statement-insight-context"],
+    },
+  ],
+  [
+    "core-pages:1",
+    { components: ["PageContainer", "PageHeader"] },
+  ],
+  [
+    "reports-category-evolution:0",
+    {
+      requiredAssertions: ["focus", "overflow"],
+      components: ["FilterBar", "SummaryGrid", "DataTable"],
+    },
+  ],
+  [
+    "cards-interface:0",
+    {
+      requiredAssertions: ["filters", "modal"],
+      legacyProcessorIds: [
+        "card-list-sorting",
+        "card-instrument-subtotals",
+        "cards-interface",
+        "cards-interface-finalizer",
+      ],
+    },
+  ],
+]);
+
+const SCENARIO_ENRICHMENTS = new Map([
+  [
+    "accounts-cards-interface",
+    {
+      components: ["DetailLayout", "Dialog", "Tabs"],
+      legacyProcessorIds: [
+        "accounts-cards-tabs",
+        "accounts-cards-standardization",
+        "accounts-cards-action-menus",
+      ],
+    },
+  ],
+  ["settings-interface", { components: ["FormLayout", "Dialog"] }],
+  ["sidebar-navigation", { components: ["Drawer"] }],
+  ["categories-interface", { legacyProcessorIds: ["categories-icons-tooltips"] }],
+  [
+    "cards-interface-adversarial",
+    { legacyProcessorIds: ["cards-interface", "cards-interface-finalizer"] },
+  ],
+  [
+    "account-remuneration",
+    { legacyProcessorIds: ["statement-list-sorting", "account-remuneration-disclosure"] },
+  ],
+  [
+    "account-remuneration-mobile",
+    { legacyProcessorIds: ["account-remuneration-disclosure"] },
+  ],
+  ["financial-insights", { legacyProcessorIds: ["statement-insight-context"] }],
+  [
+    "inbox-interface-refinement",
+    { legacyProcessorIds: ["inbox-structured-payload", "inbox-list-layout"] },
+  ],
+  ["bank-message-ai-inbox", { legacyProcessorIds: ["inbox-structured-payload"] }],
+  ["inbox-interface-accessibility", { legacyProcessorIds: ["inbox-list-layout"] }],
 ]);
 
 export const supplementalVisualScenarioModules = [
@@ -23,7 +114,7 @@ export const supplementalVisualScenarioModules = [
 ];
 
 export function getVisualScenarioModules(baseScenarios) {
-  return [...baseScenarios, ...supplementalVisualScenarioModules];
+  return [...baseScenarios.map(enrichScenario), ...supplementalVisualScenarioModules];
 }
 
 export function buildVisualScenarioExecutions(scenarios) {
@@ -36,10 +127,10 @@ export function buildVisualScenarioExecutions(scenarios) {
       return [executionFor(scenario, scenario.coverage[0], 0, scenario.module, scenario.id)];
     }
 
-    const executionModule = MULTI_COVERAGE_EXECUTION_MODULES.get(scenario.id);
-    if (!executionModule) {
+    const executionModules = MULTI_COVERAGE_EXECUTION_MODULES.get(scenario.id);
+    if (!executionModules || executionModules.length !== scenario.coverage.length) {
       throw new Error(
-        `Scenario ${scenario.id} has ${scenario.coverage.length} coverage records and requires an explicit one-record execution module override.`,
+        `Scenario ${scenario.id} has ${scenario.coverage.length} coverage records and requires an explicit one-record execution module override for every record.`,
       );
     }
 
@@ -49,7 +140,7 @@ export function buildVisualScenarioExecutions(scenarios) {
         scenario,
         record,
         coverageIndex,
-        executionModule,
+        executionModules[coverageIndex],
         `${scenario.id}::${suffix}`,
       );
     });
@@ -66,12 +157,14 @@ export function executionIdentity(execution) {
   return {
     scenarioId: execution.id,
     sourceScenarioId: execution.sourceScenarioId ?? execution.id,
+    sourceModule: execution.sourceModule ?? execution.module,
     module: execution.module,
     coverageIndex: execution.coverageIndex ?? 0,
     route: record.route,
     state: record.state,
     layout: record.layout,
     interaction: record.interaction,
+    requiredAssertions: execution.requiredAssertions ?? record.requiredAssertions ?? [],
   };
 }
 
@@ -97,7 +190,7 @@ export function buildExecutionEnvironment(execution, baseEnvironment = process.e
 }
 
 export function buildExecutionResult(execution, outcome, message) {
-  const failed = Boolean(outcome.error) || outcome.code !== 0;
+  const failed = Boolean(outcome.error) || outcome.code !== 0 || outcome.semanticOk === false;
   return {
     ...executionIdentity(execution),
     result: failed ? "failed" : "passed",
@@ -105,12 +198,50 @@ export function buildExecutionResult(execution, outcome, message) {
   };
 }
 
+function enrichScenario(scenario) {
+  const scenarioEnrichment = SCENARIO_ENRICHMENTS.get(scenario.id) ?? {};
+  return {
+    ...scenario,
+    coverage: scenario.coverage.map((record, index) => {
+      const recordEnrichment = RECORD_ENRICHMENTS.get(`${scenario.id}:${index}`) ?? {};
+      return mergeCoverage(record, scenarioEnrichment, recordEnrichment);
+    }),
+  };
+}
+
+function mergeCoverage(record, ...enrichments) {
+  const merged = { ...record };
+  for (const enrichment of enrichments) {
+    if (enrichment.components) {
+      merged.components = unique([...(merged.components ?? []), ...enrichment.components]);
+    }
+    if (enrichment.legacyProcessorIds) {
+      merged.legacyProcessorIds = unique([
+        ...(merged.legacyProcessorIds ?? []),
+        ...enrichment.legacyProcessorIds,
+      ]);
+    }
+    if (enrichment.requiredAssertions) {
+      merged.requiredAssertions = unique([
+        ...(merged.requiredAssertions ?? []),
+        ...enrichment.requiredAssertions,
+      ]);
+    }
+  }
+  merged.components ??= [];
+  merged.legacyProcessorIds ??= [];
+  merged.requiredAssertions ??= [];
+  return merged;
+}
+
 function executionFor(source, record, coverageIndex, module, id) {
   return {
     id,
     sourceScenarioId: source.id,
+    sourceModule: source.module,
     module,
     coverageIndex,
+    requiredAssertions: record.requiredAssertions ?? [],
     coverage: [record],
   };
 }
@@ -127,7 +258,13 @@ function pilotEmptyCoverage(route, archetype) {
     components: [],
     realBrowser: true,
     archetypeSupport: [],
+    requiredAssertions: [],
+    legacyProcessorIds: [],
   };
+}
+
+function unique(values) {
+  return [...new Set(values)];
 }
 
 function slug(value) {
