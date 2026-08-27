@@ -2,29 +2,15 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-export async function runPilotEmptyState({
-  route,
-  expectedTexts,
-  artifactStem,
-}) {
+export async function runPilotEmptyState({ route, expectedTexts, artifactStem }) {
   if (!chromePath) {
-    throw new Error(
-      "CHROME_BIN is required for pilot empty-state validation.",
-    );
+    throw new Error("CHROME_BIN is required for pilot empty-state validation.");
   }
   await mkdir(outputDir, { recursive: true });
 
@@ -81,11 +67,7 @@ export async function runPilotEmptyState({
         [],
         `${route} did not render its route-specific empty state.`,
       );
-      assert.equal(
-        measurements.mainPresent,
-        true,
-        `${route} did not render a main region.`,
-      );
+      assert.equal(measurements.mainPresent, true, `${route} did not render a main region.`);
       assert.equal(
         measurements.noHorizontalOverflow,
         true,
@@ -109,10 +91,7 @@ export async function runPilotEmptyState({
     if (browser) await browser.close(outputDir);
   }
 
-  await writeFile(
-    join(outputDir, `${artifactStem}.json`),
-    `${JSON.stringify(report, null, 2)}\n`,
-  );
+  await writeFile(join(outputDir, `${artifactStem}.json`), `${JSON.stringify(report, null, 2)}\n`);
   if (report.failures.length > 0) {
     for (const failure of report.failures) console.error(`- ${failure.message}`);
     process.exitCode = 1;

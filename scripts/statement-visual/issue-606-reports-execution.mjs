@@ -2,19 +2,11 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const requestedState = process.env.STATEMENT_VISUAL_STATE;
 const allowedStates = new Set(["normal", "empty", "error"]);
@@ -23,9 +15,7 @@ if (!chromePath) {
   throw new Error("CHROME_BIN is required for reports visual validation.");
 }
 if (!requestedState || !allowedStates.has(requestedState)) {
-  throw new Error(
-    `Unsupported reports coverage state: ${requestedState ?? "<missing>"}.`,
-  );
+  throw new Error(`Unsupported reports coverage state: ${requestedState ?? "<missing>"}.`);
 }
 await mkdir(outputDir, { recursive: true });
 
@@ -64,10 +54,7 @@ try {
 }
 
 const artifactStem = `issue-606-reports-${requestedState}`;
-await writeFile(
-  join(outputDir, `${artifactStem}.json`),
-  `${JSON.stringify(report, null, 2)}\n`,
-);
+await writeFile(join(outputDir, `${artifactStem}.json`), `${JSON.stringify(report, null, 2)}\n`);
 if (report.failures.length > 0) {
   for (const failure of report.failures) console.error(`- ${failure.message}`);
   process.exitCode = 1;
@@ -130,39 +117,17 @@ async function validateNormal(cdp, month, width, height, label) {
   );
   await waitForReportState(cdp, "ready");
   if (width <= 390) {
-    await evaluate(
-      cdp,
-      `document.querySelector('.evolution-table-scroll')?.focus()`,
-    );
+    await evaluate(cdp, `document.querySelector('.evolution-table-scroll')?.focus()`);
   }
   const measurements = await evaluate(cdp, reportMeasurementExpression());
   const screenshotName = `issue-606-reports-normal-${label}.png`;
   await screenshot(cdp, join(outputDir, screenshotName));
-  assert.equal(
-    measurements.state,
-    "ready",
-    `Reports ${label} did not render ready state.`,
-  );
-  assert.ok(
-    measurements.tableCount >= 1,
-    `Reports ${label} rendered no semantic table.`,
-  );
-  assert.equal(
-    measurements.noHorizontalOverflow,
-    true,
-    `Reports ${label} has page overflow.`,
-  );
+  assert.equal(measurements.state, "ready", `Reports ${label} did not render ready state.`);
+  assert.ok(measurements.tableCount >= 1, `Reports ${label} rendered no semantic table.`);
+  assert.equal(measurements.noHorizontalOverflow, true, `Reports ${label} has page overflow.`);
   if (width <= 390) {
-    assert.equal(
-      measurements.tableScrollable,
-      true,
-      "Reports mobile matrix is not scrollable.",
-    );
-    assert.equal(
-      measurements.scrollerFocused,
-      true,
-      "Reports mobile matrix is not focusable.",
-    );
+    assert.equal(measurements.tableScrollable, true, "Reports mobile matrix is not scrollable.");
+    assert.equal(measurements.scrollerFocused, true, "Reports mobile matrix is not focusable.");
   }
   report.evidence.push({
     label,
@@ -183,20 +148,9 @@ async function validateEmpty(cdp) {
   const measurements = await evaluate(cdp, reportMeasurementExpression());
   const screenshotName = "issue-606-reports-empty.png";
   await screenshot(cdp, join(outputDir, screenshotName));
-  assert.equal(
-    measurements.state,
-    "empty",
-    "Reports empty state was not rendered.",
-  );
-  assert.ok(
-    measurements.rowHeaders >= 3,
-    "Reports empty state lost principal rows.",
-  );
-  assert.equal(
-    measurements.noHorizontalOverflow,
-    true,
-    "Reports empty state has page overflow.",
-  );
+  assert.equal(measurements.state, "empty", "Reports empty state was not rendered.");
+  assert.ok(measurements.rowHeaders >= 3, "Reports empty state lost principal rows.");
+  assert.equal(measurements.noHorizontalOverflow, true, "Reports empty state has page overflow.");
   report.evidence.push({
     width: 1024,
     height: 700,
@@ -215,11 +169,7 @@ async function validateFilterError(cdp) {
   const measurements = await evaluate(cdp, reportMeasurementExpression());
   const screenshotName = "issue-606-reports-error.png";
   await screenshot(cdp, join(outputDir, screenshotName));
-  assert.equal(
-    measurements.state,
-    "filter-error",
-    "Reports filter-error state was not rendered.",
-  );
+  assert.equal(measurements.state, "filter-error", "Reports filter-error state was not rendered.");
   assert.ok(
     measurements.invalidControls >= 3,
     "Reports invalid filters are not identified accessibly.",

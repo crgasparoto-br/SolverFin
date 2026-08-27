@@ -2,19 +2,11 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const requestedState = process.env.STATEMENT_VISUAL_STATE;
 const allowedStates = new Set(["normal", "empty"]);
@@ -23,9 +15,7 @@ if (!chromePath) {
   throw new Error("CHROME_BIN is required for cards visual validation.");
 }
 if (!requestedState || !allowedStates.has(requestedState)) {
-  throw new Error(
-    `Unsupported cards coverage state: ${requestedState ?? "<missing>"}.`,
-  );
+  throw new Error(`Unsupported cards coverage state: ${requestedState ?? "<missing>"}.`);
 }
 await mkdir(outputDir, { recursive: true });
 
@@ -57,10 +47,7 @@ try {
 }
 
 const artifactStem = `issue-606-cards-${requestedState}`;
-await writeFile(
-  join(outputDir, `${artifactStem}.json`),
-  `${JSON.stringify(report, null, 2)}\n`,
-);
+await writeFile(join(outputDir, `${artifactStem}.json`), `${JSON.stringify(report, null, 2)}\n`);
 if (report.failures.length > 0) {
   for (const failure of report.failures) console.error(`- ${failure.message}`);
   process.exitCode = 1;
@@ -85,36 +72,13 @@ async function validateNormal(cdp, width, height, label) {
   const screenshotName = `issue-606-cards-normal-${label}.png`;
   await screenshot(cdp, join(outputDir, screenshotName));
 
-  assert.equal(
-    measurements.viewportWidth,
-    width,
-    `Cards ${label} viewport identity changed.`,
-  );
-  assert.equal(
-    measurements.noHorizontalOverflow,
-    true,
-    `Cards ${label} has horizontal overflow.`,
-  );
-  assert.equal(
-    measurements.overviewVisible,
-    true,
-    `Cards ${label} invoice overview is missing.`,
-  );
-  assert.ok(
-    measurements.rowCount > 0,
-    `Cards ${label} rendered no purchase rows.`,
-  );
-  assert.equal(
-    measurements.searchVisible,
-    true,
-    `Cards ${label} purchase search is missing.`,
-  );
+  assert.equal(measurements.viewportWidth, width, `Cards ${label} viewport identity changed.`);
+  assert.equal(measurements.noHorizontalOverflow, true, `Cards ${label} has horizontal overflow.`);
+  assert.equal(measurements.overviewVisible, true, `Cards ${label} invoice overview is missing.`);
+  assert.ok(measurements.rowCount > 0, `Cards ${label} rendered no purchase rows.`);
+  assert.equal(measurements.searchVisible, true, `Cards ${label} purchase search is missing.`);
   if (label === "desktop") {
-    assert.equal(
-      measurements.tableHeaderVisible,
-      true,
-      "Cards desktop table header is missing.",
-    );
+    assert.equal(measurements.tableHeaderVisible, true, "Cards desktop table header is missing.");
   } else {
     assert.equal(
       measurements.tableHeaderVisible,
@@ -164,26 +128,10 @@ async function validateFilteredEmpty(cdp) {
   );
   const screenshotName = "issue-606-cards-empty.png";
   await screenshot(cdp, join(outputDir, screenshotName));
-  assert.equal(
-    measurements.visibleRows,
-    0,
-    "Cards empty search still shows purchase rows.",
-  );
-  assert.equal(
-    measurements.emptyVisible,
-    true,
-    "Cards filtered empty state is not visible.",
-  );
-  assert.match(
-    measurements.status,
-    /^0\s/,
-    "Cards filtered result count is not zero.",
-  );
-  assert.equal(
-    measurements.clearVisible,
-    true,
-    "Cards empty state lost the clear-search action.",
-  );
+  assert.equal(measurements.visibleRows, 0, "Cards empty search still shows purchase rows.");
+  assert.equal(measurements.emptyVisible, true, "Cards filtered empty state is not visible.");
+  assert.match(measurements.status, /^0\s/, "Cards filtered result count is not zero.");
+  assert.equal(measurements.clearVisible, true, "Cards empty state lost the clear-search action.");
   assert.equal(
     measurements.noHorizontalOverflow,
     true,

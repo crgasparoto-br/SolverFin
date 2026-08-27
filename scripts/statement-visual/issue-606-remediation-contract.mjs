@@ -58,7 +58,9 @@ export function buildVisualScenarioExecutions(scenarios) {
 
 export function executionIdentity(execution) {
   if (!Array.isArray(execution.coverage) || execution.coverage.length !== 1) {
-    throw new Error(`Execution ${execution.id ?? "<unknown>"} must contain exactly one coverage record.`);
+    throw new Error(
+      `Execution ${execution.id ?? "<unknown>"} must contain exactly one coverage record.`,
+    );
   }
   const record = execution.coverage[0];
   return {
