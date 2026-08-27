@@ -80,8 +80,10 @@ export function formatExecutionContext(execution) {
 
 export function buildExecutionEnvironment(execution, baseEnvironment = process.env) {
   const identity = executionIdentity(execution);
+  const candidateSha = baseEnvironment.STATEMENT_VISUAL_CANDIDATE_SHA;
   return {
     ...baseEnvironment,
+    ...(candidateSha ? { GITHUB_SHA: candidateSha } : {}),
     STATEMENT_VISUAL_SCENARIO_ID: identity.scenarioId,
     STATEMENT_VISUAL_SOURCE_SCENARIO_ID: identity.sourceScenarioId,
     STATEMENT_VISUAL_COVERAGE_INDEX: String(identity.coverageIndex),
@@ -127,8 +129,10 @@ function pilotEmptyCoverage(route, archetype) {
 }
 
 function slug(value) {
-  return String(value)
-    .replace(/^\/+/, "")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .replace(/^-|-$/g, "") || "surface";
+  return (
+    String(value)
+      .replace(/^\/+/, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "surface"
+  );
 }

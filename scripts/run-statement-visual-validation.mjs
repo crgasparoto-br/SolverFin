@@ -16,6 +16,8 @@ import {
 import { validateRepositoryCoverageContract } from "./validate-statement-visual-coverage.mjs";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const candidateCommit =
+  process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
 await mkdir(outputDir, { recursive: true });
 
 const registeredScenarios = getVisualScenarioModules(visualScenarioModules);
@@ -117,10 +119,10 @@ async function finalize() {
   const index = {
     schemaVersion: 2,
     generatedAt: new Date().toISOString(),
-    commit: process.env.GITHUB_SHA ?? "local",
+    commit: candidateCommit,
     artifactName:
-      process.env.GITHUB_SHA && process.env.GITHUB_SHA !== "local"
-        ? `statement-visual-evidence-${process.env.GITHUB_SHA}`
+      candidateCommit !== "local"
+        ? `statement-visual-evidence-${candidateCommit}`
         : "statement-visual-evidence-local",
     contract: {
       modules: registeredScenarios.length,

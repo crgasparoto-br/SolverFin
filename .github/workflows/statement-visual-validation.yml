@@ -61,6 +61,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -136,6 +138,7 @@ jobs:
           SOLVERFIN_WEB_URL: http://127.0.0.1:5173
           SOLVERFIN_PRODUCTIVE_AUTH_URL: http://127.0.0.1:5174
           STATEMENT_VISUAL_OUTPUT: artifacts/statement-visual
+          STATEMENT_VISUAL_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run qa:statement-visual
 
       - name: Preserve server log
@@ -156,7 +159,7 @@ jobs:
         if: ${{ always() && steps.artifact_safety.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: statement-visual-evidence-${{ github.sha }}
+          name: statement-visual-evidence-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/statement-visual
           if-no-files-found: error
           retention-days: 30
@@ -165,7 +168,7 @@ jobs:
         if: ${{ always() && steps.artifact_safety.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: issue-473-diagnostic-${{ github.sha }}
+          name: issue-473-diagnostic-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             artifacts/statement-visual/issue-473-diagnostic.json
             artifacts/statement-visual/issue-473-account-edit.json
