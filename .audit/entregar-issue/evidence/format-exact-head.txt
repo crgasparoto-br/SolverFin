@@ -1,0 +1,5 @@
+subject_sha=372418dea4ebc66c559dfb15817ccca02e9e4823
+GitHub Actions CI run 33064920116, job 98492542185 Validate monorepo, completed success.
+Step 10 Check formatting completed success under repository Prettier configuration.
+The repository lockfile resolves Prettier 3.8.4 and .prettierrc.json sets printWidth=100, semi=true, singleQuote=false, trailingComma=all.
+The same exact-head job also completed lint, typecheck, test and build successfully.

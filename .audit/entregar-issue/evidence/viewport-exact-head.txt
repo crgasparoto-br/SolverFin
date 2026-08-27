@@ -1,0 +1,4 @@
+subject_sha=372418dea4ebc66c559dfb15817ccca02e9e4823
+Exact-head source inspection: scripts/statement-visual/issue-601-ui-primitives.mjs blob a64260ae0598b7de0f8a4eb8890f894a7c1286df uses document.documentElement.clientWidth as content viewport width and independently asserts document.documentElement.scrollWidth <= vw + 1, container fit, mobile table containment, and contained overflow.
+Exact-head source inspection: scripts/statement-visual/cards-interface-adversarial.mjs measures device viewport identity with window.innerWidth/window.innerHeight and separately asserts document.documentElement.scrollWidth <= window.innerWidth + 1 for compact desktop and long-content cases.
+These two exact-head surfaces discriminate device viewport identity from content/document fit and retain independent horizontal-overflow accounting.

@@ -1,53 +1,61 @@
 {
   "schema_version": 1,
-  "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+  "rejection_id": "audit-rejection:7d9f73d9-3385-495e-bc70-289757c1e1d7",
   "remediation_mode": "systemic-remediation",
-  "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
+  "material_head_sha": "372418dea4ebc66c559dfb15817ccca02e9e4823",
   "findings": [
     {
       "id": "A-001",
-      "status": "remediated-post-write-refreeze",
+      "status": "remediated-real-flow-discriminant",
       "changed_paths": [
-        ".audit/entregar-issue/handoff-ready.json"
+        "scripts/statement-visual/coverage-contract.mjs",
+        "scripts/validate-statement-visual-coverage.mjs",
+        "scripts/statement-visual/coverage-contract.test.mjs",
+        "docs/VISUAL_VALIDATION.md"
       ],
       "evidence": [
-        "evidence/handoff-gate-completeness.txt"
+        "evidence/fixture-real-flow.txt",
+        "evidence/format-exact-head.txt"
       ],
-      "summary": "A new final material SHA was created first; the terminal handoff is rebuilt as a result-only child of that exact material candidate with no material path allowed in the handoff commit."
-    },
-    {
-      "id": "A-002",
-      "status": "remediated-exact-prettier-output",
-      "changed_paths": [
-        "scripts/statement-visual/issue-606-cards-execution.mjs",
-        "scripts/statement-visual/issue-606-core-pages-execution.mjs",
-        "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
-        "scripts/statement-visual/issue-606-remediation-contract.mjs",
-        "scripts/statement-visual/issue-606-reports-execution.mjs"
-      ],
-      "evidence": [
-        "evidence/format-gate-remediation.txt"
-      ],
-      "summary": "The exact five blob objects emitted by Prettier 3.6.2 in the failing canonical CI diagnostic were committed together as the only material remediation."
+      "summary": "Critical structural components now require mapped real route/shell coverage with realBrowser=true; component:// fixtures remain isolated foundation proof only. Negative controls retain the fixture while removing real-flow qualification, and exact-head CI executed the coverage-contract suite successfully."
     }
   ],
   "unresolved_findings": [],
   "remote_confirmation": {
-    "status": "pending",
-    "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
-    "observed_workflow_runs": [
+    "status": "terminal-exact-material-head-success",
+    "material_head_sha": "372418dea4ebc66c559dfb15817ccca02e9e4823",
+    "completed_success_runs": [
       {
-        "id": 33030667033,
+        "id": 33064920116,
         "name": "CI",
-        "status": "queued"
+        "run_number": 4497,
+        "status": "completed",
+        "conclusion": "success"
       },
       {
-        "id": 33030667022,
+        "id": 33064920078,
         "name": "Statement visual validation",
-        "status": "queued"
+        "run_number": 3000,
+        "status": "completed",
+        "conclusion": "success"
       }
     ],
-    "release_claim": "not-made",
-    "observation_policy": "single-snapshot-no-polling"
+    "replacement_pr_duplicate_runs": [
+      {
+        "id": 33069372806,
+        "name": "CI",
+        "run_number": 4499,
+        "status": "in_progress-at-snapshot"
+      },
+      {
+        "id": 33069372737,
+        "name": "Statement visual validation",
+        "run_number": 3002,
+        "status": "in_progress-at-snapshot"
+      }
+    ],
+    "release_claim": "exact-material-head-gates-satisfied",
+    "observation_policy": "single-snapshot-no-polling",
+    "note": "Replacement PR duplicate runs do not change the material SHA and are not used as the positive gate evidence."
   }
 }

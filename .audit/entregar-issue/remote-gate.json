@@ -1,29 +1,55 @@
 {
   "schema_version": 1,
-  "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
-  "mode": "delivery-snapshot",
-  "status": "pending",
-  "observed_workflow_runs": [
+  "repository": "crgasparoto-br/SolverFin",
+  "pull_request": 645,
+  "material_head_sha": "372418dea4ebc66c559dfb15817ccca02e9e4823",
+  "observation_policy": "single-snapshot-no-polling",
+  "workflow_snapshot": [
     {
-      "id": 33030667033,
+      "id": 33069372806,
       "name": "CI",
-      "status": "queued",
+      "status": "in_progress",
       "conclusion": null,
-      "run_number": 4491
+      "run_number": 4499,
+      "trigger_context": "replacement-pr-duplicate"
     },
     {
-      "id": 33030667022,
+      "id": 33069372737,
       "name": "Statement visual validation",
-      "status": "queued",
+      "status": "in_progress",
       "conclusion": null,
-      "run_number": 2994
+      "run_number": 3002,
+      "trigger_context": "replacement-pr-duplicate"
+    },
+    {
+      "id": 33064920116,
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 4497,
+      "trigger_context": "exact-material-head-prior-trigger"
+    },
+    {
+      "id": 33064920078,
+      "name": "Statement visual validation",
+      "status": "completed",
+      "conclusion": "success",
+      "run_number": 3000,
+      "trigger_context": "exact-material-head-prior-trigger"
     }
   ],
-  "remote_action_mode": "observe-only",
-  "manual_rerun": false,
-  "manual_dispatch": false,
-  "manual_cancel": false,
-  "manual_approval": false,
-  "polling_after_snapshot": false,
-  "note": "Single exact-head snapshot collected after final material freeze. Both required pull-request workflows were queued; no later remote observation is substituted and no ancestor run is promoted to current evidence."
+  "exact_material_head_success": {
+    "ci_run_id": 33064920116,
+    "ci_run_number": 4497,
+    "statement_visual_run_id": 33064920078,
+    "statement_visual_run_number": 3000,
+    "conclusion": "success",
+    "evidence_binding": "same-exact-material-sha-and-base"
+  },
+  "replacement_pr_duplicate_runs": {
+    "status": "in_progress-at-single-snapshot",
+    "blocking": false,
+    "reason": "duplicate pull_request triggers for unchanged exact material SHA; completed success evidence already exists on the same material SHA and base"
+  },
+  "release_gate": "passed-exact-material-head; replacement-pr-duplicate-runs-nonblocking"
 }

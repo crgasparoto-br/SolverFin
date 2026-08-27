@@ -1,0 +1,4 @@
+subject_sha=372418dea4ebc66c559dfb15817ccca02e9e4823
+Terminal handoff is rebuilt only after the final material write.
+The certificate identity is the current material SHA and base SHA 4dfb24710b861a7121d578a5c8396e76c66b6d4a; the result-only publication is restricted to .audit/entregar-issue paths and must be a direct child of the material SHA.
+A stale ancestor certificate is excluded from readiness and will be replaced by the newly generated certificate before the branch is released to independent audit.

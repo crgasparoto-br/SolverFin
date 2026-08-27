@@ -1,61 +1,13 @@
 {
   "schema_version": 1,
-  "classification": "systemic-escape",
+  "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
-    "finding_ids": [
-      "A-001",
-      "A-002"
-    ]
+    "rejection_id": "audit-rejection:7d9f73d9-3385-495e-bc70-289757c1e1d7",
+    "finding_ids": ["A-001"]
   },
   "generalized_learning": {
-    "promotion_status": "promoted",
-    "escape_class": "post-freeze-material-drift-and-canonical-gate-regression",
-    "generalized_failure_pattern": "A delivery can become invalid after freeze when later material writes outlive its certificate, and a focused successful gate can mask a canonical repository gate that still rejects the final source bytes.",
-    "plausible_wrong_implementation": "Publish readiness before the final material write, or treat focused behavioral evidence as equivalent to the repository-wide canonical source gate.",
-    "trigger_signals": [
-      "material write after certificate publication",
-      "canonical formatter rejects final source bytes",
-      "focused gate green while aggregate gate aborts early"
-    ],
-    "risk_families": [
-      "structural-contract",
-      "semantic-effect"
-    ],
-    "reusable_control": {
-      "id": "FINAL-MATERIAL-FREEZE-AND-CANONICAL-GATE-002",
-      "procedure": "Bind every readiness certificate to the last material write and require canonical source gates to discriminate the same material bytes; pending remote state remains pending."
-    },
-    "prevention_rule": "Do not publish terminal readiness until all intended material writes are complete, and never substitute a focused gate for the canonical repository source contract.",
-    "detection_rule": "Recompute parent/path identity after publication and use exact formatter-produced bytes or an exact candidate formatter execution to distinguish source-gate regressions.",
-    "transfer_cases": [
-      {
-        "id": "T1",
-        "surface": "post-freeze-write-order",
-        "status": "passed",
-        "evidence": "A synthetic result-only publication check rejects a certificate whose parent is not the final material candidate."
-      },
-      {
-        "id": "T2",
-        "surface": "canonical-source-format",
-        "status": "passed",
-        "evidence": "A synthetic canonical-source check distinguishes exact formatter output from a focused behavioral pass."
-      }
-    ]
-  },
-  "skill_changes": [
-    {
-      "role": "prevention",
-      "skill": "entregar-issue",
-      "status": "passed",
-      "change": "Applied the existing result-only child and post-write refreeze contract before terminal publication."
-    },
-    {
-      "role": "detection",
-      "skill": "auditar-issue",
-      "status": "passed",
-      "change": "Preserved independent exact-parent and canonical-gate checks as the required detection boundary."
-    }
-  ]
+    "promotion_status": "not-required",
+    "reason": "The reusable process rule already distinguishes isolated fixtures from real integration evidence; the defect was the repository-local validator failing to enforce that existing rule, so repository regression controls close the gap without a new global Skill rule."
+  }
 }

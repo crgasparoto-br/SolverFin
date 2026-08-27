@@ -1,0 +1,6 @@
+subject_sha=372418dea4ebc66c559dfb15817ccca02e9e4823
+The canonical coverage registry maps structural components to real route/shell scenario IDs and separately retains component:// fixtures for isolated primitive proof.
+The validator accepts real application flow routes only when they start with / or shell:// and the mapped record declares realBrowser=true.
+The focused negative-control suite contains independent attacks for a component fixture, a state fixture, and a route-shaped record with realBrowser=false; each is expected to make structural real-flow coverage fail closed.
+Pilot-route normal/mobile/alternate coverage, deduplicated fingerprints, legacy retirement mappings, actionable route/state/layout/interaction identity, keyboard/focus, zoom-200 reflow, long content and overflow remain represented in the canonical contract.
+CI evidence is bound to the candidate SHA by the workflow contract and the visual artifact naming convention statement-visual-evidence-<sha>.

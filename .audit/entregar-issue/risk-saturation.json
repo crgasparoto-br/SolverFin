@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
+  "head_sha": "372418dea4ebc66c559dfb15817ccca02e9e4823",
   "families": [
     {
       "family": "authorization",
@@ -29,25 +29,36 @@
     {
       "family": "reference-liveness",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Applicable controls and declared attack surfaces were executed against the current material contract.",
       "control_ids": [
-        "NEG-606-01-LIVE",
-        "NEG-606-01-LIVE-REMOVE"
+        "REQ-001-NEG-01",
+        "REQ-001-NEG-02",
+        "REQ-002-NEG-01",
+        "REQ-002-NEG-02"
       ],
       "dimensions": [
         {
-          "surface": "coverage-source-liveness",
-          "reason": "A coverage record can remain registered after its executable source disappears or changes identity.",
+          "surface": "coverage-registry-reference",
+          "reason": "Coverage registry entries must resolve to canonical components and archetypes.",
           "control_ids": [
-            "NEG-606-01-LIVE"
+            "REQ-002-NEG-01"
           ],
           "status": "passed"
         },
         {
-          "surface": "coverage-source-removal",
-          "reason": "A removed or replaced source can leave a stale registry mapping that is no longer executable.",
+          "surface": "executor-module-reference",
+          "reason": "Coverage entries must resolve to executable modules.",
           "control_ids": [
-            "NEG-606-01-LIVE-REMOVE"
+            "REQ-001-NEG-02",
+            "REQ-002-NEG-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "registered-scenario-reference",
+          "reason": "Registered scenario references must resolve to executable coverage entries.",
+          "control_ids": [
+            "REQ-001-NEG-01"
           ],
           "status": "passed"
         }
@@ -57,36 +68,18 @@
     {
       "family": "temporal-consistency",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Applicable controls and declared attack surfaces were executed against the current material contract.",
       "control_ids": [
-        "NEG-606-01-BOUND",
-        "NEG-606-01-TIME",
-        "NEG-606-08",
-        "NEG-606-08-BOUND"
+        "REQ-002-NEG-03",
+        "REQ-011-NEG-01"
       ],
       "dimensions": [
         {
-          "surface": "legacy-retirement-boundary",
-          "reason": "Coverage can disappear between retirement decision and the candidate that removes a legacy enhancement.",
-          "control_ids": [
-            "NEG-606-08-BOUND"
-          ],
-          "status": "passed"
-        },
-        {
           "surface": "reporting-availability-window",
-          "reason": "Legacy provider retirement must remain blocked until equivalent replacement coverage is available.",
+          "reason": "Legacy retirement must not precede equivalent coverage availability.",
           "control_ids": [
-            "NEG-606-01-TIME",
-            "NEG-606-08"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "source-window-boundary",
-          "reason": "A coverage source can be observed in one candidate window and become stale after material drift.",
-          "control_ids": [
-            "NEG-606-01-BOUND"
+            "REQ-002-NEG-03",
+            "REQ-011-NEG-01"
           ],
           "status": "passed"
         }
@@ -136,61 +129,70 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Applicable controls and declared attack surfaces were executed against the current material contract.",
       "control_ids": [
-        "DELIVERY-FORMAT-GATE-001",
-        "HANDOFF-GATE-COMPLETENESS-001",
-        "NEG-606-04-PATH",
-        "NEG-606-06",
-        "VIEWPORT-METRIC-CONTRACT-001",
-        "VIEWPORT-OVERFLOW-ACCOUNTING-001"
+        "REQ-005-NEG-02",
+        "REQ-005-NEG-03",
+        "REQ-008-NEG-01",
+        "REQ-008-NEG-02",
+        "REQ-012-NEG-01",
+        "REQ-012-NEG-02",
+        "REQ-012-NEG-03"
       ],
       "dimensions": [
         {
           "surface": "benchmark-path-fidelity",
-          "reason": "The CI evidence path must exercise the same productive visual runner used by the pull request.",
+          "reason": "Candidate-SHA evidence must execute through the production visual workflow path rather than a detached substitute.",
           "control_ids": [
-            "NEG-606-04-PATH"
+            "REQ-012-NEG-01"
           ],
           "status": "passed"
         },
         {
-          "surface": "critical-component-coverage",
-          "reason": "A structural component can remain in the registry while no real browser flow reaches it.",
+          "surface": "critical-component-real-flow",
+          "reason": "Critical structural components require at least one real route or authenticated shell flow.",
           "control_ids": [
-            "NEG-606-06"
+            "REQ-008-NEG-01"
           ],
           "status": "passed"
         },
         {
           "surface": "delivery-format-gate",
-          "reason": "The final material candidate can fail the canonical repository formatter even when focused visual checks pass.",
+          "reason": "The final material candidate must satisfy the repository canonical formatter before release evidence is trusted.",
           "control_ids": [
-            "DELIVERY-FORMAT-GATE-001"
+            "REQ-012-NEG-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "fixture-vs-flow-contract",
+          "reason": "Synthetic component fixtures must remain isolated proof and cannot substitute for application integration.",
+          "control_ids": [
+            "REQ-008-NEG-02"
           ],
           "status": "passed"
         },
         {
           "surface": "handoff-gate-completeness",
-          "reason": "A ready handoff can become stale when material commits are appended after freeze.",
+          "reason": "Handoff readiness must be produced only after the final material write and must certify that exact parent.",
           "control_ids": [
-            "HANDOFF-GATE-COMPLETENESS-001"
+            "REQ-012-NEG-03"
           ],
           "status": "passed"
         },
         {
           "surface": "overflow-accounting",
-          "reason": "Viewport identity correction must not weaken the independent horizontal overflow invariant.",
+          "reason": "Horizontal overflow must remain independently accounted for while viewport metrics are validated.",
           "control_ids": [
-            "VIEWPORT-OVERFLOW-ACCOUNTING-001"
+            "REQ-005-NEG-03"
           ],
           "status": "passed"
         },
         {
           "surface": "viewport-coordinate-system",
-          "reason": "Device viewport and content viewport are distinct coordinate systems when scrollbars consume content width.",
+          "reason": "Viewport identity must distinguish device width from content width after scrollbar consumption.",
           "control_ids": [
-            "VIEWPORT-METRIC-CONTRACT-001"
+            "REQ-005-NEG-02"
           ],
           "status": "passed"
         }
@@ -200,16 +202,16 @@
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Applicable controls and declared attack surfaces were executed against the current material contract.",
       "control_ids": [
-        "NEG-606-04-DOC"
+        "REQ-011-NEG-02"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Versioned visual-validation documentation can claim evidence or gate behavior that no longer matches the candidate.",
+          "reason": "Documentation must distinguish isolated fixture proof from real-flow integration and legacy retirement rules.",
           "control_ids": [
-            "NEG-606-04-DOC"
+            "REQ-011-NEG-02"
           ],
           "status": "passed"
         }

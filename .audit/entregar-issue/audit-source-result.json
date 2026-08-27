@@ -1,26 +1,21 @@
 {
   "schema_version": 1,
   "kind": "independent-rejection",
-  "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+  "rejection_id": "audit-rejection:7d9f73d9-3385-495e-bc70-289757c1e1d7",
   "status": "rejected",
   "validity": "independent",
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 606,
     "pull_request_number": 644,
-    "audited_published_head_sha": "fd6ec941701cb1e36630c0a15682185a8183e89b",
-    "audited_material_head_sha": "fd6ec941701cb1e36630c0a15682185a8183e89b"
+    "audited_published_head_sha": "de53cb17da7bc5cffe59bc3462513a5ef9c13b9c",
+    "audited_material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71"
   },
   "findings": [
     {
       "id": "A-001",
-      "classification": "systemic",
-      "summary": "The ready handoff certified an older material SHA after later material commits, requiring post-write refreeze."
-    },
-    {
-      "id": "A-002",
-      "classification": "systemic",
-      "summary": "The canonical format gate failed on five issue-606 execution files, so downstream monorepo gates were not reached."
+      "classification": "implementation-gap",
+      "summary": "Synthetic component fixtures could satisfy mandatory critical structural real-flow coverage because the repository validator did not distinguish isolated browser fixtures from actual route/shell integration."
     }
   ]
 }
