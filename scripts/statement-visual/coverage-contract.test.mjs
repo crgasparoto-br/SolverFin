@@ -9,6 +9,7 @@ import {
   visualScenarioModules,
 } from "./coverage-contract.mjs";
 import {
+  buildExecutionEnvironment,
   buildExecutionResult,
   buildVisualScenarioExecutions,
   formatExecutionContext,
@@ -77,6 +78,19 @@ test("a secondary coverage failure keeps its exact route and state identity", ()
   assert.equal(failure.state, "empty");
   assert.match(formatExecutionContext(emptyReportExecution), /state=empty/);
   assert.doesNotMatch(formatExecutionContext(emptyReportExecution), /state=normal/);
+});
+
+test("candidate visual SHA replaces merge-preview SHA in child evidence", () => {
+  const execution = buildVisualScenarioExecutions(
+    getVisualScenarioModules(visualScenarioModules),
+  )[0];
+  const environment = buildExecutionEnvironment(execution, {
+    GITHUB_SHA: "merge-preview-sha",
+    STATEMENT_VISUAL_CANDIDATE_SHA: "material-head-sha",
+  });
+
+  assert.equal(environment.GITHUB_SHA, "material-head-sha");
+  assert.equal(environment.STATEMENT_VISUAL_CANDIDATE_SHA, "material-head-sha");
 });
 
 test("new multi-coverage scenarios fail closed without a focused execution override", () => {
