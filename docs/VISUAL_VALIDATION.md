@@ -73,7 +73,7 @@ A fixture `component://foundation-states` continua obrigatoria para provar os co
 Coberturas representativas atuais incluem:
 
 | Classe                                                                                       | Evidencia principal                                                    |
-| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | primitives isoladas, conteudo longo, dialog/drawer, foco e overflow                          | `issue-601-ui-primitives.mjs`                                          |
 | loading, vazio, erro recuperavel, indisponibilidade, permissao e demais primitives de estado | `issue-606-foundation-states.mjs`                                      |
 | componentes estruturais em fluxos reais                                                      | mapeamento `criticalStructuralRealFlowCoverage`                        |
