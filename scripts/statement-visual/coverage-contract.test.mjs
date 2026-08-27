@@ -79,7 +79,10 @@ test("a route-shaped record without real-browser execution cannot satisfy struct
     if (scenario.id !== "core-pages") return structuredClone(scenario);
     return {
       ...structuredClone(scenario),
-      coverage: scenario.coverage.map((record) => ({ ...structuredClone(record), realBrowser: false })),
+      coverage: scenario.coverage.map((record) => ({
+        ...structuredClone(record),
+        realBrowser: false,
+      })),
     };
   });
   const result = validateCoverageContract({
