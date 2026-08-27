@@ -3,44 +3,43 @@
   "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+    "rejection_id": "audit-rejection:d522dbe9-0c16-4439-9bc4-e189cafa3084",
     "finding_ids": [
-      "A-001",
-      "A-002"
+      "A-001"
     ]
   },
   "generalized_learning": {
     "promotion_status": "promoted",
-    "escape_class": "post-freeze-material-drift-and-canonical-gate-regression",
-    "generalized_failure_pattern": "A delivery can become invalid after freeze when later material writes outlive its certificate, and a focused successful gate can mask a canonical repository gate that still rejects the final source bytes.",
-    "plausible_wrong_implementation": "Publish readiness before the final material write, or treat focused behavioral evidence as equivalent to the repository-wide canonical source gate.",
+    "escape_class": "evidence-subject-sha-drift",
+    "generalized_failure_pattern": "A structured control can advertise a current subject while the referenced raw evidence still identifies an older subject, creating a metadata-to-evidence provenance split.",
+    "plausible_wrong_implementation": "Rewrite only structured head fields and preserve stale raw evidence bytes or accept evidence without content-address verification.",
     "trigger_signals": [
-      "material write after certificate publication",
-      "canonical formatter rejects final source bytes",
-      "focused gate green while aggregate gate aborts early"
+      "structured evidence carries a subject identifier",
+      "raw evidence contains its own current-subject marker",
+      "evidence is transported in a result-only package",
+      "an older subject remains mentioned in raw evidence"
     ],
     "risk_families": [
-      "structural-contract",
-      "semantic-effect"
+      "structural-contract"
     ],
     "reusable_control": {
-      "id": "FINAL-MATERIAL-FREEZE-AND-CANONICAL-GATE-002",
-      "procedure": "Bind every readiness certificate to the last material write and require canonical source gates to discriminate the same material bytes; pending remote state remains pending."
+      "id": "EVIDENCE-SUBJECT-CONTENT-BINDING",
+      "procedure": "Compare the expected subject with current-subject markers in raw evidence and verify the content hash before accepting the evidence."
     },
-    "prevention_rule": "Do not publish terminal readiness until all intended material writes are complete, and never substitute a focused gate for the canonical repository source contract.",
-    "detection_rule": "Recompute parent/path identity after publication and use exact formatter-produced bytes or an exact candidate formatter execution to distinguish source-gate regressions.",
+    "prevention_rule": "Every control that cites raw evidence must declare where the bytes are resolved, bind them to the intended material subject and content hash, and avoid ambiguous ancestor-as-current wording.",
+    "detection_rule": "Reject a control when its raw evidence current-subject marker differs from the expected subject or when the referenced bytes do not match the certified content hash.",
     "transfer_cases": [
       {
         "id": "T1",
-        "surface": "post-freeze-write-order",
+        "surface": "subject-marker-mismatch",
         "status": "passed",
-        "evidence": "A synthetic result-only publication check rejects a certificate whose parent is not the final material candidate."
+        "evidence": "A synthetic raw evidence fixture presenting an ancestor as current is rejected by the generic subject checker."
       },
       {
         "id": "T2",
-        "surface": "canonical-source-format",
+        "surface": "content-hash-mismatch",
         "status": "passed",
-        "evidence": "A synthetic canonical-source check distinguishes exact formatter output from a focused behavioral pass."
+        "evidence": "A current-subject evidence file with a deliberately incorrect expected content hash is rejected."
       }
     ]
   },
@@ -49,13 +48,13 @@
       "role": "prevention",
       "skill": "entregar-issue",
       "status": "passed",
-      "change": "Applied the existing result-only child and post-write refreeze contract before terminal publication."
+      "change": "Applied explicit evidence-location, evidence-subject and content-address bindings to critical controls before publication."
     },
     {
       "role": "detection",
-      "skill": "auditar-issue",
+      "skill": "entregar-issue",
       "status": "passed",
-      "change": "Preserved independent exact-parent and canonical-gate checks as the required detection boundary."
+      "change": "Added a transferable subject/content checker and discriminant stale-subject plus hash-mismatch siblings to the delivery evidence package."
     }
   ]
 }

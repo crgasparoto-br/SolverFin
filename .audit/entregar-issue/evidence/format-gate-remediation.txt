@@ -1,6 +1,6 @@
 Rejection audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b, finding A-002.
 Literal failure: canonical CI format:check rejected five issue-606 executor files on fd6ec941701cb1e36630c0a15682185a8183e89b.
-Remediation: apply exactly the five formatter-produced blob objects captured by the prior fail-closed Prettier 3.6.2 diagnostic, without changing executable semantics.
-Material SHA: ded93360d676be314123d79a2f5d8596b2dd1d71.
-Expected exact blobs: 6a7eff7476da2402993a2f3225b769ec1709aaca, 09b6a815a88dbfc619442b1c98360c19c330783e, c7dfb64c4edc4e7d66cd974e7f01813fb4f8ef16, 7b681a53b3d10ddd1713314e727764835a0f4cf8, 9d6e95c9a6970c45ee76938c9a4dfd73a6bd442a.
-Observed: all five newly-created Git blobs matched those exact expected SHAs before the material commit was published.
+The remediation applied canonical Prettier output and subsequent material changes retained that source contract.
+Final material SHA: 5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78.
+Observed exact-head result: CI run 33068689241 completed successfully, so the canonical repository formatting gate and downstream aggregate validation accepted the final material candidate.
+No focused visual pass is substituted for this canonical source-gate result.

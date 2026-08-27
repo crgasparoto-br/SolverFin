@@ -1,26 +1,21 @@
 {
   "schema_version": 1,
   "kind": "independent-rejection",
-  "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+  "rejection_id": "audit-rejection:d522dbe9-0c16-4439-9bc4-e189cafa3084",
   "status": "rejected",
   "validity": "independent",
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 606,
     "pull_request_number": 644,
-    "audited_published_head_sha": "fd6ec941701cb1e36630c0a15682185a8183e89b",
-    "audited_material_head_sha": "fd6ec941701cb1e36630c0a15682185a8183e89b"
+    "audited_published_head_sha": "c2bfc7800ebea5c2283a8b98aa2b8bc9490da8a7",
+    "audited_material_head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78"
   },
   "findings": [
     {
       "id": "A-001",
       "classification": "systemic",
-      "summary": "The ready handoff certified an older material SHA after later material commits, requiring post-write refreeze."
-    },
-    {
-      "id": "A-002",
-      "classification": "systemic",
-      "summary": "The canonical format gate failed on five issue-606 execution files, so downstream monorepo gates were not reached."
+      "summary": "Critical adversarial controls referenced raw evidence whose resolved subject could identify an ancestor instead of the certified material candidate."
     }
   ]
 }

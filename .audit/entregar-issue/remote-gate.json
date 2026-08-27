@@ -1,23 +1,11 @@
 {
   "schema_version": 1,
-  "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
+  "material_head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
   "mode": "delivery-snapshot",
-  "status": "pending",
+  "status": "passed",
   "observed_workflow_runs": [
-    {
-      "id": 33030667033,
-      "name": "CI",
-      "status": "queued",
-      "conclusion": null,
-      "run_number": 4491
-    },
-    {
-      "id": 33030667022,
-      "name": "Statement visual validation",
-      "status": "queued",
-      "conclusion": null,
-      "run_number": 2994
-    }
+    {"id": 33068689241, "name": "CI", "status": "completed", "conclusion": "success", "run_number": 4498},
+    {"id": 33068689219, "name": "Statement visual validation", "status": "completed", "conclusion": "success", "run_number": 3001}
   ],
   "remote_action_mode": "observe-only",
   "manual_rerun": false,
@@ -25,5 +13,5 @@
   "manual_cancel": false,
   "manual_approval": false,
   "polling_after_snapshot": false,
-  "note": "Single exact-head snapshot collected after final material freeze. Both required pull-request workflows were queued; no later remote observation is substituted and no ancestor run is promoted to current evidence."
+  "note": "Single exact-head delivery snapshot for the final material candidate. Both required pull-request workflows are terminal success; no rerun, dispatch, cancel, approval, polling, or ancestor substitution was used."
 }

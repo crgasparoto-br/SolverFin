@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
+  "head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
   "families": [
     {
       "family": "authorization",
@@ -37,7 +37,7 @@
       "dimensions": [
         {
           "surface": "coverage-source-liveness",
-          "reason": "A coverage record can remain registered after its executable source disappears or changes identity.",
+          "reason": "A registered visual source can become stale or non-executable while its registry entry remains present.",
           "control_ids": [
             "NEG-606-01-LIVE"
           ],
@@ -45,7 +45,7 @@
         },
         {
           "surface": "coverage-source-removal",
-          "reason": "A removed or replaced source can leave a stale registry mapping that is no longer executable.",
+          "reason": "A removed visual source can leave a stale registry mapping that appears covered.",
           "control_ids": [
             "NEG-606-01-LIVE-REMOVE"
           ],
@@ -67,7 +67,7 @@
       "dimensions": [
         {
           "surface": "legacy-retirement-boundary",
-          "reason": "Coverage can disappear between retirement decision and the candidate that removes a legacy enhancement.",
+          "reason": "Retirement must remain blocked across the exact candidate boundary until replacement coverage is still present.",
           "control_ids": [
             "NEG-606-08-BOUND"
           ],
@@ -75,7 +75,7 @@
         },
         {
           "surface": "reporting-availability-window",
-          "reason": "Legacy provider retirement must remain blocked until equivalent replacement coverage is available.",
+          "reason": "Equivalent replacement coverage must be available on the candidate before legacy responsibility is retired.",
           "control_ids": [
             "NEG-606-01-TIME",
             "NEG-606-08"
@@ -84,7 +84,7 @@
         },
         {
           "surface": "source-window-boundary",
-          "reason": "A coverage source can be observed in one candidate window and become stale after material drift.",
+          "reason": "Coverage evidence from an earlier material window must not be promoted after candidate identity changes.",
           "control_ids": [
             "NEG-606-01-BOUND"
           ],
@@ -139,24 +139,57 @@
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
         "DELIVERY-FORMAT-GATE-001",
+        "EVIDENCE-HASH-BINDING-001",
+        "EVIDENCE-SUBJECT-SHA-BINDING-001",
         "HANDOFF-GATE-COMPLETENESS-001",
+        "NEG-606-01-MAP",
+        "NEG-606-01-SCENARIO",
+        "NEG-606-02",
+        "NEG-606-03-A11Y",
         "NEG-606-04-PATH",
+        "NEG-606-05",
         "NEG-606-06",
+        "NEG-606-07",
+        "NEG-606-09",
         "VIEWPORT-METRIC-CONTRACT-001",
         "VIEWPORT-OVERFLOW-ACCOUNTING-001"
       ],
       "dimensions": [
         {
+          "surface": "accessibility-reflow",
+          "reason": "Representative keyboard, focus, reflow and long-content behavior must remain in the visual gate.",
+          "control_ids": [
+            "NEG-606-03-A11Y"
+          ],
+          "status": "passed"
+        },
+        {
           "surface": "benchmark-path-fidelity",
-          "reason": "The CI evidence path must exercise the same productive visual runner used by the pull request.",
+          "reason": "The CI evidence path must execute the same productive visual runner registered for the pull request candidate.",
           "control_ids": [
             "NEG-606-04-PATH"
           ],
           "status": "passed"
         },
         {
+          "surface": "component-archetype-mapping",
+          "reason": "Component and archetype coverage must be mapped by the canonical executable registry rather than an ad hoc list.",
+          "control_ids": [
+            "NEG-606-01-MAP"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "coverage-fingerprint-deduplication",
+          "reason": "Equivalent visual scenarios must be deduplicated by semantic fingerprint rather than filename.",
+          "control_ids": [
+            "NEG-606-05"
+          ],
+          "status": "passed"
+        },
+        {
           "surface": "critical-component-coverage",
-          "reason": "A structural component can remain in the registry while no real browser flow reaches it.",
+          "reason": "Critical structural components require at least one registered real application-flow scenario.",
           "control_ids": [
             "NEG-606-06"
           ],
@@ -164,15 +197,39 @@
         },
         {
           "surface": "delivery-format-gate",
-          "reason": "The final material candidate can fail the canonical repository formatter even when focused visual checks pass.",
+          "reason": "The final material source bytes must pass the canonical repository formatter rather than only focused checks.",
           "control_ids": [
             "DELIVERY-FORMAT-GATE-001"
           ],
           "status": "passed"
         },
         {
+          "surface": "evidence-content-addressing",
+          "reason": "Raw critical evidence must be bound by SHA-256 so stale or altered bytes cannot satisfy a current control.",
+          "control_ids": [
+            "EVIDENCE-HASH-BINDING-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "evidence-subject-binding",
+          "reason": "Raw critical evidence must declare the same material subject as the attack matrix and certificate.",
+          "control_ids": [
+            "EVIDENCE-SUBJECT-SHA-BINDING-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "failure-context-attribution",
+          "reason": "Every failed execution must retain its exact route, scenario, state, layout and interaction identity.",
+          "control_ids": [
+            "NEG-606-09"
+          ],
+          "status": "passed"
+        },
+        {
           "surface": "handoff-gate-completeness",
-          "reason": "A ready handoff can become stale when material commits are appended after freeze.",
+          "reason": "Terminal readiness must remain a direct result-only child of the frozen material candidate.",
           "control_ids": [
             "HANDOFF-GATE-COMPLETENESS-001"
           ],
@@ -180,15 +237,39 @@
         },
         {
           "surface": "overflow-accounting",
-          "reason": "Viewport identity correction must not weaken the independent horizontal overflow invariant.",
+          "reason": "Overflow must remain independently asserted while viewport accounting is corrected.",
           "control_ids": [
             "VIEWPORT-OVERFLOW-ACCOUNTING-001"
           ],
           "status": "passed"
         },
         {
+          "surface": "pilot-route-state-coverage",
+          "reason": "Each pilot route must independently cover normal, relevant alternate state and mobile when composition differs.",
+          "control_ids": [
+            "NEG-606-07"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "responsive-composition",
+          "reason": "Distinct responsive compositions require real-browser coverage rather than desktop-only evidence.",
+          "control_ids": [
+            "NEG-606-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "scenario-representativeness",
+          "reason": "Route, state, layout and interaction identity must remain explicit enough to distinguish representative scenarios.",
+          "control_ids": [
+            "NEG-606-01-SCENARIO"
+          ],
+          "status": "passed"
+        },
+        {
           "surface": "viewport-coordinate-system",
-          "reason": "Device viewport and content viewport are distinct coordinate systems when scrollbars consume content width.",
+          "reason": "Device viewport and content viewport remain distinct when scrollbars consume layout width.",
           "control_ids": [
             "VIEWPORT-METRIC-CONTRACT-001"
           ],
@@ -207,7 +288,7 @@
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Versioned visual-validation documentation can claim evidence or gate behavior that no longer matches the candidate.",
+          "reason": "Versioned validation documentation must describe the current executable SHA-binding and visual-gate contract.",
           "control_ids": [
             "NEG-606-04-DOC"
           ],

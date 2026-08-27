@@ -1,0 +1,14 @@
+Evidence subject binding control for systemic audit escape evidence-subject-sha-drift.
+Expected material SHA: 5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78
+Published evidence location: result-only-child
+Critical evidence SHA256: 648f9088b9cab1299299219fda8fcf6426a964710566fd5533cc97caf05cb1ce
+Literal current evidence:
+PASS subject=5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78 sha256=648f9088b9cab1299299219fda8fcf6426a964710566fd5533cc97caf05cb1ce current_claims=1
+Sibling stale ancestor presented as current:
+REJECT subject-mismatch line=1 claimed=ded93360d676be314123d79a2f5d8596b2dd1d71 expected=5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78
+EXPECTED REJECT
+Sibling historical ancestor explicitly stale while current subject is exact:
+PASS subject=5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78 sha256=cd4f77b7c1ffeb88eb34bb390d002c32e216bc853f6659d61ae09ba2d824b99a current_claims=1
+Sibling content-addressing mismatch:
+REJECT hash-mismatch expected=0000000000000000000000000000000000000000000000000000000000000000 actual=648f9088b9cab1299299219fda8fcf6426a964710566fd5533cc97caf05cb1ce
+EXPECTED REJECT

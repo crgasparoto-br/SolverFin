@@ -1,53 +1,52 @@
 {
   "schema_version": 1,
-  "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+  "rejection_id": "audit-rejection:d522dbe9-0c16-4439-9bc4-e189cafa3084",
   "remediation_mode": "systemic-remediation",
-  "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
+  "material_head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
   "findings": [
     {
       "id": "A-001",
-      "status": "remediated-post-write-refreeze",
+      "status": "remediated-exact-evidence-subject-binding",
       "changed_paths": [
-        ".audit/entregar-issue/handoff-ready.json"
+        ".audit/entregar-issue/evidence/critical-controls.txt",
+        ".audit/entregar-issue/evidence/evidence-subject-binding.txt",
+        ".audit/entregar-issue/evidence/validate-evidence-subject-binding.py",
+        ".audit/entregar-issue/requirement-attack-matrix.json",
+        ".audit/entregar-issue/inherited-controls.json",
+        ".audit/entregar-issue/audit-escape-closure.json",
+        ".audit/entregar-issue/learning-closure.json"
       ],
       "evidence": [
-        "evidence/handoff-gate-completeness.txt"
+        "evidence/critical-controls.txt",
+        "evidence/evidence-subject-binding.txt"
       ],
-      "summary": "A new final material SHA was created first; the terminal handoff is rebuilt as a result-only child of that exact material candidate with no material path allowed in the handoff commit."
-    },
-    {
-      "id": "A-002",
-      "status": "remediated-exact-prettier-output",
-      "changed_paths": [
-        "scripts/statement-visual/issue-606-cards-execution.mjs",
-        "scripts/statement-visual/issue-606-core-pages-execution.mjs",
-        "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
-        "scripts/statement-visual/issue-606-remediation-contract.mjs",
-        "scripts/statement-visual/issue-606-reports-execution.mjs"
-      ],
-      "evidence": [
-        "evidence/format-gate-remediation.txt"
-      ],
-      "summary": "The exact five blob objects emitted by Prettier 3.6.2 in the failing canonical CI diagnostic were committed together as the only material remediation."
+      "summary": "Critical evidence now declares the exact material subject and result-only resolution context, is content-addressed, and a generic control rejects ancestor-as-current and hash-mismatch siblings."
     }
   ],
   "unresolved_findings": [],
   "remote_confirmation": {
-    "status": "pending",
-    "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
+    "status": "passed",
+    "material_head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
     "observed_workflow_runs": [
       {
-        "id": 33030667033,
+        "id": 33068689241,
         "name": "CI",
-        "status": "queued"
+        "status": "completed",
+        "conclusion": "success"
       },
       {
-        "id": 33030667022,
+        "id": 33068689219,
         "name": "Statement visual validation",
-        "status": "queued"
+        "status": "completed",
+        "conclusion": "success"
       }
     ],
+    "visual_artifact": {
+      "id": 9645061997,
+      "name": "statement-visual-evidence-5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
+      "digest": "sha256:7a26cfb0335253dd67da8e9f6e3bcc29ca69da41d0ef6ce8356e9c2fd0f6d340"
+    },
     "release_claim": "not-made",
-    "observation_policy": "single-snapshot-no-polling"
+    "observation_policy": "reused-terminal-exact-material-evidence-no-new-material-write"
   }
 }
