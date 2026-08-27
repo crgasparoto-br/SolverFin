@@ -36,10 +36,7 @@ const REQUIRED_COVERAGE_FIELDS = [
 ];
 
 export function isRealApplicationFlowRoute(route) {
-  return (
-    typeof route === "string" &&
-    (route.startsWith("/") || route.startsWith("shell://"))
-  );
+  return typeof route === "string" && (route.startsWith("/") || route.startsWith("shell://"));
 }
 
 export function validateCoverageContract({
@@ -132,7 +129,9 @@ export function validateCoverageContract({
 
     const mappedScenarioIds = criticalRealFlowCoverage[component];
     if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) {
-      errors.push(`Critical structural component lacks real application-flow mapping: ${component}.`);
+      errors.push(
+        `Critical structural component lacks real application-flow mapping: ${component}.`,
+      );
       continue;
     }
 
@@ -154,11 +153,11 @@ export function validateCoverageContract({
     }
   }
 
-  for (const [component, mappedScenarioIds] of Object.entries(
-    criticalRealFlowCoverage,
-  )) {
+  for (const [component, mappedScenarioIds] of Object.entries(criticalRealFlowCoverage)) {
     if (!criticalRealFlowComponents.includes(component)) {
-      errors.push(`Real application-flow mapping references a non-structural component: ${component}.`);
+      errors.push(
+        `Real application-flow mapping references a non-structural component: ${component}.`,
+      );
     }
     if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) {
       continue;
