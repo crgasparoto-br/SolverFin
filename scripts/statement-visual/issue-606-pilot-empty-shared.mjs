@@ -2,14 +2,30 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-export async function runPilotEmptyState({ route, expectedTexts, artifactStem }) {
-  if (!chromePath) throw new Error("CHROME_BIN is required for pilot empty-state validation.");
+export async function runPilotEmptyState({
+  route,
+  expectedTexts,
+  artifactStem,
+}) {
+  if (!chromePath) {
+    throw new Error(
+      "CHROME_BIN is required for pilot empty-state validation.",
+    );
+  }
   await mkdir(outputDir, { recursive: true });
 
   const report = {
@@ -29,7 +45,11 @@ export async function runPilotEmptyState({ route, expectedTexts, artifactStem })
     await setViewport(browser.cdp, 1366, 900);
     await navigate(browser.cdp, `${baseUrl}/login`);
     const registration = await registerFreshUser(browser.cdp);
-    assert.equal(registration.ok, true, `Fresh profile registration failed with ${registration.status}.`);
+    assert.equal(
+      registration.ok,
+      true,
+      `Fresh profile registration failed with ${registration.status}.`,
+    );
 
     for (const [width, height] of [
       [1366, 900],
@@ -56,11 +76,32 @@ export async function runPilotEmptyState({ route, expectedTexts, artifactStem })
       );
       const screenshotName = `${artifactStem}-${width}.png`;
       await screenshot(browser.cdp, join(outputDir, screenshotName));
-      assert.deepEqual(measurements.missingTexts, [], `${route} did not render its route-specific empty state.`);
-      assert.equal(measurements.mainPresent, true, `${route} did not render a main region.`);
-      assert.equal(measurements.noHorizontalOverflow, true, `${route} empty state overflowed horizontally.`);
-      assert.equal(measurements.viewportWidth, width, `${route} viewport identity changed unexpectedly.`);
-      report.viewports.push({ width, height, screenshot: screenshotName, measurements });
+      assert.deepEqual(
+        measurements.missingTexts,
+        [],
+        `${route} did not render its route-specific empty state.`,
+      );
+      assert.equal(
+        measurements.mainPresent,
+        true,
+        `${route} did not render a main region.`,
+      );
+      assert.equal(
+        measurements.noHorizontalOverflow,
+        true,
+        `${route} empty state overflowed horizontally.`,
+      );
+      assert.equal(
+        measurements.viewportWidth,
+        width,
+        `${route} viewport identity changed unexpectedly.`,
+      );
+      report.viewports.push({
+        width,
+        height,
+        screenshot: screenshotName,
+        measurements,
+      });
     }
   } catch (error) {
     report.failures.push({ message: serializeError(error) });
@@ -68,7 +109,10 @@ export async function runPilotEmptyState({ route, expectedTexts, artifactStem })
     if (browser) await browser.close(outputDir);
   }
 
-  await writeFile(join(outputDir, `${artifactStem}.json`), `${JSON.stringify(report, null, 2)}\n`);
+  await writeFile(
+    join(outputDir, `${artifactStem}.json`),
+    `${JSON.stringify(report, null, 2)}\n`,
+  );
   if (report.failures.length > 0) {
     for (const failure of report.failures) console.error(`- ${failure.message}`);
     process.exitCode = 1;

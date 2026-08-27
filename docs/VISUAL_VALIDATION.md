@@ -39,7 +39,7 @@ O runner grava em `artifacts/statement-visual/`:
 - `VISUAL-GATE.md`, resumo navegavel dos cenarios executados;
 - `fatal-error.log` quando houver falha agregada.
 
-No GitHub Actions, o artefato continua se chamando `statement-visual-evidence-<sha>`. Evidencia de outro SHA nao aprova um candidato novo.
+Em pull requests, o workflow faz checkout do `pull_request.head.sha`, propaga esse mesmo SHA como `STATEMENT_VISUAL_CANDIDATE_SHA` e publica `statement-visual-evidence-<sha>`. Em execucao manual, o fallback e o `github.sha` disparado. Evidencia de outro SHA nao aprova um candidato novo.
 
 ## Falhas acionaveis
 
@@ -61,21 +61,21 @@ A fixture `component://foundation-states` continua obrigatoria para provar os co
 
 Coberturas representativas atuais incluem:
 
-| Classe                                                                                       | Evidencia principal                                                                                       |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| primitives estruturais, conteudo longo, dialog/drawer, foco e overflow                       | `issue-601-ui-primitives.mjs`                                                                             |
-| loading, vazio, erro recuperavel, indisponibilidade, permissao e demais primitives de estado | `issue-606-foundation-states.mjs`                                                                         |
-| Dashboard e Extrato responsivos                                                              | execucoes focadas por `issue-606-core-pages-execution.mjs`                                               |
-| Dashboard vazio em perfil novo                                                               | `issue-606-dashboard-empty.mjs`                                                                           |
-| Cartoes normal/mobile e vazio por filtro                                                     | execucoes focadas por `issue-606-cards-execution.mjs`                                                    |
-| Cartoes em 1366x768, conteudo longo e teclado                                                | `cards-interface-adversarial.mjs`                                                                         |
-| Contas e Cartoes desktop/mobile, tabs, menus e modais                                        | `accounts-cards-interface.mjs`                                                                            |
-| Contas e Cartoes vazio em perfil novo                                                        | `issue-606-accounts-cards-empty.mjs`                                                                      |
-| Relatorios normal/mobile/vazio/erro                                                          | execucoes focadas por `issue-606-reports-execution.mjs`                                                  |
-| Orcamentos normal desktop/mobile                                                             | `issue-606-budgets-pilot.mjs`                                                                             |
-| Orcamentos vazio em perfil novo                                                              | `issue-606-budgets-empty.mjs`                                                                             |
-| Inbox desktop/mobile e teclado                                                               | `inbox-interface-refinement.mjs` e `inbox-interface-accessibility.mjs`                                   |
-| reflow/zoom a 200%                                                                           | `issue-568-financial-assistant-zoom-200-reflow.mjs`                                                      |
+| Classe                                                                                       | Evidencia principal                                                    |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| primitives estruturais, conteudo longo, dialog/drawer, foco e overflow                       | `issue-601-ui-primitives.mjs`                                          |
+| loading, vazio, erro recuperavel, indisponibilidade, permissao e demais primitives de estado | `issue-606-foundation-states.mjs`                                      |
+| Dashboard e Extrato responsivos                                                              | execucoes focadas por `issue-606-core-pages-execution.mjs`             |
+| Dashboard vazio em perfil novo                                                               | `issue-606-dashboard-empty.mjs`                                        |
+| Cartoes normal/mobile e vazio por filtro                                                     | execucoes focadas por `issue-606-cards-execution.mjs`                  |
+| Cartoes em 1366x768, conteudo longo e teclado                                                | `cards-interface-adversarial.mjs`                                      |
+| Contas e Cartoes desktop/mobile, tabs, menus e modais                                        | `accounts-cards-interface.mjs`                                         |
+| Contas e Cartoes vazio em perfil novo                                                        | `issue-606-accounts-cards-empty.mjs`                                   |
+| Relatorios normal/mobile/vazio/erro                                                          | execucoes focadas por `issue-606-reports-execution.mjs`                |
+| Orcamentos normal desktop/mobile                                                             | `issue-606-budgets-pilot.mjs`                                          |
+| Orcamentos vazio em perfil novo                                                              | `issue-606-budgets-empty.mjs`                                          |
+| Inbox desktop/mobile e teclado                                                               | `inbox-interface-refinement.mjs` e `inbox-interface-accessibility.mjs` |
+| reflow/zoom a 200%                                                                           | `issue-568-financial-assistant-zoom-200-reflow.mjs`                    |
 
 O objetivo nao e produzir screenshot de toda combinacao. A amostra deve mudar quando rota, estado, layout, interacao, audiencia ou perfil de dados representar risco diferente.
 
