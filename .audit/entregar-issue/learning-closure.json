@@ -3,38 +3,44 @@
   "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
-    "finding_ids": ["A-001", "A-002"]
+    "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+    "finding_ids": [
+      "A-001",
+      "A-002"
+    ]
   },
   "generalized_learning": {
     "promotion_status": "promoted",
-    "escape_class": "candidate-evidence-semantic-contract-mismatch",
-    "generalized_failure_pattern": "A candidate can appear internally healthy when evidence is bound to the wrong semantic contract or to an incomplete canonical-gate state, even though the literal check looks plausible.",
-    "plausible_wrong_implementation": "Treat a nearby metric or a focused validation as equivalent to the canonical contract, then publish readiness without proving the exact semantic boundary and final gate inventory.",
+    "escape_class": "post-freeze-material-drift-and-canonical-gate-regression",
+    "generalized_failure_pattern": "A delivery can become invalid after freeze when later material writes outlive its certificate, and a focused successful gate can mask a canonical repository gate that still rejects the final source bytes.",
+    "plausible_wrong_implementation": "Publish readiness before the final material write, or treat focused behavioral evidence as equivalent to the repository-wide canonical source gate.",
     "trigger_signals": [
-      "focused validation substituted for canonical gate",
-      "two related measurements use different coordinate or identity domains",
-      "ready state produced while final evidence is pending or stale"
+      "material write after certificate publication",
+      "canonical formatter rejects final source bytes",
+      "focused gate green while aggregate gate aborts early"
     ],
-    "risk_families": ["structural-contract", "semantic-effect"],
+    "risk_families": [
+      "structural-contract",
+      "semantic-effect"
+    ],
     "reusable_control": {
-      "id": "EXACT-SEMANTIC-CONTRACT-AND-GATE-001",
-      "procedure": "Bind each material assertion to its exact semantic domain and bind readiness to the complete canonical gate inventory; represent unavailable final evidence as pending instead of inferring equivalence."
+      "id": "FINAL-MATERIAL-FREEZE-AND-CANONICAL-GATE-002",
+      "procedure": "Bind every readiness certificate to the last material write and require canonical source gates to discriminate the same material bytes; pending remote state remains pending."
     },
-    "prevention_rule": "Do not replace an exact semantic metric or canonical final gate with a nearby proxy, ancestor result, or focused check when constructing a ready candidate.",
-    "detection_rule": "Adversarial verification must vary the semantic domain and gate state independently and prove that proxy metrics or incomplete evidence cannot satisfy the final contract.",
+    "prevention_rule": "Do not publish terminal readiness until all intended material writes are complete, and never substitute a focused gate for the canonical repository source contract.",
+    "detection_rule": "Recompute parent/path identity after publication and use exact formatter-produced bytes or an exact candidate formatter execution to distinguish source-gate regressions.",
     "transfer_cases": [
       {
         "id": "T1",
-        "surface": "coordinate-domain-accounting",
+        "surface": "post-freeze-write-order",
         "status": "passed",
-        "evidence": "A synthetic layout check distinguishes outer viewport width from content-box width and accounts for excluded scrollbar width explicitly."
+        "evidence": "A synthetic result-only publication check rejects a certificate whose parent is not the final material candidate."
       },
       {
         "id": "T2",
-        "surface": "canonical-gate-readiness",
+        "surface": "canonical-source-format",
         "status": "passed",
-        "evidence": "A synthetic delivery check keeps readiness non-green when the exact final canonical gate is pending, failed, or only observed on an ancestor."
+        "evidence": "A synthetic canonical-source check distinguishes exact formatter output from a focused behavioral pass."
       }
     ]
   },
@@ -43,13 +49,13 @@
       "role": "prevention",
       "skill": "entregar-issue",
       "status": "passed",
-      "change": "Applied the existing exact-material and canonical-gate readiness contract to the current remediation; no repository-specific rule was promoted."
+      "change": "Applied the existing result-only child and post-write refreeze contract before terminal publication."
     },
     {
       "role": "detection",
       "skill": "auditar-issue",
       "status": "passed",
-      "change": "Retained independent validation of semantic evidence and canonical gate state as the detection boundary for the next audit."
+      "change": "Preserved independent exact-parent and canonical-gate checks as the required detection boundary."
     }
   ]
 }

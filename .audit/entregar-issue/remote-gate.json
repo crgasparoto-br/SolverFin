@@ -1,22 +1,22 @@
 {
   "schema_version": 1,
-  "material_head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+  "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
   "mode": "delivery-snapshot",
   "status": "pending",
   "observed_workflow_runs": [
     {
-      "id": 33016419557,
+      "id": 33030667033,
       "name": "CI",
-      "status": "in_progress",
+      "status": "queued",
       "conclusion": null,
-      "run_number": 4484
+      "run_number": 4491
     },
     {
-      "id": 33016419477,
+      "id": 33030667022,
       "name": "Statement visual validation",
-      "status": "in_progress",
+      "status": "queued",
       "conclusion": null,
-      "run_number": 2987
+      "run_number": 2994
     }
   ],
   "remote_action_mode": "observe-only",
@@ -25,5 +25,5 @@
   "manual_cancel": false,
   "manual_approval": false,
   "polling_after_snapshot": false,
-  "note": "Single exact-head snapshot collected after final material freeze. Both workflows were in_progress; no later remote observation is substituted."
+  "note": "Single exact-head snapshot collected after final material freeze. Both required pull-request workflows were queued; no later remote observation is substituted and no ancestor run is promoted to current evidence."
 }

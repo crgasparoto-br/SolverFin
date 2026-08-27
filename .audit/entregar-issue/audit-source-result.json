@@ -1,26 +1,26 @@
 {
   "schema_version": 1,
   "kind": "independent-rejection",
-  "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
+  "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
   "status": "rejected",
   "validity": "independent",
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 606,
     "pull_request_number": 644,
-    "audited_published_head_sha": "ea29883bd8573c63b48d303fd0f62d8032d64894",
-    "audited_material_head_sha": "d9f6bdf02a50b9a0fb814bc590160e82f0ebfac9"
+    "audited_published_head_sha": "fd6ec941701cb1e36630c0a15682185a8183e89b",
+    "audited_material_head_sha": "fd6ec941701cb1e36630c0a15682185a8183e89b"
   },
   "findings": [
     {
       "id": "A-001",
       "classification": "systemic",
-      "summary": "Canonical repository formatting failed on the visual gate runner and coverage validator while the prior handoff was marked ready."
+      "summary": "The ready handoff certified an older material SHA after later material commits, requiring post-write refreeze."
     },
     {
       "id": "A-002",
-      "classification": "targeted",
-      "summary": "The foundation visual assertion compared content viewport width against the requested device viewport width, misclassifying scrollbar width as a viewport failure."
+      "classification": "systemic",
+      "summary": "The canonical format gate failed on five issue-606 execution files, so downstream monorepo gates were not reached."
     }
   ]
 }

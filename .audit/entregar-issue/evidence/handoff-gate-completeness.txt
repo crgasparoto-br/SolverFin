@@ -1,6 +1,5 @@
-Terminal handoff control for Issue 606 / PR 644
-Material head 4398704e6090e7c7f90203aed5ec5925ebe004c7 is intentionally separated from the future result-only handoff child.
-The exact Prettier output was obtained fail-closed from repository CI and applied byte-for-byte while restoring the canonical format:check command.
-The latest independent rejection audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a is represented in learning, remediation, inherited-control, and escape lineage.
-The single exact-head delivery snapshot observed CI run 33016419557 in_progress and Statement visual validation run 33016419477 in_progress. No remote action or follow-up polling was performed.
-Readiness is based on critical local closure plus exact formatter output proof; remote workflow completion is recorded as pending, not green.
+Rejection audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b, finding A-001.
+Literal failure: the previous handoff certified material SHA 4398704e6090e7c7f90203aed5ec5925ebe004c7 while the PR advanced materially to fd6ec941701cb1e36630c0a15682185a8183e89b.
+Remediation rule: the terminal result-only handoff must be a direct child of the final material SHA and may change only .audit/entregar-issue paths declared by its certificate policy.
+Final material SHA for this remediation: ded93360d676be314123d79a2f5d8596b2dd1d71.
+Remote snapshot after publication: CI run 33030667033 queued; Statement visual validation run 33030667022 queued. These states remain pending and are not promoted to green.

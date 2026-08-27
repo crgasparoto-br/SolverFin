@@ -1,48 +1,50 @@
 {
   "schema_version": 1,
-  "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
-  "remediation_mode": "mixed-remediation",
-  "material_head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+  "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+  "remediation_mode": "systemic-remediation",
+  "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
   "findings": [
     {
       "id": "A-001",
-      "status": "remediated-exact-prettier-output",
+      "status": "remediated-post-write-refreeze",
       "changed_paths": [
-        "scripts/run-statement-visual-validation.mjs",
-        "scripts/validate-statement-visual-coverage.mjs"
+        ".audit/entregar-issue/handoff-ready.json"
       ],
       "evidence": [
-        "evidence/format-gate-remediation.txt",
         "evidence/handoff-gate-completeness.txt"
       ],
-      "summary": "A fail-closed CI diagnostic ran the repository Prettier 3.6.2 with --write and exposed a two-line diff. The final material candidate references exactly the two formatter-produced blobs and restores the canonical prettier . --check command."
+      "summary": "A new final material SHA was created first; the terminal handoff is rebuilt as a result-only child of that exact material candidate with no material path allowed in the handoff commit."
     },
     {
       "id": "A-002",
-      "status": "remediated",
+      "status": "remediated-exact-prettier-output",
       "changed_paths": [
-        "scripts/statement-visual/issue-606-foundation-states.mjs"
+        "scripts/statement-visual/issue-606-cards-execution.mjs",
+        "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+        "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
+        "scripts/statement-visual/issue-606-remediation-contract.mjs",
+        "scripts/statement-visual/issue-606-reports-execution.mjs"
       ],
       "evidence": [
-        "evidence/critical-controls.txt"
+        "evidence/format-gate-remediation.txt"
       ],
-      "summary": "The visual assertion separates device viewport width from content viewport width, accounts explicitly for vertical scrollbar width, and preserves the no-horizontal-overflow invariant. The official real-browser visual workflow passed after this correction."
+      "summary": "The exact five blob objects emitted by Prettier 3.6.2 in the failing canonical CI diagnostic were committed together as the only material remediation."
     }
   ],
   "unresolved_findings": [],
   "remote_confirmation": {
     "status": "pending",
-    "material_head_sha": "4398704e6090e7c7f90203aed5ec5925ebe004c7",
+    "material_head_sha": "ded93360d676be314123d79a2f5d8596b2dd1d71",
     "observed_workflow_runs": [
       {
-        "id": 33016419557,
+        "id": 33030667033,
         "name": "CI",
-        "status": "in_progress"
+        "status": "queued"
       },
       {
-        "id": 33016419477,
+        "id": 33030667022,
         "name": "Statement visual validation",
-        "status": "in_progress"
+        "status": "queued"
       }
     ],
     "release_claim": "not-made",

@@ -1,11 +1,4 @@
-Issue 606 / PR 644 critical internal evidence
-Material head: 4398704e6090e7c7f90203aed5ec5925ebe004c7
-
-- A fail-closed diagnostic candidate 9bf983bbc4a5dffee39fcf4a36a15d908f57b9ae executed the repository's installed Prettier 3.6.2 with --write and then git diff --exit-code.
-- The diagnostic formatter produced exactly two source edits: parenthesize the nullish-coalescing expression in serializeError() in scripts/run-statement-visual-validation.mjs and in the main().catch() error formatter in scripts/validate-statement-visual-coverage.mjs.
-- The formatted blobs emitted by that CI are 8e73ec3b77f1a8e9458f685ea8b1f73f4a2bdc22 and 7d3a1d0eef5970bfca8a10c49c1057e8245bdbc5; the final material tree references exactly those two blobs.
-- package.json was restored to its original canonical blob 9c6bcbadb641a2621135e0305905a519507b98d7, so format:check is again prettier . --check and the diagnostic instrumentation is absent from the final candidate.
-- Both final JavaScript sources pass node --check in the constrained runtime.
-- The viewport correction remains intact: window.innerWidth represents the device viewport, root.clientWidth represents content viewport, scrollbar width is accounted separately, and the document-fit overflow invariant remains active.
-- The single exact-head remote snapshot for 4398704e6090e7c7f90203aed5ec5925ebe004c7 observed CI run 33016419557 in_progress and Statement visual validation run 33016419477 in_progress. No rerun, dispatch, cancel, manual approval, or polling was performed.
-- The prior official Statement visual validation workflow passed after the viewport semantic correction on the material lineage; exact-head terminal workflow conclusions remain pending and are not claimed green.
+Issue #606 critical-control evidence for material SHA ded93360d676be314123d79a2f5d8596b2dd1d71.
+The five formatter-rejected visual executor files were replaced with the exact blobs emitted by Prettier 3.6.2 in GitHub Actions: cards=6a7eff7476da2402993a2f3225b769ec1709aaca, core=09b6a815a88dbfc619442b1c98360c19c330783e, pilot=c7dfb64c4edc4e7d66cd974e7f01813fb4f8ef16, remediation=7b681a53b3d10ddd1713314e727764835a0f4cf8, reports=9d6e95c9a6970c45ee76938c9a4dfd73a6bd442a.
+The material commit contains only those five formatting changes and preserves scenario behavior, route/state identity, mobile/desktop execution, focus/reflow/overflow assertions, and exact-SHA evidence binding introduced earlier in the PR.
+The previous exact-head visual workflow on fd6ec941701cb1e36630c0a15682185a8183e89b completed successfully; the new ded93360d676be314123d79a2f5d8596b2dd1d71 workflows were observed once and are queued, so no green claim is inferred for the new SHA.
