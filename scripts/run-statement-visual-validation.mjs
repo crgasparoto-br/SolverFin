@@ -22,6 +22,7 @@ const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-vi
 const semanticProofDir = join(outputDir, "semantic-proofs");
 const candidateCommit =
   process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
+
 await mkdir(outputDir, { recursive: true });
 await mkdir(semanticProofDir, { recursive: true });
 
@@ -31,11 +32,10 @@ const results = [];
 const failures = [];
 let contractValidation;
 
-let contractReady = true;
 try {
   contractValidation = await validateRepositoryCoverageContract();
 } catch (error) {
-  const failure = {
+  failures.push({
     scenarioId: "coverage-contract",
     sourceScenarioId: "coverage-contract",
     module: "scripts/validate-statement-visual-coverage.mjs",
@@ -45,14 +45,12 @@ try {
     layout: "n/a",
     interaction: "static-validation",
     message: serializeError(error),
-  };
-  failures.push(failure);
+  });
   await finalize();
   process.exitCode = 1;
-  contractReady = false;
 }
 
-if (contractReady) {
+if (failures.length === 0) {
   for (const scenario of executionScenarios) {
     const startedAt = new Date().toISOString();
     const result = await runScenario(scenario);
@@ -69,13 +67,17 @@ async function runScenario(scenario) {
   console.log(`[visual-gate] START ${context}`);
 
   const behaviorAssertions = scenario.requiredAssertions.filter(isBehaviorAssertion);
-  const primaryAssertions = scenario.requiredAssertions.filter((value) => !isBehaviorAssertion(value));
+  const primaryAssertions = scenario.requiredAssertions.filter(
+    (assertionName) => !isBehaviorAssertion(assertionName),
+  );
   const primaryProofPath = join(semanticProofDir, `${slug(scenario.id)}.json`);
   const behaviorProofPath = join(semanticProofDir, `${slug(scenario.id)}-behavior.json`);
 
   const primaryOutcome = await runChild(scenario.module, {
     ...buildExecutionEnvironment(scenario),
-    ...(primaryAssertions.length > 0 ? { STATEMENT_VISUAL_PROOF_FILE: primaryProofPath } : {}),
+    ...(primaryAssertions.length > 0
+      ? { STATEMENT_VISUAL_PROOF_FILE: primaryProofPath }
+      : {}),
   });
 
   const proofParts = [];
@@ -188,9 +190,13 @@ function combineProofParts(requiredAssertions, proofParts) {
     ...new Set(proofParts.flatMap((part) => part.observedAssertions ?? [])),
   ].sort();
   const errors = proofParts.flatMap((part) => part.errors ?? []);
-  const missing = requiredAssertions.filter((assertionName) => !observedAssertions.includes(assertionName));
+  const missing = requiredAssertions.filter(
+    (assertionName) => !observedAssertions.includes(assertionName),
+  );
   if (missing.length > 0) {
-    errors.push(`Combined semantic proof did not observe required assertions: ${missing.join(", ")}.`);
+    errors.push(
+      `Combined semantic proof did not observe required assertions: ${missing.join(", ")}.`,
+    );
   }
   return {
     status: errors.length === 0 ? "passed" : "failed",
@@ -262,25 +268,25 @@ async function finalize() {
     scenarios: results,
   };
 
-  const indexPath = join(outputDir, "visual-gate-index.json");
-  await writeFile(indexPath, `${JSON.stringify(index, null, 2)}\n`);
+  await writeFile(
+    join(outputDir, "visual-gate-index.json"),
+    `${JSON.stringify(index, null, 2)}\n`,
+  );
   await writeFile(join(outputDir, "VISUAL-GATE.md"), renderMarkdown(index));
 
   if (failures.length > 0) {
-    await writeFile(
-      join(outputDir, "fatal-error.log"),
-      `${failures
-        .map(
-          (failure) =>
-            `[${failure.scenarioId}] sourceScenario=${failure.sourceScenarioId} route=${failure.route} state=${failure.state} layout=${failure.layout} interaction=${failure.interaction} :: ${failure.message}`,
-        )
-        .join("\n")}\n`,
-    );
-  }
-
-  if (failures.length > 0) {
+    const fatal = failures
+      .map(
+        (failure) =>
+          `[${failure.scenarioId}] sourceScenario=${failure.sourceScenarioId} ` +
+            `route=${failure.route} state=${failure.state} layout=${failure.layout} ` +
+            `interaction=${failure.interaction} :: ${failure.message}`,
+      )
+      .join("\n");
+    await writeFile(join(outputDir, "fatal-error.log"), `${fatal}\n`);
     console.error(
-      `[visual-gate] ${failures.length} coverage scenario(s) failed. See ${outputDir}/visual-gate-index.json.`,
+      `[visual-gate] ${failures.length} coverage scenario(s) failed. ` +
+        `See ${outputDir}/visual-gate-index.json.`,
     );
   } else {
     console.log(`[visual-gate] ${results.length} registered coverage executions passed.`);
@@ -291,10 +297,19 @@ function renderMarkdown(index) {
   const rows = index.scenarios
     .map(
       (scenario) =>
-        `| ${scenario.scenarioId} | ${scenario.sourceScenarioId} | ${scenario.route} | ${scenario.state} | ${scenario.layout} | ${scenario.interaction} | ${scenario.semanticProof.status} | ${scenario.result} |`,
+        `| ${scenario.scenarioId} | ${scenario.sourceScenarioId} | ${scenario.route} | ` +
+        `${scenario.state} | ${scenario.layout} | ${scenario.interaction} | ` +
+        `${scenario.semanticProof.status} | ${scenario.result} |`,
     )
     .join("\n");
-  return `# Visual gate evidence\n\n- Commit: \`${index.commit}\`\n- Artifact: \`${index.artifactName}\`\n- Registered modules: ${index.contract.modules}\n- Execution units: ${index.contract.executionUnits}\n- Coverage fingerprints: ${index.contract.coverageFingerprints}\n- Failures: ${index.failures.length}\n\n| Scenario | Source scenario | Route | State | Layout | Interaction | Semantic proof | Result |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n${rows}\n`;
+  return `# Visual gate evidence\n\n- Commit: \`${index.commit}\`\n- Artifact: ` +
+    `\`${index.artifactName}\`\n- Registered modules: ${index.contract.modules}\n` +
+    `- Execution units: ${index.contract.executionUnits}\n` +
+    `- Coverage fingerprints: ${index.contract.coverageFingerprints}\n` +
+    `- Failures: ${index.failures.length}\n\n` +
+    `| Scenario | Source scenario | Route | State | Layout | Interaction | Semantic proof | ` +
+    `Result |\n` +
+    `| --- | --- | --- | --- | --- | --- | --- | --- |\n${rows}\n`;
 }
 
 function slug(value) {

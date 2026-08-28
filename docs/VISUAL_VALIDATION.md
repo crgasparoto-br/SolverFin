@@ -7,11 +7,11 @@ Este documento define o contrato operacional do gate visual do SolverFin durante
 - `scripts/statement-visual/coverage-contract.mjs`: registro canonico dos modulos Chrome, classes de cobertura, rotas-piloto, mapeamento de componentes estruturais para fluxos reais e guards de retirada do legado.
 - `scripts/statement-visual/issue-606-remediation-contract.mjs`: acrescenta as evidencias de rota exigidas pela #606, enriquece os registros com componentes/responsabilidades/assertions, gera assertions comportamentais para cada claim e decompoe cenarios compostos em execucoes de um unico registro de cobertura.
 - `scripts/statement-visual/semantic-proof.mjs`: contrato de prova semantica que vincula a identidade da unidade executada às assertions realmente observadas.
-- `scripts/statement-visual/issue-606-semantic-interactions.mjs`: executor focado das interacoes compostas de maior risco (foco/overflow e filtros/modal).
-- `scripts/statement-visual/issue-606-behavior-claims.mjs`: verificador Chrome independente que transforma claims de `components`, `legacyProcessorIds` e `desktop-mobile` em observacoes discriminantes antes de emitir a prova semantica.
+- `scripts/statement-visual/issue-606-semantic-interactions.mjs`: executor focado das interacoes compostas de maior risco (foco/overflow e filtros/modal); nos fluxos focais de extrato, cartoes e relatorios, grava tambem a evidencia comportamental discriminante produzida pelo mesmo Chrome que executou o cenario.
+- `scripts/statement-visual/issue-606-behavior-claims.mjs`: adaptador de evidencia que consome somente artefatos exact-SHA produzidos pelos cenarios Chrome e converte essas observacoes em assertions de `components`, `legacyProcessorIds` e `desktop-mobile`, sem abrir um segundo navegador nem mutar fixtures compartilhadas.
 - `scripts/validate-statement-visual-coverage.mjs`: valida o contrato antes de abrir o navegador e executa mutation controls que preservam metadata enquanto retiram a capability observavel.
 - `scripts/statement-visual/coverage-contract.test.mjs`: controles negativos e mutation tests do proprio gate.
-- `scripts/run-statement-visual-validation.mjs`: executa cada unidade de cobertura em processo isolado, separa prova primaria de prova comportamental, valida ambas e agrega o resultado.
+- `scripts/run-statement-visual-validation.mjs`: executa cada unidade de cobertura em processo isolado, valida a prova primaria, executa o adaptador de evidencia comportamental quando houver claims, combina as provas e agrega o resultado.
 - `.github/workflows/statement-visual-validation.yml`: ambiente oficial com Chrome e PostgreSQL efemero.
 
 Um novo cenario visual deve entrar no registro canonico. Nao adicione uma segunda lista de scripts diretamente no workflow. Se um modulo canonico declarar mais de um registro de cobertura, ele precisa de decomposicao explicita para execucoes focadas; o gate falha fechado quando nao existe esse mapeamento.
@@ -37,7 +37,7 @@ A unidade executavel e ainda mais estrita: cada processo Chrome do runner corres
 
 ### Prova semantica de interacao e comportamento
 
-Metadata nao e evidencia por si so. O contrato gera assertions comportamentais com os prefixos `behavior:component:`, `behavior:legacy:` e `behavior:layout:` para claims que precisam ser observados em fluxo real. O runner executa a unidade primaria e, quando existem esses claims, executa tambem `issue-606-behavior-claims.mjs` em processo Chrome independente. A unidade so passa quando a combinacao das provas observa todas as assertions exigidas.
+Metadata nao e evidencia por si so. O contrato gera assertions comportamentais com os prefixos `behavior:component:`, `behavior:legacy:` e `behavior:layout:` para claims que precisam ser observados em fluxo real. O runner executa a unidade primaria e, quando existem esses claims, executa tambem `issue-606-behavior-claims.mjs` como adaptador de artefatos exact-SHA. Esse adaptador nao abre outro Chrome: ele somente aceita observacoes geradas pelo cenario que acabou de passar e a unidade so passa quando a combinacao das provas observa todas as assertions exigidas.
 
 O runner rejeita a unidade quando:
 
@@ -68,7 +68,8 @@ O mapeamento de fluxo real permanece no mesmo registro canonico de cobertura par
 O runner grava em `artifacts/statement-visual/`:
 
 - evidencias proprias de cada cenario, incluindo screenshots e JSON/Markdown quando o modulo as produz;
-- `semantic-proofs/*.json` para unidades que exigem assertions semanticas, incluindo provas comportamentais separadas;
+- evidencias comportamentais exact-SHA produzidas pelos cenarios focais e artefatos de cenarios existentes consumidos pelo adaptador de claims;
+- `semantic-proofs/*.json` para unidades que exigem assertions semanticas, incluindo provas comportamentais separadas derivadas desses artefatos;
 - `visual-gate-index.json`, com o SHA, o resultado, os fingerprints e o status consolidado da prova semantica;
 - `VISUAL-GATE.md`, resumo navegavel dos cenarios executados;
 - `fatal-error.log` quando houver falha agregada.
@@ -99,21 +100,19 @@ Coberturas representativas atuais incluem:
 | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | primitives isoladas, conteudo longo, dialog/drawer, foco e overflow                          | `issue-601-ui-primitives.mjs`                                          |
 | loading, vazio, erro recuperavel, indisponibilidade, permissao e demais primitives de estado | `issue-606-foundation-states.mjs`                                      |
-| claims de componentes, legado e desktop/mobile em fluxos reais                               | `issue-606-behavior-claims.mjs`                                        |
-| Extrato foco + overflow                                                                      | `issue-606-semantic-interactions.mjs`                                  |
+| claims de componentes, legado e desktop/mobile em fluxos reais                               | artefatos dos cenarios + `issue-606-behavior-claims.mjs`               |
+| Extrato foco + overflow, ordenacao, insight e desktop/mobile                                 | `issue-606-semantic-interactions.mjs`                                  |
 | Dashboard e demais core pages responsivos                                                    | `issue-606-core-pages-execution.mjs`                                   |
 | Dashboard vazio em perfil novo                                                               | `issue-606-dashboard-empty.mjs`                                        |
-| Cartoes filtros + modal                                                                      | `issue-606-semantic-interactions.mjs`                                  |
-| Cartoes ordenacao, subtotais, resumo e finalizer                                             | `issue-606-behavior-claims.mjs`                                        |
+| Cartoes filtros, modal, ordenacao, subtotais, resumo e finalizer                             | `issue-606-semantic-interactions.mjs`                                  |
 | Cartoes vazio por filtro                                                                     | `issue-606-cards-execution.mjs`                                        |
 | Cartoes em 1366x768, conteudo longo e teclado                                                | `cards-interface-adversarial.mjs`                                      |
-| Contas e Cartoes desktop/mobile, tabs, menus e modais                                        | `accounts-cards-interface.mjs` + behavior claims                       |
+| Contas e Cartoes desktop/mobile, tabs, menus e modais                                        | `accounts-cards-interface.mjs` + adaptador de claims                   |
 | Contas e Cartoes vazio em perfil novo                                                        | `issue-606-accounts-cards-empty.mjs`                                   |
-| Relatorios foco + overflow                                                                   | `issue-606-semantic-interactions.mjs`                                  |
-| Relatorios filtro/tabela estrutural em fluxo real                                            | `issue-606-behavior-claims.mjs`                                        |
+| Relatorios foco + overflow e estrutura desktop/mobile                                        | `issue-606-semantic-interactions.mjs`                                  |
 | Relatorios vazio/erro                                                                        | `issue-606-reports-execution.mjs`                                      |
-| Configuracoes, formulario e dialog em fluxo real                                             | `settings-interface.mjs` + behavior claims                             |
-| shell autenticado desktop/mobile                                                             | `sidebar-navigation.mjs` + behavior claims                             |
+| Configuracoes, formulario e dialog em fluxo real                                             | `settings-interface.mjs` + adaptador de claims                         |
+| shell autenticado desktop/mobile                                                             | `sidebar-navigation.mjs` + adaptador de claims                         |
 | Orcamentos normal desktop/mobile                                                             | `issue-606-budgets-pilot.mjs`                                          |
 | Orcamentos vazio em perfil novo                                                              | `issue-606-budgets-empty.mjs`                                          |
 | Inbox desktop/mobile e teclado                                                               | `inbox-interface-refinement.mjs` e `inbox-interface-accessibility.mjs` |
@@ -123,7 +122,7 @@ O objetivo nao e produzir screenshot de toda combinacao. A amostra deve mudar qu
 
 ## Retirada de pos-processadores HTML
 
-`legacyProcessorBaselineIds` preserva os IDs que existiam no baseline da #604. `legacyProcessorRetirementCoverage` vincula cada responsabilidade legada a pelo menos um fluxo Chrome final. O registro desse fluxo precisa declarar o mesmo ID em `legacyProcessorIds` e exigir `behavior:legacy:<id>`; o verificador comportamental somente emite essa assertion depois de observar o criterio discriminante da responsabilidade no produto renderizado.
+`legacyProcessorBaselineIds` preserva os IDs que existiam no baseline da #604. `legacyProcessorRetirementCoverage` vincula cada responsabilidade legada a pelo menos um fluxo Chrome final. O registro desse fluxo precisa declarar o mesmo ID em `legacyProcessorIds` e exigir `behavior:legacy:<id>`; o adaptador comportamental somente emite essa assertion depois de validar o criterio discriminante observado e persistido pelo fluxo no SHA corrente.
 
 Remover um adapter do inventario de `apps/web/src/dev-server/legacy-html-post-processors.ts` nao remove esse guard. A evidencia de substituicao deve permanecer registrada. O contrato falha se:
 

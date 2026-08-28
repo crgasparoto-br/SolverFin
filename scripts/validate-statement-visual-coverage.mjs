@@ -93,7 +93,8 @@ export function validateCoverageContract({
       errors.push(`Execution ${execution.id} is not bound to exactly one coverage record.`);
     }
     const interaction = execution.coverage?.[0]?.interaction;
-    const usesFocusedOverride = execution.sourceModule && execution.sourceModule !== execution.module;
+    const usesFocusedOverride =
+      execution.sourceModule && execution.sourceModule !== execution.module;
     if (
       usesFocusedOverride &&
       SEMANTIC_BINDING_INTERACTIONS.has(interaction) &&
@@ -166,7 +167,9 @@ export function validateCoverageContract({
 
     const mappedScenarioIds = criticalRealFlowCoverage[component];
     if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) {
-      errors.push(`Critical structural component lacks real application-flow mapping: ${component}.`);
+      errors.push(
+        `Critical structural component lacks real application-flow mapping: ${component}.`,
+      );
       continue;
     }
 
@@ -193,7 +196,9 @@ export function validateCoverageContract({
 
   for (const [component, mappedScenarioIds] of Object.entries(criticalRealFlowCoverage)) {
     if (!criticalRealFlowComponents.includes(component)) {
-      errors.push(`Real application-flow mapping references a non-structural component: ${component}.`);
+      errors.push(
+        `Real application-flow mapping references a non-structural component: ${component}.`,
+      );
     }
     if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) continue;
     for (const scenarioId of mappedScenarioIds) {
@@ -323,7 +328,9 @@ export function runBehaviorClaimMutationControls() {
   const legacyMutation = structuredClone(canonical);
   const cards = legacyMutation.find((scenario) => scenario.id === "cards-interface");
   const cardsRecord = cards?.coverage?.[0];
-  if (!cardsRecord) throw new Error("Behavior mutation control could not find cards-interface record 0.");
+  if (!cardsRecord) {
+    throw new Error("Behavior mutation control could not find cards-interface record 0.");
+  }
   cardsRecord.requiredAssertions = cardsRecord.requiredAssertions.filter(
     (assertionName) => assertionName !== "behavior:legacy:card-list-sorting",
   );
@@ -401,7 +408,9 @@ async function main() {
   runBehaviorClaimMutationControls();
   const result = await validateRepositoryCoverageContract();
   console.log(
-    `Visual coverage contract passed: ${result.scenarios.length} modules, ${result.executions.length} one-record executions, ${result.records.length} coverage fingerprints, ${pilotRoutes.length} pilot routes.`,
+    `Visual coverage contract passed: ${result.scenarios.length} modules, ` +
+      `${result.executions.length} one-record executions, ${result.records.length} coverage fingerprints, ` +
+      `${pilotRoutes.length} pilot routes.`,
   );
 }
 
