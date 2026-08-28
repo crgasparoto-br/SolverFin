@@ -47,10 +47,7 @@ for (const scenario of cases) {
       };
       const requiredAssertions = behaviorClaimAssertionsForRecord(record);
 
-      assert.deepEqual(requiredAssertions, [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile",
-      ]);
+      assert.deepEqual(requiredAssertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
 
       const execution = {
         id: scenario.id,
