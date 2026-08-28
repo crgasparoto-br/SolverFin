@@ -74,6 +74,18 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Capture canonical formatter output
+        run: |
+          npx prettier \
+            scripts/run-statement-visual-validation.mjs \
+            scripts/statement-visual/issue-606-behavior-claims.mjs \
+            --write
+          mkdir -p artifacts/statement-visual/formatter
+          cp scripts/run-statement-visual-validation.mjs \
+            artifacts/statement-visual/formatter/run-statement-visual-validation.mjs
+          cp scripts/statement-visual/issue-606-behavior-claims.mjs \
+            artifacts/statement-visual/formatter/issue-606-behavior-claims.mjs
+
       - name: Prepare database and production web build
         run: |
           npm run prisma:generate
