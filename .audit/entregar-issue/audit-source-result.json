@@ -1,21 +1,26 @@
 {
   "schema_version": 1,
   "kind": "independent-rejection",
-  "rejection_id": "audit-rejection:d522dbe9-0c16-4439-9bc4-e189cafa3084",
+  "rejection_id": "audit-rejection:73e7ee27-98b6-4cb5-a66a-319f9c0d8fb9",
   "status": "rejected",
   "validity": "independent",
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 606,
     "pull_request_number": 644,
-    "audited_published_head_sha": "c2bfc7800ebea5c2283a8b98aa2b8bc9490da8a7",
+    "audited_published_head_sha": "43f2f19f35e9474051bb05490e51016155d9c147",
     "audited_material_head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78"
   },
   "findings": [
     {
       "id": "A-001",
-      "classification": "systemic",
-      "summary": "Critical adversarial controls referenced raw evidence whose resolved subject could identify an ancestor instead of the certified material candidate."
+      "classification": "delivery-readiness",
+      "summary": "Published handoff was stale after later material writes; post-write-refreeze was required."
+    },
+    {
+      "id": "A-002",
+      "classification": "implementation",
+      "summary": "Canonical formatter failed on six candidate visual-validation files and downstream CI gates were not reached."
     }
   ]
 }

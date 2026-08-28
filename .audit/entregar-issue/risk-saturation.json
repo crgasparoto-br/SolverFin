@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
+  "head_sha": "037200a3785fccf15c60461fae1504fa3d0d0720",
   "families": [
     {
       "family": "authorization",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current contract, matrix, or inherited-control signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -13,7 +13,7 @@
     {
       "family": "tenant-isolation",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current contract, matrix, or inherited-control signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -21,7 +21,7 @@
     {
       "family": "public-boundary",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current contract, matrix, or inherited-control signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -29,7 +29,7 @@
     {
       "family": "reference-liveness",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Derived from current requirement attack matrix and exact-head inherited controls.",
       "control_ids": [
         "NEG-606-01-LIVE",
         "NEG-606-01-LIVE-REMOVE"
@@ -57,7 +57,7 @@
     {
       "family": "temporal-consistency",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Derived from current requirement attack matrix and exact-head inherited controls.",
       "control_ids": [
         "NEG-606-01-BOUND",
         "NEG-606-01-TIME",
@@ -96,7 +96,7 @@
     {
       "family": "temporal-destination",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current contract, matrix, or inherited-control signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -104,7 +104,7 @@
     {
       "family": "concurrency-atomicity",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current contract, matrix, or inherited-control signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -112,7 +112,7 @@
     {
       "family": "idempotency",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current contract, matrix, or inherited-control signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -120,7 +120,7 @@
     {
       "family": "rollback",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current contract, matrix, or inherited-control signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -128,7 +128,7 @@
     {
       "family": "historical-immutability",
       "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
+      "reason": "No current contract, matrix, or inherited-control signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -136,7 +136,7 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Derived from current requirement attack matrix and exact-head inherited controls.",
       "control_ids": [
         "DELIVERY-FORMAT-GATE-001",
         "EVIDENCE-HASH-BINDING-001",
@@ -281,7 +281,7 @@
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "Derived from current requirement attack matrix and exact-head inherited controls.",
       "control_ids": [
         "NEG-606-04-DOC"
       ],

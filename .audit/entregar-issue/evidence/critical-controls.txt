@@ -1,7 +1,8 @@
-Issue #606 critical-control evidence for material SHA 5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78.
-Evidence location: published result-only child for material subject 5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78; this raw result is intentionally resolved from the published handoff head, not from the material parent.
-The exact material candidate completed CI run 33068689241 successfully and Statement visual validation run 33068689219 successfully in the delivery snapshot for this SHA.
-The visual run published artifact statement-visual-evidence-5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78 (artifact id 9645061997, digest sha256:7a26cfb0335253dd67da8e9f6e3bcc29ca69da41d0ef6ce8356e9c2fd0f6d340).
-Independent inspection of that exact-SHA artifact observed 59 Chrome execution units, 59 unique coverage fingerprints, zero failures, all seven pilot routes with normal plus route-specific alternate state coverage, desktop/mobile where required, keyboard/focus, overflow, long content and 200% reflow coverage.
-The workflow checks out github.event.pull_request.head.sha, passes that candidate SHA into the visual runner, and names the artifact with that exact PR-head SHA; ancestor or merge-preview SHAs are not promoted as the current evidence subject.
-The viewport device-vs-content accounting, independent horizontal-overflow invariant, canonical formatter gate and result-only handoff guards remain active for the exact material candidate.
+Issue #606 critical-control evidence for material SHA 037200a3785fccf15c60461fae1504fa3d0d0720.
+Evidence location: published result-only child for material subject 037200a3785fccf15c60461fae1504fa3d0d0720; this raw result is intentionally resolved from the published handoff head, not from the material parent.
+The exact material candidate completed CI run 33130241297 successfully and Statement visual validation run 33130241331 successfully.
+The visual workflow checked out ref 037200a3785fccf15c60461fae1504fa3d0d0720, exported STATEMENT_VISUAL_CANDIDATE_SHA=037200a3785fccf15c60461fae1504fa3d0d0720, and completed 59 registered Chrome coverage executions with zero failures.
+The visual run published artifact statement-visual-evidence-037200a3785fccf15c60461fae1504fa3d0d0720 (artifact id 9670118600, digest sha256:331e8b7749a99579e5a4681c7da9072a5c8e0533fe7a8e64972d63ad6badabeb).
+Observed coverage includes all seven pilot routes with normal plus route-specific alternate-state coverage, desktop/mobile where required, keyboard/focus, overflow, long content and 200% reflow coverage.
+The canonical CI Validate monorepo job reached and passed formatting, lint, typecheck, Prisma generation/deploy, seed, test and build; Integration API + PostgreSQL also completed successfully.
+The viewport device-vs-content accounting, independent horizontal-overflow invariant, canonical formatter gate, evidence subject/content binding and result-only handoff guards remain active for this exact material candidate.

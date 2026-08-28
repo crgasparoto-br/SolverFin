@@ -1,6 +1,6 @@
-Rejection audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b, finding A-001.
-Literal failure: a previous ready handoff certified an ancestor material SHA and later material commits made that certificate stale.
-The live PR material head is frozen at 5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78 after all material remediation, including the later coverage-contract and formatter changes.
-Both required exact-head workflows are terminal success: CI run 33068689241 and Statement visual validation run 33068689219.
-Terminal publication is required to be a direct result-only child of this exact material head and its delta is restricted to certificate-allowlisted .audit/entregar-issue result paths.
-A certificate for ded93360d676be314123d79a2f5d8596b2dd1d71 or any earlier candidate is intentionally treated as stale and cannot release independent audit.
+Independent rejection audit-rejection:73e7ee27-98b6-4cb5-a66a-319f9c0d8fb9, finding A-001.
+Literal failure: the published handoff certified material 5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78 while later material commits moved the PR head, so the prior certificate was stale and required post-write-refreeze.
+The current live material candidate is frozen at 037200a3785fccf15c60461fae1504fa3d0d0720 only after the final canonical formatting write and CI workflow restoration.
+Both exact-material required workflows are terminal success: CI run 33130241297 and Statement visual validation run 33130241331.
+The new terminal handoff must be a direct result-only child whose parent is exactly 037200a3785fccf15c60461fae1504fa3d0d0720; its delta is restricted to certificate-allowlisted .audit/entregar-issue result paths and includes handoff-ready.json.
+The old certificate for 5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78 and every earlier candidate is historical/stale and cannot release independent audit for the current material.

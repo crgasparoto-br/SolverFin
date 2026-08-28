@@ -1,6 +1,6 @@
-Rejection audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b, finding A-002.
-Literal failure: canonical CI format:check rejected five issue-606 executor files on fd6ec941701cb1e36630c0a15682185a8183e89b.
-The remediation applied canonical Prettier output and subsequent material changes retained that source contract.
-Final material SHA: 5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78.
-Observed exact-head result: CI run 33068689241 completed successfully, so the canonical repository formatting gate and downstream aggregate validation accepted the final material candidate.
+Independent rejection audit-rejection:73e7ee27-98b6-4cb5-a66a-319f9c0d8fb9, finding A-002.
+Literal failure at audited published head 43f2f19f35e9474051bb05490e51016155d9c147: canonical CI format:check rejected six issue-606 visual validation source files and downstream lint/typecheck/test/build were not reached.
+Remediation applied the canonical Prettier output to all six files and restored the original CI workflow after diagnostic extraction.
+Final material SHA: 037200a3785fccf15c60461fae1504fa3d0d0720.
+Observed exact-head result: CI run 33130241297 completed successfully. Validate monorepo explicitly reached and passed Check formatting, Lint, Typecheck, Generate Prisma client, Apply migrations, Seed demo data, Test and Build; Integration API + PostgreSQL also passed.
 No focused visual pass is substituted for this canonical source-gate result.

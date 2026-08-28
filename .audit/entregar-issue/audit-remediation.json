@@ -1,52 +1,68 @@
 {
   "schema_version": 1,
-  "rejection_id": "audit-rejection:d522dbe9-0c16-4439-9bc4-e189cafa3084",
-  "remediation_mode": "systemic-remediation",
-  "material_head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
+  "rejection_id": "audit-rejection:73e7ee27-98b6-4cb5-a66a-319f9c0d8fb9",
+  "remediation_mode": "mixed-remediation",
+  "material_head_sha": "037200a3785fccf15c60461fae1504fa3d0d0720",
   "findings": [
     {
       "id": "A-001",
-      "status": "remediated-exact-evidence-subject-binding",
+      "status": "remediated-post-write-refreeze",
       "changed_paths": [
-        ".audit/entregar-issue/evidence/critical-controls.txt",
-        ".audit/entregar-issue/evidence/evidence-subject-binding.txt",
-        ".audit/entregar-issue/evidence/validate-evidence-subject-binding.py",
-        ".audit/entregar-issue/requirement-attack-matrix.json",
-        ".audit/entregar-issue/inherited-controls.json",
+        ".audit/entregar-issue/handoff-ready.json",
         ".audit/entregar-issue/audit-escape-closure.json",
-        ".audit/entregar-issue/learning-closure.json"
+        ".audit/entregar-issue/inherited-controls.json",
+        ".audit/entregar-issue/risk-saturation.json",
+        ".audit/entregar-issue/learning-closure.json",
+        ".audit/entregar-issue/audit-remediation.json",
+        ".audit/entregar-issue/audit-source-result.json",
+        ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
       ],
       "evidence": [
-        "evidence/critical-controls.txt",
-        "evidence/evidence-subject-binding.txt"
+        "evidence/handoff-gate-completeness.txt"
       ],
-      "summary": "Critical evidence now declares the exact material subject and result-only resolution context, is content-addressed, and a generic control rejects ancestor-as-current and hash-mismatch siblings."
+      "summary": "Final material was refrozen at 037200a3785fccf15c60461fae1504fa3d0d0720; terminal publication is rebuilt as its direct result-only child."
+    },
+    {
+      "id": "A-002",
+      "status": "remediated-canonical-format",
+      "changed_paths": [
+        "scripts/run-statement-visual-validation.mjs",
+        "scripts/statement-visual/coverage-contract.test.mjs",
+        "scripts/statement-visual/issue-606-remediation-contract.mjs",
+        "scripts/statement-visual/issue-606-semantic-interactions.mjs",
+        "scripts/statement-visual/semantic-proof.mjs",
+        "scripts/validate-statement-visual-coverage.mjs"
+      ],
+      "evidence": [
+        "evidence/format-gate-remediation.txt"
+      ],
+      "summary": "Canonical Prettier output was applied to all six files and exact-head CI 33130241297 reached every downstream Validate monorepo gate successfully."
     }
   ],
   "unresolved_findings": [],
   "remote_confirmation": {
     "status": "passed",
-    "material_head_sha": "5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
+    "material_head_sha": "037200a3785fccf15c60461fae1504fa3d0d0720",
     "observed_workflow_runs": [
       {
-        "id": 33068689241,
+        "id": 33130241297,
         "name": "CI",
         "status": "completed",
         "conclusion": "success"
       },
       {
-        "id": 33068689219,
+        "id": 33130241331,
         "name": "Statement visual validation",
         "status": "completed",
         "conclusion": "success"
       }
     ],
     "visual_artifact": {
-      "id": 9645061997,
-      "name": "statement-visual-evidence-5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78",
-      "digest": "sha256:7a26cfb0335253dd67da8e9f6e3bcc29ca69da41d0ef6ce8356e9c2fd0f6d340"
+      "id": 9670118600,
+      "name": "statement-visual-evidence-037200a3785fccf15c60461fae1504fa3d0d0720",
+      "digest": "sha256:331e8b7749a99579e5a4681c7da9072a5c8e0533fe7a8e64972d63ad6badabeb"
     },
     "release_claim": "not-made",
-    "observation_policy": "reused-terminal-exact-material-evidence-no-new-material-write"
+    "observation_policy": "terminal-exact-material-evidence"
   }
 }
