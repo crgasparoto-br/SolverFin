@@ -3,12 +3,14 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:4d3a57d9-245e-4f7b-987c-5795641be3df",
-    "finding_ids": ["A-001"]
+    "rejection_id": "audit-rejection:f2f8b40d-afd5-4df8-984c-57028e525c69",
+    "finding_ids": [
+      "A-001"
+    ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The controller contract already requires discriminant negative controls and rejects metadata-only evidence; this escape was a repository-specific propagation defect and is closed by the SolverFin visual gate and mutation controls."
+    "reason": "The controller already requires discriminant negative controls for metadata-only evidence; the escape was a repository-specific propagation gap and is closed in SolverFin by universal real-flow layout binding, sibling mutation tests, cumulative inherited controls and the escape ledger."
   },
   "skill_changes": []
 }

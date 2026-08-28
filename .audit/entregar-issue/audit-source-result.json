@@ -1,16 +1,21 @@
 {
   "schema_version": 1,
-  "source_kind": "independent-audit-rejection",
-  "source_id": "audit-rejection:4d3a57d9-245e-4f7b-987c-5795641be3df",
-  "repository": "crgasparoto-br/SolverFin",
-  "pull_request": 644,
-  "issue": 606,
+  "kind": "independent-rejection",
+  "rejection_id": "audit-rejection:f2f8b40d-afd5-4df8-984c-57028e525c69",
+  "status": "rejected",
+  "validity": "independent",
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 606,
+    "pull_request_number": 644,
+    "audited_published_head_sha": "1aa11d8ad60e85359ba0e7655849c05175e4c1d9",
+    "audited_material_head_sha": "d4a83c41d3995a0ad01bc46b19677d1013cc795e"
+  },
   "findings": [
     {
       "id": "A-001",
-      "severity": "high",
-      "status": "rejected",
-      "summary": "Coverage metadata could claim component, legacy-responsibility and desktop/mobile coverage without matching behavioral proof."
+      "classification": "systemic",
+      "summary": "Real desktop-mobile records without component or legacy claims could satisfy mobile coverage from metadata without mandatory observed mobile behavior."
     }
   ]
 }

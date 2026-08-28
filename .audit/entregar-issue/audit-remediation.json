@@ -1,14 +1,18 @@
 {
   "schema_version": 1,
-  "audit_source_id": "audit-rejection:4d3a57d9-245e-4f7b-987c-5795641be3df",
-  "material_head_sha": "d4a83c41d3995a0ad01bc46b19677d1013cc795e",
+  "candidate_head_sha": "3232228884ce20971e815ce30018333fbc26e6f4",
+  "source_rejection_id": "audit-rejection:f2f8b40d-afd5-4df8-984c-57028e525c69",
+  "resolution_policy": "all-actionable-items",
+  "all_actionable_items_closed": true,
   "remediation_mode": "systemic-remediation",
   "findings": [
     {
       "id": "A-001",
       "status": "closed",
-      "closure": "Behavior assertions are mandatory for component, legacy and desktop/mobile claims; exact-SHA primary evidence is consumed through a read-only adapter and metadata-intact mutation controls reject missing behavior proof.",
-      "evidence": ".audit/entregar-issue/evidence/behavior-claim-binding.txt"
+      "resolution": "Universal real-flow desktop-mobile behavior assertions plus literal /orcamentos and two sibling mutation controls; the canonical test gate now includes all statement-visual test modules."
     }
+  ],
+  "evidence": [
+    ".audit/entregar-issue/evidence/exact-head-remediation.txt"
   ]
 }
