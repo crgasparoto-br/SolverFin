@@ -1,6 +1,2 @@
-Independent rejection audit-rejection:73e7ee27-98b6-4cb5-a66a-319f9c0d8fb9, finding A-002.
-Literal failure at audited published head 43f2f19f35e9474051bb05490e51016155d9c147: canonical CI format:check rejected six issue-606 visual validation source files and downstream lint/typecheck/test/build were not reached.
-Remediation applied the canonical Prettier output to all six files and restored the original CI workflow after diagnostic extraction.
-Final material SHA: 037200a3785fccf15c60461fae1504fa3d0d0720.
-Observed exact-head result: CI run 33130241297 completed successfully. Validate monorepo explicitly reached and passed Check formatting, Lint, Typecheck, Generate Prisma client, Apply migrations, Seed demo data, Test and Build; Integration API + PostgreSQL also passed.
-No focused visual pass is substituted for this canonical source-gate result.
+Exact material: d4a83c41d3995a0ad01bc46b19677d1013cc795e
+The GitHub Actions canonical formatter artifact produced runner blob eac0faf009371cb3b63a119bdd1757d14d1cbeea and behavior adapter blob d9229c3120f6c2a00b86e41c54531124c7332222. The final material contains exactly those Git blobs. A differently formatted byte sequence therefore cannot satisfy this control.

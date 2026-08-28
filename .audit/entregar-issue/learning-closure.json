@@ -3,14 +3,12 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:73e7ee27-98b6-4cb5-a66a-319f9c0d8fb9",
-    "finding_ids": [
-      "A-001",
-      "A-002"
-    ]
+    "rejection_id": "audit-rejection:4d3a57d9-245e-4f7b-987c-5795641be3df",
+    "finding_ids": ["A-001"]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "Both findings are repeat execution failures of controls already promoted into the delivery contract: post-write refreeze/result-only parent enforcement and the canonical aggregate formatter gate. This remediation closes adherence on the exact final material without inventing another overlapping global rule."
-  }
+    "reason": "The controller contract already requires discriminant negative controls and rejects metadata-only evidence; this escape was a repository-specific propagation defect and is closed by the SolverFin visual gate and mutation controls."
+  },
+  "skill_changes": []
 }

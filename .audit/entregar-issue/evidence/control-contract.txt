@@ -1,0 +1,6 @@
+Issue 606 exact material head: d4a83c41d3995a0ad01bc46b19677d1013cc795e
+Canonical formatted runner blob: eac0faf009371cb3b63a119bdd1757d14d1cbeea
+Canonical formatted behavior adapter blob: d9229c3120f6c2a00b86e41c54531124c7332222
+The coverage validator rejects component/layout/legacy metadata when corresponding behavior assertions are absent.
+Behavior evidence adapters require report.commit to equal the candidate SHA and consume primary Chrome evidence for desktop/mobile, interaction and legacy-responsibility claims.
+Mutation controls cover missing component behavior, missing mobile behavior, missing legacy behavior and missing semantic capability while metadata remains intact.

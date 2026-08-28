@@ -1,14 +1,2 @@
-Evidence subject binding control for exact-head delivery evidence.
-Expected material SHA: 037200a3785fccf15c60461fae1504fa3d0d0720
-Published evidence location: result-only-child
-Critical evidence SHA256: 994b4338c4576c90876f658032c0d96b2169e2cf6b8593a2788de713460aaa8e
-Literal current evidence:
-PASS subject=037200a3785fccf15c60461fae1504fa3d0d0720 sha256=994b4338c4576c90876f658032c0d96b2169e2cf6b8593a2788de713460aaa8e current_claims=1
-Sibling stale ancestor presented as current:
-REJECT subject-mismatch claimed=43f2f19f35e9474051bb05490e51016155d9c147 expected=037200a3785fccf15c60461fae1504fa3d0d0720
-EXPECTED REJECT
-Sibling historical ancestor explicitly stale while current subject is exact:
-PASS subject=037200a3785fccf15c60461fae1504fa3d0d0720 historical=5870d275a9c6cff2d30c8586ff8e75b2c6ac8b78 current_claims=1
-Sibling content-addressing mismatch:
-REJECT hash-mismatch expected=0000000000000000000000000000000000000000000000000000000000000000 actual=994b4338c4576c90876f658032c0d96b2169e2cf6b8593a2788de713460aaa8e
-EXPECTED REJECT
+Expected material subject: d4a83c41d3995a0ad01bc46b19677d1013cc795e
+Behavior evidence loading requires report.commit to equal the candidate SHA. An ancestor or mismatched subject is rejected even if its metadata or route labels match. Content-addressed evidence is separately checked by SHA-256 where recorded.

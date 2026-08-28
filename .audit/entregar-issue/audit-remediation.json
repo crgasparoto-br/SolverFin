@@ -1,68 +1,14 @@
 {
   "schema_version": 1,
-  "rejection_id": "audit-rejection:73e7ee27-98b6-4cb5-a66a-319f9c0d8fb9",
-  "remediation_mode": "mixed-remediation",
-  "material_head_sha": "037200a3785fccf15c60461fae1504fa3d0d0720",
+  "audit_source_id": "audit-rejection:4d3a57d9-245e-4f7b-987c-5795641be3df",
+  "material_head_sha": "d4a83c41d3995a0ad01bc46b19677d1013cc795e",
+  "remediation_mode": "systemic-remediation",
   "findings": [
     {
       "id": "A-001",
-      "status": "remediated-post-write-refreeze",
-      "changed_paths": [
-        ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/audit-escape-closure.json",
-        ".audit/entregar-issue/inherited-controls.json",
-        ".audit/entregar-issue/risk-saturation.json",
-        ".audit/entregar-issue/learning-closure.json",
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/audit-source-result.json",
-        ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
-      ],
-      "evidence": [
-        "evidence/handoff-gate-completeness.txt"
-      ],
-      "summary": "Final material was refrozen at 037200a3785fccf15c60461fae1504fa3d0d0720; terminal publication is rebuilt as its direct result-only child."
-    },
-    {
-      "id": "A-002",
-      "status": "remediated-canonical-format",
-      "changed_paths": [
-        "scripts/run-statement-visual-validation.mjs",
-        "scripts/statement-visual/coverage-contract.test.mjs",
-        "scripts/statement-visual/issue-606-remediation-contract.mjs",
-        "scripts/statement-visual/issue-606-semantic-interactions.mjs",
-        "scripts/statement-visual/semantic-proof.mjs",
-        "scripts/validate-statement-visual-coverage.mjs"
-      ],
-      "evidence": [
-        "evidence/format-gate-remediation.txt"
-      ],
-      "summary": "Canonical Prettier output was applied to all six files and exact-head CI 33130241297 reached every downstream Validate monorepo gate successfully."
+      "status": "closed",
+      "closure": "Behavior assertions are mandatory for component, legacy and desktop/mobile claims; exact-SHA primary evidence is consumed through a read-only adapter and metadata-intact mutation controls reject missing behavior proof.",
+      "evidence": ".audit/entregar-issue/evidence/behavior-claim-binding.txt"
     }
-  ],
-  "unresolved_findings": [],
-  "remote_confirmation": {
-    "status": "passed",
-    "material_head_sha": "037200a3785fccf15c60461fae1504fa3d0d0720",
-    "observed_workflow_runs": [
-      {
-        "id": 33130241297,
-        "name": "CI",
-        "status": "completed",
-        "conclusion": "success"
-      },
-      {
-        "id": 33130241331,
-        "name": "Statement visual validation",
-        "status": "completed",
-        "conclusion": "success"
-      }
-    ],
-    "visual_artifact": {
-      "id": 9670118600,
-      "name": "statement-visual-evidence-037200a3785fccf15c60461fae1504fa3d0d0720",
-      "digest": "sha256:331e8b7749a99579e5a4681c7da9072a5c8e0533fe7a8e64972d63ad6badabeb"
-    },
-    "release_claim": "not-made",
-    "observation_policy": "terminal-exact-material-evidence"
-  }
+  ]
 }
