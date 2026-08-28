@@ -54,7 +54,7 @@ test("a component fixture cannot satisfy critical structural real-flow coverage"
   assert.ok(
     result.errors.some(
       (error) =>
-        error.includes("lacks explicit real application-flow evidence: PageContainer") &&
+        error.includes("lacks observed real application-flow evidence: PageContainer") &&
         error.includes("ui-primitives"),
     ),
   );
@@ -69,7 +69,7 @@ test("a state fixture cannot impersonate a real structural filter flow", () => {
   assert.ok(
     result.errors.some(
       (error) =>
-        error.includes("lacks explicit real application-flow evidence: FilterBar") &&
+        error.includes("lacks observed real application-flow evidence: FilterBar") &&
         error.includes("foundation-states"),
     ),
   );
@@ -94,7 +94,7 @@ test("a route-shaped record without real-browser execution cannot satisfy struct
   });
   assert.ok(
     result.errors.some((error) =>
-      error.includes("lacks explicit real application-flow evidence: PageContainer"),
+      error.includes("lacks observed real application-flow evidence: PageContainer"),
     ),
   );
 });
@@ -118,7 +118,7 @@ test("a route-shaped record without an explicit component claim cannot satisfy s
   });
   assert.ok(
     result.errors.some((error) =>
-      error.includes("lacks explicit real application-flow evidence: PageContainer"),
+      error.includes("lacks observed real application-flow evidence: PageContainer"),
     ),
   );
 });
@@ -273,7 +273,7 @@ test("legacy retirement mapping cannot survive when the mapped scenario drops it
     result.errors.some(
       (error) =>
         error.includes("accounts-cards-tabs") &&
-        error.includes("explicit equivalent-responsibility claim"),
+        error.includes("observed equivalent-responsibility assertion"),
     ),
   );
 });
@@ -292,7 +292,7 @@ test("a second legacy surface fails closed when metadata survives but equivalent
     result.errors.some(
       (error) =>
         error.includes("card-list-sorting") &&
-        error.includes("explicit equivalent-responsibility claim"),
+        error.includes("observed equivalent-responsibility assertion"),
     ),
   );
 });
