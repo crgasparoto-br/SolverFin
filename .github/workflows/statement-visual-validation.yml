@@ -86,6 +86,14 @@ jobs:
           cp scripts/statement-visual/issue-606-behavior-claims.mjs \
             artifacts/statement-visual/formatter/issue-606-behavior-claims.mjs
 
+      - name: Upload canonical formatter output
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-formatter-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/statement-visual/formatter
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Prepare database and production web build
         run: |
           npm run prisma:generate
