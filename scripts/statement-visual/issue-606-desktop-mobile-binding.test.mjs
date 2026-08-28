@@ -75,25 +75,31 @@ for (const scenario of cases) {
   );
 }
 
-test("supplemental empty-state records bind desktop-mobile metadata to observed assertions", () => {
-  for (const scenario of supplementalVisualScenarioModules) {
-    assert.deepEqual(scenario.coverage[0].requiredAssertions, [
-      "behavior:layout:desktop",
-      "behavior:layout:mobile",
-    ]);
-  }
-});
+test(
+  "supplemental empty-state records bind desktop-mobile metadata to observed assertions",
+  () => {
+    for (const scenario of supplementalVisualScenarioModules) {
+      assert.deepEqual(scenario.coverage[0].requiredAssertions, [
+        "behavior:layout:desktop",
+        "behavior:layout:mobile",
+      ]);
+    }
+  },
+);
 
-test("component fixtures remain outside real-flow desktop-mobile behavior binding", () => {
-  const assertions = behaviorClaimAssertionsForRecord({
-    route: "component://foundation-states",
-    audience: "authenticated",
-    state: "alternate",
-    layout: "desktop-mobile",
-    interaction: "keyboard-focus-state-render",
-    dataProfile: "all-foundation-states",
-    components: [],
-    legacyProcessorIds: [],
-  });
-  assert.deepEqual(assertions, []);
-});
+test(
+  "component fixtures remain outside real-flow desktop-mobile behavior binding",
+  () => {
+    const assertions = behaviorClaimAssertionsForRecord({
+      route: "component://foundation-states",
+      audience: "authenticated",
+      state: "alternate",
+      layout: "desktop-mobile",
+      interaction: "keyboard-focus-state-render",
+      dataProfile: "all-foundation-states",
+      components: [],
+      legacyProcessorIds: [],
+    });
+    assert.deepEqual(assertions, []);
+  },
+);
