@@ -42,9 +42,7 @@ const SEMANTIC_BINDING_INTERACTIONS = new Set([
 ]);
 
 export function isRealApplicationFlowRoute(route) {
-  return (
-    typeof route === "string" && (route.startsWith("/") || route.startsWith("shell://"))
-  );
+  return typeof route === "string" && (route.startsWith("/") || route.startsWith("shell://"));
 }
 
 export function validateCoverageContract({
@@ -219,9 +217,7 @@ export function validateCoverageContract({
       errors.push(`Pilot route lacks mobile coverage: ${pilot.route}.`);
     }
 
-    const hasRouteAlternative = routeRecords.some((record) =>
-      ALTERNATIVE_STATES.has(record.state),
-    );
+    const hasRouteAlternative = routeRecords.some((record) => ALTERNATIVE_STATES.has(record.state));
     if (!hasRouteAlternative) {
       errors.push(
         `Pilot route requires route-specific empty/error/alternate coverage: ${pilot.route}.`,

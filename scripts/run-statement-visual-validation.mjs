@@ -13,10 +13,7 @@ import {
   formatExecutionContext,
   getVisualScenarioModules,
 } from "./statement-visual/issue-606-remediation-contract.mjs";
-import {
-  readSemanticProof,
-  validateSemanticProof,
-} from "./statement-visual/semantic-proof.mjs";
+import { readSemanticProof, validateSemanticProof } from "./statement-visual/semantic-proof.mjs";
 import { validateRepositoryCoverageContract } from "./validate-statement-visual-coverage.mjs";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -73,9 +70,7 @@ async function runScenario(scenario) {
     cwd: process.cwd(),
     env: {
       ...buildExecutionEnvironment(scenario),
-      ...(scenario.requiredAssertions.length > 0
-        ? { STATEMENT_VISUAL_PROOF_FILE: proofPath }
-        : {}),
+      ...(scenario.requiredAssertions.length > 0 ? { STATEMENT_VISUAL_PROOF_FILE: proofPath } : {}),
     },
     stdio: "inherit",
   });
@@ -111,8 +106,7 @@ async function runScenario(scenario) {
     }
   }
 
-  const semanticOk =
-    semanticProof.status === "not-required" || semanticProof.status === "passed";
+  const semanticOk = semanticProof.status === "not-required" || semanticProof.status === "passed";
   const failed = Boolean(outcome.error) || outcome.code !== 0 || !semanticOk;
   const message = failed
     ? outcome.error
@@ -121,11 +115,7 @@ async function runScenario(scenario) {
         ? `exit=${outcome.code ?? "null"}${outcome.signal ? ` signal=${outcome.signal}` : ""}`
         : semanticProof.errors.join("; ")
     : undefined;
-  const result = buildExecutionResult(
-    scenario,
-    { ...outcome, semanticOk },
-    message,
-  );
+  const result = buildExecutionResult(scenario, { ...outcome, semanticOk }, message);
   result.coverage = scenario.coverage.map(toEvidenceCoverage);
   result.semanticProof = semanticProof;
 
@@ -202,9 +192,7 @@ async function finalize() {
       `[visual-gate] ${failures.length} coverage scenario(s) failed. See ${outputDir}/visual-gate-index.json.`,
     );
   } else {
-    console.log(
-      `[visual-gate] ${results.length} registered coverage executions passed.`,
-    );
+    console.log(`[visual-gate] ${results.length} registered coverage executions passed.`);
   }
 }
 

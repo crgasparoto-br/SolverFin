@@ -67,9 +67,7 @@ jobs:
         run: npm run db:seed:check
 
       - name: Check formatting
-        run: |
-          ./node_modules/.bin/prettier . --write
-          git diff --exit-code
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint

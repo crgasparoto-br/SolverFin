@@ -211,8 +211,7 @@ test("focused overrides cannot retain interaction metadata without semantic asse
   const result = validateCoverageContract({ scenarios });
   assert.ok(
     result.errors.some(
-      (error) =>
-        error.includes("cards-interface") && error.includes("without semantic assertions"),
+      (error) => error.includes("cards-interface") && error.includes("without semantic assertions"),
     ),
   );
 });
@@ -221,8 +220,7 @@ test("semantic proof rejects a missing declared interaction while identity stays
   const execution = buildVisualScenarioExecutions(
     getVisualScenarioModules(visualScenarioModules),
   ).find(
-    (item) =>
-      item.sourceScenarioId === "cards-interface" && item.coverage[0]?.state === "normal",
+    (item) => item.sourceScenarioId === "cards-interface" && item.coverage[0]?.state === "normal",
   );
   assert.ok(execution);
   const validation = validateSemanticProof(execution, {
@@ -240,8 +238,7 @@ test("semantic proof rejects a sibling route identity even when assertions are c
   const execution = buildVisualScenarioExecutions(
     getVisualScenarioModules(visualScenarioModules),
   ).find(
-    (item) =>
-      item.sourceScenarioId === "cards-interface" && item.coverage[0]?.state === "normal",
+    (item) => item.sourceScenarioId === "cards-interface" && item.coverage[0]?.state === "normal",
   );
   assert.ok(execution);
   const validation = validateSemanticProof(execution, {

@@ -1,5 +1,4 @@
-const SEMANTIC_INTERACTION_MODULE =
-  "scripts/statement-visual/issue-606-semantic-interactions.mjs";
+const SEMANTIC_INTERACTION_MODULE = "scripts/statement-visual/issue-606-semantic-interactions.mjs";
 
 const MULTI_COVERAGE_EXECUTION_MODULES = new Map([
   [
@@ -21,10 +20,7 @@ const MULTI_COVERAGE_EXECUTION_MODULES = new Map([
   ],
   [
     "cards-interface",
-    [
-      SEMANTIC_INTERACTION_MODULE,
-      "scripts/statement-visual/issue-606-cards-execution.mjs",
-    ],
+    [SEMANTIC_INTERACTION_MODULE, "scripts/statement-visual/issue-606-cards-execution.mjs"],
   ],
 ]);
 
@@ -37,10 +33,7 @@ const RECORD_ENRICHMENTS = new Map([
       legacyProcessorIds: ["statement-list-sorting", "statement-insight-context"],
     },
   ],
-  [
-    "core-pages:1",
-    { components: ["PageContainer", "PageHeader"] },
-  ],
+  ["core-pages:1", { components: ["PageContainer", "PageHeader"] }],
   [
     "reports-category-evolution:0",
     {
@@ -85,10 +78,7 @@ const SCENARIO_ENRICHMENTS = new Map([
     "account-remuneration",
     { legacyProcessorIds: ["statement-list-sorting", "account-remuneration-disclosure"] },
   ],
-  [
-    "account-remuneration-mobile",
-    { legacyProcessorIds: ["account-remuneration-disclosure"] },
-  ],
+  ["account-remuneration-mobile", { legacyProcessorIds: ["account-remuneration-disclosure"] }],
   ["financial-insights", { legacyProcessorIds: ["statement-insight-context"] }],
   [
     "inbox-interface-refinement",
@@ -193,8 +183,7 @@ export function buildExecutionEnvironment(execution, baseEnvironment = process.e
 }
 
 export function buildExecutionResult(execution, outcome, message) {
-  const failed =
-    Boolean(outcome.error) || outcome.code !== 0 || outcome.semanticOk === false;
+  const failed = Boolean(outcome.error) || outcome.code !== 0 || outcome.semanticOk === false;
   return {
     ...executionIdentity(execution),
     result: failed ? "failed" : "passed",
