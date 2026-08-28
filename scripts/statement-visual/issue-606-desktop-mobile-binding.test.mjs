@@ -87,19 +87,16 @@ test(
   },
 );
 
-test(
-  "component fixtures remain outside real-flow desktop-mobile behavior binding",
-  () => {
-    const assertions = behaviorClaimAssertionsForRecord({
-      route: "component://foundation-states",
-      audience: "authenticated",
-      state: "alternate",
-      layout: "desktop-mobile",
-      interaction: "keyboard-focus-state-render",
-      dataProfile: "all-foundation-states",
-      components: [],
-      legacyProcessorIds: [],
-    });
-    assert.deepEqual(assertions, []);
-  },
-);
+test("component fixtures remain outside real-flow desktop-mobile behavior binding", () => {
+  const assertions = behaviorClaimAssertionsForRecord({
+    route: "component://foundation-states",
+    audience: "authenticated",
+    state: "alternate",
+    layout: "desktop-mobile",
+    interaction: "keyboard-focus-state-render",
+    dataProfile: "all-foundation-states",
+    components: [],
+    legacyProcessorIds: [],
+  });
+  assert.deepEqual(assertions, []);
+});
