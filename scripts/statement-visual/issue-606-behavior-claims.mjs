@@ -87,14 +87,22 @@ async function collectCorePagesEvidence() {
   assertNoFailures(report, fileName);
   const widths = new Set((report.pages ?? []).map((page) => page.width));
   assert.ok(widths.has(390), `${fileName} has no mobile execution.`);
-  assert.ok([...widths].some((width) => width >= 1024), `${fileName} has no desktop execution.`);
+  assert.ok(
+    [...widths].some((width) => width >= 1024),
+    `${fileName} has no desktop execution.`,
+  );
   assert.ok(
     (report.pages ?? []).every((page) => page.measurements?.globalOverflow === false),
     `${fileName} contains a viewport with global overflow.`,
   );
+  const assertions = ["behavior:layout:desktop", "behavior:layout:mobile"];
+  if (requestedRoute === "/dashboard") {
+    assertions.unshift("behavior:component:PageHeader");
+    assertions.unshift("behavior:component:PageContainer");
+  }
   return {
     files: [fileName],
-    assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],
+    assertions,
     observations: { widths: [...widths].sort((left, right) => left - right) },
   };
 }
@@ -361,7 +369,10 @@ async function collectFinancialAssistantEvidence() {
   assertNoFailures(report, fileName);
   const widths = new Set((report.captures ?? []).map((capture) => capture.viewport?.width));
   assert.ok(widths.has(390), `${fileName} has no mobile capture.`);
-  assert.ok([...widths].some((width) => width >= 1024), `${fileName} has no desktop capture.`);
+  assert.ok(
+    [...widths].some((width) => width >= 1024),
+    `${fileName} has no desktop capture.`,
+  );
   return {
     files: [fileName],
     assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],
@@ -377,7 +388,10 @@ async function collectBudgetsEvidence() {
     (report.scenarios ?? []).map((scenario) => scenario.measurements?.viewportWidth),
   );
   assert.ok(widths.has(390), `${fileName} has no mobile scenario.`);
-  assert.ok([...widths].some((width) => width >= 1024), `${fileName} has no desktop scenario.`);
+  assert.ok(
+    [...widths].some((width) => width >= 1024),
+    `${fileName} has no desktop scenario.`,
+  );
   return {
     files: [fileName],
     assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],

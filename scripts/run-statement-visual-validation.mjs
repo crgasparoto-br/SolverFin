@@ -73,12 +73,11 @@ async function runScenario(scenario) {
   const primaryProofPath = join(semanticProofDir, `${slug(scenario.id)}.json`);
   const behaviorProofPath = join(semanticProofDir, `${slug(scenario.id)}-behavior.json`);
 
-  const primaryOutcome = await runChild(scenario.module, {
-    ...buildExecutionEnvironment(scenario),
-    ...(primaryAssertions.length > 0
-      ? { STATEMENT_VISUAL_PROOF_FILE: primaryProofPath }
-      : {}),
-  });
+  const primaryEnvironment = buildExecutionEnvironment(scenario);
+  if (primaryAssertions.length > 0) {
+    primaryEnvironment.STATEMENT_VISUAL_PROOF_FILE = primaryProofPath;
+  }
+  const primaryOutcome = await runChild(scenario.module, primaryEnvironment);
 
   const proofParts = [];
   if (!primaryOutcome.error && primaryOutcome.code === 0 && primaryAssertions.length > 0) {
@@ -279,8 +278,8 @@ async function finalize() {
       .map(
         (failure) =>
           `[${failure.scenarioId}] sourceScenario=${failure.sourceScenarioId} ` +
-            `route=${failure.route} state=${failure.state} layout=${failure.layout} ` +
-            `interaction=${failure.interaction} :: ${failure.message}`,
+          `route=${failure.route} state=${failure.state} layout=${failure.layout} ` +
+          `interaction=${failure.interaction} :: ${failure.message}`,
       )
       .join("\n");
     await writeFile(join(outputDir, "fatal-error.log"), `${fatal}\n`);
@@ -302,14 +301,19 @@ function renderMarkdown(index) {
         `${scenario.semanticProof.status} | ${scenario.result} |`,
     )
     .join("\n");
-  return `# Visual gate evidence\n\n- Commit: \`${index.commit}\`\n- Artifact: ` +
-    `\`${index.artifactName}\`\n- Registered modules: ${index.contract.modules}\n` +
-    `- Execution units: ${index.contract.executionUnits}\n` +
-    `- Coverage fingerprints: ${index.contract.coverageFingerprints}\n` +
-    `- Failures: ${index.failures.length}\n\n` +
-    `| Scenario | Source scenario | Route | State | Layout | Interaction | Semantic proof | ` +
-    `Result |\n` +
-    `| --- | --- | --- | --- | --- | --- | --- | --- |\n${rows}\n`;
+  return `# Visual gate evidence
+
+- Commit: \`${index.commit}\`
+- Artifact: \`${index.artifactName}\`
+- Registered modules: ${index.contract.modules}
+- Execution units: ${index.contract.executionUnits}
+- Coverage fingerprints: ${index.contract.coverageFingerprints}
+- Failures: ${index.failures.length}
+
+| Scenario | Source scenario | Route | State | Layout | Interaction | Semantic proof | Result |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+${rows}
+`;
 }
 
 function slug(value) {
