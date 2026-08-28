@@ -1,18 +1,1 @@
-{
-  "schema_version": 1,
-  "candidate_head_sha": "3232228884ce20971e815ce30018333fbc26e6f4",
-  "source_rejection_id": "audit-rejection:f2f8b40d-afd5-4df8-984c-57028e525c69",
-  "resolution_policy": "all-actionable-items",
-  "all_actionable_items_closed": true,
-  "remediation_mode": "systemic-remediation",
-  "findings": [
-    {
-      "id": "A-001",
-      "status": "closed",
-      "resolution": "Universal real-flow desktop-mobile behavior assertions plus literal /orcamentos and two sibling mutation controls; the canonical test gate now includes all statement-visual test modules."
-    }
-  ],
-  "evidence": [
-    ".audit/entregar-issue/evidence/exact-head-remediation.txt"
-  ]
-}
+{"schema_version":1,"rejection_id":"audit-rejection:fb231d6e-9d97-4f58-95b2-96bc73a54a15","material_head_sha":"f617c0f4e91a3a93ea8aa2834669f50516c6e4a2","remediation_mode":"targeted-remediation","findings":[{"finding_id":"A-001","status":"remediated","requirement":"canonical final-candidate formatter gate","changed_paths":["scripts/statement-visual/issue-606-desktop-mobile-binding.test.mjs"],"evidence":".audit/entregar-issue/evidence/current-remediation.txt"}],"remote_snapshot":{"material_head_sha":"f617c0f4e91a3a93ea8aa2834669f50516c6e4a2","status":"pending-no-run","claim_remote_green":false}}

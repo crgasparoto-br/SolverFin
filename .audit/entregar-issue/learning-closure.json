@@ -1,16 +1,1 @@
-{
-  "schema_version": 1,
-  "classification": "implementation-only",
-  "source_event": {
-    "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:f2f8b40d-afd5-4df8-984c-57028e525c69",
-    "finding_ids": [
-      "A-001"
-    ]
-  },
-  "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "The controller already requires discriminant negative controls for metadata-only evidence; the escape was a repository-specific propagation gap and is closed in SolverFin by universal real-flow layout binding, sibling mutation tests, cumulative inherited controls and the escape ledger."
-  },
-  "skill_changes": []
-}
+{"schema_version":1,"source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:fb231d6e-9d97-4f58-95b2-96bc73a54a15","finding_ids":["A-001"]},"classification":"implementation-only","generalized_learning":{"promotion_status":"not-required","reason":"The existing canonical formatter gate correctly detected the defect. The remediation is implementation-local and does not expose a missing reusable prevention or detection rule."}}
