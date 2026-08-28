@@ -1,13 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 import { pageMeasurementExpression } from "./measurements.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
@@ -134,11 +128,7 @@ async function validateStatement(cdp) {
   await navigate(cdp, `${baseUrl}${route}`);
   await sleep(300);
   const measurements = await evaluate(cdp, pageMeasurementExpression());
-  assert.equal(
-    measurements.globalOverflow,
-    false,
-    "Statement has global horizontal overflow.",
-  );
+  assert.equal(measurements.globalOverflow, false, "Statement has global horizontal overflow.");
   assert.equal(
     measurements.table.hasLocalHorizontalScroll,
     true,
