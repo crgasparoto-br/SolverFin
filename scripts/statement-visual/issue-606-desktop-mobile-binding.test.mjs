@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { behaviorClaimAssertionsForRecord } from "./issue-606-remediation-contract.mjs";
+import {
+  behaviorClaimAssertionsForRecord,
+  supplementalVisualScenarioModules,
+} from "./issue-606-remediation-contract.mjs";
 import { validateSemanticProof } from "./semantic-proof.mjs";
 
 const cases = [
@@ -44,10 +47,7 @@ for (const scenario of cases) {
       };
       const requiredAssertions = behaviorClaimAssertionsForRecord(record);
 
-      assert.deepEqual(requiredAssertions, [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile",
-      ]);
+      assert.deepEqual(requiredAssertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
 
       const execution = {
         id: scenario.id,
@@ -71,6 +71,15 @@ for (const scenario of cases) {
     },
   );
 }
+
+test("supplemental empty-state records bind desktop-mobile metadata to observed assertions", () => {
+  for (const scenario of supplementalVisualScenarioModules) {
+    assert.deepEqual(scenario.coverage[0].requiredAssertions, [
+      "behavior:layout:desktop",
+      "behavior:layout:mobile",
+    ]);
+  }
+});
 
 test("component fixtures remain outside real-flow desktop-mobile behavior binding", () => {
   const assertions = behaviorClaimAssertionsForRecord({

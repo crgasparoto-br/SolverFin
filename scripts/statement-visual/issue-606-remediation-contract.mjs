@@ -270,7 +270,7 @@ function executionFor(source, record, coverageIndex, module, id) {
 }
 
 function pilotEmptyCoverage(route, archetype) {
-  return {
+  const record = {
     route,
     archetype,
     audience: "authenticated",
@@ -284,6 +284,8 @@ function pilotEmptyCoverage(route, archetype) {
     requiredAssertions: [],
     legacyProcessorIds: [],
   };
+  record.requiredAssertions = behaviorClaimAssertionsForRecord(record);
+  return record;
 }
 
 function isRealApplicationFlowRoute(route) {
