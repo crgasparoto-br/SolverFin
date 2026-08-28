@@ -14,14 +14,21 @@ import {
   getVisualScenarioModules,
   isBehaviorAssertion,
 } from "./statement-visual/issue-606-remediation-contract.mjs";
-import { readSemanticProof, validateSemanticProof } from "./statement-visual/semantic-proof.mjs";
+import {
+  readSemanticProof,
+  validateSemanticProof,
+} from "./statement-visual/semantic-proof.mjs";
 import { validateRepositoryCoverageContract } from "./validate-statement-visual-coverage.mjs";
 
-const BEHAVIOR_CLAIM_MODULE = "scripts/statement-visual/issue-606-behavior-claims.mjs";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const BEHAVIOR_CLAIM_MODULE =
+  "scripts/statement-visual/issue-606-behavior-claims.mjs";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const semanticProofDir = join(outputDir, "semantic-proofs");
 const candidateCommit =
-  process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
+  process.env.STATEMENT_VISUAL_CANDIDATE_SHA ??
+  process.env.GITHUB_SHA ??
+  "local";
 
 await mkdir(outputDir, { recursive: true });
 await mkdir(semanticProofDir, { recursive: true });
@@ -54,7 +61,11 @@ if (failures.length === 0) {
   for (const scenario of executionScenarios) {
     const startedAt = new Date().toISOString();
     const result = await runScenario(scenario);
-    results.push({ ...result, startedAt, finishedAt: new Date().toISOString() });
+    results.push({
+      ...result,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+    });
     if (result.result === "failed") failures.push(result);
   }
 
@@ -66,12 +77,16 @@ async function runScenario(scenario) {
   const context = formatExecutionContext(scenario);
   console.log(`[visual-gate] START ${context}`);
 
-  const behaviorAssertions = scenario.requiredAssertions.filter(isBehaviorAssertion);
+  const behaviorAssertions =
+    scenario.requiredAssertions.filter(isBehaviorAssertion);
   const primaryAssertions = scenario.requiredAssertions.filter(
     (assertionName) => !isBehaviorAssertion(assertionName),
   );
   const primaryProofPath = join(semanticProofDir, `${slug(scenario.id)}.json`);
-  const behaviorProofPath = join(semanticProofDir, `${slug(scenario.id)}-behavior.json`);
+  const behaviorProofPath = join(
+    semanticProofDir,
+    `${slug(scenario.id)}-behavior.json`,
+  );
 
   const primaryEnvironment = buildExecutionEnvironment(scenario);
   if (primaryAssertions.length > 0) {
@@ -80,7 +95,11 @@ async function runScenario(scenario) {
   const primaryOutcome = await runChild(scenario.module, primaryEnvironment);
 
   const proofParts = [];
-  if (!primaryOutcome.error && primaryOutcome.code === 0 && primaryAssertions.length > 0) {
+  if (
+    !primaryOutcome.error &&
+    primaryOutcome.code === 0 &&
+    primaryAssertions.length > 0
+  ) {
     proofParts.push(
       await readAndValidateProof(
         { ...scenario, requiredAssertions: primaryAssertions },
@@ -89,11 +108,17 @@ async function runScenario(scenario) {
       ),
     );
   } else if (primaryAssertions.length > 0) {
-    proofParts.push(notObservedProof(primaryAssertions, primaryProofPath, "primary"));
+    proofParts.push(
+      notObservedProof(primaryAssertions, primaryProofPath, "primary"),
+    );
   }
 
   let behaviorOutcome = { code: 0, signal: null, error: null };
-  if (!primaryOutcome.error && primaryOutcome.code === 0 && behaviorAssertions.length > 0) {
+  if (
+    !primaryOutcome.error &&
+    primaryOutcome.code === 0 &&
+    behaviorAssertions.length > 0
+  ) {
     behaviorOutcome = await runChild(BEHAVIOR_CLAIM_MODULE, {
       ...buildExecutionEnvironment(scenario),
       STATEMENT_VISUAL_REQUIRED_ASSERTIONS: JSON.stringify(behaviorAssertions),
@@ -109,18 +134,33 @@ async function runScenario(scenario) {
         ),
       );
     } else {
-      proofParts.push(notObservedProof(behaviorAssertions, behaviorProofPath, "behavior"));
+      proofParts.push(
+        notObservedProof(behaviorAssertions, behaviorProofPath, "behavior"),
+      );
     }
   } else if (behaviorAssertions.length > 0) {
-    proofParts.push(notObservedProof(behaviorAssertions, behaviorProofPath, "behavior"));
+    proofParts.push(
+      notObservedProof(behaviorAssertions, behaviorProofPath, "behavior"),
+    );
   }
 
-  const semanticProof = combineProofParts(scenario.requiredAssertions, proofParts);
-  const semanticOk = semanticProof.status === "not-required" || semanticProof.status === "passed";
+  const semanticProof = combineProofParts(
+    scenario.requiredAssertions,
+    proofParts,
+  );
+  const semanticOk =
+    semanticProof.status === "not-required" ||
+    semanticProof.status === "passed";
   const outcome = chooseOutcome(primaryOutcome, behaviorOutcome);
   const failed = Boolean(outcome.error) || outcome.code !== 0 || !semanticOk;
-  const message = failed ? buildFailureMessage(outcome, semanticProof) : undefined;
-  const result = buildExecutionResult(scenario, { ...outcome, semanticOk }, message);
+  const message = failed
+    ? buildFailureMessage(outcome, semanticProof)
+    : undefined;
+  const result = buildExecutionResult(
+    scenario,
+    { ...outcome, semanticOk },
+    message,
+  );
   result.coverage = scenario.coverage.map(toEvidenceCoverage);
   result.semanticProof = semanticProof;
 
@@ -136,8 +176,12 @@ async function runChild(modulePath, env) {
     stdio: "inherit",
   });
   return new Promise((resolve) => {
-    child.once("error", (error) => resolve({ code: null, signal: null, error }));
-    child.once("exit", (code, signal) => resolve({ code, signal, error: null }));
+    child.once("error", (error) =>
+      resolve({ code: null, signal: null, error }),
+    );
+    child.once("exit", (code, signal) =>
+      resolve({ code, signal, error: null }),
+    );
   });
 }
 
@@ -157,7 +201,9 @@ async function readAndValidateProof(execution, proofPath, kind) {
       status: "failed",
       requiredAssertions: execution.requiredAssertions,
       observedAssertions: [],
-      errors: [`Could not read ${kind} semantic proof: ${serializeError(error)}`],
+      errors: [
+        `Could not read ${kind} semantic proof: ${serializeError(error)}`,
+      ],
       proofPath,
     };
   }
@@ -208,7 +254,8 @@ function combineProofParts(requiredAssertions, proofParts) {
 
 function chooseOutcome(primaryOutcome, behaviorOutcome) {
   if (primaryOutcome.error || primaryOutcome.code !== 0) return primaryOutcome;
-  if (behaviorOutcome.error || behaviorOutcome.code !== 0) return behaviorOutcome;
+  if (behaviorOutcome.error || behaviorOutcome.code !== 0)
+    return behaviorOutcome;
   return primaryOutcome;
 }
 
@@ -288,7 +335,9 @@ async function finalize() {
         `See ${outputDir}/visual-gate-index.json.`,
     );
   } else {
-    console.log(`[visual-gate] ${results.length} registered coverage executions passed.`);
+    console.log(
+      `[visual-gate] ${results.length} registered coverage executions passed.`,
+    );
   }
 }
 
@@ -321,5 +370,7 @@ function slug(value) {
 }
 
 function serializeError(error) {
-  return error instanceof Error ? (error.stack ?? error.message) : String(error);
+  return error instanceof Error
+    ? (error.stack ?? error.message)
+    : String(error);
 }
