@@ -47,7 +47,10 @@ for (const scenario of cases) {
       };
       const requiredAssertions = behaviorClaimAssertionsForRecord(record);
 
-      assert.deepEqual(requiredAssertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
+      assert.deepEqual(requiredAssertions, [
+        "behavior:layout:desktop",
+        "behavior:layout:mobile",
+      ]);
 
       const execution = {
         id: scenario.id,
@@ -65,7 +68,9 @@ for (const scenario of cases) {
       });
 
       assert.ok(
-        mutation.errors.some((error) => error.includes("behavior:layout:mobile")),
+        mutation.errors.some((error) =>
+          error.includes("behavior:layout:mobile"),
+        ),
         "metadata-only desktop-mobile coverage must fail when mobile behavior is unobserved",
       );
     },
