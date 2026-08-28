@@ -24,10 +24,6 @@ export const criticalStructuralComponents = [
   "Toast",
 ];
 
-// Subconjunto estrutural que, por contrato da #606, precisa de pelo menos um
-// fluxo real da aplicacao. Os demais componentes continuam obrigatorios na
-// fundacao em navegador real, mas podem ser provados por fixture isolada de
-// estado/componente enquanto ainda nao forem adotados por uma rota-piloto.
 export const criticalStructuralRealFlowComponents = [
   "PageContainer",
   "PageHeader",
@@ -41,14 +37,11 @@ export const criticalStructuralRealFlowComponents = [
   "Tabs",
 ];
 
-// Mapeamento canonico componente -> cenarios que exercitam o contrato
-// estrutural em uma rota/shell real. Fixtures component:// nunca podem quitar
-// este mapeamento, mesmo que usem Chrome real e renderizem a primitive.
 export const criticalStructuralRealFlowCoverage = {
   PageContainer: ["core-pages"],
   PageHeader: ["core-pages"],
   FilterBar: ["reports-category-evolution"],
-  SummaryGrid: ["reports-category-evolution"],
+  SummaryGrid: ["cards-interface"],
   DataTable: ["core-pages", "reports-category-evolution"],
   DetailLayout: ["accounts-cards-interface"],
   FormLayout: ["settings-interface"],
@@ -95,7 +88,7 @@ export const legacyProcessorRetirementCoverage = {
   "statement-list-sorting": ["core-pages", "account-remuneration"],
   "account-remuneration-disclosure": ["account-remuneration", "account-remuneration-mobile"],
   "statement-insight-context": ["core-pages", "financial-insights"],
-  "inbox-structured-payload": ["inbox-interface-refinement", "bank-message-ai-inbox"],
+  "inbox-structured-payload": ["bank-message-ai-inbox"],
   "inbox-list-layout": ["inbox-interface-refinement", "inbox-interface-accessibility"],
 };
 

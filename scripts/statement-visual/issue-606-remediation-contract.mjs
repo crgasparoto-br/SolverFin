@@ -1,5 +1,7 @@
 const SEMANTIC_INTERACTION_MODULE = "scripts/statement-visual/issue-606-semantic-interactions.mjs";
 
+export const BEHAVIOR_ASSERTION_PREFIX = "behavior:";
+
 const MULTI_COVERAGE_EXECUTION_MODULES = new Map([
   [
     "core-pages",
@@ -45,6 +47,7 @@ const RECORD_ENRICHMENTS = new Map([
     "cards-interface:0",
     {
       requiredAssertions: ["filters", "modal"],
+      components: ["SummaryGrid"],
       legacyProcessorIds: [
         "card-list-sorting",
         "card-instrument-subtotals",
@@ -80,10 +83,7 @@ const SCENARIO_ENRICHMENTS = new Map([
   ],
   ["account-remuneration-mobile", { legacyProcessorIds: ["account-remuneration-disclosure"] }],
   ["financial-insights", { legacyProcessorIds: ["statement-insight-context"] }],
-  [
-    "inbox-interface-refinement",
-    { legacyProcessorIds: ["inbox-structured-payload", "inbox-list-layout"] },
-  ],
+  ["inbox-interface-refinement", { legacyProcessorIds: ["inbox-list-layout"] }],
   ["bank-message-ai-inbox", { legacyProcessorIds: ["inbox-structured-payload"] }],
   ["inbox-interface-accessibility", { legacyProcessorIds: ["inbox-list-layout"] }],
 ]);
@@ -191,6 +191,36 @@ export function buildExecutionResult(execution, outcome, message) {
   };
 }
 
+export function isBehaviorAssertion(value) {
+  return typeof value === "string" && value.startsWith(BEHAVIOR_ASSERTION_PREFIX);
+}
+
+export function behaviorClaimAssertionsForRecord(record) {
+  const assertions = [];
+  const realFlow = isRealApplicationFlowRoute(record.route);
+
+  if (realFlow) {
+    for (const component of record.components ?? []) {
+      assertions.push(`${BEHAVIOR_ASSERTION_PREFIX}component:${component}`);
+    }
+  }
+
+  for (const legacyId of record.legacyProcessorIds ?? []) {
+    assertions.push(`${BEHAVIOR_ASSERTION_PREFIX}legacy:${legacyId}`);
+  }
+
+  if (
+    realFlow &&
+    record.layout === "desktop-mobile" &&
+    ((record.components?.length ?? 0) > 0 || (record.legacyProcessorIds?.length ?? 0) > 0)
+  ) {
+    assertions.push(`${BEHAVIOR_ASSERTION_PREFIX}layout:desktop`);
+    assertions.push(`${BEHAVIOR_ASSERTION_PREFIX}layout:mobile`);
+  }
+
+  return unique(assertions);
+}
+
 function enrichScenario(scenario) {
   const scenarioEnrichment = SCENARIO_ENRICHMENTS.get(scenario.id) ?? {};
   return {
@@ -224,6 +254,10 @@ function mergeCoverage(record, ...enrichments) {
   merged.components ??= [];
   merged.legacyProcessorIds ??= [];
   merged.requiredAssertions ??= [];
+  merged.requiredAssertions = unique([
+    ...merged.requiredAssertions,
+    ...behaviorClaimAssertionsForRecord(merged),
+  ]);
   return merged;
 }
 
@@ -254,6 +288,10 @@ function pilotEmptyCoverage(route, archetype) {
     requiredAssertions: [],
     legacyProcessorIds: [],
   };
+}
+
+function isRealApplicationFlowRoute(route) {
+  return typeof route === "string" && (route.startsWith("/") || route.startsWith("shell://"));
 }
 
 function unique(values) {

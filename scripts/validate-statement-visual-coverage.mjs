@@ -13,9 +13,11 @@ import {
   visualScenarioModules,
 } from "./statement-visual/coverage-contract.mjs";
 import {
+  behaviorClaimAssertionsForRecord,
   buildVisualScenarioExecutions,
   getVisualScenarioModules,
 } from "./statement-visual/issue-606-remediation-contract.mjs";
+import { validateSemanticProof } from "./statement-visual/semantic-proof.mjs";
 
 const ALTERNATIVE_STATES = new Set([
   "alternate",
@@ -91,8 +93,7 @@ export function validateCoverageContract({
       errors.push(`Execution ${execution.id} is not bound to exactly one coverage record.`);
     }
     const interaction = execution.coverage?.[0]?.interaction;
-    const usesFocusedOverride =
-      execution.sourceModule && execution.sourceModule !== execution.module;
+    const usesFocusedOverride = execution.sourceModule && execution.sourceModule !== execution.module;
     if (
       usesFocusedOverride &&
       SEMANTIC_BINDING_INTERACTIONS.has(interaction) &&
@@ -127,6 +128,16 @@ export function validateCoverageContract({
       }
     }
 
+    const expectedBehaviorAssertions = behaviorClaimAssertionsForRecord(record);
+    const missingBehaviorAssertions = expectedBehaviorAssertions.filter(
+      (assertionName) => !record.requiredAssertions?.includes(assertionName),
+    );
+    if (missingBehaviorAssertions.length > 0) {
+      errors.push(
+        `Scenario ${record.scenarioId} declares behavior claims without required observed assertions: ${missingBehaviorAssertions.join(", ")}.`,
+      );
+    }
+
     const previous = fingerprints.get(record.fingerprint);
     if (previous) {
       errors.push(
@@ -155,12 +166,11 @@ export function validateCoverageContract({
 
     const mappedScenarioIds = criticalRealFlowCoverage[component];
     if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) {
-      errors.push(
-        `Critical structural component lacks real application-flow mapping: ${component}.`,
-      );
+      errors.push(`Critical structural component lacks real application-flow mapping: ${component}.`);
       continue;
     }
 
+    const requiredAssertion = `behavior:component:${component}`;
     const coveredByRealFlow = mappedScenarioIds.some((scenarioId) => {
       if (!scenarioIds.has(scenarioId)) return false;
       return records.some(
@@ -168,13 +178,14 @@ export function validateCoverageContract({
           record.scenarioId === scenarioId &&
           record.realBrowser === true &&
           isRealApplicationFlowRoute(record.route) &&
-          record.components?.includes(component),
+          record.components?.includes(component) &&
+          record.requiredAssertions?.includes(requiredAssertion),
       );
     });
 
     if (!coveredByRealFlow) {
       errors.push(
-        `Critical structural component lacks explicit real application-flow evidence: ${component}. ` +
+        `Critical structural component lacks observed real application-flow evidence: ${component}. ` +
           `Mapped scenarios: ${mappedScenarioIds.join(", ")}.`,
       );
     }
@@ -182,9 +193,7 @@ export function validateCoverageContract({
 
   for (const [component, mappedScenarioIds] of Object.entries(criticalRealFlowCoverage)) {
     if (!criticalRealFlowComponents.includes(component)) {
-      errors.push(
-        `Real application-flow mapping references a non-structural component: ${component}.`,
-      );
+      errors.push(`Real application-flow mapping references a non-structural component: ${component}.`);
     }
     if (!Array.isArray(mappedScenarioIds) || mappedScenarioIds.length === 0) continue;
     for (const scenarioId of mappedScenarioIds) {
@@ -237,12 +246,16 @@ export function validateCoverageContract({
         errors.push(`Legacy processor ${id} references unknown visual scenario ${scenarioId}.`);
         continue;
       }
-      const hasResponsibilityClaim = records.some(
-        (record) => record.scenarioId === scenarioId && record.legacyProcessorIds?.includes(id),
+      const requiredAssertion = `behavior:legacy:${id}`;
+      const hasObservedResponsibility = records.some(
+        (record) =>
+          record.scenarioId === scenarioId &&
+          record.legacyProcessorIds?.includes(id) &&
+          record.requiredAssertions?.includes(requiredAssertion),
       );
-      if (!hasResponsibilityClaim) {
+      if (!hasObservedResponsibility) {
         errors.push(
-          `Legacy processor ${id} mapped scenario ${scenarioId} lacks an explicit equivalent-responsibility claim.`,
+          `Legacy processor ${id} mapped scenario ${scenarioId} lacks an observed equivalent-responsibility assertion.`,
         );
       }
     }
@@ -263,6 +276,7 @@ export async function validateRepositoryCoverageContract({ root = process.cwd() 
   const modulePaths = new Set([
     ...scenarios.map((scenario) => scenario.module),
     ...result.executions.map((execution) => execution.module),
+    "scripts/statement-visual/issue-606-behavior-claims.mjs",
   ]);
   for (const modulePath of modulePaths) {
     try {
@@ -280,11 +294,111 @@ export async function validateRepositoryCoverageContract({ root = process.cwd() 
   return result;
 }
 
+export function runBehaviorClaimMutationControls() {
+  const canonical = getVisualScenarioModules(visualScenarioModules);
+
+  const componentMutation = structuredClone(canonical);
+  const corePages = componentMutation.find((scenario) => scenario.id === "core-pages");
+  const coreRecord = corePages?.coverage?.[0];
+  if (!coreRecord) throw new Error("Behavior mutation control could not find core-pages record 0.");
+  coreRecord.requiredAssertions = coreRecord.requiredAssertions.filter(
+    (assertionName) => assertionName !== "behavior:component:PageContainer",
+  );
+  const componentResult = validateCoverageContract({
+    scenarios: componentMutation,
+    pilots: [],
+    criticalComponents: ["PageContainer"],
+    criticalRealFlowComponents: ["PageContainer"],
+    criticalRealFlowCoverage: { PageContainer: ["core-pages"] },
+    legacyBaselineIds: [],
+    legacyCoverage: {},
+    currentLegacyIds: [],
+  });
+  requireMutationFailure(
+    componentResult.errors,
+    "behavior:component:PageContainer",
+    "Component metadata survived without observed behavior assertion.",
+  );
+
+  const legacyMutation = structuredClone(canonical);
+  const cards = legacyMutation.find((scenario) => scenario.id === "cards-interface");
+  const cardsRecord = cards?.coverage?.[0];
+  if (!cardsRecord) throw new Error("Behavior mutation control could not find cards-interface record 0.");
+  cardsRecord.requiredAssertions = cardsRecord.requiredAssertions.filter(
+    (assertionName) => assertionName !== "behavior:legacy:card-list-sorting",
+  );
+  const legacyResult = validateCoverageContract({
+    scenarios: legacyMutation,
+    pilots: [],
+    criticalComponents: [],
+    criticalRealFlowComponents: [],
+    criticalRealFlowCoverage: {},
+    legacyBaselineIds: ["card-list-sorting"],
+    legacyCoverage: { "card-list-sorting": ["cards-interface"] },
+    currentLegacyIds: [],
+  });
+  requireMutationFailure(
+    legacyResult.errors,
+    "behavior:legacy:card-list-sorting",
+    "Legacy responsibility metadata survived without observed behavior assertion.",
+  );
+
+  const layoutMutation = structuredClone(canonical);
+  const layoutCore = layoutMutation.find((scenario) => scenario.id === "core-pages");
+  const layoutRecord = layoutCore?.coverage?.[0];
+  if (!layoutRecord) throw new Error("Behavior mutation control could not find layout record.");
+  layoutRecord.requiredAssertions = layoutRecord.requiredAssertions.filter(
+    (assertionName) => assertionName !== "behavior:layout:mobile",
+  );
+  const layoutResult = validateCoverageContract({
+    scenarios: layoutMutation,
+    pilots: [],
+    criticalComponents: [],
+    criticalRealFlowComponents: [],
+    criticalRealFlowCoverage: {},
+    legacyBaselineIds: [],
+    legacyCoverage: {},
+    currentLegacyIds: [],
+  });
+  requireMutationFailure(
+    layoutResult.errors,
+    "behavior:layout:mobile",
+    "desktop-mobile metadata survived without mobile behavior assertion.",
+  );
+
+  const proofExecution = {
+    id: "behavior-proof-mutation",
+    sourceScenarioId: "behavior-proof-mutation",
+    requiredAssertions: ["behavior:legacy:card-list-sorting"],
+    coverage: [{ route: "/cartoes", state: "normal" }],
+  };
+  const proofValidation = validateSemanticProof(proofExecution, {
+    schemaVersion: 1,
+    scenarioId: proofExecution.id,
+    sourceScenarioId: proofExecution.sourceScenarioId,
+    route: "/cartoes",
+    state: "normal",
+    assertions: [],
+  });
+  requireMutationFailure(
+    proofValidation.errors,
+    "behavior:legacy:card-list-sorting",
+    "Behavior metadata survived while the observed proof omitted the capability.",
+  );
+}
+
+function requireMutationFailure(errors, expectedFragment, message) {
+  if (!errors.some((error) => error.includes(expectedFragment))) {
+    throw new Error(`${message} Expected an error containing ${expectedFragment}.`);
+  }
+}
+
 function serializeError(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
 async function main() {
+  runBehaviorClaimMutationControls();
   const result = await validateRepositoryCoverageContract();
   console.log(
     `Visual coverage contract passed: ${result.scenarios.length} modules, ${result.executions.length} one-record executions, ${result.records.length} coverage fingerprints, ${pilotRoutes.length} pilot routes.`,

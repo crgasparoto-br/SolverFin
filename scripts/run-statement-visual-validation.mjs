@@ -12,10 +12,12 @@ import {
   buildVisualScenarioExecutions,
   formatExecutionContext,
   getVisualScenarioModules,
+  isBehaviorAssertion,
 } from "./statement-visual/issue-606-remediation-contract.mjs";
 import { readSemanticProof, validateSemanticProof } from "./statement-visual/semantic-proof.mjs";
 import { validateRepositoryCoverageContract } from "./validate-statement-visual-coverage.mjs";
 
+const BEHAVIOR_CLAIM_MODULE = "scripts/statement-visual/issue-606-behavior-claims.mjs";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const semanticProofDir = join(outputDir, "semantic-proofs");
 const candidateCommit =
@@ -65,56 +67,58 @@ if (contractReady) {
 async function runScenario(scenario) {
   const context = formatExecutionContext(scenario);
   console.log(`[visual-gate] START ${context}`);
-  const proofPath = join(semanticProofDir, `${slug(scenario.id)}.json`);
-  const child = spawn(process.execPath, [scenario.module], {
-    cwd: process.cwd(),
-    env: {
-      ...buildExecutionEnvironment(scenario),
-      ...(scenario.requiredAssertions.length > 0 ? { STATEMENT_VISUAL_PROOF_FILE: proofPath } : {}),
-    },
-    stdio: "inherit",
+
+  const behaviorAssertions = scenario.requiredAssertions.filter(isBehaviorAssertion);
+  const primaryAssertions = scenario.requiredAssertions.filter((value) => !isBehaviorAssertion(value));
+  const primaryProofPath = join(semanticProofDir, `${slug(scenario.id)}.json`);
+  const behaviorProofPath = join(semanticProofDir, `${slug(scenario.id)}-behavior.json`);
+
+  const primaryOutcome = await runChild(scenario.module, {
+    ...buildExecutionEnvironment(scenario),
+    ...(primaryAssertions.length > 0 ? { STATEMENT_VISUAL_PROOF_FILE: primaryProofPath } : {}),
   });
 
-  const outcome = await new Promise((resolve) => {
-    child.once("error", (error) => resolve({ code: null, signal: null, error }));
-    child.once("exit", (code, signal) => resolve({ code, signal, error: null }));
-  });
-
-  let semanticProof = {
-    status: scenario.requiredAssertions.length > 0 ? "not-observed" : "not-required",
-    requiredAssertions: scenario.requiredAssertions,
-    observedAssertions: [],
-    errors: [],
-  };
-
-  if (!outcome.error && outcome.code === 0 && scenario.requiredAssertions.length > 0) {
-    try {
-      const proof = await readSemanticProof(proofPath);
-      const validation = validateSemanticProof(scenario, proof);
-      semanticProof = {
-        status: validation.errors.length === 0 ? "passed" : "failed",
-        ...validation,
-        proofPath,
-      };
-    } catch (error) {
-      semanticProof = {
-        ...semanticProof,
-        status: "failed",
-        errors: [`Could not read semantic proof: ${serializeError(error)}`],
-        proofPath,
-      };
-    }
+  const proofParts = [];
+  if (!primaryOutcome.error && primaryOutcome.code === 0 && primaryAssertions.length > 0) {
+    proofParts.push(
+      await readAndValidateProof(
+        { ...scenario, requiredAssertions: primaryAssertions },
+        primaryProofPath,
+        "primary",
+      ),
+    );
+  } else if (primaryAssertions.length > 0) {
+    proofParts.push(notObservedProof(primaryAssertions, primaryProofPath, "primary"));
   }
 
+  let behaviorOutcome = { code: 0, signal: null, error: null };
+  if (!primaryOutcome.error && primaryOutcome.code === 0 && behaviorAssertions.length > 0) {
+    behaviorOutcome = await runChild(BEHAVIOR_CLAIM_MODULE, {
+      ...buildExecutionEnvironment(scenario),
+      STATEMENT_VISUAL_REQUIRED_ASSERTIONS: JSON.stringify(behaviorAssertions),
+      STATEMENT_VISUAL_PROOF_FILE: behaviorProofPath,
+    });
+
+    if (!behaviorOutcome.error && behaviorOutcome.code === 0) {
+      proofParts.push(
+        await readAndValidateProof(
+          { ...scenario, requiredAssertions: behaviorAssertions },
+          behaviorProofPath,
+          "behavior",
+        ),
+      );
+    } else {
+      proofParts.push(notObservedProof(behaviorAssertions, behaviorProofPath, "behavior"));
+    }
+  } else if (behaviorAssertions.length > 0) {
+    proofParts.push(notObservedProof(behaviorAssertions, behaviorProofPath, "behavior"));
+  }
+
+  const semanticProof = combineProofParts(scenario.requiredAssertions, proofParts);
   const semanticOk = semanticProof.status === "not-required" || semanticProof.status === "passed";
+  const outcome = chooseOutcome(primaryOutcome, behaviorOutcome);
   const failed = Boolean(outcome.error) || outcome.code !== 0 || !semanticOk;
-  const message = failed
-    ? outcome.error
-      ? serializeError(outcome.error)
-      : outcome.code !== 0
-        ? `exit=${outcome.code ?? "null"}${outcome.signal ? ` signal=${outcome.signal}` : ""}`
-        : semanticProof.errors.join("; ")
-    : undefined;
+  const message = failed ? buildFailureMessage(outcome, semanticProof) : undefined;
   const result = buildExecutionResult(scenario, { ...outcome, semanticOk }, message);
   result.coverage = scenario.coverage.map(toEvidenceCoverage);
   result.semanticProof = semanticProof;
@@ -122,6 +126,93 @@ async function runScenario(scenario) {
   if (failed) console.error(`[visual-gate] FAIL ${context} :: ${message}`);
   else console.log(`[visual-gate] PASS ${context}`);
   return result;
+}
+
+async function runChild(modulePath, env) {
+  const child = spawn(process.execPath, [modulePath], {
+    cwd: process.cwd(),
+    env,
+    stdio: "inherit",
+  });
+  return new Promise((resolve) => {
+    child.once("error", (error) => resolve({ code: null, signal: null, error }));
+    child.once("exit", (code, signal) => resolve({ code, signal, error: null }));
+  });
+}
+
+async function readAndValidateProof(execution, proofPath, kind) {
+  try {
+    const proof = await readSemanticProof(proofPath);
+    const validation = validateSemanticProof(execution, proof);
+    return {
+      kind,
+      status: validation.errors.length === 0 ? "passed" : "failed",
+      ...validation,
+      proofPath,
+    };
+  } catch (error) {
+    return {
+      kind,
+      status: "failed",
+      requiredAssertions: execution.requiredAssertions,
+      observedAssertions: [],
+      errors: [`Could not read ${kind} semantic proof: ${serializeError(error)}`],
+      proofPath,
+    };
+  }
+}
+
+function notObservedProof(requiredAssertions, proofPath, kind) {
+  return {
+    kind,
+    status: "not-observed",
+    requiredAssertions,
+    observedAssertions: [],
+    errors: [],
+    proofPath,
+  };
+}
+
+function combineProofParts(requiredAssertions, proofParts) {
+  if (requiredAssertions.length === 0) {
+    return {
+      status: "not-required",
+      requiredAssertions: [],
+      observedAssertions: [],
+      errors: [],
+      parts: [],
+    };
+  }
+
+  const observedAssertions = [
+    ...new Set(proofParts.flatMap((part) => part.observedAssertions ?? [])),
+  ].sort();
+  const errors = proofParts.flatMap((part) => part.errors ?? []);
+  const missing = requiredAssertions.filter((assertionName) => !observedAssertions.includes(assertionName));
+  if (missing.length > 0) {
+    errors.push(`Combined semantic proof did not observe required assertions: ${missing.join(", ")}.`);
+  }
+  return {
+    status: errors.length === 0 ? "passed" : "failed",
+    requiredAssertions,
+    observedAssertions,
+    errors,
+    parts: proofParts,
+  };
+}
+
+function chooseOutcome(primaryOutcome, behaviorOutcome) {
+  if (primaryOutcome.error || primaryOutcome.code !== 0) return primaryOutcome;
+  if (behaviorOutcome.error || behaviorOutcome.code !== 0) return behaviorOutcome;
+  return primaryOutcome;
+}
+
+function buildFailureMessage(outcome, semanticProof) {
+  if (outcome.error) return serializeError(outcome.error);
+  if (outcome.code !== 0) {
+    return `exit=${outcome.code ?? "null"}${outcome.signal ? ` signal=${outcome.signal}` : ""}`;
+  }
+  return semanticProof.errors.join("; ");
 }
 
 function toEvidenceCoverage(record) {
@@ -145,7 +236,7 @@ function toEvidenceCoverage(record) {
 
 async function finalize() {
   const index = {
-    schemaVersion: 3,
+    schemaVersion: 4,
     generatedAt: new Date().toISOString(),
     commit: candidateCommit,
     artifactName:
