@@ -209,11 +209,7 @@ export function behaviorClaimAssertionsForRecord(record) {
     assertions.push(`${BEHAVIOR_ASSERTION_PREFIX}legacy:${legacyId}`);
   }
 
-  if (
-    realFlow &&
-    record.layout === "desktop-mobile" &&
-    ((record.components?.length ?? 0) > 0 || (record.legacyProcessorIds?.length ?? 0) > 0)
-  ) {
+  if (realFlow && record.layout === "desktop-mobile") {
     assertions.push(`${BEHAVIOR_ASSERTION_PREFIX}layout:desktop`);
     assertions.push(`${BEHAVIOR_ASSERTION_PREFIX}layout:mobile`);
   }
