@@ -5,13 +5,21 @@ export const VISUAL_SEMANTIC_PROOF_VERSION = 1;
 
 export function normalizeAssertions(assertions = []) {
   if (!Array.isArray(assertions)) return [];
-  return [...new Set(assertions.filter((value) => typeof value === "string" && value.length > 0))].sort();
+  return [
+    ...new Set(
+      assertions.filter(
+        (value) => typeof value === "string" && value.length > 0,
+      ),
+    ),
+  ].sort();
 }
 
 export async function writeSemanticProof(assertions, details = {}) {
   const proofPath = process.env.STATEMENT_VISUAL_PROOF_FILE;
   if (!proofPath) {
-    throw new Error("STATEMENT_VISUAL_PROOF_FILE is required for semantic visual proof.");
+    throw new Error(
+      "STATEMENT_VISUAL_PROOF_FILE is required for semantic visual proof.",
+    );
   }
 
   const proof = {
@@ -41,7 +49,9 @@ export function validateSemanticProof(execution, proof) {
   }
 
   if (!proof || proof.schemaVersion !== VISUAL_SEMANTIC_PROOF_VERSION) {
-    errors.push(`Execution ${execution.id} did not emit semantic proof version ${VISUAL_SEMANTIC_PROOF_VERSION}.`);
+    errors.push(
+      `Execution ${execution.id} did not emit semantic proof version ${VISUAL_SEMANTIC_PROOF_VERSION}.`,
+    );
     return { errors, requiredAssertions, observedAssertions: [] };
   }
 
@@ -60,7 +70,9 @@ export function validateSemanticProof(execution, proof) {
   }
 
   const observedAssertions = normalizeAssertions(proof.assertions);
-  const missing = requiredAssertions.filter((assertion) => !observedAssertions.includes(assertion));
+  const missing = requiredAssertions.filter(
+    (assertion) => !observedAssertions.includes(assertion),
+  );
   if (missing.length > 0) {
     errors.push(
       `Execution ${execution.id} did not prove required semantic assertions: ${missing.join(", ")}.`,

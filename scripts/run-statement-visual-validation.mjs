@@ -111,7 +111,8 @@ async function runScenario(scenario) {
     }
   }
 
-  const semanticOk = semanticProof.status === "not-required" || semanticProof.status === "passed";
+  const semanticOk =
+    semanticProof.status === "not-required" || semanticProof.status === "passed";
   const failed = Boolean(outcome.error) || outcome.code !== 0 || !semanticOk;
   const message = failed
     ? outcome.error
@@ -120,7 +121,11 @@ async function runScenario(scenario) {
         ? `exit=${outcome.code ?? "null"}${outcome.signal ? ` signal=${outcome.signal}` : ""}`
         : semanticProof.errors.join("; ")
     : undefined;
-  const result = buildExecutionResult(scenario, { ...outcome, semanticOk }, message);
+  const result = buildExecutionResult(
+    scenario,
+    { ...outcome, semanticOk },
+    message,
+  );
   result.coverage = scenario.coverage.map(toEvidenceCoverage);
   result.semanticProof = semanticProof;
 
@@ -197,7 +202,9 @@ async function finalize() {
       `[visual-gate] ${failures.length} coverage scenario(s) failed. See ${outputDir}/visual-gate-index.json.`,
     );
   } else {
-    console.log(`[visual-gate] ${results.length} registered coverage executions passed.`);
+    console.log(
+      `[visual-gate] ${results.length} registered coverage executions passed.`,
+    );
   }
 }
 

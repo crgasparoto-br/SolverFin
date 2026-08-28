@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 
-import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 import { pageMeasurementExpression } from "./measurements.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
@@ -11,7 +17,9 @@ const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-vi
 const chromePath = process.env.CHROME_BIN;
 const sourceScenario = process.env.STATEMENT_VISUAL_SOURCE_SCENARIO_ID;
 
-if (!chromePath) throw new Error("CHROME_BIN is required for semantic visual validation.");
+if (!chromePath) {
+  throw new Error("CHROME_BIN is required for semantic visual validation.");
+}
 await mkdir(outputDir, { recursive: true });
 
 const browser = await launchChrome({ baseUrl, chromePath });
@@ -31,7 +39,9 @@ try {
     await validateReports(browser.cdp);
     await writeSemanticProof(["focus", "overflow"], { surface: "reports" });
   } else {
-    throw new Error(`Unsupported semantic interaction source scenario: ${sourceScenario ?? "<missing>"}.`);
+    throw new Error(
+      `Unsupported semantic interaction source scenario: ${sourceScenario ?? "<missing>"}.`,
+    );
   }
 } finally {
   await browser.close(outputDir);
@@ -84,7 +94,11 @@ async function validateCards(cdp) {
     })()`,
   );
   assert.ok(filterState.count > 0, "Cards reconciliation filter hid every purchase.");
-  assert.equal(filterState.onlyUnreconciled, true, "Cards reconciliation filter leaked reconciled rows.");
+  assert.equal(
+    filterState.onlyUnreconciled,
+    true,
+    "Cards reconciliation filter leaked reconciled rows.",
+  );
   await evaluate(cdp, `document.querySelector('[data-reset-purchase-filters]')?.click()`);
 
   await evaluate(cdp, `document.querySelector('[data-open-modal="purchase"]')?.click()`);
@@ -120,7 +134,11 @@ async function validateStatement(cdp) {
   await navigate(cdp, `${baseUrl}${route}`);
   await sleep(300);
   const measurements = await evaluate(cdp, pageMeasurementExpression());
-  assert.equal(measurements.globalOverflow, false, "Statement has global horizontal overflow.");
+  assert.equal(
+    measurements.globalOverflow,
+    false,
+    "Statement has global horizontal overflow.",
+  );
   assert.equal(
     measurements.table.hasLocalHorizontalScroll,
     true,

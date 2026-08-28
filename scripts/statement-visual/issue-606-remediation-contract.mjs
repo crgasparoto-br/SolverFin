@@ -21,7 +21,10 @@ const MULTI_COVERAGE_EXECUTION_MODULES = new Map([
   ],
   [
     "cards-interface",
-    [SEMANTIC_INTERACTION_MODULE, "scripts/statement-visual/issue-606-cards-execution.mjs"],
+    [
+      SEMANTIC_INTERACTION_MODULE,
+      "scripts/statement-visual/issue-606-cards-execution.mjs",
+    ],
   ],
 ]);
 
@@ -190,7 +193,8 @@ export function buildExecutionEnvironment(execution, baseEnvironment = process.e
 }
 
 export function buildExecutionResult(execution, outcome, message) {
-  const failed = Boolean(outcome.error) || outcome.code !== 0 || outcome.semanticOk === false;
+  const failed =
+    Boolean(outcome.error) || outcome.code !== 0 || outcome.semanticOk === false;
   return {
     ...executionIdentity(execution),
     result: failed ? "failed" : "passed",

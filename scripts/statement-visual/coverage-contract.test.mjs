@@ -218,8 +218,11 @@ test("focused overrides cannot retain interaction metadata without semantic asse
 });
 
 test("semantic proof rejects a missing declared interaction while identity stays correct", () => {
-  const execution = buildVisualScenarioExecutions(getVisualScenarioModules(visualScenarioModules)).find(
-    (item) => item.sourceScenarioId === "cards-interface" && item.coverage[0]?.state === "normal",
+  const execution = buildVisualScenarioExecutions(
+    getVisualScenarioModules(visualScenarioModules),
+  ).find(
+    (item) =>
+      item.sourceScenarioId === "cards-interface" && item.coverage[0]?.state === "normal",
   );
   assert.ok(execution);
   const validation = validateSemanticProof(execution, {
@@ -234,8 +237,11 @@ test("semantic proof rejects a missing declared interaction while identity stays
 });
 
 test("semantic proof rejects a sibling route identity even when assertions are complete", () => {
-  const execution = buildVisualScenarioExecutions(getVisualScenarioModules(visualScenarioModules)).find(
-    (item) => item.sourceScenarioId === "cards-interface" && item.coverage[0]?.state === "normal",
+  const execution = buildVisualScenarioExecutions(
+    getVisualScenarioModules(visualScenarioModules),
+  ).find(
+    (item) =>
+      item.sourceScenarioId === "cards-interface" && item.coverage[0]?.state === "normal",
   );
   assert.ok(execution);
   const validation = validateSemanticProof(execution, {
