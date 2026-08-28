@@ -1,3 +1,6 @@
+# Reexecuta a evidencia final em Chrome para os principais fluxos visuais do SolverFin.
+# Alteracoes em autenticacao, sessao ou origem exigem nova evidencia no mesmo head auditado.
+# O fechamento documental do contrato tambem invalida evidencias vinculadas a um SHA anterior.
 name: Statement visual validation
 
 on:
@@ -5,28 +8,61 @@ on:
     branches:
       - main
     paths:
+      - "apps/web/**"
+      - "packages/shared/**"
       - "scripts/run-statement-visual-validation.mjs"
-      - "scripts/statement-visual/issue-606-behavior-claims.mjs"
+      - "scripts/validate-statement-visual-coverage.mjs"
+      - "scripts/statement-visual/**"
       - ".github/workflows/statement-visual-validation.yml"
+      - "docs/STATUS_MATRIX.md"
+      - "docs/RUNBOOK.md"
+      - "docs/VISUAL_VALIDATION.md"
+      - "docs/quality/accessibility-performance.md"
+      - "docs/product/INTERFACE_INVENTORY.md"
+      - "package.json"
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: statement-visual-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  canonical-formatter-bridge:
-    name: Canonical formatter bridge
+  visual-validation:
+    name: Chrome visual validation
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
+    env:
+      NODE_ENV: development
+      AUTH_ALLOW_DEMO: "true"
+      DATABASE_URL: postgresql://solverfin:solverfin_visual_password@localhost:5432/solverfin_visual?schema=public
+      API_BASE_URL: http://127.0.0.1:4000
+      APP_ORIGIN: http://127.0.0.1:5173
+      HOST: 127.0.0.1
+      SOLVERFIN_MASTER_EMAILS: demo@solverfin.example.invalid
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_visual
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_visual_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_visual"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - name: Checkout PR head
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,26 +74,114 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Format and restore canonical workflow
+      - name: Prepare database and production web build
         run: |
-          npx prettier \
-            scripts/run-statement-visual-validation.mjs \
-            scripts/statement-visual/issue-606-behavior-claims.mjs \
-            --write
-          git checkout c2121e2d2b9223d9fd54f2f9f993e71836d6bf3d -- \
-            .github/workflows/statement-visual-validation.yml
+          npm run prisma:generate
+          npm run build:packages
+          npm run db:deploy
+          npm run db:seed
+          npm run build --workspace @solverfin/web
 
-      - name: Publish canonical formatter commit
-        env:
-          TARGET_BRANCH: ${{ github.event.pull_request.head.ref }}
+      - name: Start SolverFin
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            scripts/run-statement-visual-validation.mjs \
-            scripts/statement-visual/issue-606-behavior-claims.mjs \
-            .github/workflows/statement-visual-validation.yml
-          git diff --cached --check
-          git diff --cached --quiet && exit 0
-          git commit -m "style(ui): apply canonical formatter"
-          git push origin "HEAD:${TARGET_BRANCH}"
+          npm run dev:all > /tmp/solverfin-dev.log 2>&1 &
+          echo $! > /tmp/solverfin-dev.pid
+
+          env \
+            NODE_ENV=production \
+            AUTH_ALLOW_DEMO=false \
+            HOST=127.0.0.1 \
+            PORT=5174 \
+            API_BASE_URL=http://127.0.0.1:4000 \
+            APP_ORIGIN=https://app.example.invalid \
+            OIDC_ISSUER_URL=https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example \
+            OIDC_CLIENT_ID=client-123 \
+            OIDC_AUDIENCE=client-123 \
+            OIDC_AUTHORIZATION_URL=https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/authorize \
+            OIDC_TOKEN_URL=https://solverfin-auth.auth.sa-east-1.amazoncognito.com/oauth2/token \
+            OIDC_JWKS_URI=https://cognito-idp.sa-east-1.amazonaws.com/sa-east-1_example/.well-known/jwks.json \
+            OIDC_REDIRECT_URI=https://app.example.invalid/api/auth/oidc/callback \
+            OIDC_LOGOUT_URL=https://solverfin-auth.auth.sa-east-1.amazoncognito.com/logout \
+            OIDC_RECOVERY_URL=https://solverfin-auth.auth.sa-east-1.amazoncognito.com/forgotPassword \
+            node apps/web/dist/dev-server.js > /tmp/solverfin-productive-auth-web.log 2>&1 &
+          echo $! > /tmp/solverfin-productive-auth-web.pid
+
+          for attempt in $(seq 1 90); do
+            if curl -sS -o /dev/null http://127.0.0.1:4000/api/me \
+              && curl -fsS http://127.0.0.1:5173/health >/dev/null \
+              && curl -fsS http://127.0.0.1:5174/health >/dev/null; then
+              sleep 8
+              if curl -sS -o /dev/null http://127.0.0.1:4000/api/me \
+                && curl -fsS http://127.0.0.1:5173/health >/dev/null \
+                && curl -fsS http://127.0.0.1:5174/health >/dev/null; then
+                exit 0
+              fi
+            fi
+            sleep 1
+          done
+          cat /tmp/solverfin-dev.log
+          cat /tmp/solverfin-productive-auth-web.log
+          exit 1
+
+      - name: Locate Chrome
+        id: chrome
+        shell: bash
+        run: |
+          chrome_bin="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)"
+          test -n "$chrome_bin"
+          echo "path=$chrome_bin" >> "$GITHUB_OUTPUT"
+          "$chrome_bin" --version
+
+      - name: Validate registered visual scenarios in Chrome
+        env:
+          CHROME_BIN: ${{ steps.chrome.outputs.path }}
+          SOLVERFIN_WEB_URL: http://127.0.0.1:5173
+          SOLVERFIN_PRODUCTIVE_AUTH_URL: http://127.0.0.1:5174
+          STATEMENT_VISUAL_OUTPUT: artifacts/statement-visual
+          STATEMENT_VISUAL_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run qa:statement-visual
+
+      - name: Preserve server log
+        if: always()
+        run: |
+          mkdir -p artifacts/statement-visual
+          cp /tmp/solverfin-dev.log artifacts/statement-visual/server.log || true
+          cp /tmp/solverfin-productive-auth-web.log artifacts/statement-visual/productive-auth-web.log || true
+
+      - name: Assert visual evidence is secret-free
+        id: artifact_safety
+        if: always()
+        run: |
+          node --test scripts/statement-visual/assert-artifact-safety.test.mjs
+          node scripts/statement-visual/assert-artifact-safety.mjs artifacts/statement-visual
+
+      - name: Upload visual evidence
+        if: ${{ always() && steps.artifact_safety.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: statement-visual-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/statement-visual
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload issue 473 diagnostic
+        if: ${{ always() && steps.artifact_safety.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-473-diagnostic-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            artifacts/statement-visual/issue-473-diagnostic.json
+            artifacts/statement-visual/issue-473-account-edit.json
+            artifacts/statement-visual/ISSUE-473.md
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Stop SolverFin
+        if: always()
+        run: |
+          if test -f /tmp/solverfin-dev.pid; then
+            kill "$(cat /tmp/solverfin-dev.pid)" || true
+          fi
+          if test -f /tmp/solverfin-productive-auth-web.pid; then
+            kill "$(cat /tmp/solverfin-productive-auth-web.pid)" || true
+          fi

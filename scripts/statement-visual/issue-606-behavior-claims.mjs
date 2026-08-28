@@ -4,16 +4,13 @@ import { join } from "node:path";
 
 import { writeSemanticProof } from "./semantic-proof.mjs";
 
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const requiredAssertions = parseRequiredAssertions();
 const sourceScenario = process.env.STATEMENT_VISUAL_SOURCE_SCENARIO_ID ?? "";
 const scenarioId = process.env.STATEMENT_VISUAL_SCENARIO_ID ?? "";
 const requestedRoute = process.env.STATEMENT_VISUAL_ROUTE ?? "";
 const candidateSha =
-  process.env.STATEMENT_VISUAL_CANDIDATE_SHA ??
-  process.env.GITHUB_SHA ??
-  "local";
+  process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
 
 if (requiredAssertions.length === 0) {
   throw new Error("Behavior-claim validation requires at least one assertion.");
@@ -38,13 +35,8 @@ function parseRequiredAssertions() {
   const raw = process.env.STATEMENT_VISUAL_REQUIRED_ASSERTIONS;
   if (!raw) return [];
   const parsed = JSON.parse(raw);
-  if (
-    !Array.isArray(parsed) ||
-    parsed.some((value) => typeof value !== "string")
-  ) {
-    throw new Error(
-      "STATEMENT_VISUAL_REQUIRED_ASSERTIONS must be a JSON array of strings.",
-    );
+  if (!Array.isArray(parsed) || parsed.some((value) => typeof value !== "string")) {
+    throw new Error("STATEMENT_VISUAL_REQUIRED_ASSERTIONS must be a JSON array of strings.");
   }
   return [...new Set(parsed)].sort();
 }
@@ -54,33 +46,22 @@ async function collectEvidence() {
   if (sourceScenario === "reports-category-evolution") {
     return collectSemanticEvidence("reports-category-evolution");
   }
-  if (sourceScenario === "cards-interface")
-    return collectSemanticEvidence("cards-interface");
-  if (sourceScenario === "accounts-cards-interface")
-    return collectAccountsCardsEvidence();
+  if (sourceScenario === "cards-interface") return collectSemanticEvidence("cards-interface");
+  if (sourceScenario === "accounts-cards-interface") return collectAccountsCardsEvidence();
   if (sourceScenario === "settings-interface") return collectSettingsEvidence();
-  if (sourceScenario === "account-remuneration")
-    return collectRemunerationEvidence();
-  if (sourceScenario === "account-remuneration-mobile")
-    return collectRemunerationEvidence();
-  if (sourceScenario === "financial-insights")
-    return collectFinancialInsightsEvidence();
+  if (sourceScenario === "account-remuneration") return collectRemunerationEvidence();
+  if (sourceScenario === "account-remuneration-mobile") return collectRemunerationEvidence();
+  if (sourceScenario === "financial-insights") return collectFinancialInsightsEvidence();
   if (sourceScenario === "sidebar-navigation") return collectSidebarEvidence();
-  if (sourceScenario === "inbox-interface-refinement")
-    return collectInboxRefinementEvidence();
+  if (sourceScenario === "inbox-interface-refinement") return collectInboxRefinementEvidence();
   if (sourceScenario === "inbox-interface-accessibility") {
     return collectInboxAccessibilityEvidence();
   }
-  if (sourceScenario === "bank-message-ai-inbox")
-    return collectBankMessageEvidence();
-  if (sourceScenario === "categories-interface")
-    return collectCategoriesEvidence();
-  if (sourceScenario === "cards-interface-adversarial")
-    return collectCardsAdversarialEvidence();
-  if (sourceScenario === "financial-assistant")
-    return collectFinancialAssistantEvidence();
-  if (sourceScenario === "budgets-pilot-baseline")
-    return collectBudgetsEvidence();
+  if (sourceScenario === "bank-message-ai-inbox") return collectBankMessageEvidence();
+  if (sourceScenario === "categories-interface") return collectCategoriesEvidence();
+  if (sourceScenario === "cards-interface-adversarial") return collectCardsAdversarialEvidence();
+  if (sourceScenario === "financial-assistant") return collectFinancialAssistantEvidence();
+  if (sourceScenario === "budgets-pilot-baseline") return collectBudgetsEvidence();
   if (sourceScenario === "dashboard-empty-state") {
     return collectEmptyEvidence("issue-606-dashboard-empty.json");
   }
@@ -90,22 +71,18 @@ async function collectEvidence() {
   if (sourceScenario === "budgets-empty-state") {
     return collectEmptyEvidence("issue-606-budgets-empty.json");
   }
-  throw new Error(
-    `No behavior evidence adapter is registered for ${sourceScenario}.`,
-  );
+  throw new Error(`No behavior evidence adapter is registered for ${sourceScenario}.`);
 }
 
 async function collectCorePagesEvidence() {
-  if (requestedRoute === "/lancamentos")
-    return collectSemanticEvidence("core-pages");
+  if (requestedRoute === "/lancamentos") return collectSemanticEvidence("core-pages");
   const fileByRoute = {
     "/dashboard": "issue-606-core-dashboard.json",
     "/cartoes": "issue-606-core-cartoes.json",
     "/contas": "issue-606-core-contas.json",
   };
   const fileName = fileByRoute[requestedRoute];
-  if (!fileName)
-    throw new Error(`No core-page evidence file for ${requestedRoute}.`);
+  if (!fileName) throw new Error(`No core-page evidence file for ${requestedRoute}.`);
   const report = await readEvidence(fileName);
   assertNoFailures(report, fileName);
   const widths = new Set((report.pages ?? []).map((page) => page.width));
@@ -115,9 +92,7 @@ async function collectCorePagesEvidence() {
     `${fileName} has no desktop execution.`,
   );
   assert.ok(
-    (report.pages ?? []).every(
-      (page) => page.measurements?.globalOverflow === false,
-    ),
+    (report.pages ?? []).every((page) => page.measurements?.globalOverflow === false),
     `${fileName} contains a viewport with global overflow.`,
   );
   const assertions = ["behavior:layout:desktop", "behavior:layout:mobile"];
@@ -135,15 +110,8 @@ async function collectCorePagesEvidence() {
 async function collectSemanticEvidence(name) {
   const fileName = `issue-606-semantic-${name}.json`;
   const report = await readEvidence(fileName);
-  assert.equal(
-    report.sourceScenario,
-    name,
-    `${fileName} source scenario mismatch.`,
-  );
-  assert.ok(
-    Array.isArray(report.assertions),
-    `${fileName} has no behavior assertions.`,
-  );
+  assert.equal(report.sourceScenario, name, `${fileName} source scenario mismatch.`);
+  assert.ok(Array.isArray(report.assertions), `${fileName} has no behavior assertions.`);
   return {
     files: [fileName],
     assertions: report.assertions,
@@ -159,9 +127,7 @@ async function collectAccountsCardsEvidence() {
   const pages = scenarios.filter((scenario) => scenario.kind === "page");
   const widths = new Set(
     pages
-      .map((scenario) =>
-        Number.parseInt(String(scenario.viewport).split("x")[0], 10),
-      )
+      .map((scenario) => Number.parseInt(String(scenario.viewport).split("x")[0], 10))
       .filter(Number.isFinite),
   );
   assert.ok(widths.has(390), "Accounts/Cards evidence has no mobile page.");
@@ -171,32 +137,24 @@ async function collectAccountsCardsEvidence() {
   );
   assert.ok(
     pages.some(
-      (scenario) =>
-        scenario.expectedTab === "accounts" &&
-        scenario.measurements?.itemCount > 0,
+      (scenario) => scenario.expectedTab === "accounts" && scenario.measurements?.itemCount > 0,
     ),
     "Accounts/Cards evidence has no populated accounts detail flow.",
   );
   assert.ok(
     pages.some(
-      (scenario) =>
-        scenario.expectedTab === "cards" &&
-        scenario.measurements?.cardRowCount > 0,
+      (scenario) => scenario.expectedTab === "cards" && scenario.measurements?.cardRowCount > 0,
     ),
     "Accounts/Cards evidence has no populated cards detail flow.",
   );
   assert.ok(
     scenarios.some(
-      (scenario) =>
-        scenario.kind === "instrument-modal" && scenario.measurements?.open,
+      (scenario) => scenario.kind === "instrument-modal" && scenario.measurements?.open,
     ),
     "Accounts/Cards evidence has no opened instrument dialog.",
   );
   assert.ok(
-    scenarios.some(
-      (scenario) =>
-        scenario.kind === "row-action-menu" && scenario.opened?.opened,
-    ),
+    scenarios.some((scenario) => scenario.kind === "row-action-menu" && scenario.opened?.opened),
     "Accounts/Cards evidence has no row action menu proof.",
   );
   return {
@@ -270,10 +228,7 @@ async function collectFinancialInsightsEvidence() {
   const report = await readEvidence(fileName);
   assertNoFailures(report, fileName);
   assert.equal(report.navigation?.pathname, "/lancamentos");
-  assert.ok(
-    report.navigation?.month,
-    "Financial insight navigation lost its month context.",
-  );
+  assert.ok(report.navigation?.month, "Financial insight navigation lost its month context.");
   const core = await collectSemanticEvidence("core-pages");
   assert.ok(
     core.assertions.includes("behavior:legacy:statement-insight-context"),
@@ -299,11 +254,7 @@ async function collectSidebarEvidence() {
   assert.equal(report.mobile?.closed?.ariaExpanded, "false");
   return {
     files: [fileName],
-    assertions: [
-      "behavior:component:Drawer",
-      "behavior:layout:desktop",
-      "behavior:layout:mobile",
-    ],
+    assertions: ["behavior:component:Drawer", "behavior:layout:desktop", "behavior:layout:mobile"],
     observations: {
       desktopViewport: report.desktop?.viewport,
       mobileViewport: report.mobile?.viewport,
@@ -397,10 +348,7 @@ async function collectCardsAdversarialEvidence() {
   assert.ok(report.liveRegion?.initial?.rowCount > 0);
   return {
     files: [fileName],
-    assertions: [
-      "behavior:legacy:cards-interface",
-      "behavior:legacy:cards-interface-finalizer",
-    ],
+    assertions: ["behavior:legacy:cards-interface", "behavior:legacy:cards-interface-finalizer"],
     observations: {
       rows: report.liveRegion?.initial?.rowCount,
       compactDesktop: report.compactDesktop,
@@ -412,9 +360,7 @@ async function collectFinancialAssistantEvidence() {
   const fileName = "issue-568-financial-assistant.json";
   const report = await readEvidence(fileName);
   assertNoFailures(report, fileName);
-  const widths = new Set(
-    (report.captures ?? []).map((capture) => capture.viewport?.width),
-  );
+  const widths = new Set((report.captures ?? []).map((capture) => capture.viewport?.width));
   assert.ok(widths.has(390), `${fileName} has no mobile capture.`);
   assert.ok(
     [...widths].some((width) => width >= 1024),
@@ -432,9 +378,7 @@ async function collectBudgetsEvidence() {
   const report = await readEvidence(fileName);
   assertNoFailures(report, fileName);
   const widths = new Set(
-    (report.scenarios ?? []).map(
-      (scenario) => scenario.measurements?.viewportWidth,
-    ),
+    (report.scenarios ?? []).map((scenario) => scenario.measurements?.viewportWidth),
   );
   assert.ok(widths.has(390), `${fileName} has no mobile scenario.`);
   assert.ok(
@@ -451,9 +395,7 @@ async function collectBudgetsEvidence() {
 async function collectEmptyEvidence(fileName) {
   const report = await readEvidence(fileName);
   assertNoFailures(report, fileName);
-  const widths = new Set(
-    (report.viewports ?? []).map((viewport) => viewport.width),
-  );
+  const widths = new Set((report.viewports ?? []).map((viewport) => viewport.width));
   assert.ok(widths.has(390), `${fileName} has no mobile empty-state evidence.`);
   assert.ok(
     [...widths].some((width) => width >= 1024),
@@ -468,19 +410,11 @@ async function collectEmptyEvidence(fileName) {
 
 async function readEvidence(fileName) {
   const report = JSON.parse(await readFile(join(outputDir, fileName), "utf8"));
-  assert.equal(
-    report.commit,
-    candidateSha,
-    `${fileName} is stale for ${candidateSha}.`,
-  );
+  assert.equal(report.commit, candidateSha, `${fileName} is stale for ${candidateSha}.`);
   return report;
 }
 
 function assertNoFailures(report, fileName) {
   const failures = report.failures ?? [];
-  assert.equal(
-    failures.length,
-    0,
-    `${fileName} contains ${failures.length} failure(s).`,
-  );
+  assert.equal(failures.length, 0, `${fileName} contains ${failures.length} failure(s).`);
 }
