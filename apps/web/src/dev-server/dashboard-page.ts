@@ -224,7 +224,7 @@ function dashboardStyles(): string {
     main { display: grid; gap: 16px; margin: 0 auto; max-width: 1440px; padding: 20px; width: 100%; }
     .dashboard-hero { align-items: start; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); }
     .dashboard-hero h1 { margin-bottom: 6px; }
-    .data-quality { background: var(--surface-muted); border: 1px solid var(--line); border-radius: var(--radius-md); display: grid; gap: 4px; padding: 12px; }
+    .data-quality { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; padding: 12px; }
     .data-quality strong { color: var(--primary); font-size: 0.875rem; }
     .data-quality span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
     .data-quality[data-quality="partial"] { border-style: dashed; }
