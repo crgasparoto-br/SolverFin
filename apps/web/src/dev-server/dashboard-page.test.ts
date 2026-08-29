@@ -9,9 +9,7 @@ describe("dev-server dashboard page", () => {
   it("renders an actionable cockpit without loading every transaction", async () => {
     const calledPaths: string[] = [];
 
-    globalThis.fetch = async (
-      input: string | URL | Request,
-    ): Promise<Response> => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
       calledPaths.push(`${url.pathname}${url.search}`);
 
@@ -76,9 +74,7 @@ describe("dev-server dashboard page", () => {
   });
 
   it("shows a compact positive state when there are no pending actions", async () => {
-    globalThis.fetch = async (
-      input: string | URL | Request,
-    ): Promise<Response> => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
 
       if (url.pathname === "/api/financial-summary") {
@@ -96,10 +92,8 @@ describe("dev-server dashboard page", () => {
         });
       }
 
-      if (url.pathname === "/api/bank-message-inbox")
-        return jsonResponse({ messages: [] });
-      if (url.pathname === "/api/invoices")
-        return jsonResponse({ invoices: [] });
+      if (url.pathname === "/api/bank-message-inbox") return jsonResponse({ messages: [] });
+      if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
       throw new Error(
         `Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`,
       );
@@ -115,9 +109,7 @@ describe("dev-server dashboard page", () => {
   });
 
   it("surfaces a partial state when an optional operational source fails", async () => {
-    globalThis.fetch = async (
-      input: string | URL | Request,
-    ): Promise<Response> => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
       if (url.pathname === "/api/financial-summary") {
         return jsonResponse({
@@ -139,8 +131,7 @@ describe("dev-server dashboard page", () => {
           headers: { "content-type": "application/json; charset=utf-8" },
         });
       }
-      if (url.pathname === "/api/invoices")
-        return jsonResponse({ invoices: [] });
+      if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
       throw new Error(
         `Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`,
       );
