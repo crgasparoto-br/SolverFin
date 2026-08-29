@@ -15,7 +15,11 @@ const consumingModules = [
   ...new Set(
     solverFinSsrStyleContracts
       .filter((contract) => contract.shell === "authenticated")
-      .map((contract) => contract.moduleFileName),
+      .map((contract) =>
+        contract.routeId === "accountsCards"
+          ? "accounts-cards/styles.js"
+          : contract.moduleFileName,
+      ),
   ),
 ].sort();
 
@@ -183,7 +187,10 @@ describe("shared shell styles", () => {
 
   it("keeps icon-only destructive controls red on hover and keyboard focus", () => {
     const css = sharedShellStyles();
-    const accountsCardsSource = readFileSync(join(currentDir, "accounts-cards-page.js"), "utf8");
+    const accountsCardsSource = readFileSync(
+      join(currentDir, "accounts-cards", "components.js"),
+      "utf8",
+    );
 
     assert.match(accountsCardsSource, /class="icon-button danger-icon-button"/);
     assert.match(css, /:not\(\.danger-icon-button\):hover:not\(:disabled\)/);
