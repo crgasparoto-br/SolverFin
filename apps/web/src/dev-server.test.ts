@@ -313,15 +313,7 @@ function accountsCardsEnhancementKeepsOnlyActiveFilter(): void {
 
 function accountsCardsPageDoesNotFetchRetiredLinks(): void {
   const accountsCardsPageSource = readFileSync(
-    path.join(
-      repoRoot,
-      "apps",
-      "web",
-      "src",
-      "dev-server",
-      "accounts-cards",
-      "page.ts",
-    ),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "page.ts"),
     "utf8",
   );
 
@@ -356,39 +348,15 @@ function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
   }
 
   const accountsCardsViewModelSource = readFileSync(
-    path.join(
-      repoRoot,
-      "apps",
-      "web",
-      "src",
-      "dev-server",
-      "accounts-cards",
-      "view-model.ts",
-    ),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "view-model.ts"),
     "utf8",
   );
   const accountsCardsPresentationSource = readFileSync(
-    path.join(
-      repoRoot,
-      "apps",
-      "web",
-      "src",
-      "dev-server",
-      "accounts-cards",
-      "presentation.ts",
-    ),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "presentation.ts"),
     "utf8",
   );
   const accountsCardsComponentsSource = readFileSync(
-    path.join(
-      repoRoot,
-      "apps",
-      "web",
-      "src",
-      "dev-server",
-      "accounts-cards",
-      "components.ts",
-    ),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "components.ts"),
     "utf8",
   );
 
