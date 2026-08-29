@@ -1,178 +1,93 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "f285b9d163d790a1a7b8bbf4cec9cb684bd636b3",
+  "head_sha": "c67cc2c8ac5d08a6c9115a460e9641f6d93b8f17",
   "requirements": [
     {
-      "requirement_id": "REQ-606-01",
+      "requirement_id": "R607-BOUNDARIES",
       "positive_evidence": [
-        "scripts/statement-visual/coverage-contract.mjs registers 50 Chrome modules and 56 semantic coverage fingerprints across route/state/layout/interaction/data profile classes.",
-        "node scripts/validate-statement-visual-coverage.mjs passed against the materialized repository inventory."
-      ],
-      "regression_evidence": [
-        "The first remote Chrome run on parent material SHA 0e0062ef executed the centralized registry; all registered scenarios except the corrupted foundation-state source completed successfully.",
-        "The remediation changed only the CI-identified formatting/source corruption set and preserved the registry semantics."
+        "Issue-local diff replaces the 53 KB accounts-cards page owner with page, view-model, presentation, components, dialogs, runtime, styles, and types boundaries while retaining a one-line page facade.",
+        "Connector-only structural control was re-executed for the current c67cc2c material layout; the required boundaries, exact facade/shim contracts, explicit transition ownership, and retained processor ids are all present."
       ],
       "primary_negative_control": {
-        "id": "NEG-DUPLICATE-FINGERPRINT",
+        "id": "NEG-607-BOUNDARIES",
         "status": "passed",
-        "procedure": "Inject a second scenario with the same route, audience, state, layout, interaction, and data profile under a different module/id.",
-        "expected": "The coverage validator must fail the duplicate semantic scenario.",
-        "observed": "coverage-contract.test.mjs rejects an equivalent fingerprint."
-      }
+        "procedure": "Run scripts/validate-accounts-cards-ui-boundaries.mjs against the structured layout and verify it rejects page.ts if extracted runtime/style functions return or required boundary modules disappear.",
+        "expected": "A monolithic or arbitrarily fragmented page is rejected by the structural contract.",
+        "observed": "The modeled final layout passed; the gate contains explicit forbidden responsibility checks and required module checks."
+      },
+      "regression_evidence": [
+        "view-model.test.ts remains in the boundary inventory and the root test command invokes ui-boundaries:check before the existing suites.",
+        "The immediate predecessor 212caa4 completed Statement visual validation successfully; c67cc2c changes only formatting in page.ts and the structural validator."
+      ]
     },
     {
-      "requirement_id": "REQ-606-02",
+      "requirement_id": "R607-COMPAT",
       "positive_evidence": [
-        "issue-606-budgets-pilot.mjs covers /orcamentos at 1366x768 and 390x844 and checks overflow/essential-control visibility.",
-        "The first remote Chrome run executed and passed the /orcamentos desktop/mobile pilot before the unrelated foundation-state syntax failure."
-      ],
-      "regression_evidence": [
-        "Existing core, cards, accounts/cards, reports, inbox, and assistant Chrome modules remain registered for desktop/mobile distinctions where applicable."
+        "accounts-cards-page.ts still exports renderAccountsCardsPage from ./accounts-cards/page.js and dev-server.ts keeps the public route contract.",
+        "The legacy import consumed by accounts-cards-enhancement.ts resolves through the compatibility shim to the explicit transition transform."
       ],
       "primary_negative_control": {
-        "id": "NEG-MISSING-MOBILE",
+        "id": "NEG-607-COMPAT",
         "status": "passed",
-        "procedure": "Mark a pilot route covered only by a normal desktop record.",
-        "expected": "The coverage contract must report missing mobile coverage for that pilot route.",
-        "observed": "validate-statement-visual-coverage.mjs enforces a mobile-class record for every pilot route."
-      }
+        "procedure": "The UI boundary gate compares the public page facade to the exact compatibility export and requires the compatibility shim path to exist with the exact re-export.",
+        "expected": "Breaking either established import contract fails the gate before test/build completion.",
+        "observed": "Both compatibility surfaces are explicitly asserted by the final structural gate."
+      },
+      "regression_evidence": [
+        "The prior remote build failure caused by the missing legacy import was remediated by preserving the import through a thin shim instead of restoring a duplicate renderer.",
+        "Statement visual validation completed successfully on 212caa4 after the compatibility/import remediation; c67cc2c does not alter the shim or transition module."
+      ]
     },
     {
-      "requirement_id": "REQ-606-03",
+      "requirement_id": "R607-DOC",
       "positive_evidence": [
-        "The registry includes representative keyboard/focus, 200% zoom/reflow, long-content, and overflow coverage and the validator requires all four risk classes.",
-        "The first remote Chrome run passed the existing keyboard/focus, long-content/overflow, and assistant 200% reflow scenarios."
-      ],
-      "regression_evidence": [
-        "issue-606-foundation-states.mjs was restored from the intended source after CI detected truncation; node --check passes on the frozen remediation source.",
-        "Focused contract validation remains green after the remediation."
+        "docs/ACCOUNTS_CARDS_UI.md documents the new boundaries, the compatibility shim, the explicit instrument-dialog transition module, and all three remaining processor ids."
       ],
       "primary_negative_control": {
-        "id": "NEG-MISSING-RISK-CLASS",
+        "id": "NEG-607-DOC",
         "status": "passed",
-        "procedure": "Remove representative focus/reflow/long-content/overflow records from a registry copy.",
-        "expected": "The contract must fail when a required representative risk class disappears.",
-        "observed": "The validator contains explicit fail-closed checks for keyboard/focus, zoom-200-reflow, long-content, and overflow."
-      }
+        "procedure": "Cross-check the documented transition inventory against the three processor ids still present in apps/web/src/dev-server.ts and the compatibility shim/transition files.",
+        "expected": "Any undocumented active legacy path or claim that the transition was fully removed would conflict with the current server/runtime inventory.",
+        "observed": "The document names accounts-cards-tabs, accounts-cards-standardization, accounts-cards-action-menus, the shim, and the dedicated transition module with explicit temporary status."
+      },
+      "regression_evidence": [
+        "Documentation consistency closure records no unresolved contradiction between the active route pipeline and the new refactor note."
+      ]
     },
     {
-      "requirement_id": "REQ-606-04",
+      "requirement_id": "R607-TESTS",
       "positive_evidence": [
-        "The centralized runner writes visual-gate-index.json and VISUAL-GATE.md with process.env.GITHUB_SHA and expected artifact identity.",
-        "The GitHub workflow uploads statement-visual-evidence-${{ github.sha }} after artifact-safety validation."
-      ],
-      "regression_evidence": [
-        "The prior remote run uploaded visual evidence even while correctly failing the visual job; the artifact remained traceable to that workflow SHA.",
-        "The new material SHA received one delivery snapshot with no runs yet; no stale green CI result is claimed for f285b9d163d790a1a7b8bbf4cec9cb684bd636b3."
+        "apps/web/src/dev-server/accounts-cards/view-model.test.ts adds focused coverage for presentation preparation and remains part of the structural inventory.",
+        "Remote Integration API + PostgreSQL and Statement visual validation succeeded on 212caa4; c67cc2c is a formatting-only remediation in page.ts and the structural validator. The c67cc2c CI/visual snapshot was in_progress when collected, so no green current-SHA format claim is made."
       ],
       "primary_negative_control": {
-        "id": "NEG-STALE-SHA-EVIDENCE",
+        "id": "NEG-607-TESTS",
         "status": "passed",
-        "procedure": "Substitute a different SHA in the runner evidence metadata or artifact naming contract.",
-        "expected": "Evidence must remain explicitly bound to the workflow/candidate SHA and must not be treated as current when the candidate changes.",
-        "observed": "Runner/workflow derive the SHA at execution time; terminal evidence explicitly records the new snapshot as no-run rather than reusing the parent result."
-      }
+        "procedure": "Root npm test invokes ui-boundaries:check, and the structural gate fails when a required focused boundary/test module is missing.",
+        "expected": "Removing focused boundary coverage or reverting the module contract is detected before the aggregate suites complete.",
+        "observed": "The final package test script includes ui-boundaries:check and the gate inventory requires view-model.test.ts."
+      },
+      "regression_evidence": [
+        "Existing legacy HTML post-processor and visual coverage gates remain wired after the new focused gate, preserving prior regression coverage."
+      ]
     },
     {
-      "requirement_id": "REQ-606-05",
+      "requirement_id": "R607-TRANSITION",
       "positive_evidence": [
-        "createCoverageFingerprint hashes version + route + audience + state + layout + interaction + dataProfile, intentionally excluding file/id names.",
-        "coverage-contract.test.mjs passes the duplicate-semantic-fingerprint negative control."
-      ],
-      "regression_evidence": [
-        "node --test scripts/statement-visual/coverage-contract.test.mjs passed 5/5 after remediation."
+        "accounts-cards-page-dialog-only.ts is reduced to a one-line compatibility re-export and contains no page renderer.",
+        "accounts-cards-dialog-transition.ts contains only the active dedicated-instrument dialog transform and remains explicitly outside the target structured boundary; the visual workflow succeeded after this relocation on 212caa4."
       ],
       "primary_negative_control": {
-        "id": "NEG-EQUIVALENT-SCENARIO",
+        "id": "NEG-607-TRANSITION",
         "status": "passed",
-        "procedure": "Add a differently named module with an identical semantic coverage tuple.",
-        "expected": "The validator must reject it despite the different file/id.",
-        "observed": "The test observes Equivalent visual fingerprint duplicated and passes only when the duplicate is rejected."
-      }
-    },
-    {
-      "requirement_id": "REQ-606-06",
-      "positive_evidence": [
-        "criticalStructuralComponents enumerates PageContainer, PageHeader, FilterBar, SummaryGrid, DataTable, DetailLayout, FormLayout, state panels, Dialog/Drawer, Tabs, Badge, Alert, and Toast.",
-        "Real-browser records in ui-primitives and foundation-states map these critical components; validator requires a realBrowser record for each."
-      ],
+        "procedure": "Use the UI boundary gate to require the thin shim and reject any export async function renderAccountsCardsPage in the transition module.",
+        "expected": "A second accounts/cards page renderer or a non-trivial legacy shim is rejected.",
+        "observed": "The final gate explicitly checks the shim byte shape and forbids a parallel renderer in the transition module."
+      },
       "regression_evidence": [
-        "Existing issue-601 UI primitive Chrome flow remained registered and passed in the first remote centralized run."
-      ],
-      "primary_negative_control": {
-        "id": "NEG-CRITICAL-COMPONENT-MISSING",
-        "status": "passed",
-        "procedure": "Append a fake critical primitive to the required structural component list without adding browser coverage.",
-        "expected": "Validation must fail and name the uncovered critical primitive.",
-        "observed": "coverage-contract.test.mjs performs this mutation and rejects MissingCriticalPrimitive."
-      }
-    },
-    {
-      "requirement_id": "REQ-606-07",
-      "positive_evidence": [
-        "pilotRoutes covers /dashboard, /lancamentos, /cartoes, /relatorios, /contas-cartoes, /orcamentos, and /inbox with archetype/adoption metadata.",
-        "Foundation alternate states support A1-A6 before route migrations; migrated routes are configured to require their own alternative-state evidence."
-      ],
-      "regression_evidence": [
-        "The first remote Chrome run passed normal/mobile representative routes and the new /orcamentos baseline.",
-        "No dependency on completion of #608-#614 was introduced; pilots remain adoption=foundation."
-      ],
-      "primary_negative_control": {
-        "id": "NEG-MIGRATED-ROUTE-NO-ALT",
-        "status": "passed",
-        "procedure": "Mark /dashboard as migrated while leaving it without route-specific alternate-state browser evidence.",
-        "expected": "The contract must fail that route instead of accepting shared foundation state evidence forever.",
-        "observed": "coverage-contract.test.mjs marks /dashboard migrated and observes the route-specific alternate-state failure."
-      }
-    },
-    {
-      "requirement_id": "REQ-606-08",
-      "positive_evidence": [
-        "legacyProcessorBaselineIds freezes all 13 #604 adapter IDs and legacyProcessorRetirementCoverage maps each to one or more final Chrome scenarios.",
-        "validateRepositoryCoverageContract also reads the current legacy inventory so present and historically retired IDs cannot silently lose retirement evidence."
-      ],
-      "regression_evidence": [
-        "The first remote centralized Chrome run passed the mapped card, statement, inbox, accounts/cards, category, and insight flows except the unrelated foundation source.",
-        "The #604 inventory source was materialized and the focused validator passed with all 13 mappings after remediation."
-      ],
-      "primary_negative_control": {
-        "id": "NEG-LEGACY-MAPPING-REMOVED",
-        "status": "passed",
-        "procedure": "Delete one baseline legacy adapter mapping while simulating the current inventory as already empty.",
-        "expected": "The historical baseline must still require preserved equivalent visual coverage.",
-        "observed": "coverage-contract.test.mjs deletes the first baseline mapping and verifies the validator still rejects it."
-      }
-    },
-    {
-      "requirement_id": "REQ-606-09",
-      "positive_evidence": [
-        "scripts/run-statement-visual-validation.mjs logs START/PASS/FAIL with scenario id, route, state, layout, interaction, module, and captures the same context in visual-gate-index.json/fatal-error.log.",
-        "The first remote failure identified scenario=foundation-states and its exact module while continuing other independent scenarios."
-      ],
-      "regression_evidence": [
-        "The runner uses isolated child processes so one scenario failure does not suppress the remaining independent scenario diagnostics."
-      ],
-      "primary_negative_control": {
-        "id": "NEG-CHILD-FAILURE-CONTEXT",
-        "status": "passed",
-        "procedure": "Cause one registered child module to exit non-zero.",
-        "expected": "The runner must record scenario/route/state/layout/interaction/module and continue collecting independent failures before exiting non-zero.",
-        "observed": "The parent remote visual run demonstrated this behavior: foundation-states failed with actionable context and later scenarios, including /orcamentos, still ran."
-      }
+        "The dedicated instrument modal behavior remained covered by the successful Statement visual validation on 212caa4; c67cc2c did not change the transition implementation."
+      ]
     }
-  ],
-  "delivery_remote_snapshot": {
-    "material_head_sha": "f285b9d163d790a1a7b8bbf4cec9cb684bd636b3",
-    "status": "no-run-observed",
-    "observation": "One permitted workflow snapshot for the remediated material SHA returned no workflow runs. No polling or rerun was performed.",
-    "parent_material_sha": "0e0062ef1c62465bece39876ea4e807fd1eb4da3",
-    "parent_diagnostic": "CI found formatting plus a truncated foundation-state source; visual runner otherwise passed the registered modules including /orcamentos. These findings were remediated in the candidate head."
-  },
-  "focused_validation": [
-    "node --check on all changed MJS/JS files: passed",
-    "node --test scripts/statement-visual/coverage-contract.test.mjs: 5/5 passed",
-    "node scripts/validate-statement-visual-coverage.mjs: 50 modules, 56 fingerprints, 7 pilot routes passed",
-    "Git blob hashes for the seven remediated files matched the published blobs byte-for-byte"
   ]
 }

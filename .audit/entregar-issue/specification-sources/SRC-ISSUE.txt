@@ -1,36 +1,34 @@
 Parent epic: #590
-Depends on: #601, #604
+Depends on: #603, #604
 
 ## Objetivo
 
-Evoluir a validação visual atual para proteger a nova fundação por classes de fluxo/componente, reduzindo dependência de asserts sobre transformação textual intermediária.
+Reduzir o acoplamento e o tamanho dos módulos web mais extensos usando as fronteiras de componentes, layouts e view-models definidas na Fase 3B.
 
 ## Escopo
 
-- mapear cobertura visual atual para componentes/arquetipos;
-- definir cenários representativos por rota/estado/layout/interação;
-- manter desktop/mobile quando houver composição distinta;
-- cobrir teclado/foco, reflow/zoom, conteúdo longo e overflow nos componentes de risco;
-- preservar evidência visual por SHA;
-- evitar duplicação de cenários com fingerprint equivalente.
+- identificar arquivos com múltiplas responsabilidades em `apps/web/src/dev-server`;
+- separar preparação de dados, renderização, interação e estilos quando houver boundary real;
+- evitar apenas fragmentar arquivos sem reduzir acoplamento;
+- eliminar gerações paralelas/legadas de uma tela quando a migração permitir;
+- preservar imports, contratos SSR e testes.
 
 ## Critérios de aceite
 
-- [ ] componentes estruturais críticos possuem pelo menos um fluxo real coberto;
-- [ ] telas-piloto possuem cenários normal, vazio/erro relevante e mobile quando necessário;
-- [ ] teclado/foco e reflow são validados em pontos representativos;
-- [ ] retirada de provider/enhancement legado só ocorre com cobertura equivalente;
-- [ ] CI publica evidência rastreável no SHA candidato;
-- [ ] falhas apontam rota/cenário/estado de forma acionável.
+- [ ] módulos migrados possuem responsabilidade clara e coesa;
+- [ ] não há duplicação de implementação antiga e nova sem status de transição explícito;
+- [ ] extrações seguem boundaries reutilizáveis, não apenas limite de linhas;
+- [ ] testes focados continuam cobrindo comportamento;
+- [ ] documentação identifica qualquer legado ainda intencional.
 
 ## Fora de escopo
 
-- screenshot de cada combinação possível;
-- substituir testes de domínio/API.
+- refactor de todos os arquivos do monorepo;
+- mudanças de domínio financeiro não necessárias à separação.
 
 ## Referências
 
 - #590
+- #603
 - #604
 - ADR 0014
-- `docs/RUNBOOK.md`

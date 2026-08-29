@@ -1,1 +1,327 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"requirement_closure","compression":"gzip","encoded_size":4004,"encoded_sha256":"5c8139a00f0c93d7ae438c5eaf1a758359bfc4b995bc51f4b419f5fdb3735ef5","decoded_size":11456,"decoded_sha256":"02868a1eb471b1c4c958cdef287ae1570aa887a2cea5112030f1c79490ae0367","parts":[{"path":"requirement-closure.parts/part-000.b64","size":4004,"sha256":"5c8139a00f0c93d7ae438c5eaf1a758359bfc4b995bc51f4b419f5fdb3735ef5"}]}
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/mnt/data/solverfin607-handoff/specification-snapshot.json",
+    "sha256": "520590bd0c7139dafc0059f90a6d9cd1cfe7dd4ef300cb13a9beaf4a28f84f0f"
+  },
+  "primary_issue_source_id": "SRC-ISSUE",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "ad38685c177dabc6ee485b91a4b583e763957b71d14cd235b846bd1683ca5166",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 6,
+      "source_text": "Reduzir o acoplamento e o tamanho dos módulos web mais extensos usando as fronteiras de componentes, layouts e view-models definidas na Fase 3B.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-BOUNDARIES"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "61f7599e99f9c551e863ea79af9dc895863734a01b41b1237c2417f61f006156",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 10,
+      "source_text": "identificar arquivos com múltiplas responsabilidades em `apps/web/src/dev-server`;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-BOUNDARIES"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "0383e464d6e7727d7863825b86bfd5b94f60a3f1da8e6b346cd9fdfc79bcbf93",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 11,
+      "source_text": "separar preparação de dados, renderização, interação e estilos quando houver boundary real;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-BOUNDARIES"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "3d9570f46ea30ad8f50cb363037d0b47f62c07e4e6ec45dbd2879a48d2d143d4",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 12,
+      "source_text": "evitar apenas fragmentar arquivos sem reduzir acoplamento;",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-BOUNDARIES"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "78c3510e77195cd03f1f5eadcdc5e89882a67a89086e172ade4c071e850e684b",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 13,
+      "source_text": "eliminar gerações paralelas/legadas de uma tela quando a migração permitir;",
+      "flags": [
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-TRANSITION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "eab46aebaebac97ba7f546e79b89f18b09c81acbc6e2001654374d4ec313566d",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 14,
+      "source_text": "preservar imports, contratos SSR e testes.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-COMPAT"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "dc32b2def89b4ba961095fa91901c14d629f7a6b0a6a502ac581d2f4b0eb76b3",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 18,
+      "source_text": "[ ] módulos migrados possuem responsabilidade clara e coesa;",
+      "flags": [
+        "observable"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-BOUNDARIES"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "f48739d3f59a0a9a54611d619038e14ad838e5611fc487731febe1565b5614d3",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 19,
+      "source_text": "[ ] não há duplicação de implementação antiga e nova sem status de transição explícito;",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-TRANSITION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "431268da3ae2993517f18c6142ce7dee8b733aad85e3bbba66ec77e520891aea",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 20,
+      "source_text": "[ ] extrações seguem boundaries reutilizáveis, não apenas limite de linhas;",
+      "flags": [
+        "negative",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-BOUNDARIES"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "dd0d2992c7f025342d01335a9c7676cea94182644dbbefab9928867c0036923a",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 21,
+      "source_text": "[ ] testes focados continuam cobrindo comportamento;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-TESTS"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "b55da0a5b8a83fc57f9be405916b2c122aa2c20c19949b61c72fd2b72d7a7f16",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "source_line": 22,
+      "source_text": "[ ] documentação identifica qualquer legado ainda intencional.",
+      "flags": [
+        "exhaustive"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R607-DOC"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": "in-scope",
+      "rationale": "Implemented and verified in the issue-local accounts/cards UI boundary refactor."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "40b8751b71bf56e890fbd57387d938787aca421e486e3bfebc1e323a9e37fd84",
+      "candidate_count": 11,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "The contract explicitly requires reusable boundaries rather than line-count fragmentation.",
+    "entries": [
+      {
+        "id": "STRUCT-607-001",
+        "obligation_ids": [
+          "OBL-009"
+        ],
+        "plausible_wrong_implementation": "Split the large file into arbitrary fragments while leaving data preparation, runtime, styles, and rendering coupled through one owner.",
+        "negative_control_evidence": [
+          "scripts/validate-accounts-cards-ui-boundaries.mjs rejects page.ts if extracted runtime/style responsibilities return and requires the explicit module boundaries."
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "The issue changes presentation module boundaries and does not define history, pagination, versioning, or a read-model contract.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "No new canonical data source or duplicated domain definition is introduced by this UI-only structural refactor.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "The refactor changes the documented status of the legacy accounts/cards renderer and must explicitly describe the remaining transition path.",
+    "old_contract_terms": [
+      "accounts-cards-page-dialog-only.ts as a parallel renderer"
+    ],
+    "new_contract_terms": [
+      "accounts-cards-page-dialog-only.ts as compatibility shim",
+      "accounts-cards-dialog-transition.ts as explicit temporary transform"
+    ],
+    "occurrences": [
+      {
+        "path": "docs/ACCOUNTS_CARDS_UI.md",
+        "classification": "updated-canonical-refactor-note"
+      },
+      {
+        "path": "apps/web/src/dev-server.ts",
+        "classification": "active-transition-pipeline"
+      }
+    ],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "Repository code search and direct server inspection confirmed the three active accounts/cards processor ids and the residual compatibility import."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": [
+      "Refactor is limited to /contas-cartoes boundaries, its transition shim, focused test/gate, documentation, and restoration of accidentally removed dev tool dependencies."
+    ]
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "R607-BOUNDARIES",
+      "R607-TRANSITION",
+      "R607-COMPAT",
+      "R607-TESTS",
+      "R607-DOC"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011"
+    ],
+    "evidence": [
+      "Issue body was re-derived directly into the specification snapshot.",
+      "The final diff preserves SSR/API behavior and explicitly inventories remaining HTML post-processors."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}
