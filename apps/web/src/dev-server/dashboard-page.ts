@@ -43,9 +43,15 @@ function renderDashboard(model: DashboardScreenViewModel): string {
         `<section class="panel"><p class="error">${escapeHtml(model.error.message)}</p></section>`,
       );
     case "empty":
-      return renderAuthenticatedPage(
-        `<section class="panel">${renderEmptyState(model.empty.title, model.empty.description)}</section>`,
-      );
+      return renderAuthenticatedPage(`
+        <section class="panel dashboard-hero" aria-labelledby="dashboard-title">
+          <div class="dashboard-heading">
+            <p class="eyebrow">Cockpit financeiro</p>
+            <h1 id="dashboard-title">Situação financeira atual</h1>
+            ${renderEmptyState(model.empty.title, model.empty.description)}
+          </div>
+        </section>
+      `);
     case "success":
       return renderAuthenticatedPage(renderDashboardContent(model.content));
   }

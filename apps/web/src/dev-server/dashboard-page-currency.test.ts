@@ -9,7 +9,9 @@ describe("dashboard multi-currency contract", () => {
   it(
     "renders ordered currency sections, explicit money and currency-scoped drilldowns",
     async () => {
-      globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      globalThis.fetch = async (
+        input: string | URL | Request,
+      ): Promise<Response> => {
         const url = new URL(String(input));
         if (url.pathname === "/api/financial-summary") {
           return jsonResponse({
@@ -43,7 +45,8 @@ describe("dashboard multi-currency contract", () => {
         }
         if (url.pathname === "/api/bank-message-inbox")
           return jsonResponse({ messages: [] });
-        if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
+        if (url.pathname === "/api/invoices")
+          return jsonResponse({ invoices: [] });
         throw new Error(
           `Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`,
         );
