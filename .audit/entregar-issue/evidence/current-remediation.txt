@@ -1,6 +1,5 @@
-Material head: c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3
-Recovery: post-write-refreeze (auditor lower bound preserved)
-CI run 4536: completed success on c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3; Validate monorepo formatting, lint, typecheck, test, build all passed.
-Statement visual validation run 3039: completed success on c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3; Chrome real-flow validation, secret-free evidence assertion and upload all passed.
-Current material diff only reformats scripts/statement-visual/issue-606-desktop-mobile-binding.test.mjs relative to the previous certified material and restores canonical package.json format:check; net issue-local scope from 397bf102.. to current material remains the test file.
-No product code change was introduced by this recovery.
+Material head: c4f8bebaebd8dee0ad9d8ec56740b05d9467eedd
+CI #4538: success
+Statement visual validation #3041: success
+Fix: replaced fixed 260 ms sleep in issue-565 AI review conflict visual harness with polling of the observable terminal conflict state (message visible + approval action re-enabled).
+Remote workflows are green on the exact material SHA.

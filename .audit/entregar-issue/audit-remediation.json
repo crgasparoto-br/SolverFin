@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3",
+  "candidate_head_sha": "c4f8bebaebd8dee0ad9d8ec56740b05d9467eedd",
   "remediation_mode": "targeted-remediation",
   "source": {
     "rejection_id": "audit-rejection:2c4f4a91-7a0e-4ccd-9f4f-8c7cb87ca79a",
@@ -18,8 +18,8 @@
       "status": "fixed",
       "evidence": ".audit/entregar-issue/evidence/current-remediation.txt",
       "validations": [
-        "CI #4536 success",
-        "Statement visual validation #3039 success",
+        "CI #4538 success",
+        "Statement visual validation #3041 success",
         "post-write refreeze on current material",
         "new terminal result-only handoff publication"
       ]
