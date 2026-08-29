@@ -83,12 +83,8 @@ if (!existsSync(transitionPath)) {
   failures.push("accounts-cards-dialog-transition.ts is missing");
 } else {
   const transition = readFileSync(transitionPath, "utf8");
-  if (
-    !transition.includes("export function moveCardInstrumentsToDedicatedDialog")
-  ) {
-    failures.push(
-      "dialog transition must expose the active HTML migration transform",
-    );
+  if (!transition.includes("export function moveCardInstrumentsToDedicatedDialog")) {
+    failures.push("dialog transition must expose the active HTML migration transform");
   }
   if (!transition.includes("keepCardInstrumentsInsideEditDialog")) {
     failures.push("dialog transition must preserve the compatibility transform export");
