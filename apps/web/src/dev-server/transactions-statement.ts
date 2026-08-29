@@ -124,8 +124,15 @@ export function resolveFilters(
     ? accounts.filter((account) => accountCurrency(account) === currency)
     : accounts;
   const requestedAccountId = url?.searchParams.get("accountId");
-  const accountId =
-    scopedAccounts.find((account) => account.id === requestedAccountId)?.id ?? scopedAccounts[0]?.id;
+  let accountId: string | undefined;
+
+  if (currency) {
+    accountId =
+      scopedAccounts.find((account) => account.id === requestedAccountId)?.id ??
+      scopedAccounts[0]?.id;
+  } else {
+    accountId = requestedAccountId ?? accounts[0]?.id;
+  }
 
   return {
     ...(accountId ? { accountId } : {}),
