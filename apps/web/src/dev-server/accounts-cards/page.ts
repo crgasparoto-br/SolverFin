@@ -27,18 +27,10 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
   ]);
 
   if (!accounts.ok) {
-    return renderApiErrorPage(
-      "/contas-cartoes",
-      "Contas e Cartões",
-      accounts.error,
-    );
+    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", accounts.error);
   }
   if (!creditCardAccounts.ok) {
-    return renderApiErrorPage(
-      "/contas-cartoes",
-      "Contas e Cartões",
-      creditCardAccounts.error,
-    );
+    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", creditCardAccounts.error);
   }
 
   const viewModel = buildAccountsCardsPageViewModel(

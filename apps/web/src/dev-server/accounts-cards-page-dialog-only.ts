@@ -1,1 +1,1 @@
-export { keepCardInstrumentsInsideEditDialog } from "./accounts-cards/dialog-transition.js";
+export { keepCardInstrumentsInsideEditDialog } from "./accounts-cards-dialog-transition.js";

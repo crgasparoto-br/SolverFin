@@ -11,7 +11,6 @@ const expectedModules = [
   "presentation.ts",
   "components.ts",
   "dialogs.ts",
-  "dialog-transition.ts",
   "runtime.ts",
   "styles.ts",
   "page.ts",
@@ -70,7 +69,7 @@ for (const forbiddenNeedle of [
 
 const legacyShimPath = resolve(sourceRoot, "accounts-cards-page-dialog-only.ts");
 const expectedLegacyShim =
-  'export { keepCardInstrumentsInsideEditDialog } from "./accounts-cards/dialog-transition.js";';
+  'export { keepCardInstrumentsInsideEditDialog } from "./accounts-cards-dialog-transition.js";';
 if (!existsSync(legacyShimPath)) {
   failures.push("accounts-cards-page-dialog-only.ts compatibility shim is missing");
 } else if (readFileSync(legacyShimPath, "utf8").trim() !== expectedLegacyShim) {
@@ -79,8 +78,10 @@ if (!existsSync(legacyShimPath)) {
   );
 }
 
-const transitionPath = resolve(boundaryRoot, "dialog-transition.ts");
-if (existsSync(transitionPath)) {
+const transitionPath = resolve(sourceRoot, "accounts-cards-dialog-transition.ts");
+if (!existsSync(transitionPath)) {
+  failures.push("accounts-cards-dialog-transition.ts is missing");
+} else {
   const transition = readFileSync(transitionPath, "utf8");
   if (!transition.includes("export function moveCardInstrumentsToDedicatedDialog")) {
     failures.push("dialog transition must expose the active HTML migration transform");
@@ -93,9 +94,9 @@ if (existsSync(transitionPath)) {
   }
 }
 
-const obsoleteTransitionPath = resolve(sourceRoot, "accounts-cards-instrument-dialog-transition.ts");
+const obsoleteTransitionPath = resolve(boundaryRoot, "dialog-transition.ts");
 if (existsSync(obsoleteTransitionPath)) {
-  failures.push("top-level dialog transition must stay inside the accounts-cards boundary");
+  failures.push("legacy dialog transition must stay outside the structured accounts-cards boundary");
 }
 
 const server = readFileSync(resolve(root, "apps/web/src/dev-server.ts"), "utf8");
