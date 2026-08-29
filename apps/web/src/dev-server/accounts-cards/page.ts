@@ -9,10 +9,7 @@ import {
 } from "./components.js";
 import { renderAccountDialog, renderCardDialog } from "./dialogs.js";
 import { escapeHtml } from "./presentation.js";
-import {
-  renderAccountsCardsApiFormScript,
-  renderAccountsCardsRuntimeScript,
-} from "./runtime.js";
+import { renderAccountsCardsApiFormScript, renderAccountsCardsRuntimeScript } from "./runtime.js";
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
 import { buildAccountsCardsPageViewModel } from "./view-model.js";
