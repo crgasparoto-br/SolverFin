@@ -1,0 +1,2 @@
+Expected material subject: d4a83c41d3995a0ad01bc46b19677d1013cc795e
+Behavior evidence loading requires report.commit to equal the candidate SHA. An ancestor or mismatched subject is rejected even if its metadata or route labels match. Content-addressed evidence is separately checked by SHA-256 where recorded.

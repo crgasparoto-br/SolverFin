@@ -1,0 +1,28 @@
+SolverFin issue 606 / PR 644 exact-head remediation evidence
+Material head: 3232228884ce20971e815ce30018333fbc26e6f4
+Work-item start: 1aa11d8ad60e85359ba0e7655849c05175e4c1d9
+Independent rejection: audit-rejection:f2f8b40d-afd5-4df8-984c-57028e525c69 / A-001
+
+Literal discriminant: /orcamentos normal with layout=desktop-mobile and no component/legacy claims.
+Sibling discriminants: /dashboard empty and /contas-cartoes empty with the same metadata-only precondition.
+Pre-fix mutation: restoring the old conditional behavior binding causes four of five focused controls to fail: the three real-flow assertions cease to require mobile and the supplemental empty-state registry loses its observed desktop/mobile assertions.
+Post-fix mutation: every real-flow desktop-mobile record requires behavior:layout:desktop and behavior:layout:mobile; supplemental empty-state records carry the same required assertions; all 5 focused tests pass and a proof containing desktop only is rejected.
+Component fixture sibling: component://foundation-states remains outside the real-application-flow rule and retains no synthetic layout behavior claim.
+
+Focused commands executed on the materialized changed files:
+- node --test issue-606-desktop-mobile-binding.test.mjs: 5/5 passed.
+- The supplemental registry regression verifies dashboard-empty-state, accounts-cards-empty-state and budgets-empty-state each carry behavior:layout:desktop and behavior:layout:mobile.
+- The semantic-proof mutation verifies a desktop-only proof is rejected for /orcamentos and both sibling real flows.
+
+Remote diagnostic lineage:
+- Material 4eba43f751177eaa33e6528dbaa8614b98842f88: CI reached canonical Prettier and failed only the new binding test; API integration passed.
+- Material 3b082652963264d9be6ffff7a4fc8ccefab82d74: CI again reported canonical formatting drift in the test. Statement visual validation also failed before scenario execution because supplemental empty-state records declared desktop-mobile metadata but had empty requiredAssertions. The exact-SHA visual artifact 9690369723 confirmed this propagation gap.
+- Material 3232228884ce20971e815ce30018333fbc26e6f4: the single delivery-snapshot collection returned no workflow run yet (pending-no-run). No remote green result is claimed.
+
+Structural observations on the exact material:
+- package.json includes scripts/statement-visual/*.test.mjs in visual-coverage-contract:check, so the mutation and supplemental-registry controls are part of the canonical repository test gate.
+- behaviorClaimAssertionsForRecord requires desktop/mobile proof for every real-flow desktop-mobile record, independent of components or legacyProcessorIds.
+- pilotEmptyCoverage now binds supplemental empty-state metadata to the same required behavior assertions at registration time.
+- issue-606-behavior-claims.mjs already maps budgets and all three empty-state scenarios to exact-SHA evidence adapters that require both mobile and desktop executions.
+- semantic-proof validation rejects any required assertion omitted by a proof.
+- docs/VISUAL_VALIDATION.md states that desktop-mobile metadata without observed mobile behavior must not remain green; the implementation now matches that versioned contract.

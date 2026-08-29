@@ -1,6 +1,6 @@
-# Reexecuta a evidência final em Chrome para os principais fluxos visuais do SolverFin.
-# Alterações em autenticação, sessão ou origem exigem nova evidência no mesmo head auditado.
-# O fechamento documental do contrato também invalida evidências vinculadas a um SHA anterior.
+# Reexecuta a evidencia final em Chrome para os principais fluxos visuais do SolverFin.
+# Alteracoes em autenticacao, sessao ou origem exigem nova evidencia no mesmo head auditado.
+# O fechamento documental do contrato tambem invalida evidencias vinculadas a um SHA anterior.
 name: Statement visual validation
 
 on:
@@ -11,10 +11,13 @@ on:
       - "apps/web/**"
       - "packages/shared/**"
       - "scripts/run-statement-visual-validation.mjs"
+      - "scripts/validate-statement-visual-coverage.mjs"
       - "scripts/statement-visual/**"
       - ".github/workflows/statement-visual-validation.yml"
       - "docs/STATUS_MATRIX.md"
       - "docs/RUNBOOK.md"
+      - "docs/VISUAL_VALIDATION.md"
+      - "docs/quality/accessibility-performance.md"
       - "docs/product/INTERFACE_INVENTORY.md"
       - "package.json"
   workflow_dispatch:
@@ -58,6 +61,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -127,27 +132,14 @@ jobs:
           echo "path=$chrome_bin" >> "$GITHUB_OUTPUT"
           "$chrome_bin" --version
 
-      - name: Validate core interfaces in Chrome
+      - name: Validate registered visual scenarios in Chrome
         env:
           CHROME_BIN: ${{ steps.chrome.outputs.path }}
           SOLVERFIN_WEB_URL: http://127.0.0.1:5173
           SOLVERFIN_PRODUCTIVE_AUTH_URL: http://127.0.0.1:5174
           STATEMENT_VISUAL_OUTPUT: artifacts/statement-visual
-        run: |
-          npm run qa:statement-visual
-          node scripts/statement-visual/productive-auth-login.mjs
-          node scripts/statement-visual/account-remuneration.mjs
-          node scripts/statement-visual/account-remuneration-mobile-evidence.mjs
-          node scripts/statement-visual/account-edit.mjs
-          node scripts/statement-visual/sidebar-navigation.mjs
-          node scripts/statement-visual/inbox-csv-review.mjs
-          node scripts/statement-visual/inbox-interface-refinement.mjs
-          node scripts/statement-visual/inbox-interface-accessibility.mjs
-          node scripts/statement-visual/bank-message-ai-inbox.mjs
-          node scripts/statement-visual/inbox-interface-content-contrast.mjs
-          node scripts/statement-visual/categories-interface.mjs
-          node scripts/statement-visual/cards-interface.mjs
-          node scripts/statement-visual/cards-interface-adversarial.mjs
+          STATEMENT_VISUAL_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run qa:statement-visual
 
       - name: Preserve server log
         if: always()
@@ -167,7 +159,7 @@ jobs:
         if: ${{ always() && steps.artifact_safety.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: statement-visual-evidence-${{ github.sha }}
+          name: statement-visual-evidence-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/statement-visual
           if-no-files-found: error
           retention-days: 30
@@ -176,7 +168,7 @@ jobs:
         if: ${{ always() && steps.artifact_safety.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
-          name: issue-473-diagnostic-${{ github.sha }}
+          name: issue-473-diagnostic-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             artifacts/statement-visual/issue-473-diagnostic.json
             artifacts/statement-visual/issue-473-account-edit.json

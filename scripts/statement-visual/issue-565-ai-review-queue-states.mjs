@@ -313,21 +313,7 @@ async function validateStates(cdp, suggestionId) {
       return true;
     })()`,
   );
-  await sleep(260);
-  const conflict = await evaluate(
-    cdp,
-    `(() => {
-      const card = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"]');
-      const status = card?.querySelector('[data-review-row-status]');
-      const button = card?.querySelector('[data-review-approve]');
-      return {
-        visible: Boolean(status) && status.textContent.includes(
-          'Esta sugestão mudou. Atualize a fila antes de tentar novamente.'
-        ),
-        actionReenabled: button?.disabled === false
-      };
-    })()`,
-  );
+  const conflict = await waitForConflictState(cdp, suggestionId);
   await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-conflict.png"));
 
   return { kinds, loading, empty, error, unavailable, retry, conflict };
@@ -362,6 +348,36 @@ async function inspectQueueStatus(cdp, expectedText) {
       };
     })()`,
   );
+}
+
+async function inspectConflictState(cdp, suggestionId) {
+  return evaluate(
+    cdp,
+    `(() => {
+      const card = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"]');
+      const status = card?.querySelector('[data-review-row-status]');
+      const button = card?.querySelector('[data-review-approve]');
+      return {
+        visible: Boolean(status) && status.textContent.includes(
+          'Esta sugestão mudou. Atualize a fila antes de tentar novamente.'
+        ),
+        actionReenabled: button?.disabled === false
+      };
+    })()`,
+  );
+}
+
+async function waitForConflictState(cdp, suggestionId, timeout = 4_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    const conflict = await inspectConflictState(cdp, suggestionId).catch(() => ({
+      visible: false,
+      actionReenabled: false,
+    }));
+    if (conflict.visible && conflict.actionReenabled) return conflict;
+    await sleep(120);
+  }
+  return inspectConflictState(cdp, suggestionId);
 }
 
 async function restoreHarness(cdp) {

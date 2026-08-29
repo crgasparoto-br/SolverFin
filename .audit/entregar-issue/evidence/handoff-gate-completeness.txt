@@ -1,0 +1,2 @@
+Frozen material: d4a83c41d3995a0ad01bc46b19677d1013cc795e
+Terminal publication is constrained to one direct result-only child under .audit/entregar-issue. The certificate and terminal validator compare published head, current head, parent identity, and complete changed-path allowlist; any later material path requires refreeze.

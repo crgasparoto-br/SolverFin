@@ -1,0 +1,343 @@
+{
+  "schema_version": 1,
+  "patterns": [
+    {
+      "escape_class": "canonical-format-gate-regression",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+        "finding_ids": [
+          "A-002"
+        ]
+      },
+      "plausible_wrong_implementation": "Allow issue-specific execution files to diverge from canonical formatter output while focused visual execution remains green.",
+      "sibling_cases": [
+        {
+          "id": "ESC-RECURRENT-FORMAT-GATE-002-S1",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt"
+        },
+        {
+          "id": "ESC-RECURRENT-FORMAT-GATE-002-S2",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-gate-inventory",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "terminal delivery ordering contract",
+        "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "exact candidate adversarial gate",
+        "control_id": "ESC-RECURRENT-FORMAT-GATE-002-CONTROL",
+        "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt"
+      },
+      "trigger_terms": [
+        "final candidate",
+        "canonical gate",
+        "stale evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory"
+        }
+      ]
+    },
+    {
+      "escape_class": "canonical-gate-handoff-state-mismatch",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Publish a ready handoff while the canonical repository gate is failed, stale, or observed only on an ancestor.",
+      "sibling_cases": [
+        {
+          "id": "ESC-LATEST-CANONICAL-GATE-HANDOFF-001-S1",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
+        },
+        {
+          "id": "ESC-LATEST-CANONICAL-GATE-HANDOFF-001-S2",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "terminal delivery ordering contract",
+        "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "exact candidate adversarial gate",
+        "control_id": "ESC-LATEST-CANONICAL-GATE-HANDOFF-001-CONTROL",
+        "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
+      },
+      "trigger_terms": [
+        "final candidate",
+        "canonical gate",
+        "stale evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory"
+        }
+      ]
+    },
+    {
+      "escape_class": "coordinate-system-contract-mismatch",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:75f0e042-46c1-42d2-b9cc-1caff31aa11a",
+        "finding_ids": [
+          "A-002"
+        ]
+      },
+      "plausible_wrong_implementation": "Compare content viewport width against the device viewport contract and misclassify scrollbar width as failure.",
+      "sibling_cases": [
+        {
+          "id": "ESC-LATEST-VIEWPORT-METRIC-001-S1",
+          "surface": "viewport-coordinate-system",
+          "dimension": "device-vs-content-width",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/critical-controls.txt"
+        },
+        {
+          "id": "ESC-LATEST-VIEWPORT-METRIC-001-S2",
+          "surface": "overflow-accounting",
+          "dimension": "scrollbar-width-accounting",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/critical-controls.txt"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "terminal delivery ordering contract",
+        "evidence": ".audit/entregar-issue/evidence/critical-controls.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "exact candidate adversarial gate",
+        "control_id": "ESC-LATEST-VIEWPORT-METRIC-001-CONTROL",
+        "evidence": ".audit/entregar-issue/evidence/critical-controls.txt"
+      },
+      "trigger_terms": [
+        "final candidate",
+        "canonical gate",
+        "stale evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "viewport-coordinate-system",
+          "dimension": "device-vs-content-width"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "overflow-accounting",
+          "dimension": "scrollbar-width-accounting"
+        }
+      ]
+    },
+    {
+      "escape_class": "evidence-subject-sha-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:d522dbe9-0c16-4439-9bc4-e189cafa3084",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Update attack-matrix head metadata to the current candidate while leaving referenced raw evidence self-identifying an ancestor as the current subject.",
+      "sibling_cases": [
+        {
+          "id": "ESC-EVIDENCE-SUBJECT-SHA-003-S1",
+          "surface": "evidence-subject-binding",
+          "dimension": "ancestor-as-current-rejected",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/evidence-subject-binding.txt"
+        },
+        {
+          "id": "ESC-EVIDENCE-SUBJECT-SHA-003-S2",
+          "surface": "evidence-content-addressing",
+          "dimension": "altered-content-rejected",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/evidence-subject-binding.txt"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "exact-SHA evidence binding metadata",
+        "evidence": ".audit/entregar-issue/evidence/critical-controls.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "generic evidence subject and content-address checker",
+        "control_id": "EVIDENCE-SUBJECT-SHA-BINDING-001",
+        "evidence": ".audit/entregar-issue/evidence/evidence-subject-binding.txt"
+      },
+      "trigger_terms": [
+        "raw evidence subject",
+        "material SHA",
+        "evidence hash",
+        "ancestor evidence",
+        "result-only evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "evidence-subject-binding",
+          "dimension": "raw-evidence-subject-sha"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "evidence-content-addressing",
+          "dimension": "raw-evidence-content-hash"
+        }
+      ]
+    },
+    {
+      "escape_class": "final-candidate-gate-omission",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr644-ci-format-20260826",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Omit the canonical repository format gate after focused checks and publish readiness anyway.",
+      "sibling_cases": [
+        {
+          "id": "ESC-DELIVERY-FORMAT-GATE-001-S1",
+          "surface": "delivery-format-gate",
+          "dimension": "formatter-gate-omission",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt"
+        },
+        {
+          "id": "ESC-DELIVERY-FORMAT-GATE-001-S2",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-gate-inventory",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "terminal delivery ordering contract",
+        "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "exact candidate adversarial gate",
+        "control_id": "ESC-DELIVERY-FORMAT-GATE-001-CONTROL",
+        "evidence": ".audit/entregar-issue/evidence/format-gate-remediation.txt"
+      },
+      "trigger_terms": [
+        "final candidate",
+        "canonical gate",
+        "stale evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory"
+        }
+      ]
+    },
+    {
+      "escape_class": "post-freeze-material-certificate-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:8981f684-a8b5-44cd-b650-481cec71eb2b",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Keep a ready certificate from an earlier material SHA after appending later material commits to the delivery branch.",
+      "sibling_cases": [
+        {
+          "id": "ESC-LATEST-POST-FREEZE-HANDOFF-002-S1",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
+        },
+        {
+          "id": "ESC-LATEST-POST-FREEZE-HANDOFF-002-S2",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "terminal delivery ordering contract",
+        "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "exact candidate adversarial gate",
+        "control_id": "ESC-LATEST-POST-FREEZE-HANDOFF-002-CONTROL",
+        "evidence": ".audit/entregar-issue/evidence/handoff-gate-completeness.txt"
+      },
+      "trigger_terms": [
+        "final candidate",
+        "canonical gate",
+        "stale evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-format-gate",
+          "dimension": "final-candidate-format-check"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-gate-completeness",
+          "dimension": "canonical-final-gate-inventory"
+        }
+      ]
+    }
+  ]
+}

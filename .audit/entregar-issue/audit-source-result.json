@@ -1,10 +1,17 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "kind": "independent-rejection",
-  "status": "rejected",
-  "rejection_id": "audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810",
-  "head_sha": "2d5706170f5087e56844f355b0672e0f61de86b4",
-  "findings": [{"id":"A-001","disposition":"blocking","status":"open","actionable":true,"remediation_mode":"systemic-remediation","summary":"Renderer-function provenance was not preserved through object/array containers, property/index retrieval, spreads and destructuring before invocation."}],
+  "rejection_id": "audit-rejection:2c4f4a91-7a0e-4ccd-9f4f-8c7cb87ca79a",
+  "head_sha": "c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3",
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "requirement": "terminal handoff freshness after post-write material change"
+    }
+  ],
   "recommendations": []
 }

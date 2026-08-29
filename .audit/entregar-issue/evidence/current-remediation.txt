@@ -1,0 +1,5 @@
+Material head: c4f8bebaebd8dee0ad9d8ec56740b05d9467eedd
+CI #4538: success
+Statement visual validation #3041: success
+Fix: replaced fixed 260 ms sleep in issue-565 AI review conflict visual harness with polling of the observable terminal conflict state (message visible + approval action re-enabled).
+Remote workflows are green on the exact material SHA.

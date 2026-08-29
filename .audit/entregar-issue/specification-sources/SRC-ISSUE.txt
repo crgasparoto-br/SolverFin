@@ -1,47 +1,36 @@
 Parent epic: #590
-Depends on: #600, #601
+Depends on: #601, #604
 
 ## Objetivo
 
-Definir padrões de composição para as classes principais de tela do SolverFin, reduzindo variação arbitrária entre rotas.
-
-## Arquétipos mínimos
-
-1. cockpit/dashboard;
-2. listagem/extrato;
-3. master-detail;
-4. cadastro/configuração;
-5. análise/relatório;
-6. revisão/inbox.
+Evoluir a validação visual atual para proteger a nova fundação por classes de fluxo/componente, reduzindo dependência de asserts sobre transformação textual intermediária.
 
 ## Escopo
 
-Para cada arquétipo definir:
-
-- hierarquia e ordem de informação;
-- ação primária e ações secundárias;
-- regiões de filtros/busca;
-- estados loading/vazio/erro/sucesso;
-- estratégia desktop/mobile;
-- comportamento de detalhe/modal/drawer;
-- requisitos de moeda quando houver valores financeiros;
-- exemplos fictícios e critérios de uso.
+- mapear cobertura visual atual para componentes/arquetipos;
+- definir cenários representativos por rota/estado/layout/interação;
+- manter desktop/mobile quando houver composição distinta;
+- cobrir teclado/foco, reflow/zoom, conteúdo longo e overflow nos componentes de risco;
+- preservar evidência visual por SHA;
+- evitar duplicação de cenários com fingerprint equivalente.
 
 ## Critérios de aceite
 
-- [ ] cada tela-piloto pode ser mapeada para um arquétipo sem exceção ad hoc relevante;
-- [ ] padrões são implementáveis pelas primitives de #601;
-- [ ] hierarquia visual não depende de cards para toda informação;
-- [ ] estados e responsividade são explícitos;
-- [ ] documentação evita prescrever estética subjetiva não testável.
+- [ ] componentes estruturais críticos possuem pelo menos um fluxo real coberto;
+- [ ] telas-piloto possuem cenários normal, vazio/erro relevante e mobile quando necessário;
+- [ ] teclado/foco e reflow são validados em pontos representativos;
+- [ ] retirada de provider/enhancement legado só ocorre com cobertura equivalente;
+- [ ] CI publica evidência rastreável no SHA candidato;
+- [ ] falhas apontam rota/cenário/estado de forma acionável.
 
 ## Fora de escopo
 
-- mockup pixel-perfect de todas as rotas;
-- criação de nova rota.
+- screenshot de cada combinação possível;
+- substituir testes de domínio/API.
 
 ## Referências
 
 - #590
-- `docs/EVOLUTION_STRATEGY.md`
-- `docs/DESIGN_SYSTEM.md`
+- #604
+- ADR 0014
+- `docs/RUNBOOK.md`

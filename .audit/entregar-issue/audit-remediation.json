@@ -2,36 +2,27 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "c4f8bebaebd8dee0ad9d8ec56740b05d9467eedd",
+  "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:dc4c2838-8730-4c9c-a07e-a36e3ca8d810",
-    "audited_head_sha": "2d5706170f5087e56844f355b0672e0f61de86b4"
+    "rejection_id": "audit-rejection:2c4f4a91-7a0e-4ccd-9f4f-8c7cb87ca79a",
+    "audited_head_sha": "c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3",
+    "audit_report_sha256": "d15b2570bd7a9b61cadb03f29d931a8af7b22a9d1a0b4b17e90f1c713d546155"
   },
-  "candidate_head_sha": "e5ec3dc64b2ff344b28c5f203fc386845fdfcc66",
-  "remediation_mode": "systemic-remediation",
   "items": [
     {
       "source_kind": "finding",
       "source_id": "A-001",
-      "remediation_mode": "systemic-remediation",
+      "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "changed_files": [
-        "scripts/validate-legacy-html-post-processors-flow-regressions.mjs",
-        "scripts/validate-legacy-html-post-processors-lexical.mjs"
-      ],
-      "evidence": [
-        "evidence/final-refreeze-validation.txt"
-      ],
+      "evidence": ".audit/entregar-issue/evidence/current-remediation.txt",
       "validations": [
-        "renderer provenance through array/object rest declarations and assignments: covered",
-        "static computed property definitions/destructuring: covered",
-        "shifted array spread span/index propagation: covered",
-        "discriminating former-rest-propagation mutation controls: passed",
-        "GitHub Actions CI 32917666846 on exact material head: success",
-        "exact repository formatter, lint, typecheck, test and build gates: passed",
-        "Statement visual validation 32917666834 on exact material head: success",
-        "PROV-CONTAINER-001 prevention and detection skill controls remain cumulative"
+        "CI #4538 success",
+        "Statement visual validation #3041 success",
+        "post-write refreeze on current material",
+        "new terminal result-only handoff publication"
       ]
     }
-  ],
-  "status": "closed"
+  ]
 }

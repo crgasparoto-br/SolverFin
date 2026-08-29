@@ -1,0 +1,2 @@
+Exact material: d4a83c41d3995a0ad01bc46b19677d1013cc795e
+The visual coverage contract retains independent viewport identity, horizontal overflow, desktop/mobile behavior assertions, semantic proof validation, and component behavior bindings. Mutation controls are fail-closed when these capabilities are removed while metadata remains present.
