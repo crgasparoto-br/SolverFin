@@ -1,1 +1,28 @@
-{"schema_version":1,"rejection_id":"audit-rejection:fb231d6e-9d97-4f58-95b2-96bc73a54a15","material_head_sha":"f617c0f4e91a3a93ea8aa2834669f50516c6e4a2","remediation_mode":"targeted-remediation","findings":[{"finding_id":"A-001","status":"remediated","requirement":"canonical final-candidate formatter gate","changed_paths":["scripts/statement-visual/issue-606-desktop-mobile-binding.test.mjs"],"evidence":".audit/entregar-issue/evidence/current-remediation.txt"}],"remote_snapshot":{"material_head_sha":"f617c0f4e91a3a93ea8aa2834669f50516c6e4a2","status":"pending-no-run","claim_remote_green":false}}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:2c4f4a91-7a0e-4ccd-9f4f-8c7cb87ca79a",
+    "audited_head_sha": "c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3",
+    "audit_report_sha256": "d15b2570bd7a9b61cadb03f29d931a8af7b22a9d1a0b4b17e90f1c713d546155"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "evidence": ".audit/entregar-issue/evidence/current-remediation.txt",
+      "validations": [
+        "CI #4536 success",
+        "Statement visual validation #3039 success",
+        "post-write refreeze on current material",
+        "new terminal result-only handoff publication"
+      ]
+    }
+  ]
+}

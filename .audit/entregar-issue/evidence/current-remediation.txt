@@ -1,23 +1,6 @@
-Issue 606 / PR 644 remediation evidence
-material_head_sha: f617c0f4e91a3a93ea8aa2834669f50516c6e4a2
-base_sha: 4dfb24710b861a7121d578a5c8396e76c66b6d4a
-independent_rejection: audit-rejection:fb231d6e-9d97-4f58-95b2-96bc73a54a15
-finding: A-001 canonical formatter gate failure
-
-Observed failure:
-- candidate bdb616015f715c4d4cbb270ba30c0d7b995868b6 remained rejected by GitHub Actions at `prettier . --check`; the only reported path was scripts/statement-visual/issue-606-desktop-mobile-binding.test.mjs.
-- lint, typecheck, test and build were not reached in that rejected candidate.
-
-Remediation:
-- final material f617c0f4e91a3a93ea8aa2834669f50516c6e4a2 changes only scripts/statement-visual/issue-606-desktop-mobile-binding.test.mjs relative to the rejected handoff lineage.
-- source layout was aligned to the repository's previously formatter-produced canonical shape from commit 3b082652963264d9be6ffff7a4fc8ccefab82d74 while preserving the supplemental desktop/mobile assertion test added later.
-- node --check passed for the remediated test source in the delivery workspace.
-- static discriminants confirm behavior: real desktop-mobile flows require both behavior:layout:desktop and behavior:layout:mobile; a semantic proof containing desktop only is rejected; component:// fixtures remain outside real-flow layout binding.
-
-Remote delivery snapshot for final material:
-- a single allowed workflow lookup for f617c0f4e91a3a93ea8aa2834669f50516c6e4a2 returned no eligible workflow runs at observation time.
-- state is recorded as pending-no-run; this delivery does not claim remote CI green for the final material.
-
-Cumulative rejection closure:
-- prior metadata-only desktop/mobile rejection audit-rejection:f2f8b40d-afd5-4df8-984c-57028e525c69 is retained and bound to the current behavior-layout negative control.
-- current formatter rejection audit-rejection:fb231d6e-9d97-4f58-95b2-96bc73a54a15 is retained and bound to the delivery-format-gate negative control.
+Material head: c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3
+Recovery: post-write-refreeze (auditor lower bound preserved)
+CI run 4536: completed success on c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3; Validate monorepo formatting, lint, typecheck, test, build all passed.
+Statement visual validation run 3039: completed success on c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3; Chrome real-flow validation, secret-free evidence assertion and upload all passed.
+Current material diff only reformats scripts/statement-visual/issue-606-desktop-mobile-binding.test.mjs relative to the previous certified material and restores canonical package.json format:check; net issue-local scope from 397bf102.. to current material remains the test file.
+No product code change was introduced by this recovery.

@@ -1,1 +1,17 @@
-{"schema_version":1,"source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:fb231d6e-9d97-4f58-95b2-96bc73a54a15","finding_ids":["A-001"]},"status":"remediated","material_head_sha":"f617c0f4e91a3a93ea8aa2834669f50516c6e4a2","classification":"implementation-only","evidence":".audit/entregar-issue/evidence/current-remediation.txt"}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "rejection_id": "audit-rejection:2c4f4a91-7a0e-4ccd-9f4f-8c7cb87ca79a",
+  "head_sha": "c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3",
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "requirement": "terminal handoff freshness after post-write material change"
+    }
+  ],
+  "recommendations": []
+}

@@ -1,1 +1,16 @@
-{"schema_version":1,"source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:fb231d6e-9d97-4f58-95b2-96bc73a54a15","finding_ids":["A-001"]},"classification":"implementation-only","generalized_learning":{"promotion_status":"not-required","reason":"The existing canonical formatter gate correctly detected the defect. The remediation is implementation-local and does not expose a missing reusable prevention or detection rule."}}
+{
+  "schema_version": 1,
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:2c4f4a91-7a0e-4ccd-9f4f-8c7cb87ca79a",
+    "finding_ids": [
+      "A-001"
+    ],
+    "audit_report_sha256": "d15b2570bd7a9b61cadb03f29d931a8af7b22a9d1a0b4b17e90f1c713d546155"
+  },
+  "classification": "implementation-only",
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The existing post-write refreeze and terminal handoff guards already detect this delivery-state failure; the remediation is to execute the existing control on the current material and publish a fresh result-only handoff."
+  }
+}
