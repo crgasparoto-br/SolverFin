@@ -67,9 +67,31 @@ for (const forbiddenNeedle of [
   }
 }
 
-const parallelLegacyPath = resolve(sourceRoot, "accounts-cards-page-dialog-only.ts");
-if (existsSync(parallelLegacyPath)) {
-  failures.push("parallel legacy renderer accounts-cards-page-dialog-only.ts must stay removed");
+const legacyShimPath = resolve(sourceRoot, "accounts-cards-page-dialog-only.ts");
+const expectedLegacyShim = [
+  "export {",
+  "  moveCardInstrumentsToDedicatedDialog as keepCardInstrumentsInsideEditDialog,",
+  '} from "./accounts-cards-instrument-dialog-transition.js";',
+].join("\n");
+if (!existsSync(legacyShimPath)) {
+  failures.push("accounts-cards-page-dialog-only.ts compatibility shim is missing");
+} else if (readFileSync(legacyShimPath, "utf8").trim() !== expectedLegacyShim) {
+  failures.push(
+    "accounts-cards-page-dialog-only.ts must remain a thin compatibility shim without a renderer implementation",
+  );
+}
+
+const transitionPath = resolve(sourceRoot, "accounts-cards-instrument-dialog-transition.ts");
+if (!existsSync(transitionPath)) {
+  failures.push("accounts-cards-instrument-dialog-transition.ts is missing");
+} else {
+  const transition = readFileSync(transitionPath, "utf8");
+  if (!transition.includes("export function moveCardInstrumentsToDedicatedDialog")) {
+    failures.push("instrument dialog transition must expose the active HTML migration transform");
+  }
+  if (transition.includes("export async function renderAccountsCardsPage")) {
+    failures.push("instrument dialog transition must not expose a parallel page renderer");
+  }
 }
 
 const server = readFileSync(resolve(root, "apps/web/src/dev-server.ts"), "utf8");

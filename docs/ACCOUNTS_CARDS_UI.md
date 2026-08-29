@@ -20,17 +20,26 @@ A migração preserva o SSR atual e o contrato público `renderAccountsCardsPage
 
 A separação não muda regras financeiras, payloads de API, rotas, textos funcionais nem o runtime SSR.
 
-## Legado removido
+## Implementação paralela removida
 
-`accounts-cards-page-dialog-only.ts` foi removido. O módulo criava uma segunda geração da mesma tela chamando o renderer principal e, em seguida, reescrevendo o HTML final por regex/string para mover instrumentos de cartão. Ele não fazia parte do despacho ativo de `dev-server.ts` e representava uma implementação paralela incompatível com a direção da ADR 0014.
+A implementação anterior de `accounts-cards-page-dialog-only.ts` criava uma segunda geração da mesma tela: chamava o renderer principal e depois reescrevia o HTML final por regex/string para mover instrumentos de cartão. Esse segundo renderer foi removido.
 
-O gate `scripts/validate-accounts-cards-ui-boundaries.mjs` protege a ausência desse renderer paralelo e a composição pelas novas fronteiras.
+O caminho `accounts-cards-page-dialog-only.ts` permanece temporariamente apenas como um **shim de compatibilidade**, porque `accounts-cards-enhancement.ts` ainda usa esse import durante a transição. O shim não renderiza página e apenas reexporta a transformação ativa a partir de `accounts-cards-instrument-dialog-transition.ts`.
+
+`accounts-cards-instrument-dialog-transition.ts` contém somente a transformação legada que ainda materializa o modal dedicado de instrumentos no HTML final. A responsabilidade está explicitamente classificada como transição: ela não expõe `renderAccountsCardsPage` e deve desaparecer quando esse comportamento for absorvido pela composição estruturada da rota.
+
+O gate `scripts/validate-accounts-cards-ui-boundaries.mjs` protege simultaneamente:
+
+- a facade canônica de página;
+- as novas fronteiras coesas;
+- o conteúdo estritamente mínimo do shim legado;
+- a ausência de um segundo renderer no módulo de transição.
 
 ## Legado de transição ainda intencional
 
 A rota continua passando, nesta ordem, pelos três pós-processadores inventariados por #604:
 
-1. `accounts-cards-tabs` (`accounts-cards-enhancement.ts`);
+1. `accounts-cards-tabs` (`accounts-cards-enhancement.ts`), que também aciona a transformação temporária do modal de instrumentos;
 2. `accounts-cards-standardization` (`accounts-cards-standardization.ts`);
 3. `accounts-cards-action-menus` (`accounts-cards-action-menu-enhancement.ts`).
 
@@ -41,7 +50,7 @@ Eles permanecem intencionalmente porque ainda são responsáveis pelo contrato f
 O recorte é protegido por:
 
 - teste focado de `view-model.ts`, incluindo contagens, busca, vínculo de conta de pagamento e mascaramento de identificadores;
-- gate estrutural `npm run ui-boundaries:check`, que impede regressão para o módulo monolítico ou reintrodução do renderer paralelo;
+- gate estrutural `npm run ui-boundaries:check`, que impede regressão para o módulo monolítico ou reintrodução de um renderer paralelo;
 - suite, typecheck, lint e build existentes do workspace Web;
 - `legacy-html-post-processors:check` e o contrato SSR existentes, que continuam cobrindo os pós-processadores de transição.
 
