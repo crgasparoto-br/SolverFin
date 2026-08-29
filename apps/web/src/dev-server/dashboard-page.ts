@@ -54,7 +54,7 @@ function renderDashboard(model: DashboardScreenViewModel): string {
 function renderDashboardContent(content: DashboardContentViewModel): string {
   return `
     <section class="panel dashboard-hero" aria-labelledby="dashboard-title">
-      <div>
+      <div class="dashboard-heading">
         <p class="eyebrow">Cockpit financeiro</p>
         <h1 id="dashboard-title">Situação financeira atual</h1>
         <p class="muted">Acompanhe posição, entradas, despesas e compromissos sem misturar moedas.</p>
@@ -223,6 +223,7 @@ function dashboardStyles(): string {
     ${sharedShellStyles()}
     main { display: grid; gap: 16px; margin: 0 auto; max-width: 1440px; padding: 20px; width: 100%; }
     .dashboard-hero { align-items: start; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); }
+    .dashboard-heading { display: grid; gap: 4px; min-width: 0; }
     .dashboard-hero h1 { margin-bottom: 6px; }
     .data-quality { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; padding: 12px; }
     .data-quality strong { color: var(--primary); font-size: 0.875rem; }
