@@ -38,9 +38,7 @@ describe("dev-server dashboard page", () => {
         return jsonResponse({ invoices: [{ dueOn: "2026-07-12" }] });
       }
 
-      throw new Error(
-        `Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`,
-      );
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
     };
 
     try {
@@ -62,10 +60,7 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /Assistente financeiro/);
       assert.match(html, /href="\/planejamento">Abrir planejamento/);
       assert.match(html, /href="\/relatorios">Abrir relatórios/);
-      assert.match(
-        html,
-        /href="\/assistente-financeiro">Abrir assistente/,
-      );
+      assert.match(html, /href="\/assistente-financeiro">Abrir assistente/);
       assert.equal(
         calledPaths.some((path) => path.startsWith("/api/transactions")),
         false,
@@ -100,9 +95,7 @@ describe("dev-server dashboard page", () => {
 
       if (url.pathname === "/api/bank-message-inbox") return jsonResponse({ messages: [] });
       if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
-      throw new Error(
-        `Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`,
-      );
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
     };
 
     try {
@@ -138,9 +131,7 @@ describe("dev-server dashboard page", () => {
         });
       }
       if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
-      throw new Error(
-        `Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`,
-      );
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
     };
 
     try {
