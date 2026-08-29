@@ -16,9 +16,7 @@ const consumingModules = [
     solverFinSsrStyleContracts
       .filter((contract) => contract.shell === "authenticated")
       .map((contract) =>
-        contract.routeId === "accountsCards"
-          ? "accounts-cards/styles.js"
-          : contract.moduleFileName,
+        contract.routeId === "accountsCards" ? "accounts-cards/styles.js" : contract.moduleFileName,
       ),
   ),
 ].sort();
