@@ -27,10 +27,18 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
   ]);
 
   if (!accounts.ok) {
-    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", accounts.error);
+    return renderApiErrorPage(
+      "/contas-cartoes",
+      "Contas e Cartões",
+      accounts.error,
+    );
   }
   if (!creditCardAccounts.ok) {
-    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", creditCardAccounts.error);
+    return renderApiErrorPage(
+      "/contas-cartoes",
+      "Contas e Cartões",
+      creditCardAccounts.error,
+    );
   }
 
   const viewModel = buildAccountsCardsPageViewModel(
@@ -44,7 +52,9 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
       "Crie uma conta para iniciar saldos e lançamentos.",
     );
   const cardsHtml =
-    viewModel.cards.map((card) => renderCardItem(card, viewModel.accounts)).join("") ||
+    viewModel.cards
+      .map((card) => renderCardItem(card, viewModel.accounts))
+      .join("") ||
     renderEmptyState(
       "Nenhum cartão cadastrado.",
       "Crie um cartão agrupador com ao menos um instrumento ativo para começar.",
@@ -141,7 +151,11 @@ function renderAuthenticatedPage(input: {
   });
 }
 
-function renderApiErrorPage(pathname: string, currentLabel: string, error: string): string {
+function renderApiErrorPage(
+  pathname: string,
+  currentLabel: string,
+  error: string,
+): string {
   return renderAuthenticatedPage({
     pathname,
     currentLabel,

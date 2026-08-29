@@ -83,8 +83,12 @@ if (!existsSync(transitionPath)) {
   failures.push("accounts-cards-dialog-transition.ts is missing");
 } else {
   const transition = readFileSync(transitionPath, "utf8");
-  if (!transition.includes("export function moveCardInstrumentsToDedicatedDialog")) {
-    failures.push("dialog transition must expose the active HTML migration transform");
+  if (
+    !transition.includes("export function moveCardInstrumentsToDedicatedDialog")
+  ) {
+    failures.push(
+      "dialog transition must expose the active HTML migration transform",
+    );
   }
   if (!transition.includes("keepCardInstrumentsInsideEditDialog")) {
     failures.push("dialog transition must preserve the compatibility transform export");
@@ -96,7 +100,9 @@ if (!existsSync(transitionPath)) {
 
 const obsoleteTransitionPath = resolve(boundaryRoot, "dialog-transition.ts");
 if (existsSync(obsoleteTransitionPath)) {
-  failures.push("legacy dialog transition must stay outside the structured accounts-cards boundary");
+  failures.push(
+    "legacy dialog transition must stay outside the structured accounts-cards boundary",
+  );
 }
 
 const server = readFileSync(resolve(root, "apps/web/src/dev-server.ts"), "utf8");
