@@ -12,6 +12,24 @@ import {
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 
+const readModuleSource = (moduleFileName: string): string =>
+  readFileSync(join(currentDir, moduleFileName), "utf8");
+
+const resolveAuthenticatedSources = (
+  routeId: string,
+  moduleFileName: string,
+): { renderer: string; styles: string } => {
+  if (routeId === "accountsCards") {
+    return {
+      renderer: readModuleSource("accounts-cards/page.js"),
+      styles: readModuleSource("accounts-cards/styles.js"),
+    };
+  }
+
+  const source = readModuleSource(moduleFileName);
+  return { renderer: source, styles: source };
+};
+
 describe("SSR shell pages", () => {
   it("derives exact route and module coverage from the canonical available routes", () => {
     assert.deepEqual(
@@ -22,7 +40,7 @@ describe("SSR shell pages", () => {
 
   for (const contract of solverFinSsrStyleContracts) {
     it(`${contract.path} keeps its renderer connected to the expected SSR shell`, () => {
-      const source = readFileSync(join(currentDir, contract.moduleFileName), "utf8");
+      const source = readModuleSource(contract.moduleFileName);
 
       if (contract.shell === "public") {
         assert.match(source, /renderLoginPage/);
@@ -30,8 +48,13 @@ describe("SSR shell pages", () => {
         return;
       }
 
-      assert.match(source, /renderAuthenticatedShellDocument/);
-      assert.match(source, /sharedShellStyles\(\)/);
+      const authenticatedSources = resolveAuthenticatedSources(
+        contract.routeId,
+        contract.moduleFileName,
+      );
+
+      assert.match(authenticatedSources.renderer, /renderAuthenticatedShellDocument/);
+      assert.match(authenticatedSources.styles, /sharedShellStyles\(\)/);
     });
   }
 });
