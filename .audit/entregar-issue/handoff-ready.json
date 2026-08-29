@@ -1,49 +1,38 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-29T15:03:52.313891+00:00",
+  "created_at": "2026-08-29T17:11:44.106558+00:00",
   "identity": {
-    "head_sha": "3a32aa02977dafb4f781732cd69613dda7c3102b",
-    "material_head_sha": "3a32aa02977dafb4f781732cd69613dda7c3102b",
-    "base_sha": "5fc6957f5b1c8ef22c1853a117e2171ac9db42a5",
-    "merge_preview_sha": "9a141456f2d23acf418c0cc31926d4c8b453a05f",
-    "material_merge_preview_sha": "9a141456f2d23acf418c0cc31926d4c8b453a05f"
+    "head_sha": "ab17ca0beeee98964f6eb51d12e27cc2de72acf5",
+    "material_head_sha": "ab17ca0beeee98964f6eb51d12e27cc2de72acf5",
+    "base_sha": "169fa1be3dced373c62554cf657b097c352f692d",
+    "merge_preview_sha": "8d4746deb7015390be4e073979faccc515e31679",
+    "material_merge_preview_sha": "8d4746deb7015390be4e073979faccc515e31679"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 607,
-    "pull_request_number": 646,
+    "issue_number": 608,
+    "pull_request_number": 647,
     "work_item_kind": "pr",
-    "work_item_number": 646,
-    "pull_request": 646,
+    "work_item_number": 647,
+    "pull_request": 647,
     "base_ref": "main",
-    "head_ref": "refactor/607-web-ui-boundaries"
+    "head_ref": "codex/608-dashboard-cockpit-multicurrency"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "5fc6957f5b1c8ef22c1853a117e2171ac9db42a5",
-    "material_head_sha": "3a32aa02977dafb4f781732cd69613dda7c3102b",
+    "work_item_start_sha": "169fa1be3dced373c62554cf657b097c352f692d",
+    "material_head_sha": "ab17ca0beeee98964f6eb51d12e27cc2de72acf5",
     "issue_changed_paths": [
-      "apps/web/src/dev-server.test.ts",
-      "apps/web/src/dev-server/accounts-cards-dialog-transition.ts",
-      "apps/web/src/dev-server/accounts-cards-page-dialog-only.ts",
-      "apps/web/src/dev-server/accounts-cards-page.ts",
-      "apps/web/src/dev-server/accounts-cards/components.ts",
-      "apps/web/src/dev-server/accounts-cards/dialogs.ts",
-      "apps/web/src/dev-server/accounts-cards/page.ts",
-      "apps/web/src/dev-server/accounts-cards/presentation.ts",
-      "apps/web/src/dev-server/accounts-cards/runtime.ts",
-      "apps/web/src/dev-server/accounts-cards/styles.ts",
-      "apps/web/src/dev-server/accounts-cards/types.ts",
-      "apps/web/src/dev-server/accounts-cards/view-model.test.ts",
-      "apps/web/src/dev-server/accounts-cards/view-model.ts",
-      "apps/web/src/dev-server/shared-styles.test.ts",
-      "apps/web/src/dev-server/shell-pages.test.ts",
-      "docs/ACCOUNTS_CARDS_UI.md",
-      "package.json",
-      "scripts/validate-accounts-cards-ui-boundaries.mjs"
+      "apps/web/src/dev-server/dashboard-drilldown-currency.test.ts",
+      "apps/web/src/dev-server/dashboard-page-currency.test.ts",
+      "apps/web/src/dev-server/dashboard-page.test.ts",
+      "apps/web/src/dev-server/dashboard-page.ts",
+      "apps/web/src/dev-server/dashboard-presenter.test.ts",
+      "apps/web/src/dev-server/dashboard-presenter.ts",
+      "apps/web/src/dev-server/transactions-statement.ts"
     ],
-    "issue_delta_sha256": "7b7daabd33672e9a846b4abf9ef0fda1dd8468960170e251613150bbd897c2da"
+    "issue_delta_sha256": "f27d101c539208a6d79e84fe173a6212c8c9634b4c1f63631ff3271ff37b6247"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -51,7 +40,7 @@
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE-608.txt",
       ".audit/entregar-issue/standard-evidence.json"
     ]
   },
@@ -84,9 +73,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "cff1dcd72f4a2830728b8a16cd104ae72ebe5abff155072141cd4cd9ee17293a",
-      "logical_sha256": "cff1dcd72f4a2830728b8a16cd104ae72ebe5abff155072141cd4cd9ee17293a",
-      "logical_size": 565,
+      "sha256": "b2182576a7aa034269b226560319c0798815e7ef74dedc3be14d0abb28c8755c",
+      "logical_sha256": "b2182576a7aa034269b226560319c0798815e7ef74dedc3be14d0abb28c8755c",
+      "logical_size": 576,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -94,9 +83,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "8d6349c6c73d44b483136c48f2fb2201328bf2d8b919852602dc6fb5db6712c3",
-      "logical_sha256": "8d6349c6c73d44b483136c48f2fb2201328bf2d8b919852602dc6fb5db6712c3",
-      "logical_size": 11938,
+      "sha256": "b8690095e316e06447ddd51dc01628d31ca9739b9fc8db40972840848926a5fc",
+      "logical_sha256": "b8690095e316e06447ddd51dc01628d31ca9739b9fc8db40972840848926a5fc",
+      "logical_size": 12675,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -104,9 +93,9 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "f0b0bc8147de28aae459dbfb39abfade4a9c60aa84131522b4675bad95f7a159",
-      "logical_sha256": "f0b0bc8147de28aae459dbfb39abfade4a9c60aa84131522b4675bad95f7a159",
-      "logical_size": 5316,
+      "sha256": "34d5cab5cb475e7ff405f3c36ec174ef36b3544b2cb98134be3d931de06010b8",
+      "logical_sha256": "34d5cab5cb475e7ff405f3c36ec174ef36b3544b2cb98134be3d931de06010b8",
+      "logical_size": 12421,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1

@@ -1,92 +1,231 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "3a32aa02977dafb4f781732cd69613dda7c3102b",
+  "head_sha": "ab17ca0beeee98964f6eb51d12e27cc2de72acf5",
   "requirements": [
     {
-      "requirement_id": "R607-BOUNDARIES",
+      "requirement_id": "RQ-001",
       "positive_evidence": [
-        "apps/web/src/dev-server/accounts-cards/page.ts owns route orchestration and authenticated SSR composition while components.ts, dialogs.ts, runtime.ts, styles.ts, types.ts and view-model.ts own the extracted boundaries.",
-        "CI run 4559 on the exact material head completed the ui-boundaries contract inside npm run test successfully."
+        "dashboard-page.ts reutiliza presentDashboard, renderAuthenticatedShellDocument e sharedShellStyles da fundacao existente."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page.ts reutiliza presentDashboard, renderAuthenticatedShellDocument e sharedShellStyles da fundacao existente."
       ],
       "primary_negative_control": {
-        "id": "NC-607-BOUNDARIES",
+        "id": "NEG-001",
         "status": "passed",
-        "procedure": "Run scripts/validate-accounts-cards-ui-boundaries.mjs against the material tree.",
-        "expected": "The guard rejects a refactor that moves runtime or styling responsibilities back into accounts-cards/page.ts or removes the declared boundary modules.",
-        "observed": "The guard reported Accounts/Cards UI boundary contract: ok in the exact-head CI test step."
-      },
-      "regression_evidence": [
-        "Exact-head CI run 4559 completed format, lint, typecheck, test and build successfully."
-      ]
+        "procedure": "Inspecionar se a pagina criou renderer/shell paralelo em vez de reutilizar os primitives atuais.",
+        "expected": "A pagina deve importar e usar os primitives/view-model existentes.",
+        "observed": "O candidato importa e usa os primitives/view-model existentes; nenhum shell paralelo foi introduzido."
+      }
     },
     {
-      "requirement_id": "R607-COMPAT",
+      "requirement_id": "RQ-002",
       "positive_evidence": [
-        "The public accounts-cards-page.ts import path remains a one-line re-export to accounts-cards/page.js.",
-        "shell-pages.test.ts now validates the real renderer in accounts-cards/page.js and the style provider in accounts-cards/styles.js without weakening the public façade."
+        "dashboard-page-currency.test.ts cobre BRL e USD em secoes independentes e drilldowns separados."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page-currency.test.ts cobre BRL e USD em secoes independentes e drilldowns separados."
       ],
       "primary_negative_control": {
-        "id": "NC-607-COMPAT",
+        "id": "NEG-002",
         "status": "passed",
-        "procedure": "Execute the SSR shell page contract and shared style contract on the exact material head.",
-        "expected": "The contracts fail if /contas-cartoes is disconnected from renderAuthenticatedShellDocument or from sharedShellStyles().",
-        "observed": "Both contracts passed in the exact-head CI test step after being aligned to the split module boundaries."
-      },
-      "regression_evidence": [
-        "Exact-head CI run 4559 passed all web tests and the production build."
-      ]
+        "procedure": "Usar duas moedas com valores diferentes e procurar qualquer total/card que as combine.",
+        "expected": "Nenhum valor de BRL e USD pode ser combinado sem conversao explicita.",
+        "observed": "O teste exige duas secoes por moeda e o presenter mantem Money com currency em cada metrica."
+      }
     },
     {
-      "requirement_id": "R607-DOC",
+      "requirement_id": "RQ-003",
       "positive_evidence": [
-        "docs/ACCOUNTS_CARDS_UI.md identifies the compatibility shim and the explicit transition transform instead of describing a parallel renderer.",
-        "The requirement-closure documentation consistency gate records both canonical transition terms and active occurrences."
+        "dashboard-page.test.ts verifica Cockpit financeiro, Situacao financeira atual, compromissos e proximas acoes."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page.test.ts verifica Cockpit financeiro, Situacao financeira atual, compromissos e proximas acoes."
       ],
       "primary_negative_control": {
-        "id": "NC-607-DOC",
+        "id": "NEG-003",
         "status": "passed",
-        "procedure": "Compare documented legacy/transition terminology with the active accounts/cards server imports and transition pipeline.",
-        "expected": "Documentation that still describes the shim as a parallel renderer or omits the remaining transition path is rejected as inconsistent.",
-        "observed": "The documentation consistency gate passed with no unresolved contradictions."
-      },
-      "regression_evidence": [
-        "The exact-head CI completed successfully with documentation and source contracts unchanged by the CI-only test corrections."
-      ]
+        "procedure": "Renderizar o dashboard com dados validos e verificar se o estado/acao prioritario fica ausente ou ambiguo.",
+        "expected": "A hierarquia inicial deve comunicar situacao atual e acoes antes de detalhes secundarios.",
+        "observed": "O HTML verificado coloca hero de situacao atual, qualidade de dados e proximas acoes antes dos modulos de horizonte."
+      }
     },
     {
-      "requirement_id": "R607-TESTS",
+      "requirement_id": "RQ-004",
       "positive_evidence": [
-        "Focused tests cover the accounts/cards view-model, shared style composition, façade compatibility and SSR shell connection.",
-        "The exact material head passed the full monorepo Test step in CI run 4559."
+        "dashboard-page-currency.test.ts exige links /lancamentos?currency=BRL e USD em KPIs."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page-currency.test.ts exige links /lancamentos?currency=BRL e USD em KPIs."
       ],
       "primary_negative_control": {
-        "id": "NC-607-TESTS",
+        "id": "NEG-004",
         "status": "passed",
-        "procedure": "Keep shell-pages.test.ts and shared-styles.test.ts pointed at the canonical implementation modules while preserving the public façade contract.",
-        "expected": "A façade-only source without the real SSR/style implementation must not satisfy the implementation-level assertions.",
-        "observed": "The earlier stale assertions exposed this mismatch; the corrected focused tests now exercise page.js, styles.js and components.js and pass on the exact material head."
-      },
-      "regression_evidence": [
-        "Integration API + PostgreSQL and Validate monorepo both completed successfully for the exact material head."
-      ]
+        "procedure": "Clicar conceitualmente em KPI de USD e resolver filtros sem conta USD disponivel.",
+        "expected": "O drilldown deve manter o recorte da moeda e nao cair silenciosamente em outra moeda.",
+        "observed": "dashboard-drilldown-currency.test.ts e transactions-statement.ts preservam filtro de moeda e impedem fallback cruzado."
+      }
     },
     {
-      "requirement_id": "R607-TRANSITION",
+      "requirement_id": "RQ-005",
       "positive_evidence": [
-        "accounts-cards-page-dialog-only.ts is a compatibility shim and accounts-cards-dialog-transition.ts owns the explicit temporary transform.",
-        "The legacy HTML post-processor contract passed in exact-head CI and reported the residual adapters with structural flow guards."
+        "dashboard-page.test.ts verifica Planejamento financeiro, Tendencias e periodos e Assistente financeiro como modulos de decisao."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page.test.ts verifica Planejamento financeiro, Tendencias e periodos e Assistente financeiro como modulos de decisao."
       ],
       "primary_negative_control": {
-        "id": "NC-607-TRANSITION",
+        "id": "NEG-005",
         "status": "passed",
-        "procedure": "Run the legacy HTML post-processor inventory, lexical and flow-regression guards.",
-        "expected": "A missing, duplicated or reordered transition adapter must fail before transformed HTML is accepted.",
-        "observed": "All legacy post-processor guards passed in exact-head CI."
-      },
+        "procedure": "Procurar numero de orcamento, projecao ou insight calculado no frontend.",
+        "expected": "Slots futuros devem ser honestos e nao fabricar calculos no frontend.",
+        "observed": "Os modulos exibem links/descricoes de capacidade sem criar valores calculados ou projecoes locais."
+      }
+    },
+    {
+      "requirement_id": "RQ-006",
+      "positive_evidence": [
+        "dashboard-page.test.ts registra chamadas e exige ausencia de /api/transactions no Dashboard."
+      ],
       "regression_evidence": [
-        "The route continues exporting renderAccountsCardsPage through the compatibility façade while implementation lives in accounts-cards/page.ts."
-      ]
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page.test.ts registra chamadas e exige ausencia de /api/transactions no Dashboard."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-006",
+        "status": "passed",
+        "procedure": "Renderizar o Dashboard e capturar qualquer chamada que comece por /api/transactions.",
+        "expected": "Nenhum download indiscriminado de todos os lancamentos deve ocorrer quando financial-summary esta disponivel.",
+        "observed": "O controle negativo exige calledPaths sem /api/transactions; dashboard-page.ts chama apenas financial-summary, inbox e invoices."
+      }
+    },
+    {
+      "requirement_id": "RQ-007",
+      "positive_evidence": [
+        "dashboard-page.ts substitui a composicao antiga por cockpit e remove a dependencia DashboardTransaction/all-transactions."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page.ts substitui a composicao antiga por cockpit e remove a dependencia DashboardTransaction/all-transactions."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-007",
+        "status": "passed",
+        "procedure": "Inspecionar imports e requests antigos que tenham ficado ativos apos a nova composicao.",
+        "expected": "Enhancements legados substituidos nao devem continuar como dependencia ativa da pagina.",
+        "observed": "DashboardTransaction e /api/transactions?status=all foram removidos da pagina; a composicao antiga foi substituida pelo cockpit."
+      }
+    },
+    {
+      "requirement_id": "RQ-008",
+      "positive_evidence": [
+        "dashboard-page-currency.test.ts cobre duas moedas e conta blocos independentes."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page-currency.test.ts cobre duas moedas e conta blocos independentes."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-008",
+        "status": "passed",
+        "procedure": "Fornecer BRL e USD e verificar se aparece um unico agregado monetario global.",
+        "expected": "O Dashboard nao pode misturar moedas em um mesmo agregado.",
+        "observed": "O presenter gera blocos por currency e o teste exige duas currency-summary independentes."
+      }
+    },
+    {
+      "requirement_id": "RQ-009",
+      "positive_evidence": [
+        "dashboard-page.test.ts verifica hero prioritario e data-quality antes dos detalhes."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page.test.ts verifica hero prioritario e data-quality antes dos detalhes."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-009",
+        "status": "passed",
+        "procedure": "Remover hero/estado prioritario e verificar se restam apenas listas/cartoes sem contexto.",
+        "expected": "Deve existir um estado prioritario inequivoco no topo.",
+        "observed": "O teste exige Cockpit financeiro e Situacao financeira atual, e a pagina renderiza data-quality no hero."
+      }
+    },
+    {
+      "requirement_id": "RQ-010",
+      "positive_evidence": [
+        "dashboard-presenter.ts preserva Money amountMinor+currency e dashboard-page.ts usa renderMoney."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-presenter.ts preserva Money amountMinor+currency e dashboard-page.ts usa renderMoney."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-010",
+        "status": "passed",
+        "procedure": "Substituir Money por numero sem currency no view-model de metrica.",
+        "expected": "Toda metrica monetaria deve carregar currency junto aos minor units.",
+        "observed": "DashboardMetricViewModel.amount permanece Money e renderMoney recebe esse objeto; currency e derivada do bloco sem conversao."
+      }
+    },
+    {
+      "requirement_id": "RQ-011",
+      "positive_evidence": [
+        "dashboard-drilldown-currency.test.ts cobre selecao de conta por moeda e ausencia de fallback silencioso."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-drilldown-currency.test.ts cobre selecao de conta por moeda e ausencia de fallback silencioso."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-011",
+        "status": "passed",
+        "procedure": "Solicitar currency=USD quando a conta requisitada for BRL.",
+        "expected": "O recorte filtrado deve selecionar somente conta compativel com a moeda ou ficar sem conta.",
+        "observed": "resolveFilters restringe scopedAccounts pela moeda antes de resolver accountId e o teste cobre divergencia de conta/moeda."
+      }
+    },
+    {
+      "requirement_id": "RQ-012",
+      "positive_evidence": [
+        "dashboard-presenter.test.ts e dashboard-page.test.ts cobrem sucesso, vazio/sem pendencias, erro de summary e estado parcial de fonte opcional."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-presenter.test.ts e dashboard-page.test.ts cobrem sucesso, vazio/sem pendencias, erro de summary e estado parcial de fonte opcional."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-012",
+        "status": "passed",
+        "procedure": "Falhar uma fonte opcional e observar se a pagina se apresenta como completa.",
+        "expected": "Falha opcional deve resultar em dados parciais; falha da fonte principal deve produzir erro; vazio deve ser explicito.",
+        "observed": "O presenter produz dataQuality partial para fonte opcional e preserva screen models de loading/error/empty/success."
+      }
+    },
+    {
+      "requirement_id": "RQ-013",
+      "positive_evidence": [
+        "dashboard-page.test.ts verifica media query mobile e focus-visible; dashboard-page.ts define reflow 1024/760 e foco para drilldowns/links."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page.test.ts verifica media query mobile e focus-visible; dashboard-page.ts define reflow 1024/760 e foco para drilldowns/links."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-013",
+        "status": "passed",
+        "procedure": "Remover a regra mobile ou o focus-visible e executar o contrato de renderizacao.",
+        "expected": "O HTML/CSS do Dashboard deve conter reflow mobile e indicador de foco de teclado.",
+        "observed": "O teste exige @media (max-width: 760px), grid em 1 coluna e .metric-drilldown:focus-visible no candidato."
+      }
+    },
+    {
+      "requirement_id": "RQ-014",
+      "positive_evidence": [
+        "dashboard-page.ts compoe HTML diretamente no renderer SSR e nao adiciona transformacao textual posterior."
+      ],
+      "regression_evidence": [
+        "Regressao vinculada ao candidato ab17ca0beeee98964f6eb51d12e27cc2de72acf5: dashboard-page.ts compoe HTML diretamente no renderer SSR e nao adiciona transformacao textual posterior."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-014",
+        "status": "passed",
+        "procedure": "Procurar replace/regex/post-processamento aplicado ao HTML final do Dashboard.",
+        "expected": "Nenhum novo pos-processamento textual do HTML deve ser introduzido.",
+        "observed": "O diff do Dashboard usa templates/escapeHtml/renderers existentes; nenhum replace ou pipeline textual final foi adicionado."
+      }
     }
   ]
 }
