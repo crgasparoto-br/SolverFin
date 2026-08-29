@@ -71,6 +71,9 @@ describe("dev-server dashboard page", () => {
         false,
       );
       assert.equal(calledPaths.includes("/api/payables-receivables"), false);
+      assert.match(html, /@media \(max-width: 760px\)/);
+      assert.match(html, /\.metric-drilldown:focus-visible/);
+      assert.match(html, /\.summary-grid, \.decision-grid \{ grid-template-columns: 1fr;/);
     } finally {
       globalThis.fetch = originalFetch;
     }
