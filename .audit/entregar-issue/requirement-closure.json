@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/solverfin607-handoff/specification-snapshot.json",
-    "sha256": "520590bd0c7139dafc0059f90a6d9cd1cfe7dd4ef300cb13a9beaf4a28f84f0f"
+    "path": "/mnt/data/solverfin607-refreeze/specification-snapshot.json",
+    "sha256": "cff1dcd72f4a2830728b8a16cd104ae72ebe5abff155072141cd4cd9ee17293a"
   },
   "primary_issue_source_id": "SRC-ISSUE",
   "obligations": [
@@ -284,13 +284,13 @@
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "Repository code search and direct server inspection confirmed the three active accounts/cards processor ids and the residual compatibility import."
+      "Repository code search and direct server inspection confirmed the active accounts/cards processor ids and residual compatibility import."
     ]
   },
   "scope_reduction_review": {
     "status": "passed",
     "matches": [
-      "Refactor is limited to /contas-cartoes boundaries, its transition shim, focused test/gate, documentation, and restoration of accidentally removed dev tool dependencies."
+      "Refactor is limited to /contas-cartoes boundaries, its transition shim, focused tests/gates, documentation, and restoration of required dev tool dependencies."
     ]
   },
   "pass_c": {
@@ -317,7 +317,7 @@
     ],
     "evidence": [
       "Issue body was re-derived directly into the specification snapshot.",
-      "The final diff preserves SSR/API behavior and explicitly inventories remaining HTML post-processors."
+      "The final material diff preserves SSR/API behavior and explicitly inventories remaining HTML post-processors."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

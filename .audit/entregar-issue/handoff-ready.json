@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-29T13:11:21.662393+00:00",
+  "created_at": "2026-08-29T15:03:52.313891+00:00",
   "identity": {
-    "head_sha": "c67cc2c8ac5d08a6c9115a460e9641f6d93b8f17",
-    "material_head_sha": "c67cc2c8ac5d08a6c9115a460e9641f6d93b8f17",
+    "head_sha": "3a32aa02977dafb4f781732cd69613dda7c3102b",
+    "material_head_sha": "3a32aa02977dafb4f781732cd69613dda7c3102b",
     "base_sha": "5fc6957f5b1c8ef22c1853a117e2171ac9db42a5",
-    "merge_preview_sha": "0911bc06dc94323ea38843a69ef7897672a0d302",
-    "material_merge_preview_sha": "0911bc06dc94323ea38843a69ef7897672a0d302"
+    "merge_preview_sha": "9a141456f2d23acf418c0cc31926d4c8b453a05f",
+    "material_merge_preview_sha": "9a141456f2d23acf418c0cc31926d4c8b453a05f"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -22,8 +22,9 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "5fc6957f5b1c8ef22c1853a117e2171ac9db42a5",
-    "material_head_sha": "c67cc2c8ac5d08a6c9115a460e9641f6d93b8f17",
+    "material_head_sha": "3a32aa02977dafb4f781732cd69613dda7c3102b",
     "issue_changed_paths": [
+      "apps/web/src/dev-server.test.ts",
       "apps/web/src/dev-server/accounts-cards-dialog-transition.ts",
       "apps/web/src/dev-server/accounts-cards-page-dialog-only.ts",
       "apps/web/src/dev-server/accounts-cards-page.ts",
@@ -36,11 +37,13 @@
       "apps/web/src/dev-server/accounts-cards/types.ts",
       "apps/web/src/dev-server/accounts-cards/view-model.test.ts",
       "apps/web/src/dev-server/accounts-cards/view-model.ts",
+      "apps/web/src/dev-server/shared-styles.test.ts",
+      "apps/web/src/dev-server/shell-pages.test.ts",
       "docs/ACCOUNTS_CARDS_UI.md",
       "package.json",
       "scripts/validate-accounts-cards-ui-boundaries.mjs"
     ],
-    "issue_delta_sha256": "ec4a80e4abe057804b02c3591a1a64493002b09d6026cdd01a7e21ed1bf6b704"
+    "issue_delta_sha256": "7b7daabd33672e9a846b4abf9ef0fda1dd8468960170e251613150bbd897c2da"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -81,9 +84,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "520590bd0c7139dafc0059f90a6d9cd1cfe7dd4ef300cb13a9beaf4a28f84f0f",
-      "logical_sha256": "520590bd0c7139dafc0059f90a6d9cd1cfe7dd4ef300cb13a9beaf4a28f84f0f",
-      "logical_size": 564,
+      "sha256": "cff1dcd72f4a2830728b8a16cd104ae72ebe5abff155072141cd4cd9ee17293a",
+      "logical_sha256": "cff1dcd72f4a2830728b8a16cd104ae72ebe5abff155072141cd4cd9ee17293a",
+      "logical_size": 565,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -91,9 +94,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "f2153fcb6320a9dd9c45910650565d03ed9a04c52b43b1edfdb721131b84d272",
-      "logical_sha256": "f2153fcb6320a9dd9c45910650565d03ed9a04c52b43b1edfdb721131b84d272",
-      "logical_size": 11948,
+      "sha256": "8d6349c6c73d44b483136c48f2fb2201328bf2d8b919852602dc6fb5db6712c3",
+      "logical_sha256": "8d6349c6c73d44b483136c48f2fb2201328bf2d8b919852602dc6fb5db6712c3",
+      "logical_size": 11938,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -101,9 +104,9 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "e55c9155d57e6517bd84d7291d3456edc14cd6018baa170a60c9d1d562db3b64",
-      "logical_sha256": "e55c9155d57e6517bd84d7291d3456edc14cd6018baa170a60c9d1d562db3b64",
-      "logical_size": 6456,
+      "sha256": "f0b0bc8147de28aae459dbfb39abfade4a9c60aa84131522b4675bad95f7a159",
+      "logical_sha256": "f0b0bc8147de28aae459dbfb39abfade4a9c60aa84131522b4675bad95f7a159",
+      "logical_size": 5316,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1

@@ -1,92 +1,91 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "c67cc2c8ac5d08a6c9115a460e9641f6d93b8f17",
+  "head_sha": "3a32aa02977dafb4f781732cd69613dda7c3102b",
   "requirements": [
     {
       "requirement_id": "R607-BOUNDARIES",
       "positive_evidence": [
-        "Issue-local diff replaces the 53 KB accounts-cards page owner with page, view-model, presentation, components, dialogs, runtime, styles, and types boundaries while retaining a one-line page facade.",
-        "Connector-only structural control was re-executed for the current c67cc2c material layout; the required boundaries, exact facade/shim contracts, explicit transition ownership, and retained processor ids are all present."
+        "apps/web/src/dev-server/accounts-cards/page.ts owns route orchestration and authenticated SSR composition while components.ts, dialogs.ts, runtime.ts, styles.ts, types.ts and view-model.ts own the extracted boundaries.",
+        "CI run 4559 on the exact material head completed the ui-boundaries contract inside npm run test successfully."
       ],
       "primary_negative_control": {
-        "id": "NEG-607-BOUNDARIES",
+        "id": "NC-607-BOUNDARIES",
         "status": "passed",
-        "procedure": "Run scripts/validate-accounts-cards-ui-boundaries.mjs against the structured layout and verify it rejects page.ts if extracted runtime/style functions return or required boundary modules disappear.",
-        "expected": "A monolithic or arbitrarily fragmented page is rejected by the structural contract.",
-        "observed": "The modeled final layout passed; the gate contains explicit forbidden responsibility checks and required module checks."
+        "procedure": "Run scripts/validate-accounts-cards-ui-boundaries.mjs against the material tree.",
+        "expected": "The guard rejects a refactor that moves runtime or styling responsibilities back into accounts-cards/page.ts or removes the declared boundary modules.",
+        "observed": "The guard reported Accounts/Cards UI boundary contract: ok in the exact-head CI test step."
       },
       "regression_evidence": [
-        "view-model.test.ts remains in the boundary inventory and the root test command invokes ui-boundaries:check before the existing suites.",
-        "The immediate predecessor 212caa4 completed Statement visual validation successfully; c67cc2c changes only formatting in page.ts and the structural validator."
+        "Exact-head CI run 4559 completed format, lint, typecheck, test and build successfully."
       ]
     },
     {
       "requirement_id": "R607-COMPAT",
       "positive_evidence": [
-        "accounts-cards-page.ts still exports renderAccountsCardsPage from ./accounts-cards/page.js and dev-server.ts keeps the public route contract.",
-        "The legacy import consumed by accounts-cards-enhancement.ts resolves through the compatibility shim to the explicit transition transform."
+        "The public accounts-cards-page.ts import path remains a one-line re-export to accounts-cards/page.js.",
+        "shell-pages.test.ts now validates the real renderer in accounts-cards/page.js and the style provider in accounts-cards/styles.js without weakening the public façade."
       ],
       "primary_negative_control": {
-        "id": "NEG-607-COMPAT",
+        "id": "NC-607-COMPAT",
         "status": "passed",
-        "procedure": "The UI boundary gate compares the public page facade to the exact compatibility export and requires the compatibility shim path to exist with the exact re-export.",
-        "expected": "Breaking either established import contract fails the gate before test/build completion.",
-        "observed": "Both compatibility surfaces are explicitly asserted by the final structural gate."
+        "procedure": "Execute the SSR shell page contract and shared style contract on the exact material head.",
+        "expected": "The contracts fail if /contas-cartoes is disconnected from renderAuthenticatedShellDocument or from sharedShellStyles().",
+        "observed": "Both contracts passed in the exact-head CI test step after being aligned to the split module boundaries."
       },
       "regression_evidence": [
-        "The prior remote build failure caused by the missing legacy import was remediated by preserving the import through a thin shim instead of restoring a duplicate renderer.",
-        "Statement visual validation completed successfully on 212caa4 after the compatibility/import remediation; c67cc2c does not alter the shim or transition module."
+        "Exact-head CI run 4559 passed all web tests and the production build."
       ]
     },
     {
       "requirement_id": "R607-DOC",
       "positive_evidence": [
-        "docs/ACCOUNTS_CARDS_UI.md documents the new boundaries, the compatibility shim, the explicit instrument-dialog transition module, and all three remaining processor ids."
+        "docs/ACCOUNTS_CARDS_UI.md identifies the compatibility shim and the explicit transition transform instead of describing a parallel renderer.",
+        "The requirement-closure documentation consistency gate records both canonical transition terms and active occurrences."
       ],
       "primary_negative_control": {
-        "id": "NEG-607-DOC",
+        "id": "NC-607-DOC",
         "status": "passed",
-        "procedure": "Cross-check the documented transition inventory against the three processor ids still present in apps/web/src/dev-server.ts and the compatibility shim/transition files.",
-        "expected": "Any undocumented active legacy path or claim that the transition was fully removed would conflict with the current server/runtime inventory.",
-        "observed": "The document names accounts-cards-tabs, accounts-cards-standardization, accounts-cards-action-menus, the shim, and the dedicated transition module with explicit temporary status."
+        "procedure": "Compare documented legacy/transition terminology with the active accounts/cards server imports and transition pipeline.",
+        "expected": "Documentation that still describes the shim as a parallel renderer or omits the remaining transition path is rejected as inconsistent.",
+        "observed": "The documentation consistency gate passed with no unresolved contradictions."
       },
       "regression_evidence": [
-        "Documentation consistency closure records no unresolved contradiction between the active route pipeline and the new refactor note."
+        "The exact-head CI completed successfully with documentation and source contracts unchanged by the CI-only test corrections."
       ]
     },
     {
       "requirement_id": "R607-TESTS",
       "positive_evidence": [
-        "apps/web/src/dev-server/accounts-cards/view-model.test.ts adds focused coverage for presentation preparation and remains part of the structural inventory.",
-        "Remote Integration API + PostgreSQL and Statement visual validation succeeded on 212caa4; c67cc2c is a formatting-only remediation in page.ts and the structural validator. The c67cc2c CI/visual snapshot was in_progress when collected, so no green current-SHA format claim is made."
+        "Focused tests cover the accounts/cards view-model, shared style composition, façade compatibility and SSR shell connection.",
+        "The exact material head passed the full monorepo Test step in CI run 4559."
       ],
       "primary_negative_control": {
-        "id": "NEG-607-TESTS",
+        "id": "NC-607-TESTS",
         "status": "passed",
-        "procedure": "Root npm test invokes ui-boundaries:check, and the structural gate fails when a required focused boundary/test module is missing.",
-        "expected": "Removing focused boundary coverage or reverting the module contract is detected before the aggregate suites complete.",
-        "observed": "The final package test script includes ui-boundaries:check and the gate inventory requires view-model.test.ts."
+        "procedure": "Keep shell-pages.test.ts and shared-styles.test.ts pointed at the canonical implementation modules while preserving the public façade contract.",
+        "expected": "A façade-only source without the real SSR/style implementation must not satisfy the implementation-level assertions.",
+        "observed": "The earlier stale assertions exposed this mismatch; the corrected focused tests now exercise page.js, styles.js and components.js and pass on the exact material head."
       },
       "regression_evidence": [
-        "Existing legacy HTML post-processor and visual coverage gates remain wired after the new focused gate, preserving prior regression coverage."
+        "Integration API + PostgreSQL and Validate monorepo both completed successfully for the exact material head."
       ]
     },
     {
       "requirement_id": "R607-TRANSITION",
       "positive_evidence": [
-        "accounts-cards-page-dialog-only.ts is reduced to a one-line compatibility re-export and contains no page renderer.",
-        "accounts-cards-dialog-transition.ts contains only the active dedicated-instrument dialog transform and remains explicitly outside the target structured boundary; the visual workflow succeeded after this relocation on 212caa4."
+        "accounts-cards-page-dialog-only.ts is a compatibility shim and accounts-cards-dialog-transition.ts owns the explicit temporary transform.",
+        "The legacy HTML post-processor contract passed in exact-head CI and reported the residual adapters with structural flow guards."
       ],
       "primary_negative_control": {
-        "id": "NEG-607-TRANSITION",
+        "id": "NC-607-TRANSITION",
         "status": "passed",
-        "procedure": "Use the UI boundary gate to require the thin shim and reject any export async function renderAccountsCardsPage in the transition module.",
-        "expected": "A second accounts/cards page renderer or a non-trivial legacy shim is rejected.",
-        "observed": "The final gate explicitly checks the shim byte shape and forbids a parallel renderer in the transition module."
+        "procedure": "Run the legacy HTML post-processor inventory, lexical and flow-regression guards.",
+        "expected": "A missing, duplicated or reordered transition adapter must fail before transformed HTML is accepted.",
+        "observed": "All legacy post-processor guards passed in exact-head CI."
       },
       "regression_evidence": [
-        "The dedicated instrument modal behavior remained covered by the successful Statement visual validation on 212caa4; c67cc2c did not change the transition implementation."
+        "The route continues exporting renderAccountsCardsPage through the compatibility façade while implementation lives in accounts-cards/page.ts."
       ]
     }
   ]
