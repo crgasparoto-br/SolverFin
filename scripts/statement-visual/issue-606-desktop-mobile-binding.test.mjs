@@ -32,44 +32,41 @@ const cases = [
 ];
 
 for (const scenario of cases) {
-  test(
-    `${scenario.id} requires observed mobile proof even without component or legacy claims`,
-    () => {
-      const record = {
-        route: scenario.route,
-        audience: "authenticated",
-        state: scenario.state,
-        layout: "desktop-mobile",
-        interaction: scenario.interaction,
-        dataProfile: scenario.dataProfile,
-        components: [],
-        legacyProcessorIds: [],
-      };
-      const requiredAssertions = behaviorClaimAssertionsForRecord(record);
+  test(`${scenario.id} requires observed mobile proof even without component or legacy claims`, () => {
+    const record = {
+      route: scenario.route,
+      audience: "authenticated",
+      state: scenario.state,
+      layout: "desktop-mobile",
+      interaction: scenario.interaction,
+      dataProfile: scenario.dataProfile,
+      components: [],
+      legacyProcessorIds: [],
+    };
+    const requiredAssertions = behaviorClaimAssertionsForRecord(record);
 
-      assert.deepEqual(requiredAssertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
+    assert.deepEqual(requiredAssertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
 
-      const execution = {
-        id: scenario.id,
-        sourceScenarioId: scenario.id,
-        requiredAssertions,
-        coverage: [record],
-      };
-      const mutation = validateSemanticProof(execution, {
-        schemaVersion: 1,
-        scenarioId: scenario.id,
-        sourceScenarioId: scenario.id,
-        route: scenario.route,
-        state: scenario.state,
-        assertions: ["behavior:layout:desktop"],
-      });
+    const execution = {
+      id: scenario.id,
+      sourceScenarioId: scenario.id,
+      requiredAssertions,
+      coverage: [record],
+    };
+    const mutation = validateSemanticProof(execution, {
+      schemaVersion: 1,
+      scenarioId: scenario.id,
+      sourceScenarioId: scenario.id,
+      route: scenario.route,
+      state: scenario.state,
+      assertions: ["behavior:layout:desktop"],
+    });
 
-      assert.ok(
-        mutation.errors.some((error) => error.includes("behavior:layout:mobile")),
-        "metadata-only desktop-mobile coverage must fail when mobile behavior is unobserved",
-      );
-    },
-  );
+    assert.ok(
+      mutation.errors.some((error) => error.includes("behavior:layout:mobile")),
+      "metadata-only desktop-mobile coverage must fail when mobile behavior is unobserved",
+    );
+  });
 }
 
 test("supplemental empty-state records bind desktop-mobile metadata to observed assertions", () => {
