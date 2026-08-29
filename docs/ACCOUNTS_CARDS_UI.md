@@ -13,6 +13,7 @@ A migração preserva o SSR atual e o contrato público `renderAccountsCardsPage
 - `presentation.ts`: formatação e pequenas primitivas de apresentação;
 - `components.ts`: composição das linhas/listas de contas, cartões e instrumentos;
 - `dialogs.ts`: formulários e dialogs de criação/edição;
+- `dialog-transition.ts`: transformação HTML legada ainda necessária para o modal dedicado de instrumentos, explicitamente isolada como transição;
 - `runtime.ts`: interação no cliente para formulários, abas, filtros, dialogs e máscara monetária;
 - `styles.ts`: estilos específicos da rota;
 - `page.ts`: orquestra fetch, view-model e composição SSR;
@@ -24,9 +25,9 @@ A separação não muda regras financeiras, payloads de API, rotas, textos funci
 
 A implementação anterior de `accounts-cards-page-dialog-only.ts` criava uma segunda geração da mesma tela: chamava o renderer principal e depois reescrevia o HTML final por regex/string para mover instrumentos de cartão. Esse segundo renderer foi removido.
 
-O caminho `accounts-cards-page-dialog-only.ts` permanece temporariamente apenas como um **shim de compatibilidade**, porque `accounts-cards-enhancement.ts` ainda usa esse import durante a transição. O shim não renderiza página e apenas reexporta a transformação ativa a partir de `accounts-cards-instrument-dialog-transition.ts`.
+O caminho `accounts-cards-page-dialog-only.ts` permanece temporariamente apenas como um **shim de compatibilidade**, porque `accounts-cards-enhancement.ts` ainda usa esse import durante a transição. O shim não renderiza página e apenas reexporta a transformação ativa de `accounts-cards/dialog-transition.ts`.
 
-`accounts-cards-instrument-dialog-transition.ts` contém somente a transformação legada que ainda materializa o modal dedicado de instrumentos no HTML final. A responsabilidade está explicitamente classificada como transição: ela não expõe `renderAccountsCardsPage` e deve desaparecer quando esse comportamento for absorvido pela composição estruturada da rota.
+`accounts-cards/dialog-transition.ts` contém somente a transformação legada que ainda materializa o modal dedicado de instrumentos no HTML final. A responsabilidade está explicitamente classificada como transição: ela não expõe `renderAccountsCardsPage` e deve desaparecer quando esse comportamento for absorvido pela composição estruturada da rota.
 
 O gate `scripts/validate-accounts-cards-ui-boundaries.mjs` protege simultaneamente:
 

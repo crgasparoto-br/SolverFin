@@ -26,14 +26,40 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
     ),
   ]);
 
-  if (!accounts.ok)
-    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", accounts.error);
-  if (!creditCardAccounts.ok)
-    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", creditCardAccounts.error);
+  if (!accounts.ok) {
+    return renderApiErrorPage(
+      "/contas-cartoes",
+      "Contas e Cartões",
+      accounts.error,
+    );
+  }
+  if (!creditCardAccounts.ok) {
+    return renderApiErrorPage(
+      "/contas-cartoes",
+      "Contas e Cartões",
+      creditCardAccounts.error,
+    );
+  }
 
   const viewModel = buildAccountsCardsPageViewModel(
     accounts.data.accounts,
     creditCardAccounts.data.creditCardAccounts,
+  );
+  const accountsHtml =
+    viewModel.accounts.map(renderAccountItem).join("") ||
+    renderEmptyState(
+      "Nenhuma conta cadastrada.",
+      "Crie uma conta para iniciar saldos e lançamentos.",
+    );
+  const cardsHtml =
+    viewModel.cards.map((card) => renderCardItem(card, viewModel.accounts)).join("") ||
+    renderEmptyState(
+      "Nenhum cartão cadastrado.",
+      "Crie um cartão agrupador com ao menos um instrumento ativo para começar.",
+    );
+  const connectionsHtml = renderEmptyState(
+    "Conexões ficam para uma próxima etapa.",
+    "Esta tela está preparada para receber integrações quando houver suporte, sem prometer automação bancária direta.",
   );
 
   return renderAuthenticatedPage({
@@ -79,7 +105,7 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
           <span>${viewModel.activeAccountCount} ativas</span>
         </div>
         <div class="master-list" data-master-list>
-          ${viewModel.accounts.map(renderAccountItem).join("") || renderEmptyState("Nenhuma conta cadastrada.", "Crie uma conta para iniciar saldos e lançamentos.")}
+          ${accountsHtml}
         </div>
         ${renderFilterEmptyState("Nenhuma conta encontrada.")}
       </section>
@@ -93,13 +119,13 @@ export async function renderAccountsCardsPage(token: string): Promise<string> {
           <span>${viewModel.activeCardCount} ativos</span>
         </div>
         <div class="master-list" data-master-list>
-          ${viewModel.cards.map((card) => renderCardItem(card, viewModel.accounts)).join("") || renderEmptyState("Nenhum cartão cadastrado.", "Crie um cartão agrupador com ao menos um instrumento ativo para começar.")}
+          ${cardsHtml}
         </div>
         ${renderFilterEmptyState("Nenhum cartão encontrado.")}
       </section>
 
       <section id="connections-panel" class="master-panel" data-tab-panel="connections" role="tabpanel" aria-labelledby="connections-tab" hidden>
-        ${renderEmptyState("Conexões ficam para uma próxima etapa.", "Esta tela está preparada para receber integrações quando houver suporte, sem prometer automação bancária direta.")}
+        ${connectionsHtml}
       </section>
 
       ${renderAccountDialog()}
