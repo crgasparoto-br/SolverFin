@@ -1,3 +1,15 @@
+import { formatMinorCurrency } from "@solverfin/shared";
+
+import {
+  renderCard,
+  renderEmptyState,
+  renderLoading,
+  renderMetricCard as renderFoundationMetricCard,
+  renderPageContainer,
+  renderPageHeader,
+  renderRecoverableError,
+  renderSummaryGrid,
+} from "../design-system/primitives.js";
 import { renderMoney } from "../design-system/money.js";
 import { apiGet } from "./api.js";
 import {
@@ -36,35 +48,57 @@ function renderDashboard(model: DashboardScreenViewModel): string {
   switch (model.status) {
     case "loading":
       return renderAuthenticatedPage(
-        '<section class="panel" aria-busy="true"><p class="muted">Carregando resumo financeiro...</p></section>',
+        renderPageContainer({
+          className: "dashboard-page",
+          childrenHtml: renderLoading({
+            title: "Carregando resumo financeiro",
+            description: "Estamos preparando os indicadores do cockpit.",
+          }),
+        }),
       );
     case "error":
       return renderAuthenticatedPage(
-        `<section class="panel"><p class="error">${escapeHtml(model.error.message)}</p></section>`,
+        renderPageContainer({
+          className: "dashboard-page",
+          childrenHtml: renderRecoverableError({
+            title: "Não foi possível carregar o Dashboard",
+            description: model.error.message,
+          }),
+        }),
       );
     case "empty":
-      return renderAuthenticatedPage(`
-        <section class="panel dashboard-hero" aria-labelledby="dashboard-title">
-          <div class="dashboard-heading">
-            <p class="eyebrow">Cockpit financeiro</p>
-            <h1 id="dashboard-title">Situação financeira atual</h1>
-            ${renderEmptyState(model.empty.title, model.empty.description)}
-          </div>
-        </section>
-      `);
+      return renderAuthenticatedPage(
+        renderPageContainer({
+          className: "dashboard-page",
+          childrenHtml: `
+            <section class="panel dashboard-hero" aria-label="Situação financeira atual">
+              ${renderPageHeader({
+                eyebrow: "Cockpit financeiro",
+                title: "Situação financeira atual",
+              })}
+              ${renderEmptyState({
+                title: model.empty.title,
+                description: model.empty.description,
+              })}
+            </section>
+          `,
+        }),
+      );
     case "success":
-      return renderAuthenticatedPage(renderDashboardContent(model.content));
+      return renderAuthenticatedPage(
+        renderPageContainer({ className: "dashboard-page", childrenHtml: renderDashboardContent(model.content) }),
+      );
   }
 }
 
 function renderDashboardContent(content: DashboardContentViewModel): string {
   return `
-    <section class="panel dashboard-hero" aria-labelledby="dashboard-title">
-      <div class="dashboard-heading">
-        <p class="eyebrow">Cockpit financeiro</p>
-        <h1 id="dashboard-title">Situação financeira atual</h1>
-        <p class="muted">Acompanhe posição, entradas, despesas e compromissos sem misturar moedas.</p>
-      </div>
+    <section class="panel dashboard-hero" aria-label="Situação financeira atual">
+      ${renderPageHeader({
+        eyebrow: "Cockpit financeiro",
+        title: "Situação financeira atual",
+        description: "Acompanhe posição, entradas, despesas e compromissos sem misturar moedas.",
+      })}
       <div class="data-quality" data-quality="${content.dataQuality.status}" role="status">
         <strong>${escapeHtml(content.dataQuality.title)}</strong>
         <span>${escapeHtml(content.dataQuality.description)}</span>
@@ -108,10 +142,10 @@ function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewMo
 
 function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
   if (blocks.length === 0) {
-    return renderEmptyState(
-      "Nenhum total financeiro disponível.",
-      "Registre lançamentos ou contas para acompanhar os valores deste perfil.",
-    );
+    return renderEmptyState({
+      title: "Nenhum total financeiro disponível.",
+      description: "Registre lançamentos ou contas para acompanhar os valores deste perfil.",
+    });
   }
 
   return blocks
@@ -121,9 +155,7 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
           <div class="section-heading currency-heading">
             <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
           </div>
-          <div class="summary-grid">
-            ${block.metrics.map(renderMetricCard).join("")}
-          </div>
+          ${renderSummaryGrid({ childrenHtml: block.metrics.map(renderDashboardMetric).join("") })}
         </section>
       `,
     )
@@ -132,10 +164,10 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
 
 function renderNextActions(actions: DashboardContentViewModel["nextActions"]): string {
   if (actions.length === 0) {
-    return renderEmptyState(
-      "Nenhuma pendência agora.",
-      "Compromissos previstos, faturas e itens de revisão aparecerão aqui.",
-    );
+    return renderEmptyState({
+      title: "Nenhuma pendência agora.",
+      description: "Compromissos previstos, faturas e itens de revisão aparecerão aqui.",
+    });
   }
 
   return `<div class="rows next-action-rows">${actions
@@ -151,15 +183,13 @@ function renderDecisionModules(modules: readonly DashboardDecisionModuleViewMode
       <div class="section-heading"><div><p class="eyebrow">Horizonte</p><h2 id="decision-title">Ferramentas de decisão</h2></div></div>
       <div class="decision-grid">
         ${modules
-          .map(
-            (module) => `
-              <article class="panel decision-card">
-                <p class="eyebrow">${escapeHtml(module.eyebrow)}</p>
-                <h3>${escapeHtml(module.title)}</h3>
-                <p class="muted">${escapeHtml(module.description)}</p>
-                <a class="text-link" href="${escapeHtml(module.href)}">${escapeHtml(module.linkLabel)}</a>
-              </article>
-            `,
+          .map((module) =>
+            renderCard({
+              title: module.title,
+              className: "decision-card",
+              bodyHtml: `<p class="eyebrow">${escapeHtml(module.eyebrow)}</p><p class="muted">${escapeHtml(module.description)}</p>`,
+              footerHtml: `<a class="text-link" href="${escapeHtml(module.href)}">${escapeHtml(module.linkLabel)}</a>`,
+            }),
           )
           .join("")}
       </div>
@@ -179,10 +209,10 @@ function renderRecentItems(items: readonly DashboardRecentItemViewModel[]): stri
         `,
       )
       .join("") ||
-    renderEmptyState(
-      "Nenhum lançamento recente.",
-      "Os indicadores acima continuam disponíveis por moeda quando houver saldo ou compromissos.",
-    )
+    renderEmptyState({
+      title: "Nenhum lançamento recente.",
+      description: "Os indicadores acima continuam disponíveis por moeda quando houver saldo ou compromissos.",
+    })
   );
 }
 
@@ -209,28 +239,23 @@ function renderNextActionRow(
   `;
 }
 
-function renderMetricCard(metric: DashboardMetricViewModel): string {
-  return `
-    <article class="metric-card">
-      <span>${escapeHtml(metric.title)}</span>
-      <strong>${renderMoney(metric.amount)}</strong>
-      <p>${escapeHtml(metric.subtitle)}</p>
-      <a class="metric-drilldown" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">Ver evidências</a>
-    </article>
-  `;
-}
+function renderDashboardMetric(metric: DashboardMetricViewModel): string {
+  const metricCard = renderFoundationMetricCard({
+    label: metric.title,
+    value: formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency }),
+    detail: metric.subtitle,
+  });
 
-function renderEmptyState(title: string, description: string): string {
-  return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
+  return `<div class="dashboard-metric">${metricCard}<a class="metric-drilldown sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">Ver evidências</a></div>`;
 }
 
 function dashboardStyles(): string {
   return `
     ${sharedShellStyles()}
-    main { display: grid; gap: 16px; margin: 0 auto; max-width: 1440px; padding: 20px; width: 100%; }
+    main { display: grid; gap: 16px; padding: 20px 0; width: 100%; }
+    .sf-page-container { display: grid; gap: 16px; }
     .dashboard-hero { align-items: start; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); }
-    .dashboard-heading { display: grid; gap: 4px; min-width: 0; }
-    .dashboard-hero h1 { margin-bottom: 6px; }
+    .dashboard-hero .sf-page-header { min-width: 0; }
     .data-quality { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; padding: 12px; }
     .data-quality strong { color: var(--primary); font-size: 0.875rem; }
     .data-quality span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
@@ -243,20 +268,19 @@ function dashboardStyles(): string {
     .currency-chip:hover, .currency-chip:focus-visible { background: var(--primary-soft); }
     .currency-summary { display: grid; gap: 8px; scroll-margin-top: 20px; }
     .currency-heading h2 { color: var(--primary); font-size: 1rem; margin: 0; }
-    .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); display: grid; gap: 6px; min-width: 0; padding: 14px 16px; }
-    .metric-card > span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-    .metric-card > strong { color: var(--primary); font-size: 1.25rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
-    .metric-card p { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
-    .metric-drilldown, .text-link { color: var(--primary); font-size: 0.8125rem; font-weight: 700; justify-self: start; text-underline-offset: 3px; }
+    .currency-summary .sf-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .dashboard-metric { min-width: 0; position: relative; }
+    .dashboard-metric .sf-metric-card { height: 100%; padding-bottom: 42px; }
+    .metric-drilldown, .text-link { color: var(--primary); font-size: 0.8125rem; font-weight: 700; text-underline-offset: 3px; }
+    .metric-drilldown { bottom: 14px; left: 16px; position: absolute; }
     .metric-drilldown:focus-visible, .text-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
     .next-actions { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
     .quick-links { display: flex; flex-wrap: wrap; gap: 6px; }
     .decision-section { display: grid; gap: 10px; }
     .decision-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .decision-card { align-content: start; display: grid; gap: 8px; min-width: 0; }
-    .decision-card h3 { color: var(--primary); font-size: 1rem; margin: 0; }
+    .decision-card { align-content: start; min-width: 0; }
+    .decision-card .sf-card-body { display: grid; gap: 8px; }
     .rows { display: grid; gap: 0; }
     .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; min-width: 0; padding: 8px 0; }
     .row:first-child { border-top: 0; padding-top: 0; }
@@ -264,8 +288,8 @@ function dashboardStyles(): string {
     .row div > span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
     .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
     .row > strong { text-align: right; white-space: nowrap; }
-    @media (max-width: 1024px) { .summary-grid, .decision-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } }
-    @media (max-width: 760px) { .summary-grid, .decision-grid { grid-template-columns: 1fr; } .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } }
+    @media (max-width: 1024px) { .currency-summary .sf-summary-grid, .decision-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .currency-summary .sf-summary-grid, .decision-grid { grid-template-columns: 1fr; } .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } }
   `;
 }
 

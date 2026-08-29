@@ -6,7 +6,7 @@ import { renderDashboardPage } from "./dashboard-page.js";
 const originalFetch = globalThis.fetch;
 
 describe("dashboard multi-currency contract", () => {
-  it("renders ordered currency sections, explicit money and currency-scoped drilldowns", async () => {
+  it("renders ordered currency sections, explicit money and KPI-specific evidence drilldowns", async () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
       if (url.pathname === "/api/financial-summary") {
@@ -54,19 +54,34 @@ describe("dashboard multi-currency contract", () => {
       assert.match(html, /aria-label="Moedas disponíveis"/);
       assert.match(html, /href="#currency-BRL">BRL<\/a>/);
       assert.match(html, /href="#currency-USD">USD<\/a>/);
-      assert.match(
-        html,
-        /href="\/lancamentos\?currency=BRL" aria-label="Ver lançamentos em BRL">Ver evidências<\/a>/,
-      );
-      assert.match(
-        html,
-        /href="\/lancamentos\?currency=USD" aria-label="Ver lançamentos em USD">Ver evidências<\/a>/,
-      );
+
+      for (const currency of ["BRL", "USD"]) {
+        assert.match(html, new RegExp(`href="/lancamentos\\?currency=${currency}"`));
+        assert.match(
+          html,
+          new RegExp(
+            `href="/lancamentos\\?currency=${currency}&amp;kind=income&amp;evidence=posted"`,
+          ),
+        );
+        assert.match(
+          html,
+          new RegExp(
+            `href="/lancamentos\\?currency=${currency}&amp;kind=expense&amp;evidence=posted"`,
+          ),
+        );
+        assert.match(
+          html,
+          new RegExp(
+            `href="/lancamentos\\?currency=${currency}&amp;kind=expense&amp;evidence=planned"`,
+          ),
+        );
+      }
+
       assert.match(html, /Compra ficticia USD/);
       assert.match(html, /expense - posted - USD - 18\/08\/2026/);
       assert.equal((html.match(/class="currency-summary"/g) ?? []).length, 2);
-      assert.equal((html.match(/href="\/lancamentos\?currency=BRL"/g) ?? []).length >= 4, true);
-      assert.equal((html.match(/href="\/lancamentos\?currency=USD"/g) ?? []).length >= 4, true);
+      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 8);
+      assert.match(html, /class="sf-summary-grid"/);
     } finally {
       globalThis.fetch = originalFetch;
     }

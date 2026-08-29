@@ -6,7 +6,7 @@ import { renderDashboardPage } from "./dashboard-page.js";
 const originalFetch = globalThis.fetch;
 
 describe("dev-server dashboard page", () => {
-  it("renders an actionable cockpit without loading every transaction", async () => {
+  it("renders an actionable cockpit on Phase 3B primitives without loading every transaction", async () => {
     const calledPaths: string[] = [];
 
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
@@ -66,15 +66,20 @@ describe("dev-server dashboard page", () => {
         false,
       );
       assert.equal(calledPaths.includes("/api/payables-receivables"), false);
+
+      assert.match(html, /class="sf-page-container dashboard-page"/);
+      assert.match(html, /class="sf-page-header"/);
+      assert.match(html, /class="sf-summary-grid"/);
+      assert.match(html, /class="sf-metric-card"/);
       assert.match(html, /@media \(max-width: 760px\)/);
       assert.match(html, /\.metric-drilldown:focus-visible/);
-      assert.match(html, /\.summary-grid, \.decision-grid \{ grid-template-columns: 1fr;/);
+      assert.match(html, /\.sf-summary-grid, \.decision-grid \{ grid-template-columns: 1fr;/);
     } finally {
       globalThis.fetch = originalFetch;
     }
   });
 
-  it("shows a compact positive state when there are no pending actions", async () => {
+  it("shows a canonical empty state when there are no pending actions", async () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
 
@@ -101,6 +106,7 @@ describe("dev-server dashboard page", () => {
     try {
       const html = await renderDashboardPage("session-token");
       assert.match(html, /Nenhuma pendência agora\./);
+      assert.match(html, /class="sf-state-panel" data-state="empty"/);
       assert.doesNotMatch(html, /\/pagar-receber/);
     } finally {
       globalThis.fetch = originalFetch;

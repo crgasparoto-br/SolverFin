@@ -36,7 +36,7 @@ function successfulInput(): DashboardPresenterInput {
 }
 
 describe("dashboard presenter", () => {
-  it("maps canonical financial values without recomputing them and keeps currency mandatory", () => {
+  it("maps canonical financial values and gives each KPI a discriminating evidence drilldown", () => {
     const model = presentDashboard(successfulInput());
 
     assert.equal(model.status, "success");
@@ -53,13 +53,25 @@ describe("dashboard presenter", () => {
     );
     assert.deepEqual(
       model.content.currencySummaries[0]?.metrics.map((metric) => metric.href),
-      Array(4).fill("/lancamentos?currency=USD"),
+      [
+        "/lancamentos?currency=USD",
+        "/lancamentos?currency=USD&kind=income&evidence=posted",
+        "/lancamentos?currency=USD&kind=expense&evidence=posted",
+        "/lancamentos?currency=USD&kind=expense&evidence=planned",
+      ],
+    );
+    assert.equal(
+      new Set(model.content.currencySummaries[0]?.metrics.map((metric) => metric.href)).size,
+      4,
     );
     assert.deepEqual(model.content.recentItems[0]?.amount, {
       amountMinor: 2_100,
       currency: "USD",
     });
-    assert.equal(model.content.nextActions[0]?.href, "/lancamentos?currency=USD");
+    assert.equal(
+      model.content.nextActions[0]?.href,
+      "/lancamentos?currency=USD&kind=expense&evidence=planned",
+    );
     assert.equal(model.content.dataQuality.status, "complete");
   });
 

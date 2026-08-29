@@ -95,6 +95,14 @@ export interface DashboardPresenterInput {
   filters: Readonly<Record<string, string>>;
 }
 
+type DashboardDrilldownKind = "income" | "expense";
+type DashboardDrilldownEvidence = "posted" | "planned";
+
+interface DashboardDrilldownFilters {
+  kind?: DashboardDrilldownKind;
+  evidence?: DashboardDrilldownEvidence;
+}
+
 export function presentDashboard(input: DashboardPresenterInput): DashboardScreenViewModel {
   const context = {
     filters: input.filters,
@@ -137,8 +145,6 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
 function presentCurrencySummary(
   block: DashboardFinancialSummaryCurrencyBlock,
 ): DashboardCurrencySummaryViewModel {
-  const href = currencyDrilldownHref(block.currency);
-
   return {
     currency: block.currency,
     metrics: [
@@ -146,29 +152,29 @@ function presentCurrencySummary(
         title: "Disponível estimado",
         subtitle: "Saldo das contas ativas",
         amount: money(block.availableBalanceMinor, block.currency),
-        href,
-        linkLabel: `Ver lançamentos em ${block.currency}`,
+        href: currencyDrilldownHref(block.currency),
+        linkLabel: `Ver extrato em ${block.currency}`,
       },
       {
         title: "Receitas do mês",
         subtitle: "Entradas postadas no mês atual",
         amount: money(block.incomeMinor, block.currency),
-        href,
-        linkLabel: `Ver lançamentos em ${block.currency}`,
+        href: currencyDrilldownHref(block.currency, { kind: "income", evidence: "posted" }),
+        linkLabel: `Ver receitas postadas em ${block.currency}`,
       },
       {
         title: "Despesas do mês",
         subtitle: "Saídas postadas no mês atual",
         amount: money(block.expensesMinor, block.currency),
-        href,
-        linkLabel: `Ver lançamentos em ${block.currency}`,
+        href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "posted" }),
+        linkLabel: `Ver despesas postadas em ${block.currency}`,
       },
       {
         title: "Compromissos previstos",
-        subtitle: "Lançamentos planejados no mês",
+        subtitle: "Despesas planejadas no mês",
         amount: money(block.plannedCommitmentsMinor, block.currency),
-        href,
-        linkLabel: `Ver lançamentos em ${block.currency}`,
+        href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "planned" }),
+        linkLabel: `Ver compromissos planejados em ${block.currency}`,
       },
     ],
   };
@@ -188,8 +194,8 @@ function presentNextActions(
     .map((block) => ({
       title: `Compromissos previstos em ${block.currency}`,
       description: "Revise os lançamentos planejados desta moeda no Extrato.",
-      href: currencyDrilldownHref(block.currency),
-      linkLabel: `Ver extrato em ${block.currency}`,
+      href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "planned" }),
+      linkLabel: `Ver compromissos planejados em ${block.currency}`,
     }));
 
   if (reviewCount > 0) {
@@ -275,8 +281,14 @@ function provenance(resource: string, available: boolean): ScreenDataProvenance 
   };
 }
 
-function currencyDrilldownHref(currency: string): string {
-  return `/lancamentos?currency=${encodeURIComponent(currency.toUpperCase())}`;
+function currencyDrilldownHref(
+  currency: string,
+  filters: DashboardDrilldownFilters = {},
+): string {
+  const query = new URLSearchParams({ currency: currency.toUpperCase() });
+  if (filters.kind) query.set("kind", filters.kind);
+  if (filters.evidence) query.set("evidence", filters.evidence);
+  return `/lancamentos?${query.toString()}`;
 }
 
 function nearestDueDate(dates: string[]): string {

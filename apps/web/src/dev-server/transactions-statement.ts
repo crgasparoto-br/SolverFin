@@ -82,9 +82,14 @@ export function projectTransactionGroups(
   ];
 }
 
+export type StatementKindFilter = "income" | "expense";
+export type StatementEvidenceFilter = "posted" | "planned";
+
 export interface StatementFilters {
   accountId?: string;
   currency?: string;
+  kind?: StatementKindFilter;
+  evidence?: StatementEvidenceFilter;
   month: string;
   day?: string;
   startsOn: string;
@@ -120,6 +125,8 @@ export function resolveFilters(
   const day = resolveSelectedDay(url, month);
   const period = day ? dayToPeriod(day) : monthToPeriod(month);
   const currency = normalizeCurrency(url?.searchParams.get("currency"));
+  const kind = normalizeKindFilter(url?.searchParams.get("kind"));
+  const evidence = normalizeEvidenceFilter(url?.searchParams.get("evidence"));
   const scopedAccounts = currency
     ? accounts.filter((account) => accountCurrency(account) === currency)
     : accounts;
@@ -137,6 +144,8 @@ export function resolveFilters(
   return {
     ...(accountId ? { accountId } : {}),
     ...(currency ? { currency } : {}),
+    ...(kind ? { kind } : {}),
+    ...(evidence ? { evidence } : {}),
     month,
     ...(day ? { day } : {}),
     startsOn: period.startsOn,
@@ -180,10 +189,32 @@ export function filterStatementPeriodTransactions(
   filters: StatementFilters,
 ): TransactionRecord[] {
   return transactions.filter((transaction) => {
-    const date = statementDate(transaction);
+    const date = evidenceDate(transaction, filters.evidence);
+    if (date < filters.startsOn || date > filters.endsOn) return false;
+    if (filters.kind && transaction.kind !== filters.kind) return false;
 
-    return date >= filters.startsOn && date <= filters.endsOn;
+    if (filters.evidence === "posted") {
+      if (transaction.status !== "posted" && transaction.status !== "reconciled") return false;
+      // Invoice payment transactions are deliberately excluded from the Dashboard month totals.
+      if (transaction.invoiceId !== undefined) return false;
+    }
+
+    if (filters.evidence === "planned") {
+      if (transaction.status !== "planned" && transaction.status !== "suggested") return false;
+      if (transaction.effectiveOn !== undefined) return false;
+    }
+
+    return true;
   });
+}
+
+function evidenceDate(
+  transaction: TransactionRecord,
+  evidence: StatementEvidenceFilter | undefined,
+): string {
+  if (evidence === "posted") return transaction.occurredOn;
+  if (evidence === "planned") return transaction.plannedOn;
+  return statementDate(transaction);
 }
 
 export function calculateOpeningBalance(
@@ -314,6 +345,16 @@ function accountCurrency(account: AccountRecord): string {
 function normalizeCurrency(value: string | null | undefined): string | undefined {
   const normalized = value?.trim().toUpperCase();
   return /^[A-Z]{3}$/.test(normalized ?? "") ? normalized : undefined;
+}
+
+function normalizeKindFilter(value: string | null | undefined): StatementKindFilter | undefined {
+  return value === "income" || value === "expense" ? value : undefined;
+}
+
+function normalizeEvidenceFilter(
+  value: string | null | undefined,
+): StatementEvidenceFilter | undefined {
+  return value === "posted" || value === "planned" ? value : undefined;
 }
 
 function getCurrentMonth(): string {
