@@ -5,6 +5,7 @@ export interface AccountRecord {
   status: string;
   openingBalanceMinor: number;
   institutionKey?: string;
+  currency?: string;
 }
 
 export interface TransactionRecord {
@@ -83,6 +84,7 @@ export function projectTransactionGroups(
 
 export interface StatementFilters {
   accountId?: string;
+  currency?: string;
   month: string;
   day?: string;
   startsOn: string;
@@ -117,10 +119,17 @@ export function resolveFilters(
   const month = resolveSelectedMonth(url, currentMonth);
   const day = resolveSelectedDay(url, month);
   const period = day ? dayToPeriod(day) : monthToPeriod(month);
-  const accountId = url?.searchParams.get("accountId") ?? accounts[0]?.id;
+  const currency = normalizeCurrency(url?.searchParams.get("currency"));
+  const scopedAccounts = currency
+    ? accounts.filter((account) => accountCurrency(account) === currency)
+    : accounts;
+  const requestedAccountId = url?.searchParams.get("accountId");
+  const accountId =
+    scopedAccounts.find((account) => account.id === requestedAccountId)?.id ?? scopedAccounts[0]?.id;
 
   return {
     ...(accountId ? { accountId } : {}),
+    ...(currency ? { currency } : {}),
     month,
     ...(day ? { day } : {}),
     startsOn: period.startsOn,
@@ -289,6 +298,15 @@ function resolveSelectedDay(url: URL | undefined, month: string): string | undef
   if (!queryDay.startsWith(`${month}-`)) return undefined;
 
   return queryDay;
+}
+
+function accountCurrency(account: AccountRecord): string {
+  return (account.currency ?? "BRL").toUpperCase();
+}
+
+function normalizeCurrency(value: string | null | undefined): string | undefined {
+  const normalized = value?.trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(normalized ?? "") ? normalized : undefined;
 }
 
 function getCurrentMonth(): string {

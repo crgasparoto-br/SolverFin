@@ -2,24 +2,13 @@ import { formatDateOnly } from "@solverfin/shared";
 
 import type { ApiFailure, ApiSuccess } from "./api.js";
 import {
+  emptyScreen,
   errorScreen,
   successScreen,
   type MoneyViewModel,
   type ScreenDataProvenance,
   type ScreenViewModel,
 } from "./screen-view-model.js";
-
-export interface DashboardTransaction {
-  id: string;
-  description: string;
-  kind: "income" | "expense" | "transfer";
-  status: string;
-  amountMinor: number;
-  occurredOn: string;
-  plannedOn?: string;
-  invoiceId?: string;
-  installmentId?: string;
-}
 
 export interface DashboardOpenInvoice {
   dueOn: string;
@@ -51,6 +40,8 @@ export interface DashboardMetricViewModel {
   title: string;
   subtitle: string;
   amount: MoneyViewModel;
+  href: string;
+  linkLabel: string;
 }
 
 export interface DashboardCurrencySummaryViewModel {
@@ -73,17 +64,32 @@ export interface DashboardRecentItemViewModel {
   amount: MoneyViewModel;
 }
 
+export interface DashboardDataQualityViewModel {
+  status: "complete" | "partial";
+  title: string;
+  description: string;
+}
+
+export interface DashboardDecisionModuleViewModel {
+  eyebrow: string;
+  title: string;
+  description: string;
+  href: string;
+  linkLabel: string;
+}
+
 export interface DashboardContentViewModel {
   currencySummaries: readonly DashboardCurrencySummaryViewModel[];
   nextActions: readonly DashboardNextActionViewModel[];
   recentItems: readonly DashboardRecentItemViewModel[];
+  dataQuality: DashboardDataQualityViewModel;
+  decisionModules: readonly DashboardDecisionModuleViewModel[];
 }
 
 export type DashboardScreenViewModel = ScreenViewModel<DashboardContentViewModel>;
 
 export interface DashboardPresenterInput {
   summary: ApiSuccess<DashboardFinancialSummary> | ApiFailure;
-  transactions: ApiSuccess<{ transactions: DashboardTransaction[] }> | ApiFailure;
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure;
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure;
   filters: Readonly<Record<string, string>>;
@@ -99,9 +105,23 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
     return errorScreen(context, { message: input.summary.error });
   }
 
+  if (
+    input.summary.data.currencyBlocks.length === 0 &&
+    input.summary.data.recentItems.length === 0
+  ) {
+    return emptyScreen(context, {
+      title: "Ainda não há dados financeiros para este perfil.",
+      description: "Cadastre uma conta ou um lançamento para iniciar o cockpit financeiro.",
+    });
+  }
+
   return successScreen(context, {
     currencySummaries: input.summary.data.currencyBlocks.map(presentCurrencySummary),
-    nextActions: presentNextActions(input.transactions, input.pendingReview, input.openInvoices),
+    nextActions: presentNextActions(
+      input.summary.data.currencyBlocks,
+      input.pendingReview,
+      input.openInvoices,
+    ),
     recentItems: input.summary.data.recentItems.map((item) => ({
       description: item.description,
       kind: item.kind,
@@ -109,12 +129,16 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
       occurredOnLabel: formatDateOnly(item.occurredOn),
       amount: money(item.amountMinor, item.currency),
     })),
+    dataQuality: presentDataQuality(input.pendingReview, input.openInvoices),
+    decisionModules: decisionModules(),
   });
 }
 
 function presentCurrencySummary(
   block: DashboardFinancialSummaryCurrencyBlock,
 ): DashboardCurrencySummaryViewModel {
+  const href = currencyDrilldownHref(block.currency);
+
   return {
     currency: block.currency,
     metrics: [
@@ -122,51 +146,51 @@ function presentCurrencySummary(
         title: "Disponível estimado",
         subtitle: "Saldo das contas ativas",
         amount: money(block.availableBalanceMinor, block.currency),
+        href,
+        linkLabel: `Ver lançamentos em ${block.currency}`,
       },
       {
         title: "Receitas do mês",
         subtitle: "Entradas postadas no mês atual",
         amount: money(block.incomeMinor, block.currency),
+        href,
+        linkLabel: `Ver lançamentos em ${block.currency}`,
       },
       {
         title: "Despesas do mês",
         subtitle: "Saídas postadas no mês atual",
         amount: money(block.expensesMinor, block.currency),
+        href,
+        linkLabel: `Ver lançamentos em ${block.currency}`,
       },
       {
         title: "Compromissos previstos",
         subtitle: "Lançamentos planejados no mês",
         amount: money(block.plannedCommitmentsMinor, block.currency),
+        href,
+        linkLabel: `Ver lançamentos em ${block.currency}`,
       },
     ],
   };
 }
 
 function presentNextActions(
-  transactionsResult: ApiSuccess<{ transactions: DashboardTransaction[] }> | ApiFailure,
+  currencyBlocks: DashboardFinancialSummaryCurrencyBlock[],
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
 ): DashboardNextActionViewModel[] {
-  const plannedTransactions = transactionsResult.ok
-    ? transactionsResult.data.transactions.filter(isPlannedCommitment)
-    : [];
   const reviewCount = pendingReview.ok ? pendingReview.data.messages.length : 0;
   const invoices = openInvoices.ok ? openInvoices.data.invoices : [];
-  const plannedCount = plannedTransactions.length;
   const reviewPlural = reviewCount === 1 ? "m" : "ns";
   const invoicePlural = invoices.length === 1 ? "" : "s";
-  const plannedPlural = plannedCount === 1 ? "" : "s";
-  const plannedDueDates = plannedTransactions.map(getTransactionDueDate);
-  const actions: DashboardNextActionViewModel[] = [];
-
-  if (plannedCount > 0) {
-    actions.push({
-      title: `${plannedCount} lançamento${plannedPlural} previsto${plannedPlural} no Extrato`,
-      description: `Próximo vencimento em ${formatDateOnly(nearestDueDate(plannedDueDates))}.`,
-      href: "/lancamentos",
-      linkLabel: "Ver extrato",
-    });
-  }
+  const actions: DashboardNextActionViewModel[] = currencyBlocks
+    .filter((block) => block.plannedCommitmentsMinor > 0)
+    .map((block) => ({
+      title: `Compromissos previstos em ${block.currency}`,
+      description: "Revise os lançamentos planejados desta moeda no Extrato.",
+      href: currencyDrilldownHref(block.currency),
+      linkLabel: `Ver extrato em ${block.currency}`,
+    }));
 
   if (reviewCount > 0) {
     actions.push({
@@ -189,10 +213,55 @@ function presentNextActions(
   return actions;
 }
 
+function presentDataQuality(
+  pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
+  openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
+): DashboardDataQualityViewModel {
+  if (!pendingReview.ok || !openInvoices.ok) {
+    return {
+      status: "partial",
+      title: "Dados parciais",
+      description:
+        "Os indicadores financeiros estão disponíveis, mas alguns alertas operacionais não puderam ser carregados.",
+    };
+  }
+
+  return {
+    status: "complete",
+    title: "Dados atualizados",
+    description: "Os indicadores e alertas disponíveis preservam a moeda de origem.",
+  };
+}
+
+function decisionModules(): DashboardDecisionModuleViewModel[] {
+  return [
+    {
+      eyebrow: "Orçamento",
+      title: "Planejamento financeiro",
+      description: "Organize o horizonte financeiro sem converter valores entre moedas.",
+      href: "/planejamento",
+      linkLabel: "Abrir planejamento",
+    },
+    {
+      eyebrow: "Projeções",
+      title: "Tendências e períodos",
+      description: "Compare a evolução observável dos dados financeiros por período.",
+      href: "/relatorios",
+      linkLabel: "Abrir relatórios",
+    },
+    {
+      eyebrow: "Insights",
+      title: "Assistente financeiro",
+      description: "Use explicações e insights como apoio, mantendo os valores verificáveis.",
+      href: "/assistente-financeiro",
+      linkLabel: "Abrir assistente",
+    },
+  ];
+}
+
 function dashboardProvenance(input: DashboardPresenterInput): ScreenDataProvenance[] {
   return [
     provenance("/api/financial-summary", input.summary.ok),
-    provenance("/api/transactions?status=all", input.transactions.ok),
     provenance("/api/bank-message-inbox?status=pending_review", input.pendingReview.ok),
     provenance("/api/invoices?status=open", input.openInvoices.ok),
   ];
@@ -206,17 +275,8 @@ function provenance(resource: string, available: boolean): ScreenDataProvenance 
   };
 }
 
-function isPlannedCommitment(transaction: DashboardTransaction): boolean {
-  return (
-    (transaction.status === "planned" || transaction.status === "suggested") &&
-    (transaction.kind === "income" || transaction.kind === "expense") &&
-    transaction.invoiceId === undefined &&
-    transaction.installmentId === undefined
-  );
-}
-
-function getTransactionDueDate(transaction: DashboardTransaction): string {
-  return transaction.plannedOn ?? transaction.occurredOn;
+function currencyDrilldownHref(currency: string): string {
+  return `/lancamentos?currency=${encodeURIComponent(currency.toUpperCase())}`;
 }
 
 function nearestDueDate(dates: string[]): string {

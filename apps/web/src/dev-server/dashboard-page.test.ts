@@ -6,12 +6,12 @@ import { renderDashboardPage } from "./dashboard-page.js";
 const originalFetch = globalThis.fetch;
 
 describe("dev-server dashboard page", () => {
-  it("highlights planned statement items, inbox review items and open invoices with quick links", async () => {
+  it("renders an actionable cockpit without loading every transaction", async () => {
     const calledPaths: string[] = [];
 
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
-      calledPaths.push(url.pathname);
+      calledPaths.push(`${url.pathname}${url.search}`);
 
       if (url.pathname === "/api/financial-summary") {
         return jsonResponse({
@@ -28,32 +28,6 @@ describe("dev-server dashboard page", () => {
         });
       }
 
-      if (url.pathname === "/api/transactions") {
-        assert.equal(url.searchParams.get("status"), "all");
-        return jsonResponse({
-          transactions: [
-            {
-              id: "planned-expense",
-              description: "Aluguel previsto",
-              kind: "expense",
-              status: "planned",
-              amountMinor: 20000,
-              occurredOn: "2026-07-10",
-              plannedOn: "2026-07-10",
-            },
-            {
-              id: "planned-income",
-              description: "Receita prevista",
-              kind: "income",
-              status: "planned",
-              amountMinor: 50000,
-              occurredOn: "2026-07-05",
-              plannedOn: "2026-07-05",
-            },
-          ],
-        });
-      }
-
       if (url.pathname === "/api/bank-message-inbox") {
         assert.equal(url.searchParams.get("status"), "pending_review");
         return jsonResponse({ messages: [{ id: "message-1" }] });
@@ -64,27 +38,34 @@ describe("dev-server dashboard page", () => {
         return jsonResponse({ invoices: [{ dueOn: "2026-07-12" }] });
       }
 
-      return jsonResponse({});
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
     };
 
-    const html = await renderDashboardPage("session-token");
+    try {
+      const html = await renderDashboardPage("session-token");
 
-    assert.match(html, /Visão geral financeira/);
-    assert.doesNotMatch(html, /Demo seguro|Perfil pessoal demo/);
-    assert.match(html, /Próximas ações/);
-    assert.match(html, /2 lançamentos previstos no Extrato/);
-    assert.match(html, /Próximo vencimento em 05\/07\/2026/);
-    assert.match(html, /1 item aguardando revisão na inbox/);
-    assert.match(html, /1 fatura de cartão em aberto/);
-    assert.match(html, /href="\/lancamentos">Ver extrato/);
-    assert.match(html, /href="\/inbox">Abrir inbox/);
-    assert.match(html, /href="\/cartoes">Ver cartões/);
-    assert.match(html, /class="quick-links"/);
-    assert.match(html, /href="\/lancamentos" title="Ver extrato da conta">[\s\S]*?Extrato<\/a>/);
-    assert.doesNotMatch(html, /\/pagar-receber/);
-    assert.equal(calledPaths.includes("/api/payables-receivables"), false);
-
-    globalThis.fetch = originalFetch;
+      assert.match(html, /Cockpit financeiro/);
+      assert.match(html, /Situação financeira atual/);
+      assert.match(html, /sem misturar moedas/);
+      assert.match(html, /data-quality="complete"/);
+      assert.match(html, /Compromissos previstos em BRL/);
+      assert.match(html, /href="\/lancamentos\?currency=BRL">Ver extrato em BRL/);
+      assert.match(html, /1 item aguardando revisão na inbox/);
+      assert.match(html, /1 fatura de cartão em aberto/);
+      assert.match(html, /href="\/inbox">Abrir inbox/);
+      assert.match(html, /href="\/cartoes">Ver cartões/);
+      assert.match(html, /Ferramentas de decisão/);
+      assert.match(html, /Planejamento financeiro/);
+      assert.match(html, /Tendências e períodos/);
+      assert.match(html, /Assistente financeiro/);
+      assert.match(html, /href="\/planejamento">Abrir planejamento/);
+      assert.match(html, /href="\/relatorios">Abrir relatórios/);
+      assert.match(html, /href="\/assistente-financeiro">Abrir assistente/);
+      assert.equal(calledPaths.some((path) => path.startsWith("/api/transactions")), false);
+      assert.equal(calledPaths.includes("/api/payables-receivables"), false);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
   it("shows a compact positive state when there are no pending actions", async () => {
@@ -106,28 +87,54 @@ describe("dev-server dashboard page", () => {
         });
       }
 
-      if (url.pathname === "/api/transactions") {
-        return jsonResponse({ transactions: [] });
-      }
-
-      if (url.pathname === "/api/bank-message-inbox") {
-        return jsonResponse({ messages: [] });
-      }
-
-      if (url.pathname === "/api/invoices") {
-        return jsonResponse({ invoices: [] });
-      }
-
-      return jsonResponse({});
+      if (url.pathname === "/api/bank-message-inbox") return jsonResponse({ messages: [] });
+      if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
     };
 
-    const html = await renderDashboardPage("session-token");
+    try {
+      const html = await renderDashboardPage("session-token");
+      assert.match(html, /Nenhuma pendência agora\./);
+      assert.doesNotMatch(html, /\/pagar-receber/);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 
-    assert.match(html, /Nenhuma pendência agora\./);
-    assert.doesNotMatch(html, /Demo seguro|Perfil pessoal demo/);
-    assert.doesNotMatch(html, /\/pagar-receber/);
+  it("surfaces a partial state when an optional operational source fails", async () => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input));
+      if (url.pathname === "/api/financial-summary") {
+        return jsonResponse({
+          currencyBlocks: [
+            {
+              currency: "BRL",
+              availableBalanceMinor: 500000,
+              incomeMinor: 300000,
+              expensesMinor: 150000,
+              plannedCommitmentsMinor: 0,
+            },
+          ],
+          recentItems: [],
+        });
+      }
+      if (url.pathname === "/api/bank-message-inbox") {
+        return new Response(JSON.stringify({ error: "temporarily unavailable" }), {
+          status: 503,
+          headers: { "content-type": "application/json; charset=utf-8" },
+        });
+      }
+      if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
+    };
 
-    globalThis.fetch = originalFetch;
+    try {
+      const html = await renderDashboardPage("session-token");
+      assert.match(html, /data-quality="partial"/);
+      assert.match(html, /Dados parciais/);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });
 
