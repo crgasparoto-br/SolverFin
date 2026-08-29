@@ -41,9 +41,12 @@ describe("dashboard multi-currency contract", () => {
             ],
           });
         }
-        if (url.pathname === "/api/bank-message-inbox") return jsonResponse({ messages: [] });
+        if (url.pathname === "/api/bank-message-inbox")
+          return jsonResponse({ messages: [] });
         if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
-        throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
+        throw new Error(
+          `Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`,
+        );
       };
 
       try {
@@ -67,8 +70,14 @@ describe("dashboard multi-currency contract", () => {
         assert.match(html, /Compra ficticia USD/);
         assert.match(html, /expense - posted - USD - 18\/08\/2026/);
         assert.equal((html.match(/class="currency-summary"/g) ?? []).length, 2);
-        assert.equal((html.match(/href="\/lancamentos\?currency=BRL"/g) ?? []).length >= 4, true);
-        assert.equal((html.match(/href="\/lancamentos\?currency=USD"/g) ?? []).length >= 4, true);
+        assert.equal(
+          (html.match(/href="\/lancamentos\?currency=BRL"/g) ?? []).length >= 4,
+          true,
+        );
+        assert.equal(
+          (html.match(/href="\/lancamentos\?currency=USD"/g) ?? []).length >= 4,
+          true,
+        );
       } finally {
         globalThis.fetch = originalFetch;
       }
