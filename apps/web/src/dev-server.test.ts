@@ -313,7 +313,7 @@ function accountsCardsEnhancementKeepsOnlyActiveFilter(): void {
 
 function accountsCardsPageDoesNotFetchRetiredLinks(): void {
   const accountsCardsPageSource = readFileSync(
-    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards-page.ts"),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "page.ts"),
     "utf8",
   );
 
@@ -347,18 +347,37 @@ function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
     assert.equal(webInstitution?.shortLabel, catalogInstitution.fallbackLabel);
   }
 
-  const accountsCardsPageSource = readFileSync(
-    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards-page.ts"),
+  const accountsCardsViewModelSource = readFileSync(
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "view-model.ts"),
+    "utf8",
+  );
+  const accountsCardsPresentationSource = readFileSync(
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "presentation.ts"),
+    "utf8",
+  );
+  const accountsCardsComponentsSource = readFileSync(
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "components.ts"),
     "utf8",
   );
 
   assert.match(
-    accountsCardsPageSource,
-    /import \{ findInstitution, institutions, renderInstitutionIcon \} from "\.\/institutions\.js";/,
+    accountsCardsViewModelSource,
+    /import \{ findInstitution \} from "\.\.\/institutions\.js";/,
   );
-  assert.match(accountsCardsPageSource, /<div class="identity-mark">\$\{renderInstitutionIcon/);
+  assert.match(
+    accountsCardsPresentationSource,
+    /import \{ institutions \} from "\.\.\/institutions\.js";/,
+  );
+  assert.match(
+    accountsCardsComponentsSource,
+    /import \{ renderInstitutionIcon \} from "\.\.\/institutions\.js";/,
+  );
+  assert.match(
+    accountsCardsComponentsSource,
+    /<div class="identity-mark">\$\{renderInstitutionIcon/,
+  );
   assert.doesNotMatch(
-    accountsCardsPageSource,
+    accountsCardsComponentsSource,
     /<div class="identity-mark" aria-hidden="true">\$\{renderInstitutionIcon/,
   );
 }
