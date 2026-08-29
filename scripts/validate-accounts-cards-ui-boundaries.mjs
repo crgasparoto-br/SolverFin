@@ -27,7 +27,9 @@ for (const moduleName of expectedModules) {
 const facadePath = resolve(sourceRoot, "accounts-cards-page.ts");
 const facade = readFileSync(facadePath, "utf8").trim();
 if (facade !== 'export { renderAccountsCardsPage } from "./accounts-cards/page.js";') {
-  failures.push("accounts-cards-page.ts must remain a compatibility facade for the structured page module");
+  failures.push(
+    "accounts-cards-page.ts must remain a compatibility facade for the structured page module",
+  );
 }
 
 const page = readFileSync(resolve(boundaryRoot, "page.ts"), "utf8");
@@ -38,15 +40,28 @@ for (const importNeedle of [
   'from "./styles.js"',
   'from "./view-model.js"',
 ]) {
-  if (!page.includes(importNeedle)) failures.push(`page.ts is not composed through ${importNeedle}`);
+  if (!page.includes(importNeedle)) {
+    failures.push(`page.ts is not composed through ${importNeedle}`);
+  }
 }
 
-for (const forbiddenNeedle of ["function apiFormScript", "function masterPageScript", "function baseCss"] ) {
-  if (page.includes(forbiddenNeedle)) failures.push(`page.ts still owns extracted responsibility: ${forbiddenNeedle}`);
+for (const forbiddenNeedle of [
+  "function apiFormScript",
+  "function masterPageScript",
+  "function baseCss",
+]) {
+  if (page.includes(forbiddenNeedle)) {
+    failures.push(`page.ts still owns extracted responsibility: ${forbiddenNeedle}`);
+  }
 }
 
 const viewModel = readFileSync(resolve(boundaryRoot, "view-model.ts"), "utf8");
-for (const forbiddenNeedle of ["apiGet(", "<script", "<style", "renderAuthenticatedShellDocument"]) {
+for (const forbiddenNeedle of [
+  "apiGet(",
+  "<script",
+  "<style",
+  "renderAuthenticatedShellDocument",
+]) {
   if (viewModel.includes(forbiddenNeedle)) {
     failures.push(`view-model.ts crossed its data-preparation boundary: ${forbiddenNeedle}`);
   }
@@ -64,7 +79,9 @@ for (const transitionalProcessor of [
   "accounts-cards-action-menus",
 ]) {
   if (!server.includes(`id: "${transitionalProcessor}"`)) {
-    failures.push(`intentional transition processor disappeared without route migration: ${transitionalProcessor}`);
+    failures.push(
+      `intentional transition processor disappeared without route migration: ${transitionalProcessor}`,
+    );
   }
 }
 

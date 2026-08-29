@@ -1,7 +1,12 @@
 import { apiGet } from "../api.js";
 import { icon } from "../icons.js";
 import { renderAuthenticatedShellDocument } from "../shell.js";
-import { renderAccountItem, renderCardItem, renderEmptyState, renderFilterEmptyState } from "./components.js";
+import {
+  renderAccountItem,
+  renderCardItem,
+  renderEmptyState,
+  renderFilterEmptyState,
+} from "./components.js";
 import { renderAccountDialog, renderCardDialog } from "./dialogs.js";
 import { escapeHtml } from "./presentation.js";
 import {
