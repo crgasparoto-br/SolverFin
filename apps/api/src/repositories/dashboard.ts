@@ -19,6 +19,7 @@ export interface DashboardCurrencyBlock {
   availableBalanceMinor: number;
   incomeMinor: number;
   expensesMinor: number;
+  netVariationMinor: number;
   plannedCommitmentsMinor: number;
 }
 
@@ -34,6 +35,7 @@ export interface DashboardSummary {
   availableBalanceMinor?: number;
   incomeMinor?: number;
   expensesMinor?: number;
+  netVariationMinor?: number;
   plannedCommitmentsMinor?: number;
 }
 
@@ -179,6 +181,10 @@ export async function buildFinancialSummary(
         "PLANNED",
         "SUGGESTED",
       ]);
+      const netVariation = addSafeMoneyMinor(
+        [monthIncome, -monthExpense],
+        `dashboard monthly net variation for ${currency}`,
+      );
 
       return {
         currency,
@@ -188,6 +194,7 @@ export async function buildFinancialSummary(
         ),
         incomeMinor: monthIncome,
         expensesMinor: monthExpense,
+        netVariationMinor: netVariation,
         plannedCommitmentsMinor: monthPlanned,
       };
     });
@@ -214,6 +221,7 @@ export async function buildFinancialSummary(
       summary.availableBalanceMinor = singleCurrency.availableBalanceMinor;
       summary.incomeMinor = singleCurrency.incomeMinor;
       summary.expensesMinor = singleCurrency.expensesMinor;
+      summary.netVariationMinor = singleCurrency.netVariationMinor;
       summary.plannedCommitmentsMinor = singleCurrency.plannedCommitmentsMinor;
     }
   }
