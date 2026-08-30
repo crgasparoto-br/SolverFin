@@ -50,7 +50,10 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /sem misturar moedas/);
       assert.match(html, /data-quality="complete"/);
       assert.match(html, /Variação líquida do mês/);
-      assert.match(html, /href="\/lancamentos\?currency=BRL&amp;evidence=posted" aria-label="Ver variação postada em BRL"/);
+      assert.match(
+        html,
+        /href="\/lancamentos\?currency=BRL&amp;evidence=posted" aria-label="Ver variação postada em BRL"/,
+      );
       assert.match(html, /Compromissos previstos em BRL/);
       assert.match(
         html,
