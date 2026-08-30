@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-30T05:24:01.541965+00:00",
+  "created_at": "2026-08-30T12:06:52.077613+00:00",
   "identity": {
-    "head_sha": "fb831e46b236c460854e4f42e2089ec6be8e72ed",
-    "material_head_sha": "fb831e46b236c460854e4f42e2089ec6be8e72ed",
+    "head_sha": "ce096f796001dc1017cca658aeb98203c9821b34",
+    "material_head_sha": "ce096f796001dc1017cca658aeb98203c9821b34",
     "base_sha": "169fa1be3dced373c62554cf657b097c352f692d",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
@@ -13,17 +13,21 @@
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 608,
     "pull_request_number": 647,
-    "work_item_kind": "pr",
-    "work_item_number": 647,
+    "work_item_kind": "issue",
+    "work_item_number": 608,
     "pull_request": 647,
     "base_ref": "main",
     "head_ref": "codex/608-dashboard-cockpit-multicurrency"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "9d7c6d88e4ab441dd085e2b0096be0733fcdea2b",
-    "material_head_sha": "fb831e46b236c460854e4f42e2089ec6be8e72ed",
+    "work_item_start_sha": "72d5b329c7db09b3a5de6566ca284028052016ab",
+    "material_head_sha": "ce096f796001dc1017cca658aeb98203c9821b34",
     "issue_changed_paths": [
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/requirement-closure.json",
+      ".audit/entregar-issue/specification-snapshot.json",
+      ".audit/entregar-issue/standard-evidence.json",
       "apps/api/src/financial-summary-multi-currency.integration.test.ts",
       "apps/api/src/repositories/dashboard.ts",
       "apps/web/src/dev-server/dashboard-drilldown-evidence.test.ts",
@@ -31,10 +35,11 @@
       "apps/web/src/dev-server/dashboard-page.test.ts",
       "apps/web/src/dev-server/dashboard-presenter.test.ts",
       "apps/web/src/dev-server/dashboard-presenter.ts",
+      "apps/web/src/dev-server/transactions-statement.ts",
       "docs/DASHBOARD.md",
       "scripts/statement-visual/main.mjs"
     ],
-    "issue_delta_sha256": "0da7463896bbbf88a95b4b6ad1eeca81504b0e826efe7bb1b22c92f73eab654f"
+    "issue_delta_sha256": "3a43d726d6599e583c1dcd8c7c0b908ea44b9c51ec61cfce0326b20bb66a85a8"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -74,9 +79,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "9dbb944693a3ba58a90ae9dd8e25b33bfec3fc6e919911f683c70869e386408d",
-      "logical_sha256": "9dbb944693a3ba58a90ae9dd8e25b33bfec3fc6e919911f683c70869e386408d",
-      "logical_size": 582,
+      "sha256": "888ed3a6f1561e60dd78039fc6c430cc69eb9a73688a13e6086ae5ac8a470965",
+      "logical_sha256": "888ed3a6f1561e60dd78039fc6c430cc69eb9a73688a13e6086ae5ac8a470965",
+      "logical_size": 555,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -84,9 +89,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "64e5586935a6df55fd1f5120d0ac24fe77c9a64461e2e604760118cdd5948b45",
-      "logical_sha256": "64e5586935a6df55fd1f5120d0ac24fe77c9a64461e2e604760118cdd5948b45",
-      "logical_size": 12812,
+      "sha256": "e035d0ed1e21719bddb208d338af1b451f798454aeffd361713455fafcd4e374",
+      "logical_sha256": "e035d0ed1e21719bddb208d338af1b451f798454aeffd361713455fafcd4e374",
+      "logical_size": 11765,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -94,9 +99,9 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "dcee9cea524b57b9a06d974475b7995ec9bf8cb6e17332cb7ce7d057ffcb657e",
-      "logical_sha256": "dcee9cea524b57b9a06d974475b7995ec9bf8cb6e17332cb7ce7d057ffcb657e",
-      "logical_size": 11243,
+      "sha256": "69d9f471c4935f35e69b1f33ac241c000f031f4e2a47b6bd73ff32a8141cbb76",
+      "logical_sha256": "69d9f471c4935f35e69b1f33ac241c000f031f4e2a47b6bd73ff32a8141cbb76",
+      "logical_size": 11772,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1

@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/solverfin-608-handoff-new/.audit/entregar-issue/specification-snapshot.json",
-    "sha256": "9dbb944693a3ba58a90ae9dd8e25b33bfec3fc6e919911f683c70869e386408d"
+    "path": "/mnt/data/solverfin608-final/.audit/entregar-issue/specification-snapshot.json",
+    "sha256": "888ed3a6f1561e60dd78039fc6c430cc69eb9a73688a13e6086ae5ac8a470965"
   },
   "primary_issue_source_id": "SRC-ISSUE-608",
   "obligations": [
@@ -21,7 +21,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-002",
@@ -40,7 +40,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-003",
@@ -57,7 +57,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-004",
@@ -74,7 +74,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-005",
@@ -93,7 +93,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-006",
@@ -112,7 +112,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-007",
@@ -129,7 +129,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-008",
@@ -148,7 +148,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-009",
@@ -165,7 +165,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-010",
@@ -182,7 +182,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-011",
@@ -199,7 +199,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-012",
@@ -216,7 +216,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-013",
@@ -233,7 +233,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     },
     {
       "id": "OBL-014",
@@ -252,7 +252,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coberto pela implementacao e pelas evidencias discriminantes da entrega da Issue 608."
+      "rationale": "Coberto pela implementação e pelas evidências discriminantes da entrega da Issue 608."
     }
   ],
   "source_coverage": [
@@ -283,67 +283,33 @@
   "observable_assertions": [],
   "structural_invariant_closures": {
     "status": "not-applicable",
-    "applicability_reason": "A especificacao nao introduz invariantes estruturais, precedencia ou caminhos canonicos obrigatorios.",
+    "applicability_reason": "A especificação não introduz caminho canônico ou forma estrutural obrigatória nova nesta remediação.",
     "entries": [],
     "unresolved_invariants": []
   },
   "read_model_closures": {
     "status": "not-applicable",
-    "applicability_reason": "A entrega nao cria historico, versionamento, paginacao ou read model temporal.",
-    "entries": [],
-    "unconsumed_outputs": [],
-    "unmapped_required_fields": []
+    "applicability_reason": "A entrega não cria histórico, versionamento, paginação ou read model temporal."
   },
   "canonical_source_consistency": {
     "status": "not-applicable",
-    "applicability_reason": "Nao ha nova fonte canonica concorrente nem migracao de source of truth nesta entrega.",
-    "entries": [],
-    "unverified_surfaces": [],
-    "missing_divergent_tests": []
+    "applicability_reason": "A entrega não cria uma segunda fonte canônica concorrente para o Dashboard."
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "O contrato vivo do Dashboard foi atualizado junto com a mudanca de rota, variacao e evidencias de acessibilidade.",
-    "old_contract_terms": [
-      "quatro indicadores principais",
-      "/assistente-financeiro"
-    ],
-    "new_contract_terms": [
-      "cinco indicadores principais",
-      "/assistente",
-      "variacao liquida do mes"
-    ],
-    "occurrences": [
-      "docs/DASHBOARD.md atualizado no material head"
-    ],
-    "unresolved_contradictions": [],
-    "searched_outside_diff": true,
-    "search_evidence": [
-      "Roteamento canonico verificado em apps/web/src/app-shell/routes.ts e apps/web/src/dev-server.ts."
+    "applicability_reason": "A documentação viva do Dashboard foi atualizada junto da substituição dos comportamentos legados.",
+    "evidence": [
+      "docs/DASHBOARD.md acompanha o contrato multi-moeda, variação, drilldowns e estados."
     ]
   },
   "scope_reduction_review": {
     "status": "passed",
-    "matches": []
+    "matches": [],
+    "reviewed": true
   },
   "pass_c": {
     "status": "passed",
-    "requirement_ids": [
-      "RQ-001",
-      "RQ-002",
-      "RQ-003",
-      "RQ-004",
-      "RQ-005",
-      "RQ-006",
-      "RQ-007",
-      "RQ-008",
-      "RQ-009",
-      "RQ-010",
-      "RQ-011",
-      "RQ-012",
-      "RQ-013",
-      "RQ-014"
-    ],
+    "reviewed_all_specification_sources": true,
     "obligation_ids": [
       "OBL-001",
       "OBL-002",
@@ -359,13 +325,6 @@
       "OBL-012",
       "OBL-013",
       "OBL-014"
-    ],
-    "evidence": [
-      "Contrato da Issue 608 rederivado e confrontado com codigo, testes, documentacao e gate visual."
-    ],
-    "rederived_without_pr_description": true,
-    "reviewed_user_visible_semantics": true,
-    "reviewed_producer_consumer_parity": true,
-    "reviewed_all_specification_sources": true
+    ]
   }
 }

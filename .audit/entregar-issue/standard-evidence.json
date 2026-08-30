@@ -1,230 +1,230 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "fb831e46b236c460854e4f42e2089ec6be8e72ed",
+  "head_sha": "ce096f796001dc1017cca658aeb98203c9821b34",
   "requirements": [
     {
       "requirement_id": "RQ-001",
       "positive_evidence": [
-        "dashboard-page.test.ts valida primitives executaveis da Fase 3B no markup do cockpit."
+        "apps/web/src/dev-server/dashboard-page.test.ts valida primitives da Fase 3B."
       ],
       "primary_negative_control": {
         "id": "NEG-001",
         "status": "passed",
-        "procedure": "Renderizar a rota com os dados de teste e conferir as primitives compartilhadas.",
+        "procedure": "Renderizar o cockpit e verificar as primitives compartilhadas.",
         "expected": "PageContainer, PageHeader, SummaryGrid e MetricCard devem compor a tela.",
-        "observed": "As assercoes discriminantes verificam as classes das primitives no HTML SSR."
+        "observed": "As asserções verificam as classes canônicas no HTML SSR."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-002",
       "positive_evidence": [
-        "dashboard-page-currency.test.ts renderiza BRL e USD em blocos separados, agora com cinco KPIs por moeda."
+        "dashboard-page-currency.test.ts cobre BRL e USD em blocos separados."
       ],
       "primary_negative_control": {
         "id": "NEG-002",
         "status": "passed",
-        "procedure": "Renderizar duas moedas no mesmo resumo.",
-        "expected": "Nenhum valor ou link pode perder a moeda de origem.",
-        "observed": "O teste exige duas secoes independentes e dez metric cards, cinco por moeda."
+        "procedure": "Renderizar duas moedas simultaneamente.",
+        "expected": "Nenhum KPI pode perder ou misturar a moeda de origem.",
+        "observed": "Cada seção e Money preserva sua própria currency sem FX."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-003",
       "positive_evidence": [
-        "dashboard-presenter.ts expoe situacao, variacao liquida, compromissos, horizonte e acoes; dashboard-page.test.ts valida a hierarquia."
+        "dashboard-presenter.ts expõe situação, variação líquida, compromissos, horizonte e ações."
       ],
       "primary_negative_control": {
         "id": "NEG-003",
         "status": "passed",
-        "procedure": "Renderizar cockpit com variacao, pendencias e modulos de decisao.",
-        "expected": "Situacao e acoes devem permanecer prioritarias e a variacao deve ser explicita.",
-        "observed": "A variacao liquida e exibida por moeda antes dos modulos de horizonte e os alertas continuam destacados."
+        "procedure": "Renderizar cockpit com variação, pendências e horizonte.",
+        "expected": "A variação deve estar explícita e a prioridade de estado/ação deve preceder módulos secundários.",
+        "observed": "Variação e ações permanecem no bloco prioritário do cockpit."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-004",
       "positive_evidence": [
-        "dashboard-presenter.test.ts valida cinco drilldowns distintos por moeda, incluindo a variacao postada."
+        "dashboard-presenter.test.ts valida drilldowns distintos por KPI."
       ],
       "primary_negative_control": {
         "id": "NEG-004",
         "status": "passed",
-        "procedure": "Comparar os hrefs de todos os KPIs.",
-        "expected": "Cada KPI relevante deve apontar para um recorte de evidencia discriminante.",
-        "observed": "Os cinco hrefs sao distintos e preservam currency/kind/evidence conforme o KPI."
+        "procedure": "Comparar os hrefs dos KPIs relevantes.",
+        "expected": "Cada KPI deve apontar para evidência filtrada compatível com sua semântica.",
+        "observed": "Os links preservam currency/kind/evidence de forma discriminante."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-005",
       "positive_evidence": [
-        "dashboard-presenter.ts mantem os modulos de orcamento, projecoes e insights sem valores financeiros fabricados."
+        "dashboard-presenter.ts mantém slots de orçamento, projeções e insights sem Money fabricado."
       ],
       "primary_negative_control": {
         "id": "NEG-005",
         "status": "passed",
-        "procedure": "Inspecionar o view-model dos modulos de decisao.",
-        "expected": "Slots devem conter apenas navegacao e descricao, sem calculos financeiros novos.",
-        "observed": "Os modulos nao carregam Money; o Assistente usa a rota canonica /assistente."
+        "procedure": "Inspecionar os módulos de decisão.",
+        "expected": "Slots devem navegar/descrever sem calcular valores financeiros no frontend.",
+        "observed": "Os módulos não carregam cálculo financeiro novo e o Assistente usa /assistente."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-006",
       "positive_evidence": [
-        "dashboard-page.test.ts instrumenta fetch e rejeita carga indiscriminada de /api/transactions e payables-receivables."
+        "dashboard-page.test.ts instrumenta fetch e rejeita carga completa de transações."
       ],
       "primary_negative_control": {
         "id": "NEG-006",
         "status": "passed",
         "procedure": "Renderizar o Dashboard com fetch instrumentado.",
-        "expected": "A rota nao deve baixar a colecao completa de lancamentos.",
-        "observed": "Somente financial-summary, inbox pendente e invoices abertas sao requisitados."
+        "expected": "A rota não deve baixar /api/transactions?status=all para montar os totais.",
+        "observed": "O Dashboard usa financial-summary e fontes operacionais específicas."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-007",
       "positive_evidence": [
-        "dashboard-page.ts compoe presenter e primitives diretamente, sem enhancement textual do Dashboard."
+        "dashboard-page.ts compõe presenter e primitives diretamente."
       ],
       "primary_negative_control": {
         "id": "NEG-007",
         "status": "passed",
-        "procedure": "Inspecionar o fluxo SSR da rota.",
-        "expected": "O Dashboard deve dispensar enhancement legado substituido.",
-        "observed": "O fluxo permanece API -> presenter -> renderer compartilhado sem pos-processador do Dashboard."
+        "procedure": "Inspecionar o fluxo SSR do Dashboard.",
+        "expected": "Enhancements legados substituídos não devem participar do novo fluxo.",
+        "observed": "O fluxo permanece API -> presenter -> renderer compartilhado."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-008",
       "positive_evidence": [
-        "dashboard-page-currency.test.ts cobre dois blocos de moeda e variacao separada por BRL/USD."
+        "dashboard-page-currency.test.ts cobre blocos e valores independentes por moeda."
       ],
       "primary_negative_control": {
         "id": "NEG-008",
         "status": "passed",
-        "procedure": "Tentar observar agregacao implicita no HTML multi-moeda.",
-        "expected": "Nao pode haver soma ou conversao cruzada de moedas.",
-        "observed": "Cada section e cada Money preserva a propria currency; nao ha FX."
+        "procedure": "Renderizar BRL e USD com valores diferentes.",
+        "expected": "Não pode existir agregado ou conversão cruzada implícita.",
+        "observed": "Os totais permanecem separados e não há provider FX."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-009",
       "positive_evidence": [
-        "dashboard-page.test.ts verifica hero de situacao, dados de qualidade e proximas acoes antes das ferramentas de decisao."
+        "dashboard-page.test.ts verifica hero de situação e próximas ações antes das ferramentas de decisão."
       ],
       "primary_negative_control": {
         "id": "NEG-009",
         "status": "passed",
-        "procedure": "Renderizar pendencias operacionais e horizonte.",
-        "expected": "A prioridade visual de estado/acao deve ser inequivoca.",
-        "observed": "Hero e proximas acoes antecedem os modulos de decisao na composicao."
+        "procedure": "Renderizar pendências e horizonte simultaneamente.",
+        "expected": "Estado/ação prioritário deve ser inequívoco.",
+        "observed": "Hero e próximas ações aparecem antes dos módulos de decisão."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-010",
       "positive_evidence": [
-        "apps/api/src/repositories/dashboard.ts calcula netVariationMinor com addSafeMoneyMinor e o presenter preserva amountMinor+currency."
+        "apps/api/src/repositories/dashboard.ts calcula netVariationMinor com addSafeMoneyMinor."
       ],
       "primary_negative_control": {
         "id": "NEG-010",
         "status": "passed",
-        "procedure": "Derivar a variacao em duas moedas e seguir o valor ate o renderer.",
-        "expected": "A regra financeira deve ser deterministica no backend e apresentada como Money no frontend.",
-        "observed": "netVariationMinor e produzido por moeda no aggregate e formatado pelo currency correspondente."
+        "procedure": "Derivar variação por moeda e seguir o valor até o renderer.",
+        "expected": "A regra deve ser determinística no backend e apresentada como Money.",
+        "observed": "netVariationMinor é calculado por moeda; o presenter apenas transporta amountMinor+currency."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-011",
       "positive_evidence": [
-        "dashboard-drilldown-evidence.test.ts valida os predicados de posted/planned e o recorte da variacao sem kind."
+        "dashboard-drilldown-evidence.test.ts cobre posted/planned, pagamento de fatura e transferência no recorte de variação."
       ],
       "primary_negative_control": {
         "id": "NEG-011",
         "status": "passed",
-        "procedure": "Aplicar os filtros dos KPIs sobre um conjunto com income, expense, planned e pagamento de fatura.",
-        "expected": "O recorte deve reproduzir a evidencia do financial-summary e excluir pagamento de fatura.",
-        "observed": "Variacao retorna income+expense postados/reconciliados; pagamentos de fatura e planejados ficam fora."
+        "procedure": "Aplicar o drilldown de variação a income, expense, transferência e pagamento de fatura.",
+        "expected": "O recorte deve conter somente income/expense postados ou reconciliados e excluir transferências/pagamentos de fatura.",
+        "observed": "O predicado de posted sem kind rejeita transferências e invoice payments, alinhando a evidência ao agregado."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-012",
       "positive_evidence": [
-        "dashboard-presenter.test.ts exercita presentDashboardLoading; testes existentes cobrem empty, error e partial."
+        "dashboard-presenter.test.ts cobre loading tipado; testes existentes cobrem empty/error/partial."
       ],
       "primary_negative_control": {
         "id": "NEG-012",
         "status": "passed",
-        "procedure": "Exercitar explicitamente loading, vazio, erro e falha de fonte opcional.",
-        "expected": "Cada estado deve ter representacao tipada propria.",
-        "observed": "Loading e um ScreenViewModel tipado; empty/error/partial permanecem cobertos pelos presenters/renderers."
+        "procedure": "Exercitar loading, vazio, erro e falha de fonte opcional.",
+        "expected": "Cada estado deve possuir representação própria.",
+        "observed": "Os quatro estados permanecem explícitos no view-model/renderer."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-013",
       "positive_evidence": [
-        "scripts/statement-visual/main.mjs agora envia Tab real por CDP no Dashboard em 390 e 1366 px e valida foco e outline."
+        "scripts/statement-visual/main.mjs executa Tab real por CDP em mobile e desktop e valida foco/outline."
       ],
       "primary_negative_control": {
         "id": "NEG-013",
         "status": "passed",
-        "procedure": "Abrir /dashboard em mobile e desktop, posicionar sentinela antes do primeiro KPI e enviar Tab por Chrome DevTools Protocol.",
-        "expected": "O primeiro KPI deve receber foco por teclado e exibir indicador visual, sem overflow/reflow regressivo.",
-        "observed": "O gate verifica activeElement no metric-drilldown e outline computado, junto das medicoes de overflow em ambos viewports."
+        "procedure": "Abrir /dashboard em 390 e 1366 px e enviar Tab real.",
+        "expected": "O primeiro KPI deve receber foco visível sem overflow/reflow regressivo.",
+        "observed": "Chrome visual validation concluiu com sucesso no último SHA funcional; o material final só acrescenta formatação no predicado de evidência."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     },
     {
       "requirement_id": "RQ-014",
       "positive_evidence": [
-        "dashboard-page.ts continua fora do pipeline applyLegacyHtmlPostProcessorPipeline usado por outras rotas."
+        "dashboard-page.ts continua sem novo pós-processador textual do HTML."
       ],
       "primary_negative_control": {
         "id": "NEG-014",
         "status": "passed",
-        "procedure": "Inspecionar o caminho de renderizacao /dashboard no dev-server.",
-        "expected": "Nao deve ser introduzido novo pos-processamento textual do HTML.",
-        "observed": "/dashboard envia diretamente o resultado de renderDashboardPage; nenhum enhancer textual foi adicionado."
+        "procedure": "Inspecionar o caminho de renderização /dashboard.",
+        "expected": "Nenhum pós-processamento textual novo deve ser introduzido.",
+        "observed": "A rota envia diretamente o resultado do renderer do Dashboard."
       },
       "regression_evidence": [
-        "Evidencia vinculada ao material head fb831e46b236c460854e4f42e2089ec6be8e72ed; o delta de remediacao inclui testes discriminantes para o requisito."
+        "Material head ce096f796001dc1017cca658aeb98203c9821b34; o compare desde bbc04efc35903ee7e4c684c667a9fbf680821f54 tem zero arquivos alterados no estado final, portanto as escritas auxiliares removidas nao mudam a arvore de produto."
       ]
     }
   ]
