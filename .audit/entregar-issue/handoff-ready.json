@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-08-30T03:16:52.204082+00:00",
+  "created_at": "2026-08-30T05:24:01.541965+00:00",
   "identity": {
-    "head_sha": "dd8376653a8ff4b80651e240fc28570272e2770e",
-    "material_head_sha": "dd8376653a8ff4b80651e240fc28570272e2770e",
+    "head_sha": "fb831e46b236c460854e4f42e2089ec6be8e72ed",
+    "material_head_sha": "fb831e46b236c460854e4f42e2089ec6be8e72ed",
     "base_sha": "169fa1be3dced373c62554cf657b097c352f692d",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
@@ -22,11 +22,19 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "9d7c6d88e4ab441dd085e2b0096be0733fcdea2b",
-    "material_head_sha": "dd8376653a8ff4b80651e240fc28570272e2770e",
+    "material_head_sha": "fb831e46b236c460854e4f42e2089ec6be8e72ed",
     "issue_changed_paths": [
-      "apps/web/src/dev-server/dashboard-page.test.ts"
+      "apps/api/src/financial-summary-multi-currency.integration.test.ts",
+      "apps/api/src/repositories/dashboard.ts",
+      "apps/web/src/dev-server/dashboard-drilldown-evidence.test.ts",
+      "apps/web/src/dev-server/dashboard-page-currency.test.ts",
+      "apps/web/src/dev-server/dashboard-page.test.ts",
+      "apps/web/src/dev-server/dashboard-presenter.test.ts",
+      "apps/web/src/dev-server/dashboard-presenter.ts",
+      "docs/DASHBOARD.md",
+      "scripts/statement-visual/main.mjs"
     ],
-    "issue_delta_sha256": "5ae2dda743b38c46ae8ceb6803702e97ab80841fa2b19edf869ed69f34a288c2"
+    "issue_delta_sha256": "0da7463896bbbf88a95b4b6ad1eeca81504b0e826efe7bb1b22c92f73eab654f"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -66,9 +74,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "044eae32ce590d4f63ab807812c6b8d301677fe84f4e754101c0fed5451af812",
-      "logical_sha256": "044eae32ce590d4f63ab807812c6b8d301677fe84f4e754101c0fed5451af812",
-      "logical_size": 468,
+      "sha256": "9dbb944693a3ba58a90ae9dd8e25b33bfec3fc6e919911f683c70869e386408d",
+      "logical_sha256": "9dbb944693a3ba58a90ae9dd8e25b33bfec3fc6e919911f683c70869e386408d",
+      "logical_size": 582,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -76,9 +84,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "818af99beea588ae566c2057af4f72d66486c03bdef440cdf159673208d31fe2",
-      "logical_sha256": "818af99beea588ae566c2057af4f72d66486c03bdef440cdf159673208d31fe2",
-      "logical_size": 6523,
+      "sha256": "64e5586935a6df55fd1f5120d0ac24fe77c9a64461e2e604760118cdd5948b45",
+      "logical_sha256": "64e5586935a6df55fd1f5120d0ac24fe77c9a64461e2e604760118cdd5948b45",
+      "logical_size": 12812,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -86,9 +94,9 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "ff50502f352914fbf883b52b14d802e67e14f716ef400041cdbb4a5654f7df83",
-      "logical_sha256": "ff50502f352914fbf883b52b14d802e67e14f716ef400041cdbb4a5654f7df83",
-      "logical_size": 6982,
+      "sha256": "dcee9cea524b57b9a06d974475b7995ec9bf8cb6e17332cb7ce7d057ffcb657e",
+      "logical_sha256": "dcee9cea524b57b9a06d974475b7995ec9bf8cb6e17332cb7ce7d057ffcb657e",
+      "logical_size": 11243,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
