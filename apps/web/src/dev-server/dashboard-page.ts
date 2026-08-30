@@ -218,7 +218,8 @@ function renderRecentItems(items: readonly DashboardRecentItemViewModel[]): stri
       .join("") ||
     renderEmptyState({
       title: "Nenhum lançamento recente.",
-      description: "Os indicadores acima continuam disponíveis por moeda quando houver saldo ou compromissos.",
+      description:
+        "Os indicadores acima continuam disponíveis por moeda quando houver saldo ou compromissos.",
     })
   );
 }
