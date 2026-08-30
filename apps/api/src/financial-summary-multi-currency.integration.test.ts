@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 
 import type { TenantContext } from "@solverfin/domain";
 
@@ -185,7 +186,9 @@ async function main(): Promise<void> {
     false,
   );
 
-  const brlEvidenceAccountIds = blockFor(summary, "BRL").accounts.map((account) => account.id);
+  const brlEvidenceAccountIds = (blockFor(summary, "BRL").accounts ?? []).map(
+    (account) => account.id,
+  );
   assert.equal(brlEvidenceAccountIds.includes(brlAccount.id), true);
   assert.equal(brlEvidenceAccountIds.includes(brlSecondaryAccount.id), true);
   assert.equal(brlEvidenceAccountIds.includes(siblingAccount.id), false);
