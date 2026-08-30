@@ -152,12 +152,14 @@ async function main(): Promise<void> {
     availableBalanceMinor: 10_800,
     incomeMinor: 1_100,
     expensesMinor: 300,
+    netVariationMinor: 800,
     plannedCommitmentsMinor: 500,
   });
   assertBlockDelta(summary, baseline, "USD", {
     availableBalanceMinor: 21_800,
     incomeMinor: 2_200,
     expensesMinor: 400,
+    netVariationMinor: 1_800,
     plannedCommitmentsMinor: 700,
   });
   assert.deepEqual(blockFor(summary, "EUR"), blockFor(baseline, "EUR"));
@@ -170,6 +172,7 @@ async function main(): Promise<void> {
   assert.equal("availableBalanceMinor" in summary, false);
   assert.equal("incomeMinor" in summary, false);
   assert.equal("expensesMinor" in summary, false);
+  assert.equal("netVariationMinor" in summary, false);
   assert.equal("plannedCommitmentsMinor" in summary, false);
 
   const issueItems = summary.recentItems.filter((item) =>
@@ -189,6 +192,7 @@ interface ExpectedBlockDelta {
   availableBalanceMinor: number;
   incomeMinor: number;
   expensesMinor: number;
+  netVariationMinor: number;
   plannedCommitmentsMinor: number;
 }
 
@@ -205,6 +209,7 @@ function assertBlockDelta(
       availableBalanceMinor: current.availableBalanceMinor - before.availableBalanceMinor,
       incomeMinor: current.incomeMinor - before.incomeMinor,
       expensesMinor: current.expensesMinor - before.expensesMinor,
+      netVariationMinor: current.netVariationMinor - before.netVariationMinor,
       plannedCommitmentsMinor: current.plannedCommitmentsMinor - before.plannedCommitmentsMinor,
     },
     expected,
@@ -222,6 +227,7 @@ function blockFor(summary: DashboardSummary, currency: string): DashboardCurrenc
     availableBalanceMinor: 0,
     incomeMinor: 0,
     expensesMinor: 0,
+    netVariationMinor: 0,
     plannedCommitmentsMinor: 0,
   };
 }
