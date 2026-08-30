@@ -34,7 +34,6 @@ const DASHBOARD_LOAD_MAX_LIFETIME_MS = 30_000;
 
 interface DashboardLoadEntry {
   promise: Promise<DashboardPresenterInput>;
-  loadingRendered: boolean;
 }
 
 const dashboardLoads = new Map<string, DashboardLoadEntry>();
@@ -47,7 +46,6 @@ export async function renderDashboardPage(token: string): Promise<string> {
   ]);
 
   if (outcome.state === "loading") {
-    entry.loadingRendered = true;
     return renderDashboard(presentDashboardLoading());
   }
 
@@ -69,7 +67,7 @@ function dashboardLoadEntry(token: string): DashboardLoadEntry {
     openInvoices,
     filters: {},
   }));
-  const entry: DashboardLoadEntry = { promise, loadingRendered: false };
+  const entry: DashboardLoadEntry = { promise };
   dashboardLoads.set(token, entry);
 
   const cleanup = setTimeout(() => {
@@ -214,12 +212,15 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
 }
 
 function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
-  const links = metric.evidenceLinks.length
+  const evidenceItems = metric.evidenceLinks.length
     ? metric.evidenceLinks
-        .map(
-          (link) =>
-            `<a class="evidence-link sf-focus-ring" href="${escapeHtml(link.href)}">${escapeHtml(link.label)}</a>`,
-        )
+        .map((item) => {
+          if (item.href) {
+            return `<a class="evidence-link sf-focus-ring" href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`;
+          }
+
+          return `<span class="evidence-static"><strong>${escapeHtml(item.label)}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ""}</span>`;
+        })
         .join("")
     : '<p class="muted">Nenhuma conta vinculada a esta evidência.</p>';
 
@@ -227,7 +228,7 @@ function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
     <details id="${escapeHtml(metric.evidenceId)}" class="evidence-detail">
       <summary>${escapeHtml(metric.title)}</summary>
       <p class="muted">${escapeHtml(metric.evidenceTitle)}</p>
-      <div class="evidence-links">${links}</div>
+      <div class="evidence-links">${evidenceItems}</div>
     </details>
   `;
 }
@@ -375,6 +376,9 @@ function dashboardStyles(): string {
     .evidence-links { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 12px 12px; }
     .evidence-link { border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; text-decoration: none; }
     .evidence-link:hover { background: var(--primary-soft); }
+    .evidence-static { background: var(--surface-soft); border: 1px dashed var(--line); border-radius: var(--radius); display: grid; gap: 2px; padding: 7px 10px; }
+    .evidence-static strong { color: var(--primary); font-size: 0.8125rem; }
+    .evidence-static small { color: var(--muted); font-size: 0.75rem; }
     .next-actions { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
     .quick-links { display: flex; flex-wrap: wrap; gap: 6px; }
