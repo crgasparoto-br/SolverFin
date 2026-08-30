@@ -30,7 +30,7 @@ export interface LegacyHtmlPostProcessorInventoryEntry {
   fallbackAccessibility: string;
 }
 
-export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 13;
+export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 11;
 
 export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
   {
@@ -188,35 +188,6 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
       "O contexto de insight e calculado antes do render e entregue como dado estruturado ao componente responsavel.",
     fallbackAccessibility:
       "Contexto adicional nao remove o conteudo financeiro principal nem cria dependencia exclusiva de indicacao visual.",
-  },
-  {
-    id: "inbox-structured-payload",
-    route: "/inbox",
-    order: 1,
-    owner: "web-inbox",
-    module: "./inbox-structured-payload-enhancement.js",
-    exportName: "enhanceInboxWithStructuredPayloads",
-    responsibility:
-      "Busca payloads estruturados e os acopla a itens da Inbox depois que a pagina foi renderizada.",
-    migration: "view-model-schema",
-    replacementCriterion:
-      "Payloads estruturados sao resolvidos antes da renderizacao e fazem parte do ViewModel/contrato de cada item da Inbox.",
-    fallbackAccessibility:
-      "Falha ao obter payload nao remove descricao, estado ou acao basica do item e o fallback continua legivel.",
-  },
-  {
-    id: "inbox-list-layout",
-    route: "/inbox",
-    order: 2,
-    owner: "web-inbox",
-    module: "./inbox-list-layout-enhancement.js",
-    exportName: "enhanceInboxListLayout",
-    responsibility: "Reorganiza layout/lista da Inbox depois da composicao do HTML final.",
-    migration: "component-props-slots",
-    replacementCriterion:
-      "O componente/lista da Inbox renderiza diretamente a estrutura responsiva final a partir do ViewModel.",
-    fallbackAccessibility:
-      "Ordem de leitura, agrupamentos, acoes e estados continuam coerentes em desktop, mobile e teclado.",
   },
 ] as const satisfies readonly LegacyHtmlPostProcessorInventoryEntry[];
 
