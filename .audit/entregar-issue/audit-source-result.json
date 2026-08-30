@@ -4,49 +4,26 @@
   "result": "rejected",
   "result_validity": "INDEPENDENT",
   "releases_merge": "no",
-  "rejection_id": "audit-rejection:fb1e1bff-bbf1-4ce6-ada5-65bcccdcbec2",
-  "head_sha": "9e48806980c584b895492a332518882652c7a289",
-  "base_sha": "169fa1be3dced373c62554cf657b097c352f692d",
+  "rejection_id": "audit-rejection:614-handoff-target-5e68df9",
+  "head_sha": "5e68df9d9b59937dda2f6d9f14b85e5e8f396954",
+  "base_sha": "f009b6201da2bca78d03e459af0034f03bf4d43b",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 614,
+    "pull_request_number": 648,
+    "head_sha": "5e68df9d9b59937dda2f6d9f14b85e5e8f396954"
+  },
   "findings": [
     {
       "id": "A-001",
-      "title": "CI obrigatório vermelho por Prettier",
+      "title": "Handoff vinculado semanticamente ao work item incorreto",
       "status": "open",
       "disposition": "blocking",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "failed_gate": {
-        "deterministic": true,
-        "name": "Prettier format check",
-        "command": "prettier . --check",
-        "subject_sha": "9e48806980c584b895492a332518882652c7a289",
-        "observed_exit_code": 1,
-        "evidence_sha256": "aad41f4c777a204fc438be41a24a3d1371308b74d06059c9f20622d17e98a0a7"
-      }
-    },
-    {
-      "id": "A-002",
-      "title": "Handoff com work_item_start resetado e escopo sub-relatado",
-      "status": "open",
-      "disposition": "blocking",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation"
-    },
-    {
-      "id": "A-003",
-      "title": "Drilldown por moeda colapsava múltiplas contas",
-      "status": "open",
-      "disposition": "blocking",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation"
-    },
-    {
-      "id": "A-004",
-      "title": "Loading do Dashboard não era alcançável na rota real",
-      "status": "open",
-      "disposition": "blocking",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation"
+      "category": "delivery-not-ready",
+      "requested": "work_item_kind=issue, work_item_number=614",
+      "observed": "work_item_kind=pr, work_item_number=648"
     }
   ],
   "recommendations": []

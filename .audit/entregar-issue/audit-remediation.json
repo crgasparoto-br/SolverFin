@@ -3,12 +3,12 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "f2c1342ffecf9c0350917a214a47412b2145426e",
+  "candidate_head_sha": "f560ba2757dd067ebb89e211cfb9e21050f86c37",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:fb1e1bff-bbf1-4ce6-ada5-65bcccdcbec2",
-    "audited_head_sha": "9e48806980c584b895492a332518882652c7a289",
-    "audit_report_sha256": "b16d5ab6874f0613aaed5951016060a94c0d955009c76ff5d8df5e51164e68b0"
+    "rejection_id": "audit-rejection:614-handoff-target-5e68df9",
+    "audited_head_sha": "5e68df9d9b59937dda2f6d9f14b85e5e8f396954",
+    "audit_report_sha256": "418b7198975d7b8c26386cf9b38fff817a9f3fb0f9e838236ca6a72cb385f9ac"
   },
   "items": [
     {
@@ -16,61 +16,11 @@
       "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "evidence": [
-        "Prettier oficial do repositório foi aplicado e o comando exato passou no CI final."
-      ],
+      "evidence": "The replacement handoff is rebuilt as an issue-scoped result-only child over material head f560ba2757dd067ebb89e211cfb9e21050f86c37 with work_item_kind=issue and work_item_number=614 while retaining pull_request_number=648.",
       "validations": [
-        "CI run 33312413586 / job 99259743912: format check success."
-      ],
-      "closure_kind": "deterministic-gate-replay",
-      "original_failed_gate": {
-        "command": "prettier . --check",
-        "subject_sha": "9e48806980c584b895492a332518882652c7a289",
-        "exit_code": 1,
-        "evidence_sha256": "aad41f4c777a204fc438be41a24a3d1371308b74d06059c9f20622d17e98a0a7"
-      },
-      "revalidation": {
-        "command": "prettier . --check",
-        "equivalence": "exact-command-replay",
-        "subject_sha": "f2c1342ffecf9c0350917a214a47412b2145426e",
-        "exit_code": 0,
-        "evidence_sha256": "2ea5ecf31e2f921afa92d79f59840d53109d1e01bd9a7f1a02f8ef3a4f037ce7"
-      }
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-002",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "evidence": [
-        "Checkpoint inicial recuperado como o base imutável da entrega e o handoff é reconstruído cumulativamente."
-      ],
-      "validations": [
-        "work_item_start_sha restaurado para 169fa1be3dced373c62554cf657b097c352f692d."
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-003",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "evidence": [
-        "Resumo por moeda agora carrega referências de contas e o cockpit expõe evidência explícita por accountId."
-      ],
-      "validations": [
-        "dashboard-drilldown-currency.test.ts cobre duas contas BRL."
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-004",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "evidence": [
-        "Rota SSR possui caminho real de loading com janela curta e cache de promessa."
-      ],
-      "validations": [
-        "dashboard-page.test.ts cobre o estado loading observável."
+        "build_handoff_certificate.py rejects subject/snapshot mismatches before publication",
+        "validate_handoff_certificate.py is executed against the expected Issue 614 target before the branch ref is updated",
+        "the published replacement child is required to have parent f560ba2757dd067ebb89e211cfb9e21050f86c37 and only allow-listed handoff paths"
       ]
     }
   ]

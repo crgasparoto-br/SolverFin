@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "work_item": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 614,
+    "pull_request_number": 648
+  },
+  "escapes": [
+    {
+      "escape_id": "A-001-HANDOFF-TARGET-BINDING",
+      "escape_class": "handoff-semantic-target-binding",
+      "source_audit": {
+        "head_sha": "5e68df9d9b59937dda2f6d9f14b85e5e8f396954",
+        "rejection_id": "audit-rejection:614-handoff-target-5e68df9",
+        "finding_id": "A-001",
+        "finding_ids": ["A-001"],
+        "audit_report_sha256": "418b7198975d7b8c26386cf9b38fff817a9f3fb0f9e838236ca6a72cb385f9ac"
+      },
+      "plausible_wrong_implementation": "Build a structurally valid delivery certificate for the related pull request and publish it as if it were bound to the issue explicitly requested for audit.",
+      "literal_case": {
+        "procedure": "Build a certificate with work_item_kind=issue and work_item_number=614, then validate it against the independently resolved Issue 614 target before publication.",
+        "status": "passed",
+        "evidence": "evidence/preflight/correct-audit-validator.txt sha256=dc9c288acc9bb9e8c6783bec1bdf7d2697cfb06882c3f0fe938857d6f7fb059a",
+        "observed": "The target validator returned READY for the corrected issue-scoped subject."
+      },
+      "sibling_cases": [
+        {
+          "id": "related-pr-used-as-work-item",
+          "surface": "handoff-certificate-subject",
+          "dimension": "work-item-kind-and-number",
+          "status": "passed",
+          "evidence": "evidence/preflight/wrong-pr-audit-validator.txt sha256=203e20c5479e008619931e8ba4950a301d09bb94779d3b3ce72555c90eb31151; validator blocked both work_item_kind and work_item_number and required fresh-handoff."
+        },
+        {
+          "id": "issue-number-work-item-number-diverge",
+          "surface": "handoff-builder-input",
+          "dimension": "issue-number-consistency",
+          "status": "passed",
+          "evidence": "evidence/preflight/wrong-number-builder.txt sha256=6c051d9a643cc06aa79ddca73f9200f18aaef19b9330db7d9128c967fd8dd00c; builder blocked issue subject whose issue-number differed from work-item-number."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "identity",
+          "surface": "handoff-certificate-subject",
+          "dimension": "resolved-target-vs-certified-work-item"
+        },
+        {
+          "risk_family": "identity",
+          "surface": "handoff-builder-input",
+          "dimension": "issue-number-vs-work-item-number"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "delivery invocation",
+        "evidence": "The replacement uses the existing build_handoff_certificate.py issue-subject guard with --work-item-kind issue --work-item-number 614 --issue-number 614; evidence/preflight/correct-builder.txt sha256=2f8ecffee00b4aacd6ab6aa8e011ea57afeb16f00a1f4fb589a9ea9512362726."
+      },
+      "detection_change": {
+        "skill_or_gate": "pre-publication target validation",
+        "control_id": "HANDOFF-TARGET-BINDING-001",
+        "evidence": "The replacement is validated with auditar-issue validate_handoff_certificate.py against repository, Issue 614 and PR 648 before ref publication; the negative PR-scoped sibling is rejected with sha256=203e20c5479e008619931e8ba4950a301d09bb94779d3b3ce72555c90eb31151."
+      },
+      "trigger_terms": [
+        "handoff target",
+        "work_item_kind",
+        "work_item_number",
+        "issue_number",
+        "pull_request_number"
+      ],
+      "required_risk_families": ["identity"],
+      "revalidated_head_sha": "f560ba2757dd067ebb89e211cfb9e21050f86c37",
+      "status": "passed"
+    }
+  ]
+}
