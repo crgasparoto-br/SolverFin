@@ -34,6 +34,20 @@ describe("dashboard KPI evidence drilldown", () => {
     );
   });
 
+  it("reproduces the Dashboard monthly variation evidence without collapsing income and expense", () => {
+    const filters = resolveFilters(
+      new URL("http://solverfin.test/lancamentos?currency=USD&evidence=posted&month=2026-08"),
+      [account],
+    );
+
+    assert.equal(filters.kind, undefined);
+    assert.equal(filters.evidence, "posted");
+    assert.deepEqual(
+      filterStatementPeriodTransactions(transactions(), filters).map((item) => item.id),
+      ["posted-income", "reconciled-income", "posted-expense"],
+    );
+  });
+
   it("reproduces the Dashboard posted-expense month predicate", () => {
     const filters = resolveFilters(
       new URL(
