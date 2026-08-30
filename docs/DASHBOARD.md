@@ -21,11 +21,11 @@ Nenhum total combina moedas diferentes. Cada bloco de indicadores preserva a moe
 
 O Dashboard consome contratos agregados e operacionais específicos:
 
-- `/api/financial-summary`: blocos financeiros por moeda e itens recentes;
+- `/api/financial-summary`: blocos financeiros por moeda, referências das contas que podem fornecer evidência e itens recentes;
 - `/api/bank-message-inbox?status=pending_review`: quantidade de itens aguardando revisão;
 - `/api/invoices?status=open`: faturas em aberto.
 
-A rota não baixa indiscriminadamente `/api/transactions?status=all` para recompor indicadores que já existem no `financial-summary`.
+A rota não baixa indiscriminadamente `/api/transactions?status=all` para recompor indicadores que já existem no `financial-summary`. As referências de conta são metadados leves (`id`, nome e status); nenhum cálculo financeiro novo é executado no frontend.
 
 Quando uma fonte operacional opcional falha, os indicadores financeiros continuam visíveis e a interface sinaliza `Dados parciais`. Falha do resumo financeiro obrigatório resulta em estado de erro explícito.
 
@@ -44,30 +44,32 @@ Os estilos compartilhados são fornecidos por `sharedShellStyles()`, que inclui 
 
 ## Indicadores e drilldown
 
-Cada moeda tem cinco indicadores principais. Os links levam ao Extrato com recortes que reproduzem a evidência correspondente:
+Cada moeda tem cinco indicadores principais. O card navega primeiro para um índice de evidências da própria moeda no Dashboard; esse índice apresenta uma entrada explícita para cada conta contribuinte e cada entrada abre o Extrato já filtrado por `accountId` e moeda.
 
-- Disponível estimado: `currency=<MOEDA>`;
-- Variação líquida do mês: `currency=<MOEDA>&evidence=posted`;
-- Receitas do mês: `currency=<MOEDA>&kind=income&evidence=posted`;
-- Despesas do mês: `currency=<MOEDA>&kind=expense&evidence=posted`;
-- Compromissos previstos: `currency=<MOEDA>&kind=expense&evidence=planned`.
+- Disponível estimado: somente contas ativas da moeda, com acesso ao Extrato individual de cada conta;
+- Variação líquida do mês: todas as contas da moeda com `evidence=posted`;
+- Receitas do mês: todas as contas da moeda com `kind=income&evidence=posted`;
+- Despesas do mês: todas as contas da moeda com `kind=expense&evidence=posted`;
+- Compromissos previstos: todas as contas da moeda com `kind=expense&evidence=planned`.
+
+Contas inativas continuam disponíveis como evidência histórica para variação, receitas, despesas e compromissos, mas não participam do índice do disponível estimado. Assim, duas ou mais contas na mesma moeda nunca são reduzidas arbitrariamente à primeira conta encontrada.
 
 A variação líquida é calculada no contrato agregado do backend como receitas postadas/reconciliadas menos despesas postadas/reconciliadas da mesma moeda e do mesmo mês. O frontend apenas apresenta `netVariationMinor`; ele não reconstitui nem inventa a regra financeira.
 
 O Extrato interpreta `kind` somente para `income` e `expense`, e `evidence` somente para `posted` e `planned`. Valores não suportados são ignorados em vez de receber significado implícito. `posted` reproduz o recorte mensal do resumo para status `posted`/`reconciled` pela data `occurredOn` e exclui pagamentos de fatura; quando `kind` não é informado, o recorte preserva receitas e despesas para explicar a variação. `planned` reproduz compromissos `planned`/`suggested` pela data `plannedOn`, sem `effectiveOn`.
 
-A resolução por `currency` continua escolhendo somente uma conta na moeda solicitada. Se não existir conta compatível, não há fallback silencioso para outra moeda.
+Os links produzidos pelo índice sempre carregam um `accountId` explícito pertencente à moeda do bloco. A resolução do Extrato portanto permanece por conta, sem fallback para outra moeda e sem criar um saldo agregado artificial no frontend.
 
 ## Estados
 
-O view-model do Dashboard mantém estados explícitos:
+O Dashboard mantém estados explícitos e alcançáveis:
 
-- `loading`: estado tipado disponível antes da resolução das fontes;
+- `loading`: se as fontes ultrapassarem a janela curta de resolução SSR, a rota devolve imediatamente o estado de carregamento; a mesma promessa de carga permanece temporariamente reutilizável e a página refaz a navegação sem disparar outra coleta concorrente;
 - `error`: resumo financeiro obrigatório indisponível;
 - `empty`: sem evidência financeira para o perfil;
 - `success`: cockpit renderizado, com qualidade `complete` ou `partial` conforme as fontes operacionais opcionais.
 
-Estados vazios também são reutilizados dentro de seções, como ações pendentes e itens recentes.
+O cache transitório do loading existe apenas para atravessar o reload do estado de espera e possui expiração curta. Estados vazios também são reutilizados dentro de seções, como ações pendentes e itens recentes.
 
 ## Orçamento, projeções e insights
 
@@ -80,24 +82,26 @@ O módulo de insights navega pela rota canônica `/assistente`.
 A composição preserva:
 
 - reflow da grade de indicadores nos breakpoints do cockpit;
-- navegação nativa por links para moedas e drilldowns;
-- foco visível nos links de evidência;
+- navegação nativa por links para moedas e índices de evidência;
+- detalhes nativos (`details`/`summary`) para abrir as evidências de cada KPI;
+- links por conta com foco visível e recorte determinístico do Extrato;
 - estados com semântica e `aria-live` fornecidos pelas primitives compartilhadas;
 - validação real em desktop e mobile;
-- validação por teclado no Chrome: o gate envia `Tab`, confirma que o primeiro KPI recebe foco e verifica a presença de outline visível.
+- validação por teclado no Chrome: o gate envia `Tab`, confirma foco navegável e verifica a presença de outline visível.
 
 ## Validação
 
 As regressões da rota cobrem, entre outros pontos:
 
 - valores multi-moedas sem mistura;
+- duas contas da mesma moeda preservadas no contrato e no índice de evidência;
 - variação líquida determinística por moeda;
 - uso das primitives da Fase 3B na marcação SSR;
 - ausência de carga indiscriminada de todos os lançamentos;
 - drilldowns distintos para variação, receita, despesa e compromisso;
-- seleção da conta pela moeda pedida;
+- `accountId` explícito para cada conta de evidência;
 - filtragem de evidência postada/reconciliada versus planejada/sugerida;
-- estado `loading` tipado, vazio, erro e dados parciais;
+- estado `loading` alcançável na rota, vazio, erro e dados parciais;
 - rota canônica do Assistente Financeiro;
 - reflow, teclado e foco visível;
 - validação visual real da rota no workflow `Statement visual validation`.
