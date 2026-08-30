@@ -21,6 +21,7 @@ describe("dev-server dashboard page", () => {
               availableBalanceMinor: 500000,
               incomeMinor: 300000,
               expensesMinor: 150000,
+              netVariationMinor: 150000,
               plannedCommitmentsMinor: 20000,
             },
           ],
@@ -48,6 +49,8 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /Situação financeira atual/);
       assert.match(html, /sem misturar moedas/);
       assert.match(html, /data-quality="complete"/);
+      assert.match(html, /Variação líquida do mês/);
+      assert.match(html, /href="\/lancamentos\?currency=BRL&amp;evidence=posted" aria-label="Ver variação postada em BRL"/);
       assert.match(html, /Compromissos previstos em BRL/);
       assert.match(
         html,
@@ -63,7 +66,7 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /Assistente financeiro/);
       assert.match(html, /href="\/planejamento">Abrir planejamento/);
       assert.match(html, /href="\/relatorios">Abrir relatórios/);
-      assert.match(html, /href="\/assistente-financeiro">Abrir assistente/);
+      assert.match(html, /href="\/assistente">Abrir assistente/);
       assert.equal(
         calledPaths.some((path) => path.startsWith("/api/transactions")),
         false,
@@ -97,6 +100,7 @@ describe("dev-server dashboard page", () => {
               availableBalanceMinor: 500000,
               incomeMinor: 300000,
               expensesMinor: 150000,
+              netVariationMinor: 150000,
               plannedCommitmentsMinor: 0,
             },
           ],
@@ -130,6 +134,7 @@ describe("dev-server dashboard page", () => {
               availableBalanceMinor: 500000,
               incomeMinor: 300000,
               expensesMinor: 150000,
+              netVariationMinor: 150000,
               plannedCommitmentsMinor: 0,
             },
           ],
