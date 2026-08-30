@@ -40,14 +40,10 @@ export interface DashboardFinancialSummaryCurrencyBlock {
   accounts?: readonly DashboardAccountReference[];
 }
 
-export interface DashboardFinancialSummary {
-  currencyBlocks: DashboardFinancialSummaryCurrencyBlock[];
-  recentItems: DashboardFinancialSummaryItem[];
-}
-
 export interface DashboardMetricEvidenceLinkViewModel {
   label: string;
-  href: string;
+  href?: string;
+  note?: string;
 }
 
 export interface DashboardMetricViewModel {
@@ -249,10 +245,17 @@ function metric(
     linkLabel: `Ver evidências em ${block.currency}`,
     evidenceId,
     evidenceTitle,
-    evidenceLinks: accounts.map((account) => ({
-      label: account.status === "active" ? account.name : `${account.name} (inativa)`,
-      href: accountDrilldownHref(account.id, block.currency, filters),
-    })),
+    evidenceLinks: accounts.map((account) =>
+      account.status === "active"
+        ? {
+            label: account.name,
+            href: accountDrilldownHref(account.id, block.currency, filters),
+          }
+        : {
+            label: `${account.name} (inativa)`,
+            note: "Conta histórica incluída no agregado; sem ação operacional neste fluxo.",
+          },
+    ),
   };
 }
 
