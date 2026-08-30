@@ -40,19 +40,25 @@ async function main(): Promise<void> {
   const baseline = await buildFinancialSummary(CONTEXT, REFERENCE);
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
   const brlAccount = await createAccountForContext(CONTEXT, {
-    name: `Summary BRL issue 595 ${suffix}`,
+    name: `Summary BRL issue 608 ${suffix}`,
     kind: "checking",
     currency: "BRL",
     openingBalanceMinor: 10_000,
   });
+  const brlSecondaryAccount = await createAccountForContext(CONTEXT, {
+    name: `Summary BRL secondary issue 608 ${suffix}`,
+    kind: "checking",
+    currency: "BRL",
+    openingBalanceMinor: 4_000,
+  });
   const usdAccount = await createAccountForContext(CONTEXT, {
-    name: `Summary USD issue 595 ${suffix}`,
+    name: `Summary USD issue 608 ${suffix}`,
     kind: "checking",
     currency: "USD",
     openingBalanceMinor: 20_000,
   });
   const siblingAccount = await createAccountForContext(SIBLING_CONTEXT, {
-    name: `Summary sibling EUR issue 595 ${suffix}`,
+    name: `Summary sibling EUR issue 608 ${suffix}`,
     kind: "checking",
     currency: "EUR",
     openingBalanceMinor: 90_000_000,
@@ -67,7 +73,18 @@ async function main(): Promise<void> {
     occurredOn: "2037-08-05",
     plannedOn: "2037-08-05",
     effectiveOn: "2037-08-05",
-    description: `BRL income issue 595 ${suffix}`,
+    description: `BRL income issue 608 ${suffix}`,
+  });
+  await createTransactionForContext(CONTEXT, {
+    accountId: brlSecondaryAccount.id,
+    kind: "income",
+    status: "posted",
+    amountMinor: 700,
+    currency: "BRL",
+    occurredOn: "2037-08-05",
+    plannedOn: "2037-08-05",
+    effectiveOn: "2037-08-05",
+    description: `BRL secondary income issue 608 ${suffix}`,
   });
   await createTransactionForContext(CONTEXT, {
     accountId: brlAccount.id,
@@ -78,7 +95,7 @@ async function main(): Promise<void> {
     occurredOn: "2037-08-06",
     plannedOn: "2037-08-06",
     effectiveOn: "2037-08-06",
-    description: `BRL expense issue 595 ${suffix}`,
+    description: `BRL expense issue 608 ${suffix}`,
   });
   await createTransactionForContext(CONTEXT, {
     accountId: brlAccount.id,
@@ -89,7 +106,7 @@ async function main(): Promise<void> {
     occurredOn: "2037-08-07",
     plannedOn: "2037-08-25",
     effectiveOn: null,
-    description: `BRL planned issue 595 ${suffix}`,
+    description: `BRL planned issue 608 ${suffix}`,
   });
 
   await createTransactionForContext(CONTEXT, {
@@ -101,7 +118,7 @@ async function main(): Promise<void> {
     occurredOn: "2037-08-08",
     plannedOn: "2037-08-08",
     effectiveOn: "2037-08-08",
-    description: `USD income issue 595 ${suffix}`,
+    description: `USD income issue 608 ${suffix}`,
   });
   await createTransactionForContext(CONTEXT, {
     accountId: usdAccount.id,
@@ -112,7 +129,7 @@ async function main(): Promise<void> {
     occurredOn: "2037-08-09",
     plannedOn: "2037-08-09",
     effectiveOn: "2037-08-09",
-    description: `USD expense issue 595 ${suffix}`,
+    description: `USD expense issue 608 ${suffix}`,
   });
   await createTransactionForContext(CONTEXT, {
     accountId: usdAccount.id,
@@ -123,10 +140,10 @@ async function main(): Promise<void> {
     occurredOn: "2037-08-10",
     plannedOn: "2037-08-26",
     effectiveOn: null,
-    description: `USD planned issue 595 ${suffix}`,
+    description: `USD planned issue 608 ${suffix}`,
   });
 
-  const siblingDescription = `Sibling profile income issue 595 ${suffix}`;
+  const siblingDescription = `Sibling profile income issue 608 ${suffix}`;
   await createTransactionForContext(SIBLING_CONTEXT, {
     accountId: siblingAccount.id,
     kind: "income",
@@ -149,10 +166,10 @@ async function main(): Promise<void> {
   assert.deepEqual(currencies, [...currencies].sort());
 
   assertBlockDelta(summary, baseline, "BRL", {
-    availableBalanceMinor: 10_800,
-    incomeMinor: 1_100,
+    availableBalanceMinor: 15_500,
+    incomeMinor: 1_800,
     expensesMinor: 300,
-    netVariationMinor: 800,
+    netVariationMinor: 1_500,
     plannedCommitmentsMinor: 500,
   });
   assertBlockDelta(summary, baseline, "USD", {
@@ -168,6 +185,11 @@ async function main(): Promise<void> {
     false,
   );
 
+  const brlEvidenceAccountIds = blockFor(summary, "BRL").accounts.map((account) => account.id);
+  assert.equal(brlEvidenceAccountIds.includes(brlAccount.id), true);
+  assert.equal(brlEvidenceAccountIds.includes(brlSecondaryAccount.id), true);
+  assert.equal(brlEvidenceAccountIds.includes(siblingAccount.id), false);
+
   assert.equal("currency" in summary, false);
   assert.equal("availableBalanceMinor" in summary, false);
   assert.equal("incomeMinor" in summary, false);
@@ -176,7 +198,7 @@ async function main(): Promise<void> {
   assert.equal("plannedCommitmentsMinor" in summary, false);
 
   const issueItems = summary.recentItems.filter((item) =>
-    item.description.includes(`issue 595 ${suffix}`),
+    item.description.includes(`issue 608 ${suffix}`),
   );
   assert.equal(
     issueItems.some((item) => item.currency === "BRL"),
@@ -228,5 +250,6 @@ function blockFor(summary: DashboardSummary, currency: string): DashboardCurrenc
     incomeMinor: 0,
     expensesMinor: 0,
     plannedCommitmentsMinor: 0,
+    accounts: [],
   };
 }
