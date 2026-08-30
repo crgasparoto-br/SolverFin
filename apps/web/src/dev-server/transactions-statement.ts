@@ -127,18 +127,21 @@ export function resolveFilters(
   const currency = normalizeCurrency(url?.searchParams.get("currency"));
   const kind = normalizeKindFilter(url?.searchParams.get("kind"));
   const evidence = normalizeEvidenceFilter(url?.searchParams.get("evidence"));
+  const activeAccounts = accounts.filter((account) => account.status === "active");
   const scopedAccounts = currency
     ? accounts.filter((account) => accountCurrency(account) === currency)
     : accounts;
+  const scopedActiveAccounts = scopedAccounts.filter((account) => account.status === "active");
   const requestedAccountId = url?.searchParams.get("accountId");
   let accountId: string | undefined;
 
   if (currency) {
     accountId =
       scopedAccounts.find((account) => account.id === requestedAccountId)?.id ??
-      scopedAccounts[0]?.id;
+      scopedActiveAccounts[0]?.id;
   } else {
-    accountId = requestedAccountId ?? accounts[0]?.id;
+    accountId =
+      accounts.find((account) => account.id === requestedAccountId)?.id ?? activeAccounts[0]?.id;
   }
 
   return {
@@ -194,21 +197,25 @@ export function filterStatementPeriodTransactions(
     if (filters.kind && transaction.kind !== filters.kind) return false;
 
     if (filters.evidence === "posted") {
-      if (transaction.status !== "posted" && transaction.status !== "reconciled")
+      if (transaction.status !== "posted" && transaction.status !== "reconciled") {
         return false;
+      }
       // The unqualified posted drilldown explains monthly net variation, which is income minus expense.
       if (
         !filters.kind &&
         transaction.kind !== "income" &&
         transaction.kind !== "expense"
-      )
+      ) {
         return false;
+      }
       // Invoice payment transactions are deliberately excluded from the Dashboard month totals.
       if (transaction.invoiceId !== undefined) return false;
     }
 
     if (filters.evidence === "planned") {
-      if (transaction.status !== "planned" && transaction.status !== "suggested") return false;
+      if (transaction.status !== "planned" && transaction.status !== "suggested") {
+        return false;
+      }
       if (transaction.effectiveOn !== undefined) return false;
     }
 
