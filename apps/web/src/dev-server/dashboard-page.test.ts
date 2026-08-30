@@ -78,10 +78,11 @@ describe("dev-server dashboard page", () => {
         html,
         /href="\/lancamentos\?currency=BRL&amp;accountId=brl-archived&amp;kind=income&amp;evidence=posted">Conta Histórica \(inativa\)<\/a>/,
       );
-      assert.doesNotMatch(
-        html,
-        /dashboard-evidence-brl-available[\s\S]*accountId=brl-archived[\s\S]*<\/details>/,
-      );
+      const availableEvidence =
+        html.match(/<details id="dashboard-evidence-brl-available"[\s\S]*?<\/details>/)?.[0] ?? "";
+      assert.match(availableEvidence, /accountId=brl-primary/);
+      assert.match(availableEvidence, /accountId=brl-reserve/);
+      assert.doesNotMatch(availableEvidence, /accountId=brl-archived/);
       assert.match(html, /1 item aguardando revisão na inbox/);
       assert.match(html, /1 fatura de cartão em aberto/);
       assert.match(html, /href="\/inbox">Abrir inbox/);
