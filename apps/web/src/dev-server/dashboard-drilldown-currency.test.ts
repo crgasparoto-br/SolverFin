@@ -13,8 +13,16 @@ const accounts: AccountRecord[] = [
     currency: "BRL",
   },
   {
-    id: "usd-account",
+    id: "usd-primary",
     name: "Conta USD",
+    kind: "checking",
+    status: "active",
+    openingBalanceMinor: 0,
+    currency: "USD",
+  },
+  {
+    id: "usd-reserve",
+    name: "Reserva USD",
     kind: "checking",
     status: "active",
     openingBalanceMinor: 0,
@@ -23,14 +31,16 @@ const accounts: AccountRecord[] = [
 ];
 
 describe("dashboard currency drilldown", () => {
-  it("selects evidence from an account in the requested dashboard currency", () => {
+  it("keeps the exact account selected by the Dashboard evidence index", () => {
     const filters = resolveFilters(
-      new URL("http://solverfin.test/lancamentos?currency=usd&month=2026-08"),
+      new URL(
+        "http://solverfin.test/lancamentos?currency=usd&accountId=usd-reserve&month=2026-08",
+      ),
       accounts,
     );
 
     assert.deepEqual(filters, {
-      accountId: "usd-account",
+      accountId: "usd-reserve",
       currency: "USD",
       month: "2026-08",
       startsOn: "2026-08-01",
