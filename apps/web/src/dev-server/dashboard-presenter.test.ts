@@ -20,6 +20,11 @@ function successfulInput(): DashboardPresenterInput {
             expensesMinor: 2_100,
             netVariationMinor: 4_600,
             plannedCommitmentsMinor: 900,
+            accounts: [
+              { id: "usd-primary", name: "Conta USD", status: "active" },
+              { id: "usd-reserve", name: "Reserva USD", status: "active" },
+              { id: "usd-archived", name: "USD histórica", status: "archived" },
+            ],
           },
         ],
         recentItems: [
@@ -41,14 +46,15 @@ function successfulInput(): DashboardPresenterInput {
 }
 
 describe("dashboard presenter", () => {
-  it("maps canonical financial values and gives each KPI a discriminating evidence drilldown", () => {
+  it("maps canonical financial values and gives each KPI complete per-account evidence", () => {
     const model = presentDashboard(successfulInput());
 
     assert.equal(model.status, "success");
     if (model.status !== "success") return;
 
+    const metrics = model.content.currencySummaries[0]?.metrics ?? [];
     assert.deepEqual(
-      model.content.currencySummaries[0]?.metrics.map((metric) => metric.amount),
+      metrics.map((metric) => metric.amount),
       [
         { amountMinor: 12_345, currency: "USD" },
         { amountMinor: 4_600, currency: "USD" },
@@ -58,27 +64,38 @@ describe("dashboard presenter", () => {
       ],
     );
     assert.deepEqual(
-      model.content.currencySummaries[0]?.metrics.map((metric) => metric.href),
+      metrics.map((metric) => metric.href),
       [
-        "/lancamentos?currency=USD",
-        "/lancamentos?currency=USD&evidence=posted",
-        "/lancamentos?currency=USD&kind=income&evidence=posted",
-        "/lancamentos?currency=USD&kind=expense&evidence=posted",
-        "/lancamentos?currency=USD&kind=expense&evidence=planned",
+        "#dashboard-evidence-usd-available",
+        "#dashboard-evidence-usd-variation",
+        "#dashboard-evidence-usd-income",
+        "#dashboard-evidence-usd-expense",
+        "#dashboard-evidence-usd-planned",
       ],
     );
-    assert.equal(
-      new Set(model.content.currencySummaries[0]?.metrics.map((metric) => metric.href)).size,
-      5,
+    assert.equal(new Set(metrics.map((metric) => metric.href)).size, 5);
+
+    assert.deepEqual(
+      metrics[0]?.evidenceLinks.map((link) => link.href),
+      [
+        "/lancamentos?currency=USD&accountId=usd-primary",
+        "/lancamentos?currency=USD&accountId=usd-reserve",
+      ],
     );
+    assert.deepEqual(
+      metrics[2]?.evidenceLinks.map((link) => link.href),
+      [
+        "/lancamentos?currency=USD&accountId=usd-primary&kind=income&evidence=posted",
+        "/lancamentos?currency=USD&accountId=usd-reserve&kind=income&evidence=posted",
+        "/lancamentos?currency=USD&accountId=usd-archived&kind=income&evidence=posted",
+      ],
+    );
+    assert.equal(metrics[2]?.evidenceLinks[2]?.label, "USD histórica (inativa)");
     assert.deepEqual(model.content.recentItems[0]?.amount, {
       amountMinor: 2_100,
       currency: "USD",
     });
-    assert.equal(
-      model.content.nextActions[0]?.href,
-      "/lancamentos?currency=USD&kind=expense&evidence=planned",
-    );
+    assert.equal(model.content.nextActions[0]?.href, "#dashboard-evidence-usd-planned");
     assert.equal(model.content.dataQuality.status, "complete");
   });
 
