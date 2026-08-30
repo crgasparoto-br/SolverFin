@@ -44,21 +44,21 @@ Os estilos compartilhados são fornecidos por `sharedShellStyles()`, que inclui 
 
 ## Indicadores e drilldown
 
-Cada moeda tem cinco indicadores principais. O card navega primeiro para um índice de evidências da própria moeda no Dashboard; esse índice apresenta uma entrada explícita para cada conta contribuinte e cada entrada abre o Extrato já filtrado por `accountId` e moeda.
+Cada moeda tem cinco indicadores principais. O card navega primeiro para um índice de evidências da própria moeda no Dashboard. Esse índice apresenta uma entrada explícita para cada conta relacionada ao bloco; contas ativas abrem o Extrato já filtrado por `accountId` e moeda, enquanto contas inativas permanecem identificadas como evidência histórica sem oferecer uma ação operacional enganosa.
 
 - Disponível estimado: somente contas ativas da moeda, com acesso ao Extrato individual de cada conta;
-- Variação líquida do mês: todas as contas da moeda com `evidence=posted`;
-- Receitas do mês: todas as contas da moeda com `kind=income&evidence=posted`;
-- Despesas do mês: todas as contas da moeda com `kind=expense&evidence=posted`;
-- Compromissos previstos: todas as contas da moeda com `kind=expense&evidence=planned`.
+- Variação líquida do mês: contas da moeda relacionadas ao agregado, com `evidence=posted` nas contas ativas;
+- Receitas do mês: contas da moeda relacionadas ao agregado, com `kind=income&evidence=posted` nas contas ativas;
+- Despesas do mês: contas da moeda relacionadas ao agregado, com `kind=expense&evidence=posted` nas contas ativas;
+- Compromissos previstos: contas da moeda relacionadas ao agregado, com `kind=expense&evidence=planned` nas contas ativas.
 
-Contas inativas continuam disponíveis como evidência histórica para variação, receitas, despesas e compromissos, mas não participam do índice do disponível estimado. Assim, duas ou mais contas na mesma moeda nunca são reduzidas arbitrariamente à primeira conta encontrada.
+Contas inativas continuam visíveis como referência histórica para variação, receitas, despesas e compromissos, mas não recebem link para um Extrato que poderia resolver para outra conta. Elas também não participam do índice do disponível estimado. Assim, duas ou mais contas ativas na mesma moeda nunca são reduzidas arbitrariamente à primeira conta encontrada.
 
 A variação líquida é calculada no contrato agregado do backend como receitas postadas/reconciliadas menos despesas postadas/reconciliadas da mesma moeda e do mesmo mês. O frontend apenas apresenta `netVariationMinor`; ele não reconstitui nem inventa a regra financeira.
 
 O Extrato interpreta `kind` somente para `income` e `expense`, e `evidence` somente para `posted` e `planned`. Valores não suportados são ignorados em vez de receber significado implícito. `posted` reproduz o recorte mensal do resumo para status `posted`/`reconciled` pela data `occurredOn` e exclui pagamentos de fatura; quando `kind` não é informado, o recorte preserva receitas e despesas para explicar a variação. `planned` reproduz compromissos `planned`/`suggested` pela data `plannedOn`, sem `effectiveOn`.
 
-Os links produzidos pelo índice sempre carregam um `accountId` explícito pertencente à moeda do bloco. A resolução do Extrato portanto permanece por conta, sem fallback para outra moeda e sem criar um saldo agregado artificial no frontend.
+Os links operacionais produzidos pelo índice sempre carregam um `accountId` explícito pertencente à moeda do bloco. A resolução do Extrato portanto permanece por conta, sem fallback para outra moeda e sem criar um saldo agregado artificial no frontend.
 
 ## Estados
 
@@ -84,7 +84,8 @@ A composição preserva:
 - reflow da grade de indicadores nos breakpoints do cockpit;
 - navegação nativa por links para moedas e índices de evidência;
 - detalhes nativos (`details`/`summary`) para abrir as evidências de cada KPI;
-- links por conta com foco visível e recorte determinístico do Extrato;
+- links de contas ativas com foco visível e recorte determinístico do Extrato;
+- identificação read-only de contas inativas sem navegação enganosa;
 - estados com semântica e `aria-live` fornecidos pelas primitives compartilhadas;
 - validação real em desktop e mobile;
 - validação por teclado no Chrome: o gate envia `Tab`, confirma foco navegável e verifica a presença de outline visível.
@@ -94,12 +95,13 @@ A composição preserva:
 As regressões da rota cobrem, entre outros pontos:
 
 - valores multi-moedas sem mistura;
-- duas contas da mesma moeda preservadas no contrato e no índice de evidência;
+- duas contas ativas da mesma moeda preservadas no contrato e no índice de evidência;
+- contas inativas identificadas sem produzir um link operacional incorreto;
 - variação líquida determinística por moeda;
 - uso das primitives da Fase 3B na marcação SSR;
 - ausência de carga indiscriminada de todos os lançamentos;
 - drilldowns distintos para variação, receita, despesa e compromisso;
-- `accountId` explícito para cada conta de evidência;
+- `accountId` explícito para cada conta ativa navegável;
 - filtragem de evidência postada/reconciliada versus planejada/sugerida;
 - estado `loading` alcançável na rota, vazio, erro e dados parciais;
 - rota canônica do Assistente Financeiro;
