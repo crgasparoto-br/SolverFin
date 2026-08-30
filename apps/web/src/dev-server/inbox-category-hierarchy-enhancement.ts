@@ -1,3 +1,9 @@
+import {
+  renderDetailLayout,
+  renderFilterBar,
+  renderPageContainer,
+  renderPageHeader,
+} from "../design-system/primitives.js";
 import { enhanceInboxOfxImport } from "./inbox-ofx-import-enhancement.js";
 
 export interface CategoryRecord {
@@ -116,13 +122,138 @@ export function resolveInboxCategorySelection(
   return { categoryId, removedBecauseIncompatible: false, unavailable: false };
 }
 
+export function enhanceInboxReviewArchetype(html: string): string {
+  if (html.includes("data-inbox-review-archetype")) return html;
+
+  const headingPattern =
+    /<section class="page-heading">[\s\S]*?<div class="heading-actions">([\s\S]*?)<\/div>\s*<\/section>/;
+  const headingMatch = html.match(headingPattern);
+  if (!headingMatch) return html;
+
+  const importPattern =
+    /<section class="panel import-workspace" aria-labelledby="csv-import-title">[\s\S]*?<\/section>/;
+  const suggestionsPattern =
+    /<section class="panel list-panel">\s*<div class="section-heading">\s*<h2>Outras sugestões<\/h2>[\s\S]*?<\/section>/;
+  const messagesPattern =
+    /<section class="panel list-panel">\s*<div class="section-heading">\s*<h2>Mensagens recebidas<\/h2>[\s\S]*?<\/section>/;
+
+  const importMatch = html.match(importPattern);
+  const suggestionsMatch = html.match(suggestionsPattern);
+  const messagesMatch = html.match(messagesPattern);
+  if (!importMatch || !suggestionsMatch || !messagesMatch) return html;
+
+  const headerHtml = renderPageHeader({
+    eyebrow: "Entradas e revisão",
+    title: "Inbox",
+    description:
+      "Revise mensagens, sugestões e importações com evidência antes de confirmar qualquer efeito financeiro.",
+    actionsHtml: headingMatch[1]?.trim() ?? "",
+  });
+  const filterBarHtml = renderFilterBar({
+    label: "Navegação da triagem",
+    childrenHtml: `
+      <a class="secondary-button inbox-review-nav" href="#inbox-review-queue">Fila de revisão</a>
+      <a class="secondary-button inbox-review-nav" href="#csv-import-title">Evidência da importação</a>
+      <span class="muted small-note" role="status">Decisões continuam explícitas e dependem da evidência atual.</span>
+    `,
+  });
+
+  const suggestionsHtml = suggestionsMatch[0].replace(
+    'class="panel list-panel"',
+    'class="inbox-review-group" aria-labelledby="inbox-review-suggestions-title"',
+  ).replace("<h2>Outras sugestões</h2>", '<h2 id="inbox-review-suggestions-title">Outras sugestões</h2>');
+  const messagesHtml = messagesMatch[0].replace(
+    'class="panel list-panel"',
+    'class="inbox-review-group" aria-labelledby="inbox-review-messages-title"',
+  ).replace("<h2>Mensagens recebidas</h2>", '<h2 id="inbox-review-messages-title">Mensagens recebidas</h2>');
+  const evidenceHtml = importMatch[0].replace(
+    'class="panel import-workspace"',
+    'class="inbox-review-evidence" data-inbox-review-evidence',
+  );
+
+  const reviewLayoutHtml = renderDetailLayout({
+    masterHtml: `
+      <section id="inbox-review-queue" class="inbox-review-queue" aria-labelledby="inbox-review-queue-title">
+        <div class="inbox-review-queue-heading">
+          <div>
+            <p class="eyebrow">Triagem</p>
+            <h2 id="inbox-review-queue-title">Fila de revisão</h2>
+          </div>
+          <p class="muted small-note">Origem, estado e confiança permanecem visíveis em cada item.</p>
+        </div>
+        ${suggestionsHtml}
+        ${messagesHtml}
+      </section>
+    `,
+    detailHtml: `
+      <section class="inbox-review-detail" aria-labelledby="inbox-review-detail-title">
+        <div class="inbox-review-detail-heading">
+          <div>
+            <p class="eyebrow">Evidência e decisão</p>
+            <h2 id="inbox-review-detail-title">Item em revisão</h2>
+          </div>
+          <p class="muted small-note">Selecione um lote ou item e confirme somente depois de revisar a evidência.</p>
+        </div>
+        ${evidenceHtml}
+      </section>
+    `,
+  });
+
+  const cockpitHtml = renderPageContainer({
+    className: "inbox-review-cockpit",
+    childrenHtml: `${filterBarHtml}${reviewLayoutHtml}`,
+  });
+
+  let enhanced = html.replace(headingPattern, `${headerHtml}${cockpitHtml}`);
+  enhanced = enhanced.replace(importMatch[0], "");
+  enhanced = enhanced.replace(suggestionsMatch[0], "");
+  enhanced = enhanced.replace(messagesMatch[0], "");
+  enhanced = enhanced.replace(
+    "<main",
+    '<main data-inbox-review-archetype="A6"',
+  );
+  enhanced = enhanced.replace(
+    "</style>",
+    `
+      .inbox-review-cockpit { display: grid; gap: 12px; max-width: none; padding: 0; }
+      .inbox-review-cockpit .sf-filter-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+      .inbox-review-nav { text-decoration: none; }
+      .inbox-review-cockpit .sf-detail-layout { align-items: start; display: grid; gap: 14px; grid-template-columns: minmax(300px, .72fr) minmax(0, 1.28fr); }
+      .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+      .inbox-review-queue, .inbox-review-detail { display: grid; gap: 12px; padding: 12px; }
+      .inbox-review-group { padding: 10px; }
+      .inbox-review-group + .inbox-review-group { margin-top: 2px; }
+      .inbox-review-evidence { padding: 10px; }
+      .inbox-review-queue-heading, .inbox-review-detail-heading { align-items: start; display: flex; gap: 12px; justify-content: space-between; }
+      .inbox-review-queue-heading > div, .inbox-review-detail-heading > div { display: grid; gap: 3px; }
+      .inbox-review-detail { position: sticky; top: 12px; }
+      @media (max-width: 900px) {
+        .inbox-review-cockpit .sf-detail-layout { grid-template-columns: 1fr; }
+        .inbox-review-detail { position: static; }
+      }
+      @media (max-width: 600px) {
+        .inbox-review-queue, .inbox-review-detail { padding: 9px; }
+        .inbox-review-queue-heading, .inbox-review-detail-heading { display: grid; }
+        .inbox-review-cockpit .sf-filter-bar { align-items: stretch; display: grid; }
+        .inbox-review-nav { justify-content: center; width: 100%; }
+      }
+    </style>`,
+  );
+
+  return enhanced;
+}
+
 export function enhanceInboxCategoryHierarchy(
   html: string,
   categories: readonly CategoryRecord[],
 ): string {
   const ofxEnhanced = enhanceInboxOfxImport(html);
-  if (!ofxEnhanced.includes('id="csv-line-edit-dialog"')) return ofxEnhanced;
-  if (ofxEnhanced.includes("data-inbox-category-hierarchy-enhanced")) return ofxEnhanced;
+  if (!ofxEnhanced.includes('id="csv-line-edit-dialog"')) {
+    return enhanceInboxReviewArchetype(ofxEnhanced);
+  }
+  if (ofxEnhanced.includes("data-inbox-category-hierarchy-enhanced")) {
+    return enhanceInboxReviewArchetype(ofxEnhanced);
+  }
 
   const choices = buildInboxCategoryChoices(categories);
   const choicesJson = JSON.stringify(choices).replace(/</g, "\\u003c");
@@ -185,14 +316,14 @@ export function enhanceInboxCategoryHierarchy(
         });`;
 
   let enhanced = ofxEnhanced.replace(categoryOptionsPattern, categoryOptionsReplacement);
-  if (enhanced === ofxEnhanced) return ofxEnhanced;
+  if (enhanced === ofxEnhanced) return enhanceInboxReviewArchetype(ofxEnhanced);
 
   const withStatus = enhanced.replace(statusAnchor, statusReplacement);
-  if (withStatus === enhanced) return ofxEnhanced;
+  if (withStatus === enhanced) return enhanceInboxReviewArchetype(ofxEnhanced);
   enhanced = withStatus;
 
   const withKindListener = enhanced.replace(kindListenerPattern, kindListenerReplacement);
-  if (withKindListener === enhanced) return ofxEnhanced;
+  if (withKindListener === enhanced) return enhanceInboxReviewArchetype(ofxEnhanced);
   enhanced = withKindListener;
 
   enhanced = enhanced.replace("<main", "<main data-inbox-category-hierarchy-enhanced");
@@ -203,7 +334,7 @@ export function enhanceInboxCategoryHierarchy(
     </style>`,
   );
 
-  return enhanced;
+  return enhanceInboxReviewArchetype(enhanced);
 }
 
 function resolveCategoryPath(
