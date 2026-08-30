@@ -17,6 +17,7 @@ describe("dashboard multi-currency contract", () => {
               availableBalanceMinor: 10_000,
               incomeMinor: 3_000,
               expensesMinor: 1_000,
+              netVariationMinor: 2_000,
               plannedCommitmentsMinor: 500,
             },
             {
@@ -24,6 +25,7 @@ describe("dashboard multi-currency contract", () => {
               availableBalanceMinor: 20_000,
               incomeMinor: 4_000,
               expensesMinor: 2_000,
+              netVariationMinor: 2_000,
               plannedCommitmentsMinor: 700,
             },
           ],
@@ -59,6 +61,10 @@ describe("dashboard multi-currency contract", () => {
         assert.match(html, new RegExp(`href="/lancamentos\\?currency=${currency}"`));
         assert.match(
           html,
+          new RegExp(`href="/lancamentos\\?currency=${currency}&amp;evidence=posted"`),
+        );
+        assert.match(
+          html,
           new RegExp(
             `href="/lancamentos\\?currency=${currency}&amp;kind=income&amp;evidence=posted"`,
           ),
@@ -77,10 +83,11 @@ describe("dashboard multi-currency contract", () => {
         );
       }
 
+      assert.match(html, /Variação líquida do mês/);
       assert.match(html, /Compra ficticia USD/);
       assert.match(html, /expense - posted - USD - 18\/08\/2026/);
       assert.equal((html.match(/class="currency-summary"/g) ?? []).length, 2);
-      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 8);
+      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 10);
       assert.match(html, /class="sf-summary-grid"/);
     } finally {
       globalThis.fetch = originalFetch;
