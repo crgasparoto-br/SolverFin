@@ -158,14 +158,24 @@ export function enhanceInboxReviewArchetype(html: string): string {
     `,
   });
 
-  const suggestionsHtml = suggestionsMatch[0].replace(
-    'class="panel list-panel"',
-    'class="inbox-review-group" aria-labelledby="inbox-review-suggestions-title"',
-  ).replace("<h2>Outras sugestões</h2>", '<h2 id="inbox-review-suggestions-title">Outras sugestões</h2>');
-  const messagesHtml = messagesMatch[0].replace(
-    'class="panel list-panel"',
-    'class="inbox-review-group" aria-labelledby="inbox-review-messages-title"',
-  ).replace("<h2>Mensagens recebidas</h2>", '<h2 id="inbox-review-messages-title">Mensagens recebidas</h2>');
+  const suggestionsHtml = suggestionsMatch[0]
+    .replace(
+      'class="panel list-panel"',
+      'class="inbox-review-group" aria-labelledby="inbox-review-suggestions-title"',
+    )
+    .replace(
+      "<h2>Outras sugestões</h2>",
+      '<h2 id="inbox-review-suggestions-title">Outras sugestões</h2>',
+    );
+  const messagesHtml = messagesMatch[0]
+    .replace(
+      'class="panel list-panel"',
+      'class="inbox-review-group" aria-labelledby="inbox-review-messages-title"',
+    )
+    .replace(
+      "<h2>Mensagens recebidas</h2>",
+      '<h2 id="inbox-review-messages-title">Mensagens recebidas</h2>',
+    );
   const evidenceHtml = importMatch[0].replace(
     'class="panel import-workspace"',
     'class="inbox-review-evidence" data-inbox-review-evidence',
@@ -204,10 +214,10 @@ export function enhanceInboxReviewArchetype(html: string): string {
     childrenHtml: `${filterBarHtml}${reviewLayoutHtml}`,
   });
 
-  let enhanced = html.replace(headingPattern, `${headerHtml}${cockpitHtml}`);
-  enhanced = enhanced.replace(importMatch[0], "");
+  let enhanced = html.replace(importMatch[0], "");
   enhanced = enhanced.replace(suggestionsMatch[0], "");
   enhanced = enhanced.replace(messagesMatch[0], "");
+  enhanced = enhanced.replace(headingPattern, `${headerHtml}${cockpitHtml}`);
   enhanced = enhanced.replace(
     "<main",
     '<main data-inbox-review-archetype="A6"',
