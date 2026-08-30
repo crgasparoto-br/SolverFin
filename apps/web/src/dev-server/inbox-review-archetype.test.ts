@@ -73,16 +73,14 @@ describe("Inbox review archetype", () => {
   });
 
   it("retires the Inbox textual post-processors from the active legacy budget", () => {
+    const activeIds = LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => String(entry.id));
+
     assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 11);
     assert.equal(
       LEGACY_HTML_POST_PROCESSOR_INVENTORY.some((entry) => entry.route === "/inbox"),
       false,
     );
-    assert.equal(
-      LEGACY_HTML_POST_PROCESSOR_INVENTORY.some(
-        (entry) => entry.id === "inbox-structured-payload" || entry.id === "inbox-list-layout",
-      ),
-      false,
-    );
+    assert.equal(activeIds.includes("inbox-structured-payload"), false);
+    assert.equal(activeIds.includes("inbox-list-layout"), false);
   });
 });
