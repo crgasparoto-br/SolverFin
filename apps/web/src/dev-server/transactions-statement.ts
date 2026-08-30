@@ -201,11 +201,7 @@ export function filterStatementPeriodTransactions(
         return false;
       }
       // The unqualified posted drilldown explains monthly net variation, which is income minus expense.
-      if (
-        !filters.kind &&
-        transaction.kind !== "income" &&
-        transaction.kind !== "expense"
-      ) {
+      if (!filters.kind && transaction.kind !== "income" && transaction.kind !== "expense") {
         return false;
       }
       // Invoice payment transactions are deliberately excluded from the Dashboard month totals.
@@ -362,9 +358,7 @@ function normalizeCurrency(value: string | null | undefined): string | undefined
   return /^[A-Z]{3}$/.test(normalized ?? "") ? normalized : undefined;
 }
 
-function normalizeKindFilter(
-  value: string | null | undefined,
-): StatementKindFilter | undefined {
+function normalizeKindFilter(value: string | null | undefined): StatementKindFilter | undefined {
   return value === "income" || value === "expense" ? value : undefined;
 }
 
@@ -395,8 +389,6 @@ function isValidDateOnly(value: string | null | undefined): value is string {
   const date = new Date(Date.UTC(year, month - 1, day));
 
   return (
-    date.getUTCFullYear() === year &&
-    date.getUTCMonth() === month - 1 &&
-    date.getUTCDate() === day
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
   );
 }

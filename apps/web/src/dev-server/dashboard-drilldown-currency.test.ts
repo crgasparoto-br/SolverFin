@@ -33,9 +33,7 @@ const accounts: AccountRecord[] = [
 describe("dashboard currency drilldown", () => {
   it("keeps the exact account selected by the Dashboard evidence index", () => {
     const filters = resolveFilters(
-      new URL(
-        "http://solverfin.test/lancamentos?currency=usd&accountId=usd-reserve&month=2026-08",
-      ),
+      new URL("http://solverfin.test/lancamentos?currency=usd&accountId=usd-reserve&month=2026-08"),
       accounts,
     );
 
