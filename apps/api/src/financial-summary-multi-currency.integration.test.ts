@@ -209,7 +209,7 @@ function assertBlockDelta(
       availableBalanceMinor: current.availableBalanceMinor - before.availableBalanceMinor,
       incomeMinor: current.incomeMinor - before.incomeMinor,
       expensesMinor: current.expensesMinor - before.expensesMinor,
-      netVariationMinor: current.netVariationMinor - before.netVariationMinor,
+      netVariationMinor: (current.netVariationMinor ?? 0) - (before.netVariationMinor ?? 0),
       plannedCommitmentsMinor: current.plannedCommitmentsMinor - before.plannedCommitmentsMinor,
     },
     expected,
@@ -227,7 +227,6 @@ function blockFor(summary: DashboardSummary, currency: string): DashboardCurrenc
     availableBalanceMinor: 0,
     incomeMinor: 0,
     expensesMinor: 0,
-    netVariationMinor: 0,
     plannedCommitmentsMinor: 0,
   };
 }
