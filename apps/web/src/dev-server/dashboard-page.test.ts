@@ -73,7 +73,10 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /class="sf-metric-card"/);
       assert.match(html, /@media \(max-width: 760px\)/);
       assert.match(html, /\.metric-drilldown:focus-visible/);
-      assert.match(html, /\.sf-summary-grid, \.decision-grid \{ grid-template-columns: 1fr;/);
+      assert.match(
+        html,
+        /\.currency-summary \.sf-summary-grid, \.decision-grid \{ grid-template-columns: 1fr;/,
+      );
     } finally {
       globalThis.fetch = originalFetch;
     }
