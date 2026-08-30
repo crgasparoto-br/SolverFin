@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { presentDashboard, type DashboardPresenterInput } from "./dashboard-presenter.js";
+import {
+  presentDashboard,
+  presentDashboardLoading,
+  type DashboardPresenterInput,
+} from "./dashboard-presenter.js";
 
 function successfulInput(): DashboardPresenterInput {
   return {
@@ -14,6 +18,7 @@ function successfulInput(): DashboardPresenterInput {
             availableBalanceMinor: 12_345,
             incomeMinor: 6_700,
             expensesMinor: 2_100,
+            netVariationMinor: 4_600,
             plannedCommitmentsMinor: 900,
           },
         ],
@@ -46,6 +51,7 @@ describe("dashboard presenter", () => {
       model.content.currencySummaries[0]?.metrics.map((metric) => metric.amount),
       [
         { amountMinor: 12_345, currency: "USD" },
+        { amountMinor: 4_600, currency: "USD" },
         { amountMinor: 6_700, currency: "USD" },
         { amountMinor: 2_100, currency: "USD" },
         { amountMinor: 900, currency: "USD" },
@@ -55,6 +61,7 @@ describe("dashboard presenter", () => {
       model.content.currencySummaries[0]?.metrics.map((metric) => metric.href),
       [
         "/lancamentos?currency=USD",
+        "/lancamentos?currency=USD&evidence=posted",
         "/lancamentos?currency=USD&kind=income&evidence=posted",
         "/lancamentos?currency=USD&kind=expense&evidence=posted",
         "/lancamentos?currency=USD&kind=expense&evidence=planned",
@@ -62,7 +69,7 @@ describe("dashboard presenter", () => {
     );
     assert.equal(
       new Set(model.content.currencySummaries[0]?.metrics.map((metric) => metric.href)).size,
-      4,
+      5,
     );
     assert.deepEqual(model.content.recentItems[0]?.amount, {
       amountMinor: 2_100,
@@ -107,8 +114,16 @@ describe("dashboard presenter", () => {
     if (model.status !== "success") return;
     assert.deepEqual(
       model.content.decisionModules.map((module) => module.href),
-      ["/planejamento", "/relatorios", "/assistente-financeiro"],
+      ["/planejamento", "/relatorios", "/assistente"],
     );
+  });
+
+  it("exposes the typed loading state before data sources are resolved", () => {
+    const model = presentDashboardLoading({ profileId: "profile-1" });
+
+    assert.equal(model.status, "loading");
+    assert.deepEqual(model.context.filters, { profileId: "profile-1" });
+    assert.deepEqual(model.context.provenance, []);
   });
 
   it("returns a typed empty state when the mandatory summary has no financial evidence", () => {
