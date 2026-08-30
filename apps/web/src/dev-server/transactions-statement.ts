@@ -195,6 +195,8 @@ export function filterStatementPeriodTransactions(
 
     if (filters.evidence === "posted") {
       if (transaction.status !== "posted" && transaction.status !== "reconciled") return false;
+      // The unqualified posted drilldown explains monthly net variation, which is income minus expense.
+      if (!filters.kind && transaction.kind !== "income" && transaction.kind !== "expense") return false;
       // Invoice payment transactions are deliberately excluded from the Dashboard month totals.
       if (transaction.invoiceId !== undefined) return false;
     }
