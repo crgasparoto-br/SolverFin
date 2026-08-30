@@ -87,10 +87,11 @@ describe("dashboard presenter", () => {
       [
         "/lancamentos?currency=USD&accountId=usd-primary&kind=income&evidence=posted",
         "/lancamentos?currency=USD&accountId=usd-reserve&kind=income&evidence=posted",
-        "/lancamentos?currency=USD&accountId=usd-archived&kind=income&evidence=posted",
+        undefined,
       ],
     );
     assert.equal(metrics[2]?.evidenceLinks[2]?.label, "USD histórica (inativa)");
+    assert.match(metrics[2]?.evidenceLinks[2]?.note ?? "", /histórica incluída no agregado/);
     assert.deepEqual(model.content.recentItems[0]?.amount, {
       amountMinor: 2_100,
       currency: "USD",
