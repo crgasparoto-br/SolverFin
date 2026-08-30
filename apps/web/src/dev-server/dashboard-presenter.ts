@@ -40,6 +40,11 @@ export interface DashboardFinancialSummaryCurrencyBlock {
   accounts?: readonly DashboardAccountReference[];
 }
 
+export interface DashboardFinancialSummary {
+  currencyBlocks: DashboardFinancialSummaryCurrencyBlock[];
+  recentItems: DashboardFinancialSummaryItem[];
+}
+
 export interface DashboardMetricEvidenceLinkViewModel {
   label: string;
   href?: string;
