@@ -27,7 +27,7 @@ export interface DashboardCurrencyBlock {
   expensesMinor: number;
   netVariationMinor?: number;
   plannedCommitmentsMinor: number;
-  accounts: DashboardAccountReference[];
+  accounts?: DashboardAccountReference[];
 }
 
 export interface DashboardSummary {
