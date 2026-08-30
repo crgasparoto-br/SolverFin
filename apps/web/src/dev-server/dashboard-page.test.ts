@@ -5,6 +5,12 @@ import { renderDashboardPage } from "./dashboard-page.js";
 
 const originalFetch = globalThis.fetch;
 
+const brlAccounts = [
+  { id: "brl-primary", name: "Conta Principal", status: "active" },
+  { id: "brl-reserve", name: "Reserva BRL", status: "active" },
+  { id: "brl-archived", name: "Conta Histórica", status: "archived" },
+];
+
 describe("dev-server dashboard page", () => {
   it("renders an actionable cockpit on Phase 3B primitives without loading every transaction", async () => {
     const calledPaths: string[] = [];
@@ -23,6 +29,7 @@ describe("dev-server dashboard page", () => {
               expensesMinor: 150000,
               netVariationMinor: 150000,
               plannedCommitmentsMinor: 20000,
+              accounts: brlAccounts,
             },
           ],
           recentItems: [],
@@ -43,7 +50,7 @@ describe("dev-server dashboard page", () => {
     };
 
     try {
-      const html = await renderDashboardPage("session-token");
+      const html = await renderDashboardPage("session-token-actionable");
 
       assert.match(html, /Cockpit financeiro/);
       assert.match(html, /Situação financeira atual/);
@@ -52,12 +59,28 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /Variação líquida do mês/);
       assert.match(
         html,
-        /href="\/lancamentos\?currency=BRL&amp;evidence=posted" aria-label="Ver variação postada em BRL"/,
+        /href="#dashboard-evidence-brl-variation" aria-label="Ver evidências em BRL"/,
       );
       assert.match(html, /Compromissos previstos em BRL/);
       assert.match(
         html,
-        /href="\/lancamentos\?currency=BRL" aria-label="Ver extrato em BRL">Ver extrato em BRL/,
+        /href="#dashboard-evidence-brl-available" aria-label="Ver evidências em BRL"/,
+      );
+      assert.match(
+        html,
+        /href="\/lancamentos\?currency=BRL&amp;accountId=brl-primary&amp;kind=income&amp;evidence=posted">Conta Principal<\/a>/,
+      );
+      assert.match(
+        html,
+        /href="\/lancamentos\?currency=BRL&amp;accountId=brl-reserve&amp;kind=income&amp;evidence=posted">Reserva BRL<\/a>/,
+      );
+      assert.match(
+        html,
+        /href="\/lancamentos\?currency=BRL&amp;accountId=brl-archived&amp;kind=income&amp;evidence=posted">Conta Histórica \(inativa\)<\/a>/,
+      );
+      assert.doesNotMatch(
+        html,
+        /dashboard-evidence-brl-available[\s\S]*accountId=brl-archived[\s\S]*<\/details>/,
       );
       assert.match(html, /1 item aguardando revisão na inbox/);
       assert.match(html, /1 fatura de cartão em aberto/);
@@ -80,12 +103,26 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /class="sf-page-header"/);
       assert.match(html, /class="sf-summary-grid"/);
       assert.match(html, /class="sf-metric-card"/);
+      assert.match(html, /class="evidence-detail"/);
       assert.match(html, /@media \(max-width: 760px\)/);
       assert.match(html, /\.metric-drilldown:focus-visible/);
       assert.match(
         html,
         /\.currency-summary \.sf-summary-grid, \.decision-grid \{ grid-template-columns: 1fr;/,
       );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("renders a reachable loading state when dashboard sources are still pending", async () => {
+    globalThis.fetch = async (): Promise<Response> => new Promise<Response>(() => undefined);
+
+    try {
+      const html = await renderDashboardPage("session-token-loading");
+      assert.match(html, /data-state="loading"/);
+      assert.match(html, /Carregando resumo financeiro/);
+      assert.match(html, /window\.setTimeout\(\(\) => window\.location\.reload\(\), 250\)/);
     } finally {
       globalThis.fetch = originalFetch;
     }
@@ -105,6 +142,7 @@ describe("dev-server dashboard page", () => {
               expensesMinor: 150000,
               netVariationMinor: 150000,
               plannedCommitmentsMinor: 0,
+              accounts: brlAccounts,
             },
           ],
           recentItems: [],
@@ -117,7 +155,7 @@ describe("dev-server dashboard page", () => {
     };
 
     try {
-      const html = await renderDashboardPage("session-token");
+      const html = await renderDashboardPage("session-token-empty");
       assert.match(html, /Nenhuma pendência agora\./);
       assert.match(html, /class="sf-state-panel" data-state="empty"/);
       assert.doesNotMatch(html, /\/pagar-receber/);
@@ -139,6 +177,7 @@ describe("dev-server dashboard page", () => {
               expensesMinor: 150000,
               netVariationMinor: 150000,
               plannedCommitmentsMinor: 0,
+              accounts: brlAccounts,
             },
           ],
           recentItems: [],
@@ -155,7 +194,7 @@ describe("dev-server dashboard page", () => {
     };
 
     try {
-      const html = await renderDashboardPage("session-token");
+      const html = await renderDashboardPage("session-token-partial");
       assert.match(html, /data-quality="partial"/);
       assert.match(html, /Dados parciais/);
     } finally {
