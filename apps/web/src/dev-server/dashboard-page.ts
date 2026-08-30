@@ -254,7 +254,7 @@ function renderDashboardMetric(metric: DashboardMetricViewModel): string {
     detail: metric.subtitle,
   });
 
-  return `<div class="dashboard-metric">${metricCard}<a class="metric-drilldown sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">Ver evidências</a></div>`;
+  return `<div class="dashboard-metric">${metricCard}<a class="metric-drilldown sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">${escapeHtml(metric.linkLabel)}</a></div>`;
 }
 
 function dashboardStyles(): string {
