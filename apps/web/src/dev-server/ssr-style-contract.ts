@@ -145,11 +145,6 @@ const accountsCardsRuntimeProviders = [
 
 const inboxRuntimeProviders = [
   markerProvider(
-    "runtime:inbox-list-layout",
-    "inbox-list-layout-enhancement.js",
-    'id="inbox-list-layout-styles"',
-  ),
-  markerProvider(
     "runtime:round-selection",
     "round-selection-control-enhancement.js",
     'data-round-selection-control="enhanced"',
@@ -179,11 +174,6 @@ const inboxRuntimeProviders = [
     "runtime:inbox-row-readability",
     "inbox-row-readability-enhancement.js",
     'data-inbox-row-readability="enhanced"',
-  ),
-  markerProvider(
-    "runtime:inbox-date-filter-action",
-    "inbox-date-filter-action-enhancement.js",
-    'data-inbox-date-filter-action="explicit"',
   ),
 ] as const;
 

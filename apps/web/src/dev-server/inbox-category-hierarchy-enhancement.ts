@@ -218,10 +218,7 @@ export function enhanceInboxReviewArchetype(html: string): string {
   enhanced = enhanced.replace(suggestionsMatch[0], "");
   enhanced = enhanced.replace(messagesMatch[0], "");
   enhanced = enhanced.replace(headingPattern, `${headerHtml}${cockpitHtml}`);
-  enhanced = enhanced.replace(
-    "<main",
-    '<main data-inbox-review-archetype="A6"',
-  );
+  enhanced = enhanced.replace("<main", '<main data-inbox-review-archetype="A6"');
   enhanced = enhanced.replace(
     "</style>",
     `

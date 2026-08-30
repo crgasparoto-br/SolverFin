@@ -77,7 +77,7 @@ describe("Inbox review archetype", () => {
 
     assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 11);
     assert.equal(
-      LEGACY_HTML_POST_PROCESSOR_INVENTORY.some((entry) => entry.route === "/inbox"),
+      LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => String(entry.route)).includes("/inbox"),
       false,
     );
     assert.equal(activeIds.includes("inbox-structured-payload"), false);
