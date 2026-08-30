@@ -1,0 +1,38 @@
+Parent epic: #591
+Depends on: #594, #595, #601, #602, #603, #605
+
+## Objetivo
+
+Migrar `/dashboard` para a nova fundação e reorganizar a tela para responder rapidamente: como estou, o que mudou, o que vai acontecer e se preciso agir.
+
+## Escopo
+
+- usar primitives/layout/view-model da Fase 3B;
+- exibir saldos e principais totais por moeda sem agregado implícito;
+- priorizar disponível/situação, variação, compromissos, horizonte e ações;
+- tornar KPIs clicáveis com drilldown para a evidência;
+- preparar slots para orçamento, projeção e insights sem calcular esses valores no frontend;
+- remover dependência de download indiscriminado de todos os lançamentos quando houver endpoint agregado adequado;
+- remover/depreciar enhancements legados substituídos.
+
+## Critérios de aceite
+
+- [ ] dashboard não mistura moedas;
+- [ ] hierarquia visual possui ação/estado prioritário inequívoco;
+- [ ] valores são fornecidos por contratos determinísticos e `Money`;
+- [ ] KPIs relevantes navegam para recortes filtrados;
+- [ ] loading, vazio, erro e dados parciais têm estados próprios;
+- [ ] desktop/mobile, teclado/foco e reflow são validados;
+- [ ] não é introduzido novo pós-processamento textual do HTML.
+
+## Fora de escopo
+
+- implementar a projeção 30/60/90 dentro desta issue;
+- provider de câmbio.
+
+## Referências
+
+- #591
+- `docs/EVOLUTION_STRATEGY.md`
+- ADR 0013
+- ADR 0014

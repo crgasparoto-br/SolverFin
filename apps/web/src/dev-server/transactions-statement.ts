@@ -5,6 +5,7 @@ export interface AccountRecord {
   status: string;
   openingBalanceMinor: number;
   institutionKey?: string;
+  currency?: string;
 }
 
 export interface TransactionRecord {
@@ -81,8 +82,14 @@ export function projectTransactionGroups(
   ];
 }
 
+export type StatementKindFilter = "income" | "expense";
+export type StatementEvidenceFilter = "posted" | "planned";
+
 export interface StatementFilters {
   accountId?: string;
+  currency?: string;
+  kind?: StatementKindFilter;
+  evidence?: StatementEvidenceFilter;
   month: string;
   day?: string;
   startsOn: string;
@@ -117,10 +124,31 @@ export function resolveFilters(
   const month = resolveSelectedMonth(url, currentMonth);
   const day = resolveSelectedDay(url, month);
   const period = day ? dayToPeriod(day) : monthToPeriod(month);
-  const accountId = url?.searchParams.get("accountId") ?? accounts[0]?.id;
+  const currency = normalizeCurrency(url?.searchParams.get("currency"));
+  const kind = normalizeKindFilter(url?.searchParams.get("kind"));
+  const evidence = normalizeEvidenceFilter(url?.searchParams.get("evidence"));
+  const activeAccounts = accounts.filter((account) => account.status === "active");
+  const scopedAccounts = currency
+    ? accounts.filter((account) => accountCurrency(account) === currency)
+    : accounts;
+  const scopedActiveAccounts = scopedAccounts.filter((account) => account.status === "active");
+  const requestedAccountId = url?.searchParams.get("accountId");
+  let accountId: string | undefined;
+
+  if (currency) {
+    accountId =
+      scopedAccounts.find((account) => account.id === requestedAccountId)?.id ??
+      scopedActiveAccounts[0]?.id;
+  } else {
+    accountId =
+      accounts.find((account) => account.id === requestedAccountId)?.id ?? activeAccounts[0]?.id;
+  }
 
   return {
     ...(accountId ? { accountId } : {}),
+    ...(currency ? { currency } : {}),
+    ...(kind ? { kind } : {}),
+    ...(evidence ? { evidence } : {}),
     month,
     ...(day ? { day } : {}),
     startsOn: period.startsOn,
@@ -164,10 +192,40 @@ export function filterStatementPeriodTransactions(
   filters: StatementFilters,
 ): TransactionRecord[] {
   return transactions.filter((transaction) => {
-    const date = statementDate(transaction);
+    const date = evidenceDate(transaction, filters.evidence);
+    if (date < filters.startsOn || date > filters.endsOn) return false;
+    if (filters.kind && transaction.kind !== filters.kind) return false;
 
-    return date >= filters.startsOn && date <= filters.endsOn;
+    if (filters.evidence === "posted") {
+      if (transaction.status !== "posted" && transaction.status !== "reconciled") {
+        return false;
+      }
+      // The unqualified posted drilldown explains monthly net variation, which is income minus expense.
+      if (!filters.kind && transaction.kind !== "income" && transaction.kind !== "expense") {
+        return false;
+      }
+      // Invoice payment transactions are deliberately excluded from the Dashboard month totals.
+      if (transaction.invoiceId !== undefined) return false;
+    }
+
+    if (filters.evidence === "planned") {
+      if (transaction.status !== "planned" && transaction.status !== "suggested") {
+        return false;
+      }
+      if (transaction.effectiveOn !== undefined) return false;
+    }
+
+    return true;
   });
+}
+
+function evidenceDate(
+  transaction: TransactionRecord,
+  evidence: StatementEvidenceFilter | undefined,
+): string {
+  if (evidence === "posted") return transaction.occurredOn;
+  if (evidence === "planned") return transaction.plannedOn;
+  return statementDate(transaction);
 }
 
 export function calculateOpeningBalance(
@@ -289,6 +347,25 @@ function resolveSelectedDay(url: URL | undefined, month: string): string | undef
   if (!queryDay.startsWith(`${month}-`)) return undefined;
 
   return queryDay;
+}
+
+function accountCurrency(account: AccountRecord): string {
+  return (account.currency ?? "BRL").toUpperCase();
+}
+
+function normalizeCurrency(value: string | null | undefined): string | undefined {
+  const normalized = value?.trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(normalized ?? "") ? normalized : undefined;
+}
+
+function normalizeKindFilter(value: string | null | undefined): StatementKindFilter | undefined {
+  return value === "income" || value === "expense" ? value : undefined;
+}
+
+function normalizeEvidenceFilter(
+  value: string | null | undefined,
+): StatementEvidenceFilter | undefined {
+  return value === "posted" || value === "planned" ? value : undefined;
 }
 
 function getCurrentMonth(): string {

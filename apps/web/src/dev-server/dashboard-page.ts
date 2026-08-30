@@ -1,70 +1,159 @@
+import { formatMinorCurrency } from "@solverfin/shared";
+
+import {
+  renderCard,
+  renderEmptyState,
+  renderLoading,
+  renderMetricCard as renderFoundationMetricCard,
+  renderPageContainer,
+  renderPageHeader,
+  renderRecoverableError,
+  renderSummaryGrid,
+} from "../design-system/primitives.js";
 import { renderMoney } from "../design-system/money.js";
 import { apiGet } from "./api.js";
 import {
   presentDashboard,
+  presentDashboardLoading,
   type DashboardContentViewModel,
   type DashboardCurrencySummaryViewModel,
+  type DashboardDecisionModuleViewModel,
   type DashboardFinancialSummary,
   type DashboardMetricViewModel,
   type DashboardOpenInvoice,
+  type DashboardPresenterInput,
   type DashboardRecentItemViewModel,
   type DashboardScreenViewModel,
-  type DashboardTransaction,
 } from "./dashboard-presenter.js";
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
 
+const DASHBOARD_LOADING_GRACE_MS = 75;
+const DASHBOARD_LOAD_MAX_LIFETIME_MS = 30_000;
+
+interface DashboardLoadEntry {
+  promise: Promise<DashboardPresenterInput>;
+}
+
+const dashboardLoads = new Map<string, DashboardLoadEntry>();
+
 export async function renderDashboardPage(token: string): Promise<string> {
-  const [summary, transactions, pendingReview, openInvoices] = await Promise.all([
-    apiGet<DashboardFinancialSummary>(token, "/api/financial-summary"),
-    apiGet<{ transactions: DashboardTransaction[] }>(token, "/api/transactions?status=all"),
-    apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
-    apiGet<{ invoices: DashboardOpenInvoice[] }>(token, "/api/invoices?status=open"),
+  const entry = dashboardLoadEntry(token);
+  const outcome = await Promise.race([
+    entry.promise.then((input) => ({ state: "ready" as const, input })),
+    loadingGrace().then(() => ({ state: "loading" as const })),
   ]);
 
-  return renderDashboard(
-    presentDashboard({
-      summary,
-      transactions,
-      pendingReview,
-      openInvoices,
-      filters: {},
-    }),
-  );
+  if (outcome.state === "loading") {
+    return renderDashboard(presentDashboardLoading());
+  }
+
+  dashboardLoads.delete(token);
+  return renderDashboard(presentDashboard(outcome.input));
+}
+
+function dashboardLoadEntry(token: string): DashboardLoadEntry {
+  const pending = dashboardLoads.get(token);
+  if (pending) return pending;
+
+  const promise = Promise.all([
+    apiGet<DashboardFinancialSummary>(token, "/api/financial-summary"),
+    apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
+    apiGet<{ invoices: DashboardOpenInvoice[] }>(token, "/api/invoices?status=open"),
+  ]).then(([summary, pendingReview, openInvoices]) => ({
+    summary,
+    pendingReview,
+    openInvoices,
+    filters: {},
+  }));
+  const entry: DashboardLoadEntry = { promise };
+  dashboardLoads.set(token, entry);
+
+  const cleanup = setTimeout(() => {
+    if (dashboardLoads.get(token) === entry) dashboardLoads.delete(token);
+  }, DASHBOARD_LOAD_MAX_LIFETIME_MS);
+  cleanup.unref?.();
+
+  return entry;
+}
+
+function loadingGrace(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, DASHBOARD_LOADING_GRACE_MS));
 }
 
 function renderDashboard(model: DashboardScreenViewModel): string {
   switch (model.status) {
     case "loading":
       return renderAuthenticatedPage(
-        '<section class="panel" aria-busy="true"><p class="muted">Carregando resumo financeiro...</p></section>',
+        renderPageContainer({
+          className: "dashboard-page",
+          childrenHtml: `${renderLoading({
+            title: "Carregando resumo financeiro",
+            description: "Estamos preparando os indicadores do cockpit.",
+          })}${dashboardLoadingRetryScript()}`,
+        }),
       );
     case "error":
       return renderAuthenticatedPage(
-        `<section class="panel"><p class="error">${escapeHtml(model.error.message)}</p></section>`,
+        renderPageContainer({
+          className: "dashboard-page",
+          childrenHtml: renderRecoverableError({
+            title: "Não foi possível carregar o Dashboard",
+            description: model.error.message,
+          }),
+        }),
       );
     case "empty":
       return renderAuthenticatedPage(
-        `<section class="panel">${renderEmptyState(model.empty.title, model.empty.description)}</section>`,
+        renderPageContainer({
+          className: "dashboard-page",
+          childrenHtml: `
+            <section class="panel dashboard-hero" aria-label="Situação financeira atual">
+              <div class="dashboard-heading">
+                ${renderPageHeader({
+                  eyebrow: "Cockpit financeiro",
+                  title: "Situação financeira atual",
+                })}
+              </div>
+              ${renderEmptyState({
+                title: model.empty.title,
+                description: model.empty.description,
+              })}
+            </section>
+          `,
+        }),
       );
     case "success":
-      return renderAuthenticatedPage(renderDashboardContent(model.content));
+      return renderAuthenticatedPage(
+        renderPageContainer({
+          className: "dashboard-page",
+          childrenHtml: renderDashboardContent(model.content),
+        }),
+      );
   }
 }
 
 function renderDashboardContent(content: DashboardContentViewModel): string {
   return `
-    <section class="dashboard-heading">
-      <div>
-        <p class="eyebrow">Visão geral financeira</p>
-        <h1>Resumo financeiro</h1>
+    <section class="panel dashboard-hero" aria-label="Situação financeira atual">
+      <div class="dashboard-heading">
+        ${renderPageHeader({
+          eyebrow: "Cockpit financeiro",
+          title: "Situação financeira atual",
+          description: "Acompanhe posição, entradas, despesas e compromissos sem misturar moedas.",
+        })}
+      </div>
+      <div class="data-quality" data-quality="${content.dataQuality.status}" role="status">
+        <strong>${escapeHtml(content.dataQuality.title)}</strong>
+        <span>${escapeHtml(content.dataQuality.description)}</span>
       </div>
     </section>
+    ${renderCurrencyNavigator(content.currencySummaries)}
     ${renderCurrencySummaries(content.currencySummaries)}
     <section class="panel next-actions" aria-label="Próximas ações">
       <div class="section-heading">
-        <h2>Próximas ações</h2>
+        <div><p class="eyebrow">Ação</p><h2>Próximas ações</h2></div>
       </div>
       ${renderNextActions(content.nextActions)}
       <div class="quick-links" aria-label="Atalhos da rotina">
@@ -73,34 +162,48 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         <a class="button-link secondary-link" href="/inbox" title="Inbox e revisão de sugestões">${icon("inbox", 14)} Inbox</a>
       </div>
     </section>
+    ${renderDecisionModules(content.decisionModules)}
     <section class="panel list-panel">
       <div class="section-heading">
-        <h2>Itens recentes</h2>
+        <div><p class="eyebrow">Evidências</p><h2>Itens recentes</h2></div>
       </div>
       <div class="rows">
         ${renderRecentItems(content.recentItems)}
       </div>
     </section>
+    ${dashboardEvidenceScript()}
   `;
+}
+
+function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
+  if (blocks.length < 2) return "";
+
+  return `<nav class="currency-nav panel" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
+    .map(
+      (block) =>
+        `<a class="currency-chip" href="#currency-${escapeHtml(block.currency)}">${escapeHtml(block.currency)}</a>`,
+    )
+    .join("")}</nav>`;
 }
 
 function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
   if (blocks.length === 0) {
-    return renderEmptyState(
-      "Nenhum total financeiro disponível.",
-      "Registre lançamentos ou contas para acompanhar os valores deste perfil.",
-    );
+    return renderEmptyState({
+      title: "Nenhum total financeiro disponível.",
+      description: "Registre lançamentos ou contas para acompanhar os valores deste perfil.",
+    });
   }
 
   return blocks
     .map(
       (block) => `
-        <section class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
+        <section id="currency-${escapeHtml(block.currency)}" class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
           <div class="section-heading currency-heading">
-            <h2>${escapeHtml(block.currency)}</h2>
+            <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
           </div>
-          <div class="summary-grid">
-            ${block.metrics.map(renderMetricCard).join("")}
+          ${renderSummaryGrid({ childrenHtml: block.metrics.map(renderDashboardMetric).join("") })}
+          <div class="currency-evidence" aria-label="Evidências dos indicadores em ${escapeHtml(block.currency)}">
+            ${block.metrics.map(renderDashboardEvidence).join("")}
           </div>
         </section>
       `,
@@ -108,12 +211,34 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
     .join("");
 }
 
+function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
+  const evidenceItems = metric.evidenceLinks.length
+    ? metric.evidenceLinks
+        .map((item) => {
+          if (item.href) {
+            return `<a class="evidence-link sf-focus-ring" href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`;
+          }
+
+          return `<span class="evidence-static"><strong>${escapeHtml(item.label)}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ""}</span>`;
+        })
+        .join("")
+    : '<p class="muted">Nenhuma conta vinculada a esta evidência.</p>';
+
+  return `
+    <details id="${escapeHtml(metric.evidenceId)}" class="evidence-detail">
+      <summary>${escapeHtml(metric.title)}</summary>
+      <p class="muted">${escapeHtml(metric.evidenceTitle)}</p>
+      <div class="evidence-links">${evidenceItems}</div>
+    </details>
+  `;
+}
+
 function renderNextActions(actions: DashboardContentViewModel["nextActions"]): string {
   if (actions.length === 0) {
-    return renderEmptyState(
-      "Nenhuma pendência agora.",
-      "Lançamentos previstos, faturas e itens de revisão aparecerão aqui.",
-    );
+    return renderEmptyState({
+      title: "Nenhuma pendência agora.",
+      description: "Compromissos previstos, faturas e itens de revisão aparecerão aqui.",
+    });
   }
 
   return `<div class="rows next-action-rows">${actions
@@ -121,6 +246,26 @@ function renderNextActions(actions: DashboardContentViewModel["nextActions"]): s
       renderNextActionRow(action.title, action.description, action.href, action.linkLabel),
     )
     .join("")}</div>`;
+}
+
+function renderDecisionModules(modules: readonly DashboardDecisionModuleViewModel[]): string {
+  return `
+    <section class="decision-section" aria-labelledby="decision-title">
+      <div class="section-heading"><div><p class="eyebrow">Horizonte</p><h2 id="decision-title">Ferramentas de decisão</h2></div></div>
+      <div class="decision-grid">
+        ${modules
+          .map((module) =>
+            renderCard({
+              title: module.title,
+              className: "decision-card",
+              bodyHtml: `<p class="eyebrow">${escapeHtml(module.eyebrow)}</p><p class="muted">${escapeHtml(module.description)}</p>`,
+              footerHtml: `<a class="text-link" href="${escapeHtml(module.href)}">${escapeHtml(module.linkLabel)}</a>`,
+            }),
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
 }
 
 function renderRecentItems(items: readonly DashboardRecentItemViewModel[]): string {
@@ -135,10 +280,11 @@ function renderRecentItems(items: readonly DashboardRecentItemViewModel[]): stri
         `,
       )
       .join("") ||
-    renderEmptyState(
-      "Nenhum lançamento ainda.",
-      "Crie lançamentos para acompanhar a rotina financeira deste perfil.",
-    )
+    renderEmptyState({
+      title: "Nenhum lançamento recente.",
+      description:
+        "Os indicadores acima continuam disponíveis por moeda quando houver saldo ou compromissos.",
+    })
   );
 }
 
@@ -160,36 +306,86 @@ function renderNextActionRow(
   return `
     <article class="row next-action-row">
       <div><strong>${escapeHtml(title)}</strong><span>${escapeHtml(description)}</span></div>
-      <a class="button-link secondary-link" href="${href}">${escapeHtml(linkLabel)}</a>
+      <a class="button-link secondary-link" href="${escapeHtml(href)}">${escapeHtml(linkLabel)}</a>
     </article>
   `;
 }
 
-function renderMetricCard(metric: DashboardMetricViewModel): string {
-  return `<article class="metric-card"><span>${escapeHtml(metric.title)}</span><strong>${renderMoney(metric.amount)}</strong><p>${escapeHtml(metric.subtitle)}</p></article>`;
+function renderDashboardMetric(metric: DashboardMetricViewModel): string {
+  const metricCard = renderFoundationMetricCard({
+    label: metric.title,
+    value: formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency }),
+    detail: metric.subtitle,
+  });
+
+  return `<div class="dashboard-metric">${metricCard}<a class="metric-drilldown sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">${escapeHtml(metric.linkLabel)}</a></div>`;
 }
 
-function renderEmptyState(title: string, description: string): string {
-  return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
+function dashboardLoadingRetryScript(): string {
+  return `
+    <script>
+      window.setTimeout(() => window.location.reload(), 250);
+    </script>
+  `;
+}
+
+function dashboardEvidenceScript(): string {
+  return `
+    <script>
+      function openDashboardEvidence() {
+        const id = window.location.hash.slice(1);
+        if (!id.startsWith("dashboard-evidence-")) return;
+        const target = document.getElementById(id);
+        if (target && target.tagName === "DETAILS") target.open = true;
+      }
+      window.addEventListener("hashchange", openDashboardEvidence);
+      openDashboardEvidence();
+    </script>
+  `;
 }
 
 function dashboardStyles(): string {
   return `
     ${sharedShellStyles()}
-    main { display: grid; gap: 16px; margin: 0 auto; max-width: 1440px; padding: 20px; width: 100%; }
-    .dashboard-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
+    main { display: grid; gap: 16px; padding: 20px 0; width: 100%; }
+    .sf-page-container { display: grid; gap: 16px; }
+    .dashboard-hero { align-items: start; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); }
+    .dashboard-heading { display: grid; gap: 4px; min-width: 0; }
+    .data-quality { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; padding: 12px; }
+    .data-quality strong { color: var(--primary); font-size: 0.875rem; }
+    .data-quality span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
+    .data-quality[data-quality="partial"] { border-style: dashed; }
     .secondary-link { background: var(--surface); border: 1px solid var(--line); color: var(--primary); }
     .secondary-link:hover { background: var(--primary-soft); border-color: #c8dde5; }
-    .currency-summary { display: grid; gap: 8px; }
-    .currency-heading h2 { color: var(--primary); font-size: 0.875rem; letter-spacing: 0.04em; margin: 0; }
-    .summary-grid { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .metric-card { display: grid; gap: 6px; min-width: 0; padding: 14px 16px; }
-    .metric-card > span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-    .metric-card > strong { color: var(--primary); font-size: 1.25rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
-    .metric-card p { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
+    .currency-nav { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+    .currency-nav > span { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .currency-chip { border: 1px solid var(--line); border-radius: 999px; color: var(--primary); font-size: 0.8125rem; font-weight: 700; padding: 5px 10px; text-decoration: none; }
+    .currency-chip:hover, .currency-chip:focus-visible { background: var(--primary-soft); }
+    .currency-summary { display: grid; gap: 8px; scroll-margin-top: 20px; }
+    .currency-heading h2 { color: var(--primary); font-size: 1rem; margin: 0; }
+    .currency-summary .sf-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .dashboard-metric { min-width: 0; position: relative; }
+    .dashboard-metric .sf-metric-card { height: 100%; padding-bottom: 42px; }
+    .metric-drilldown, .text-link, .evidence-link { color: var(--primary); font-size: 0.8125rem; font-weight: 700; text-underline-offset: 3px; }
+    .metric-drilldown { bottom: 14px; left: 16px; position: absolute; }
+    .metric-drilldown:focus-visible, .text-link:focus-visible, .evidence-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+    .currency-evidence { display: grid; gap: 6px; }
+    .evidence-detail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); scroll-margin-top: 20px; }
+    .evidence-detail > summary { cursor: pointer; font-size: 0.875rem; font-weight: 700; padding: 10px 12px; }
+    .evidence-detail > p { padding: 0 12px; }
+    .evidence-links { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 12px 12px; }
+    .evidence-link { border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; text-decoration: none; }
+    .evidence-link:hover { background: var(--primary-soft); }
+    .evidence-static { background: var(--surface-soft); border: 1px dashed var(--line); border-radius: var(--radius); display: grid; gap: 2px; padding: 7px 10px; }
+    .evidence-static strong { color: var(--primary); font-size: 0.8125rem; }
+    .evidence-static small { color: var(--muted); font-size: 0.75rem; }
     .next-actions { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
     .quick-links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .decision-section { display: grid; gap: 10px; }
+    .decision-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .decision-card { align-content: start; min-width: 0; }
+    .decision-card .sf-card-body { display: grid; gap: 8px; }
     .rows { display: grid; gap: 0; }
     .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; min-width: 0; padding: 8px 0; }
     .row:first-child { border-top: 0; padding-top: 0; }
@@ -197,8 +393,8 @@ function dashboardStyles(): string {
     .row div > span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
     .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
     .row > strong { text-align: right; white-space: nowrap; }
-    @media (max-width: 1024px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 760px) { .summary-grid { grid-template-columns: 1fr; } .dashboard-heading, .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } }
+    @media (max-width: 1024px) { .currency-summary .sf-summary-grid, .decision-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .currency-summary .sf-summary-grid, .decision-grid { grid-template-columns: 1fr; } .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } .evidence-links { display: grid; } }
   `;
 }
 

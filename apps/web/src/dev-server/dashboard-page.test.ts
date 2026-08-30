@@ -5,13 +5,19 @@ import { renderDashboardPage } from "./dashboard-page.js";
 
 const originalFetch = globalThis.fetch;
 
+const brlAccounts = [
+  { id: "brl-primary", name: "Conta Principal", status: "active" },
+  { id: "brl-reserve", name: "Reserva BRL", status: "active" },
+  { id: "brl-archived", name: "Conta Histórica", status: "archived" },
+];
+
 describe("dev-server dashboard page", () => {
-  it("highlights planned statement items, inbox review items and open invoices with quick links", async () => {
+  it("renders an actionable cockpit on Phase 3B primitives without loading every transaction", async () => {
     const calledPaths: string[] = [];
 
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
-      calledPaths.push(url.pathname);
+      calledPaths.push(`${url.pathname}${url.search}`);
 
       if (url.pathname === "/api/financial-summary") {
         return jsonResponse({
@@ -21,36 +27,12 @@ describe("dev-server dashboard page", () => {
               availableBalanceMinor: 500000,
               incomeMinor: 300000,
               expensesMinor: 150000,
+              netVariationMinor: 150000,
               plannedCommitmentsMinor: 20000,
+              accounts: brlAccounts,
             },
           ],
           recentItems: [],
-        });
-      }
-
-      if (url.pathname === "/api/transactions") {
-        assert.equal(url.searchParams.get("status"), "all");
-        return jsonResponse({
-          transactions: [
-            {
-              id: "planned-expense",
-              description: "Aluguel previsto",
-              kind: "expense",
-              status: "planned",
-              amountMinor: 20000,
-              occurredOn: "2026-07-10",
-              plannedOn: "2026-07-10",
-            },
-            {
-              id: "planned-income",
-              description: "Receita prevista",
-              kind: "income",
-              status: "planned",
-              amountMinor: 50000,
-              occurredOn: "2026-07-05",
-              plannedOn: "2026-07-05",
-            },
-          ],
         });
       }
 
@@ -64,30 +46,91 @@ describe("dev-server dashboard page", () => {
         return jsonResponse({ invoices: [{ dueOn: "2026-07-12" }] });
       }
 
-      return jsonResponse({});
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
     };
 
-    const html = await renderDashboardPage("session-token");
+    try {
+      const html = await renderDashboardPage("session-token-actionable");
 
-    assert.match(html, /Visão geral financeira/);
-    assert.doesNotMatch(html, /Demo seguro|Perfil pessoal demo/);
-    assert.match(html, /Próximas ações/);
-    assert.match(html, /2 lançamentos previstos no Extrato/);
-    assert.match(html, /Próximo vencimento em 05\/07\/2026/);
-    assert.match(html, /1 item aguardando revisão na inbox/);
-    assert.match(html, /1 fatura de cartão em aberto/);
-    assert.match(html, /href="\/lancamentos">Ver extrato/);
-    assert.match(html, /href="\/inbox">Abrir inbox/);
-    assert.match(html, /href="\/cartoes">Ver cartões/);
-    assert.match(html, /class="quick-links"/);
-    assert.match(html, /href="\/lancamentos" title="Ver extrato da conta">[\s\S]*?Extrato<\/a>/);
-    assert.doesNotMatch(html, /\/pagar-receber/);
-    assert.equal(calledPaths.includes("/api/payables-receivables"), false);
+      assert.match(html, /Cockpit financeiro/);
+      assert.match(html, /Situação financeira atual/);
+      assert.match(html, /sem misturar moedas/);
+      assert.match(html, /data-quality="complete"/);
+      assert.match(html, /Variação líquida do mês/);
+      assert.match(
+        html,
+        /href="#dashboard-evidence-brl-variation" aria-label="Ver evidências em BRL"/,
+      );
+      assert.match(html, /Compromissos previstos em BRL/);
+      assert.match(
+        html,
+        /href="#dashboard-evidence-brl-available" aria-label="Ver evidências em BRL"/,
+      );
+      assert.match(
+        html,
+        /href="\/lancamentos\?currency=BRL&amp;accountId=brl-primary&amp;kind=income&amp;evidence=posted">Conta Principal<\/a>/,
+      );
+      assert.match(
+        html,
+        /href="\/lancamentos\?currency=BRL&amp;accountId=brl-reserve&amp;kind=income&amp;evidence=posted">Reserva BRL<\/a>/,
+      );
+      assert.match(
+        html,
+        /<span class="evidence-static"><strong>Conta Histórica \(inativa\)<\/strong><small>Conta histórica incluída no agregado; sem ação operacional neste fluxo\.<\/small><\/span>/,
+      );
+      assert.doesNotMatch(html, /accountId=brl-archived/);
+      const availableEvidence =
+        html.match(/<details id="dashboard-evidence-brl-available"[\s\S]*?<\/details>/)?.[0] ?? "";
+      assert.match(availableEvidence, /accountId=brl-primary/);
+      assert.match(availableEvidence, /accountId=brl-reserve/);
+      assert.doesNotMatch(availableEvidence, /Conta Histórica/);
+      assert.match(html, /1 item aguardando revisão na inbox/);
+      assert.match(html, /1 fatura de cartão em aberto/);
+      assert.match(html, /href="\/inbox">Abrir inbox/);
+      assert.match(html, /href="\/cartoes">Ver cartões/);
+      assert.match(html, /Ferramentas de decisão/);
+      assert.match(html, /Planejamento financeiro/);
+      assert.match(html, /Tendências e períodos/);
+      assert.match(html, /Assistente financeiro/);
+      assert.match(html, /href="\/planejamento">Abrir planejamento/);
+      assert.match(html, /href="\/relatorios">Abrir relatórios/);
+      assert.match(html, /href="\/assistente">Abrir assistente/);
+      assert.equal(
+        calledPaths.some((path) => path.startsWith("/api/transactions")),
+        false,
+      );
+      assert.equal(calledPaths.includes("/api/payables-receivables"), false);
 
-    globalThis.fetch = originalFetch;
+      assert.match(html, /class="sf-page-container dashboard-page"/);
+      assert.match(html, /class="sf-page-header"/);
+      assert.match(html, /class="sf-summary-grid"/);
+      assert.match(html, /class="sf-metric-card"/);
+      assert.match(html, /class="evidence-detail"/);
+      assert.match(html, /@media \(max-width: 760px\)/);
+      assert.match(html, /\.metric-drilldown:focus-visible/);
+      assert.match(
+        html,
+        /\.currency-summary \.sf-summary-grid, \.decision-grid \{ grid-template-columns: 1fr;/,
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 
-  it("shows a compact positive state when there are no pending actions", async () => {
+  it("renders a reachable loading state when dashboard sources are still pending", async () => {
+    globalThis.fetch = async (): Promise<Response> => new Promise<Response>(() => undefined);
+
+    try {
+      const html = await renderDashboardPage("session-token-loading");
+      assert.match(html, /data-state="loading"/);
+      assert.match(html, /Carregando resumo financeiro/);
+      assert.match(html, /window\.setTimeout\(\(\) => window\.location\.reload\(\), 250\)/);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("shows a canonical empty state when there are no pending actions", async () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input));
 
@@ -99,35 +142,66 @@ describe("dev-server dashboard page", () => {
               availableBalanceMinor: 500000,
               incomeMinor: 300000,
               expensesMinor: 150000,
+              netVariationMinor: 150000,
               plannedCommitmentsMinor: 0,
+              accounts: brlAccounts,
             },
           ],
           recentItems: [],
         });
       }
 
-      if (url.pathname === "/api/transactions") {
-        return jsonResponse({ transactions: [] });
-      }
-
-      if (url.pathname === "/api/bank-message-inbox") {
-        return jsonResponse({ messages: [] });
-      }
-
-      if (url.pathname === "/api/invoices") {
-        return jsonResponse({ invoices: [] });
-      }
-
-      return jsonResponse({});
+      if (url.pathname === "/api/bank-message-inbox") return jsonResponse({ messages: [] });
+      if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
     };
 
-    const html = await renderDashboardPage("session-token");
+    try {
+      const html = await renderDashboardPage("session-token-empty");
+      assert.match(html, /Nenhuma pendência agora\./);
+      assert.match(html, /class="sf-state-panel" data-state="empty"/);
+      assert.doesNotMatch(html, /\/pagar-receber/);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 
-    assert.match(html, /Nenhuma pendência agora\./);
-    assert.doesNotMatch(html, /Demo seguro|Perfil pessoal demo/);
-    assert.doesNotMatch(html, /\/pagar-receber/);
+  it("surfaces a partial state when an optional operational source fails", async () => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input));
+      if (url.pathname === "/api/financial-summary") {
+        return jsonResponse({
+          currencyBlocks: [
+            {
+              currency: "BRL",
+              availableBalanceMinor: 500000,
+              incomeMinor: 300000,
+              expensesMinor: 150000,
+              netVariationMinor: 150000,
+              plannedCommitmentsMinor: 0,
+              accounts: brlAccounts,
+            },
+          ],
+          recentItems: [],
+        });
+      }
+      if (url.pathname === "/api/bank-message-inbox") {
+        return new Response(JSON.stringify({ error: "temporarily unavailable" }), {
+          status: 503,
+          headers: { "content-type": "application/json; charset=utf-8" },
+        });
+      }
+      if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
+      throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
+    };
 
-    globalThis.fetch = originalFetch;
+    try {
+      const html = await renderDashboardPage("session-token-partial");
+      assert.match(html, /data-quality="partial"/);
+      assert.match(html, /Dados parciais/);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });
 

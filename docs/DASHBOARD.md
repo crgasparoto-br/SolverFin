@@ -1,80 +1,109 @@
-# Dashboard financeiro inicial
+# Dashboard financeiro
 
-Este documento registra o contrato inicial do dashboard operacional do SolverFin Web.
+Este documento registra o contrato executável atual do Dashboard do SolverFin Web em `/dashboard`.
 
-A implementacao atual fica em `apps/web/src/dashboard/` e segue a estrategia das issues anteriores de frontend: contratos TypeScript, calculos puros, CSS base e mocks isolados, sem escolher framework web nem consumir APIs inexistentes.
+A implementação SSR fica em `apps/web/src/dev-server/dashboard-page.ts` e `apps/web/src/dev-server/dashboard-presenter.ts`. O Dashboard usa a fundação de interface da Fase 3B (`apps/web/src/design-system/`) para estados, cabeçalho, contêiner, grid de resumo e cards de métricas, mantendo o view-model como fronteira entre contratos financeiros e renderização.
 
 ## Objetivo
 
-Exibir uma primeira visao de saldos, receitas, despesas, resultado do periodo, vencimentos proximos, gastos por categoria, fluxo mensal e disponibilidade financeira diaria quando houver contrato estruturado para isso.
+O Dashboard funciona como cockpit financeiro orientado à decisão. Ele deve responder rapidamente:
 
-## Estrutura criada
+- como está a posição financeira atual;
+- o que mudou no mês, por meio da variação líquida postada por moeda;
+- quais entradas e despesas postadas ou reconciliadas pertencem ao período;
+- quais compromissos estão previstos;
+- quais pendências operacionais exigem ação;
+- quais módulos de planejamento, projeção e insights podem ser abertos para aprofundamento.
 
-- `types.ts`: contratos de dados, estado e view model do dashboard.
-- `calculations.ts`: calculos deterministas de totais, categorias, fluxo mensal, disponibilidade e filtro por tenant/perfil.
-- `mock-data.ts`: dataset ficticio e isolado para desenvolvimento.
-- `examples.ts`: exemplos de loading, erro, vazio e pronto, com totais esperados.
-- `styles.ts`: CSS base para cards, disponibilidade, listas, estado central e responsividade.
-- `index.ts`: export publico do modulo.
+Nenhum total combina moedas diferentes. Cada bloco de indicadores preserva a moeda de origem e valores monetários continuam representados pelo contrato `Money` (`amountMinor + currency`).
 
-## Dados e isolamento
+## Fontes de dados
 
-O dataset mockado usa apenas valores ficticios. Ele inclui propositalmente um lancamento de outro tenant/perfil para validar que os calculos filtram pelo contexto ativo antes de montar o resumo.
+O Dashboard consome contratos agregados e operacionais específicos:
 
-Contexto ativo do mock:
+- `/api/financial-summary`: blocos financeiros por moeda, referências das contas que podem fornecer evidência e itens recentes;
+- `/api/bank-message-inbox?status=pending_review`: quantidade de itens aguardando revisão;
+- `/api/invoices?status=open`: faturas em aberto.
 
-| Campo             | Valor                   |
-| ----------------- | ----------------------- |
-| Tenant            | `tenant-demo`           |
-| Perfil financeiro | `profile-personal-demo` |
-| Periodo           | Junho de 2026           |
+A rota não baixa indiscriminadamente `/api/transactions?status=all` para recompor indicadores que já existem no `financial-summary`. As referências de conta são metadados leves (`id`, nome e status); nenhum cálculo financeiro novo é executado no frontend.
 
-Valores esperados do exemplo pronto:
+Quando uma fonte operacional opcional falha, os indicadores financeiros continuam visíveis e a interface sinaliza `Dados parciais`. Falha do resumo financeiro obrigatório resulta em estado de erro explícito.
 
-| Indicador       | Valor em centavos |
-| --------------- | ----------------: |
-| Saldo           |            582250 |
-| Receitas        |            700000 |
-| Despesas        |            357750 |
-| Resultado       |            342250 |
-| Disponivel hoje |             14320 |
+## Fundação da Fase 3B
 
-O percentual de despesas esperado e `51.11`.
+A composição do Dashboard reutiliza as primitives executáveis compartilhadas:
 
-## Estados do dashboard
+- `renderPageContainer` para largura e gutters canônicos;
+- `renderPageHeader` para hierarquia do hero;
+- `renderSummaryGrid` para a grade responsiva de KPIs;
+- `renderMetricCard` para apresentação dos valores;
+- `renderLoading`, `renderEmptyState` e `renderRecoverableError` para estados de superfície;
+- `renderCard` para módulos de decisão.
 
-`buildDashboardViewModel` suporta:
+Os estilos compartilhados são fornecidos por `sharedShellStyles()`, que inclui o CSS/tokens do design system. Regras locais do Dashboard são limitadas à composição específica do cockpit, sem reconstruir as primitives compartilhadas.
 
-- `loading`: resumo ainda em carregamento;
-- `error`: falha controlada no carregamento;
-- `empty`: usuario sem lancamentos ou vencimentos no contexto;
-- `ready`: dados prontos para renderizacao.
+## Indicadores e drilldown
 
-## Disponibilidade financeira diaria
+Cada moeda tem cinco indicadores principais. O card navega primeiro para um índice de evidências da própria moeda no Dashboard. Esse índice apresenta uma entrada explícita para cada conta relacionada ao bloco; contas ativas abrem o Extrato já filtrado por `accountId` e moeda, enquanto contas inativas permanecem identificadas como evidência histórica sem oferecer uma ação operacional enganosa.
 
-A UI nao calcula disponibilidade diretamente. Ela apenas exibe o resultado quando `dailyAvailability` e fornecido por um contrato estruturado.
+- Disponível estimado: somente contas ativas da moeda, com acesso ao Extrato individual de cada conta;
+- Variação líquida do mês: contas da moeda relacionadas ao agregado, com `evidence=posted` nas contas ativas;
+- Receitas do mês: contas da moeda relacionadas ao agregado, com `kind=income&evidence=posted` nas contas ativas;
+- Despesas do mês: contas da moeda relacionadas ao agregado, com `kind=expense&evidence=posted` nas contas ativas;
+- Compromissos previstos: contas da moeda relacionadas ao agregado, com `kind=expense&evidence=planned` nas contas ativas.
 
-Quando o servico ainda nao existe, o card retorna estado `pending` com uma mensagem explicita. Quando o servico informa baixa confianca, o card mostra descricao orientada a revisao das premissas.
+Contas inativas continuam visíveis como referência histórica para variação, receitas, despesas e compromissos, mas não recebem link para um Extrato que poderia resolver para outra conta. Elas também não participam do índice do disponível estimado. Assim, duas ou mais contas ativas na mesma moeda nunca são reduzidas arbitrariamente à primeira conta encontrada.
 
-Essa decisao preserva o sequenciamento do epic #72: premissas, recorrencias estatisticas e calculo de disponibilidade devem ser definidos nas subissues proprias antes de virarem regra definitiva de UI.
+A variação líquida é calculada no contrato agregado do backend como receitas postadas/reconciliadas menos despesas postadas/reconciliadas da mesma moeda e do mesmo mês. O frontend apenas apresenta `netVariationMinor`; ele não reconstitui nem inventa a regra financeira.
 
-## Fora deste corte
+O Extrato interpreta `kind` somente para `income` e `expense`, e `evidence` somente para `posted` e `planned`. Valores não suportados são ignorados em vez de receber significado implícito. `posted` reproduz o recorte mensal do resumo para status `posted`/`reconciled` pela data `occurredOn` e exclui pagamentos de fatura; quando `kind` não é informado, o recorte preserva receitas e despesas para explicar a variação. `planned` reproduz compromissos `planned`/`suggested` pela data `plannedOn`, sem `effectiveOn`.
 
-- Implementacao concreta em React, Vue, Svelte ou outro framework.
-- Consumo de APIs reais.
-- Graficos complexos ou biblioteca de charts.
-- Calculo definitivo de disponibilidade financeira.
-- Testes visuais em navegador.
-- Evidencia visual por screenshot.
+Os links operacionais produzidos pelo índice sempre carregam um `accountId` explícito pertencente à moeda do bloco. A resolução do Extrato portanto permanece por conta, sem fallback para outra moeda e sem criar um saldo agregado artificial no frontend.
 
-## Validacao esperada
+## Estados
 
-Enquanto nao houver app executavel, a validacao automatica esperada para este corte e:
+O Dashboard mantém estados explícitos e alcançáveis:
 
-- `format:check`;
-- `lint`;
-- `typecheck`;
-- testes placeholders existentes;
-- `build`.
+- `loading`: se as fontes ultrapassarem a janela curta de resolução SSR, a rota devolve imediatamente o estado de carregamento; a mesma promessa de carga permanece temporariamente reutilizável e a página refaz a navegação sem disparar outra coleta concorrente;
+- `error`: resumo financeiro obrigatório indisponível;
+- `empty`: sem evidência financeira para o perfil;
+- `success`: cockpit renderizado, com qualidade `complete` ou `partial` conforme as fontes operacionais opcionais.
 
-Quando o app web tiver runtime, esta documentacao deve ser revisitada para incluir screenshots mobile/desktop, testes dos componentes reais e validacao de rota protegida integrada ao shell.
+O cache transitório do loading existe apenas para atravessar o reload do estado de espera e possui expiração curta. Estados vazios também são reutilizados dentro de seções, como ações pendentes e itens recentes.
+
+## Orçamento, projeções e insights
+
+Os módulos de decisão são apenas pontos de navegação para capacidades existentes. O Dashboard não fabrica valores de orçamento, projeção 30/60/90 ou insights financeiros no frontend. Novos números devem vir de contratos determinísticos próprios antes de serem exibidos no cockpit.
+
+O módulo de insights navega pela rota canônica `/assistente`.
+
+## Responsividade e acessibilidade
+
+A composição preserva:
+
+- reflow da grade de indicadores nos breakpoints do cockpit;
+- navegação nativa por links para moedas e índices de evidência;
+- detalhes nativos (`details`/`summary`) para abrir as evidências de cada KPI;
+- links de contas ativas com foco visível e recorte determinístico do Extrato;
+- identificação read-only de contas inativas sem navegação enganosa;
+- estados com semântica e `aria-live` fornecidos pelas primitives compartilhadas;
+- validação real em desktop e mobile;
+- validação por teclado no Chrome: o gate envia `Tab`, confirma foco navegável e verifica a presença de outline visível.
+
+## Validação
+
+As regressões da rota cobrem, entre outros pontos:
+
+- valores multi-moedas sem mistura;
+- duas contas ativas da mesma moeda preservadas no contrato e no índice de evidência;
+- contas inativas identificadas sem produzir um link operacional incorreto;
+- variação líquida determinística por moeda;
+- uso das primitives da Fase 3B na marcação SSR;
+- ausência de carga indiscriminada de todos os lançamentos;
+- drilldowns distintos para variação, receita, despesa e compromisso;
+- `accountId` explícito para cada conta ativa navegável;
+- filtragem de evidência postada/reconciliada versus planejada/sugerida;
+- estado `loading` alcançável na rota, vazio, erro e dados parciais;
+- rota canônica do Assistente Financeiro;
+- reflow, teclado e foco visível;
+- validação visual real da rota no workflow `Statement visual validation`.

@@ -1,16 +1,52 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "rejection_id": "audit-rejection:2c4f4a91-7a0e-4ccd-9f4f-8c7cb87ca79a",
-  "head_sha": "c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3",
+  "result": "rejected",
+  "result_validity": "INDEPENDENT",
+  "releases_merge": "no",
+  "rejection_id": "audit-rejection:fb1e1bff-bbf1-4ce6-ada5-65bcccdcbec2",
+  "head_sha": "9e48806980c584b895492a332518882652c7a289",
+  "base_sha": "169fa1be3dced373c62554cf657b097c352f692d",
   "findings": [
     {
       "id": "A-001",
-      "disposition": "blocking",
+      "title": "CI obrigatório vermelho por Prettier",
       "status": "open",
+      "disposition": "blocking",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "requirement": "terminal handoff freshness after post-write material change"
+      "failed_gate": {
+        "deterministic": true,
+        "name": "Prettier format check",
+        "command": "prettier . --check",
+        "subject_sha": "9e48806980c584b895492a332518882652c7a289",
+        "observed_exit_code": 1,
+        "evidence_sha256": "aad41f4c777a204fc438be41a24a3d1371308b74d06059c9f20622d17e98a0a7"
+      }
+    },
+    {
+      "id": "A-002",
+      "title": "Handoff com work_item_start resetado e escopo sub-relatado",
+      "status": "open",
+      "disposition": "blocking",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation"
+    },
+    {
+      "id": "A-003",
+      "title": "Drilldown por moeda colapsava múltiplas contas",
+      "status": "open",
+      "disposition": "blocking",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation"
+    },
+    {
+      "id": "A-004",
+      "title": "Loading do Dashboard não era alcançável na rota real",
+      "status": "open",
+      "disposition": "blocking",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation"
     }
   ],
   "recommendations": []
