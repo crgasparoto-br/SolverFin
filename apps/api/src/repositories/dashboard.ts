@@ -19,7 +19,7 @@ export interface DashboardCurrencyBlock {
   availableBalanceMinor: number;
   incomeMinor: number;
   expensesMinor: number;
-  netVariationMinor: number;
+  netVariationMinor?: number;
   plannedCommitmentsMinor: number;
 }
 
