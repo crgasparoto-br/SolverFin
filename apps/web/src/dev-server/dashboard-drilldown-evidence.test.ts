@@ -34,7 +34,7 @@ describe("dashboard KPI evidence drilldown", () => {
     );
   });
 
-  it("reproduces the Dashboard monthly variation evidence without collapsing income and expense", () => {
+  it("reproduces the Dashboard monthly variation evidence without transfers or invoice payments", () => {
     const filters = resolveFilters(
       new URL("http://solverfin.test/lancamentos?currency=USD&evidence=posted&month=2026-08"),
       [account],
@@ -98,6 +98,7 @@ function transactions(): TransactionRecord[] {
     transaction("invoice-payment-income", "income", "posted", true, "invoice-1"),
     transaction("planned-income", "income", "planned", false),
     transaction("posted-expense", "expense", "posted", true),
+    transaction("posted-transfer", "transfer", "posted", true),
     transaction("planned-expense", "expense", "planned", false),
     transaction("suggested-expense", "expense", "suggested", false),
   ];
@@ -105,7 +106,7 @@ function transactions(): TransactionRecord[] {
 
 function transaction(
   id: string,
-  kind: "income" | "expense",
+  kind: "income" | "expense" | "transfer",
   status: "posted" | "reconciled" | "planned" | "suggested",
   effective: boolean,
   invoiceId?: string,
