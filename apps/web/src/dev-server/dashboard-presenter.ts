@@ -4,6 +4,7 @@ import type { ApiFailure, ApiSuccess } from "./api.js";
 import {
   emptyScreen,
   errorScreen,
+  loadingScreen,
   successScreen,
   type MoneyViewModel,
   type ScreenDataProvenance,
@@ -28,6 +29,7 @@ export interface DashboardFinancialSummaryCurrencyBlock {
   availableBalanceMinor: number;
   incomeMinor: number;
   expensesMinor: number;
+  netVariationMinor: number;
   plannedCommitmentsMinor: number;
 }
 
@@ -103,6 +105,12 @@ interface DashboardDrilldownFilters {
   evidence?: DashboardDrilldownEvidence;
 }
 
+export function presentDashboardLoading(
+  filters: Readonly<Record<string, string>> = {},
+): DashboardScreenViewModel {
+  return loadingScreen({ filters, provenance: [] });
+}
+
 export function presentDashboard(input: DashboardPresenterInput): DashboardScreenViewModel {
   const context = {
     filters: input.filters,
@@ -154,6 +162,13 @@ function presentCurrencySummary(
         amount: money(block.availableBalanceMinor, block.currency),
         href: currencyDrilldownHref(block.currency),
         linkLabel: `Ver extrato em ${block.currency}`,
+      },
+      {
+        title: "Variação líquida do mês",
+        subtitle: "Receitas postadas menos despesas postadas",
+        amount: money(block.netVariationMinor, block.currency),
+        href: currencyDrilldownHref(block.currency, { evidence: "posted" }),
+        linkLabel: `Ver variação postada em ${block.currency}`,
       },
       {
         title: "Receitas do mês",
@@ -259,7 +274,7 @@ function decisionModules(): DashboardDecisionModuleViewModel[] {
       eyebrow: "Insights",
       title: "Assistente financeiro",
       description: "Use explicações e insights como apoio, mantendo os valores verificáveis.",
-      href: "/assistente-financeiro",
+      href: "/assistente",
       linkLabel: "Abrir assistente",
     },
   ];
