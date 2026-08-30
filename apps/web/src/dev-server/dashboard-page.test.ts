@@ -49,7 +49,10 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /sem misturar moedas/);
       assert.match(html, /data-quality="complete"/);
       assert.match(html, /Compromissos previstos em BRL/);
-      assert.match(html, /href="\/lancamentos\?currency=BRL">Ver extrato em BRL/);
+      assert.match(
+        html,
+        /href="\/lancamentos\?currency=BRL" aria-label="Ver extrato em BRL">Ver extrato em BRL/,
+      );
       assert.match(html, /1 item aguardando revisão na inbox/);
       assert.match(html, /1 fatura de cartão em aberto/);
       assert.match(html, /href="\/inbox">Abrir inbox/);
