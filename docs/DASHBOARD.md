@@ -9,6 +9,7 @@ A implementação SSR fica em `apps/web/src/dev-server/dashboard-page.ts` e `app
 O Dashboard funciona como cockpit financeiro orientado à decisão. Ele deve responder rapidamente:
 
 - como está a posição financeira atual;
+- o que mudou no mês, por meio da variação líquida postada por moeda;
 - quais entradas e despesas postadas ou reconciliadas pertencem ao período;
 - quais compromissos estão previstos;
 - quais pendências operacionais exigem ação;
@@ -43,14 +44,17 @@ Os estilos compartilhados são fornecidos por `sharedShellStyles()`, que inclui 
 
 ## Indicadores e drilldown
 
-Cada moeda tem quatro indicadores principais. Os links levam ao Extrato com recortes que reproduzem a evidência correspondente:
+Cada moeda tem cinco indicadores principais. Os links levam ao Extrato com recortes que reproduzem a evidência correspondente:
 
 - Disponível estimado: `currency=<MOEDA>`;
+- Variação líquida do mês: `currency=<MOEDA>&evidence=posted`;
 - Receitas do mês: `currency=<MOEDA>&kind=income&evidence=posted`;
 - Despesas do mês: `currency=<MOEDA>&kind=expense&evidence=posted`;
 - Compromissos previstos: `currency=<MOEDA>&kind=expense&evidence=planned`.
 
-O Extrato interpreta `kind` somente para `income` e `expense`, e `evidence` somente para `posted` e `planned`. Valores não suportados são ignorados em vez de receber significado implícito. `posted` reproduz o recorte mensal do resumo para status `posted`/`reconciled` pela data `occurredOn` e exclui pagamentos de fatura; `planned` reproduz compromissos `planned`/`suggested` pela data `plannedOn`, sem `effectiveOn`.
+A variação líquida é calculada no contrato agregado do backend como receitas postadas/reconciliadas menos despesas postadas/reconciliadas da mesma moeda e do mesmo mês. O frontend apenas apresenta `netVariationMinor`; ele não reconstitui nem inventa a regra financeira.
+
+O Extrato interpreta `kind` somente para `income` e `expense`, e `evidence` somente para `posted` e `planned`. Valores não suportados são ignorados em vez de receber significado implícito. `posted` reproduz o recorte mensal do resumo para status `posted`/`reconciled` pela data `occurredOn` e exclui pagamentos de fatura; quando `kind` não é informado, o recorte preserva receitas e despesas para explicar a variação. `planned` reproduz compromissos `planned`/`suggested` pela data `plannedOn`, sem `effectiveOn`.
 
 A resolução por `currency` continua escolhendo somente uma conta na moeda solicitada. Se não existir conta compatível, não há fallback silencioso para outra moeda.
 
@@ -58,7 +62,7 @@ A resolução por `currency` continua escolhendo somente uma conta na moeda soli
 
 O view-model do Dashboard mantém estados explícitos:
 
-- `loading`: carregamento do resumo;
+- `loading`: estado tipado disponível antes da resolução das fontes;
 - `error`: resumo financeiro obrigatório indisponível;
 - `empty`: sem evidência financeira para o perfil;
 - `success`: cockpit renderizado, com qualidade `complete` ou `partial` conforme as fontes operacionais opcionais.
@@ -69,26 +73,31 @@ Estados vazios também são reutilizados dentro de seções, como ações penden
 
 Os módulos de decisão são apenas pontos de navegação para capacidades existentes. O Dashboard não fabrica valores de orçamento, projeção 30/60/90 ou insights financeiros no frontend. Novos números devem vir de contratos determinísticos próprios antes de serem exibidos no cockpit.
 
+O módulo de insights navega pela rota canônica `/assistente`.
+
 ## Responsividade e acessibilidade
 
 A composição preserva:
 
-- reflow de quatro para duas e uma coluna nos breakpoints do cockpit;
+- reflow da grade de indicadores nos breakpoints do cockpit;
 - navegação nativa por links para moedas e drilldowns;
 - foco visível nos links de evidência;
 - estados com semântica e `aria-live` fornecidos pelas primitives compartilhadas;
-- validação de desktop/mobile e estado vazio no fluxo de validação visual em navegador.
+- validação real em desktop e mobile;
+- validação por teclado no Chrome: o gate envia `Tab`, confirma que o primeiro KPI recebe foco e verifica a presença de outline visível.
 
 ## Validação
 
 As regressões da rota cobrem, entre outros pontos:
 
 - valores multi-moedas sem mistura;
+- variação líquida determinística por moeda;
 - uso das primitives da Fase 3B na marcação SSR;
 - ausência de carga indiscriminada de todos os lançamentos;
-- drilldowns distintos para receita, despesa e compromisso;
+- drilldowns distintos para variação, receita, despesa e compromisso;
 - seleção da conta pela moeda pedida;
 - filtragem de evidência postada/reconciliada versus planejada/sugerida;
-- estados vazio, erro e dados parciais;
-- reflow e foco visível;
+- estado `loading` tipado, vazio, erro e dados parciais;
+- rota canônica do Assistente Financeiro;
+- reflow, teclado e foco visível;
 - validação visual real da rota no workflow `Statement visual validation`.
