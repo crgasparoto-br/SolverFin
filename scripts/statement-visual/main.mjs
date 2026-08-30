@@ -73,6 +73,9 @@ try {
         `${route} has essential content outside the viewport at ${width}px`,
         evidence.measurements.outsideEssential,
       );
+      if (route === "/dashboard") {
+        evidence.keyboard = await validateDashboardKeyboardFocus();
+      }
     }
   }
 
@@ -150,6 +153,62 @@ async function capturePage(scenario) {
   const evidence = { ...scenario, screenshot: filename, measurements };
   pages.push(evidence);
   return evidence;
+}
+
+async function validateDashboardKeyboardFocus() {
+  const prepared = await evaluate(
+    browser.cdp,
+    `(() => {
+      const target = document.querySelector('.metric-drilldown');
+      if (!target) return { ready: false, reason: 'metric drilldown missing' };
+      const sentinel = document.createElement('button');
+      sentinel.type = 'button';
+      sentinel.dataset.dashboardFocusSentinel = 'true';
+      sentinel.setAttribute('aria-label', 'Sentinela temporária de foco do Dashboard');
+      sentinel.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;padding:0;border:0';
+      target.before(sentinel);
+      sentinel.focus();
+      return { ready: document.activeElement === sentinel };
+    })()`,
+  );
+  check(prepared.ready, "Dashboard keyboard focus sentinel could not be prepared", prepared);
+
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "rawKeyDown",
+    key: "Tab",
+    code: "Tab",
+    windowsVirtualKeyCode: 9,
+    nativeVirtualKeyCode: 9,
+  });
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Tab",
+    code: "Tab",
+    windowsVirtualKeyCode: 9,
+    nativeVirtualKeyCode: 9,
+  });
+  await sleep(80);
+
+  const result = await evaluate(
+    browser.cdp,
+    `(() => {
+      const target = document.querySelector('.metric-drilldown');
+      const sentinel = document.querySelector('[data-dashboard-focus-sentinel="true"]');
+      const activeIsTarget = document.activeElement === target;
+      const style = target ? getComputedStyle(target) : null;
+      const outlineVisible = Boolean(style && style.outlineStyle !== 'none' && parseFloat(style.outlineWidth || '0') > 0);
+      if (sentinel) sentinel.remove();
+      return {
+        activeIsTarget,
+        outlineVisible,
+        activeLabel: document.activeElement?.getAttribute?.('aria-label') ?? null,
+      };
+    })()`,
+  );
+
+  check(result.activeIsTarget, "Dashboard Tab did not reach the first KPI drilldown", result);
+  check(result.outlineVisible, "Dashboard KPI focus indicator is not visibly rendered", result);
+  return result;
 }
 
 function validateStatement(evidence, width) {
