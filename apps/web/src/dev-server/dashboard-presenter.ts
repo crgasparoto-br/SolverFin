@@ -159,30 +159,21 @@ function presentCurrencySummary(
         title: "Receitas do mês",
         subtitle: "Entradas postadas no mês atual",
         amount: money(block.incomeMinor, block.currency),
-        href: currencyDrilldownHref(block.currency, {
-          kind: "income",
-          evidence: "posted",
-        }),
+        href: currencyDrilldownHref(block.currency, { kind: "income", evidence: "posted" }),
         linkLabel: `Ver receitas postadas em ${block.currency}`,
       },
       {
         title: "Despesas do mês",
         subtitle: "Saídas postadas no mês atual",
         amount: money(block.expensesMinor, block.currency),
-        href: currencyDrilldownHref(block.currency, {
-          kind: "expense",
-          evidence: "posted",
-        }),
+        href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "posted" }),
         linkLabel: `Ver despesas postadas em ${block.currency}`,
       },
       {
         title: "Compromissos previstos",
         subtitle: "Despesas planejadas no mês",
         amount: money(block.plannedCommitmentsMinor, block.currency),
-        href: currencyDrilldownHref(block.currency, {
-          kind: "expense",
-          evidence: "planned",
-        }),
+        href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "planned" }),
         linkLabel: `Ver compromissos planejados em ${block.currency}`,
       },
     ],
@@ -203,10 +194,7 @@ function presentNextActions(
     .map((block) => ({
       title: `Compromissos previstos em ${block.currency}`,
       description: "Revise os lançamentos planejados desta moeda no Extrato.",
-      href: currencyDrilldownHref(block.currency, {
-        kind: "expense",
-        evidence: "planned",
-      }),
+      href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "planned" }),
       linkLabel: `Ver compromissos planejados em ${block.currency}`,
     }));
 
@@ -293,10 +281,7 @@ function provenance(resource: string, available: boolean): ScreenDataProvenance 
   };
 }
 
-function currencyDrilldownHref(
-  currency: string,
-  filters: DashboardDrilldownFilters = {},
-): string {
+function currencyDrilldownHref(currency: string, filters: DashboardDrilldownFilters = {}): string {
   const query = new URLSearchParams({ currency: currency.toUpperCase() });
   if (filters.kind) query.set("kind", filters.kind);
   if (filters.evidence) query.set("evidence", filters.evidence);

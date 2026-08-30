@@ -136,9 +136,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
   `;
 }
 
-function renderCurrencyNavigator(
-  blocks: readonly DashboardCurrencySummaryViewModel[],
-): string {
+function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
   if (blocks.length < 2) return "";
 
   return `<nav class="currency-nav panel" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
@@ -149,9 +147,7 @@ function renderCurrencyNavigator(
     .join("")}</nav>`;
 }
 
-function renderCurrencySummaries(
-  blocks: readonly DashboardCurrencySummaryViewModel[],
-): string {
+function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
   if (blocks.length === 0) {
     return renderEmptyState({
       title: "Nenhum total financeiro disponível.",
@@ -166,9 +162,7 @@ function renderCurrencySummaries(
           <div class="section-heading currency-heading">
             <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
           </div>
-          ${renderSummaryGrid({
-            childrenHtml: block.metrics.map(renderDashboardMetric).join(""),
-          })}
+          ${renderSummaryGrid({ childrenHtml: block.metrics.map(renderDashboardMetric).join("") })}
         </section>
       `,
     )
@@ -190,9 +184,7 @@ function renderNextActions(actions: DashboardContentViewModel["nextActions"]): s
     .join("")}</div>`;
 }
 
-function renderDecisionModules(
-  modules: readonly DashboardDecisionModuleViewModel[],
-): string {
+function renderDecisionModules(modules: readonly DashboardDecisionModuleViewModel[]): string {
   return `
     <section class="decision-section" aria-labelledby="decision-title">
       <div class="section-heading"><div><p class="eyebrow">Horizonte</p><h2 id="decision-title">Ferramentas de decisão</h2></div></div>
@@ -257,9 +249,7 @@ function renderNextActionRow(
 function renderDashboardMetric(metric: DashboardMetricViewModel): string {
   const metricCard = renderFoundationMetricCard({
     label: metric.title,
-    value: formatMinorCurrency(metric.amount.amountMinor, {
-      currency: metric.amount.currency,
-    }),
+    value: formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency }),
     detail: metric.subtitle,
   });
 
