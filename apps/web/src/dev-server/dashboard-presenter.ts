@@ -24,6 +24,12 @@ export interface DashboardFinancialSummaryItem {
   status: string;
 }
 
+export interface DashboardAccountReference {
+  id: string;
+  name: string;
+  status: string;
+}
+
 export interface DashboardFinancialSummaryCurrencyBlock {
   currency: string;
   availableBalanceMinor: number;
@@ -31,11 +37,17 @@ export interface DashboardFinancialSummaryCurrencyBlock {
   expensesMinor: number;
   netVariationMinor: number;
   plannedCommitmentsMinor: number;
+  accounts?: readonly DashboardAccountReference[];
 }
 
 export interface DashboardFinancialSummary {
   currencyBlocks: DashboardFinancialSummaryCurrencyBlock[];
   recentItems: DashboardFinancialSummaryItem[];
+}
+
+export interface DashboardMetricEvidenceLinkViewModel {
+  label: string;
+  href: string;
 }
 
 export interface DashboardMetricViewModel {
@@ -44,6 +56,9 @@ export interface DashboardMetricViewModel {
   amount: MoneyViewModel;
   href: string;
   linkLabel: string;
+  evidenceId: string;
+  evidenceTitle: string;
+  evidenceLinks: readonly DashboardMetricEvidenceLinkViewModel[];
 }
 
 export interface DashboardCurrencySummaryViewModel {
@@ -100,6 +115,8 @@ export interface DashboardPresenterInput {
 type DashboardDrilldownKind = "income" | "expense";
 type DashboardDrilldownEvidence = "posted" | "planned";
 
+type DashboardMetricKey = "available" | "variation" | "income" | "expense" | "planned";
+
 interface DashboardDrilldownFilters {
   kind?: DashboardDrilldownKind;
   evidence?: DashboardDrilldownEvidence;
@@ -153,45 +170,89 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
 function presentCurrencySummary(
   block: DashboardFinancialSummaryCurrencyBlock,
 ): DashboardCurrencySummaryViewModel {
+  const accounts = block.accounts ?? [];
+
   return {
     currency: block.currency,
     metrics: [
-      {
-        title: "Disponível estimado",
-        subtitle: "Saldo das contas ativas",
-        amount: money(block.availableBalanceMinor, block.currency),
-        href: currencyDrilldownHref(block.currency),
-        linkLabel: `Ver extrato em ${block.currency}`,
-      },
-      {
-        title: "Variação líquida do mês",
-        subtitle: "Receitas postadas menos despesas postadas",
-        amount: money(block.netVariationMinor, block.currency),
-        href: currencyDrilldownHref(block.currency, { evidence: "posted" }),
-        linkLabel: `Ver variação postada em ${block.currency}`,
-      },
-      {
-        title: "Receitas do mês",
-        subtitle: "Entradas postadas no mês atual",
-        amount: money(block.incomeMinor, block.currency),
-        href: currencyDrilldownHref(block.currency, { kind: "income", evidence: "posted" }),
-        linkLabel: `Ver receitas postadas em ${block.currency}`,
-      },
-      {
-        title: "Despesas do mês",
-        subtitle: "Saídas postadas no mês atual",
-        amount: money(block.expensesMinor, block.currency),
-        href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "posted" }),
-        linkLabel: `Ver despesas postadas em ${block.currency}`,
-      },
-      {
-        title: "Compromissos previstos",
-        subtitle: "Despesas planejadas no mês",
-        amount: money(block.plannedCommitmentsMinor, block.currency),
-        href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "planned" }),
-        linkLabel: `Ver compromissos planejados em ${block.currency}`,
-      },
+      metric(
+        block,
+        "available",
+        "Disponível estimado",
+        "Saldo das contas ativas",
+        block.availableBalanceMinor,
+        {},
+        accounts.filter((account) => account.status === "active"),
+        `Contas ativas que compõem o disponível em ${block.currency}`,
+      ),
+      metric(
+        block,
+        "variation",
+        "Variação líquida do mês",
+        "Receitas postadas menos despesas postadas",
+        block.netVariationMinor,
+        { evidence: "posted" },
+        accounts,
+        `Contas com evidência da variação postada em ${block.currency}`,
+      ),
+      metric(
+        block,
+        "income",
+        "Receitas do mês",
+        "Entradas postadas no mês atual",
+        block.incomeMinor,
+        { kind: "income", evidence: "posted" },
+        accounts,
+        `Contas com receitas postadas em ${block.currency}`,
+      ),
+      metric(
+        block,
+        "expense",
+        "Despesas do mês",
+        "Saídas postadas no mês atual",
+        block.expensesMinor,
+        { kind: "expense", evidence: "posted" },
+        accounts,
+        `Contas com despesas postadas em ${block.currency}`,
+      ),
+      metric(
+        block,
+        "planned",
+        "Compromissos previstos",
+        "Despesas planejadas no mês",
+        block.plannedCommitmentsMinor,
+        { kind: "expense", evidence: "planned" },
+        accounts,
+        `Contas com compromissos planejados em ${block.currency}`,
+      ),
     ],
+  };
+}
+
+function metric(
+  block: DashboardFinancialSummaryCurrencyBlock,
+  key: DashboardMetricKey,
+  title: string,
+  subtitle: string,
+  amountMinor: number,
+  filters: DashboardDrilldownFilters,
+  accounts: readonly DashboardAccountReference[],
+  evidenceTitle: string,
+): DashboardMetricViewModel {
+  const evidenceId = evidenceAnchorId(block.currency, key);
+
+  return {
+    title,
+    subtitle,
+    amount: money(amountMinor, block.currency),
+    href: `#${evidenceId}`,
+    linkLabel: `Ver evidências em ${block.currency}`,
+    evidenceId,
+    evidenceTitle,
+    evidenceLinks: accounts.map((account) => ({
+      label: account.status === "active" ? account.name : `${account.name} (inativa)`,
+      href: accountDrilldownHref(account.id, block.currency, filters),
+    })),
   };
 }
 
@@ -209,8 +270,8 @@ function presentNextActions(
     .map((block) => ({
       title: `Compromissos previstos em ${block.currency}`,
       description: "Revise os lançamentos planejados desta moeda no Extrato.",
-      href: currencyDrilldownHref(block.currency, { kind: "expense", evidence: "planned" }),
-      linkLabel: `Ver compromissos planejados em ${block.currency}`,
+      href: `#${evidenceAnchorId(block.currency, "planned")}`,
+      linkLabel: `Ver evidências em ${block.currency}`,
     }));
 
   if (reviewCount > 0) {
@@ -296,8 +357,19 @@ function provenance(resource: string, available: boolean): ScreenDataProvenance 
   };
 }
 
-function currencyDrilldownHref(currency: string, filters: DashboardDrilldownFilters = {}): string {
-  const query = new URLSearchParams({ currency: currency.toUpperCase() });
+function evidenceAnchorId(currency: string, key: DashboardMetricKey): string {
+  return `dashboard-evidence-${currency.toLowerCase()}-${key}`;
+}
+
+function accountDrilldownHref(
+  accountId: string,
+  currency: string,
+  filters: DashboardDrilldownFilters,
+): string {
+  const query = new URLSearchParams({
+    currency: currency.toUpperCase(),
+    accountId,
+  });
   if (filters.kind) query.set("kind", filters.kind);
   if (filters.evidence) query.set("evidence", filters.evidence);
   return `/lancamentos?${query.toString()}`;
