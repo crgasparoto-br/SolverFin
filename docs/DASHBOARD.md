@@ -45,12 +45,10 @@ Os estilos compartilhados são fornecidos por `sharedShellStyles()`, que inclui 
 
 Cada moeda tem quatro indicadores principais. Os links levam ao Extrato com recortes que reproduzem a evidência correspondente:
 
-| Indicador | Recorte do Extrato |
-| --- | --- |
-| Disponível estimado | `currency=<MOEDA>` |
-| Receitas do mês | `currency=<MOEDA>&kind=income&evidence=posted` |
-| Despesas do mês | `currency=<MOEDA>&kind=expense&evidence=posted` |
-| Compromissos previstos | `currency=<MOEDA>&kind=expense&evidence=planned` |
+- Disponível estimado: `currency=<MOEDA>`;
+- Receitas do mês: `currency=<MOEDA>&kind=income&evidence=posted`;
+- Despesas do mês: `currency=<MOEDA>&kind=expense&evidence=posted`;
+- Compromissos previstos: `currency=<MOEDA>&kind=expense&evidence=planned`.
 
 O Extrato interpreta `kind` somente para `income` e `expense`, e `evidence` somente para `posted` e `planned`. Valores não suportados são ignorados em vez de receber significado implícito. `posted` reproduz o recorte mensal do resumo para status `posted`/`reconciled` pela data `occurredOn` e exclui pagamentos de fatura; `planned` reproduz compromissos `planned`/`suggested` pela data `plannedOn`, sem `effectiveOn`.
 

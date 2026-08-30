@@ -72,10 +72,12 @@ function renderDashboard(model: DashboardScreenViewModel): string {
           className: "dashboard-page",
           childrenHtml: `
             <section class="panel dashboard-hero" aria-label="Situação financeira atual">
-              ${renderPageHeader({
-                eyebrow: "Cockpit financeiro",
-                title: "Situação financeira atual",
-              })}
+              <div class="dashboard-heading">
+                ${renderPageHeader({
+                  eyebrow: "Cockpit financeiro",
+                  title: "Situação financeira atual",
+                })}
+              </div>
               ${renderEmptyState({
                 title: model.empty.title,
                 description: model.empty.description,
@@ -86,7 +88,10 @@ function renderDashboard(model: DashboardScreenViewModel): string {
       );
     case "success":
       return renderAuthenticatedPage(
-        renderPageContainer({ className: "dashboard-page", childrenHtml: renderDashboardContent(model.content) }),
+        renderPageContainer({
+          className: "dashboard-page",
+          childrenHtml: renderDashboardContent(model.content),
+        }),
       );
   }
 }
@@ -94,11 +99,13 @@ function renderDashboard(model: DashboardScreenViewModel): string {
 function renderDashboardContent(content: DashboardContentViewModel): string {
   return `
     <section class="panel dashboard-hero" aria-label="Situação financeira atual">
-      ${renderPageHeader({
-        eyebrow: "Cockpit financeiro",
-        title: "Situação financeira atual",
-        description: "Acompanhe posição, entradas, despesas e compromissos sem misturar moedas.",
-      })}
+      <div class="dashboard-heading">
+        ${renderPageHeader({
+          eyebrow: "Cockpit financeiro",
+          title: "Situação financeira atual",
+          description: "Acompanhe posição, entradas, despesas e compromissos sem misturar moedas.",
+        })}
+      </div>
       <div class="data-quality" data-quality="${content.dataQuality.status}" role="status">
         <strong>${escapeHtml(content.dataQuality.title)}</strong>
         <span>${escapeHtml(content.dataQuality.description)}</span>
@@ -129,7 +136,9 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
   `;
 }
 
-function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
+function renderCurrencyNavigator(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+): string {
   if (blocks.length < 2) return "";
 
   return `<nav class="currency-nav panel" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
@@ -140,7 +149,9 @@ function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewMo
     .join("")}</nav>`;
 }
 
-function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
+function renderCurrencySummaries(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+): string {
   if (blocks.length === 0) {
     return renderEmptyState({
       title: "Nenhum total financeiro disponível.",
@@ -155,7 +166,9 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
           <div class="section-heading currency-heading">
             <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
           </div>
-          ${renderSummaryGrid({ childrenHtml: block.metrics.map(renderDashboardMetric).join("") })}
+          ${renderSummaryGrid({
+            childrenHtml: block.metrics.map(renderDashboardMetric).join(""),
+          })}
         </section>
       `,
     )
@@ -177,7 +190,9 @@ function renderNextActions(actions: DashboardContentViewModel["nextActions"]): s
     .join("")}</div>`;
 }
 
-function renderDecisionModules(modules: readonly DashboardDecisionModuleViewModel[]): string {
+function renderDecisionModules(
+  modules: readonly DashboardDecisionModuleViewModel[],
+): string {
   return `
     <section class="decision-section" aria-labelledby="decision-title">
       <div class="section-heading"><div><p class="eyebrow">Horizonte</p><h2 id="decision-title">Ferramentas de decisão</h2></div></div>
@@ -242,7 +257,9 @@ function renderNextActionRow(
 function renderDashboardMetric(metric: DashboardMetricViewModel): string {
   const metricCard = renderFoundationMetricCard({
     label: metric.title,
-    value: formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency }),
+    value: formatMinorCurrency(metric.amount.amountMinor, {
+      currency: metric.amount.currency,
+    }),
     detail: metric.subtitle,
   });
 
@@ -255,7 +272,7 @@ function dashboardStyles(): string {
     main { display: grid; gap: 16px; padding: 20px 0; width: 100%; }
     .sf-page-container { display: grid; gap: 16px; }
     .dashboard-hero { align-items: start; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); }
-    .dashboard-hero .sf-page-header { min-width: 0; }
+    .dashboard-heading { display: grid; gap: 4px; min-width: 0; }
     .data-quality { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; padding: 12px; }
     .data-quality strong { color: var(--primary); font-size: 0.875rem; }
     .data-quality span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
