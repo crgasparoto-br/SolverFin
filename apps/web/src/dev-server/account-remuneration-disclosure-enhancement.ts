@@ -42,5 +42,18 @@ export function enhanceAccountRemunerationDisclosure(html: string): string {
     DISCLOSURE_SUMMARY,
   );
 
-  return enhancedHtml.replace("</head>", `${styles}</head>`);
+  const script = `
+      <script data-account-remuneration-disclosure-controller>
+        document.querySelectorAll("details.account-remuneration-audit").forEach((disclosure) => {
+          disclosure.addEventListener("toggle", () => {
+            if (disclosure.open) return;
+            const actions = disclosure
+              .closest(".statement-row.statement-body")
+              ?.querySelector("details.actions");
+            if (actions) actions.open = false;
+          });
+        });
+      </script>`;
+
+  return enhancedHtml.replace("</head>", `${styles}</head>`).replace("</body>", `${script}</body>`);
 }

@@ -410,10 +410,13 @@ export function recurrencesSectionScript(): string {
               return;
             }
 
+            const submit = form.querySelector('button[type="submit"]');
+            if (submit) submit.disabled = true;
             if (statusNode) statusNode.textContent = "Salvando...";
             const result = await execute("current");
             if (statusNode) statusNode.textContent = result.message;
             if (result.ok) window.setTimeout(() => window.location.reload(), 450);
+            else if (submit) submit.disabled = false;
           }, true);
         }
 
