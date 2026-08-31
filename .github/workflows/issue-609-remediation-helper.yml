@@ -11,7 +11,25 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: postgresql://solverfin:solverfin_dev_password@localhost:5432/solverfin?schema=public
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -28,8 +46,30 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Validate repository build gates
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply migrations
+        run: npm run db:deploy
+
+      - name: Seed demo data
+        run: npm run db:seed
+
+      - name: Run official test gate with diagnostic capture
+        id: repository-tests
+        continue-on-error: true
         run: |
-          npm run build:packages
-          npm run typecheck
-          npm run build
+          set -o pipefail
+          npm run test 2>&1 | tee issue-609-official-test.log
+
+      - name: Upload official test diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-609-official-test-diagnostic
+          path: issue-609-official-test.log
+          if-no-files-found: error
+
+      - name: Preserve test outcome
+        if: steps.repository-tests.outcome == 'failure'
+        run: exit 1
