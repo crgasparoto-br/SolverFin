@@ -461,6 +461,8 @@ export function enhanceInboxReviewArchetype(html: string): string {
       .inbox-review-evidence .import-workspace { gap: 10px; }
       .inbox-review-evidence .import-heading { align-items: center; }
       .inbox-review-evidence .import-layout { gap: 10px; grid-template-columns: minmax(205px, 250px) minmax(0, 1fr); }
+      .inbox-review-evidence .batch-item { align-items: flex-start; align-self: start; display: flex; flex-direction: column; height: auto; justify-content: flex-start; min-height: 54px; white-space: normal; }
+      .inbox-review-evidence .batch-item > strong, .inbox-review-evidence .batch-item > span { max-width: 100%; min-width: 0; overflow-wrap: anywhere; width: 100%; }
       .inbox-review-evidence .import-detail { gap: 8px; min-width: 0; }
       .inbox-review-evidence .detail-heading { align-items: center; gap: 8px; padding-bottom: 7px; }
       .inbox-review-evidence .detail-heading h3 { font-size: 1rem; }
