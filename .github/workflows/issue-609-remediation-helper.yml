@@ -1,0 +1,112 @@
+name: Issue 609 remediation helper
+
+on:
+  push:
+    branches:
+      - codex/609-statement-account-currency
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/609-statement-account-currency
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply exact optional property fix
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'apps/web/src/dev-server/transactions-page-v2.ts';
+          const source = fs.readFileSync(path, 'utf8');
+          const before = `function resolvePresentation(url: URL | undefined): StatementPresentation {
+            const rawSort = url?.searchParams.get("sort");
+            const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
+            return {
+              search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
+              sort,
+              ...(readNonEmpty(url?.searchParams.get("categoryId"))
+                ? { insightCategoryId: readNonEmpty(url?.searchParams.get("categoryId")) }
+                : {}),
+              ...(normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "")
+                ? { insightMerchantKey: normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "") }
+                : {}),
+            };
+          }`;
+          const after = `function resolvePresentation(url: URL | undefined): StatementPresentation {
+            const rawSort = url?.searchParams.get("sort");
+            const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
+            const insightCategoryId = readNonEmpty(url?.searchParams.get("categoryId"));
+            const insightMerchantKey = normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "");
+            return {
+              search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
+              sort,
+              ...(insightCategoryId ? { insightCategoryId } : {}),
+              ...(insightMerchantKey ? { insightMerchantKey } : {}),
+            };
+          }`;
+          if (!source.includes(before)) {
+            throw new Error('Expected resolvePresentation source not found');
+          }
+          fs.writeFileSync(path, source.replace(before, after));
+          NODE
+          npx prettier --write apps/web/src/dev-server/transactions-page-v2.ts
+
+      - name: Validate web typecheck and build
+        id: validate
+        continue-on-error: true
+        run: |
+          mkdir -p artifacts/issue-609-remediation
+          set +e
+          npm run build:packages > artifacts/issue-609-remediation/validation.log 2>&1
+          status=$?
+          if [ "$status" -eq 0 ]; then
+            npm run typecheck --workspace @solverfin/web >> artifacts/issue-609-remediation/validation.log 2>&1
+            status=$?
+          fi
+          if [ "$status" -eq 0 ]; then
+            npm run build --workspace @solverfin/web >> artifacts/issue-609-remediation/validation.log 2>&1
+            status=$?
+          fi
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload validation log
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-609-remediation-log-${{ github.sha }}
+          path: artifacts/issue-609-remediation/validation.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Commit validated fix
+        if: steps.validate.outputs.status == '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/dev-server/transactions-page-v2.ts
+          if git diff --cached --quiet; then
+            echo "No remediation changes"
+          else
+            git commit -m "fix(web): stabilize statement presentation filters"
+            git push origin HEAD:codex/609-statement-account-currency
+          fi
+
+      - name: Fail when validation failed
+        if: steps.validate.outputs.status != '0'
+        run: exit 1
