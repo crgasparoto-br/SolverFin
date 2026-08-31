@@ -442,7 +442,7 @@ function renderRow(
   return `<article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row">
     <label class="col-select"><input type="checkbox" data-select-transaction value="${escapeHtml(transaction.id)}" data-kind="${escapeHtml(transaction.kind)}" data-status="${escapeHtml(transaction.status)}" data-currency="${escapeHtml(currency ?? "")}" data-amount="${row.amountMinor}" data-date="${escapeHtml(date)}" data-description="${escapeHtml(transaction.description)}" data-category="${escapeHtml(categoryName)}" aria-label="Selecionar lançamento ${escapeHtml(transaction.description || "sem descrição")}"${eligible ? "" : " disabled"}></label>
     <time class="col-date" datetime="${escapeHtml(date)}">${formatDate(date)}</time>
-    <div class="description col-description"><strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}${transaction.accountRemuneration ? '<span class="account-remuneration-badge">Remuneração CDI</span>' : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}${renderAccountRemunerationAudit(transaction)}</div>
+    <div class="description col-description">${renderTransactionDescription(transaction, selectedAccount, accounts)}</div>
     <span class="col-category">${escapeHtml(categoryName)}</span><span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
     ${renderStatementStatus(transaction)}
     <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatMoney(row.amountMinor, currency) : "Moeda indisponível"}</strong>
@@ -450,12 +450,28 @@ function renderRow(
     <details class="actions col-actions"><summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary><div class="actions-menu" role="menu">
       <button type="button" class="actions-item" data-edit="${escapeHtml(transaction.id)}">${renderEditIcon()}<span>Editar</span></button>
       <button type="button" class="actions-item" data-action data-method="PATCH" data-path="/api/transactions/${escapeHtml(transaction.id)}" data-payload='${escapeHtml(JSON.stringify({ status: nextStatus }))}'>${renderReconcileIcon(transaction.status === "reconciled")}<span>${transaction.status === "reconciled" ? "Desconciliar" : "Marcar como conciliado"}</span></button>
-      <button type="button" class="actions-item" data-clone="${escapeHtml(transaction.id)}">${renderCloneIcon()}<span>Clonar</span></button><hr class="actions-divider" />
+      ${renderTransactionCloneAction(transaction)}<hr class="actions-divider" />
       <button type="button" class="actions-item danger" data-action data-method="POST" data-path="/api/transactions/${escapeHtml(transaction.id)}/void" data-confirm="${escapeHtml(transaction.status === "reconciled" ? "Este lançamento já está conciliado. Excluir mesmo assim?" : "Excluir este lançamento?")}">${renderTrashIcon()}<span>Excluir</span></button>
       ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
     </div></details>
     <script type="application/json" data-transaction="${escapeHtml(transaction.id)}">${serializeScriptJson(transaction)}</script>
   </article>`;
+}
+
+function renderTransactionDescription(
+  transaction: TransactionRecord,
+  selectedAccount: AccountRecord | undefined,
+  accounts: readonly AccountRecord[],
+): string {
+  if (transaction.accountRemuneration) {
+    return `<strong>Remuneração CDI${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}${renderAccountRemunerationAudit(transaction)}`;
+  }
+  return `<strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}`;
+}
+
+function renderTransactionCloneAction(transaction: TransactionRecord): string {
+  if (transaction.accountRemuneration) return "";
+  return `<button type="button" class="actions-item" data-clone="${escapeHtml(transaction.id)}">${renderCloneIcon()}<span>Clonar</span></button>`;
 }
 
 function renderGroupRow(
@@ -478,7 +494,10 @@ function renderGroupRow(
 export function renderAccountRemunerationAudit(transaction: TransactionRecord): string {
   const remuneration = transaction.accountRemuneration;
   if (!remuneration) return "";
-  return `<details class="account-remuneration-audit" aria-label="Memória do cálculo da remuneração"><summary>Ver memória do cálculo</summary><div class="account-remuneration-audit-heading"><strong>Memória do cálculo</strong><span class="account-remuneration-adjustment ${remuneration.manuallyAdjusted ? "adjusted" : "original"}">${remuneration.manuallyAdjusted ? "Ajustado manualmente" : "Valor original"}</span></div><dl><div><dt>Competência</dt><dd>${formatDate(remuneration.competenceOn)}</dd></div><div><dt>Saldo-base</dt><dd>${formatMoney(remuneration.balanceBaseMinor, "BRL")}</dd></div><div><dt>CDI diário</dt><dd>${formatPercentage(remuneration.dailyRatePercent, 8)}</dd></div><div><dt>Percentual aplicado</dt><dd>${formatPercentage(remuneration.remunerationPercent, 4)}</dd></div><div><dt>Valor original</dt><dd>${formatMoney(remuneration.originalAmountMinor, "BRL")}</dd></div></dl></details>`;
+  const adjustment = remuneration.manuallyAdjusted
+    ? '<span class="account-remuneration-adjustment adjusted">Ajustado manualmente</span>'
+    : "";
+  return `<details class="account-remuneration-audit" aria-label="Memória do cálculo da remuneração"><summary>Ver memória do cálculo</summary><div class="account-remuneration-audit-content">${adjustment}<dl><div><dt>Competência</dt><dd>${formatDate(remuneration.competenceOn)}</dd></div><div><dt>Saldo-base</dt><dd>${formatMoney(remuneration.balanceBaseMinor, "BRL")}</dd></div><div><dt>CDI diário</dt><dd>${formatPercentage(remuneration.dailyRatePercent, 8)}</dd></div><div><dt>Percentual aplicado</dt><dd>${formatPercentage(remuneration.remunerationPercent, 4)}</dd></div><div><dt>Valor original</dt><dd>${formatMoney(remuneration.originalAmountMinor, "BRL")}</dd></div></dl></div></details><span class="account-remuneration-summary">Competência ${formatDate(remuneration.competenceOn)} · ${formatPercentage(remuneration.remunerationPercent, 4)} do CDI</span>`;
 }
 
 function renderTransferNote(
@@ -644,6 +663,50 @@ function clientScript(currency: string | undefined): string {
     statusNode.className = "form-status muted full";
     statusNode.setAttribute("aria-live", "polite");
     form.appendChild(statusNode);
+    const remunerationIds = new Set();
+    const unlockRemunerationFields = () => {
+      form.dataset.remunerationProtected = "false";
+      form.querySelectorAll("[data-remuneration-protected]").forEach((field) => {
+        field.removeAttribute("data-remuneration-protected");
+        field.removeAttribute("aria-disabled");
+        if ("readOnly" in field) field.readOnly = false;
+      });
+      form.querySelector("[data-remuneration-edit-notice]")?.remove();
+    };
+    const protectRemunerationField = (field) => {
+      if (!field) return;
+      field.setAttribute("data-remuneration-protected", "true");
+      field.setAttribute("aria-disabled", "true");
+      field.dataset.remunerationValue = field.value;
+      if ("readOnly" in field) field.readOnly = true;
+    };
+    const lockRemunerationFields = () => {
+      unlockRemunerationFields();
+      form.dataset.remunerationProtected = "true";
+      const repeatMode = form.elements.repeatMode;
+      if (repeatMode) repeatMode.value = "single";
+      [form.elements.kind, form.elements.plannedOn, form.elements.description, repeatMode, form.querySelector("[data-edit-account-select]")].forEach(protectRemunerationField);
+      const saveRow = form.querySelector(".save-row");
+      if (saveRow && !form.querySelector("[data-remuneration-edit-notice]")) {
+        const notice = document.createElement("p");
+        notice.className = "remuneration-edit-notice";
+        notice.setAttribute("data-remuneration-edit-notice", "");
+        notice.textContent = "Neste lançamento, altere somente o valor creditado, a categoria, a situação e a data efetiva. Conta, tipo, competência e memória do cálculo permanecem protegidos.";
+        saveRow.before(notice);
+      }
+    };
+    form.addEventListener("mousedown", (event) => {
+      const target = event.target;
+      if (target?.matches?.('select[data-remuneration-protected="true"]')) event.preventDefault();
+    }, true);
+    form.addEventListener("keydown", (event) => {
+      const target = event.target;
+      if (target?.matches?.('select[data-remuneration-protected="true"]')) event.preventDefault();
+    }, true);
+    form.addEventListener("change", (event) => {
+      const target = event.target;
+      if (target?.matches?.('[data-remuneration-protected="true"]')) target.value = target.dataset.remunerationValue || target.value;
+    }, true);
 
     const moneyToMinor = (value) => Math.round(parseFloat(String(value).replace(/\./g, "").replace(",", ".") || "0") * 100);
     const minorToMoneyInput = (amountMinor) => (amountMinor / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -711,13 +774,24 @@ function clientScript(currency: string | undefined): string {
     document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; form.reset(); form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; setStatus("posted"); syncFieldVisibility(); modal.showModal(); }));
     document.querySelectorAll("[data-transaction]").forEach((node) => {
       const transaction = JSON.parse(node.textContent);
+      if (transaction.accountRemuneration) remunerationIds.add(transaction.id);
       const hydrate = (selector, clone) => { const button = document.querySelector(selector + transaction.id + '"]'); if (!button) return; button.addEventListener("click", () => { form.reset(); form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id; form.dataset.method = clone ? "POST" : "PATCH"; form.kind.value = transaction.kind; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); }); };
       hydrate('[data-edit="', false); hydrate('[data-clone="', true);
     });
+    document.addEventListener("click", (event) => {
+      const target = event.target?.closest?.("[data-edit], [data-clone], [data-open-modal]");
+      if (!target) return;
+      const editId = target.getAttribute("data-edit");
+      window.setTimeout(() => {
+        if (editId && remunerationIds.has(editId)) lockRemunerationFields();
+        else unlockRemunerationFields();
+      }, 0);
+    }, true);
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault(); if (form.dataset.submitting === "true") return;
       const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]'); form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
+      let shouldReload = false;
       try {
         let response;
         if (mode === "fixed" && method === "POST") {
@@ -725,9 +799,9 @@ function clientScript(currency: string | undefined): string {
         } else if (mode === "installment" && method === "POST") {
           const data = new FormData(form); response = await send("/api/installments", "POST", { accountId: String(data.get("accountId")), destinationAccountId: String(data.get("destinationAccountId") || "") || null, categoryId: String(data.get("categoryId") || "") || null, kind: String(data.get("kind")), status: String(data.get("status")), description: String(data.get("description") || "").trim(), note: String(data.get("note") || "").trim() || null, plannedOn: String(data.get("plannedOn")), effectiveOn: String(data.get("effectiveOn") || "") || null, amountMinor: moneyToMinor(data.get("amountMinor")), amountMode: String(data.get("installmentValueMode") || "per_installment"), totalInstallments: Math.max(2, Number(data.get("installments") || 2)), initialSequenceNumber: Math.max(1, Number(data.get("installmentStart") || 1)), idempotencyKey: newIdempotencyKey() });
         } else response = await send(form.dataset.path || "/api/transactions", method, payload());
-        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response); if (response.ok) setTimeout(() => location.reload(), 350);
+        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response); if (response.ok) { shouldReload = true; setTimeout(() => location.reload(), 350); }
       } catch { statusNode.className = "form-status error full"; statusNode.textContent = "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente."; }
-      finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit) submit.disabled = false; }
+      finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit && !shouldReload) submit.disabled = false; }
     });
 
     document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async () => { if (button.dataset.confirm && !confirm(button.dataset.confirm)) return; const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {}); if (response.ok) setTimeout(() => location.reload(), 300); }));
@@ -866,7 +940,7 @@ function css(): string {
     .selection-bar{align-items:center;background:var(--surface);border:1px solid var(--primary);border-radius:var(--radius);bottom:16px;box-shadow:var(--shadow);display:flex;gap:12px;justify-content:flex-end;padding:10px 14px;position:sticky;z-index:8}.selection-bar[hidden]{display:none}.group-modal-panel{max-width:760px}.group-modal-panel form{display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr))}.group-readonly,.group-members,.group-modal-panel .save-row,.group-modal-panel .form-error{grid-column:1/-1}.group-members{border:1px solid var(--line);border-radius:var(--radius);max-height:280px;overflow:auto}.group-members>div{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:9px}
     .statement-status{align-items:center;border:1px solid currentColor;border-radius:999px;cursor:default;display:inline-flex;height:26px;justify-content:center;justify-self:start;padding:0;position:relative;width:26px}.statement-status-ok{background:var(--success-bg);color:var(--success)}.statement-status-posted{background:#e0f2fe;color:#0369a1}.statement-status-pending{background:var(--warning-bg);color:var(--warning)}.statement-status-planned{background:var(--primary-soft);color:var(--primary)}
     .actions{position:relative}.actions summary{align-items:center;background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:28px;justify-content:center;list-style:none;width:28px}.actions summary::-webkit-details-marker{display:none}.actions-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);display:grid;gap:2px;max-width:220px;padding:4px;position:absolute;right:0;top:34px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:var(--radius);color:var(--text);display:flex;font-size:.8125rem;font-weight:600;gap:8px;justify-content:flex-start;min-height:32px;padding:0 8px;text-align:left;white-space:nowrap}.actions-item.danger{color:var(--danger)}.actions-divider{border:0;border-top:1px solid var(--line);margin:3px 2px}
-    .account-remuneration-audit{margin-top:4px;max-width:100%;min-width:0}.account-remuneration-audit summary{color:var(--primary);cursor:pointer;font-size:.75rem;font-weight:700}.account-remuneration-audit dl{display:grid;gap:4px 10px;grid-template-columns:repeat(2,minmax(0,1fr));margin:7px 0 0}.account-remuneration-audit dl div{min-width:0}.account-remuneration-audit dt{color:var(--muted);font-size:.68rem}.account-remuneration-audit dd{font-size:.75rem;font-weight:700;margin:0;overflow-wrap:anywhere}.account-remuneration-audit-heading{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between}.account-remuneration-adjustment{font-size:.68rem}
+    .statement-row.account-remuneration-row{border-left:3px solid var(--primary)}.statement-row.account-remuneration-row .col-description{min-width:15rem}.statement-row.account-remuneration-row .description{align-items:baseline;column-gap:4px;display:grid;grid-template-columns:max-content minmax(0,1fr);min-width:0}.statement-row.account-remuneration-row .description>strong{grid-column:1;grid-row:1;overflow-wrap:normal;white-space:nowrap}.account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;grid-column:1/-1;grid-row:2;line-height:1.35}.account-remuneration-audit{background:transparent;border:0;display:block;grid-column:2;grid-row:1;justify-self:start;margin:0;max-width:100%;min-width:0;padding:0}.account-remuneration-audit[open]{grid-column:1/-1;grid-row:3;margin:4px 0 0}.account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;line-height:1.2;list-style:none;padding:0;white-space:nowrap}.account-remuneration-audit summary::-webkit-details-marker{display:none}.account-remuneration-audit-content{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:4px;padding:8px}.account-remuneration-adjustment{border-radius:999px;font-size:.6875rem;font-weight:800;padding:2px 7px}.account-remuneration-audit-content .account-remuneration-adjustment{background:var(--warning-bg);color:var(--warning);justify-self:start}.account-remuneration-audit-content dl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));margin:0}.account-remuneration-audit-content dl div{min-width:0}.account-remuneration-audit-content dt{color:var(--muted);font-size:.625rem;font-weight:700;text-transform:uppercase}.account-remuneration-audit-content dd{font-size:.75rem;font-weight:700;margin:0;overflow-wrap:anywhere}@media(max-width:760px){.account-remuneration-audit-content dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .empty{background:var(--bg);border:1px dashed var(--line);border-radius:var(--radius-lg);display:grid;gap:4px;margin:14px;padding:14px}dialog{border:0;border-radius:var(--radius-lg);box-shadow:0 24px 80px rgba(15,23,42,.24);max-width:min(860px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.48)}.modal-panel{display:grid;gap:14px;padding:18px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.save-row{align-items:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}.status-icons{align-items:center;display:flex;gap:6px}.status-icon-btn{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;height:32px;justify-content:center;min-height:0;padding:0;width:32px}.status-icon-btn[data-status-option=posted].active{background:#e0f2fe;color:#0369a1}.status-icon-btn[data-status-option=reconciled].active{background:var(--success-bg);color:var(--success)}.status-icon-btn[data-status-option=planned].active{background:var(--warning-bg);color:var(--warning)}.status-label{color:var(--muted);font-size:.75rem;font-weight:600}
     @media(max-width:1279px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}.summary-totals{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:1100px){.filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}.statement-filter-actions{grid-column:1/-1}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}
