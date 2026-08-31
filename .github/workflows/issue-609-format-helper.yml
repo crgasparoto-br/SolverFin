@@ -1,0 +1,63 @@
+name: Issue 609 format helper
+
+on:
+  push:
+    branches:
+      - codex/609-statement-account-currency
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/609-statement-account-currency
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Format issue 609 files
+        run: |
+          npx prettier --write \
+            apps/web/src/dev-server.ts \
+            apps/web/src/dev-server/legacy-html-post-processors.ts \
+            apps/web/src/dev-server/ssr-style-contract.ts \
+            apps/web/src/dev-server/statement-list-archetype.ts \
+            apps/web/src/dev-server/statement-list-archetype.test.ts \
+            apps/web/src/dev-server/transactions-page-v2.ts \
+            apps/web/src/dev-server/transactions-page-v2.test.ts \
+            docs/LEGACY_HTML_POST_PROCESSORS.md \
+            docs/TRANSACTIONS.md
+
+      - name: Commit formatted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/web/src/dev-server.ts \
+            apps/web/src/dev-server/legacy-html-post-processors.ts \
+            apps/web/src/dev-server/ssr-style-contract.ts \
+            apps/web/src/dev-server/statement-list-archetype.ts \
+            apps/web/src/dev-server/statement-list-archetype.test.ts \
+            apps/web/src/dev-server/transactions-page-v2.ts \
+            apps/web/src/dev-server/transactions-page-v2.test.ts \
+            docs/LEGACY_HTML_POST_PROCESSORS.md \
+            docs/TRANSACTIONS.md
+          if git diff --cached --quiet; then
+            echo "Already formatted"
+          else
+            git commit -m "style(web): format issue 609 changes"
+            git push origin HEAD:codex/609-statement-account-currency
+          fi
