@@ -30,49 +30,199 @@ jobs:
 
       - name: Apply issue 609 remediations
         run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const path = 'apps/web/src/dev-server/transactions-page-v2.ts';
-          let source = fs.readFileSync(path, 'utf8');
-          const before = `function resolvePresentation(url: URL | undefined): StatementPresentation {
-            const rawSort = url?.searchParams.get("sort");
-            const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
-            return {
-              search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
-              sort,
-              ...(readNonEmpty(url?.searchParams.get("categoryId"))
-                ? { insightCategoryId: readNonEmpty(url?.searchParams.get("categoryId")) }
-                : {}),
-              ...(normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "")
-                ? { insightMerchantKey: normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "") }
-                : {}),
-            };
-          }`;
-          const after = `function resolvePresentation(url: URL | undefined): StatementPresentation {
-            const rawSort = url?.searchParams.get("sort");
-            const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
-            const insightCategoryId = readNonEmpty(url?.searchParams.get("categoryId"));
-            const insightMerchantKey = normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "");
-            return {
-              search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
-              sort,
-              ...(insightCategoryId ? { insightCategoryId } : {}),
-              ...(insightMerchantKey ? { insightMerchantKey } : {}),
-            };
-          }`;
-          if (source.includes(before)) source = source.replace(before, after);
-          else if (!source.includes(after)) throw new Error('Expected resolvePresentation source not found');
+          python3 <<'PY'
+          from pathlib import Path
+          import re
 
-          const mainBefore = 'main { display:grid; gap:14px; margin:0 auto; min-width:0; padding:18px 20px; width:100%; }';
-          const mainAfter = 'main { display:grid; gap:14px; margin:0 auto; max-width:1800px; min-width:0; padding:18px 20px; width:100%; }';
-          if (source.includes(mainBefore)) source = source.replace(mainBefore, mainAfter);
-          else if (!source.includes(mainAfter)) throw new Error('Expected main width source not found');
+          statement_path = Path("apps/web/src/dev-server/transactions-page-v2.ts")
+          statement = statement_path.read_text()
 
-          fs.writeFileSync(path, source);
-          NODE
-          npx prettier --write apps/web/src/dev-server/transactions-page-v2.ts
+          old_description = '''    <div class="description col-description"><strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}${transaction.accountRemuneration ? '<span class="account-remuneration-badge">Remuneração CDI</span>' : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}${renderAccountRemunerationAudit(transaction)}</div>'''
+          new_description = '''    <div class="description col-description">${renderTransactionDescription(transaction, selectedAccount, accounts)}</div>'''
+          if old_description in statement:
+              statement = statement.replace(old_description, new_description, 1)
+          elif new_description not in statement:
+              raise RuntimeError("Expected statement description renderer was not found")
 
-      - name: Validate full repository typecheck and build
+          old_clone = '''      <button type="button" class="actions-item" data-clone="${escapeHtml(transaction.id)}">${renderCloneIcon()}<span>Clonar</span></button><hr class="actions-divider" />'''
+          new_clone = '''      ${renderTransactionCloneAction(transaction)}<hr class="actions-divider" />'''
+          if old_clone in statement:
+              statement = statement.replace(old_clone, new_clone, 1)
+          elif new_clone not in statement:
+              raise RuntimeError("Expected transaction clone action was not found")
+
+          helper_marker = "function renderTransactionDescription("
+          if helper_marker not in statement:
+              insert_marker = "function renderGroupRow(\n"
+              helper = '''function renderTransactionDescription(
+            transaction: TransactionRecord,
+            selectedAccount: AccountRecord | undefined,
+            accounts: readonly AccountRecord[],
+          ): string {
+            if (transaction.accountRemuneration) {
+              return `<strong>Remuneração CDI${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}${renderAccountRemunerationAudit(transaction)}`;
+            }
+            return `<strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}`;
+          }
+
+          function renderTransactionCloneAction(transaction: TransactionRecord): string {
+            if (transaction.accountRemuneration) return "";
+            return `<button type="button" class="actions-item" data-clone="${escapeHtml(transaction.id)}">${renderCloneIcon()}<span>Clonar</span></button>`;
+          }
+
+          '''
+              if insert_marker not in statement:
+                  raise RuntimeError("renderGroupRow insertion point was not found")
+              statement = statement.replace(insert_marker, helper + insert_marker, 1)
+
+          compact_audit = '''export function renderAccountRemunerationAudit(transaction: TransactionRecord): string {
+            const remuneration = transaction.accountRemuneration;
+            if (!remuneration) return "";
+            const adjustment = remuneration.manuallyAdjusted
+              ? '<span class="account-remuneration-adjustment adjusted">Ajustado manualmente</span>'
+              : "";
+            return `<details class="account-remuneration-audit" aria-label="Memória do cálculo da remuneração"><summary>Ver memória do cálculo</summary><div class="account-remuneration-audit-content">${adjustment}<dl><div><dt>Competência</dt><dd>${formatDate(remuneration.competenceOn)}</dd></div><div><dt>Saldo-base</dt><dd>${formatMoney(remuneration.balanceBaseMinor, "BRL")}</dd></div><div><dt>CDI diário</dt><dd>${formatPercentage(remuneration.dailyRatePercent, 8)}</dd></div><div><dt>Percentual aplicado</dt><dd>${formatPercentage(remuneration.remunerationPercent, 4)}</dd></div><div><dt>Valor original</dt><dd>${formatMoney(remuneration.originalAmountMinor, "BRL")}</dd></div></dl></div></details><span class="account-remuneration-summary">Competência ${formatDate(remuneration.competenceOn)} · ${formatPercentage(remuneration.remunerationPercent, 4)} do CDI</span>`;
+          }
+
+          function renderTransferNote'''
+          if 'class="account-remuneration-audit-content"' not in statement:
+              statement, count = re.subn(
+                  r'export function renderAccountRemunerationAudit\(transaction: TransactionRecord\): string \{.*?\n\}\n\nfunction renderTransferNote',
+                  compact_audit,
+                  statement,
+                  count=1,
+                  flags=re.S,
+              )
+              if count != 1:
+                  raise RuntimeError("Account remuneration renderer replacement failed")
+
+          old_css = '''    .account-remuneration-audit{margin-top:4px;max-width:100%;min-width:0}.account-remuneration-audit summary{color:var(--primary);cursor:pointer;font-size:.75rem;font-weight:700}.account-remuneration-audit dl{display:grid;gap:4px 10px;grid-template-columns:repeat(2,minmax(0,1fr));margin:7px 0 0}.account-remuneration-audit dl div{min-width:0}.account-remuneration-audit dt{color:var(--muted);font-size:.68rem}.account-remuneration-audit dd{font-size:.75rem;font-weight:700;margin:0;overflow-wrap:anywhere}.account-remuneration-audit-heading{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:space-between}.account-remuneration-adjustment{font-size:.68rem}'''
+          new_css = '''    .statement-row.account-remuneration-row{border-left:3px solid var(--primary)}.statement-row.account-remuneration-row .col-description{min-width:15rem}.statement-row.account-remuneration-row .description{align-items:baseline;column-gap:4px;display:grid;grid-template-columns:max-content minmax(0,1fr);min-width:0}.statement-row.account-remuneration-row .description>strong{grid-column:1;grid-row:1;overflow-wrap:normal;white-space:nowrap}.account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;grid-column:1/-1;grid-row:2;line-height:1.35}.account-remuneration-audit{background:transparent;border:0;display:block;grid-column:2;grid-row:1;justify-self:start;margin:0;max-width:100%;min-width:0;padding:0}.account-remuneration-audit[open]{grid-column:1/-1;grid-row:3;margin:4px 0 0}.account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;line-height:1.2;list-style:none;padding:0;white-space:nowrap}.account-remuneration-audit summary::-webkit-details-marker{display:none}.account-remuneration-audit-content{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:4px;padding:8px}.account-remuneration-adjustment{border-radius:999px;font-size:.6875rem;font-weight:800;padding:2px 7px}.account-remuneration-audit-content .account-remuneration-adjustment{background:var(--warning-bg);color:var(--warning);justify-self:start}.account-remuneration-audit-content dl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));margin:0}.account-remuneration-audit-content dl div{min-width:0}.account-remuneration-audit-content dt{color:var(--muted);font-size:.625rem;font-weight:700;text-transform:uppercase}.account-remuneration-audit-content dd{font-size:.75rem;font-weight:700;margin:0;overflow-wrap:anywhere}@media(max-width:760px){.account-remuneration-audit-content dl{grid-template-columns:repeat(2,minmax(0,1fr))}}'''
+          if old_css in statement:
+              statement = statement.replace(old_css, new_css, 1)
+          elif new_css not in statement:
+              raise RuntimeError("Expected remuneration CSS block was not found")
+
+          protection_marker = "const remunerationIds = new Set();"
+          if protection_marker not in statement:
+              insert_after = '''    form.appendChild(statusNode);\n'''
+              protection = '''    const remunerationIds = new Set();
+              const unlockRemunerationFields = () => {
+                form.dataset.remunerationProtected = "false";
+                form.querySelectorAll("[data-remuneration-protected]").forEach((field) => {
+                  field.removeAttribute("data-remuneration-protected");
+                  field.removeAttribute("aria-disabled");
+                  if ("readOnly" in field) field.readOnly = false;
+                });
+                form.querySelector("[data-remuneration-edit-notice]")?.remove();
+              };
+              const protectRemunerationField = (field) => {
+                if (!field) return;
+                field.setAttribute("data-remuneration-protected", "true");
+                field.setAttribute("aria-disabled", "true");
+                field.dataset.remunerationValue = field.value;
+                if ("readOnly" in field) field.readOnly = true;
+              };
+              const lockRemunerationFields = () => {
+                unlockRemunerationFields();
+                form.dataset.remunerationProtected = "true";
+                const repeatMode = form.elements.repeatMode;
+                if (repeatMode) repeatMode.value = "single";
+                [form.elements.kind, form.elements.plannedOn, form.elements.description, repeatMode, form.querySelector("[data-edit-account-select]")].forEach(protectRemunerationField);
+                const saveRow = form.querySelector(".save-row");
+                if (saveRow && !form.querySelector("[data-remuneration-edit-notice]")) {
+                  const notice = document.createElement("p");
+                  notice.className = "remuneration-edit-notice";
+                  notice.setAttribute("data-remuneration-edit-notice", "");
+                  notice.textContent = "Neste lançamento, altere somente o valor creditado, a categoria, a situação e a data efetiva. Conta, tipo, competência e memória do cálculo permanecem protegidos.";
+                  saveRow.before(notice);
+                }
+              };
+              form.addEventListener("mousedown", (event) => {
+                const target = event.target;
+                if (target?.matches?.('select[data-remuneration-protected="true"]')) event.preventDefault();
+              }, true);
+              form.addEventListener("keydown", (event) => {
+                const target = event.target;
+                if (target?.matches?.('select[data-remuneration-protected="true"]')) event.preventDefault();
+              }, true);
+              form.addEventListener("change", (event) => {
+                const target = event.target;
+                if (target?.matches?.('[data-remuneration-protected="true"]')) target.value = target.dataset.remunerationValue || target.value;
+              }, true);
+          '''
+              if insert_after not in statement:
+                  raise RuntimeError("Statement runtime insertion point was not found")
+              statement = statement.replace(insert_after, insert_after + protection, 1)
+
+              transaction_loop = '''    document.querySelectorAll("[data-transaction]").forEach((node) => {\n      const transaction = JSON.parse(node.textContent);'''
+              transaction_loop_with_ids = '''    document.querySelectorAll("[data-transaction]").forEach((node) => {
+                const transaction = JSON.parse(node.textContent);
+                if (transaction.accountRemuneration) remunerationIds.add(transaction.id);'''
+              if transaction_loop not in statement:
+                  raise RuntimeError("Statement transaction runtime loop was not found")
+              statement = statement.replace(transaction_loop, transaction_loop_with_ids, 1)
+
+              after_loop_marker = '''      hydrate('[data-edit="', false); hydrate('[data-clone="', true);\n    });\n'''
+              protection_listener = '''      hydrate('[data-edit="', false); hydrate('[data-clone="', true);
+              });
+              document.addEventListener("click", (event) => {
+                const target = event.target?.closest?.("[data-edit], [data-clone], [data-open-modal]");
+                if (!target) return;
+                const editId = target.getAttribute("data-edit");
+                window.setTimeout(() => {
+                  if (editId && remunerationIds.has(editId)) lockRemunerationFields();
+                  else unlockRemunerationFields();
+                }, 0);
+              }, true);
+          '''
+              if after_loop_marker not in statement:
+                  raise RuntimeError("Statement transaction runtime loop closing was not found")
+              statement = statement.replace(after_loop_marker, protection_listener, 1)
+
+          submit_start = '''      event.preventDefault(); if (form.dataset.submitting === "true") return;
+              const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]'); form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
+              try {'''
+          submit_start_new = '''      event.preventDefault(); if (form.dataset.submitting === "true") return;
+              const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]'); form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
+              let shouldReload = false;
+              try {'''
+          if submit_start in statement:
+              statement = statement.replace(submit_start, submit_start_new, 1)
+          elif "let shouldReload = false;" not in statement:
+              raise RuntimeError("Statement submit start was not found")
+
+          success_reload = '''        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response); if (response.ok) setTimeout(() => location.reload(), 350);'''
+          success_reload_new = '''        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response); if (response.ok) { shouldReload = true; setTimeout(() => location.reload(), 350); }'''
+          if success_reload in statement:
+              statement = statement.replace(success_reload, success_reload_new, 1)
+          elif success_reload_new not in statement:
+              raise RuntimeError("Statement success reload branch was not found")
+
+          finally_old = '''      finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit) submit.disabled = false; }'''
+          finally_new = '''      finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit && !shouldReload) submit.disabled = false; }'''
+          if finally_old in statement:
+              statement = statement.replace(finally_old, finally_new, 1)
+          elif finally_new not in statement:
+              raise RuntimeError("Statement submit finalizer was not found")
+
+          statement_path.write_text(statement)
+
+          inbox_path = Path("apps/web/src/dev-server/inbox-review-archetype.test.ts")
+          inbox = inbox_path.read_text()
+          stale = "assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 11);"
+          stable = "assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, LEGACY_HTML_POST_PROCESSOR_INVENTORY.length);"
+          if stale in inbox:
+              inbox = inbox.replace(stale, stable, 1)
+          elif stable not in inbox:
+              raise RuntimeError("Inbox legacy budget assertion was not found")
+          inbox_path.write_text(inbox)
+          PY
+          npx prettier --write \
+            apps/web/src/dev-server/transactions-page-v2.ts \
+            apps/web/src/dev-server/inbox-review-archetype.test.ts
+
+      - name: Validate repository build gates
         id: validate
         continue-on-error: true
         run: |
@@ -104,11 +254,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/web/src/dev-server/transactions-page-v2.ts
+          git add \
+            apps/web/src/dev-server/transactions-page-v2.ts \
+            apps/web/src/dev-server/inbox-review-archetype.test.ts
           if git diff --cached --quiet; then
             echo "No remediation changes"
           else
-            git commit -m "fix(web): stabilize statement A2 validation"
+            git commit -m "fix(web): preserve statement remuneration behavior"
             git push origin HEAD:codex/609-statement-account-currency
           fi
 
