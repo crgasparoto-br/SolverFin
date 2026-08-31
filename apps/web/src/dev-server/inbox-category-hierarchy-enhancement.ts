@@ -260,7 +260,8 @@ export function enhanceInboxReviewArchetype(html: string): string {
             row.hidden = !matches;
             if (matches) visible += 1;
           });
-          counter.textContent = visible + " de " + rows.length + " linha(s)";
+          const nextCounterText = visible + " de " + rows.length + " linha(s)";
+          if (counter.textContent !== nextCounterText) counter.textContent = nextCounterText;
           if (syncUrl) syncDateUrl(startsOn, endsOn);
         };
         const ensureDateFilters = () => {

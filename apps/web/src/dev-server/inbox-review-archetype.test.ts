@@ -64,6 +64,19 @@ describe("Inbox review archetype", () => {
     assert.match(html, /class="panel import-workspace inbox-review-evidence"/);
   });
 
+  it("keeps the date-filter mutation observer from rescheduling itself indefinitely", () => {
+    const html = enhanceInboxReviewArchetype(inboxFixture);
+
+    assert.match(
+      html,
+      /const nextCounterText = visible \+ " de " \+ rows\.length \+ " linha\(s\)";/,
+    );
+    assert.match(
+      html,
+      /if \(counter\.textContent !== nextCounterText\) counter\.textContent = nextCounterText;/,
+    );
+  });
+
   it("is idempotent so repeated composition does not duplicate review surfaces", () => {
     const once = enhanceInboxReviewArchetype(inboxFixture);
     const twice = enhanceInboxReviewArchetype(once);
