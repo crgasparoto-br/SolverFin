@@ -46,14 +46,20 @@ function inboxAccessibilityStyles(): string {
     .inbox-page .import-layout {
       gap: 0 !important;
     }
-    .inbox-page .import-batch-list,
+    .inbox-page .import-batch-list {
+      align-items: stretch;
+      display: flex !important;
+      flex-direction: column;
+      gap: 0 !important;
+    }
     .inbox-page .import-rows {
       gap: 0 !important;
     }
     .inbox-page .batch-item {
       border-radius: 0 !important;
+      flex: 0 0 auto;
       gap: 1px !important;
-      min-height: 34px !important;
+      min-height: 54px !important;
     }
     .inbox-page .bulk-actions {
       min-height: 36px;
