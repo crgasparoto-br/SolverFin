@@ -99,7 +99,8 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
 
   if (!transactionResult.ok) return renderErrorPage(transactionResult.error);
 
-  const groups = groupsResult.ok && Array.isArray(groupsResult.data?.groups) ? groupsResult.data.groups : [];
+  const groups =
+    groupsResult.ok && Array.isArray(groupsResult.data?.groups) ? groupsResult.data.groups : [];
   const transactions = projectTransactionGroups(
     transactionResult.data.transactions.filter(isAccountStatementTransaction),
     groups,
@@ -125,7 +126,12 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     presentation,
     url,
   );
-  const contextHtml = renderStatementContext(selectedAccount, currency, filters.startsOn, filters.endsOn);
+  const contextHtml = renderStatementContext(
+    selectedAccount,
+    currency,
+    filters.startsOn,
+    filters.endsOn,
+  );
   const statusHtml = renderInsightContext(presentation);
   const summaryHtml = renderSummaryPanel(summary, selectedAccount, currency);
   const listHtml = renderStatementList(
@@ -181,7 +187,10 @@ function filterRowsForPresentation(
   const search = normalizeSearch(presentation.search);
   return rows.filter((row) => {
     const transaction = row.transaction;
-    if (presentation.insightCategoryId && transaction.categoryId !== presentation.insightCategoryId) {
+    if (
+      presentation.insightCategoryId &&
+      transaction.categoryId !== presentation.insightCategoryId
+    ) {
       return false;
     }
     if (
@@ -195,20 +204,29 @@ function filterRowsForPresentation(
     }
     if (!search) return true;
     const category = transaction.categoryId
-      ? categories.find((candidate) => candidate.id === transaction.categoryId)?.name ?? ""
+      ? (categories.find((candidate) => candidate.id === transaction.categoryId)?.name ?? "")
       : "";
-    return normalizeSearch(`${transaction.description} ${category} ${transaction.kind} ${transaction.status}`).includes(search);
+    return normalizeSearch(
+      `${transaction.description} ${category} ${transaction.kind} ${transaction.status}`,
+    ).includes(search);
   });
 }
 
 function sortRows(rows: readonly StatementRow[], sort: StatementSort): StatementRow[] {
   const sorted = [...rows];
   sorted.sort((left, right) => {
-    if (sort === "date_desc") return statementDate(right.transaction).localeCompare(statementDate(left.transaction));
+    if (sort === "date_desc")
+      return statementDate(right.transaction).localeCompare(statementDate(left.transaction));
     if (sort === "amount_desc") return Math.abs(right.amountMinor) - Math.abs(left.amountMinor);
     if (sort === "amount_asc") return Math.abs(left.amountMinor) - Math.abs(right.amountMinor);
-    if (sort === "description_desc") return right.transaction.description.localeCompare(left.transaction.description, "pt-BR", { sensitivity: "base" });
-    if (sort === "description_asc") return left.transaction.description.localeCompare(right.transaction.description, "pt-BR", { sensitivity: "base" });
+    if (sort === "description_desc")
+      return right.transaction.description.localeCompare(left.transaction.description, "pt-BR", {
+        sensitivity: "base",
+      });
+    if (sort === "description_asc")
+      return left.transaction.description.localeCompare(right.transaction.description, "pt-BR", {
+        sensitivity: "base",
+      });
     return statementDate(left.transaction).localeCompare(statementDate(right.transaction));
   });
   return sorted;
@@ -231,7 +249,15 @@ function renderFilters(
   presentation: StatementPresentation,
   url: URL | undefined,
 ): string {
-  const preserved = ["profileId", "currency", "kind", "evidence", "day", "categoryId", "merchantKey"]
+  const preserved = [
+    "profileId",
+    "currency",
+    "kind",
+    "evidence",
+    "day",
+    "categoryId",
+    "merchantKey",
+  ]
     .map((name) => {
       const value = url?.searchParams.get(name);
       return value ? `<input type="hidden" name="${name}" value="${escapeHtml(value)}">` : "";
@@ -273,7 +299,10 @@ function renderSortOptions(selected: StatementSort): string {
     ["description_desc", "Descrição: Z–A"],
   ];
   return options
-    .map(([value, label]) => `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
     .join("");
 }
 
@@ -303,7 +332,9 @@ function renderInsightContext(presentation: StatementPresentation): string {
   if (!presentation.insightCategoryId && !presentation.insightMerchantKey) return "";
   const filters = [
     presentation.insightCategoryId ? "a categoria indicada pelo insight" : undefined,
-    presentation.insightMerchantKey ? `o estabelecimento ${presentation.insightMerchantKey}` : undefined,
+    presentation.insightMerchantKey
+      ? `o estabelecimento ${presentation.insightMerchantKey}`
+      : undefined,
   ].filter((value): value is string => Boolean(value));
   return `<p class="statement-insight-context" data-insight-context role="status"><strong>Filtro do insight ativo:</strong> mostrando lançamentos compatíveis com ${escapeHtml(filters.join(" e "))}. O resumo da conta permanece completo.</p>`;
 }
@@ -318,14 +349,23 @@ function renderStatementList(
   currency: string | undefined,
   sort: StatementSort,
 ): string {
-  const body = rows.length > 0
-    ? renderRowsWithTemporalGroups(rows, selectedAccount, accounts, categories, recurrences, currency, sort)
-    : emptyState(
-        selectedAccount ? "Nenhum lançamento neste recorte." : "Selecione uma conta.",
-        selectedAccount
-          ? "Altere o período ou os filtros, ou crie um lançamento para acompanhar a movimentação."
-          : "O extrato é sempre exibido por conta bancária.",
-      );
+  const body =
+    rows.length > 0
+      ? renderRowsWithTemporalGroups(
+          rows,
+          selectedAccount,
+          accounts,
+          categories,
+          recurrences,
+          currency,
+          sort,
+        )
+      : emptyState(
+          selectedAccount ? "Nenhum lançamento neste recorte." : "Selecione uma conta.",
+          selectedAccount
+            ? "Altere o período ou os filtros, ou crie um lançamento para acompanhar a movimentação."
+            : "O extrato é sempre exibido por conta bancária.",
+        );
   return `<section class="panel statement-panel" aria-labelledby="statement-list-title">
     <div class="statement-toolbar">
       <div><p class="eyebrow">Movimentações</p><h2 id="statement-list-title">${selectedAccount ? `Extrato de ${escapeHtml(selectedAccount.name)}` : "Extrato"}</h2></div>
@@ -358,9 +398,10 @@ function renderRowsWithTemporalGroups(
   return rows
     .map((row) => {
       const date = statementDate(row.transaction);
-      const separator = groupByDate && date !== previousDate
-        ? `<div class="statement-date-group" data-statement-date-group="${escapeHtml(date)}"><span>${formatDate(date)}</span><span>${escapeHtml(resolveEvidenceLabel(row.transaction))}</span></div>`
-        : "";
+      const separator =
+        groupByDate && date !== previousDate
+          ? `<div class="statement-date-group" data-statement-date-group="${escapeHtml(date)}"><span>${formatDate(date)}</span><span>${escapeHtml(resolveEvidenceLabel(row.transaction))}</span></div>`
+          : "";
       previousDate = date;
       return `${separator}${renderRow(row, selectedAccount, accounts, categories, recurrences, currency)}`;
     })
@@ -383,7 +424,8 @@ function renderRow(
   const currency = resolveTransactionCurrency(transaction, accountCurrency);
   if (transaction.group) return renderGroupRow(row, transaction.group, currency);
   const categoryName = transaction.categoryId
-    ? categories.find((category) => category.id === transaction.categoryId)?.name ?? "Categoria não localizada"
+    ? (categories.find((category) => category.id === transaction.categoryId)?.name ??
+      "Categoria não localizada")
     : "Sem categoria";
   const nextStatus = transaction.status === "reconciled" ? "posted" : "reconciled";
   const date = statementDate(transaction);
@@ -418,7 +460,11 @@ function renderRow(
   </article>`;
 }
 
-function renderGroupRow(row: StatementRow, group: TransactionGroupRecord, currency: string | undefined): string {
+function renderGroupRow(
+  row: StatementRow,
+  group: TransactionGroupRecord,
+  currency: string | undefined,
+): string {
   return `<article class="statement-row statement-body grouped-row" role="row" data-group-row="${escapeHtml(group.id)}">
     <span class="col-select group-indicator" aria-label="Grupo de lançamentos">&#128279;</span>
     <time class="col-date" datetime="${escapeHtml(group.displayOn)}">${formatDate(group.displayOn)}</time>
@@ -437,26 +483,48 @@ export function renderAccountRemunerationAudit(transaction: TransactionRecord): 
   return `<details class="account-remuneration-audit" aria-label="Memória do cálculo da remuneração"><summary>Ver memória do cálculo</summary><div class="account-remuneration-audit-heading"><strong>Memória do cálculo</strong><span class="account-remuneration-adjustment ${remuneration.manuallyAdjusted ? "adjusted" : "original"}">${remuneration.manuallyAdjusted ? "Ajustado manualmente" : "Valor original"}</span></div><dl><div><dt>Competência</dt><dd>${formatDate(remuneration.competenceOn)}</dd></div><div><dt>Saldo-base</dt><dd>${formatMoney(remuneration.balanceBaseMinor, "BRL")}</dd></div><div><dt>CDI diário</dt><dd>${formatPercentage(remuneration.dailyRatePercent, 8)}</dd></div><div><dt>Percentual aplicado</dt><dd>${formatPercentage(remuneration.remunerationPercent, 4)}</dd></div><div><dt>Valor original</dt><dd>${formatMoney(remuneration.originalAmountMinor, "BRL")}</dd></div></dl></details>`;
 }
 
-function renderTransferNote(transaction: TransactionRecord, selectedAccount: AccountRecord | undefined, accounts: readonly AccountRecord[]): string {
+function renderTransferNote(
+  transaction: TransactionRecord,
+  selectedAccount: AccountRecord | undefined,
+  accounts: readonly AccountRecord[],
+): string {
   if (transaction.kind !== "transfer") return "";
   const origin = accounts.find((account) => account.id === transaction.accountId)?.name;
-  const destination = accounts.find((account) => account.id === transaction.destinationAccountId)?.name;
-  const text = selectedAccount?.id === transaction.destinationAccountId
-    ? `Recebida de ${origin ?? "outra conta"}`
-    : `Enviada para ${destination ?? "outra conta"}`;
+  const destination = accounts.find(
+    (account) => account.id === transaction.destinationAccountId,
+  )?.name;
+  const text =
+    selectedAccount?.id === transaction.destinationAccountId
+      ? `Recebida de ${origin ?? "outra conta"}`
+      : `Enviada para ${destination ?? "outra conta"}`;
   return `<span>${escapeHtml(text)}</span>`;
 }
 
-function renderSummaryPanel(summary: StatementSummary, selectedAccount: AccountRecord | undefined, currency: string | undefined): string {
-  const money = (value: number) => currency ? formatMoney(value, currency) : "Moeda indisponível";
+function renderSummaryPanel(
+  summary: StatementSummary,
+  selectedAccount: AccountRecord | undefined,
+  currency: string | undefined,
+): string {
+  const money = (value: number) => (currency ? formatMoney(value, currency) : "Moeda indisponível");
   return `<aside class="panel account-summary" aria-label="Resumo da conta"><div><p class="eyebrow">Resumo da Conta</p><h2>${escapeHtml(selectedAccount?.name ?? "Selecione uma conta")}</h2>${currency ? `<span class="statement-context-pill" data-context="summary-currency">${escapeHtml(currency)}</span>` : ""}</div><section class="summary-balance"><span>Saldo atual</span><strong class="${summary.effectiveBalanceMinor < 0 ? "debit" : "credit"}">${money(summary.effectiveBalanceMinor)}</strong><p>Saldo efetivo com lançamentos realizados.</p></section><div class="summary-totals">${summaryTotal("Receitas", summary.incomeMinor, "credit", currency)}${summaryTotal("Despesas", -summary.expenseMinor, "debit", currency)}</div><section class="status-overview" aria-label="Status dos lançamentos"><h3>Status</h3>${statusLine("Conciliados", summary.reconciledCount, summary.reconciledMinor, "ok", currency)}${statusLine("Não conciliados", summary.unreconciledCount, summary.unreconciledMinor, "posted", currency)}${statusLine("Pendentes", summary.pendingCount, summary.pendingMinor, "pending", currency)}</section></aside>`;
 }
 
-function summaryTotal(label: string, amountMinor: number, tone: string, currency: string | undefined): string {
+function summaryTotal(
+  label: string,
+  amountMinor: number,
+  tone: string,
+  currency: string | undefined,
+): string {
   return `<div class="summary-total"><span>${escapeHtml(label)}</span><strong class="${tone}">${currency ? formatMoney(amountMinor, currency) : "Moeda indisponível"}</strong></div>`;
 }
 
-function statusLine(label: string, count: number, amountMinor: number, tone: string, currency: string | undefined): string {
+function statusLine(
+  label: string,
+  count: number,
+  amountMinor: number,
+  tone: string,
+  currency: string | undefined,
+): string {
   return `<div class="status-line"><span class="chip chip-${tone}">${count}</span><p>${escapeHtml(label)}</p><strong>${currency ? formatMoney(amountMinor, currency) : "Moeda indisponível"}</strong></div>`;
 }
 
@@ -464,8 +532,14 @@ function chip(label: string, count: number, tone: string): string {
   return `<span class="chip chip-${tone}"><strong>${count}</strong>${escapeHtml(label)}</span>`;
 }
 
-function renderAccountPicker(accounts: readonly AccountRecord[], selectedAccount: AccountRecord | undefined, selectedId: string | undefined): string {
-  const triggerIcon = selectedAccount ? renderInstitutionIcon(findInstitution(selectedAccount.institutionKey).key) : renderInstitutionIcon("");
+function renderAccountPicker(
+  accounts: readonly AccountRecord[],
+  selectedAccount: AccountRecord | undefined,
+  selectedId: string | undefined,
+): string {
+  const triggerIcon = selectedAccount
+    ? renderInstitutionIcon(findInstitution(selectedAccount.institutionKey).key)
+    : renderInstitutionIcon("");
   return `<div class="account-field" data-account-picker><label id="account-picker-label">Conta</label><div class="account-select"><button type="button" class="account-select-trigger" data-account-trigger aria-haspopup="listbox" aria-expanded="false" aria-labelledby="account-picker-label"><span class="account-select-icon">${triggerIcon}</span><span class="account-select-text">${selectedAccount ? `${escapeHtml(selectedAccount.name)} · ${escapeHtml(resolveAccountCurrency(selectedAccount) ?? "Moeda indisponível")}` : "Selecione uma conta"}</span><svg class="account-select-chevron" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><input type="hidden" name="accountId" value="${escapeHtml(selectedId ?? "")}" required data-account-input /><ul class="account-select-menu" role="listbox" hidden data-account-menu aria-labelledby="account-picker-label">${accounts.map((account) => renderAccountOption(account, selectedId)).join("")}</ul></div></div>`;
 }
 
@@ -475,21 +549,40 @@ function renderAccountOption(account: AccountRecord, selected?: string): string 
   return `<li role="option" tabindex="-1" data-account-option="${escapeHtml(account.id)}" data-account-name="${escapeHtml(account.name)}" data-account-currency="${escapeHtml(currency ?? "")}" aria-selected="${selected === account.id}"><span class="account-select-icon">${renderInstitutionIcon(institution.key)}</span><span>${escapeHtml(account.name)}${currency ? ` · ${escapeHtml(currency)}` : " · moeda indisponível"}</span></li>`;
 }
 
-function renderModal(selectedAccount: AccountRecord | undefined, accounts: readonly AccountRecord[], categories: readonly CategoryRecord[], currency: string | undefined): string {
+function renderModal(
+  selectedAccount: AccountRecord | undefined,
+  accounts: readonly AccountRecord[],
+  categories: readonly CategoryRecord[],
+  currency: string | undefined,
+): string {
   return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit">Fechar</button></form><div><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>${selectedAccount ? `Novo lançamento em ${escapeHtml(selectedAccount.name)}` : "Selecione uma conta"}</h2><p class="muted">Conta e moeda vêm do contexto principal.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label>Tipo<select name="kind" required>${renderKindOptions()}</select></label><label>Valor (${escapeHtml(currency ?? "moeda indisponível")})<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label>Data prevista<input name="plannedOn" type="date" required /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label data-field="destinationAccountId">Conta destino<select name="destinationAccountId"><option value="">Apenas transferência</option>${renderAccountOptions(accounts)}</select></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label><label class="full">Descrição<input name="description" maxlength="240" required /></label><label class="full">Observação<textarea name="note" rows="3"></textarea></label><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form></section></dialog>`;
 }
 
-function renderGroupModal(selectedAccount: AccountRecord | undefined, currency: string | undefined): string {
+function renderGroupModal(
+  selectedAccount: AccountRecord | undefined,
+  currency: string | undefined,
+): string {
   return `<dialog class="modal" data-group-modal><section class="modal-panel group-modal-panel"><header><div><p class="eyebrow">Agrupamento</p><h2 data-group-title>Unificar lançamentos</h2></div><button type="button" class="icon-btn" data-group-close aria-label="Fechar">&times;</button></header><form data-group-form><label>Descrição do grupo<input name="description" maxlength="240" required></label><label>Data de exibição<input name="displayOn" type="date" required></label><label>Conta<input value="${escapeHtml(selectedAccount?.name ?? "")}" readonly></label><label>Moeda<input value="${escapeHtml(currency ?? "Moeda indisponível")}" readonly></label><div class="group-readonly" data-group-summary></div><div class="group-members" data-group-members></div><p class="form-error" data-group-error hidden></p><div class="save-row"><button type="button" class="ghost-btn" data-group-close>Cancelar</button><button type="submit">Unificar</button><button type="button" class="danger" data-group-ungroup hidden>Desagrupar lançamentos</button></div></form></section></dialog>`;
 }
 
 function renderCategoryOptions(categories: readonly CategoryRecord[], selected?: string): string {
-  return buildCategoryHierarchy(categories).map(({ category, depth }) => `<option value="${escapeHtml(category.id)}" data-kind="${escapeHtml(category.kind)}"${selected === category.id ? " selected" : ""}>${depth > 0 ? "  ".repeat(depth) + "↳ " : ""}${escapeHtml(category.name)}</option>`).join("");
+  return buildCategoryHierarchy(categories)
+    .map(
+      ({ category, depth }) =>
+        `<option value="${escapeHtml(category.id)}" data-kind="${escapeHtml(category.kind)}"${selected === category.id ? " selected" : ""}>${depth > 0 ? "  ".repeat(depth) + "↳ " : ""}${escapeHtml(category.name)}</option>`,
+    )
+    .join("");
 }
 
-function buildCategoryHierarchy(categories: readonly CategoryRecord[]): { category: CategoryRecord; depth: number }[] {
+function buildCategoryHierarchy(
+  categories: readonly CategoryRecord[],
+): { category: CategoryRecord; depth: number }[] {
   const childrenByParent = new Map<string | undefined, CategoryRecord[]>();
-  for (const category of categories) childrenByParent.set(category.parentCategoryId, [...(childrenByParent.get(category.parentCategoryId) ?? []), category]);
+  for (const category of categories)
+    childrenByParent.set(category.parentCategoryId, [
+      ...(childrenByParent.get(category.parentCategoryId) ?? []),
+      category,
+    ]);
   const rows: { category: CategoryRecord; depth: number }[] = [];
   const walk = (parentId: string | undefined, depth: number): void => {
     for (const category of childrenByParent.get(parentId) ?? []) {
@@ -502,11 +595,22 @@ function buildCategoryHierarchy(categories: readonly CategoryRecord[]): { catego
 }
 
 function renderKindOptions(): string {
-  return [["income", "Entrada"], ["expense", "Saída"], ["transfer", "Transferência"]].map(([value, label]) => `<option value="${value}">${label}</option>`).join("");
+  return [
+    ["income", "Entrada"],
+    ["expense", "Saída"],
+    ["transfer", "Transferência"],
+  ]
+    .map(([value, label]) => `<option value="${value}">${label}</option>`)
+    .join("");
 }
 
 function renderAccountOptions(accounts: readonly AccountRecord[]): string {
-  return accounts.map((account) => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)} · ${escapeHtml(resolveAccountCurrency(account) ?? "moeda indisponível")}</option>`).join("");
+  return accounts
+    .map(
+      (account) =>
+        `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)} · ${escapeHtml(resolveAccountCurrency(account) ?? "moeda indisponível")}</option>`,
+    )
+    .join("");
 }
 
 function renderStatusIcon(value: string, label: string, iconPaths: string): string {
@@ -516,9 +620,15 @@ function renderStatusIcon(value: string, label: string, iconPaths: string): stri
 function renderDotsIcon(): string {
   return `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="5" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="19" r="1.9" fill="currentColor"/></svg>`;
 }
-function renderEditIcon(): string { return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`; }
-function renderCloneIcon(): string { return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" fill="none" stroke="currentColor" stroke-width="2"/></svg>`; }
-function renderTrashIcon(): string { return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
+function renderEditIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>`;
+}
+function renderCloneIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+}
+function renderTrashIcon(): string {
+  return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
 function renderReconcileIcon(isReconciled: boolean): string {
   return isReconciled
     ? `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 14 5 10l4-4M5 10h9a5 5 0 1 1 0 10h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
@@ -641,19 +751,33 @@ function clientScript(currency: string | undefined): string {
 }
 
 function renderShell(content: string): string {
-  return renderAuthenticatedShellDocument({ activePathname: "/lancamentos", content, currentLabel: "Extrato bancário", styles: css() });
+  return renderAuthenticatedShellDocument({
+    activePathname: "/lancamentos",
+    content,
+    currentLabel: "Extrato bancário",
+    styles: css(),
+  });
 }
 
 function renderErrorPage(error: string): string {
-  return renderShell(`<section class="panel"><p class="eyebrow">Erro ao carregar dados</p><h1>Lançamentos</h1><p class="error">${escapeHtml(error)}</p><a class="button-link" href="/lancamentos">Tentar novamente</a></section>`);
+  return renderShell(
+    `<section class="panel"><p class="eyebrow">Erro ao carregar dados</p><h1>Lançamentos</h1><p class="error">${escapeHtml(error)}</p><a class="button-link" href="/lancamentos">Tentar novamente</a></section>`,
+  );
 }
 
 function resolveAccountCurrency(account: AccountRecord | undefined): string | undefined {
   return normalizeCurrency(account?.currency);
 }
 
-function resolveTransactionCurrency(transaction: TransactionRecord, accountCurrency: string | undefined): string | undefined {
-  return normalizeCurrency(transaction.group?.currency) ?? normalizeCurrency(transaction.currency) ?? accountCurrency;
+function resolveTransactionCurrency(
+  transaction: TransactionRecord,
+  accountCurrency: string | undefined,
+): string | undefined {
+  return (
+    normalizeCurrency(transaction.group?.currency) ??
+    normalizeCurrency(transaction.currency) ??
+    accountCurrency
+  );
 }
 
 function normalizeCurrency(value: string | undefined): string | undefined {
@@ -664,17 +788,72 @@ function normalizeCurrency(value: string | undefined): string | undefined {
 function formatMoney(amountMinor: number, currency: string): string {
   return formatMinorCurrency(amountMinor, { currency });
 }
-function formatDate(value: string): string { return formatDateOnly(value); }
-function formatPercentage(value: number, maximumFractionDigits: number): string { return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits }).format(value)}%`; }
-function formatKind(kind: string): string { return kind === "income" ? "Entrada" : kind === "expense" ? "Saída" : kind === "transfer" ? "Transferência" : kind; }
-function resolveEvidenceLabel(transaction: TransactionRecord): string { return transaction.effectiveOn ? "Efetivo" : transaction.plannedOn ? "Previsto" : "Evento"; }
-function emptyState(title: string, description: string): string { return `<div class="empty"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(description)}</p></div>`; }
-function readNonEmpty(value: string | null | undefined): string | undefined { const normalized = value?.trim(); return normalized ? normalized : undefined; }
-function normalizeSearch(value: string): string { return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim(); }
-function normalizeMerchantKey(value: string): string | undefined { const normalized = value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\d+/g, " ").replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120); return normalized.length < 3 ? undefined : normalized; }
-function isStatementSort(value: string | null | undefined): value is StatementSort { return value === "date_asc" || value === "date_desc" || value === "amount_desc" || value === "amount_asc" || value === "description_asc" || value === "description_desc"; }
-function escapeHtml(value: string): string { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
-function serializeScriptJson(value: unknown): string { return JSON.stringify(value).replace(/</g, "\\u003c"); }
+function formatDate(value: string): string {
+  return formatDateOnly(value);
+}
+function formatPercentage(value: number, maximumFractionDigits: number): string {
+  return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits }).format(value)}%`;
+}
+function formatKind(kind: string): string {
+  return kind === "income"
+    ? "Entrada"
+    : kind === "expense"
+      ? "Saída"
+      : kind === "transfer"
+        ? "Transferência"
+        : kind;
+}
+function resolveEvidenceLabel(transaction: TransactionRecord): string {
+  return transaction.effectiveOn ? "Efetivo" : transaction.plannedOn ? "Previsto" : "Evento";
+}
+function emptyState(title: string, description: string): string {
+  return `<div class="empty"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(description)}</p></div>`;
+}
+function readNonEmpty(value: string | null | undefined): string | undefined {
+  const normalized = value?.trim();
+  return normalized ? normalized : undefined;
+}
+function normalizeSearch(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function normalizeMerchantKey(value: string): string | undefined {
+  const normalized = value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\d+/g, " ")
+    .replace(/[^a-z\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 120);
+  return normalized.length < 3 ? undefined : normalized;
+}
+function isStatementSort(value: string | null | undefined): value is StatementSort {
+  return (
+    value === "date_asc" ||
+    value === "date_desc" ||
+    value === "amount_desc" ||
+    value === "amount_asc" ||
+    value === "description_asc" ||
+    value === "description_desc"
+  );
+}
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+function serializeScriptJson(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
 
 function css(): string {
   return `${sharedShellStyles()}${statementListArchetypeStyles()}

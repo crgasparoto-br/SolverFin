@@ -24,17 +24,17 @@ Um adapter legado pode permanecer apenas enquanto tiver ID, rota, ordem, dono, r
 
 ## Inventário residual
 
-| Rota              | Ordem | Dono                 | ID                                | Responsabilidade                                             | Migração                |
-| ----------------- | ----: | -------------------- | --------------------------------- | ------------------------------------------------------------ | ----------------------- |
-| `/contas-cartoes` |     1 | `web-accounts-cards` | `accounts-cards-tabs`             | Completar filtros, estilos e runtime das abas após o render. | `component-props-slots` |
-| `/contas-cartoes` |     2 | `web-accounts-cards` | `accounts-cards-standardization`  | Normalizar markup/classes da master.                         | `component-props-slots` |
-| `/contas-cartoes` |     3 | `web-accounts-cards` | `accounts-cards-action-menus`     | Montar menus de ações, estilos e runtime.                    | `component-props-slots` |
-| `/categorias`     |     1 | `web-categories`     | `categories-icons-tooltips`       | Decorar categorias com ícones e tooltips.                    | `component-props-slots` |
-| `/cartoes`        |     1 | `web-cards`          | `card-list-sorting`               | Reordenar a lista de cartões.                                | `view-model-schema`     |
-| `/cartoes`        |     2 | `web-cards`          | `card-instrument-subtotals`       | Inserir subtotais por instrumento.                           | `view-model-schema`     |
-| `/cartoes`        |     3 | `web-cards`          | `cards-interface`                 | Completar estrutura/runtime da interface.                    | `component-props-slots` |
-| `/cartoes`        |     4 | `web-cards`          | `cards-interface-finalizer`       | Aplicar ajustes finais dependentes do markup.                | `component-props-slots` |
-| `/lancamentos`    |     1 | `web-statement`      | `account-remuneration-disclosure` | Preservar temporariamente seleção em massa, agrupamentos e disclosure de remuneração enquanto o último runtime é extraído do legado. | `temporary-processor` |
+| Rota              | Ordem | Dono                 | ID                                | Responsabilidade                                                                                                                     | Migração                |
+| ----------------- | ----: | -------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| `/contas-cartoes` |     1 | `web-accounts-cards` | `accounts-cards-tabs`             | Completar filtros, estilos e runtime das abas após o render.                                                                         | `component-props-slots` |
+| `/contas-cartoes` |     2 | `web-accounts-cards` | `accounts-cards-standardization`  | Normalizar markup/classes da master.                                                                                                 | `component-props-slots` |
+| `/contas-cartoes` |     3 | `web-accounts-cards` | `accounts-cards-action-menus`     | Montar menus de ações, estilos e runtime.                                                                                            | `component-props-slots` |
+| `/categorias`     |     1 | `web-categories`     | `categories-icons-tooltips`       | Decorar categorias com ícones e tooltips.                                                                                            | `component-props-slots` |
+| `/cartoes`        |     1 | `web-cards`          | `card-list-sorting`               | Reordenar a lista de cartões.                                                                                                        | `view-model-schema`     |
+| `/cartoes`        |     2 | `web-cards`          | `card-instrument-subtotals`       | Inserir subtotais por instrumento.                                                                                                   | `view-model-schema`     |
+| `/cartoes`        |     3 | `web-cards`          | `cards-interface`                 | Completar estrutura/runtime da interface.                                                                                            | `component-props-slots` |
+| `/cartoes`        |     4 | `web-cards`          | `cards-interface-finalizer`       | Aplicar ajustes finais dependentes do markup.                                                                                        | `component-props-slots` |
+| `/lancamentos`    |     1 | `web-statement`      | `account-remuneration-disclosure` | Preservar temporariamente seleção em massa, agrupamentos e disclosure de remuneração enquanto o último runtime é extraído do legado. | `temporary-processor`   |
 
 Os critérios completos de substituição e os fallbacks ficam no inventário TypeScript para que testes e revisão trabalhem sobre a mesma fonte.
 
