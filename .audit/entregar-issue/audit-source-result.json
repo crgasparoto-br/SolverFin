@@ -1,29 +1,51 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "result": "rejected",
-  "result_validity": "INDEPENDENT",
-  "releases_merge": "no",
-  "rejection_id": "audit-rejection:614-inbox-mobile-evidence-list-overlap",
-  "head_sha": "4e8bac07c1e2589781216b77784b8e7970432ce5",
-  "base_sha": "f009b6201da2bca78d03e459af0034f03bf4d43b",
-  "identity": {
-    "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 614,
-    "pull_request_number": 648,
-    "head_sha": "4e8bac07c1e2589781216b77784b8e7970432ce5"
-  },
+  "mode": "independent",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue_number": 614,
+  "pull_request_number": 648,
+  "head_sha": "041b4bc4624430eb1127dc6629baac5c3a700350",
+  "published_handoff_head_sha": "48c204f867e239d0ac44e78138f3ea92809b6e8e",
+  "rejection_id": "audit-rejection:614-phase3b-textual-postprocessor",
   "findings": [
     {
-      "id": "A-002",
-      "title": "Lista de lotes da evidência fica ilegível em tablet/mobile",
-      "status": "open",
+      "id": "A-003",
+      "severity": "blocking",
       "disposition": "blocking",
+      "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "visual-responsive-regression",
-      "requested": "Batch filename, status/count and received date remain readable and non-overlapping at 768x1024 and 390x844 with a permanent geometric negative control.",
-      "observed": "Independent audit found batch metadata escaping fixed-height items and overlapping sibling rows on tablet/mobile."
+      "requirement_ids": [
+        "REQ-001",
+        "REQ-005",
+        "REQ-011"
+      ],
+      "summary": "A6 review composition remained a regex/string postprocessor over final HTML despite Phase 3B direct-composition requirements."
+    },
+    {
+      "id": "A-004",
+      "severity": "high",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "requirement_ids": [
+        "REQ-009"
+      ],
+      "summary": "financialInsights.insufficientData stopped being observable on the production Inbox path after the old structured payload enhancer was disconnected."
+    },
+    {
+      "id": "A-005",
+      "severity": "high",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "requirement_ids": [
+        "REQ-010"
+      ],
+      "summary": "A categories API failure skipped A6 entirely and silently returned the pre-A6 layout."
     }
   ],
   "recommendations": []

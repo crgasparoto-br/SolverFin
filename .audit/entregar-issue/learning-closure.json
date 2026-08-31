@@ -2,15 +2,18 @@
   "schema_version": 1,
   "classification": "implementation-only",
   "source_event": {
-    "kind": "independent-audit-rejection",
-    "rejection_id": "audit-rejection:614-inbox-mobile-evidence-list-overlap",
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:614-phase3b-textual-postprocessor",
+    "audit_report_sha256": "775be8d72101991b4578f064a9b842e497fdbd7d42f2d6243c2003d6b5a4ff0e",
     "finding_ids": [
-      "A-002"
-    ],
-    "audit_report_sha256": "7259c7a14e42b8f589a11ea20ed73f613bb9918f7565a7fa89628d5caf5bd213"
+      "A-003",
+      "A-004",
+      "A-005"
+    ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The escape is localized to the Inbox evidence batch layout. Prevention is implemented in the route-specific layout and detection is permanently covered by the existing Statement visual geometric gate, so no global Skill rule is required."
-  }
+    "reason": "The rejection identified three local Inbox implementation/wiring defects. Existing Phase 3B structural and state-preservation contracts already prohibit them, so no new global Skill rule is needed."
+  },
+  "skill_changes": []
 }

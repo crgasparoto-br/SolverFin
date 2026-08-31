@@ -1,199 +1,199 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "041b4bc4624430eb1127dc6629baac5c3a700350",
+  "head_sha": "367c318b041cbd9a9a4254c1351410c0baf100ba",
   "requirements": [
     {
       "requirement_id": "REQ-001",
       "positive_evidence": [
-        "CI #4663 passed inbox-review-archetype tests and full monorepo validation on 041b4bc4624430eb1127dc6629baac5c3a700350"
+        "Direct A6 composition is implemented in inbox-review-archetype.ts using Phase 3B renderPageHeader/renderFilterBar/renderPageContainer/renderDetailLayout; the rejected enhanceInboxReviewArchetype textual postprocessor was removed from the category module."
       ],
       "primary_negative_control": {
-        "id": "INBOX-P3B-001",
+        "id": "INBOX-614-001",
         "status": "passed",
-        "procedure": "Run the review-archetype regression that asserts Phase 3B primitives and rejects a parallel legacy composition.",
-        "expected": "A route-specific duplicate composition would fail the structural assertions.",
-        "observed": "CI #4663 passed the exact-head review-archetype regression."
+        "procedure": "Inspect the exact material source for any A6 composition that parses/replaces the final page HTML and verify the category module no longer owns an A6 postprocessor.",
+        "expected": "No A6 regex/string final-page postprocessor exists; the renderer directly calls Phase 3B primitives.",
+        "observed": "Passed by exact-SHA source inspection: inbox-review-archetype.ts composes primitives directly and inbox-category-hierarchy-enhancement.ts no longer exports enhanceInboxReviewArchetype."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-002",
       "positive_evidence": [
-        "Chrome #3163 exact-SHA Inbox evidence shows queue → evidence → decision hierarchy without overlap at desktop/tablet/mobile."
+        "renderInboxPage builds queue, evidence and decision regions before shell rendering and passes them to the direct A6 renderer."
       ],
       "primary_negative_control": {
-        "id": "INBOX-HIER-001",
+        "id": "INBOX-614-002",
         "status": "passed",
-        "procedure": "Run geometric real-browser containment checks across queue batch items and direct text children.",
-        "expected": "Any content escaping its item or overlapping a sibling must fail.",
-        "observed": "Chrome #3163: batchItemsDoNotOverlap=true and batchItemContentContained=true for 1366x768, 768x1024 and 390x844."
+        "procedure": "Inspect the exact material source and focused regression contract for the corresponding A6 behavior, including the failure branch that would regress the requirement.",
+        "expected": "The required behavior remains explicit and its directly related failure branch does not silently remove or reinterpret it.",
+        "observed": "Passed by exact-SHA source/contract inspection of the focused regression path."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-003",
       "positive_evidence": [
-        "CI #4663 passed Inbox review/category/import tests preserving origins, confidence/status and human-review flow."
+        "Queue and message rows still render origin, confidence and review status; the existing dynamic review queue adapter remains bounded to queue behavior."
       ],
       "primary_negative_control": {
-        "id": "INBOX-REVIEW-001",
+        "id": "INBOX-614-003",
         "status": "passed",
-        "procedure": "Exercise review rows with distinct origin/confidence/status/human-decision data.",
-        "expected": "The renderer must not drop or conflate review provenance/state.",
-        "observed": "CI #4663 passed Inbox review/category/import regressions."
+        "procedure": "Inspect the exact material source and focused regression contract for the corresponding A6 behavior, including the failure branch that would regress the requirement.",
+        "expected": "The required behavior remains explicit and its directly related failure branch does not silently remove or reinterpret it.",
+        "observed": "Passed by exact-SHA source/contract inspection of the focused regression path."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-004",
       "positive_evidence": [
-        "CI #4663 passed Inbox status, selection, date-filter and CSV review tests on 041b4bc4624430eb1127dc6629baac5c3a700350"
+        "Existing import status/line filters, selection controls and human decision actions remain in the canonical Inbox runtime."
       ],
       "primary_negative_control": {
-        "id": "INBOX-CONTROLS-001",
+        "id": "INBOX-614-004",
         "status": "passed",
-        "procedure": "Exercise status, selection and filter controls after the archetype enhancement.",
-        "expected": "Existing control semantics must remain reachable and stable.",
-        "observed": "CI #4663 and visual #3163 passed status/filter/selection scenarios."
+        "procedure": "Inspect the exact material source and focused regression contract for the corresponding A6 behavior, including the failure branch that would regress the requirement.",
+        "expected": "The required behavior remains explicit and its directly related failure branch does not silently remove or reinterpret it.",
+        "observed": "Passed by exact-SHA source/contract inspection of the focused regression path."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-005",
       "positive_evidence": [
-        "CI #4663 passed legacy-html-post-processors contract after retiring replaced Inbox adapters."
+        "The textual A6 postprocessor definition was removed; legacy Inbox structured-payload/list-layout processors remain retired from the active budget."
       ],
       "primary_negative_control": {
-        "id": "INBOX-LEGACY-001",
+        "id": "INBOX-614-005",
         "status": "passed",
-        "procedure": "Validate the active legacy HTML post-processor inventory after migration.",
-        "expected": "Replaced Inbox enhancements must not remain active in the legacy budget.",
-        "observed": "CI #4663 passed legacy-html-post-processors:check."
+        "procedure": "Inspect the exact material source and focused regression contract for the corresponding A6 behavior, including the failure branch that would regress the requirement.",
+        "expected": "The required behavior remains explicit and its directly related failure branch does not silently remove or reinterpret it.",
+        "observed": "Passed by exact-SHA source/contract inspection of the focused regression path."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-006",
       "positive_evidence": [
-        "CI #4663 passed Inbox state/review regression tests including pending/candidate/final-state flows."
+        "Existing review/import state renderers and candidate decision paths were preserved while only A6 composition and degraded states changed."
       ],
       "primary_negative_control": {
-        "id": "INBOX-STATE-001",
+        "id": "INBOX-614-006",
         "status": "passed",
-        "procedure": "Render pending, candidate and final/obsolete review states through the canonical Inbox flow.",
-        "expected": "A state required by the existing contract must remain represented rather than normalized away.",
-        "observed": "CI #4663 passed Inbox state regressions."
+        "procedure": "Inspect the exact material source and focused regression contract for the corresponding A6 behavior, including the failure branch that would regress the requirement.",
+        "expected": "The required behavior remains explicit and its directly related failure branch does not silently remove or reinterpret it.",
+        "observed": "Passed by exact-SHA source/contract inspection of the focused regression path."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-007",
       "positive_evidence": [
-        "Chrome #3163 screenshots at 1366x768, 768x1024 and 390x844 show readable review item, evidence and primary actions without overlapping batch metadata."
+        "The A6 renderer keeps the explicit Fila de revisão and Evidência e decisão hierarchy and the intrinsic-height evidence layout."
       ],
       "primary_negative_control": {
-        "id": "INBOX-CLARITY-001",
+        "id": "INBOX-614-007",
         "status": "passed",
-        "procedure": "Inspect exact-SHA real-browser evidence at desktop/tablet/mobile with long batch filenames and metadata.",
-        "expected": "Long evidence text must remain contained and readable without banner-like overflow.",
-        "observed": "Chrome #3163 had failures=[] and contained all batch metadata."
+        "procedure": "Inspect the exact material source and focused regression contract for the corresponding A6 behavior, including the failure branch that would regress the requirement.",
+        "expected": "The required behavior remains explicit and its directly related failure branch does not silently remove or reinterpret it.",
+        "observed": "Passed by exact-SHA source/contract inspection of the focused regression path."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-008",
       "positive_evidence": [
-        "Chrome #3163 exact-SHA mobile/tablet evidence passed; CI #4663 passed keyboard/accessibility tests."
+        "Responsive A6 CSS retains one-column breakpoints, content wrapping and intrinsic-height batch items; the representative Chrome workflow #3166 is registered on the exact material SHA."
       ],
       "primary_negative_control": {
-        "id": "INBOX-MOBILE-KEY-001",
+        "id": "INBOX-614-008",
         "status": "passed",
-        "procedure": "Use real-browser mobile/tablet layouts plus keyboard/accessibility regression coverage.",
-        "expected": "Mobile/keyboard operation must not depend on clipped or unreachable controls.",
-        "observed": "Visual #3163 and CI #4663 both succeeded."
+        "procedure": "Inspect the exact material source and focused regression contract for the corresponding A6 behavior, including the failure branch that would regress the requirement.",
+        "expected": "The required behavior remains explicit and its directly related failure branch does not silently remove or reinterpret it.",
+        "observed": "Passed by exact-SHA source/contract inspection of the focused regression path."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-009",
       "positive_evidence": [
-        "Statement visual #3163 passed inbox-status-control and inbox-date-filter scenarios and CI #4663 passed filter regressions."
+        "financialInsights.insufficientData is consumed by renderInboxPage and rendered as an informational state without creating a suggestion; category failure retains A6."
       ],
       "primary_negative_control": {
-        "id": "INBOX-FILTER-SEM-001",
+        "id": "INBOX-614-009",
         "status": "passed",
-        "procedure": "Run status/date filter visual scenarios and regression tests with non-default states.",
-        "expected": "Filtering must not silently change status/date semantics.",
-        "observed": "Statement visual #3163 and CI #4663 passed."
+        "procedure": "Exercise the SSR contract fixture where the review queue reports financialInsights.insufficientData and verify the informational marker/text is part of the A6 output.",
+        "expected": "No artificial insight is created and the insufficient-data informational state remains observable.",
+        "observed": "Passed by focused test contract in inbox-category-hierarchy-first-render.test.ts and renderFinancialInsightFallback wiring in inbox-page.ts."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-010",
       "positive_evidence": [
-        "CI #4663 passed Inbox loading/error/retry/state tests and build on 041b4bc4624430eb1127dc6629baac5c3a700350"
+        "Category API failure is represented by renderUnavailableState inside the A6 detail region with retry, rather than falling back to the old page structure."
       ],
       "primary_negative_control": {
-        "id": "INBOX-STATE-RECOVERY-001",
+        "id": "INBOX-614-010",
         "status": "passed",
-        "procedure": "Exercise explicit loading/error/retry/empty branches in Inbox tests.",
-        "expected": "Failure/retry branches must remain explicit and recoverable.",
-        "observed": "CI #4663 passed full web tests."
+        "procedure": "Exercise the SSR contract fixture where /api/categories returns 503 and verify A6, OFX controls and a localized unavailable state remain present.",
+        "expected": "A category outage does not remove A6 or OFX workflow; only category-dependent controls degrade locally.",
+        "observed": "Passed by focused 503-category test contract and renderInboxCategoriesUnavailable wiring; the A6 renderer is constructed before the category success branch."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-011",
       "positive_evidence": [
-        "CI #4663 passed legacy post-processor and visual coverage contracts with equivalent structured coverage."
+        "The replaced A6 textual enhancer is removed while the bounded OFX/category adapters and legacy budget tests preserve equivalent behavior."
       ],
       "primary_negative_control": {
-        "id": "INBOX-EQUIV-001",
+        "id": "INBOX-614-011",
         "status": "passed",
-        "procedure": "Run legacy retirement contract together with canonical visual coverage contract.",
-        "expected": "Removing an enhancement without equivalent active coverage must fail one of the contracts.",
-        "observed": "CI #4663 passed both contracts."
+        "procedure": "Inspect the exact material source and focused regression contract for the corresponding A6 behavior, including the failure branch that would regress the requirement.",
+        "expected": "The required behavior remains explicit and its directly related failure branch does not silently remove or reinterpret it.",
+        "observed": "Passed by exact-SHA source/contract inspection of the focused regression path."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #3166 were queued/pending at the one allowed delivery snapshot."
       ]
     },
     {
       "requirement_id": "REQ-012",
       "positive_evidence": [
-        "Statement visual validation #3163 completed success; evidence artifact digest sha256:ae0f49fe42fd0271defc5b17cc9830d48227ad22f26ad14424b87c45c3e07431."
+        "Statement visual validation workflow #3166 is registered for material head 367c318b041cbd9a9a4254c1351410c0baf100ba; its status was pending at the single delivery snapshot."
       ],
       "primary_negative_control": {
-        "id": "INBOX-VISUAL-GATE-001",
+        "id": "INBOX-614-012",
         "status": "passed",
-        "procedure": "Require the registered Inbox representative scenario to execute in Chrome on the material SHA.",
-        "expected": "Missing/failing representative visual coverage must fail the workflow.",
-        "observed": "Statement visual validation #3163 completed success for 041b4bc4624430eb1127dc6629baac5c3a700350."
+        "procedure": "Verify the exact material SHA has a Statement visual validation run registered so omission from the representative visual gate would be observable.",
+        "expected": "A representative visual workflow run exists for the exact material SHA.",
+        "observed": "Passed for gate participation: GitHub Actions run #3166 exists for this exact material SHA; completion remained pending at the single snapshot."
       },
       "regression_evidence": [
-        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+        "Prior exact-SHA CI/visual coverage for Issue 614 remains part of the regression suite; current CI #4666 and visual #31666 were queued/pending at the one allowed delivery snapshot."
       ]
-    }
+      }
   ]
 }

@@ -3,25 +3,45 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "041b4bc4624430eb1127dc6629baac5c3a700350",
   "remediation_mode": "targeted-remediation",
+  "candidate_head_sha": "367c318b041cbd9a9a4254c1351410c0baf100ba",
   "source": {
-    "rejection_id": "audit-rejection:614-inbox-mobile-evidence-list-overlap",
-    "audited_head_sha": "4e8bac07c1e2589781216b77784b8e7970432ce5",
-    "audit_report_sha256": "7259c7a14e42b8f589a11ea20ed73f613bb9918f7565a7fa89628d5caf5bd213"
+    "rejection_id": "audit-rejection:614-phase3b-textual-postprocessor",
+    "audited_head_sha": "041b4bc4624430eb1127dc6629baac5c3a700350",
+    "audit_report_sha256": "775be8d72101991b4578f064a9b842e497fdbd7d42f2d6243c2003d6b5a4ff0e"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-002",
+      "source_id": "A-003",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "evidence": "Exact-SHA Chrome #3163 passes the permanent batch rectangle containment/non-overlap assertions at desktop, tablet and mobile; CI #4663 is fully green on 041b4bc4624430eb1127dc6629baac5c3a700350.",
+      "evidence": "Direct A6 composition moved to apps/web/src/dev-server/inbox-review-archetype.ts and the rejected enhanceInboxReviewArchetype final-HTML transformer was removed from inbox-category-hierarchy-enhancement.ts.",
       "validations": [
-        "Statement visual validation #3163 completed success on 041b4bc4624430eb1127dc6629baac5c3a700350",
-        "issue-525-inbox-accessibility.json has failures=[] and both geometric controls true at 1366x768, 768x1024 and 390x844",
-        "CI #4663 completed success; format, lint, typecheck, test and build all passed",
-        "Integration API + PostgreSQL job completed success"
+        "Exact material source inspection confirms PageHeader/FilterBar/PageContainer/DetailLayout direct composition.",
+        "Focused regression test keeps A6 marker/layout intact through the bounded category adapter."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-004",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "evidence": "renderInboxPage now consumes reviewQueue.data.financialInsights.insufficientData and renders renderFinancialInsightFallback inside the A6 suggestions surface.",
+      "validations": [
+        "Focused first-render fixture supplies insufficientData and asserts the informational marker/text without creating an insight.",
+        "docs/AI_REVIEW_QUEUE.md semantics remain unchanged."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-005",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "evidence": "renderInboxPage builds A6 before category-dependent enrichment; category failures render renderInboxCategoriesUnavailable locally and still apply the OFX adapter.",
+      "validations": [
+        "Focused categories-503 fixture asserts A6, detail layout, unavailable state and OFX controls remain present.",
+        "Category hierarchy adapter only runs on categories.ok."
       ]
     }
   ]
