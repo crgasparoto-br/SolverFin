@@ -3,24 +3,25 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "4c339c8e2be458335eae1767bd8560a2568d745a",
+  "candidate_head_sha": "041b4bc4624430eb1127dc6629baac5c3a700350",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:614-handoff-target-5e68df9",
-    "audited_head_sha": "5e68df9d9b59937dda2f6d9f14b85e5e8f396954",
-    "audit_report_sha256": "418b7198975d7b8c26386cf9b38fff817a9f3fb0f9e838236ca6a72cb385f9ac"
+    "rejection_id": "audit-rejection:614-inbox-mobile-evidence-list-overlap",
+    "audited_head_sha": "4e8bac07c1e2589781216b77784b8e7970432ce5",
+    "audit_report_sha256": "7259c7a14e42b8f589a11ea20ed73f613bb9918f7565a7fa89628d5caf5bd213"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-001",
+      "source_id": "A-002",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "evidence": "The issue-scoped handoff is rebuilt after mandatory post-write refreeze on material head 4c339c8e2be458335eae1767bd8560a2568d745a with work_item_kind=issue, work_item_number=614, issue_number=614 and pull_request_number=648.",
+      "evidence": "Exact-SHA Chrome #3163 passes the permanent batch rectangle containment/non-overlap assertions at desktop, tablet and mobile; CI #4663 is fully green on 041b4bc4624430eb1127dc6629baac5c3a700350.",
       "validations": [
-        "build_handoff_certificate.py rejects issue/work-item/snapshot subject mismatches before publication",
-        "standard evidence and the previous independent rejection closure are revalidated against material head 4c339c8e2be458335eae1767bd8560a2568d745a",
-        "the published replacement is required to be a direct result-only child of 4c339c8e2be458335eae1767bd8560a2568d745a containing only certificate-allowlisted result paths"
+        "Statement visual validation #3163 completed success on 041b4bc4624430eb1127dc6629baac5c3a700350",
+        "issue-525-inbox-accessibility.json has failures=[] and both geometric controls true at 1366x768, 768x1024 and 390x844",
+        "CI #4663 completed success; format, lint, typecheck, test and build all passed",
+        "Integration API + PostgreSQL job completed success"
       ]
     }
   ]

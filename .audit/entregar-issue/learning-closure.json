@@ -3,12 +3,14 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-audit-rejection",
-    "rejection_id": "audit-rejection:614-handoff-target-5e68df9",
-    "finding_ids": ["A-001"],
-    "audit_report_sha256": "418b7198975d7b8c26386cf9b38fff817a9f3fb0f9e838236ca6a72cb385f9ac"
+    "rejection_id": "audit-rejection:614-inbox-mobile-evidence-list-overlap",
+    "finding_ids": [
+      "A-002"
+    ],
+    "audit_report_sha256": "7259c7a14e42b8f589a11ea20ed73f613bb9918f7565a7fa89628d5caf5bd213"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The installed delivery and audit skills already enforce semantic target binding. The escape was caused by invoking the existing handoff builder with the PR as the work item instead of the issue requested by the user, so the correction is limited to the delivery instance and its pre-publication validation."
+    "reason": "The escape is localized to the Inbox evidence batch layout. Prevention is implemented in the route-specific layout and detection is permanently covered by the existing Statement visual geometric gate, so no global Skill rule is required."
   }
 }

@@ -1,1 +1,199 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"standard_evidence","compression":"gzip","encoded_size":4396,"encoded_sha256":"a0b15bd7c9124991a4b89ddcdcd0dee63de6b86e2f5a0a903a291e5c0b5969d7","decoded_size":15138,"decoded_sha256":"cbd454c91d1748c57d268d206eb900fad0f6c44d215b43545676aecd0e452804","parts":[{"path":"standard-evidence.parts/part-000.b64","size":4396,"sha256":"a0b15bd7c9124991a4b89ddcdcd0dee63de6b86e2f5a0a903a291e5c0b5969d7"}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "head_sha": "041b4bc4624430eb1127dc6629baac5c3a700350",
+  "requirements": [
+    {
+      "requirement_id": "REQ-001",
+      "positive_evidence": [
+        "CI #4663 passed inbox-review-archetype tests and full monorepo validation on 041b4bc4624430eb1127dc6629baac5c3a700350"
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-P3B-001",
+        "status": "passed",
+        "procedure": "Run the review-archetype regression that asserts Phase 3B primitives and rejects a parallel legacy composition.",
+        "expected": "A route-specific duplicate composition would fail the structural assertions.",
+        "observed": "CI #4663 passed the exact-head review-archetype regression."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-002",
+      "positive_evidence": [
+        "Chrome #3163 exact-SHA Inbox evidence shows queue → evidence → decision hierarchy without overlap at desktop/tablet/mobile."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-HIER-001",
+        "status": "passed",
+        "procedure": "Run geometric real-browser containment checks across queue batch items and direct text children.",
+        "expected": "Any content escaping its item or overlapping a sibling must fail.",
+        "observed": "Chrome #3163: batchItemsDoNotOverlap=true and batchItemContentContained=true for 1366x768, 768x1024 and 390x844."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-003",
+      "positive_evidence": [
+        "CI #4663 passed Inbox review/category/import tests preserving origins, confidence/status and human-review flow."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-REVIEW-001",
+        "status": "passed",
+        "procedure": "Exercise review rows with distinct origin/confidence/status/human-decision data.",
+        "expected": "The renderer must not drop or conflate review provenance/state.",
+        "observed": "CI #4663 passed Inbox review/category/import regressions."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-004",
+      "positive_evidence": [
+        "CI #4663 passed Inbox status, selection, date-filter and CSV review tests on 041b4bc4624430eb1127dc6629baac5c3a700350"
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-CONTROLS-001",
+        "status": "passed",
+        "procedure": "Exercise status, selection and filter controls after the archetype enhancement.",
+        "expected": "Existing control semantics must remain reachable and stable.",
+        "observed": "CI #4663 and visual #3163 passed status/filter/selection scenarios."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-005",
+      "positive_evidence": [
+        "CI #4663 passed legacy-html-post-processors contract after retiring replaced Inbox adapters."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-LEGACY-001",
+        "status": "passed",
+        "procedure": "Validate the active legacy HTML post-processor inventory after migration.",
+        "expected": "Replaced Inbox enhancements must not remain active in the legacy budget.",
+        "observed": "CI #4663 passed legacy-html-post-processors:check."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-006",
+      "positive_evidence": [
+        "CI #4663 passed Inbox state/review regression tests including pending/candidate/final-state flows."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-STATE-001",
+        "status": "passed",
+        "procedure": "Render pending, candidate and final/obsolete review states through the canonical Inbox flow.",
+        "expected": "A state required by the existing contract must remain represented rather than normalized away.",
+        "observed": "CI #4663 passed Inbox state regressions."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-007",
+      "positive_evidence": [
+        "Chrome #3163 screenshots at 1366x768, 768x1024 and 390x844 show readable review item, evidence and primary actions without overlapping batch metadata."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-CLARITY-001",
+        "status": "passed",
+        "procedure": "Inspect exact-SHA real-browser evidence at desktop/tablet/mobile with long batch filenames and metadata.",
+        "expected": "Long evidence text must remain contained and readable without banner-like overflow.",
+        "observed": "Chrome #3163 had failures=[] and contained all batch metadata."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-008",
+      "positive_evidence": [
+        "Chrome #3163 exact-SHA mobile/tablet evidence passed; CI #4663 passed keyboard/accessibility tests."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-MOBILE-KEY-001",
+        "status": "passed",
+        "procedure": "Use real-browser mobile/tablet layouts plus keyboard/accessibility regression coverage.",
+        "expected": "Mobile/keyboard operation must not depend on clipped or unreachable controls.",
+        "observed": "Visual #3163 and CI #4663 both succeeded."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-009",
+      "positive_evidence": [
+        "Statement visual #3163 passed inbox-status-control and inbox-date-filter scenarios and CI #4663 passed filter regressions."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-FILTER-SEM-001",
+        "status": "passed",
+        "procedure": "Run status/date filter visual scenarios and regression tests with non-default states.",
+        "expected": "Filtering must not silently change status/date semantics.",
+        "observed": "Statement visual #3163 and CI #4663 passed."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-010",
+      "positive_evidence": [
+        "CI #4663 passed Inbox loading/error/retry/state tests and build on 041b4bc4624430eb1127dc6629baac5c3a700350"
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-STATE-RECOVERY-001",
+        "status": "passed",
+        "procedure": "Exercise explicit loading/error/retry/empty branches in Inbox tests.",
+        "expected": "Failure/retry branches must remain explicit and recoverable.",
+        "observed": "CI #4663 passed full web tests."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-011",
+      "positive_evidence": [
+        "CI #4663 passed legacy post-processor and visual coverage contracts with equivalent structured coverage."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-EQUIV-001",
+        "status": "passed",
+        "procedure": "Run legacy retirement contract together with canonical visual coverage contract.",
+        "expected": "Removing an enhancement without equivalent active coverage must fail one of the contracts.",
+        "observed": "CI #4663 passed both contracts."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-012",
+      "positive_evidence": [
+        "Statement visual validation #3163 completed success; evidence artifact digest sha256:ae0f49fe42fd0271defc5b17cc9830d48227ad22f26ad14424b87c45c3e07431."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-VISUAL-GATE-001",
+        "status": "passed",
+        "procedure": "Require the registered Inbox representative scenario to execute in Chrome on the material SHA.",
+        "expected": "Missing/failing representative visual coverage must fail the workflow.",
+        "observed": "Statement visual validation #3163 completed success for 041b4bc4624430eb1127dc6629baac5c3a700350."
+      },
+      "regression_evidence": [
+        "CI #4663 exact-head success: format, lint, typecheck, test and build all passed."
+      ]
+    }
+  ]
+}

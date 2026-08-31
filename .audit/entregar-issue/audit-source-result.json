@@ -4,26 +4,26 @@
   "result": "rejected",
   "result_validity": "INDEPENDENT",
   "releases_merge": "no",
-  "rejection_id": "audit-rejection:614-handoff-target-5e68df9",
-  "head_sha": "5e68df9d9b59937dda2f6d9f14b85e5e8f396954",
+  "rejection_id": "audit-rejection:614-inbox-mobile-evidence-list-overlap",
+  "head_sha": "4e8bac07c1e2589781216b77784b8e7970432ce5",
   "base_sha": "f009b6201da2bca78d03e459af0034f03bf4d43b",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 614,
     "pull_request_number": 648,
-    "head_sha": "5e68df9d9b59937dda2f6d9f14b85e5e8f396954"
+    "head_sha": "4e8bac07c1e2589781216b77784b8e7970432ce5"
   },
   "findings": [
     {
-      "id": "A-001",
-      "title": "Handoff vinculado semanticamente ao work item incorreto",
+      "id": "A-002",
+      "title": "Lista de lotes da evidência fica ilegível em tablet/mobile",
       "status": "open",
       "disposition": "blocking",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "delivery-not-ready",
-      "requested": "work_item_kind=issue, work_item_number=614",
-      "observed": "work_item_kind=pr, work_item_number=648"
+      "category": "visual-responsive-regression",
+      "requested": "Batch filename, status/count and received date remain readable and non-overlapping at 768x1024 and 390x844 with a permanent geometric negative control.",
+      "observed": "Independent audit found batch metadata escaping fixed-height items and overlapping sibling rows on tablet/mobile."
     }
   ],
   "recommendations": []
