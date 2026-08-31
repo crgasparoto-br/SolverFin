@@ -152,8 +152,10 @@ export function enhanceInboxReviewArchetype(html: string): string {
   const filterBarHtml = renderFilterBar({
     label: "Navegação da triagem",
     childrenHtml: `
-      <a class="secondary-button inbox-review-nav" href="#inbox-review-queue">Fila de revisão</a>
-      <a class="secondary-button inbox-review-nav" href="#csv-import-title">Evidência da importação</a>
+      <nav class="inbox-section-nav" aria-label="Seções da Inbox">
+        <a class="secondary-button inbox-review-nav" href="#inbox-review-queue">Fila de revisão</a>
+        <a class="secondary-button inbox-review-nav" href="#csv-import-title">Evidência da importação</a>
+      </nav>
       <span class="muted small-note" role="status">Decisões continuam explícitas e dependem da evidência atual.</span>
     `,
   });
@@ -161,7 +163,7 @@ export function enhanceInboxReviewArchetype(html: string): string {
   const suggestionsHtml = suggestionsMatch[0]
     .replace(
       'class="panel list-panel"',
-      'class="inbox-review-group" aria-labelledby="inbox-review-suggestions-title"',
+      'class="panel list-panel inbox-review-group" aria-labelledby="inbox-review-suggestions-title"',
     )
     .replace(
       "<h2>Outras sugestões</h2>",
@@ -170,7 +172,7 @@ export function enhanceInboxReviewArchetype(html: string): string {
   const messagesHtml = messagesMatch[0]
     .replace(
       'class="panel list-panel"',
-      'class="inbox-review-group" aria-labelledby="inbox-review-messages-title"',
+      'class="panel list-panel inbox-review-group" aria-labelledby="inbox-review-messages-title"',
     )
     .replace(
       "<h2>Mensagens recebidas</h2>",
@@ -178,7 +180,7 @@ export function enhanceInboxReviewArchetype(html: string): string {
     );
   const evidenceHtml = importMatch[0].replace(
     'class="panel import-workspace"',
-    'class="inbox-review-evidence" data-inbox-review-evidence',
+    'class="panel import-workspace inbox-review-evidence" data-inbox-review-evidence',
   );
 
   const reviewLayoutHtml = renderDetailLayout({
@@ -224,7 +226,8 @@ export function enhanceInboxReviewArchetype(html: string): string {
     `
       .inbox-review-cockpit { display: grid; gap: 12px; max-width: none; padding: 0; }
       .inbox-review-cockpit .sf-filter-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
-      .inbox-review-nav { text-decoration: none; }
+      .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: nowrap; gap: 8px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
+      .inbox-review-nav { flex: 0 0 auto; text-decoration: none; }
       .inbox-review-cockpit .sf-detail-layout { align-items: start; display: grid; gap: 14px; grid-template-columns: minmax(300px, .72fr) minmax(0, 1.28fr); }
       .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
       .inbox-review-queue, .inbox-review-detail { display: grid; gap: 12px; padding: 12px; }
@@ -234,15 +237,50 @@ export function enhanceInboxReviewArchetype(html: string): string {
       .inbox-review-queue-heading, .inbox-review-detail-heading { align-items: start; display: flex; gap: 12px; justify-content: space-between; }
       .inbox-review-queue-heading > div, .inbox-review-detail-heading > div { display: grid; gap: 3px; }
       .inbox-review-detail { position: sticky; top: 12px; }
+      .inbox-review-evidence .import-workspace { gap: 10px; }
+      .inbox-review-evidence .import-heading { align-items: center; }
+      .inbox-review-evidence .import-layout { gap: 10px; grid-template-columns: minmax(205px, 250px) minmax(0, 1fr); }
+      .inbox-review-evidence .import-detail { gap: 8px; min-width: 0; }
+      .inbox-review-evidence .detail-heading { align-items: center; gap: 8px; padding-bottom: 7px; }
+      .inbox-review-evidence .detail-heading h3 { font-size: 1rem; }
+      .inbox-review-evidence .import-summary { gap: 4px; }
+      .inbox-review-evidence .import-summary span { border-radius: 999px; font-size: .68rem; padding: 4px 7px; }
+      .inbox-review-evidence .bulk-actions { gap: 8px; min-height: 38px; padding: 6px 8px; }
+      .inbox-review-evidence .bulk-actions > div { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+      .inbox-review-evidence .import-rows { gap: 0; }
+      .inbox-review-evidence .import-row { align-items: start; border-radius: 0; display: grid; gap: 6px; grid-template-columns: 26px minmax(0, 1fr); padding: 5px 8px; }
+      .inbox-review-evidence .row-editor { display: grid; gap: 4px; min-width: 0; }
+      .inbox-review-evidence .row-heading { align-items: center; display: flex; gap: 7px; justify-content: space-between; }
+      .inbox-review-evidence .row-heading strong { font-size: .78rem; }
+      .inbox-review-evidence .row-summary { display: grid; gap: 3px 8px; grid-template-columns: minmax(82px, .62fr) minmax(68px, .5fr) minmax(90px, .65fr) minmax(150px, 1.45fr) minmax(118px, .9fr); margin: 0; }
+      .inbox-review-evidence .row-summary > div { align-content: start; display: grid; gap: 1px; min-width: 0; }
+      .inbox-review-evidence .row-summary dt { color: var(--muted); font-size: .7rem; font-weight: 700; letter-spacing: .02em; line-height: 1.15; text-transform: uppercase; }
+      .inbox-review-evidence .row-summary dd { font-size: .75rem; line-height: 1.2; margin: 0; min-width: 0; overflow-wrap: anywhere; }
+      .inbox-review-evidence .inline-actions, .inbox-review-evidence .maintenance-actions { gap: 4px; }
+      .inbox-review-evidence .candidate-list { display: grid; gap: 4px; grid-column: 2; }
+      .inbox-review-evidence .candidate-card { align-items: center; gap: 8px; padding: 6px 8px; }
+      @media (max-width: 1120px) {
+        .inbox-review-evidence .import-layout { grid-template-columns: 1fr; }
+        .inbox-review-evidence .row-summary { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
+      }
       @media (max-width: 900px) {
         .inbox-review-cockpit .sf-detail-layout { grid-template-columns: 1fr; }
         .inbox-review-detail { position: static; }
+      }
+      @media (max-width: 760px) {
+        .inbox-review-evidence .row-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .inbox-review-evidence .detail-heading, .inbox-review-evidence .bulk-actions { align-items: stretch; display: grid; }
+        .inbox-review-evidence .bulk-actions > div { justify-content: flex-start; }
       }
       @media (max-width: 600px) {
         .inbox-review-queue, .inbox-review-detail { padding: 9px; }
         .inbox-review-queue-heading, .inbox-review-detail-heading { display: grid; }
         .inbox-review-cockpit .sf-filter-bar { align-items: stretch; display: grid; }
-        .inbox-review-nav { justify-content: center; width: 100%; }
+        .inbox-section-nav { max-width: 100%; width: 100%; }
+        .inbox-review-nav { justify-content: center; min-width: 190px; }
+      }
+      @media (max-width: 480px) {
+        .inbox-review-evidence .row-summary { grid-template-columns: 1fr; }
       }
     </style>`,
   );
