@@ -6,7 +6,7 @@ on:
       - codex/609-statement-account-currency
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   validate:
@@ -28,71 +28,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Apply targeted remediation patch
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
+      - name: Build packages
+        run: npm run build:packages
 
-          replacements = {
-              Path("apps/web/src/dev-server/maintenance-actions.test.ts"): [
-                  (
-                      'assert.match(html, /<h1>Extrato Bancário<\\/h1>/);',
-                      'assert.match(html, /<h1[^>]*>Extrato Bancário<\\/h1>/);',
-                  ),
-              ],
-              Path("apps/web/src/dev-server/recurrences-section.ts"): [
-                  (
-                      '            if (statusNode) statusNode.textContent = "Salvando...";\n            const result = await execute("current");\n            if (statusNode) statusNode.textContent = result.message;\n            if (result.ok) window.setTimeout(() => window.location.reload(), 450);',
-                      '            const submit = form.querySelector(\'button[type="submit"]\');\n            if (submit) submit.disabled = true;\n            if (statusNode) statusNode.textContent = "Salvando...";\n            const result = await execute("current");\n            if (statusNode) statusNode.textContent = result.message;\n            if (result.ok) window.setTimeout(() => window.location.reload(), 450);\n            else if (submit) submit.disabled = false;',
-                  ),
-              ],
-              Path("apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts"): [
-                  (
-                      '  return enhancedHtml.replace("</head>", `${styles}</head>`);',
-                      '''  const script = `\n      <script data-account-remuneration-disclosure-controller>\n        document.querySelectorAll("details.account-remuneration-audit").forEach((disclosure) => {\n          disclosure.addEventListener("toggle", () => {\n            if (disclosure.open) return;\n            const actions = disclosure\n              .closest(".statement-row.statement-body")\n              ?.querySelector("details.actions");\n            if (actions) actions.open = false;\n          });\n        });\n      </script>`;\n\n  return enhancedHtml\n    .replace("</head>", `${styles}</head>`)\n    .replace("</body>", `${script}</body>`);''',
-                  ),
-              ],
-          }
+      - name: Typecheck
+        run: npm run typecheck
 
-          changed = []
-          for path, path_replacements in replacements.items():
-              text = path.read_text(encoding="utf-8")
-              original = text
-              for old, new in path_replacements:
-                  if old not in text:
-                      raise SystemExit(f"Expected remediation anchor not found in {path}: {old[:100]!r}")
-                  text = text.replace(old, new, 1)
-              if text != original:
-                  path.write_text(text, encoding="utf-8")
-                  changed.append(str(path))
-
-          print("Changed:", ", ".join(changed))
-          PY
-
-          npx prettier --write \
-            apps/web/src/dev-server/maintenance-actions.test.ts \
-            apps/web/src/dev-server/recurrences-section.ts \
-            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
-
-      - name: Validate repository build gates
-        run: |
-          npm run build:packages
-          npm run typecheck
-          npm run build
-
-      - name: Commit remediation
-        shell: bash
-        run: |
-          if git diff --quiet; then
-            echo "No remediation changes to commit."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            apps/web/src/dev-server/maintenance-actions.test.ts \
-            apps/web/src/dev-server/recurrences-section.ts \
-            apps/web/src/dev-server/account-remuneration-disclosure-enhancement.ts
-          git commit -m "fix: resolve issue 609 CI regressions"
-          git push origin HEAD:codex/609-statement-account-currency
+      - name: Build
+        run: npm run build
