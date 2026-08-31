@@ -210,6 +210,16 @@ function validateOperationalMetrics(metrics, { requireFiveRows }) {
     metrics,
   );
   check(metrics.actionsFitViewport, `Action overflows at ${metrics.viewport}`, metrics);
+  check(
+    metrics.batchItemsDoNotOverlap,
+    `Import batch items overlap at ${metrics.viewport}`,
+    metrics,
+  );
+  check(
+    metrics.batchItemContentContained,
+    `Import batch item content escapes its item at ${metrics.viewport}`,
+    metrics,
+  );
   if (requireFiveRows) {
     check(
       metrics.completeRows >= 5,
@@ -225,7 +235,17 @@ async function inspectOperationalViewport(
   { width, height, screenshotName, verifyLabelActivation = false },
 ) {
   await setViewport(cdp, width, height);
-  await evaluate(cdp, `(() => { window.scrollTo(0, 0); return true; })()`);
+  const evidenceFocused = await evaluate(
+    cdp,
+    `(() => {
+      const target = document.getElementById('csv-import-title');
+      if (!target) return false;
+      target.scrollIntoView({ block: 'start', inline: 'nearest' });
+      window.scrollBy(0, -8);
+      return true;
+    })()`,
+  );
+  assert.equal(evidenceFocused, true, "Inbox A6 evidence target is unavailable");
   await sleep(250);
 
   const metrics = await evaluate(
@@ -242,10 +262,45 @@ async function inspectOperationalViewport(
         const rect = element.getBoundingClientRect();
         return rect.top >= 0 && rect.bottom <= window.innerHeight;
       };
+      const rectSnapshot = (element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+        };
+      };
+      const rectsOverlap = (left, right) => (
+        left.left < right.right - 1 &&
+        left.right > right.left + 1 &&
+        left.top < right.bottom - 1 &&
+        left.bottom > right.top + 1
+      );
+      const rectContains = (outer, inner) => (
+        inner.left >= outer.left - 1 &&
+        inner.right <= outer.right + 1 &&
+        inner.top >= outer.top - 1 &&
+        inner.bottom <= outer.bottom + 1
+      );
       const rows = [...document.querySelectorAll('.import-row')];
       const checkboxes = [...document.querySelectorAll('.bulk-actions input[type="checkbox"], .import-row input[type="checkbox"]')].filter(visible);
       const buttons = [...document.querySelectorAll('.inbox-page button, .inbox-page .button-link')].filter(visible);
       const operationalText = [...document.querySelectorAll('.row-summary dt, .row-heading .status-pill')].filter(visible);
+      const batchItems = [...document.querySelectorAll('.import-batch-list .batch-item')].filter(visible);
+      const batchItemRects = batchItems.map((item) => rectSnapshot(item));
+      const batchItemContent = batchItems.map((item) => {
+        const itemRect = rectSnapshot(item);
+        const content = [...item.querySelectorAll(':scope > strong, :scope > span')]
+          .filter(visible)
+          .map((element) => ({
+            text: (element.textContent || '').trim(),
+            rect: rectSnapshot(element),
+          }));
+        return { itemRect, content };
+      });
       const dimensions = (elements) => elements.map((element) => {
         const rect = element.getBoundingClientRect();
         return { width: Math.round(rect.width), height: Math.round(rect.height), text: (element.textContent || '').trim() };
@@ -275,12 +330,41 @@ async function inspectOperationalViewport(
           const rect = element.getBoundingClientRect();
           return rect.left >= 0 && rect.right <= window.innerWidth;
         }),
+        batchItemsDoNotOverlap: batchItemRects.length > 0 && batchItemRects.every((rect, index) =>
+          batchItemRects.every((other, otherIndex) => index === otherIndex || !rectsOverlap(rect, other)),
+        ),
+        batchItemContentContained: batchItemContent.length > 0 && batchItemContent.every(({ itemRect, content }) =>
+          content.length > 0 && content.every(({ rect }) => rectContains(itemRect, rect)),
+        ),
         labelActivatesCheckbox,
         checkboxDimensions: dimensions(checkboxes.slice(0, 4)),
         buttonDimensions: dimensions(buttons.slice(0, 12)),
         operationalFontSizes: operationalText.slice(0, 12).map((element) => ({
           text: (element.textContent || '').trim(),
           fontSize: getComputedStyle(element).fontSize
+        })),
+        batchItemRects: batchItemRects.map((rect) => ({
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          top: Math.round(rect.top),
+          bottom: Math.round(rect.bottom),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        })),
+        batchItemContentRects: batchItemContent.map(({ itemRect, content }) => ({
+          itemRect: {
+            left: Math.round(itemRect.left),
+            right: Math.round(itemRect.right),
+            top: Math.round(itemRect.top),
+            bottom: Math.round(itemRect.bottom),
+          },
+          content: content.map(({ text, rect }) => ({
+            text,
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            top: Math.round(rect.top),
+            bottom: Math.round(rect.bottom),
+          })),
         })),
         rowRects: rows.slice(0, 6).map((row) => {
           const rect = row.getBoundingClientRect();

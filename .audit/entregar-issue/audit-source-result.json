@@ -1,52 +1,31 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "result": "rejected",
-  "result_validity": "INDEPENDENT",
-  "releases_merge": "no",
-  "rejection_id": "audit-rejection:fb1e1bff-bbf1-4ce6-ada5-65bcccdcbec2",
-  "head_sha": "9e48806980c584b895492a332518882652c7a289",
-  "base_sha": "169fa1be3dced373c62554cf657b097c352f692d",
+  "mode": "independent",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue_number": 614,
+  "pull_request_number": 648,
+  "head_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
+  "published_handoff_head_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
+  "rejection_id": "audit-rejection:614-format-check-inbox-page",
   "findings": [
     {
-      "id": "A-001",
-      "title": "CI obrigatório vermelho por Prettier",
-      "status": "open",
+      "id": "A-006",
+      "severity": "blocking",
       "disposition": "blocking",
+      "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
+      "requirement_ids": [],
+      "summary": "The deterministic monorepo formatting gate failed on apps/web/src/dev-server/inbox-page.ts, so lint, typecheck, test and build were not reached.",
       "failed_gate": {
+        "name": "Check formatting",
+        "command": "npm run format:check",
         "deterministic": true,
-        "name": "Prettier format check",
-        "command": "prettier . --check",
-        "subject_sha": "9e48806980c584b895492a332518882652c7a289",
+        "subject_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
         "observed_exit_code": 1,
-        "evidence_sha256": "aad41f4c777a204fc438be41a24a3d1371308b74d06059c9f20622d17e98a0a7"
+        "evidence_sha256": "199231f45b6316efa8d4fdf1e146773ce2fa4e6194f4ece12e847f7a15587c09"
       }
-    },
-    {
-      "id": "A-002",
-      "title": "Handoff com work_item_start resetado e escopo sub-relatado",
-      "status": "open",
-      "disposition": "blocking",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation"
-    },
-    {
-      "id": "A-003",
-      "title": "Drilldown por moeda colapsava múltiplas contas",
-      "status": "open",
-      "disposition": "blocking",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation"
-    },
-    {
-      "id": "A-004",
-      "title": "Loading do Dashboard não era alcançável na rota real",
-      "status": "open",
-      "disposition": "blocking",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation"
     }
   ],
   "recommendations": []

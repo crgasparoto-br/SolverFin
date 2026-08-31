@@ -66,6 +66,7 @@ async function validateInboxInterfaceRefinement(cdp) {
     width: 1366,
     height: 768,
     screenshotName: "issue-525-inbox-desktop-1366x768.png",
+    scrollTarget: "#csv-import-title",
     verifyKeyboardFocus: true,
   });
   check(desktop.bodyFitsViewport, "Inbox overflows horizontally at 1366x768", desktop);

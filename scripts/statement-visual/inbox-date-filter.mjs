@@ -29,6 +29,18 @@ try {
     `document.querySelectorAll('.import-row').length === 4 && Boolean(document.getElementById('apply-inbox-date-filters'))`,
   );
 
+  const evidenceFocused = await evaluate(
+    browser.cdp,
+    `(() => {
+      const link = document.querySelector('.inbox-review-nav[href="#csv-import-title"]');
+      const target = document.getElementById('csv-import-title');
+      link?.click();
+      return Boolean(link && target);
+    })()`,
+  );
+  assert.equal(evidenceFocused, true, "Inbox A6 evidence navigation is unavailable");
+  await sleep(150);
+
   const clickability = await evaluate(
     browser.cdp,
     `(() => {

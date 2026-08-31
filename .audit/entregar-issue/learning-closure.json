@@ -1,19 +1,17 @@
 {
   "schema_version": 1,
+  "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:fb1e1bff-bbf1-4ce6-ada5-65bcccdcbec2",
+    "rejection_id": "audit-rejection:614-format-check-inbox-page",
+    "audit_report_sha256": "4a309cb7c9ff3c02aa3793af99ee5d4c833a3519a266ef6eb5caf3c2fda8fe46",
     "finding_ids": [
-      "A-001",
-      "A-002",
-      "A-003",
-      "A-004"
-    ],
-    "audit_report_sha256": "b16d5ab6874f0613aaed5951016060a94c0d955009c76ff5d8df5e51164e68b0"
+      "A-006"
+    ]
   },
-  "classification": "implementation-only",
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "Os controles existentes já exigem checkpoint inicial imutável, replay do gate determinístico e handoff result-only fresco; os demais achados eram específicos da implementação do Dashboard, portanto não exigem nova regra global."
-  }
+    "reason": "The rejection was a local formatting defect already caught by the existing deterministic Prettier gate; no new reusable Skill rule is required."
+  },
+  "skill_changes": []
 }

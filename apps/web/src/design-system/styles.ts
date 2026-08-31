@@ -589,6 +589,12 @@ ${Object.keys(tokens.semanticStates)
   min-width: 0;
 }
 
+.sf-detail-layout button {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
 .sf-form-layout,
 .sf-form-layout-fields {
   display: grid;

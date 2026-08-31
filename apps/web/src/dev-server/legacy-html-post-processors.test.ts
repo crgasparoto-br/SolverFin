@@ -44,18 +44,14 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
 });
 
 test("legacy HTML pipeline preserves the registered order including async adapters", async () => {
-  const result = await applyLegacyHtmlPostProcessorPipeline("/inbox", "rendered", [
+  const result = await applyLegacyHtmlPostProcessorPipeline("/categorias", "rendered", [
     {
-      id: "inbox-structured-payload",
-      transform: async (html) => `${html}|payload`,
-    },
-    {
-      id: "inbox-list-layout",
-      transform: (html) => `${html}|layout`,
+      id: "categories-icons-tooltips",
+      transform: async (html) => `${html}|icons`,
     },
   ]);
 
-  assert.equal(result, "rendered|payload|layout");
+  assert.equal(result, "rendered|icons");
 });
 
 test("legacy HTML pipeline rejects missing or reordered adapters before transforming HTML", async () => {
@@ -104,7 +100,6 @@ test("every route represented in the inventory has at least one residual adapter
     "/categorias",
     "/cartoes",
     "/lancamentos",
-    "/inbox",
   ];
 
   assert.deepEqual(

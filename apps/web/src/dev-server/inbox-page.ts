@@ -5,6 +5,14 @@ import {
   enhanceInboxCategoryHierarchy,
   type CategoryRecord,
 } from "./inbox-category-hierarchy-enhancement.js";
+import { enhanceInboxOfxImport } from "./inbox-ofx-import-enhancement.js";
+import {
+  inboxReviewArchetypeStyles,
+  renderFinancialInsightFallback,
+  renderInboxCategoriesUnavailable,
+  renderInboxReviewArchetype,
+  type FinancialInsightFallbackView,
+} from "./inbox-review-archetype.js";
 import { icon } from "./icons.js";
 import { buildImportStatementUrl } from "./import-statement-navigation.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
@@ -58,10 +66,17 @@ interface ReviewQueueItem {
   model?: string;
 }
 
+interface ReviewQueueResponse {
+  suggestions: ReviewQueueItem[];
+  financialInsights?: {
+    insufficientData?: readonly FinancialInsightFallbackView[];
+  };
+}
+
 export async function renderInboxPage(token: string): Promise<string> {
   const [messages, reviewQueue, accounts, categories, profiles] = await Promise.all([
     apiGet<{ messages: BankMessageInboxRecord[] }>(token, "/api/bank-message-inbox?status=all"),
-    apiGet<{ suggestions: ReviewQueueItem[] }>(
+    apiGet<ReviewQueueResponse>(
       token,
       "/api/ai-review-queue?status=pending_review&includeLowConfidence=true",
     ),
@@ -86,26 +101,20 @@ export async function renderInboxPage(token: string): Promise<string> {
     : undefined;
   const activeProfileLabel = activeProfile?.name ?? "Perfil financeiro ativo";
 
-  const html = renderShell(`
-    <section class="page-heading">
-      <div>
-        <p class="eyebrow">Entradas e revisão</p>
-        <h1>Inbox</h1>
-        <p class="muted">Importe extratos ou registre mensagens e confirme cada efeito financeiro antes de salvar.</p>
-      </div>
-      <div class="heading-actions">
-        <button type="button" class="secondary-button" data-open-dialog="new-inbox-message-dialog" title="Registrar nova mensagem">${icon("send", 14)} Registrar mensagem</button>
-        <button type="button" data-open-dialog="csv-import-dialog" title="Importar extrato CSV">${icon("upload", 14)} Importar extrato</button>
-      </div>
-    </section>
-
-    ${renderCsvImportWorkspace()}
-
-    <section class="panel list-panel">
+  const actionsHtml = `
+    <button type="button" class="secondary-button" data-open-dialog="new-inbox-message-dialog" title="Registrar nova mensagem">${icon("send", 14)} Registrar mensagem</button>
+    <button type="button" data-open-dialog="csv-import-dialog" title="Importar extrato CSV">${icon("upload", 14)} Importar extrato</button>
+  `;
+  const financialInsightFallbackHtml = reviewQueue.ok
+    ? renderFinancialInsightFallback(reviewQueue.data.financialInsights?.insufficientData ?? [])
+    : "";
+  const suggestionsHtml = `
+    <section class="panel list-panel inbox-review-group" aria-labelledby="inbox-review-suggestions-title">
       <div class="section-heading">
-        <h2>Outras sugestões</h2>
+        <h2 id="inbox-review-suggestions-title">Outras sugestões</h2>
         <span>${suggestions.length} pendentes</span>
       </div>
+      ${financialInsightFallbackHtml}
       <div class="rows maintenance-rows">
         ${
           suggestions.map(renderReviewSuggestionRow).join("") ||
@@ -116,10 +125,11 @@ export async function renderInboxPage(token: string): Promise<string> {
         }
       </div>
     </section>
-
-    <section class="panel list-panel">
+  `;
+  const messagesHtml = `
+    <section class="panel list-panel inbox-review-group" aria-labelledby="inbox-review-messages-title">
       <div class="section-heading">
-        <h2>Mensagens recebidas</h2>
+        <h2 id="inbox-review-messages-title">Mensagens recebidas</h2>
         <span>${messages.data.messages.length} itens</span>
       </div>
       <div class="rows maintenance-rows">
@@ -132,8 +142,28 @@ export async function renderInboxPage(token: string): Promise<string> {
         }
       </div>
     </section>
+  `;
+  const evidenceHtml = renderCsvImportWorkspace().replace(
+    'class="panel import-workspace"',
+    'class="panel import-workspace inbox-review-evidence" data-inbox-review-evidence',
+  );
+  const categoryStatusHtml = categories.ok
+    ? ""
+    : renderInboxCategoriesUnavailable(categories.error);
+  const reviewQueueStatusHtml = reviewQueue.ok
+    ? ""
+    : `<p class="error" role="alert">Não foi possível carregar as outras sugestões: ${escapeHtml(reviewQueue.error)}</p>`;
+  const statusHtml = `${categoryStatusHtml}${reviewQueueStatusHtml}`;
+  const reviewSurfaceHtml = renderInboxReviewArchetype({
+    actionsHtml,
+    suggestionsHtml,
+    messagesHtml,
+    evidenceHtml,
+    statusHtml,
+  });
 
-    ${reviewQueue.ok ? "" : `<p class="error" role="alert">Não foi possível carregar as outras sugestões: ${escapeHtml(reviewQueue.error)}</p>`}
+  const html = renderShell(`
+    ${reviewSurfaceHtml}
     ${renderCsvImportDialog(accountOptions, activeProfileLabel)}
     ${renderCsvLineEditDialog()}
     ${renderNewMessageDialog(accountOptions, categoryOptions)}
@@ -141,8 +171,11 @@ export async function renderInboxPage(token: string): Promise<string> {
     ${apiFormScript()}
     ${dialogScript()}
   `);
+  const ofxEnhanced = enhanceInboxOfxImport(html);
 
-  return categories.ok ? enhanceInboxCategoryHierarchy(html, categories.data.categories) : html;
+  return categories.ok
+    ? enhanceInboxCategoryHierarchy(ofxEnhanced, categories.data.categories)
+    : ofxEnhanced;
 }
 
 function renderCsvImportWorkspace(): string {
@@ -1068,6 +1101,7 @@ function baseCss(): string {
   return `
     ${sharedShellStyles()}
     ${sharedDialogStyles()}
+    ${inboxReviewArchetypeStyles()}
     .small-note { font-size: 0.8125rem; }
     textarea, input[type="file"] { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); font: inherit; font-size: 0.875rem; line-height: 1.5; padding: 8px 10px; width: 100%; }
     textarea { min-height: 36px; resize: vertical; }

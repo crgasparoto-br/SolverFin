@@ -1,0 +1,38 @@
+# [Fase 3C] Migrar Inbox para arquétipo de revisão e triagem
+
+Parent epic: #591
+Depends on: #601, #603, #604, #605, #606
+
+## Objetivo
+
+Migrar `/inbox` para o arquétipo de revisão, reduzindo fragmentação visual e priorizando triagem, evidência e decisão sobre mensagens, importações e sugestões.
+
+## Escopo
+
+- usar primitives/layout/view-model da Fase 3B;
+- organizar fila, filtros, evidência e ações de decisão com hierarquia consistente;
+- preservar origens, confiança, estados e revisão humana;
+- manter ações de status, seleção e filtros existentes necessários ao fluxo;
+- retirar enhancements de tabela, filtro, legibilidade e acessibilidade que forem substituídos por componentes estruturados;
+- preservar estados concorrentes/obsoletos quando já fazem parte do contrato.
+
+## Critérios de aceite
+
+- [ ] item em revisão, evidência e ação principal ficam claros sem banners/textos longos;
+- [ ] fila é operável por teclado e mobile;
+- [ ] filtros e estados não perdem semântica existente;
+- [ ] empty/loading/error/retry são consistentes;
+- [ ] enhancements substituídos são removidos/depreciados com cobertura equivalente;
+- [ ] cenário representativo participa do gate visual.
+
+## Fora de escopo
+
+- alterar contratos de IA ou deduplicação;
+- automatizar aprovação irreversível.
+
+## Referências
+
+- #591
+- `docs/AI_REVIEW_QUEUE.md`
+- `docs/BANK_MESSAGE_INBOX.md`
+- ADR 0014

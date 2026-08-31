@@ -1,1 +1,199 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"standard_evidence","compression":"gzip","encoded_size":2576,"encoded_sha256":"22fcbdb6bec8474f6534ca9c5aaf738dfda9070a33aecfdd63209dab34cd85c5","decoded_size":11180,"decoded_sha256":"241aa01eb5b07dbffbdf50d98b7271ab9386bf33c81208e2ef7da36e7240abf1","parts":[{"path":"standard-evidence.parts/part-000.b64","size":2576,"sha256":"22fcbdb6bec8474f6534ca9c5aaf738dfda9070a33aecfdd63209dab34cd85c5"}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "head_sha": "4def539a981d8d9c99e2900013e607341e3ad926",
+  "requirements": [
+    {
+      "requirement_id": "REQ-001",
+      "positive_evidence": [
+        "The canonical Inbox renderer still composes A6 directly through the Phase 3B review archetype; the remediation only restructures status-string assembly."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-001",
+        "status": "passed",
+        "procedure": "Inspect the material diff and direct renderer call path for any reintroduction of final-page textual A6 composition.",
+        "expected": "Only status-string assembly changes; direct Phase 3B A6 composition remains intact.",
+        "observed": "The material diff is limited to category/review queue status intermediate variables in inbox-page.ts."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-002",
+      "positive_evidence": [
+        "Requirement REQ-002 remains covered by the unchanged A6 implementation; the material remediation changes only status-string formatting structure."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-002",
+        "status": "passed",
+        "procedure": "Inspect the exact material diff against the pre-remediation head and verify no functional branch for this requirement changed.",
+        "expected": "No functional behavior for the requirement changes in a formatting-only remediation.",
+        "observed": "The compare contains only inbox-page.ts with 7 additions/7 deletions in the status assembly block."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-003",
+      "positive_evidence": [
+        "Requirement REQ-003 remains covered by the unchanged A6 implementation; the material remediation changes only status-string formatting structure."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-003",
+        "status": "passed",
+        "procedure": "Inspect the exact material diff against the pre-remediation head and verify no functional branch for this requirement changed.",
+        "expected": "No functional behavior for the requirement changes in a formatting-only remediation.",
+        "observed": "The compare contains only inbox-page.ts with 7 additions/7 deletions in the status assembly block."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-004",
+      "positive_evidence": [
+        "Requirement REQ-004 remains covered by the unchanged A6 implementation; the material remediation changes only status-string formatting structure."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-004",
+        "status": "passed",
+        "procedure": "Inspect the exact material diff against the pre-remediation head and verify no functional branch for this requirement changed.",
+        "expected": "No functional behavior for the requirement changes in a formatting-only remediation.",
+        "observed": "The compare contains only inbox-page.ts with 7 additions/7 deletions in the status assembly block."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-005",
+      "positive_evidence": [
+        "Requirement REQ-005 remains covered by the unchanged A6 implementation; the material remediation changes only status-string formatting structure."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-005",
+        "status": "passed",
+        "procedure": "Inspect the exact material diff against the pre-remediation head and verify no functional branch for this requirement changed.",
+        "expected": "No functional behavior for the requirement changes in a formatting-only remediation.",
+        "observed": "The compare contains only inbox-page.ts with 7 additions/7 deletions in the status assembly block."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-006",
+      "positive_evidence": [
+        "Requirement REQ-006 remains covered by the unchanged A6 implementation; the material remediation changes only status-string formatting structure."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-006",
+        "status": "passed",
+        "procedure": "Inspect the exact material diff against the pre-remediation head and verify no functional branch for this requirement changed.",
+        "expected": "No functional behavior for the requirement changes in a formatting-only remediation.",
+        "observed": "The compare contains only inbox-page.ts with 7 additions/7 deletions in the status assembly block."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-007",
+      "positive_evidence": [
+        "Requirement REQ-007 remains covered by the unchanged A6 implementation; the material remediation changes only status-string formatting structure."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-007",
+        "status": "passed",
+        "procedure": "Inspect the exact material diff against the pre-remediation head and verify no functional branch for this requirement changed.",
+        "expected": "No functional behavior for the requirement changes in a formatting-only remediation.",
+        "observed": "The compare contains only inbox-page.ts with 7 additions/7 deletions in the status assembly block."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-008",
+      "positive_evidence": [
+        "Requirement REQ-008 remains covered by the unchanged A6 implementation; the material remediation changes only status-string formatting structure."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-008",
+        "status": "passed",
+        "procedure": "Inspect the exact material diff against the pre-remediation head and verify no functional branch for this requirement changed.",
+        "expected": "No functional behavior for the requirement changes in a formatting-only remediation.",
+        "observed": "The compare contains only inbox-page.ts with 7 additions/7 deletions in the status assembly block."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-009",
+      "positive_evidence": [
+        "financialInsights.insufficientData remains consumed and rendered in the A6 suggestions surface; the formatting-only change does not touch that branch."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-009",
+        "status": "passed",
+        "procedure": "Inspect the insufficient-data branch and verify it remains wired before the status-string composition changed by the remediation.",
+        "expected": "The informational insufficient-data state remains observable without an artificial insight.",
+        "observed": "The insufficient-data call is unchanged and remains part of suggestionsHtml."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-010",
+      "positive_evidence": [
+        "Category API failure still renders a localized unavailable state inside A6, now assigned to categoryStatusHtml before composition."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-010",
+        "status": "passed",
+        "procedure": "Inspect the categories failure branch and verify A6 is still built before bounded category enrichment.",
+        "expected": "A category outage keeps A6 and unrelated OFX behavior available.",
+        "observed": "categoryStatusHtml delegates to renderInboxCategoriesUnavailable and is concatenated into the same A6 statusHtml."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-011",
+      "positive_evidence": [
+        "Requirement REQ-011 remains covered by the unchanged A6 implementation; the material remediation changes only status-string formatting structure."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-011",
+        "status": "passed",
+        "procedure": "Inspect the exact material diff against the pre-remediation head and verify no functional branch for this requirement changed.",
+        "expected": "No functional behavior for the requirement changes in a formatting-only remediation.",
+        "observed": "The compare contains only inbox-page.ts with 7 additions/7 deletions in the status assembly block."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    },
+    {
+      "requirement_id": "REQ-012",
+      "positive_evidence": [
+        "Statement visual validation #3171 is registered for exact material head 4def539a981d8d9c99e2900013e607341e3ad926 and was in progress at the single remote snapshot."
+      ],
+      "primary_negative_control": {
+        "id": "INBOX-614-012",
+        "status": "passed",
+        "procedure": "Verify a representative Statement visual validation workflow is registered for the exact material SHA.",
+        "expected": "The exact material candidate participates in the representative visual gate.",
+        "observed": "GitHub Actions run #3171 exists for the exact material SHA; completion was in progress at snapshot time."
+      },
+      "regression_evidence": [
+        "CI #4671 on the exact material SHA completed the previously failing Check formatting step successfully; lint was in progress and later sequential gates were not yet claimed passed at the single allowed snapshot."
+      ]
+    }
+  ]
+}
