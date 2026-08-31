@@ -30,7 +30,7 @@ export interface LegacyHtmlPostProcessorInventoryEntry {
   fallbackAccessibility: string;
 }
 
-export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 11;
+export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 9;
 
 export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
   {
@@ -147,47 +147,19 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
       "A retirada so ocorre quando o HTML servido conserva semantica, foco, labels e estados equivalentes.",
   },
   {
-    id: "statement-list-sorting",
-    route: "/lancamentos",
-    order: 1,
-    owner: "web-statement",
-    module: "./list-sorting-enhancement.js",
-    exportName: "enhanceStatementListSorting",
-    responsibility: "Reordena linhas do extrato e injeta apresentacao associada depois do render.",
-    migration: "view-model-schema",
-    replacementCriterion:
-      "O ViewModel do extrato determina ordem e metadados de apresentacao antes de renderizar as linhas.",
-    fallbackAccessibility:
-      "A ordem do DOM continua refletindo a ordem apresentada e estados de linha permanecem anunciaveis.",
-  },
-  {
     id: "account-remuneration-disclosure",
     route: "/lancamentos",
-    order: 2,
+    order: 1,
     owner: "web-statement",
     module: "./account-remuneration-disclosure-enhancement.js",
     exportName: "enhanceAccountRemunerationDisclosure",
     responsibility:
-      "Adiciona affordance e memoria de calculo de remuneracao sobre linhas ja renderizadas.",
-    migration: "view-model-schema",
+      "Adapter temporario que preserva selecao em massa, operacoes de agrupamento e affordance de remuneracao enquanto esses runtimes sao extraidos do legado.",
+    migration: "temporary-processor",
     replacementCriterion:
-      "Dados de remuneracao e disclosure chegam no ViewModel da linha e o componente renderiza a affordance diretamente.",
+      "Selecao em massa, edicao de agrupamentos e disclosure de remuneracao sao emitidos diretamente pelo renderer A2 com contratos de runtime equivalentes, sem transformar HTML final.",
     fallbackAccessibility:
-      "Memoria de calculo e acao de disclosure continuam acessiveis por texto, foco e teclado durante a transicao.",
-  },
-  {
-    id: "statement-insight-context",
-    route: "/lancamentos",
-    order: 3,
-    owner: "web-statement",
-    module: "./statement-insight-context-enhancement.js",
-    exportName: "enhanceStatementInsightContext",
-    responsibility: "Acopla contexto de insights ao extrato com base no documento final e na URL.",
-    migration: "view-model-schema",
-    replacementCriterion:
-      "O contexto de insight e calculado antes do render e entregue como dado estruturado ao componente responsavel.",
-    fallbackAccessibility:
-      "Contexto adicional nao remove o conteudo financeiro principal nem cria dependencia exclusiva de indicacao visual.",
+      "Selecao, dialogs, memoria de calculo, foco, teclado e labels permanecem operaveis durante a ultima etapa da migracao.",
   },
 ] as const satisfies readonly LegacyHtmlPostProcessorInventoryEntry[];
 
@@ -219,9 +191,6 @@ export async function applyLegacyHtmlPostProcessorPipeline(
   }
 
   let currentHtml = html;
-  for (const step of steps) {
-    currentHtml = await step.transform(currentHtml);
-  }
-
+  for (const step of steps) currentHtml = await step.transform(currentHtml);
   return currentHtml;
 }
