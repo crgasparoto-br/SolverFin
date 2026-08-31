@@ -51,8 +51,7 @@ jobs:
           elif new_clone not in statement:
               raise RuntimeError("Expected transaction clone action was not found")
 
-          helper_marker = "function renderTransactionDescription("
-          if helper_marker not in statement:
+          if "function renderTransactionDescription(" not in statement:
               insert_marker = "function renderGroupRow(\n"
               helper = '''function renderTransactionDescription(
             transaction: TransactionRecord,
@@ -103,8 +102,7 @@ jobs:
           elif new_css not in statement:
               raise RuntimeError("Expected remuneration CSS block was not found")
 
-          protection_marker = "const remunerationIds = new Set();"
-          if protection_marker not in statement:
+          if "const remunerationIds = new Set();" not in statement:
               insert_after = '''    form.appendChild(statusNode);\n'''
               protection = '''    const remunerationIds = new Set();
               const unlockRemunerationFields = () => {
@@ -180,31 +178,35 @@ jobs:
                   raise RuntimeError("Statement transaction runtime loop closing was not found")
               statement = statement.replace(after_loop_marker, protection_listener, 1)
 
-          submit_start = '''      event.preventDefault(); if (form.dataset.submitting === "true") return;
-              const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]'); form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
-              try {'''
-          submit_start_new = '''      event.preventDefault(); if (form.dataset.submitting === "true") return;
-              const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]'); form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
-              let shouldReload = false;
-              try {'''
-          if submit_start in statement:
-              statement = statement.replace(submit_start, submit_start_new, 1)
-          elif "let shouldReload = false;" not in statement:
-              raise RuntimeError("Statement submit start was not found")
+          if "let shouldReload = false;" not in statement:
+              statement, count = re.subn(
+                  r'(statusNode\.textContent = "Salvando\.\.\.";\s*)(try \{)',
+                  lambda match: match.group(1) + 'let shouldReload = false;\n      ' + match.group(2),
+                  statement,
+                  count=1,
+              )
+              if count != 1:
+                  raise RuntimeError("Statement submit start was not found")
 
-          success_reload = '''        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response); if (response.ok) setTimeout(() => location.reload(), 350);'''
-          success_reload_new = '''        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response); if (response.ok) { shouldReload = true; setTimeout(() => location.reload(), 350); }'''
-          if success_reload in statement:
-              statement = statement.replace(success_reload, success_reload_new, 1)
-          elif success_reload_new not in statement:
-              raise RuntimeError("Statement success reload branch was not found")
+          if "shouldReload = true" not in statement:
+              statement, count = re.subn(
+                  r'if \(response\.ok\) setTimeout\(\(\) => location\.reload\(\), 350\);',
+                  'if (response.ok) { shouldReload = true; setTimeout(() => location.reload(), 350); }',
+                  statement,
+                  count=1,
+              )
+              if count != 1:
+                  raise RuntimeError("Statement success reload branch was not found")
 
-          finally_old = '''      finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit) submit.disabled = false; }'''
-          finally_new = '''      finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit && !shouldReload) submit.disabled = false; }'''
-          if finally_old in statement:
-              statement = statement.replace(finally_old, finally_new, 1)
-          elif finally_new not in statement:
-              raise RuntimeError("Statement submit finalizer was not found")
+          if "submit && !shouldReload" not in statement:
+              statement, count = re.subn(
+                  r'finally \{\s*delete form\.dataset\.submitting;\s*form\.removeAttribute\("aria-busy"\);\s*if \(submit\) submit\.disabled = false;\s*\}',
+                  'finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit && !shouldReload) submit.disabled = false; }',
+                  statement,
+                  count=1,
+              )
+              if count != 1:
+                  raise RuntimeError("Statement submit finalizer was not found")
 
           statement_path.write_text(statement)
 
