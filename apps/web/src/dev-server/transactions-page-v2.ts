@@ -167,15 +167,13 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
 function resolvePresentation(url: URL | undefined): StatementPresentation {
   const rawSort = url?.searchParams.get("sort");
   const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
+  const insightCategoryId = readNonEmpty(url?.searchParams.get("categoryId"));
+  const insightMerchantKey = normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "");
   return {
     search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
     sort,
-    ...(readNonEmpty(url?.searchParams.get("categoryId"))
-      ? { insightCategoryId: readNonEmpty(url?.searchParams.get("categoryId")) }
-      : {}),
-    ...(normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "")
-      ? { insightMerchantKey: normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "") }
-      : {}),
+    ...(insightCategoryId ? { insightCategoryId } : {}),
+    ...(insightMerchantKey ? { insightMerchantKey } : {}),
   };
 }
 
