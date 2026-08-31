@@ -210,7 +210,7 @@ export function enhanceInboxReviewArchetype(html: string): string {
       </section>
     `,
   });
-  const reviewRuntimeHtml = `
+  const reviewRuntimeHtml = String.raw`
     <script data-inbox-review-runtime="true">
       (() => {
         const profileId = new URLSearchParams(window.location.search).get("profileId");
