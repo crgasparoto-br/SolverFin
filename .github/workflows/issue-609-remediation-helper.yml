@@ -28,8 +28,21 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Validate repository build gates
+      - name: Run repository tests with diagnostic capture
+        id: repository-tests
+        continue-on-error: true
         run: |
-          npm run build:packages
-          npm run typecheck
-          npm run build
+          set -o pipefail
+          npm test 2>&1 | tee issue-609-test.log
+
+      - name: Upload test diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-609-test-diagnostic
+          path: issue-609-test.log
+          if-no-files-found: error
+
+      - name: Preserve test outcome
+        if: steps.repository-tests.outcome == 'failure'
+        run: exit 1
