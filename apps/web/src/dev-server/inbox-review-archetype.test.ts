@@ -49,6 +49,7 @@ describe("Inbox review archetype", () => {
     assert.match(html, /class="sf-page-container inbox-review-cockpit"/);
     assert.match(html, /class="sf-filter-bar"/);
     assert.match(html, /class="sf-detail-layout"/);
+    assert.match(html, /class="inbox-section-nav"/);
     assert.match(html, /id="inbox-review-queue"/);
     assert.match(html, /data-inbox-review-evidence/);
     assert.match(html, /Evidência e decisão/);
@@ -59,8 +60,8 @@ describe("Inbox review archetype", () => {
     assert.match(html, /data-api-action/);
     assert.match(html, /id="import-workspace-status"/);
     assert.match(html, /id="import-batch-detail"/);
-    assert.doesNotMatch(html, /class="panel list-panel"/);
-    assert.doesNotMatch(html, /class="panel import-workspace"/);
+    assert.match(html, /class="panel list-panel inbox-review-group"/);
+    assert.match(html, /class="panel import-workspace inbox-review-evidence"/);
   });
 
   it("is idempotent so repeated composition does not duplicate review surfaces", () => {
