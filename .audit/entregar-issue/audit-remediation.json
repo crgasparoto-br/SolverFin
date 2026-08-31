@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "f560ba2757dd067ebb89e211cfb9e21050f86c37",
+  "candidate_head_sha": "4c339c8e2be458335eae1767bd8560a2568d745a",
   "remediation_mode": "targeted-remediation",
   "source": {
     "rejection_id": "audit-rejection:614-handoff-target-5e68df9",
@@ -16,11 +16,11 @@
       "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "evidence": "The replacement handoff is rebuilt as an issue-scoped result-only child over material head f560ba2757dd067ebb89e211cfb9e21050f86c37 with work_item_kind=issue and work_item_number=614 while retaining pull_request_number=648.",
+      "evidence": "The issue-scoped handoff is rebuilt after mandatory post-write refreeze on material head 4c339c8e2be458335eae1767bd8560a2568d745a with work_item_kind=issue, work_item_number=614, issue_number=614 and pull_request_number=648.",
       "validations": [
-        "build_handoff_certificate.py rejects subject/snapshot mismatches before publication",
-        "validate_handoff_certificate.py is executed against the expected Issue 614 target before the branch ref is updated",
-        "the published replacement child is required to have parent f560ba2757dd067ebb89e211cfb9e21050f86c37 and only allow-listed handoff paths"
+        "build_handoff_certificate.py rejects issue/work-item/snapshot subject mismatches before publication",
+        "standard evidence and the previous independent rejection closure are revalidated against material head 4c339c8e2be458335eae1767bd8560a2568d745a",
+        "the published replacement is required to be a direct result-only child of 4c339c8e2be458335eae1767bd8560a2568d745a containing only certificate-allowlisted result paths"
       ]
     }
   ]
