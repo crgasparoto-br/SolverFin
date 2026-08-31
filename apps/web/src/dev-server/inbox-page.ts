@@ -147,13 +147,13 @@ export async function renderInboxPage(token: string): Promise<string> {
     'class="panel import-workspace"',
     'class="panel import-workspace inbox-review-evidence" data-inbox-review-evidence',
   );
-  const statusHtml = `${
-    categories.ok ? "" : renderInboxCategoriesUnavailable(categories.error)
-  }${
-    reviewQueue.ok
-      ? ""
-      : `<p class="error" role="alert">Não foi possível carregar as outras sugestões: ${escapeHtml(reviewQueue.error)}</p>`
-  }`;
+  const categoryStatusHtml = categories.ok
+    ? ""
+    : renderInboxCategoriesUnavailable(categories.error);
+  const reviewQueueStatusHtml = reviewQueue.ok
+    ? ""
+    : `<p class="error" role="alert">Não foi possível carregar as outras sugestões: ${escapeHtml(reviewQueue.error)}</p>`;
+  const statusHtml = `${categoryStatusHtml}${reviewQueueStatusHtml}`;
   const reviewSurfaceHtml = renderInboxReviewArchetype({
     actionsHtml,
     suggestionsHtml,
