@@ -855,7 +855,7 @@ function serializeScriptJson(value: unknown): string {
 
 function css(): string {
   return `${sharedShellStyles()}${statementListArchetypeStyles()}
-    main { display:grid; gap:14px; margin:0 auto; min-width:0; padding:18px 20px; width:100%; }
+    main { display:grid; gap:14px; margin:0 auto; max-width:1800px; min-width:0; padding:18px 20px; width:100%; }
     [hidden]{display:none!important}.warning{color:var(--warning);font-weight:600}
     .filter-form{align-items:end;display:grid;gap:10px;grid-template-columns:minmax(12rem,1.1fr) minmax(12rem,.75fr) minmax(12rem,1fr) minmax(11rem,.75fr) auto}
     .month-field,.account-field{display:grid;gap:6px}.account-select{position:relative}.account-select-trigger{align-items:center;background:var(--surface);border:1px solid var(--line);color:var(--text);display:flex;gap:8px;justify-content:flex-start;min-height:44px;padding:0 10px;text-align:left;width:100%}.account-select-text{flex:1;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-select-icon{align-items:center;display:inline-flex;flex-shrink:0;height:20px;width:20px}.account-select-chevron{color:var(--muted);flex-shrink:0}.account-select-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);left:0;list-style:none;margin:4px 0 0;max-height:260px;overflow-y:auto;padding:4px;position:absolute;right:0;top:100%;z-index:20}.account-select-menu li{align-items:center;border-radius:var(--radius);cursor:pointer;display:flex;font-size:.875rem;font-weight:600;gap:8px;padding:7px 8px}.account-select-menu li:hover,.account-select-menu li[aria-selected=true]{background:var(--primary-soft)}
