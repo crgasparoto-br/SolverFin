@@ -5,47 +5,27 @@
   "repository": "crgasparoto-br/SolverFin",
   "issue_number": 614,
   "pull_request_number": 648,
-  "head_sha": "041b4bc4624430eb1127dc6629baac5c3a700350",
-  "published_handoff_head_sha": "48c204f867e239d0ac44e78138f3ea92809b6e8e",
-  "rejection_id": "audit-rejection:614-phase3b-textual-postprocessor",
+  "head_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
+  "published_handoff_head_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
+  "rejection_id": "audit-rejection:614-format-check-inbox-page",
   "findings": [
     {
-      "id": "A-003",
+      "id": "A-006",
       "severity": "blocking",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "requirement_ids": [
-        "REQ-001",
-        "REQ-005",
-        "REQ-011"
-      ],
-      "summary": "A6 review composition remained a regex/string postprocessor over final HTML despite Phase 3B direct-composition requirements."
-    },
-    {
-      "id": "A-004",
-      "severity": "high",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "requirement_ids": [
-        "REQ-009"
-      ],
-      "summary": "financialInsights.insufficientData stopped being observable on the production Inbox path after the old structured payload enhancer was disconnected."
-    },
-    {
-      "id": "A-005",
-      "severity": "high",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "requirement_ids": [
-        "REQ-010"
-      ],
-      "summary": "A categories API failure skipped A6 entirely and silently returned the pre-A6 layout."
+      "requirement_ids": [],
+      "summary": "The deterministic monorepo formatting gate failed on apps/web/src/dev-server/inbox-page.ts, so lint, typecheck, test and build were not reached.",
+      "failed_gate": {
+        "name": "Check formatting",
+        "command": "npm run format:check",
+        "deterministic": true,
+        "subject_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
+        "observed_exit_code": 1,
+        "evidence_sha256": "199231f45b6316efa8d4fdf1e146773ce2fa4e6194f4ece12e847f7a15587c09"
+      }
     }
   ],
   "recommendations": []

@@ -4,45 +4,46 @@
   "resolution_policy": "all-actionable-items",
   "status": "closed",
   "remediation_mode": "targeted-remediation",
-  "candidate_head_sha": "367c318b041cbd9a9a4254c1351410c0baf100ba",
+  "candidate_head_sha": "4def539a981d8d9c99e2900013e607341e3ad926",
   "source": {
-    "rejection_id": "audit-rejection:614-phase3b-textual-postprocessor",
-    "audited_head_sha": "041b4bc4624430eb1127dc6629baac5c3a700350",
-    "audit_report_sha256": "775be8d72101991b4578f064a9b842e497fdbd7d42f2d6243c2003d6b5a4ff0e"
+    "rejection_id": "audit-rejection:614-format-check-inbox-page",
+    "audited_head_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
+    "audit_report_sha256": "4a309cb7c9ff3c02aa3793af99ee5d4c833a3519a266ef6eb5caf3c2fda8fe46"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-003",
+      "source_id": "A-006",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "evidence": "Direct A6 composition moved to apps/web/src/dev-server/inbox-review-archetype.ts and the rejected enhanceInboxReviewArchetype final-HTML transformer was removed from inbox-category-hierarchy-enhancement.ts.",
+      "closure_kind": "deterministic-gate-replay",
+      "changed_files": [
+        "apps/web/src/dev-server/inbox-page.ts"
+      ],
+      "evidence": [
+        "The status composition was rewritten into Prettier-stable intermediate variables without changing rendered semantics.",
+        "The final material diff from the pre-remediation head changes only apps/web/src/dev-server/inbox-page.ts (7 additions, 7 deletions)."
+      ],
       "validations": [
-        "Exact material source inspection confirms PageHeader/FilterBar/PageContainer/DetailLayout direct composition.",
-        "Focused regression test keeps A6 marker/layout intact through the bounded category adapter."
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-004",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "evidence": "renderInboxPage now consumes reviewQueue.data.financialInsights.insufficientData and renders renderFinancialInsightFallback inside the A6 suggestions surface.",
-      "validations": [
-        "Focused first-render fixture supplies insufficientData and asserts the informational marker/text without creating an insight.",
-        "docs/AI_REVIEW_QUEUE.md semantics remain unchanged."
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-005",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "evidence": "renderInboxPage builds A6 before category-dependent enrichment; category failures render renderInboxCategoriesUnavailable locally and still apply the OFX adapter.",
-      "validations": [
-        "Focused categories-503 fixture asserts A6, detail layout, unavailable state and OFX controls remain present.",
-        "Category hierarchy adapter only runs on categories.ok."
-      ]
+        "GitHub Actions CI #4671 job Validate monorepo reports Check formatting completed with conclusion=success on the exact material SHA.",
+        "At the single remote delivery snapshot, lint was in progress and later sequential gates were correctly recorded as not yet reached rather than claimed passed."
+      ],
+      "original_failed_gate": {
+        "name": "Check formatting",
+        "command": "npm run format:check",
+        "subject_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
+        "exit_code": 1,
+        "evidence_sha256": "199231f45b6316efa8d4fdf1e146773ce2fa4e6194f4ece12e847f7a15587c09"
+      },
+      "revalidation": {
+        "command": "npm run format:check",
+        "subject_sha": "4def539a981d8d9c99e2900013e607341e3ad926",
+        "exit_code": 0,
+        "evidence_sha256": "c73dd0269197366c4946a1c4fd38d94b6f8189b18f390e1215398387cfeea06e",
+        "equivalence": "exact-command-replay",
+        "remote_run_id": 33432655247,
+        "remote_job_id": 99621490725
+      }
     }
   ]
 }
