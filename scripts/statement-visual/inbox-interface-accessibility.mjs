@@ -225,7 +225,17 @@ async function inspectOperationalViewport(
   { width, height, screenshotName, verifyLabelActivation = false },
 ) {
   await setViewport(cdp, width, height);
-  await evaluate(cdp, `(() => { window.scrollTo(0, 0); return true; })()`);
+  const evidenceFocused = await evaluate(
+    cdp,
+    `(() => {
+      const target = document.getElementById('csv-import-title');
+      if (!target) return false;
+      target.scrollIntoView({ block: 'start', inline: 'nearest' });
+      window.scrollBy(0, -8);
+      return true;
+    })()`,
+  );
+  assert.equal(evidenceFocused, true, "Inbox A6 evidence target is unavailable");
   await sleep(250);
 
   const metrics = await evaluate(
