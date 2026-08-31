@@ -4,6 +4,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { assertExplicitRuntimeEnvironment } from "@solverfin/shared";
 
 import { buildSolverFinWebManifest } from "./pwa/manifest.js";
+import { enhanceAccountRemunerationDisclosure } from "./dev-server/account-remuneration-disclosure-enhancement.js";
 import { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
 import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
@@ -228,7 +229,17 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       return;
     }
     if (shouldUseLocalRecurrenceAdapter()) await materializeLocally("account", token, url);
-    sendHtml(response, 200, await renderTransactionsPage(token, url));
+    const html = await applyLegacyHtmlPostProcessorPipeline(
+      "/lancamentos",
+      await renderTransactionsPage(token, url),
+      [
+        {
+          id: "account-remuneration-disclosure",
+          transform: (currentHtml) => enhanceAccountRemunerationDisclosure(currentHtml),
+        },
+      ],
+    );
+    sendHtml(response, 200, html);
     return;
   }
 
