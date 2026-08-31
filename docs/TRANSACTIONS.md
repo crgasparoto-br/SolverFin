@@ -7,14 +7,17 @@ contexto autenticado de organização e perfil financeiro.
 ## Visão operacional
 
 O Extrato é a superfície principal para receitas, despesas, transferências e compromissos previstos
-de conta corrente. A implementação atual fica principalmente em
-`apps/web/src/dev-server/transactions-page.ts`, com regras de apresentação em
-`apps/web/src/dev-server/transactions-statement.ts` e operações persistidas pelas rotas e
+de conta corrente. A composição atual usa `apps/web/src/dev-server/transactions-page-v2.ts` como
+renderer da rota e `apps/web/src/dev-server/statement-list-archetype.ts` como arquétipo **A2 —
+listagem/extrato**. As regras financeiras e temporais continuam concentradas em
+`apps/web/src/dev-server/transactions-statement.ts`; operações persistidas continuam nas rotas e
 repositórios de `apps/api`.
 
 A tela permite:
 
-- selecionar uma conta ativa e um mês, com filtro diário opcional;
+- selecionar uma conta ativa e um mês;
+- reconhecer sem ambiguidade a conta, o período e a moeda do contexto atual;
+- buscar por descrição/categoria e ordenar por data, valor ou descrição antes do render;
 - acompanhar saldo inicial, entradas, saídas, pendências e conciliação;
 - criar, editar e clonar lançamentos por modal contextual;
 - conciliar, desconciliar e excluir logicamente lançamentos elegíveis;
@@ -25,13 +28,50 @@ A tela permite:
 Não existe exclusão física pelo fluxo da tela. Operações destrutivas usam cancelamento, estorno ou
 exclusão lógica conforme o contrato do domínio.
 
-## Filtros e data operacional
+## Arquétipo A2, conta e moeda
+
+`/lancamentos` não depende mais de pós-processamento de HTML para ordenar a lista nem para aplicar
+filtros originados de insights. O renderer prepara o ViewModel e entrega ao A2, nesta ordem:
+
+1. cabeçalho e ações rápidas;
+2. contexto explícito da conta, moeda e período;
+3. filtros compactos, busca e ordenação;
+4. resumo financeiro da conta;
+5. lista operacional agrupada temporalmente quando a ordenação é por data;
+6. detalhe e ações contextuais sem abandonar a lista.
+
+A moeda é parte do contexto financeiro da conta e das linhas. Uma moeda válida é um código ISO de
+três letras normalizado em maiúsculas. O renderer usa a moeda da transação/grupo quando disponível e,
+para uma linha da conta atual, a moeda explícita da própria conta como contexto. Quando a API não
+fornece uma moeda válida, a interface mostra **Moeda indisponível** e desabilita operações que
+precisam desse contexto, em vez de inventar BRL no formatter.
+
+Remuneração de conta continua sendo um domínio exclusivamente BRL conforme seu contrato próprio; por
+isso a memória de cálculo dessa feature usa BRL de forma explícita, não como fallback genérico do
+Extrato.
+
+## Filtros, insight e data operacional
 
 A consulta é sempre escopada pela conta selecionada. A visão padrão usa o mês informado no filtro;
 quando o parâmetro `day` contém uma data válida pertencente ao mesmo mês, o período exibido fica
-restrito a esse dia.
+restrito a esse dia conforme `transactions-statement.ts`.
 
-Para ordenar, filtrar e calcular saldos, a linha usa a data operacional na seguinte precedência:
+O formulário do A2 aceita:
+
+- `accountId` e `month` como contexto principal;
+- `q` para busca textual local ao ViewModel;
+- `sort` com `date_asc`, `date_desc`, `amount_desc`, `amount_asc`, `description_asc` e
+  `description_desc`;
+- parâmetros de contexto já existentes, como `profileId`, `currency`, `kind`, `evidence`, `day`,
+  `categoryId` e `merchantKey`, preservados durante a navegação.
+
+`categoryId` e `merchantKey`, quando recebidos de um insight, filtram as linhas antes do render. O
+resumo da conta permanece completo e a tela exibe um aviso contextual de que o filtro do insight está
+ativo. Grupos consolidados não são apresentados como correspondência de insight porque o filtro deve
+continuar verificável contra lançamentos individuais.
+
+Para ordenar, filtrar, agrupar visualmente e calcular saldos, a linha usa a data operacional na
+seguinte precedência:
 
 1. `effectiveOn`;
 2. `plannedOn`;
@@ -105,6 +145,17 @@ grupos selecionados sem criar nova movimentação financeira.
 O contrato completo do endpoint, estados elegíveis, respostas e regras de rollback está em
 [`API_TRANSACTION_BULK_ACTIONS.md`](./API_TRANSACTION_BULK_ACTIONS.md).
 
+## Adapter operacional residual
+
+O A2 já substitui `statement-list-sorting` e `statement-insight-context`. A rota mantém temporariamente
+somente o adapter inventariado `account-remuneration-disclosure`, porque o módulo histórico também
+preserva runtime já entregue de seleção em massa e administração avançada de agrupamentos. Esse
+adapter não é autorização para novas features por transformação de HTML.
+
+O critério de retirada está em [`LEGACY_HTML_POST_PROCESSORS.md`](./LEGACY_HTML_POST_PROCESSORS.md):
+seleção em massa, edição de agrupamentos e disclosure de remuneração devem ser emitidos diretamente
+pela composição A2 com equivalência de teclado, foco, labels e operações antes da remoção definitiva.
+
 ## Recorrências
 
 Recorrências não possuem tela ou bloco separado. Cada ocorrência materializada aparece como uma linha
@@ -112,51 +163,27 @@ normal do Extrato, preservando o indicador e as ações da recorrência no próp
 de escopo, pausa, retomada, cancelamento e materialização antecipada seguem
 [`RECURRENCES_INSTALLMENTS_WEB.md`](./RECURRENCES_INSTALLMENTS_WEB.md).
 
-## Identificação e manutenção de parcelas canônicas
-
-O Extrato consulta as parcelas canônicas pela conta e pelo período operacional selecionados e associa
-cada item exclusivamente pela transação vinculada. A leitura complementar usa `effectiveOn`,
-`plannedOn`, `occurredOn` e `dueOn` como fallback para identificar a parcela no mesmo período exibido
-pela linha. O indicador **Parcela X de Y** não transforma descrições como `1/6` em parcela canônica.
-
-A consulta de parcelas é única por renderização e degradável. Falha temporária não impede o
-carregamento da lista principal, mas mantém a edição indisponível até que a elegibilidade possa ser
-confirmada. O contrato completo está em [`API_INSTALLMENTS.md`](./API_INSTALLMENTS.md).
-
-A edição direta usa o modal de lançamento em modo restrito. Somente `description`, `note` e
-`categoryId` podem ser enviados ao contrato de parcelas, e `categoryId: null` remove a categoria após
-escolha explícita de **Sem categoria**. Categoria arquivada vinculada ao lançamento permanece
-selecionada como referência histórica.
-
-Mudanças de valor, datas, conta, tipo, situação, repetição ou redistribuição permanecem fora desse
-fluxo. O endpoint genérico de transações rejeita atualizações de dados de registros com
-`installmentId`, exceto o payload exclusivo de situação usado pela ação operacional de conciliar ou
-desconciliar. Quando esse payload foi construído a partir de um snapshot anterior, a persistência
-preserva `description`, `note` e `categoryId` já confirmados por uma edição concorrente da parcela, sem
-restaurar silenciosamente os valores antigos.
-
-A exclusão lógica individual ou em massa continua permitida como transição operacional. Nesse caso, a
-`Transaction` passa para `voided`, a `Installment` permanece consultável para histórico e a manutenção
-direta fica bloqueada com `transaction_status_locked`. Essa regra não autoriza exclusão física nem
-transforma o `PATCH` de parcela em rota de mudança de situação.
-
-O contrato de agrupamento também não pode ser usado como caminho alternativo: parcelas não entram em
-novos grupos, e grupos legados precisam ser desagrupados antes da manutenção.
+## Parcelas canônicas
 
 O modo manual **Repetição = Parcelado** envia uma única criação canônica para a API. O backend cria
 as `Installment` e as `Transaction` vinculadas de forma atômica, preserva descrição e observação
 separadas, aplica a âncora mensal da data original e devolve os mesmos identificadores em replay
-idempotente. As linhas passam imediatamente a usar o indicador e a manutenção conservadora de parcelas.
+idempotente. As ocorrências materializadas aparecem no Extrato como lançamentos normais, mantendo os
+contratos de elegibilidade de manutenção e agrupamento definidos em [`API_INSTALLMENTS.md`](./API_INSTALLMENTS.md).
 
 ## Estados, responsividade e acessibilidade
 
 A tela possui estados de erro e vazio contextualizados, feedback de salvamento e controles
-desabilitados quando a operação não é elegível. Os modais mantêm título e rótulos acessíveis, foco
-inicial coerente, navegação por teclado e fechamento por `Escape`.
+desabilitados quando conta ou moeda não permitem concluir a operação. Cabeçalho, filtros, contexto,
+lista e modais mantêm rótulos acessíveis e navegação por teclado.
 
-As validações visuais permanentes do repositório cobrem o Extrato em desktop e mobile, incluindo
-`1366x768` e `390x844`, além dos fluxos específicos de agrupamento, ações em massa, recorrências e
-parcelas canônicas.
+Em desktop, o resumo e a lista formam o layout A2. Em larguras menores, o resumo deixa de ser sticky,
+os filtros passam a grade reduzida e cada linha operacional prioriza data, histórico, status, valor,
+moeda/contexto e ação sem exigir largura fixa de desktop.
+
+As validações visuais permanentes do repositório devem cobrir o Extrato em desktop e mobile,
+incluindo `1366x768` e `390x844`, além dos fluxos específicos de agrupamento, ações em massa,
+recorrências e parcelas canônicas.
 
 ## Validação
 
