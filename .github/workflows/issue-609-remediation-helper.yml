@@ -11,7 +11,7 @@ permissions:
 jobs:
   remediate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -28,12 +28,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Apply exact optional property fix
+      - name: Apply issue 609 remediations
         run: |
           node <<'NODE'
           const fs = require('node:fs');
           const path = 'apps/web/src/dev-server/transactions-page-v2.ts';
-          const source = fs.readFileSync(path, 'utf8');
+          let source = fs.readFileSync(path, 'utf8');
           const before = `function resolvePresentation(url: URL | undefined): StatementPresentation {
             const rawSort = url?.searchParams.get("sort");
             const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
@@ -60,14 +60,19 @@ jobs:
               ...(insightMerchantKey ? { insightMerchantKey } : {}),
             };
           }`;
-          if (!source.includes(before)) {
-            throw new Error('Expected resolvePresentation source not found');
-          }
-          fs.writeFileSync(path, source.replace(before, after));
+          if (source.includes(before)) source = source.replace(before, after);
+          else if (!source.includes(after)) throw new Error('Expected resolvePresentation source not found');
+
+          const mainBefore = 'main { display:grid; gap:14px; margin:0 auto; min-width:0; padding:18px 20px; width:100%; }';
+          const mainAfter = 'main { display:grid; gap:14px; margin:0 auto; max-width:1800px; min-width:0; padding:18px 20px; width:100%; }';
+          if (source.includes(mainBefore)) source = source.replace(mainBefore, mainAfter);
+          else if (!source.includes(mainAfter)) throw new Error('Expected main width source not found');
+
+          fs.writeFileSync(path, source);
           NODE
           npx prettier --write apps/web/src/dev-server/transactions-page-v2.ts
 
-      - name: Validate web typecheck and build
+      - name: Validate full repository typecheck and build
         id: validate
         continue-on-error: true
         run: |
@@ -76,11 +81,11 @@ jobs:
           npm run build:packages > artifacts/issue-609-remediation/validation.log 2>&1
           status=$?
           if [ "$status" -eq 0 ]; then
-            npm run typecheck --workspace @solverfin/web >> artifacts/issue-609-remediation/validation.log 2>&1
+            npm run typecheck >> artifacts/issue-609-remediation/validation.log 2>&1
             status=$?
           fi
           if [ "$status" -eq 0 ]; then
-            npm run build --workspace @solverfin/web >> artifacts/issue-609-remediation/validation.log 2>&1
+            npm run build >> artifacts/issue-609-remediation/validation.log 2>&1
             status=$?
           fi
           echo "status=$status" >> "$GITHUB_OUTPUT"
@@ -103,7 +108,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No remediation changes"
           else
-            git commit -m "fix(web): stabilize statement presentation filters"
+            git commit -m "fix(web): stabilize statement A2 validation"
             git push origin HEAD:codex/609-statement-account-currency
           fi
 
