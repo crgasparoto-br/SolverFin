@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { enhanceInboxReviewArchetype } from "./inbox-category-hierarchy-enhancement.js";
+import { enhanceInboxCategoryHierarchy } from "./inbox-category-hierarchy-enhancement.js";
 import {
   inboxReviewArchetypeStyles,
   renderFinancialInsightFallback,
@@ -42,7 +42,7 @@ describe("Inbox review archetype", () => {
     assert.match(html, /data-inbox-review-runtime="true"/);
   });
 
-  it("treats the old textual archetype enhancer as a no-op once the canonical renderer marker exists", () => {
+  it("keeps the direct A6 composition intact while the legacy category adapter only enriches category behavior", () => {
     const html = renderInboxReviewArchetype({
       actionsHtml: "",
       suggestionsHtml: '<section class="panel list-panel"><h2>Outras sugestões</h2></section>',
@@ -50,8 +50,11 @@ describe("Inbox review archetype", () => {
       evidenceHtml:
         '<section class="panel import-workspace" aria-labelledby="csv-import-title"><h2 id="csv-import-title">Extratos importados</h2></section>',
     });
+    const enhanced = enhanceInboxCategoryHierarchy(html, []);
 
-    assert.equal(enhanceInboxReviewArchetype(html), html);
+    assert.match(enhanced, /data-inbox-review-archetype="A6"/);
+    assert.equal((enhanced.match(/data-inbox-review-archetype/g) ?? []).length, 1);
+    assert.equal((enhanced.match(/class="sf-detail-layout"/g) ?? []).length, 1);
   });
 
   it("preserves observable insufficient-data and degraded-category states inside A6", () => {
