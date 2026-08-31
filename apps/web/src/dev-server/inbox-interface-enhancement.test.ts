@@ -74,7 +74,11 @@ test("mantém seleção compacta com alvos acessíveis e botões no padrão do d
   );
   assert.match(
     accessibilityStyles,
-    /\.inbox-page \.batch-item \{[\s\S]*?min-height: 34px !important;/,
+    /\.inbox-page \.import-batch-list \{[\s\S]*?display: flex !important;[\s\S]*?flex-direction: column;/,
+  );
+  assert.match(
+    accessibilityStyles,
+    /\.inbox-page \.batch-item \{[\s\S]*?flex: 0 0 auto;[\s\S]*?min-height: 54px !important;/,
   );
   assert.match(enhanced, /\.inbox-page \.bulk-actions button \{[\s\S]*?width: auto;/);
 });
