@@ -188,10 +188,17 @@ describe("SSR style contract", () => {
   it("tracks migrated remuneration page styles and residual disclosure runtime independently", () => {
     const base = contractFor("transactions");
     const pageProvider = providerFor(base, "page:transactions");
-    const disclosureProvider = providerFor(base, "runtime:account-remuneration-disclosure");
-    const contract = withProviders(base, [pageProvider.providerId, disclosureProvider.providerId]);
+    const disclosureProvider = providerFor(
+      base,
+      "runtime:account-remuneration-disclosure",
+    );
+    const contract = withProviders(base, [
+      pageProvider.providerId,
+      disclosureProvider.providerId,
+    ]);
     const pageCssFragment =
-      pageProvider.requiredCssFragments?.[0] ?? assert.fail("missing transaction page CSS fragment");
+      pageProvider.requiredCssFragments?.[0] ??
+      assert.fail("missing transaction page CSS fragment");
     const disclosureMarker =
       disclosureProvider.requiredStyleBlockMarkers?.[0] ?? assert.fail("missing disclosure marker");
 
