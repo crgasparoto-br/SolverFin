@@ -6,7 +6,7 @@ on:
       - codex/609-statement-account-currency
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   validate:
@@ -33,8 +33,6 @@ jobs:
     steps:
       - name: Checkout triggering commit
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -54,9 +52,7 @@ jobs:
           function replaceExactly(path, before, after) {
             const source = fs.readFileSync(path, "utf8");
             const count = source.split(before).length - 1;
-            if (count !== 1) {
-              throw new Error(`${path}: expected exactly one match, found ${count}`);
-            }
+            if (count !== 1) throw new Error(`${path}: expected exactly one match, found ${count}`);
             fs.writeFileSync(path, source.replace(before, after));
           }
 
@@ -97,16 +93,12 @@ jobs:
       - name: Run official test gate
         run: npm run test
 
-      - name: Publish remediation and restore helper
-        run: |
-          git restore --source=HEAD^ -- .github/workflows/issue-609-remediation-helper.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            .github/workflows/issue-609-remediation-helper.yml \
-            apps/web/src/dev-server/recurrences-section.ts \
-            apps/web/src/dev-server/transactions-page-v2.ts \
+      - name: Upload validated source files
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-609-validated-source
+          path: |
+            apps/web/src/dev-server/recurrences-section.ts
+            apps/web/src/dev-server/transactions-page-v2.ts
             apps/web/src/dev-server/ssr-style-contract.test.ts
-          git diff --cached --check
-          git commit -m "fix(web): preserve account currency in recurrence modal"
-          git push origin HEAD:codex/609-statement-account-currency
+          retention-days: 1
