@@ -183,12 +183,19 @@ async function createFixture(cdp) {
         status: response.status,
         body: await response.json().catch(() => ({}))
       });
-      const accounts = await readJson(await fetch("/api/accounts"));
-      if (!accounts.ok) return accounts;
-      const account = (accounts.body.accounts || []).find((item) => item.status === "active");
-      if (!account) return { ok: false, status: 0, body: { error: "No active account available" } };
-
       const suffix = Date.now().toString(36);
+      const createdAccount = await readJson(await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: "QA Inbox Status " + suffix,
+          kind: "checking",
+          openingBalanceMinor: 0,
+          currency: "BRL"
+        })
+      }));
+      if (!createdAccount.ok) return createdAccount;
+      const account = createdAccount.body.account;
       const description = "Status control " + suffix;
       const rejectedDescription = "Status rejected " + suffix;
       const created = await readJson(await fetch("/api/import-batches/csv", {

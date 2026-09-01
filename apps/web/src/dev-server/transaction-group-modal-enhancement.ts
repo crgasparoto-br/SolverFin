@@ -264,6 +264,16 @@ export function enhanceTransactionGroupModal(html: string): string {
           window.setTimeout(refreshModal, 0);
         });
 
+        const nativeShowModal = modal.showModal.bind(modal);
+        modal.showModal = function () {
+          nativeShowModal();
+          if (skipNextToggleRefresh) {
+            skipNextToggleRefresh = false;
+            return;
+          }
+          window.setTimeout(refreshModal, 0);
+        };
+
         membersNode.addEventListener("click", async function (event) {
           const button = event.target.closest('[data-member-action="void"]');
           if (!button || !currentGroup) return;

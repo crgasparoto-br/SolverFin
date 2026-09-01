@@ -23,6 +23,7 @@ const report = {
   collapsedGroups: undefined,
   keyboardActionMenu: undefined,
   keyboardModal: undefined,
+  liveRegion: undefined,
   screenshots: [],
 };
 
@@ -35,6 +36,7 @@ try {
   await waitFor(browser.cdp, '[data-cards-archetype="A3"] [data-purchase-item]');
 
   report.compactDesktop = await validateCompactDesktop(browser.cdp);
+  report.liveRegion = { initial: { rowCount: report.compactDesktop.rowCount } };
   report.screenshots.push("cards-compact-desktop.png");
   report.longContent = await validateLongContent(browser.cdp);
   report.collapsedGroups = await validateCollapsedGroups(browser.cdp);
@@ -258,8 +260,10 @@ async function validateKeyboardModal(cdp) {
     `(() => {
       const dialog = document.querySelector('dialog[data-modal="purchase"]');
       const rect = dialog?.getBoundingClientRect();
+      const style = dialog ? getComputedStyle(dialog) : undefined;
       return {
         open: Boolean(dialog?.open),
+        visible: Boolean(rect && rect.width > 0 && rect.height > 0 && style?.display !== 'none' && style?.visibility !== 'hidden'),
         labelled: Boolean(dialog?.getAttribute('aria-labelledby')),
         focusInside: Boolean(dialog?.contains(document.activeElement)),
         insideViewport: Boolean(rect && rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1),
@@ -267,6 +271,7 @@ async function validateKeyboardModal(cdp) {
     })()`,
   );
   assert.equal(opened.open, true);
+  assert.equal(opened.visible, true);
   assert.equal(opened.labelled, true);
   assert.equal(opened.focusInside, true, "Modal did not contain focus after opening");
   assert.equal(opened.insideViewport, true);
@@ -276,9 +281,17 @@ async function validateKeyboardModal(cdp) {
   await sleep(80);
   const closed = await evaluate(
     cdp,
-    `!document.querySelector('dialog[data-modal="purchase"]')?.open`,
+    `(() => {
+      const dialog = document.querySelector('dialog[data-modal="purchase"]');
+      const button = document.querySelector('[data-open-modal="purchase"]');
+      return {
+        open: Boolean(dialog?.open),
+        focusRestored: document.activeElement === button,
+      };
+    })()`,
   );
-  assert.equal(closed, true, "Escape did not close purchase modal");
+  assert.equal(closed.open, false, "Escape did not close purchase modal");
+  assert.equal(closed.focusRestored, true, "Purchase modal did not restore focus on close");
   return { opened, closed };
 }
 

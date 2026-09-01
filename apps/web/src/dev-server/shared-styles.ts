@@ -406,6 +406,7 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
         flex-wrap: nowrap;
         gap: var(--sf-space-1);
         height: auto;
+        min-width: 0;
         overflow-x: auto;
         padding: var(--sf-space-2) var(--sf-space-3);
         position: sticky;
