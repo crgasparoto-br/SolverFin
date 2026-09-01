@@ -24,10 +24,7 @@ const MULTI_COVERAGE_EXECUTION_MODULES = new Map([
   ],
   [
     "cards-interface",
-    [
-      CARDS_SEMANTIC_INTERACTION_MODULE,
-      "scripts/statement-visual/issue-606-cards-execution.mjs",
-    ],
+    [CARDS_SEMANTIC_INTERACTION_MODULE, "scripts/statement-visual/issue-606-cards-execution.mjs"],
   ],
 ]);
 
