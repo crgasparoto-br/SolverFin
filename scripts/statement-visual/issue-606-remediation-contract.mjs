@@ -104,6 +104,11 @@ export const supplementalVisualScenarioModules = [
     module: "scripts/statement-visual/issue-606-budgets-empty.mjs",
     coverage: [pilotEmptyCoverage("/orcamentos", "A1")],
   },
+  {
+    id: "statement-profile-keyboard",
+    module: "scripts/statement-visual/issue-609-profile-keyboard.mjs",
+    coverage: [statementProfileKeyboardCoverage()],
+  },
 ];
 
 export function getVisualScenarioModules(baseScenarios) {
@@ -278,6 +283,25 @@ function pilotEmptyCoverage(route, archetype) {
     layout: "desktop-mobile",
     interaction: "state-render",
     dataProfile: "fresh-profile",
+    components: [],
+    realBrowser: true,
+    archetypeSupport: [],
+    requiredAssertions: [],
+    legacyProcessorIds: [],
+  };
+  record.requiredAssertions = behaviorClaimAssertionsForRecord(record);
+  return record;
+}
+
+function statementProfileKeyboardCoverage() {
+  const record = {
+    route: "/lancamentos",
+    archetype: "A2",
+    audience: "authenticated",
+    state: "normal",
+    layout: "desktop-mobile",
+    interaction: "keyboard-profile-context",
+    dataProfile: "multi-account-active-profile",
     components: [],
     realBrowser: true,
     archetypeSupport: [],
