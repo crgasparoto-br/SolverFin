@@ -220,7 +220,8 @@ async function validateAccountMobile(fixture) {
 
 async function validateBlockedAccountDesktop(fixture) {
   await setViewport(browser.cdp, 1366, 768);
-  const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-08`;
+  const accountId = encodeURIComponent(fixture.accountId);
+  const route = `/lancamentos?accountId=${accountId}&month=${fixture.blockedAccountMonth}`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const line = await waitForAccountLine(fixture.blockedAccountTransactionId);
   check(line.installmentEditable === false, "Blocked installment was presented as editable", line);
@@ -590,12 +591,15 @@ function fixtureExpression() {
     const conflictAccountInstallment = accountInstallments.find(
       (item) => item.dueOn === "2026-09-05" && item.transaction?.id,
     );
+    let blockedAccountMonth = "";
     if (blockedAccountInstallment?.transaction?.id) {
-      await request(
+      const reconciled = await request(
         "/api/transactions/" + blockedAccountInstallment.transaction.id,
         "PATCH",
         { status: "reconciled" },
       );
+      const effectiveOn = reconciled.transaction?.effectiveOn || "";
+      blockedAccountMonth = String(effectiveOn).slice(0, 7);
     }
     await request("/api/categories/" + category.id + "/archive", "POST");
 
@@ -635,6 +639,7 @@ function fixtureExpression() {
     if (
       !accountInstallment?.transaction?.id ||
       !blockedAccountInstallment?.transaction?.id ||
+      !blockedAccountMonth ||
       !conflictAccountInstallment?.transaction?.id ||
       !cardInstallment?.transaction?.invoiceId
     ) {
@@ -647,6 +652,7 @@ function fixtureExpression() {
       accountInstallmentId: accountInstallment.id,
       accountTransactionId: accountInstallment.transaction.id,
       accountBadge: "Parcela " + accountInstallment.sequenceNumber + " de " + accountInstallment.totalInstallments,
+      blockedAccountMonth,
       blockedAccountTransactionId: blockedAccountInstallment.transaction.id,
       conflictAccountTransactionId: conflictAccountInstallment.transaction.id,
       conflictAccountOriginalDescription: conflictAccountInstallment.transaction.description,

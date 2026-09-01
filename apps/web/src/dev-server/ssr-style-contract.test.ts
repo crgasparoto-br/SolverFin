@@ -185,51 +185,50 @@ describe("SSR style contract", () => {
     );
   });
 
-  it("tracks remuneration statement and disclosure runtime styles independently", () => {
+  it("tracks migrated remuneration and residual disclosure styles independently", () => {
     const base = contractFor("transactions");
-    const statementProvider = providerFor(base, "runtime:account-remuneration-statement");
+    const pageProvider = providerFor(base, "page:transactions");
     const disclosureProvider = providerFor(base, "runtime:account-remuneration-disclosure");
-    const contract = withProviders(base, [
-      "page:transactions",
-      statementProvider.providerId,
-      disclosureProvider.providerId,
-    ]);
-    const statementMarker =
-      statementProvider.requiredStyleBlockMarkers?.[0] ?? assert.fail("missing statement marker");
-    const disclosureMarker =
-      disclosureProvider.requiredStyleBlockMarkers?.[0] ?? assert.fail("missing disclosure marker");
+    const contract = withProviders(base, [pageProvider.providerId, disclosureProvider.providerId]);
+    const pageCssFragments = pageProvider.requiredCssFragments;
+    const pageCssFragment = pageCssFragments?.[0] ?? assert.fail("missing page CSS fragment");
+    const disclosureMarkers = disclosureProvider.requiredStyleBlockMarkers;
+    const disclosureMarker = disclosureMarkers?.[0] ?? assert.fail("missing disclosure marker");
 
-    assert.equal(statementProvider.moduleFileName, "list-sorting-enhancement.js");
-    assert.equal(statementMarker, "data-account-remuneration-statement-styles");
+    assert.equal(
+      base.registeredStyleProviders.some(
+        (provider) => provider.providerId === "runtime:account-remuneration-statement",
+      ),
+      false,
+    );
+    assert.equal(pageProvider.moduleFileName, "transactions-page-v2.js");
     assert.equal(
       disclosureProvider.moduleFileName,
       "account-remuneration-disclosure-enhancement.js",
     );
     assert.equal(disclosureMarker, "data-account-remuneration-disclosure-affordance");
 
+    const pageCss = `${pageCssFragment} display: grid; }`;
     const html = authenticatedDocument(
-      `${providers.sharedShell}${providers.statementPresentation}${transactionsPageCss}`,
-      '<section class="statement-layout"><details class="account-remuneration-audit">Memória</details></section>',
+      `${providers.sharedShell}${providers.statementPresentation}${pageCss}`,
+      '<section data-statement-archetype="A2" class="statement-layout"><details class="account-remuneration-audit">Memória</details></section>',
       [
-        `<style ${statementMarker}>.account-remuneration-audit { display: block; }</style>`,
         `<style ${disclosureMarker}>.account-remuneration-audit summary { display: inline-flex; }</style>`,
       ],
     );
 
     assert.deepEqual(validateRenderedSsrStyleDocument({ contract, html, providers }), []);
 
-    const withoutStatement = validateRenderedSsrStyleDocument({
+    const withoutPageStyles = validateRenderedSsrStyleDocument({
       contract,
-      html: removeStyleBlockByMarker(html, statementMarker),
+      html: removeStyleProviderFromDocument(html, pageCss),
       providers,
     });
     assert.ok(
-      withoutStatement.some((violation) =>
-        violation.includes("provider=runtime:account-remuneration-statement"),
-      ),
+      withoutPageStyles.some((violation) => violation.includes("provider=page:transactions")),
     );
     assert.ok(
-      withoutStatement.every(
+      withoutPageStyles.every(
         (violation) => !violation.includes("provider=runtime:account-remuneration-disclosure"),
       ),
     );
@@ -245,9 +244,7 @@ describe("SSR style contract", () => {
       ),
     );
     assert.ok(
-      withoutDisclosure.every(
-        (violation) => !violation.includes("provider=runtime:account-remuneration-statement"),
-      ),
+      withoutDisclosure.every((violation) => !violation.includes("provider=page:transactions")),
     );
   });
 

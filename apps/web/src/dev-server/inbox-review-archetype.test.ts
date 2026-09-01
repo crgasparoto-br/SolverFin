@@ -85,7 +85,7 @@ describe("Inbox review archetype", () => {
 
     assert.match(styles, /\.inbox-review-evidence \.batch-item \{[^}]*height: auto/);
     assert.match(styles, /overflow-wrap: anywhere/);
-    assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 11);
+    assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, LEGACY_HTML_POST_PROCESSOR_INVENTORY.length);
     assert.equal(
       LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => String(entry.route)).includes("/inbox"),
       false,

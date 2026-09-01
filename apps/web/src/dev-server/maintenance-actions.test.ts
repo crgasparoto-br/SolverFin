@@ -62,7 +62,7 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
     new URL("/lancamentos?month=2026-06", "http://solverfin.test"),
   );
 
-  assert.match(html, /<h1>Extrato Bancário<\/h1>/);
+  assert.match(html, /<h1[^>]*>Extrato Bancário<\/h1>/);
   assert.match(html, /Movimentações/);
   assert.match(html, /<label for="filter-month">Mês<\/label>/);
   assert.match(html, /id="filter-month" name="month" type="month" value="2026-06"/);

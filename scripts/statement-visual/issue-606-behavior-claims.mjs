@@ -62,6 +62,9 @@ async function collectEvidence() {
   if (sourceScenario === "cards-interface-adversarial") return collectCardsAdversarialEvidence();
   if (sourceScenario === "financial-assistant") return collectFinancialAssistantEvidence();
   if (sourceScenario === "budgets-pilot-baseline") return collectBudgetsEvidence();
+  if (sourceScenario === "statement-profile-keyboard") {
+    return collectStatementProfileKeyboardEvidence();
+  }
   if (sourceScenario === "dashboard-empty-state") {
     return collectEmptyEvidence("issue-606-dashboard-empty.json");
   }
@@ -389,6 +392,52 @@ async function collectBudgetsEvidence() {
     files: [fileName],
     assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],
     observations: { widths: [...widths].sort((left, right) => left - right) },
+  };
+}
+
+async function collectStatementProfileKeyboardEvidence() {
+  const fileName = "issue-609-profile-keyboard.json";
+  const report = await readEvidence(fileName);
+  const scenarios = report.scenarios ?? [];
+  const widths = new Set(
+    scenarios
+      .map((scenario) => Number.parseInt(String(scenario.viewport).split("x")[0], 10))
+      .filter(Number.isFinite),
+  );
+  assert.ok(widths.has(390), `${fileName} has no mobile scenario.`);
+  assert.ok(
+    [...widths].some((width) => width >= 1024),
+    `${fileName} has no desktop scenario.`,
+  );
+  assert.ok(
+    scenarios.every((scenario) => scenario.profile?.visible === true),
+    `${fileName} contains a scenario without visible profile context.`,
+  );
+  assert.ok(
+    scenarios.every(
+      (scenario) =>
+        scenario.focusedOption?.role === "option" && scenario.focusedOption?.menuOpen === true,
+    ),
+    `${fileName} contains a scenario without keyboard focus in the account listbox.`,
+  );
+  assert.ok(
+    scenarios.every(
+      (scenario) =>
+        scenario.selectedState?.accountId &&
+        scenario.selectedState.accountId === scenario.selectedState.selectedId,
+    ),
+    `${fileName} contains a scenario where keyboard selection did not update the account.`,
+  );
+  return {
+    files: [fileName],
+    assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],
+    observations: {
+      widths: [...widths].sort((left, right) => left - right),
+      profileVisible: scenarios.every((scenario) => scenario.profile?.visible === true),
+      keyboardSelection: scenarios.every(
+        (scenario) => scenario.selectedState?.accountId === scenario.selectedState?.selectedId,
+      ),
+    },
   };
 }
 

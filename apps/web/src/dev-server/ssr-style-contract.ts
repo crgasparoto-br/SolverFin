@@ -58,12 +58,6 @@ const recurrenceAuxiliaryProvider = cssProvider(
 );
 
 const transactionRuntimeProviders = [
-  markerProvider("runtime:list-sorting", "list-sorting-enhancement.js", "data-list-sorting-styles"),
-  markerProvider(
-    "runtime:account-remuneration-statement",
-    "list-sorting-enhancement.js",
-    "data-account-remuneration-statement-styles",
-  ),
   markerProvider(
     "runtime:account-remuneration-disclosure",
     "account-remuneration-disclosure-enhancement.js",
@@ -182,9 +176,9 @@ export const solverFinSsrStyleContracts = [
     representativeHtmlFragments: ['class="dashboard-heading"'],
     pageCssFragments: [".dashboard-heading {"],
   }),
-  authenticated("transactions", "/lancamentos", "transactions-page.js", {
-    representativeHtmlFragments: ['class="statement-layout"'],
-    pageCssFragments: [".statement-layout {"],
+  authenticated("transactions", "/lancamentos", "transactions-page-v2.js", {
+    representativeHtmlFragments: ['data-statement-archetype="A2"', 'class="statement-layout"'],
+    pageCssFragments: ['[data-statement-archetype="A2"] {'],
     auxiliaryStyleProviders: [recurrenceAuxiliaryProvider, ...transactionRuntimeProviders],
     conditionalHeadProviders: [
       {

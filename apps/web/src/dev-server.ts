@@ -24,10 +24,7 @@ import { renderFinancialAssistantPage } from "./dev-server/financial-assistant-p
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { applyLegacyHtmlPostProcessorPipeline } from "./dev-server/legacy-html-post-processors.js";
-import {
-  enhanceCardListSorting,
-  enhanceStatementListSorting,
-} from "./dev-server/list-sorting-enhancement.js";
+import { enhanceCardListSorting } from "./dev-server/list-sorting-enhancement.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
@@ -46,9 +43,8 @@ import {
   getSessionCredentialFromRequest,
 } from "./dev-server/session.js";
 import { renderSettingsPage } from "./dev-server/settings-page.js";
-import { enhanceStatementInsightContext } from "./dev-server/statement-insight-context-enhancement.js";
 import { tryServeStaticAsset } from "./dev-server/static-assets.js";
-import { renderTransactionsPage } from "./dev-server/transactions-page.js";
+import { renderTransactionsPageV2 as renderTransactionsPage } from "./dev-server/transactions-page-v2.js";
 
 export { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
 export { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
@@ -76,7 +72,7 @@ export { renderReportsPage } from "./dev-server/reports-page.js";
 export { renderReportsRoutePage } from "./dev-server/reports-route-page.js";
 export { resolveRoute } from "./dev-server/routes.js";
 export { renderSettingsPage } from "./dev-server/settings-page.js";
-export { renderTransactionsPage } from "./dev-server/transactions-page.js";
+export { renderTransactionsPageV2 as renderTransactionsPage } from "./dev-server/transactions-page-v2.js";
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = Number(process.env.PORT ?? 5173);
@@ -114,9 +110,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     return;
   }
 
-  if (await tryServeStaticAsset(url.pathname, response)) {
-    return;
-  }
+  if (await tryServeStaticAsset(url.pathname, response)) return;
 
   if (url.pathname.startsWith("/api/")) {
     await handleApiRequest(request, response, url, token);
@@ -228,11 +222,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       sendHtml(response, 200, renderRecurrenceMaterializationGate("card", url));
       return;
     }
-
-    if (shouldUseLocalRecurrenceAdapter()) {
-      await materializeLocally("card", token, url);
-    }
-
+    if (shouldUseLocalRecurrenceAdapter()) await materializeLocally("card", token, url);
     const html = await applyLegacyHtmlPostProcessorPipeline(
       "/cartoes",
       await renderCardsPageWithMonthNavigation(token, url),
@@ -245,10 +235,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
           id: "card-instrument-subtotals",
           transform: (currentHtml) => enhanceCardInstrumentSubtotals(currentHtml),
         },
-        {
-          id: "cards-interface",
-          transform: (currentHtml) => enhanceCardsInterface(currentHtml),
-        },
+        { id: "cards-interface", transform: (currentHtml) => enhanceCardsInterface(currentHtml) },
         {
           id: "cards-interface-finalizer",
           transform: (currentHtml) => finalizeCardsInterface(currentHtml),
@@ -264,26 +251,14 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       sendHtml(response, 200, renderRecurrenceMaterializationGate("account", url));
       return;
     }
-
-    if (shouldUseLocalRecurrenceAdapter()) {
-      await materializeLocally("account", token, url);
-    }
-
+    if (shouldUseLocalRecurrenceAdapter()) await materializeLocally("account", token, url);
     const html = await applyLegacyHtmlPostProcessorPipeline(
       "/lancamentos",
       await renderTransactionsPage(token, url),
       [
         {
-          id: "statement-list-sorting",
-          transform: (currentHtml) => enhanceStatementListSorting(currentHtml, url),
-        },
-        {
           id: "account-remuneration-disclosure",
           transform: (currentHtml) => enhanceAccountRemunerationDisclosure(currentHtml),
-        },
-        {
-          id: "statement-insight-context",
-          transform: (currentHtml) => enhanceStatementInsightContext(currentHtml, url),
         },
       ],
     );
@@ -303,7 +278,6 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       response.end();
       return;
     }
-
     sendHtml(response, 200, await renderReportsRoutePage(token, url));
     return;
   }
@@ -327,31 +301,24 @@ async function handleOidcCompletion(
   credential: string | undefined,
 ): Promise<void> {
   const returnTo = validateInternalReturnTo(url.searchParams.get("returnTo"));
-
   if (!returnTo || !credential) {
     sendHtml(
       response,
       200,
-      renderLoginPage("cookie-unavailable", passwordResetUrl, {
-        productiveOidc: true,
-      }),
+      renderLoginPage("cookie-unavailable", passwordResetUrl, { productiveOidc: true }),
     );
     return;
   }
-
   const session = await apiGet<{ user: { id: string } }>(credential, "/api/me");
   if (!session.ok) {
     response.setHeader("set-cookie", [...clearApiSessionCookies(), clearSessionCookie()]);
     sendHtml(
       response,
       200,
-      renderLoginPage("cookie-unavailable", passwordResetUrl, {
-        productiveOidc: true,
-      }),
+      renderLoginPage("cookie-unavailable", passwordResetUrl, { productiveOidc: true }),
     );
     return;
   }
-
   response.writeHead(303, { location: returnTo, "cache-control": "no-store" });
   response.end();
 }
@@ -362,11 +329,9 @@ async function materializeLocally(
   url: URL,
 ): Promise<void> {
   try {
-    if (surface === "card") {
+    if (surface === "card")
       await materializeCardInvoiceRecurrences(credential, url, process.env.APP_ORIGIN);
-    } else {
-      await materializeAccountStatementRecurrences(credential, url, process.env.APP_ORIGIN);
-    }
+    else await materializeAccountStatementRecurrences(credential, url, process.env.APP_ORIGIN);
   } catch (error) {
     console.error("Local recurrence materialization failed", {
       surface,
@@ -407,24 +372,19 @@ function validateInternalReturnTo(value: string | null): string | undefined {
     normalized.includes("#") ||
     normalized.includes("\\") ||
     /^[a-z][a-z0-9+.-]*:/i.test(normalized)
-  ) {
+  )
     return undefined;
-  }
 
   const parsed = new URL(normalized, "https://solverfin.invalid");
-  if (parsed.origin !== "https://solverfin.invalid" || parsed.username || parsed.password) {
+  if (parsed.origin !== "https://solverfin.invalid" || parsed.username || parsed.password)
     return undefined;
-  }
-
   return `${parsed.pathname}${parsed.search}`;
 }
 
 function isProductiveWebAuthEnabled(): boolean {
   const nodeEnv = process.env.NODE_ENV?.trim().toLowerCase();
-  if (!nodeEnv || nodeEnv === "development" || nodeEnv === "local" || nodeEnv === "test") {
+  if (!nodeEnv || nodeEnv === "development" || nodeEnv === "local" || nodeEnv === "test")
     return false;
-  }
-
   return Boolean(
     process.env.OIDC_ISSUER_URL &&
     process.env.OIDC_CLIENT_ID &&
