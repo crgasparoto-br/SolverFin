@@ -1,18 +1,1 @@
-{
-  "schema_version": 1,
-  "classification": "implementation-only",
-  "source_event": {
-    "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:609-649-1f0b57d-profile-keyboard",
-    "audit_report_sha256": "ae6b6ab3ca74399e34feb0c77e03659d8c360966103fdf507ffac7e54cc3919b",
-    "finding_ids": [
-      "A-002",
-      "A-003"
-    ]
-  },
-  "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "The governing issue and interface contracts already require visible financial context and keyboard/mobile operability. The rejection resulted from local implementation and evidence omissions, so repository regression controls are sufficient without changing the global Skill rules."
-  },
-  "skill_changes": []
-}
+{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:609-post-write-refreeze-4c47a2d","audit_report_sha256":"a371be7facb6bdd1645b6cfa9bcf2e1de1aea8640d0618557ba63fd3cce5c7eb","finding_ids":[]},"generalized_learning":{"promotion_status":"not-required","reason":"The rejection is a terminal delivery-state mismatch after a material post-freeze write. Existing handoff invariants already require post-write refreeze; no new global rule is needed."},"skill_changes":[]}
