@@ -6,18 +6,32 @@
   "issue_number": 609,
   "pull_request_number": 649,
   "head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6",
-  "published_handoff_head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6",
-  "rejection_id": "audit-rejection:609-649-1f0b57d-handoff",
+  "published_handoff_head_sha": "f60252eab5939cb4feae7b70cbfd22bbea59ec00",
+  "rejection_id": "audit-rejection:609-649-1f0b57d-profile-keyboard",
   "findings": [
     {
-      "id": "A-001",
-      "severity": "blocking",
+      "id": "A-002",
+      "severity": "high",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "requirement_ids": [],
-      "summary": "The delivery handoff was not produced for Issue 609 / PR 649: handoff-ready.json was byte-identical to the base and bound to Issue 614 / PR 648."
+      "requirement_ids": [
+        "REQ-003"
+      ],
+      "summary": "Active financial profile is not visible in the statement context."
+    },
+    {
+      "id": "A-003",
+      "severity": "high",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "requirement_ids": [
+        "REQ-011"
+      ],
+      "summary": "Account picker cannot be completed with keyboard-only operation."
     }
   ],
   "recommendations": []

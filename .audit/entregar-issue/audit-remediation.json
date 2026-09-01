@@ -4,29 +4,53 @@
   "resolution_policy": "all-actionable-items",
   "status": "closed",
   "remediation_mode": "targeted-remediation",
-  "candidate_head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6",
+  "candidate_head_sha": "b95007659cd40118898446c7f05f6008515a0175",
   "source": {
-    "rejection_id": "audit-rejection:609-649-1f0b57d-handoff",
+    "rejection_id": "audit-rejection:609-649-1f0b57d-profile-keyboard",
     "audited_head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6",
-    "audit_report_sha256": "b1543def5474190e29adb0f1cdd294ddc9a04b4531a8eff2c855a25569afea0a"
+    "audit_report_sha256": "ae6b6ab3ca74399e34feb0c77e03659d8c360966103fdf507ffac7e54cc3919b"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-001",
+      "source_id": "A-002",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "fresh-handoff-reconstruction",
+      "closure_kind": "implementation-regression",
       "changed_files": [
-        ".audit/entregar-issue/"
+        "apps/web/src/dev-server/statement-list-archetype.ts",
+        "apps/web/src/dev-server/statement-list-archetype-accessibility.test.ts",
+        "scripts/statement-visual/issue-609-profile-keyboard.mjs",
+        "scripts/statement-visual/issue-606-remediation-contract.mjs"
       ],
       "evidence": [
-        "The foreign inherited Issue 614 handoff is not reused as evidence; a new Issue 609 package is built from the current issue body and exact-head observations.",
-        "The replacement handoff certificate binds repository, Issue 609, PR 649, branch, base, material head and all 16 issue-local changed paths."
+        "A2 now renders a visible active-profile context pill sourced from /api/financial-profiles.",
+        "The focused unit test and Chrome scenario reject a hidden-only profile implementation."
       ],
       "validations": [
-        "validate_specification_coverage.py and validate_standard_evidence.py pass on the reconstructed packet.",
-        "Terminal publication is constrained to one result-only child whose parent is the frozen material head and whose changed paths are limited to the new audit package."
+        "Static exact-head inspection confirms visible profile runtime and explicit unavailable state.",
+        "CI run 33515164400 and visual run 33515164563 were observed in_progress on exact material head in the permitted delivery snapshot."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-003",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "implementation-regression",
+      "changed_files": [
+        "apps/web/src/dev-server/statement-list-archetype.ts",
+        "apps/web/src/dev-server/statement-list-archetype-accessibility.test.ts",
+        "scripts/statement-visual/issue-609-profile-keyboard.mjs",
+        "scripts/statement-visual/issue-606-remediation-contract.mjs"
+      ],
+      "evidence": [
+        "Account picker now handles ArrowDown/ArrowUp/Home/End/Enter/Space/Escape/Tab and reuses canonical click selection via current.click().",
+        "Focused style and a real Chrome desktop/mobile scenario are registered."
+      ],
+      "validations": [
+        "Static exact-head inspection confirms keyboard branches and focus-visible CSS.",
+        "The visual gate scenario requires URL accountId to change after ArrowDown + Enter at 1366x768 and 390x844."
       ]
     }
   ]
