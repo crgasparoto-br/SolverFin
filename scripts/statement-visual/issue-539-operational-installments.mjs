@@ -220,7 +220,8 @@ async function validateAccountMobile(fixture) {
 
 async function validateBlockedAccountDesktop(fixture) {
   await setViewport(browser.cdp, 1366, 768);
-  const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=${fixture.blockedAccountMonth}`;
+  const accountId = encodeURIComponent(fixture.accountId);
+  const route = `/lancamentos?accountId=${accountId}&month=${fixture.blockedAccountMonth}`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const line = await waitForAccountLine(fixture.blockedAccountTransactionId);
   check(line.installmentEditable === false, "Blocked installment was presented as editable", line);
