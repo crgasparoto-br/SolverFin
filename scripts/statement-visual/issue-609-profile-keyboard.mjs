@@ -9,7 +9,8 @@ const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-if (!chromePath) throw new Error("CHROME_BIN is required for Issue 609 profile/keyboard validation.");
+if (!chromePath)
+  throw new Error("CHROME_BIN is required for Issue 609 profile/keyboard validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 const scenarios = [];
@@ -116,10 +117,18 @@ async function validateViewport(width, height, fixture) {
       };
     })()`,
   );
-  assert.equal(focusedOption.role, "option", "ArrowDown did not move focus into the account listbox.");
+  assert.equal(
+    focusedOption.role,
+    "option",
+    "ArrowDown did not move focus into the account listbox.",
+  );
   assert.equal(focusedOption.menuOpen, true, "Account listbox did not open from the keyboard.");
   assert.ok(focusedOption.accountId, "Focused account option has no account identifier.");
-  assert.notEqual(focusedOption.accountId, fixture.firstAccountId, "Keyboard focus did not leave the selected account.");
+  assert.notEqual(
+    focusedOption.accountId,
+    fixture.firstAccountId,
+    "Keyboard focus did not leave the selected account.",
+  );
 
   const expectedAccountId = focusedOption.accountId;
   await key("Enter", 13);
@@ -137,9 +146,20 @@ async function validateViewport(width, height, fixture) {
       };
     })()`,
   );
-  assert.equal(selectedState.accountId, expectedAccountId, "Enter did not navigate to the focused account.");
-  assert.equal(selectedState.selectedId, expectedAccountId, "Selected account state did not follow keyboard navigation.");
-  assert.ok(selectedState.context.length > 0, "Account context disappeared after keyboard selection.");
+  assert.equal(
+    selectedState.accountId,
+    expectedAccountId,
+    "Enter did not navigate to the focused account.",
+  );
+  assert.equal(
+    selectedState.selectedId,
+    expectedAccountId,
+    "Selected account state did not follow keyboard navigation.",
+  );
+  assert.ok(
+    selectedState.context.length > 0,
+    "Account context disappeared after keyboard selection.",
+  );
 
   const filename = `issue-609-profile-keyboard-${width}x${height}.png`;
   await screenshot(browser.cdp, join(outputDir, filename));
