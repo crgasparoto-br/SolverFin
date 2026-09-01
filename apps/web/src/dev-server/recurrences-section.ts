@@ -53,6 +53,7 @@ export function renderRecurrenceEditModal(
   categories: RecurrenceSectionCategory[],
   targetKind: RecurrenceSectionTargetKind,
   cardInstrumentOptions = "",
+  amountCurrencyLabel = "R$",
 ): string {
   const isCard = targetKind === "card";
   const scopeSubject = isCard ? "Esta compra" : "Este lançamento";
@@ -81,7 +82,7 @@ export function renderRecurrenceEditModal(
           }
           <label>A cada<input name="interval" type="number" min="1" max="60" value="1" /></label>
           <label>Frequência<select name="frequency">${renderFrequencyOptions()}</select></label>
-          <label>Valor (R$)<input name="amountMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
+          <label>Valor (${escapeHtml(amountCurrencyLabel)})<input name="amountMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
           <label>Início<input name="startOn" type="date" /></label>
           <label>Fim opcional<input name="endOn" type="date" /></label>
           <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>

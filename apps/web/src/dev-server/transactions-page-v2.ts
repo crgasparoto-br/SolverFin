@@ -158,7 +158,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     ${content}
     ${renderModal(selectedAccount, accounts, categories, currency)}
     ${renderGroupModal(selectedAccount, currency)}
-    ${renderRecurrenceEditModal(categories, "account")}
+    ${renderRecurrenceEditModal(categories, "account", "", currency ?? "moeda indisponível")}
     ${clientScript(currency)}
     ${recurrencesSectionScript()}
   `);
