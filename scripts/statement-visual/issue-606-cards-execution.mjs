@@ -97,41 +97,36 @@ async function validateNormal(cdp, width, height, label) {
 
 async function validateFilteredEmpty(cdp) {
   await setViewport(cdp, 1440, 900);
-  await navigate(cdp, `${baseUrl}/cartoes?month=2026-06`);
-  await waitForCards(cdp);
-  await evaluate(
+  await navigate(
     cdp,
-    `(() => {
-      const input = document.querySelector('[data-purchase-search]');
-      if (!input) throw new Error('Purchase search is missing');
-      input.value = 'consulta-sem-resultado-visual';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    })()`,
+    `${baseUrl}/cartoes?month=2026-06&q=${encodeURIComponent("consulta-sem-resultado-visual")}`,
   );
   await waitForFilteredEmptyState(cdp);
   const measurements = await evaluate(
     cdp,
     `(() => {
       const rows = Array.from(document.querySelectorAll('[data-purchase-item]'));
-      const visibleRows = rows.filter((row) => !row.hidden);
       const empty = document.querySelector('[data-purchase-filter-empty]');
-      const clear = document.querySelector('[data-clear-purchase-search]');
       const root = document.documentElement;
       return {
-        visibleRows: visibleRows.length,
+        rowCount: rows.length,
         emptyVisible: Boolean(empty && !empty.hidden),
         status: document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '',
-        clearVisible: Boolean(clear && !clear.hidden),
+        query: document.querySelector('[data-purchase-search]')?.value || '',
         noHorizontalOverflow: root.scrollWidth <= root.clientWidth + 1,
       };
     })()`,
   );
   const screenshotName = "issue-606-cards-empty.png";
   await screenshot(cdp, join(outputDir, screenshotName));
-  assert.equal(measurements.visibleRows, 0, "Cards empty search still shows purchase rows.");
+  assert.equal(measurements.rowCount, 0, "Cards empty search still shows purchase rows.");
   assert.equal(measurements.emptyVisible, true, "Cards filtered empty state is not visible.");
   assert.match(measurements.status, /^0\s/, "Cards filtered result count is not zero.");
-  assert.equal(measurements.clearVisible, true, "Cards empty state lost the clear-search action.");
+  assert.equal(
+    measurements.query,
+    "consulta-sem-resultado-visual",
+    "Cards filtered query was not preserved by the SSR filter.",
+  );
   assert.equal(
     measurements.noHorizontalOverflow,
     true,
@@ -150,15 +145,16 @@ async function waitForFilteredEmptyState(cdp) {
     const synchronized = await evaluate(
       cdp,
       `(() => {
-        const rows = Array.from(document.querySelectorAll('[data-purchase-item]'));
+        const root = document.querySelector('[data-cards-archetype="A3"]');
+        const rows = document.querySelectorAll('[data-purchase-item]');
         const empty = document.querySelector('[data-purchase-filter-empty]');
-        const clear = document.querySelector('[data-clear-purchase-search]');
         const status = document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '';
-        return rows.length > 0 &&
-          rows.every((row) => row.hidden) &&
+        const query = document.querySelector('[data-purchase-search]')?.value || '';
+        return Boolean(root) &&
+          rows.length === 0 &&
           Boolean(empty && !empty.hidden) &&
-          Boolean(clear && !clear.hidden) &&
-          /^0\\s/.test(status);
+          /^0\\s/.test(status) &&
+          query === 'consulta-sem-resultado-visual';
       })()`,
     );
     if (synchronized) return;
@@ -171,7 +167,7 @@ async function waitForCards(cdp) {
   for (let attempt = 0; attempt < 60; attempt += 1) {
     const ready = await evaluate(
       cdp,
-      `Boolean(document.querySelector('main[data-cards-interface-enhanced] .invoice-overview') && document.querySelector('[data-purchase-item]'))`,
+      `Boolean(document.querySelector('[data-cards-archetype="A3"] .cards-invoice-summary') && document.querySelector('[data-purchase-item]'))`,
     );
     if (ready) return;
     await sleep(100);
@@ -190,10 +186,10 @@ function cardsMeasurementExpression() {
     return {
       viewportWidth: window.innerWidth,
       noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
-      overviewVisible: visible(document.querySelector('.invoice-overview')),
+      overviewVisible: visible(document.querySelector('.cards-invoice-summary')),
       rowCount: document.querySelectorAll('[data-purchase-item]').length,
       searchVisible: visible(document.querySelector('[data-purchase-search]')),
-      tableHeaderVisible: visible(document.querySelector('.purchase-table-head')),
+      tableHeaderVisible: visible(document.querySelector('.cards-purchase-table-head')),
     };
   })()`;
 }
