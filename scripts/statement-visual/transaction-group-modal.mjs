@@ -308,15 +308,30 @@ try {
       const originalConfirm = window.confirm;
       window.confirm = () => true;
       const button = document.querySelector('[data-group-action="status"]');
+    async function waitForStatus(expectedStatus, expectedLabel) {
+      const deadline = Date.now() + 5_000;
+      while (Date.now() < deadline) {
+        const status = document.querySelector("[data-group-status-input]").value;
+        const label = button.textContent;
+        if (status === expectedStatus && label === expectedLabel) return;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      throw new Error(
+        "Timed out waiting for group status transition to " +
+          expectedStatus +
+          " / " +
+          expectedLabel,
+      );
+    }
       button.click();
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await waitForStatus("Conciliado", "Desconciliar");
       const reconciled = {
         status: document.querySelector("[data-group-status-input]").value,
         label: button.textContent,
         modalOpen: document.querySelector("[data-group-modal]").open
       };
       button.click();
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await waitForStatus("Efetivado", "Marcar como conciliado");
       const posted = {
         status: document.querySelector("[data-group-status-input]").value,
         label: button.textContent,
