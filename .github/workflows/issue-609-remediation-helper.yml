@@ -6,7 +6,7 @@ on:
       - codex/609-statement-account-currency
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -92,6 +92,17 @@ jobs:
 
       - name: Run official test gate
         run: npm run test
+
+      - name: Persist validated remediation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/web/src/dev-server/recurrences-section.ts \
+            apps/web/src/dev-server/transactions-page-v2.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(web): use account currency in recurrence editor"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Upload validated source files
         uses: actions/upload-artifact@v4
