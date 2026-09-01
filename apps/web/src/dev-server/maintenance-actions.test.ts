@@ -87,7 +87,7 @@ async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void>
   assert.match(html, /Fechar fatura/);
   assert.match(html, /data-api-path="\/api\/invoices\/invoice-1\/close"/);
   assert.match(html, /data-path="\/api\/invoices\/invoice-1\/pay"/);
-  assert.match(html, /Lançar pagamento/);
+  assert.match(html, /Liquidar fatura/);
 }
 
 async function budgetsExposeUsageAndArchiveActions(): Promise<void> {
@@ -115,6 +115,7 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
           name: "Conta principal",
           kind: "checking",
           status: "active",
+          currency: "BRL",
           openingBalanceMinor: 100000,
         },
       ],
@@ -176,6 +177,22 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
           periodEndOn: "2026-06-30",
           dueOn: "2026-07-10",
           totalAmountMinor: 45000,
+          currency: "BRL",
+        },
+      ],
+    };
+  }
+
+  if (pathname === "/api/credit-card-accounts/card-1/instruments") {
+    return {
+      instruments: [
+        {
+          id: "instrument-1",
+          type: "physical",
+          holder: "primary",
+          status: "active",
+          isDefault: true,
+          maskedIdentifier: "final 1234",
         },
       ],
     };
