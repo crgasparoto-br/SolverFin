@@ -1,4 +1,7 @@
-const SEMANTIC_INTERACTION_MODULE = "scripts/statement-visual/issue-606-semantic-interactions.mjs";
+const SEMANTIC_INTERACTION_MODULE =
+  "scripts/statement-visual/issue-606-semantic-interactions.mjs";
+const CARDS_SEMANTIC_INTERACTION_MODULE =
+  "scripts/statement-visual/issue-610-cards-semantic-interactions.mjs";
 
 export const BEHAVIOR_ASSERTION_PREFIX = "behavior:";
 
@@ -22,7 +25,10 @@ const MULTI_COVERAGE_EXECUTION_MODULES = new Map([
   ],
   [
     "cards-interface",
-    [SEMANTIC_INTERACTION_MODULE, "scripts/statement-visual/issue-606-cards-execution.mjs"],
+    [
+      CARDS_SEMANTIC_INTERACTION_MODULE,
+      "scripts/statement-visual/issue-606-cards-execution.mjs",
+    ],
   ],
 ]);
 
