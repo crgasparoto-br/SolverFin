@@ -15,8 +15,12 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
 
   const ids = LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
+
+  const routes = new Set<string>(
+    LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route),
+  );
   assert.equal(
-    LEGACY_HTML_POST_PROCESSOR_INVENTORY.some((entry) => entry.route === "/cartoes"),
+    routes.has("/cartoes"),
     false,
     "/cartoes must stay off the legacy HTML pipeline after the A3 migration",
   );
@@ -29,7 +33,6 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
     "/inbox": "web-inbox",
   };
 
-  const routes = new Set(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route));
   for (const route of routes) {
     const routeEntries = LEGACY_HTML_POST_PROCESSOR_INVENTORY.filter(
       (entry) => entry.route === route,
