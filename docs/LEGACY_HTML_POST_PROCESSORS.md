@@ -14,7 +14,7 @@ Novas features não devem introduzir pós-processadores de HTML final como mecan
 
 Um adapter legado pode permanecer apenas enquanto tiver ID, rota, ordem, dono, responsabilidade, caminho de migração, critério de substituição e fallback/acessibilidade explícitos no inventário canônico.
 
-`LEGACY_HTML_POST_PROCESSOR_BUDGET` é monotônico e acompanha exatamente a quantidade de entradas residuais. Na migração da Issue #609, o orçamento passa a **9**: `statement-list-sorting` e `statement-insight-context` saem do pipeline de `/lancamentos` porque ordenação, busca e contexto de insight passaram a ser resolvidos antes do render pelo renderer A2.
+`LEGACY_HTML_POST_PROCESSOR_BUDGET` é monotônico e acompanha exatamente a quantidade de entradas residuais. A Issue #609 reduziu o orçamento para **9** ao retirar dois adapters de `/lancamentos`. A Issue #610 reduz novamente o orçamento para **5** ao retirar os quatro adapters de `/cartoes`: `card-list-sorting`, `card-instrument-subtotals`, `cards-interface` e `cards-interface-finalizer`.
 
 ## Classificações
 
@@ -30,13 +30,28 @@ Um adapter legado pode permanecer apenas enquanto tiver ID, rota, ordem, dono, r
 | `/contas-cartoes` |     2 | `web-accounts-cards` | `accounts-cards-standardization`  | Normalizar markup/classes da master.                                                                                                 | `component-props-slots` |
 | `/contas-cartoes` |     3 | `web-accounts-cards` | `accounts-cards-action-menus`     | Montar menus de ações, estilos e runtime.                                                                                            | `component-props-slots` |
 | `/categorias`     |     1 | `web-categories`     | `categories-icons-tooltips`       | Decorar categorias com ícones e tooltips.                                                                                            | `component-props-slots` |
-| `/cartoes`        |     1 | `web-cards`          | `card-list-sorting`               | Reordenar a lista de cartões.                                                                                                        | `view-model-schema`     |
-| `/cartoes`        |     2 | `web-cards`          | `card-instrument-subtotals`       | Inserir subtotais por instrumento.                                                                                                   | `view-model-schema`     |
-| `/cartoes`        |     3 | `web-cards`          | `cards-interface`                 | Completar estrutura/runtime da interface.                                                                                            | `component-props-slots` |
-| `/cartoes`        |     4 | `web-cards`          | `cards-interface-finalizer`       | Aplicar ajustes finais dependentes do markup.                                                                                        | `component-props-slots` |
 | `/lancamentos`    |     1 | `web-statement`      | `account-remuneration-disclosure` | Preservar temporariamente seleção em massa, agrupamentos e disclosure de remuneração enquanto o último runtime é extraído do legado. | `temporary-processor`   |
 
 Os critérios completos de substituição e os fallbacks ficam no inventário TypeScript para que testes e revisão trabalhem sobre a mesma fonte.
+
+## Cartões A3 sem pós-processamento de HTML final
+
+A Issue #610 migra `/cartoes` para `apps/web/src/dev-server/cards-page-v2.ts` e para o arquétipo A3 (master-detail). O renderer passa a emitir diretamente a hierarquia operacional:
+
+`cartão → fatura → compras`
+
+Antes do render são resolvidos:
+
+- cartão selecionado e faturas pertencentes a esse cartão;
+- fatura selecionada por `invoiceId` ou mês;
+- busca, filtro de conciliação, filtro por dia e ordenação das compras;
+- agrupamento e subtotais por instrumento;
+- moeda explícita da fatura e das compras;
+- contas elegíveis para liquidação na mesma moeda da fatura.
+
+A interface separa explicitamente `Registrar compra`, `Fechar fatura` e `Liquidar fatura`. A liquidação continua sendo movimentação financeira da conta de pagamento e **não** uma segunda despesa econômica: o reconhecimento econômico permanece na compra do cartão, conforme `docs/CARDS.md`.
+
+Por isso, `/cartoes` é renderizada diretamente pelo dispatcher e não deve voltar a usar `applyLegacyHtmlPostProcessorPipeline()`. Os módulos antigos `list-sorting-enhancement.ts`, `card-instrument-subtotals-enhancement.ts`, `cards-interface-enhancement.ts` e `cards-interface-finalizer.ts` podem permanecer temporariamente no repositório como referência histórica/deprecada, mas não fazem parte do fluxo servido da rota.
 
 ## Extrato A2 e adapter residual
 
@@ -62,7 +77,7 @@ O fluxo normal permanece:
 2. adapters residuais inventariados são aplicados na ordem canônica;
 3. `sendHtml()` executa a finalização comum do documento.
 
-Rotas que já não possuem entradas no inventário não devem criar um pipeline vazio apenas para manter a forma antiga.
+Rotas que já não possuem entradas no inventário, como `/cartoes`, não devem criar um pipeline vazio apenas para manter a forma antiga.
 
 ## Guardrail de CI
 
