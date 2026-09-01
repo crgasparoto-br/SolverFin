@@ -13,10 +13,7 @@ import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancemen
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
 import { apiGet, handleApiRequest } from "./dev-server/api.js";
-import { enhanceCardInstrumentSubtotals } from "./dev-server/card-instrument-subtotals-enhancement.js";
-import { finalizeCardsInterface } from "./dev-server/cards-interface-finalizer.js";
-import { enhanceCardsInterface } from "./dev-server/cards-interface-enhancement.js";
-import { renderCardsPageWithMonthNavigation } from "./dev-server/cards-page-month-navigation.js";
+import { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2.js";
 import { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
@@ -24,7 +21,6 @@ import { renderFinancialAssistantPage } from "./dev-server/financial-assistant-p
 import { sendHtml, sendJson } from "./dev-server/http.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { applyLegacyHtmlPostProcessorPipeline } from "./dev-server/legacy-html-post-processors.js";
-import { enhanceCardListSorting } from "./dev-server/list-sorting-enhancement.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
 import { resolvePasswordResetUrl } from "./dev-server/password-reset.js";
@@ -55,7 +51,7 @@ export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 export { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
 export { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
 export { renderAccountsPage, renderBudgetsPage } from "./dev-server/pages.js";
-export { renderCardsPage } from "./dev-server/cards-page.js";
+export { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2.js";
 export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderDashboardPage } from "./dev-server/dashboard-page.js";
 export { renderFinancialAssistantPage } from "./dev-server/financial-assistant-page.js";
@@ -223,26 +219,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       return;
     }
     if (shouldUseLocalRecurrenceAdapter()) await materializeLocally("card", token, url);
-    const html = await applyLegacyHtmlPostProcessorPipeline(
-      "/cartoes",
-      await renderCardsPageWithMonthNavigation(token, url),
-      [
-        {
-          id: "card-list-sorting",
-          transform: (currentHtml) => enhanceCardListSorting(currentHtml, url),
-        },
-        {
-          id: "card-instrument-subtotals",
-          transform: (currentHtml) => enhanceCardInstrumentSubtotals(currentHtml),
-        },
-        { id: "cards-interface", transform: (currentHtml) => enhanceCardsInterface(currentHtml) },
-        {
-          id: "cards-interface-finalizer",
-          transform: (currentHtml) => finalizeCardsInterface(currentHtml),
-        },
-      ],
-    );
-    sendHtml(response, 200, html);
+    sendHtml(response, 200, await renderCardsPage(token, url));
     return;
   }
 
