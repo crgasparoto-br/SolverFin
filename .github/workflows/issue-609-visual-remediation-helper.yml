@@ -31,20 +31,24 @@ jobs:
           node <<'NODE'
           const fs = require("node:fs");
           const path = "scripts/statement-visual/transaction-group-modal.mjs";
-
-          function replaceExactly(before, after) {
-            const source = fs.readFileSync(path, "utf8");
-            const count = source.split(before).length - 1;
-            if (count !== 1) throw new Error(`${path}: expected exactly one match, found ${count}`);
-            fs.writeFileSync(path, source.replace(before, after));
+          const source = fs.readFileSync(path, "utf8");
+          const blockStart = source.indexOf("  const statusTransitions = await evaluate(");
+          const blockEnd = source.indexOf(
+            "  assert.deepEqual(statusTransitions.reconciled",
+            blockStart,
+          );
+          if (blockStart < 0 || blockEnd < 0) {
+            throw new Error(`${path}: status transition block was not found`);
           }
 
-          replaceExactly(
-            `      const button = document.querySelector('[data-group-action="status"]');
-              button.click();
-              await new Promise((resolve) => setTimeout(resolve, 150));
-              const reconciled = {`,
-            `      const button = document.querySelector('[data-group-action="status"]');
+          let block = source.slice(blockStart, blockEnd);
+          const buttonMarker = `const button = document.querySelector('[data-group-action="status"]');`;
+          if (block.split(buttonMarker).length - 1 !== 1) {
+            throw new Error(`${path}: status action button marker is not unique`);
+          }
+          block = block.replace(
+            buttonMarker,
+            `${buttonMarker}
               async function waitForStatus(expectedStatus, expectedLabel) {
                 const deadline = Date.now() + 5_000;
                 while (Date.now() < deadline) {
@@ -59,20 +63,23 @@ jobs:
                     " / " +
                     expectedLabel,
                 );
-              }
-              button.click();
-              await waitForStatus("Conciliado", "Desconciliar");
-              const reconciled = {`,
+              }`,
           );
 
-          replaceExactly(
-            `      button.click();
-              await new Promise((resolve) => setTimeout(resolve, 150));
-              const posted = {`,
-            `      button.click();
-              await waitForStatus("Efetivado", "Marcar como conciliado");
-              const posted = {`,
+          const sleepMarker = "await new Promise((resolve) => setTimeout(resolve, 150));";
+          if (block.split(sleepMarker).length - 1 !== 2) {
+            throw new Error(`${path}: expected exactly two fixed status waits`);
+          }
+          block = block.replace(
+            sleepMarker,
+            'await waitForStatus("Conciliado", "Desconciliar");',
           );
+          block = block.replace(
+            sleepMarker,
+            'await waitForStatus("Efetivado", "Marcar como conciliado");',
+          );
+
+          fs.writeFileSync(path, source.slice(0, blockStart) + block + source.slice(blockEnd));
           NODE
 
           npx prettier --write scripts/statement-visual/transaction-group-modal.mjs
