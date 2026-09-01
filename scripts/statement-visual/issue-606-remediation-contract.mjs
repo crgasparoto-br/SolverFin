@@ -1,5 +1,6 @@
 const SEMANTIC_INTERACTION_MODULE = "scripts/statement-visual/issue-606-semantic-interactions.mjs";
-const CARDS_SEMANTIC_INTERACTION_MODULE = "scripts/statement-visual/issue-610-cards-semantic-interactions.mjs";
+const CARDS_SEMANTIC_INTERACTION_MODULE =
+  "scripts/statement-visual/issue-610-cards-semantic-interactions.mjs";
 
 export const BEHAVIOR_ASSERTION_PREFIX = "behavior:";
 
