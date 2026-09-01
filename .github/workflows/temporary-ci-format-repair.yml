@@ -1,16 +1,18 @@
 name: Temporary CI format repair
 
 on:
-  push:
+  pull_request:
     branches:
-      - codex/610-cards-master-detail
+      - main
+    types:
+      - synchronize
 
 permissions:
   contents: write
 
 jobs:
   format-repair:
-    if: github.actor != 'github-actions[bot]'
+    if: github.head_ref == 'codex/610-cards-master-detail' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
