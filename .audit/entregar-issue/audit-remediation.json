@@ -4,46 +4,30 @@
   "resolution_policy": "all-actionable-items",
   "status": "closed",
   "remediation_mode": "targeted-remediation",
-  "candidate_head_sha": "4def539a981d8d9c99e2900013e607341e3ad926",
+  "candidate_head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6",
   "source": {
-    "rejection_id": "audit-rejection:614-format-check-inbox-page",
-    "audited_head_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
-    "audit_report_sha256": "4a309cb7c9ff3c02aa3793af99ee5d4c833a3519a266ef6eb5caf3c2fda8fe46"
+    "rejection_id": "audit-rejection:609-649-1f0b57d-handoff",
+    "audited_head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6",
+    "audit_report_sha256": "b1543def5474190e29adb0f1cdd294ddc9a04b4531a8eff2c855a25569afea0a"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-006",
+      "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "deterministic-gate-replay",
+      "closure_kind": "fresh-handoff-reconstruction",
       "changed_files": [
-        "apps/web/src/dev-server/inbox-page.ts"
+        ".audit/entregar-issue/"
       ],
       "evidence": [
-        "The status composition was rewritten into Prettier-stable intermediate variables without changing rendered semantics.",
-        "The final material diff from the pre-remediation head changes only apps/web/src/dev-server/inbox-page.ts (7 additions, 7 deletions)."
+        "The foreign inherited Issue 614 handoff is not reused as evidence; a new Issue 609 package is built from the current issue body and exact-head observations.",
+        "The replacement handoff certificate binds repository, Issue 609, PR 649, branch, base, material head and all 16 issue-local changed paths."
       ],
       "validations": [
-        "GitHub Actions CI #4671 job Validate monorepo reports Check formatting completed with conclusion=success on the exact material SHA.",
-        "At the single remote delivery snapshot, lint was in progress and later sequential gates were correctly recorded as not yet reached rather than claimed passed."
-      ],
-      "original_failed_gate": {
-        "name": "Check formatting",
-        "command": "npm run format:check",
-        "subject_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
-        "exit_code": 1,
-        "evidence_sha256": "199231f45b6316efa8d4fdf1e146773ce2fa4e6194f4ece12e847f7a15587c09"
-      },
-      "revalidation": {
-        "command": "npm run format:check",
-        "subject_sha": "4def539a981d8d9c99e2900013e607341e3ad926",
-        "exit_code": 0,
-        "evidence_sha256": "c73dd0269197366c4946a1c4fd38d94b6f8189b18f390e1215398387cfeea06e",
-        "equivalence": "exact-command-replay",
-        "remote_run_id": 33432655247,
-        "remote_job_id": 99621490725
-      }
+        "validate_specification_coverage.py and validate_standard_evidence.py pass on the reconstructed packet.",
+        "Terminal publication is constrained to one result-only child whose parent is the frozen material head and whose changed paths are limited to the new audit package."
+      ]
     }
   ]
 }

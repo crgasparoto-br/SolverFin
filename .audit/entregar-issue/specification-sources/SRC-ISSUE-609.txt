@@ -1,0 +1,37 @@
+Parent epic: #591
+Depends on: #595, #597, #601, #602, #603, #604, #605
+
+## Objetivo
+
+Migrar `/lancamentos` para o novo padrão de listagem/extrato, mantendo contexto de conta e moeda evidente e reduzindo complexidade visual sem perder recorrências, parcelas, agrupamentos, seleção e conciliação.
+
+## Escopo
+
+- usar primitives/layout/view-model da Fase 3B;
+- manter conta/perfil/moeda visíveis no contexto da lista;
+- organizar filtros e busca em barra compacta;
+- agrupar lançamentos temporalmente de forma coerente com #597;
+- manter ações contextuais e detalhe sem perder a lista;
+- preservar seleção em massa, agrupamentos, recorrências, parcelas e remuneração quando aplicável;
+- retirar enhancements substituídos pela nova composição.
+
+## Critérios de aceite
+
+- [ ] moeda de cada valor e do contexto da conta é inequívoca;
+- [ ] filtros/busca funcionam sem reload desnecessário quando o padrão permitir;
+- [ ] ações existentes continuam acessíveis por teclado e mobile;
+- [ ] estados vazio/erro/loading/retry são consistentes;
+- [ ] conteúdo longo e viewport reduzida não quebram a lista;
+- [ ] enhancements substituídos são removidos/depreciados com contrato SSR atualizado;
+- [ ] fluxo real é coberto no gate visual.
+
+## Fora de escopo
+
+- criar rota separada para recorrências;
+- alterar semântica de datas fora de #597.
+
+## Referências
+
+- #591
+- `docs/TRANSACTIONS.md`
+- `docs/EVOLUTION_STRATEGY.md`

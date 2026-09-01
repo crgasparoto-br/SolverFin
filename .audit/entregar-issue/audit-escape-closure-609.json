@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-609-HANDOFF-FOREIGN-TARGET",
+      "status": "passed",
+      "escape_class": "delivery-target-binding-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:609-649-1f0b57d-handoff",
+        "audit_report_sha256": "b1543def5474190e29adb0f1cdd294ddc9a04b4531a8eff2c855a25569afea0a",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "literal_case": {
+        "requested": "Publish a handoff bound to the current delivery target.",
+        "observed": "The active reconstruction binds the fresh package to material head 1f0b57d1fd142d7b27830e6befd3be11efeb2bf6; the inherited foreign target package is treated only as historical input."
+      },
+      "plausible_wrong_implementation": "A result-only delivery could appear complete while carrying a handoff certificate inherited from the base and bound to a different issue or pull request.",
+      "sibling_cases": [
+        {
+          "surface": "issue-target-binding",
+          "status": "passed",
+          "evidence": "Current certificate subject is generated with explicit repository and issue_number arguments."
+        },
+        {
+          "surface": "pull-request-target-binding",
+          "status": "passed",
+          "evidence": "Current certificate subject is generated with explicit pull_request_number, base_ref and head_ref arguments."
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Recovery was classified fresh-handoff-required and the package was reconstructed instead of updating only handoff-ready.json."
+      },
+      "detection_change": {
+        "evidence": "Terminal validation checks current target subject, result-only parent and changed-path allowlist before READY."
+      },
+      "revalidated_head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6"
+    }
+  ]
+}

@@ -3,29 +3,21 @@
   "contract_version": "2026-08-20.3",
   "mode": "independent",
   "repository": "crgasparoto-br/SolverFin",
-  "issue_number": 614,
-  "pull_request_number": 648,
-  "head_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
-  "published_handoff_head_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
-  "rejection_id": "audit-rejection:614-format-check-inbox-page",
+  "issue_number": 609,
+  "pull_request_number": 649,
+  "head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6",
+  "published_handoff_head_sha": "1f0b57d1fd142d7b27830e6befd3be11efeb2bf6",
+  "rejection_id": "audit-rejection:609-649-1f0b57d-handoff",
   "findings": [
     {
-      "id": "A-006",
+      "id": "A-001",
       "severity": "blocking",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
       "requirement_ids": [],
-      "summary": "The deterministic monorepo formatting gate failed on apps/web/src/dev-server/inbox-page.ts, so lint, typecheck, test and build were not reached.",
-      "failed_gate": {
-        "name": "Check formatting",
-        "command": "npm run format:check",
-        "deterministic": true,
-        "subject_sha": "131f6c41f9450ad771b8fb54d5ba8c45a1c5b419",
-        "observed_exit_code": 1,
-        "evidence_sha256": "199231f45b6316efa8d4fdf1e146773ce2fa4e6194f4ece12e847f7a15587c09"
-      }
+      "summary": "The delivery handoff was not produced for Issue 609 / PR 649: handoff-ready.json was byte-identical to the base and bound to Issue 614 / PR 648."
     }
   ],
   "recommendations": []
