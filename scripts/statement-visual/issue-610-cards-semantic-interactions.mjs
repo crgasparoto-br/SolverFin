@@ -17,9 +17,7 @@ if (!chromePath) {
   throw new Error("CHROME_BIN is required for cards semantic visual validation.");
 }
 if (sourceScenario !== "cards-interface") {
-  throw new Error(
-    `Unsupported cards semantic source scenario: ${sourceScenario ?? "<missing>"}.`,
-  );
+  throw new Error(`Unsupported cards semantic source scenario: ${sourceScenario ?? "<missing>"}.`);
 }
 
 await mkdir(outputDir, { recursive: true });
@@ -215,13 +213,11 @@ async function inspectCardsStructure(cdp) {
           );
         }
         const displayedByCurrency = new Map();
-        group
-          .querySelectorAll('.cards-instrument-totals .sf-money[data-currency]')
-          .forEach((money) => {
-            const currency = String(money.getAttribute('data-currency') || '').toUpperCase();
-            const value = parseMoneyMinor(money.querySelector('.sf-money-value')?.textContent || '');
-            if (currency && value !== null) displayedByCurrency.set(currency, value);
-          });
+        group.querySelectorAll('.cards-instrument-totals .sf-money[data-currency]').forEach((money) => {
+          const currency = String(money.getAttribute('data-currency') || '').toUpperCase();
+          const value = parseMoneyMinor(money.querySelector('.sf-money-value')?.textContent || '');
+          if (currency && value !== null) displayedByCurrency.set(currency, value);
+        });
         const consistentInstrument = records.every(
           (record) => String(record.cardInstrumentId || '') === instrumentId,
         );
@@ -243,8 +239,7 @@ async function inspectCardsStructure(cdp) {
       const summaryRect = summary?.getBoundingClientRect();
       return {
         viewportWidth: innerWidth,
-        pageFits:
-          document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
         summaryVisible: Boolean(summaryRect && summaryRect.width > 0 && summaryRect.height > 0),
         purchaseCount: document.querySelectorAll('[data-purchase-item]').length,
         instrumentGroupCount: groups.length,
