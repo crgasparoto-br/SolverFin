@@ -1,0 +1,88 @@
+name: Issue 609 visual remediation helper
+
+on:
+  push:
+    branches:
+      - codex/609-statement-account-currency
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout triggering commit
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Apply deterministic visual wait
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const path = "scripts/statement-visual/transaction-group-modal.mjs";
+
+          function replaceExactly(before, after) {
+            const source = fs.readFileSync(path, "utf8");
+            const count = source.split(before).length - 1;
+            if (count !== 1) throw new Error(`${path}: expected exactly one match, found ${count}`);
+            fs.writeFileSync(path, source.replace(before, after));
+          }
+
+          replaceExactly(
+            `      const button = document.querySelector('[data-group-action="status"]');
+              button.click();
+              await new Promise((resolve) => setTimeout(resolve, 150));
+              const reconciled = {`,
+            `      const button = document.querySelector('[data-group-action="status"]');
+              async function waitForStatus(expectedStatus, expectedLabel) {
+                const deadline = Date.now() + 5_000;
+                while (Date.now() < deadline) {
+                  const status = document.querySelector("[data-group-status-input]").value;
+                  const label = button.textContent;
+                  if (status === expectedStatus && label === expectedLabel) return;
+                  await new Promise((resolve) => setTimeout(resolve, 50));
+                }
+                throw new Error(
+                  "Timed out waiting for group status transition to " +
+                    expectedStatus +
+                    " / " +
+                    expectedLabel,
+                );
+              }
+              button.click();
+              await waitForStatus("Conciliado", "Desconciliar");
+              const reconciled = {`,
+          );
+
+          replaceExactly(
+            `      button.click();
+              await new Promise((resolve) => setTimeout(resolve, 150));
+              const posted = {`,
+            `      button.click();
+              await waitForStatus("Efetivado", "Marcar como conciliado");
+              const posted = {`,
+          );
+          NODE
+
+          npx prettier --write scripts/statement-visual/transaction-group-modal.mjs
+          node --check scripts/statement-visual/transaction-group-modal.mjs
+
+      - name: Persist validated visual remediation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/statement-visual/transaction-group-modal.mjs
+          git diff --cached --quiet && exit 0
+          git commit -m "test(visual): await group status transitions"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
