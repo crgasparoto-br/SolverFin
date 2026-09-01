@@ -260,7 +260,9 @@ async function cardsA3RendersEmptyStateWithoutCardContext(): Promise<void> {
   assert.match(html, /Selecione um cartão/);
   assert.match(html, /href="\/contas-cartoes"/);
   assert.equal(
-    calledPaths.some((path) => path.includes("/instruments") || path.startsWith("/api/recurrences")),
+    calledPaths.some(
+      (path) => path.includes("/instruments") || path.startsWith("/api/recurrences"),
+    ),
     false,
     "empty card state must not query card-scoped resources",
   );

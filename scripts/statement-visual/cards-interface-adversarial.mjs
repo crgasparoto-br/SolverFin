@@ -92,7 +92,10 @@ async function validateCompactDesktop(cdp) {
   assert.ok(measurements.groupCount > 0, "Cards A3 has no instrument groups");
   assert.ok(measurements.rowCount > 0, "Cards A3 has no purchase rows");
   assert.ok(measurements.moneyCurrencies.length > 0, "Cards A3 rendered no explicit Money values");
-  assert.ok(measurements.moneyCurrencies.every(Boolean), "Cards A3 rendered Money without currency");
+  assert.ok(
+    measurements.moneyCurrencies.every(Boolean),
+    "Cards A3 rendered Money without currency",
+  );
   assert.match(measurements.settlementCopy, /não é uma nova compra/i);
 
   const accessibility = await readAccessibilitySummary(cdp);
@@ -142,8 +145,16 @@ async function validateLongContent(cdp) {
     })()`,
   );
 
-  assert.equal(measurements.noHorizontalOverflow, true, "Long card content creates horizontal overflow");
-  assert.equal(measurements.detailInsideViewport, true, "Long card content pushes invoice detail outside viewport");
+  assert.equal(
+    measurements.noHorizontalOverflow,
+    true,
+    "Long card content creates horizontal overflow",
+  );
+  assert.equal(
+    measurements.detailInsideViewport,
+    true,
+    "Long card content pushes invoice detail outside viewport",
+  );
   assert.equal(measurements.rowActionVisible, true, "Long card content hides row action");
 
   await evaluate(
@@ -172,7 +183,10 @@ async function validateCollapsedGroups(cdp) {
   );
   assert.ok(initial.rowCount > 0 && initial.groupCount > 0);
 
-  await evaluate(cdp, `document.querySelectorAll('[data-instrument-purchase-group]').forEach((group) => { group.open = false; })`);
+  await evaluate(
+    cdp,
+    `document.querySelectorAll('[data-instrument-purchase-group]').forEach((group) => { group.open = false; })`,
+  );
   await sleep(80);
   const collapsed = await evaluate(
     cdp,
@@ -187,7 +201,10 @@ async function validateCollapsedGroups(cdp) {
   assert.equal(collapsed.noHorizontalOverflow, true);
   await screenshot(cdp, join(outputDir, "cards-collapsed-groups.png"));
 
-  await evaluate(cdp, `document.querySelectorAll('[data-instrument-purchase-group]').forEach((group) => { group.open = true; })`);
+  await evaluate(
+    cdp,
+    `document.querySelectorAll('[data-instrument-purchase-group]').forEach((group) => { group.open = true; })`,
+  );
   await sleep(80);
   return { initial, collapsed };
 }
@@ -204,7 +221,10 @@ async function validateKeyboardActionMenu(cdp) {
   assert.equal(prepared, true, "Purchase action menu cannot receive keyboard focus");
   await pressKey(cdp, "Enter", "Enter", 13);
   await sleep(60);
-  const opened = await evaluate(cdp, `Boolean(document.querySelector('.cards-purchase-actions[open]'))`);
+  const opened = await evaluate(
+    cdp,
+    `Boolean(document.querySelector('.cards-purchase-actions[open]'))`,
+  );
   assert.equal(opened, true, "Purchase action menu did not open with Enter");
   await pressKey(cdp, "Escape", "Escape", 27);
   await sleep(60);
@@ -254,7 +274,10 @@ async function validateKeyboardModal(cdp) {
 
   await pressKey(cdp, "Escape", "Escape", 27);
   await sleep(80);
-  const closed = await evaluate(cdp, `!document.querySelector('dialog[data-modal="purchase"]')?.open`);
+  const closed = await evaluate(
+    cdp,
+    `!document.querySelector('dialog[data-modal="purchase"]')?.open`,
+  );
   assert.equal(closed, true, "Escape did not close purchase modal");
   return { opened, closed };
 }
@@ -263,7 +286,9 @@ async function readAccessibilitySummary(cdp) {
   await cdp.send("Accessibility.enable");
   const tree = await cdp.send("Accessibility.getFullAXTree");
   const roles = Array.from(
-    new Set((tree.nodes ?? []).map((node) => node.role?.value).filter((role) => typeof role === "string")),
+    new Set(
+      (tree.nodes ?? []).map((node) => node.role?.value).filter((role) => typeof role === "string"),
+    ),
   );
   return { nodeCount: tree.nodes?.length ?? 0, roles };
 }

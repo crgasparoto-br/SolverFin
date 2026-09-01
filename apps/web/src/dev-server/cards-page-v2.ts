@@ -219,7 +219,8 @@ export async function renderCardsPageV2(
     childrenHtml: `${renderPageHeader({
       eyebrow: "Cartões e faturas",
       title: "Cartões de Crédito",
-      description: "Acompanhe cada cartão pela fatura selecionada e revise as compras que a compõem.",
+      description:
+        "Acompanhe cada cartão pela fatura selecionada e revise as compras que a compõem.",
       actionsHtml: renderPageActions(selectedCard, activeInstruments),
     })}${renderDetailLayout({
       masterHtml: renderCardMaster(cards, selectedCard, instruments, invoiceCurrency, url),
@@ -260,10 +261,6 @@ export async function renderCardsPageV2(
       ${clientScript()}
       ${recurrencesSectionScript()}
     </div>
-    <style data-invoice-month-navigation-styles></style>
-    <style data-list-sorting-styles></style>
-    <style data-cards-interface-styles></style>
-    <style data-cards-status-alignment></style>
   `);
 }
 
@@ -332,7 +329,9 @@ function filterPurchases(
     const category = purchase.categoryId
       ? (categories.find((candidate) => candidate.id === purchase.categoryId)?.name ?? "")
       : "";
-    return normalizeSearch(`${purchase.description} ${category} ${purchase.status}`).includes(query);
+    return normalizeSearch(`${purchase.description} ${category} ${purchase.status}`).includes(
+      query,
+    );
   });
 }
 
@@ -404,7 +403,8 @@ function renderCardMaster(
     return renderEmptyState({
       title: "Nenhum cartão cadastrado",
       description: "Cadastre um cartão para acompanhar faturas, limites e compras.",
-      actionHtml: '<a class="sf-button sf-button-primary" href="/contas-cartoes">Cadastrar cartão</a>',
+      actionHtml:
+        '<a class="sf-button sf-button-primary" href="/contas-cartoes">Cadastrar cartão</a>',
     });
   }
   const options = cards
@@ -604,7 +604,11 @@ function renderInvoiceSummary(
           money(summary?.totalExpensesMinor ?? invoice.totalAmountMinor, currency),
           currency,
         ),
-        summaryMetric("Conciliado", money(summary?.reconciledExpensesMinor ?? 0, currency), currency),
+        summaryMetric(
+          "Conciliado",
+          money(summary?.reconciledExpensesMinor ?? 0, currency),
+          currency,
+        ),
         summaryMetric(
           "Não conciliado",
           money(summary?.unreconciledExpensesMinor ?? 0, currency),
@@ -637,7 +641,9 @@ function renderPurchaseFilters(
   visiblePurchases: readonly CardPurchaseRecord[],
   url: URL,
 ): string {
-  const reconciledCount = allPurchases.filter((purchase) => purchase.status === "reconciled").length;
+  const reconciledCount = allPurchases.filter(
+    (purchase) => purchase.status === "reconciled",
+  ).length;
   const unreconciledCount = allPurchases.length - reconciledCount;
   const base = new URL(url);
   base.pathname = "/cartoes";
@@ -731,7 +737,8 @@ function renderPurchaseRow(
   selectedInvoice: InvoiceRecord,
 ): string {
   const category = purchase.categoryId
-    ? (categories.find((candidate) => candidate.id === purchase.categoryId)?.name ?? "Sem categoria")
+    ? (categories.find((candidate) => candidate.id === purchase.categoryId)?.name ??
+      "Sem categoria")
     : "Sem categoria";
   const recurrence = purchase.recurrenceId
     ? recurrences.find((candidate) => candidate.id === purchase.recurrenceId)

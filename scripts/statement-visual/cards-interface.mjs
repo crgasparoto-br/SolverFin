@@ -75,7 +75,7 @@ async function runViewportSession(label, width, height, validate) {
 async function openCards(cdp) {
   await navigateWithRetry(cdp, `${baseUrl}/cartoes?month=2026-06`, "cards A3");
   await waitFor(cdp, '[data-cards-archetype="A3"]');
-  await waitFor(cdp, '[data-purchase-item]');
+  await waitFor(cdp, "[data-purchase-item]");
 }
 
 async function validatePage(cdp, viewportKind) {
@@ -139,30 +139,83 @@ async function validatePage(cdp, viewportKind) {
 
   check(measurements.archetype === "A3", "Cards route is not rendered as A3", measurements);
   check(measurements.noHorizontalOverflow, "Cards page has horizontal overflow", measurements);
-  check(measurements.masterVisible && measurements.detailVisible, "Master-detail hierarchy is incomplete", measurements);
+  check(
+    measurements.masterVisible && measurements.detailVisible,
+    "Master-detail hierarchy is incomplete",
+    measurements,
+  );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
   check(measurements.primaryAmountVisible, "Invoice amount due is not visible", measurements);
   check(measurements.statusVisible, "Invoice status is not visible", measurements);
-  check(measurements.invoiceCopy.includes("Fechamento") && measurements.invoiceCopy.includes("Vencimento"), "Invoice closing and due dates are not explicit", measurements);
-  check(measurements.settlementCopy.includes("não é uma nova compra"), "Settlement semantics are not explicit", measurements);
-  check(measurements.currencies.length > 0 && measurements.currencies.every(Boolean), "Money is rendered without explicit currency", measurements);
+  check(
+    measurements.invoiceCopy.includes("Fechamento") &&
+      measurements.invoiceCopy.includes("Vencimento"),
+    "Invoice closing and due dates are not explicit",
+    measurements,
+  );
+  check(
+    measurements.settlementCopy.includes("não é uma nova compra"),
+    "Settlement semantics are not explicit",
+    measurements,
+  );
+  check(
+    measurements.currencies.length > 0 && measurements.currencies.every(Boolean),
+    "Money is rendered without explicit currency",
+    measurements,
+  );
   check(measurements.cardSelect, "Card master selector is unavailable", measurements);
-  check(measurements.invoiceTabs > 0 && measurements.monthInput, "Invoice navigation is incomplete", measurements);
+  check(
+    measurements.invoiceTabs > 0 && measurements.monthInput,
+    "Invoice navigation is incomplete",
+    measurements,
+  );
   check(measurements.searchVisible, "Purchase search is unavailable", measurements);
   check(measurements.filterCount >= 3, "Reconciliation filters are incomplete", measurements);
   check(measurements.rowCount > 0, "Cards page rendered no purchase rows", measurements);
-  check(measurements.resultAnnouncement.includes("compra"), "Purchase result count is not announced", measurements);
+  check(
+    measurements.resultAnnouncement.includes("compra"),
+    "Purchase result count is not announced",
+    measurements,
+  );
 
   if (viewportKind === "desktop") {
-    check(measurements.tableHeaderVisible, "Purchase table header is not visible on desktop", measurements);
-    check(measurements.minimumRowHeight >= 40, "Purchase rows are too small on desktop", measurements);
+    check(
+      measurements.tableHeaderVisible,
+      "Purchase table header is not visible on desktop",
+      measurements,
+    );
+    check(
+      measurements.minimumRowHeight >= 40,
+      "Purchase rows are too small on desktop",
+      measurements,
+    );
   } else {
-    check(measurements.heroAction.height >= 44, "Primary purchase action is smaller than 44px", measurements);
+    check(
+      measurements.heroAction.height >= 44,
+      "Primary purchase action is smaller than 44px",
+      measurements,
+    );
     check(measurements.searchHeight >= 40, "Purchase search is too small on mobile", measurements);
-    check(!measurements.tableHeaderVisible, "Desktop purchase header remains visible on mobile", measurements);
-    check(measurements.mobileDateLabel.includes("Data"), "Mobile purchase date lost its contextual label", measurements);
-    check(measurements.mobileStatusLabel.includes("Situação"), "Mobile purchase status lost its contextual label", measurements);
-    check(measurements.minimumActionTarget >= 30, "Purchase action target is too small on mobile", measurements);
+    check(
+      !measurements.tableHeaderVisible,
+      "Desktop purchase header remains visible on mobile",
+      measurements,
+    );
+    check(
+      measurements.mobileDateLabel.includes("Data"),
+      "Mobile purchase date lost its contextual label",
+      measurements,
+    );
+    check(
+      measurements.mobileStatusLabel.includes("Situação"),
+      "Mobile purchase status lost its contextual label",
+      measurements,
+    );
+    check(
+      measurements.minimumActionTarget >= 30,
+      "Purchase action target is too small on mobile",
+      measurements,
+    );
   }
 
   await screenshot(cdp, join(outputDir, `cards-${viewportKind}.png`));
@@ -174,7 +227,7 @@ async function validateFilteredEmpty(cdp) {
   const filteredUrl = new URL(current);
   filteredUrl.searchParams.set("q", "__solverfin_no_purchase_matches__");
   await navigateWithRetry(cdp, filteredUrl.toString(), "cards filtered empty");
-  await waitFor(cdp, '[data-purchase-filter-empty]');
+  await waitFor(cdp, "[data-purchase-filter-empty]");
 
   const result = await evaluate(
     cdp,
@@ -188,7 +241,11 @@ async function validateFilteredEmpty(cdp) {
   check(result.rowCount === 0, "Filtered empty state still renders purchase rows", result);
   check(result.emptyVisible, "Filtered purchase empty state is not visible", result);
   check(result.status.startsWith("0 "), "Filtered result count is not zero", result);
-  check(result.query === "__solverfin_no_purchase_matches__", "Filtered query is not preserved", result);
+  check(
+    result.query === "__solverfin_no_purchase_matches__",
+    "Filtered query is not preserved",
+    result,
+  );
 
   await openCards(cdp);
   return result;
@@ -222,17 +279,27 @@ async function validateModal(cdp, viewportKind) {
   check(measurements.closeTarget >= 40, "Purchase modal close action is too small", measurements);
   if (viewportKind === "mobile") {
     check(measurements.singleColumn, "Purchase modal is not single-column on mobile", measurements);
-    check(measurements.minimumActionHeight >= 40, "Purchase modal action is too small on mobile", measurements);
+    check(
+      measurements.minimumActionHeight >= 40,
+      "Purchase modal action is too small on mobile",
+      measurements,
+    );
   }
   await screenshot(cdp, join(outputDir, `cards-modal-${viewportKind}.png`));
-  await evaluate(cdp, `document.querySelector('dialog[data-modal="purchase"] [data-close-modal]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('dialog[data-modal="purchase"] [data-close-modal]')?.click()`,
+  );
   await sleep(80);
   return measurements;
 }
 
 async function waitFor(cdp, selector) {
   for (let attempt = 0; attempt < 60; attempt += 1) {
-    const ready = await evaluate(cdp, `Boolean(document.querySelector(${JSON.stringify(selector)}))`);
+    const ready = await evaluate(
+      cdp,
+      `Boolean(document.querySelector(${JSON.stringify(selector)}))`,
+    );
     if (ready) return;
     await sleep(100);
   }
@@ -253,7 +320,8 @@ async function navigateWithRetry(cdp, url, label) {
 }
 
 function serializeError(error) {
-  if (error instanceof Error) return { name: error.name, message: error.message, stack: error.stack ?? "" };
+  if (error instanceof Error)
+    return { name: error.name, message: error.message, stack: error.stack ?? "" };
   return { name: "UnknownError", message: String(error), stack: "" };
 }
 

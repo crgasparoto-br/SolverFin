@@ -16,9 +16,7 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
   const ids = LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
 
-  const routes = new Set<string>(
-    LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route),
-  );
+  const routes = new Set<string>(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route));
   assert.equal(
     routes.has("/cartoes"),
     false,
