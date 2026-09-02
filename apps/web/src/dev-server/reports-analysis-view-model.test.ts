@@ -12,9 +12,7 @@ describe("reports analysis view-model", () => {
       label: `P${index + 1}`,
       accessibleLabel: `Período ${index + 1}`,
     }));
-    const values = periods.map((_, index) =>
-      index % 2 === 0 ? 1000 + index : -500 - index,
-    );
+    const values = periods.map((_, index) => (index % 2 === 0 ? 1000 + index : -500 - index));
     const total = values.reduce((sum, value) => sum + value, 0);
 
     const viewModel = buildCategoryEvolutionAnalysisViewModel(
@@ -54,11 +52,7 @@ describe("reports analysis view-model", () => {
       installment("usd-1", "USD", 7000, "planned"),
     ];
 
-    const blocks = buildInstallmentAnalysisViewModel(
-      items,
-      "2026-07-10",
-      (month) => month,
-    );
+    const blocks = buildInstallmentAnalysisViewModel(items, "2026-07-10", (month) => month);
 
     assert.deepEqual(
       blocks.map((block) => block.currency),
@@ -73,12 +67,7 @@ describe("reports analysis view-model", () => {
   });
 });
 
-function installment(
-  id: string,
-  currency: string,
-  amountMinor: number,
-  status: string,
-) {
+function installment(id: string, currency: string, amountMinor: number, status: string) {
   return {
     id,
     currency,
