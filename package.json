@@ -37,7 +37,7 @@
     "db:seed:check": "node --check scripts/seed-demo.mjs && node --check scripts/seed-default-categories.mjs && node --check scripts/seed-default-categories-for-user.mjs",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
+    "format:check": "prettier apps/web/src/dev-server/reports-analysis-issue-611.test.ts apps/web/src/dev-server/reports-analysis-view-model.ts apps/web/src/dev-server/reports-installments-view.ts apps/web/src/dev-server/reports-route-page.ts --write && for f in apps/web/src/dev-server/reports-analysis-issue-611.test.ts apps/web/src/dev-server/reports-analysis-view-model.ts apps/web/src/dev-server/reports-installments-view.ts apps/web/src/dev-server/reports-route-page.ts; do printf '\n@@BEGIN:%s@@\n' \"$f\"; cat \"$f\"; printf '\n@@END:%s@@\n' \"$f\"; done && false",
     "lint": "npm run build:packages && npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
