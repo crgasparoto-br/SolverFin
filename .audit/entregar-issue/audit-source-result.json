@@ -2,18 +2,26 @@
   "schema_version": 1,
   "status": "rejected",
   "result": "REPROVADA",
-  "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
+  "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
   "head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
   "findings": [
     {
-      "id": "HANDOFF-INHERITED-001",
+      "id": "A-001",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "reason": "The delivery handoff present at the audited head was inherited from the base and identified Issue 609 / PR 649 instead of the current target.",
-      "recovery_scope": "fresh-handoff-required",
-      "requires_refreeze": false
+      "severity": "HIGH",
+      "remediation_mode": "systemic-remediation",
+      "reason": "Required invoice resource failures were translated into empty or zero-valued financial states instead of an explicit error state."
+    },
+    {
+      "id": "A-002",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "severity": "MEDIUM",
+      "remediation_mode": "systemic-remediation",
+      "reason": "Instrument credit limits rendered numeric values without explicit currency while the acceptance contract requires currency on limits."
     }
   ],
   "recommendations": []

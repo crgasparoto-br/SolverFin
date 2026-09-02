@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-DELIVERY-TARGET-BINDING-001",
+      "status": "passed",
+      "escape_class": "delivery-target-binding",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
+        "finding_ids": [
+          "HANDOFF-INHERITED-001"
+        ],
+        "audit_report_sha256": "6528b4a35ab56a88cc3a054237411e4c77d809e9bf258d66f95869833be11a3b"
+      },
+      "plausible_wrong_implementation": "Treat a handoff inherited from a base branch as readiness for a different delivery merely because the artifact file exists and is internally valid.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "The current package is rebuilt for the current delivery target and does not treat inherited artifacts as current readiness."
+      },
+      "sibling_cases": [
+        {
+          "id": "SIB-INHERITED-BASE",
+          "status": "passed",
+          "evidence": "Foreign base artifact remains historical only."
+        },
+        {
+          "id": "SIB-FOREIGN-HEAD",
+          "status": "passed",
+          "evidence": "Foreign changed artifact cannot activate handoff reuse."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "Current delivery package must bind repository, issue, PR, branch, base and material SHA."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "Target binding and terminal handoff validation run before independent audit."
+        ]
+      },
+      "revalidated_head_sha": "d7e5da12b525101274879a22249e0b3d7f3ba921",
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "inherited-base-artifact"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "foreign-target-artifact"
+        }
+      ]
+    },
+    {
+      "escape_id": "ESC-CARDS-REQUIRED-RESOURCE-FAIL-CLOSED-001",
+      "status": "passed",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "ccf591e6198c2f5d4b71c36290330c456c875847a5ff6a636752674b7fbde535"
+      },
+      "plausible_wrong_implementation": "Translate a failed required invoice resource request into a valid empty collection or zero financial summary so the page appears healthy.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "A purchases failure routes to the explicit error page and cannot render the empty purchase state."
+      },
+      "sibling_cases": [
+        {
+          "id": "SIB-SUMMARY-FAILURE",
+          "status": "passed",
+          "evidence": "Summary failure routes to explicit error before summary values render."
+        },
+        {
+          "id": "SIB-FINANCIAL-DEPENDENCY-FAILURE",
+          "status": "passed",
+          "evidence": "Accounts, categories, instruments and recurrences failures route to explicit error before dependent actions render."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "Required invoice/card resources are checked for ok=false before any semantic fallback or financial composition."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "Focused regression source covers literal purchases failure and sibling summary/accounts/categories/instruments/recurrences failures."
+        ]
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "required-resource-state-contract",
+          "dimension": "nested-resource-failure"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "required-resource-state-contract",
+          "dimension": "sibling-resource-failure"
+        }
+      ],
+      "revalidated_head_sha": "d7e5da12b525101274879a22249e0b3d7f3ba921",
+      "required_risk_families": [
+        "structural-contract"
+      ]
+    },
+    {
+      "escape_id": "ESC-CARDS-MONETARY-CURRENCY-LABEL-001",
+      "status": "passed",
+      "escape_class": "monetary-unit-explicitness",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
+        "finding_ids": [
+          "A-002"
+        ],
+        "audit_report_sha256": "ccf591e6198c2f5d4b71c36290330c456c875847a5ff6a636752674b7fbde535"
+      },
+      "plausible_wrong_implementation": "Render a numeric instrument credit limit outside the money primitive without carrying the invoice currency, while other money values remain correctly labeled.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "Instrument limit text now includes the selected invoice ISO currency before the localized numeric value."
+      },
+      "sibling_cases": [
+        {
+          "id": "SIB-SECOND-INSTRUMENT-LIMIT",
+          "status": "passed",
+          "evidence": "Every instrument limit in the same invoice uses the same explicit invoice currency."
+        },
+        {
+          "id": "SIB-MISSING-CURRENCY-LIMIT",
+          "status": "passed",
+          "evidence": "Missing currency renders an unavailable-currency label instead of an unlabeled numeric amount."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "Instrument label formatting requires currency before it may render a numeric limit."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "Focused regression requires limite USD 1.000,00 and rejects raw limite 1.000,00 and limite 500,00 forms."
+        ]
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "monetary-unit-contract",
+          "dimension": "raw-numeric-label"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "monetary-unit-contract",
+          "dimension": "missing-currency-path"
+        }
+      ],
+      "revalidated_head_sha": "d7e5da12b525101274879a22249e0b3d7f3ba921",
+      "required_risk_families": [
+        "structural-contract"
+      ]
+    }
+  ]
+}

@@ -3,27 +3,40 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
-  "remediation_mode": "targeted-remediation",
+  "candidate_head_sha": "d7e5da12b525101274879a22249e0b3d7f3ba921",
+  "remediation_mode": "systemic-remediation",
   "source": {
-    "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
+    "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
     "audited_head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
-    "audit_report_sha256": "6528b4a35ab56a88cc3a054237411e4c77d809e9bf258d66f95869833be11a3b"
+    "audit_report_sha256": "ccf591e6198c2f5d4b71c36290330c456c875847a5ff6a636752674b7fbde535"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "HANDOFF-INHERITED-001",
-      "remediation_mode": "targeted-remediation",
+      "source_id": "A-001",
+      "remediation_mode": "systemic-remediation",
       "status": "fixed",
       "evidence": [
-        "The Issue 609 / PR 649 audit package is classified as inherited-base-artifact and is not reused as evidence for the current target.",
-        "A fresh Issue 610 / PR 650 specification snapshot, requirement closure, standard evidence and handoff certificate are generated for the frozen material head."
+        "Required purchases, summary, accounts, categories, instruments and recurrences now fail closed through renderErrorPage before financial state is composed.",
+        "Focused regression source rejects false empty-state rendering for nested failures."
       ],
       "validations": [
-        "classify_handoff_recovery returns fresh-handoff-required for inherited-base-artifact.",
-        "Canonical specification coverage and standard evidence validators pass for the current package.",
-        "Terminal handoff guard is required before the PR is returned to independent audit."
+        "Exact-head renderer inspection at d7e5da12b525101274879a22249e0b3d7f3ba921",
+        "Focused regression contract in cards-page-v2-audit-remediation.test.ts covers literal and sibling resource failures."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "systemic-remediation",
+      "status": "fixed",
+      "evidence": [
+        "Instrument labels receive the selected invoice currency and numeric limits include the ISO currency code.",
+        "When currency is unavailable, the renderer does not expose an unlabeled numeric limit."
+      ],
+      "validations": [
+        "Exact-head renderer inspection at d7e5da12b525101274879a22249e0b3d7f3ba921",
+        "Focused regression contract requires limite USD 1.000,00 and rejects unlabeled limit forms."
       ]
     }
   ]

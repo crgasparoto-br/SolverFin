@@ -1,5 +1,4 @@
-Material head: c4f8bebaebd8dee0ad9d8ec56740b05d9467eedd
-CI #4538: success
-Statement visual validation #3041: success
-Fix: replaced fixed 260 ms sleep in issue-565 AI review conflict visual harness with polling of the observable terminal conflict state (message visible + approval action re-enabled).
-Remote workflows are green on the exact material SHA.
+Material candidate: d7e5da12b525101274879a22249e0b3d7f3ba921
+Systemic remediation source inspection confirms required invoice resources fail closed before financial rendering; instrument numeric limits require explicit invoice currency; profileId and aria-current fixes remain in the renderer.
+The only delta from c5d7530efb65fa92bc0c720ea5d6e11e60ec9605 is formatting in cards-page-v2-audit-remediation.test.ts. Statement visual validation had passed on c5d7530e and product renderer/visual scenario blobs are unchanged by d7e5da12. CI 4751 and visual 3249 were observed queued and are not claimed as completed.
+Focused regression source covers purchases, summary, accounts, instruments, recurrences, categories, USD limit labeling, profile navigation and aria-current.

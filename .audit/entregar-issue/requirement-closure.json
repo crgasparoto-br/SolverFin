@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/tmp/solverfin-610-handoff/audit/specification-snapshot.json",
-    "sha256": "1c451dbcce3b27ddde4ed93c09f247fcd26033b27bba34d167a52c3a3636c36c"
+    "path": "specification-snapshot.json",
+    "sha256": "19fbce50faaa15637eedd68e20621584712da93a3376aaed97d4fb5596048a2e"
   },
   "primary_issue_source_id": "SRC-ISSUE-610",
   "obligations": [
@@ -282,83 +282,57 @@
   "observable_assertions": [],
   "structural_invariant_closures": {
     "status": "not-applicable",
-    "applicability_reason": "No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.",
+    "applicability_reason": "The canonical contract has no required implementation architecture, forbidden dependency, or canonical structural path.",
     "entries": [],
     "unresolved_invariants": []
   },
   "read_model_closures": {
     "status": "not-applicable",
-    "applicability_reason": "The contract does not require a historical read model, version timeline, pagination, authorship, or supersession semantics.",
+    "applicability_reason": "The canonical contract does not require a historical timeline, versioned read model, pagination, authorship, or supersession.",
     "entries": [],
     "unconsumed_outputs": [],
     "unmapped_required_fields": []
   },
   "canonical_source_consistency": {
     "status": "passed",
-    "applicability_reason": "The coherent UI-state requirement is closed by one selected card/invoice context and one explicit invoice currency propagated across summary, purchases, limits, and settlement eligibility.",
+    "applicability_reason": "The coherent card and invoice state uses the selected invoice as the source for required financial resources and currency context.",
     "entries": [
       {
         "id": "CSC-610-01",
-        "obligation_ids": [
-          "OBL-006",
-          "OBL-010",
-          "OBL-013"
+        "requirement_ids": [
+          "REQ-610-06",
+          "REQ-610-07"
         ],
-        "evidence": [
-          "apps/web/src/dev-server/cards-page-v2.ts derives invoiceCurrency once and filters settlement accounts by that currency.",
-          "apps/web/src/dev-server/cards-page-v2.test.ts uses USD and proves BRL settlement accounts are excluded."
-        ]
+        "status": "passed",
+        "evidence": "Required invoice resources fail closed before financial values render, and invoice currency is propagated to limits."
       }
-    ],
-    "unverified_surfaces": [],
-    "missing_divergent_tests": []
+    ]
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "The delivery retires the legacy /cartoes post-processing path and the canonical legacy inventory documentation was updated in the same material candidate.",
-    "old_contract_terms": [
-      "/cartoes legacy HTML post-processors",
-      "LEGACY_HTML_POST_PROCESSOR_BUDGET=9"
-    ],
-    "new_contract_terms": [
-      "/cartoes rendered directly by cards-page-v2.ts",
-      "LEGACY_HTML_POST_PROCESSOR_BUDGET=5"
-    ],
-    "occurrences": [
+    "applicability_reason": "The delivery retires substituted legacy enhancements and the existing legacy post-processor documentation was updated in the issue implementation.",
+    "entries": [
       {
-        "path": "docs/LEGACY_HTML_POST_PROCESSORS.md",
-        "status": "updated",
-        "evidence": "Issue #610 section records removal of four /cartoes adapters and budget reduction from 9 to 5."
-      },
-      {
-        "path": "apps/web/src/dev-server/legacy-html-post-processors.test.ts",
-        "status": "updated",
-        "evidence": "Executable guard asserts budget 5 and that /cartoes is absent from the legacy inventory."
+        "id": "DOC-610-01",
+        "requirement_ids": [
+          "REQ-610-08"
+        ],
+        "status": "passed",
+        "evidence": "docs/LEGACY_HTML_POST_PROCESSORS.md and the canonical guard reflect removal of /cartoes from the legacy pipeline."
       }
-    ],
-    "unresolved_contradictions": [],
-    "searched_outside_diff": true,
-    "search_evidence": [
-      "CI run 33576900061 completed successfully with formatting, lint, typecheck, test and build.",
-      "Statement visual validation run 33576900097 completed successfully on the material head."
     ]
   },
   "scope_reduction_review": {
     "status": "passed",
-    "matches": []
+    "reviewed_sources": [
+      "SRC-ISSUE-610"
+    ],
+    "findings": [],
+    "rationale": "No required Issue 610 behavior is deferred or reduced by the remediation."
   },
   "pass_c": {
     "status": "passed",
-    "requirement_ids": [
-      "REQ-610-01",
-      "REQ-610-02",
-      "REQ-610-03",
-      "REQ-610-04",
-      "REQ-610-05",
-      "REQ-610-06",
-      "REQ-610-07",
-      "REQ-610-08"
-    ],
+    "reviewed_all_specification_sources": true,
     "obligation_ids": [
       "OBL-001",
       "OBL-002",
@@ -368,21 +342,13 @@
       "OBL-006",
       "OBL-007",
       "OBL-008",
-        "OBL-009",
+      "OBL-009",
       "OBL-010",
-        "OBL-011",
+      "OBL-011",
       "OBL-012",
-        "OBL-013",
+      "OBL-013",
       "OBL-014"
     ],
-    "evidence": [
-      "Issue #610 body was re-derived directly into 14 canonical obligations.",
-      "PR #650 material diff and exact-head CI/Chrome evidence were reviewed against all obligations.",
-      "Out-of-scope rotational interest, balance installment financing, and FX provider remain excluded."
-    ],
-    "rederived_without_pr_description": true,
-    "reviewed_user_visible_semantics": true,
-    "reviewed_producer_consumer_parity": true,
-    "reviewed_all_specification_sources": true
+    "rationale": "All fourteen canonical obligations were rechecked after the systemic remediation."
   }
 }

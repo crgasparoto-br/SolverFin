@@ -1,17 +1,55 @@
 {
   "schema_version": 1,
-  "classification": "implementation-only",
+  "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
-    "audit_report_sha256": "6528b4a35ab56a88cc3a054237411e4c77d809e9bf258d66f95869833be11a3b",
+    "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
     "finding_ids": [
-      "HANDOFF-INHERITED-001"
-    ]
+      "A-001",
+      "A-002"
+    ],
+    "audit_report_sha256": "ccf591e6198c2f5d4b71c36290330c456c875847a5ff6a636752674b7fbde535"
   },
   "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "The controller already has a generic delivery-target binding rule that forbids reuse of inherited foreign handoff artifacts; this rejection is the concrete delivery instance to remediate, not a missing global control."
+    "escape_class": "semantic-fallback-and-unit-labeling",
+    "generalized_failure_pattern": "A UI can preserve nominal structure while translating unavailable required data into valid-looking values or rendering monetary numbers without their unit.",
+    "plausible_wrong_implementation": "Use convenient empty or zero fallbacks for failed required resources and verify currency only on components already using a money primitive.",
+    "trigger_signals": [
+      "required remote resource influences financial state",
+      "numeric monetary text exists outside a money primitive",
+      "negative control only inspects happy-path selectors"
+    ],
+    "risk_families": [
+      "semantic-effect",
+      "structural-contract"
+    ],
+    "reusable_control": "For each required financial resource, inject failure and require an explicit error state; scan every numeric monetary label for an explicit unit or a deliberate unavailable state.",
+    "prevention_rule": "Required financial inputs fail closed before semantic composition, and numeric monetary output may be emitted only when its currency or unit is available.",
+    "detection_rule": "Negative tests must attack nested resource failures and raw monetary labels outside canonical money components.",
+    "transfer_cases": [
+      {
+        "surface": "required-resource-state",
+        "status": "passed",
+        "evidence": "Synthetic purchase and summary failures are rejected as error states rather than empty values."
+      },
+      {
+        "surface": "raw-monetary-label",
+        "status": "passed",
+        "evidence": "Synthetic instrument limits require an ISO currency or render no numeric amount."
+      }
+    ],
+    "promotion_status": "promoted"
   },
-  "skill_changes": []
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "status": "passed",
+      "evidence": "The promoted prevention rule is represented in the current attack matrix and inherited controls."
+    },
+    {
+      "role": "detection",
+      "status": "passed",
+      "evidence": "The promoted detection rule is represented in focused negative controls for nested failures and raw limit labels."
+    }
+  ]
 }
