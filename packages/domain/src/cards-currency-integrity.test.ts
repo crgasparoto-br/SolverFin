@@ -46,7 +46,11 @@ function runAcceptsMatchingExistingInvoiceCurrency(): void {
     makeInvoiceId: (period) => `invoice-${period.periodEndOn}`,
   });
 
-  assertEqual(result.invoice.id, invoice.id, "matching invoice should be reused");
+  assertEqual(
+    result.invoice.id,
+    invoice.id,
+    "matching invoice should be reused",
+  );
   assertEqual(
     result.invoice.currency,
     "USD",
@@ -179,7 +183,11 @@ function runRejectsCrossCurrencyPaymentAccount(): void {
     "CARD_INVOICE_PAYMENT_ACCOUNT_CURRENCY_MISMATCH",
   );
 
-  assertEqual(invoice.status, "open", "rejected payment must not mutate invoice input");
+  assertEqual(
+    invoice.status,
+    "open",
+    "rejected payment must not mutate invoice input",
+  );
 }
 
 function runSkipsCrossCurrencyPaymentForecast(): void {
@@ -213,7 +221,11 @@ function runSkipsCrossCurrencyPaymentForecast(): void {
     makeForecastTransactionId: (invoiceId) => `forecast-${invoiceId}`,
   });
 
-  assertEqual(result.invoice.currency, "USD", "purchase should keep USD invoice currency");
+  assertEqual(
+    result.invoice.currency,
+    "USD",
+    "purchase should keep USD invoice currency",
+  );
   assertEqual(
     result.forecastTransactions.length,
     0,
@@ -276,7 +288,10 @@ function assertCurrencyError(
   try {
     action();
   } catch (error) {
-    if (error instanceof CardCurrencyInvariantError && error.code === expectedCode) {
+    if (
+      error instanceof CardCurrencyInvariantError &&
+      error.code === expectedCode
+    ) {
       return;
     }
 
@@ -288,6 +303,8 @@ function assertCurrencyError(
 
 function assertEqual<T>(actual: T, expected: T, message: string): void {
   if (actual !== expected) {
-    throw new Error(`${message}. Expected ${String(expected)}, received ${String(actual)}.`);
+    throw new Error(
+      `${message}. Expected ${String(expected)}, received ${String(actual)}.`,
+    );
   }
 }
