@@ -158,8 +158,6 @@ export async function renderCardsPageV2(
 
   const cards = cardsResult.data.cards.filter((card) => card.status !== "archived");
   const invoices = invoicesResult.data.invoices;
-  const accounts = accountsResult.ok ? accountsResult.data.accounts : [];
-  const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
   const selectedCard = resolveSelectedCard(cards, url.searchParams.get("cardId"));
   const cardInvoices = selectedCard ? invoicesForCard(invoices, selectedCard.id) : [];
   const selectedInvoice = resolveSelectedInvoice(cardInvoices, url);
@@ -171,6 +169,7 @@ export async function renderCardsPageV2(
         `/api/credit-card-accounts/${encodeURIComponent(selectedCard.id)}/instruments`,
       )
     : { ok: true as const, data: { instruments: [] as CardInstrumentRecord[] } };
+  if (selectedCard && !instrumentsResult.ok) return renderErrorPage(instrumentsResult.error);
   const instruments = instrumentsResult.ok ? instrumentsResult.data.instruments : [];
   const activeInstruments = instruments.filter((instrument) => instrument.status === "active");
 
@@ -181,6 +180,7 @@ export async function renderCardsPageV2(
         `/api/recurrences?cardId=${encodeURIComponent(selectedCard.id)}&status=all`,
       )
     : { ok: true as const, data: { recurrences: [] as RecurrenceRecord[] } };
+  if (selectedCard && !recurrencesResult.ok) return renderErrorPage(recurrencesResult.error);
   const recurrences = recurrencesResult.ok ? recurrencesResult.data.recurrences : [];
 
   const [summaryResult, purchasesResult] = selectedInvoice
@@ -199,14 +199,21 @@ export async function renderCardsPageV2(
         { ok: true, data: { purchases: [] as CardPurchaseRecord[] } },
       ] as const);
 
-  const summary = summaryResult.ok ? summaryResult.data.summary : undefined;
-  const canonicalPurchases = purchasesResult.ok ? purchasesResult.data.purchases : [];
+  if (selectedInvoice && !accountsResult.ok) return renderErrorPage(accountsResult.error);
+  if (selectedInvoice && !categoriesResult.ok) return renderErrorPage(categoriesResult.error);
+  if (!summaryResult.ok) return renderErrorPage(summaryResult.error);
+  if (!purchasesResult.ok) return renderErrorPage(purchasesResult.error);
+
+  const accounts = accountsResult.ok ? accountsResult.data.accounts : [];
+  const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
+  const summary = summaryResult.data.summary;
+  const canonicalPurchases = purchasesResult.data.purchases;
   const invoiceCurrency = resolveInvoiceCurrency(selectedInvoice, canonicalPurchases);
   const visiblePurchases = sortPurchases(
     filterPurchases(canonicalPurchases, categories, presentation),
     presentation.sort,
   );
-  const groups = groupPurchasesByInstrument(visiblePurchases, instruments);
+  const groups = groupPurchasesByInstrument(visiblePurchases, instruments, invoiceCurrency);
   const matchingPaymentAccounts = invoiceCurrency
     ? accounts.filter(
         (account) =>
@@ -255,7 +262,7 @@ export async function renderCardsPageV2(
       ${renderRecurrenceEditModal(
         categories,
         "card",
-        renderInstrumentOptions(activeInstruments),
+        renderInstrumentOptions(activeInstruments, invoiceCurrency),
         invoiceCurrency ?? "moeda indisponível",
       )}
       ${clientScript()}
@@ -354,6 +361,7 @@ function sortPurchases(
 function groupPurchasesByInstrument(
   purchases: readonly CardPurchaseRecord[],
   instruments: readonly CardInstrumentRecord[],
+  currency: string | undefined,
 ): InstrumentPurchaseGroup[] {
   const groups = new Map<string, InstrumentPurchaseGroup>();
   const order: string[] = [];
@@ -366,7 +374,10 @@ function groupPurchasesByInstrument(
         label:
           id === "__unassigned__"
             ? "Sem instrumento identificado"
-            : formatInstrumentLabel(instruments.find((instrument) => instrument.id === id)),
+            : formatInstrumentLabel(
+                instruments.find((instrument) => instrument.id === id),
+                currency,
+              ),
         purchases: [],
       };
       groups.set(id, group);
@@ -451,14 +462,14 @@ function renderCardMaster(
           active
             .map(
               (instrument) =>
-                `<li><span>${escapeHtml(formatInstrumentLabel(instrument))}</span>${instrument.isDefault ? "<strong>Padrão</strong>" : ""}</li>`,
+                `<li><span>${escapeHtml(formatInstrumentLabel(instrument, invoiceCurrency))}</span>${instrument.isDefault ? "<strong>Padrão</strong>" : ""}</li>`,
             )
             .join("") || "<li><span>Nenhum instrumento ativo.</span></li>"
         }
         ${archived
           .map(
             (instrument) =>
-              `<li class="muted"><span>${escapeHtml(formatInstrumentLabel(instrument))}</span><small>Arquivado</small></li>`,
+              `<li class="muted"><span>${escapeHtml(formatInstrumentLabel(instrument, invoiceCurrency))}</span><small>Arquivado</small></li>`,
           )
           .join("")}
       </ul>
@@ -543,10 +554,12 @@ function renderInvoiceNavigation(
     selectedInvoice?.periodEndOn.slice(0, 7) ??
     normalizeMonth(url.searchParams.get("month")) ??
     currentMonth();
+  const profileId = url.searchParams.get("profileId");
   return `<div class="cards-invoice-navigation" data-invoice-navigation>
     <div class="cards-invoice-navigation-head"><div><span class="cards-kicker">Faturas</span><strong>Navegar por período</strong></div>
       <form method="get" action="/cartoes" class="cards-month-jump">
         <input type="hidden" name="cardId" value="${escapeHtml(cardId)}">
+        ${profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(profileId)}">` : ""}
         <label for="cards-invoice-month">Ir para mês</label>
         <input id="cards-invoice-month" type="month" name="month" value="${escapeHtml(month)}" data-invoice-month-input>
         <button type="submit" class="sf-button sf-button-secondary">Ir</button>
@@ -646,14 +659,17 @@ function renderPurchaseFilters(
   ).length;
   const unreconciledCount = allPurchases.length - reconciledCount;
   const base = new URL(url);
+  const profileId = url.searchParams.get("profileId");
   base.pathname = "/cartoes";
   base.search = "";
   base.searchParams.set("cardId", cardId);
   base.searchParams.set("invoiceId", invoice.id);
+  if (profileId) base.searchParams.set("profileId", profileId);
   const controls = `<form method="get" action="/cartoes" class="cards-purchase-filter-form">
       <input type="hidden" name="cardId" value="${escapeHtml(cardId)}">
       <input type="hidden" name="invoiceId" value="${escapeHtml(invoice.id)}">
       <input type="hidden" name="reconciliation" value="${escapeHtml(presentation.reconciliation)}">
+      ${profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(profileId)}">` : ""}
       <label class="cards-search-field" for="cards-purchase-search">Buscar compras
         <input id="cards-purchase-search" type="search" name="q" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" data-purchase-search autocomplete="off">
       </label>
@@ -681,7 +697,7 @@ function filterLink(
   active: boolean,
   value: string,
 ): string {
-  return `<a class="cards-filter-chip${active ? " is-active" : ""}" href="${escapeHtml(href)}" data-reconciliation-toggle="${escapeHtml(value)}" aria-pressed="${active}"><span>${escapeHtml(label)}</span><small>${count}</small></a>`;
+  return `<a class="cards-filter-chip${active ? " is-active" : ""}" href="${escapeHtml(href)}" data-reconciliation-toggle="${escapeHtml(value)}"${active ? ' aria-current="page"' : ""}><span>${escapeHtml(label)}</span><small>${count}</small></a>`;
 }
 
 function renderPurchaseGroups(
@@ -774,7 +790,7 @@ function renderPurchaseModal(
         <label>Moeda<input name="currency" value="${escapeHtml(currency ?? "")}" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" required autocomplete="off"></label>
         <label>Data<input name="occurredOn" type="date" required></label>
         <label class="full">Descrição<input name="description" required placeholder="Compra no cartão"></label>
-        <label>Instrumento<select name="cardInstrumentId"${instruments.length === 0 ? " disabled" : " required"}>${renderInstrumentOptions(instruments)}</select></label>
+        <label>Instrumento<select name="cardInstrumentId"${instruments.length === 0 ? " disabled" : " required"}>${renderInstrumentOptions(instruments, currency)}</select></label>
         <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
         <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
         <label data-purchase-field="totalInstallments" hidden>Parcelas<input name="totalInstallments" type="number" min="2" max="120" value="2"></label>
@@ -828,12 +844,15 @@ function renderSortOptions(selected: CardSort): string {
     )
     .join("");
 }
-function renderInstrumentOptions(instruments: readonly CardInstrumentRecord[]): string {
+function renderInstrumentOptions(
+  instruments: readonly CardInstrumentRecord[],
+  currency: string | undefined,
+): string {
   if (instruments.length === 0) return '<option value="">Nenhum instrumento ativo</option>';
   return instruments
     .map(
       (instrument) =>
-        `<option value="${escapeHtml(instrument.id)}"${instrument.isDefault ? " selected" : ""}>${escapeHtml(formatInstrumentLabel(instrument))}</option>`,
+        `<option value="${escapeHtml(instrument.id)}"${instrument.isDefault ? " selected" : ""}>${escapeHtml(formatInstrumentLabel(instrument, currency))}</option>`,
     )
     .join("");
 }
@@ -856,16 +875,21 @@ function renderAccountOptions(accounts: readonly AccountRecord[]): string {
     .join("");
 }
 
-function formatInstrumentLabel(instrument: CardInstrumentRecord | undefined): string {
+function formatInstrumentLabel(
+  instrument: CardInstrumentRecord | undefined,
+  currency: string | undefined,
+): string {
   if (!instrument) return "Instrumento arquivado ou indisponível";
   const title =
     instrument.name?.trim() ||
     `${formatInstrumentType(instrument.type)} - ${formatInstrumentHolder(instrument.holder)}`;
   const identifier = instrument.maskedIdentifier ? ` · ${instrument.maskedIdentifier}` : "";
   const limit =
-    instrument.effectiveCreditLimitMinor !== undefined
-      ? ` · limite ${formatLegacyLimit(instrument.effectiveCreditLimitMinor)}`
-      : "";
+    instrument.effectiveCreditLimitMinor === undefined
+      ? ""
+      : currency
+        ? ` · limite ${currency} ${formatMinorNumber(instrument.effectiveCreditLimitMinor)}`
+        : " · limite com moeda indisponível";
   return `${title}${identifier}${limit}`;
 }
 function formatInstrumentType(type: string): string {
@@ -878,7 +902,7 @@ function formatInstrumentHolder(holder: string): string {
   if (holder === "additional") return "Adicional";
   return holder;
 }
-function formatLegacyLimit(amountMinor: number): string {
+function formatMinorNumber(amountMinor: number): string {
   return (amountMinor / 100).toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -1016,7 +1040,7 @@ function renderErrorPage(error: string): string {
   return renderShell(
     renderPageContainer({
       className: "cards-a3-page",
-      childrenHtml: `${renderPageHeader({ eyebrow: "Cartões e faturas", title: "Cartões de Crédito" })}<section class="cards-load-error" role="alert"><strong>Não foi possível carregar os cartões.</strong><p>${escapeHtml(error)}</p><a class="sf-button sf-button-primary" href="/cartoes">Tentar novamente</a></section>`,
+      childrenHtml: `${renderPageHeader({ eyebrow: "Cartões e faturas", title: "Cartões de Crédito" })}<section class="cards-load-error" role="alert" data-cards-load-error><strong>Não foi possível carregar os dados de cartões.</strong><p>${escapeHtml(error)}</p><a class="sf-button sf-button-primary" href="/cartoes">Tentar novamente</a></section>`,
     }),
   );
 }
@@ -1255,6 +1279,7 @@ function css(): string {
     .cards-master-panel{display:grid;gap:14px;padding:14px;position:sticky;top:70px}
     .cards-master-heading,.cards-invoice-navigation-head,.cards-section-heading{align-items:center;display:flex;gap:10px;justify-content:space-between}
     .cards-master-heading h2,.cards-section-heading h3{font-size:1rem;margin:2px 0 0}
+    .cards-invoice-navigation-head>div{display:grid;gap:2px}
     .cards-kicker{color:var(--muted);font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
     .cards-edit-link{font-size:.82rem;font-weight:700}
     .cards-card-picker{display:grid;gap:6px}.cards-card-picker select{width:100%}
@@ -1264,7 +1289,7 @@ function css(): string {
     .cards-master-meta{display:grid;gap:7px}.cards-master-meta>div{align-items:center;display:flex;gap:8px;justify-content:space-between}.cards-master-meta dt{color:var(--muted);font-size:.78rem}.cards-master-meta dd{font-size:.8rem;font-weight:750;text-align:right}
     .cards-instrument-nav{border-top:1px solid var(--line);padding-top:10px}.cards-instrument-nav summary{align-items:center;cursor:pointer;display:flex;font-weight:750;justify-content:space-between}.cards-instrument-nav summary span{color:var(--muted);font-size:.75rem}.cards-instrument-nav ul{display:grid;gap:7px;list-style:none;margin:10px 0 0;padding:0}.cards-instrument-nav li{align-items:start;display:flex;font-size:.78rem;gap:6px;justify-content:space-between}.cards-instrument-nav li span{min-width:0}.cards-instrument-nav li strong,.cards-instrument-nav li small{white-space:nowrap}
     .cards-detail-panel{display:grid;gap:0;overflow:hidden}
-    .cards-invoice-navigation{border-bottom:1px solid var(--line);display:grid;gap:10px;padding:12px 14px}.cards-month-jump{align-items:end;display:flex;gap:6px}.cards-month-jump label{display:grid;font-size:.74rem;gap:4px}.cards-month-jump input{min-width:9.5rem}.cards-month-jump .sf-button{min-height:36px}
+    .cards-invoice-navigation{border-bottom:1px solid var(--line);display:grid;gap:10px;padding:12px 14px}.cards-month-jump{align-items:end;display:flex;gap:6px}.cards-month-jump label{display:grid;font-size:.74rem;gap:4px}.cards-month-jump input{min-width:9.5rem}.cards-month-jump .sf-button{min-height:36px;white-space:nowrap}
     .cards-invoice-navigation .sf-tabs{display:flex;gap:6px;max-width:100%;overflow-x:auto;padding-bottom:2px}.cards-invoice-navigation .sf-tab{border:1px solid var(--line);border-radius:999px;flex:0 0 auto;font-size:.76rem;padding:6px 10px}.cards-invoice-navigation .sf-tab[aria-current="page"]{background:var(--primary-soft);border-color:var(--primary);color:var(--primary);font-weight:800}
     .cards-invoice-header{align-items:start;border-bottom:1px solid var(--line);display:grid;gap:12px;grid-template-columns:minmax(0,1fr) auto;padding:16px 18px}.cards-invoice-title-block{display:grid;gap:5px}.cards-invoice-title-row{align-items:center;display:flex;gap:8px}.cards-invoice-title-block h2{font-size:1.25rem}.cards-invoice-title-block p{color:var(--muted);font-size:.82rem}.cards-invoice-primary{display:grid;gap:4px;justify-items:end;min-width:230px}.cards-invoice-primary>span{color:var(--muted);font-size:.76rem}.cards-invoice-primary>strong{font-size:1.45rem}.cards-invoice-actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:5px}.cards-settlement-note{background:var(--primary-soft);border-radius:var(--radius);font-size:.78rem;grid-column:1/-1;margin:0;padding:8px 10px}
     .cards-invoice-summary{border-bottom:1px solid var(--line);display:grid;gap:9px;padding:12px 18px}.cards-invoice-summary .sf-summary-grid{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}.cards-summary-metric{background:var(--bg);border-radius:var(--radius);display:grid;gap:3px;padding:10px}.cards-summary-metric>span,.cards-summary-metric>small{color:var(--muted);font-size:.72rem}.cards-summary-metric>strong{font-size:.95rem}.cards-limit-detail{display:flex;flex-wrap:wrap;gap:14px}.cards-limit-detail>div{display:flex;font-size:.76rem;gap:5px}.cards-limit-detail dt{color:var(--muted)}.cards-limit-detail dd{font-weight:750}
