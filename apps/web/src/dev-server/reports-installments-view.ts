@@ -69,7 +69,10 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     categoriesParams.set("profileId", filters.profileId);
   }
   const [installmentsResult, cardsResult, categoriesResult] = await Promise.all([
-    apiGet<{ installments: InstallmentRecord[] }>(token, buildInstallmentsPath(filters)),
+    apiGet<{ installments: InstallmentRecord[] }>(
+      token,
+      buildInstallmentsPath(filters),
+    ),
     apiGet<{ cards: CardRecord[] }>(token, `/api/cards?${cardsParams.toString()}`),
     apiGet<{ categories: CategoryRecord[] }>(
       token,
@@ -89,14 +92,21 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     return renderShell(
       header +
         form +
-        renderState("api-error", "Não foi possível carregar as parcelas", installmentsResult.error),
+        renderState(
+          "api-error",
+          "Não foi possível carregar as parcelas",
+          installmentsResult.error,
+        ),
     );
   }
 
   return renderShell(
     header +
       form +
-      renderInstallments(installmentsSorted(installmentsResult.data.installments), filters),
+      renderInstallments(
+        installmentsSorted(installmentsResult.data.installments),
+        filters,
+      ),
   );
 }
 
@@ -315,7 +325,7 @@ function renderInstallmentDetail(
 
   return `<div class="section-heading report-detail-count"><span>${countLabel}</span></div>
     <div class="installment-table" tabindex="0" aria-label="Parcelas do relatório em ${escapeHtml(block.currency)}">
-      <table>
+      <table class="sf-table">
         <caption class="sr-only">Parcelas do relatório em ${escapeHtml(block.currency)}</caption>
         <thead><tr><th scope="col">Vencimento</th><th scope="col">Parcela</th><th scope="col">Origem</th><th scope="col">Cartão</th><th scope="col">Categoria</th><th scope="col">Status</th><th scope="col">Valor</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -334,7 +344,10 @@ function renderAggregateRows(
       "As parcelas do filtro selecionado aparecerão aqui.",
     );
   }
-  const maxAmount = Math.max(1, ...rows.map((row) => Math.abs(row.amountMinor)));
+  const maxAmount = Math.max(
+    1,
+    ...rows.map((row) => Math.abs(row.amountMinor)),
+  );
   return `<div class="aggregate-list" data-aggregate-kind="${escapeHtml(kind)}">${rows
     .map((row) => {
       const scale =
@@ -380,7 +393,8 @@ function normalizeMonth(value: string | null): string | undefined {
 }
 
 function normalizeStatus(value: string | null): string {
-  return value && new Set(["all", "planned", "posted", "reconciled", "cancelled"]).has(value)
+  return value &&
+    new Set(["all", "planned", "posted", "reconciled", "cancelled"]).has(value)
     ? value
     : "all";
 }
