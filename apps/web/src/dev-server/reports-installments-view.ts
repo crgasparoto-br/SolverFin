@@ -1,6 +1,17 @@
-import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
+import { formatDateOnly } from "@solverfin/shared";
 
+import { renderMoney } from "../design-system/money.js";
+import { renderAlert, renderDataTable, renderText } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
+import {
+  renderReportAnalysisBlock,
+  type AnalysisSummaryItem,
+} from "./reports-analysis-archetype.js";
+import {
+  buildInstallmentAnalysisViewModel,
+  type InstallmentAggregateViewModel,
+  type InstallmentCurrencyViewModel,
+} from "./reports-analysis-view-model.js";
 import {
   escapeReportHtml as escapeHtml,
   renderReportHeading as renderHeading,
@@ -47,25 +58,6 @@ interface InstallmentRecord {
   };
   card?: { id: string; name: string; status: string };
   category?: { id: string; name: string; kind: string; status: string };
-}
-
-interface InstallmentSummary {
-  activeCount: number;
-  totalMinor: number;
-  plannedOpenCount: number;
-  plannedOpenMinor: number;
-  postedClosedCount: number;
-  postedClosedMinor: number;
-  overdueCount: number;
-  overdueMinor: number;
-  futureCount: number;
-  futureMinor: number;
-}
-
-interface AggregateRow {
-  label: string;
-  count: number;
-  amountMinor: number;
 }
 
 export async function renderInstallmentsView(token: string, url: URL): Promise<string> {
@@ -179,160 +171,206 @@ function renderInstallments(
     </section>`;
   }
 
-  const summary = summarizeInstallments(installments, todayDateOnly());
-  return `<div data-report-state="ready">
-    <section class="summary-grid" aria-label="Indicadores de parcelas">
-      ${renderMetric("Abertas/planejadas", summary.plannedOpenCount, summary.plannedOpenMinor)}
-      ${renderMetric("Postadas/fechadas", summary.postedClosedCount, summary.postedClosedMinor)}
-      ${renderMetric("Vencidas", summary.overdueCount, summary.overdueMinor, "warning")}
-      ${renderMetric("Futuras", summary.futureCount, summary.futureMinor)}
-      ${renderMetric("Total mensal", summary.activeCount, summary.totalMinor, "primary")}
-    </section>
-    <section class="report-grid" aria-label="Agrupamentos de parcelas">
-      <section class="panel report-results">
-        <div class="section-heading"><h2>Comprometimento por mês</h2><span>${escapeHtml(formatMonthYear(filters.month))}</span></div>
-        ${renderAggregateRows(groupByMonth(installments), "month")}
-      </section>
-      <section class="panel report-results">
-        <div class="section-heading"><h2>Por cartão</h2><span>${summary.activeCount} parcelas</span></div>
-        ${renderAggregateRows(groupByCard(installments), "card")}
-      </section>
-      <section class="panel report-results">
-        <div class="section-heading"><h2>Por categoria</h2><span>${summary.activeCount} parcelas</span></div>
-        ${renderAggregateRows(groupByCategory(installments), "category")}
-      </section>
-    </section>
-    <section class="panel report-results"><div class="section-heading"><div><p class="eyebrow">Consulta somente leitura</p><h2>Parcelas consideradas</h2></div><span>${installments.length} registros</span></div>
-      <div class="installment-table" role="table" aria-label="Parcelas do relatório"><div class="installment-table-head" role="row"><span>Vencimento</span><span>Parcela</span><span>Origem</span><span>Cartão</span><span>Categoria</span><span>Status</span><span>Valor</span></div>${installments.map(renderInstallmentRow).join("")}</div>
-    </section>
-    <p class="sr-only">Período consultado: ${escapeHtml(formatMonthYear(filters.month))}</p>
-  </div>`;
-}
-
-function summarizeInstallments(
-  installments: readonly InstallmentRecord[],
-  today: string,
-): InstallmentSummary {
-  return installments.reduce<InstallmentSummary>(
-    (summary, installment) => {
-      const amountMinor = installment.status === "cancelled" ? 0 : installment.amountMinor;
-      const postedClosed = isPostedOrClosed(installment);
-      const plannedOpen = installment.status === "planned" && !postedClosed;
-      const overdue = plannedOpen && installment.dueOn < today;
-      const future = installment.status !== "cancelled" && installment.dueOn > today;
-
-      if (installment.status !== "cancelled") {
-        summary.activeCount += 1;
-        summary.totalMinor += amountMinor;
-      }
-      if (plannedOpen) {
-        summary.plannedOpenCount += 1;
-        summary.plannedOpenMinor += amountMinor;
-      }
-      if (postedClosed) {
-        summary.postedClosedCount += 1;
-        summary.postedClosedMinor += amountMinor;
-      }
-      if (overdue) {
-        summary.overdueCount += 1;
-        summary.overdueMinor += amountMinor;
-      }
-      if (future) {
-        summary.futureCount += 1;
-        summary.futureMinor += amountMinor;
-      }
-      return summary;
-    },
-    {
-      activeCount: 0,
-      totalMinor: 0,
-      plannedOpenCount: 0,
-      plannedOpenMinor: 0,
-      postedClosedCount: 0,
-      postedClosedMinor: 0,
-      overdueCount: 0,
-      overdueMinor: 0,
-      futureCount: 0,
-      futureMinor: 0,
-    },
-  );
-}
-
-function isPostedOrClosed(installment: InstallmentRecord): boolean {
-  return (
-    installment.status === "posted" ||
-    installment.status === "reconciled" ||
-    installment.invoice?.status === "closed" ||
-    installment.invoice?.status === "paid"
-  );
-}
-
-function groupByMonth(installments: readonly InstallmentRecord[]): AggregateRow[] {
-  return aggregateBy(installments, (installment) => formatMonthYear(installment.dueOn.slice(0, 7)));
-}
-
-function groupByCard(installments: readonly InstallmentRecord[]): AggregateRow[] {
-  return aggregateBy(
+  const currencyBlocks = buildInstallmentAnalysisViewModel(
     installments,
-    (installment) => installment.card?.name ?? "Sem cartão informado",
+    todayDateOnly(),
+    formatMonthYear,
   );
+  return `<div data-report-state="ready" class="currency-report-list">${currencyBlocks
+    .map((block, index) => renderInstallmentCurrencyBlock(block, filters, index))
+    .join("")}<p class="sr-only">Período consultado: ${escapeHtml(formatMonthYear(filters.month))}</p></div>`;
 }
 
-function groupByCategory(installments: readonly InstallmentRecord[]): AggregateRow[] {
-  return aggregateBy(installments, (installment) => installment.category?.name ?? "Sem categoria");
+function renderInstallmentCurrencyBlock(
+  block: InstallmentCurrencyViewModel<InstallmentRecord>,
+  filters: InstallmentFilters,
+  index: number,
+): string {
+  const summary = block.summary;
+  const summaryItems: AnalysisSummaryItem[] = [
+    installmentSummaryItem(
+      "Abertas/planejadas",
+      summary.plannedOpenCount,
+      summary.plannedOpenMinor,
+      block.currency,
+    ),
+    installmentSummaryItem(
+      "Postadas/fechadas",
+      summary.postedClosedCount,
+      summary.postedClosedMinor,
+      block.currency,
+    ),
+    installmentSummaryItem(
+      "Vencidas",
+      summary.overdueCount,
+      summary.overdueMinor,
+      block.currency,
+      summary.overdueCount > 0 ? "attention" : "neutral",
+    ),
+    installmentSummaryItem(
+      "Futuras",
+      summary.futureCount,
+      summary.futureMinor,
+      block.currency,
+    ),
+    installmentSummaryItem(
+      "Total mensal",
+      summary.activeCount,
+      summary.totalMinor,
+      block.currency,
+      "information",
+    ),
+  ];
+
+  return renderReportAnalysisBlock({
+    id: `installment-analysis-${index}-${safeId(block.currency)}`,
+    currency: block.currency,
+    periodCount: 1,
+    summaryItems,
+    visualizationTitle: `Distribuição de ${formatMonthYear(filters.month)}`,
+    visualizationHtml: renderInstallmentDistribution(block),
+    highlightsHtml: renderInstallmentHighlights(block),
+    detailTitle: "Parcelas consideradas",
+    detailHtml: renderInstallmentDetail(block),
+  });
 }
 
-function aggregateBy(
-  installments: readonly InstallmentRecord[],
-  labelFor: (installment: InstallmentRecord) => string,
-): AggregateRow[] {
-  const groups = new Map<string, AggregateRow>();
-  for (const installment of installments) {
-    const label = labelFor(installment);
-    const current = groups.get(label) ?? { label, count: 0, amountMinor: 0 };
-    current.count += 1;
-    if (installment.status !== "cancelled") current.amountMinor += installment.amountMinor;
-    groups.set(label, current);
-  }
-  return Array.from(groups.values()).sort(
-    (left, right) => right.amountMinor - left.amountMinor || left.label.localeCompare(right.label),
-  );
+function installmentSummaryItem(
+  label: string,
+  count: number,
+  amountMinor: number,
+  currency: string,
+  tone: AnalysisSummaryItem["tone"] = "neutral",
+): AnalysisSummaryItem {
+  return {
+    label,
+    primaryHtml: renderText(count),
+    secondaryHtml: renderMoney({ amountMinor, currency }),
+    tone,
+  };
 }
 
-function renderAggregateRows(rows: readonly AggregateRow[], kind: string): string {
+function renderInstallmentDistribution(
+  block: InstallmentCurrencyViewModel<InstallmentRecord>,
+): string {
+  return `<div class="report-grid" aria-label="Agrupamentos de parcelas em ${escapeHtml(block.currency)}">
+      <section class="panel report-results">
+        <div class="section-heading"><h4>Comprometimento por mês</h4><span>${block.summary.activeCount} parcelas</span></div>
+        ${renderAggregateRows(block.groups.months, "month", block.currency)}
+      </section>
+      <section class="panel report-results">
+        <div class="section-heading"><h4>Por cartão</h4><span>${block.summary.activeCount} parcelas</span></div>
+        ${renderAggregateRows(block.groups.cards, "card", block.currency)}
+      </section>
+      <section class="panel report-results">
+        <div class="section-heading"><h4>Por categoria</h4><span>${block.summary.activeCount} parcelas</span></div>
+        ${renderAggregateRows(block.groups.categories, "category", block.currency)}
+      </section>
+    </div>`;
+}
+
+function renderInstallmentHighlights(
+  block: InstallmentCurrencyViewModel<InstallmentRecord>,
+): string {
+  const topCategory = block.groups.categories[0];
+  const highlight = topCategory
+    ? `<article class="report-highlight"><span>Maior comprometimento por categoria</span><strong>${escapeHtml(topCategory.label)}</strong>${renderMoney({ amountMinor: topCategory.amountMinor, currency: block.currency })}</article>`
+    : "";
+  const alert =
+    block.summary.overdueCount > 0
+      ? renderAlert({
+          tone: "attention",
+          title: `${block.summary.overdueCount} parcela${block.summary.overdueCount === 1 ? "" : "s"} vencida${block.summary.overdueCount === 1 ? "" : "s"}`,
+          description: "Revise as parcelas vencidas no detalhe antes de alterar o planejamento.",
+        })
+      : renderAlert({
+          tone: "positive",
+          title: "Nenhuma parcela vencida neste recorte",
+          description: "O detalhe abaixo mantém as parcelas futuras, postadas e canceladas identificáveis.",
+        });
+  return `<div class="report-highlights-grid">${highlight}</div>${alert}`;
+}
+
+function renderInstallmentDetail(
+  block: InstallmentCurrencyViewModel<InstallmentRecord>,
+): string {
+  const countLabel = `${block.items.length} registro${block.items.length === 1 ? "" : "s"}`;
+  return `<div class="section-heading report-detail-count"><span>${countLabel}</span></div>${renderDataTable({
+    caption: `Parcelas do relatório em ${block.currency}`,
+    rows: block.items,
+    rowKey: (item) => item.id,
+    columns: [
+      {
+        id: "dueOn",
+        header: "Vencimento",
+        renderCell: (item) =>
+          `<time datetime="${escapeHtml(item.dueOn)}">${escapeHtml(formatDateOnly(item.dueOn))}</time>`,
+      },
+      {
+        id: "installment",
+        header: "Parcela",
+        renderCell: (item) => `${item.sequenceNumber}/${item.totalInstallments}`,
+      },
+      {
+        id: "source",
+        header: "Origem",
+        renderCell: (item) =>
+          renderText(item.transaction?.description ?? item.recurrence?.description ?? "Parcela"),
+      },
+      {
+        id: "card",
+        header: "Cartão",
+        renderCell: (item) => renderText(item.card?.name ?? "Sem cartão"),
+      },
+      {
+        id: "category",
+        header: "Categoria",
+        renderCell: (item) => renderText(item.category?.name ?? "Sem categoria"),
+      },
+      {
+        id: "status",
+        header: "Status",
+        renderCell: (item) => renderText(installmentStatusLabel(item)),
+      },
+      {
+        id: "amount",
+        header: "Valor",
+        align: "end",
+        renderCell: (item) => renderMoney({ amountMinor: item.amountMinor, currency: block.currency }),
+      },
+    ],
+  })}`;
+}
+
+function renderAggregateRows(
+  rows: readonly InstallmentAggregateViewModel[],
+  kind: string,
+  currency: string,
+): string {
   if (rows.length === 0) {
     return renderCompactEmptyState(
       "Sem dados para agrupar.",
       "As parcelas do filtro selecionado aparecerão aqui.",
     );
   }
+  const maxAmount = Math.max(1, ...rows.map((row) => Math.abs(row.amountMinor)));
   return `<div class="aggregate-list" data-aggregate-kind="${escapeHtml(kind)}">${rows
-    .map(
-      (row) =>
-        `<article class="aggregate-row"><div><strong>${escapeHtml(row.label)}</strong><span>${row.count} parcela${row.count === 1 ? "" : "s"}</span></div><strong>${escapeHtml(formatMinorCurrency(row.amountMinor))}</strong></article>`,
-    )
+    .map((row) => {
+      const scale = row.amountMinor === 0 ? 0 : Math.max(4, Math.round((Math.abs(row.amountMinor) / maxAmount) * 100));
+      return `<article class="aggregate-row"><div class="aggregate-copy"><strong>${escapeHtml(row.label)}</strong><span>${row.count} parcela${row.count === 1 ? "" : "s"}</span><span class="aggregate-bar" aria-hidden="true"><span style="--aggregate-size:${scale}%"></span></span></div><strong>${renderMoney({ amountMinor: row.amountMinor, currency })}</strong></article>`;
+    })
     .join("")}</div>`;
-}
-
-function renderMetric(
-  label: string,
-  count: number,
-  amountMinor: number,
-  tone: "default" | "warning" | "primary" = "default",
-): string {
-  return `<article class="metric-card metric-${tone}"><span>${escapeHtml(label)}</span><strong>${count}</strong><p>${escapeHtml(formatMinorCurrency(amountMinor))}</p></article>`;
 }
 
 function renderCompactEmptyState(title: string, description: string): string {
   return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
 }
 
-function renderInstallmentRow(item: InstallmentRecord): string {
-  const source = item.transaction?.description ?? item.recurrence?.description ?? "Parcela";
+function installmentStatusLabel(item: InstallmentRecord): string {
   const invoice = item.invoice?.status
     ? ` · Fatura ${formatInvoiceStatus(item.invoice.status)}`
     : "";
-  return `<article class="installment-table-row" role="row"><time datetime="${escapeHtml(item.dueOn)}">${escapeHtml(formatDateOnly(item.dueOn))}</time><span>${item.sequenceNumber}/${item.totalInstallments}</span><strong>${escapeHtml(source)}</strong><span>${escapeHtml(item.card?.name ?? "Sem cartão")}</span><span>${escapeHtml(item.category?.name ?? "Sem categoria")}</span><span>${escapeHtml(formatInstallmentStatus(item.status) + invoice)}</span><strong>${escapeHtml(formatMinorCurrency(item.amountMinor, { currency: item.currency }))}</strong></article>`;
+  return formatInstallmentStatus(item.status) + invoice;
 }
 
 function renderStatusOptions(selected: string): string {
@@ -412,4 +450,8 @@ function installmentsSorted(items: InstallmentRecord[]): InstallmentRecord[] {
 
 function byName(left: { name: string }, right: { name: string }): number {
   return left.name.localeCompare(right.name, "pt-BR");
+}
+
+function safeId(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "-");
 }
