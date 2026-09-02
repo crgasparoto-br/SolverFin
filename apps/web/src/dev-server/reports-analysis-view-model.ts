@@ -56,12 +56,11 @@ export function buildCategoryEvolutionAnalysisViewModel(
     amountMinor: block.result.cells[index]?.amountMinor ?? 0,
   }));
   const bestPeriod = trend.reduce<(typeof trend)[number] | undefined>(
-    (best, item) => (best === undefined || item.amountMinor > best.amountMinor ? item : best),
+    (best, item) => best === undefined || item.amountMinor > best.amountMinor ? item : best,
     undefined,
   );
   const lowestPeriod = trend.reduce<(typeof trend)[number] | undefined>(
-    (lowest, item) =>
-      lowest === undefined || item.amountMinor < lowest.amountMinor ? item : lowest,
+    (lowest, item) => lowest === undefined || item.amountMinor < lowest.amountMinor ? item : lowest,
     undefined,
   );
 
