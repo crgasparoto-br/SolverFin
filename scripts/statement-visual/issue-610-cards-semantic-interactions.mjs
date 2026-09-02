@@ -107,7 +107,7 @@ async function validateCards(cdp) {
         onlyUnreconciled: rows.every(
           (row) => row.dataset.reconciliation === 'unreconciled',
         ),
-        selected: selected?.getAttribute('aria-pressed') === 'true',
+        selected: selected?.getAttribute('aria-current') === 'page',
       };
     })()`,
   );
