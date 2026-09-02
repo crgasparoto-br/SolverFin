@@ -59,11 +59,7 @@ async function cardsA3FailsClosedWhenFinancialActionDependenciesCannotLoad(): Pr
 
     const html = await renderCardsPageV2("session-token", selectedInvoiceUrl());
 
-    assert.match(
-      html,
-      /data-cards-load-error/,
-      `${scenario.path} deve renderizar erro explícito`,
-    );
+    assert.match(html, /data-cards-load-error/, `${scenario.path} deve renderizar erro explícito`);
     assert.match(html, new RegExp(scenario.message));
     assert.doesNotMatch(html, /Nenhuma compra encontrada/);
   }
@@ -96,10 +92,7 @@ async function cardsA3PreservesProfileAcrossInvoiceNavigation(): Promise<void> {
     html,
     /invoiceId=invoice-jul[^\"]*profileId=profile-explicit|profileId=profile-explicit[^\"]*invoiceId=invoice-jul/,
   );
-  assert.match(
-    html,
-    /data-reconciliation-toggle="unreconciled" aria-current="page"/,
-  );
+  assert.match(html, /data-reconciliation-toggle="unreconciled" aria-current="page"/);
   assert.doesNotMatch(html, /data-reconciliation-toggle="[^"]+" aria-pressed=/);
 }
 
@@ -118,10 +111,7 @@ function createCardsFetchMock(
   return async (request: string | URL | Request): Promise<Response> => {
     const url = new URL(String(request));
     if (url.pathname === input.failurePath) {
-      return jsonResponse(
-        { error: { message: input.failureMessage ?? "Falha simulada" } },
-        503,
-      );
+      return jsonResponse({ error: { message: input.failureMessage ?? "Falha simulada" } }, 503);
     }
 
     if (url.pathname === "/api/cards") {
@@ -188,9 +178,7 @@ function createCardsFetchMock(
 
     if (url.pathname === "/api/categories") {
       return jsonResponse({
-        categories: [
-          { id: "category-food", name: "Alimentação", status: "active" },
-        ],
+        categories: [{ id: "category-food", name: "Alimentação", status: "active" }],
       });
     }
 
