@@ -69,10 +69,7 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     categoriesParams.set("profileId", filters.profileId);
   }
   const [installmentsResult, cardsResult, categoriesResult] = await Promise.all([
-    apiGet<{ installments: InstallmentRecord[] }>(
-      token,
-      buildInstallmentsPath(filters),
-    ),
+    apiGet<{ installments: InstallmentRecord[] }>(token, buildInstallmentsPath(filters)),
     apiGet<{ cards: CardRecord[] }>(token, `/api/cards?${cardsParams.toString()}`),
     apiGet<{ categories: CategoryRecord[] }>(
       token,
@@ -92,21 +89,14 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     return renderShell(
       header +
         form +
-        renderState(
-          "api-error",
-          "Não foi possível carregar as parcelas",
-          installmentsResult.error,
-        ),
+        renderState("api-error", "Não foi possível carregar as parcelas", installmentsResult.error),
     );
   }
 
   return renderShell(
     header +
       form +
-      renderInstallments(
-        installmentsSorted(installmentsResult.data.installments),
-        filters,
-      ),
+      renderInstallments(installmentsSorted(installmentsResult.data.installments), filters),
   );
 }
 
@@ -293,8 +283,7 @@ function renderInstallmentHighlights(
       ? renderAlert({
           tone: "attention",
           title: `${block.summary.overdueCount} parcela${block.summary.overdueCount === 1 ? "" : "s"} vencida${block.summary.overdueCount === 1 ? "" : "s"}`,
-          description:
-            "Revise as parcelas vencidas no detalhe antes de alterar o planejamento.",
+          description: "Revise as parcelas vencidas no detalhe antes de alterar o planejamento.",
         })
       : renderAlert({
           tone: "positive",
@@ -344,19 +333,13 @@ function renderAggregateRows(
       "As parcelas do filtro selecionado aparecerão aqui.",
     );
   }
-  const maxAmount = Math.max(
-    1,
-    ...rows.map((row) => Math.abs(row.amountMinor)),
-  );
+  const maxAmount = Math.max(1, ...rows.map((row) => Math.abs(row.amountMinor)));
   return `<div class="aggregate-list" data-aggregate-kind="${escapeHtml(kind)}">${rows
     .map((row) => {
       const scale =
         row.amountMinor === 0
           ? 0
-          : Math.max(
-              4,
-              Math.round((Math.abs(row.amountMinor) / maxAmount) * 100),
-            );
+          : Math.max(4, Math.round((Math.abs(row.amountMinor) / maxAmount) * 100));
       return `<article class="aggregate-row"><div class="aggregate-copy"><strong>${escapeHtml(row.label)}</strong><span>${row.count} parcela${row.count === 1 ? "" : "s"}</span><span class="aggregate-bar" aria-hidden="true"><span style="--aggregate-size:${scale}%"></span></span></div><strong>${renderMoney({ amountMinor: row.amountMinor, currency })}</strong></article>`;
     })
     .join("")}</div>`;
@@ -393,8 +376,7 @@ function normalizeMonth(value: string | null): string | undefined {
 }
 
 function normalizeStatus(value: string | null): string {
-  return value &&
-    new Set(["all", "planned", "posted", "reconciled", "cancelled"]).has(value)
+  return value && new Set(["all", "planned", "posted", "reconciled", "cancelled"]).has(value)
     ? value
     : "all";
 }
@@ -414,7 +396,10 @@ function todayDateOnly(): string {
 function monthEnd(month: string): string {
   const year = Number(month.slice(0, 4));
   const monthNumber = Number(month.slice(5, 7));
-  return `${month}-${String(new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()).padStart(2, "0")}`;
+  return `${month}-${String(new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()).padStart(
+    2,
+    "0",
+  )}`;
 }
 
 function formatMonthYear(month: string): string {
