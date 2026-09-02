@@ -3,40 +3,27 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "504fc42abdf6425cc1df481e7f7361f4f9783216",
+  "candidate_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
   "remediation_mode": "systemic-remediation",
   "source": {
-    "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
-    "audited_head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
-    "audit_report_sha256": "ccf591e6198c2f5d4b71c36290330c456c875847a5ff6a636752674b7fbde535"
+    "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
+    "audited_head_sha": "2aa2e175151bfd28fe1b487953df7b229895060f",
+    "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-001",
+      "source_id": "A-003",
       "remediation_mode": "systemic-remediation",
       "status": "fixed",
       "evidence": [
-        "Required purchases, summary, accounts, categories, instruments and recurrences fail closed through renderErrorPage before financial state is composed.",
-        "Exact-head focused regression rejects false empty-state rendering for nested failures."
+        "Existing-invoice currency mismatch is rejected before any write.",
+        "Sibling guards cover installments, invoice-period move, historical reads/close, payment account currency, and forecast creation.",
+        "Canonical documentation records the single-currency invoice invariant."
       ],
       "validations": [
-        "Exact-head CI run 4756 completed success on 504fc42abdf6425cc1df481e7f7361f4f9783216, including the web test suite containing cards-page-v2-audit-remediation.test.ts.",
-        "Exact-head Chrome visual run 3254 completed success on 504fc42abdf6425cc1df481e7f7361f4f9783216."
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-002",
-      "remediation_mode": "systemic-remediation",
-      "status": "fixed",
-      "evidence": [
-        "Instrument labels receive the selected invoice currency and numeric limits include the ISO currency code.",
-        "When currency is unavailable, the renderer does not expose an unlabeled numeric limit."
-      ],
-      "validations": [
-        "Exact-head CI run 4756 completed success on 504fc42abdf6425cc1df481e7f7361f4f9783216; the focused regression requires limite USD 1.000,00 and rejects unlabeled limit forms.",
-        "Exact-head Chrome visual run 3254 completed success on 504fc42abdf6425cc1df481e7f7361f4f9783216."
+        "CI run 4762 completed success on a1e37ac7eb377cc60db47f32f2ece44e54774111, including domain and API integration coverage.",
+        "Statement visual validation run 3260 completed success on a1e37ac7eb377cc60db47f32f2ece44e54774111."
       ]
     }
   ]

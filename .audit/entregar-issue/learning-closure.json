@@ -3,39 +3,43 @@
   "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
+    "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
     "finding_ids": [
-      "A-001",
-      "A-002"
+      "A-003"
     ],
-    "audit_report_sha256": "ccf591e6198c2f5d4b71c36290330c456c875847a5ff6a636752674b7fbde535"
+    "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
   },
   "generalized_learning": {
-    "escape_class": "semantic-fallback-and-unit-labeling",
-    "generalized_failure_pattern": "A UI can preserve nominal structure while translating unavailable required data into valid-looking values or rendering monetary numbers without their unit.",
-    "plausible_wrong_implementation": "Use convenient empty or zero fallbacks for failed required resources and verify currency only on components already using a money primitive.",
+    "escape_class": "relational-monetary-unit-mismatch",
+    "generalized_failure_pattern": "A financial aggregate can look structurally valid while related entities carry incompatible monetary units and minor values are combined without a conversion contract.",
+    "plausible_wrong_implementation": "Validate that each currency string is individually valid but never assert currency equality across the aggregate and its producers or consumers.",
     "trigger_signals": [
-      "required remote resource influences financial state",
-      "numeric monetary text exists outside a money primitive",
-      "negative control only inspects happy-path selectors"
+      "money aggregate updated by related entity",
+      "currency accepted from caller",
+      "minor-unit arithmetic across relationship",
+      "no explicit conversion provider"
     ],
     "risk_families": [
-      "semantic-effect",
-      "structural-contract"
+      "semantic-effect"
     ],
-    "reusable_control": "For each required financial resource, inject failure and require an explicit error state; scan every numeric monetary label for an explicit unit or a deliberate unavailable state.",
-    "prevention_rule": "Required financial inputs fail closed before semantic composition, and numeric monetary output may be emitted only when its currency or unit is available.",
-    "detection_rule": "Negative tests must attack nested resource failures and raw monetary labels outside canonical money components.",
+    "reusable_control": "REL-SEM-001: before monetary aggregation or settlement, require related entities to share the canonical currency unless an explicit conversion contract is present.",
+    "prevention_rule": "Reject a related monetary operation before mutation when its currency differs from the canonical aggregate currency and no conversion contract exists.",
+    "detection_rule": "Attack the literal writer plus installment, move, historical-read, forecast, and payment siblings with deliberately divergent currencies and assert no partial mutation.",
     "transfer_cases": [
       {
-        "surface": "required-resource-state",
+        "surface": "aggregate-writer",
         "status": "passed",
-        "evidence": "Synthetic purchase and summary failures are rejected as error states rather than empty values."
+        "evidence": "Cross-currency purchase and future installment invoice are rejected before mutation."
       },
       {
-        "surface": "raw-monetary-label",
+        "surface": "aggregate-relink",
         "status": "passed",
-        "evidence": "Synthetic instrument limits require an ISO currency or render no numeric amount."
+        "evidence": "Cross-currency invoice-period move is rejected before source, destination, or transaction changes."
+      },
+      {
+        "surface": "aggregate-consumer",
+        "status": "passed",
+        "evidence": "Historical mismatch fails closed and payment/forecast boundaries preserve currency identity."
       }
     ],
     "promotion_status": "promoted"
@@ -44,12 +48,12 @@
     {
       "role": "prevention",
       "status": "passed",
-      "evidence": "The promoted prevention rule is represented in the current attack matrix and inherited controls."
+      "evidence": "REL-SEM-001 is represented in the critical attack matrix and inherited controls."
     },
     {
       "role": "detection",
       "status": "passed",
-      "evidence": "The promoted detection rule is represented in focused negative controls for nested failures and raw limit labels."
+      "evidence": "Exact-head domain/API tests exercise the literal case and distinct sibling surfaces."
     }
   ]
 }

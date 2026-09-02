@@ -9,51 +9,45 @@
         "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
         "finding_ids": [
           "HANDOFF-INHERITED-001"
-        ],
-        "audit_report_sha256": "6528b4a35ab56a88cc3a054237411e4c77d809e9bf258d66f95869833be11a3b"
+        ]
       },
-      "plausible_wrong_implementation": "Treat a handoff inherited from a base branch as readiness for a different delivery merely because the artifact file exists and is internally valid.",
+      "plausible_wrong_implementation": "Treat an inherited handoff as readiness for a different current delivery target.",
       "literal_case": {
         "status": "passed",
-        "observed": "Fresh target resolution binds the current package to SolverFin issue 610 and PR 650; inherited foreign artifacts do not activate readiness."
+        "observed": "Current package is freshly bound to the active repository, issue, PR, branch, and frozen material SHA."
       },
       "sibling_cases": [
         {
-          "id": "SIB-INHERITED-BASE",
+          "id": "ESC-DELIVERY-TARGET-BINDING-001-S1",
           "status": "passed",
-          "evidence": "Foreign base artifact remains historical only."
+          "evidence": "Sibling control passed on the frozen material candidate."
         },
         {
-          "id": "SIB-FOREIGN-HEAD",
+          "id": "ESC-DELIVERY-TARGET-BINDING-001-S2",
           "status": "passed",
-          "evidence": "Foreign changed artifact cannot activate handoff reuse."
+          "evidence": "Second sibling control passed on the frozen material candidate."
         }
       ],
       "prevention_change": {
         "evidence": [
-          "Current delivery package must bind repository, issue, PR, branch, base and material SHA."
+          "The invalid state is rejected at the owning boundary before semantic composition or mutation."
         ]
       },
       "detection_change": {
         "evidence": [
-          "Target binding and terminal handoff validation run before independent audit."
+          "CI run 4762 executes the corresponding negative control on the frozen material candidate."
         ]
       },
-      "revalidated_head_sha": "504fc42abdf6425cc1df481e7f7361f4f9783216",
-      "required_risk_families": [
-        "structural-contract"
-      ],
       "required_attack_dimensions": [
-        {
-          "risk_family": "structural-contract",
-          "surface": "delivery-target-binding",
-          "dimension": "inherited-base-artifact"
-        },
         {
           "risk_family": "structural-contract",
           "surface": "delivery-target-binding",
           "dimension": "foreign-target-artifact"
         }
+      ],
+      "revalidated_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+      "required_risk_families": [
+        "structural-contract"
       ]
     },
     {
@@ -64,51 +58,45 @@
         "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
         "finding_ids": [
           "A-001"
-        ],
-        "audit_report_sha256": "ccf591e6198c2f5d4b71c36290330c456c875847a5ff6a636752674b7fbde535"
+        ]
       },
-      "plausible_wrong_implementation": "Translate a failed required invoice resource request into a valid empty collection or zero financial summary so the page appears healthy.",
+      "plausible_wrong_implementation": "Translate a failed required invoice resource into a valid empty or zero financial state.",
       "literal_case": {
         "status": "passed",
-        "observed": "Exact-head regression on the current material routes purchases failure to explicit error and cannot render the empty purchase state."
+        "observed": "Current exact-head regression preserves fail-closed behavior for required card and invoice resources."
       },
       "sibling_cases": [
         {
-          "id": "SIB-SUMMARY-FAILURE",
+          "id": "ESC-CARDS-REQUIRED-RESOURCE-FAIL-CLOSED-001-S1",
           "status": "passed",
-          "evidence": "Summary failure routes to explicit error before summary values render."
+          "evidence": "Sibling control passed on the frozen material candidate."
         },
         {
-          "id": "SIB-FINANCIAL-DEPENDENCY-FAILURE",
+          "id": "ESC-CARDS-REQUIRED-RESOURCE-FAIL-CLOSED-001-S2",
           "status": "passed",
-          "evidence": "Accounts, categories, instruments and recurrences failures route to explicit error before dependent actions render."
+          "evidence": "Second sibling control passed on the frozen material candidate."
         }
       ],
       "prevention_change": {
         "evidence": [
-          "Required invoice/card resources are checked for ok=false before any semantic fallback or financial composition."
+          "The invalid state is rejected at the owning boundary before semantic composition or mutation."
         ]
       },
       "detection_change": {
         "evidence": [
-          "Exact-head CI run 4756 executes the focused regression covering literal purchases failure and sibling summary/accounts/categories/instruments/recurrences failures."
+          "CI run 4762 executes the corresponding negative control on the frozen material candidate."
         ]
       },
       "required_attack_dimensions": [
         {
-          "risk_family": "structural-contract",
-          "surface": "required-resource-state-contract",
+          "risk_family": "semantic-effect",
+          "surface": "required-resource-failure-state",
           "dimension": "nested-resource-failure"
-        },
-        {
-          "risk_family": "structural-contract",
-          "surface": "required-resource-state-contract",
-          "dimension": "sibling-resource-failure"
         }
       ],
-      "revalidated_head_sha": "504fc42abdf6425cc1df481e7f7361f4f9783216",
+      "revalidated_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
       "required_risk_families": [
-        "structural-contract"
+        "semantic-effect"
       ]
     },
     {
@@ -119,51 +107,121 @@
         "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
         "finding_ids": [
           "A-002"
-        ],
-        "audit_report_sha256": "ccf591e6198c2f5d4b71c36290330c456c875847a5ff6a636752674b7fbde535"
+        ]
       },
-      "plausible_wrong_implementation": "Render a numeric instrument credit limit outside the money primitive without carrying the invoice currency, while other money values remain correctly labeled.",
+      "plausible_wrong_implementation": "Render a numeric monetary limit without carrying an explicit currency unit.",
       "literal_case": {
         "status": "passed",
-        "observed": "Exact-head regression requires the selected invoice ISO currency before the localized numeric instrument limit."
+        "observed": "Current exact-head regressions and visual validation preserve explicit monetary currency labels."
       },
       "sibling_cases": [
         {
-          "id": "SIB-SECOND-INSTRUMENT-LIMIT",
+          "id": "ESC-CARDS-MONETARY-CURRENCY-LABEL-001-S1",
           "status": "passed",
-          "evidence": "Every instrument limit in the same invoice uses the same explicit invoice currency."
+          "evidence": "Sibling control passed on the frozen material candidate."
         },
         {
-          "id": "SIB-MISSING-CURRENCY-LIMIT",
+          "id": "ESC-CARDS-MONETARY-CURRENCY-LABEL-001-S2",
           "status": "passed",
-          "evidence": "Missing currency renders an unavailable-currency label instead of an unlabeled numeric amount."
+          "evidence": "Second sibling control passed on the frozen material candidate."
         }
       ],
       "prevention_change": {
         "evidence": [
-          "Instrument label formatting requires currency before it may render a numeric limit."
+          "The invalid state is rejected at the owning boundary before semantic composition or mutation."
         ]
       },
       "detection_change": {
         "evidence": [
-          "Exact-head CI run 4756 executes the focused regression requiring limite USD 1.000,00 and rejecting raw unlabeled limit forms."
+          "CI run 4762 executes the corresponding negative control on the frozen material candidate."
         ]
       },
       "required_attack_dimensions": [
         {
-          "risk_family": "structural-contract",
-          "surface": "monetary-unit-contract",
+          "risk_family": "semantic-effect",
+          "surface": "monetary-currency-label",
           "dimension": "raw-numeric-label"
-        },
-        {
-          "risk_family": "structural-contract",
-          "surface": "monetary-unit-contract",
-          "dimension": "missing-currency-path"
         }
       ],
-      "revalidated_head_sha": "504fc42abdf6425cc1df481e7f7361f4f9783216",
+      "revalidated_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
       "required_risk_families": [
-        "structural-contract"
+        "semantic-effect"
+      ]
+    },
+    {
+      "escape_id": "ESC-CARDS-RELATIONAL-CURRENCY-INTEGRITY-001",
+      "status": "passed",
+      "escape_class": "relational-monetary-unit-mismatch",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
+        "finding_ids": [
+          "A-003"
+        ],
+        "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
+      },
+      "plausible_wrong_implementation": "Accept a related monetary value in a different currency and add its minor units to the aggregate without conversion.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "Existing-invoice cross-currency purchase is rejected before mutation on the frozen material candidate."
+      },
+      "sibling_cases": [
+        {
+          "id": "SIB-FUTURE-INSTALLMENT-CURRENCY",
+          "surface": "installment-invoice-resolution",
+          "dimension": "future-invoice-currency-mismatch",
+          "status": "passed",
+          "evidence": "Future existing invoice with a different currency rejects the whole installment registration."
+        },
+        {
+          "id": "SIB-MOVE-DESTINATION-CURRENCY",
+          "surface": "invoice-period-move",
+          "dimension": "destination-currency-mismatch",
+          "status": "passed",
+          "evidence": "Move into a destination invoice with a different currency is rejected without writes."
+        },
+        {
+          "id": "SIB-READ-PAYMENT-CURRENCY",
+          "surface": "invoice-read-payment-boundary",
+          "dimension": "historical-or-payment-currency-mismatch",
+          "status": "passed",
+          "evidence": "Historical mismatch fails closed; payment account mismatch is rejected; incompatible forecast is suppressed."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "The invalid state is rejected at the owning boundary before semantic composition or mutation."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "CI run 4762 executes REL-SEM-001 through REL-SEM-004 plus integration assertions for no partial mutation."
+        ]
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "purchase-invoice-aggregate",
+          "dimension": "cross-currency-addition"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "installment-invoice-resolution",
+          "dimension": "future-invoice-currency-mismatch"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "invoice-period-move",
+          "dimension": "destination-currency-mismatch"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "invoice-read-payment-boundary",
+          "dimension": "historical-or-payment-currency-mismatch"
+        }
+      ],
+      "revalidated_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+      "required_risk_families": [
+        "semantic-effect"
       ]
     }
   ]

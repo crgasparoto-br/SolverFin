@@ -2,27 +2,20 @@
   "schema_version": 1,
   "status": "rejected",
   "result": "REPROVADA",
-  "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
-  "head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
+  "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
+  "head_sha": "2aa2e175151bfd28fe1b487953df7b229895060f",
   "findings": [
     {
-      "id": "A-001",
+      "id": "A-003",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "severity": "HIGH",
       "remediation_mode": "systemic-remediation",
-      "reason": "Required invoice resource failures were translated into empty or zero-valued financial states instead of an explicit error state."
-    },
-    {
-      "id": "A-002",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "severity": "MEDIUM",
-      "remediation_mode": "systemic-remediation",
-      "reason": "Instrument credit limits rendered numeric values without explicit currency while the acceptance contract requires currency on limits."
+      "reason": "A purchase could use a currency different from an existing invoice, while amountMinor was added to the invoice total without conversion."
     }
   ],
-  "recommendations": []
+  "recommendations": [
+    "Enforce invoice currency identity at domain and repository boundaries and cover sibling producer paths."
+  ]
 }
