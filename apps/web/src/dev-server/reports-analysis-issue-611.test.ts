@@ -42,6 +42,14 @@ describe("issue 611 reports analysis archetype", () => {
       new Date("2026-07-31T12:00:00.000Z"),
     );
 
+    process.stdout.write(
+      `ISSUE611_DIAG ${JSON.stringify({
+        a5Count: (html.match(/data-report-analysis="a5"/g) ?? []).length,
+        matrixCount: (html.match(/class="evolution-table"/g) ?? []).length,
+        currencies: html.match(/data-currency="[^"]+"/g) ?? [],
+      })}\n`,
+    );
+
     assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
     assert.match(html, /data-currency="BRL"/);
     assert.match(html, /data-currency="USD"/);
