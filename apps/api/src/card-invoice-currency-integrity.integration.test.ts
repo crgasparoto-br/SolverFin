@@ -28,7 +28,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for currency integrity integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for currency integrity integration tests.",
+  );
 
   const suffix = Date.now().toString(36);
   const account = await createCreditCardAccountForContext(CONTEXT, {
@@ -49,7 +52,11 @@ async function main(): Promise<void> {
 
   assert.ok(instrument, "Expected initial active instrument.");
 
-  await assertRejectsCrossCurrencyPurchaseWithoutWrites(account.id, instrument.id, suffix);
+  await assertRejectsCrossCurrencyPurchaseWithoutWrites(
+    account.id,
+    instrument.id,
+    suffix,
+  );
   await assertRejectsCrossCurrencyMoveWithoutWrites(account.id, instrument.id, suffix);
   await assertHistoricalMismatchFailsClosed(account.id, instrument.id, suffix);
 }
@@ -106,7 +113,9 @@ async function assertRejectsCrossCurrencyMoveWithoutWrites(
     cardInstrumentId: instrumentId,
   });
 
-  await query(`update "Invoice" set "currency" = 'USD' where "id" = $1`, [destination.invoice.id]);
+  await query(`update "Invoice" set "currency" = 'USD' where "id" = $1`, [
+    destination.invoice.id,
+  ]);
 
   const originBefore = await readInvoiceTotal(origin.invoice.id);
   const destinationBefore = await readInvoiceTotal(destination.invoice.id);
@@ -138,7 +147,9 @@ async function assertHistoricalMismatchFailsClosed(
     cardInstrumentId: instrumentId,
   });
 
-  await query(`update "Invoice" set "currency" = 'USD' where "id" = $1`, [purchase.invoice.id]);
+  await query(`update "Invoice" set "currency" = 'USD' where "id" = $1`, [
+    purchase.invoice.id,
+  ]);
 
   await assert.rejects(
     () => summarizeInvoiceForContext(CONTEXT, purchase.invoice.id),
@@ -169,9 +180,10 @@ async function readInvoiceTotal(invoiceId: string): Promise<number> {
 }
 
 async function readInvoiceStatus(invoiceId: string): Promise<string> {
-  const rows = await query<{ status: string }>(`select "status" from "Invoice" where "id" = $1`, [
-    invoiceId,
-  ]);
+  const rows = await query<{ status: string }>(
+    `select "status" from "Invoice" where "id" = $1`,
+    [invoiceId],
+  );
   const row = rows[0];
   assert.ok(row, `Expected invoice ${invoiceId}.`);
   return row.status;

@@ -23,7 +23,14 @@ runSkipsCrossCurrencyPaymentForecast();
 
 function runAcceptsMatchingExistingInvoiceCurrency(): void {
   const card = createCardFixture();
-  const invoice = createInvoiceFixture(card, "2026-05-21", "2026-06-20", "2026-07-10", 10_000, "USD");
+  const invoice = createInvoiceFixture(
+    card,
+    "2026-05-21",
+    "2026-06-20",
+    "2026-07-10",
+    10_000,
+    "USD",
+  );
   const result = registerCardPurchase({
     transactionId: "purchase-usd-compatible",
     context,
@@ -40,13 +47,28 @@ function runAcceptsMatchingExistingInvoiceCurrency(): void {
   });
 
   assertEqual(result.invoice.id, invoice.id, "matching invoice should be reused");
-  assertEqual(result.invoice.currency, "USD", "matching invoice should preserve normalized currency");
-  assertEqual(result.invoice.totalAmountMinor, 15_000, "matching invoice should receive the amount");
+  assertEqual(
+    result.invoice.currency,
+    "USD",
+    "matching invoice should preserve normalized currency",
+  );
+  assertEqual(
+    result.invoice.totalAmountMinor,
+    15_000,
+    "matching invoice should receive the amount",
+  );
 }
 
 function runRejectsCrossCurrencyExistingInvoice(): void {
   const card = createCardFixture();
-  const invoice = createInvoiceFixture(card, "2026-05-21", "2026-06-20", "2026-07-10", 10_000, "BRL");
+  const invoice = createInvoiceFixture(
+    card,
+    "2026-05-21",
+    "2026-06-20",
+    "2026-07-10",
+    10_000,
+    "BRL",
+  );
 
   assertCurrencyError(
     () =>
@@ -67,14 +89,36 @@ function runRejectsCrossCurrencyExistingInvoice(): void {
     "CARD_INVOICE_CURRENCY_MISMATCH",
   );
 
-  assertEqual(invoice.totalAmountMinor, 10_000, "rejected purchase must not mutate source invoice input");
-  assertEqual(invoice.currency, "BRL", "rejected purchase must preserve source invoice currency");
+  assertEqual(
+    invoice.totalAmountMinor,
+    10_000,
+    "rejected purchase must not mutate source invoice input",
+  );
+  assertEqual(
+    invoice.currency,
+    "BRL",
+    "rejected purchase must preserve source invoice currency",
+  );
 }
 
 function runRejectsCrossCurrencyFutureInstallmentInvoice(): void {
   const card = createCardFixture();
-  const current = createInvoiceFixture(card, "2026-05-21", "2026-06-20", "2026-07-10", 10_000, "USD");
-  const future = createInvoiceFixture(card, "2026-06-21", "2026-07-20", "2026-08-10", 7_000, "BRL");
+  const current = createInvoiceFixture(
+    card,
+    "2026-05-21",
+    "2026-06-20",
+    "2026-07-10",
+    10_000,
+    "USD",
+  );
+  const future = createInvoiceFixture(
+    card,
+    "2026-06-21",
+    "2026-07-20",
+    "2026-08-10",
+    7_000,
+    "BRL",
+  );
 
   assertCurrencyError(
     () =>
@@ -97,13 +141,28 @@ function runRejectsCrossCurrencyFutureInstallmentInvoice(): void {
     "CARD_INVOICE_CURRENCY_MISMATCH",
   );
 
-  assertEqual(current.totalAmountMinor, 10_000, "current invoice input stays unchanged after rejection");
-  assertEqual(future.totalAmountMinor, 7_000, "future invoice input stays unchanged after rejection");
+  assertEqual(
+    current.totalAmountMinor,
+    10_000,
+    "current invoice input stays unchanged after rejection",
+  );
+  assertEqual(
+    future.totalAmountMinor,
+    7_000,
+    "future invoice input stays unchanged after rejection",
+  );
 }
 
 function runRejectsCrossCurrencyPaymentAccount(): void {
   const card = createCardFixture();
-  const invoice = createInvoiceFixture(card, "2026-05-21", "2026-06-20", "2026-07-10", 12_000, "USD");
+  const invoice = createInvoiceFixture(
+    card,
+    "2026-05-21",
+    "2026-06-20",
+    "2026-07-10",
+    12_000,
+    "USD",
+  );
   const account = createAccountFixture("payment-brl", "BRL");
 
   assertCurrencyError(
@@ -155,7 +214,11 @@ function runSkipsCrossCurrencyPaymentForecast(): void {
   });
 
   assertEqual(result.invoice.currency, "USD", "purchase should keep USD invoice currency");
-  assertEqual(result.forecastTransactions.length, 0, "incompatible account must not receive USD forecast");
+  assertEqual(
+    result.forecastTransactions.length,
+    0,
+    "incompatible account must not receive USD forecast",
+  );
 }
 
 function createCardFixture(): Card {

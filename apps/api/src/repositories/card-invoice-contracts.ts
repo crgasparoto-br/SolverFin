@@ -97,7 +97,8 @@ async function assertInvoiceCurrencyIntegrity(
     invoiceCurrency === undefined ||
     rows.some(
       (row) =>
-        row.purchaseCurrency !== null && normalizeCurrency(row.purchaseCurrency) !== invoiceCurrency,
+        row.purchaseCurrency !== null &&
+        normalizeCurrency(row.purchaseCurrency) !== invoiceCurrency,
     );
 
   if (mismatch) {
