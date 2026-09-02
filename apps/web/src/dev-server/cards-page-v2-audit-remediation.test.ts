@@ -90,7 +90,7 @@ async function cardsA3PreservesProfileAcrossInvoiceNavigation(): Promise<void> {
   assert.match(html, /name="profileId" value="profile-explicit"/);
   assert.match(
     html,
-    /invoiceId=invoice-jul[^\"]*profileId=profile-explicit|profileId=profile-explicit[^\"]*invoiceId=invoice-jul/,
+    /invoiceId=invoice-jul[^"]*profileId=profile-explicit|profileId=profile-explicit[^"]*invoiceId=invoice-jul/,
   );
   assert.match(html, /data-reconciliation-toggle="unreconciled" aria-current="page"/);
   assert.doesNotMatch(html, /data-reconciliation-toggle="[^"]+" aria-pressed=/);
