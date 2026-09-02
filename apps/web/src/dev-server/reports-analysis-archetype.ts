@@ -1,9 +1,5 @@
 import { renderMoney } from "../design-system/money.js";
-import {
-  renderAlert,
-  renderSummaryGrid,
-  renderText,
-} from "../design-system/primitives.js";
+import { renderAlert, renderSummaryGrid, renderText } from "../design-system/primitives.js";
 
 export interface AnalysisSummaryItem {
   label: string;
@@ -90,25 +86,15 @@ export function renderAnalysisSummaryGrid(
 }
 
 export function renderResultTrend(points: readonly TrendPoint[]): string {
-  const maxAbsolute = Math.max(
-    1,
-    ...points.map((point) => Math.abs(point.amountMinor)),
-  );
+  const maxAbsolute = Math.max(1, ...points.map((point) => Math.abs(point.amountMinor)));
   return `<ol class="report-trend" aria-label="Resultado por período">${points
     .map((point) => {
       const scale =
         point.amountMinor === 0
           ? 0
-          : Math.max(
-              4,
-              Math.round((Math.abs(point.amountMinor) / maxAbsolute) * 100),
-            );
+          : Math.max(4, Math.round((Math.abs(point.amountMinor) / maxAbsolute) * 100));
       const sign =
-        point.amountMinor < 0
-          ? "negative"
-          : point.amountMinor > 0
-            ? "positive"
-            : "neutral";
+        point.amountMinor < 0 ? "negative" : point.amountMinor > 0 ? "positive" : "neutral";
       return `<li class="report-trend-point" data-sign="${sign}"><div class="report-trend-copy"><span aria-hidden="true">${renderText(point.label)}</span><span class="sr-only">${renderText(point.accessibleLabel)}</span><strong>${renderMoney({ amountMinor: point.amountMinor, currency: point.currency })}</strong></div><div class="report-trend-track" aria-hidden="true"><span class="report-trend-bar" style="--report-trend-size:${scale}%"></span></div></li>`;
     })
     .join("")}</ol>`;
