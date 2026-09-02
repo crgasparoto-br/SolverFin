@@ -178,7 +178,9 @@ function renderInstallments(
   );
   return `<div data-report-state="ready" class="currency-report-list">${currencyBlocks
     .map((block, index) => renderInstallmentCurrencyBlock(block, filters, index))
-    .join("")}<p class="sr-only">Período consultado: ${escapeHtml(formatMonthYear(filters.month))}</p></div>`;
+    .join(
+      "",
+    )}<p class="sr-only">Período consultado: ${escapeHtml(formatMonthYear(filters.month))}</p></div>`;
 }
 
 function renderInstallmentCurrencyBlock(
@@ -207,12 +209,7 @@ function renderInstallmentCurrencyBlock(
       block.currency,
       summary.overdueCount > 0 ? "attention" : "neutral",
     ),
-    installmentSummaryItem(
-      "Futuras",
-      summary.futureCount,
-      summary.futureMinor,
-      block.currency,
-    ),
+    installmentSummaryItem("Futuras", summary.futureCount, summary.futureMinor, block.currency),
     installmentSummaryItem(
       "Total mensal",
       summary.activeCount,
@@ -294,9 +291,7 @@ function renderInstallmentHighlights(
   return `<div class="report-highlights-grid">${highlight}</div>${alert}`;
 }
 
-function renderInstallmentDetail(
-  block: InstallmentCurrencyViewModel<InstallmentRecord>,
-): string {
+function renderInstallmentDetail(block: InstallmentCurrencyViewModel<InstallmentRecord>): string {
   const countLabel = `${block.items.length} registro${block.items.length === 1 ? "" : "s"}`;
   const rows = block.items
     .map(

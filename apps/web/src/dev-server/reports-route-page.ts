@@ -5,9 +5,7 @@ import {
   renderReportAnalysisBlock,
   renderResultTrend,
 } from "./reports-analysis-archetype.js";
-import {
-  buildCategoryEvolutionAnalysisViewModel,
-} from "./reports-analysis-view-model.js";
+import { buildCategoryEvolutionAnalysisViewModel } from "./reports-analysis-view-model.js";
 import { renderCategoryEvolutionRuntime } from "./reports-category-evolution-runtime.js";
 import { renderInstallmentsView } from "./reports-installments-view.js";
 import {
@@ -273,9 +271,7 @@ async function renderCategoryEvolutionView(
       navigation +
       form +
       `<div data-report-state="ready" class="currency-report-list">${report.currencyBlocks
-        .map((block, blockIndex) =>
-          renderCategoryEvolutionAnalysis(report, block, blockIndex),
-        )
+        .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex))
         .join("")}</div>` +
       renderCategoryEvolutionRuntime(),
   );

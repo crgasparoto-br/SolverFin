@@ -56,11 +56,12 @@ export function buildCategoryEvolutionAnalysisViewModel(
     amountMinor: block.result.cells[index]?.amountMinor ?? 0,
   }));
   const bestPeriod = trend.reduce<(typeof trend)[number] | undefined>(
-    (best, item) => best === undefined || item.amountMinor > best.amountMinor ? item : best,
+    (best, item) => (best === undefined || item.amountMinor > best.amountMinor ? item : best),
     undefined,
   );
   const lowestPeriod = trend.reduce<(typeof trend)[number] | undefined>(
-    (lowest, item) => lowest === undefined || item.amountMinor < lowest.amountMinor ? item : lowest,
+    (lowest, item) =>
+      lowest === undefined || item.amountMinor < lowest.amountMinor ? item : lowest,
     undefined,
   );
 
@@ -154,38 +155,35 @@ function summarizeInstallments(
   installments: readonly InstallmentAnalysisItem[],
   today: string,
 ): InstallmentSummaryViewModel {
-  return installments.reduce<InstallmentSummaryViewModel>(
-    (summary, installment) => {
-      const amountMinor = installment.status === "cancelled" ? 0 : installment.amountMinor;
-      const postedClosed = isPostedOrClosed(installment);
-      const plannedOpen = installment.status === "planned" && !postedClosed;
-      const overdue = plannedOpen && installment.dueOn < today;
-      const future = installment.status !== "cancelled" && installment.dueOn > today;
+  return installments.reduce<InstallmentSummaryViewModel>((summary, installment) => {
+    const amountMinor = installment.status === "cancelled" ? 0 : installment.amountMinor;
+    const postedClosed = isPostedOrClosed(installment);
+    const plannedOpen = installment.status === "planned" && !postedClosed;
+    const overdue = plannedOpen && installment.dueOn < today;
+    const future = installment.status !== "cancelled" && installment.dueOn > today;
 
-      if (installment.status !== "cancelled") {
-        summary.activeCount += 1;
-        summary.totalMinor += amountMinor;
-      }
-      if (plannedOpen) {
-        summary.plannedOpenCount += 1;
-        summary.plannedOpenMinor += amountMinor;
-      }
-      if (postedClosed) {
-        summary.postedClosedCount += 1;
-        summary.postedClosedMinor += amountMinor;
-      }
-      if (overdue) {
-        summary.overdueCount += 1;
-        summary.overdueMinor += amountMinor;
-      }
-      if (future) {
-        summary.futureCount += 1;
-        summary.futureMinor += amountMinor;
-      }
-      return summary;
-    },
-    emptyInstallmentSummary(),
-  );
+    if (installment.status !== "cancelled") {
+      summary.activeCount += 1;
+      summary.totalMinor += amountMinor;
+    }
+    if (plannedOpen) {
+      summary.plannedOpenCount += 1;
+      summary.plannedOpenMinor += amountMinor;
+    }
+    if (postedClosed) {
+      summary.postedClosedCount += 1;
+      summary.postedClosedMinor += amountMinor;
+    }
+    if (overdue) {
+      summary.overdueCount += 1;
+      summary.overdueMinor += amountMinor;
+    }
+    if (future) {
+      summary.futureCount += 1;
+      summary.futureMinor += amountMinor;
+    }
+    return summary;
+  }, emptyInstallmentSummary());
 }
 
 function emptyInstallmentSummary(): InstallmentSummaryViewModel {
