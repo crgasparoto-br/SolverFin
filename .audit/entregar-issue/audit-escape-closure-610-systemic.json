@@ -15,7 +15,7 @@
       "plausible_wrong_implementation": "Treat a handoff inherited from a base branch as readiness for a different delivery merely because the artifact file exists and is internally valid.",
       "literal_case": {
         "status": "passed",
-        "observed": "The current package is rebuilt for the current delivery target and does not treat inherited artifacts as current readiness."
+        "observed": "Fresh target resolution binds the current package to SolverFin issue 610 and PR 650; inherited foreign artifacts do not activate readiness."
       },
       "sibling_cases": [
         {
@@ -39,7 +39,7 @@
           "Target binding and terminal handoff validation run before independent audit."
         ]
       },
-      "revalidated_head_sha": "613275679a230c2f44c1b83c685f4b77a2f8c457",
+      "revalidated_head_sha": "504fc42abdf6425cc1df481e7f7361f4f9783216",
       "required_risk_families": [
         "structural-contract"
       ],
@@ -70,7 +70,7 @@
       "plausible_wrong_implementation": "Translate a failed required invoice resource request into a valid empty collection or zero financial summary so the page appears healthy.",
       "literal_case": {
         "status": "passed",
-        "observed": "A purchases failure routes to the explicit error page and cannot render the empty purchase state."
+        "observed": "Exact-head regression on the current material routes purchases failure to explicit error and cannot render the empty purchase state."
       },
       "sibling_cases": [
         {
@@ -91,7 +91,7 @@
       },
       "detection_change": {
         "evidence": [
-          "Focused regression source covers literal purchases failure and sibling summary/accounts/categories/instruments/recurrences failures."
+          "Exact-head CI run 4756 executes the focused regression covering literal purchases failure and sibling summary/accounts/categories/instruments/recurrences failures."
         ]
       },
       "required_attack_dimensions": [
@@ -106,7 +106,7 @@
           "dimension": "sibling-resource-failure"
         }
       ],
-      "revalidated_head_sha": "613275679a230c2f44c1b83c685f4b77a2f8c457",
+      "revalidated_head_sha": "504fc42abdf6425cc1df481e7f7361f4f9783216",
       "required_risk_families": [
         "structural-contract"
       ]
@@ -125,7 +125,7 @@
       "plausible_wrong_implementation": "Render a numeric instrument credit limit outside the money primitive without carrying the invoice currency, while other money values remain correctly labeled.",
       "literal_case": {
         "status": "passed",
-        "observed": "Instrument limit text now includes the selected invoice ISO currency before the localized numeric value."
+        "observed": "Exact-head regression requires the selected invoice ISO currency before the localized numeric instrument limit."
       },
       "sibling_cases": [
         {
@@ -146,7 +146,7 @@
       },
       "detection_change": {
         "evidence": [
-          "Focused regression requires limite USD 1.000,00 and rejects raw limite 1.000,00 and limite 500,00 forms."
+          "Exact-head CI run 4756 executes the focused regression requiring limite USD 1.000,00 and rejecting raw unlabeled limit forms."
         ]
       },
       "required_attack_dimensions": [
@@ -161,7 +161,7 @@
           "dimension": "missing-currency-path"
         }
       ],
-      "revalidated_head_sha": "613275679a230c2f44c1b83c685f4b77a2f8c457",
+      "revalidated_head_sha": "504fc42abdf6425cc1df481e7f7361f4f9783216",
       "required_risk_families": [
         "structural-contract"
       ]

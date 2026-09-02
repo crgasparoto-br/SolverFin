@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "613275679a230c2f44c1b83c685f4b77a2f8c457",
+  "candidate_head_sha": "504fc42abdf6425cc1df481e7f7361f4f9783216",
   "remediation_mode": "systemic-remediation",
   "source": {
     "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
@@ -17,13 +17,12 @@
       "remediation_mode": "systemic-remediation",
       "status": "fixed",
       "evidence": [
-        "Required purchases, summary, accounts, categories, instruments and recurrences now fail closed through renderErrorPage before financial state is composed.",
-        "Focused regression source rejects false empty-state rendering for nested failures."
+        "Required purchases, summary, accounts, categories, instruments and recurrences fail closed through renderErrorPage before financial state is composed.",
+        "Exact-head focused regression rejects false empty-state rendering for nested failures."
       ],
       "validations": [
-        "Exact-head renderer inspection at 613275679a230c2f44c1b83c685f4b77a2f8c457",
-        "Focused regression contract in cards-page-v2-audit-remediation.test.ts covers literal and sibling resource failures.",
-        "Repository formatting contract uses printWidth 100; the remediation regression source was normalized to the same accepted shape as cards-page-v2.test.ts before refreeze."
+        "Exact-head CI run 4756 completed success on 504fc42abdf6425cc1df481e7f7361f4f9783216, including the web test suite containing cards-page-v2-audit-remediation.test.ts.",
+        "Exact-head Chrome visual run 3254 completed success on 504fc42abdf6425cc1df481e7f7361f4f9783216."
       ]
     },
     {
@@ -36,9 +35,8 @@
         "When currency is unavailable, the renderer does not expose an unlabeled numeric limit."
       ],
       "validations": [
-        "Exact-head renderer inspection at 613275679a230c2f44c1b83c685f4b77a2f8c457",
-        "Focused regression contract requires limite USD 1.000,00 and rejects unlabeled limit forms.",
-        "Repository formatting contract uses printWidth 100; the remediation regression source was normalized to the same accepted shape as cards-page-v2.test.ts before refreeze."
+        "Exact-head CI run 4756 completed success on 504fc42abdf6425cc1df481e7f7361f4f9783216; the focused regression requires limite USD 1.000,00 and rejects unlabeled limit forms.",
+        "Exact-head Chrome visual run 3254 completed success on 504fc42abdf6425cc1df481e7f7361f4f9783216."
       ]
     }
   ]

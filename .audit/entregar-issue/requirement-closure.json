@@ -7,13 +7,13 @@
   "primary_issue_source_id": "SRC-ISSUE-610",
   "obligations": [
     {
-      "id": "OBL-001",
       "candidate_key": "a0cc07b599cdb4b6614b8a1cdac30e977e86a10a19648fe00afdc52a2a14deca",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 10,
       "source_text": "usar primitives/layout/view-model da Fase 3B;",
       "flags": [],
+      "id": "OBL-001",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-01"
@@ -21,10 +21,9 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-01."
+      "rationale": "Closed by exact-head material validation for REQ-610-01."
     },
     {
-      "id": "OBL-002",
       "candidate_key": "3a679dcbbffe7fb89a7ba81fe950a98e890e18ed129d1cb22f6bb7759818e881",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
@@ -33,6 +32,7 @@
       "flags": [
         "freshness"
       ],
+      "id": "OBL-002",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-02"
@@ -40,16 +40,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-02."
+      "rationale": "Closed by exact-head material validation for REQ-610-02."
     },
     {
-      "id": "OBL-003",
       "candidate_key": "e533a10890e364cc2b6272d314c2148ac10bd961af59e87f831f2f1df6aee94e",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 12,
       "source_text": "organizar navegação entre faturas e instrumentos;",
       "flags": [],
+      "id": "OBL-003",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-03"
@@ -57,16 +57,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-03."
+      "rationale": "Closed by exact-head material validation for REQ-610-03."
     },
     {
-      "id": "OBL-004",
       "candidate_key": "dcc082b5d0e2c6f2bbd91662af7d1f4eff0abc67a6ea245820f916e284111862",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 13,
       "source_text": "apresentar compras, parcelas e recorrências dentro do contexto da fatura;",
       "flags": [],
+      "id": "OBL-004",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-04"
@@ -74,16 +74,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-04."
+      "rationale": "Closed by exact-head material validation for REQ-610-04."
     },
     {
-      "id": "OBL-005",
       "candidate_key": "a449dc4983888166a6c221921ab7b0feb122c5269486663ebb5ae414f8fd5872",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 14,
       "source_text": "separar visualmente ações de registrar compra, fechar e pagar/liquidar fatura;",
       "flags": [],
+      "id": "OBL-005",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-05"
@@ -91,16 +91,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-05."
+      "rationale": "Closed by exact-head material validation for REQ-610-05."
     },
     {
-      "id": "OBL-006",
       "candidate_key": "5663cad373fe518433a3f881b220e7f657d0459b4d23714a9902a23d1a809361",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 15,
       "source_text": "preservar moeda da fatura/cartão;",
       "flags": [],
+      "id": "OBL-006",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-06"
@@ -108,16 +108,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-06."
+      "rationale": "Closed by exact-head material validation for REQ-610-06."
     },
     {
-      "id": "OBL-007",
       "candidate_key": "e03bee6001a92e5b7e64f0c1656e81c1a237951243cad6ad2fbb3ec194e4d7cd",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 16,
       "source_text": "retirar enhancements substituídos.",
       "flags": [],
+      "id": "OBL-007",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-08"
@@ -125,10 +125,9 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-08."
+      "rationale": "Closed by exact-head material validation for REQ-610-08."
     },
     {
-      "id": "OBL-008",
       "candidate_key": "acdc217415fe060da020ba8d6f7d7f110c114cdd493acb5d64e74214dfd4c089",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
@@ -137,6 +136,7 @@
       "flags": [
         "negative"
       ],
+      "id": "OBL-008",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-01"
@@ -144,10 +144,9 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-01."
+      "rationale": "Closed by exact-head material validation for REQ-610-01."
     },
     {
-      "id": "OBL-009",
       "candidate_key": "79074da63c2422770b8474147e7ed62005cde2cbaed899c34d3fe587096e535c",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
@@ -156,6 +155,7 @@
       "flags": [
         "negative"
       ],
+      "id": "OBL-009",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-05"
@@ -163,16 +163,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-05."
+      "rationale": "Closed by exact-head material validation for REQ-610-05."
     },
     {
-      "id": "OBL-010",
       "candidate_key": "6636bb1a693feeaf1ca8befc032decfc66bec50d6df5b7b7f3b67b07b978f085",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 22,
       "source_text": "[ ] moeda é explícita em fatura, compras e limites;",
       "flags": [],
+      "id": "OBL-010",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-06"
@@ -180,16 +180,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-06."
+      "rationale": "Closed by exact-head material validation for REQ-610-06."
     },
     {
-      "id": "OBL-011",
       "candidate_key": "9c714db2409254226407ee60cdf3e7850c018cfe15e980c2bd24fbbd2fe58406",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 23,
       "source_text": "[ ] fechamento/vencimento e ação principal são visualmente priorizados;",
       "flags": [],
+      "id": "OBL-011",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-02"
@@ -197,16 +197,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-02."
+      "rationale": "Closed by exact-head material validation for REQ-610-02."
     },
     {
-      "id": "OBL-012",
       "candidate_key": "c6692a537fc6bd7490b0b5f8fd25242b1215ff01ca8ccb470c8b89dfe8e34da8",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 24,
       "source_text": "[ ] navegação de faturas funciona em desktop/mobile e teclado;",
       "flags": [],
+      "id": "OBL-012",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-03"
@@ -214,16 +214,16 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-03."
+      "rationale": "Closed by exact-head material validation for REQ-610-03."
     },
     {
-      "id": "OBL-013",
       "candidate_key": "89dada21179c8a041b679e919e61184802b5d74aa3640926c53d281de0926357",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
       "source_line": 25,
       "source_text": "[ ] estados vazio/erro/loading são coerentes;",
       "flags": [],
+      "id": "OBL-013",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-07"
@@ -231,10 +231,9 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-07."
+      "rationale": "Closed by exact-head material validation for REQ-610-07."
     },
     {
-      "id": "OBL-014",
       "candidate_key": "cdbdee5a592b04a5a9eb2aa93f4ad22ee541b5ab61a93e99f6061aaac6c50cbf",
       "source_id": "SRC-ISSUE-610",
       "source_sha256": "a34a1e384c29aa5d37cf01e23fa6773eecd592bf7137ef211cac1acb69f3392b",
@@ -244,6 +243,7 @@
         "exhaustive",
         "source-catalog"
       ],
+      "id": "OBL-014",
       "disposition": "covered",
       "requirement_ids": [
         "REQ-610-08"
@@ -251,7 +251,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Closed by implementation and exact-head evidence for REQ-610-08."
+      "rationale": "Closed by exact-head material validation for REQ-610-08."
     }
   ],
   "source_coverage": [
@@ -310,7 +310,7 @@
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "The delivery retires substituted legacy enhancements and the existing legacy post-processor documentation was updated in the issue implementation.",
+    "applicability_reason": "The delivery retires substituted legacy enhancements and keeps the canonical legacy post-processor documentation synchronized.",
     "entries": [
       {
         "id": "DOC-610-01",
@@ -328,7 +328,7 @@
       "SRC-ISSUE-610"
     ],
     "findings": [],
-    "rationale": "No required Issue 610 behavior is deferred or reduced by the remediation."
+    "rationale": "No required Issue 610 behavior is deferred or reduced by the post-CI refreeze."
   },
   "pass_c": {
     "status": "passed",
@@ -349,6 +349,6 @@
       "OBL-013",
       "OBL-014"
     ],
-    "rationale": "All fourteen canonical obligations were rechecked after the systemic remediation."
+    "rationale": "All fourteen canonical obligations were rechecked for the terminal post-CI refreeze."
   }
 }
