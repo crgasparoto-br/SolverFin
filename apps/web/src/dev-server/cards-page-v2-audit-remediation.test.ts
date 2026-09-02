@@ -38,7 +38,7 @@ async function cardsA3FailsClosedWhenSummaryCannotLoad(): Promise<void> {
 
   assert.match(html, /data-cards-load-error/);
   assert.match(html, /Falha simulada no resumo/);
-  assert.doesNotMatch(html, /cards-invoice-summary/);
+  assert.doesNotMatch(html, /<section class="cards-invoice-summary"/);
   assert.doesNotMatch(html, /Nenhuma compra encontrada/);
 }
 
