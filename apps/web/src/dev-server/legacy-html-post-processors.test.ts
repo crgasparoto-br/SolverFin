@@ -11,9 +11,17 @@ import {
 
 test("legacy HTML post-processors have a canonical, reducing inventory", () => {
   assert.equal(LEGACY_HTML_POST_PROCESSOR_INVENTORY.length, LEGACY_HTML_POST_PROCESSOR_BUDGET);
+  assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 5);
 
   const ids = LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
+
+  const routes = new Set<string>(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route));
+  assert.equal(
+    routes.has("/cartoes"),
+    false,
+    "/cartoes must stay off the legacy HTML pipeline after the A3 migration",
+  );
 
   const expectedOwnerByRoute: Record<LegacyHtmlPostProcessorRoute, LegacyHtmlPostProcessorOwner> = {
     "/contas-cartoes": "web-accounts-cards",
@@ -23,7 +31,6 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
     "/inbox": "web-inbox",
   };
 
-  const routes = new Set(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route));
   for (const route of routes) {
     const routeEntries = LEGACY_HTML_POST_PROCESSOR_INVENTORY.filter(
       (entry) => entry.route === route,
@@ -58,37 +65,30 @@ test("legacy HTML pipeline rejects missing or reordered adapters before transfor
   const calls: string[] = [];
 
   await assert.rejects(
-    applyLegacyHtmlPostProcessorPipeline("/cartoes", "rendered", [
+    applyLegacyHtmlPostProcessorPipeline("/contas-cartoes", "rendered", [
       {
-        id: "cards-interface",
+        id: "accounts-cards-standardization",
         transform: (html) => {
-          calls.push("cards-interface");
+          calls.push("accounts-cards-standardization");
           return html;
         },
       },
       {
-        id: "card-list-sorting",
+        id: "accounts-cards-tabs",
         transform: (html) => {
-          calls.push("card-list-sorting");
+          calls.push("accounts-cards-tabs");
           return html;
         },
       },
       {
-        id: "card-instrument-subtotals",
+        id: "accounts-cards-action-menus",
         transform: (html) => {
-          calls.push("card-instrument-subtotals");
-          return html;
-        },
-      },
-      {
-        id: "cards-interface-finalizer",
-        transform: (html) => {
-          calls.push("cards-interface-finalizer");
+          calls.push("accounts-cards-action-menus");
           return html;
         },
       },
     ]),
-    /Legacy HTML post-processor order mismatch for \/cartoes/,
+    /Legacy HTML post-processor order mismatch for \/contas-cartoes/,
   );
 
   assert.deepEqual(calls, []);
@@ -98,7 +98,6 @@ test("every route represented in the inventory has at least one residual adapter
   const expectedRoutes: LegacyHtmlPostProcessorRoute[] = [
     "/contas-cartoes",
     "/categorias",
-    "/cartoes",
     "/lancamentos",
   ];
 

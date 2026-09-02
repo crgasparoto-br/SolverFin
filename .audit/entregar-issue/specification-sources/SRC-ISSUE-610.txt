@@ -1,0 +1,38 @@
+Parent epic: #591
+Depends on: #593, #594, #595, #601, #602, #603, #604, #605
+
+## Objetivo
+
+Migrar `/cartoes` para a nova fundação e tornar explícita a hierarquia `cartão -> fatura -> compras`, com foco na fatura atual e sem confundir compra com liquidação da fatura.
+
+## Escopo
+
+- usar primitives/layout/view-model da Fase 3B;
+- destacar cartão selecionado, fatura atual, fechamento, vencimento, total e limite/uso quando disponível;
+- organizar navegação entre faturas e instrumentos;
+- apresentar compras, parcelas e recorrências dentro do contexto da fatura;
+- separar visualmente ações de registrar compra, fechar e pagar/liquidar fatura;
+- preservar moeda da fatura/cartão;
+- retirar enhancements substituídos.
+
+## Critérios de aceite
+
+- [ ] hierarquia cartão/fatura/compras é compreensível sem texto explicativo longo;
+- [ ] pagamento de fatura não aparece como segunda compra/despesa econômica;
+- [ ] moeda é explícita em fatura, compras e limites;
+- [ ] fechamento/vencimento e ação principal são visualmente priorizados;
+- [ ] navegação de faturas funciona em desktop/mobile e teclado;
+- [ ] estados vazio/erro/loading são coerentes;
+- [ ] enhancements substituídos são removidos/depreciados com cobertura equivalente.
+
+## Fora de escopo
+
+- rotativo/juros/parcelamento de saldo;
+- provider de câmbio.
+
+## Referências
+
+- #591
+- #593
+- `docs/CARDS.md`
+- `docs/EVOLUTION_STRATEGY.md`

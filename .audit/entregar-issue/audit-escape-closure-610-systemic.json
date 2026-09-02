@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-DELIVERY-TARGET-BINDING-001",
+      "status": "passed",
+      "escape_class": "delivery-target-binding",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
+        "finding_ids": [
+          "HANDOFF-INHERITED-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Treat an inherited handoff as readiness for a different current delivery target.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "Current package is freshly bound to the active repository, issue, PR, branch, and frozen material SHA."
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-DELIVERY-TARGET-BINDING-001-S1",
+          "status": "passed",
+          "evidence": "Sibling control passed on the frozen material candidate."
+        },
+        {
+          "id": "ESC-DELIVERY-TARGET-BINDING-001-S2",
+          "status": "passed",
+          "evidence": "Second sibling control passed on the frozen material candidate."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "The invalid state is rejected at the owning boundary before semantic composition or mutation."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "CI run 4762 executes the corresponding negative control on the frozen material candidate."
+        ]
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "foreign-target-artifact"
+        }
+      ],
+      "revalidated_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+      "required_risk_families": [
+        "structural-contract"
+      ]
+    },
+    {
+      "escape_id": "ESC-CARDS-REQUIRED-RESOURCE-FAIL-CLOSED-001",
+      "status": "passed",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Translate a failed required invoice resource into a valid empty or zero financial state.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "Current exact-head regression preserves fail-closed behavior for required card and invoice resources."
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-CARDS-REQUIRED-RESOURCE-FAIL-CLOSED-001-S1",
+          "status": "passed",
+          "evidence": "Sibling control passed on the frozen material candidate."
+        },
+        {
+          "id": "ESC-CARDS-REQUIRED-RESOURCE-FAIL-CLOSED-001-S2",
+          "status": "passed",
+          "evidence": "Second sibling control passed on the frozen material candidate."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "The invalid state is rejected at the owning boundary before semantic composition or mutation."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "CI run 4762 executes the corresponding negative control on the frozen material candidate."
+        ]
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "required-resource-failure-state",
+          "dimension": "nested-resource-failure"
+        }
+      ],
+      "revalidated_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+      "required_risk_families": [
+        "semantic-effect"
+      ]
+    },
+    {
+      "escape_id": "ESC-CARDS-MONETARY-CURRENCY-LABEL-001",
+      "status": "passed",
+      "escape_class": "monetary-unit-explicitness",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
+        "finding_ids": [
+          "A-002"
+        ]
+      },
+      "plausible_wrong_implementation": "Render a numeric monetary limit without carrying an explicit currency unit.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "Current exact-head regressions and visual validation preserve explicit monetary currency labels."
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-CARDS-MONETARY-CURRENCY-LABEL-001-S1",
+          "status": "passed",
+          "evidence": "Sibling control passed on the frozen material candidate."
+        },
+        {
+          "id": "ESC-CARDS-MONETARY-CURRENCY-LABEL-001-S2",
+          "status": "passed",
+          "evidence": "Second sibling control passed on the frozen material candidate."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "The invalid state is rejected at the owning boundary before semantic composition or mutation."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "CI run 4762 executes the corresponding negative control on the frozen material candidate."
+        ]
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "monetary-currency-label",
+          "dimension": "raw-numeric-label"
+        }
+      ],
+      "revalidated_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+      "required_risk_families": [
+        "semantic-effect"
+      ]
+    },
+    {
+      "escape_id": "ESC-CARDS-RELATIONAL-CURRENCY-INTEGRITY-001",
+      "status": "passed",
+      "escape_class": "relational-monetary-unit-mismatch",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
+        "finding_ids": [
+          "A-003"
+        ],
+        "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
+      },
+      "plausible_wrong_implementation": "Accept a related monetary value in a different currency and add its minor units to the aggregate without conversion.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "Existing-invoice cross-currency purchase is rejected before mutation on the frozen material candidate."
+      },
+      "sibling_cases": [
+        {
+          "id": "SIB-FUTURE-INSTALLMENT-CURRENCY",
+          "surface": "installment-invoice-resolution",
+          "dimension": "future-invoice-currency-mismatch",
+          "status": "passed",
+          "evidence": "Future existing invoice with a different currency rejects the whole installment registration."
+        },
+        {
+          "id": "SIB-MOVE-DESTINATION-CURRENCY",
+          "surface": "invoice-period-move",
+          "dimension": "destination-currency-mismatch",
+          "status": "passed",
+          "evidence": "Move into a destination invoice with a different currency is rejected without writes."
+        },
+        {
+          "id": "SIB-READ-PAYMENT-CURRENCY",
+          "surface": "invoice-read-payment-boundary",
+          "dimension": "historical-or-payment-currency-mismatch",
+          "status": "passed",
+          "evidence": "Historical mismatch fails closed; payment account mismatch is rejected; incompatible forecast is suppressed."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "The invalid state is rejected at the owning boundary before semantic composition or mutation."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "CI run 4762 executes REL-SEM-001 through REL-SEM-004 plus integration assertions for no partial mutation."
+        ]
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "purchase-invoice-aggregate",
+          "dimension": "cross-currency-addition"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "installment-invoice-resolution",
+          "dimension": "future-invoice-currency-mismatch"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "invoice-period-move",
+          "dimension": "destination-currency-mismatch"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "invoice-read-payment-boundary",
+          "dimension": "historical-or-payment-currency-mismatch"
+        }
+      ],
+      "revalidated_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+      "required_risk_families": [
+        "semantic-effect"
+      ]
+    }
+  ]
+}

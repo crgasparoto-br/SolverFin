@@ -171,13 +171,18 @@ Quando `instruments` e informado:
 
 A fatura e resolvida por `cardId + periodStartOn + periodEndOn`:
 
-- se nao existir, uma fatura `open` e criada;
-- se existir e estiver `open`, o total e incrementado;
+- se nao existir, uma fatura `open` e criada na moeda normalizada da compra;
+- se existir e estiver `open`, o total so e incrementado quando a moeda da compra for igual a moeda da fatura;
+- divergencia de moeda e rejeitada com `CARD_INVOICE_CURRENCY_MISMATCH` antes de qualquer persistencia do resultado da compra;
 - faturas `closed`, `paid`, `overdue` ou `cancelled` nao recebem novas compras.
 
-Compras feitas por instrumentos diferentes do mesmo agrupador compartilham a mesma fatura quando pertencem ao mesmo periodo.
+Cada fatura e monomoeda. Nao existe conversao cambial implicita no registro, parcelamento, materializacao de recorrencia ou movimentacao de compra entre periodos. Parcelas futuras tambem validam a moeda de cada fatura existente antes de qualquer resultado ser persistido.
 
-`updateCardPurchaseForContext` (`PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId`) rejeita qualquer edicao quando a fatura vinculada estiver `CLOSED`, `PAID` ou `CANCELLED`, retornando o codigo `CARD_PURCHASE_INVOICE_LOCKED` com HTTP 409. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria.
+Estados historicos em que uma compra esteja ligada a uma fatura de moeda diferente falham de forma explicita antes de resumo, edicao, fechamento ou movimentacao. Esses estados nao podem ser usados para agregar totais como se os minor units fossem comparaveis.
+
+Compras feitas por instrumentos diferentes do mesmo agrupador compartilham a mesma fatura quando pertencem ao mesmo periodo e a mesma moeda.
+
+`updateCardPurchaseForContext` (`PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId`) rejeita qualquer edicao quando a fatura vinculada estiver `CLOSED`, `PAID` ou `CANCELLED`, retornando o codigo `CARD_PURCHASE_INVOICE_LOCKED` com HTTP 409. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria. Se o estado historico tiver moeda divergente entre compra e fatura, `CARD_INVOICE_CURRENCY_MISMATCH` tambem bloqueia a edicao antes da mutacao.
 
 Compras parceladas criam parcelas planejadas. O valor total e dividido entre as parcelas, com centavos excedentes aplicados nas primeiras parcelas. Cada parcela preserva o `cardInstrumentId` escolhido na compra original quando o fluxo novo esta em uso.
 
@@ -207,7 +212,7 @@ Exemplo:
 }
 ```
 
-Mudancas futuras no instrumento default apenas preenchem novas criacoes. Elas nao alteram recorrencias existentes.
+Mudancas futuras no instrumento default apenas preenchem novas criacoes. Elas nao alteram recorrencias existentes. A materializacao reutiliza `registerCardPurchaseForContext`, portanto herda a validacao de moeda da fatura sem manter uma politica paralela.
 
 ## Pagamento de fatura
 
@@ -217,17 +222,19 @@ Decisao de MVP:
 
 - pagamento parcial ou maior que o total da fatura e rejeitado;
 - o pagamento deve ser exatamente igual ao total atual da fatura;
+- a conta de pagamento deve ter a mesma moeda da fatura; divergencia e rejeitada por `CARD_INVOICE_PAYMENT_ACCOUNT_CURRENCY_MISMATCH` antes da persistencia;
 - suporte a pagamento parcial depende de campo persistente de valor pago/saldo em aberto e fica para evolucao futura.
 
 ## Previsao de pagamento da fatura
 
-Quando o agrupador tem `paymentAccountId` configurado e a conta esta `active`, a compra tambem gera ou atualiza uma `Transaction` de previsao:
+Quando o agrupador tem `paymentAccountId` configurado e a conta esta `active`, a compra gera ou atualiza uma `Transaction` de previsao somente para faturas cuja moeda corresponda a moeda da conta configurada:
 
 - `kind: "expense"`, `status: "planned"`, `source: "manual"`, sem `effectiveOn`.
 - `accountId` = conta de pagamento do agrupador.
 - `cardId` = agrupador da fatura.
 - `invoiceId` referencia a fatura correspondente.
 - `amountMinor` e `plannedOn` acompanham `totalAmountMinor` e `dueOn` da fatura.
+- se a moeda da conta for diferente, nenhuma previsao e criada para aquela fatura, porque nao existe conversao implicita.
 - Ao pagar a fatura (`payInvoice`), a previsao correspondente e marcada como `voided`.
 
 ## Privacidade de dados de cartao
@@ -246,6 +253,8 @@ Fixtures e exemplos usam apenas dados ficticios e mascarados.
 - `CARD_INSTRUMENT_NOT_ACTIVE`: instrumento informado esta arquivado e nao pode receber nova compra.
 - `CARD_NOT_ACTIVE`: cartao arquivado ou bloqueado nao pode receber compra.
 - `CARD_INVOICE_NOT_OPEN`: fatura nao esta aberta para novas compras.
+- `CARD_INVOICE_CURRENCY_MISMATCH`: compra e fatura nao podem ser agregadas ou movidas quando suas moedas divergem.
+- `CARD_INVOICE_PAYMENT_ACCOUNT_CURRENCY_MISMATCH`: conta de pagamento e fatura possuem moedas diferentes.
 - `CARD_INVOICE_PAYMENT_AMOUNT_INVALID`: pagamento nao corresponde ao total da fatura.
 - `CARD_PAYMENT_ACCOUNT_ARCHIVED`: conta de pagamento nao esta ativa.
 - `RECURRENCE_CARD_INSTRUMENT_INVALID`: instrumento informado na recorrencia nao esta ativo ou nao pertence ao agrupador/tenant.
@@ -255,4 +264,5 @@ Fixtures e exemplos usam apenas dados ficticios e mascarados.
 - Integracao com operadora de cartao.
 - Juros, rotativo e parcelamento da propria fatura.
 - Pagamentos parciais.
+- Provider de cambio ou conversao automatica entre moedas.
 - Ajuste completo de UI e fluxo de compras/faturas, previstos nas #322 e #323.

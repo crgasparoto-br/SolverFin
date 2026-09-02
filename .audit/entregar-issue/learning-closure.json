@@ -1,1 +1,59 @@
-{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:609-post-write-refreeze-4c47a2d","audit_report_sha256":"a371be7facb6bdd1645b6cfa9bcf2e1de1aea8640d0618557ba63fd3cce5c7eb","finding_ids":[]},"generalized_learning":{"promotion_status":"not-required","reason":"The rejection is a terminal delivery-state mismatch after a material post-freeze write. Existing handoff invariants already require post-write refreeze; no new global rule is needed."},"skill_changes":[]}
+{
+  "schema_version": 1,
+  "classification": "systemic-escape",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
+    "finding_ids": [
+      "A-003"
+    ],
+    "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
+  },
+  "generalized_learning": {
+    "escape_class": "relational-monetary-unit-mismatch",
+    "generalized_failure_pattern": "A financial aggregate can look structurally valid while related entities carry incompatible monetary units and minor values are combined without a conversion contract.",
+    "plausible_wrong_implementation": "Validate that each currency string is individually valid but never assert currency equality across the aggregate and its producers or consumers.",
+    "trigger_signals": [
+      "money aggregate updated by related entity",
+      "currency accepted from caller",
+      "minor-unit arithmetic across relationship",
+      "no explicit conversion provider"
+    ],
+    "risk_families": [
+      "semantic-effect"
+    ],
+    "reusable_control": "REL-SEM-001: before monetary aggregation or settlement, require related entities to share the canonical currency unless an explicit conversion contract is present.",
+    "prevention_rule": "Reject a related monetary operation before mutation when its currency differs from the canonical aggregate currency and no conversion contract exists.",
+    "detection_rule": "Attack the literal writer plus installment, move, historical-read, forecast, and payment siblings with deliberately divergent currencies and assert no partial mutation.",
+    "transfer_cases": [
+      {
+        "surface": "aggregate-writer",
+        "status": "passed",
+        "evidence": "Cross-currency purchase and future installment invoice are rejected before mutation."
+      },
+      {
+        "surface": "aggregate-relink",
+        "status": "passed",
+        "evidence": "Cross-currency invoice-period move is rejected before source, destination, or transaction changes."
+      },
+      {
+        "surface": "aggregate-consumer",
+        "status": "passed",
+        "evidence": "Historical mismatch fails closed and payment/forecast boundaries preserve currency identity."
+      }
+    ],
+    "promotion_status": "promoted"
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "status": "passed",
+      "evidence": "REL-SEM-001 is represented in the critical attack matrix and inherited controls."
+    },
+    {
+      "role": "detection",
+      "status": "passed",
+      "evidence": "Exact-head domain/API tests exercise the literal case and distinct sibling surfaces."
+    }
+  ]
+}

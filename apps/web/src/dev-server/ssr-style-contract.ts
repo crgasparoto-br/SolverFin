@@ -95,25 +95,6 @@ const transactionRuntimeProviders = [
   ),
 ] as const;
 
-const cardRuntimeProviders = [
-  markerProvider(
-    "runtime:invoice-month-navigation",
-    "cards-page-month-navigation.js",
-    "data-invoice-month-navigation-styles",
-  ),
-  markerProvider("runtime:list-sorting", "list-sorting-enhancement.js", "data-list-sorting-styles"),
-  markerProvider(
-    "runtime:cards-interface",
-    "cards-interface-enhancement.js",
-    "data-cards-interface-styles",
-  ),
-  markerProvider(
-    "runtime:cards-status-alignment",
-    "cards-interface-finalizer.js",
-    "data-cards-status-alignment",
-  ),
-] as const;
-
 const accountsCardsRuntimeProviders = [
   markerProvider(
     "runtime:card-instruments-dialog",
@@ -187,10 +168,10 @@ export const solverFinSsrStyleContracts = [
       },
     ],
   }),
-  authenticated("cards", "/cartoes", "cards-page.js", {
-    representativeHtmlFragments: ['class="cards-layout"'],
-    pageCssFragments: [".cards-layout {"],
-    auxiliaryStyleProviders: [recurrenceAuxiliaryProvider, ...cardRuntimeProviders],
+  authenticated("cards", "/cartoes", "cards-page-v2.js", {
+    representativeHtmlFragments: ['data-cards-archetype="A3"', 'class="cards-layout"'],
+    pageCssFragments: ['[data-cards-archetype="A3"]{'],
+    auxiliaryStyleProviders: [recurrenceAuxiliaryProvider],
   }),
   authenticated("accountsCards", "/contas-cartoes", "accounts-cards-page.js", {
     representativeHtmlFragments: ['data-tab-panel="accounts"'],

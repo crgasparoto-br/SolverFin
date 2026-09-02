@@ -1,1 +1,30 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","status":"closed","remediation_mode":"targeted-remediation","candidate_head_sha":"4c47a2db603ffc7a5cfe13a1b86c8c59ba6841ab","source":{"rejection_id":"audit-rejection:609-post-write-refreeze-4c47a2d","audited_head_sha":"4c47a2db603ffc7a5cfe13a1b86c8c59ba6841ab","audit_report_sha256":"a371be7facb6bdd1645b6cfa9bcf2e1de1aea8640d0618557ba63fd3cce5c7eb"},"items":[]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+  "remediation_mode": "systemic-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
+    "audited_head_sha": "2aa2e175151bfd28fe1b487953df7b229895060f",
+    "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-003",
+      "remediation_mode": "systemic-remediation",
+      "status": "fixed",
+      "evidence": [
+        "Existing-invoice currency mismatch is rejected before any write.",
+        "Sibling guards cover installments, invoice-period move, historical reads/close, payment account currency, and forecast creation.",
+        "Canonical documentation records the single-currency invoice invariant."
+      ],
+      "validations": [
+        "CI run 4762 completed success on a1e37ac7eb377cc60db47f32f2ece44e54774111, including domain and API integration coverage.",
+        "Statement visual validation run 3260 completed success on a1e37ac7eb377cc60db47f32f2ece44e54774111."
+      ]
+    }
+  ]
+}

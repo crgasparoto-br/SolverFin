@@ -30,7 +30,10 @@ export interface LegacyHtmlPostProcessorInventoryEntry {
   fallbackAccessibility: string;
 }
 
-export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 9;
+// Issue #610 migrates /cartoes to the A3 master-detail renderer. The four former
+// card post-processors remain in the repository only as deprecated reference code
+// until a later cleanup can remove the files without losing historical regression context.
+export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 5;
 
 export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
   {
@@ -88,63 +91,6 @@ export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
       "Linhas de categoria recebem icone, label e ajuda como props/slots no renderer, sem localizar trechos HTML por string/regex.",
     fallbackAccessibility:
       "Texto da categoria continua suficiente sem o icone e qualquer ajuda visual mantem nome/descricao acessivel.",
-  },
-  {
-    id: "card-list-sorting",
-    route: "/cartoes",
-    order: 1,
-    owner: "web-cards",
-    module: "./list-sorting-enhancement.js",
-    exportName: "enhanceCardListSorting",
-    responsibility: "Reordena visualmente a lista de cartoes depois da geracao do documento.",
-    migration: "view-model-schema",
-    replacementCriterion:
-      "A ordenacao e resolvida no ViewModel antes do render e o HTML ja nasce na ordem final para o periodo selecionado.",
-    fallbackAccessibility:
-      "A ordem visual e a ordem do DOM permanecem equivalentes para leitura e navegacao por teclado.",
-  },
-  {
-    id: "card-instrument-subtotals",
-    route: "/cartoes",
-    order: 2,
-    owner: "web-cards",
-    module: "./card-instrument-subtotals-enhancement.js",
-    exportName: "enhanceCardInstrumentSubtotals",
-    responsibility: "Calcula/insere subtotais de instrumentos sobre grupos ja renderizados.",
-    migration: "view-model-schema",
-    replacementCriterion:
-      "Subtotais e agrupamentos fazem parte do ViewModel da fatura/cartao e sao renderizados junto ao grupo correspondente.",
-    fallbackAccessibility:
-      "Subtotais preservam contexto textual de grupo e nao dependem apenas de posicao, cor ou estilo visual.",
-  },
-  {
-    id: "cards-interface",
-    route: "/cartoes",
-    order: 3,
-    owner: "web-cards",
-    module: "./cards-interface-enhancement.js",
-    exportName: "enhanceCardsInterface",
-    responsibility:
-      "Complementa estrutura, estilos e runtime da interface de cartoes apos o render.",
-    migration: "component-props-slots",
-    replacementCriterion:
-      "Componentes de cartao/fatura emitem diretamente estados, acoes e hooks de runtime usados pela interface final.",
-    fallbackAccessibility:
-      "Controles, dialogs, estados vazios e feedback mantem nomes acessiveis e operacao por teclado.",
-  },
-  {
-    id: "cards-interface-finalizer",
-    route: "/cartoes",
-    order: 4,
-    owner: "web-cards",
-    module: "./cards-interface-finalizer.js",
-    exportName: "finalizeCardsInterface",
-    responsibility: "Faz ajustes finais dependentes do markup concreto da tela de cartoes.",
-    migration: "component-props-slots",
-    replacementCriterion:
-      "O renderer estrutural satisfaz o contrato final da tela sem uma etapa posterior de finalizacao textual.",
-    fallbackAccessibility:
-      "A retirada so ocorre quando o HTML servido conserva semantica, foco, labels e estados equivalentes.",
   },
   {
     id: "account-remuneration-disclosure",
