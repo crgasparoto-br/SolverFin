@@ -5,7 +5,9 @@ import {
   renderReportAnalysisBlock,
   renderResultTrend,
 } from "./reports-analysis-archetype.js";
-import { buildCategoryEvolutionAnalysisViewModel } from "./reports-analysis-view-model.js";
+import {
+  buildCategoryEvolutionAnalysisViewModel,
+} from "./reports-analysis-view-model.js";
 import { renderCategoryEvolutionRuntime } from "./reports-category-evolution-runtime.js";
 import { renderInstallmentsView } from "./reports-installments-view.js";
 import {
@@ -271,7 +273,9 @@ async function renderCategoryEvolutionView(
       navigation +
       form +
       `<div data-report-state="ready" class="currency-report-list">${report.currencyBlocks
-        .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex))
+        .map((block, blockIndex) =>
+          renderCategoryEvolutionAnalysis(report, block, blockIndex),
+        )
         .join("")}</div>` +
       renderCategoryEvolutionRuntime(),
   );
@@ -290,17 +294,26 @@ function renderCategoryEvolutionAnalysis(
     summaryItems: [
       {
         label: "Receitas",
-        primaryHtml: renderMoney({ amountMinor: analysis.summary.incomeMinor, currency: analysis.currency }),
+        primaryHtml: renderMoney({
+          amountMinor: analysis.summary.incomeMinor,
+          currency: analysis.currency,
+        }),
         tone: "positive",
       },
       {
         label: "Despesas",
-        primaryHtml: renderMoney({ amountMinor: analysis.summary.expenseMinor, currency: analysis.currency }),
+        primaryHtml: renderMoney({
+          amountMinor: analysis.summary.expenseMinor,
+          currency: analysis.currency,
+        }),
         tone: "negative",
       },
       {
         label: "Resultado",
-        primaryHtml: renderMoney({ amountMinor: analysis.summary.resultMinor, currency: analysis.currency }),
+        primaryHtml: renderMoney({
+          amountMinor: analysis.summary.resultMinor,
+          currency: analysis.currency,
+        }),
         tone: analysis.summary.resultMinor < 0 ? "negative" : "information",
       },
       {
@@ -314,7 +327,10 @@ function renderCategoryEvolutionAnalysis(
     ],
     visualizationTitle: "Resultado ao longo do tempo",
     visualizationHtml: renderResultTrend(
-      analysis.trend.map((point) => ({ ...point, currency: analysis.currency })),
+      analysis.trend.map((point) => ({
+        ...point,
+        currency: analysis.currency,
+      })),
     ),
     highlightsHtml: renderAnalysisHighlights({
       currency: analysis.currency,
