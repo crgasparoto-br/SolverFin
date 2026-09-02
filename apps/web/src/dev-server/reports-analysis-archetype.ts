@@ -79,8 +79,8 @@ export function renderResultTrend(points: readonly TrendPoint[]): string {
 
 export function renderAnalysisHighlights(input: {
   currency: string;
-  best?: { label: string; amountMinor: number };
-  lowest?: { label: string; amountMinor: number };
+  best?: { label: string; amountMinor: number } | undefined;
+  lowest?: { label: string; amountMinor: number } | undefined;
   negativePeriodCount: number;
 }): string {
   const items = [
