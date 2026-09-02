@@ -12,9 +12,13 @@ afterEach(() => {
 describe("issue 611 reports analysis archetype", () => {
   it("renders summary, visualization, highlights and detail for a 24-period multi-currency report", async () => {
     const periods = buildPeriods(24);
-    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    globalThis.fetch = async (
+      input: string | URL | Request,
+    ): Promise<Response> => {
       const url = new URL(String(input));
-      if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (url.pathname === "/api/accounts") {
+        return jsonResponse({ accounts: [] });
+      }
       if (url.pathname === "/api/credit-card-accounts") {
         return jsonResponse({ creditCardAccounts: [] });
       }
@@ -58,7 +62,9 @@ describe("issue 611 reports analysis archetype", () => {
   });
 
   it("keeps installment summaries separated by currency and uses semantic detail tables", async () => {
-    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    globalThis.fetch = async (
+      input: string | URL | Request,
+    ): Promise<Response> => {
       const url = new URL(String(input));
       if (url.pathname === "/api/installments") {
         return jsonResponse({
@@ -68,8 +74,12 @@ describe("issue 611 reports analysis archetype", () => {
           ],
         });
       }
-      if (url.pathname === "/api/cards") return jsonResponse({ cards: [] });
-      if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+      if (url.pathname === "/api/cards") {
+        return jsonResponse({ cards: [] });
+      }
+      if (url.pathname === "/api/categories") {
+        return jsonResponse({ categories: [] });
+      }
       return jsonResponse({});
     };
 
@@ -88,10 +98,21 @@ describe("issue 611 reports analysis archetype", () => {
   });
 });
 
-function categoryBlock(currency: string, periodCount: number, incomeMinor: number, expenseMinor: number) {
-  const income = Array.from({ length: periodCount }, () => Math.round(incomeMinor / periodCount));
-  const expense = Array.from({ length: periodCount }, () => Math.round(expenseMinor / periodCount));
-  const result = income.map((value, index) => value - (expense[index] ?? 0));
+function categoryBlock(
+  currency: string,
+  periodCount: number,
+  incomeMinor: number,
+  expenseMinor: number,
+) {
+  const income = Array.from({ length: periodCount }, () =>
+    Math.round(incomeMinor / periodCount),
+  );
+  const expense = Array.from({ length: periodCount }, () =>
+    Math.round(expenseMinor / periodCount),
+  );
+  const result = income.map(
+    (value, index) => value - (expense[index] ?? 0),
+  );
   return {
     currency,
     income: series(income),
@@ -138,9 +159,18 @@ function installment(id: string, currency: string, amountMinor: number) {
     dueOn: "2026-07-15",
     amountMinor,
     currency,
-    transaction: { id: `t-${id}`, description: `Parcela ${id}`, status: "planned" },
+    transaction: {
+      id: `t-${id}`,
+      description: `Parcela ${id}`,
+      status: "planned",
+    },
     card: { id: `card-${id}`, name: `Cartão ${id}`, status: "active" },
-    category: { id: `category-${id}`, name: `Categoria ${id}`, kind: "expense", status: "active" },
+    category: {
+      id: `category-${id}`,
+      name: `Categoria ${id}`,
+      kind: "expense",
+      status: "active",
+    },
   };
 }
 
