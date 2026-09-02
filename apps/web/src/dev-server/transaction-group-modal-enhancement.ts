@@ -73,7 +73,7 @@ export function enhanceTransactionGroupModal(html: string): string {
           edit: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 20h4.8L19.2 9.6a2.7 2.7 0 0 0 0-3.8l-1-1a2.7 2.7 0 0 0-3.8 0L4 15.2V20zm2-2v-2l9.8-9.8c.3-.3.7-.3 1 0l1 1c.3.3.3.7 0 1L8 18H6z" fill="currentColor"/></svg>',
           trash: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
           check: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-          ungroup: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8.5 15.5 6 18a3 3 0 0 1-4-4l4-4a3 3 0 0 1 4 0M15.5 8.5 18 6a3 3 0 0 1 4 4l-4 4a3 3 0 0 1-4 0M9 15l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
+          ungroup: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8.5 15.5 6 18a3 3 0 0 1-4-4l4-4a3 3 0 0 1 4 0M15.5 8.5 18 6a3 3 0 0 1 4 4l-4 4a3 3 0 0 1-4 0M9 15l6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         };
 
         const effectiveField = readonlyField("Valor efetivo", "group-effective-input");
