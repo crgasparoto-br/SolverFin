@@ -172,10 +172,9 @@ async function readInvoiceTotal(invoiceId: string): Promise<number> {
 }
 
 async function readInvoiceStatus(invoiceId: string): Promise<string> {
-  const rows = await query<{ status: string }>(
-    `select "status" from "Invoice" where "id" = $1`,
-    [invoiceId],
-  );
+  const rows = await query<{ status: string }>(`select "status" from "Invoice" where "id" = $1`, [
+    invoiceId,
+  ]);
   const row = rows[0];
   assert.ok(row, `Expected invoice ${invoiceId}.`);
   return row.status;
