@@ -10,82 +10,88 @@ afterEach(() => {
 });
 
 describe("issue 611 reports analysis archetype", () => {
-  it("renders summary, visualization, highlights and detail for a 24-period multi-currency report", async () => {
-    const periods = buildPeriods(24);
-    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
-      const url = new URL(String(input));
-      if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
-      if (url.pathname === "/api/credit-card-accounts") {
-        return jsonResponse({ creditCardAccounts: [] });
-      }
-      assert.equal(url.pathname, "/api/reports/category-evolution");
-      assert.equal(url.searchParams.get("periods"), "24");
-      return jsonResponse({
-        report: {
-          interval: "monthly",
-          start: "2024-08",
-          periodCount: 24,
-          periods,
-          currencyBlocks: [
-            categoryBlock("BRL", periods.length, 100000, 45000),
-            categoryBlock("USD", periods.length, 50000, 20000),
-          ],
-        },
-      });
-    };
-
-    const html = await renderReportsRoutePage(
-      "token",
-      new URL(
-        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2024-08&periods=24",
-      ),
-      new Date("2026-07-31T12:00:00.000Z"),
-    );
-
-    assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
-    assert.match(html, /data-currency="BRL"/);
-    assert.match(html, /data-currency="USD"/);
-    assert.equal((html.match(/class="evolution-table"/g) ?? []).length, 2);
-    assert.match(html, /tabindex="0" aria-label="Matriz de evolução em BRL"/);
-
-    const summary = html.indexOf('data-analysis-layer="summary"');
-    const visualization = html.indexOf('data-analysis-layer="visualization"');
-    const highlights = html.indexOf('data-analysis-layer="highlights"');
-    const detail = html.indexOf('data-analysis-layer="detail"');
-    assert.ok(summary >= 0 && summary < visualization);
-    assert.ok(visualization < highlights);
-    assert.ok(highlights < detail);
-  });
-
-  it("keeps installment summaries separated by currency and uses semantic detail tables", async () => {
-    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
-      const url = new URL(String(input));
-      if (url.pathname === "/api/installments") {
+  it(
+    "renders summary, visualization, highlights and detail for a 24-period multi-currency report",
+    async () => {
+      const periods = buildPeriods(24);
+      globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+        const url = new URL(String(input));
+        if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+        if (url.pathname === "/api/credit-card-accounts") {
+          return jsonResponse({ creditCardAccounts: [] });
+        }
+        assert.equal(url.pathname, "/api/reports/category-evolution");
+        assert.equal(url.searchParams.get("periods"), "24");
         return jsonResponse({
-          installments: [
-            installment("brl", "BRL", 10000),
-            installment("usd", "USD", 5000),
-          ],
+          report: {
+            interval: "monthly",
+            start: "2024-08",
+            periodCount: 24,
+            periods,
+            currencyBlocks: [
+              categoryBlock("BRL", periods.length, 100000, 45000),
+              categoryBlock("USD", periods.length, 50000, 20000),
+            ],
+          },
         });
-      }
-      if (url.pathname === "/api/cards") return jsonResponse({ cards: [] });
-      if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
-      return jsonResponse({});
-    };
+      };
 
-    const html = await renderReportsRoutePage(
-      "token",
-      new URL("http://localhost/relatorios?view=installments&month=2026-07"),
-    );
+      const html = await renderReportsRoutePage(
+        "token",
+        new URL(
+          "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2024-08&periods=24",
+        ),
+        new Date("2026-07-31T12:00:00.000Z"),
+      );
 
-    assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
-    assert.match(html, /data-currency="BRL"/);
-    assert.match(html, /data-currency="USD"/);
-    assert.equal((html.match(/<table class="sf-table">/g) ?? []).length, 2);
-    assert.match(html, /<th scope="col"[^>]*>Valor<\/th>/);
-    assert.match(html, /data-money-availability="available"/);
-    assert.doesNotMatch(html, /data-currency="BRL"[^]*19\.500/);
-  });
+      assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
+      assert.match(html, /data-currency="BRL"/);
+      assert.match(html, /data-currency="USD"/);
+      assert.equal((html.match(/class="evolution-table"/g) ?? []).length, 2);
+      assert.match(html, /tabindex="0" aria-label="Matriz de evolução em BRL"/);
+
+      const summary = html.indexOf('data-analysis-layer="summary"');
+      const visualization = html.indexOf('data-analysis-layer="visualization"');
+      const highlights = html.indexOf('data-analysis-layer="highlights"');
+      const detail = html.indexOf('data-analysis-layer="detail"');
+      assert.ok(summary >= 0 && summary < visualization);
+      assert.ok(visualization < highlights);
+      assert.ok(highlights < detail);
+    },
+  );
+
+  it(
+    "keeps installment summaries separated by currency and uses semantic detail tables",
+    async () => {
+      globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+        const url = new URL(String(input));
+        if (url.pathname === "/api/installments") {
+          return jsonResponse({
+            installments: [
+              installment("brl", "BRL", 10000),
+              installment("usd", "USD", 5000),
+            ],
+          });
+        }
+        if (url.pathname === "/api/cards") return jsonResponse({ cards: [] });
+        if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+        return jsonResponse({});
+      };
+
+      const html = await renderReportsRoutePage(
+        "token",
+        new URL("http://localhost/relatorios?view=installments&month=2026-07"),
+      );
+
+      assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
+      assert.match(html, /data-currency="BRL"/);
+      assert.match(html, /data-currency="USD"/);
+      assert.equal((html.match(/<table class="sf-table">/g) ?? []).length, 2);
+      assert.match(html, /<th scope="col"[^>]*>Valor<\/th>/);
+      assert.match(html, /data-money-availability="available"/);
+      assert.doesNotMatch(html, /data-currency="BRL"[^]*19\.500/);
+    },
+  );
 });
 
 function categoryBlock(
