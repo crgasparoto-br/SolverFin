@@ -74,20 +74,19 @@ export function renderAnalysisSummaryGrid(
   const itemClassName = options.itemClassName
     ? `report-summary-metric ${options.itemClassName}`
     : "report-summary-metric";
-  const grid = renderSummaryGrid({
-    childrenHtml: items
-      .map((item) => {
-        const secondary = item.secondaryHtml
-          ? `<div class="report-summary-secondary">${item.secondaryHtml}</div>`
-          : "";
-        return `<article class="${renderText(itemClassName)}" data-tone="${item.tone ?? "neutral"}"><span>${renderText(item.label)}</span><strong>${item.primaryHtml}</strong>${secondary}</article>`;
-      })
-      .join(""),
-  });
+  const childrenHtml = items
+    .map((item) => {
+      const secondary = item.secondaryHtml
+        ? `<div class="report-summary-secondary">${item.secondaryHtml}</div>`
+        : "";
+      return `<article class="${renderText(itemClassName)}" data-tone="${item.tone ?? "neutral"}"><span>${renderText(item.label)}</span><strong>${item.primaryHtml}</strong>${secondary}</article>`;
+    })
+    .join("");
 
-  return options.wrapperClassName
-    ? `<div class="${renderText(options.wrapperClassName)}">${grid}</div>`
-    : grid;
+  if (options.wrapperClassName) {
+    return `<div class="sf-summary-grid ${renderText(options.wrapperClassName)}">${childrenHtml}</div>`;
+  }
+  return renderSummaryGrid({ childrenHtml });
 }
 
 export function renderResultTrend(points: readonly TrendPoint[]): string {
