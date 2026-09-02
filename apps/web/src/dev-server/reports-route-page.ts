@@ -1,6 +1,11 @@
-import { formatMinorCurrency } from "@solverfin/shared";
-
+import { renderMoney } from "../design-system/money.js";
 import { apiGet } from "./api.js";
+import {
+  renderAnalysisHighlights,
+  renderReportAnalysisBlock,
+  renderResultTrend,
+} from "./reports-analysis-archetype.js";
+import { buildCategoryEvolutionAnalysisViewModel } from "./reports-analysis-view-model.js";
 import { renderCategoryEvolutionRuntime } from "./reports-category-evolution-runtime.js";
 import { renderInstallmentsView } from "./reports-installments-view.js";
 import {
@@ -266,10 +271,70 @@ async function renderCategoryEvolutionView(
       navigation +
       form +
       `<div data-report-state="ready" class="currency-report-list">${report.currencyBlocks
-        .map((block, blockIndex) => renderCurrencyMatrix(report, block, blockIndex))
+        .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex))
         .join("")}</div>` +
       renderCategoryEvolutionRuntime(),
   );
+}
+
+function renderCategoryEvolutionAnalysis(
+  report: CategoryEvolutionReport,
+  block: CategoryEvolutionReport["currencyBlocks"][number],
+  blockIndex: number,
+): string {
+  const analysis = buildCategoryEvolutionAnalysisViewModel(report, block);
+  return renderReportAnalysisBlock({
+    id: `category-analysis-${blockIndex}-${safeId(analysis.currency)}`,
+    currency: analysis.currency,
+    periodCount: analysis.periodCount,
+    summaryItems: [
+      {
+        label: "Receitas",
+        primaryHtml: renderMoney({ amountMinor: analysis.summary.incomeMinor, currency: analysis.currency }),
+        tone: "positive",
+      },
+      {
+        label: "Despesas",
+        primaryHtml: renderMoney({ amountMinor: analysis.summary.expenseMinor, currency: analysis.currency }),
+        tone: "negative",
+      },
+      {
+        label: "Resultado",
+        primaryHtml: renderMoney({ amountMinor: analysis.summary.resultMinor, currency: analysis.currency }),
+        tone: analysis.summary.resultMinor < 0 ? "negative" : "information",
+      },
+      {
+        label: "Resultado médio",
+        primaryHtml: renderMoney({
+          amountMinor: analysis.summary.averageResultMinor,
+          currency: analysis.currency,
+        }),
+        tone: "neutral",
+      },
+    ],
+    visualizationTitle: "Resultado ao longo do tempo",
+    visualizationHtml: renderResultTrend(
+      analysis.trend.map((point) => ({ ...point, currency: analysis.currency })),
+    ),
+    highlightsHtml: renderAnalysisHighlights({
+      currency: analysis.currency,
+      best: analysis.highlights.bestPeriod
+        ? {
+            label: analysis.highlights.bestPeriod.accessibleLabel,
+            amountMinor: analysis.highlights.bestPeriod.amountMinor,
+          }
+        : undefined,
+      lowest: analysis.highlights.lowestPeriod
+        ? {
+            label: analysis.highlights.lowestPeriod.accessibleLabel,
+            amountMinor: analysis.highlights.lowestPeriod.amountMinor,
+          }
+        : undefined,
+      negativePeriodCount: analysis.highlights.negativePeriodCount,
+    }),
+    detailTitle: "Matriz por categoria",
+    detailHtml: renderCurrencyMatrix(report, block, blockIndex),
+  });
 }
 
 function renderEvolutionFilterForm(
@@ -390,13 +455,10 @@ function renderCurrencyMatrix(
   const expenseRows = expenseBranches.map((branch) => branch.html).join("");
   const incomeRowIds = incomeBranches.flatMap((branch) => branch.rowIds);
   const expenseRowIds = expenseBranches.flatMap((branch) => branch.rowIds);
-  const currencyId = `currency-${blockIndex}-${safeId(block.currency)}`;
   const incomeToggle = renderTreeToggle(incomeSectionId, "receitas", incomeRowIds, "income");
   const expenseToggle = renderTreeToggle(expenseSectionId, "despesas", expenseRowIds, "expense");
 
-  return `
-    <section class="panel evolution-block" aria-labelledby="${currencyId}">
-      <div class="section-heading"><div><p class="eyebrow">Moeda</p><h2 id="${currencyId}">${escapeHtml(block.currency)}</h2></div><span>${report.periodCount} período${report.periodCount === 1 ? "" : "s"}</span></div>
+  return `<div class="evolution-block">
       <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução em ${escapeHtml(block.currency)}">
         <table class="evolution-table" data-category-tree="${blockIndex}">
           <thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods
@@ -419,7 +481,7 @@ function renderCurrencyMatrix(
           </tbody>
         </table>
       </div>
-    </section>`;
+    </div>`;
 }
 
 function renderPeriodHeader(period: CategoryEvolutionReport["periods"][number]): string {
@@ -541,7 +603,7 @@ function renderValueCell(
   const presentedAmount = kind === "expense" ? -Math.abs(amountMinor) : amountMinor;
   const normalized = Object.is(presentedAmount, -0) ? 0 : presentedAmount;
   const negativeResult = kind === "result" && normalized < 0;
-  return `<td${negativeResult ? ' class="report-value-negative" data-negative-value="true"' : ""}><strong>${escapeHtml(formatMinorCurrency(normalized, { currency }))}</strong><span>${percentage === null ? "—" : `${formatPercentage(percentage)}%`}</span></td>`;
+  return `<td${negativeResult ? ' class="report-value-negative" data-negative-value="true"' : ""}><strong>${renderMoney({ amountMinor: normalized, currency })}</strong><span>${percentage === null ? "—" : `${formatPercentage(percentage)}%`}</span></td>`;
 }
 
 function formatPercentage(value: number): string {
