@@ -59,7 +59,11 @@ async function cardsA3FailsClosedWhenFinancialActionDependenciesCannotLoad(): Pr
 
     const html = await renderCardsPageV2("session-token", selectedInvoiceUrl());
 
-    assert.match(html, /data-cards-load-error/, `${scenario.path} deve renderizar erro explícito`);
+    assert.match(
+      html,
+      /data-cards-load-error/,
+      `${scenario.path} deve renderizar erro explícito`,
+    );
     assert.match(html, new RegExp(scenario.message));
     assert.doesNotMatch(html, /Nenhuma compra encontrada/);
   }
@@ -88,7 +92,10 @@ async function cardsA3PreservesProfileAcrossInvoiceNavigation(): Promise<void> {
   );
 
   assert.match(html, /name="profileId" value="profile-explicit"/);
-  assert.match(html, /invoiceId=invoice-jul[^\"]*profileId=profile-explicit|profileId=profile-explicit[^\"]*invoiceId=invoice-jul/);
+  assert.match(
+    html,
+    /invoiceId=invoice-jul[^\"]*profileId=profile-explicit|profileId=profile-explicit[^\"]*invoiceId=invoice-jul/,
+  );
   assert.match(
     html,
     /data-reconciliation-toggle="unreconciled" aria-current="page"/,
@@ -102,10 +109,12 @@ function selectedInvoiceUrl(): URL {
   );
 }
 
-function createCardsFetchMock(input: {
-  failurePath?: string;
-  failureMessage?: string;
-} = {}): typeof fetch {
+function createCardsFetchMock(
+  input: {
+    failurePath?: string;
+    failureMessage?: string;
+  } = {},
+): typeof fetch {
   return async (request: string | URL | Request): Promise<Response> => {
     const url = new URL(String(request));
     if (url.pathname === input.failurePath) {
@@ -161,8 +170,18 @@ function createCardsFetchMock(input: {
     if (url.pathname === "/api/accounts") {
       return jsonResponse({
         accounts: [
-          { id: "account-usd", name: "Conta Dólar", status: "active", currency: "USD" },
-          { id: "account-brl", name: "Conta Real", status: "active", currency: "BRL" },
+          {
+            id: "account-usd",
+            name: "Conta Dólar",
+            status: "active",
+            currency: "USD",
+          },
+          {
+            id: "account-brl",
+            name: "Conta Real",
+            status: "active",
+            currency: "BRL",
+          },
         ],
       });
     }
