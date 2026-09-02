@@ -264,13 +264,15 @@ export function enhanceTransactionGroupModal(html: string): string {
           window.setTimeout(refreshModal, 0);
         });
 
+        modal.addEventListener("close", function () {
+          skipNextToggleRefresh = false;
+        });
+
         const nativeShowModal = modal.showModal.bind(modal);
         modal.showModal = function () {
+          const suppressRefresh = skipNextToggleRefresh;
           nativeShowModal();
-          if (skipNextToggleRefresh) {
-            skipNextToggleRefresh = false;
-            return;
-          }
+          if (suppressRefresh) return;
           window.setTimeout(refreshModal, 0);
         };
 
