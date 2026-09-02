@@ -137,7 +137,11 @@ try {
     })()`,
   );
   assert.equal(activation.clickObserved, true, "Enter did not produce the native button click.");
-  assert.equal(activation.processingObserved, true, "The processing state was not announced after keyboard activation.");
+  assert.equal(
+    activation.processingObserved,
+    true,
+    "The processing state was not announced after keyboard activation.",
+  );
   assert.equal(activation.processingAriaBusy, "true");
   assert.equal(activation.processingStatus, "Processando...");
   assert.equal(activation.processingActionsDisabled, true);
