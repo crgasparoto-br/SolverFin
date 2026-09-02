@@ -40,8 +40,16 @@ export interface CategoryEvolutionAnalysisViewModel {
     amountMinor: number;
   }>;
   highlights: {
-    bestPeriod?: { label: string; accessibleLabel: string; amountMinor: number };
-    lowestPeriod?: { label: string; accessibleLabel: string; amountMinor: number };
+    bestPeriod?: {
+      label: string;
+      accessibleLabel: string;
+      amountMinor: number;
+    };
+    lowestPeriod?: {
+      label: string;
+      accessibleLabel: string;
+      amountMinor: number;
+    };
     negativePeriodCount: number;
   };
 }
@@ -56,7 +64,8 @@ export function buildCategoryEvolutionAnalysisViewModel(
     amountMinor: block.result.cells[index]?.amountMinor ?? 0,
   }));
   const bestPeriod = trend.reduce<(typeof trend)[number] | undefined>(
-    (best, item) => (best === undefined || item.amountMinor > best.amountMinor ? item : best),
+    (best, item) =>
+      best === undefined || item.amountMinor > best.amountMinor ? item : best,
     undefined,
   );
   const lowestPeriod = trend.reduce<(typeof trend)[number] | undefined>(
@@ -144,9 +153,17 @@ export function buildInstallmentAnalysisViewModel<T extends InstallmentAnalysisI
       items: currencyItems.slice(),
       summary: summarizeInstallments(currencyItems, today),
       groups: {
-        months: aggregateBy(currencyItems, (item) => formatMonth(item.dueOn.slice(0, 7))),
-        cards: aggregateBy(currencyItems, (item) => item.card?.name ?? "Sem cartão informado"),
-        categories: aggregateBy(currencyItems, (item) => item.category?.name ?? "Sem categoria"),
+        months: aggregateBy(currencyItems, (item) =>
+          formatMonth(item.dueOn.slice(0, 7)),
+        ),
+        cards: aggregateBy(
+          currencyItems,
+          (item) => item.card?.name ?? "Sem cartão informado",
+        ),
+        categories: aggregateBy(
+          currencyItems,
+          (item) => item.category?.name ?? "Sem categoria",
+        ),
       },
     }));
 }
@@ -157,11 +174,13 @@ function summarizeInstallments(
 ): InstallmentSummaryViewModel {
   return installments.reduce<InstallmentSummaryViewModel>(
     (summary, installment) => {
-      const amountMinor = installment.status === "cancelled" ? 0 : installment.amountMinor;
+      const amountMinor =
+        installment.status === "cancelled" ? 0 : installment.amountMinor;
       const postedClosed = isPostedOrClosed(installment);
       const plannedOpen = installment.status === "planned" && !postedClosed;
       const overdue = plannedOpen && installment.dueOn < today;
-      const future = installment.status !== "cancelled" && installment.dueOn > today;
+      const future =
+        installment.status !== "cancelled" && installment.dueOn > today;
 
       if (installment.status !== "cancelled") {
         summary.activeCount += 1;
@@ -222,18 +241,24 @@ function aggregateBy<T extends InstallmentAnalysisItem>(
     const label = labelFor(installment);
     const current = groups.get(label) ?? { label, count: 0, amountMinor: 0 };
     current.count += 1;
-    if (installment.status !== "cancelled") current.amountMinor += installment.amountMinor;
+    if (installment.status !== "cancelled") {
+      current.amountMinor += installment.amountMinor;
+    }
     groups.set(label, current);
   }
   return Array.from(groups.values()).sort(
-    (left, right) => right.amountMinor - left.amountMinor || left.label.localeCompare(right.label, "pt-BR"),
+    (left, right) =>
+      right.amountMinor - left.amountMinor ||
+      left.label.localeCompare(right.label, "pt-BR"),
   );
 }
 
 function normalizeCurrency(currency: string): string {
   const normalized = currency.trim().toUpperCase();
   if (!/^[A-Z]{3}$/.test(normalized)) {
-    throw new TypeError("Report analysis requires an explicit three-letter currency code.");
+    throw new TypeError(
+      "Report analysis requires an explicit three-letter currency code.",
+    );
   }
   return normalized;
 }
