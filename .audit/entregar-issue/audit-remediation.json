@@ -1,1 +1,30 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","status":"closed","remediation_mode":"targeted-remediation","candidate_head_sha":"4c47a2db603ffc7a5cfe13a1b86c8c59ba6841ab","source":{"rejection_id":"audit-rejection:609-post-write-refreeze-4c47a2d","audited_head_sha":"4c47a2db603ffc7a5cfe13a1b86c8c59ba6841ab","audit_report_sha256":"a371be7facb6bdd1645b6cfa9bcf2e1de1aea8640d0618557ba63fd3cce5c7eb"},"items":[]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
+    "audited_head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
+    "audit_report_sha256": "6528b4a35ab56a88cc3a054237411e4c77d809e9bf258d66f95869833be11a3b"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "HANDOFF-INHERITED-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "evidence": [
+        "The Issue 609 / PR 649 audit package is classified as inherited-base-artifact and is not reused as evidence for the current target.",
+        "A fresh Issue 610 / PR 650 specification snapshot, requirement closure, standard evidence and handoff certificate are generated for the frozen material head."
+      ],
+      "validations": [
+        "classify_handoff_recovery returns fresh-handoff-required for inherited-base-artifact.",
+        "Canonical specification coverage and standard evidence validators pass for the current package.",
+        "Terminal handoff guard is required before the PR is returned to independent audit."
+      ]
+    }
+  ]
+}

@@ -1,1 +1,20 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","mode":"independent","repository":"crgasparoto-br/SolverFin","issue_number":609,"pull_request_number":649,"head_sha":"4c47a2db603ffc7a5cfe13a1b86c8c59ba6841ab","published_handoff_head_sha":"b95007659cd40118898446c7f05f6008515a0175","rejection_id":"audit-rejection:609-post-write-refreeze-4c47a2d","findings":[],"recommendations":[],"recovery":{"reason":"material write occurred after the prior freeze","recovery_scope":"post-write-refreeze","requires_refreeze":true}}
+{
+  "schema_version": 1,
+  "status": "rejected",
+  "result": "REPROVADA",
+  "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
+  "head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
+  "findings": [
+    {
+      "id": "HANDOFF-INHERITED-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "reason": "The delivery handoff present at the audited head was inherited from the base and identified Issue 609 / PR 649 instead of the current target.",
+      "recovery_scope": "fresh-handoff-required",
+      "requires_refreeze": false
+    }
+  ],
+  "recommendations": []
+}

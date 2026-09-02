@@ -1,1 +1,146 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","head_sha":"4c47a2db603ffc7a5cfe13a1b86c8c59ba6841ab","requirements":[{"requirement_id":"REQ-001","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-001-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-002","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-002-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-003","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-003-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-004","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-004-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-005","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-005-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-006","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-006-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-007","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-007-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-008","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-008-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-009","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-009-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-010","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-010-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-011","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-011-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-012","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-012-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-013","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-013-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-014","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-014-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]},{"requirement_id":"REQ-015","positive_evidence":["CI 33518843327 and visual 33518843394 passed on exact head."],"primary_negative_control":{"id":"REQ-015-NEG","status":"passed","procedure":"Run the existing requirement regression control.","expected":"Regression is rejected.","observed":"Exact-head CI/visual gates passed."},"regression_evidence":["No product-code write followed the green gates."]}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235",
+  "requirements": [
+    {
+      "requirement_id": "REQ-610-01",
+      "positive_evidence": [
+        "apps/web/src/dev-server/cards-page-v2.test.ts at blob 91d0b3fe8f76b147d1f2c3d9e3db93447fbfda88 asserts data-cards-archetype=A3, sf-detail-layout, selected card, selected invoice and invoice items.",
+        "Statement visual validation run 33576900097 completed successfully on material head fbe7e5c77f1ba59f92fde4fc8be368bcaa330235."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-610-01",
+        "status": "passed",
+        "procedure": "Exercise the cards renderer and verify the hierarchy markers for card master, selected invoice, and invoice purchase detail are all present in one render.",
+        "expected": "A flattened or legacy-composed page would fail at least one hierarchy marker.",
+        "observed": "The exact-head renderer exposes A3 master-detail markers and the Chrome visual workflow passed."
+      },
+      "regression_evidence": [
+        "CI run 33576900061 completed successfully with typecheck, test and build on the material head."
+      ]
+    },
+    {
+      "requirement_id": "REQ-610-02",
+      "positive_evidence": [
+        "cards-page-v2.ts renders the selected invoice summary with closing date, due date, amount due and card limit totals in the detail context.",
+        "cards-interface-adversarial.mjs verifies invoice summary and the primary purchase action are visible at 1366x768; visual run 33576900097 passed."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-610-02",
+        "status": "passed",
+        "procedure": "Render a selected invoice and inspect whether summary and primary action remain visible in the detail panel at the compact desktop viewport.",
+        "expected": "Summary or primary action hidden or displaced would fail the control.",
+        "observed": "The visual exact-head run completed with summary and primary action visibility assertions passing."
+      },
+      "regression_evidence": [
+        "cards-page-v2.test.ts validates the selected invoice context and explicit fatura section."
+      ]
+    },
+    {
+      "requirement_id": "REQ-610-03",
+      "positive_evidence": [
+        "cards-page-v2.test.ts asserts invoice navigation links and the native month input.",
+        "issue-610-cards-semantic-interactions.mjs validates desktop 1440x900 and mobile 390x844 layouts.",
+        "cards-interface-adversarial.mjs verifies Enter/Escape keyboard operation and focus restoration for interactive card controls."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-610-03",
+        "status": "passed",
+        "procedure": "Operate the invoice/card controls at desktop and mobile widths and activate keyboard-driven menus/modals with Enter and Escape.",
+        "expected": "Horizontal overflow, inaccessible controls, failed keyboard activation, or lost focus would fail the control.",
+        "observed": "Chrome visual run 33576900097 completed successfully with desktop/mobile and keyboard assertions."
+      },
+      "regression_evidence": [
+        "CI and Statement visual validation both succeeded on fbe7e5c77f1ba59f92fde4fc8be368bcaa330235."
+      ]
+    },
+    {
+      "requirement_id": "REQ-610-04",
+      "positive_evidence": [
+        "cards-page-v2.test.ts proves recurrences are fetched before invoice purchases and renders physical/virtual instrument groups plus purchase rows.",
+        "issue-610-cards-semantic-interactions.mjs verifies purchase rows, instrument groups, and instrument subtotals inside the invoice context."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-610-04",
+        "status": "passed",
+        "procedure": "Render a selected invoice with multiple instruments and recurrence materialization, then compare instrument grouping and purchase totals.",
+        "expected": "Missing recurrence materialization, purchases outside the invoice context, or inconsistent instrument subtotals would fail.",
+        "observed": "The unit contract and exact-head Chrome scenario both passed."
+      },
+      "regression_evidence": [
+        "cards-page-v2.test.ts asserts Hotel, Taxi and Coffee purchases within the selected invoice."
+      ]
+    },
+    {
+      "requirement_id": "REQ-610-05",
+      "positive_evidence": [
+        "cards-page-v2.test.ts asserts separate Registrar compra, Fechar fatura and Liquidar fatura flows and the text that settlement is not a new purchase.",
+        "cards-interface-adversarial.mjs asserts the settlement copy contains that settlement is not a new purchase."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-610-05",
+        "status": "passed",
+        "procedure": "Render an open invoice and inspect the economic-action labels and settlement endpoint semantics.",
+        "expected": "If settlement were presented as another purchase or the actions were conflated, the control would fail.",
+        "observed": "Separate purchase, close, and settlement actions are present and the exact-head Chrome assertion passed."
+      },
+      "regression_evidence": [
+        "CI run 33576900061 passed the route contract tests and build."
+      ]
+    },
+    {
+      "requirement_id": "REQ-610-06",
+      "positive_evidence": [
+        "cards-page-v2.test.ts renders USD explicitly for invoice and purchases, passes USD through forms, includes Conta Dolar USD and excludes Conta Real BRL from settlement.",
+        "cards-interface-adversarial.mjs asserts every rendered .sf-money value has a non-empty data-currency."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-610-06",
+        "status": "passed",
+        "procedure": "Use an invoice in USD alongside USD and BRL accounts and verify only same-currency settlement accounts are eligible while every money value carries currency.",
+        "expected": "A silent BRL fallback, missing currency label, or cross-currency settlement account would fail.",
+        "observed": "The USD fixture excludes the BRL account and all Money nodes carry explicit currency in the passed exact-head validations."
+      },
+      "regression_evidence": [
+        "Statement visual validation 33576900097 succeeded on the material head."
+      ]
+    },
+    {
+      "requirement_id": "REQ-610-07",
+      "positive_evidence": [
+        "cards-page-v2.test.ts validates an explicit empty-card state and avoids card-scoped requests when no card exists.",
+        "cards-page-v2.ts returns an explicit role=alert error page with retry when card or invoice loading fails.",
+        "The SSR renderer awaits page-critical API results before emitting the final document, so initial data loading does not expose a partial client-side page state."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-610-07",
+        "status": "passed",
+        "procedure": "Exercise no-card and failed-card/invoice fetch branches and inspect whether the page either renders a complete empty state or a complete retryable error instead of partial card-scoped UI.",
+        "expected": "Partial stale UI, hidden failure, or card-scoped requests from the empty state would fail.",
+        "observed": "The empty-state contract passes, the error branch is explicit in the exact-head renderer, and no standalone partial-loading markup is emitted by the SSR path."
+      },
+      "regression_evidence": [
+        "CI run 33576900061 completed formatting, lint, typecheck, test and build successfully."
+      ]
+    },
+    {
+      "requirement_id": "REQ-610-08",
+      "positive_evidence": [
+        "legacy-html-post-processors.test.ts at blob d0243ece36f2dbebc69fe07ebd332f02b974da44 asserts budget 5 and that /cartoes is absent from the legacy HTML inventory.",
+        "docs/LEGACY_HTML_POST_PROCESSORS.md records retirement of card-list-sorting, card-instrument-subtotals, cards-interface and cards-interface-finalizer from the served /cartoes path.",
+        "apps/web/src/dev-server.ts routes /cartoes directly to cards-page-v2.ts according to PR #650 material diff."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-610-08",
+        "status": "passed",
+        "procedure": "Run the canonical legacy inventory guard and reject any reintroduction of /cartoes into the legacy HTML post-processing inventory.",
+        "expected": "Any replaced /cartoes adapter reintroduced into the served pipeline would fail the inventory/budget guard.",
+        "observed": "The guard passed in CI run 33576900061 and the budget is reduced from 9 to 5."
+      },
+      "regression_evidence": [
+        "Statement visual validation 33576900097 passed behavior coverage after the legacy adapter retirement."
+      ]
+    }
+  ]
+}

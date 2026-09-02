@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-DELIVERY-TARGET-BINDING-001",
+      "status": "passed",
+      "escape_class": "delivery-target-binding",
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
+        "finding_ids": [
+          "HANDOFF-INHERITED-001"
+        ],
+        "audit_report_sha256": "6528b4a35ab56a88cc3a054237411e4c77d809e9bf258d66f95869833be11a3b"
+      },
+      "plausible_wrong_implementation": "Treat a handoff inherited from a base branch as readiness for a different delivery merely because the artifact file exists and is internally valid.",
+      "literal_case": {
+        "status": "passed",
+        "observed": "The inherited foreign package is excluded from reuse and the current delivery package is rebuilt from the current issue source for the exact material head."
+      },
+      "sibling_cases": [
+        {
+          "id": "SIB-INHERITED-BASE",
+          "status": "passed",
+          "evidence": "A foreign subject that is byte-identical to the base is classified as inherited-base-artifact and cannot be reused."
+        },
+        {
+          "id": "SIB-FOREIGN-HEAD",
+          "status": "passed",
+          "evidence": "A foreign subject changed on the working head remains foreign-target and cannot activate a handoff-only fast path."
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "The current package is regenerated from the canonical current issue source and binds repository, issue, PR, branch, base and material SHA explicitly."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "Target binding and the terminal handoff guard must both pass before the candidate can be returned to an independent auditor."
+        ]
+      },
+      "revalidated_head_sha": "fbe7e5c77f1ba59f92fde4fc8be368bcaa330235"
+    }
+  ]
+}

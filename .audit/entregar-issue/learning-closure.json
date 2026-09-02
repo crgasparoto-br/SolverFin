@@ -1,1 +1,17 @@
-{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:609-post-write-refreeze-4c47a2d","audit_report_sha256":"a371be7facb6bdd1645b6cfa9bcf2e1de1aea8640d0618557ba63fd3cce5c7eb","finding_ids":[]},"generalized_learning":{"promotion_status":"not-required","reason":"The rejection is a terminal delivery-state mismatch after a material post-freeze write. Existing handoff invariants already require post-write refreeze; no new global rule is needed."},"skill_changes":[]}
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:pr650-fbe7e5c7-inherited-handoff",
+    "audit_report_sha256": "6528b4a35ab56a88cc3a054237411e4c77d809e9bf258d66f95869833be11a3b",
+    "finding_ids": [
+      "HANDOFF-INHERITED-001"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The controller already has a generic delivery-target binding rule that forbids reuse of inherited foreign handoff artifacts; this rejection is the concrete delivery instance to remediate, not a missing global control."
+  },
+  "skill_changes": []
+}
