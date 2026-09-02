@@ -1,7 +1,7 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { renderMoney } from "../design-system/money.js";
-import { renderAlert, renderDataTable, renderText } from "../design-system/primitives.js";
+import { renderAlert, renderText } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import {
   renderReportAnalysisBlock,
@@ -227,6 +227,8 @@ function renderInstallmentCurrencyBlock(
     currency: block.currency,
     periodCount: 1,
     summaryItems,
+    summaryWrapperClassName: "summary-grid",
+    summaryItemClassName: "metric-card",
     visualizationTitle: `Distribuição de ${formatMonthYear(filters.month)}`,
     visualizationHtml: renderInstallmentDistribution(block),
     highlightsHtml: renderInstallmentHighlights(block),
@@ -255,15 +257,15 @@ function renderInstallmentDistribution(
 ): string {
   return `<div class="report-grid" aria-label="Agrupamentos de parcelas em ${escapeHtml(block.currency)}">
       <section class="panel report-results">
-        <div class="section-heading"><h4>Comprometimento por mês</h4><span>${block.summary.activeCount} parcelas</span></div>
+        <div class="section-heading"><h2>Comprometimento por mês</h2><span>${block.summary.activeCount} parcelas</span></div>
         ${renderAggregateRows(block.groups.months, "month", block.currency)}
       </section>
       <section class="panel report-results">
-        <div class="section-heading"><h4>Por cartão</h4><span>${block.summary.activeCount} parcelas</span></div>
+        <div class="section-heading"><h2>Por cartão</h2><span>${block.summary.activeCount} parcelas</span></div>
         ${renderAggregateRows(block.groups.cards, "card", block.currency)}
       </section>
       <section class="panel report-results">
-        <div class="section-heading"><h4>Por categoria</h4><span>${block.summary.activeCount} parcelas</span></div>
+        <div class="section-heading"><h2>Por categoria</h2><span>${block.summary.activeCount} parcelas</span></div>
         ${renderAggregateRows(block.groups.categories, "category", block.currency)}
       </section>
     </div>`;
@@ -281,12 +283,14 @@ function renderInstallmentHighlights(
       ? renderAlert({
           tone: "attention",
           title: `${block.summary.overdueCount} parcela${block.summary.overdueCount === 1 ? "" : "s"} vencida${block.summary.overdueCount === 1 ? "" : "s"}`,
-          description: "Revise as parcelas vencidas no detalhe antes de alterar o planejamento.",
+          description:
+            "Revise as parcelas vencidas no detalhe antes de alterar o planejamento.",
         })
       : renderAlert({
           tone: "positive",
           title: "Nenhuma parcela vencida neste recorte",
-          description: "O detalhe abaixo mantém as parcelas futuras, postadas e canceladas identificáveis.",
+          description:
+            "O detalhe abaixo mantém as parcelas futuras, postadas e canceladas identificáveis.",
         });
   return `<div class="report-highlights-grid">${highlight}</div>${alert}`;
 }
@@ -295,51 +299,28 @@ function renderInstallmentDetail(
   block: InstallmentCurrencyViewModel<InstallmentRecord>,
 ): string {
   const countLabel = `${block.items.length} registro${block.items.length === 1 ? "" : "s"}`;
-  return `<div class="section-heading report-detail-count"><span>${countLabel}</span></div>${renderDataTable({
-    caption: `Parcelas do relatório em ${block.currency}`,
-    rows: block.items,
-    rowKey: (item) => item.id,
-    columns: [
-      {
-        id: "dueOn",
-        header: "Vencimento",
-        renderCell: (item) =>
-          `<time datetime="${escapeHtml(item.dueOn)}">${escapeHtml(formatDateOnly(item.dueOn))}</time>`,
-      },
-      {
-        id: "installment",
-        header: "Parcela",
-        renderCell: (item) => `${item.sequenceNumber}/${item.totalInstallments}`,
-      },
-      {
-        id: "source",
-        header: "Origem",
-        renderCell: (item) =>
-          renderText(item.transaction?.description ?? item.recurrence?.description ?? "Parcela"),
-      },
-      {
-        id: "card",
-        header: "Cartão",
-        renderCell: (item) => renderText(item.card?.name ?? "Sem cartão"),
-      },
-      {
-        id: "category",
-        header: "Categoria",
-        renderCell: (item) => renderText(item.category?.name ?? "Sem categoria"),
-      },
-      {
-        id: "status",
-        header: "Status",
-        renderCell: (item) => renderText(installmentStatusLabel(item)),
-      },
-      {
-        id: "amount",
-        header: "Valor",
-        align: "end",
-        renderCell: (item) => renderMoney({ amountMinor: item.amountMinor, currency: block.currency }),
-      },
-    ],
-  })}`;
+  const rows = block.items
+    .map(
+      (item) => `<tr class="installment-table-row">
+        <td><time datetime="${escapeHtml(item.dueOn)}">${escapeHtml(formatDateOnly(item.dueOn))}</time></td>
+        <td>${item.sequenceNumber}/${item.totalInstallments}</td>
+        <td>${renderText(item.transaction?.description ?? item.recurrence?.description ?? "Parcela")}</td>
+        <td>${renderText(item.card?.name ?? "Sem cartão")}</td>
+        <td>${renderText(item.category?.name ?? "Sem categoria")}</td>
+        <td>${renderText(installmentStatusLabel(item))}</td>
+        <td>${renderMoney({ amountMinor: item.amountMinor, currency: block.currency })}</td>
+      </tr>`,
+    )
+    .join("");
+
+  return `<div class="section-heading report-detail-count"><span>${countLabel}</span></div>
+    <div class="installment-table" tabindex="0" aria-label="Parcelas do relatório em ${escapeHtml(block.currency)}">
+      <table>
+        <caption class="sr-only">Parcelas do relatório em ${escapeHtml(block.currency)}</caption>
+        <thead><tr><th scope="col">Vencimento</th><th scope="col">Parcela</th><th scope="col">Origem</th><th scope="col">Cartão</th><th scope="col">Categoria</th><th scope="col">Status</th><th scope="col">Valor</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
 }
 
 function renderAggregateRows(
@@ -356,7 +337,13 @@ function renderAggregateRows(
   const maxAmount = Math.max(1, ...rows.map((row) => Math.abs(row.amountMinor)));
   return `<div class="aggregate-list" data-aggregate-kind="${escapeHtml(kind)}">${rows
     .map((row) => {
-      const scale = row.amountMinor === 0 ? 0 : Math.max(4, Math.round((Math.abs(row.amountMinor) / maxAmount) * 100));
+      const scale =
+        row.amountMinor === 0
+          ? 0
+          : Math.max(
+              4,
+              Math.round((Math.abs(row.amountMinor) / maxAmount) * 100),
+            );
       return `<article class="aggregate-row"><div class="aggregate-copy"><strong>${escapeHtml(row.label)}</strong><span>${row.count} parcela${row.count === 1 ? "" : "s"}</span><span class="aggregate-bar" aria-hidden="true"><span style="--aggregate-size:${scale}%"></span></span></div><strong>${renderMoney({ amountMinor: row.amountMinor, currency })}</strong></article>`;
     })
     .join("")}</div>`;
