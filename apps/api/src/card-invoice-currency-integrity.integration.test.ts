@@ -7,12 +7,8 @@ import {
   closeInvoiceForContext,
   summarizeInvoiceForContext,
 } from "./repositories/card-invoice-contracts.js";
-import {
-  moveCardPurchaseInvoicePeriodForContext,
-} from "./repositories/card-purchase-invoice-period-move.js";
-import {
-  createCreditCardAccountForContext,
-} from "./repositories/card-instruments.js";
+import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
+import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import { registerCardPurchaseForContext } from "./repositories/cards.js";
 
 const CONTEXT: TenantContext = {
@@ -56,16 +52,8 @@ async function main(): Promise<void> {
 
   assert.ok(instrument, "Expected initial active instrument.");
 
-  await assertRejectsCrossCurrencyPurchaseWithoutWrites(
-    account.id,
-    instrument.id,
-    suffix,
-  );
-  await assertRejectsCrossCurrencyMoveWithoutWrites(
-    account.id,
-    instrument.id,
-    suffix,
-  );
+  await assertRejectsCrossCurrencyPurchaseWithoutWrites(account.id, instrument.id, suffix);
+  await assertRejectsCrossCurrencyMoveWithoutWrites(account.id, instrument.id, suffix);
   await assertHistoricalMismatchFailsClosed(account.id, instrument.id, suffix);
 }
 
@@ -98,10 +86,7 @@ async function assertRejectsCrossCurrencyPurchaseWithoutWrites(
 
   assert.equal(await readInvoiceTotal(baseline.invoice.id), beforeTotal);
   assert.equal(await countInvoicePurchases(baseline.invoice.id), beforeCount);
-  assert.equal(
-    await countTransactionsByDescription(`USD rejected ${suffix}`),
-    0,
-  );
+  assert.equal(await countTransactionsByDescription(`USD rejected ${suffix}`), 0);
 }
 
 async function assertRejectsCrossCurrencyMoveWithoutWrites(
@@ -124,9 +109,7 @@ async function assertRejectsCrossCurrencyMoveWithoutWrites(
     cardInstrumentId: instrumentId,
   });
 
-  await query(`update "Invoice" set "currency" = 'USD' where "id" = $1`, [
-    destination.invoice.id,
-  ]);
+  await query(`update "Invoice" set "currency" = 'USD' where "id" = $1`, [destination.invoice.id]);
 
   const originBefore = await readInvoiceTotal(origin.invoice.id);
   const destinationBefore = await readInvoiceTotal(destination.invoice.id);
@@ -134,26 +117,15 @@ async function assertRejectsCrossCurrencyMoveWithoutWrites(
 
   await assert.rejects(
     () =>
-      moveCardPurchaseInvoicePeriodForContext(
-        CONTEXT,
-        cardId,
-        origin.transaction.id,
-        {
-          invoicePeriod: "2031-08",
-        },
-      ),
+      moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, origin.transaction.id, {
+        invoicePeriod: "2031-08",
+      }),
     hasCode("CARD_INVOICE_CURRENCY_MISMATCH"),
   );
 
-  assert.equal(
-    await readTransactionInvoice(origin.transaction.id),
-    transactionBefore,
-  );
+  assert.equal(await readTransactionInvoice(origin.transaction.id), transactionBefore);
   assert.equal(await readInvoiceTotal(origin.invoice.id), originBefore);
-  assert.equal(
-    await readInvoiceTotal(destination.invoice.id),
-    destinationBefore,
-  );
+  assert.equal(await readInvoiceTotal(destination.invoice.id), destinationBefore);
 }
 
 async function assertHistoricalMismatchFailsClosed(
@@ -169,9 +141,7 @@ async function assertHistoricalMismatchFailsClosed(
     cardInstrumentId: instrumentId,
   });
 
-  await query(`update "Invoice" set "currency" = 'USD' where "id" = $1`, [
-    purchase.invoice.id,
-  ]);
+  await query(`update "Invoice" set "currency" = 'USD' where "id" = $1`, [purchase.invoice.id]);
 
   await assert.rejects(
     () => summarizeInvoiceForContext(CONTEXT, purchase.invoice.id),
@@ -183,10 +153,7 @@ async function assertHistoricalMismatchFailsClosed(
   );
 
   assert.equal(await readInvoiceStatus(purchase.invoice.id), "OPEN");
-  assert.equal(
-    await readInvoiceTotal(purchase.invoice.id),
-    purchase.invoice.totalAmountMinor,
-  );
+  assert.equal(await readInvoiceTotal(purchase.invoice.id), purchase.invoice.totalAmountMinor);
 }
 
 function hasCode(expectedCode: string): (error: unknown) => boolean {
@@ -223,9 +190,7 @@ async function countInvoicePurchases(invoiceId: string): Promise<number> {
   return Number(rows[0]?.count ?? 0);
 }
 
-async function countTransactionsByDescription(
-  description: string,
-): Promise<number> {
+async function countTransactionsByDescription(description: string): Promise<number> {
   const rows = await query<{ count: number | string }>(
     `select count(*)::int as "count" from "Transaction"
       where "organizationId" = $1 and "financialProfileId" = $2 and "description" = $3`,
@@ -234,9 +199,7 @@ async function countTransactionsByDescription(
   return Number(rows[0]?.count ?? 0);
 }
 
-async function readTransactionInvoice(
-  transactionId: string,
-): Promise<string | null> {
+async function readTransactionInvoice(transactionId: string): Promise<string | null> {
   const rows = await query<{ invoiceId: string | null }>(
     `select "invoiceId" from "Transaction" where "id" = $1`,
     [transactionId],
