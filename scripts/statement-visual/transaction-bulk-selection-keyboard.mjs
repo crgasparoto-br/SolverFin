@@ -73,17 +73,23 @@ try {
     `(() => {
       const group = document.querySelector('[data-selection-entity="group"][value="${created.groupId}"]');
       const button = document.querySelector('[data-bulk-selection-action="reconcile"]');
-      if (!group || !button) throw new Error('Issue 530 keyboard controls were not found.');
+      const bar = document.querySelector('[data-selection-bar]');
+      const statusNode = bar?.querySelector('[data-bulk-selection-status]');
+      if (!group || !button || !bar || !statusNode) throw new Error('Issue 530 keyboard controls were not found.');
       group.checked = true;
       group.dispatchEvent(new Event('change', { bubbles: true }));
       window.confirm = () => true;
-      const originalFetch = window.fetch.bind(window);
-      window.fetch = async (input, init) => {
-        if (String(input).includes('/api/transactions/bulk-actions')) {
-          await new Promise((resolve) => setTimeout(resolve, 250));
-        }
-        return originalFetch(input, init);
-      };
+      window.__issue530ProcessingState = null;
+      const processingObserver = new MutationObserver(() => {
+        if (statusNode.textContent.trim() !== 'Processando...' || window.__issue530ProcessingState) return;
+        window.__issue530ProcessingState = {
+          status: statusNode.textContent.trim(),
+          ariaBusy: bar.getAttribute('aria-busy'),
+          actionsDisabled: Array.from(bar.querySelectorAll('[data-bulk-selection-action]')).every((actionButton) => actionButton.disabled)
+        };
+        processingObserver.disconnect();
+      });
+      processingObserver.observe(statusNode, { childList: true, characterData: true, subtree: true });
       window.__issue530NativeClick = false;
       button.addEventListener('click', () => { window.__issue530NativeClick = true; }, { once: true });
       button.focus();
@@ -113,24 +119,28 @@ try {
     ...key,
   });
   await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...key });
-  await sleep(60);
+  await sleep(20);
 
   const activation = await evaluate(
     browser.cdp,
     `(() => {
       const bar = document.querySelector('[data-selection-bar]');
+      const processing = window.__issue530ProcessingState;
       return {
         clickObserved: window.__issue530NativeClick === true,
-        ariaBusy: bar.getAttribute('aria-busy'),
-        status: bar.querySelector('[data-bulk-selection-status]').textContent.trim(),
-        actionsDisabled: Array.from(bar.querySelectorAll('[data-bulk-selection-action]')).every((button) => button.disabled)
+        processingObserved: Boolean(processing),
+        processingAriaBusy: processing?.ariaBusy ?? null,
+        processingStatus: processing?.status ?? '',
+        processingActionsDisabled: processing?.actionsDisabled ?? false,
+        currentStatus: bar.querySelector('[data-bulk-selection-status]').textContent.trim()
       };
     })()`,
   );
   assert.equal(activation.clickObserved, true, "Enter did not produce the native button click.");
-  assert.equal(activation.ariaBusy, "true");
-  assert.equal(activation.status, "Processando...");
-  assert.equal(activation.actionsDisabled, true);
+  assert.equal(activation.processingObserved, true, "The processing state was not announced after keyboard activation.");
+  assert.equal(activation.processingAriaBusy, "true");
+  assert.equal(activation.processingStatus, "Processando...");
+  assert.equal(activation.processingActionsDisabled, true);
 
   await loaded;
   await sleep(140);
