@@ -79,6 +79,16 @@ A compra deve manter referencia ao instrumento usado para que telas, faturas e r
 
 Parcelas devem preservar a origem da compra. A fatura consolida os valores por agrupador e periodo, mas cada item deve continuar rastreavel pelo instrumento.
 
+### Integridade de moeda
+
+Cada fatura e monomoeda. Uma compra so pode compor uma fatura existente quando a moeda ISO normalizada da compra for exatamente igual a moeda da fatura. Nao existe conversao cambial implicita nesse fluxo: divergencia de moeda deve ser rejeitada antes de persistir `Transaction`, `Installment`, `Invoice`, previsao ou auditoria relacionada a operacao.
+
+A mesma regra vale para parcelas futuras, recorrencias materializadas e movimentacao de compra entre periodos. Uma movimentacao deve validar a moeda da fatura de origem e, quando ja existir, da fatura de destino antes de alterar a compra ou qualquer total.
+
+Estados historicos em que uma compra esteja vinculada a uma fatura de moeda diferente nao podem ser agregados silenciosamente. Resumo, edicao, fechamento e movimentacao da fatura devem falhar de forma explicita ate a inconsistencia ser saneada.
+
+A conta usada para liquidar uma fatura deve ter a mesma moeda da fatura. Previsoes automaticas de pagamento so podem ser geradas para a conta configurada quando a moeda da conta corresponder a moeda da fatura. Provider de cambio permanece fora de escopo; portanto nenhuma dessas operacoes faz conversao automatica.
+
 ## Recorrencias
 
 Recorrencias de cartao devem preservar o instrumento escolhido no momento da criacao.
@@ -129,6 +139,7 @@ Comportamento:
 - rejeita movimentacao para o mesmo periodo com `CARD_PURCHASE_INVOICE_PERIOD_UNCHANGED`;
 - rejeita origem travada com `CARD_PURCHASE_INVOICE_LOCKED`;
 - rejeita destino travado com `CARD_PURCHASE_DESTINATION_INVOICE_LOCKED`;
+- rejeita origem ou destino com moeda diferente da compra com `CARD_INVOICE_CURRENCY_MISMATCH`;
 - resolve ou cria fatura destino aberta para o periodo calculado;
 - move somente a compra/ocorrencia selecionada;
 - preserva `cardId`, `cardInstrumentId`, categoria, descricao, valor, moeda, status, recorrencia e demais vinculos da compra;
@@ -259,6 +270,9 @@ A cobertura automatizada deve proteger pelo menos:
 - fatura exibindo origem por instrumento;
 - parcelas e recorrencias preservando o instrumento da compra;
 - recorrencias preservando o instrumento definido na criacao;
+- rejeicao atomica de compra, parcela ou movimentacao com moeda divergente da fatura;
+- deteccao fail-closed de estado historico com compra e fatura em moedas diferentes;
+- liquidacao e previsao de pagamento somente com conta na mesma moeda da fatura;
 - movimentacao segura de compra para outro periodo de fatura;
 - tela `Contas e Cartoes` com lista compacta, criacao e edicao em modal, gestao de instrumentos em modal dedicado, default, arquivamento, estado bloqueado/inativo e ausencia do fluxo legado;
 - tela `Cartoes` com hierarquia da fatura, busca, filtros, lista responsiva, estados acessiveis e modais validados em desktop e mobile.
