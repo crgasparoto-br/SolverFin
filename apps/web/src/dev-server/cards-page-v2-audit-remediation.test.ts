@@ -188,7 +188,9 @@ function createCardsFetchMock(
 
     if (url.pathname === "/api/categories") {
       return jsonResponse({
-        categories: [{ id: "category-food", name: "Alimentação", status: "active" }],
+        categories: [
+          { id: "category-food", name: "Alimentação", status: "active" },
+        ],
       });
     }
 
