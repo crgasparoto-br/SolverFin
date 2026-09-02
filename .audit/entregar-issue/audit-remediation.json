@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "d7e5da12b525101274879a22249e0b3d7f3ba921",
+  "candidate_head_sha": "613275679a230c2f44c1b83c685f4b77a2f8c457",
   "remediation_mode": "systemic-remediation",
   "source": {
     "rejection_id": "audit-rejection:pr650-fbe7e5c7-invoice-state-and-currency-gaps",
@@ -21,8 +21,9 @@
         "Focused regression source rejects false empty-state rendering for nested failures."
       ],
       "validations": [
-        "Exact-head renderer inspection at d7e5da12b525101274879a22249e0b3d7f3ba921",
-        "Focused regression contract in cards-page-v2-audit-remediation.test.ts covers literal and sibling resource failures."
+        "Exact-head renderer inspection at 613275679a230c2f44c1b83c685f4b77a2f8c457",
+        "Focused regression contract in cards-page-v2-audit-remediation.test.ts covers literal and sibling resource failures.",
+        "Repository formatting contract uses printWidth 100; the remediation regression source was normalized to the same accepted shape as cards-page-v2.test.ts before refreeze."
       ]
     },
     {
@@ -35,8 +36,9 @@
         "When currency is unavailable, the renderer does not expose an unlabeled numeric limit."
       ],
       "validations": [
-        "Exact-head renderer inspection at d7e5da12b525101274879a22249e0b3d7f3ba921",
-        "Focused regression contract requires limite USD 1.000,00 and rejects unlabeled limit forms."
+        "Exact-head renderer inspection at 613275679a230c2f44c1b83c685f4b77a2f8c457",
+        "Focused regression contract requires limite USD 1.000,00 and rejects unlabeled limit forms.",
+        "Repository formatting contract uses printWidth 100; the remediation regression source was normalized to the same accepted shape as cards-page-v2.test.ts before refreeze."
       ]
     }
   ]

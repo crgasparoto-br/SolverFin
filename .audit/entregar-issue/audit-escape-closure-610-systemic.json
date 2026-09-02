@@ -39,7 +39,7 @@
           "Target binding and terminal handoff validation run before independent audit."
         ]
       },
-      "revalidated_head_sha": "d7e5da12b525101274879a22249e0b3d7f3ba921",
+      "revalidated_head_sha": "613275679a230c2f44c1b83c685f4b77a2f8c457",
       "required_risk_families": [
         "structural-contract"
       ],
@@ -106,7 +106,7 @@
           "dimension": "sibling-resource-failure"
         }
       ],
-      "revalidated_head_sha": "d7e5da12b525101274879a22249e0b3d7f3ba921",
+      "revalidated_head_sha": "613275679a230c2f44c1b83c685f4b77a2f8c457",
       "required_risk_families": [
         "structural-contract"
       ]
@@ -161,7 +161,7 @@
           "dimension": "missing-currency-path"
         }
       ],
-      "revalidated_head_sha": "d7e5da12b525101274879a22249e0b3d7f3ba921",
+      "revalidated_head_sha": "613275679a230c2f44c1b83c685f4b77a2f8c457",
       "required_risk_families": [
         "structural-contract"
       ]
