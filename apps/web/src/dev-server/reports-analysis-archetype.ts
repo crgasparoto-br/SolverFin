@@ -76,14 +76,17 @@ export function renderReportAnalysisBlock(props: ReportAnalysisBlockProps): stri
 
 export function renderReportAnalysisStateBlock(props: ReportAnalysisStateBlockProps): string {
   const copy = reportStateCopy(props.state);
-  const role = props.state === "empty" || props.state === "loading" ? "status" : "alert";
-  const detailHtml =
-    props.detailHtml ??
-    `<p class="state-note">${renderText(copy.detail)}</p>`;
+  const alertTone =
+    props.state === "empty" || props.state === "loading" ? "information" : "attention";
+  const detailHtml = props.detailHtml ?? `<p class="state-note">${renderText(copy.detail)}</p>`;
   return `<section class="report-analysis-block report-analysis-state" data-report-analysis="a5" data-report-state="${renderText(props.state)}" aria-labelledby="${renderText(props.id)}" aria-live="polite">
     <section class="report-analysis-layer" data-analysis-layer="summary" aria-label="Resumo">
       <div class="report-layer-heading"><p class="eyebrow">Resumo</p><h2 id="${renderText(props.id)}">${renderText(props.title)}</h2></div>
-      <div role="${role}">${renderAlert({ tone: props.state === "empty" || props.state === "loading" ? "information" : "attention", title: props.title, description: props.description })}</div>
+      ${renderAlert({
+        tone: alertTone,
+        title: props.title,
+        description: props.description,
+      })}
     </section>
     <section class="report-analysis-layer" data-analysis-layer="visualization" aria-label="Visualização">
       <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>${renderText(copy.visualizationTitle)}</h3></div>
