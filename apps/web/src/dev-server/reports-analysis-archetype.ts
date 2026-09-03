@@ -114,9 +114,11 @@ function reportStateCopy(state: ReportAnalysisState): {
   if (state === "loading") {
     return {
       visualizationTitle: "Preparando a visualização",
-      visualization: "A visualização será exibida assim que os dados do recorte estiverem disponíveis.",
+      visualization:
+        "A visualização será exibida assim que os dados do recorte estiverem disponíveis.",
       highlightsTitle: "Preparando os destaques",
-      highlights: "Os destaques serão calculados sem misturar moedas quando o carregamento terminar.",
+      highlights:
+        "Os destaques serão calculados sem misturar moedas quando o carregamento terminar.",
       detailTitle: "Preparando o detalhe",
       detail: "O detalhamento permanecerá neste mesmo contexto após o carregamento.",
     };
@@ -124,16 +126,19 @@ function reportStateCopy(state: ReportAnalysisState): {
   if (state === "empty") {
     return {
       visualizationTitle: "Sem dados para visualizar",
-      visualization: "Não há pontos no recorte atual; ajuste os filtros para comparar outro período.",
+      visualization:
+        "Não há pontos no recorte atual; ajuste os filtros para comparar outro período.",
       highlightsTitle: "Sem destaques no recorte",
-      highlights: "Não há variações ou concentrações a destacar enquanto o recorte estiver vazio.",
+      highlights:
+        "Não há variações ou concentrações a destacar enquanto o recorte estiver vazio.",
       detailTitle: "Sem registros detalhados",
       detail: "Nenhum registro atende aos filtros aplicados.",
     };
   }
   return {
     visualizationTitle: "Visualização indisponível",
-    visualization: "A visualização permanece neste contexto e será recomposta após corrigir o erro.",
+    visualization:
+      "A visualização permanece neste contexto e será recomposta após corrigir o erro.",
     highlightsTitle: "Destaques indisponíveis",
     highlights: "Os destaques não são calculados com dados incompletos ou filtros inválidos.",
     detailTitle: "Detalhe indisponível",
