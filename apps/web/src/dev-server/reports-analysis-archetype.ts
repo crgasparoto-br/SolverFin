@@ -129,8 +129,7 @@ function reportStateCopy(state: ReportAnalysisState): {
       visualization:
         "Não há pontos no recorte atual; ajuste os filtros para comparar outro período.",
       highlightsTitle: "Sem destaques no recorte",
-      highlights:
-        "Não há variações ou concentrações a destacar enquanto o recorte estiver vazio.",
+      highlights: "Não há variações ou concentrações a destacar enquanto o recorte estiver vazio.",
       detailTitle: "Sem registros detalhados",
       detail: "Nenhum registro atende aos filtros aplicados.",
     };
