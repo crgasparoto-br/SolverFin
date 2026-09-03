@@ -22,6 +22,17 @@ export interface ReportAnalysisBlockProps {
   detailHtml: string;
 }
 
+export type ReportAnalysisState = "loading" | "empty" | "filter-error" | "api-error";
+
+export interface ReportAnalysisStateBlockProps {
+  id: string;
+  state: ReportAnalysisState;
+  title: string;
+  description: string;
+  detailTitle?: string;
+  detailHtml?: string;
+}
+
 export interface TrendPoint {
   label: string;
   accessibleLabel: string;
@@ -61,6 +72,70 @@ export function renderReportAnalysisBlock(props: ReportAnalysisBlockProps): stri
       ${props.detailHtml}
     </section>
   </section>`;
+}
+
+export function renderReportAnalysisStateBlock(props: ReportAnalysisStateBlockProps): string {
+  const copy = reportStateCopy(props.state);
+  const role = props.state === "empty" || props.state === "loading" ? "status" : "alert";
+  const detailHtml =
+    props.detailHtml ??
+    `<p class="state-note">${renderText(copy.detail)}</p>`;
+  return `<section class="report-analysis-block report-analysis-state" data-report-analysis="a5" data-report-state="${renderText(props.state)}" aria-labelledby="${renderText(props.id)}" aria-live="polite">
+    <section class="report-analysis-layer" data-analysis-layer="summary" aria-label="Resumo">
+      <div class="report-layer-heading"><p class="eyebrow">Resumo</p><h2 id="${renderText(props.id)}">${renderText(props.title)}</h2></div>
+      <div role="${role}">${renderAlert({ tone: props.state === "empty" || props.state === "loading" ? "information" : "attention", title: props.title, description: props.description })}</div>
+    </section>
+    <section class="report-analysis-layer" data-analysis-layer="visualization" aria-label="Visualização">
+      <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>${renderText(copy.visualizationTitle)}</h3></div>
+      <p class="state-note">${renderText(copy.visualization)}</p>
+    </section>
+    <section class="report-analysis-layer" data-analysis-layer="highlights" aria-label="Destaques">
+      <div class="report-layer-heading"><p class="eyebrow">Destaques</p><h3>${renderText(copy.highlightsTitle)}</h3></div>
+      <p class="state-note">${renderText(copy.highlights)}</p>
+    </section>
+    <section class="report-analysis-layer report-detail-layer" data-analysis-layer="detail" aria-label="Detalhe">
+      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle ?? copy.detailTitle)}</h3></div>
+      ${detailHtml}
+    </section>
+  </section>`;
+}
+
+function reportStateCopy(state: ReportAnalysisState): {
+  visualizationTitle: string;
+  visualization: string;
+  highlightsTitle: string;
+  highlights: string;
+  detailTitle: string;
+  detail: string;
+} {
+  if (state === "loading") {
+    return {
+      visualizationTitle: "Preparando a visualização",
+      visualization: "A visualização será exibida assim que os dados do recorte estiverem disponíveis.",
+      highlightsTitle: "Preparando os destaques",
+      highlights: "Os destaques serão calculados sem misturar moedas quando o carregamento terminar.",
+      detailTitle: "Preparando o detalhe",
+      detail: "O detalhamento permanecerá neste mesmo contexto após o carregamento.",
+    };
+  }
+  if (state === "empty") {
+    return {
+      visualizationTitle: "Sem dados para visualizar",
+      visualization: "Não há pontos no recorte atual; ajuste os filtros para comparar outro período.",
+      highlightsTitle: "Sem destaques no recorte",
+      highlights: "Não há variações ou concentrações a destacar enquanto o recorte estiver vazio.",
+      detailTitle: "Sem registros detalhados",
+      detail: "Nenhum registro atende aos filtros aplicados.",
+    };
+  }
+  return {
+    visualizationTitle: "Visualização indisponível",
+    visualization: "A visualização permanece neste contexto e será recomposta após corrigir o erro.",
+    highlightsTitle: "Destaques indisponíveis",
+    highlights: "Os destaques não são calculados com dados incompletos ou filtros inválidos.",
+    detailTitle: "Detalhe indisponível",
+    detail: "O detalhe será exibido neste mesmo fluxo quando o relatório puder ser processado.",
+  };
 }
 
 export function renderAnalysisSummaryGrid(
