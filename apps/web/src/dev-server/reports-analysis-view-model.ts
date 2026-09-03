@@ -231,9 +231,7 @@ function aggregateBy<T extends InstallmentAnalysisItem>(
   const groups = new Map<string, InstallmentAggregateViewModel>();
   for (const installment of installments) {
     const identity = identityFor(installment);
-    const groupKey = identity.filterId
-      ? `id:${identity.filterId}`
-      : `label:${identity.label}`;
+    const groupKey = identity.filterId ? `id:${identity.filterId}` : `label:${identity.label}`;
     const current = groups.get(groupKey) ?? {
       label: identity.label,
       count: 0,

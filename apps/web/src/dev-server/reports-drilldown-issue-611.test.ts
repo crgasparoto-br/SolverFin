@@ -110,10 +110,7 @@ describe("issue 611 report drilldown remediation", () => {
 
     assert.equal(installmentQueries.at(-1)?.searchParams.get("cardId"), "card-b");
     assert.equal(installmentQueries.at(-1)?.searchParams.get("categoryId"), "category-a");
-    assert.match(
-      drilledHtml,
-      /<option value="card-b" selected>Cartão compartilhado<\/option>/,
-    );
+    assert.match(drilledHtml, /<option value="card-b" selected>Cartão compartilhado<\/option>/);
     assert.match(initialHtml, /abrir recorte deste cartão/);
     assert.match(initialHtml, /abrir recorte desta categoria/);
   });
