@@ -1,0 +1,16 @@
+Target-binding recovery evidence
+repository=crgasparoto-br/SolverFin
+issue=611
+pr=651
+material_head=07aaa0d34588e49f58b205b757b9f4f7c634fd71
+base=5cd6e43265828a6712d24996a7a5844381b4ee29
+observed_foreign_snapshot_issue=610
+observed_foreign_snapshot_pr=650
+foreign_handoff_blob=27052ace8a259739bc15ba72bfce55128758903c
+classification=inherited-base-artifact
+recovery=fresh-handoff-required
+validator_target_binding_output_sha256=36a7923c113bad763a6f6d5b3605bdad4706d747b0092dd3f0d6d4960998e0da
+entregar_skill_regression_tests_sha256=da3f0e5c326dac2c85bfdfa2a4031bd62c37c87cf183f3f614f857edcce3182a
+auditar_skill_origin_tests_sha256=8a581be0f6db1784472f5caf741a64a5266d854a2b9ffda305d92fbe45b65de0
+Expected: an inherited foreign delivery package is rejected for the new target and must not be reused.
+Observed: the target-binding preflight classified the package as inherited-base-artifact and the installed skill regression suites passed.

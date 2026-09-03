@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+  "base_sha": "5cd6e43265828a6712d24996a7a5844381b4ee29",
+  "merge_preview_sha": "399724779573596a8e59e7bf795f8884c06cc2e6",
+  "observations": [
+    {
+      "workflow": "CI",
+      "run_id": 33758571471,
+      "status": "completed",
+      "conclusion": "success",
+      "scope": "monorepo validation and API/PostgreSQL integration"
+    },
+    {
+      "workflow": "Statement visual validation",
+      "run_id": 33758571428,
+      "status": "completed",
+      "conclusion": "success",
+      "scope": "registered visual scenarios in Chrome"
+    }
+  ],
+  "note": "Observed from GitHub Actions for the exact material head before handoff publication; no workflow was rerun by this recovery."
+}

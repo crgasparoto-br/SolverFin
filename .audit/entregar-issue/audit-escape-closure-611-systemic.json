@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "AE-HANDOFF-ORIGIN-001",
+      "escape_class": "inherited-foreign-delivery-artifact-reuse",
+      "status": "passed",
+      "source_audit": {
+        "rejection_id": "audit-rejection:834518e4-037b-4dd4-b463-94f85018f80a",
+        "finding_id": "AUD-651-DELIVERY-001",
+        "finding_ids": [
+          "AUD-651-DELIVERY-001"
+        ],
+        "audit_report_sha256": "af2eccf8f84a91cfd514b28347aa277b9e6bd309e7d99fd7766ce266b28ee4f2"
+      },
+      "plausible_wrong_implementation": "Accept a ready handoff found at the canonical path without proving that it was created for the resolved target or differs from the immutable base artifact.",
+      "literal_case": {
+        "procedure": "Resolve the current delivery target, compare candidate and immutable-base handoff identity, and classify a foreign unchanged artifact before any reuse.",
+        "expected": "Foreign base-identical artifact is rejected and a fresh handoff is required.",
+        "observed": "The recovery preflight rejected the inherited foreign packet; a new target-bound package was rebuilt for the current material head.",
+        "status": "passed",
+        "evidence": "evidence/target-binding-regression.txt",
+        "evidence_sha256": "14553c68d1c2f8b7e7bbf1b81236e0601ddf31392ee1e8165828fd325607bfa7"
+      },
+      "sibling_cases": [
+        {
+          "id": "AE-HANDOFF-ORIGIN-001-S1",
+          "surface": "delivery-target-binding",
+          "dimension": "base-identical-foreign-subject",
+          "status": "passed"
+        },
+        {
+          "id": "AE-HANDOFF-ORIGIN-001-S2",
+          "surface": "handoff-origin-inheritance",
+          "dimension": "base-identical-foreign-certificate",
+          "status": "passed"
+        }
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "base-identical-foreign-subject"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-origin-inheritance",
+          "dimension": "base-identical-foreign-certificate"
+        }
+      ],
+      "prevention_change": {
+        "control_id": "DELIVERY-TARGET-BINDING-001",
+        "evidence": "Target-binding recovery classifies inherited foreign artifacts before reuse."
+      },
+      "detection_change": {
+        "control_id": "HANDOFF-BASE-ORIGIN-001",
+        "evidence": "Immutable-base origin regression independently detects base-identical foreign certificates."
+      },
+      "trigger_terms": [
+        "inherited artifact",
+        "foreign subject",
+        "base-identical handoff",
+        "target binding"
+      ],
+      "revalidated_head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71"
+    }
+  ]
+}

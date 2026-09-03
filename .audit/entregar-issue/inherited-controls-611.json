@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+  "source_audits": [
+    {
+      "rejection_id": "audit-rejection:834518e4-037b-4dd4-b463-94f85018f80a",
+      "finding_ids": [
+        "AUD-651-DELIVERY-001"
+      ],
+      "audit_report_sha256": "af2eccf8f84a91cfd514b28347aa277b9e6bd309e7d99fd7766ce266b28ee4f2"
+    }
+  ],
+  "controls": [
+    {
+      "id": "DELIVERY-TARGET-BINDING-001",
+      "status": "passed",
+      "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+      "subject_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+      "evidence": "evidence/target-binding-regression.txt",
+      "evidence_sha256": "14553c68d1c2f8b7e7bbf1b81236e0601ddf31392ee1e8165828fd325607bfa7",
+      "control_type": "procedure",
+      "procedure": "Resolve target identity and compare inherited delivery metadata against the immutable base before allowing evidence reuse.",
+      "expected": "A base-identical artifact bound to another delivery is rejected before reuse.",
+      "observed": "The current recovery classified the inherited package as foreign and rebuilt the target-bound packet.",
+      "attack_control_id": "NEG-611-002-TARGET-BINDING",
+      "risk_family": "structural-contract",
+      "surface": "delivery-target-binding",
+      "dimension": "base-identical-foreign-subject"
+    },
+    {
+      "id": "HANDOFF-BASE-ORIGIN-001",
+      "status": "passed",
+      "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+      "subject_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+      "evidence": "evidence/target-binding-regression.txt",
+      "evidence_sha256": "14553c68d1c2f8b7e7bbf1b81236e0601ddf31392ee1e8165828fd325607bfa7",
+      "control_type": "procedure",
+      "procedure": "Compare the handoff object at candidate head with the same path on the immutable base before attributing origin to the current delivery.",
+      "expected": "An unchanged foreign certificate is inherited repository state, not current delivery evidence.",
+      "observed": "The immutable-base origin controls passed and the inherited foreign handoff was not accepted for the current target.",
+      "attack_control_id": "NEG-611-002-HANDOFF-ORIGIN",
+      "risk_family": "structural-contract",
+      "surface": "handoff-origin-inheritance",
+      "dimension": "base-identical-foreign-certificate"
+    }
+  ],
+  "retired_controls": [],
+  "unresolved_controls": []
+}

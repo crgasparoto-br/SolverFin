@@ -3,27 +3,28 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+  "candidate_head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
   "remediation_mode": "systemic-remediation",
   "source": {
-    "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
-    "audited_head_sha": "2aa2e175151bfd28fe1b487953df7b229895060f",
-    "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
+    "rejection_id": "audit-rejection:834518e4-037b-4dd4-b463-94f85018f80a",
+    "audited_head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+    "audit_report_sha256": "af2eccf8f84a91cfd514b28347aa277b9e6bd309e7d99fd7766ce266b28ee4f2"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-003",
+      "source_id": "AUD-651-DELIVERY-001",
       "remediation_mode": "systemic-remediation",
       "status": "fixed",
       "evidence": [
-        "Existing-invoice currency mismatch is rejected before any write.",
-        "Sibling guards cover installments, invoice-period move, historical reads/close, payment account currency, and forecast creation.",
-        "Canonical documentation records the single-currency invoice invariant."
+        "A fresh issue-611 specification snapshot and critical handoff packet were rebuilt instead of reusing the inherited issue-610 packet.",
+        "Delivery-target binding and immutable-base origin controls explicitly reject a base-identical foreign subject/certificate.",
+        "The product material head remains unchanged and exact-head CI plus Chrome visual validation are successful."
       ],
       "validations": [
-        "CI run 4762 completed success on a1e37ac7eb377cc60db47f32f2ece44e54774111, including domain and API integration coverage.",
-        "Statement visual validation run 3260 completed success on a1e37ac7eb377cc60db47f32f2ece44e54774111."
+        "validate_specification_coverage.py passed for the issue-611 snapshot and closure.",
+        "validate_requirement_attack_matrix.py passed with delivery-target-binding and handoff-origin-inheritance controls.",
+        "Installed target-binding and base-origin regression tests passed in the recovery workspace."
       ]
     }
   ]

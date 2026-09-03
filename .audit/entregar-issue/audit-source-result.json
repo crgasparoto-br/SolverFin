@@ -1,21 +1,16 @@
 {
-  "schema_version": 1,
-  "status": "rejected",
-  "result": "REPROVADA",
-  "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
-  "head_sha": "2aa2e175151bfd28fe1b487953df7b229895060f",
+  "contract_version": "2026-08-20.3",
+  "rejection_id": "audit-rejection:834518e4-037b-4dd4-b463-94f85018f80a",
+  "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
   "findings": [
     {
-      "id": "A-003",
+      "id": "AUD-651-DELIVERY-001",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
-      "severity": "HIGH",
       "remediation_mode": "systemic-remediation",
-      "reason": "A purchase could use a currency different from an existing invoice, while amountMinor was added to the invoice total without conversion."
+      "reason": "delivery-not-ready: inherited-base-artifact; the current target handoff was not produced because the certificate was byte-identical to the immutable base and belonged to another delivery."
     }
   ],
-  "recommendations": [
-    "Enforce invoice currency identity at domain and repository boundaries and cover sibling producer paths."
-  ]
+  "recommendations": []
 }
