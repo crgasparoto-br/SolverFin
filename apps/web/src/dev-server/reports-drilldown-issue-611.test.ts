@@ -134,9 +134,7 @@ function installment(id: string, cardId?: string, categoryId?: string) {
     amountMinor: 1000,
     currency: "BRL",
     transaction: { id: `transaction-${id}`, description: `Parcela ${id}`, status: "planned" },
-    ...(cardId
-      ? { card: { id: cardId, name: "Cartão compartilhado", status: "active" } }
-      : {}),
+    ...(cardId ? { card: { id: cardId, name: "Cartão compartilhado", status: "active" } } : {}),
     ...(categoryId
       ? {
           category: {
