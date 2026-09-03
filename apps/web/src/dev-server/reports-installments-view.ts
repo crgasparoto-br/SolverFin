@@ -162,13 +162,11 @@ function renderInstallments(
   filters: InstallmentFilters,
 ): string {
   if (installments.length === 0) {
-    return `<section class="panel report-results" data-report-state="empty">
-      <div class="section-heading"><div><p class="eyebrow">Parcelas</p><h2>${escapeHtml(formatMonthYear(filters.month))}</h2></div></div>
-      ${renderCompactEmptyState(
-        "Nenhuma parcela no período.",
-        "Ajuste mês, cartão, categoria ou status para revisar outro recorte.",
-      )}
-    </section>`;
+    return renderState(
+      "empty",
+      `Nenhuma parcela em ${formatMonthYear(filters.month)}`,
+      "Ajuste mês, cartão, categoria ou status para revisar outro recorte.",
+    );
   }
 
   const currencyBlocks = buildInstallmentAnalysisViewModel(
