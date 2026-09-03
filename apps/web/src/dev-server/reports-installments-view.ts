@@ -60,6 +60,8 @@ interface InstallmentRecord {
   category?: { id: string; name: string; kind: string; status: string };
 }
 
+type InstallmentDrilldownKind = "card" | "category";
+
 export async function renderInstallmentsView(token: string, url: URL): Promise<string> {
   const filters = readInstallmentFilters(url);
   const cardsParams = new URLSearchParams({ status: "all" });
@@ -225,7 +227,7 @@ function renderInstallmentCurrencyBlock(
     summaryWrapperClassName: "summary-grid",
     summaryItemClassName: "metric-card",
     visualizationTitle: `Distribuição de ${formatMonthYear(filters.month)}`,
-    visualizationHtml: renderInstallmentDistribution(block),
+    visualizationHtml: renderInstallmentDistribution(block, filters),
     highlightsHtml: renderInstallmentHighlights(block),
     detailTitle: "Parcelas consideradas",
     detailHtml: renderInstallmentDetail(block),
@@ -249,6 +251,7 @@ function installmentSummaryItem(
 
 function renderInstallmentDistribution(
   block: InstallmentCurrencyViewModel<InstallmentRecord>,
+  filters: InstallmentFilters,
 ): string {
   return `<div class="report-grid" aria-label="Agrupamentos de parcelas em ${escapeHtml(block.currency)}">
       <section class="panel report-results">
@@ -257,11 +260,11 @@ function renderInstallmentDistribution(
       </section>
       <section class="panel report-results">
         <div class="section-heading"><h2>Por cartão</h2><span>${block.summary.activeCount} parcelas</span></div>
-        ${renderAggregateRows(block.groups.cards, "card", block.currency)}
+        ${renderAggregateRows(block.groups.cards, "card", block.currency, filters)}
       </section>
       <section class="panel report-results">
         <div class="section-heading"><h2>Por categoria</h2><span>${block.summary.activeCount} parcelas</span></div>
-        ${renderAggregateRows(block.groups.categories, "category", block.currency)}
+        ${renderAggregateRows(block.groups.categories, "category", block.currency, filters)}
       </section>
     </div>`;
 }
@@ -319,6 +322,7 @@ function renderAggregateRows(
   rows: readonly InstallmentAggregateViewModel[],
   kind: string,
   currency: string,
+  filters?: InstallmentFilters,
 ): string {
   if (rows.length === 0) {
     return renderCompactEmptyState(
@@ -333,9 +337,43 @@ function renderAggregateRows(
         row.amountMinor === 0
           ? 0
           : Math.max(4, Math.round((Math.abs(row.amountMinor) / maxAmount) * 100));
-      return `<article class="aggregate-row"><div class="aggregate-copy"><strong>${escapeHtml(row.label)}</strong><span>${row.count} parcela${row.count === 1 ? "" : "s"}</span><span class="aggregate-bar" aria-hidden="true"><span style="--aggregate-size:${scale}%"></span></span></div><strong>${renderMoney({ amountMinor: row.amountMinor, currency })}</strong></article>`;
+      const drilldownKind = kind === "card" || kind === "category" ? kind : undefined;
+      const label =
+        filters && drilldownKind && row.filterId
+          ? renderAggregateDrilldown(row, drilldownKind, filters)
+          : `<strong>${escapeHtml(row.label)}</strong>`;
+      return `<article class="aggregate-row"><div class="aggregate-copy">${label}<span>${row.count} parcela${row.count === 1 ? "" : "s"}</span><span class="aggregate-bar" aria-hidden="true"><span style="--aggregate-size:${scale}%"></span></span></div><strong>${renderMoney({ amountMinor: row.amountMinor, currency })}</strong></article>`;
     })
     .join("")}</div>`;
+}
+
+function renderAggregateDrilldown(
+  row: InstallmentAggregateViewModel,
+  kind: InstallmentDrilldownKind,
+  filters: InstallmentFilters,
+): string {
+  if (!row.filterId) return `<strong>${escapeHtml(row.label)}</strong>`;
+  const href = buildInstallmentDrilldownHref(filters, kind, row.filterId);
+  const accessibleAction =
+    kind === "card" ? "abrir recorte deste cartão" : "abrir recorte desta categoria";
+  return `<a class="aggregate-drilldown sf-focus-ring" data-report-drilldown="${kind}" href="${escapeHtml(href)}"><strong>${escapeHtml(row.label)}</strong><span class="sr-only"> — ${accessibleAction}</span></a>`;
+}
+
+function buildInstallmentDrilldownHref(
+  filters: InstallmentFilters,
+  kind: InstallmentDrilldownKind,
+  filterId: string,
+): string {
+  const params = new URLSearchParams({
+    view: "installments",
+    month: filters.month,
+    status: filters.status,
+  });
+  if (filters.profileId) params.set("profileId", filters.profileId);
+  if (filters.cardId) params.set("cardId", filters.cardId);
+  if (filters.categoryId) params.set("categoryId", filters.categoryId);
+  params.set(kind === "card" ? "cardId" : "categoryId", filterId);
+  return `/relatorios?${params.toString()}`;
 }
 
 function renderCompactEmptyState(title: string, description: string): string {

@@ -119,6 +119,8 @@ Somente as celulas negativas da linha **Resultado**, inclusive **Media** e **Tot
 
 A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-error`. Resumo, visualizacao e destaques precedem a matriz quando ha dados monetarios. A tendencia usa estrutura textual acessivel alem das barras de apoio visual. A matriz usa tabela semantica, cabecalhos de coluna/linha, rotulos acessiveis de periodo e sinal textual em todos os estados, inclusive no recorte vazio. Em desktop, cabecalho e descricao permanecem fixos durante a rolagem quando suportado. Em telas menores, filtros e camadas analiticas quebram em linhas e a matriz rola horizontalmente sem cortar dados. Botoes de secao e categoria operam por mouse e teclado e possuem foco visivel.
 
+O drilldown da evolucao continua condicionado a existir um destino canonico que represente fielmente o intervalo e a origem selecionados. Nao se cria link parcial para `/lancamentos` quando a rota de destino perderia parte do recorte anual, rolling-year, conta/cartao ou outra dimensao material.
+
 ## Parcelas consolidadas
 
 A visao permanece somente leitura e usa `GET /api/installments`. Mantem filtros por mes, status, cartao e categoria, com `profileId` encaminhado explicitamente quando presente.
@@ -133,6 +135,8 @@ Os indicadores preservados sao:
 
 Desde a issue #611, as parcelas sao particionadas por `currency` antes do calculo desses indicadores e dos agrupamentos. Cada moeda recebe resumo proprio, visualizacao dos agrupamentos por mes/cartao/categoria, destaques e tabela detalhada. Parcelas canceladas permanecem identificaveis no detalhe e nao entram nos valores ativos consolidados. Todos os valores monetarios sao exibidos por `Money` com moeda explicita.
 
+Os agrupamentos **Por cartao** e **Por categoria** preservam a identidade canonica de cada recurso e oferecem drilldown para a propria visao de parcelas. O link mantem `view=installments`, mes, status, `profileId` e o filtro irmao compativel, substituindo somente o `cardId` ou `categoryId` correspondente. Recursos homonimos permanecem separados por ID; linhas sinteticas sem ID, como **Sem cartao informado** ou **Sem categoria**, nao fabricam um destino navegavel.
+
 ## Estados
 
 - `ready`: camadas de analise e respectivo detalhe renderizados por moeda;
@@ -142,7 +146,7 @@ Desde a issue #611, as parcelas sao particionadas por `currency` antes do calcul
 
 ## Fora do escopo atual
 
-Exportacao PDF/CSV/Excel, impressao formatada, comparacao com orcamento, drill-down, multiplas contas ou cartoes simultaneos, combinacao conta+cartao, conversao cambial e persistencia do estado da arvore.
+Exportacao PDF/CSV/Excel, impressao formatada, comparacao com orcamento, drilldown da evolucao quando nao existir destino canonico fiel ao recorte, multiplas contas ou cartoes simultaneos, combinacao conta+cartao, conversao cambial e persistencia do estado da arvore.
 
 ## Testes
 
@@ -166,7 +170,9 @@ A issue #611 acrescenta controles para:
 - relatorio de evolucao com duas moedas e janela estendida de 24 periodos;
 - separacao de parcelas BRL/USD antes de qualquer total ou agrupamento;
 - uso de tabela semantica no detalhe de parcelas e preservacao da matriz semantica na evolucao;
-- uso de `Money` para os valores monetarios das camadas migradas.
+- uso de `Money` para os valores monetarios das camadas migradas;
+- drilldown canonico por cartao/categoria em parcelas, com preservacao dos filtros compativeis;
+- recursos homonimos separados por ID e ausencia de link fabricado para agrupamentos sinteticos sem identidade canonica.
 
 ## Referencias
 

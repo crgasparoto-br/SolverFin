@@ -90,8 +90,8 @@ export interface InstallmentAnalysisItem {
   amountMinor: number;
   currency: string;
   invoice?: { status: string };
-  card?: { name: string };
-  category?: { name: string };
+  card?: { id?: string; name: string };
+  category?: { id?: string; name: string };
 }
 
 export interface InstallmentSummaryViewModel {
@@ -111,6 +111,12 @@ export interface InstallmentAggregateViewModel {
   label: string;
   count: number;
   amountMinor: number;
+  filterId?: string;
+}
+
+interface InstallmentAggregateIdentity {
+  label: string;
+  filterId?: string;
 }
 
 export interface InstallmentCurrencyViewModel<T extends InstallmentAnalysisItem> {
@@ -144,9 +150,17 @@ export function buildInstallmentAnalysisViewModel<T extends InstallmentAnalysisI
       items: currencyItems.slice(),
       summary: summarizeInstallments(currencyItems, today),
       groups: {
-        months: aggregateBy(currencyItems, (item) => formatMonth(item.dueOn.slice(0, 7))),
-        cards: aggregateBy(currencyItems, (item) => item.card?.name ?? "Sem cartão informado"),
-        categories: aggregateBy(currencyItems, (item) => item.category?.name ?? "Sem categoria"),
+        months: aggregateBy(currencyItems, (item) => ({
+          label: formatMonth(item.dueOn.slice(0, 7)),
+        })),
+        cards: aggregateBy(currencyItems, (item) => ({
+          label: item.card?.name ?? "Sem cartão informado",
+          ...(item.card?.id ? { filterId: item.card.id } : {}),
+        })),
+        categories: aggregateBy(currencyItems, (item) => ({
+          label: item.category?.name ?? "Sem categoria",
+          ...(item.category?.id ? { filterId: item.category.id } : {}),
+        })),
       },
     }));
 }
@@ -212,19 +226,29 @@ function isPostedOrClosed(installment: InstallmentAnalysisItem): boolean {
 
 function aggregateBy<T extends InstallmentAnalysisItem>(
   installments: readonly T[],
-  labelFor: (installment: T) => string,
+  identityFor: (installment: T) => InstallmentAggregateIdentity,
 ): InstallmentAggregateViewModel[] {
   const groups = new Map<string, InstallmentAggregateViewModel>();
   for (const installment of installments) {
-    const label = labelFor(installment);
-    const current = groups.get(label) ?? { label, count: 0, amountMinor: 0 };
+    const identity = identityFor(installment);
+    const groupKey = identity.filterId
+      ? `id:${identity.filterId}`
+      : `label:${identity.label}`;
+    const current = groups.get(groupKey) ?? {
+      label: identity.label,
+      count: 0,
+      amountMinor: 0,
+      ...(identity.filterId ? { filterId: identity.filterId } : {}),
+    };
     current.count += 1;
     if (installment.status !== "cancelled") current.amountMinor += installment.amountMinor;
-    groups.set(label, current);
+    groups.set(groupKey, current);
   }
   return Array.from(groups.values()).sort(
     (left, right) =>
-      right.amountMinor - left.amountMinor || left.label.localeCompare(right.label, "pt-BR"),
+      right.amountMinor - left.amountMinor ||
+      left.label.localeCompare(right.label, "pt-BR") ||
+      (left.filterId ?? "").localeCompare(right.filterId ?? ""),
   );
 }
 
