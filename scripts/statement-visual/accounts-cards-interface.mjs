@@ -2,19 +2,11 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const candidateSha =
   process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
@@ -80,25 +72,13 @@ async function validateViewport(cdp, viewport) {
 
   const baseline = await inspectPage(cdp);
   assert.equal(baseline.archetype, "A3");
-  assert.equal(
-    baseline.detailLayoutVisible,
-    true,
-    "A3 DetailLayout is not visible.",
-  );
+  assert.equal(baseline.detailLayoutVisible, true, "A3 DetailLayout is not visible.");
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
   assert.equal(baseline.detailVisible, true, "Selected detail is not visible.");
-  assert.equal(
-    baseline.noHorizontalOverflow,
-    true,
-    "A3 page overflows horizontally.",
-  );
+  assert.equal(baseline.noHorizontalOverflow, true, "A3 page overflows horizontally.");
   assert.equal(baseline.tabArtifacts, 0, "Retired tab markup is still present.");
   assert.ok(baseline.masterItemCount > 0, "No master resources were rendered.");
-  assert.equal(
-    baseline.selectedMasterCount,
-    1,
-    "Exactly one master resource must be selected.",
-  );
+  assert.equal(baseline.selectedMasterCount, 1, "Exactly one master resource must be selected.");
   assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
   assert.deepEqual(baseline.statusOptions, ["all", "active", "inactive"]);
   assert.equal(baseline.loadingStatePresent, true, "Route loading state is not wired.");
@@ -133,11 +113,7 @@ async function validateViewport(cdp, viewport) {
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "card");
     assert.equal(measurements.selectedMasterCount, 1);
-    assert.equal(
-      measurements.currencyContextVisible,
-      true,
-      "Card currency context is ambiguous.",
-    );
+    assert.equal(measurements.currencyContextVisible, true, "Card currency context is ambiguous.");
     assert.equal(
       measurements.instrumentSectionVisible,
       true,
@@ -188,10 +164,7 @@ async function validateViewport(cdp, viewport) {
     });
   }
 
-  await screenshot(
-    cdp,
-    join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`),
-  );
+  await screenshot(cdp, join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`));
 }
 
 async function inspectPage(cdp) {
@@ -219,7 +192,7 @@ async function inspectPage(cdp) {
         tabArtifacts: document.querySelectorAll('[data-tab-panel], [role="tab"], .sf-tabs').length,
         searchVisible: visible(document.querySelector('[data-master-search]')),
         statusOptions: Array.from(document.querySelectorAll('[data-master-status] option')).map((option) => option.value),
-        currencyContextVisible: /Moeda/i.test(detailText) && (/\b(BRL|USD|EUR)\b/.test(detailText) || /Moeda (indisponível|não informada)/i.test(detailText)),
+        currencyContextVisible: /Moeda\\s*(BRL|USD|EUR)\\b/i.test(detailText) || /Moeda\\s*(indisponível|não informada)/i.test(detailText),
         instrumentSectionVisible: visible(document.querySelector('.resource-instruments')),
         instrumentCount: document.querySelectorAll('[data-card-instrument]').length,
         loadingStatePresent: Boolean(document.querySelector('[data-resource-loading]')),
@@ -272,11 +245,7 @@ async function validateFilter(cdp) {
     state.totalCount,
     "Search did not filter the unified master list.",
   );
-  assert.equal(
-    state.emptyVisible,
-    true,
-    "Filtered empty state is not visible.",
-  );
+  assert.equal(state.emptyVisible, true, "Filtered empty state is not visible.");
   return state;
 }
 
@@ -292,16 +261,7 @@ async function validateKeyboardDialog(cdp) {
   );
   assert.equal(prepared, true, "No focusable direct edit action is available.");
 
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
-    key: "Enter",
-    code: "Enter",
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key: "Enter",
-    code: "Enter",
-  });
+  await pressEnter(cdp);
   await waitFor(
     cdp,
     `Boolean(document.querySelector('dialog.master-dialog[open]:not(#accounts-cards-confirm-dialog)'))`,
@@ -323,27 +283,10 @@ async function validateKeyboardDialog(cdp) {
   );
   assert.equal(opened.open, true);
   assert.equal(opened.labelled, true);
-  assert.equal(
-    opened.insideViewport,
-    true,
-    "Resource dialog exceeds the viewport.",
-  );
-  assert.equal(
-    opened.focusInside,
-    true,
-    "Resource dialog did not receive focus.",
-  );
+  assert.equal(opened.insideViewport, true, "Resource dialog exceeds the viewport.");
+  assert.equal(opened.focusInside, true, "Resource dialog did not receive focus.");
 
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
-    key: "Escape",
-    code: "Escape",
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key: "Escape",
-    code: "Escape",
-  });
+  await pressEscape(cdp);
   await sleep(100);
   const closed = await evaluate(
     cdp,
@@ -353,11 +296,7 @@ async function validateKeyboardDialog(cdp) {
     }))()`,
   );
   assert.equal(closed.open, false, "Resource dialog did not close with Escape.");
-  assert.equal(
-    closed.focusRestored,
-    true,
-    "Focus was not restored to the dialog trigger.",
-  );
+  assert.equal(closed.focusRestored, true, "Focus was not restored to the dialog trigger.");
   return { ...opened, closed };
 }
 
@@ -385,11 +324,7 @@ async function validateSaveFailureStates(cdp) {
       return true;
     })()`,
   );
-  assert.equal(
-    prepared,
-    true,
-    "Could not prepare a valid save form for loading/error coverage.",
-  );
+  assert.equal(prepared, true, "Could not prepare a valid save form for loading/error coverage.");
   await sleep(80);
 
   const loading = await evaluate(
@@ -399,11 +334,7 @@ async function validateSaveFailureStates(cdp) {
       status: document.querySelector('dialog.master-dialog[open] [data-form-status]')?.textContent?.trim() || '',
     }))()`,
   );
-  assert.equal(
-    loading.visible,
-    true,
-    "Loading state did not become visible during save.",
-  );
+  assert.equal(loading.visible, true, "Loading state did not become visible during save.");
   assert.match(loading.status, /Salvando/i);
 
   await evaluate(
@@ -431,24 +362,11 @@ async function validateSaveFailureStates(cdp) {
       return result;
     })()`,
   );
-  assert.equal(
-    failed.loadingHidden,
-    true,
-    "Loading state remained visible after save failure.",
-  );
+  assert.equal(failed.loadingHidden, true, "Loading state remained visible after save failure.");
   assert.match(failed.status, /Falha simulada/i);
   assert.match(failed.statusClass, /error/);
 
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyDown",
-    key: "Escape",
-    code: "Escape",
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key: "Escape",
-    code: "Escape",
-  });
+  await pressEscape(cdp);
   await sleep(80);
   return { loading, failed };
 }
@@ -469,11 +387,7 @@ async function validateConfirmationCancellation(cdp) {
       return true;
     })()`,
   );
-  assert.equal(
-    prepared,
-    true,
-    "No destructive action requiring confirmation was found.",
-  );
+  assert.equal(prepared, true, "No destructive action requiring confirmation was found.");
   await waitFor(
     cdp,
     `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
@@ -494,16 +408,8 @@ async function validateConfirmationCancellation(cdp) {
       return value;
     })()`,
   );
-  assert.equal(
-    result.open,
-    false,
-    "Confirmation dialog did not close after cancellation.",
-  );
-  assert.equal(
-    result.requestCount,
-    0,
-    "Cancelled destructive action still called the API.",
-  );
+  assert.equal(result.open, false, "Confirmation dialog did not close after cancellation.");
+  assert.equal(result.requestCount, 0, "Cancelled destructive action still called the API.");
   return { ...result, cancelledWithoutRequest: true };
 }
 
@@ -529,17 +435,9 @@ async function validateLongContent(cdp) {
       actionsVisible: Boolean(document.querySelector('.resource-detail-actions')?.getClientRects().length),
     }))()`,
   );
-  assert.equal(
-    result.noHorizontalOverflow,
-    true,
-    "Long content creates horizontal overflow.",
-  );
+  assert.equal(result.noHorizontalOverflow, true, "Long content creates horizontal overflow.");
   assert.equal(result.detailVisible, true);
-  assert.equal(
-    result.actionsVisible,
-    true,
-    "Long content hides maintenance actions.",
-  );
+  assert.equal(result.actionsVisible, true, "Long content hides maintenance actions.");
   await evaluate(
     cdp,
     `((values) => {
@@ -576,6 +474,48 @@ async function waitFor(cdp, expression, message) {
   throw new Error(message);
 }
 
+async function pressEscape(cdp) {
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "rawKeyDown",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  });
+}
+
+async function pressEnter(cdp) {
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "rawKeyDown",
+    key: "Enter",
+    code: "Enter",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "char",
+    key: "Enter",
+    code: "Enter",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+    text: "\r",
+  });
+  await cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Enter",
+    code: "Enter",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+}
+
 function serializeError(error) {
-  return error instanceof Error ? error.stack ?? error.message : String(error);
+  return error instanceof Error ? (error.stack ?? error.message) : String(error);
 }
