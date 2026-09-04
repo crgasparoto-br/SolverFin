@@ -1,5 +1,9 @@
 import { formatMinorCurrency } from "@solverfin/shared";
-import { renderBadge, renderEmptyState, renderUnavailableState } from "../../design-system/primitives.js";
+import {
+  renderBadge,
+  renderEmptyState,
+  renderUnavailableState,
+} from "../../design-system/primitives.js";
 import { renderInstitutionIcon } from "../institutions.js";
 import {
   renderAccountEditDialog,
@@ -17,7 +21,11 @@ import {
   renderEditIcon,
   renderTrashIcon,
 } from "./presentation.js";
-import type { AccountRecord, CardInstrumentRecord, CreditCardAccountRecord } from "./types.js";
+import type {
+  AccountRecord,
+  CardInstrumentRecord,
+  CreditCardAccountRecord,
+} from "./types.js";
 import {
   buildAccountItemViewModel,
   buildCardItemViewModel,
@@ -30,13 +38,16 @@ import {
   type SelectedResourceViewModel,
 } from "./view-model.js";
 
-export function renderResourceMaster(resources: readonly ResourceMasterViewModel[]): string {
+export function renderResourceMaster(
+  resources: readonly ResourceMasterViewModel[],
+): string {
   const list =
     resources.length > 0
       ? resources.map(renderResourceMasterItem).join("")
       : renderEmptyState({
           title: "Nenhuma conta ou cartão cadastrado",
-          description: "Adicione uma conta ou um cartão para iniciar o cadastro financeiro.",
+          description:
+            "Adicione uma conta ou um cartão para iniciar o cadastro financeiro.",
         });
 
   return `
@@ -79,18 +90,30 @@ export function renderSelectedResourceDetail(
   if (!selected) {
     return `<section class="resource-detail-panel resource-detail-empty">${renderEmptyState({
       title: "Selecione um recurso",
-      description: "Escolha uma conta ou cartão na lista para consultar e manter o cadastro.",
+      description:
+        "Escolha uma conta ou cartão na lista para consultar e manter o cadastro.",
     })}</section>`;
   }
 
   return selected.kind === "account"
     ? renderAccountDetail(selected.account, selected.currency)
-    : renderCardDetail(selected.card, accounts, selected.paymentAccount, selected.currency);
+    : renderCardDetail(
+        selected.card,
+        accounts,
+        selected.paymentAccount,
+        selected.currency,
+      );
 }
 
-function renderAccountDetail(account: AccountRecord, currency: string | undefined): string {
+function renderAccountDetail(
+  account: AccountRecord,
+  currency: string | undefined,
+): string {
   const viewModel = buildAccountItemViewModel(account);
-  const money = formatAmountWithCurrency(account.openingBalanceMinor ?? 0, currency);
+  const money = formatAmountWithCurrency(
+    account.openingBalanceMinor ?? 0,
+    currency,
+  );
   return `
     <section class="resource-detail-panel" data-resource-detail="account" data-resource-key="account:${escapeHtml(account.id)}">
       <header class="resource-detail-heading">
@@ -167,17 +190,29 @@ function renderCardDetail(
     </section>`;
 }
 
-function detailField(label: string, value: string, unavailable = false): string {
+function detailField(
+  label: string,
+  value: string,
+  unavailable = false,
+): string {
   return `<div class="resource-detail-field${unavailable ? " is-unavailable" : ""}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
 }
 
-function formatAmountWithCurrency(amountMinor: number, currency: string | undefined): string {
+function formatAmountWithCurrency(
+  amountMinor: number,
+  currency: string | undefined,
+): string {
   if (!currency) return `${formatMoneyInput(amountMinor)} · moeda indisponível`;
   return formatMinorCurrency(amountMinor, { currency });
 }
 
-function renderCardInstrumentList(card: CreditCardAccountRecord, currency?: string): string {
-  const hasActiveInstrument = card.instruments.some((instrument) => instrument.status === "active");
+function renderCardInstrumentList(
+  card: CreditCardAccountRecord,
+  currency?: string,
+): string {
+  const hasActiveInstrument = card.instruments.some(
+    (instrument) => instrument.status === "active",
+  );
   const inactiveNotice = hasActiveInstrument
     ? ""
     : `<p class="instrument-warning" role="status">Sem instrumento ativo para novos lançamentos. Cadastre um novo instrumento para voltar a usar este cartão.</p>`;
@@ -194,11 +229,16 @@ function renderCardInstrumentItem(
   instrument: CardInstrumentRecord,
   currency?: string,
 ): string {
-  const title = instrument.name?.trim() || `${formatInstrumentType(instrument.type)} ${formatInstrumentHolder(instrument.holder).toLowerCase()}`;
+  const title =
+    instrument.name?.trim() ||
+    `${formatInstrumentType(instrument.type)} ${formatInstrumentHolder(instrument.holder).toLowerCase()}`;
   const isActive = instrument.status === "active";
   const escapedTitle = escapeHtml(title);
   const editDialogId = `edit-card-instrument-dialog-${instrument.id}`;
-  const limit = instrument.creditLimitMinor === undefined ? "" : ` · limite ${formatAmountWithCurrency(instrument.creditLimitMinor, currency)}`;
+  const limit =
+    instrument.creditLimitMinor === undefined
+      ? ""
+      : ` · limite ${formatAmountWithCurrency(instrument.creditLimitMinor, currency)}`;
   const setDefaultAction =
     isActive && !instrument.isDefault
       ? `<form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/default-instrument" class="inline-action-form"><input type="hidden" name="instrumentId" value="${escapeHtml(instrument.id)}" /><button type="submit" class="icon-button" aria-label="Definir ${escapedTitle} como default">${renderDefaultIcon()}</button></form>`
@@ -220,7 +260,10 @@ export function renderAccountItem(account: AccountRecord): string {
   return `<article class="master-item" data-master-item data-status="${escapeHtml(account.status)}" data-search="${escapeHtml(viewModel.search)}"><div class="identity-mark">${renderInstitutionIcon(viewModel.institutionKey)}</div><div class="item-main"><div class="item-title-row"><strong>${escapeHtml(account.name)}</strong><span class="status-pill">${escapeHtml(formatGenericStatus(account.status))}</span></div><p>${escapeHtml(formatAccountKind(account.kind))} · ${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(account.currency ?? "Moeda não informada")}${viewModel.bankIdentifier ? ` · ${escapeHtml(viewModel.bankIdentifier)}` : ""}</p></div><div class="amount-stack"><span>Saldo inicial</span><strong>${formatAmountWithCurrency(account.openingBalanceMinor ?? 0, normalizeCurrency(account.currency))}</strong></div>${renderAccountEditDialog(account, viewModel.editDialogId)}</article>`;
 }
 
-export function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]): string {
+export function renderCardItem(
+  card: CreditCardAccountRecord,
+  accounts: AccountRecord[],
+): string {
   const viewModel = buildCardItemViewModel(card, accounts);
   return `<article class="master-item card-account-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(viewModel.search)}"><div class="identity-mark card-mark" aria-hidden="true">${renderCardBrandIcon(viewModel.brandKey)}</div><div class="item-main"><div class="item-title-row"><strong>${escapeHtml(card.name)}</strong><span class="status-pill">${escapeHtml(formatGenericStatus(card.status))}</span></div><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(viewModel.brandLabel)} · fecha ${card.closingDay}, vence ${card.dueDay}</p></div><div class="amount-stack"><span>Limite total</span><strong>${viewModel.paymentAccountCurrency ? formatAmountWithCurrency(card.creditLimitMinor ?? 0, viewModel.paymentAccountCurrency) : "Moeda indisponível"}</strong></div>${renderCardEditDialog(card, accounts, viewModel.editDialogId)}</article>`;
 }

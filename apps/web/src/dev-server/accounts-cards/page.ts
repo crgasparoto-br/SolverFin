@@ -14,19 +14,40 @@ import {
 } from "./components.js";
 import { renderAccountDialog, renderCardDialog } from "./dialogs.js";
 import { escapeHtml } from "./presentation.js";
-import { renderAccountsCardsApiFormScript, renderAccountsCardsRuntimeScript } from "./runtime.js";
+import {
+  renderAccountsCardsApiFormScript,
+  renderAccountsCardsRuntimeScript,
+} from "./runtime.js";
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
 import { buildAccountsCardsPageViewModel } from "./view-model.js";
 
-export async function renderAccountsCardsPage(token: string, url?: URL): Promise<string> {
+export async function renderAccountsCardsPage(
+  token: string,
+  url?: URL,
+): Promise<string> {
   const [accounts, creditCardAccounts] = await Promise.all([
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts?status=all"),
-    apiGet<{ creditCardAccounts: CreditCardAccountRecord[] }>(token, "/api/credit-card-accounts?status=all"),
+    apiGet<{ creditCardAccounts: CreditCardAccountRecord[] }>(
+      token,
+      "/api/credit-card-accounts?status=all",
+    ),
   ]);
 
-  if (!accounts.ok) return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", accounts.error);
-  if (!creditCardAccounts.ok) return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", creditCardAccounts.error);
+  if (!accounts.ok) {
+    return renderApiErrorPage(
+      "/contas-cartoes",
+      "Contas e Cartões",
+      accounts.error,
+    );
+  }
+  if (!creditCardAccounts.ok) {
+    return renderApiErrorPage(
+      "/contas-cartoes",
+      "Contas e Cartões",
+      creditCardAccounts.error,
+    );
+  }
 
   const viewModel = buildAccountsCardsPageViewModel(
     accounts.data.accounts,
@@ -39,7 +60,10 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
     <button type="button" class="secondary-button" data-open-dialog="new-card-dialog">Adicionar cartão</button>`;
   const masterDetail = renderDetailLayout({
     masterHtml: renderResourceMaster(viewModel.resources),
-    detailHtml: renderSelectedResourceDetail(viewModel.selectedResource, viewModel.accounts),
+    detailHtml: renderSelectedResourceDetail(
+      viewModel.selectedResource,
+      viewModel.accounts,
+    ),
   });
   const loading = `<div data-resource-loading hidden>${renderLoading({ title: "Atualizando cadastro", description: "Aguarde enquanto a alteração é salva." })}</div>`;
 
@@ -51,14 +75,19 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
       childrenHtml: `${renderPageHeader({
         eyebrow: "Cadastros financeiros",
         title: "Contas e cartões",
-        description: "Selecione um recurso para consultar contexto, moeda, instrumentos e ações de manutenção sem perder a listagem.",
+        description:
+          "Selecione um recurso para consultar contexto, moeda, instrumentos e ações de manutenção sem perder a listagem.",
         actionsHtml: headerActions,
       })}${loading}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
     }),
   });
 }
 
-function renderAuthenticatedPage(input: { pathname: string; currentLabel: string; content: string }): string {
+function renderAuthenticatedPage(input: {
+  pathname: string;
+  currentLabel: string;
+  content: string;
+}): string {
   return renderAuthenticatedShellDocument({
     activePathname: input.pathname,
     content: input.content,
@@ -67,7 +96,11 @@ function renderAuthenticatedPage(input: { pathname: string; currentLabel: string
   });
 }
 
-function renderApiErrorPage(pathname: string, currentLabel: string, error: string): string {
+function renderApiErrorPage(
+  pathname: string,
+  currentLabel: string,
+  error: string,
+): string {
   return renderAuthenticatedPage({
     pathname,
     currentLabel,

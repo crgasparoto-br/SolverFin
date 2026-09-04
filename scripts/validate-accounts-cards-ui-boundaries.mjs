@@ -21,13 +21,20 @@ const failures = [];
 
 for (const moduleName of expectedModules) {
   const filePath = resolve(boundaryRoot, moduleName);
-  if (!existsSync(filePath)) failures.push(`missing boundary module: ${moduleName}`);
+  if (!existsSync(filePath)) {
+    failures.push(`missing boundary module: ${moduleName}`);
+  }
 }
 
 const facadePath = resolve(sourceRoot, "accounts-cards-page.ts");
 const facade = readFileSync(facadePath, "utf8").trim();
-if (facade !== 'export { renderAccountsCardsPage } from "./accounts-cards/page.js";') {
-  failures.push("accounts-cards-page.ts must remain a compatibility facade for the structured page module");
+if (
+  facade !==
+  'export { renderAccountsCardsPage } from "./accounts-cards/page.js";'
+) {
+  failures.push(
+    "accounts-cards-page.ts must remain a compatibility facade for the structured page module",
+  );
 }
 
 const page = readFileSync(resolve(boundaryRoot, "page.ts"), "utf8");
@@ -39,7 +46,9 @@ for (const importNeedle of [
   'from "./styles.js"',
   'from "./view-model.js"',
 ]) {
-  if (!page.includes(importNeedle)) failures.push(`page.ts is not composed through ${importNeedle}`);
+  if (!page.includes(importNeedle)) {
+    failures.push(`page.ts is not composed through ${importNeedle}`);
+  }
 }
 
 for (const requiredNeedle of [
@@ -48,7 +57,9 @@ for (const requiredNeedle of [
   "renderResourceMaster",
   "renderSelectedResourceDetail",
 ]) {
-  if (!page.includes(requiredNeedle)) failures.push(`A3 structural renderer is missing ${requiredNeedle}`);
+  if (!page.includes(requiredNeedle)) {
+    failures.push(`A3 structural renderer is missing ${requiredNeedle}`);
+  }
 }
 
 for (const forbiddenNeedle of [
@@ -57,26 +68,54 @@ for (const forbiddenNeedle of [
   "function masterPageScript",
   "function baseCss",
 ]) {
-  if (page.includes(forbiddenNeedle)) failures.push(`page.ts still owns or exposes retired structure: ${forbiddenNeedle}`);
+  if (page.includes(forbiddenNeedle)) {
+    failures.push(
+      `page.ts still owns or exposes retired structure: ${forbiddenNeedle}`,
+    );
+  }
 }
 
 const viewModel = readFileSync(resolve(boundaryRoot, "view-model.ts"), "utf8");
-for (const forbiddenNeedle of ["apiGet(", "<script", "<style", "renderAuthenticatedShellDocument"]) {
-  if (viewModel.includes(forbiddenNeedle)) failures.push(`view-model.ts crossed its data-preparation boundary: ${forbiddenNeedle}`);
+for (const forbiddenNeedle of [
+  "apiGet(",
+  "<script",
+  "<style",
+  "renderAuthenticatedShellDocument",
+]) {
+  if (viewModel.includes(forbiddenNeedle)) {
+    failures.push(
+      `view-model.ts crossed its data-preparation boundary: ${forbiddenNeedle}`,
+    );
+  }
 }
-for (const requiredNeedle of ["ResourceMasterViewModel", "SelectedResourceViewModel", "normalizeCurrency"]) {
-  if (!viewModel.includes(requiredNeedle)) failures.push(`view-model.ts is missing ${requiredNeedle}`);
+for (const requiredNeedle of [
+  "ResourceMasterViewModel",
+  "SelectedResourceViewModel",
+  "normalizeCurrency",
+]) {
+  if (!viewModel.includes(requiredNeedle)) {
+    failures.push(`view-model.ts is missing ${requiredNeedle}`);
+  }
 }
 
-const legacyShimPath = resolve(sourceRoot, "accounts-cards-page-dialog-only.ts");
-const expectedLegacyShim = 'export { keepCardInstrumentsInsideEditDialog } from "./accounts-cards-dialog-transition.js";';
+const legacyShimPath = resolve(
+  sourceRoot,
+  "accounts-cards-page-dialog-only.ts",
+);
+const expectedLegacyShim =
+  'export { keepCardInstrumentsInsideEditDialog } from "./accounts-cards-dialog-transition.js";';
 if (!existsSync(legacyShimPath)) {
   failures.push("accounts-cards-page-dialog-only.ts compatibility shim is missing");
 } else if (readFileSync(legacyShimPath, "utf8").trim() !== expectedLegacyShim) {
-  failures.push("accounts-cards-page-dialog-only.ts must remain a thin deprecated compatibility shim");
+  failures.push(
+    "accounts-cards-page-dialog-only.ts must remain a thin deprecated compatibility shim",
+  );
 }
 
-const transitionPath = resolve(sourceRoot, "accounts-cards-dialog-transition.ts");
+const transitionPath = resolve(
+  sourceRoot,
+  "accounts-cards-dialog-transition.ts",
+);
 if (!existsSync(transitionPath)) {
   failures.push("accounts-cards-dialog-transition.ts is missing");
 } else {
@@ -87,7 +126,11 @@ if (!existsSync(transitionPath)) {
 }
 
 const server = readFileSync(resolve(root, "apps/web/src/dev-server.ts"), "utf8");
-if (!server.includes("sendHtml(response, 200, await renderAccountsCardsPage(token, url));")) {
+if (
+  !server.includes(
+    "sendHtml(response, 200, await renderAccountsCardsPage(token, url));",
+  )
+) {
   failures.push("/contas-cartoes must be dispatched directly by the A3 renderer");
 }
 for (const retiredProcessor of [
@@ -96,7 +139,9 @@ for (const retiredProcessor of [
   "accounts-cards-action-menus",
 ]) {
   if (server.includes(`id: "${retiredProcessor}"`)) {
-    failures.push(`retired processor returned to /contas-cartoes: ${retiredProcessor}`);
+    failures.push(
+      `retired processor returned to /contas-cartoes: ${retiredProcessor}`,
+    );
   }
 }
 

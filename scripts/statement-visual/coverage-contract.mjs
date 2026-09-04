@@ -284,7 +284,7 @@ const simpleScenarios = [
   ["inbox-date-filter", "scripts/statement-visual/inbox-date-filter.mjs", "/inbox", "A6", "filtered", "responsive", "filter", "date-filter"],
   ["accounts-cards-interface", "scripts/statement-visual/accounts-cards-interface.mjs", "/contas-cartoes", "A3", "normal", "desktop-mobile", "keyboard-focus-modal", "accounts-and-cards"],
   ["hover-states", "scripts/statement-visual/issue-537-hover-states.mjs", "/lancamentos", "A2", "interactive", "desktop", "hover-focus", "hover-states"],
-  ["operational-installments", "scripts/statement-visual/issue-539-operational-installments-v2.mjs", "/lancamentos", "A2", "installments", "responsive", "installment-flow", "installments"],
+  ["operational-installments", "scripts/statement-visual/issue-539-operational-installments.mjs", "/lancamentos", "A2", "installments", "responsive", "installment-flow", "installments"],
   ["operational-installments-keyboard", "scripts/statement-visual/issue-539-operational-installments-keyboard.mjs", "/lancamentos", "A2", "installments", "desktop", "keyboard-focus", "installments"],
   ["installment-grouping-guard", "scripts/statement-visual/issue-539-installment-grouping-guard.mjs", "/lancamentos", "A2", "grouped", "responsive", "grouping-guard", "installment-grouping"],
   ["manual-installments", "scripts/statement-visual/issue-553-manual-installments-v2.mjs", "/lancamentos", "A2", "editing", "dialog", "submit-retry", "manual-installments"],

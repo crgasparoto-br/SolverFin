@@ -104,10 +104,10 @@ Coberturas representativas atuais incluem:
 | Extrato foco + overflow, ordenacao, insight e desktop/mobile                                 | `issue-606-semantic-interactions.mjs`                                  |
 | Dashboard e demais core pages responsivos                                                    | `issue-606-core-pages-execution.mjs`                                   |
 | Dashboard vazio em perfil novo                                                               | `issue-606-dashboard-empty.mjs`                                        |
-| Cartoes filtros, modal, ordenacao, subtotais, resumo, finalizer e Tabs de fatura              | `issue-610-cards-semantic-interactions.mjs`                             |
+| Cartoes filtros, modal, ordenacao, subtotais, resumo, finalizer e Tabs                       | `issue-610-cards-semantic-interactions.mjs`                            |
 | Cartoes vazio por filtro                                                                     | `issue-606-cards-execution.mjs`                                        |
 | Cartoes em 1366x768, conteudo longo e teclado                                                | `cards-interface-adversarial.mjs`                                      |
-| Contas e Cartoes A3 desktop/mobile, master-detail, selecao, filtros, dialogs e acoes diretas  | `accounts-cards-interface.mjs` + adaptador de claims                   |
+| Contas e Cartoes A3 master-detail, dialogs e acoes diretas                                   | `accounts-cards-interface.mjs` + adaptador de claims                   |
 | Contas e Cartoes vazio em perfil novo                                                        | `issue-606-accounts-cards-empty.mjs`                                   |
 | Relatorios foco + overflow e estrutura desktop/mobile                                        | `issue-606-semantic-interactions.mjs`                                  |
 | Relatorios vazio/erro                                                                        | `issue-606-reports-execution.mjs`                                      |

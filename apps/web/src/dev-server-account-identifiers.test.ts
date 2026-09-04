@@ -9,13 +9,47 @@ async function accountsPageSeparatesAgencyAndAccount(): Promise<void> {
   globalThis.fetch = (async (input: string | URL | Request) => {
     const url = String(input);
     if (url.endsWith("/api/accounts?status=all")) {
-      return jsonResponse({ accounts: [
-        { id: "account-separated", name: "Conta separada", kind: "checking", status: "active", openingBalanceMinor: 0, currency: "BRL", institutionKey: "c6", agencyIdentifier: "0001", accountIdentifier: "12345-6" },
-        { id: "account-legacy", name: "Conta legada", kind: "checking", status: "active", openingBalanceMinor: 0, currency: "USD", institutionKey: "c6", maskedIdentifier: "Ag **** · Conta **** 7788" },
-        { id: "account-hybrid", name: "Conta híbrida", kind: "checking", status: "active", openingBalanceMinor: 0, currency: "EUR", institutionKey: "c6", agencyIdentifier: "4321", accountIdentifier: "99999-0", maskedIdentifier: "LEGADO **** 1111" },
-      ] });
+      return jsonResponse({
+        accounts: [
+          {
+            id: "account-separated",
+            name: "Conta separada",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 0,
+            currency: "BRL",
+            institutionKey: "c6",
+            agencyIdentifier: "0001",
+            accountIdentifier: "12345-6",
+          },
+          {
+            id: "account-legacy",
+            name: "Conta legada",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 0,
+            currency: "USD",
+            institutionKey: "c6",
+            maskedIdentifier: "Ag **** · Conta **** 7788",
+          },
+          {
+            id: "account-hybrid",
+            name: "Conta híbrida",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 0,
+            currency: "EUR",
+            institutionKey: "c6",
+            agencyIdentifier: "4321",
+            accountIdentifier: "99999-0",
+            maskedIdentifier: "LEGADO **** 1111",
+          },
+        ],
+      });
     }
-    if (url.endsWith("/api/credit-card-accounts?status=all")) return jsonResponse({ creditCardAccounts: [] });
+    if (url.endsWith("/api/credit-card-accounts?status=all")) {
+      return jsonResponse({ creditCardAccounts: [] });
+    }
     throw new Error(`Unexpected fetch: ${url}`);
   }) as typeof fetch;
 
@@ -37,7 +71,10 @@ async function accountsPageSeparatesAgencyAndAccount(): Promise<void> {
     assert.match(separatedEdit, /name="agencyIdentifier" value="0001"/);
     assert.match(separatedEdit, /name="accountIdentifier" value="12345-6"/);
     assert.match(legacy, /Ag \*\*\*\* · Conta \*\*\*\* 7788/);
-    assert.match(legacyEdit, /Identificador legado: Ag \*\*\*\* · Conta \*\*\*\* 7788/);
+    assert.match(
+      legacyEdit,
+      /Identificador legado: Ag \*\*\*\* · Conta \*\*\*\* 7788/,
+    );
     assert.match(legacyEdit, /name="agencyIdentifier" value=""/);
     assert.match(legacyEdit, /name="accountIdentifier" value=""/);
     assert.match(hybrid, /Agência final 21 · Conta final 99-0/);
@@ -51,7 +88,12 @@ async function accountsPageSeparatesAgencyAndAccount(): Promise<void> {
 }
 
 function renderAccount(accountId: string): Promise<string> {
-  return renderAccountsCardsPage("session-token", new URL(`https://solverfin.invalid/contas-cartoes?resource=${encodeURIComponent(`account:${accountId}`)}`));
+  return renderAccountsCardsPage(
+    "session-token",
+    new URL(
+      `https://solverfin.invalid/contas-cartoes?resource=${encodeURIComponent(`account:${accountId}`)}`,
+    ),
+  );
 }
 
 function selectedDetail(html: string): string {
@@ -70,5 +112,8 @@ function sliceDialog(html: string, id: string): string {
 }
 
 function jsonResponse(body: unknown): Response {
-  return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json; charset=utf-8" } });
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
 }

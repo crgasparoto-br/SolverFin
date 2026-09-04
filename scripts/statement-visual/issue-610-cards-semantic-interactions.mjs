@@ -2,12 +2,19 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const sourceScenario = process.env.STATEMENT_VISUAL_SOURCE_SCENARIO_ID;
 const candidateSha =
@@ -17,7 +24,9 @@ if (!chromePath) {
   throw new Error("CHROME_BIN is required for cards semantic visual validation.");
 }
 if (sourceScenario !== "cards-interface") {
-  throw new Error(`Unsupported cards semantic source scenario: ${sourceScenario ?? "<missing>"}.`);
+  throw new Error(
+    `Unsupported cards semantic source scenario: ${sourceScenario ?? "<missing>"}.`,
+  );
 }
 
 await mkdir(outputDir, { recursive: true });
@@ -53,11 +62,25 @@ async function validateCards(cdp) {
   await waitForCards(cdp);
 
   const desktopStructure = await inspectCardsStructure(cdp);
-  assert.equal(desktopStructure.pageFits, true, "Cards desktop page overflows horizontally.");
-  assert.equal(desktopStructure.summaryVisible, true, "Cards invoice summary is not visible.");
-  assert.ok(desktopStructure.tabCount > 0, "Cards invoice Tabs primitive is not present in the real flow.");
+  assert.equal(
+    desktopStructure.pageFits,
+    true,
+    "Cards desktop page overflows horizontally.",
+  );
+  assert.equal(
+    desktopStructure.summaryVisible,
+    true,
+    "Cards invoice summary is not visible.",
+  );
+  assert.ok(
+    desktopStructure.tabCount > 0,
+    "Cards invoice Tabs primitive is not present in the real flow.",
+  );
   assert.ok(desktopStructure.purchaseCount > 0, "Cards rendered no purchases.");
-  assert.ok(desktopStructure.instrumentGroupCount > 0, "Cards rendered no instrument groups.");
+  assert.ok(
+    desktopStructure.instrumentGroupCount > 0,
+    "Cards rendered no instrument groups.",
+  );
   assert.equal(
     desktopStructure.instrumentSubtotalsValid,
     true,
@@ -88,14 +111,22 @@ async function validateCards(cdp) {
       emptyVisible: Boolean(document.querySelector('[data-purchase-filter-empty]')),
     }))()`,
   );
-  assert.equal(filteredState.rowCount, 0, "Cards filtered state still renders purchases.");
+  assert.equal(
+    filteredState.rowCount,
+    0,
+    "Cards filtered state still renders purchases.",
+  );
   assert.equal(
     filteredState.query,
     "consulta-sem-resultado-visual",
     "Cards search query is not preserved by SSR filtering.",
   );
   assert.match(filteredState.status, /^0\s+compras?$/);
-  assert.equal(filteredState.emptyVisible, true, "Cards filtered empty state is missing.");
+  assert.equal(
+    filteredState.emptyVisible,
+    true,
+    "Cards filtered empty state is missing.",
+  );
 
   await navigate(cdp, `${baseUrl}${baseRoute}&reconciliation=unreconciled`);
   await waitForCards(cdp);
@@ -113,23 +144,36 @@ async function validateCards(cdp) {
       };
     })()`,
   );
-  assert.ok(filterState.count > 0, "Cards unreconciled filter returned no purchase.");
+  assert.ok(
+    filterState.count > 0,
+    "Cards unreconciled filter returned no purchase.",
+  );
   assert.equal(
     filterState.onlyUnreconciled,
     true,
     "Cards reconciliation filter leaked reconciled rows.",
   );
-  assert.equal(filterState.selected, true, "Cards reconciliation filter lost its selected state.");
+  assert.equal(
+    filterState.selected,
+    true,
+    "Cards reconciliation filter lost its selected state.",
+  );
 
   const dateDesc = await inspectCardSort(cdp, "date_desc");
   const dateAsc = await inspectCardSort(cdp, "date_asc");
-  assert.ok(dateDesc.comparableGroups > 0, "Cards sorting has no comparable purchase group.");
+  assert.ok(
+    dateDesc.comparableGroups > 0,
+    "Cards sorting has no comparable purchase group.",
+  );
   assert.equal(dateDesc.sorted, true, "Cards date_desc order is not descending.");
   assert.equal(dateAsc.sorted, true, "Cards date_asc order is not ascending.");
 
   await navigate(cdp, `${baseUrl}${baseRoute}`);
   await waitForCards(cdp);
-  await evaluate(cdp, `document.querySelector('[data-open-modal="purchase"]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-open-modal="purchase"]')?.click()`,
+  );
   await waitFor(
     cdp,
     `Boolean(document.querySelector('dialog[data-modal="purchase"][open]'))`,
@@ -157,18 +201,44 @@ async function validateCards(cdp) {
     })()`,
   );
   assert.equal(modal.labelled, true, "Cards purchase modal is not labelled.");
-  assert.equal(modal.insideViewport, true, "Cards purchase modal exceeds the viewport.");
-  assert.equal(modal.focusInside, true, "Cards purchase modal did not receive focus.");
-  assert.equal(modal.firstControlExists, true, "Cards purchase modal has no interactive control.");
+  assert.equal(
+    modal.insideViewport,
+    true,
+    "Cards purchase modal exceeds the viewport.",
+  );
+  assert.equal(
+    modal.focusInside,
+    true,
+    "Cards purchase modal did not receive focus.",
+  );
+  assert.equal(
+    modal.firstControlExists,
+    true,
+    "Cards purchase modal has no interactive control.",
+  );
 
   await setViewport(cdp, 390, 844);
   await navigate(cdp, `${baseUrl}${baseRoute}`);
   await waitForCards(cdp);
   const mobileStructure = await inspectCardsStructure(cdp);
-  assert.equal(mobileStructure.pageFits, true, "Cards mobile page overflows horizontally.");
-  assert.equal(mobileStructure.summaryVisible, true, "Cards mobile summary is not visible.");
-  assert.ok(mobileStructure.tabCount > 0, "Cards invoice Tabs primitive is not present on mobile.");
-  assert.ok(mobileStructure.purchaseCount > 0, "Cards mobile rendered no purchases.");
+  assert.equal(
+    mobileStructure.pageFits,
+    true,
+    "Cards mobile page overflows horizontally.",
+  );
+  assert.equal(
+    mobileStructure.summaryVisible,
+    true,
+    "Cards mobile summary is not visible.",
+  );
+  assert.ok(
+    mobileStructure.tabCount > 0,
+    "Cards invoice Tabs primitive is not present on mobile.",
+  );
+  assert.ok(
+    mobileStructure.purchaseCount > 0,
+    "Cards mobile rendered no purchases.",
+  );
 
   return {
     desktop: desktopStructure,
