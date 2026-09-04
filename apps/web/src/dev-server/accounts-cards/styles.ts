@@ -60,6 +60,7 @@ export function accountsCardsPageStyles(): string {
     .secondary-button, .danger-button { align-items: center; border-radius: var(--radius); display: inline-flex; font: inherit; font-weight: 650; gap: 7px; min-height: 40px; padding: 0 12px; }
     .secondary-button { background: var(--surface); border: 1px solid var(--line); color: var(--text); }
     .danger-button { background: var(--surface); border: 1px solid #fecaca; color: var(--danger); }
+    .danger-button:hover:not(:disabled), .danger-button:focus-visible { background: var(--danger-bg); border-color: var(--sf-color-danger-border); color: var(--danger); }
     .icon-button { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--primary); display: inline-flex; height: 40px; justify-content: center; min-width: 40px; padding: 0; }
     .danger-icon-button { color: var(--danger); }
     .edit-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: 10px; }
