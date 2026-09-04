@@ -1,0 +1,36 @@
+Parent epic: #591
+Depends on: #595, #601, #602, #603, #605
+
+## Objetivo
+
+Migrar `/relatorios` para o arquétipo de análise, priorizando entendimento e decisão antes da matriz detalhada.
+
+## Escopo
+
+- preservar filtros e contratos analíticos existentes;
+- estruturar cada relatório em resumo/conclusão, visualização, destaques e detalhe tabular;
+- manter blocos separados por moeda por padrão;
+- usar primitives/layout/view-model e `Money`;
+- permitir drilldown quando houver rota/filtro canônico;
+- manter tabelas/matrizes acessíveis e usáveis em viewport reduzida.
+
+## Critérios de aceite
+
+- [ ] matriz detalhada não é a primeira/única representação do relatório quando houver resumo útil;
+- [ ] moedas distintas aparecem separadas sem soma implícita;
+- [ ] filtros continuam reproduzíveis e refletidos na visualização;
+- [ ] tabelas preservam teclado, headers semânticos e overflow controlado;
+- [ ] loading, vazio e erro possuem estados claros;
+- [ ] testes cobrem ao menos um relatório multi-moedas e um período extenso.
+
+## Fora de escopo
+
+- criar provider de câmbio;
+- mudar cálculos do relatório sem issue de domínio correspondente.
+
+## Referências
+
+- #591
+- `docs/REPORTS.md`
+- `docs/API_REPORTS.md`
+- ADR 0013

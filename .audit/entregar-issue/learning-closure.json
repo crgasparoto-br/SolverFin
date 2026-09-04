@@ -3,43 +3,42 @@
   "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
+    "rejection_id": "audit-rejection:e115eb84-81c6-41b9-b5ec-4856662d6e88",
     "finding_ids": [
-      "A-003"
+      "A-001"
     ],
-    "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
+    "audit_report_sha256": "a30a460a84ec1981cf1791ffdaaeea00ae3425dd30fd55322eb12e5acd1af5a0"
   },
   "generalized_learning": {
-    "escape_class": "relational-monetary-unit-mismatch",
-    "generalized_failure_pattern": "A financial aggregate can look structurally valid while related entities carry incompatible monetary units and minor values are combined without a conversion contract.",
-    "plausible_wrong_implementation": "Validate that each currency string is individually valid but never assert currency equality across the aggregate and its producers or consumers.",
+    "escape_class": "silent-translation-loss",
+    "generalized_failure_pattern": "A presentation or transport layer can preserve readable labels while discarding canonical identity needed by a later canonical route, filter or action boundary.",
+    "plausible_wrong_implementation": "Map display labels only, allow homonymous resources to look correct, and conclude that no canonical destination exists because the identifier was lost before the navigation decision.",
     "trigger_signals": [
-      "money aggregate updated by related entity",
-      "currency accepted from caller",
-      "minor-unit arithmetic across relationship",
-      "no explicit conversion provider"
+      "canonical route/filter/action exists",
+      "presentation mapping/view-model between source and consumer",
+      "display label differs from canonical identity",
+      "conditional navigation or mutation depends on identity"
     ],
     "risk_families": [
-      "semantic-effect"
+      "structural-contract",
+      "documentation"
     ],
-    "reusable_control": "REL-SEM-001: before monetary aggregation or settlement, require related entities to share the canonical currency unless an explicit conversion contract is present.",
-    "prevention_rule": "Reject a related monetary operation before mutation when its currency differs from the canonical aggregate currency and no conversion contract exists.",
-    "detection_rule": "Attack the literal writer plus installment, move, historical-read, forecast, and payment siblings with deliberately divergent currencies and assert no partial mutation.",
+    "reusable_control": {
+      "id": "CANONICAL-TARGET-IDENTITY-001",
+      "procedure": "Use two deliberately distinct canonical identities with the same display label, traverse the mapping boundary and observe the downstream canonical consumer; also test a missing-identity case."
+    },
+    "prevention_rule": "When a requirement is conditional on a canonical destination, enumerate candidate canonical routes/filters/actions before declaring none and preserve every identity field required by the selected destination through intermediate transforms.",
+    "detection_rule": "Adversarially vary canonical identity independently from display labels and observe the final navigation/action boundary; reject fabricated destinations when identity is absent.",
     "transfer_cases": [
       {
-        "surface": "aggregate-writer",
-        "status": "passed",
-        "evidence": "Cross-currency purchase and future installment invoice are rejected before mutation."
+        "surface": "presentation-mapping",
+        "case": "Two resources share one label but have distinct canonical identities before a navigable consumer.",
+        "status": "passed"
       },
       {
-        "surface": "aggregate-relink",
-        "status": "passed",
-        "evidence": "Cross-currency invoice-period move is rejected before source, destination, or transaction changes."
-      },
-      {
-        "surface": "aggregate-consumer",
-        "status": "passed",
-        "evidence": "Historical mismatch fails closed and payment/forecast boundaries preserve currency identity."
+        "surface": "documentation-claim-resolution",
+        "case": "A capability claim is checked against the canonical route/filter inventory before stating that no destination exists.",
+        "status": "passed"
       }
     ],
     "promotion_status": "promoted"
@@ -48,12 +47,14 @@
     {
       "role": "prevention",
       "status": "passed",
-      "evidence": "REL-SEM-001 is represented in the critical attack matrix and inherited controls."
+      "evidence": "evidence/entregar-skill-tests.txt",
+      "change": "The delivery controller explicitly derives semantic identity propagation controls from canonical-path requirements."
     },
     {
       "role": "detection",
       "status": "passed",
-      "evidence": "Exact-head domain/API tests exercise the literal case and distinct sibling surfaces."
+      "evidence": "evidence/auditar-skill-tests.txt",
+      "change": "Re-audit readiness enforces cumulative rejection closure and semantic evidence before another independent audit."
     }
   ]
 }

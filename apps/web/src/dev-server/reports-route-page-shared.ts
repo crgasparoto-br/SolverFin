@@ -1,4 +1,8 @@
 import { renderAuthenticatedShellDocument } from "./shell.js";
+import {
+  renderReportAnalysisStateBlock,
+  type ReportAnalysisState,
+} from "./reports-analysis-archetype.js";
 import { reportPageStyles } from "./reports-route-page-styles.js";
 
 export type ReportsView = "category-evolution" | "installments";
@@ -25,11 +29,16 @@ export function renderReportViewNavigation(selected: ReportsView, profileId?: st
 }
 
 export function renderReportState(
-  state: "empty" | "filter-error" | "api-error",
+  state: ReportAnalysisState,
   title: string,
   description: string,
 ): string {
-  return `<section class="panel report-state report-state-${state}" data-report-state="${state}" role="${state === "empty" ? "status" : "alert"}"><strong>${escapeReportHtml(title)}</strong><p class="muted">${escapeReportHtml(description)}</p></section>`;
+  return renderReportAnalysisStateBlock({
+    id: `report-state-${state}`,
+    state,
+    title,
+    description,
+  });
 }
 
 export function renderReportsShell(content: string): string {

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+  "head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
   "families": [
     {
       "family": "authorization",
@@ -28,45 +28,25 @@
     },
     {
       "family": "reference-liveness",
-      "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
-      "control_ids": [
-        "NEG-REQ-610-02-01"
-      ],
-      "dimensions": [
-        {
-          "surface": "selected-invoice-context",
-          "reason": "The REQ-610-02 contract can fail specifically at selected-invoice-context while adjacent card behavior remains valid.",
-          "control_ids": [
-            "NEG-REQ-610-02-01"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
     },
     {
       "family": "temporal-consistency",
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-REQ-610-02-03",
-        "NEG-REQ-610-08-02"
+        "NEG-REQ-012-02"
       ],
       "dimensions": [
         {
-          "surface": "invoice-period-state",
-          "reason": "The REQ-610-02 contract can fail specifically at invoice-period-state while adjacent card behavior remains valid.",
+          "surface": "extended-period-sequence",
+          "reason": "An extended window can have wrong period count/order while short windows pass.",
           "control_ids": [
-            "NEG-REQ-610-02-03"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "reporting-availability-window",
-          "reason": "The REQ-610-08 contract can fail specifically at reporting-availability-window while adjacent card behavior remains valid.",
-          "control_ids": [
-            "NEG-REQ-610-08-02"
+            "NEG-REQ-012-02"
           ],
           "status": "passed"
         }
@@ -75,11 +55,22 @@
     },
     {
       "family": "temporal-destination",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-012-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "extended-period-boundary",
+          "reason": "Period generation can drift at the far boundary of the requested extended interval.",
+          "control_ids": [
+            "NEG-REQ-012-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "concurrency-atomicity",
@@ -118,47 +109,52 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-REQ-610-06-03",
-        "NEG-REQ-610-06-04",
-        "NEG-REQ-610-07-02",
-        "NEG-REQ-610-07-03",
-        "NEG-REQ-610-08-03",
-        "NEG-REQ-610-08-05",
-        "NEG-REQ-610-08-06"
+        "DELIVERY-TARGET-BINDING-001",
+        "HANDOFF-BASE-ORIGIN-001",
+        "NEG-REQ-002-01",
+        "NEG-REQ-005-02",
+        "TEST-REQ-012-EXTENDED-PERIOD",
+        "TEST-REQ-012-MULTICURRENCY"
       ],
       "dimensions": [
         {
-          "surface": "delivery-format-gate",
-          "reason": "The REQ-610-08 contract can fail specifically at delivery-format-gate while adjacent card behavior remains valid.",
+          "surface": "analysis-layer-order",
+          "reason": "All sections can exist while the detail matrix is still presented before the decision layers.",
           "control_ids": [
-            "NEG-REQ-610-08-03"
+            "NEG-REQ-002-01"
           ],
           "status": "passed"
         },
         {
           "surface": "delivery-target-binding",
-          "reason": "Systemic-remediation structural guard prevents the audited shortcut from being translated into a valid state.",
+          "reason": "Delivery evidence can be internally coherent yet belong to a different target or origin.",
           "control_ids": [
-            "NEG-REQ-610-08-05",
-            "NEG-REQ-610-08-06"
+            "DELIVERY-TARGET-BINDING-001"
           ],
           "status": "passed"
         },
         {
-          "surface": "monetary-unit-contract",
-          "reason": "Systemic-remediation structural guard prevents the audited shortcut from being translated into a valid state.",
+          "surface": "handoff-origin-inheritance",
+          "reason": "Delivery evidence can be internally coherent yet belong to a different target or origin.",
           "control_ids": [
-            "NEG-REQ-610-06-03",
-            "NEG-REQ-610-06-04"
+            "HANDOFF-BASE-ORIGIN-001"
           ],
           "status": "passed"
         },
         {
-          "surface": "required-resource-state-contract",
-          "reason": "Systemic-remediation structural guard prevents the audited shortcut from being translated into a valid state.",
+          "surface": "semantic-identity-propagation",
+          "reason": "A presentation transform can drop target identity and group homonymous labels together.",
           "control_ids": [
-            "NEG-REQ-610-07-02",
-            "NEG-REQ-610-07-03"
+            "NEG-REQ-005-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "specified-test-matrix",
+          "reason": "A single green scenario can mask omission of one explicitly required sibling test.",
+          "control_ids": [
+            "TEST-REQ-012-EXTENDED-PERIOD",
+            "TEST-REQ-012-MULTICURRENCY"
           ],
           "status": "passed"
         }
@@ -170,14 +166,14 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-REQ-610-08-04"
+        "NEG-REQ-005-03"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "The REQ-610-08 contract can fail specifically at canonical-claims while adjacent card behavior remains valid.",
+          "reason": "Documentation can claim no destination exists even when canonical filters are supported.",
           "control_ids": [
-            "NEG-REQ-610-08-04"
+            "NEG-REQ-005-03"
           ],
           "status": "passed"
         }

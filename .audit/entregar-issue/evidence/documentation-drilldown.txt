@@ -1,0 +1,5 @@
+Documentation semantic consistency — exact material head
+subject_sha=bfdc368a8c485e764a7367b8cb24bd0654f2794b
+Old claim removed: drill-down was globally outside report scope because no canonical destination was said to exist.
+New claim: installment card/category aggregates use the canonical same-route filters when identity exists; contexts without a faithful destination remain non-navigable.
+Repository consistency review confirms Issue 611 requires drilldown when a canonical route/filter exists and /relatorios?view=installments supports cardId/categoryId.

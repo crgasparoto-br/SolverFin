@@ -3,27 +3,28 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "a1e37ac7eb377cc60db47f32f2ece44e54774111",
+  "candidate_head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
   "remediation_mode": "systemic-remediation",
   "source": {
-    "rejection_id": "audit-rejection:pr650-2aa2e175-cross-currency-invoice-corruption",
-    "audited_head_sha": "2aa2e175151bfd28fe1b487953df7b229895060f",
-    "audit_report_sha256": "8ef210b32a9317ea7af984998b3cedc5d324e23a97dde10f5662ded012473ee1"
+    "rejection_id": "audit-rejection:e115eb84-81c6-41b9-b5ec-4856662d6e88",
+    "audited_head_sha": "3c7c5c61047e99213993da66465511d524091019",
+    "audit_report_sha256": "888a50b144d23ca4293cdea9b18fbdeede7d6a193ed5587c9a1db7b857951151"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-003",
+      "source_id": "A-001",
       "remediation_mode": "systemic-remediation",
       "status": "fixed",
       "evidence": [
-        "Existing-invoice currency mismatch is rejected before any write.",
-        "Sibling guards cover installments, invoice-period move, historical reads/close, payment account currency, and forecast creation.",
-        "Canonical documentation records the single-currency invoice invariant."
+        "Canonical identifiers are preserved across presentation mapping and used by same-route drilldowns.",
+        "Homonymous labels remain separated by identifier and missing-identifier rows do not invent navigation.",
+        "Reports documentation now distinguishes supported canonical drilldown from contexts without a faithful destination."
       ],
       "validations": [
-        "CI run 4762 completed success on a1e37ac7eb377cc60db47f32f2ece44e54774111, including domain and API integration coverage.",
-        "Statement visual validation run 3260 completed success on a1e37ac7eb377cc60db47f32f2ece44e54774111."
+        "reports-drilldown-issue-611.test.ts covers exact ID selection, homonyms, compatible-filter preservation and synthetic-row non-navigation.",
+        "CI run 33786783206 passed format, lint, typecheck, test, build and API/PostgreSQL integration.",
+        "Chrome visual validation run 33786783102 passed registered desktop/mobile scenarios."
       ]
     }
   ]

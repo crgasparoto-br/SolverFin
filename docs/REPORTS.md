@@ -15,11 +15,24 @@ A rota `/relatorios` possui duas visoes:
 
 Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
 
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
 ## Evolucao por categoria
 
-**Status:** disponivel desde a issue #542 e ampliada pela issue #546.
+**Status:** disponivel desde a issue #542, ampliada pelas issues #546 e #611.
 
-A visao apresenta uma matriz hierarquica por moeda, com coluna de descricao, colunas de periodo, **Media** e **Total**. A ordem e:
+A visao apresenta primeiro resumo, tendencia do resultado e destaques do recorte. A matriz hierarquica por moeda permanece como detalhe completo, com coluna de descricao, colunas de periodo, **Media** e **Total**. A ordem dentro da matriz e:
 
 1. Receitas;
 2. arvore de categorias de receita;
@@ -62,7 +75,7 @@ A evolucao usa `Transaction.occurredOn` e inclui somente `income|expense` com `p
 
 Nao entram transferencias nem estados `planned`, `suggested` ou `voided`. `TransactionGroup`, `Installment`, `Invoice`, `Recurrence` e outros vinculos nao sao somados como movimentos adicionais. No recorte por cartao, o pagamento da fatura continua excluido e nao e somado novamente a compra. A API agrega no servidor e nao envia historico bruto ao frontend.
 
-Moedas diferentes geram blocos independentes, sem conversao ou soma entre codigos. Quando a API nao retorna bloco monetario porque o recorte nao possui movimentos, a matriz vazia apresenta zeros neutros e nao fabrica simbolo ou codigo de moeda.
+Moedas diferentes geram blocos independentes, sem conversao ou soma entre codigos. O resumo, a tendencia, os destaques e a matriz usam a mesma moeda do bloco e exibem valores monetarios por `Money`. Quando a API nao retorna bloco monetario porque o recorte nao possui movimentos, a matriz vazia apresenta zeros neutros e nao fabrica simbolo ou codigo de moeda.
 
 ### Hierarquia recolhivel
 
@@ -104,7 +117,9 @@ Somente as celulas negativas da linha **Resultado**, inclusive **Media** e **Tot
 
 ### SSR, responsividade e acessibilidade
 
-A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-error`. A matriz usa tabela semantica, cabecalhos de coluna/linha, rotulos acessiveis de periodo e sinal textual em todos os estados, inclusive no recorte vazio. Em desktop, cabecalho e descricao permanecem fixos durante a rolagem quando suportado. Em telas menores, filtros quebram em linhas e a matriz rola horizontalmente sem cortar dados. Botoes de secao e categoria operam por mouse e teclado e possuem foco visivel.
+A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-error`. Resumo, visualizacao e destaques precedem a matriz quando ha dados monetarios. A tendencia usa estrutura textual acessivel alem das barras de apoio visual. A matriz usa tabela semantica, cabecalhos de coluna/linha, rotulos acessiveis de periodo e sinal textual em todos os estados, inclusive no recorte vazio. Em desktop, cabecalho e descricao permanecem fixos durante a rolagem quando suportado. Em telas menores, filtros e camadas analiticas quebram em linhas e a matriz rola horizontalmente sem cortar dados. Botoes de secao e categoria operam por mouse e teclado e possuem foco visivel.
+
+O drilldown da evolucao continua condicionado a existir um destino canonico que represente fielmente o intervalo e a origem selecionados. Nao se cria link parcial para `/lancamentos` quando a rota de destino perderia parte do recorte anual, rolling-year, conta/cartao ou outra dimensao material.
 
 ## Parcelas consolidadas
 
@@ -118,18 +133,20 @@ Os indicadores preservados sao:
 - futuras;
 - total mensal.
 
-Abaixo dos indicadores, a tela preserva os agrupamentos por mes, cartao e categoria e a lista completa das parcelas consideradas. Parcelas canceladas permanecem identificaveis na lista e nao entram nos valores ativos consolidados.
+Desde a issue #611, as parcelas sao particionadas por `currency` antes do calculo desses indicadores e dos agrupamentos. Cada moeda recebe resumo proprio, visualizacao dos agrupamentos por mes/cartao/categoria, destaques e tabela detalhada. Parcelas canceladas permanecem identificaveis no detalhe e nao entram nos valores ativos consolidados. Todos os valores monetarios sao exibidos por `Money` com moeda explicita.
+
+Os agrupamentos **Por cartao** e **Por categoria** preservam a identidade canonica de cada recurso e oferecem drilldown para a propria visao de parcelas. O link mantem `view=installments`, mes, status, `profileId` e o filtro irmao compativel, substituindo somente o `cardId` ou `categoryId` correspondente. Recursos homonimos permanecem separados por ID; linhas sinteticas sem ID, como **Sem cartao informado** ou **Sem categoria**, nao fabricam um destino navegavel.
 
 ## Estados
 
-- `ready`: matriz ou parcelas renderizadas;
+- `ready`: camadas de analise e respectivo detalhe renderizados por moeda;
 - `empty`: cabecalhos e linhas principais preservados, com valores neutros quando nao existir moeda no recorte e orientacao para outro periodo, conta ou cartao;
 - `filter-error`: erro local antes da consulta financeira, preservando os valores enviados para correcao;
 - `api-error`: falha segura ao carregar contas, cartoes ou relatorio, sem sucesso parcial.
 
 ## Fora do escopo atual
 
-Exportacao PDF/CSV/Excel, impressao formatada, graficos adicionais, comparacao com orcamento, drill-down, multiplas contas ou cartoes simultaneos, combinacao conta+cartao, conversao cambial e persistencia do estado da arvore.
+Exportacao PDF/CSV/Excel, impressao formatada, comparacao com orcamento, drilldown da evolucao quando nao existir destino canonico fiel ao recorte, multiplas contas ou cartoes simultaneos, combinacao conta+cartao, conversao cambial e persistencia do estado da arvore.
 
 ## Testes
 
@@ -146,6 +163,16 @@ A issue #546 acrescenta testes para:
 - controles acessiveis nas secoes e categorias, hierarquia multinivel, independencia por bloco e preservacao do estado de descendentes;
 - destaque de **Resultado** negativo;
 - validacao Chrome em desktop e mobile com conta e cartao.
+
+A issue #611 acrescenta controles para:
+
+- ordem `resumo -> visualizacao -> destaques -> detalhe` em cada bloco monetario;
+- relatorio de evolucao com duas moedas e janela estendida de 24 periodos;
+- separacao de parcelas BRL/USD antes de qualquer total ou agrupamento;
+- uso de tabela semantica no detalhe de parcelas e preservacao da matriz semantica na evolucao;
+- uso de `Money` para os valores monetarios das camadas migradas;
+- drilldown canonico por cartao/categoria em parcelas, com preservacao dos filtros compativeis;
+- recursos homonimos separados por ID e ausencia de link fabricado para agrupamentos sinteticos sem identidade canonica.
 
 ## Referencias
 

@@ -1,0 +1,10 @@
+Delivery target-binding inherited-control revalidation
+subject_sha=bfdc368a8c485e764a7367b8cb24bd0654f2794b
+repository=crgasparoto-br/SolverFin
+issue=611
+pull_request=651
+base_ref=main
+head_ref=codex/611-reports-analysis-archetype
+Procedure: resolve target identity and reject inherited/base-identical foreign delivery artifacts before reuse.
+Expected: stale certificate existence never counts as current delivery evidence.
+Observed: previous handoff remained stale by material SHA and is replaced by a fresh packet for the resolved target.

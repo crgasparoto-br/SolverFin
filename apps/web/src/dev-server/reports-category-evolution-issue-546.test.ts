@@ -144,17 +144,18 @@ describe("reports category evolution issue 546", () => {
     );
 
     const negativeCells =
-      html.match(/class="report-value-negative" data-negative-value="true"/g) ?? [];
+      html.match(/<td class="report-value-negative" data-negative-value="true">[\s\S]*?<\/td>/g) ??
+      [];
     assert.equal(negativeCells.length, 3);
-    assert.match(html, /report-value-negative[^>]*><strong>-R\$\s*50,00<\/strong>/);
-    assert.match(html, /report-value-negative[^>]*><strong>-R\$\s*25,00<\/strong>/);
-    assert.match(html, /report-value-negative[^>]*><strong>-R\$\s*50,00<\/strong>/);
+    assert.match(negativeCells[0] ?? "", /sf-money-value">-R\$\s*50,00<\/span>/);
+    assert.match(negativeCells[1] ?? "", /sf-money-value">-R\$\s*25,00<\/span>/);
+    assert.match(negativeCells[2] ?? "", /sf-money-value">-R\$\s*50,00<\/span>/);
     const expenseRow =
       html.match(
         /<tr class="report-row report-row-expense report-section-row"[\s\S]*?<\/tr>/,
       )?.[0] ?? "";
     assert.doesNotMatch(expenseRow, /report-value-negative/);
-    assert.match(html, /<strong>R\$\s*0,00<\/strong>/);
+    assert.match(html, /sf-money-value">R\$\s*0,00<\/span>/);
   });
 
   it("rejects two source filters locally before loading source lists", async () => {
