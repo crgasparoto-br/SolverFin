@@ -8,6 +8,8 @@ import { loginExpression } from "./fixtures.mjs";
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
+const candidateSha =
+  process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
 const failures = [];
 const scenarios = [];
 const viewports = [
@@ -16,56 +18,25 @@ const viewports = [
   { width: 390, height: 844, suffix: "mobile-390x844" },
 ];
 
-if (!chromePath) throw new Error("CHROME_BIN is required for accounts and cards validation.");
+if (!chromePath) throw new Error("CHROME_BIN is required for accounts/cards A3 validation.");
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 
 try {
-  await browser.cdp.send("Accessibility.enable");
   await setViewport(browser.cdp, 1440, 900);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
-  await verifyKeyboardTabsAndFilterPersistence(browser.cdp);
-
   for (const viewport of viewports) {
-    await setViewport(browser.cdp, viewport.width, viewport.height);
-    await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
-    await sleep(500);
-
-    await captureState(
-      browser.cdp,
-      "accounts",
-      viewport.width,
-      viewport.height,
-      `issue-535-accounts-${viewport.suffix}.png`,
-    );
-    await verifyRowActionMenu(browser.cdp, "accounts", viewport.width, viewport.height);
-
-    await activateCards(browser.cdp);
-    await captureState(
-      browser.cdp,
-      "cards",
-      viewport.width,
-      viewport.height,
-      `issue-535-cards-${viewport.suffix}.png`,
-    );
-    await verifyRowActionMenu(browser.cdp, "cards", viewport.width, viewport.height);
-    await captureInstrumentModal(
-      browser.cdp,
-      viewport.width,
-      viewport.height,
-      `issue-535-instruments-modal-${viewport.suffix}.png`,
-    );
-    await captureCardCreateModal(
-      browser.cdp,
-      viewport.width,
-      viewport.height,
-      `issue-535-card-create-modal-${viewport.suffix}.png`,
-    );
-
-    if (viewport.width === 1366) await verifyConfirmationCancellation(browser.cdp);
+    try {
+      await validateViewport(browser.cdp, viewport);
+    } catch (error) {
+      failures.push({
+        message: `Accounts/Cards A3 validation failed at ${viewport.width}x${viewport.height}`,
+        details: serializeError(error),
+      });
+    }
   }
 } finally {
   await browser.close(outputDir);
@@ -73,7 +44,7 @@ try {
 
 const report = {
   generatedAt: new Date().toISOString(),
-  commit: process.env.GITHUB_SHA ?? "local",
+  commit: candidateSha,
   browser: browser.version,
   failures,
   scenarios,
@@ -84,606 +55,385 @@ await writeFile(
 );
 
 if (failures.length > 0) {
-  for (const failure of failures) console.error(`- ${failure.message}`);
+  for (const failure of failures) console.error(`- ${failure.message}: ${failure.details}`);
   process.exitCode = 1;
 } else {
-  console.log("Issue 535 accounts and cards visual validation passed.");
+  console.log("Accounts/Cards A3 master-detail visual validation passed.");
 }
 
-async function captureState(cdp, expectedTab, width, height, filename) {
-  const measurements = await evaluate(cdp, pageStateExpression(expectedTab));
-  const accessibility = await accessibilitySummary(cdp);
-  await screenshot(cdp, join(outputDir, filename));
+async function validateViewport(cdp, viewport) {
+  await setViewport(cdp, viewport.width, viewport.height);
+  await navigate(cdp, `${baseUrl}/contas-cartoes`);
+  await waitForA3(cdp);
+
+  const baseline = await inspectPage(cdp);
+  assert.equal(baseline.archetype, "A3");
+  assert.equal(baseline.detailLayoutVisible, true, "A3 DetailLayout is not visible.");
+  assert.equal(baseline.masterVisible, true, "Master list is not visible.");
+  assert.equal(baseline.detailVisible, true, "Selected detail is not visible.");
+  assert.equal(baseline.noHorizontalOverflow, true, "A3 page overflows horizontally.");
+  assert.equal(baseline.tabArtifacts, 0, "Retired tab markup is still present.");
+  assert.ok(baseline.masterItemCount > 0, "No master resources were rendered.");
+  assert.equal(baseline.selectedMasterCount, 1, "Exactly one master resource must be selected.");
+  assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
+  assert.deepEqual(baseline.statusOptions, ["all", "active", "inactive"]);
+  assert.equal(baseline.loadingStatePresent, true, "Route loading state is not wired.");
+
+  const account = await selectResource(cdp, "account");
+  const card = await selectResource(cdp, "card");
+  assert.ok(account, "Demo data has no account master resource.");
+  assert.ok(card, "Demo data has no card master resource.");
+
+  if (account) {
+    await navigate(cdp, `${baseUrl}${account.href}`);
+    await waitForDetail(cdp, "account");
+    const measurements = await inspectPage(cdp);
+    assert.equal(measurements.selectedKind, "account");
+    assert.equal(measurements.selectedMasterCount, 1);
+    assert.equal(measurements.currencyContextVisible, true, "Account currency context is ambiguous.");
+    scenarios.push({
+      kind: "page",
+      resourceKind: "account",
+      viewport: `${viewport.width}x${viewport.height}`,
+      measurements,
+    });
+  }
+
+  if (card) {
+    await navigate(cdp, `${baseUrl}${card.href}`);
+    await waitForDetail(cdp, "card");
+    const measurements = await inspectPage(cdp);
+    assert.equal(measurements.selectedKind, "card");
+    assert.equal(measurements.selectedMasterCount, 1);
+    assert.equal(measurements.currencyContextVisible, true, "Card currency context is ambiguous.");
+    assert.equal(measurements.instrumentSectionVisible, true, "Card instruments are not inside the detail.");
+    scenarios.push({
+      kind: "page",
+      resourceKind: "card",
+      viewport: `${viewport.width}x${viewport.height}`,
+      measurements,
+    });
+  }
+
+  const filter = await validateFilter(cdp);
+  scenarios.push({ kind: "filter", viewport: `${viewport.width}x${viewport.height}`, measurements: filter });
+
+  const dialog = await validateKeyboardDialog(cdp);
   scenarios.push({
-    kind: "page",
-    expectedTab,
-    viewport: `${width}x${height}`,
-    filename,
-    measurements,
-    accessibility,
+    kind: "resource-dialog",
+    viewport: `${viewport.width}x${viewport.height}`,
+    measurements: dialog,
   });
 
-  check(
-    measurements.selectedTab === expectedTab,
-    `Issue 535 did not select ${expectedTab}`,
-    measurements,
-  );
-  check(
-    measurements.contextActionCount === 1,
-    "Issue 535 must expose one primary action",
-    measurements,
-  );
-  check(
-    measurements.contextActionLabel ===
-      (expectedTab === "cards" ? "Adicionar cartão" : "Adicionar conta"),
-    `Issue 535 primary action does not match ${expectedTab}`,
-    measurements,
-  );
-  check(
-    measurements.searchPlaceholder ===
-      (expectedTab === "cards"
-        ? "Buscar por nome, instituição, bandeira ou final"
-        : "Buscar por nome, instituição ou conta"),
-    `Issue 535 search placeholder does not match ${expectedTab}`,
-    measurements,
-  );
-  check(
-    !measurements.hasConnectionsTab,
-    "Issue 535 still exposes the Connections tab",
-    measurements,
-  );
-  check(
-    JSON.stringify(measurements.statusOptions) === JSON.stringify(["all", "active", "inactive"]),
-    "Issue 535 status filter is incomplete",
-    measurements,
-  );
-  check(
-    !measurements.globalOverflow,
-    `Issue 535 overflows horizontally at ${width}px`,
-    measurements,
-  );
-  check(
-    measurements.minimumTriggerTarget >= 40,
-    "Issue 535 has action-menu triggers smaller than 40px",
-    measurements,
-  );
-  check(
-    measurements.actionMenuTriggerCount === measurements.actionContainerCount,
-    "Issue 556 must expose exactly one three-dot trigger per row action container",
-    measurements,
-  );
-  check(
-    measurements.visibleLegacyActionCount === 0,
-    "Issue 556 still exposes legacy row action icons outside the three-dot menu",
-    measurements,
-  );
-  check(
-    measurements.itemFooterCount === measurements.itemCount,
-    "Issue 535 rows were not normalized into a comparable footer",
-    measurements,
-  );
-  check(
-    accessibility.tabCount >= 2,
-    "Issue 535 accessibility tree has no tab semantics",
-    accessibility,
-  );
+  if (viewport.width === 1366) {
+    const failureState = await validateSaveFailureStates(cdp);
+    scenarios.push({ kind: "save-failure", viewport: "1366x768", measurements: failureState });
 
-  if (expectedTab === "accounts") {
-    check(measurements.cdiActionCount > 0, "Issue 535 exposes no CDI actions", measurements);
-    check(
-      measurements.enabledCdiLabelsValid,
-      "Issue 535 enabled CDI actions lack Ativar/Configurar accessible labels",
-      measurements,
-    );
+    const destructive = await validateConfirmationCancellation(cdp);
+    scenarios.push({
+      kind: "confirmation-cancel",
+      viewport: "1366x768",
+      measurements: destructive,
+    });
+
+    const longContent = await validateLongContent(cdp);
+    scenarios.push({ kind: "long-content", viewport: "1366x768", measurements: longContent });
   }
 
-  if (expectedTab === "cards") {
-    check(
-      measurements.inlineInstrumentListCount === 0,
-      "Issue 535 still renders instruments inside card rows",
-      measurements,
-    );
-    check(
-      measurements.instrumentDisclosureCount === 0,
-      "Issue 535 still renders inline instrument disclosures",
-      measurements,
-    );
-    check(
-      measurements.viewInstrumentActionCount === measurements.cardRowCount,
-      "Issue 535 does not expose one Ver instrumentos action per card",
-      measurements,
-    );
-    check(
-      measurements.dedicatedInstrumentDialogCount === measurements.cardRowCount,
-      "Issue 535 does not expose one dedicated instrument dialog per card",
-      measurements,
-    );
-  }
+  await screenshot(cdp, join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`));
 }
 
-async function verifyRowActionMenu(cdp, expectedTab, width, height) {
-  const opened = await evaluate(
+async function inspectPage(cdp) {
+  return evaluate(
     cdp,
     `(() => {
-      const panel = document.querySelector('[data-tab-panel="${expectedTab}"]:not([hidden])');
-      const trigger = panel?.querySelector('.item-actions .action-menu-trigger');
-      if (!trigger) return { opened: false };
-      trigger.scrollIntoView({ block: 'center' });
-      trigger.click();
-      const menu = trigger.parentElement?.querySelector('.action-menu-popover');
-      const items = menu ? Array.from(menu.querySelectorAll('[role="menuitem"]')) : [];
+      const visible = (element) => {
+        if (!element) return false;
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+      };
+      const detail = document.querySelector('[data-resource-detail]');
+      const detailText = detail?.textContent || '';
+      const masterItems = Array.from(document.querySelectorAll('[data-resource-master-item]'));
       return {
-        opened: trigger.getAttribute('aria-expanded') === 'true' && Boolean(menu && !menu.hidden),
-        triggerLabel: trigger.getAttribute('aria-label') || '',
-        menuRole: menu?.getAttribute('role') || '',
-        labels: items.map((item) => item.getAttribute('aria-label') || item.dataset.actionMenuLabel || ''),
-        enabledCount: items.filter((item) => !item.disabled).length,
+        archetype: document.querySelector('[data-accounts-cards-archetype]')?.getAttribute('data-accounts-cards-archetype') || '',
+        noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        detailLayoutVisible: visible(document.querySelector('.sf-detail-layout')),
+        masterVisible: visible(document.querySelector('.resource-master-panel')),
+        detailVisible: visible(document.querySelector('.resource-detail-panel')),
+        masterItemCount: masterItems.length,
+        selectedMasterCount: document.querySelectorAll('[data-resource-master-item] [aria-current="page"]').length,
+        selectedKind: detail?.getAttribute('data-resource-detail') || '',
+        tabArtifacts: document.querySelectorAll('[data-tab-panel], [role="tab"], .sf-tabs').length,
+        searchVisible: visible(document.querySelector('[data-master-search]')),
+        statusOptions: Array.from(document.querySelectorAll('[data-master-status] option')).map((option) => option.value),
+        currencyContextVisible: /Moeda/i.test(detailText) && (/\b(BRL|USD|EUR)\b/.test(detailText) || /Moeda (indisponível|não informada)/i.test(detailText)),
+        instrumentSectionVisible: visible(document.querySelector('.resource-instruments')),
+        instrumentCount: document.querySelectorAll('[data-card-instrument]').length,
+        loadingStatePresent: Boolean(document.querySelector('[data-resource-loading]')),
+        directActionCount: detail ? detail.querySelectorAll('.resource-detail-actions button, .resource-detail-actions a').length : 0,
       };
     })()`,
   );
-  await sleep(100);
-  scenarios.push({ kind: "row-action-menu", expectedTab, viewport: `${width}x${height}`, opened });
+}
 
-  check(opened.opened, `Issue 556 did not open the ${expectedTab} action menu`, opened);
-  check(
-    opened.triggerLabel.startsWith("Ações de "),
-    "Issue 556 trigger lacks an item-specific label",
-    opened,
+async function selectResource(cdp, kind) {
+  return evaluate(
+    cdp,
+    `(() => {
+      const link = Array.from(document.querySelectorAll('[data-resource-master-item] .resource-master-link')).find((candidate) => {
+        const value = new URL(candidate.href).searchParams.get('resource') || '';
+        return value.startsWith(${JSON.stringify(`${kind}:`)});
+      });
+      if (!link) return null;
+      const url = new URL(link.href);
+      return { href: url.pathname + url.search, label: link.textContent?.trim() || '' };
+    })()`,
   );
-  check(opened.menuRole === "menu", "Issue 556 popover lacks menu semantics", opened);
-  check(opened.labels.length > 0, "Issue 556 action menu has no actions", opened);
-  check(opened.labels.every(Boolean), "Issue 556 action menu contains an unlabeled action", opened);
-  check(opened.enabledCount > 0, "Issue 556 action menu has no enabled action", opened);
+}
+
+async function validateFilter(cdp) {
+  const state = await evaluate(
+    cdp,
+    `(() => {
+      const input = document.querySelector('[data-master-search]');
+      if (!input) return { available: false };
+      input.value = 'consulta-sem-resultado-issue-612';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      const items = Array.from(document.querySelectorAll('[data-resource-master-item]'));
+      const empty = document.querySelector('[data-filter-empty]');
+      const result = {
+        available: true,
+        hiddenCount: items.filter((item) => item.hidden).length,
+        totalCount: items.length,
+        emptyVisible: Boolean(empty && !empty.hidden),
+      };
+      input.value = '';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      return result;
+    })()`,
+  );
+  assert.equal(state.available, true);
+  assert.ok(state.totalCount > 0);
+  assert.equal(state.hiddenCount, state.totalCount, "Search did not filter the unified master list.");
+  assert.equal(state.emptyVisible, true, "Filtered empty state is not visible.");
+  return state;
+}
+
+async function validateKeyboardDialog(cdp) {
+  const prepared = await evaluate(
+    cdp,
+    `(() => {
+      const trigger = document.querySelector('[data-resource-detail] [data-open-dialog]');
+      if (!trigger) return false;
+      trigger.focus();
+      return document.activeElement === trigger;
+    })()`,
+  );
+  assert.equal(prepared, true, "No focusable direct edit action is available.");
+
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter" });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter", code: "Enter" });
+  await waitFor(cdp, `Boolean(document.querySelector('dialog.master-dialog[open]:not(#accounts-cards-confirm-dialog)'))`, "Resource dialog did not open with Enter.");
+
+  const opened = await evaluate(
+    cdp,
+    `(() => {
+      const dialog = document.querySelector('dialog.master-dialog[open]:not(#accounts-cards-confirm-dialog)');
+      const rect = dialog?.getBoundingClientRect();
+      return {
+        open: Boolean(dialog),
+        labelled: Boolean(dialog?.getAttribute('aria-labelledby') || dialog?.getAttribute('aria-label')),
+        insideViewport: Boolean(rect && rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && rect.bottom <= innerHeight),
+        focusInside: Boolean(dialog && dialog.contains(document.activeElement)),
+      };
+    })()`,
+  );
+  assert.equal(opened.open, true);
+  assert.equal(opened.labelled, true);
+  assert.equal(opened.insideViewport, true, "Resource dialog exceeds the viewport.");
+  assert.equal(opened.focusInside, true, "Resource dialog did not receive focus.");
+
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
+  await sleep(100);
+  const closed = await evaluate(
+    cdp,
+    `(() => ({
+      open: Boolean(document.querySelector('dialog.master-dialog[open]:not(#accounts-cards-confirm-dialog)')),
+      focusRestored: document.activeElement?.matches?.('[data-resource-detail] [data-open-dialog]') === true,
+    }))()`,
+  );
+  assert.equal(closed.open, false, "Resource dialog did not close with Escape.");
+  assert.equal(closed.focusRestored, true, "Focus was not restored to the dialog trigger.");
+  return { ...opened, closed };
+}
+
+async function validateSaveFailureStates(cdp) {
+  await evaluate(cdp, `document.querySelector('[data-resource-detail] [data-open-dialog]')?.click()`);
+  await waitFor(cdp, `Boolean(document.querySelector('dialog.master-dialog[open]:not(#accounts-cards-confirm-dialog)'))`, "Edit dialog did not reopen.");
+
+  const prepared = await evaluate(
+    cdp,
+    `(() => {
+      const dialog = document.querySelector('dialog.master-dialog[open]:not(#accounts-cards-confirm-dialog)');
+      const form = dialog?.querySelector('form[data-api-form]');
+      if (!form || !form.checkValidity()) return false;
+      window.__issue612OriginalFetch = window.fetch;
+      window.__issue612ResolveFetch = null;
+      window.fetch = () => new Promise((resolve) => { window.__issue612ResolveFetch = resolve; });
+      form.requestSubmit();
+      return true;
+    })()`,
+  );
+  assert.equal(prepared, true, "Could not prepare a valid save form for loading/error coverage.");
+  await sleep(80);
+
+  const loading = await evaluate(
+    cdp,
+    `(() => ({
+      visible: Boolean(document.querySelector('[data-resource-loading]') && !document.querySelector('[data-resource-loading]').hidden),
+      status: document.querySelector('dialog.master-dialog[open] [data-form-status]')?.textContent?.trim() || '',
+    }))()`,
+  );
+  assert.equal(loading.visible, true, "Loading state did not become visible during save.");
+  assert.match(loading.status, /Salvando/i);
+
+  await evaluate(
+    cdp,
+    `(() => {
+      window.__issue612ResolveFetch?.(new Response(JSON.stringify({ error: { message: 'Falha simulada de validação' } }), {
+        status: 500,
+        headers: { 'content-type': 'application/json' },
+      }));
+    })()`,
+  );
+  await sleep(120);
+  const failed = await evaluate(
+    cdp,
+    `(() => {
+      const status = document.querySelector('dialog.master-dialog[open] [data-form-status]');
+      const result = {
+        loadingHidden: Boolean(document.querySelector('[data-resource-loading]')?.hidden),
+        status: status?.textContent?.trim() || '',
+        statusClass: status?.className || '',
+      };
+      if (window.__issue612OriginalFetch) window.fetch = window.__issue612OriginalFetch;
+      delete window.__issue612OriginalFetch;
+      delete window.__issue612ResolveFetch;
+      return result;
+    })()`,
+  );
+  assert.equal(failed.loadingHidden, true, "Loading state remained visible after save failure.");
+  assert.match(failed.status, /Falha simulada/i);
+  assert.match(failed.statusClass, /error/);
 
   await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
   await sleep(80);
-  const closed = await evaluate(
+  return { loading, failed };
+}
+
+async function validateConfirmationCancellation(cdp) {
+  const prepared = await evaluate(
     cdp,
     `(() => {
-      const panel = document.querySelector('[data-tab-panel="${expectedTab}"]:not([hidden])');
-      const activeElement = document.activeElement;
-      const trigger = Array.from(panel?.querySelectorAll('.item-actions .action-menu-trigger') || []).find(
-        (candidate) => candidate.getAttribute('aria-label') === ${JSON.stringify(opened.triggerLabel)},
-      );
-      return {
-        expanded: trigger?.getAttribute('aria-expanded') || '',
-        focusRestored:
-          activeElement?.matches?.('.action-menu-trigger') === true &&
-          activeElement.getAttribute('aria-label') === ${JSON.stringify(opened.triggerLabel)},
-        activeTag: activeElement?.tagName || '',
-        activeClass: activeElement?.className || '',
-        activeLabel: activeElement?.getAttribute?.('aria-label') || '',
-        triggerConnected: Boolean(trigger?.isConnected),
+      const form = document.querySelector('[data-resource-detail] form[data-confirm]');
+      if (!form) return false;
+      window.__issue612OriginalFetch = window.fetch;
+      window.__issue612FetchCount = 0;
+      window.fetch = (...args) => {
+        window.__issue612FetchCount += 1;
+        return window.__issue612OriginalFetch(...args);
       };
-    })()`,
-  );
-  check(
-    closed.expanded === "false",
-    `Issue 556 ${expectedTab} menu did not close with Escape`,
-    closed,
-  );
-  check(
-    closed.focusRestored,
-    `Issue 556 ${expectedTab} menu did not restore trigger focus`,
-    closed,
-  );
-}
-
-async function activateCards(cdp) {
-  await evaluate(cdp, `document.querySelector('#cards-tab')?.click()`);
-  await sleep(180);
-}
-
-async function openFirstInstrumentDialog(cdp) {
-  return evaluate(
-    cdp,
-    `(() => {
-      const panel = document.querySelector('[data-tab-panel="cards"]:not([hidden])');
-      const triggers = Array.from(panel?.querySelectorAll('.card-account-item .action-menu-trigger') || []);
-      const trigger = triggers.find((candidate) =>
-        candidate.parentElement?.querySelector('[data-view-instruments]:not([disabled])')
-      );
-      if (!trigger) return false;
-      trigger.click();
-      const action = trigger.parentElement?.querySelector('[data-view-instruments]:not([disabled])');
-      if (!action) return false;
-      action.click();
+      form.requestSubmit();
       return true;
     })()`,
   );
-}
-
-async function captureInstrumentModal(cdp, width, height, filename) {
-  const opened = await openFirstInstrumentDialog(cdp);
-  check(opened, "Issue 535 has no Ver instrumentos action in the three-dot menu", {
-    width,
-    height,
-  });
-  if (!opened) return;
-  await sleep(180);
-
-  const measurements = await evaluate(cdp, instrumentModalStateExpression());
-  const accessibility = await accessibilitySummary(cdp);
-  await screenshot(cdp, join(outputDir, filename));
-  scenarios.push({
-    kind: "instrument-modal",
-    viewport: `${width}x${height}`,
-    filename,
-    measurements,
-    accessibility,
-  });
-
-  check(measurements.open, "Issue 535 instrument modal did not open", measurements);
-  check(
-    measurements.insideViewport,
-    `Issue 535 instrument modal exceeds ${width}x${height}`,
-    measurements,
-  );
-  check(
-    measurements.title === "Instrumentos do cartão",
-    "Issue 535 instrument modal has an unexpected title",
-    measurements,
-  );
-  check(
-    measurements.identifiesCard,
-    "Issue 535 instrument modal does not identify the card",
-    measurements,
-  );
-  check(
-    measurements.hasInstrumentListOrEmptyState,
-    "Issue 535 instrument modal has neither a list nor an empty state",
-    measurements,
-  );
-  check(
-    measurements.hasAddInstrumentAction,
-    "Issue 535 instrument modal has no Add instrument action",
-    measurements,
-  );
-  check(
-    measurements.instrumentActionContainerCount === measurements.instrumentActionMenuTriggerCount,
-    "Issue 556 instrument actions are not consolidated into one three-dot menu per instrument",
-    measurements,
-  );
-  check(
-    measurements.visibleLegacyInstrumentActionCount === 0,
-    "Issue 556 still exposes legacy instrument action icons",
-    measurements,
-  );
-  check(
-    measurements.minimumInstrumentActionTarget >= 40,
-    "Issue 535 instrument action triggers are smaller than 40px",
-    measurements,
-  );
-  check(
-    !measurements.hasUnmaskedLongNumber,
-    "Issue 535 instrument modal exposes an unmasked long number",
-    measurements,
-  );
-  check(
-    accessibility.dialogCount >= 1,
-    "Issue 535 instrument modal is absent from the accessibility tree",
-    accessibility,
-  );
-
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
-  await sleep(100);
-  const closeState = await evaluate(
-    cdp,
-    `(() => ({
-      open: Boolean(document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]')),
-      focusRestored: document.activeElement?.matches?.('.card-account-item .action-menu-trigger') === true,
-    }))()`,
-  );
-  check(!closeState.open, "Issue 535 instrument modal did not close with Escape", closeState);
-  check(
-    closeState.focusRestored,
-    "Issue 556 did not restore focus to the card action-menu trigger",
-    closeState,
-  );
-}
-
-async function captureCardCreateModal(cdp, width, height, filename) {
-  await evaluate(cdp, `document.querySelector('[data-context-action]')?.click()`);
-  await sleep(180);
-  const measurements = await evaluate(cdp, cardCreateModalStateExpression());
-  await screenshot(cdp, join(outputDir, filename));
-  scenarios.push({
-    kind: "card-create-modal",
-    viewport: `${width}x${height}`,
-    filename,
-    measurements,
-  });
-
-  check(measurements.open, "Issue 535 card creation modal did not open", measurements);
-  check(
-    measurements.insideViewport,
-    `Issue 535 card creation modal exceeds ${width}x${height}`,
-    measurements,
-  );
-  check(
-    measurements.hasCloseButton,
-    "Issue 535 card modal has no accessible close action",
-    measurements,
-  );
-  check(measurements.hasCancelButton, "Issue 535 card modal has no Cancel action", measurements);
-  check(
-    measurements.hasSinglePrimaryAction,
-    "Issue 535 card modal primary action is ambiguous",
-    measurements,
-  );
-  check(
-    JSON.stringify(measurements.groupLabels) ===
-      JSON.stringify([
-        "Identificação do cartão",
-        "Datas e limite",
-        "Conta de pagamento",
-        "Instrumento inicial",
-      ]),
-    "Issue 535 card creation form is not grouped as specified",
-    measurements,
-  );
-
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape" });
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape" });
-  await sleep(100);
-  const focusRestored = await evaluate(
-    cdp,
-    `document.activeElement?.matches?.('[data-context-action]') === true`,
-  );
-  check(focusRestored, "Issue 535 did not restore focus after closing card creation", {
-    width,
-    height,
-  });
-}
-
-async function verifyKeyboardTabsAndFilterPersistence(cdp) {
-  await navigate(cdp, `${baseUrl}/contas-cartoes`);
-  await sleep(500);
+  assert.equal(prepared, true, "No destructive action requiring confirmation was found.");
+  await waitFor(cdp, `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`, "Confirmation dialog did not open.");
+  await evaluate(cdp, `document.querySelector('[data-confirm-cancel]')?.click()`);
+  await sleep(80);
   const result = await evaluate(
     cdp,
     `(() => {
-      const accounts = document.querySelector('#accounts-tab');
-      const cards = document.querySelector('#cards-tab');
-      const search = document.querySelector('[data-master-search]');
-      const status = document.querySelector('[data-master-status]');
-      accounts?.focus();
-      accounts?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-      const arrowSelectedCards = cards?.getAttribute('aria-selected') === 'true' && document.activeElement === cards;
-      search.value = 'teste preservado';
-      search.dispatchEvent(new Event('input', { bubbles: true }));
-      status.value = 'inactive';
-      status.dispatchEvent(new Event('change', { bubbles: true }));
-      cards?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
-      const homeSelectedAccounts = accounts?.getAttribute('aria-selected') === 'true' && document.activeElement === accounts;
-      const preserved = search.value === 'teste preservado' && status.value === 'inactive';
-      search.value = '';
-      search.dispatchEvent(new Event('input', { bubbles: true }));
-      status.value = 'all';
-      status.dispatchEvent(new Event('change', { bubbles: true }));
-      return { arrowSelectedCards, homeSelectedAccounts, preserved };
+      const value = {
+        open: Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]')),
+        requestCount: Number(window.__issue612FetchCount || 0),
+      };
+      if (window.__issue612OriginalFetch) window.fetch = window.__issue612OriginalFetch;
+      delete window.__issue612OriginalFetch;
+      delete window.__issue612FetchCount;
+      return value;
     })()`,
   );
-  scenarios.push({ kind: "keyboard-and-filter", viewport: "1440x900", result });
-  check(result.arrowSelectedCards, "Issue 535 ArrowRight tab navigation failed", result);
-  check(result.homeSelectedAccounts, "Issue 535 Home tab navigation failed", result);
-  check(result.preserved, "Issue 535 filters were not preserved between tabs", result);
+  assert.equal(result.open, false, "Confirmation dialog did not close after cancellation.");
+  assert.equal(result.requestCount, 0, "Cancelled destructive action still called the API.");
+  return { ...result, cancelledWithoutRequest: true };
 }
 
-async function verifyConfirmationCancellation(cdp) {
-  await activateCards(cdp);
-  const instrumentDialogOpened = await openFirstInstrumentDialog(cdp);
-  if (!instrumentDialogOpened) {
-    check(false, "Issue 556 has no instrument dialog available for confirmation validation", {});
-    return;
-  }
-  await sleep(160);
-
-  const opened = await evaluate(
+async function validateLongContent(cdp) {
+  const original = await evaluate(
     cdp,
     `(() => {
-      const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
-      const triggers = Array.from(dialog?.querySelectorAll('.instrument-actions .action-menu-trigger') || []);
-      const trigger = triggers.find((candidate) =>
-        candidate.parentElement?.querySelector('form[data-confirm] .action-menu-item:not([disabled])')
-      );
-      if (!trigger) return false;
-      trigger.click();
-      const form = trigger.parentElement?.querySelector('form[data-confirm]');
-      const action = form?.querySelector('.action-menu-item:not([disabled])');
-      if (!form || !action) return false;
-      window.__issue535OriginalFetch = window.fetch;
-      window.__issue535FetchCount = 0;
-      window.fetch = (...args) => {
-        window.__issue535FetchCount += 1;
-        return window.__issue535OriginalFetch(...args);
-      };
-      action.click();
-      return true;
+      const title = document.querySelector('[data-resource-detail] h2');
+      const masterTitle = document.querySelector('[data-resource-master-item] .resource-master-title strong');
+      const values = { title: title?.textContent || '', masterTitle: masterTitle?.textContent || '' };
+      const long = 'Recurso financeiro internacional com identificação deliberadamente extensa para validar reflow sem perda de ações ou contexto monetário';
+      if (title) title.textContent = long;
+      if (masterTitle) masterTitle.textContent = long;
+      return values;
     })()`,
   );
-  if (!opened) {
-    check(
-      false,
-      "Issue 556 has no destructive instrument action available in a three-dot menu",
-      {},
-    );
-    return;
-  }
-  await sleep(120);
-
-  const openState = await evaluate(
+  await sleep(80);
+  const result = await evaluate(
     cdp,
-    `(() => {
-      const dialog = document.querySelector('dialog.confirm-dialog[open]');
-      return {
-        open: Boolean(dialog),
-        title: dialog?.querySelector('[data-confirm-title]')?.textContent?.trim() || '',
-        action: dialog?.querySelector('[data-confirm-submit]')?.textContent?.trim() || '',
-      };
-    })()`,
+    `(() => ({
+      noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+      detailVisible: Boolean(document.querySelector('[data-resource-detail]')?.getClientRects().length),
+      actionsVisible: Boolean(document.querySelector('.resource-detail-actions')?.getClientRects().length),
+    }))()`,
   );
+  assert.equal(result.noHorizontalOverflow, true, "Long content creates horizontal overflow.");
+  assert.equal(result.detailVisible, true);
+  assert.equal(result.actionsVisible, true, "Long content hides maintenance actions.");
   await evaluate(
     cdp,
-    `document.querySelector('dialog.confirm-dialog[open] [data-confirm-cancel]')?.click()`,
+    `((values) => {
+      const title = document.querySelector('[data-resource-detail] h2');
+      const masterTitle = document.querySelector('[data-resource-master-item] .resource-master-title strong');
+      if (title) title.textContent = values.title;
+      if (masterTitle) masterTitle.textContent = values.masterTitle;
+    })(${JSON.stringify(original)})`,
   );
-  await sleep(100);
-  const cancelState = await evaluate(
+  return result;
+}
+
+async function waitForA3(cdp) {
+  await waitFor(
     cdp,
-    `(() => {
-      const result = {
-        requestCount: window.__issue535FetchCount,
-        open: Boolean(document.querySelector('dialog.confirm-dialog[open]')),
-        focusRestored: document.activeElement?.matches?.('.instrument-actions .action-menu-trigger') === true,
-      };
-      if (window.__issue535OriginalFetch) window.fetch = window.__issue535OriginalFetch;
-      delete window.__issue535OriginalFetch;
-      delete window.__issue535FetchCount;
-      document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]')?.close();
-      return result;
-    })()`,
-  );
-  scenarios.push({ kind: "confirmation-cancel", viewport: "1366x768", openState, cancelState });
-  check(openState.open, "Issue 535 confirmation modal did not open", openState);
-  check(
-    openState.title.startsWith("Arquivar ") || openState.title.startsWith("Excluir "),
-    "Issue 535 confirmation title is not direct",
-    openState,
-  );
-  check(
-    openState.action === "Arquivar" || openState.action === "Excluir",
-    "Issue 535 confirmation final action is not explicit",
-    openState,
-  );
-  check(cancelState.requestCount === 0, "Issue 535 Cancel sent an API request", cancelState);
-  check(!cancelState.open, "Issue 535 confirmation stayed open after Cancel", cancelState);
-  check(
-    cancelState.focusRestored,
-    "Issue 556 confirmation did not restore focus to the three-dot trigger",
-    cancelState,
+    `Boolean(document.querySelector('[data-accounts-cards-archetype="A3"]') && document.querySelector('[data-resource-master-item]'))`,
+    "Accounts/Cards A3 did not render master resources.",
   );
 }
 
-async function accessibilitySummary(cdp) {
-  const tree = await cdp.send("Accessibility.getFullAXTree");
-  const nodes = Array.isArray(tree.nodes) ? tree.nodes : [];
-  return {
-    nodeCount: nodes.length,
-    tabCount: nodes.filter((node) => node.role?.value === "tab").length,
-    dialogCount: nodes.filter((node) => node.role?.value === "dialog").length,
-    buttonCount: nodes.filter((node) => node.role?.value === "button").length,
-    menuCount: nodes.filter((node) => node.role?.value === "menu").length,
-    menuItemCount: nodes.filter((node) => node.role?.value === "menuitem").length,
-  };
+async function waitForDetail(cdp, kind) {
+  await waitFor(
+    cdp,
+    `Boolean(document.querySelector('[data-resource-detail="${kind}"]'))`,
+    `Accounts/Cards did not render ${kind} detail.`,
+  );
 }
 
-function pageStateExpression(expectedTab) {
-  return `(() => {
-    const root = document.documentElement;
-    const panel = document.querySelector('[data-tab-panel="${expectedTab}"]:not([hidden])');
-    const action = document.querySelector('[data-context-action]');
-    const actionContainers = Array.from(panel?.querySelectorAll('.item-actions') || []);
-    const triggers = actionContainers.map((container) => container.querySelector(':scope > .action-menu > .action-menu-trigger')).filter(Boolean);
-    const triggerSizes = triggers.map((button) => {
-      const rect = button.getBoundingClientRect();
-      return Math.min(rect.width, rect.height);
-    });
-    const visibleLegacyActions = actionContainers.flatMap((container) =>
-      Array.from(container.querySelectorAll(':scope > button, :scope > form button'))
-    ).filter((button) => {
-      const rect = button.getBoundingClientRect();
-      const style = getComputedStyle(button);
-      return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-    });
-    const status = document.querySelector('[data-master-status]');
-    const cardRows = Array.from(document.querySelectorAll('[data-tab-panel="cards"] .card-account-item'));
-    const cdiActions = Array.from(document.querySelectorAll('[data-account-remuneration-action]'));
-    const enabledCdiActions = cdiActions.filter((button) => !button.disabled);
-    return {
-      selectedTab: document.querySelector('[data-tab][aria-selected="true"]')?.dataset.tab || '',
-      contextActionCount: document.querySelectorAll('[data-context-action]').length,
-      contextActionLabel: action?.getAttribute('aria-label') || action?.textContent?.trim() || '',
-      searchPlaceholder: document.querySelector('[data-master-search]')?.getAttribute('placeholder') || '',
-      hasConnectionsTab: Boolean(document.querySelector('#connections-tab')),
-      statusOptions: status ? Array.from(status.options).map((option) => option.value) : [],
-      globalOverflow: root.scrollWidth > root.clientWidth + 1,
-      minimumTriggerTarget: triggerSizes.length > 0 ? Math.min(...triggerSizes) : 0,
-      actionContainerCount: actionContainers.length,
-      actionMenuTriggerCount: triggers.length,
-      visibleLegacyActionCount: visibleLegacyActions.length,
-      itemCount: document.querySelectorAll('[data-master-item]').length,
-      itemFooterCount: document.querySelectorAll('[data-master-item] > .item-footer').length,
-      cardRowCount: cardRows.length,
-      inlineInstrumentListCount: document.querySelectorAll('.card-account-item > .item-main .instrument-list').length,
-      instrumentDisclosureCount: document.querySelectorAll('.instrument-disclosure').length,
-      viewInstrumentActionCount: document.querySelectorAll('.card-account-item [data-view-instruments]').length,
-      dedicatedInstrumentDialogCount: document.querySelectorAll('dialog[data-card-instruments-dedicated-dialog]').length,
-      cdiActionCount: cdiActions.length,
-      enabledCdiLabelsValid: enabledCdiActions.every((button) => ['Ativar CDI', 'Configurar CDI'].includes(button.getAttribute('aria-label'))),
-      visiblePanel: document.querySelector('[data-tab-panel]:not([hidden])')?.dataset.tabPanel || '',
-    };
-  })()`;
+async function waitFor(cdp, expression, message) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    if (await evaluate(cdp, expression)) return;
+    await sleep(100);
+  }
+  throw new Error(message);
 }
 
-function instrumentModalStateExpression() {
-  return `(() => {
-    const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');
-    if (!dialog) return { open: false };
-    const rect = dialog.getBoundingClientRect();
-    const actionContainers = Array.from(dialog.querySelectorAll('.instrument-actions'));
-    const triggers = actionContainers.map((container) => container.querySelector(':scope > .action-menu > .action-menu-trigger')).filter(Boolean);
-    const triggerSizes = triggers.map((button) => {
-      const buttonRect = button.getBoundingClientRect();
-      return Math.min(buttonRect.width, buttonRect.height);
-    });
-    const visibleLegacyActions = actionContainers.flatMap((container) =>
-      Array.from(container.querySelectorAll(':scope > button, :scope > form button'))
-    ).filter((button) => {
-      const buttonRect = button.getBoundingClientRect();
-      const style = getComputedStyle(button);
-      return buttonRect.width > 0 && buttonRect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-    });
-    const text = dialog.textContent || '';
-    return {
-      open: dialog.open === true,
-      insideViewport: rect.left >= 0 && rect.top >= 0 && rect.right <= window.innerWidth && rect.bottom <= window.innerHeight,
-      title: dialog.querySelector('h2')?.textContent?.trim() || '',
-      identifiesCard: Boolean(dialog.querySelector('.card-instruments-dialog-heading .muted')?.textContent?.trim()),
-      hasInstrumentListOrEmptyState: Boolean(dialog.querySelector('.instrument-list, [data-instrument-empty-state]')),
-      hasAddInstrumentAction: Boolean(dialog.querySelector('[data-toggle-instrument-create]')),
-      instrumentActionContainerCount: actionContainers.length,
-      instrumentActionMenuTriggerCount: triggers.length,
-      visibleLegacyInstrumentActionCount: visibleLegacyActions.length,
-      minimumInstrumentActionTarget: triggerSizes.length > 0 ? Math.min(...triggerSizes) : 40,
-      hasUnmaskedLongNumber: /(?:\\d[ -]?){12,19}/.test(text.replace(/\\*+/g, '')),
-      width: rect.width,
-      height: rect.height,
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-    };
-  })()`;
-}
-
-function cardCreateModalStateExpression() {
-  return `(() => {
-    const dialog = document.querySelector('#new-card-dialog[open]');
-    if (!dialog) return { open: false };
-    const rect = dialog.getBoundingClientRect();
-    const submitButtons = dialog.querySelectorAll('button[type="submit"]');
-    return {
-      open: dialog.open === true,
-      insideViewport: rect.left >= 0 && rect.top >= 0 && rect.right <= window.innerWidth && rect.bottom <= window.innerHeight,
-      hasCloseButton: Boolean(dialog.querySelector('.dialog-standard-close[aria-label="Fechar"]')),
-      hasCancelButton: Array.from(dialog.querySelectorAll('button')).some((button) => button.textContent?.trim() === 'Cancelar'),
-      hasSinglePrimaryAction: submitButtons.length === 1,
-      groupLabels: Array.from(dialog.querySelectorAll('.card-form-group > legend')).map((legend) => legend.textContent?.trim()),
-      width: rect.width,
-      height: rect.height,
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-    };
-  })()`;
-}
-
-function check(condition, message, context) {
-  if (!condition) failures.push({ message, context });
+function serializeError(error) {
+  return error instanceof Error ? error.stack ?? error.message : String(error);
 }
