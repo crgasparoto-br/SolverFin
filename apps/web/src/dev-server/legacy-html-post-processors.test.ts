@@ -11,16 +11,17 @@ import {
 
 test("legacy HTML post-processors have a canonical, reducing inventory", () => {
   assert.equal(LEGACY_HTML_POST_PROCESSOR_INVENTORY.length, LEGACY_HTML_POST_PROCESSOR_BUDGET);
-  assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 5);
+  assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 2);
 
   const ids = LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
 
   const routes = new Set<string>(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route));
+  assert.equal(routes.has("/cartoes"), false);
   assert.equal(
-    routes.has("/cartoes"),
+    routes.has("/contas-cartoes"),
     false,
-    "/cartoes must stay off the legacy HTML pipeline after the A3 migration",
+    "/contas-cartoes must stay off the legacy HTML pipeline after the A3 migration",
   );
 
   const expectedOwnerByRoute: Record<LegacyHtmlPostProcessorRoute, LegacyHtmlPostProcessorOwner> = {
@@ -32,9 +33,7 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
   };
 
   for (const route of routes) {
-    const routeEntries = LEGACY_HTML_POST_PROCESSOR_INVENTORY.filter(
-      (entry) => entry.route === route,
-    );
+    const routeEntries = LEGACY_HTML_POST_PROCESSOR_INVENTORY.filter((entry) => entry.route === route);
     assert.deepEqual(
       routeEntries.map((entry) => entry.order),
       routeEntries.map((_, index) => index + 1),
@@ -57,50 +56,23 @@ test("legacy HTML pipeline preserves the registered order including async adapte
       transform: async (html) => `${html}|icons`,
     },
   ]);
-
   assert.equal(result, "rendered|icons");
 });
 
-test("legacy HTML pipeline rejects missing or reordered adapters before transforming HTML", async () => {
-  const calls: string[] = [];
-
+test("legacy HTML pipeline rejects adapters for a route retired from the inventory", async () => {
   await assert.rejects(
     applyLegacyHtmlPostProcessorPipeline("/contas-cartoes", "rendered", [
       {
-        id: "accounts-cards-standardization",
-        transform: (html) => {
-          calls.push("accounts-cards-standardization");
-          return html;
-        },
-      },
-      {
-        id: "accounts-cards-tabs",
-        transform: (html) => {
-          calls.push("accounts-cards-tabs");
-          return html;
-        },
-      },
-      {
-        id: "accounts-cards-action-menus",
-        transform: (html) => {
-          calls.push("accounts-cards-action-menus");
-          return html;
-        },
+        id: "categories-icons-tooltips",
+        transform: (html) => html,
       },
     ]),
     /Legacy HTML post-processor order mismatch for \/contas-cartoes/,
   );
-
-  assert.deepEqual(calls, []);
 });
 
 test("every route represented in the inventory has at least one residual adapter", () => {
-  const expectedRoutes: LegacyHtmlPostProcessorRoute[] = [
-    "/contas-cartoes",
-    "/categorias",
-    "/lancamentos",
-  ];
-
+  const expectedRoutes: LegacyHtmlPostProcessorRoute[] = ["/categorias", "/lancamentos"];
   assert.deepEqual(
     [...new Set(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route))],
     expectedRoutes,
