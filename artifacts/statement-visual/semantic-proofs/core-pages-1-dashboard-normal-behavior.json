@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "core-pages::1-dashboard-normal",
+  "sourceScenarioId": "core-pages",
+  "route": "/dashboard",
+  "state": "normal",
+  "assertions": [
+    "behavior:component:PageContainer",
+    "behavior:component:PageHeader",
+    "behavior:layout:desktop",
+    "behavior:layout:mobile"
+  ],
+  "details": {
+    "sourceScenario": "core-pages",
+    "evidenceFiles": [
+      "issue-606-core-dashboard.json"
+    ],
+    "observations": {
+      "widths": [
+        390,
+        1366
+      ]
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "generatedAt": "2026-09-04T19:17:07.341Z",
+  "commit": "local",
+  "route": "/contas",
+  "state": "normal",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "pages": [
+    {
+      "width": 390,
+      "height": 1100,
+      "screenshot": "issue-606-core-contas-390.png",
+      "measurements": {
+        "title": "Contas e Cartões - SolverFin",
+        "viewportWidth": 390,
+        "viewportHeight": 1100,
+        "mainWidth": 375,
+        "mainLeft": 0,
+        "rootScrollWidth": 375,
+        "rootClientWidth": 375,
+        "bodyScrollWidth": 375,
+        "globalOverflow": false,
+        "centerDelta": 0,
+        "layoutMode": "not-applicable",
+        "summaryRect": null,
+        "panelRect": null,
+        "table": {
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "overflowX": "",
+          "hasLocalHorizontalScroll": false
+        },
+        "moneyProblems": [],
+        "overlaps": [],
+        "outsideEssential": [],
+        "balanceHierarchy": true
+      }
+    },
+    {
+      "width": 1366,
+      "height": 1000,
+      "screenshot": "issue-606-core-contas-1366.png",
+      "measurements": {
+        "title": "Contas e Cartões - SolverFin",
+        "viewportWidth": 1366,
+        "viewportHeight": 1000,
+        "mainWidth": 1131,
+        "mainLeft": 220,
+        "rootScrollWidth": 1351,
+        "rootClientWidth": 1351,
+        "bodyScrollWidth": 1351,
+        "globalOverflow": false,
+        "centerDelta": 0,
+        "layoutMode": "not-applicable",
+        "summaryRect": null,
+        "panelRect": null,
+        "table": {
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "overflowX": "",
+          "hasLocalHorizontalScroll": false
+        },
+        "moneyProblems": [],
+        "overlaps": [],
+        "outsideEssential": [],
+        "balanceHierarchy": true
+      }
+    }
+  ],
+  "failures": []
+}

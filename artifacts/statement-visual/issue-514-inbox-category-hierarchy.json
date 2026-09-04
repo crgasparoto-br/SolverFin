@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-09-04T19:18:31.253Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "viewport": "390x844",
+  "batchId": "57f92f4c-bb43-4df1-bdc7-9b463708fcbc",
+  "keyboard": {
+    "activeName": "categoryId",
+    "visitedFields": [
+      "occurredOn",
+      "occurredOn",
+      "occurredOn",
+      "kind",
+      "amount",
+      "description",
+      "accountId",
+      "categoryId"
+    ]
+  },
+  "hierarchy": {
+    "firstOption": {
+      "value": "",
+      "text": "Sem categoria"
+    },
+    "expenseOption": {
+      "value": "d606366e-85aa-4da1-b007-8ed32f8d5ad4",
+      "text": "Auditoria despesa mtnc73l3 › Categoria visual mtnc73l3"
+    },
+    "incomeOption": {
+      "value": "734973fe-7baa-4709-ba50-6a89ada54ee0",
+      "text": "Auditoria receita mtnc73l3 › Categoria visual mtnc73l3"
+    },
+    "transferVisible": false,
+    "afterKindChange": {
+      "selectionCleared": true,
+      "selectPreserved": true,
+      "focusPreserved": true,
+      "warning": true,
+      "otherFieldsPreserved": true
+    },
+    "selectedIncomeId": "734973fe-7baa-4709-ba50-6a89ada54ee0"
+  },
+  "reopened": {
+    "kind": "income",
+    "categoryId": "734973fe-7baa-4709-ba50-6a89ada54ee0",
+    "selectedText": "Auditoria receita mtnc73l3 › Categoria visual mtnc73l3",
+    "bodyFitsViewport": true
+  },
+  "screenshot": "issue-514-inbox-category-hierarchy.png"
+}

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "settings-interface",
+  "sourceScenarioId": "settings-interface",
+  "route": "/configuracoes",
+  "state": "normal",
+  "assertions": [
+    "behavior:component:Dialog",
+    "behavior:component:FormLayout",
+    "behavior:layout:desktop",
+    "behavior:layout:mobile"
+  ],
+  "details": {
+    "sourceScenario": "settings-interface",
+    "evidenceFiles": [
+      "settings-interface.json"
+    ],
+    "observations": {
+      "desktop": {
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "rootFontSizePx": 16,
+        "noHorizontalOverflow": true,
+        "h1Count": 1,
+        "h1Text": "Configurações",
+        "activeSection": "rules",
+        "linksAreGet": true,
+        "focusableNavigation": true,
+        "dialogOpen": true,
+        "dialogInsideViewport": true,
+        "hasTenantOperational": false,
+        "hasCentavosLabel": false,
+        "hasProfileHeading": false,
+        "hasProfileListHeading": false,
+        "hasRulesHeading": true,
+        "hasProfileAction": false,
+        "hasPriorityHelp": true,
+        "hasDecimalInputs": true,
+        "hasReviewMessage": true,
+        "ruleItemCount": 7,
+        "section": "rules"
+      },
+      "mobile": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "rootFontSizePx": 16,
+        "noHorizontalOverflow": true,
+        "h1Count": 1,
+        "h1Text": "Configurações",
+        "activeSection": "rules",
+        "linksAreGet": true,
+        "focusableNavigation": true,
+        "dialogOpen": true,
+        "dialogInsideViewport": true,
+        "hasTenantOperational": false,
+        "hasCentavosLabel": false,
+        "hasProfileHeading": false,
+        "hasProfileListHeading": false,
+        "hasRulesHeading": true,
+        "hasProfileAction": false,
+        "hasPriorityHelp": true,
+        "hasDecimalInputs": true,
+        "hasReviewMessage": true,
+        "ruleItemCount": 7,
+        "section": "rules"
+      }
+    }
+  }
+}

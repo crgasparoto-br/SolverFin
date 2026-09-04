@@ -1,0 +1,123 @@
+{
+  "generatedAt": "2026-09-04T19:25:33.322Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "viewport": "1366x768",
+  "compactDesktop": {
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    },
+    "noHorizontalOverflow": true,
+    "archetype": "A3",
+    "masterVisible": true,
+    "detailVisible": true,
+    "primaryActionVisible": true,
+    "searchVisible": true,
+    "tableHeaderVisible": true,
+    "groupCount": 2,
+    "rowCount": 4,
+    "moneyCurrencies": [
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL",
+      "BRL"
+    ],
+    "settlementCopy": "Liquidação não é uma nova compra. O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.",
+    "accessibility": {
+      "nodeCount": 1318,
+      "roles": [
+        "RootWebArea",
+        "none",
+        "complementary",
+        "banner",
+        "main",
+        "link",
+        "navigation",
+        "button",
+        "strong",
+        "generic",
+        "region",
+        "StaticText",
+        "heading",
+        "paragraph",
+        "DescriptionList",
+        "group",
+        "InlineTextBox",
+        "LabelText",
+        "combobox",
+        "term",
+        "definition",
+        "DisclosureTriangle",
+        "list",
+        "MenuListPopup",
+        "listitem",
+        "DateTime",
+        "option",
+        "status",
+        "table",
+        "searchbox",
+        "Date",
+        "row",
+        "spinbutton",
+        "columnheader",
+        "cell"
+      ]
+    }
+  },
+  "longContent": {
+    "noHorizontalOverflow": true,
+    "detailInsideViewport": true,
+    "rowActionVisible": true
+  },
+  "collapsedGroups": {
+    "initial": {
+      "rowCount": 4,
+      "groupCount": 2
+    },
+    "collapsed": {
+      "closedGroups": 2,
+      "visibleRows": 0,
+      "noHorizontalOverflow": true
+    }
+  },
+  "keyboardActionMenu": {
+    "opened": true,
+    "closed": {
+      "open": false,
+      "focusReturned": true
+    }
+  },
+  "keyboardModal": {
+    "opened": {
+      "open": true,
+      "visible": true,
+      "labelled": true,
+      "focusInside": true,
+      "insideViewport": true
+    },
+    "closed": {
+      "open": false,
+      "focusRestored": true
+    }
+  },
+  "liveRegion": {
+    "initial": {
+      "rowCount": 4
+    }
+  },
+  "screenshots": [
+    "cards-compact-desktop.png",
+    "cards-collapsed-groups.png",
+    "cards-modal-compact-desktop.png"
+  ]
+}

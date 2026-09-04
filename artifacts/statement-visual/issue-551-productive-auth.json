@@ -1,0 +1,97 @@
+{
+  "generatedAt": "2026-09-04T19:22:50.265Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "viewports": [
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "measurements": {
+        "passwordInputs": 0,
+        "registerActions": 0,
+        "primary": {
+          "visible": true,
+          "href": "/api/auth/oidc/start?returnTo=/dashboard",
+          "role": "a"
+        },
+        "recovery": {
+          "visible": true,
+          "href": "/api/auth/oidc/start?returnTo=/dashboard",
+          "role": "a"
+        },
+        "horizontalOverflow": false
+      },
+      "screenshot": "issue-551-productive-login-mobile.png"
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "measurements": {
+        "passwordInputs": 0,
+        "registerActions": 0,
+        "primary": {
+          "visible": true,
+          "href": "/api/auth/oidc/start?returnTo=/dashboard",
+          "role": "a"
+        },
+        "recovery": {
+          "visible": true,
+          "href": "/api/auth/oidc/start?returnTo=/dashboard",
+          "role": "a"
+        },
+        "horizontalOverflow": false
+      },
+      "screenshot": "issue-551-productive-login-tablet.png"
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "measurements": {
+        "passwordInputs": 0,
+        "registerActions": 0,
+        "primary": {
+          "visible": true,
+          "href": "/api/auth/oidc/start?returnTo=/dashboard",
+          "role": "a"
+        },
+        "recovery": {
+          "visible": true,
+          "href": "/api/auth/oidc/start?returnTo=/dashboard",
+          "role": "a"
+        },
+        "horizontalOverflow": false
+      },
+      "screenshot": "issue-551-productive-login-desktop.png"
+    }
+  ],
+  "keyboard": {
+    "primary": {
+      "activated": "/api/auth/oidc/start?returnTo=/dashboard"
+    },
+    "recovery": {
+      "activated": "/api/auth/oidc/start?returnTo=/dashboard"
+    }
+  },
+  "accessibility": {
+    "linkNames": [
+      "Continuar com acesso seguro",
+      "Recuperar acesso"
+    ]
+  },
+  "cookieUnavailable": {
+    "exists": true,
+    "text": "O acesso foi concluído no provedor, mas o navegador não manteve a sessão. Habilite cookies para este site e reinicie o acesso seguro.",
+    "restartVisible": true
+  },
+  "screenshots": [
+    "issue-551-productive-login-mobile.png",
+    "issue-551-productive-login-tablet.png",
+    "issue-551-productive-login-desktop.png",
+    "issue-551-productive-login-zoom-200.png",
+    "issue-551-productive-login-cookie-unavailable.png"
+  ]
+}

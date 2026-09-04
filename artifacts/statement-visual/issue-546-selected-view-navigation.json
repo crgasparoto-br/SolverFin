@@ -1,0 +1,12 @@
+{
+  "accountId": "e3fff1fc-3690-4a62-a565-4a64212e2a51",
+  "result": {
+    "ok": true,
+    "href": "#",
+    "before": "/relatorios?view=category-evolution&interval=monthly&start=2026-09&periods=1&accountId=e3fff1fc-3690-4a62-a565-4a64212e2a51",
+    "after": "/relatorios?view=category-evolution&interval=monthly&start=2026-09&periods=1&accountId=e3fff1fc-3690-4a62-a565-4a64212e2a51",
+    "accountId": "e3fff1fc-3690-4a62-a565-4a64212e2a51",
+    "cardId": null,
+    "selectedOrigin": "account:e3fff1fc-3690-4a62-a565-4a64212e2a51"
+  }
+}

@@ -82,10 +82,7 @@ function preparesCardPresentationAndSearchMetadata(): void {
   assert.equal(viewModel.paymentAccountCurrency, "BRL");
   assert.equal(viewModel.activeInstrumentCount, 1);
   assert.equal(viewModel.editDialogId, "edit-card-dialog-card-1");
-  assert.equal(
-    viewModel.newInstrumentDialogId,
-    "new-card-instrument-dialog-card-1",
-  );
+  assert.equal(viewModel.newInstrumentDialogId, "new-card-instrument-dialog-card-1");
   assert.match(viewModel.search, /virtual titular/);
   assert.match(viewModel.search, /\*\*\*\* 4321/);
   assert.equal(viewModel.isArchived, false);
@@ -95,20 +92,14 @@ function selectsResourceFromUrlAndKeepsCurrencyExplicit(): void {
   const account = accountFixture("payment-usd", "active", "usd");
   const card = cardFixture("card-usd", "active", account.id);
 
-  const viewModel = buildAccountsCardsPageViewModel(
-    [account],
-    [card],
-    "card:card-usd",
-  );
+  const viewModel = buildAccountsCardsPageViewModel([account], [card], "card:card-usd");
 
   assert.equal(viewModel.selectedResource?.kind, "card");
   if (viewModel.selectedResource?.kind !== "card") {
     assert.fail("card must be selected");
   }
   assert.equal(viewModel.selectedResource.currency, "USD");
-  const master = viewModel.resources.find(
-    (resource) => resource.key === "card:card-usd",
-  );
+  const master = viewModel.resources.find((resource) => resource.key === "card:card-usd");
   assert.equal(master?.currency, "USD");
   assert.equal(master?.currencyLabel, "USD");
   assert.equal(master?.brandKey, "mastercard");
@@ -119,30 +110,20 @@ function doesNotInventCurrencyWhenCardHasNoPaymentAccountCurrency(): void {
   const account = accountFixture("payment-unknown", "active", "");
   const card = cardFixture("card-unknown", "active", account.id);
 
-  const viewModel = buildAccountsCardsPageViewModel(
-    [account],
-    [card],
-    "card:card-unknown",
-  );
+  const viewModel = buildAccountsCardsPageViewModel([account], [card], "card:card-unknown");
 
   assert.equal(viewModel.selectedResource?.kind, "card");
   if (viewModel.selectedResource?.kind !== "card") {
     assert.fail("card must be selected");
   }
   assert.equal(viewModel.selectedResource.currency, undefined);
-  const master = viewModel.resources.find(
-    (resource) => resource.key === "card:card-unknown",
-  );
+  const master = viewModel.resources.find((resource) => resource.key === "card:card-unknown");
   assert.equal(master?.currency, undefined);
   assert.equal(master?.currencyLabel, "Moeda indisponível");
   assert.equal(master?.search.includes("brl"), false);
 }
 
-function accountFixture(
-  id: string,
-  status: string,
-  currency: string,
-): AccountRecord {
+function accountFixture(id: string, status: string, currency: string): AccountRecord {
   return {
     id,
     name: `Conta ${id}`,

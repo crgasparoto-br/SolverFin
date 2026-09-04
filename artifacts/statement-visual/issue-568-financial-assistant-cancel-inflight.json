@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-09-04T19:22:37.789Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "result": {
+    "messagePending": false,
+    "cancelObserved": true,
+    "cancelWhileMessagePending": true,
+    "messageReleasedByCancel": true,
+    "releaseMessage": null,
+    "status": "Contexto cancelado. Inicie um novo contexto para continuar.",
+    "ariaBusy": "false",
+    "cancelDisabled": true
+  }
+}

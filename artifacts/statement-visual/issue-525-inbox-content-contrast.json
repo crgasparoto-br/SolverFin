@@ -1,0 +1,121 @@
+{
+  "generatedAt": "2026-09-04T19:24:06.926Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "batchId": "2b663773-3bcf-4586-bc74-c6d8f8656590",
+  "desktop": {
+    "viewport": "1366x768",
+    "bodyFitsViewport": true,
+    "completeRows": 8,
+    "financialFieldsAreFullyVisible": true,
+    "descriptionPreviewIsFullyVisible": true,
+    "dateAndAmountAreFullyVisible": true,
+    "financialFieldsAreFullyAccessible": true,
+    "financialFields": [
+      {
+        "label": "Data",
+        "fullValue": "01/07/2026",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Tipo",
+        "fullValue": "Receita",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Valor",
+        "fullValue": "R$ 1.234.567,89",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Descrição",
+        "fullValue": "Descrição financeira extensa usada para validar acesso integral por teclado foco e ponteiro sem aumentar permanentemente a altura da linha mtncebah complemento operacional para distinguir lançamentos semelhantes durante a revisão",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Conta de referência",
+        "fullValue": "Carteira dinheiro demo",
+        "previewClipped": false,
+        "fullyAccessible": true
+      }
+    ],
+    "descriptionIsFullyAccessible": true,
+    "accountIsFullyAccessible": true,
+    "tooltipIsVisible": true,
+    "tooltipFitsViewport": true,
+    "disabledButtonContrast": 8.4,
+    "disabledButtonOpacity": 1,
+    "disabledButtonColors": {
+      "color": "rgb(51, 65, 85)",
+      "backgroundColor": "rgb(226, 232, 240)"
+    },
+    "descriptionDimensions": {
+      "width": 180,
+      "previewClientWidth": 169,
+      "previewScrollWidth": 169
+    },
+    "screenshot": "issue-525-inbox-content-contrast-desktop-1366x768.png"
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "bodyFitsViewport": true,
+    "completeRows": 3,
+    "financialFieldsAreFullyVisible": true,
+    "descriptionPreviewIsFullyVisible": true,
+    "dateAndAmountAreFullyVisible": true,
+    "financialFieldsAreFullyAccessible": true,
+    "financialFields": [
+      {
+        "label": "Data",
+        "fullValue": "01/07/2026",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Tipo",
+        "fullValue": "Receita",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Valor",
+        "fullValue": "R$ 1.234.567,89",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Descrição",
+        "fullValue": "Descrição financeira extensa usada para validar acesso integral por teclado foco e ponteiro sem aumentar permanentemente a altura da linha mtncebah complemento operacional para distinguir lançamentos semelhantes durante a revisão",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Conta de referência",
+        "fullValue": "Carteira dinheiro demo",
+        "previewClipped": false,
+        "fullyAccessible": true
+      }
+    ],
+    "descriptionIsFullyAccessible": true,
+    "accountIsFullyAccessible": true,
+    "tooltipIsVisible": true,
+    "tooltipFitsViewport": true,
+    "disabledButtonContrast": 8.4,
+    "disabledButtonOpacity": 1,
+    "disabledButtonColors": {
+      "color": "rgb(51, 65, 85)",
+      "backgroundColor": "rgb(226, 232, 240)"
+    },
+    "descriptionDimensions": {
+      "width": 285,
+      "previewClientWidth": 285,
+      "previewScrollWidth": 285
+    },
+    "screenshot": "issue-525-inbox-content-contrast-mobile-390x844.png"
+  }
+}

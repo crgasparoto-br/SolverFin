@@ -1,0 +1,264 @@
+{
+  "generatedAt": "2026-09-04T19:19:36.791Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "scenarios": [
+    {
+      "route": "/contas-cartoes",
+      "kind": "hover",
+      "viewport": "1440x900",
+      "screenshot": "issue-537-hover-states-desktop-1440x900.png",
+      "styles": {
+        "primary": {
+          "backgroundColor": "rgb(10, 46, 58)",
+          "borderColor": "rgb(15, 61, 76)",
+          "boxShadow": "none",
+          "color": "rgb(255, 255, 255)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "neutral": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "destructive": {
+          "backgroundColor": "rgb(254, 226, 226)",
+          "borderColor": "rgb(254, 202, 202)",
+          "boxShadow": "none",
+          "color": "rgb(220, 38, 38)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        }
+      }
+    },
+    {
+      "route": "/contas-cartoes",
+      "kind": "focus-visible",
+      "viewport": "1440x900",
+      "screenshot": "issue-537-destructive-focus-desktop-1440x900.png",
+      "styles": {
+        "primary": {
+          "backgroundColor": "rgb(15, 61, 76)",
+          "borderColor": "rgb(15, 61, 76)",
+          "boxShadow": "none",
+          "color": "rgb(255, 255, 255)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "neutral": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "destructive": {
+          "backgroundColor": "rgb(254, 226, 226)",
+          "borderColor": "rgb(254, 202, 202)",
+          "boxShadow": "rgba(34, 211, 238, 0.35) 0px 0px 0px 3px",
+          "color": "rgb(220, 38, 38)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        }
+      }
+    },
+    {
+      "route": "/lancamentos",
+      "kind": "neutral-hover",
+      "viewport": "1440x900",
+      "screenshot": "issue-537-statement-neutral-hover-desktop-1440x900.png",
+      "styles": {
+        "accountPicker": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "monthNavigation": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "currentMonth": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "status": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "recurrenceClose": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        }
+      }
+    },
+    {
+      "route": "/lancamentos",
+      "kind": "neutral-focus-visible",
+      "viewport": "1440x900",
+      "screenshot": "issue-537-statement-neutral-focus-desktop-1440x900.png",
+      "styles": {
+        "accountPicker": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(15, 23, 42)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "monthNavigation": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "currentMonth": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "status": {
+          "backgroundColor": "rgb(224, 242, 254)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(3, 105, 161)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "recurrenceClose": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "rgba(34, 211, 238, 0.35) 0px 0px 0px 3px",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        }
+      }
+    },
+    {
+      "route": "/lancamentos",
+      "kind": "neutral-hover",
+      "viewport": "390x844",
+      "screenshot": "issue-537-statement-neutral-hover-mobile-390x844.png",
+      "styles": {
+        "accountPicker": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "monthNavigation": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "currentMonth": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "status": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "recurrenceClose": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        }
+      }
+    },
+    {
+      "route": "/lancamentos",
+      "kind": "neutral-focus-visible",
+      "viewport": "390x844",
+      "screenshot": "issue-537-statement-neutral-focus-mobile-390x844.png",
+      "styles": {
+        "accountPicker": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(15, 23, 42)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "monthNavigation": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "currentMonth": {
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "status": {
+          "backgroundColor": "rgb(224, 242, 254)",
+          "borderColor": "rgb(226, 232, 240)",
+          "boxShadow": "none",
+          "color": "rgb(3, 105, 161)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        },
+        "recurrenceClose": {
+          "backgroundColor": "rgb(241, 247, 249)",
+          "borderColor": "rgb(165, 203, 214)",
+          "boxShadow": "rgba(34, 211, 238, 0.35) 0px 0px 0px 3px",
+          "color": "rgb(15, 61, 76)",
+          "outlineStyle": "none",
+          "outlineWidth": "0px"
+        }
+      }
+    }
+  ]
+}

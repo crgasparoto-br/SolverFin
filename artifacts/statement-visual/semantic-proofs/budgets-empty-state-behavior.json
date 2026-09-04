@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "budgets-empty-state",
+  "sourceScenarioId": "budgets-empty-state",
+  "route": "/orcamentos",
+  "state": "empty",
+  "assertions": [
+    "behavior:layout:desktop",
+    "behavior:layout:mobile"
+  ],
+  "details": {
+    "sourceScenario": "budgets-empty-state",
+    "evidenceFiles": [
+      "issue-606-budgets-empty.json"
+    ],
+    "observations": {
+      "widths": [
+        390,
+        1366
+      ]
+    }
+  }
+}

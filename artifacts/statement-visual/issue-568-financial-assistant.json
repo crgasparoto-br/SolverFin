@@ -1,0 +1,274 @@
+{
+  "generatedAt": "2026-09-04T19:22:34.000Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "captures": [
+    {
+      "scenario": "desktop-empty",
+      "routeReady": true,
+      "readOnlyVisible": true,
+      "emptyStateVisible": true,
+      "composerVisible": true,
+      "actionsVisible": true,
+      "statusVisible": true,
+      "selectedElementsFitViewport": true,
+      "overflowingElements": [],
+      "singleColumn": true,
+      "visualScale": 1,
+      "viewport": {
+        "width": 1366,
+        "height": 900,
+        "clientWidth": 1366,
+        "documentWidth": 1366
+      },
+      "documentFitsViewport": true,
+      "horizontalOverflowPx": 0,
+      "bodyFitsViewport": true
+    },
+    {
+      "scenario": "mobile-390x844",
+      "routeReady": true,
+      "readOnlyVisible": true,
+      "emptyStateVisible": true,
+      "composerVisible": true,
+      "actionsVisible": true,
+      "statusVisible": true,
+      "selectedElementsFitViewport": true,
+      "overflowingElements": [
+        {
+          "tag": "nav",
+          "className": "nav-open",
+          "left": 145,
+          "right": 363,
+          "clientWidth": 218,
+          "scrollWidth": 1798
+        },
+        {
+          "tag": "a",
+          "className": "",
+          "left": 259,
+          "right": 406,
+          "clientWidth": 147,
+          "scrollWidth": 147
+        },
+        {
+          "tag": "a",
+          "className": "",
+          "left": 410,
+          "right": 571,
+          "clientWidth": 161,
+          "scrollWidth": 161
+        },
+        {
+          "tag": "svg",
+          "className": "",
+          "left": 418,
+          "right": 433,
+          "clientWidth": 15,
+          "scrollWidth": 15
+        },
+        {
+          "tag": "rect",
+          "className": "",
+          "left": 418,
+          "right": 432,
+          "clientWidth": 0,
+          "scrollWidth": 0
+        },
+        {
+          "tag": "path",
+          "className": "",
+          "left": 418,
+          "right": 432,
+          "clientWidth": 0,
+          "scrollWidth": 0
+        },
+        {
+          "tag": "a",
+          "className": "",
+          "left": 575,
+          "right": 693,
+          "clientWidth": 118,
+          "scrollWidth": 118
+        },
+        {
+          "tag": "svg",
+          "className": "",
+          "left": 583,
+          "right": 598,
+          "clientWidth": 15,
+          "scrollWidth": 15
+        },
+        {
+          "tag": "path",
+          "className": "",
+          "left": 584,
+          "right": 596,
+          "clientWidth": 0,
+          "scrollWidth": 0
+        },
+        {
+          "tag": "path",
+          "className": "",
+          "left": 590,
+          "right": 596,
+          "clientWidth": 0,
+          "scrollWidth": 0
+        }
+      ],
+      "singleColumn": true,
+      "visualScale": 1,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "clientWidth": 375,
+        "documentWidth": 375
+      },
+      "documentFitsViewport": true,
+      "horizontalOverflowPx": 0,
+      "bodyFitsViewport": true,
+      "screenshot": "issue-568-financial-assistant-mobile-390x844.png"
+    },
+    {
+      "scenario": "zoom-200-percent",
+      "routeReady": true,
+      "readOnlyVisible": true,
+      "emptyStateVisible": true,
+      "composerVisible": true,
+      "actionsVisible": true,
+      "statusVisible": true,
+      "selectedElementsFitViewport": true,
+      "overflowingElements": [
+        {
+          "tag": "nav",
+          "className": "nav-open",
+          "left": 145,
+          "right": 656,
+          "clientWidth": 511,
+          "scrollWidth": 1798
+        },
+        {
+          "tag": "a",
+          "className": "",
+          "left": 575,
+          "right": 693,
+          "clientWidth": 118,
+          "scrollWidth": 118
+        },
+        {
+          "tag": "a",
+          "className": "",
+          "left": 697,
+          "right": 891,
+          "clientWidth": 194,
+          "scrollWidth": 194
+        },
+        {
+          "tag": "svg",
+          "className": "",
+          "left": 705,
+          "right": 720,
+          "clientWidth": 15,
+          "scrollWidth": 15
+        },
+        {
+          "tag": "polygon",
+          "className": "",
+          "left": 707,
+          "right": 718,
+          "clientWidth": 0,
+          "scrollWidth": 0
+        },
+        {
+          "tag": "a",
+          "className": "",
+          "left": 895,
+          "right": 1045,
+          "clientWidth": 151,
+          "scrollWidth": 151
+        },
+        {
+          "tag": "svg",
+          "className": "",
+          "left": 903,
+          "right": 918,
+          "clientWidth": 15,
+          "scrollWidth": 15
+        },
+        {
+          "tag": "path",
+          "className": "",
+          "left": 905,
+          "right": 915,
+          "clientWidth": 0,
+          "scrollWidth": 0
+        },
+        {
+          "tag": "path",
+          "className": "",
+          "left": 905,
+          "right": 915,
+          "clientWidth": 0,
+          "scrollWidth": 0
+        },
+        {
+          "tag": "path",
+          "className": "",
+          "left": 913,
+          "right": 916,
+          "clientWidth": 0,
+          "scrollWidth": 0
+        }
+      ],
+      "singleColumn": true,
+      "visualScale": 2,
+      "viewport": {
+        "width": 683,
+        "height": 900,
+        "clientWidth": 668,
+        "documentWidth": 668
+      },
+      "documentFitsViewport": true,
+      "horizontalOverflowPx": 0,
+      "bodyFitsViewport": true,
+      "screenshot": "issue-568-financial-assistant-zoom-200.png"
+    }
+  ],
+  "interactions": {
+    "promptKeyboard": {
+      "buttonFocused": true,
+      "disabled": false,
+      "nativeActivationObserved": true,
+      "inputFocused": true,
+      "value": "Resumo deste mês"
+    },
+    "clarification": {
+      "questionVisible": true,
+      "responseVisible": true,
+      "inputFocused": true,
+      "status": "Preciso de uma informação adicional para continuar.",
+      "excerpt": "VOCÊ\n\nResumo\n\nSOLVERFIN\nBaixa\n\nInforme o periodo que deseja analisar, por exemplo: hoje, este mes, mes passado ou 2026-08.\n\nConfiança: Baixa\nComo esta resposta foi calculada"
+    },
+    "controlledError": {
+      "controlledErrorVisible": true,
+      "inputFocused": true,
+      "status": "Falha visual controlada da issue 568."
+    },
+    "clear": {
+      "completed": true,
+      "inputFocused": true,
+      "disabled": false
+    },
+    "newContext": {
+      "completed": true,
+      "inputFocused": true,
+      "disabled": false
+    },
+    "cancel": {
+      "completed": true,
+      "inputFocused": true,
+      "disabled": false
+    }
+  },
+  "failures": []
+}

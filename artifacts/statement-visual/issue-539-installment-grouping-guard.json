@@ -1,0 +1,274 @@
+{
+  "generatedAt": "2026-09-04T19:19:55.704Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "scenarios": [
+    {
+      "route": "/lancamentos?accountId=200da0a0-ce4f-4e76-be8c-db342a61644f&month=2026-07",
+      "viewport": "1366x768",
+      "state": "canonical installment reconciled and unreconciled through bulk actions",
+      "screenshot": "issue-539-installment-grouping-guard-1366x768.png",
+      "desktop": {
+        "badge": "Parcela 2 de 2",
+        "selectionDisabled": false,
+        "selectionLabel": "Selecionar lançamento QA parcela fora de agrupamento — parcela canônica, indisponível para unificação",
+        "installmentQueries": 1,
+        "globalOverflow": false
+      },
+      "unreconcileSelection": {
+        "canonicalSelected": true,
+        "ordinarySelected": false,
+        "groupingDisabled": true,
+        "groupingTitle": "Desmarque as parcelas canônicas para unificar somente lançamentos elegíveis.",
+        "help": "Unificar lançamentos indisponível: desmarque as parcelas canônicas. Elas continuam disponíveis para conciliar, desconciliar ou excluir. Marcar como conciliado indisponível: todos os lançamentos selecionados já estão conciliados.",
+        "reconcileDisabled": true,
+        "unreconcileDisabled": false,
+        "voidDisabled": false,
+        "selectionCount": "1",
+        "globalOverflow": false
+      },
+      "unreconcile": {
+        "statusText": "Conciliação desmarcada. Atualizando...",
+        "installment": {
+          "id": "a1f5151b-a64a-44e3-af45-1ee729414c81",
+          "organizationId": "22222222-2222-4222-8222-222222222222",
+          "financialProfileId": "33333333-3333-4333-8333-333333333331",
+          "status": "reconciled",
+          "sequenceNumber": 2,
+          "totalInstallments": 2,
+          "dueOn": "2026-07-15",
+          "amountMinor": 12345,
+          "currency": "BRL",
+          "editable": false,
+          "editBlockedReason": "installment_status_locked",
+          "transaction": {
+            "id": "79e4f3c7-a6f8-4158-b48b-143c6f83885c",
+            "status": "posted",
+            "kind": "expense",
+            "source": "installment",
+            "amountMinor": 12345,
+            "currency": "BRL",
+            "occurredOn": "2026-07-15",
+            "plannedOn": "2026-07-15",
+            "description": "QA parcela fora de agrupamento",
+            "note": "",
+            "accountId": "200da0a0-ce4f-4e76-be8c-db342a61644f",
+            "categoryId": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d"
+          },
+          "category": {
+            "id": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d",
+            "name": "Categoria guard mtnc8ymf",
+            "kind": "expense",
+            "status": "active"
+          }
+        },
+        "transaction": {
+          "id": "79e4f3c7-a6f8-4158-b48b-143c6f83885c",
+          "organizationId": "22222222-2222-4222-8222-222222222222",
+          "financialProfileId": "33333333-3333-4333-8333-333333333331",
+          "kind": "expense",
+          "status": "posted",
+          "source": "installment",
+          "amountMinor": 12345,
+          "currency": "BRL",
+          "occurredOn": "2026-07-15",
+          "plannedOn": "2026-07-15",
+          "description": "QA parcela fora de agrupamento",
+          "createdAt": "2026-09-04T19:19:53.462Z",
+          "updatedAt": "2026-09-04T19:19:54.164Z",
+          "effectiveOn": "2026-07-15",
+          "accountId": "200da0a0-ce4f-4e76-be8c-db342a61644f",
+          "categoryId": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d",
+          "installmentId": "a1f5151b-a64a-44e3-af45-1ee729414c81",
+          "createdByUserId": "11111111-1111-4111-8111-111111111111",
+          "updatedByUserId": "11111111-1111-4111-8111-111111111111"
+        }
+      },
+      "reconcileSelection": {
+        "canonicalSelected": true,
+        "ordinarySelected": false,
+        "groupingDisabled": true,
+        "groupingTitle": "Desmarque as parcelas canônicas para unificar somente lançamentos elegíveis.",
+        "help": "Unificar lançamentos indisponível: desmarque as parcelas canônicas. Elas continuam disponíveis para conciliar, desconciliar ou excluir. Desmarcar conciliado indisponível: nenhum lançamento selecionado está conciliado.",
+        "reconcileDisabled": false,
+        "unreconcileDisabled": true,
+        "voidDisabled": false,
+        "selectionCount": "1",
+        "globalOverflow": false
+      },
+      "reconcile": {
+        "statusText": "Lançamentos conciliados. Atualizando...",
+        "installment": {
+          "id": "a1f5151b-a64a-44e3-af45-1ee729414c81",
+          "organizationId": "22222222-2222-4222-8222-222222222222",
+          "financialProfileId": "33333333-3333-4333-8333-333333333331",
+          "status": "reconciled",
+          "sequenceNumber": 2,
+          "totalInstallments": 2,
+          "dueOn": "2026-07-15",
+          "amountMinor": 12345,
+          "currency": "BRL",
+          "editable": false,
+          "editBlockedReason": "installment_status_locked",
+          "transaction": {
+            "id": "79e4f3c7-a6f8-4158-b48b-143c6f83885c",
+            "status": "reconciled",
+            "kind": "expense",
+            "source": "installment",
+            "amountMinor": 12345,
+            "currency": "BRL",
+            "occurredOn": "2026-07-15",
+            "plannedOn": "2026-07-15",
+            "description": "QA parcela fora de agrupamento",
+            "note": "",
+            "accountId": "200da0a0-ce4f-4e76-be8c-db342a61644f",
+            "categoryId": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d"
+          },
+          "category": {
+            "id": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d",
+            "name": "Categoria guard mtnc8ymf",
+            "kind": "expense",
+            "status": "active"
+          }
+        },
+        "transaction": {
+          "id": "79e4f3c7-a6f8-4158-b48b-143c6f83885c",
+          "organizationId": "22222222-2222-4222-8222-222222222222",
+          "financialProfileId": "33333333-3333-4333-8333-333333333331",
+          "kind": "expense",
+          "status": "reconciled",
+          "source": "installment",
+          "amountMinor": 12345,
+          "currency": "BRL",
+          "occurredOn": "2026-07-15",
+          "plannedOn": "2026-07-15",
+          "description": "QA parcela fora de agrupamento",
+          "createdAt": "2026-09-04T19:19:53.462Z",
+          "updatedAt": "2026-09-04T19:19:54.827Z",
+          "effectiveOn": "2026-07-15",
+          "accountId": "200da0a0-ce4f-4e76-be8c-db342a61644f",
+          "categoryId": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d",
+          "installmentId": "a1f5151b-a64a-44e3-af45-1ee729414c81",
+          "reconciledAt": "2026-09-04T19:19:54.827Z",
+          "createdByUserId": "11111111-1111-4111-8111-111111111111",
+          "updatedByUserId": "11111111-1111-4111-8111-111111111111"
+        }
+      },
+      "apiGuard": {
+        "status": 409,
+        "body": {
+          "error": {
+            "code": "TRANSACTION_GROUP_INSTALLMENT_MEMBER_INELIGIBLE",
+            "message": "Parcelas canônicas não podem participar de agrupamentos. Desagrupe para manter a parcela.",
+            "correlationId": "corr-mtnc8z2c-9lcopyfz"
+          }
+        }
+      }
+    },
+    {
+      "route": "/lancamentos?accountId=200da0a0-ce4f-4e76-be8c-db342a61644f&month=2026-07",
+      "viewport": "390x844",
+      "state": "canonical installment bulk logical deletion preserved history",
+      "screenshot": "issue-539-installment-grouping-guard-390x844.png",
+      "mobile": {
+        "badge": "Parcela 2 de 2",
+        "selectionDisabled": false,
+        "selectionLabel": "Selecionar lançamento QA parcela fora de agrupamento — parcela canônica, indisponível para unificação",
+        "installmentQueries": 1,
+        "globalOverflow": false
+      },
+      "mobileSelection": {
+        "canonicalSelected": true,
+        "ordinarySelected": true,
+        "groupingDisabled": true,
+        "groupingTitle": "Desmarque as parcelas canônicas para unificar somente lançamentos elegíveis.",
+        "help": "Unificar lançamentos indisponível: desmarque as parcelas canônicas. Elas continuam disponíveis para conciliar, desconciliar ou excluir. Marcar como conciliado indisponível: todos os lançamentos selecionados já estão conciliados.",
+        "reconcileDisabled": true,
+        "unreconcileDisabled": false,
+        "voidDisabled": false,
+        "selectionCount": "2",
+        "globalOverflow": false
+      },
+      "bulkVoid": {
+        "statusText": "Lançamentos excluídos. Atualizando...",
+        "installment": {
+          "id": "a1f5151b-a64a-44e3-af45-1ee729414c81",
+          "organizationId": "22222222-2222-4222-8222-222222222222",
+          "financialProfileId": "33333333-3333-4333-8333-333333333331",
+          "status": "reconciled",
+          "sequenceNumber": 2,
+          "totalInstallments": 2,
+          "dueOn": "2026-07-15",
+          "amountMinor": 12345,
+          "currency": "BRL",
+          "editable": false,
+          "editBlockedReason": "installment_status_locked",
+          "transaction": {
+            "id": "79e4f3c7-a6f8-4158-b48b-143c6f83885c",
+            "status": "voided",
+            "kind": "expense",
+            "source": "installment",
+            "amountMinor": 12345,
+            "currency": "BRL",
+            "occurredOn": "2026-07-15",
+            "plannedOn": "2026-07-15",
+            "description": "QA parcela fora de agrupamento",
+            "note": "",
+            "accountId": "200da0a0-ce4f-4e76-be8c-db342a61644f",
+            "categoryId": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d"
+          },
+          "category": {
+            "id": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d",
+            "name": "Categoria guard mtnc8ymf",
+            "kind": "expense",
+            "status": "active"
+          }
+        },
+        "transaction": {
+          "id": "79e4f3c7-a6f8-4158-b48b-143c6f83885c",
+          "organizationId": "22222222-2222-4222-8222-222222222222",
+          "financialProfileId": "33333333-3333-4333-8333-333333333331",
+          "kind": "expense",
+          "status": "voided",
+          "source": "installment",
+          "amountMinor": 12345,
+          "currency": "BRL",
+          "occurredOn": "2026-07-15",
+          "plannedOn": "2026-07-15",
+          "description": "QA parcela fora de agrupamento",
+          "createdAt": "2026-09-04T19:19:53.462Z",
+          "updatedAt": "2026-09-04T19:19:55.501Z",
+          "effectiveOn": "2026-07-15",
+          "accountId": "200da0a0-ce4f-4e76-be8c-db342a61644f",
+          "categoryId": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d",
+          "installmentId": "a1f5151b-a64a-44e3-af45-1ee729414c81",
+          "voidedAt": "2026-09-04T19:19:55.501Z",
+          "createdByUserId": "11111111-1111-4111-8111-111111111111",
+          "updatedByUserId": "11111111-1111-4111-8111-111111111111"
+        },
+        "additionalTransaction": {
+          "id": "4b3e61b1-390a-4f8a-9b01-da6b6db868a4",
+          "organizationId": "22222222-2222-4222-8222-222222222222",
+          "financialProfileId": "33333333-3333-4333-8333-333333333331",
+          "kind": "expense",
+          "status": "voided",
+          "source": "manual",
+          "amountMinor": 6789,
+          "currency": "BRL",
+          "occurredOn": "2026-07-15",
+          "plannedOn": "2026-07-15",
+          "description": "QA lançamento comum para agrupamento",
+          "createdAt": "2026-09-04T19:19:53.486Z",
+          "updatedAt": "2026-09-04T19:19:55.501Z",
+          "effectiveOn": "2026-07-15",
+          "accountId": "200da0a0-ce4f-4e76-be8c-db342a61644f",
+          "categoryId": "4fd81d65-e5fc-45da-9659-1f5f9c9a367d",
+          "voidedAt": "2026-09-04T19:19:55.501Z",
+          "createdByUserId": "11111111-1111-4111-8111-111111111111",
+          "updatedByUserId": "11111111-1111-4111-8111-111111111111"
+        }
+      }
+    }
+  ]
+}

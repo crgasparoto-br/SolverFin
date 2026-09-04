@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "reports-category-evolution::0-relatorios-normal",
+  "sourceScenarioId": "reports-category-evolution",
+  "route": "/relatorios",
+  "state": "normal",
+  "assertions": [
+    "focus",
+    "overflow"
+  ],
+  "details": {
+    "surface": "reports"
+  }
+}

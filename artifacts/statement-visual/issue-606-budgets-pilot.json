@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-09-04T19:22:44.952Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "scenarios": [
+    {
+      "route": "/orcamentos",
+      "state": "normal",
+      "viewport": "1366x768",
+      "screenshot": "issue-606-budgets-desktop.png",
+      "measurements": {
+        "pathname": "/orcamentos",
+        "viewportWidth": 1366,
+        "documentFits": true,
+        "hasMain": true,
+        "hasHeading": true,
+        "essentialOutsideViewport": []
+      }
+    },
+    {
+      "route": "/orcamentos",
+      "state": "normal",
+      "viewport": "390x844",
+      "screenshot": "issue-606-budgets-mobile.png",
+      "measurements": {
+        "pathname": "/orcamentos",
+        "viewportWidth": 390,
+        "documentFits": true,
+        "hasMain": true,
+        "hasHeading": true,
+        "essentialOutsideViewport": []
+      }
+    }
+  ]
+}

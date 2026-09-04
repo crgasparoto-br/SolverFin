@@ -92,9 +92,7 @@ export function buildAccountsCardsPageViewModel(
   cards: CreditCardAccountRecord[],
   requestedResource?: string | null,
 ): AccountsCardsPageViewModel {
-  const accountResources = accounts.map((account) =>
-    buildAccountResource(account),
-  );
+  const accountResources = accounts.map((account) => buildAccountResource(account));
   const cardResources = cards.map((card) => buildCardResource(card, accounts));
   const resources = [...accountResources, ...cardResources];
   const requestedKey = parseResourceKey(requestedResource);
@@ -118,9 +116,7 @@ export function buildAccountsCardsPageViewModel(
   };
 }
 
-function buildAccountResource(
-  account: AccountRecord,
-): ResourceMasterViewModel {
+function buildAccountResource(account: AccountRecord): ResourceMasterViewModel {
   const item = buildAccountItemViewModel(account);
   const currency = normalizeCurrency(account.currency);
   const key = `account:${account.id}` as const;
@@ -136,9 +132,7 @@ function buildAccountResource(
     secondaryLabel: formatAccountKind(account.kind),
     currency,
     currencyLabel: currency ?? "Moeda não informada",
-    search: [item.search, currency ?? "moeda indisponível", "conta"]
-      .join(" ")
-      .toLowerCase(),
+    search: [item.search, currency ?? "moeda indisponível", "conta"].join(" ").toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(key)}`,
     isSelected: false,
   };
@@ -162,11 +156,7 @@ function buildCardResource(
     secondaryLabel: `${item.brandLabel} · ${item.activeInstrumentCount} ${item.activeInstrumentCount === 1 ? "instrumento ativo" : "instrumentos ativos"}`,
     currency: item.paymentAccountCurrency,
     currencyLabel: item.paymentAccountCurrency ?? "Moeda indisponível",
-    search: [
-      item.search,
-      item.paymentAccountCurrency ?? "moeda indisponível",
-      "cartão",
-    ]
+    search: [item.search, item.paymentAccountCurrency ?? "moeda indisponível", "cartão"]
       .join(" ")
       .toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(key)}`,
@@ -180,9 +170,7 @@ function resolveSelectedResource(
   cards: CreditCardAccountRecord[],
 ): SelectedResourceViewModel | undefined {
   if (key.startsWith("account:")) {
-    const account = accounts.find(
-      (candidate) => `account:${candidate.id}` === key,
-    );
+    const account = accounts.find((candidate) => `account:${candidate.id}` === key);
     return account
       ? {
           kind: "account",
@@ -195,9 +183,7 @@ function resolveSelectedResource(
 
   const card = cards.find((candidate) => `card:${candidate.id}` === key);
   if (!card) return undefined;
-  const paymentAccount = accounts.find(
-    (account) => account.id === card.paymentAccountId,
-  );
+  const paymentAccount = accounts.find((account) => account.id === card.paymentAccountId);
   return {
     kind: "card",
     key,
@@ -207,9 +193,7 @@ function resolveSelectedResource(
   };
 }
 
-function parseResourceKey(
-  value: string | null | undefined,
-): ResourceKey | undefined {
+function parseResourceKey(value: string | null | undefined): ResourceKey | undefined {
   const normalized = value?.trim();
   if (!normalized || !/^(account|card):[^:]+$/.test(normalized)) {
     return undefined;
@@ -217,9 +201,7 @@ function parseResourceKey(
   return normalized as ResourceKey;
 }
 
-export function buildAccountItemViewModel(
-  account: AccountRecord,
-): AccountItemViewModel {
+export function buildAccountItemViewModel(account: AccountRecord): AccountItemViewModel {
   const institution = findInstitution(account.institutionKey);
   const bankIdentifier = formatAccountIdentifier(account);
 
@@ -228,13 +210,7 @@ export function buildAccountItemViewModel(
     institutionKey: institution.key,
     institutionLabel: institution.label,
     bankIdentifier,
-    search: [
-      account.name,
-      institution.label,
-      bankIdentifier ?? "",
-      account.kind,
-      account.status,
-    ]
+    search: [account.name, institution.label, bankIdentifier ?? "", account.kind, account.status]
       .join(" ")
       .toLowerCase(),
     editDialogId: `edit-account-dialog-${account.id}`,
@@ -248,9 +224,7 @@ export function buildCardItemViewModel(
 ): CardItemViewModel {
   const institution = findInstitution(card.institutionKey);
   const brand = findCardBrand(card.brandKey);
-  const paymentAccount = accounts.find(
-    (account) => account.id === card.paymentAccountId,
-  );
+  const paymentAccount = accounts.find((account) => account.id === card.paymentAccountId);
 
   return {
     card,
@@ -285,9 +259,7 @@ export function buildCardItemViewModel(
   };
 }
 
-export function normalizeCurrency(
-  value: string | undefined,
-): string | undefined {
+export function normalizeCurrency(value: string | undefined): string | undefined {
   const normalized = value?.trim().toUpperCase();
   return normalized && /^[A-Z]{3}$/.test(normalized) ? normalized : undefined;
 }
@@ -300,9 +272,7 @@ export function countActive(items: Array<{ status: string }>): number {
   return items.filter((item) => item.status === "active").length;
 }
 
-export function formatAccountIdentifier(
-  account: AccountRecord,
-): string | undefined {
+export function formatAccountIdentifier(account: AccountRecord): string | undefined {
   const parts = [
     formatAccountIdentifierPart("Agência", account.agencyIdentifier, 2),
     formatAccountIdentifierPart("Conta", account.accountIdentifier, 4),

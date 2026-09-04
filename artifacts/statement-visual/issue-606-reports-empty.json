@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-09-04T19:17:16.084Z",
+  "commit": "local",
+  "route": "/relatorios",
+  "state": "empty",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "evidence": [
+    {
+      "width": 1024,
+      "height": 700,
+      "screenshot": "issue-606-reports-empty.png",
+      "measurements": {
+        "state": "empty",
+        "viewportWidth": 1024,
+        "noHorizontalOverflow": true,
+        "tableCount": 1,
+        "rowHeaders": 3,
+        "tableScrollable": true,
+        "scrollerFocused": false,
+        "invalidControls": 0
+      }
+    }
+  ],
+  "failures": []
+}

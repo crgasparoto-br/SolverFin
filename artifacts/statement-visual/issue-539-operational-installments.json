@@ -1,0 +1,129 @@
+{
+  "generatedAt": "2026-09-04T19:19:45.203Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "scenarios": [
+    {
+      "route": "/lancamentos?accountId=7cd771a0-a7aa-44a9-892b-330149348d37&month=2026-07",
+      "viewport": "1366x768",
+      "state": "editable archived category",
+      "screenshot": "issue-539-account-installment-desktop-1366x768.png",
+      "modal": {
+        "open": true,
+        "title": "Editar parcela",
+        "categoryValue": "30f246ea-5435-42f1-a92c-2dc71af072fb",
+        "categoryLabel": "Categoria historica QA mtnc8oet (arquivada)",
+        "categoryOptionDisabled": true,
+        "visibleEditableNames": [
+          "categoryId",
+          "description",
+          "note"
+        ],
+        "focusName": "description",
+        "reasonText": "",
+        "saveHidden": false,
+        "descriptionValue": "QA issue 539 parcela conta",
+        "reloadVisible": false,
+        "globalOverflow": false,
+        "dialogWithinViewport": true
+      }
+    },
+    {
+      "route": "/lancamentos?accountId=7cd771a0-a7aa-44a9-892b-330149348d37&month=2026-07",
+      "viewport": "390x844",
+      "state": "restricted modal",
+      "screenshot": "issue-539-account-installment-mobile-390x844.png",
+      "modal": {
+        "open": true,
+        "title": "Editar parcela",
+        "categoryValue": "30f246ea-5435-42f1-a92c-2dc71af072fb",
+        "categoryLabel": "Categoria historica QA mtnc8oet (arquivada)",
+        "categoryOptionDisabled": true,
+        "visibleEditableNames": [
+          "categoryId",
+          "description",
+          "note"
+        ],
+        "focusName": "description",
+        "reasonText": "",
+        "saveHidden": false,
+        "descriptionValue": "QA issue 539 ajustada mtnc8p5p",
+        "reloadVisible": false,
+        "globalOverflow": false,
+        "dialogWithinViewport": true
+      }
+    },
+    {
+      "route": "/lancamentos?accountId=7cd771a0-a7aa-44a9-892b-330149348d37&month=2026-09",
+      "viewport": "1366x768",
+      "state": "read-only reconciled installment",
+      "screenshot": "issue-539-account-installment-blocked-desktop-1366x768.png",
+      "modal": {
+        "open": true,
+        "title": "Detalhes da parcela",
+        "categoryValue": "30f246ea-5435-42f1-a92c-2dc71af072fb",
+        "categoryLabel": "Categoria historica QA mtnc8oet (arquivada)",
+        "categoryOptionDisabled": true,
+        "visibleEditableNames": [],
+        "focusName": "",
+        "reasonText": "O lançamento já foi efetivado, conciliado ou cancelado.",
+        "saveHidden": true,
+        "descriptionValue": "QA issue 539 parcela conta",
+        "reloadVisible": false,
+        "globalOverflow": false,
+        "dialogWithinViewport": true
+      }
+    },
+    {
+      "route": "/lancamentos?accountId=7cd771a0-a7aa-44a9-892b-330149348d37&month=2026-09",
+      "viewport": "1366x768",
+      "state": "stale edit conflict",
+      "screenshot": "issue-539-account-installment-conflict-desktop-1366x768.png",
+      "conflict": {
+        "statusUpdate": 200,
+        "patchResult": {
+          "status": 409,
+          "body": {
+            "error": {
+              "code": "INSTALLMENT_EDIT_BLOCKED",
+              "message": "Parcela bloqueada para edicao: transaction_status_locked.",
+              "correlationId": "corr-mtnc8r1y-g4b4afyi"
+            }
+          }
+        },
+        "modalOpen": true,
+        "statusText": "O estado da parcela mudou e ela não pode mais ser alterada. Seus valores foram preservados.",
+        "descriptionValue": "Conflito preservado mtnc8r0t",
+        "reloadVisible": true
+      }
+    },
+    {
+      "route": "/cartoes?cardId=74ddd77f-c8a4-4688-959d-fa4eb85c7d63&invoiceId=656ff03e-6516-49d5-b177-c3956a685740",
+      "viewport": "1366x768",
+      "state": "purchase edit",
+      "screenshot": "issue-539-card-installment-desktop-1366x768.png",
+      "purchaseModal": {
+        "open": true,
+        "title": "Editar compra",
+        "method": "PATCH",
+        "globalOverflow": false
+      }
+    },
+    {
+      "route": "/cartoes?cardId=74ddd77f-c8a4-4688-959d-fa4eb85c7d63&invoiceId=656ff03e-6516-49d5-b177-c3956a685740",
+      "viewport": "390x844",
+      "state": "installment badge",
+      "screenshot": "issue-539-card-installment-mobile-390x844.png",
+      "line": {
+        "badge": "Parcela 1 de 3",
+        "purchaseEditEnabled": true,
+        "hasInstallmentEdit": false,
+        "blockReason": "Esta parcela é alterada pela compra da fatura.",
+        "badgeTabIndex": 0,
+        "accessibleDescription": "Esta parcela é alterada pela compra da fatura.",
+        "globalOverflow": false
+      }
+    }
+  ]
+}

@@ -167,9 +167,7 @@ async function accountsCardsPageRendersMasterDetailWithNestedInstruments(): Prom
   try {
     const html = await renderAccountsCardsPage(
       "session-token",
-      new URL(
-        "https://solverfin.invalid/contas-cartoes?resource=card%3Acard-c6",
-      ),
+      new URL("https://solverfin.invalid/contas-cartoes?resource=card%3Acard-c6"),
     );
 
     assert.match(html, /data-accounts-cards-archetype="A3"/);
@@ -186,30 +184,15 @@ async function accountsCardsPageRendersMasterDetailWithNestedInstruments(): Prom
     assert.match(html, /Virtual adicional/);
     assert.match(html, /\*\*\*\* 1111/);
     assert.match(html, /USD/);
-    assert.match(
-      html,
-      /data-open-dialog="new-card-instrument-dialog-card-c6"/,
-    );
-    assert.match(
-      html,
-      /data-api-path="\/api\/credit-card-accounts\/card-c6\/instruments"/,
-    );
-    assert.match(
-      html,
-      /data-api-path="\/api\/credit-card-instruments\/instrument-physical"/,
-    );
-    assert.match(
-      html,
-      /data-api-path="\/api\/credit-card-accounts\/card-c6\/default-instrument"/,
-    );
+    assert.match(html, /data-open-dialog="new-card-instrument-dialog-card-c6"/);
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/instruments"/);
+    assert.match(html, /data-api-path="\/api\/credit-card-instruments\/instrument-physical"/);
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/default-instrument"/);
     assert.match(
       html,
       /data-api-path="\/api\/credit-card-instruments\/instrument-virtual\/archive"/,
     );
-    assert.match(
-      html,
-      /data-api-path="\/api\/credit-card-accounts\/card-c6\/archive"/,
-    );
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/archive"/);
     assert.match(html, /data-payload-kind="credit-card-account"/);
     assert.doesNotMatch(html, /data-api-path="\/api\/cards"/);
     assert.doesNotMatch(html, /\/api\/card-additional-links/);
@@ -269,10 +252,7 @@ function accountsCardsDirectEnhancementIsInjectedOnce(): void {
   const enhancedAgain = enhanceAccountsCardsTabs(enhanced);
 
   assert.match(enhanced, /data-accounts-cards-direct-enhancement/);
-  assert.equal(
-    (enhancedAgain.match(/data-accounts-cards-direct-enhancement/g) ?? []).length,
-    1,
-  );
+  assert.equal((enhancedAgain.match(/data-accounts-cards-direct-enhancement/g) ?? []).length, 1);
   assert.match(enhanced, /activeFilterStorageKey/);
   assert.match(enhanced, /wireActiveFilter\(\)/);
   assert.doesNotMatch(enhanced, /card-additional-links/);
@@ -297,22 +277,11 @@ function accountsCardsEnhancementKeepsOnlyActiveFilter(): void {
 
 function accountsCardsPageDoesNotFetchRetiredLinks(): void {
   const accountsCardsPageSource = readFileSync(
-    path.join(
-      repoRoot,
-      "apps",
-      "web",
-      "src",
-      "dev-server",
-      "accounts-cards",
-      "page.ts",
-    ),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "page.ts"),
     "utf8",
   );
 
-  assert.match(
-    accountsCardsPageSource,
-    /\/api\/credit-card-accounts\?status=all/,
-  );
+  assert.match(accountsCardsPageSource, /\/api\/credit-card-accounts\?status=all/);
   assert.match(accountsCardsPageSource, /creditCardAccounts/);
   assert.doesNotMatch(accountsCardsPageSource, /\/api\/cards\?status=all/);
   assert.doesNotMatch(accountsCardsPageSource, /\/api\/card-additional-links/);
@@ -324,9 +293,7 @@ function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
     "",
     ...[...financialInstitutionCatalog]
       .filter((institution) => institution.status === "active")
-      .sort((first, second) =>
-        first.label.localeCompare(second.label, "pt-BR"),
-      )
+      .sort((first, second) => first.label.localeCompare(second.label, "pt-BR"))
       .map((institution) => institution.key),
   ];
 
@@ -345,39 +312,15 @@ function accountAndCardInstitutionSelectsUseGlobalCatalog(): void {
   }
 
   const accountsCardsViewModelSource = readFileSync(
-    path.join(
-      repoRoot,
-      "apps",
-      "web",
-      "src",
-      "dev-server",
-      "accounts-cards",
-      "view-model.ts",
-    ),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "view-model.ts"),
     "utf8",
   );
   const accountsCardsPresentationSource = readFileSync(
-    path.join(
-      repoRoot,
-      "apps",
-      "web",
-      "src",
-      "dev-server",
-      "accounts-cards",
-      "presentation.ts",
-    ),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "presentation.ts"),
     "utf8",
   );
   const accountsCardsComponentsSource = readFileSync(
-    path.join(
-      repoRoot,
-      "apps",
-      "web",
-      "src",
-      "dev-server",
-      "accounts-cards",
-      "components.ts",
-    ),
+    path.join(repoRoot, "apps", "web", "src", "dev-server", "accounts-cards", "components.ts"),
     "utf8",
   );
 
@@ -421,33 +364,21 @@ function institutionIconsUseExplicitLogoSources(): void {
   assert.match(bradescoIcon, /decoding="async"/);
   assert.match(bradescoIcon, /data-logo-source="local"/);
   assert.match(bradescoIcon, /\/images\/institutions\/bradesco\.png/);
-  assert.match(
-    renderInstitutionIcon("inter"),
-    /\/images\/institutions\/inter\.png/,
-  );
+  assert.match(renderInstitutionIcon("inter"), /\/images\/institutions\/inter\.png/);
   assert.match(renderInstitutionIcon("c6"), />C6</);
   assert.doesNotMatch(renderInstitutionIcon("c6"), /<img\b/);
   assert.match(renderInstitutionIcon("nubank"), />NU</);
   assert.doesNotMatch(renderInstitutionIcon("nubank"), /<img\b/);
   assert.match(renderInstitutionIcon("legacy_bank"), />LB</);
-  assert.match(
-    renderInstitutionIcon("porto_bank"),
-    /\/images\/institutions\/porto-bank\.svg/,
-  );
+  assert.match(renderInstitutionIcon("porto_bank"), /\/images\/institutions\/porto-bank\.svg/);
   assert.match(renderInstitutionIcon("bradesco"), />BR</);
   assert.match(renderInstitutionIcon("bradesco"), /aria-hidden="true"/);
-  assert.match(
-    renderInstitutionIcon("bradesco"),
-    /removeAttribute\('aria-hidden'\)/,
-  );
+  assert.match(renderInstitutionIcon("bradesco"), /removeAttribute\('aria-hidden'\)/);
 
   for (const institution of financialInstitutionCatalog) {
     if (institution.logoAssetPath === undefined) continue;
 
-    assert.match(
-      institution.logoAssetPath,
-      /^\/images\/institutions\/[a-z0-9-]+\.(png|svg|webp)$/,
-    );
+    assert.match(institution.logoAssetPath, /^\/images\/institutions\/[a-z0-9-]+\.(png|svg|webp)$/);
     assertLocalInstitutionLogo(institution.logoAssetPath);
   }
 }
@@ -495,9 +426,7 @@ function sidebarMenuUsesPtBrLabels(): void {
   assert.equal(privateRoutes.get("/contas-cartoes"), "Contas e Cartões");
   assert.equal(privateRoutes.has("/contas"), false);
   assert.equal(
-    Array.from(privateRoutes.values()).filter(
-      (label) => label === "Contas e Cartões",
-    ).length,
+    Array.from(privateRoutes.values()).filter((label) => label === "Contas e Cartões").length,
     1,
   );
   assert.equal(privateRoutes.get("/cartoes"), "Cartões de Crédito");

@@ -1,0 +1,29 @@
+{
+  "prepared": {
+    "focused": true,
+    "disabled": false,
+    "accessibleText": "Marcar como conciliado"
+  },
+  "activation": {
+    "clickObserved": true,
+    "processingObserved": true,
+    "processingAriaBusy": "true",
+    "processingStatus": "Processando...",
+    "processingActionsDisabled": true,
+    "currentStatus": "Lançamentos conciliados. Atualizando..."
+  },
+  "persisted": {
+    "groupPresent": true,
+    "status": "Conciliado"
+  },
+  "ungroupedResponse": {
+    "ok": true,
+    "status": 200
+  },
+  "ungrouped": {
+    "groupedRowPresent": false,
+    "individualRowCount": 2,
+    "groupIconCount": 0,
+    "groupedMarkerCount": 0
+  }
+}

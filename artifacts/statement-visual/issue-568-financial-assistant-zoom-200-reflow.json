@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-09-04T19:22:41.610Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "referenceViewportWidth": 1366,
+  "zoomEquivalentLayoutWidth": 683,
+  "observation": {
+    "viewport": {
+      "innerWidth": 683,
+      "clientWidth": 668,
+      "documentWidth": 668,
+      "visualViewportWidth": 668
+    },
+    "effectiveZoomPercent": 200,
+    "visualScale": 1,
+    "documentFitsViewport": true,
+    "keyContentFitsViewport": true,
+    "singleColumn": true,
+    "composerVisible": true,
+    "statusVisible": true,
+    "actionsVisible": true,
+    "screenshot": "issue-568-financial-assistant-zoom-200-reflow.png"
+  },
+  "failures": []
+}

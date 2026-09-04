@@ -1,0 +1,52 @@
+{
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "desktop": {
+    "viewportWidth": 1280,
+    "documentFits": true,
+    "containerFits": true,
+    "titleLines": 9,
+    "titleWraps": true,
+    "detailColumns": "612px 612px",
+    "detailSingleColumn": false,
+    "tableFits": true,
+    "tableScrollable": true,
+    "tableOverflowContained": true
+  },
+  "dialog": {
+    "focused": {
+      "id": "sample-dialog-trigger",
+      "focusVisible": true,
+      "boxShadow": "rgba(34, 211, 238, 0.3) 0px 0px 0px 2.59921px"
+    },
+    "opened": true,
+    "closed": {
+      "closed": true,
+      "focusRestored": true
+    }
+  },
+  "drawer": {
+    "focused": {
+      "id": "sample-drawer-trigger",
+      "focusVisible": true,
+      "boxShadow": "rgba(34, 211, 238, 0.26) 0px 0px 0px 2.225px"
+    },
+    "opened": true,
+    "closed": {
+      "closed": true,
+      "focusRestored": true
+    }
+  },
+  "mobile": {
+    "viewportWidth": 345,
+    "documentFits": true,
+    "containerFits": true,
+    "titleLines": 33,
+    "titleWraps": true,
+    "detailColumns": "317px",
+    "detailSingleColumn": true,
+    "tableFits": true,
+    "tableScrollable": true,
+    "tableOverflowContained": true
+  }
+}

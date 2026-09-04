@@ -28,10 +28,7 @@ for (const moduleName of expectedModules) {
 
 const facadePath = resolve(sourceRoot, "accounts-cards-page.ts");
 const facade = readFileSync(facadePath, "utf8").trim();
-if (
-  facade !==
-  'export { renderAccountsCardsPage } from "./accounts-cards/page.js";'
-) {
+if (facade !== 'export { renderAccountsCardsPage } from "./accounts-cards/page.js";') {
   failures.push(
     "accounts-cards-page.ts must remain a compatibility facade for the structured page module",
   );
@@ -69,9 +66,7 @@ for (const forbiddenNeedle of [
   "function baseCss",
 ]) {
   if (page.includes(forbiddenNeedle)) {
-    failures.push(
-      `page.ts still owns or exposes retired structure: ${forbiddenNeedle}`,
-    );
+    failures.push(`page.ts still owns or exposes retired structure: ${forbiddenNeedle}`);
   }
 }
 
@@ -83,9 +78,7 @@ for (const forbiddenNeedle of [
   "renderAuthenticatedShellDocument",
 ]) {
   if (viewModel.includes(forbiddenNeedle)) {
-    failures.push(
-      `view-model.ts crossed its data-preparation boundary: ${forbiddenNeedle}`,
-    );
+    failures.push(`view-model.ts crossed its data-preparation boundary: ${forbiddenNeedle}`);
   }
 }
 for (const requiredNeedle of [
@@ -98,10 +91,7 @@ for (const requiredNeedle of [
   }
 }
 
-const legacyShimPath = resolve(
-  sourceRoot,
-  "accounts-cards-page-dialog-only.ts",
-);
+const legacyShimPath = resolve(sourceRoot, "accounts-cards-page-dialog-only.ts");
 const expectedLegacyShim =
   'export { keepCardInstrumentsInsideEditDialog } from "./accounts-cards-dialog-transition.js";';
 if (!existsSync(legacyShimPath)) {
@@ -112,10 +102,7 @@ if (!existsSync(legacyShimPath)) {
   );
 }
 
-const transitionPath = resolve(
-  sourceRoot,
-  "accounts-cards-dialog-transition.ts",
-);
+const transitionPath = resolve(sourceRoot, "accounts-cards-dialog-transition.ts");
 if (!existsSync(transitionPath)) {
   failures.push("accounts-cards-dialog-transition.ts is missing");
 } else {
@@ -126,11 +113,7 @@ if (!existsSync(transitionPath)) {
 }
 
 const server = readFileSync(resolve(root, "apps/web/src/dev-server.ts"), "utf8");
-if (
-  !server.includes(
-    "sendHtml(response, 200, await renderAccountsCardsPage(token, url));",
-  )
-) {
+if (!server.includes("sendHtml(response, 200, await renderAccountsCardsPage(token, url));")) {
   failures.push("/contas-cartoes must be dispatched directly by the A3 renderer");
 }
 for (const retiredProcessor of [
@@ -139,9 +122,7 @@ for (const retiredProcessor of [
   "accounts-cards-action-menus",
 ]) {
   if (server.includes(`id: "${retiredProcessor}"`)) {
-    failures.push(
-      `retired processor returned to /contas-cartoes: ${retiredProcessor}`,
-    );
+    failures.push(`retired processor returned to /contas-cartoes: ${retiredProcessor}`);
   }
 }
 

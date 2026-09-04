@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "core-pages::2-cartoes-normal",
+  "sourceScenarioId": "core-pages",
+  "route": "/cartoes",
+  "state": "normal",
+  "assertions": [
+    "behavior:layout:desktop",
+    "behavior:layout:mobile"
+  ],
+  "details": {
+    "sourceScenario": "core-pages",
+    "evidenceFiles": [
+      "issue-606-core-cartoes.json"
+    ],
+    "observations": {
+      "widths": [
+        390,
+        1366
+      ]
+    }
+  }
+}

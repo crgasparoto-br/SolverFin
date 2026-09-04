@@ -1,0 +1,117 @@
+{
+  "initial": {
+    "rowFound": true,
+    "markerFound": true,
+    "markerLabel": "Selecionar agrupamento QA issue 530 agrupamento, 2 lançamentos",
+    "financialStatus": "Efetivado não conciliado",
+    "groupStateLabel": "Agrupamento com 2 lançamentos",
+    "groupStateTooltip": "Agrupamento com 2 lançamentos",
+    "groupStateFocusable": true,
+    "groupStateUsesStatusStyle": true
+  },
+  "mixedSelection": {
+    "hidden": false,
+    "count": "2 itens · 3 lançamentos",
+    "total": "R$ 350,00",
+    "groupDisabled": true,
+    "reconcileDisabled": false,
+    "unreconcileDisabled": true,
+    "voidDisabled": false,
+    "help": "Unificar lançamentos indisponível: desmarque os agrupamentos para unificar somente lançamentos simples. Desmarcar conciliado indisponível: nenhum lançamento selecionado está conciliado."
+  },
+  "desktop": {
+    "barHeight": 141,
+    "barWidth": 760,
+    "barTop": 743,
+    "barBottom": 884,
+    "barScrollWidth": 758,
+    "barClientWidth": 758,
+    "parentHeight": 3798,
+    "parentWidth": 759,
+    "computedDisplay": "grid",
+    "computedPosition": "fixed",
+    "computedBottom": "16px",
+    "computedHeight": "141.094px",
+    "computedWidth": "760px",
+    "computedGridTemplateColumns": "291.359px 72.0781px 61px 76.7812px 180.781px",
+    "visibleInViewport": true,
+    "bodyOverflow": false
+  },
+  "shortDesktop": {
+    "barHeight": 141,
+    "barWidth": 760,
+    "barTop": 611,
+    "barBottom": 752,
+    "barScrollWidth": 758,
+    "barClientWidth": 758,
+    "parentHeight": 3798,
+    "parentWidth": 759,
+    "computedDisplay": "grid",
+    "computedPosition": "fixed",
+    "computedBottom": "16px",
+    "computedHeight": "141.094px",
+    "computedWidth": "760px",
+    "computedGridTemplateColumns": "291.359px 72.0781px 61px 76.7812px 180.781px",
+    "visibleInViewport": true,
+    "bodyOverflow": false
+  },
+  "mobile": {
+    "bodyOverflow": false,
+    "barWidth": 358,
+    "barHeight": 300,
+    "viewportWidth": 375,
+    "viewportHeight": 844,
+    "visibleInViewport": true,
+    "actionCount": 3,
+    "helpVisible": true
+  },
+  "serverFailure": {
+    "selectedCount": 2,
+    "status": "Falha controlada para manter a seleção.",
+    "ariaBusy": "false"
+  },
+  "networkFailure": {
+    "selectedCount": 2,
+    "status": "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.",
+    "ariaBusy": "false"
+  },
+  "keyboardPrepared": {
+    "focused": true,
+    "tagName": "BUTTON",
+    "type": "button",
+    "tabIndex": 0,
+    "accessibleText": "Marcar como conciliado"
+  },
+  "keyboardActivation": {
+    "enterReceived": true,
+    "nativeActivation": false
+  },
+  "loading": {
+    "ariaBusy": "true",
+    "actionsDisabled": true,
+    "clearDisabled": true,
+    "status": "Processando..."
+  },
+  "reconciled": {
+    "groupPresent": true,
+    "groupStatus": "Conciliado",
+    "directStatus": "Conciliado"
+  },
+  "unreconciled": {
+    "groupPresent": true,
+    "groupStatus": "Efetivado não conciliado",
+    "directStatus": "Efetivado não conciliado"
+  },
+  "cancelledDeletion": {
+    "bulkCalls": 0,
+    "selectedCount": 2,
+    "groupPresent": true,
+    "directPresent": true,
+    "ariaBusy": null
+  },
+  "deleted": {
+    "groupPresent": false,
+    "directPresent": false,
+    "selectionBarHidden": true
+  }
+}

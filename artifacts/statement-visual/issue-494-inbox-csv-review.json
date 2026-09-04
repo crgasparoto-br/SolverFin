@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-09-04T19:23:28.364Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "viewport": "390x844",
+  "batchId": "4015aeea-475e-4e01-ae5f-acafbf5342c4",
+  "mappingDialog": {
+    "setup": {
+      "ok": true,
+      "dialogOpen": true,
+      "hasKindControl": false,
+      "hasExternalIdControl": false
+    },
+    "c6": {
+      "strategy": "split",
+      "date": "Data Lançamento",
+      "description": "Descrição",
+      "income": "Entrada(R$)",
+      "expense": "Saída(R$)",
+      "amountOptions": [
+        "Selecione",
+        "Data Lançamento",
+        "Data Contábil",
+        "Título",
+        "Descrição",
+        "Entrada(R$)",
+        "Saída(R$)"
+      ],
+      "incomeOptions": [
+        "Selecione",
+        "Data Lançamento",
+        "Data Contábil",
+        "Título",
+        "Descrição",
+        "Entrada(R$)",
+        "Saída(R$)"
+      ],
+      "expenseOptions": [
+        "Selecione",
+        "Data Lançamento",
+        "Data Contábil",
+        "Título",
+        "Descrição",
+        "Entrada(R$)",
+        "Saída(R$)"
+      ],
+      "interpretation": "Pronto para revisão2 válidas · 0 com problemaInterpretação aplicadaData Lançamento → DataDescrição → DescricaoEntrada(R$) → ReceitaSaída(R$) → DespesaSaldo do Dia(R$) → IgnoradoLinhaDataDescriçãoTipoValor220/07/2026Receita visualReceitaR$ 100,00321/07/2026Despesa visualDespesaR$ 25,50",
+      "createDisabled": false
+    },
+    "partialSplit": {
+      "strategy": "signed",
+      "amount": "Valor",
+      "income": "Entrada",
+      "createDisabled": false,
+      "preview": "Pronto para revisão1 válidas · 0 com problemaInterpretação aplicadaData → DataDescrição → DescricaoValor → Valor com sinalLinhaDataDescriçãoTipoValor220/07/2026AssinadaDespesaR$ 10,00"
+    },
+    "ambiguous": {
+      "strategy": "",
+      "amount": "Valor",
+      "income": "Entrada",
+      "expense": "Saída",
+      "createDisabled": true,
+      "interpretation": "mapping_required0 válidas · 0 com problemaInterpretação aplicadaData → DataDescrição → Descricao"
+    },
+    "resolved": {
+      "strategy": "split",
+      "createDisabled": false,
+      "preview": "Pronto para revisão1 válidas · 0 com problemaInterpretação aplicadaData → DataDescrição → DescricaoEntrada → ReceitaSaída → DespesaLinhaDataDescriçãoTipoValor220/07/2026AmbíguaReceitaR$ 10,00"
+    },
+    "screenshot": "issue-513-csv-mapping-c6.png"
+  },
+  "initial": {
+    "bodyFitsViewport": true,
+    "editVisible": true,
+    "headingFocused": true,
+    "summaryText": "Válidas 1Pendentes 1Bloqueadas 0Aprovadas 0Conciliadas 0Ignoradas como duplicadas 0Rejeitadas 0Lançamentos vinculados 0Transferências 0 · R$ 0,00Problemas 0"
+  },
+  "opened": {
+    "open": true,
+    "labelledBy": "csv-line-edit-title",
+    "activeName": "occurredOn",
+    "originalDescription": "Validação móvel mtncdfvb",
+    "originalAmount": "12,34"
+  },
+  "transferInteraction": {
+    "optionExists": true,
+    "visibleAndRequired": true,
+    "explicitDirection": "Origem: Carteira dinheiro demo · Destino: Conta transferência visual mtncdfvb",
+    "invalidated": true,
+    "warning": "A outra conta foi removida porque ficou igual ou incompatível com a conta de referência.",
+    "hiddenAfterLeavingTransfer": true,
+    "clearedAfterLeavingTransfer": true,
+    "descriptionPreserved": true,
+    "amountPreserved": true
+  },
+  "failedSave": {
+    "open": true,
+    "description": "Valor preservado após erro",
+    "amount": "0",
+    "status": "Valor precisa ser um inteiro positivo em centavos."
+  },
+  "closed": {
+    "returnedToEdit": true,
+    "bodyFitsViewport": true
+  },
+  "screenshot": "issue-494-inbox-csv-mobile-edit-error.png"
+}

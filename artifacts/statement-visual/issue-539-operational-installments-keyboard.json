@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-09-04T19:19:49.999Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "scenarios": [
+    {
+      "route": "/lancamentos?accountId=0cd3e483-31ac-4222-a286-32889db12042&month=2026-07&day=2026-07-15",
+      "viewport": "1366x768",
+      "focusOrder": [
+        "description",
+        "categoryId",
+        "description",
+        "note",
+        "Salvar parcela",
+        "Fechar"
+      ],
+      "screenshot": "issue-539-installment-keyboard-1366x768.png",
+      "requestScope": {
+        "installmentQuery": "/api/installments?accountId=0cd3e483-31ac-4222-a286-32889db12042&operationalFrom=2026-07-15&operationalTo=2026-07-15&status=all",
+        "badge": "Parcela 1 de 1"
+      }
+    }
+  ]
+}

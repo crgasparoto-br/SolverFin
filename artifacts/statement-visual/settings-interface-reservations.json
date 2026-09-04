@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-09-04T19:21:21.540Z",
+  "commit": "local",
+  "browser": "Google Chrome for Testing 127.0.6533.88",
+  "failures": [],
+  "mutationCoverage": {
+    "profileCreate": true,
+    "profileEdit": true,
+    "profileArchive": true,
+    "ruleCreate": true,
+    "ruleInactivate": true,
+    "rulesApply": true
+  },
+  "profilesNormal": {
+    "name": "profiles-mobile-baseline",
+    "zoom": false,
+    "filename": "issue-558-profiles-mobile-baseline.png",
+    "textScale": {
+      "requested": false,
+      "beforePx": 16,
+      "afterPx": 16,
+      "ratio": 1
+    },
+    "measurements": {
+      "search": "?section=profiles",
+      "rootFontSizePx": 16,
+      "noHorizontalOverflow": true,
+      "dialogInsideViewport": true,
+      "headingVisible": true,
+      "profileItems": 9
+    }
+  },
+  "profilesZoom": {
+    "name": "profiles-mobile-zoom-200",
+    "zoom": true,
+    "filename": "issue-558-profiles-mobile-zoom-200.png",
+    "textScale": {
+      "requested": true,
+      "beforePx": 16,
+      "afterPx": 32,
+      "ratio": 2
+    },
+    "measurements": {
+      "search": "?section=profiles",
+      "rootFontSizePx": 32,
+      "noHorizontalOverflow": true,
+      "dialogInsideViewport": true,
+      "headingVisible": true,
+      "profileItems": 9
+    }
+  },
+  "profilesZoomEvidence": {
+    "available": true,
+    "different": true,
+    "normalFile": "issue-558-profiles-mobile-baseline.png",
+    "zoomFile": "issue-558-profiles-mobile-zoom-200.png",
+    "normalSha256": "a4a96ff0cd3f58e246e6f62aa2291e3d5623083d8332efaeb6a3095490bae44a",
+    "zoomSha256": "495025e4b437b7454bc136525a062132a7b1771e55d344f3ec93b324d23462f8"
+  }
+}

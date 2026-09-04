@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "financial-assistant",
+  "sourceScenarioId": "financial-assistant",
+  "route": "/assistente",
+  "state": "normal",
+  "assertions": [
+    "behavior:layout:desktop",
+    "behavior:layout:mobile"
+  ],
+  "details": {
+    "sourceScenario": "financial-assistant",
+    "evidenceFiles": [
+      "issue-568-financial-assistant.json"
+    ],
+    "observations": {
+      "widths": [
+        390,
+        683,
+        1366
+      ]
+    }
+  }
+}

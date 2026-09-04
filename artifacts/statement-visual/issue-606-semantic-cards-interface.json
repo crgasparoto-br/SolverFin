@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-04T19:17:33.693Z",
+  "commit": "local",
+  "sourceScenario": "cards-interface",
+  "assertions": [
+    "behavior:component:SummaryGrid",
+    "behavior:component:Tabs",
+    "behavior:layout:desktop",
+    "behavior:layout:mobile",
+    "behavior:legacy:card-instrument-subtotals",
+    "behavior:legacy:card-list-sorting",
+    "behavior:legacy:cards-interface",
+    "behavior:legacy:cards-interface-finalizer"
+  ],
+  "observations": {
+    "desktop": {
+      "viewportWidth": 1440,
+      "pageFits": true,
+      "summaryVisible": true,
+      "tabCount": 2,
+      "purchaseCount": 4,
+      "instrumentGroupCount": 2,
+      "instrumentSubtotalsValid": true,
+      "instrumentGroups": [
+        {
+          "instrumentId": "55555555-5555-4555-8555-555555555562",
+          "rowCount": 2,
+          "expectedByCurrency": {
+            "BRL": 22730
+          },
+          "displayedByCurrency": {
+            "BRL": 22730
+          },
+          "consistentInstrument": true,
+          "subtotalMatches": true
+        },
+        {
+          "instrumentId": "55555555-5555-4555-8555-555555555561",
+          "rowCount": 2,
+          "expectedByCurrency": {
+            "BRL": 26030
+          },
+          "displayedByCurrency": {
+            "BRL": 26030
+          },
+          "consistentInstrument": true,
+          "subtotalMatches": true
+        }
+      ]
+    },
+    "mobile": {
+      "viewportWidth": 390,
+      "pageFits": true,
+      "summaryVisible": true,
+      "tabCount": 2,
+      "purchaseCount": 4,
+      "instrumentGroupCount": 2,
+      "instrumentSubtotalsValid": true,
+      "instrumentGroups": [
+        {
+          "instrumentId": "55555555-5555-4555-8555-555555555562",
+          "rowCount": 2,
+          "expectedByCurrency": {
+            "BRL": 22730
+          },
+          "displayedByCurrency": {
+            "BRL": 22730
+          },
+          "consistentInstrument": true,
+          "subtotalMatches": true
+        },
+        {
+          "instrumentId": "55555555-5555-4555-8555-555555555561",
+          "rowCount": 2,
+          "expectedByCurrency": {
+            "BRL": 26030
+          },
+          "displayedByCurrency": {
+            "BRL": 26030
+          },
+          "consistentInstrument": true,
+          "subtotalMatches": true
+        }
+      ]
+    },
+    "sorting": {
+      "dateAsc": {
+        "direction": "date_asc",
+        "comparableGroups": 2,
+        "sorted": true,
+        "groups": [
+          {
+            "dates": [
+              "2026-06-08",
+              "2026-06-11"
+            ],
+            "sorted": true
+          },
+          {
+            "dates": [
+              "2026-06-14",
+              "2026-06-18"
+            ],
+            "sorted": true
+          }
+        ]
+      },
+      "dateDesc": {
+        "direction": "date_desc",
+        "comparableGroups": 2,
+        "sorted": true,
+        "groups": [
+          {
+            "dates": [
+              "2026-06-18",
+              "2026-06-14"
+            ],
+            "sorted": true
+          },
+          {
+            "dates": [
+              "2026-06-11",
+              "2026-06-08"
+            ],
+            "sorted": true
+          }
+        ]
+      }
+    },
+    "filterState": {
+      "count": 2,
+      "onlyUnreconciled": true,
+      "selected": true
+    },
+    "filteredState": {
+      "rowCount": 0,
+      "query": "consulta-sem-resultado-visual",
+      "status": "0 compras",
+      "emptyVisible": true
+    },
+    "modal": {
+      "labelled": true,
+      "insideViewport": true,
+      "focusInside": true,
+      "firstControlExists": true
+    }
+  }
+}

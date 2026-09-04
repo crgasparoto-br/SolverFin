@@ -71,10 +71,7 @@ async function accountsPageSeparatesAgencyAndAccount(): Promise<void> {
     assert.match(separatedEdit, /name="agencyIdentifier" value="0001"/);
     assert.match(separatedEdit, /name="accountIdentifier" value="12345-6"/);
     assert.match(legacy, /Ag \*\*\*\* · Conta \*\*\*\* 7788/);
-    assert.match(
-      legacyEdit,
-      /Identificador legado: Ag \*\*\*\* · Conta \*\*\*\* 7788/,
-    );
+    assert.match(legacyEdit, /Identificador legado: Ag \*\*\*\* · Conta \*\*\*\* 7788/);
     assert.match(legacyEdit, /name="agencyIdentifier" value=""/);
     assert.match(legacyEdit, /name="accountIdentifier" value=""/);
     assert.match(hybrid, /Agência final 21 · Conta final 99-0/);

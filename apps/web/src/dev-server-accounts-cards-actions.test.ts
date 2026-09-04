@@ -58,9 +58,7 @@ async function accountsCardsPageRendersCardMaintenanceInsideSelectedDetail(): Pr
   try {
     const html = await renderAccountsCardsPage(
       "session-token",
-      new URL(
-        "https://solverfin.invalid/contas-cartoes?resource=card%3Acard-unused",
-      ),
+      new URL("https://solverfin.invalid/contas-cartoes?resource=card%3Acard-unused"),
     );
     assert.match(html, /data-accounts-cards-archetype="A3"/);
     assert.doesNotMatch(html, /data-tab-panel=/);
@@ -71,18 +69,9 @@ async function accountsCardsPageRendersCardMaintenanceInsideSelectedDetail(): Pr
     assert.match(html, /Físico · Titular principal · \*\*\*\* 1111/);
     assert.match(html, /EUR/);
     assert.match(html, /data-open-dialog="edit-card-dialog-card-unused"/);
-    assert.match(
-      html,
-      /data-open-dialog="new-card-instrument-dialog-card-unused"/,
-    );
-    assert.match(
-      html,
-      /data-open-dialog="edit-card-instrument-dialog-instrument-physical"/,
-    );
-    assert.match(
-      html,
-      /data-api-path="\/api\/credit-card-accounts\/card-unused\/instruments"/,
-    );
+    assert.match(html, /data-open-dialog="new-card-instrument-dialog-card-unused"/);
+    assert.match(html, /data-open-dialog="edit-card-instrument-dialog-instrument-physical"/);
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-unused\/instruments"/);
     assert.match(
       html,
       /data-api-method="PATCH" data-api-path="\/api\/credit-card-instruments\/instrument-physical"/,

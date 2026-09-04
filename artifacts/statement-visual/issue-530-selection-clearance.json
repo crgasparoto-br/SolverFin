@@ -1,0 +1,22 @@
+{
+  "selected": {
+    "selected": true,
+    "barVisible": true
+  },
+  "desktop": {
+    "barHeight": 124,
+    "barTop": 628,
+    "lastRowBottom": 542,
+    "paddingBottom": 192,
+    "overlap": -87,
+    "visibleInViewport": true
+  },
+  "mobile": {
+    "barHeight": 247,
+    "barTop": 581,
+    "lastRowBottom": 459,
+    "paddingBottom": 360,
+    "overlap": -121,
+    "visibleInViewport": true
+  }
+}
