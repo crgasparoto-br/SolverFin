@@ -95,29 +95,6 @@ const transactionRuntimeProviders = [
   ),
 ] as const;
 
-const accountsCardsRuntimeProviders = [
-  markerProvider(
-    "runtime:card-instruments-dialog",
-    "accounts-cards-page-dialog-only.js",
-    "data-card-instruments-dedicated-dialog-styles",
-  ),
-  markerProvider(
-    "runtime:accounts-cards-neutral",
-    "accounts-cards-enhancement.js",
-    "data-accounts-cards-neutral-styles",
-  ),
-  markerProvider(
-    "runtime:account-remuneration-modal",
-    "accounts-cards-enhancement.js",
-    "data-account-remuneration-modal-styles",
-  ),
-  markerProvider(
-    "runtime:accounts-cards-standardization",
-    "accounts-cards-standardization.js",
-    "data-accounts-cards-standardization-styles",
-  ),
-] as const;
-
 const inboxRuntimeProviders = [
   markerProvider(
     "runtime:round-selection",
@@ -174,9 +151,8 @@ export const solverFinSsrStyleContracts = [
     auxiliaryStyleProviders: [recurrenceAuxiliaryProvider],
   }),
   authenticated("accountsCards", "/contas-cartoes", "accounts-cards-page.js", {
-    representativeHtmlFragments: ['data-tab-panel="accounts"'],
-    pageCssFragments: [".master-toolbar, .master-panel {"],
-    auxiliaryStyleProviders: accountsCardsRuntimeProviders,
+    representativeHtmlFragments: ['data-accounts-cards-archetype="A3"', 'class="sf-detail-layout"'],
+    pageCssFragments: [".accounts-cards-a3-page .sf-detail-layout {"],
   }),
   authenticated("accountRemuneration", "/remuneracao-contas", "account-remuneration-page.js", {
     representativeHtmlFragments: ['class="configuration-list"'],
