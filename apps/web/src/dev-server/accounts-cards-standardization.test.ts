@@ -1,4 +1,4 @@
-// Issue 556: contratos de interface para o menu de três pontos.
+// Issue 556/#612: contratos históricos do standardizer e retirada do runtime servido.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -15,9 +15,8 @@ const fixture = `<!doctype html><html><head></head><body>
 <script>if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) return;</script>
 </body></html>`;
 
-test("padroniza cabecalho, abas, filtros e acao contextual", () => {
+test("mantém o comportamento histórico do standardizer isolado", () => {
   const html = standardizeAccountsCardsPage(fixture);
-
   assert.match(html, /<h1>Contas e cartões<\/h1>/);
   assert.doesNotMatch(html, /Cadastros financeiros/);
   assert.doesNotMatch(html, /connections-tab/);
@@ -28,53 +27,35 @@ test("padroniza cabecalho, abas, filtros e acao contextual", () => {
   assert.match(html, /Contas <span>2<\/span>/);
   assert.match(html, /Cartões <span>1<\/span>/);
   assert.match(html, /data-master-status/);
-  assert.match(html, /<option value="inactive">Inativos<\/option>/);
   assert.match(html, /accounts-cards-toolbar/);
 });
 
-test("injeta modal, CDI por icone, tooltips e formularios agrupados", () => {
+test("preserva confirmação, tooltips e agrupamento no código histórico", () => {
   const html = standardizeAccountsCardsPage(fixture);
-
   assert.match(html, /standardizeRows/);
   assert.match(html, /item-footer/);
-  assert.doesNotMatch(html, /instrument-disclosure/);
   assert.match(html, /standardizeCdiActions/);
   assert.match(html, /MutationObserver/);
-  assert.match(html, /presentation\.label/);
   assert.match(html, /data-tooltip/);
   assert.match(html, /Identificação do cartão/);
   assert.match(html, /Instrumento inicial/);
-  assert.match(html, /Buscar por nome, instituição, bandeira ou final/);
   assert.match(html, /Processando\.\.\./);
-  assert.match(html, /destructive \? 'Excluir' : 'Arquivar'/);
-  assert.match(html, /confirmation\.split/);
-  assert.match(html, /form\[data-api-form\]\.edit-grid/);
-  assert.match(html, /Arquivar\\s\+/);
-  assert.match(html, /dialogTriggers = new WeakMap/);
-  assert.match(html, /dialog\.addEventListener\('cancel'/);
-  assert.match(html, /event\.key !== 'Escape'/);
-  assert.match(html, /window\.setTimeout\(\(\) => trigger\.focus\(\), 0\)/);
   assert.doesNotMatch(html, /window\.confirm/);
   assert.equal(standardizeAccountsCardsPage(html), html);
 });
 
-test("preserva contratos do gate visual", () => {
+test("gate visual comprova o A3 direto sem tabs ou menus pós-processados", () => {
   const visualGateSource = readFileSync(
     new URL("../../../scripts/statement-visual/accounts-cards-interface.mjs", import.meta.url),
     "utf8",
   );
-  const expectedRuntimeRegex =
-    "hasUnmaskedLongNumber: /(?:\\\\d[ -]?){12,19}/.test(text.replace(/\\\\*+/g, '')),";
-
-  assert.ok(visualGateSource.includes(expectedRuntimeRegex));
-  assert.ok(
-    visualGateSource.includes(
-      "const dialog = document.querySelector('dialog[data-card-instruments-dedicated-dialog][open]');",
-    ),
-  );
-  assert.ok(visualGateSource.includes(".card-account-item .action-menu-trigger"));
-  assert.ok(
-    visualGateSource.includes("actionMenuTriggerCount === measurements.actionContainerCount"),
-  );
-  assert.ok(visualGateSource.includes("visibleLegacyInstrumentActionCount === 0"));
+  assert.match(visualGateSource, /data-accounts-cards-archetype/);
+  assert.match(visualGateSource, /\.sf-detail-layout/);
+  assert.match(visualGateSource, /data-resource-master-item/);
+  assert.match(visualGateSource, /data-resource-detail/);
+  assert.match(visualGateSource, /hasTabs/);
+  assert.match(visualGateSource, /legacyActionMenuCount/);
+  assert.match(visualGateSource, /Moeda indisponível|currencyContext/);
+  assert.doesNotMatch(visualGateSource, /expectedTab/);
+  assert.doesNotMatch(visualGateSource, /row-action-menu/);
 });
