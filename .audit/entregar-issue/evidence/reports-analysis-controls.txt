@@ -1,0 +1,16 @@
+Issue 611 report analysis controls — exact material head
+subject_sha=bfdc368a8c485e764a7367b8cb24bd0654f2794b
+CI_run=33786783206
+visual_run=33786783102
+
+REQ-001 filters/contracts: route regression preserves month/status/profile/sibling category while selecting exact cardId and follows the URL through SSR/API.
+REQ-002 four layers: ready blocks render summary/conclusion, visualization, highlights and tabular detail in that order; desktop/mobile visual run passed.
+REQ-003 currency blocks: BRL/USD fixtures partition by currency before totals and aggregates.
+REQ-004 primitives/Money: analysis archetype uses view-model and Money with explicit currency; typecheck/build passed.
+REQ-006 reduced viewport: semantic headers, keyboard-focusable table scroller and controlled overflow validated at 1366x768 and 390x844.
+REQ-007 summary before matrix: regression rejects a matrix-first ready presentation.
+REQ-008 no implicit currency sum: BRL/USD remain separate across summary and detail.
+REQ-009 filters reproducible: URL filters drive report request and remain reflected after drilldown.
+REQ-010 tables: headers, keyboard focus and overflow contract remain present.
+REQ-011 states: loading, empty, invalid-filter and API-error semantics remain explicit.
+REQ-012 tests: multi-currency and 24-period extended-window cases are in the repository test gate, which passed on this SHA.

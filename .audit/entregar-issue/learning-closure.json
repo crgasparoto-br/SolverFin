@@ -3,42 +3,42 @@
   "classification": "systemic-escape",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:834518e4-037b-4dd4-b463-94f85018f80a",
+    "rejection_id": "audit-rejection:e115eb84-81c6-41b9-b5ec-4856662d6e88",
     "finding_ids": [
-      "AUD-651-DELIVERY-001"
+      "A-001"
     ],
-    "audit_report_sha256": "af2eccf8f84a91cfd514b28347aa277b9e6bd309e7d99fd7766ce266b28ee4f2"
+    "audit_report_sha256": "a30a460a84ec1981cf1791ffdaaeea00ae3425dd30fd55322eb12e5acd1af5a0"
   },
   "generalized_learning": {
-    "escape_class": "inherited-foreign-delivery-artifact-reuse",
-    "generalized_failure_pattern": "A new delivery can inherit a ready artifact from its base and mistakenly treat path existence or internal validity as proof that the artifact was produced for the current target.",
-    "plausible_wrong_implementation": "Reuse the existing handoff or specification snapshot without comparing immutable-base object identity and without binding repository, work item, pull request and branch subject.",
+    "escape_class": "silent-translation-loss",
+    "generalized_failure_pattern": "A presentation or transport layer can preserve readable labels while discarding canonical identity needed by a later canonical route, filter or action boundary.",
+    "plausible_wrong_implementation": "Map display labels only, allow homonymous resources to look correct, and conclude that no canonical destination exists because the identifier was lost before the navigation decision.",
     "trigger_signals": [
-      "existing result artifact at delivery start",
-      "candidate artifact identical to immutable base",
-      "artifact subject differs from resolved target"
+      "canonical route/filter/action exists",
+      "presentation mapping/view-model between source and consumer",
+      "display label differs from canonical identity",
+      "conditional navigation or mutation depends on identity"
     ],
     "risk_families": [
-      "structural-contract"
+      "structural-contract",
+      "documentation"
     ],
     "reusable_control": {
-      "id": "DELIVERY-TARGET-BINDING-001",
-      "purpose": "Reject inherited or foreign result artifacts before any evidence reuse."
+      "id": "CANONICAL-TARGET-IDENTITY-001",
+      "procedure": "Use two deliberately distinct canonical identities with the same display label, traverse the mapping boundary and observe the downstream canonical consumer; also test a missing-identity case."
     },
-    "prevention_rule": "Resolve the target first, compare current result artifacts against the immutable base, and force a fresh package when origin or subject binding is foreign.",
-    "detection_rule": "Audit target binding and immutable-base object identity independently before accepting a ready certificate as current delivery evidence.",
+    "prevention_rule": "When a requirement is conditional on a canonical destination, enumerate candidate canonical routes/filters/actions before declaring none and preserve every identity field required by the selected destination through intermediate transforms.",
+    "detection_rule": "Adversarially vary canonical identity independently from display labels and observe the final navigation/action boundary; reject fabricated destinations when identity is absent.",
     "transfer_cases": [
       {
-        "id": "TRANSFER-SNAPSHOT-SUBJECT",
-        "surface": "specification-snapshot",
-        "status": "passed",
-        "observed": "A foreign inherited specification snapshot is rejected before requirement reuse."
+        "surface": "presentation-mapping",
+        "case": "Two resources share one label but have distinct canonical identities before a navigable consumer.",
+        "status": "passed"
       },
       {
-        "id": "TRANSFER-CERTIFICATE-ORIGIN",
-        "surface": "handoff-certificate",
-        "status": "passed",
-        "observed": "A base-identical foreign handoff certificate is classified as inherited state rather than current output."
+        "surface": "documentation-claim-resolution",
+        "case": "A capability claim is checked against the canonical route/filter inventory before stating that no destination exists.",
+        "status": "passed"
       }
     ],
     "promotion_status": "promoted"
@@ -47,14 +47,14 @@
     {
       "role": "prevention",
       "status": "passed",
-      "change": "Target binding rejects inherited foreign specification artifacts before reuse.",
-      "evidence": "entregar-issue delivery-target-binding and handoff-recovery regression suite passed."
+      "evidence": "evidence/entregar-skill-tests.txt",
+      "change": "The delivery controller explicitly derives semantic identity propagation controls from canonical-path requirements."
     },
     {
       "role": "detection",
       "status": "passed",
-      "change": "Independent handoff origin check distinguishes base-identical foreign certificates from current delivery output.",
-      "evidence": "auditar-issue immutable-base handoff-origin regression suite passed."
+      "evidence": "evidence/auditar-skill-tests.txt",
+      "change": "Re-audit readiness enforces cumulative rejection closure and semantic evidence before another independent audit."
     }
   ]
 }

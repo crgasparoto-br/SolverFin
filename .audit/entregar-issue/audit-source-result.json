@@ -1,15 +1,17 @@
 {
-  "contract_version": "2026-08-20.3",
-  "rejection_id": "audit-rejection:834518e4-037b-4dd4-b463-94f85018f80a",
-  "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+  "schema_version": 1,
+  "status": "rejected",
+  "result": "REPROVADA",
+  "rejection_id": "audit-rejection:e115eb84-81c6-41b9-b5ec-4856662d6e88",
+  "head_sha": "3c7c5c61047e99213993da66465511d524091019",
   "findings": [
     {
-      "id": "AUD-651-DELIVERY-001",
+      "id": "A-001",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "systemic-remediation",
-      "reason": "delivery-not-ready: inherited-base-artifact; the current target handoff was not produced because the certificate was byte-identical to the immutable base and belonged to another delivery."
+      "reason": "A canonical drilldown destination existed, but the presentation view-model dropped canonical card/category identifiers and rendered static aggregates, allowing homonymous visible labels to collapse target identity."
     }
   ],
   "recommendations": []

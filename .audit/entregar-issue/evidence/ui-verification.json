@@ -1,35 +1,24 @@
 {
   "schema_version": 1,
-  "material_head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
-  "route": "/relatorios",
   "status": "passed",
   "mode": "internal-verification",
+  "material_head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
+  "route": "/relatorios?view=installments&month=2026-09",
+  "browser_run_id": 33786783102,
+  "browser": "Chrome 151",
+  "artifact_digest": "sha256:8579730e2b398139b44ca3412aeb43432e7e8e9f8b31fc140c8fe37076716e97",
   "scenarios": [
     {
-      "id": "reports-24-period-multicurrency",
-      "evidence": "apps/web/src/dev-server/reports-analysis-issue-611.test.ts",
-      "observed": "24 periods with BRL and USD preserve separate analysis blocks and summary→visualization→highlights→detail ordering."
+      "viewport": "1366x768",
+      "state": "ready",
+      "observed": "Summary metrics precede visualization groups; month/card/category groupings are readable; semantic detail table remains horizontally scrollable without page overflow."
     },
     {
-      "id": "installments-multicurrency",
-      "evidence": "apps/web/src/dev-server/reports-analysis-issue-611.test.ts",
-      "observed": "BRL and USD installment totals remain separate and semantic detail tables are rendered without cross-currency sum."
-    },
-    {
-      "id": "loading-empty-errors",
-      "evidence": "apps/web/src/dev-server/reports-analysis-state-issue-611.test.ts",
-      "observed": "loading, empty, invalid-filter and API-error states keep clear analysis hierarchy."
-    },
-    {
-      "id": "view-model-partition",
-      "evidence": "apps/web/src/dev-server/reports-analysis-view-model.test.ts",
-      "observed": "category evolution keeps 24-period trend and installment aggregates partition by currency before summing."
+      "viewport": "390x844",
+      "state": "ready",
+      "observed": "Filters, summary and analysis groups stack into one column; detail remains available through controlled table scrolling and the page fits the viewport."
     }
   ],
-  "browser_gate": {
-    "workflow_run_id": 33758571428,
-    "conclusion": "success",
-    "browser": "Chrome"
-  },
-  "note": "No product bytes are changed by this handoff recovery; this evidence rebinds already-green exact-head UI validation to the current issue contract."
+  "accessibility": "Keyboard-focusable table scroller, visible focus styles and semantic table headers remain present; drilldown links use native anchors with accessible action text.",
+  "findings": []
 }

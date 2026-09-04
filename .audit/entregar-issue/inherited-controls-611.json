@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+  "head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:834518e4-037b-4dd4-b463-94f85018f80a",
@@ -8,21 +8,27 @@
         "AUD-651-DELIVERY-001"
       ],
       "audit_report_sha256": "af2eccf8f84a91cfd514b28347aa277b9e6bd309e7d99fd7766ce266b28ee4f2"
+    },
+    {
+      "rejection_id": "audit-rejection:e115eb84-81c6-41b9-b5ec-4856662d6e88",
+      "finding_ids": [
+        "A-001"
+      ],
+      "audit_report_sha256": "a30a460a84ec1981cf1791ffdaaeea00ae3425dd30fd55322eb12e5acd1af5a0"
     }
   ],
   "controls": [
     {
       "id": "DELIVERY-TARGET-BINDING-001",
       "status": "passed",
-      "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
-      "subject_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+      "head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
+      "subject_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
       "evidence": "evidence/target-binding-regression.txt",
-      "evidence_sha256": "14553c68d1c2f8b7e7bbf1b81236e0601ddf31392ee1e8165828fd325607bfa7",
+      "evidence_sha256": "4a680ac07a003c5563faf4d4c38b53c035d3e68de2b26041565705ae47f67ca0",
       "control_type": "procedure",
-      "procedure": "Resolve target identity and compare inherited delivery metadata against the immutable base before allowing evidence reuse.",
-      "expected": "A base-identical artifact bound to another delivery is rejected before reuse.",
-      "observed": "The current recovery classified the inherited package as foreign and rebuilt the target-bound packet.",
-      "attack_control_id": "NEG-611-002-TARGET-BINDING",
+      "procedure": "Resolve the current repository, issue, PR and branch identity before accepting any prior delivery artifact as current evidence.",
+      "expected": "A foreign or inherited artifact is rejected before reuse as current delivery evidence.",
+      "observed": "The stale predecessor certificate is not accepted for the current material and a fresh target-bound packet is constructed.",
       "risk_family": "structural-contract",
       "surface": "delivery-target-binding",
       "dimension": "base-identical-foreign-subject"
@@ -30,18 +36,33 @@
     {
       "id": "HANDOFF-BASE-ORIGIN-001",
       "status": "passed",
-      "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
-      "subject_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+      "head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
+      "subject_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
       "evidence": "evidence/target-binding-regression.txt",
-      "evidence_sha256": "14553c68d1c2f8b7e7bbf1b81236e0601ddf31392ee1e8165828fd325607bfa7",
+      "evidence_sha256": "4a680ac07a003c5563faf4d4c38b53c035d3e68de2b26041565705ae47f67ca0",
       "control_type": "procedure",
-      "procedure": "Compare the handoff object at candidate head with the same path on the immutable base before attributing origin to the current delivery.",
-      "expected": "An unchanged foreign certificate is inherited repository state, not current delivery evidence.",
-      "observed": "The immutable-base origin controls passed and the inherited foreign handoff was not accepted for the current target.",
-      "attack_control_id": "NEG-611-002-HANDOFF-ORIGIN",
+      "procedure": "Compare handoff subject and origin against the resolved target rather than trusting path existence or internal hashes alone.",
+      "expected": "A base-identical or foreign certificate cannot be current evidence for another delivery.",
+      "observed": "The previous material certificate remains historical and the terminal package is rebuilt for the current material head.",
       "risk_family": "structural-contract",
       "surface": "handoff-origin-inheritance",
       "dimension": "base-identical-foreign-certificate"
+    },
+    {
+      "id": "CANONICAL-TARGET-IDENTITY-001",
+      "status": "passed",
+      "head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
+      "subject_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
+      "evidence": "evidence/reports-drilldown-remediation.txt",
+      "evidence_sha256": "fa4fb327c7c7de00745644317404dd84375d8d3ada0fcf3f09f4ace988f5dce7",
+      "control_type": "test",
+      "procedure": "Pass deliberately distinct canonical target IDs with identical display labels through presentation mapping, rendering and canonical navigation, including a row without target identity.",
+      "expected": "Distinct identities remain distinct and navigate to the exact target with compatible context; missing identity does not fabricate navigation.",
+      "observed": "Card/category homonyms remain distinct, exact target ID reaches the downstream report request, filters are preserved and synthetic missing-ID rows have no link.",
+      "attack_control_id": "NEG-REQ-005-02",
+      "risk_family": "structural-contract",
+      "surface": "semantic-identity-propagation",
+      "dimension": "homonymous-target-id-retention"
     }
   ],
   "retired_controls": [],

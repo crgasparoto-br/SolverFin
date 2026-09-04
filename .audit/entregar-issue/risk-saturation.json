@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+  "head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
   "families": [
     {
       "family": "authorization",
@@ -39,14 +39,14 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-611-012-TEMP-CONSISTENCY"
+        "NEG-REQ-012-02"
       ],
       "dimensions": [
         {
-          "surface": "extended-period-boundary",
-          "reason": "An extended report can truncate periods while still returning plausible totals.",
+          "surface": "extended-period-sequence",
+          "reason": "An extended window can have wrong period count/order while short windows pass.",
           "control_ids": [
-            "NEG-611-012-TEMP-CONSISTENCY"
+            "NEG-REQ-012-02"
           ],
           "status": "passed"
         }
@@ -58,14 +58,14 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-611-012-TEMP-DESTINATION"
+        "NEG-REQ-012-03"
       ],
       "dimensions": [
         {
-          "surface": "period-range-preservation",
-          "reason": "Extended-period values can be shifted into the wrong period while aggregate totals remain unchanged.",
+          "surface": "extended-period-boundary",
+          "reason": "Period generation can drift at the far boundary of the requested extended interval.",
           "control_ids": [
-            "NEG-611-012-TEMP-DESTINATION"
+            "NEG-REQ-012-03"
           ],
           "status": "passed"
         }
@@ -109,43 +109,52 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-611-002-HANDOFF-ORIGIN",
-        "NEG-611-002-ORDER",
-        "NEG-611-002-TARGET-BINDING",
-        "NEG-611-012-EXTENDED",
-        "NEG-611-012-MULTICURRENCY"
+        "DELIVERY-TARGET-BINDING-001",
+        "HANDOFF-BASE-ORIGIN-001",
+        "NEG-REQ-002-01",
+        "NEG-REQ-005-02",
+        "TEST-REQ-012-EXTENDED-PERIOD",
+        "TEST-REQ-012-MULTICURRENCY"
       ],
       "dimensions": [
         {
           "surface": "analysis-layer-order",
-          "reason": "The required composition order is structural and can regress independently of report values.",
+          "reason": "All sections can exist while the detail matrix is still presented before the decision layers.",
           "control_ids": [
-            "NEG-611-002-ORDER"
+            "NEG-REQ-002-01"
           ],
           "status": "passed"
         },
         {
           "surface": "delivery-target-binding",
-          "reason": "A valid-looking packet can belong to another issue or pull request.",
+          "reason": "Delivery evidence can be internally coherent yet belong to a different target or origin.",
           "control_ids": [
-            "NEG-611-002-TARGET-BINDING"
+            "DELIVERY-TARGET-BINDING-001"
           ],
           "status": "passed"
         },
         {
           "surface": "handoff-origin-inheritance",
-          "reason": "A handoff path can be inherited unchanged from the base and falsely attributed to this delivery.",
+          "reason": "Delivery evidence can be internally coherent yet belong to a different target or origin.",
           "control_ids": [
-            "NEG-611-002-HANDOFF-ORIGIN"
+            "HANDOFF-BASE-ORIGIN-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "semantic-identity-propagation",
+          "reason": "A presentation transform can drop target identity and group homonymous labels together.",
+          "control_ids": [
+            "NEG-REQ-005-02"
           ],
           "status": "passed"
         },
         {
           "surface": "specified-test-matrix",
-          "reason": "The issue explicitly mandates separate multi-currency and extended-period test cases.",
+          "reason": "A single green scenario can mask omission of one explicitly required sibling test.",
           "control_ids": [
-            "NEG-611-012-EXTENDED",
-            "NEG-611-012-MULTICURRENCY"
+            "TEST-REQ-012-EXTENDED-PERIOD",
+            "TEST-REQ-012-MULTICURRENCY"
           ],
           "status": "passed"
         }
@@ -157,14 +166,14 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-611-005-DOC"
+        "NEG-REQ-005-03"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Normative report documentation must describe the same drilldown availability as runtime.",
+          "reason": "Documentation can claim no destination exists even when canonical filters are supported.",
           "control_ids": [
-            "NEG-611-005-DOC"
+            "NEG-REQ-005-03"
           ],
           "status": "passed"
         }

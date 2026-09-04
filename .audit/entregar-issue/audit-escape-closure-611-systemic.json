@@ -13,27 +13,28 @@
         ],
         "audit_report_sha256": "af2eccf8f84a91cfd514b28347aa277b9e6bd309e7d99fd7766ce266b28ee4f2"
       },
-      "plausible_wrong_implementation": "Accept a ready handoff found at the canonical path without proving that it was created for the resolved target or differs from the immutable base artifact.",
+      "plausible_wrong_implementation": "Accept a ready handoff found at a canonical result path without proving that it was created for the resolved target or differs from inherited base state.",
       "literal_case": {
-        "procedure": "Resolve the current delivery target, compare candidate and immutable-base handoff identity, and classify a foreign unchanged artifact before any reuse.",
-        "expected": "Foreign base-identical artifact is rejected and a fresh handoff is required.",
-        "observed": "The recovery preflight rejected the inherited foreign packet; a new target-bound package was rebuilt for the current material head.",
+        "procedure": "Resolve the current delivery target and compare prior handoff identity before any evidence reuse.",
+        "expected": "Foreign or inherited handoff evidence is rejected before reuse.",
+        "observed": "The prior certificate is treated as historical lineage and a fresh current-target result packet is required.",
         "status": "passed",
-        "evidence": "evidence/target-binding-regression.txt",
-        "evidence_sha256": "14553c68d1c2f8b7e7bbf1b81236e0601ddf31392ee1e8165828fd325607bfa7"
+        "evidence": "evidence/target-binding-regression.txt"
       },
       "sibling_cases": [
         {
           "id": "AE-HANDOFF-ORIGIN-001-S1",
           "surface": "delivery-target-binding",
           "dimension": "base-identical-foreign-subject",
-          "status": "passed"
+          "status": "passed",
+          "evidence": "evidence/target-binding-regression.txt"
         },
         {
           "id": "AE-HANDOFF-ORIGIN-001-S2",
           "surface": "handoff-origin-inheritance",
           "dimension": "base-identical-foreign-certificate",
-          "status": "passed"
+          "status": "passed",
+          "evidence": "evidence/target-binding-regression.txt"
         }
       ],
       "required_risk_families": [
@@ -53,11 +54,11 @@
       ],
       "prevention_change": {
         "control_id": "DELIVERY-TARGET-BINDING-001",
-        "evidence": "Target-binding recovery classifies inherited foreign artifacts before reuse."
+        "evidence": "Target binding is resolved before delivery evidence reuse."
       },
       "detection_change": {
         "control_id": "HANDOFF-BASE-ORIGIN-001",
-        "evidence": "Immutable-base origin regression independently detects base-identical foreign certificates."
+        "evidence": "Handoff origin is independently checked against resolved target identity."
       },
       "trigger_terms": [
         "inherited artifact",
@@ -65,7 +66,84 @@
         "base-identical handoff",
         "target binding"
       ],
-      "revalidated_head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71"
+      "revalidated_head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b"
+    },
+    {
+      "escape_id": "AE-SILENT-TRANSLATION-LOSS-001",
+      "escape_class": "silent-translation-loss",
+      "status": "passed",
+      "source_audit": {
+        "rejection_id": "audit-rejection:e115eb84-81c6-41b9-b5ec-4856662d6e88",
+        "finding_id": "A-001",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "a30a460a84ec1981cf1791ffdaaeea00ae3425dd30fd55322eb12e5acd1af5a0",
+        "head_sha": "3c7c5c61047e99213993da66465511d524091019"
+      },
+      "plausible_wrong_implementation": "Preserve human-readable labels in a presentation transform while silently discarding canonical target identifiers, making homonymous targets collapse and disabling a route that actually exists.",
+      "literal_case": {
+        "procedure": "Use homonymous display labels with deliberately distinct canonical target identifiers, traverse presentation mapping and renderer, then follow the generated canonical navigation.",
+        "expected": "Identity survives the transform and the exact target is navigated with compatible context.",
+        "observed": "The current material retains distinct target IDs through the view-model and renderer, follows the exact selected ID and preserves compatible filters.",
+        "status": "passed",
+        "evidence": "evidence/reports-drilldown-remediation.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "AE-SILENT-TRANSLATION-LOSS-001-S1",
+          "surface": "semantic-identity-propagation",
+          "dimension": "card-id-divergence",
+          "status": "passed",
+          "evidence": "evidence/reports-drilldown-remediation.txt"
+        },
+        {
+          "id": "AE-SILENT-TRANSLATION-LOSS-001-S2",
+          "surface": "semantic-identity-propagation",
+          "dimension": "category-id-divergence",
+          "status": "passed",
+          "evidence": "evidence/reports-drilldown-remediation.txt"
+        },
+        {
+          "id": "AE-SILENT-TRANSLATION-LOSS-001-S3",
+          "surface": "canonical-claims",
+          "dimension": "missing-identity-no-fabricated-target",
+          "status": "passed",
+          "evidence": "evidence/documentation-drilldown.txt"
+        }
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "documentation"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "semantic-identity-propagation",
+          "dimension": "homonymous-target-id-retention"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "canonical-route-enumeration"
+        }
+      ],
+      "prevention_change": {
+        "control_id": "CANONICAL-TARGET-IDENTITY-001",
+        "evidence": "Delivery planning now treats canonical identity as a first-class field that must survive presentation mapping when navigation depends on it."
+      },
+      "detection_change": {
+        "control_id": "NEG-REQ-005-02",
+        "evidence": "Adversarial controls use deliberately distinct canonical IDs with the same label and observe the downstream navigation boundary."
+      },
+      "trigger_terms": [
+        "canonical route",
+        "canonical filter",
+        "presentation mapping",
+        "identity field",
+        "homonymous label"
+      ],
+      "revalidated_head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b"
     }
   ]
 }

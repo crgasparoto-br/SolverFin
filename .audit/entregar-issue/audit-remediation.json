@@ -3,28 +3,28 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
+  "candidate_head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
   "remediation_mode": "systemic-remediation",
   "source": {
-    "rejection_id": "audit-rejection:834518e4-037b-4dd4-b463-94f85018f80a",
-    "audited_head_sha": "07aaa0d34588e49f58b205b757b9f4f7c634fd71",
-    "audit_report_sha256": "af2eccf8f84a91cfd514b28347aa277b9e6bd309e7d99fd7766ce266b28ee4f2"
+    "rejection_id": "audit-rejection:e115eb84-81c6-41b9-b5ec-4856662d6e88",
+    "audited_head_sha": "3c7c5c61047e99213993da66465511d524091019",
+    "audit_report_sha256": "888a50b144d23ca4293cdea9b18fbdeede7d6a193ed5587c9a1db7b857951151"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "AUD-651-DELIVERY-001",
+      "source_id": "A-001",
       "remediation_mode": "systemic-remediation",
       "status": "fixed",
       "evidence": [
-        "A fresh issue-611 specification snapshot and critical handoff packet were rebuilt instead of reusing the inherited issue-610 packet.",
-        "Delivery-target binding and immutable-base origin controls explicitly reject a base-identical foreign subject/certificate.",
-        "The product material head remains unchanged and exact-head CI plus Chrome visual validation are successful."
+        "Canonical identifiers are preserved across presentation mapping and used by same-route drilldowns.",
+        "Homonymous labels remain separated by identifier and missing-identifier rows do not invent navigation.",
+        "Reports documentation now distinguishes supported canonical drilldown from contexts without a faithful destination."
       ],
       "validations": [
-        "validate_specification_coverage.py passed for the issue-611 snapshot and closure.",
-        "validate_requirement_attack_matrix.py passed with delivery-target-binding and handoff-origin-inheritance controls.",
-        "Installed target-binding and base-origin regression tests passed in the recovery workspace."
+        "reports-drilldown-issue-611.test.ts covers exact ID selection, homonyms, compatible-filter preservation and synthetic-row non-navigation.",
+        "CI run 33786783206 passed format, lint, typecheck, test, build and API/PostgreSQL integration.",
+        "Chrome visual validation run 33786783102 passed registered desktop/mobile scenarios."
       ]
     }
   ]
