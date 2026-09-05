@@ -196,6 +196,7 @@ async function inspectPage(cdp) {
         selectedKind: detail?.getAttribute('data-resource-detail') || '',
         hasTabs: document.querySelectorAll('[data-tab-panel], [role="tab"], .sf-tabs').length > 0,
         legacyActionMenuCount: document.querySelectorAll('.action-menu-trigger, [data-legacy-item-menu]').length,
+        tabArtifacts: document.querySelectorAll('[data-tab-panel], [role="tab"], .sf-tabs, .action-menu-trigger, [data-legacy-item-menu]').length,
         searchVisible: visible(document.querySelector('[data-master-search]')),
         statusOptions: Array.from(document.querySelectorAll('[data-master-status] option')).map((option) => option.value),
         currencyContextVisible: /Moeda\\s*(BRL|USD|EUR)\\b/i.test(detailText) || /Moeda\\s*(indisponível|não informada)/i.test(detailText),
