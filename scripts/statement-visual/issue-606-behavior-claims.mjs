@@ -133,46 +133,95 @@ async function collectAccountsCardsEvidence() {
       .map((scenario) => Number.parseInt(String(scenario.viewport).split("x")[0], 10))
       .filter(Number.isFinite),
   );
-  assert.ok(widths.has(390), "Accounts/Cards evidence has no mobile page.");
+  assert.ok(widths.has(390), "Accounts/Cards A3 evidence has no mobile page.");
   assert.ok(
     [...widths].some((width) => width >= 1366),
-    "Accounts/Cards evidence has no desktop page.",
+    "Accounts/Cards A3 evidence has no desktop page.",
   );
   assert.ok(
     pages.some(
-      (scenario) => scenario.expectedTab === "accounts" && scenario.measurements?.itemCount > 0,
+      (scenario) =>
+        scenario.resourceKind === "account" &&
+        scenario.measurements?.selectedKind === "account" &&
+        scenario.measurements?.masterItemCount > 0 &&
+        scenario.measurements?.currencyContextVisible === true &&
+        scenario.measurements?.tabArtifacts === 0,
     ),
-    "Accounts/Cards evidence has no populated accounts detail flow.",
+    "Accounts/Cards A3 evidence has no populated account master-detail flow.",
   );
   assert.ok(
     pages.some(
-      (scenario) => scenario.expectedTab === "cards" && scenario.measurements?.cardRowCount > 0,
+      (scenario) =>
+        scenario.resourceKind === "card" &&
+        scenario.measurements?.selectedKind === "card" &&
+        scenario.measurements?.masterItemCount > 0 &&
+        scenario.measurements?.currencyContextVisible === true &&
+        scenario.measurements?.instrumentSectionVisible === true &&
+        scenario.measurements?.tabArtifacts === 0,
     ),
-    "Accounts/Cards evidence has no populated cards detail flow.",
+    "Accounts/Cards A3 evidence has no populated card master-detail flow.",
+  );
+  assert.ok(
+    pages.every((scenario) => scenario.measurements?.noHorizontalOverflow === true),
+    "Accounts/Cards A3 evidence contains horizontal overflow.",
   );
   assert.ok(
     scenarios.some(
-      (scenario) => scenario.kind === "instrument-modal" && scenario.measurements?.open,
+      (scenario) =>
+        scenario.kind === "resource-dialog" &&
+        scenario.measurements?.open === true &&
+        scenario.measurements?.labelled === true &&
+        scenario.measurements?.insideViewport === true &&
+        scenario.measurements?.focusInside === true &&
+        scenario.measurements?.closed?.focusRestored === true,
     ),
-    "Accounts/Cards evidence has no opened instrument dialog.",
+    "Accounts/Cards A3 evidence has no keyboard-operable resource dialog.",
   );
   assert.ok(
-    scenarios.some((scenario) => scenario.kind === "row-action-menu" && scenario.opened?.opened),
-    "Accounts/Cards evidence has no row action menu proof.",
+    scenarios.some(
+      (scenario) =>
+        scenario.kind === "confirmation-cancel" &&
+        scenario.measurements?.cancelledWithoutRequest === true &&
+        scenario.measurements?.requestCount === 0,
+    ),
+    "Accounts/Cards A3 evidence has no fail-closed destructive-action cancellation proof.",
+  );
+  assert.ok(
+    scenarios.some(
+      (scenario) =>
+        scenario.kind === "save-failure" &&
+        scenario.measurements?.loading?.visible === true &&
+        scenario.measurements?.failed?.loadingHidden === true &&
+        /error/.test(scenario.measurements?.failed?.statusClass ?? ""),
+    ),
+    "Accounts/Cards A3 evidence has no loading/error save-state proof.",
+  );
+  assert.ok(
+    scenarios.some(
+      (scenario) =>
+        scenario.kind === "long-content" &&
+        scenario.measurements?.noHorizontalOverflow === true &&
+        scenario.measurements?.actionsVisible === true,
+    ),
+    "Accounts/Cards A3 evidence has no long-content reflow proof.",
   );
   return {
     files: [fileName],
     assertions: [
       "behavior:component:DetailLayout",
       "behavior:component:Dialog",
-      "behavior:component:Tabs",
       "behavior:legacy:accounts-cards-tabs",
       "behavior:legacy:accounts-cards-standardization",
       "behavior:legacy:accounts-cards-action-menus",
       "behavior:layout:desktop",
       "behavior:layout:mobile",
     ],
-    observations: { widths: [...widths].sort((left, right) => left - right) },
+    observations: {
+      widths: [...widths].sort((left, right) => left - right),
+      masterDetail: true,
+      retiredTabs: true,
+      directActions: true,
+    },
   };
 }
 

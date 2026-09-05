@@ -49,7 +49,7 @@ const RECORD_ENRICHMENTS = new Map([
     "cards-interface:0",
     {
       requiredAssertions: ["filters", "modal"],
-      components: ["SummaryGrid"],
+      components: ["SummaryGrid", "Tabs"],
       legacyProcessorIds: [
         "card-list-sorting",
         "card-instrument-subtotals",
@@ -64,7 +64,7 @@ const SCENARIO_ENRICHMENTS = new Map([
   [
     "accounts-cards-interface",
     {
-      components: ["DetailLayout", "Dialog", "Tabs"],
+      components: ["DetailLayout", "Dialog"],
       legacyProcessorIds: [
         "accounts-cards-tabs",
         "accounts-cards-standardization",

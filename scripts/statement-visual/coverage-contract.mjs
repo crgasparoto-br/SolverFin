@@ -47,7 +47,7 @@ export const criticalStructuralRealFlowCoverage = {
   FormLayout: ["settings-interface"],
   Dialog: ["accounts-cards-interface", "settings-interface"],
   Drawer: ["sidebar-navigation"],
-  Tabs: ["accounts-cards-interface"],
+  Tabs: ["cards-interface"],
 };
 
 export const pilotRoutes = [

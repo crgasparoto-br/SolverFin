@@ -21,7 +21,7 @@ loginRouteIsRealPage();
 privateRouteRedirectsWithoutSession();
 privateRouteAllowsSessionAndIdentifiesDashboardRoute();
 accountsCardsRouteRendersMasterPage();
-await accountsCardsPageRendersCreditCardAccountsWithNestedInstruments();
+await accountsCardsPageRendersMasterDetailWithNestedInstruments();
 adminInstitutionsRouteRequiresSessionButStaysOutOfCommonMenu();
 accountsCardsEnhancementIgnoresNonAccountsCardsHtml();
 accountsCardsDirectEnhancementIsInjectedOnce();
@@ -76,7 +76,7 @@ function accountsCardsRouteRendersMasterPage(): void {
   assert.equal(authenticatedRoute.kind, "placeholder");
 }
 
-async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments(): Promise<void> {
+async function accountsCardsPageRendersMasterDetailWithNestedInstruments(): Promise<void> {
   const originalFetch = globalThis.fetch;
 
   globalThis.fetch = (async (input: string | URL | Request) => {
@@ -91,7 +91,7 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
             kind: "checking",
             status: "active",
             openingBalanceMinor: 0,
-            currency: "BRL",
+            currency: "USD",
             institutionKey: "c6",
           },
         ],
@@ -165,71 +165,35 @@ async function accountsCardsPageRendersCreditCardAccountsWithNestedInstruments()
   }) as typeof fetch;
 
   try {
-    const html = await renderAccountsCardsPage("session-token");
+    const html = await renderAccountsCardsPage(
+      "session-token",
+      new URL("https://solverfin.invalid/contas-cartoes?resource=card%3Acard-c6"),
+    );
 
+    assert.match(html, /data-accounts-cards-archetype="A3"/);
+    assert.match(html, /class="sf-detail-layout"/);
+    assert.doesNotMatch(html, /data-tab-panel=/);
+    assert.match(html, /aria-current="page"/);
+    assert.match(html, /data-resource-detail="card"/);
     assert.match(html, /Cartão C6/);
-    assert.match(html, /Cartões de crédito <span>2<\/span>/);
-    assert.match(html, /Conta de pagamento: Conta pagamento · 2 instrumentos ativos/);
-    assert.match(html, /aria-label="Instrumentos de Cartão C6"/);
+    assert.match(html, /Conta pagamento/);
+    assert.match(html, /<span>Moeda<\/span><strong>USD<\/strong>/);
+    assert.match(html, />USD</);
+    assert.match(html, /Instrumentos do cartão/);
     assert.match(html, /Físico titular/);
-    assert.match(html, /Físico · Titular principal · \*\*\*\* 1111 · limite/);
-    assert.match(html, /3\.000,00/);
     assert.match(html, /Virtual adicional/);
-    assert.match(html, /Virtual · Adicional · \*\*\*\* 2222 · limite/);
-    assert.match(html, /1\.000,00/);
-    assert.match(html, />Default<\/span>/);
-    assert.match(html, /aria-label="Adicionar instrumento em Cartão C6"/);
+    assert.match(html, /\*\*\*\* 1111/);
+    assert.match(html, /USD/);
     assert.match(html, /data-open-dialog="new-card-instrument-dialog-card-c6"/);
     assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/instruments"/);
-    assert.match(html, /<label>Tipo<select name="type" required>/);
-    assert.match(html, /<label>Titularidade<select name="holder" required>/);
-    assert.match(
-      html,
-      /<button type="submit" title="Criar novo instrumento">[\s\S]*?Criar instrumento<\/button>/,
-    );
-    assert.match(html, /aria-label="Editar instrumento Físico titular"/);
-    assert.match(html, /aria-label="Editar instrumento Virtual adicional"/);
     assert.match(html, /data-api-path="\/api\/credit-card-instruments\/instrument-physical"/);
-    assert.match(html, /data-api-path="\/api\/credit-card-instruments\/instrument-virtual"/);
-    assert.match(
-      html,
-      /<button type="submit" title="Salvar alterações do instrumento">[\s\S]*?Salvar instrumento<\/button>/,
-    );
-    assert.equal(
-      (html.match(/\/api\/credit-card-accounts\/card-c6\/default-instrument/g) ?? []).length,
-      1,
-    );
-    assert.match(html, /name="instrumentId" value="instrument-virtual"/);
-    assert.match(html, /aria-label="Definir Virtual adicional como default"/);
-    assert.match(
-      html,
-      /data-api-path="\/api\/credit-card-instruments\/instrument-physical\/archive"/,
-    );
+    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/default-instrument"/);
     assert.match(
       html,
       /data-api-path="\/api\/credit-card-instruments\/instrument-virtual\/archive"/,
     );
-    assert.match(html, /aria-label="Arquivar Físico titular"/);
-    assert.match(html, /aria-label="Arquivar Virtual adicional"/);
-    assert.match(html, /Cartão bloqueado/);
-    assert.match(html, />Bloqueado<\/span>/);
-    assert.match(html, /Conta de pagamento: Conta pagamento · 0 instrumentos ativos/);
-    assert.match(
-      html,
-      /Sem instrumento ativo para novos lançamentos\. Cadastre um novo instrumento para voltar a usar este cartão\./,
-    );
-    assert.match(html, /Virtual antigo/);
-    assert.match(html, /Virtual · Titular principal · \*\*\*\* 9999 · limite/);
-    assert.match(html, /500,00/);
-    assert.match(html, /aria-label="Adicionar instrumento em Cartão bloqueado"/);
-    assert.match(html, /data-open-dialog="new-card-instrument-dialog-card-blocked"/);
-    assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-blocked\/instruments"/);
-    assert.match(html, /aria-label="Editar instrumento Virtual antigo"/);
-    assert.doesNotMatch(html, /Definir Virtual antigo como default/);
-    assert.doesNotMatch(html, /Arquivar Virtual antigo/);
-    assert.match(html, /data-api-path="\/api\/credit-card-accounts"/);
-    assert.match(html, /data-payload-kind="credit-card-account"/);
     assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-c6\/archive"/);
+    assert.match(html, /data-payload-kind="credit-card-account"/);
     assert.doesNotMatch(html, /data-api-path="\/api\/cards"/);
     assert.doesNotMatch(html, /\/api\/card-additional-links/);
   } finally {
