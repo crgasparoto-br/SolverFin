@@ -288,7 +288,6 @@ async function navigateWithRetry(cdp, url, label) {
 
       if (pageState.href.startsWith(url)) {
         console.warn(`Navigation to ${label} reached the page despite a missing load event.`);
-        await waitForReadyState(cdp);
         return;
       }
 
@@ -296,20 +295,6 @@ async function navigateWithRetry(cdp, url, label) {
       console.warn(`Navigation to ${label} failed on attempt ${attempt}; retrying.`);
       await sleep(400 * attempt);
     }
-  }
-}
-
-async function waitForReadyState(cdp) {
-  for (let attempt = 0; attempt < 50; attempt += 1) {
-    try {
-      if (await evaluate(cdp, "document.readyState === 'complete'")) {
-        await sleep(100);
-        return;
-      }
-    } catch {
-      // The renderer may still be restarting; keep polling.
-    }
-    await sleep(100);
   }
 }
 

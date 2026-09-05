@@ -32,7 +32,6 @@ try {
   const observations = await validateCards(browser.cdp);
   const assertions = [
     "behavior:component:SummaryGrid",
-    "behavior:component:Tabs",
     "behavior:legacy:card-list-sorting",
     "behavior:legacy:card-instrument-subtotals",
     "behavior:legacy:cards-interface",
@@ -55,10 +54,6 @@ async function validateCards(cdp) {
   const desktopStructure = await inspectCardsStructure(cdp);
   assert.equal(desktopStructure.pageFits, true, "Cards desktop page overflows horizontally.");
   assert.equal(desktopStructure.summaryVisible, true, "Cards invoice summary is not visible.");
-  assert.ok(
-    desktopStructure.tabCount > 0,
-    "Cards invoice Tabs primitive is not present in the real flow.",
-  );
   assert.ok(desktopStructure.purchaseCount > 0, "Cards rendered no purchases.");
   assert.ok(desktopStructure.instrumentGroupCount > 0, "Cards rendered no instrument groups.");
   assert.equal(
@@ -170,7 +165,6 @@ async function validateCards(cdp) {
   const mobileStructure = await inspectCardsStructure(cdp);
   assert.equal(mobileStructure.pageFits, true, "Cards mobile page overflows horizontally.");
   assert.equal(mobileStructure.summaryVisible, true, "Cards mobile summary is not visible.");
-  assert.ok(mobileStructure.tabCount > 0, "Cards invoice Tabs primitive is not present on mobile.");
   assert.ok(mobileStructure.purchaseCount > 0, "Cards mobile rendered no purchases.");
 
   return {
@@ -247,7 +241,6 @@ async function inspectCardsStructure(cdp) {
         viewportWidth: innerWidth,
         pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
         summaryVisible: Boolean(summaryRect && summaryRect.width > 0 && summaryRect.height > 0),
-        tabCount: document.querySelectorAll('.cards-invoice-navigation .sf-tab').length,
         purchaseCount: document.querySelectorAll('[data-purchase-item]').length,
         instrumentGroupCount: groups.length,
         instrumentSubtotalsValid:

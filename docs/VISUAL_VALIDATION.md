@@ -61,7 +61,7 @@ O contrato mantem duas provas complementares e nao intercambiaveis:
 
 `realBrowser: true` sozinho nao transforma uma fixture em fluxo real. Um registro `component://...` continua util para a fundacao, mas nunca quita o criterio de aceite "componente estrutural critico possui pelo menos um fluxo real coberto". O gate tambem rejeita um mapeamento para rota real quando o registro correspondente nao declara execucao em navegador real, remove o componente mantendo apenas o ID do cenario ou preserva o componente sem a assertion comportamental correspondente.
 
-O mapeamento de fluxo real permanece no mesmo registro canonico de cobertura para evitar uma segunda fonte de verdade. Os controles negativos exercitam fixture de primitive, fixture de estado, registro de rota sem navegador real e mutacoes que preservam metadata mas retiram a capability observavel. A issue #612 move a prova real de `Tabs` de `/contas-cartoes` para `/cartoes`, onde a navegacao de faturas continua usando essa primitive; `/contas-cartoes` passa a provar `DetailLayout` e `Dialog` sem reintroduzir abas aposentadas.
+O mapeamento de fluxo real permanece no mesmo registro canonico de cobertura para evitar uma segunda fonte de verdade. Os controles negativos exercitam fixture de primitive, fixture de estado, registro de rota sem navegador real e mutacoes que preservam metadata mas retiram a capability observavel.
 
 ## Evidencia por SHA
 
@@ -104,10 +104,10 @@ Coberturas representativas atuais incluem:
 | Extrato foco + overflow, ordenacao, insight e desktop/mobile                                 | `issue-606-semantic-interactions.mjs`                                  |
 | Dashboard e demais core pages responsivos                                                    | `issue-606-core-pages-execution.mjs`                                   |
 | Dashboard vazio em perfil novo                                                               | `issue-606-dashboard-empty.mjs`                                        |
-| Cartoes filtros, modal, ordenacao, subtotais, resumo, finalizer e Tabs                       | `issue-610-cards-semantic-interactions.mjs`                            |
+| Cartoes filtros, modal, ordenacao, subtotais, resumo e finalizer                             | `issue-606-semantic-interactions.mjs`                                  |
 | Cartoes vazio por filtro                                                                     | `issue-606-cards-execution.mjs`                                        |
 | Cartoes em 1366x768, conteudo longo e teclado                                                | `cards-interface-adversarial.mjs`                                      |
-| Contas e Cartoes A3 master-detail, dialogs e acoes diretas                                   | `accounts-cards-interface.mjs` + adaptador de claims                   |
+| Contas e Cartoes desktop/mobile, tabs, menus e modais                                        | `accounts-cards-interface.mjs` + adaptador de claims                   |
 | Contas e Cartoes vazio em perfil novo                                                        | `issue-606-accounts-cards-empty.mjs`                                   |
 | Relatorios foco + overflow e estrutura desktop/mobile                                        | `issue-606-semantic-interactions.mjs`                                  |
 | Relatorios vazio/erro                                                                        | `issue-606-reports-execution.mjs`                                      |
