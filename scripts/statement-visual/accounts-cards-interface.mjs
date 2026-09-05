@@ -77,7 +77,11 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.detailVisible, true, "Selected detail is not visible.");
   assert.equal(baseline.noHorizontalOverflow, true, "A3 page overflows horizontally.");
   assert.equal(baseline.hasTabs, false, "Retired tab markup is still present.");
-  assert.equal(baseline.legacyActionMenuCount, 0, "Post-processed row action menus are still present.");
+  assert.equal(
+    baseline.legacyActionMenuCount,
+    0,
+    "Post-processed row action menus are still present.",
+  );
   assert.ok(baseline.masterItemCount > 0, "No master resources were rendered.");
   assert.equal(baseline.selectedMasterCount, 1, "Exactly one master resource must be selected.");
   assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
