@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
-  "issue": 611,
-  "created_at": "2026-09-04T01:54:29.440197+00:00",
-  "primary_source_id": "SRC-ISSUE-611",
+  "issue": 612,
+  "created_at": "2026-09-05T17:25:17.206115+00:00",
+  "primary_source_id": "SRC-ISSUE-612",
   "sources": [
     {
-      "id": "SRC-ISSUE-611",
+      "id": "SRC-ISSUE-612",
       "kind": "issue-body",
-      "path": "specification-sources/SRC-ISSUE-611.txt",
-      "locator": "/mnt/data/solverfin611-terminal/input/issue-611.md",
-      "sha256": "8574bab5321e2e2c91fe5b66d8f934f56bc0986e445054b3f71ffccda0509964",
+      "path": "specification-sources/SRC-ISSUE-612.txt",
+      "locator": "/mnt/data/solverfin-612-handoff/input/issue-612.md",
+      "sha256": "3cc008d055ff5f9a62aa7aef0f8fe98710b99977333d11b6675c0b2845824876",
       "textual": true,
       "extract_source_id": null,
       "required": true,
-      "line_count": 36
+      "line_count": 38
     }
   ]
 }
