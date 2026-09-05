@@ -76,7 +76,8 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
   assert.equal(baseline.detailVisible, true, "Selected detail is not visible.");
   assert.equal(baseline.noHorizontalOverflow, true, "A3 page overflows horizontally.");
-  assert.equal(baseline.tabArtifacts, 0, "Retired tab markup is still present.");
+  assert.equal(baseline.hasTabs, false, "Retired tab markup is still present.");
+  assert.equal(baseline.legacyActionMenuCount, 0, "Post-processed row action menus are still present.");
   assert.ok(baseline.masterItemCount > 0, "No master resources were rendered.");
   assert.equal(baseline.selectedMasterCount, 1, "Exactly one master resource must be selected.");
   assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
@@ -189,7 +190,8 @@ async function inspectPage(cdp) {
         masterItemCount: masterItems.length,
         selectedMasterCount: document.querySelectorAll('[data-resource-master-item] [aria-current="page"]').length,
         selectedKind: detail?.getAttribute('data-resource-detail') || '',
-        tabArtifacts: document.querySelectorAll('[data-tab-panel], [role="tab"], .sf-tabs').length,
+        hasTabs: document.querySelectorAll('[data-tab-panel], [role="tab"], .sf-tabs').length > 0,
+        legacyActionMenuCount: document.querySelectorAll('.action-menu-trigger, [data-legacy-item-menu]').length,
         searchVisible: visible(document.querySelector('[data-master-search]')),
         statusOptions: Array.from(document.querySelectorAll('[data-master-status] option')).map((option) => option.value),
         currencyContextVisible: /Moeda\\s*(BRL|USD|EUR)\\b/i.test(detailText) || /Moeda\\s*(indisponível|não informada)/i.test(detailText),

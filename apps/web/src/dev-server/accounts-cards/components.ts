@@ -120,8 +120,8 @@ function renderAccountDetail(account: AccountRecord, currency: string | undefine
           <button type="submit" class="danger-button">${renderTrashIcon()} Excluir</button>
         </form>
       </div>
-      ${renderAccountEditDialog(account, viewModel.editDialogId)}
-    </section>`;
+    </section>
+    ${renderAccountEditDialog(account, viewModel.editDialogId)}`;
 }
 
 function renderCardDetail(

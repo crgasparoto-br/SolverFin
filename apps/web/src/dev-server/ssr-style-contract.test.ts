@@ -146,14 +146,18 @@ describe("SSR style contract", () => {
   });
 
   it("rejects missing and empty marker-backed runtime style blocks", () => {
-    const base = contractFor("accountsCards");
-    const target = providerFor(base, "runtime:accounts-cards-neutral");
-    const contract = withProviders(base, ["page:accountsCards", target.providerId]);
+    const base = contractFor("transactions");
+    const pageProvider = providerFor(base, "page:transactions");
+    const target = providerFor(base, "runtime:transaction-group-modal");
+    const contract = withProviders(base, [pageProvider.providerId, target.providerId]);
+    const pageCssFragment =
+      pageProvider.requiredCssFragments?.[0] ?? assert.fail("missing page CSS fragment");
     const marker = target.requiredStyleBlockMarkers?.[0] ?? assert.fail("missing marker");
+    const pageCss = `${pageCssFragment} display: grid; }`;
     const html = authenticatedDocument(
-      `${providers.sharedShell}.master-toolbar, .master-panel { display: grid; }`,
-      '<section data-tab-panel="accounts">Contas</section>',
-      [`<style ${marker}>.accounts-cards-tab { display: grid; }</style>`],
+      `${providers.sharedShell}${providers.statementPresentation}${pageCss}`,
+      '<section data-statement-archetype="A2" class="statement-layout" data-group-modal>Extrato fictício</section>',
+      [`<style ${marker}>.group-modal-panel { display: grid; }</style>`],
     );
 
     assert.deepEqual(validateRenderedSsrStyleDocument({ contract, html, providers }), []);
@@ -165,12 +169,12 @@ describe("SSR style contract", () => {
     });
     assert.ok(
       missingViolations.some((violation) =>
-        violation.includes("provider=runtime:accounts-cards-neutral"),
+        violation.includes("provider=runtime:transaction-group-modal"),
       ),
     );
 
     const emptyHtml = html.replace(
-      `<style ${marker}>.accounts-cards-tab { display: grid; }</style>`,
+      `<style ${marker}>.group-modal-panel { display: grid; }</style>`,
       `<style ${marker}> </style>`,
     );
     const emptyViolations = validateRenderedSsrStyleDocument({
@@ -180,7 +184,7 @@ describe("SSR style contract", () => {
     });
     assert.ok(
       emptyViolations.some((violation) =>
-        violation.includes("provider=runtime:accounts-cards-neutral"),
+        violation.includes("provider=runtime:transaction-group-modal"),
       ),
     );
   });
