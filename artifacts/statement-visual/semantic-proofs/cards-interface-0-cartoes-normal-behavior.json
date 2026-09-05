@@ -16,9 +16,7 @@
   ],
   "details": {
     "sourceScenario": "cards-interface",
-    "evidenceFiles": [
-      "issue-606-semantic-cards-interface.json"
-    ],
+    "evidenceFiles": ["issue-606-semantic-cards-interface.json"],
     "observations": {
       "desktop": {
         "viewportWidth": 1440,
@@ -97,17 +95,11 @@
           "sorted": true,
           "groups": [
             {
-              "dates": [
-                "2026-06-08",
-                "2026-06-11"
-              ],
+              "dates": ["2026-06-08", "2026-06-11"],
               "sorted": true
             },
             {
-              "dates": [
-                "2026-06-14",
-                "2026-06-18"
-              ],
+              "dates": ["2026-06-14", "2026-06-18"],
               "sorted": true
             }
           ]
@@ -118,17 +110,11 @@
           "sorted": true,
           "groups": [
             {
-              "dates": [
-                "2026-06-18",
-                "2026-06-14"
-              ],
+              "dates": ["2026-06-18", "2026-06-14"],
               "sorted": true
             },
             {
-              "dates": [
-                "2026-06-11",
-                "2026-06-08"
-              ],
+              "dates": ["2026-06-11", "2026-06-08"],
               "sorted": true
             }
           ]

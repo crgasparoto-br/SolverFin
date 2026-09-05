@@ -4,14 +4,10 @@
   "sourceScenarioId": "bank-message-ai-inbox",
   "route": "/inbox",
   "state": "review",
-  "assertions": [
-    "behavior:legacy:inbox-structured-payload"
-  ],
+  "assertions": ["behavior:legacy:inbox-structured-payload"],
   "details": {
     "sourceScenario": "bank-message-ai-inbox",
-    "evidenceFiles": [
-      "issue-563-bank-message-ai-inbox.json"
-    ],
+    "evidenceFiles": ["issue-563-bank-message-ai-inbox.json"],
     "observations": {
       "desktop": {
         "viewport": "1366x900",

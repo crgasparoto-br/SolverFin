@@ -4,15 +4,10 @@
   "sourceScenarioId": "financial-insights",
   "route": "/lancamentos",
   "state": "insights",
-  "assertions": [
-    "behavior:legacy:statement-insight-context"
-  ],
+  "assertions": ["behavior:legacy:statement-insight-context"],
   "details": {
     "sourceScenario": "financial-insights",
-    "evidenceFiles": [
-      "issue-567-financial-insights.json",
-      "issue-606-semantic-core-pages.json"
-    ],
+    "evidenceFiles": ["issue-567-financial-insights.json", "issue-606-semantic-core-pages.json"],
     "observations": {
       "navigation": {
         "linkHref": "/lancamentos?month=2026-09",

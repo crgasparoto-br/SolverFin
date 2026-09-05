@@ -10,10 +10,7 @@
   ],
   "details": {
     "sourceScenario": "account-remuneration",
-    "evidenceFiles": [
-      "issue-490-account-remuneration.json",
-      "issue-606-semantic-core-pages.json"
-    ],
+    "evidenceFiles": ["issue-490-account-remuneration.json", "issue-606-semantic-core-pages.json"],
     "observations": {
       "desktopExpanded": true,
       "mobileExpanded": true,

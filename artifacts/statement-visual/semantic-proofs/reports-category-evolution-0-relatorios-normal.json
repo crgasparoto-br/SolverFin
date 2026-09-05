@@ -4,10 +4,7 @@
   "sourceScenarioId": "reports-category-evolution",
   "route": "/relatorios",
   "state": "normal",
-  "assertions": [
-    "focus",
-    "overflow"
-  ],
+  "assertions": ["focus", "overflow"],
   "details": {
     "surface": "reports"
   }

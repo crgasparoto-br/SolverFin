@@ -4,10 +4,7 @@
   "sourceScenarioId": "core-pages",
   "route": "/lancamentos",
   "state": "normal",
-  "assertions": [
-    "focus",
-    "overflow"
-  ],
+  "assertions": ["focus", "overflow"],
   "details": {
     "surface": "statement"
   }

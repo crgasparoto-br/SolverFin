@@ -4,20 +4,12 @@
   "sourceScenarioId": "dashboard-empty-state",
   "route": "/dashboard",
   "state": "empty",
-  "assertions": [
-    "behavior:layout:desktop",
-    "behavior:layout:mobile"
-  ],
+  "assertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
   "details": {
     "sourceScenario": "dashboard-empty-state",
-    "evidenceFiles": [
-      "issue-606-dashboard-empty.json"
-    ],
+    "evidenceFiles": ["issue-606-dashboard-empty.json"],
     "observations": {
-      "widths": [
-        390,
-        1366
-      ]
+      "widths": [390, 1366]
     }
   }
 }

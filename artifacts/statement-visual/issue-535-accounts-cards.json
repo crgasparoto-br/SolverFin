@@ -19,11 +19,7 @@
         "selectedKind": "account",
         "tabArtifacts": 0,
         "searchVisible": true,
-        "statusOptions": [
-          "all",
-          "active",
-          "inactive"
-        ],
+        "statusOptions": ["all", "active", "inactive"],
         "currencyContextVisible": true,
         "instrumentSectionVisible": false,
         "instrumentCount": 0,
@@ -46,11 +42,7 @@
         "selectedKind": "card",
         "tabArtifacts": 0,
         "searchVisible": true,
-        "statusOptions": [
-          "all",
-          "active",
-          "inactive"
-        ],
+        "statusOptions": ["all", "active", "inactive"],
         "currencyContextVisible": true,
         "instrumentSectionVisible": true,
         "instrumentCount": 2,
@@ -97,11 +89,7 @@
         "selectedKind": "account",
         "tabArtifacts": 0,
         "searchVisible": true,
-        "statusOptions": [
-          "all",
-          "active",
-          "inactive"
-        ],
+        "statusOptions": ["all", "active", "inactive"],
         "currencyContextVisible": true,
         "instrumentSectionVisible": false,
         "instrumentCount": 0,
@@ -124,11 +112,7 @@
         "selectedKind": "card",
         "tabArtifacts": 0,
         "searchVisible": true,
-        "statusOptions": [
-          "all",
-          "active",
-          "inactive"
-        ],
+        "statusOptions": ["all", "active", "inactive"],
         "currencyContextVisible": true,
         "instrumentSectionVisible": true,
         "instrumentCount": 2,
@@ -208,11 +192,7 @@
         "selectedKind": "account",
         "tabArtifacts": 0,
         "searchVisible": true,
-        "statusOptions": [
-          "all",
-          "active",
-          "inactive"
-        ],
+        "statusOptions": ["all", "active", "inactive"],
         "currencyContextVisible": true,
         "instrumentSectionVisible": false,
         "instrumentCount": 0,
@@ -235,11 +215,7 @@
         "selectedKind": "card",
         "tabArtifacts": 0,
         "searchVisible": true,
-        "statusOptions": [
-          "all",
-          "active",
-          "inactive"
-        ],
+        "statusOptions": ["all", "active", "inactive"],
         "currencyContextVisible": true,
         "instrumentSectionVisible": true,
         "instrumentCount": 2,

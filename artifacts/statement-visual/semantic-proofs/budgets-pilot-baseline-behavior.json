@@ -4,20 +4,12 @@
   "sourceScenarioId": "budgets-pilot-baseline",
   "route": "/orcamentos",
   "state": "normal",
-  "assertions": [
-    "behavior:layout:desktop",
-    "behavior:layout:mobile"
-  ],
+  "assertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
   "details": {
     "sourceScenario": "budgets-pilot-baseline",
-    "evidenceFiles": [
-      "issue-606-budgets-pilot.json"
-    ],
+    "evidenceFiles": ["issue-606-budgets-pilot.json"],
     "observations": {
-      "widths": [
-        390,
-        1366
-      ]
+      "widths": [390, 1366]
     }
   }
 }

@@ -41,11 +41,7 @@
           "layout": "desktop-mobile",
           "interaction": "overflow-and-focus",
           "dataProfile": "long-statement",
-          "components": [
-            "PageContainer",
-            "PageHeader",
-            "DataTable"
-          ],
+          "components": ["PageContainer", "PageHeader", "DataTable"],
           "requiredAssertions": [
             "focus",
             "overflow",
@@ -57,10 +53,7 @@
             "behavior:layout:desktop",
             "behavior:layout:mobile"
           ],
-          "legacyProcessorIds": [
-            "statement-list-sorting",
-            "statement-insight-context"
-          ],
+          "legacyProcessorIds": ["statement-list-sorting", "statement-insight-context"],
           "fingerprint": "514cf996728fcc4598cecbabaf5ebec3722ca1050129b24deedb29bf0900d745"
         }
       ],
@@ -94,14 +87,8 @@
             "kind": "primary",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "focus",
-              "overflow"
-            ],
-            "observedAssertions": [
-              "focus",
-              "overflow"
-            ],
+            "requiredAssertions": ["focus", "overflow"],
+            "observedAssertions": ["focus", "overflow"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/core-pages-0-lancamentos-normal.json"
           },
           {
@@ -159,10 +146,7 @@
           "layout": "desktop-mobile",
           "interaction": "viewport-smoke",
           "dataProfile": "demo-seed",
-          "components": [
-            "PageContainer",
-            "PageHeader"
-          ],
+          "components": ["PageContainer", "PageHeader"],
           "requiredAssertions": [
             "behavior:component:PageContainer",
             "behavior:component:PageHeader",
@@ -222,10 +206,7 @@
       "state": "normal",
       "layout": "desktop-mobile",
       "interaction": "viewport-smoke",
-      "requiredAssertions": [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile"
-      ],
+      "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
       "result": "passed",
       "coverage": [
         {
@@ -237,38 +218,23 @@
           "interaction": "viewport-smoke",
           "dataProfile": "demo-seed",
           "components": [],
-          "requiredAssertions": [
-            "behavior:layout:desktop",
-            "behavior:layout:mobile"
-          ],
+          "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
           "legacyProcessorIds": [],
           "fingerprint": "4637a7ce57f5ebb31576bce6da2564b62d410ab2c4e738fda560d5f7d70ae816"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
-        "observedAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
+        "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+        "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
-            "observedAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
+            "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+            "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/core-pages-2-cartoes-normal-behavior.json"
           }
         ]
@@ -286,10 +252,7 @@
       "state": "normal",
       "layout": "desktop-mobile",
       "interaction": "viewport-smoke",
-      "requiredAssertions": [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile"
-      ],
+      "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
       "result": "passed",
       "coverage": [
         {
@@ -301,38 +264,23 @@
           "interaction": "viewport-smoke",
           "dataProfile": "demo-seed",
           "components": [],
-          "requiredAssertions": [
-            "behavior:layout:desktop",
-            "behavior:layout:mobile"
-          ],
+          "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
           "legacyProcessorIds": [],
           "fingerprint": "767646634c6f59265332f2bb3bf37286002481e14b99cf2119840e49fe450490"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
-        "observedAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
+        "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+        "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
-            "observedAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
+            "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+            "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/core-pages-3-contas-normal-behavior.json"
           }
         ]
@@ -369,11 +317,7 @@
           "layout": "desktop-mobile",
           "interaction": "keyboard-focus-overflow",
           "dataProfile": "category-evolution",
-          "components": [
-            "FilterBar",
-            "SummaryGrid",
-            "DataTable"
-          ],
+          "components": ["FilterBar", "SummaryGrid", "DataTable"],
           "requiredAssertions": [
             "focus",
             "overflow",
@@ -413,14 +357,8 @@
             "kind": "primary",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "focus",
-              "overflow"
-            ],
-            "observedAssertions": [
-              "focus",
-              "overflow"
-            ],
+            "requiredAssertions": ["focus", "overflow"],
+            "observedAssertions": ["focus", "overflow"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/reports-category-evolution-0-relatorios-normal.json"
           },
           {
@@ -648,10 +586,7 @@
           "layout": "desktop-mobile",
           "interaction": "filters-modal",
           "dataProfile": "invoice-purchases",
-          "components": [
-            "SummaryGrid",
-            "Tabs"
-          ],
+          "components": ["SummaryGrid", "Tabs"],
           "requiredAssertions": [
             "filters",
             "modal",
@@ -705,14 +640,8 @@
             "kind": "primary",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "filters",
-              "modal"
-            ],
-            "observedAssertions": [
-              "filters",
-              "modal"
-            ],
+            "requiredAssertions": ["filters", "modal"],
+            "observedAssertions": ["filters", "modal"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/cards-interface-0-cartoes-normal.json"
           },
           {
@@ -1182,10 +1111,7 @@
           "layout": "desktop-mobile",
           "interaction": "keyboard-focus-modal",
           "dataProfile": "accounts-and-cards",
-          "components": [
-            "DetailLayout",
-            "Dialog"
-          ],
+          "components": ["DetailLayout", "Dialog"],
           "requiredAssertions": [
             "behavior:component:DetailLayout",
             "behavior:component:Dialog",
@@ -1724,10 +1650,7 @@
           "layout": "desktop-mobile",
           "interaction": "form-flow",
           "dataProfile": "settings",
-          "components": [
-            "FormLayout",
-            "Dialog"
-          ],
+          "components": ["FormLayout", "Dialog"],
           "requiredAssertions": [
             "behavior:component:FormLayout",
             "behavior:component:Dialog",
@@ -1935,9 +1858,7 @@
       "state": "insights",
       "layout": "responsive",
       "interaction": "drilldown",
-      "requiredAssertions": [
-        "behavior:legacy:statement-insight-context"
-      ],
+      "requiredAssertions": ["behavior:legacy:statement-insight-context"],
       "result": "passed",
       "coverage": [
         {
@@ -1949,35 +1870,23 @@
           "interaction": "drilldown",
           "dataProfile": "financial-insights",
           "components": [],
-          "requiredAssertions": [
-            "behavior:legacy:statement-insight-context"
-          ],
-          "legacyProcessorIds": [
-            "statement-insight-context"
-          ],
+          "requiredAssertions": ["behavior:legacy:statement-insight-context"],
+          "legacyProcessorIds": ["statement-insight-context"],
           "fingerprint": "c592dd5b6558f8c4b97cc08fa37e347301779caf35878feaaf99f204741d404f"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:legacy:statement-insight-context"
-        ],
-        "observedAssertions": [
-          "behavior:legacy:statement-insight-context"
-        ],
+        "requiredAssertions": ["behavior:legacy:statement-insight-context"],
+        "observedAssertions": ["behavior:legacy:statement-insight-context"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:legacy:statement-insight-context"
-            ],
-            "observedAssertions": [
-              "behavior:legacy:statement-insight-context"
-            ],
+            "requiredAssertions": ["behavior:legacy:statement-insight-context"],
+            "observedAssertions": ["behavior:legacy:statement-insight-context"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/financial-insights-behavior.json"
           }
         ]
@@ -1995,10 +1904,7 @@
       "state": "normal",
       "layout": "desktop-mobile",
       "interaction": "keyboard-focus",
-      "requiredAssertions": [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile"
-      ],
+      "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
       "result": "passed",
       "coverage": [
         {
@@ -2010,38 +1916,23 @@
           "interaction": "keyboard-focus",
           "dataProfile": "assistant",
           "components": [],
-          "requiredAssertions": [
-            "behavior:layout:desktop",
-            "behavior:layout:mobile"
-          ],
+          "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
           "legacyProcessorIds": [],
           "fingerprint": "64a5ae06696d503477ee8f53d5497792e6288d0be2c3a4a9ca3f58b677c39865"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
-        "observedAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
+        "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+        "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
-            "observedAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
+            "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+            "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/financial-assistant-behavior.json"
           }
         ]
@@ -2133,10 +2024,7 @@
       "state": "normal",
       "layout": "desktop-mobile",
       "interaction": "viewport-smoke",
-      "requiredAssertions": [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile"
-      ],
+      "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
       "result": "passed",
       "coverage": [
         {
@@ -2148,38 +2036,23 @@
           "interaction": "viewport-smoke",
           "dataProfile": "demo-seed",
           "components": [],
-          "requiredAssertions": [
-            "behavior:layout:desktop",
-            "behavior:layout:mobile"
-          ],
+          "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
           "legacyProcessorIds": [],
           "fingerprint": "edb372f797e025b23fc01e464c1ce85fd5de4de98c3b2602d812bff77f98e28a"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
-        "observedAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
+        "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+        "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
-            "observedAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
+            "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+            "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/budgets-pilot-baseline-behavior.json"
           }
         ]
@@ -2253,10 +2126,7 @@
             "behavior:legacy:statement-list-sorting",
             "behavior:legacy:account-remuneration-disclosure"
           ],
-          "legacyProcessorIds": [
-            "statement-list-sorting",
-            "account-remuneration-disclosure"
-          ],
+          "legacyProcessorIds": ["statement-list-sorting", "account-remuneration-disclosure"],
           "fingerprint": "ebebc425e10eac7b78cdcc2918239c2baf8f65534728d6088d0a29770d35ade9"
         }
       ],
@@ -2301,9 +2171,7 @@
       "state": "remuneration",
       "layout": "mobile",
       "interaction": "disclosure",
-      "requiredAssertions": [
-        "behavior:legacy:account-remuneration-disclosure"
-      ],
+      "requiredAssertions": ["behavior:legacy:account-remuneration-disclosure"],
       "result": "passed",
       "coverage": [
         {
@@ -2315,35 +2183,23 @@
           "interaction": "disclosure",
           "dataProfile": "remunerated-account",
           "components": [],
-          "requiredAssertions": [
-            "behavior:legacy:account-remuneration-disclosure"
-          ],
-          "legacyProcessorIds": [
-            "account-remuneration-disclosure"
-          ],
+          "requiredAssertions": ["behavior:legacy:account-remuneration-disclosure"],
+          "legacyProcessorIds": ["account-remuneration-disclosure"],
           "fingerprint": "cfea3bb623fcd552013d7587ce4eb504bcd632dea66b8e66104aa7dbebb7bc66"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:legacy:account-remuneration-disclosure"
-        ],
-        "observedAssertions": [
-          "behavior:legacy:account-remuneration-disclosure"
-        ],
+        "requiredAssertions": ["behavior:legacy:account-remuneration-disclosure"],
+        "observedAssertions": ["behavior:legacy:account-remuneration-disclosure"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:legacy:account-remuneration-disclosure"
-            ],
-            "observedAssertions": [
-              "behavior:legacy:account-remuneration-disclosure"
-            ],
+            "requiredAssertions": ["behavior:legacy:account-remuneration-disclosure"],
+            "observedAssertions": ["behavior:legacy:account-remuneration-disclosure"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/account-remuneration-mobile-behavior.json"
           }
         ]
@@ -2413,9 +2269,7 @@
           "layout": "desktop-mobile",
           "interaction": "keyboard-navigation",
           "dataProfile": "navigation",
-          "components": [
-            "Drawer"
-          ],
+          "components": ["Drawer"],
           "requiredAssertions": [
             "behavior:component:Drawer",
             "behavior:layout:desktop",
@@ -2528,9 +2382,7 @@
             "behavior:layout:desktop",
             "behavior:layout:mobile"
           ],
-          "legacyProcessorIds": [
-            "inbox-list-layout"
-          ],
+          "legacyProcessorIds": ["inbox-list-layout"],
           "fingerprint": "ba11d1d82dfb20c95dee8590aae1c88694414a5bb460131490c82932c5cb703d"
         }
       ],
@@ -2579,9 +2431,7 @@
       "state": "normal",
       "layout": "responsive",
       "interaction": "keyboard-focus-accessibility",
-      "requiredAssertions": [
-        "behavior:legacy:inbox-list-layout"
-      ],
+      "requiredAssertions": ["behavior:legacy:inbox-list-layout"],
       "result": "passed",
       "coverage": [
         {
@@ -2593,35 +2443,23 @@
           "interaction": "keyboard-focus-accessibility",
           "dataProfile": "review-batch",
           "components": [],
-          "requiredAssertions": [
-            "behavior:legacy:inbox-list-layout"
-          ],
-          "legacyProcessorIds": [
-            "inbox-list-layout"
-          ],
+          "requiredAssertions": ["behavior:legacy:inbox-list-layout"],
+          "legacyProcessorIds": ["inbox-list-layout"],
           "fingerprint": "dddef5bba760696a92b0f0f315a9db7cd415a46668ee874cfb4e4c9935e5ae08"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:legacy:inbox-list-layout"
-        ],
-        "observedAssertions": [
-          "behavior:legacy:inbox-list-layout"
-        ],
+        "requiredAssertions": ["behavior:legacy:inbox-list-layout"],
+        "observedAssertions": ["behavior:legacy:inbox-list-layout"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:legacy:inbox-list-layout"
-            ],
-            "observedAssertions": [
-              "behavior:legacy:inbox-list-layout"
-            ],
+            "requiredAssertions": ["behavior:legacy:inbox-list-layout"],
+            "observedAssertions": ["behavior:legacy:inbox-list-layout"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/inbox-interface-accessibility-behavior.json"
           }
         ]
@@ -2639,9 +2477,7 @@
       "state": "review",
       "layout": "responsive",
       "interaction": "review-flow",
-      "requiredAssertions": [
-        "behavior:legacy:inbox-structured-payload"
-      ],
+      "requiredAssertions": ["behavior:legacy:inbox-structured-payload"],
       "result": "passed",
       "coverage": [
         {
@@ -2653,35 +2489,23 @@
           "interaction": "review-flow",
           "dataProfile": "bank-message",
           "components": [],
-          "requiredAssertions": [
-            "behavior:legacy:inbox-structured-payload"
-          ],
-          "legacyProcessorIds": [
-            "inbox-structured-payload"
-          ],
+          "requiredAssertions": ["behavior:legacy:inbox-structured-payload"],
+          "legacyProcessorIds": ["inbox-structured-payload"],
           "fingerprint": "d79fd98a75caf2477c548528443d8c5ad8c663015e7163a67be7a797ef143486"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:legacy:inbox-structured-payload"
-        ],
-        "observedAssertions": [
-          "behavior:legacy:inbox-structured-payload"
-        ],
+        "requiredAssertions": ["behavior:legacy:inbox-structured-payload"],
+        "observedAssertions": ["behavior:legacy:inbox-structured-payload"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:legacy:inbox-structured-payload"
-            ],
-            "observedAssertions": [
-              "behavior:legacy:inbox-structured-payload"
-            ],
+            "requiredAssertions": ["behavior:legacy:inbox-structured-payload"],
+            "observedAssertions": ["behavior:legacy:inbox-structured-payload"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/bank-message-ai-inbox-behavior.json"
           }
         ]
@@ -2757,9 +2581,7 @@
             "behavior:layout:desktop",
             "behavior:layout:mobile"
           ],
-          "legacyProcessorIds": [
-            "categories-icons-tooltips"
-          ],
+          "legacyProcessorIds": ["categories-icons-tooltips"],
           "fingerprint": "fa98a49afe0f749cd4b386e3e995f2c664d5b11ffb56104143a96972df45d9f7"
         }
       ],
@@ -2827,10 +2649,7 @@
             "behavior:legacy:cards-interface",
             "behavior:legacy:cards-interface-finalizer"
           ],
-          "legacyProcessorIds": [
-            "cards-interface",
-            "cards-interface-finalizer"
-          ],
+          "legacyProcessorIds": ["cards-interface", "cards-interface-finalizer"],
           "fingerprint": "c3d3315566ab95f4b1c1d10179790457dd4a215968a51402d13b6b6b08e1875f"
         }
       ],
@@ -2875,10 +2694,7 @@
       "state": "empty",
       "layout": "desktop-mobile",
       "interaction": "state-render",
-      "requiredAssertions": [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile"
-      ],
+      "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
       "result": "passed",
       "coverage": [
         {
@@ -2890,38 +2706,23 @@
           "interaction": "state-render",
           "dataProfile": "fresh-profile",
           "components": [],
-          "requiredAssertions": [
-            "behavior:layout:desktop",
-            "behavior:layout:mobile"
-          ],
+          "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
           "legacyProcessorIds": [],
           "fingerprint": "8b01017d55195548dcd88a4cf6d5e3a169878f829efcd0cb0836e1791dc93321"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
-        "observedAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
+        "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+        "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
-            "observedAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
+            "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+            "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/dashboard-empty-state-behavior.json"
           }
         ]
@@ -2939,10 +2740,7 @@
       "state": "empty",
       "layout": "desktop-mobile",
       "interaction": "state-render",
-      "requiredAssertions": [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile"
-      ],
+      "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
       "result": "passed",
       "coverage": [
         {
@@ -2954,38 +2752,23 @@
           "interaction": "state-render",
           "dataProfile": "fresh-profile",
           "components": [],
-          "requiredAssertions": [
-            "behavior:layout:desktop",
-            "behavior:layout:mobile"
-          ],
+          "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
           "legacyProcessorIds": [],
           "fingerprint": "4a7e5f90de01c1682defde90e02a9393cba1ad210ab07fffbe624d0fa6c73a8a"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
-        "observedAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
+        "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+        "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
-            "observedAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
+            "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+            "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/accounts-cards-empty-state-behavior.json"
           }
         ]
@@ -3003,10 +2786,7 @@
       "state": "empty",
       "layout": "desktop-mobile",
       "interaction": "state-render",
-      "requiredAssertions": [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile"
-      ],
+      "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
       "result": "passed",
       "coverage": [
         {
@@ -3018,38 +2798,23 @@
           "interaction": "state-render",
           "dataProfile": "fresh-profile",
           "components": [],
-          "requiredAssertions": [
-            "behavior:layout:desktop",
-            "behavior:layout:mobile"
-          ],
+          "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
           "legacyProcessorIds": [],
           "fingerprint": "cbeb802181e1e4f4e471a9248a5214ee9ee03163efa9f44ccab55620ecb2808a"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
-        "observedAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
+        "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+        "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
-            "observedAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
+            "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+            "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/budgets-empty-state-behavior.json"
           }
         ]
@@ -3067,10 +2832,7 @@
       "state": "normal",
       "layout": "desktop-mobile",
       "interaction": "keyboard-profile-context",
-      "requiredAssertions": [
-        "behavior:layout:desktop",
-        "behavior:layout:mobile"
-      ],
+      "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
       "result": "passed",
       "coverage": [
         {
@@ -3082,38 +2844,23 @@
           "interaction": "keyboard-profile-context",
           "dataProfile": "multi-account-active-profile",
           "components": [],
-          "requiredAssertions": [
-            "behavior:layout:desktop",
-            "behavior:layout:mobile"
-          ],
+          "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
           "legacyProcessorIds": [],
           "fingerprint": "e49b84f577b8b1a3cba612f407488ca3a8a8c44acfa9421bf709d45fff30ff40"
         }
       ],
       "semanticProof": {
         "status": "passed",
-        "requiredAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
-        "observedAssertions": [
-          "behavior:layout:desktop",
-          "behavior:layout:mobile"
-        ],
+        "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+        "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
         "errors": [],
         "parts": [
           {
             "kind": "behavior",
             "status": "passed",
             "errors": [],
-            "requiredAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
-            "observedAssertions": [
-              "behavior:layout:desktop",
-              "behavior:layout:mobile"
-            ],
+            "requiredAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
+            "observedAssertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
             "proofPath": "artifacts/statement-visual/semantic-proofs/statement-profile-keyboard-behavior.json"
           }
         ]

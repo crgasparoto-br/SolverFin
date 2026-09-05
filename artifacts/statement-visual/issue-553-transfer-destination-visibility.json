@@ -32,11 +32,7 @@
       "modal": {
         "open": true,
         "title": "Editar parcela",
-        "visibleEditableNames": [
-          "categoryId",
-          "description",
-          "note"
-        ],
+        "visibleEditableNames": ["categoryId", "description", "note"],
         "description": "QA transferencia parcelada entre contas",
         "globalOverflow": false
       },

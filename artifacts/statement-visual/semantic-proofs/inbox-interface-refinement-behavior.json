@@ -11,9 +11,7 @@
   ],
   "details": {
     "sourceScenario": "inbox-interface-refinement",
-    "evidenceFiles": [
-      "issue-525-inbox-interface-refinement.json"
-    ],
+    "evidenceFiles": ["issue-525-inbox-interface-refinement.json"],
     "observations": {
       "desktopRows": 5,
       "mobileRows": 2

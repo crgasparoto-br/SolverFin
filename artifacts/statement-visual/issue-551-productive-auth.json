@@ -77,10 +77,7 @@
     }
   },
   "accessibility": {
-    "linkNames": [
-      "Continuar com acesso seguro",
-      "Recuperar acesso"
-    ]
+    "linkNames": ["Continuar com acesso seguro", "Recuperar acesso"]
   },
   "cookieUnavailable": {
     "exists": true,

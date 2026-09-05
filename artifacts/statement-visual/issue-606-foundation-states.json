@@ -7,13 +7,7 @@
     "contentViewportWidth": 1351,
     "verticalScrollbarWidth": 15,
     "documentFits": true,
-    "states": [
-      "empty",
-      "error",
-      "loading",
-      "permission",
-      "unavailable"
-    ],
+    "states": ["empty", "error", "loading", "permission", "unavailable"],
     "loadingBusy": "true",
     "errorRole": "alert",
     "tabsLabel": "Secoes da validacao",
@@ -30,13 +24,7 @@
     "contentViewportWidth": 375,
     "verticalScrollbarWidth": 15,
     "documentFits": true,
-    "states": [
-      "empty",
-      "error",
-      "loading",
-      "permission",
-      "unavailable"
-    ],
+    "states": ["empty", "error", "loading", "permission", "unavailable"],
     "loadingBusy": "true",
     "errorRole": "alert",
     "tabsLabel": "Secoes da validacao",

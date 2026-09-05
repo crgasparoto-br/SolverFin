@@ -286,8 +286,5 @@
     },
     "screenshot": "issue-480-sidebar-mobile-open.png"
   },
-  "screenshots": [
-    "issue-480-sidebar-1280x480.png",
-    "issue-480-sidebar-mobile-open.png"
-  ]
+  "screenshots": ["issue-480-sidebar-1280x480.png", "issue-480-sidebar-mobile-open.png"]
 }

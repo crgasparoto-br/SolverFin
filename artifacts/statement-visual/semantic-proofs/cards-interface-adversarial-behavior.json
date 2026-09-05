@@ -4,15 +4,10 @@
   "sourceScenarioId": "cards-interface-adversarial",
   "route": "/cartoes",
   "state": "long-content",
-  "assertions": [
-    "behavior:legacy:cards-interface",
-    "behavior:legacy:cards-interface-finalizer"
-  ],
+  "assertions": ["behavior:legacy:cards-interface", "behavior:legacy:cards-interface-finalizer"],
   "details": {
     "sourceScenario": "cards-interface-adversarial",
-    "evidenceFiles": [
-      "cards-interface-adversarial.json"
-    ],
+    "evidenceFiles": ["cards-interface-adversarial.json"],
     "observations": {
       "rows": 4,
       "compactDesktop": {

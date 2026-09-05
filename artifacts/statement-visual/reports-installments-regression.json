@@ -24,16 +24,8 @@
           "Futuras",
           "Total mensal"
         ],
-        "aggregateKinds": [
-          "month",
-          "card",
-          "category"
-        ],
-        "groupHeadings": [
-          "Comprometimento por mês",
-          "Por cartão",
-          "Por categoria"
-        ],
+        "aggregateKinds": ["month", "card", "category"],
+        "groupHeadings": ["Comprometimento por mês", "Por cartão", "Por categoria"],
         "installmentRows": 51,
         "hasCardName": true,
         "hasFirstCategory": true,
@@ -61,16 +53,8 @@
           "Futuras",
           "Total mensal"
         ],
-        "aggregateKinds": [
-          "month",
-          "card",
-          "category"
-        ],
-        "groupHeadings": [
-          "Comprometimento por mês",
-          "Por cartão",
-          "Por categoria"
-        ],
+        "aggregateKinds": ["month", "card", "category"],
+        "groupHeadings": ["Comprometimento por mês", "Por cartão", "Por categoria"],
         "installmentRows": 51,
         "hasCardName": true,
         "hasFirstCategory": true,

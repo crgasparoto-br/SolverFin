@@ -4,21 +4,12 @@
   "sourceScenarioId": "financial-assistant",
   "route": "/assistente",
   "state": "normal",
-  "assertions": [
-    "behavior:layout:desktop",
-    "behavior:layout:mobile"
-  ],
+  "assertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
   "details": {
     "sourceScenario": "financial-assistant",
-    "evidenceFiles": [
-      "issue-568-financial-assistant.json"
-    ],
+    "evidenceFiles": ["issue-568-financial-assistant.json"],
     "observations": {
-      "widths": [
-        390,
-        683,
-        1366
-      ]
+      "widths": [390, 683, 1366]
     }
   }
 }

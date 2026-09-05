@@ -4,20 +4,12 @@
   "sourceScenarioId": "accounts-cards-empty-state",
   "route": "/contas-cartoes",
   "state": "empty",
-  "assertions": [
-    "behavior:layout:desktop",
-    "behavior:layout:mobile"
-  ],
+  "assertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
   "details": {
     "sourceScenario": "accounts-cards-empty-state",
-    "evidenceFiles": [
-      "issue-606-accounts-cards-empty.json"
-    ],
+    "evidenceFiles": ["issue-606-accounts-cards-empty.json"],
     "observations": {
-      "widths": [
-        390,
-        1366
-      ]
+      "widths": [390, 1366]
     }
   }
 }

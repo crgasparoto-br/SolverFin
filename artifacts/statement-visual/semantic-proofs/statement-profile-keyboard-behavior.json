@@ -4,20 +4,12 @@
   "sourceScenarioId": "statement-profile-keyboard",
   "route": "/lancamentos",
   "state": "normal",
-  "assertions": [
-    "behavior:layout:desktop",
-    "behavior:layout:mobile"
-  ],
+  "assertions": ["behavior:layout:desktop", "behavior:layout:mobile"],
   "details": {
     "sourceScenario": "statement-profile-keyboard",
-    "evidenceFiles": [
-      "issue-609-profile-keyboard.json"
-    ],
+    "evidenceFiles": ["issue-609-profile-keyboard.json"],
     "observations": {
-      "widths": [
-        390,
-        1366
-      ],
+      "widths": [390, 1366],
       "profileVisible": true,
       "keyboardSelection": true
     }

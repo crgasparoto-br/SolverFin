@@ -15,11 +15,7 @@
         "categoryValue": "30f246ea-5435-42f1-a92c-2dc71af072fb",
         "categoryLabel": "Categoria historica QA mtnc8oet (arquivada)",
         "categoryOptionDisabled": true,
-        "visibleEditableNames": [
-          "categoryId",
-          "description",
-          "note"
-        ],
+        "visibleEditableNames": ["categoryId", "description", "note"],
         "focusName": "description",
         "reasonText": "",
         "saveHidden": false,
@@ -40,11 +36,7 @@
         "categoryValue": "30f246ea-5435-42f1-a92c-2dc71af072fb",
         "categoryLabel": "Categoria historica QA mtnc8oet (arquivada)",
         "categoryOptionDisabled": true,
-        "visibleEditableNames": [
-          "categoryId",
-          "description",
-          "note"
-        ],
+        "visibleEditableNames": ["categoryId", "description", "note"],
         "focusName": "description",
         "reasonText": "",
         "saveHidden": false,

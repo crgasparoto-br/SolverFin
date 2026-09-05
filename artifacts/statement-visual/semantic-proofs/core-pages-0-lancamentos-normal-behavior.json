@@ -15,9 +15,7 @@
   ],
   "details": {
     "sourceScenario": "core-pages",
-    "evidenceFiles": [
-      "issue-606-semantic-core-pages.json"
-    ],
+    "evidenceFiles": ["issue-606-semantic-core-pages.json"],
     "observations": {
       "desktop": {
         "measurements": {

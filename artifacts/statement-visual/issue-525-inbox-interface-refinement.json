@@ -58,11 +58,7 @@
       "bulkWidth": 394,
       "bulkLabelWidth": 177,
       "bulkButtonWidth": 194,
-      "compactFilterButtonWidths": [
-        107,
-        134,
-        73
-      ],
+      "compactFilterButtonWidths": [107, 134, 73],
       "navClientWidth": 656,
       "navScrollWidth": 656
     },
@@ -122,11 +118,7 @@
       "bulkWidth": 461,
       "bulkLabelWidth": 177,
       "bulkButtonWidth": 194,
-      "compactFilterButtonWidths": [
-        107,
-        134,
-        73
-      ],
+      "compactFilterButtonWidths": [107, 134, 73],
       "navClientWidth": 481,
       "navScrollWidth": 481
     },
@@ -186,11 +178,7 @@
       "bulkWidth": 315,
       "bulkLabelWidth": 177,
       "bulkButtonWidth": 194,
-      "compactFilterButtonWidths": [
-        107,
-        134,
-        73
-      ],
+      "compactFilterButtonWidths": [107, 134, 73],
       "navClientWidth": 327,
       "navScrollWidth": 388
     },

@@ -442,12 +442,7 @@
     "collapsedMobileRowVisible": true,
     "disclosureIndicatorVisible": true,
     "disclosureFontMinimumPx": 12,
-    "desktopColumnIsolationWidths": [
-      1280,
-      1366,
-      1440,
-      1920
-    ],
+    "desktopColumnIsolationWidths": [1280, 1366, 1440, 1920],
     "collapsedAndExpandedCategoryOverlap": false
   }
 }

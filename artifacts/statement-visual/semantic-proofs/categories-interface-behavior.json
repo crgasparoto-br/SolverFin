@@ -11,9 +11,7 @@
   ],
   "details": {
     "sourceScenario": "categories-interface",
-    "evidenceFiles": [
-      "categories-interface.json"
-    ],
+    "evidenceFiles": ["categories-interface.json"],
     "observations": {
       "desktop": {
         "viewport": {

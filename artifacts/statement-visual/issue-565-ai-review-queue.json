@@ -16,17 +16,8 @@
       "actionsFitViewport": true,
       "actionsMeetMinimum": true,
       "technicalIdHidden": true,
-      "buttonLabels": [
-        "Ver detalhes",
-        "Editar",
-        "Aprovar",
-        "Rejeitar"
-      ],
-      "filterValues": [
-        "transaction_extraction",
-        "pending_review",
-        "all"
-      ],
+      "buttonLabels": ["Ver detalhes", "Editar", "Aprovar", "Rejeitar"],
+      "filterValues": ["transaction_extraction", "pending_review", "all"],
       "cardRect": {
         "left": 31,
         "right": 344,
@@ -43,17 +34,8 @@
       "actionsFitViewport": true,
       "actionsMeetMinimum": true,
       "technicalIdHidden": true,
-      "buttonLabels": [
-        "Ver detalhes",
-        "Editar",
-        "Aprovar",
-        "Rejeitar"
-      ],
-      "filterValues": [
-        "transaction_extraction",
-        "pending_review",
-        "all"
-      ],
+      "buttonLabels": ["Ver detalhes", "Editar", "Aprovar", "Rejeitar"],
+      "filterValues": ["transaction_extraction", "pending_review", "all"],
       "cardRect": {
         "left": 256,
         "right": 717,
@@ -70,17 +52,8 @@
       "actionsFitViewport": true,
       "actionsMeetMinimum": true,
       "technicalIdHidden": true,
-      "buttonLabels": [
-        "Ver detalhes",
-        "Editar",
-        "Aprovar",
-        "Rejeitar"
-      ],
-      "filterValues": [
-        "transaction_extraction",
-        "pending_review",
-        "all"
-      ],
+      "buttonLabels": ["Ver detalhes", "Editar", "Aprovar", "Rejeitar"],
+      "filterValues": ["transaction_extraction", "pending_review", "all"],
       "cardRect": {
         "left": 258,
         "right": 806,

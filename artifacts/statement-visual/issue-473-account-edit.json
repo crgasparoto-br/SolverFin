@@ -321,8 +321,5 @@
     "destinationAccountId": "9788f0fb-21a8-475e-94e4-1b3d45a70744",
     "fieldVisible": true
   },
-  "screenshots": [
-    "issue-473-edit-account-before-save.png",
-    "issue-473-edit-account-after-save.png"
-  ]
+  "screenshots": ["issue-473-edit-account-before-save.png", "issue-473-edit-account-after-save.png"]
 }

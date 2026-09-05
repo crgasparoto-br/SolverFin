@@ -13,9 +13,7 @@
   ],
   "details": {
     "sourceScenario": "reports-category-evolution",
-    "evidenceFiles": [
-      "issue-606-semantic-reports-category-evolution.json"
-    ],
+    "evidenceFiles": ["issue-606-semantic-reports-category-evolution.json"],
     "observations": {
       "month": "2026-09",
       "desktop": {

@@ -12,9 +12,7 @@
   ],
   "details": {
     "sourceScenario": "settings-interface",
-    "evidenceFiles": [
-      "settings-interface.json"
-    ],
+    "evidenceFiles": ["settings-interface.json"],
     "observations": {
       "desktop": {
         "viewport": {

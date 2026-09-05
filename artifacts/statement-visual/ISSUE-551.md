@@ -13,4 +13,3 @@
 - árvore de acessibilidade com nomes das ações;
 - estado de cookie indisponível com orientação e reinício;
 - três viewports e texto a 200% sem overflow horizontal.
-

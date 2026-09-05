@@ -15,15 +15,9 @@
   ],
   "details": {
     "sourceScenario": "accounts-cards-interface",
-    "evidenceFiles": [
-      "issue-535-accounts-cards.json"
-    ],
+    "evidenceFiles": ["issue-535-accounts-cards.json"],
     "observations": {
-      "widths": [
-        390,
-        1366,
-        1440
-      ],
+      "widths": [390, 1366, 1440],
       "masterDetail": true,
       "retiredTabs": true,
       "directActions": true

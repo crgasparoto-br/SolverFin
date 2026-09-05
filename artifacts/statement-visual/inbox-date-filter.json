@@ -13,30 +13,19 @@
     "centerY": 426.640625
   },
   "range": {
-    "visibleDates": [
-      "10/07/2026",
-      "15/07/2026",
-      "20/07/2026"
-    ],
+    "visibleDates": ["10/07/2026", "15/07/2026", "20/07/2026"],
     "counter": "3 de 4 linha(s)",
     "lineStart": "2026-07-10",
     "lineEnd": "2026-07-20"
   },
   "singleDay": {
-    "visibleDates": [
-      "15/07/2026"
-    ],
+    "visibleDates": ["15/07/2026"],
     "counter": "1 de 4 linha(s)",
     "lineStart": "2026-07-15",
     "lineEnd": "2026-07-15"
   },
   "cleared": {
-    "visibleDates": [
-      "01/07/2026",
-      "10/07/2026",
-      "15/07/2026",
-      "20/07/2026"
-    ],
+    "visibleDates": ["01/07/2026", "10/07/2026", "15/07/2026", "20/07/2026"],
     "counter": "4 de 4 linha(s)",
     "lineStart": null,
     "lineEnd": null

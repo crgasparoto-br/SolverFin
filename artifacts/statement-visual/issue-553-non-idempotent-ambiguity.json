@@ -21,9 +21,7 @@
           "submitDisabled": true,
           "statusText": "Não foi possível confirmar se a operação foi concluída. Confira o Extrato antes de tentar novamente para evitar duplicidade. Feche este formulário após a conferência."
         },
-        "persistedIds": [
-          "6cbdeacf-0970-4376-8404-7c2c4078050f"
-        ],
+        "persistedIds": ["6cbdeacf-0970-4376-8404-7c2c4078050f"],
         "screenshot": "issue-553-non-idempotent-transaction-1366x768.png"
       },
       {
@@ -43,9 +41,7 @@
           "submitDisabled": true,
           "statusText": "Não foi possível confirmar se a operação foi concluída. Confira o Extrato antes de tentar novamente para evitar duplicidade. Feche este formulário após a conferência."
         },
-        "persistedIds": [
-          "31df4a33-7938-418b-be1d-9499415fb646"
-        ],
+        "persistedIds": ["31df4a33-7938-418b-be1d-9499415fb646"],
         "screenshot": "issue-553-non-idempotent-recurrence-1366x768.png"
       }
     ]
