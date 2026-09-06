@@ -1,9 +1,11 @@
 import {
   renderDetailLayout,
+  renderDialogTrigger,
   renderLoading,
   renderPageContainer,
   renderPageHeader,
   renderRecoverableError,
+  renderSolverFinUiInteractionsScriptTag,
 } from "../../design-system/primitives.js";
 import { apiGet } from "../api.js";
 import { renderAuthenticatedShellDocument } from "../shell.js";
@@ -18,6 +20,20 @@ import { renderAccountsCardsApiFormScript, renderAccountsCardsRuntimeScript } fr
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
 import { buildAccountsCardsPageViewModel } from "./view-model.js";
+
+function renderHeaderDialogTrigger(input: {
+  dialogId: string;
+  label: string;
+  className: string;
+  variant?: "primary" | "secondary";
+}): string {
+  // data-open-dialog remains only as a stable visual-evidence selector. Interaction is owned by
+  // data-sf-dialog-open from renderDialogTrigger and the shared Phase 3B controller.
+  return renderDialogTrigger(input).replace(
+    "<button ",
+    `<button data-open-dialog="${escapeHtml(input.dialogId)}" `,
+  );
+}
 
 export async function renderAccountsCardsPage(token: string, url?: URL): Promise<string> {
   const [accounts, creditCardAccounts] = await Promise.all([
@@ -41,9 +57,19 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
     url?.searchParams.get("resource"),
   );
 
-  const headerActions = `
-    <button type="button" class="resource-primary-action" data-open-dialog="new-account-dialog">Adicionar conta</button>
-    <button type="button" class="secondary-button" data-open-dialog="new-card-dialog">Adicionar cartão</button>`;
+  const headerActions = [
+    renderHeaderDialogTrigger({
+      dialogId: "new-account-dialog",
+      label: "Adicionar conta",
+      className: "resource-primary-action",
+    }),
+    renderHeaderDialogTrigger({
+      dialogId: "new-card-dialog",
+      label: "Adicionar cartão",
+      className: "secondary-button",
+      variant: "secondary",
+    }),
+  ].join("");
   const masterDetail = renderDetailLayout({
     masterHtml: renderResourceMaster(viewModel.resources),
     detailHtml: renderSelectedResourceDetail(viewModel.selectedResource, viewModel.accounts),
@@ -61,7 +87,7 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
         description:
           "Selecione um recurso para consultar contexto, moeda, instrumentos e ações de manutenção sem perder a listagem.",
         actionsHtml: headerActions,
-      })}${loading}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
+      })}${loading}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderSolverFinUiInteractionsScriptTag()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
     }),
   });
 }

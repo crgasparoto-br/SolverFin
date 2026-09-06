@@ -1,3 +1,4 @@
+import { renderDialog } from "../../design-system/primitives.js";
 import { icon } from "../icons.js";
 import {
   escapeHtml,
@@ -19,16 +20,30 @@ import {
   formatInstrumentType,
 } from "./view-model.js";
 
-export function renderAccountEditDialog(account: AccountRecord, dialogId: string): string {
-  const titleId = `${dialogId}-title`;
+function renderAccountsCardsDialog(input: {
+  id: string;
+  title: string;
+  eyebrow: string;
+  bodyHtml: string;
+}): string {
+  const dialog = renderDialog({
+    id: input.id,
+    title: input.title,
+    bodyHtml: `<p class="eyebrow">${escapeHtml(input.eyebrow)}</p>${input.bodyHtml}`,
+  }).replace('class="sf-dialog"', 'class="sf-dialog master-dialog"');
+  const escapedId = escapeHtml(input.id);
+  return dialog.replace(
+    `<dialog class="sf-dialog master-dialog" id="${escapedId}"`,
+    `<dialog id="${escapedId}" class="sf-dialog master-dialog"`,
+  );
+}
 
-  return `
-    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
-        <p class="eyebrow">Editar cadastro</p>
-        <h2 id="${escapeHtml(titleId)}">${escapeHtml(account.name)}</h2>
-      </div>
+export function renderAccountEditDialog(account: AccountRecord, dialogId: string): string {
+  return renderAccountsCardsDialog({
+    id: dialogId,
+    title: account.name,
+    eyebrow: "Editar cadastro",
+    bodyHtml: `
       <form data-api-form data-api-method="PATCH" data-api-path="/api/accounts/${escapeHtml(account.id)}" class="edit-grid">
         <label>Nome<input name="name" value="${escapeHtml(account.name)}" required /></label>
         <label>Tipo<select name="kind">${renderAccountKindOptions(account.kind)}</select></label>
@@ -39,9 +54,8 @@ export function renderAccountEditDialog(account: AccountRecord, dialogId: string
         <label>Conta<input name="accountIdentifier" value="${escapeHtml(account.accountIdentifier ?? "")}" autocomplete="off" /></label>
         ${renderLegacyAccountIdentifier(account)}
         <button type="submit" title="Salvar alterações da conta">${icon("save", 14)} Salvar conta</button>
-      </form>
-    </dialog>
-  `;
+      </form>`,
+  });
 }
 
 export function renderCardEditDialog(
@@ -49,15 +63,11 @@ export function renderCardEditDialog(
   accounts: AccountRecord[],
   dialogId: string,
 ): string {
-  const titleId = `${dialogId}-title`;
-
-  return `
-    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
-        <p class="eyebrow">Editar cadastro</p>
-        <h2 id="${escapeHtml(titleId)}">${escapeHtml(card.name)}</h2>
-      </div>
+  return renderAccountsCardsDialog({
+    id: dialogId,
+    title: card.name,
+    eyebrow: "Editar cadastro",
+    bodyHtml: `
       <form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}" class="edit-grid">
         <label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions(card.institutionKey)}</select></label>
@@ -68,9 +78,8 @@ export function renderCardEditDialog(
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
         <button type="submit" title="Salvar alterações do cartão">${icon("save", 14)} Salvar cartão</button>
       </form>
-      ${renderCardInlineInstrumentForms(card)}
-    </dialog>
-  `;
+      ${renderCardInlineInstrumentForms(card)}`,
+  });
 }
 
 function renderCardInlineInstrumentForms(card: CreditCardAccountRecord): string {
@@ -86,8 +95,7 @@ function renderCardInlineInstrumentForms(card: CreditCardAccountRecord): string 
           </div>
         </div>
         <p class="muted">Nenhum instrumento cadastrado neste cartão.</p>
-      </section>
-    `;
+      </section>`;
   }
 
   return `
@@ -102,8 +110,7 @@ function renderCardInlineInstrumentForms(card: CreditCardAccountRecord): string 
       <div class="dialog-instrument-forms">
         ${card.instruments.map(renderCardInlineInstrumentForm).join("")}
       </div>
-    </section>
-  `;
+    </section>`;
 }
 
 function renderCardInlineInstrumentForm(instrument: CardInstrumentRecord): string {
@@ -126,23 +133,18 @@ function renderCardInlineInstrumentForm(instrument: CardInstrumentRecord): strin
       <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
       <label>Limite do instrumento (moeda da conta de pagamento)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
       <button type="submit" title="Salvar alterações do instrumento">${icon("save", 14)} Salvar instrumento</button>
-    </form>
-  `;
+    </form>`;
 }
 
 export function renderCardInstrumentCreateDialog(
   card: CreditCardAccountRecord,
   dialogId: string,
 ): string {
-  const titleId = `${dialogId}-title`;
-
-  return `
-    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
-        <p class="eyebrow">Novo instrumento</p>
-        <h2 id="${escapeHtml(titleId)}">${escapeHtml(card.name)}</h2>
-      </div>
+  return renderAccountsCardsDialog({
+    id: dialogId,
+    title: card.name,
+    eyebrow: "Novo instrumento",
+    bodyHtml: `
       <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/instruments" class="edit-grid">
         <label>Tipo<select name="type" required>${renderInstrumentTypeOptions()}</select></label>
         <label>Titularidade<select name="holder" required>${renderInstrumentHolderOptions()}</select></label>
@@ -150,25 +152,21 @@ export function renderCardInstrumentCreateDialog(
         <label>Final mascarado<input name="maskedIdentifier" placeholder="**** 1234" /></label>
         <label>Limite do instrumento (moeda da conta de pagamento)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <button type="submit" title="Criar novo instrumento">${icon("save", 14)} Criar instrumento</button>
-      </form>
-    </dialog>
-  `;
+      </form>`,
+  });
 }
 
 export function renderCardInstrumentEditDialog(instrument: CardInstrumentRecord): string {
   const dialogId = `edit-card-instrument-dialog-${instrument.id}`;
-  const titleId = `${dialogId}-title`;
   const title =
     instrument.name?.trim() ||
     `${formatInstrumentType(instrument.type)} ${formatInstrumentHolder(instrument.holder).toLowerCase()}`;
 
-  return `
-    <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
-        <p class="eyebrow">Editar instrumento</p>
-        <h2 id="${escapeHtml(titleId)}">${escapeHtml(title)}</h2>
-      </div>
+  return renderAccountsCardsDialog({
+    id: dialogId,
+    title,
+    eyebrow: "Editar instrumento",
+    bodyHtml: `
       <form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}" class="edit-grid">
         <label>Tipo<select name="type" required>${renderInstrumentTypeOptions(instrument.type)}</select></label>
         <label>Titularidade<select name="holder" required>${renderInstrumentHolderOptions(instrument.holder)}</select></label>
@@ -176,16 +174,16 @@ export function renderCardInstrumentEditDialog(instrument: CardInstrumentRecord)
         <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
         <label>Limite do instrumento (moeda da conta de pagamento)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
         <button type="submit" title="Salvar alterações do instrumento">${icon("save", 14)} Salvar instrumento</button>
-      </form>
-    </dialog>
-  `;
+      </form>`,
+  });
 }
 
 export function renderAccountDialog(): string {
-  return `
-    <dialog id="new-account-dialog" class="master-dialog" aria-labelledby="new-account-title">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading"><p class="eyebrow">Novo cadastro</p><h2 id="new-account-title">Nova conta</h2></div>
+  return renderAccountsCardsDialog({
+    id: "new-account-dialog",
+    title: "Nova conta",
+    eyebrow: "Novo cadastro",
+    bodyHtml: `
       <form data-api-form data-api-path="/api/accounts" class="edit-grid">
         <label>Nome<input name="name" required /></label>
         <label>Tipo<select name="kind" required>${renderAccountKindOptions()}</select></label>
@@ -195,16 +193,16 @@ export function renderAccountDialog(): string {
         <label>Agência<input name="agencyIdentifier" placeholder="Ex.: 0001" autocomplete="off" /></label>
         <label>Conta<input name="accountIdentifier" placeholder="Ex.: 12345-6" autocomplete="off" /></label>
         <button type="submit" title="Salvar nova conta">${icon("save", 14)} Criar conta</button>
-      </form>
-    </dialog>
-  `;
+      </form>`,
+  });
 }
 
 export function renderCardDialog(accounts: AccountRecord[]): string {
-  return `
-    <dialog id="new-card-dialog" class="master-dialog" aria-labelledby="new-card-title">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading"><p class="eyebrow">Novo cadastro</p><h2 id="new-card-title">Novo cartão</h2></div>
+  return renderAccountsCardsDialog({
+    id: "new-card-dialog",
+    title: "Novo cartão",
+    eyebrow: "Novo cadastro",
+    bodyHtml: `
       <form data-api-form data-api-path="/api/credit-card-accounts" data-payload-kind="credit-card-account" class="edit-grid">
         <label>Nome<input name="name" required /></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions()}</select></label>
@@ -219,7 +217,6 @@ export function renderCardDialog(accounts: AccountRecord[]): string {
         <label>Final mascarado<input name="instrumentMaskedIdentifier" placeholder="**** 1234" /></label>
         <label>Limite do instrumento (moeda da conta de pagamento)<input name="instrumentCreditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <button type="submit" title="Salvar novo cartão">${icon("save", 14)} Criar cartão</button>
-      </form>
-    </dialog>
-  `;
+      </form>`,
+  });
 }

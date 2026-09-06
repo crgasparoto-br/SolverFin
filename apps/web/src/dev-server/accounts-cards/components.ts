@@ -1,6 +1,8 @@
 import { formatMinorCurrency } from "@solverfin/shared";
 import {
   renderBadge,
+  renderDialog,
+  renderDialogTrigger,
   renderEmptyState,
   renderUnavailableState,
 } from "../../design-system/primitives.js";
@@ -33,6 +35,44 @@ import {
   type ResourceMasterViewModel,
   type SelectedResourceViewModel,
 } from "./view-model.js";
+
+function renderRouteDialogTrigger(input: {
+  dialogId: string;
+  label: string;
+  className: string;
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  disabled?: boolean;
+  iconHtml?: string;
+  iconOnly?: boolean;
+}): string {
+  const label = escapeHtml(input.label);
+  let trigger = renderDialogTrigger({
+    dialogId: input.dialogId,
+    label: input.label,
+    className: input.className,
+    variant: input.variant,
+    disabled: input.disabled,
+  });
+
+  // Compatibility marker for the existing Chrome scenario only. Dialog behavior is owned by
+  // data-sf-dialog-open and the shared Phase 3B controller, never by the route runtime.
+  trigger = trigger.replace(
+    "<button ",
+    `<button data-open-dialog="${escapeHtml(input.dialogId)}" `,
+  );
+
+  if (!input.iconHtml) return trigger;
+  const visibleLabel = `<span class="sf-button-label">${label}</span>`;
+  const replacement = input.iconOnly
+    ? `${input.iconHtml}<span class="sf-visually-hidden">${label}</span>`
+    : `${input.iconHtml}${visibleLabel}`;
+  trigger = trigger.replace(visibleLabel, replacement);
+
+  if (input.iconOnly) {
+    trigger = trigger.replace("<button ", `<button aria-label="${label}" `);
+  }
+  return trigger;
+}
 
 export function renderResourceMaster(resources: readonly ResourceMasterViewModel[]): string {
   const list =
@@ -111,7 +151,7 @@ function renderAccountDetail(account: AccountRecord, currency: string | undefine
         ${detailField("Estado", formatGenericStatus(account.status))}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(account.name)}">
-        <button type="button" class="resource-primary-action" data-open-dialog="${escapeHtml(viewModel.editDialogId)}">${renderEditIcon()} Editar conta</button>
+        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar conta", className: "resource-primary-action", iconHtml: renderEditIcon() })}
         <a class="button-link secondary" href="/remuneracao-contas">Remuneração CDI</a>
         <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
           <button type="submit" class="secondary-button"${viewModel.isArchived ? " disabled" : ""}>${renderArchiveIcon()} Arquivar</button>
@@ -156,8 +196,8 @@ function renderCardDetail(
         ${renderCardInstrumentList(card, currency)}
       </section>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(card.name)}">
-        <button type="button" class="resource-primary-action" data-open-dialog="${escapeHtml(viewModel.editDialogId)}">${renderEditIcon()} Editar cartão</button>
-        <button type="button" class="secondary-button" data-open-dialog="${escapeHtml(viewModel.newInstrumentDialogId)}"${viewModel.isArchived ? " disabled" : ""}>${renderAddIcon()} Adicionar instrumento</button>
+        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar cartão", className: "resource-primary-action", iconHtml: renderEditIcon() })}
+        ${renderRouteDialogTrigger({ dialogId: viewModel.newInstrumentDialogId, label: "Adicionar instrumento", className: "secondary-button", variant: "secondary", disabled: viewModel.isArchived, iconHtml: renderAddIcon() })}
         <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
           <button type="submit" class="secondary-button"${viewModel.isArchived ? " disabled" : ""}>${renderArchiveIcon()} Arquivar</button>
         </form>
@@ -215,12 +255,25 @@ function renderCardInstrumentItem(
   const archiveAction = isActive
     ? `<form data-api-form data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}/archive" data-confirm="Arquivar ${escapedTitle}? Ele continuará visível, mas não poderá receber novas compras." class="inline-action-form"><button type="submit" class="icon-button danger-icon-button" aria-label="Arquivar ${escapedTitle}">${renderArchiveIcon()}</button></form>`
     : "";
+  const editAction = renderRouteDialogTrigger({
+    dialogId: editDialogId,
+    label: `Editar instrumento ${title}`,
+    className: "icon-button",
+    variant: "ghost",
+    iconHtml: renderEditIcon(),
+    iconOnly: true,
+  });
 
-  return `<article class="instrument-item" data-card-instrument><div><strong>${escapedTitle}</strong><p class="instrument-meta">${escapeHtml(formatInstrumentType(instrument.type))} · ${escapeHtml(formatInstrumentHolder(instrument.holder))}${instrument.maskedIdentifier ? ` · ${escapeHtml(instrument.maskedIdentifier)}` : ""}${escapeHtml(limit)}</p></div><div class="instrument-side"><div class="instrument-tags">${instrument.isDefault ? '<span class="instrument-pill">Default</span>' : ""}<span class="instrument-pill ${instrument.status === "archived" ? "is-archived" : ""}">${escapeHtml(formatGenericStatus(instrument.status))}</span></div><div class="instrument-actions" aria-label="Ações de ${escapedTitle}"><button type="button" class="icon-button" data-open-dialog="${escapeHtml(editDialogId)}" aria-label="Editar instrumento ${escapedTitle}">${renderEditIcon()}</button>${setDefaultAction}${archiveAction}</div></div></article>`;
+  return `<article class="instrument-item" data-card-instrument><div><strong>${escapedTitle}</strong><p class="instrument-meta">${escapeHtml(formatInstrumentType(instrument.type))} · ${escapeHtml(formatInstrumentHolder(instrument.holder))}${instrument.maskedIdentifier ? ` · ${escapeHtml(instrument.maskedIdentifier)}` : ""}${escapeHtml(limit)}</p></div><div class="instrument-side"><div class="instrument-tags">${instrument.isDefault ? '<span class="instrument-pill">Default</span>' : ""}<span class="instrument-pill ${instrument.status === "archived" ? "is-archived" : ""}">${escapeHtml(formatGenericStatus(instrument.status))}</span></div><div class="instrument-actions" aria-label="Ações de ${escapedTitle}">${editAction}${setDefaultAction}${archiveAction}</div></div></article>`;
 }
 
 export function renderConfirmationDialog(): string {
-  return `<dialog id="accounts-cards-confirm-dialog" class="master-dialog confirm-dialog" aria-labelledby="accounts-cards-confirm-title"><div class="dialog-heading"><p class="eyebrow">Confirmar ação</p><h2 id="accounts-cards-confirm-title">Deseja continuar?</h2><p data-confirm-message></p></div><div class="confirm-dialog-actions"><button type="button" class="secondary-button" data-confirm-cancel>Cancelar</button><button type="button" class="danger-button" data-confirm-accept>Confirmar</button></div></dialog>`;
+  return renderDialog({
+    id: "accounts-cards-confirm-dialog",
+    title: "Deseja continuar?",
+    bodyHtml: `<p class="eyebrow">Confirmar ação</p><p data-confirm-message></p>`,
+    actionsHtml: `<button type="button" class="secondary-button" data-confirm-cancel>Cancelar</button><button type="button" class="danger-button" data-confirm-accept>Confirmar</button>`,
+  });
 }
 
 // Compatibilidade temporária para testes e módulos históricos não servidos pela rota A3.

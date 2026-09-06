@@ -68,9 +68,12 @@ async function accountsCardsPageRendersCardMaintenanceInsideSelectedDetail(): Pr
     assert.match(html, /Físico titular/);
     assert.match(html, /Físico · Titular principal · \*\*\*\* 1111/);
     assert.match(html, /EUR/);
-    assert.match(html, /data-open-dialog="edit-card-dialog-card-unused"/);
-    assert.match(html, /data-open-dialog="new-card-instrument-dialog-card-unused"/);
-    assert.match(html, /data-open-dialog="edit-card-instrument-dialog-instrument-physical"/);
+    assert.match(html, /data-sf-dialog-open="edit-card-dialog-card-unused"/);
+    assert.match(html, /data-sf-dialog-open="new-card-instrument-dialog-card-unused"/);
+    assert.match(html, /data-sf-dialog-open="edit-card-instrument-dialog-instrument-physical"/);
+    assert.match(html, /class="sf-dialog master-dialog"/);
+    assert.match(html, /data-sf-dialog-close/);
+    assert.match(html, /__solverFinUiPrimitivesBound/);
     assert.match(html, /data-api-path="\/api\/credit-card-accounts\/card-unused\/instruments"/);
     assert.match(
       html,
@@ -78,6 +81,8 @@ async function accountsCardsPageRendersCardMaintenanceInsideSelectedDetail(): Pr
     );
     assert.doesNotMatch(html, /data-card-instruments-dedicated-dialog-styles/);
     assert.doesNotMatch(html, /data-card-instruments-dedicated-dialog-script/);
+    assert.doesNotMatch(html, /dialogTriggers/);
+    assert.doesNotMatch(html, /dialog-close-form/);
   } finally {
     globalThis.fetch = originalFetch;
   }

@@ -10,13 +10,13 @@ O contrato público continua sendo `renderAccountsCardsPage`, mas a implementaç
 - `view-model.ts`: coleção unificada de contas/cartões, seleção do recurso, labels, busca e contexto de moeda;
 - `presentation.ts`: formatação e pequenas primitivas de apresentação;
 - `components.ts`: master único, detalhe contextual, instrumentos e ações;
-- `dialogs.ts`: criação/edição de conta, cartão e instrumento;
-- `runtime.ts`: formulários, busca/filtro, confirmação destrutiva, dialogs, foco e máscara monetária;
-- `styles.ts`: estilos específicos da rota;
-- `page.ts`: fetch, estados da página e composição SSR;
+- `dialogs.ts`: conteúdo dos fluxos de criação/edição, sempre composto pela primitive compartilhada `renderDialog`;
+- `runtime.ts`: formulários, busca/filtro, confirmação destrutiva e máscara monetária; não possui controller genérico de dialogs;
+- `styles.ts`: estilos específicos do conteúdo da rota, sem duplicar a superfície modal da fundação;
+- `page.ts`: fetch, estados da página, composição SSR e inclusão única do controller compartilhado de UI;
 - `accounts-cards-page.ts`: facade de compatibilidade para imports existentes.
 
-A rota usa diretamente as primitives da Fase 3B, em especial `PageContainer`, `PageHeader`, `DetailLayout`, `Dialog`, `EmptyState`, `Loading`, `RecoverableError` e `UnavailableState`.
+A rota usa diretamente as primitives da Fase 3B, em especial `PageContainer`, `PageHeader`, `DetailLayout`, `Dialog`, `DialogTrigger`, `EmptyState`, `Loading`, `RecoverableError` e `UnavailableState`. A abertura, fechamento por `Escape` e restauração de foco dos dialogs de criação/edição são responsabilidade de `renderSolverFinUiInteractionsScriptTag()`; a rota não implementa um controller modal concorrente.
 
 ## Composição A3
 
@@ -34,9 +34,11 @@ Limites de cartão e instrumento seguem o mesmo contexto monetário da conta de 
 
 ## Ações e dialogs
 
-Criação e edição permanecem no contexto da tela por dialogs. As ações primárias são diretas no detalhe; ações destrutivas usam o dialog de confirmação da própria rota e não `window.confirm`.
+Criação e edição permanecem no contexto da tela por dialogs. Os acionadores são produzidos por `renderDialogTrigger` e as superfícies por `renderDialog`; o comportamento genérico vem do controller compartilhado da Fase 3B. As ações primárias são diretas no detalhe.
 
-Ao abrir um dialog por teclado ou mouse, o foco entra no dialog e retorna ao acionador ao fechar. Cancelar uma confirmação destrutiva não dispara request. Durante uma gravação, a rota apresenta estado de loading e mantém erro recuperável no próprio formulário em caso de falha.
+A confirmação destrutiva também usa markup da primitive `Dialog`, embora sua decisão assíncrona (confirmar/cancelar antes do request) continue sendo orquestrada pela rota. Essa lógica é específica da operação destrutiva e não substitui nem duplica o controller genérico de abertura/fechamento dos dialogs de CRUD.
+
+Ao abrir um dialog de criação/edição por teclado ou mouse, o foco entra no dialog e retorna ao acionador ao fechar. Cancelar uma confirmação destrutiva não dispara request e devolve o foco ao controle que a iniciou. Durante uma gravação, a rota apresenta estado de loading e mantém erro recuperável no próprio formulário em caso de falha.
 
 Os instrumentos ficam dentro do detalhe do cartão correspondente. Cadastro, edição, definição de default e arquivamento continuam usando os endpoints existentes; a issue #612 não altera o modelo de instrumentos.
 
@@ -52,16 +54,17 @@ Os módulos históricos podem permanecer temporariamente no repositório como re
 
 ## Responsividade e acessibilidade
 
-No desktop, `DetailLayout` mantém master e detalhe lado a lado. No mobile, a composição empilha sem scroll horizontal acidental. O gate visual cobre 1440×900, 1366×768 e 390×844, incluindo conteúdo longo, busca vazia, foco/teclado, dialog e ações.
+No desktop, `DetailLayout` mantém master e detalhe lado a lado. No mobile, a composição empilha sem scroll horizontal acidental. `Dialog` usa os estilos e comportamento responsivo compartilhados da fundação; a rota mantém apenas estilos do conteúdo interno dos formulários e instrumentos.
 
-O estado de perfil novo mostra `Nenhuma conta ou cartão cadastrado` no master e `Selecione um recurso` no detalhe.
+O gate visual cobre 1440×900, 1366×768 e 390×844, incluindo conteúdo longo, busca vazia, foco/teclado, dialog e ações. O estado de perfil novo mostra `Nenhuma conta ou cartão cadastrado` no master e `Selecione um recurso` no detalhe.
 
 ## Validação
 
 O recorte é protegido por:
 
 - testes do renderer/view-model para seleção A3 e moeda explícita, incluindo USD e moeda indisponível;
-- `ui-boundaries:check` para as fronteiras dos módulos;
+- `ui-boundaries:check`, que exige `renderDialog`, `renderDialogTrigger` e o controller compartilhado e rejeita controller/CSS modal específico da rota;
+- teste de manutenção da rota, que exige `data-sf-dialog-open`, `data-sf-dialog-close` e o script compartilhado na saída SSR;
 - `legacy-html-post-processors:check`, que exige budget residual 2 e proíbe o retorno da rota ao pipeline;
 - contrato SSR, que exige o marcador A3 e CSS da própria rota sem providers runtime aposentados;
 - `accounts-cards-interface.mjs`, que executa o fluxo A3 real e produz evidência de `DetailLayout`, `Dialog`, desktop/mobile e responsabilidades legadas substituídas;
@@ -73,6 +76,7 @@ O recorte é protegido por:
 - issue #612;
 - issue #607 — separação das fronteiras internas da tela;
 - issue #604 — mecanismo de migração dos pós-processadores;
+- `docs/UI_PRIMITIVES.md`;
 - `docs/DESIGN_SYSTEM.md`;
 - `docs/SCREEN_ARCHETYPES.md`;
 - `docs/adr/0014-incremental-component-ui-architecture.md`;

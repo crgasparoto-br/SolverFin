@@ -59,6 +59,7 @@ export function renderAccountsCardsApiFormScript(): string {
         function requestConfirmation(message) {
           if (!message || !confirmationDialog || !confirmationAccept || !confirmationCancel) return Promise.resolve(true);
           confirmationMessage.textContent = message;
+          const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
           return new Promise((resolve) => {
             let settled = false;
             const finish = (value) => {
@@ -67,15 +68,19 @@ export function renderAccountsCardsApiFormScript(): string {
               confirmationAccept.removeEventListener("click", accept);
               confirmationCancel.removeEventListener("click", cancel);
               confirmationDialog.removeEventListener("cancel", onCancel);
+              confirmationDialog.removeEventListener("close", onClose);
               if (confirmationDialog.open && typeof confirmationDialog.close === "function") confirmationDialog.close();
+              if (trigger && trigger.isConnected) window.setTimeout(() => trigger.focus(), 0);
               resolve(value);
             };
             const accept = () => finish(true);
             const cancel = () => finish(false);
             const onCancel = (event) => { event.preventDefault(); finish(false); };
+            const onClose = () => finish(false);
             confirmationAccept.addEventListener("click", accept);
             confirmationCancel.addEventListener("click", cancel);
             confirmationDialog.addEventListener("cancel", onCancel);
+            confirmationDialog.addEventListener("close", onClose);
             if (typeof confirmationDialog.showModal === "function") confirmationDialog.showModal();
             else confirmationDialog.setAttribute("open", "");
             confirmationCancel.focus();
@@ -119,7 +124,6 @@ export function renderAccountsCardsRuntimeScript(): string {
       (() => {
         const searchInput = document.querySelector("[data-master-search]");
         const statusSelect = document.querySelector("[data-master-status]");
-        const dialogTriggers = new WeakMap();
 
         function maskMoneyValue(raw) {
           const digits = String(raw || "").replace(/\\D/g, "").replace(/^0+(?=\\d)/, "");
@@ -153,36 +157,6 @@ export function renderAccountsCardsRuntimeScript(): string {
 
         [searchInput, statusSelect].forEach((control) => control && control.addEventListener("input", applyFilters));
         statusSelect && statusSelect.addEventListener("change", applyFilters);
-
-        document.querySelectorAll("[data-open-dialog]").forEach((button) => {
-          button.addEventListener("click", () => {
-            const dialog = document.getElementById(button.dataset.openDialog || "");
-            if (!dialog) return;
-            dialogTriggers.set(dialog, button);
-            if (typeof dialog.showModal === "function") dialog.showModal();
-            else dialog.setAttribute("open", "");
-            const firstField = dialog.querySelector("input, select, textarea, button");
-            firstField && firstField.focus();
-          });
-        });
-
-        document.querySelectorAll(".dialog-close-form").forEach((form) => {
-          form.addEventListener("submit", (event) => {
-            event.preventDefault();
-            const dialog = form.closest("dialog");
-            if (!dialog) return;
-            if (typeof dialog.close === "function") dialog.close();
-            else dialog.removeAttribute("open");
-          });
-        });
-
-        document.querySelectorAll("dialog.master-dialog").forEach((dialog) => {
-          dialog.addEventListener("close", () => {
-            const trigger = dialogTriggers.get(dialog);
-            if (trigger && trigger.isConnected) window.setTimeout(() => trigger.focus(), 0);
-          });
-        });
-
         applyFilters();
       })();
     </script>`;

@@ -65,16 +65,10 @@ export function accountsCardsPageStyles(): string {
     .danger-icon-button { color: var(--danger); }
     .edit-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: 10px; }
     .edit-grid button, .edit-grid .form-status, .edit-grid .legacy-account-identifier { grid-column: 1 / -1; }
-    .master-dialog { border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 24px 80px rgba(15,23,42,.18); max-height: 90vh; max-width: 760px; overflow: auto; padding: 18px; width: calc(100% - 32px); }
-    .master-dialog::backdrop { background: rgba(15,23,42,.42); }
-    .dialog-close-form { display: flex; justify-content: flex-end; margin-bottom: 10px; }
-    .dialog-heading { display: grid; gap: 5px; }
     .dialog-subsection { border-top: 1px solid var(--line); display: grid; gap: 10px; margin-top: 14px; padding-top: 14px; }
     .dialog-subsection-heading, .instrument-edit-heading { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
     .dialog-instrument-forms { display: grid; gap: 10px; }
     .instrument-edit-form { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); margin-top: 0; padding: 10px; }
-    .confirm-dialog { max-width: 520px; }
-    .confirm-dialog-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
     [data-resource-loading] { position: sticky; top: 8px; z-index: 20; }
     .form-status { font-size: .8rem; }
     @media (max-width: 1050px) { .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: 260px minmax(0,1fr); } .resource-detail-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
@@ -91,8 +85,8 @@ export function accountsCardsPageStyles(): string {
       .resource-detail-identity { display: none; }
       .instrument-side { justify-items: start; }
       .instrument-tags, .instrument-actions { justify-content: flex-start; }
-      .resource-detail-actions, .confirm-dialog-actions { align-items: stretch; display: grid; }
-      .resource-detail-actions > *, .resource-detail-actions form > button, .confirm-dialog-actions > button { width: 100%; }
+      .resource-detail-actions { align-items: stretch; display: grid; }
+      .resource-detail-actions > *, .resource-detail-actions form > button { width: 100%; }
     }
   `;
 }

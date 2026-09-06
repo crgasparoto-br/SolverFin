@@ -50,6 +50,8 @@ for (const importNeedle of [
 
 for (const requiredNeedle of [
   "renderDetailLayout",
+  "renderDialogTrigger",
+  "renderSolverFinUiInteractionsScriptTag",
   'data-accounts-cards-archetype="A3"',
   "renderResourceMaster",
   "renderSelectedResourceDetail",
@@ -88,6 +90,37 @@ for (const requiredNeedle of [
 ]) {
   if (!viewModel.includes(requiredNeedle)) {
     failures.push(`view-model.ts is missing ${requiredNeedle}`);
+  }
+}
+
+const components = readFileSync(resolve(boundaryRoot, "components.ts"), "utf8");
+if (!components.includes("renderDialogTrigger")) {
+  failures.push("components.ts must render maintenance dialog triggers through Phase 3B primitives");
+}
+if (!components.includes("renderDialog({")) {
+  failures.push("confirmation dialog must be rendered through the shared Dialog primitive");
+}
+
+const dialogs = readFileSync(resolve(boundaryRoot, "dialogs.ts"), "utf8");
+if (!dialogs.includes("renderDialog({")) {
+  failures.push("dialogs.ts must render CRUD dialogs through the shared Dialog primitive");
+}
+if (dialogs.includes("<dialog")) {
+  failures.push("dialogs.ts must not own raw dialog markup");
+}
+
+const runtime = readFileSync(resolve(boundaryRoot, "runtime.ts"), "utf8");
+const genericRuntime = runtime.split("export function renderAccountsCardsRuntimeScript(): string {")[1] ?? "";
+for (const forbiddenNeedle of ["dialogTriggers", "showModal", "data-open-dialog", "dialog-close-form"] ) {
+  if (genericRuntime.includes(forbiddenNeedle)) {
+    failures.push(`route runtime reintroduced a CRUD dialog controller: ${forbiddenNeedle}`);
+  }
+}
+
+const styles = readFileSync(resolve(boundaryRoot, "styles.ts"), "utf8");
+for (const forbiddenNeedle of [".master-dialog {", ".master-dialog::backdrop", ".dialog-close-form"] ) {
+  if (styles.includes(forbiddenNeedle)) {
+    failures.push(`route styles reintroduced shared modal CSS: ${forbiddenNeedle}`);
   }
 }
 
