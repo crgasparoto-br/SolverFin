@@ -52,7 +52,7 @@ try {
     await setViewport(browser.cdp, width, height);
     await navigate(browser.cdp, `${baseUrl}${route}`);
     await sleep(300);
-    const measurements = await evaluate(browser.cdp, pageMeasurementExpression());
+    const measurements = await measurePage(browser.cdp);
     const stem = slug(requestedRoute);
     const screenshotName = `issue-606-core-${stem}-${width}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
@@ -109,6 +109,20 @@ if (report.failures.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(`${requestedRoute} focused core-page validation passed.`);
+}
+
+async function measurePage(cdp, attempts = 5) {
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await evaluate(cdp, pageMeasurementExpression());
+    } catch (error) {
+      lastError = error;
+      if (attempt === attempts - 1) break;
+      await sleep(100 * (attempt + 1));
+    }
+  }
+  throw lastError ?? new Error("Core-page measurement failed without a captured error.");
 }
 
 function slug(value) {
