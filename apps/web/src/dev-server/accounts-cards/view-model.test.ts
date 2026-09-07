@@ -12,7 +12,7 @@ preservesPageCollectionsAndCountsActiveItems();
 preparesAccountPresentationWithoutExposingFullIdentifiers();
 preparesCardPresentationAndSearchMetadata();
 selectsResourceFromUrlAndKeepsCurrencyExplicit();
-doesNotInventCurrencyWhenCardHasNoPaymentAccountCurrency();
+doesNotInventCurrencyWhenCardHasNoDefaultCurrency();
 
 function preservesPageCollectionsAndCountsActiveItems(): void {
   const accounts: AccountRecord[] = [
@@ -20,8 +20,8 @@ function preservesPageCollectionsAndCountsActiveItems(): void {
     accountFixture("account-archived", "archived", "USD"),
   ];
   const cards: CreditCardAccountRecord[] = [
-    cardFixture("card-active", "active", "account-active"),
-    cardFixture("card-archived", "archived", "account-archived"),
+    cardFixture("card-active", "active", "account-active", "BRL"),
+    cardFixture("card-archived", "archived", "account-archived", "USD"),
   ];
 
   const viewModel = buildAccountsCardsPageViewModel(accounts, cards);
@@ -53,9 +53,9 @@ function preparesAccountPresentationWithoutExposingFullIdentifiers(): void {
 }
 
 function preparesCardPresentationAndSearchMetadata(): void {
-  const accounts = [accountFixture("payment-account", "active", "BRL")];
+  const accounts = [accountFixture("payment-account", "active", "USD")];
   accounts[0]!.name = "Conta principal";
-  const card = cardFixture("card-1", "active", "payment-account");
+  const card = cardFixture("card-1", "active", "payment-account", "BRL");
   card.instruments = [
     {
       id: "instrument-1",
@@ -79,18 +79,19 @@ function preparesCardPresentationAndSearchMetadata(): void {
   const viewModel = buildCardItemViewModel(card, accounts);
 
   assert.equal(viewModel.paymentAccountName, "Conta principal");
-  assert.equal(viewModel.paymentAccountCurrency, "BRL");
+  assert.equal(viewModel.cardCurrency, "BRL");
   assert.equal(viewModel.activeInstrumentCount, 1);
   assert.equal(viewModel.editDialogId, "edit-card-dialog-card-1");
   assert.equal(viewModel.newInstrumentDialogId, "new-card-instrument-dialog-card-1");
   assert.match(viewModel.search, /virtual titular/);
   assert.match(viewModel.search, /\*\*\*\* 4321/);
+  assert.match(viewModel.search, /brl/);
   assert.equal(viewModel.isArchived, false);
 }
 
 function selectsResourceFromUrlAndKeepsCurrencyExplicit(): void {
-  const account = accountFixture("payment-usd", "active", "usd");
-  const card = cardFixture("card-usd", "active", account.id);
+  const account = accountFixture("payment-usd", "active", "BRL");
+  const card = cardFixture("card-usd", "active", account.id, "usd");
 
   const viewModel = buildAccountsCardsPageViewModel([account], [card], "card:card-usd");
 
@@ -106,8 +107,8 @@ function selectsResourceFromUrlAndKeepsCurrencyExplicit(): void {
   assert.equal(master?.isSelected, true);
 }
 
-function doesNotInventCurrencyWhenCardHasNoPaymentAccountCurrency(): void {
-  const account = accountFixture("payment-unknown", "active", "");
+function doesNotInventCurrencyWhenCardHasNoDefaultCurrency(): void {
+  const account = accountFixture("payment-brl", "active", "BRL");
   const card = cardFixture("card-unknown", "active", account.id);
 
   const viewModel = buildAccountsCardsPageViewModel([account], [card], "card:card-unknown");
@@ -119,7 +120,7 @@ function doesNotInventCurrencyWhenCardHasNoPaymentAccountCurrency(): void {
   assert.equal(viewModel.selectedResource.currency, undefined);
   const master = viewModel.resources.find((resource) => resource.key === "card:card-unknown");
   assert.equal(master?.currency, undefined);
-  assert.equal(master?.currencyLabel, "Moeda indisponível");
+  assert.equal(master?.currencyLabel, "Moeda não informada");
   assert.equal(master?.search.includes("brl"), false);
 }
 
@@ -138,6 +139,7 @@ function cardFixture(
   id: string,
   status: string,
   paymentAccountId: string,
+  currency?: string,
 ): CreditCardAccountRecord {
   return {
     id,
@@ -148,6 +150,7 @@ function cardFixture(
     creditLimitMinor: 100000,
     brandKey: "mastercard",
     paymentAccountId,
+    ...(currency ? { currency } : {}),
     instruments: [],
   };
 }
