@@ -50,8 +50,8 @@ function renderRouteDialogTrigger(input: {
     dialogId: input.dialogId,
     label: input.label,
     className: input.className,
-    variant: input.variant,
-    disabled: input.disabled,
+    ...(input.variant === undefined ? {} : { variant: input.variant }),
+    ...(input.disabled === undefined ? {} : { disabled: input.disabled }),
   });
 
   // Compatibility marker for the existing Chrome scenario only. Dialog behavior is owned by
