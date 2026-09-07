@@ -101,10 +101,13 @@ function selectedDetail(html: string): string {
 }
 
 function sliceDialog(html: string, id: string): string {
-  const start = html.indexOf(`<dialog id="${id}"`);
-  assert.ok(start >= 0, `dialog ${id} should exist`);
-  const end = html.indexOf("</dialog>", start);
-  assert.ok(end > start, `dialog ${id} should close`);
+  const idStart = html.indexOf(`id="${id}"`);
+  assert.ok(idStart >= 0, `dialog ${id} should exist`);
+  const start = html.lastIndexOf("<dialog", idStart);
+  const openingEnd = html.indexOf(">", start);
+  assert.ok(start >= 0 && openingEnd > idStart, `dialog ${id} should own its id attribute`);
+  const end = html.indexOf("</dialog>", openingEnd);
+  assert.ok(end > openingEnd, `dialog ${id} should close`);
   return html.slice(start, end + "</dialog>".length);
 }
 
