@@ -1,18 +1,1 @@
-{
-  "schema_version": 1,
-  "status": "rejected",
-  "result": "REPROVADA",
-  "rejection_id": "audit-rejection:e115eb84-81c6-41b9-b5ec-4856662d6e88",
-  "head_sha": "3c7c5c61047e99213993da66465511d524091019",
-  "findings": [
-    {
-      "id": "A-001",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "systemic-remediation",
-      "reason": "A canonical drilldown destination existed, but the presentation view-model dropped canonical card/category identifiers and rendered static aggregates, allowing homonymous visible labels to collapse target identity."
-    }
-  ],
-  "recommendations": []
-}
+{"schema_version":1,"status":"rejected","result":"REPROVADA","rejection_id":"audit-rejection:99eed414-1eda-4b79-b9aa-fc113662aba8","head_sha":"c89c5e803758a8185d489ca1a2216b1429a20ce6","findings":[{"id":"A-004","disposition":"blocking","status":"open","actionable":true,"remediation_mode":"targeted-remediation","category":"delivery-not-ready","reason":"terminal-evidence-stale","recovery_scope":"handoff-only","requires_refreeze":false,"summary":"The published requirement-closure Pass C still cited exact-head runs for ancestor 6e41988744d8009287681322e9256a0d833aa2a8 while the certified material head is 26cf290e33f1c715f053e34ba9b60956692b7408. Refresh Pass C and recertify the result-only child without material changes."}],"recommendations":[]}

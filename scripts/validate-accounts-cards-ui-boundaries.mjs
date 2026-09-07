@@ -21,7 +21,9 @@ const failures = [];
 
 for (const moduleName of expectedModules) {
   const filePath = resolve(boundaryRoot, moduleName);
-  if (!existsSync(filePath)) failures.push(`missing boundary module: ${moduleName}`);
+  if (!existsSync(filePath)) {
+    failures.push(`missing boundary module: ${moduleName}`);
+  }
 }
 
 const facadePath = resolve(sourceRoot, "accounts-cards-page.ts");
@@ -34,6 +36,7 @@ if (facade !== 'export { renderAccountsCardsPage } from "./accounts-cards/page.j
 
 const page = readFileSync(resolve(boundaryRoot, "page.ts"), "utf8");
 for (const importNeedle of [
+  'from "../../design-system/primitives.js"',
   'from "./components.js"',
   'from "./dialogs.js"',
   'from "./runtime.js"',
@@ -45,13 +48,27 @@ for (const importNeedle of [
   }
 }
 
+for (const requiredNeedle of [
+  "renderDetailLayout",
+  "renderDialogTrigger",
+  "renderSolverFinUiInteractionsScriptTag",
+  'data-accounts-cards-archetype="A3"',
+  "renderResourceMaster",
+  "renderSelectedResourceDetail",
+]) {
+  if (!page.includes(requiredNeedle)) {
+    failures.push(`A3 structural renderer is missing ${requiredNeedle}`);
+  }
+}
+
 for (const forbiddenNeedle of [
+  "data-tab-panel",
   "function apiFormScript",
   "function masterPageScript",
   "function baseCss",
 ]) {
   if (page.includes(forbiddenNeedle)) {
-    failures.push(`page.ts still owns extracted responsibility: ${forbiddenNeedle}`);
+    failures.push(`page.ts still owns or exposes retired structure: ${forbiddenNeedle}`);
   }
 }
 
@@ -66,6 +83,58 @@ for (const forbiddenNeedle of [
     failures.push(`view-model.ts crossed its data-preparation boundary: ${forbiddenNeedle}`);
   }
 }
+for (const requiredNeedle of [
+  "ResourceMasterViewModel",
+  "SelectedResourceViewModel",
+  "normalizeCurrency",
+]) {
+  if (!viewModel.includes(requiredNeedle)) {
+    failures.push(`view-model.ts is missing ${requiredNeedle}`);
+  }
+}
+
+const components = readFileSync(resolve(boundaryRoot, "components.ts"), "utf8");
+if (!components.includes("renderDialogTrigger")) {
+  failures.push(
+    "components.ts must render maintenance dialog triggers through Phase 3B primitives",
+  );
+}
+if (!components.includes("renderDialog({")) {
+  failures.push("confirmation dialog must be rendered through the shared Dialog primitive");
+}
+
+const dialogs = readFileSync(resolve(boundaryRoot, "dialogs.ts"), "utf8");
+if (!dialogs.includes("renderDialog({")) {
+  failures.push("dialogs.ts must render CRUD dialogs through the shared Dialog primitive");
+}
+if (dialogs.includes("<dialog")) {
+  failures.push("dialogs.ts must not own raw dialog markup");
+}
+
+const runtime = readFileSync(resolve(boundaryRoot, "runtime.ts"), "utf8");
+const genericRuntime =
+  runtime.split("export function renderAccountsCardsRuntimeScript(): string {")[1] ?? "";
+for (const forbiddenNeedle of [
+  "dialogTriggers",
+  "showModal",
+  "data-open-dialog",
+  "dialog-close-form",
+]) {
+  if (genericRuntime.includes(forbiddenNeedle)) {
+    failures.push(`route runtime reintroduced a CRUD dialog controller: ${forbiddenNeedle}`);
+  }
+}
+
+const styles = readFileSync(resolve(boundaryRoot, "styles.ts"), "utf8");
+for (const forbiddenNeedle of [
+  ".master-dialog {",
+  ".master-dialog::backdrop",
+  ".dialog-close-form",
+]) {
+  if (styles.includes(forbiddenNeedle)) {
+    failures.push(`route styles reintroduced shared modal CSS: ${forbiddenNeedle}`);
+  }
+}
 
 const legacyShimPath = resolve(sourceRoot, "accounts-cards-page-dialog-only.ts");
 const expectedLegacyShim =
@@ -74,7 +143,7 @@ if (!existsSync(legacyShimPath)) {
   failures.push("accounts-cards-page-dialog-only.ts compatibility shim is missing");
 } else if (readFileSync(legacyShimPath, "utf8").trim() !== expectedLegacyShim) {
   failures.push(
-    "accounts-cards-page-dialog-only.ts must remain a thin compatibility shim without a renderer implementation",
+    "accounts-cards-page-dialog-only.ts must remain a thin deprecated compatibility shim",
   );
 }
 
@@ -83,34 +152,22 @@ if (!existsSync(transitionPath)) {
   failures.push("accounts-cards-dialog-transition.ts is missing");
 } else {
   const transition = readFileSync(transitionPath, "utf8");
-  if (!transition.includes("export function moveCardInstrumentsToDedicatedDialog")) {
-    failures.push("dialog transition must expose the active HTML migration transform");
-  }
-  if (!transition.includes("keepCardInstrumentsInsideEditDialog")) {
-    failures.push("dialog transition must preserve the compatibility transform export");
-  }
   if (transition.includes("export async function renderAccountsCardsPage")) {
     failures.push("dialog transition must not expose a parallel page renderer");
   }
 }
 
-const obsoleteTransitionPath = resolve(boundaryRoot, "dialog-transition.ts");
-if (existsSync(obsoleteTransitionPath)) {
-  failures.push(
-    "legacy dialog transition must stay outside the structured accounts-cards boundary",
-  );
-}
-
 const server = readFileSync(resolve(root, "apps/web/src/dev-server.ts"), "utf8");
-for (const transitionalProcessor of [
+if (!server.includes("sendHtml(response, 200, await renderAccountsCardsPage(token, url));")) {
+  failures.push("/contas-cartoes must be dispatched directly by the A3 renderer");
+}
+for (const retiredProcessor of [
   "accounts-cards-tabs",
   "accounts-cards-standardization",
   "accounts-cards-action-menus",
 ]) {
-  if (!server.includes(`id: "${transitionalProcessor}"`)) {
-    failures.push(
-      `intentional transition processor disappeared without route migration: ${transitionalProcessor}`,
-    );
+  if (server.includes(`id: "${retiredProcessor}"`)) {
+    failures.push(`retired processor returned to /contas-cartoes: ${retiredProcessor}`);
   }
 }
 

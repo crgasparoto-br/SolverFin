@@ -1,63 +1,83 @@
 # Fronteiras de UI — Contas e Cartões
 
-Este documento registra o recorte da issue #607 aplicado à rota `/contas-cartoes`.
+Este documento registra a arquitetura atual da rota `/contas-cartoes` após a migração da issue #612 para o arquétipo A3 master-detail.
 
-## Objetivo do recorte
+## Arquitetura da rota
 
-A rota era renderizada por `apps/web/src/dev-server/accounts-cards-page.ts`, que concentrava acesso à API, preparação de dados, HTML de componentes e dialogs, scripts de interação, estilos e tipos em um único módulo de aproximadamente 53 KB.
-
-A migração preserva o SSR atual e o contrato público `renderAccountsCardsPage`, mas separa responsabilidades reais sob `apps/web/src/dev-server/accounts-cards/`:
+O contrato público continua sendo `renderAccountsCardsPage`, mas a implementação é composta em `apps/web/src/dev-server/accounts-cards/`:
 
 - `types.ts`: contratos de dados consumidos pela tela;
-- `view-model.ts`: preparação determinística de estado de apresentação, contagens, busca, identificadores e labels;
+- `view-model.ts`: coleção unificada de contas/cartões, seleção do recurso, labels, busca e contexto de moeda;
 - `presentation.ts`: formatação e pequenas primitivas de apresentação;
-- `components.ts`: composição das linhas/listas de contas, cartões e instrumentos;
-- `dialogs.ts`: formulários e dialogs de criação/edição;
-- `runtime.ts`: interação no cliente para formulários, abas, filtros, dialogs e máscara monetária;
-- `styles.ts`: estilos específicos da rota;
-- `page.ts`: orquestra fetch, view-model e composição SSR;
+- `components.ts`: master único, detalhe contextual, instrumentos e ações;
+- `dialogs.ts`: conteúdo dos fluxos de criação/edição, sempre composto pela primitive compartilhada `renderDialog`;
+- `runtime.ts`: formulários, busca/filtro, confirmação destrutiva e máscara monetária; não possui controller genérico de dialogs;
+- `styles.ts`: estilos específicos do conteúdo da rota, sem duplicar a superfície modal da fundação;
+- `page.ts`: fetch, estados da página, composição SSR e inclusão única do controller compartilhado de UI;
 - `accounts-cards-page.ts`: facade de compatibilidade para imports existentes.
 
-A separação não muda regras financeiras, payloads de API, rotas, textos funcionais nem o runtime SSR.
+A rota usa diretamente as primitives da Fase 3B, em especial `PageContainer`, `PageHeader`, `DetailLayout`, `Dialog`, `DialogTrigger`, `EmptyState`, `Loading`, `RecoverableError` e `UnavailableState`. A abertura, fechamento por `Escape` e restauração de foco dos dialogs de criação/edição são responsabilidade de `renderSolverFinUiInteractionsScriptTag()`; a rota não implementa um controller modal concorrente.
 
-## Implementação paralela removida
+## Composição A3
 
-A implementação anterior de `accounts-cards-page-dialog-only.ts` criava uma segunda geração da mesma tela: chamava o renderer principal e depois reescrevia o HTML final por regex/string para mover instrumentos de cartão. Esse segundo renderer foi removido.
+`/contas-cartoes` não usa mais abas para separar contas e cartões. A coluna master apresenta uma única coleção de recursos financeiros. A seleção é endereçável por `?resource=account:<id>` ou `?resource=card:<id>` e o detalhe mantém o recurso escolhido visível sem perder o contexto da lista.
 
-O caminho `accounts-cards-page-dialog-only.ts` permanece temporariamente apenas como um **shim de compatibilidade**, porque `accounts-cards-enhancement.ts` ainda usa esse import durante a transição. O shim não renderiza página e apenas reexporta a transformação ativa de `accounts-cards-dialog-transition.ts`.
+Para contas, o detalhe mantém instituição, tipo, moeda, agência/conta, saldo inicial e estado. Para cartões, mantém instituição, bandeira, conta de pagamento, fechamento/vencimento, moeda, limite e instrumentos internos.
 
-`accounts-cards-dialog-transition.ts` contém somente a transformação legada que ainda materializa o modal dedicado de instrumentos no HTML final. Ela permanece fora da fronteira estruturada `accounts-cards/` para deixar explícito que é um pós-processamento de transição, não parte da arquitetura-alvo. O módulo não expõe `renderAccountsCardsPage` e deve desaparecer quando esse comportamento for absorvido pela composição estruturada da rota.
+A moeda nunca é inferida silenciosamente:
 
-O gate `scripts/validate-accounts-cards-ui-boundaries.mjs` protege simultaneamente:
+- conta: usa a moeda declarada no próprio cadastro;
+- cartão: usa a moeda da conta de pagamento vinculada;
+- sem uma moeda determinável, a interface mostra `Moeda indisponível`/`moeda indisponível` em vez de assumir BRL.
 
-- a facade canônica de página;
-- as novas fronteiras coesas;
-- o conteúdo estritamente mínimo do shim legado;
-- a ausência de um segundo renderer no módulo de transição.
+Limites de cartão e instrumento seguem o mesmo contexto monetário da conta de pagamento.
 
-## Legado de transição ainda intencional
+## Ações e dialogs
 
-A rota continua passando, nesta ordem, pelos três pós-processadores inventariados por #604:
+Criação e edição permanecem no contexto da tela por dialogs. Os acionadores são produzidos por `renderDialogTrigger` e as superfícies por `renderDialog`; o comportamento genérico vem do controller compartilhado da Fase 3B. As ações primárias são diretas no detalhe.
 
-1. `accounts-cards-tabs` (`accounts-cards-enhancement.ts`), que também aciona a transformação temporária do modal de instrumentos;
-2. `accounts-cards-standardization` (`accounts-cards-standardization.ts`);
-3. `accounts-cards-action-menus` (`accounts-cards-action-menu-enhancement.ts`).
+A confirmação destrutiva também usa markup da primitive `Dialog`, embora sua decisão assíncrona (confirmar/cancelar antes do request) continue sendo orquestrada pela rota. Essa lógica é específica da operação destrutiva e não substitui nem duplica o controller genérico de abertura/fechamento dos dialogs de CRUD.
 
-Eles permanecem intencionalmente porque ainda são responsáveis pelo contrato final servido e possuem critérios de retirada explícitos em `legacy-html-post-processors.ts`. A issue #607 não substitui silenciosamente esses comportamentos: a retirada deve acontecer quando cada responsabilidade for migrada para componentes/view-models estruturados com cobertura SSR, visual e de acessibilidade equivalente.
+Ao abrir um dialog de criação/edição por teclado ou mouse, o foco entra no dialog e retorna ao acionador ao fechar. Cancelar uma confirmação destrutiva não dispara request e devolve o foco ao controle que a iniciou. Durante uma gravação, a rota apresenta estado de loading e mantém erro recuperável no próprio formulário em caso de falha.
+
+Os instrumentos ficam dentro do detalhe do cartão correspondente. Cadastro, edição, definição de default e arquivamento continuam usando os endpoints existentes; a issue #612 não altera o modelo de instrumentos.
+
+## Pós-processamento legado aposentado
+
+A rota não passa mais por `applyLegacyHtmlPostProcessorPipeline()`. As responsabilidades dos três adapters históricos foram absorvidas pela composição estruturada:
+
+1. `accounts-cards-tabs`: substituído pelo master unificado, seleção por recurso e filtros próprios;
+2. `accounts-cards-standardization`: substituído pelo markup A3 emitido diretamente pelos componentes;
+3. `accounts-cards-action-menus`: substituído pelas ações diretas, dialogs e confirmação estruturada.
+
+Os módulos históricos podem permanecer temporariamente no repositório como referência/depreciação, mas não fazem parte do fluxo servido de `/contas-cartoes`. A evidência de aposentadoria continua no contrato visual por `legacyProcessorRetirementCoverage` para impedir perda silenciosa de responsabilidade.
+
+## Responsividade e acessibilidade
+
+No desktop, `DetailLayout` mantém master e detalhe lado a lado. No mobile, a composição empilha sem scroll horizontal acidental. `Dialog` usa os estilos e comportamento responsivo compartilhados da fundação; a rota mantém apenas estilos do conteúdo interno dos formulários e instrumentos.
+
+O gate visual cobre 1440×900, 1366×768 e 390×844, incluindo conteúdo longo, busca vazia, foco/teclado, dialog e ações. O estado de perfil novo mostra `Nenhuma conta ou cartão cadastrado` no master e `Selecione um recurso` no detalhe.
 
 ## Validação
 
 O recorte é protegido por:
 
-- teste focado de `view-model.ts`, incluindo contagens, busca, vínculo de conta de pagamento e mascaramento de identificadores;
-- gate estrutural `npm run ui-boundaries:check`, que impede regressão para o módulo monolítico ou reintrodução de um renderer paralelo;
-- suite, typecheck, lint e build existentes do workspace Web;
-- `legacy-html-post-processors:check` e o contrato SSR existentes, que continuam cobrindo os pós-processadores de transição.
+- testes do renderer/view-model para seleção A3 e moeda explícita, incluindo USD e moeda indisponível;
+- `ui-boundaries:check`, que exige `renderDialog`, `renderDialogTrigger` e o controller compartilhado e rejeita controller/CSS modal específico da rota;
+- teste de manutenção da rota, que exige `data-sf-dialog-open`, `data-sf-dialog-close` e o script compartilhado na saída SSR;
+- `legacy-html-post-processors:check`, que exige budget residual 2 e proíbe o retorno da rota ao pipeline;
+- contrato SSR, que exige o marcador A3 e CSS da própria rota sem providers runtime aposentados;
+- `accounts-cards-interface.mjs`, que executa o fluxo A3 real e produz evidência de `DetailLayout`, `Dialog`, desktop/mobile e responsabilidades legadas substituídas;
+- `issue-606-accounts-cards-empty.mjs` para o estado vazio de perfil novo;
+- suite, lint, typecheck e build do workspace Web.
 
 ## Referências
 
-- issue #607;
-- issue #603 — boundary de view-models;
+- issue #612;
+- issue #607 — separação das fronteiras internas da tela;
 - issue #604 — mecanismo de migração dos pós-processadores;
+- `docs/UI_PRIMITIVES.md`;
+- `docs/DESIGN_SYSTEM.md`;
+- `docs/SCREEN_ARCHETYPES.md`;
 - `docs/adr/0014-incremental-component-ui-architecture.md`;
-- `docs/ARCHITECTURE.md`.
+- `docs/LEGACY_HTML_POST_PROCESSORS.md`.

@@ -8,10 +8,7 @@ import { enhanceAccountRemunerationDisclosure } from "./dev-server/account-remun
 import { renderAccountRemunerationPage } from "./dev-server/account-remuneration-page.js";
 import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
-import { enhanceAccountsCardsActionMenus } from "./dev-server/accounts-cards-action-menu-enhancement.js";
-import { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
-import { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
 import { apiGet, handleApiRequest } from "./dev-server/api.js";
 import { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2.js";
 import { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
@@ -171,25 +168,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/contas-cartoes" && token) {
-    const html = await applyLegacyHtmlPostProcessorPipeline(
-      "/contas-cartoes",
-      await renderAccountsCardsPage(token),
-      [
-        {
-          id: "accounts-cards-tabs",
-          transform: (currentHtml) => enhanceAccountsCardsTabs(currentHtml),
-        },
-        {
-          id: "accounts-cards-standardization",
-          transform: (currentHtml) => standardizeAccountsCardsPage(currentHtml),
-        },
-        {
-          id: "accounts-cards-action-menus",
-          transform: (currentHtml) => enhanceAccountsCardsActionMenus(currentHtml),
-        },
-      ],
-    );
-    sendHtml(response, 200, html);
+    sendHtml(response, 200, await renderAccountsCardsPage(token, url));
     return;
   }
 

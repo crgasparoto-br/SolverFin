@@ -30,54 +30,11 @@ export interface LegacyHtmlPostProcessorInventoryEntry {
   fallbackAccessibility: string;
 }
 
-// Issue #610 migrates /cartoes to the A3 master-detail renderer. The four former
-// card post-processors remain in the repository only as deprecated reference code
-// until a later cleanup can remove the files without losing historical regression context.
-export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 5;
+// Issues #610 and #612 migrate /cartoes and /contas-cartoes to direct structural renderers.
+// Their former post-processors remain in the repository only as deprecated reference code.
+export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 2;
 
 export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
-  {
-    id: "accounts-cards-tabs",
-    route: "/contas-cartoes",
-    order: 1,
-    owner: "web-accounts-cards",
-    module: "./accounts-cards-enhancement.js",
-    exportName: "enhanceAccountsCardsTabs",
-    responsibility: "Completa filtros, estilos e runtime das abas de contas/cartoes apos o render.",
-    migration: "component-props-slots",
-    replacementCriterion:
-      "O renderer estrutural entrega filtro ativo, hooks de remuneracao e runtime das abas sem procurar ou substituir HTML final.",
-    fallbackAccessibility:
-      "Abas, dialogs e filtro continuam operaveis por teclado e mantem labels/aria enquanto o adapter existir.",
-  },
-  {
-    id: "accounts-cards-standardization",
-    route: "/contas-cartoes",
-    order: 2,
-    owner: "web-accounts-cards",
-    module: "./accounts-cards-standardization.js",
-    exportName: "standardizeAccountsCardsPage",
-    responsibility: "Normaliza markup e classes da master de contas/cartoes depois do render.",
-    migration: "component-props-slots",
-    replacementCriterion:
-      "Os componentes da master emitem diretamente a estrutura e as classes canonicas esperadas pelo shell e pelos testes SSR.",
-    fallbackAccessibility:
-      "A estrutura normalizada preserva ordem de leitura, nomes acessiveis, dialogs e controles existentes.",
-  },
-  {
-    id: "accounts-cards-action-menus",
-    route: "/contas-cartoes",
-    order: 3,
-    owner: "web-accounts-cards",
-    module: "./accounts-cards-action-menu-enhancement.js",
-    exportName: "enhanceAccountsCardsActionMenus",
-    responsibility: "Adiciona menu de acoes, estilos e runtime sobre a estrutura ja renderizada.",
-    migration: "component-props-slots",
-    replacementCriterion:
-      "Um componente de menu de acoes e seu runtime sao renderizados diretamente com estado, foco e itens recebidos por contrato.",
-    fallbackAccessibility:
-      "Trigger, role=menu/menuitem, retorno de foco e navegacao por teclado permanecem cobertos antes da remocao.",
-  },
   {
     id: "categories-icons-tooltips",
     route: "/categorias",
