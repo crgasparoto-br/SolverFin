@@ -99,16 +99,21 @@ export function renderAccountsCardsApiFormScript(): string {
             if (loadingState) loadingState.hidden = false;
             status.className = "form-status muted";
             status.textContent = "Salvando...";
-            const response = await fetch(form.dataset.apiPath, {
-              method,
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-            status.className = response.ok ? "form-status success" : "form-status error";
-            status.textContent = await readApiMessage(response);
-            if (response.ok) {
-              window.setTimeout(() => window.location.reload(), 350);
-              return;
+            try {
+              const response = await fetch(form.dataset.apiPath, {
+                method,
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+              status.className = response.ok ? "form-status success" : "form-status error";
+              status.textContent = await readApiMessage(response);
+              if (response.ok) {
+                window.setTimeout(() => window.location.reload(), 350);
+                return;
+              }
+            } catch {
+              status.className = "form-status error";
+              status.textContent = "Não foi possível concluir a ação. Verifique sua conexão e tente novamente.";
             }
             if (loadingState) loadingState.hidden = true;
             if (submitButton) submitButton.disabled = false;
