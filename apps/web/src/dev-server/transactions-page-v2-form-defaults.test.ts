@@ -41,13 +41,28 @@ test("novo lançamento sugere datas locais e aplica fallbacks temporais seguros"
     );
     assert.match(
       html,
-      /status === "posted" \|\| status === "reconciled" \? \(String\(effectiveOn \|\| ""\)\.trim\(\) \|\| occurredOn\) : null/,
-      "lançamento efetivado sem data efetiva usa a data do evento, enquanto previsto limpa o efeito de caixa",
+      /const explicitEffectiveOn = String\(effectiveOn \|\| ""\)\.trim\(\); const isCreate = \(form\.dataset\.method \|\| "POST"\) === "POST";/,
+      "a normalização diferencia criação de atualização",
+    );
+    assert.match(
+      html,
+      /const normalizedEffectiveOn = status === "posted" \|\| status === "reconciled" \? \(explicitEffectiveOn \|\| \(isCreate \? occurredOn : undefined\)\) : null;/,
+      "criação efetivada usa a data do evento, mas atualização sem data explícita não fabrica data efetiva",
+    );
+    assert.match(
+      html,
+      /if \(normalizedEffectiveOn !== undefined\) result\.effectiveOn = normalizedEffectiveOn;/,
+      "transições em edição deixam o domínio aplicar a data canônica quando a data efetiva não foi informada",
     );
     assert.match(
       html,
       /plannedOn: item\.plannedOn, effectiveOn: item\.effectiveOn/,
       "parcelamentos reutilizam as mesmas datas normalizadas",
+    );
+    assert.match(
+      html,
+      /form\.dataset\.method = clone \? "POST" : "PATCH";[\s\S]*form\.occurredOn\.value = transaction\.occurredOn; form\.plannedOn\.value = transaction\.plannedOn \|\| transaction\.occurredOn; form\.effectiveOn\.value = transaction\.effectiveOn \|\| "";/,
+      "edição e clonagem hidratam as datas persistidas sem substituir pela data atual",
     );
   } finally {
     globalThis.fetch = originalFetch;
