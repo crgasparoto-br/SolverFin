@@ -5,6 +5,7 @@ import { renderCardsPageV2 } from "./cards-page-v2.js";
 const originalFetch = globalThis.fetch;
 
 await cardsA3KeepsHierarchyCurrencyAndSettlementDistinct();
+await cardsA3BlocksNewPurchasesUntilCardCurrencyIsConfigured();
 await cardsA3RendersEmptyStateWithoutCardContext();
 
 globalThis.fetch = originalFetch;
@@ -16,15 +17,16 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     const url = new URL(String(input));
     calledPaths.push(`${url.pathname}${url.search}`);
 
-    if (url.pathname === "/api/cards") {
+    if (url.pathname === "/api/credit-card-accounts") {
       return jsonResponse({
-        cards: [
+        creditCardAccounts: [
           {
             id: "card-usd",
             name: "Cartão Viagem",
             status: "active",
             closingDay: 20,
             dueDay: 10,
+            currency: "USD",
             maskedIdentifier: "final 4242",
             institutionKey: "itau",
           },
@@ -34,6 +36,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             status: "active",
             closingDay: 5,
             dueDay: 15,
+            currency: "BRL",
           },
         ],
       });
@@ -77,7 +80,21 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
 
     if (url.pathname === "/api/categories") {
       return jsonResponse({
-        categories: [{ id: "category-food", name: "Alimentação", status: "active" }],
+        categories: [
+          { id: "category-food", name: "Alimentação", status: "active" },
+          {
+            id: "category-restaurants",
+            name: "Bares e restaurantes",
+            status: "active",
+            parentCategoryId: "category-food",
+          },
+          {
+            id: "category-orphan",
+            name: "Categoria órfã",
+            status: "active",
+            parentCategoryId: "missing-parent",
+          },
+        ],
       });
     }
 
@@ -155,7 +172,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             cardId: "card-usd",
             cardInstrumentId: "instrument-main",
             invoiceId: "invoice-aug",
-            categoryId: "category-food",
+            categoryId: "category-restaurants",
             occurredOn: "2026-08-18",
             plannedOn: "2026-08-18",
             description: "Hotel",
@@ -212,8 +229,17 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /type="month" name="month"/);
   assert.match(html, /invoiceId=invoice-jul/);
   assert.match(html, /data-currency="USD"/);
+  assert.match(html, /Moeda padrão<\/dt><dd>USD/);
   assert.match(html, /Moeda da fatura<\/dt><dd>USD/);
-  assert.match(html, /name="currency" value="USD"/);
+  assert.match(html, /name="currency" value="USD"[^>]*readonly/);
+  assert.match(html, /name="occurredOn" type="date" required data-default-local-today/);
+  assert.match(html, /occurredOnField\.value = localToday\(\)/);
+  assert.match(html, /Alimentação › Bares e restaurantes/);
+  assert.match(html, /Categoria órfã/);
+  assert.ok(
+    html.indexOf('value="category-food"') < html.indexOf('value="category-restaurants"'),
+    "parent category must be rendered before its child",
+  );
   assert.match(html, /Conta Dólar · USD/);
   assert.doesNotMatch(html, /Conta Real · BRL/);
   assert.match(html, /Liquidação não é uma nova compra/);
@@ -239,6 +265,60 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
 }
 
+async function cardsA3BlocksNewPurchasesUntilCardCurrencyIsConfigured(): Promise<void> {
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = new URL(String(input));
+    if (url.pathname === "/api/credit-card-accounts") {
+      return jsonResponse({
+        creditCardAccounts: [
+          {
+            id: "card-without-currency",
+            name: "Cartão legado",
+            status: "active",
+            closingDay: 8,
+            dueDay: 15,
+          },
+        ],
+      });
+    }
+    if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
+    if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+    if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+    if (url.pathname === "/api/credit-card-accounts/card-without-currency/instruments") {
+      return jsonResponse({
+        instruments: [
+          {
+            id: "instrument-legacy",
+            type: "physical",
+            holder: "primary",
+            status: "active",
+            isDefault: true,
+          },
+        ],
+      });
+    }
+    if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
+    return jsonResponse({});
+  };
+
+  const html = await renderCardsPageV2(
+    "session-token",
+    new URL("http://solverfin.local/cartoes?cardId=card-without-currency"),
+  );
+
+  assert.match(html, /Moeda padrão<\/dt><dd>Não informada/);
+  assert.match(html, /Defina a moeda padrão deste cartão antes de registrar novas compras/);
+  assert.match(html, /resource=card%3Acard-without-currency/);
+  assert.match(
+    html,
+    /data-open-modal="purchase" disabled title="Defina a moeda padrão do cartão em Contas e Cartões"/,
+  );
+  assert.match(html, /name="currency" value=""[^>]*readonly/);
+  assert.match(html, /Defina a moeda padrão do cartão antes de registrar uma compra/);
+  assert.match(html, /type="submit" disabled>Salvar compra/);
+  assert.doesNotMatch(html, /name="currency" value="BRL"/);
+}
+
 async function cardsA3RendersEmptyStateWithoutCardContext(): Promise<void> {
   const calledPaths: string[] = [];
 
@@ -246,7 +326,9 @@ async function cardsA3RendersEmptyStateWithoutCardContext(): Promise<void> {
     const url = new URL(String(input));
     calledPaths.push(`${url.pathname}${url.search}`);
 
-    if (url.pathname === "/api/cards") return jsonResponse({ cards: [] });
+    if (url.pathname === "/api/credit-card-accounts") {
+      return jsonResponse({ creditCardAccounts: [] });
+    }
     if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
     if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
     if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
