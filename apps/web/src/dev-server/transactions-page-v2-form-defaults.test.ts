@@ -1,0 +1,115 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { renderTransactionsPageV2 } from "./transactions-page-v2.js";
+
+const originalFetch = globalThis.fetch;
+
+test("novo lançamento sugere datas locais e aplica fallbacks temporais seguros", async () => {
+  globalThis.fetch = mockFetch();
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
+    );
+
+    assert.match(
+      html,
+      /Data do evento<input name="occurredOn" type="date" required \/>/,
+      "a data do evento continua obrigatória no lançamento simples",
+    );
+    assert.match(
+      html,
+      /Data prevista<input name="plannedOn" type="date" \/>/,
+      "a data prevista pode ficar vazia porque usa a data do evento como fallback",
+    );
+    assert.match(
+      html,
+      /const currentLocalDate = \(\) => \{ const now = new Date\(\); return String\(now\.getFullYear\(\)\)/,
+      "a sugestão usa a data civil local do navegador, sem converter o dia por UTC",
+    );
+    assert.match(
+      html,
+      /const today = currentLocalDate\(\); form\.occurredOn\.value = today; form\.plannedOn\.value = today;/,
+      "ao abrir um novo lançamento, evento e previsão começam com a data atual",
+    );
+    assert.match(
+      html,
+      /const normalizedPlannedOn = String\(plannedOn \|\| ""\)\.trim\(\) \|\| occurredOn;/,
+      "data prevista vazia deve repetir a data do evento",
+    );
+    assert.match(
+      html,
+      /status === "posted" \|\| status === "reconciled" \? \(String\(effectiveOn \|\| ""\)\.trim\(\) \|\| occurredOn\) : null/,
+      "lançamento efetivado sem data efetiva usa a data do evento, enquanto previsto limpa o efeito de caixa",
+    );
+    assert.match(
+      html,
+      /plannedOn: item\.plannedOn, effectiveOn: item\.effectiveOn/,
+      "parcelamentos reutilizam as mesmas datas normalizadas",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("mensagens do formulário de lançamentos permanecem em pt-BR", async () => {
+  globalThis.fetch = mockFetch();
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
+    );
+
+    assert.match(
+      html,
+      /TRANSACTION_EFFECTIVE_DATE_REQUIRED: "Lançamentos efetivados ou conciliados exigem data efetiva\."/,
+    );
+    assert.match(
+      html,
+      /Não foi possível concluir a ação\. Revise os dados e tente novamente\./,
+      "erros desconhecidos recebem fallback em pt-BR",
+    );
+    assert.doesNotMatch(
+      html,
+      /body\.error && body\.error\.message/,
+      "o formulário não deve expor diretamente mensagens técnicas retornadas pela API",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+function mockFetch() {
+  return async (input: string | URL | Request): Promise<Response> => {
+    const url = new URL(String(input), "http://solverfin.test");
+    if (url.pathname === "/api/accounts") {
+      return jsonResponse({
+        accounts: [
+          {
+            id: "account-brl",
+            name: "Conta corrente",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 0,
+            currency: "BRL",
+          },
+        ],
+      });
+    }
+    if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+    if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
+    if (url.pathname === "/api/transaction-groups") return jsonResponse({ groups: [] });
+    if (url.pathname === "/api/transactions") return jsonResponse({ transactions: [] });
+    return jsonResponse({});
+  };
+}
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
+}
