@@ -85,6 +85,9 @@ async function validateViewport(cdp, viewport) {
   assert.ok(baseline.masterItemCount > 0, "No master resources were rendered.");
   assert.equal(baseline.selectedMasterCount, 1, "Exactly one master resource must be selected.");
   assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
+  assert.deepEqual(baseline.kindOptions, ["all", "account", "card"]);
+  assert.equal(baseline.currencyOptions[0], "all");
+  assert.ok(baseline.currencyOptions.length > 1, "Currency filter has no resource options.");
   assert.deepEqual(baseline.statusOptions, ["all", "active", "inactive"]);
   assert.equal(baseline.loadingStatePresent, true, "Route loading state is not wired.");
 
@@ -198,6 +201,8 @@ async function inspectPage(cdp) {
         legacyActionMenuCount: document.querySelectorAll('.action-menu-trigger, [data-legacy-item-menu]').length,
         tabArtifacts: document.querySelectorAll('[data-tab-panel], [role="tab"], .sf-tabs, .action-menu-trigger, [data-legacy-item-menu]').length,
         searchVisible: visible(document.querySelector('[data-master-search]')),
+        kindOptions: Array.from(document.querySelectorAll('[data-master-kind] option')).map((option) => option.value),
+        currencyOptions: Array.from(document.querySelectorAll('[data-master-currency] option')).map((option) => option.value),
         statusOptions: Array.from(document.querySelectorAll('[data-master-status] option')).map((option) => option.value),
         currencyContextVisible: /Moeda\\s*(BRL|USD|EUR)\\b/i.test(detailText) || /Moeda\\s*(indisponível|não informada)/i.test(detailText),
         instrumentSectionVisible: visible(document.querySelector('.resource-instruments')),
@@ -229,30 +234,96 @@ async function validateFilter(cdp) {
     cdp,
     `(() => {
       const input = document.querySelector('[data-master-search]');
-      if (!input) return { available: false };
-      input.value = 'consulta-sem-resultado-issue-612';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
+      const kind = document.querySelector('[data-master-kind]');
+      const currency = document.querySelector('[data-master-currency]');
+      const status = document.querySelector('[data-master-status]');
+      if (!input || !kind || !currency || !status) return { available: false };
       const items = Array.from(document.querySelectorAll('[data-resource-master-item]'));
       const empty = document.querySelector('[data-filter-empty]');
-      const result = {
-        available: true,
-        hiddenCount: items.filter((item) => item.hidden).length,
-        totalCount: items.length,
-        emptyVisible: Boolean(empty && !empty.hidden),
-      };
+
+      input.value = 'consulta-sem-resultado-issue-654';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      const searchHiddenCount = items.filter((item) => item.hidden).length;
+      const emptyVisible = Boolean(empty && !empty.hidden);
+
       input.value = '';
       input.dispatchEvent(new Event('input', { bubbles: true }));
-      return result;
+      kind.value = 'account';
+      kind.dispatchEvent(new Event('change', { bubbles: true }));
+      const accountVisible = items.filter((item) => !item.hidden);
+      const accountOnly = accountVisible.every((item) => item.dataset.kind === 'account');
+
+      kind.value = 'all';
+      kind.dispatchEvent(new Event('change', { bubbles: true }));
+      const selectedCurrency = Array.from(currency.options).map((option) => option.value).find((value) => value !== 'all') || 'all';
+      currency.value = selectedCurrency;
+      currency.dispatchEvent(new Event('change', { bubbles: true }));
+      const currencyVisible = items.filter((item) => !item.hidden);
+      const currencyOnly = selectedCurrency === 'all' || currencyVisible.every((item) => item.dataset.currency === selectedCurrency);
+
+      currency.value = 'all';
+      currency.dispatchEvent(new Event('change', { bubbles: true }));
+      const target = items.find((item) => item.dataset.kind === 'account') || items[0];
+      const targetName = target?.querySelector('.resource-master-title strong')?.textContent?.trim().toLowerCase() || '';
+      const targetKind = target?.dataset.kind || 'all';
+      const targetCurrency = target?.dataset.currency || 'unavailable';
+      const targetStatus = target?.dataset.status === 'active' ? 'active' : 'inactive';
+      input.value = targetName;
+      kind.value = targetKind;
+      currency.value = targetCurrency;
+      status.value = targetStatus;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      kind.dispatchEvent(new Event('change', { bubbles: true }));
+      currency.dispatchEvent(new Event('change', { bubbles: true }));
+      status.dispatchEvent(new Event('change', { bubbles: true }));
+      const combinedVisible = items.filter((item) => !item.hidden);
+      const combinedMatches = combinedVisible.every((item) => {
+        const matchesName = !targetName || String(item.dataset.search || '').includes(targetName);
+        const matchesKind = item.dataset.kind === targetKind;
+        const matchesCurrency = item.dataset.currency === targetCurrency;
+        const matchesStatus = targetStatus === 'active' ? item.dataset.status === 'active' : item.dataset.status !== 'active';
+        return matchesName && matchesKind && matchesCurrency && matchesStatus;
+      });
+
+      input.value = '';
+      kind.value = 'all';
+      currency.value = 'all';
+      status.value = 'all';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      kind.dispatchEvent(new Event('change', { bubbles: true }));
+      currency.dispatchEvent(new Event('change', { bubbles: true }));
+      status.dispatchEvent(new Event('change', { bubbles: true }));
+
+      return {
+        available: true,
+        searchHiddenCount,
+        totalCount: items.length,
+        emptyVisible,
+        accountVisibleCount: accountVisible.length,
+        accountOnly,
+        selectedCurrency,
+        currencyVisibleCount: currencyVisible.length,
+        currencyOnly,
+        combinedVisibleCount: combinedVisible.length,
+        combinedMatches,
+      };
     })()`,
   );
   assert.equal(state.available, true);
   assert.ok(state.totalCount > 0);
   assert.equal(
-    state.hiddenCount,
+    state.searchHiddenCount,
     state.totalCount,
     "Search did not filter the unified master list.",
   );
   assert.equal(state.emptyVisible, true, "Filtered empty state is not visible.");
+  assert.ok(state.accountVisibleCount > 0, "Type filter did not keep any account visible.");
+  assert.equal(state.accountOnly, true, "Type filter left non-account resources visible.");
+  assert.notEqual(state.selectedCurrency, "all", "Currency filter has no selectable currency state.");
+  assert.ok(state.currencyVisibleCount > 0, "Currency filter hid every resource unexpectedly.");
+  assert.equal(state.currencyOnly, true, "Currency filter left resources from another currency visible.");
+  assert.ok(state.combinedVisibleCount > 0, "Combined filters hid the target resource.");
+  assert.equal(state.combinedMatches, true, "Search, type, currency and status are not combined.");
   return state;
 }
 

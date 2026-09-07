@@ -82,6 +82,7 @@ export function renderResourceMaster(resources: readonly ResourceMasterViewModel
           title: "Nenhuma conta ou cartão cadastrado",
           description: "Adicione uma conta ou um cartão para iniciar o cadastro financeiro.",
         });
+  const currencyOptions = renderCurrencyFilterOptions(resources);
 
   return `
     <section class="resource-master-panel" aria-label="Contas e cartões">
@@ -90,11 +91,27 @@ export function renderResourceMaster(resources: readonly ResourceMasterViewModel
       </div>
       <div class="resource-master-filters" role="group" aria-label="Filtros dos recursos">
         <label>Buscar<input data-master-search type="search" placeholder="Nome, instituição, conta, bandeira ou moeda" autocomplete="off" /></label>
+        <label>Tipo<select data-master-kind><option value="all">Todos</option><option value="account">Contas</option><option value="card">Cartões</option></select></label>
+        <label>Moeda<select data-master-currency>${currencyOptions}</select></label>
         <label>Status<select data-master-status><option value="all">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></label>
       </div>
       <div class="resource-master-list" data-master-list>${list}</div>
-      <div data-filter-empty hidden>${renderEmptyState({ title: "Nenhum recurso encontrado", description: "Ajuste a busca ou o filtro de status." })}</div>
+      <div data-filter-empty hidden>${renderEmptyState({ title: "Nenhum recurso encontrado", description: "Ajuste a busca ou os filtros de tipo, moeda e status." })}</div>
     </section>`;
+}
+
+function renderCurrencyFilterOptions(resources: readonly ResourceMasterViewModel[]): string {
+  const currencies = Array.from(
+    new Set(resources.flatMap((resource) => (resource.currency ? [resource.currency] : []))),
+  ).sort();
+  const hasUnavailableCurrency = resources.some((resource) => !resource.currency);
+  return [
+    '<option value="all">Todas</option>',
+    ...currencies.map(
+      (currency) => `<option value="${escapeHtml(currency)}">${escapeHtml(currency)}</option>`,
+    ),
+    ...(hasUnavailableCurrency ? ['<option value="unavailable">Indisponível</option>'] : []),
+  ].join("");
 }
 
 function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
@@ -103,7 +120,7 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
       ? renderInstitutionIcon(resource.institutionKey)
       : renderCardBrandIcon(resource.brandKey ?? "");
   return `
-    <article class="master-item resource-master-item${resource.isSelected ? " is-selected" : ""}" data-resource-master-item data-status="${escapeHtml(resource.status)}" data-search="${escapeHtml(resource.search)}">
+    <article class="master-item resource-master-item${resource.isSelected ? " is-selected" : ""}" data-resource-master-item data-kind="${escapeHtml(resource.kind)}" data-currency="${escapeHtml(resource.currency ?? "unavailable")}" data-status="${escapeHtml(resource.status)}" data-search="${escapeHtml(resource.search)}">
       <a class="resource-master-link" href="${escapeHtml(resource.href)}"${resource.isSelected ? ' aria-current="page"' : ""}>
         <span class="resource-master-icon" aria-hidden="true">${icon}</span>
         <span class="resource-master-copy">
@@ -288,5 +305,5 @@ export function renderCardItem(card: CreditCardAccountRecord, accounts: AccountR
 }
 
 export function renderFilterEmptyState(title: string): string {
-  return `<div class="empty-state filter-empty-state" data-filter-empty hidden><strong>${escapeHtml(title)}</strong><p class="muted">Ajuste a busca ou o filtro de status para ver outros cadastros.</p></div>`;
+  return `<div class="empty-state filter-empty-state" data-filter-empty hidden><strong>${escapeHtml(title)}</strong><p class="muted">Ajuste a busca ou os filtros de tipo, moeda e status para ver outros cadastros.</p></div>`;
 }
