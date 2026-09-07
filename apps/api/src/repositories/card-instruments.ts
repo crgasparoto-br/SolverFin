@@ -41,7 +41,12 @@ export interface CreditCardAccountContract extends Card {
 type NewCardInstrumentPayload = Omit<CreateCardInstrumentPayload, "cardId">;
 
 export interface CreateCreditCardAccountPayload extends CreateCardPayload {
+  currency: string;
   instruments: readonly NewCardInstrumentPayload[];
+}
+
+export interface UpdateCreditCardAccountPayload extends UpdateCardPayload {
+  currency?: string;
 }
 
 export interface UpdateCardInstrumentPayload {
@@ -64,6 +69,7 @@ interface CardRow {
   closingDay: number;
   dueDay: number;
   creditLimitMinor: number | null;
+  currency: string | null;
   maskedIdentifier: string | null;
   institutionKey: string | null;
   brandKey: string | null;
@@ -94,7 +100,7 @@ interface CardInstrumentRow {
 type ExecuteQuery = typeof query;
 
 const CARD_COLUMNS = `"id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status",
-  "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey",
+  "closingDay", "dueDay", "creditLimitMinor", "currency", "maskedIdentifier", "institutionKey", "brandKey",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 const CARD_INSTRUMENT_COLUMNS = `"id", "organizationId", "financialProfileId", "cardId", "type", "holder",
@@ -135,20 +141,25 @@ export async function createCreditCardAccountForContext(
 ): Promise<CreditCardAccountContract> {
   assertHasActiveInstrumentPayload(payload.instruments);
 
-  const paymentAccount = payload.paymentAccountId
-    ? await findAccountRow(context, payload.paymentAccountId)
+  const { currency: currencyInput, instruments: instrumentPayloads, ...domainPayload } = payload;
+  const currency = normalizeCardCurrency(currencyInput);
+  const paymentAccount = domainPayload.paymentAccountId
+    ? await findAccountRow(context, domainPayload.paymentAccountId)
     : undefined;
   const now = new Date().toISOString();
-  let card = createCardDomain({
-    id: randomUUID(),
-    context,
-    now,
-    payload,
-    ...(paymentAccount ? { paymentAccount } : {}),
-  }).card;
+  let card: Card = {
+    ...createCardDomain({
+      id: randomUUID(),
+      context,
+      now,
+      payload: domainPayload,
+      ...(paymentAccount ? { paymentAccount } : {}),
+    }).card,
+    currency,
+  };
   let instruments: readonly CardInstrument[] = [];
 
-  for (const instrumentPayload of payload.instruments) {
+  for (const instrumentPayload of instrumentPayloads) {
     const result = createCardInstrumentDomain({
       id: randomUUID(),
       context,
@@ -173,10 +184,11 @@ export async function createCreditCardAccountForContext(
 export async function updateCreditCardAccountForContext(
   context: TenantContext,
   cardId: EntityId,
-  payload: UpdateCardPayload,
+  payload: UpdateCreditCardAccountPayload,
 ): Promise<CreditCardAccountContract> {
   const currentCard = await findCardRow(context, cardId);
-  const paymentAccountId = payload.paymentAccountId ?? currentCard?.paymentAccountId;
+  const { currency: currencyInput, ...domainPayload } = payload;
+  const paymentAccountId = domainPayload.paymentAccountId ?? currentCard?.paymentAccountId;
   const paymentAccount = paymentAccountId
     ? await findAccountRow(context, paymentAccountId)
     : undefined;
@@ -184,13 +196,18 @@ export async function updateCreditCardAccountForContext(
     context,
     card: currentCard,
     now: new Date().toISOString(),
-    payload,
+    payload: domainPayload,
     ...(paymentAccount ? { paymentAccount } : {}),
   });
+  const updatedCard: Card =
+    currencyInput === undefined
+      ? result.card
+      : { ...result.card, currency: normalizeCardCurrency(currencyInput) };
+  const mutation = addCurrencyToCardAudit(result, currentCard, updatedCard);
 
-  await persistCardMutation(result);
+  await persistCardMutation(mutation);
 
-  return getCreditCardAccountForContext(context, result.card.id);
+  return getCreditCardAccountForContext(context, mutation.card.id);
 }
 
 export async function archiveCreditCardAccountForContext(
@@ -536,6 +553,41 @@ function validateCreditLimit(value: number): number {
   return value;
 }
 
+function normalizeCardCurrency(value: string): string {
+  const normalized = value.trim().toUpperCase();
+
+  if (!/^[A-Z]{3}$/.test(normalized)) {
+    throw cardInstrumentError(
+      "CARD_CURRENCY_INVALID",
+      "Informe uma moeda valida com tres letras, como BRL, USD ou EUR.",
+    );
+  }
+
+  return normalized;
+}
+
+function addCurrencyToCardAudit(
+  result: CardMutationResult,
+  before: Card | undefined,
+  after: Card,
+): CardMutationResult {
+  if (before?.currency === after.currency) {
+    return { ...result, card: after };
+  }
+
+  const marker = before?.currency === undefined ? "added" : "changed";
+  return {
+    card: after,
+    auditEntry: {
+      ...result.auditEntry,
+      redactedChanges: {
+        ...(result.auditEntry.redactedChanges ?? {}),
+        currency: marker,
+      },
+    },
+  };
+}
+
 function normalizeOptionalText(value: string | null, code: string): string | undefined {
   if (value === null) {
     return undefined;
@@ -605,12 +657,13 @@ async function persistCard(executeQuery: ExecuteQuery, card: Card): Promise<void
   await executeQuery(
     `insert into "Card"
       ("id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status", "closingDay",
-       "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+       "dueDay", "creditLimitMinor", "currency", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
      on conflict ("id") do update set
        "paymentAccountId" = excluded."paymentAccountId", "name" = excluded."name",
        "status" = excluded."status", "closingDay" = excluded."closingDay", "dueDay" = excluded."dueDay",
-       "creditLimitMinor" = excluded."creditLimitMinor", "maskedIdentifier" = excluded."maskedIdentifier",
+       "creditLimitMinor" = excluded."creditLimitMinor", "currency" = excluded."currency",
+       "maskedIdentifier" = excluded."maskedIdentifier",
        "institutionKey" = excluded."institutionKey", "brandKey" = excluded."brandKey",
        "updatedAt" = excluded."updatedAt", "updatedByUserId" = excluded."updatedByUserId"`,
     [
@@ -623,6 +676,7 @@ async function persistCard(executeQuery: ExecuteQuery, card: Card): Promise<void
       card.closingDay,
       card.dueDay,
       card.creditLimitMinor ?? null,
+      card.currency ?? null,
       card.maskedIdentifier ?? null,
       card.institutionKey ?? null,
       card.brandKey ?? null,
@@ -751,6 +805,7 @@ function mapCardRow(row: CardRow): Card {
 
   if (row.paymentAccountId !== null) card.paymentAccountId = row.paymentAccountId;
   if (row.creditLimitMinor !== null) card.creditLimitMinor = row.creditLimitMinor;
+  if (row.currency !== null) card.currency = row.currency.trim().toUpperCase();
   if (row.maskedIdentifier !== null) card.maskedIdentifier = row.maskedIdentifier;
   if (row.institutionKey !== null)
     card.institutionKey = row.institutionKey as Card["institutionKey"];
