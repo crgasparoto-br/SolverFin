@@ -30,20 +30,25 @@ const CORRELATION_ID_HEADER = "x-correlation-id";
 const TRANSACTION_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   TRANSACTION_KIND_REQUIRED: "Informe o tipo do lançamento.",
   TRANSACTION_KIND_INVALID: "O tipo de lançamento informado não é suportado.",
-  TRANSACTION_STATUS_INVALID: "A situação do lançamento informada não é suportada.",
+  TRANSACTION_STATUS_INVALID:
+    "A situação do lançamento informada não é suportada.",
   TRANSACTION_SOURCE_INVALID: "A origem do lançamento informada não é suportada.",
   TRANSACTION_AMOUNT_INVALID: "Informe um valor válido maior que zero.",
   TRANSACTION_DATE_REQUIRED: "Informe a data do evento.",
   TRANSACTION_EFFECTIVE_DATE_REQUIRED:
     "Lançamentos efetivados ou conciliados exigem data efetiva.",
   TRANSACTION_ACCOUNT_REQUIRED: "Selecione uma conta para o lançamento.",
-  TRANSACTION_ACCOUNT_INVALID: "A conta selecionada não corresponde ao lançamento.",
+  TRANSACTION_ACCOUNT_INVALID:
+    "A conta selecionada não corresponde ao lançamento.",
   TRANSACTION_ACCOUNT_ARCHIVED: "A conta selecionada precisa estar ativa.",
-  TRANSACTION_DESTINATION_ACCOUNT_REQUIRED: "Selecione a conta de destino da transferência.",
-  TRANSACTION_DESTINATION_ACCOUNT_INVALID: "A conta de destino da transferência é inválida.",
+  TRANSACTION_DESTINATION_ACCOUNT_REQUIRED:
+    "Selecione a conta de destino da transferência.",
+  TRANSACTION_DESTINATION_ACCOUNT_INVALID:
+    "A conta de destino da transferência é inválida.",
   TRANSACTION_TRANSFER_SAME_ACCOUNT:
     "A conta de origem e a conta de destino devem ser diferentes.",
-  TRANSACTION_CURRENCY_MISMATCH: "A moeda do lançamento deve ser a mesma da conta.",
+  TRANSACTION_CURRENCY_MISMATCH:
+    "A moeda do lançamento deve ser a mesma da conta.",
   TRANSACTION_CATEGORY_INVALID: "A categoria selecionada é inválida.",
   TRANSACTION_CATEGORY_ARCHIVED: "A categoria selecionada precisa estar ativa.",
 };
@@ -140,7 +145,11 @@ function normalizeApiError(
 function normalizeTransactionError(
   error: unknown,
 ): Required<Pick<ApiErrorLike, "code" | "statusCode" | "message">> | undefined {
-  if (!isApiErrorLike(error) || error.statusCode !== 400 || typeof error.code !== "string") {
+  if (
+    !isApiErrorLike(error) ||
+    error.statusCode !== 400 ||
+    typeof error.code !== "string"
+  ) {
     return undefined;
   }
 
