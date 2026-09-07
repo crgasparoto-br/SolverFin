@@ -108,7 +108,7 @@ function selectsResourceFromUrlAndKeepsCurrencyExplicit(): void {
 }
 
 function doesNotInventCurrencyWhenCardHasNoDefaultCurrency(): void {
-  const account = accountFixture("payment-brl", "active", "BRL");
+  const account = accountFixture("payment-account", "active", "BRL");
   const card = cardFixture("card-unknown", "active", account.id);
 
   const viewModel = buildAccountsCardsPageViewModel([account], [card], "card:card-unknown");
