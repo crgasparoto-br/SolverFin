@@ -179,6 +179,7 @@ async function createCreditCardAccountHandler(
     name: String(body.name ?? ""),
     closingDay: Number(body.closingDay),
     dueDay: Number(body.dueDay),
+    currency: String(body.currency ?? ""),
     instruments: readInstruments(body.instruments),
     ...(body.creditLimitMinor !== undefined
       ? { creditLimitMinor: Number(body.creditLimitMinor) }
@@ -223,6 +224,7 @@ async function updateCreditCardAccountHandler(
       ...(body.creditLimitMinor !== undefined
         ? { creditLimitMinor: Number(body.creditLimitMinor) }
         : {}),
+      ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
       ...(body.maskedIdentifier !== undefined
         ? { maskedIdentifier: String(body.maskedIdentifier) }
         : {}),
