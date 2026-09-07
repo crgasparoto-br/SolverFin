@@ -27,7 +27,10 @@ async function transportFailureRestoresRecoverableFormState(): Promise<void> {
       if (selector === 'button[type="submit"]') return submitButton;
       return null;
     },
-    addEventListener(type: string, listener: (event: { preventDefault(): void }) => Promise<void>) {
+    addEventListener(
+      type: string,
+      listener: (event: { preventDefault(): void }) => Promise<void>,
+    ) {
       if (type === "submit") submitHandler = listener;
     },
     appendChild() {},
@@ -80,16 +83,32 @@ async function transportFailureRestoresRecoverableFormState(): Promise<void> {
   const submission = submitHandler({ preventDefault() {} });
   await Promise.resolve();
 
-  assert.equal(loadingState.hidden, false, "Loading should be visible while the request is pending.");
-  assert.equal(submitButton.disabled, true, "Submit should be disabled while the request is pending.");
+  assert.equal(
+    loadingState.hidden,
+    false,
+    "Loading should be visible while the request is pending.",
+  );
+  assert.equal(
+    submitButton.disabled,
+    true,
+    "Submit should be disabled while the request is pending.",
+  );
   assert.match(status.textContent, /Salvando/i);
 
   assert.ok(rejectFetch, "The transport rejection hook was not captured.");
   rejectFetch(new TypeError("Failed to fetch"));
   await submission;
 
-  assert.equal(loadingState.hidden, true, "Loading must be hidden after a transport failure.");
-  assert.equal(submitButton.disabled, false, "Submit must be re-enabled after a transport failure.");
+  assert.equal(
+    loadingState.hidden,
+    true,
+    "Loading must be hidden after a transport failure.",
+  );
+  assert.equal(
+    submitButton.disabled,
+    false,
+    "Submit must be re-enabled after a transport failure.",
+  );
   assert.match(status.className, /error/);
   assert.match(status.textContent, /Verifique sua conexão e tente novamente/i);
 }
