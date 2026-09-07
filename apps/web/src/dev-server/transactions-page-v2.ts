@@ -786,8 +786,10 @@ function clientScript(currency: string | undefined): string {
       const occurredOn = String(data.get("occurredOn") || "").trim();
       const status = String(data.get("status"));
       const normalizedPlannedOn = String(plannedOn || "").trim() || occurredOn;
-      const normalizedEffectiveOn = status === "posted" || status === "reconciled" ? (String(effectiveOn || "").trim() || occurredOn) : null;
-      const result = { kind: String(data.get("kind")), amountMinor, occurredOn, plannedOn: normalizedPlannedOn, effectiveOn: normalizedEffectiveOn, accountId: String(data.get("accountId")), description, status };
+      const explicitEffectiveOn = String(effectiveOn || "").trim(); const isCreate = (form.dataset.method || "POST") === "POST";
+      const normalizedEffectiveOn = status === "posted" || status === "reconciled" ? (explicitEffectiveOn || (isCreate ? occurredOn : undefined)) : null;
+      const result = { kind: String(data.get("kind")), amountMinor, occurredOn, plannedOn: normalizedPlannedOn, accountId: String(data.get("accountId")), description, status };
+      if (normalizedEffectiveOn !== undefined) result.effectiveOn = normalizedEffectiveOn;
       const destinationAccountId = String(data.get("destinationAccountId") || ""); const categoryId = String(data.get("categoryId") || ""); const note = String(data.get("note") || "").trim();
       if (destinationAccountId) result.destinationAccountId = destinationAccountId; if (categoryId) result.categoryId = categoryId; if (note) result.note = note; return result;
     };
