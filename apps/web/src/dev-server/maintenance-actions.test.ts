@@ -151,13 +151,14 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
     };
   }
 
-  if (pathname === "/api/cards") {
+  if (pathname === "/api/credit-card-accounts") {
     return {
-      cards: [
+      creditCardAccounts: [
         {
           id: "card-1",
           name: "Cartão principal",
           status: "active",
+          currency: "BRL",
           closingDay: 10,
           dueDay: 20,
           paymentAccountId: "account-1",
