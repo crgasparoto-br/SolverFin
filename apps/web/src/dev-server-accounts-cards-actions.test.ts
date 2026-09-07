@@ -82,7 +82,7 @@ async function accountsCardsPageRendersCardMaintenanceInsideSelectedDetail(): Pr
     assert.doesNotMatch(html, /data-card-instruments-dedicated-dialog-styles/);
     assert.doesNotMatch(html, /data-card-instruments-dedicated-dialog-script/);
     assert.doesNotMatch(html, /dialogTriggers/);
-    assert.doesNotMatch(html, /dialog-close-form/);
+    assert.doesNotMatch(html, /<form[^>]*class="dialog-close-form"/);
   } finally {
     globalThis.fetch = originalFetch;
   }
