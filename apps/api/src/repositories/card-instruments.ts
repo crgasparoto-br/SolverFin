@@ -41,7 +41,7 @@ export interface CreditCardAccountContract extends Card {
 type NewCardInstrumentPayload = Omit<CreateCardInstrumentPayload, "cardId">;
 
 export interface CreateCreditCardAccountPayload extends CreateCardPayload {
-  currency: string;
+  currency?: string;
   instruments: readonly NewCardInstrumentPayload[];
 }
 
@@ -142,21 +142,20 @@ export async function createCreditCardAccountForContext(
   assertHasActiveInstrumentPayload(payload.instruments);
 
   const { currency: currencyInput, instruments: instrumentPayloads, ...domainPayload } = payload;
-  const currency = normalizeCardCurrency(currencyInput);
   const paymentAccount = domainPayload.paymentAccountId
     ? await findAccountRow(context, domainPayload.paymentAccountId)
     : undefined;
   const now = new Date().toISOString();
-  let card: Card = {
-    ...createCardDomain({
-      id: randomUUID(),
-      context,
-      now,
-      payload: domainPayload,
-      ...(paymentAccount ? { paymentAccount } : {}),
-    }).card,
-    currency,
-  };
+  let card: Card = createCardDomain({
+    id: randomUUID(),
+    context,
+    now,
+    payload: domainPayload,
+    ...(paymentAccount ? { paymentAccount } : {}),
+  }).card;
+  if (currencyInput !== undefined) {
+    card = { ...card, currency: normalizeCardCurrency(currencyInput) };
+  }
   let instruments: readonly CardInstrument[] = [];
 
   for (const instrumentPayload of instrumentPayloads) {
