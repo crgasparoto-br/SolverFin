@@ -26,16 +26,11 @@ function renderAccountsCardsDialog(input: {
   eyebrow: string;
   bodyHtml: string;
 }): string {
-  const dialog = renderDialog({
+  return renderDialog({
     id: input.id,
     title: input.title,
     bodyHtml: `<p class="eyebrow">${escapeHtml(input.eyebrow)}</p>${input.bodyHtml}`,
   }).replace('class="sf-dialog"', 'class="sf-dialog master-dialog"');
-  const escapedId = escapeHtml(input.id);
-  return dialog.replace(
-    `<dialog class="sf-dialog master-dialog" id="${escapedId}"`,
-    `<dialog id="${escapedId}" class="sf-dialog master-dialog"`,
-  );
 }
 
 export function renderAccountEditDialog(account: AccountRecord, dialogId: string): string {
