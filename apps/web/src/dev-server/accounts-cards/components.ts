@@ -174,7 +174,7 @@ function renderCardDetail(
   const limit = formatAmountWithCurrency(card.creditLimitMinor ?? 0, currency);
   const currencyState = currency
     ? detailField("Moeda", currency)
-    : `<div class="resource-detail-field is-unavailable">${renderUnavailableState({ title: "Moeda indisponível", description: "Vincule uma conta de pagamento com moeda informada para definir o contexto monetário deste cartão." })}</div>`;
+    : `<div class="resource-detail-field is-unavailable">${renderUnavailableState({ title: "Moeda não informada", description: "Edite o cartão e informe a moeda padrão antes de registrar novas compras." })}</div>`;
 
   return `
     <section class="resource-detail-panel" data-resource-detail="card" data-resource-key="card:${escapeHtml(card.id)}">
@@ -284,7 +284,7 @@ export function renderAccountItem(account: AccountRecord): string {
 
 export function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]): string {
   const viewModel = buildCardItemViewModel(card, accounts);
-  return `<article class="master-item card-account-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(viewModel.search)}"><div class="identity-mark card-mark" aria-hidden="true">${renderCardBrandIcon(viewModel.brandKey)}</div><div class="item-main"><div class="item-title-row"><strong>${escapeHtml(card.name)}</strong><span class="status-pill">${escapeHtml(formatGenericStatus(card.status))}</span></div><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(viewModel.brandLabel)} · fecha ${card.closingDay}, vence ${card.dueDay}</p></div><div class="amount-stack"><span>Limite total</span><strong>${viewModel.paymentAccountCurrency ? formatAmountWithCurrency(card.creditLimitMinor ?? 0, viewModel.paymentAccountCurrency) : "Moeda indisponível"}</strong></div>${renderCardEditDialog(card, accounts, viewModel.editDialogId)}</article>`;
+  return `<article class="master-item card-account-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(viewModel.search)}"><div class="identity-mark card-mark" aria-hidden="true">${renderCardBrandIcon(viewModel.brandKey)}</div><div class="item-main"><div class="item-title-row"><strong>${escapeHtml(card.name)}</strong><span class="status-pill">${escapeHtml(formatGenericStatus(card.status))}</span></div><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(viewModel.brandLabel)} · fecha ${card.closingDay}, vence ${card.dueDay}</p></div><div class="amount-stack"><span>Limite total</span><strong>${viewModel.cardCurrency ? formatAmountWithCurrency(card.creditLimitMinor ?? 0, viewModel.cardCurrency) : "Moeda indisponível"}</strong></div>${renderCardEditDialog(card, accounts, viewModel.editDialogId)}</article>`;
 }
 
 export function renderFilterEmptyState(title: string): string {
