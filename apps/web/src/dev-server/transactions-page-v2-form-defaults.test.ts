@@ -84,6 +84,16 @@ test("mensagens do formulário de lançamentos permanecem em pt-BR", async () =>
     );
     assert.match(
       html,
+      /const safeMessageCodes = new Set\(\["INSTALLMENT_PAYLOAD_INVALID"\]\);/,
+      "validações controladas de parcelamento podem preservar detalhes úteis em pt-BR",
+    );
+    assert.match(
+      html,
+      /const safeDetail = safeMessageCodes\.has\(code\) \? String\(body\?\.error\?\.message \|\| ""\) : "";/,
+      "detalhes retornados pela API só são reutilizados para códigos explicitamente permitidos",
+    );
+    assert.match(
+      html,
       /Não foi possível concluir a ação\. Revise os dados e tente novamente\./,
       "erros desconhecidos recebem fallback em pt-BR",
     );

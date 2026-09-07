@@ -779,7 +779,8 @@ function clientScript(currency: string | undefined): string {
       TRANSACTION_CATEGORY_INVALID: "A categoria selecionada é inválida.",
       TRANSACTION_CATEGORY_ARCHIVED: "A categoria selecionada precisa estar ativa."
     };
-    const message = async (response) => { const body = await response.json().catch(() => ({})); if (response.ok) return "Ação concluída. Atualizando..."; const code = String((body.error && body.error.code) || ""); return transactionErrorMessages[code] || "Não foi possível concluir a ação. Revise os dados e tente novamente."; };
+    const safeMessageCodes = new Set(["INSTALLMENT_PAYLOAD_INVALID"]);
+    const message = async (response) => { const body = await response.json().catch(() => ({})); if (response.ok) return "Ação concluída. Atualizando..."; const code = String((body.error && body.error.code) || ""); const safeDetail = safeMessageCodes.has(code) ? String(body?.error?.message || "") : ""; return transactionErrorMessages[code] || safeDetail || "Não foi possível concluir a ação. Revise os dados e tente novamente."; };
 
     const basePayload = (plannedOn, effectiveOn, amountMinor, description) => {
       const data = new FormData(form);
