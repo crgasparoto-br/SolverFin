@@ -388,6 +388,7 @@ model Card {
   closingDay         Int
   dueDay             Int
   creditLimitMinor   BigInt?    @db.BigInt
+  currency           String?    @db.Char(3)
   maskedIdentifier   String?    @db.VarChar(80)
   institutionKey     String?    @db.VarChar(80)
   brandKey           String?    @db.VarChar(80)
@@ -674,7 +675,7 @@ model Budget {
   alertThresholdPercent Int?
   createdByUserId       String?      @db.Uuid
   updatedByUserId       String?      @db.Uuid
-  createdAt             DateTime     @default(now())
+  createdAt              DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
 
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
@@ -811,7 +812,7 @@ model AuditLogEntry {
   occurredAt         DateTime        @default(now())
   actorKind          AuditActorKind
   actorId            String?         @db.Uuid
-  action             AuditAction
+  action              AuditAction
   entityKind         AuditEntityKind
   entityId           String          @db.Uuid
   correlationId      String?         @db.VarChar(120)
