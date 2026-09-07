@@ -87,10 +87,7 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
   assert.deepEqual(baseline.kindOptions, ["all", "account", "card"]);
   assert.equal(baseline.currencyOptions[0], "all");
-  assert.ok(
-    baseline.currencyOptions.length > 1,
-    "Currency filter has no resource options.",
-  );
+  assert.ok(baseline.currencyOptions.length > 1, "Currency filter has no resource options.");
   assert.deepEqual(baseline.statusOptions, ["all", "active", "inactive"]);
   assert.equal(baseline.loadingStatePresent, true, "Route loading state is not wired.");
 
@@ -320,38 +317,21 @@ async function validateFilter(cdp) {
     "Search did not filter the unified master list.",
   );
   assert.equal(state.emptyVisible, true, "Filtered empty state is not visible.");
-  assert.ok(
-    state.accountVisibleCount > 0,
-    "Type filter did not keep any account visible.",
-  );
-  assert.equal(
-    state.accountOnly,
-    true,
-    "Type filter left non-account resources visible.",
-  );
+  assert.ok(state.accountVisibleCount > 0, "Type filter did not keep any account visible.");
+  assert.equal(state.accountOnly, true, "Type filter left non-account resources visible.");
   assert.notEqual(
     state.selectedCurrency,
     "all",
     "Currency filter has no selectable currency state.",
   );
-  assert.ok(
-    state.currencyVisibleCount > 0,
-    "Currency filter hid every resource unexpectedly.",
-  );
+  assert.ok(state.currencyVisibleCount > 0, "Currency filter hid every resource unexpectedly.");
   assert.equal(
     state.currencyOnly,
     true,
     "Currency filter left resources from another currency visible.",
   );
-  assert.ok(
-    state.combinedVisibleCount > 0,
-    "Combined filters hid the target resource.",
-  );
-  assert.equal(
-    state.combinedMatches,
-    true,
-    "Search, type, currency and status are not combined.",
-  );
+  assert.ok(state.combinedVisibleCount > 0, "Combined filters hid the target resource.");
+  assert.equal(state.combinedMatches, true, "Search, type, currency and status are not combined.");
   return state;
 }
 
