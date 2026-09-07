@@ -4,6 +4,7 @@ import { renderAccountsCardsApiFormScript } from "./runtime.js";
 
 await transportFailureRestoresRecoverableFormState();
 
+// prettier-ignore
 async function transportFailureRestoresRecoverableFormState(): Promise<void> {
   const status = {
     className: "form-status muted",
