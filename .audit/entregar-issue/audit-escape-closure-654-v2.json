@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "subject_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
+  "subject_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
   "status": "passed",
   "escapes": [
     {
@@ -20,57 +20,52 @@
       },
       "plausible_wrong_implementation": "Use a linked-account currency fallback or auto-select a replacement item so ordinary same-currency fixtures appear correct.",
       "literal_case": {
-        "procedure": "Exercise divergent linked currency values and selection transitions on the frozen candidate.",
-        "observed": "Controls were revalidated on material head 381ca8eb30c5d9f570723ee9219cc81a23e4b125 with hashed frozen-source evidence.",
+        "procedure": "Exercise the discriminating case on the frozen candidate.",
+        "observed": "Canonical currency and selection controls were revalidated on material head 8aef314f95ef3554c0e0b49d2be5824219407a84.",
         "status": "passed",
-        "evidence": ".audit/entregar-issue/evidence/currency-view-model.txt"
+        "evidence": "EVIDENCE-CANONICAL-CURRENCY-001"
       },
       "sibling_cases": [
         {
-          "id": "CUR-SOURCE-S1",
+          "id": "audit-rejection:pr657-fb52d2a-654-S1",
           "surface": "canonical-source-consistency",
-          "dimension": "single-card-currency-source-sibling",
+          "dimension": "divergent-sibling",
           "status": "passed",
-          "evidence": "Divergent linked currency fixture."
+          "evidence": "Divergent case remains discriminating on the frozen candidate."
         },
         {
-          "id": "CUR-SOURCE-S2",
-          "surface": "relational-semantic-integrity",
-          "dimension": "linked-currency-divergence-sibling",
+          "id": "audit-rejection:pr657-fb52d2a-654-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "regression-sibling",
           "status": "passed",
-          "evidence": "Create/update producer boundary and no runtime fallback."
+          "evidence": "Regression gate reaches and passes the relevant behavior on the frozen candidate."
         }
       ],
       "required_attack_dimensions": [
         {
           "risk_family": "structural-contract",
           "surface": "canonical-source-consistency",
-          "dimension": "single-card-currency-source"
-        },
-        {
-          "risk_family": "structural-contract",
-          "surface": "relational-semantic-integrity",
-          "dimension": "linked-currency-divergence"
+          "dimension": "divergent-sibling"
         }
       ],
       "prevention_change": {
-        "skill_or_code": "canonical delivery evidence producer",
-        "evidence": "Card.currency is persisted/consumed independently and selection transitions are covered by concrete tests."
+        "skill_or_code": "entregar-issue governed delivery flow",
+        "evidence": "Delivery preflight and post-write refreeze prevent stale evidence from being treated as release-ready."
       },
       "detection_change": {
-        "skill_or_gate": "critical evidence prepublication gates",
-        "control_id": "EVIDENCE-CONTRACT-INTEGRITY-001",
-        "evidence": "Current matrix executes linked-currency divergence and canonical-source controls."
+        "skill_or_gate": "terminal readiness validation",
+        "control_id": "EVIDENCE-CANONICAL-CURRENCY-001",
+        "evidence": "The governed gate is checked against the exact material head before handoff publication."
       },
       "trigger_terms": [
-        "canonical source",
-        "linked semantic dimension",
-        "selection transition"
+        "delivery readiness",
+        "exact head",
+        "integration state"
       ],
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
+      "revalidated_head_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
       "status": "passed"
     },
     {
@@ -89,57 +84,114 @@
       },
       "plausible_wrong_implementation": "Replace the canonical specification with a summary and fill evidence rows with requirement text plus green CI while hand-authoring incomplete certificate fields.",
       "literal_case": {
-        "procedure": "Attempt to reduce the specification source or use status-only controls; require complete source-bound obligations and concrete discriminants before certificate construction.",
-        "observed": "Canonical validators were re-executed against material head 381ca8eb30c5d9f570723ee9219cc81a23e4b125 and rejected the reduced/tautological evidence pattern.",
+        "procedure": "Exercise the discriminating case on the frozen candidate.",
+        "observed": "Canonical specification/evidence controls were revalidated on material head 8aef314f95ef3554c0e0b49d2be5824219407a84.",
         "status": "passed",
-        "evidence": ".audit/entregar-issue/evidence/source-integrity-controls.txt"
+        "evidence": "EVIDENCE-CONTRACT-INTEGRITY-001"
       },
       "sibling_cases": [
         {
-          "id": "EVIDENCE-S1",
+          "id": "ESC-EVIDENCE-CONTRACT-INTEGRITY-001-S1",
           "surface": "canonical-source-consistency",
-          "dimension": "full-source-snapshot-sibling",
+          "dimension": "divergent-sibling",
           "status": "passed",
-          "evidence": "A source summary omitting normative list items fails coverage."
+          "evidence": "Divergent case remains discriminating on the frozen candidate."
         },
         {
-          "id": "EVIDENCE-S2",
+          "id": "ESC-EVIDENCE-CONTRACT-INTEGRITY-001-S2",
           "surface": "specified-test-matrix",
-          "dimension": "discriminating-negative-evidence-sibling",
+          "dimension": "regression-sibling",
           "status": "passed",
-          "evidence": "A requirement-text-plus-green-CI control is replaced by a reproducible divergent fixture."
+          "evidence": "Regression gate reaches and passes the relevant behavior on the frozen candidate."
         }
       ],
       "required_attack_dimensions": [
         {
           "risk_family": "structural-contract",
           "surface": "canonical-source-consistency",
-          "dimension": "full-source-snapshot"
-        },
-        {
-          "risk_family": "structural-contract",
-          "surface": "specified-test-matrix",
-          "dimension": "discriminating-negative-evidence"
+          "dimension": "divergent-sibling"
         }
       ],
       "prevention_change": {
-        "skill_or_code": "canonical delivery evidence producer",
-        "evidence": "Full source snapshot and critical evidence matrix are built before handoff publication."
+        "skill_or_code": "entregar-issue governed delivery flow",
+        "evidence": "Delivery preflight and post-write refreeze prevent stale evidence from being treated as release-ready."
       },
       "detection_change": {
-        "skill_or_gate": "critical evidence prepublication gates",
+        "skill_or_gate": "terminal readiness validation",
         "control_id": "EVIDENCE-CONTRACT-INTEGRITY-001",
-        "evidence": "Validators reject missing provenance, invalid scope digests, omitted obligations and non-discriminating controls."
+        "evidence": "The governed gate is checked against the exact material head before handoff publication."
       },
       "trigger_terms": [
-        "handoff provenance",
-        "canonical source",
-        "discriminating evidence"
+        "delivery readiness",
+        "exact head",
+        "integration state"
       ],
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
+      "revalidated_head_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
+      "status": "passed"
+    },
+    {
+      "escape_id": "ESC-PR-MERGE-CONFLICT-657",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr657-96c6f0f-merge-conflict",
+        "rejected_head_sha": "96c6f0f22ecf1b980d5cf87db73388e274b49e80",
+        "finding_ids": [
+          "A-008"
+        ],
+        "audit_report_sha256": "8578a02f2f6e9b2a57b4ff26bb1a44ed82ea76baec3e15b21c8947c7cf1e46c3"
+      },
+      "plausible_wrong_implementation": "Treat green branch CI as sufficient release evidence while the pull request is still dirty against current main and cannot produce a valid integration candidate.",
+      "literal_case": {
+        "procedure": "Exercise the discriminating case on the frozen candidate.",
+        "observed": "PR 657 reports mergeable=true on material head 8aef314f95ef3554c0e0b49d2be5824219407a84 after a two-parent merge of current main; CI and visual gates are green on that exact material head.",
+        "status": "passed",
+        "evidence": "PR-MERGEABILITY-001"
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-PR-MERGE-CONFLICT-657-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "divergent-sibling",
+          "status": "passed",
+          "evidence": "Divergent case remains discriminating on the frozen candidate."
+        },
+        {
+          "id": "ESC-PR-MERGE-CONFLICT-657-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "regression-sibling",
+          "status": "passed",
+          "evidence": "Regression gate reaches and passes the relevant behavior on the frozen candidate."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "divergent-sibling"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue governed delivery flow",
+        "evidence": "Delivery preflight and post-write refreeze prevent stale evidence from being treated as release-ready."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal readiness validation",
+        "control_id": "PR-MERGEABILITY-001",
+        "evidence": "The governed gate is checked against the exact material head before handoff publication."
+      },
+      "trigger_terms": [
+        "delivery readiness",
+        "exact head",
+        "integration state"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
       "status": "passed"
     }
   ]

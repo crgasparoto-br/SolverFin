@@ -4,4 +4,4 @@ Canonical source integrity remediation for the current delivery packet:
 - validate_specification_coverage.py passes against the complete snapshot/closure pair.
 - the critical attack matrix uses reproducible positive, negative and regression controls instead of the previous tautology that repeated the requirement and cited only green CI.
 - the canonical handoff builder computes producer.skill_sha256 and issue_delta_sha256; these values are not supplied by hand-authored evidence.
-Material head: 381ca8eb30c5d9f570723ee9219cc81a23e4b125
+Material head: 8aef314f95ef3554c0e0b49d2be5824219407a84

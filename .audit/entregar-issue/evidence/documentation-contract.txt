@@ -1,4 +1,4 @@
-Material head: 381ca8eb30c5d9f570723ee9219cc81a23e4b125
+Material head: 8aef314f95ef3554c0e0b49d2be5824219407a84
 Source: docs/ACCOUNTS_CARDS_UI.md (Git blob 6b430b636f4771443f2d3dbdeec01100bf6689e3)
 Observed canonical claims on the frozen source:
 - /contas-cartoes uses one A3 master list and does not use tabs to separate accounts/cards.

@@ -1,4 +1,4 @@
-Material head: 381ca8eb30c5d9f570723ee9219cc81a23e4b125
+Material head: 8aef314f95ef3554c0e0b49d2be5824219407a84
 Source: apps/web/src/dev-server/accounts-cards/filters.test.ts (Git blob 37c3bca4a9fce450455d9781b6cbd18ccd95aa58)
 Observed assertions on the frozen source:
 - account and card type options are rendered as Contas and Cartões.
@@ -6,5 +6,5 @@ Observed assertions on the frozen source:
 - account fixture is tagged data-currency=USD; missing-currency card is tagged data-currency=unavailable.
 - runtime combines matchesSearch && matchesKind && matchesCurrency && matchesStatus.
 - selected resource filtered out removes aria-current and selected styling and exposes data-filter-selection-empty.
-Remote execution: CI run 34216384721 completed success on the same material head.
-Visual execution: Chrome visual run 34216384621 completed success on the same material head, with registered scenarios at 1440x900, 1366x768 and 390x844.
+Remote execution: CI run 34259133477 completed success on the same material head.
+Visual execution: Chrome visual run 34259133437 completed success on the same material head, with registered scenarios at 1440x900, 1366x768 and 390x844.

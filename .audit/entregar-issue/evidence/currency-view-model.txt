@@ -1,7 +1,7 @@
-Material head: 381ca8eb30c5d9f570723ee9219cc81a23e4b125
+Material head: 8aef314f95ef3554c0e0b49d2be5824219407a84
 Source: apps/web/src/dev-server/accounts-cards/view-model.test.ts (Git blob 3d85578649995720639a9d8916c8e0b41f4a9b21)
 Discriminating fixtures/assertions on the frozen source:
 - payment account currency is USD while card currency is BRL; buildCardItemViewModel asserts cardCurrency == BRL, refuting fallback to the linked payment account.
 - selected card with currency usd is normalized to USD in selectedResource and master metadata.
 - card with no currency linked to a BRL payment account remains undefined and its master search does not contain brl.
-Remote execution: CI run 34216384721 completed success on the same material head.
+Remote execution: CI run 34259133477 completed success on the same material head.

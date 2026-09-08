@@ -2,42 +2,22 @@
   "schema_version": 1,
   "status": "rejected",
   "result": "REPROVADA",
-  "rejection_id": "audit-rejection:853486ba-25c6-45a2-ac48-cd93b9ee5b32",
-  "head_sha": "3a49b3140eccf1b3129b7acb99cecb9c219300e4",
+  "rejection_id": "audit-rejection:pr657-96c6f0f-merge-conflict",
+  "head_sha": "96c6f0f22ecf1b980d5cf87db73388e274b49e80",
   "identity": {
     "material_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
-    "published_handoff_head_sha": "3a49b3140eccf1b3129b7acb99cecb9c219300e4"
+    "published_handoff_head_sha": "96c6f0f22ecf1b980d5cf87db73388e274b49e80"
   },
   "findings": [
     {
-      "id": "A-005",
+      "id": "A-008",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "delivery-not-ready",
-      "reason": "invalid-handoff-provenance-and-scope-digest",
-      "summary": "Handoff lacks producer skill provenance and carries an invalid issue-local scope digest."
-    },
-    {
-      "id": "A-006",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "category": "remediation-incomplete",
-      "reason": "audit-remediation-contract-mismatch",
-      "summary": "Remediation ledger does not satisfy the canonical all-actionable-items closure contract."
-    },
-    {
-      "id": "A-007",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "systemic-remediation",
-      "category": "evidence-integrity",
-      "reason": "reduced-specification-and-tautological-controls",
-      "summary": "Delivery evidence used a reduced paraphrase instead of the full canonical specification and controls that did not discriminate plausible wrong implementations."
+      "category": "execution-state-gap",
+      "reason": "pull-request-merge-conflict",
+      "summary": "PR 657 had unresolved conflicts with current main (mergeable=false, rebaseable=false, mergeable_state=dirty), so green branch CI did not prove integration."
     }
   ],
   "recommendations": []

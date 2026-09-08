@@ -3,68 +3,29 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
-  "remediation_mode": "mixed-remediation",
+  "candidate_head_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
+  "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:853486ba-25c6-45a2-ac48-cd93b9ee5b32",
-    "audited_head_sha": "3a49b3140eccf1b3129b7acb99cecb9c219300e4",
-    "audit_report_sha256": "c997dbee62a4433f95a79e9968e540de3d258aa63c26c8ffebc260cec592be4c"
+    "rejection_id": "audit-rejection:pr657-96c6f0f-merge-conflict",
+    "audited_head_sha": "96c6f0f22ecf1b980d5cf87db73388e274b49e80",
+    "audit_report_sha256": "8578a02f2f6e9b2a57b4ff26bb1a44ed82ea76baec3e15b21c8947c7cf1e46c3"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-005",
+      "source_id": "A-008",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "delivery-evidence-rebuild",
-      "changed_files": [
-        ".audit/entregar-issue/handoff-ready.json"
-      ],
+      "closure_kind": "behavioral-fix",
+      "changed_files": [],
       "evidence": [
-        "Canonical handoff builder computes producer skill provenance and the issue-local scope digest from exact inputs."
+        "Material head 8aef314f95ef3554c0e0b49d2be5824219407a84 is a two-parent merge commit whose parents are the previous PR head and current main; PR 657 now reports mergeable=true.",
+        "The current main..material-head comparison preserves the issue 654 delivery diff without importing issue 653 product files into the PR diff."
       ],
       "validations": [
-        "build_handoff_certificate.py and validate_handoff_certificate.py pass before publication."
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-006",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "delivery-evidence-rebuild",
-      "changed_files": [
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/audit-source-result.json"
-      ],
-      "evidence": [
-        "Ledger uses all-actionable-items, closed status, exact candidate SHA and SHA-256 binding to the source audit bytes."
-      ],
-      "validations": [
-        "validate_audit_remediation.py closes all actionable findings one-to-one."
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-007",
-      "remediation_mode": "systemic-remediation",
-      "status": "fixed",
-      "closure_kind": "systemic-control-strengthening",
-      "changed_files": [
-        ".audit/entregar-issue/specification-snapshot.json",
-        ".audit/entregar-issue/specification-sources/SRC-ISSUE-654.txt",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/requirement-attack-matrix.json",
-        ".audit/entregar-issue/risk-saturation.json",
-        ".audit/entregar-issue/inherited-controls-654.json",
-        ".audit/entregar-issue/audit-escape-closure-654-v2.json",
-        ".audit/entregar-issue/learning-closure-654-v2.json"
-      ],
-      "evidence": [
-        "Complete canonical source is snapshotted with 85 lines and 41 source-bound obligations; critical evidence uses concrete divergent fixtures and hashed controls."
-      ],
-      "validations": [
-        "Specification coverage, attack matrix, risk saturation, inherited controls, learning closure and audit escape lineage validators pass."
+        "CI run 34259133477 completed success on material head 8aef314f95ef3554c0e0b49d2be5824219407a84.",
+        "Statement visual validation run 34259133437 completed success on material head 8aef314f95ef3554c0e0b49d2be5824219407a84.",
+        "Fresh PR metadata confirms mergeable=true after conflict resolution."
       ]
     }
   ]
