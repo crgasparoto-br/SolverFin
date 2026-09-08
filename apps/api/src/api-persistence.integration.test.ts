@@ -90,6 +90,7 @@ async function createPersonalFinancialFlow(token: string): Promise<PersonalFixtu
     closingDay: 20,
     dueDay: 10,
     creditLimitMinor: 100000,
+    currency: "BRL",
     paymentAccountId: account.id,
     institutionKey: "porto_bank",
     brandKey: "visa",
@@ -275,6 +276,7 @@ async function createPersonalCardInvoiceFlow(
       occurredOn: "2026-06-19",
       amountMinor: 3210,
       description: `Compra cartao integracao ${suffix}`,
+      currency: "BRL",
       categoryId: fixtures.category.id,
     },
   );
@@ -404,6 +406,7 @@ async function createCardRecurrenceFlow(
     name: `Cartao assinatura ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     paymentAccountId: fixtures.account.id,
   });
   assert.equal(cardResponse.statusCode, 201);
@@ -433,6 +436,7 @@ async function createCardRecurrenceFlow(
     frequency: "monthly",
     startOn: "2026-06-05",
     amountMinor: 4990,
+    currency: "BRL",
     description: `Assinatura no cartao ${suffix}`,
     cardId: card.id,
     categoryId: fixtures.category.id,
