@@ -35,8 +35,7 @@ assert.throws(
 assert.throws(
   () => resolveCanonicalCardPurchaseCurrency("BRL", "USD"),
   (error: unknown) =>
-    error instanceof CardCurrencyContractError &&
-    error.code === "CARD_PURCHASE_CURRENCY_MISMATCH",
+    error instanceof CardCurrencyContractError && error.code === "CARD_PURCHASE_CURRENCY_MISMATCH",
 );
 
 assert.doesNotThrow(() => assertLinkedPaymentAccountCurrency("usd", " USD "));
