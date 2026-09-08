@@ -161,14 +161,18 @@ export async function updateCardForContext(
     ...(paymentAccount ? { paymentAccount } : {}),
   });
   const currency =
-    currencyInput === undefined ? result.card.currency : normalizeRequiredCardCurrency(currencyInput);
+    currencyInput === undefined
+      ? result.card.currency
+      : normalizeRequiredCardCurrency(currencyInput);
 
   if (currency !== undefined && paymentAccount !== undefined) {
     assertLinkedPaymentAccountCurrency(currency, paymentAccount.currency);
   }
 
-  const mutation: CardMutationResult =
-    currency === result.card.currency ? result : { ...result, card: { ...result.card, currency } };
+  let mutation: CardMutationResult = result;
+  if (currency !== undefined && currency !== result.card.currency) {
+    mutation = { ...result, card: { ...result.card, currency } };
+  }
 
   await persistCardMutation(mutation);
 
