@@ -122,8 +122,7 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
       ? renderInstitutionIcon(resource.institutionKey)
       : renderCardBrandIcon(resource.brandKey ?? "");
   const currencyLabel =
-    resource.currency ??
-    (resource.kind === "card" ? "Moeda indisponível" : resource.currencyLabel);
+    resource.currency ?? (resource.kind === "card" ? "Moeda indisponível" : resource.currencyLabel);
   return `
     <article class="master-item resource-master-item${resource.isSelected ? " is-selected" : ""}" data-resource-master-item data-kind="${escapeHtml(resource.kind)}" data-currency="${escapeHtml(resource.currency ?? "unavailable")}" data-status="${escapeHtml(resource.status)}" data-search="${escapeHtml(resource.search)}">
       <a class="resource-master-link" href="${escapeHtml(resource.href)}"${resource.isSelected ? ' aria-current="page"' : ""}>
