@@ -16,6 +16,11 @@ import {
 import { AuthError } from "./auth.js";
 import type { ApiHeaders } from "./http-headers.js";
 import { auth } from "./auth-service.js";
+import {
+  assertCardCurrencyChangeAllowedForContext,
+  assertLinkedPaymentAccountCurrencyForContext,
+  normalizeRequiredCardCurrency,
+} from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
 import { readCreateTransactionOccurredOn } from "./transaction-create-temporal-input.js";
@@ -699,10 +704,19 @@ async function createCardHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
+  const currency = normalizeRequiredCardCurrency(body.currency);
+  const paymentAccountId =
+    body.paymentAccountId !== undefined ? String(body.paymentAccountId) : undefined;
+
+  if (paymentAccountId !== undefined) {
+    await assertLinkedPaymentAccountCurrencyForContext(context, paymentAccountId, currency);
+  }
+
   const card = await createCardForContext(context, {
     name: String(body.name ?? ""),
     closingDay: Number(body.closingDay),
     dueDay: Number(body.dueDay),
+    currency,
     ...(body.creditLimitMinor !== undefined
       ? { creditLimitMinor: Number(body.creditLimitMinor) }
       : {}),
@@ -711,9 +725,7 @@ async function createCardHandler(
       : {}),
     ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
     ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
-    ...(body.paymentAccountId !== undefined
-      ? { paymentAccountId: String(body.paymentAccountId) }
-      : {}),
+    ...(paymentAccountId !== undefined ? { paymentAccountId } : {}),
   });
 
   return json(201, { card });
@@ -733,13 +745,44 @@ async function updateCardHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const card = await updateCardForContext(context, requireParam(match, "cardId"), {
+  const cardId = requireParam(match, "cardId");
+  const currentCard = await getCardForContext(context, cardId);
+  const requestedCurrency =
+    body.currency !== undefined
+      ? normalizeRequiredCardCurrency(body.currency)
+      : currentCard.currency;
+  const paymentAccountId =
+    body.paymentAccountId !== undefined
+      ? String(body.paymentAccountId)
+      : currentCard.paymentAccountId;
+
+  if (body.currency !== undefined && requestedCurrency !== undefined) {
+    await assertCardCurrencyChangeAllowedForContext(
+      context,
+      cardId,
+      currentCard.currency,
+      requestedCurrency,
+    );
+  }
+
+  if (requestedCurrency !== undefined && paymentAccountId !== undefined) {
+    await assertLinkedPaymentAccountCurrencyForContext(
+      context,
+      paymentAccountId,
+      requestedCurrency,
+    );
+  }
+
+  const card = await updateCardForContext(context, cardId, {
     ...(body.name !== undefined ? { name: String(body.name) } : {}),
     ...(body.status !== undefined ? { status: body.status as CardStatus } : {}),
     ...(body.closingDay !== undefined ? { closingDay: Number(body.closingDay) } : {}),
     ...(body.dueDay !== undefined ? { dueDay: Number(body.dueDay) } : {}),
     ...(body.creditLimitMinor !== undefined
       ? { creditLimitMinor: Number(body.creditLimitMinor) }
+      : {}),
+    ...(body.currency !== undefined && requestedCurrency !== undefined
+      ? { currency: requestedCurrency }
       : {}),
     ...(body.maskedIdentifier !== undefined
       ? { maskedIdentifier: String(body.maskedIdentifier) }

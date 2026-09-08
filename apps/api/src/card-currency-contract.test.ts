@@ -57,7 +57,7 @@ assert.throws(
 
 const migration = readFileSync(
   new URL(
-    "../../../prisma/migrations/20260907143000_add_card_default_currency/migration.sql",
+    "../../prisma/migrations/20260907143000_add_card_default_currency/migration.sql",
     import.meta.url,
   ),
   "utf8",
