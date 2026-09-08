@@ -110,9 +110,7 @@ function renderCurrencyFilterOptions(resources: readonly ResourceMasterViewModel
     ...currencies.map(
       (currency) => `<option value="${escapeHtml(currency)}">${escapeHtml(currency)}</option>`,
     ),
-    ...(hasUnavailableCurrency
-      ? ['<option value="unavailable">Moeda indisponível</option>']
-      : []),
+    ...(hasUnavailableCurrency ? ['<option value="unavailable">Moeda indisponível</option>'] : []),
   ].join("");
 }
 
