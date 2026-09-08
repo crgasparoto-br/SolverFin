@@ -331,7 +331,7 @@ export function statementPresentationScript(): string {
 
               if (!response.ok) {
                 setStatus(
-                  (body.error && body.error.message) || "Não foi possível concluir a alteração.",
+                  body?.error?.message || "Não foi possível concluir a alteração.",
                   "error",
                 );
                 setBusy(false);

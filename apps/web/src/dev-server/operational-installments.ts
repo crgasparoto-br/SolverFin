@@ -653,9 +653,11 @@ export function operationalInstallmentsController(): string {
           const body = await response.json().catch(() => ({}));
           if (!response.ok) {
             const code = body.error && body.error.code;
+            const safeMessageCodes = new Set(["INSTALLMENT_PAYLOAD_INVALID"]);
+            const safeDetail = safeMessageCodes.has(code) ? String(body?.error?.message || "") : "";
             status.textContent = code === "INSTALLMENT_EDIT_BLOCKED"
               ? "O estado da parcela mudou e ela não pode mais ser alterada. Seus valores foram preservados."
-              : ((body.error && body.error.message) || "Não foi possível salvar a parcela.");
+              : (safeDetail || "Não foi possível salvar a parcela.");
             status.className = "installment-form-status error";
             if (code === "INSTALLMENT_EDIT_BLOCKED" || response.status === 409) showReloadAction(form, installmentId);
             if (saveButton) saveButton.disabled = false;
