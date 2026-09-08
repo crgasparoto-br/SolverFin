@@ -32,7 +32,7 @@ try {
   assert.equal(committedButMasked.backendStatus, 201);
   await waitForFormStatus("A resposta foi inconclusiva");
 
-  const ambiguousState = await readRecoveryState();
+  const ambiguousState = await waitForRecoveryState();
   assert.equal(ambiguousState.modalOpen, true);
   assert.equal(ambiguousState.recoveryState, "ambiguous");
   assert.equal(ambiguousState.amountDisabled, true);
@@ -295,19 +295,31 @@ async function waitForFormStatus(expectedText) {
   );
 }
 
-async function readRecoveryState() {
+async function waitForRecoveryState() {
   return evaluate(
     browser.cdp,
-    `(() => {
-      const form = document.querySelector("[data-form]");
-      return {
-        modalOpen: document.querySelector("[data-modal]")?.open === true,
-        recoveryState: form.dataset.installmentRecovery || "",
-        amountDisabled: form.elements.namedItem("amountMinor").disabled === true,
-        descriptionDisabled: form.elements.namedItem("description").disabled === true,
-        submitDisabled: form.querySelector('button[type="submit"]')?.disabled === true,
-        statusText: form.querySelector(".form-status")?.textContent || "",
-      };
+    `(async () => {
+      for (let attempt = 0; attempt < 120; attempt += 1) {
+        const form = document.querySelector("[data-form]");
+        const state = {
+          modalOpen: document.querySelector("[data-modal]")?.open === true,
+          recoveryState: form?.dataset.installmentRecovery || "",
+          amountDisabled: form?.elements.namedItem("amountMinor")?.disabled === true,
+          descriptionDisabled: form?.elements.namedItem("description")?.disabled === true,
+          submitDisabled: form?.querySelector('button[type="submit"]')?.disabled === true,
+          statusText: form?.querySelector(".form-status")?.textContent || "",
+        };
+        if (
+          state.modalOpen
+          && state.recoveryState === "ambiguous"
+          && state.amountDisabled
+          && state.descriptionDisabled
+          && state.submitDisabled === false
+          && state.statusText.includes("A resposta foi inconclusiva")
+        ) return state;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      throw new Error("Timed out waiting for stable ambiguous recovery state");
     })()`,
   );
 }
