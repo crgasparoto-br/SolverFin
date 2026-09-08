@@ -210,7 +210,9 @@ async function inspectPage(cdp) {
         searchVisible: visible(document.querySelector('[data-master-search]')),
         kindOptions: Array.from(document.querySelectorAll('[data-master-kind] option')).map((option) => option.value),
         currencyOptions: Array.from(document.querySelectorAll('[data-master-currency] option')).map((option) => option.value),
-        currencyOptionLabels: Array.from(document.querySelectorAll('[data-master-currency] option')).map((option) => option.textContent?.trim() || ''),
+        currencyOptionLabels: Array.from(
+          document.querySelectorAll('[data-master-currency] option'),
+        ).map((option) => option.textContent?.trim() || ''),
         statusOptions: Array.from(document.querySelectorAll('[data-master-status] option')).map((option) => option.value),
         currencyContextVisible: /Moeda\\s*(BRL|USD|EUR)\\b/i.test(detailText) || /Moeda\\s*(indisponível|não informada)/i.test(detailText),
         instrumentSectionVisible: visible(document.querySelector('.resource-instruments')),
@@ -253,12 +255,20 @@ async function validateFilter(cdp) {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       const searchHiddenCount = items.filter((item) => item.hidden).length;
       const emptyVisible = Boolean(empty && !empty.hidden);
-      const selectedMasterCountAfterEmpty = document.querySelectorAll('[data-resource-master-item] [aria-current="page"]').length;
-      const selectedClassCountAfterEmpty = document.querySelectorAll('[data-resource-master-item].is-selected').length;
+      const selectedMasterCountAfterEmpty = document.querySelectorAll(
+        '[data-resource-master-item] [aria-current="page"]',
+      ).length;
+      const selectedClassCountAfterEmpty = document.querySelectorAll(
+        '[data-resource-master-item].is-selected',
+      ).length;
       const selectedDetailAfterEmpty = document.querySelector('[data-resource-detail]');
       const neutralDetailAfterEmpty = document.querySelector('[data-filter-selection-empty]');
-      const selectedDetailHiddenAfterEmpty = Boolean(selectedDetailAfterEmpty && selectedDetailAfterEmpty.hidden);
-      const neutralDetailVisibleAfterEmpty = Boolean(neutralDetailAfterEmpty && !neutralDetailAfterEmpty.hidden);
+      const selectedDetailHiddenAfterEmpty = Boolean(
+        selectedDetailAfterEmpty && selectedDetailAfterEmpty.hidden,
+      );
+      const neutralDetailVisibleAfterEmpty = Boolean(
+        neutralDetailAfterEmpty && !neutralDetailAfterEmpty.hidden,
+      );
 
       input.value = '';
       input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -307,9 +317,13 @@ async function validateFilter(cdp) {
       kind.dispatchEvent(new Event('change', { bubbles: true }));
       currency.dispatchEvent(new Event('change', { bubbles: true }));
       status.dispatchEvent(new Event('change', { bubbles: true }));
-      const selectedMasterCountAfterReset = document.querySelectorAll('[data-resource-master-item] [aria-current="page"]').length;
+      const selectedMasterCountAfterReset = document.querySelectorAll(
+        '[data-resource-master-item] [aria-current="page"]',
+      ).length;
       const neutralDetailAfterReset = document.querySelector('[data-filter-selection-empty]');
-      const neutralDetailVisibleAfterReset = Boolean(neutralDetailAfterReset && !neutralDetailAfterReset.hidden);
+      const neutralDetailVisibleAfterReset = Boolean(
+        neutralDetailAfterReset && !neutralDetailAfterReset.hidden,
+      );
 
       return {
         available: true,
@@ -340,12 +354,36 @@ async function validateFilter(cdp) {
     "Search did not filter the unified master list.",
   );
   assert.equal(state.emptyVisible, true, "Filtered empty state is not visible.");
-  assert.equal(state.selectedMasterCountAfterEmpty, 0, "Filtered-out resource kept aria-current.");
-  assert.equal(state.selectedClassCountAfterEmpty, 0, "Filtered-out resource kept selected styling.");
-  assert.equal(state.selectedDetailHiddenAfterEmpty, true, "Filtered-out resource detail stayed visible.");
-  assert.equal(state.neutralDetailVisibleAfterEmpty, true, "Neutral selection detail was not shown.");
-  assert.equal(state.selectedMasterCountAfterReset, 0, "Clearing filters restored a selection silently.");
-  assert.equal(state.neutralDetailVisibleAfterReset, true, "Clearing filters hid the neutral detail without an explicit selection.");
+  assert.equal(
+    state.selectedMasterCountAfterEmpty,
+    0,
+    "Filtered-out resource kept aria-current.",
+  );
+  assert.equal(
+    state.selectedClassCountAfterEmpty,
+    0,
+    "Filtered-out resource kept selected styling.",
+  );
+  assert.equal(
+    state.selectedDetailHiddenAfterEmpty,
+    true,
+    "Filtered-out resource detail stayed visible.",
+  );
+  assert.equal(
+    state.neutralDetailVisibleAfterEmpty,
+    true,
+    "Neutral selection detail was not shown.",
+  );
+  assert.equal(
+    state.selectedMasterCountAfterReset,
+    0,
+    "Clearing filters restored a selection silently.",
+  );
+  assert.equal(
+    state.neutralDetailVisibleAfterReset,
+    true,
+    "Clearing filters hid the neutral detail without an explicit selection.",
+  );
   assert.ok(state.accountVisibleCount > 0, "Type filter did not keep any account visible.");
   assert.equal(state.accountOnly, true, "Type filter left non-account resources visible.");
   assert.notEqual(

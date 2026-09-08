@@ -121,6 +121,9 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
     resource.kind === "account"
       ? renderInstitutionIcon(resource.institutionKey)
       : renderCardBrandIcon(resource.brandKey ?? "");
+  const currencyLabel =
+    resource.currency ??
+    (resource.kind === "card" ? "Moeda indisponível" : resource.currencyLabel);
   return `
     <article class="master-item resource-master-item${resource.isSelected ? " is-selected" : ""}" data-resource-master-item data-kind="${escapeHtml(resource.kind)}" data-currency="${escapeHtml(resource.currency ?? "unavailable")}" data-status="${escapeHtml(resource.status)}" data-search="${escapeHtml(resource.search)}">
       <a class="resource-master-link" href="${escapeHtml(resource.href)}"${resource.isSelected ? ' aria-current="page"' : ""}>
@@ -129,7 +132,7 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
           <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong>${renderBadge({ label: formatGenericStatus(resource.status), tone: resource.status === "active" ? "positive" : "neutral" })}</span>
           <span>${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")} · ${escapeHtml(resource.institutionLabel)}</span>
           <span>${escapeHtml(resource.secondaryLabel)}</span>
-          <span class="resource-master-currency">${escapeHtml(resource.currency ?? (resource.kind === "card" ? "Moeda indisponível" : resource.currencyLabel))}</span>
+          <span class="resource-master-currency">${escapeHtml(currencyLabel)}</span>
         </span>
       </a>
     </article>`;
@@ -150,11 +153,11 @@ export function renderSelectedResourceDetail(
     selected.kind === "account"
       ? renderAccountDetail(selected.account, selected.currency)
       : renderCardDetail(selected.card, accounts, selected.paymentAccount, selected.currency);
-  const filteredEmpty = `<section class="resource-detail-panel resource-detail-empty" data-filter-selection-empty hidden>${renderEmptyState({
+  const filteredEmpty = renderEmptyState({
     title: "Selecione um recurso",
     description: "Escolha uma conta ou cartão na lista para consultar e manter o cadastro.",
-  })}</section>`;
-  return `${detail}${filteredEmpty}`;
+  });
+  return `${detail}<section class="resource-detail-panel resource-detail-empty" data-filter-selection-empty hidden>${filteredEmpty}</section>`;
 }
 
 function renderAccountDetail(account: AccountRecord, currency: string | undefined): string {
@@ -197,9 +200,13 @@ function renderCardDetail(
 ): string {
   const viewModel = buildCardItemViewModel(card, accounts);
   const limit = formatAmountWithCurrency(card.creditLimitMinor ?? 0, currency);
+  const unavailableCurrencyState = renderUnavailableState({
+    title: "Moeda indisponível",
+    description: "Edite o cartão e informe a moeda padrão antes de registrar novas compras.",
+  });
   const currencyState = currency
     ? detailField("Moeda", currency)
-    : `<div class="resource-detail-field is-unavailable">${renderUnavailableState({ title: "Moeda indisponível", description: "Edite o cartão e informe a moeda padrão antes de registrar novas compras." })}</div>`;
+    : `<div class="resource-detail-field is-unavailable">${unavailableCurrencyState}</div>`;
 
   return `
     <section class="resource-detail-panel" data-resource-detail="card" data-resource-key="card:${escapeHtml(card.id)}">
