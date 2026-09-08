@@ -2,14 +2,14 @@
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
   "issue": 653,
-  "created_at": "2026-09-08T00:38:28.646527+00:00",
+  "created_at": "2026-09-08T11:04:12.291640+00:00",
   "primary_source_id": "SRC-ISSUE-653",
   "sources": [
     {
       "id": "SRC-ISSUE-653",
       "kind": "issue-body",
       "path": "specification-sources/SRC-ISSUE-653.txt",
-      "locator": "/tmp/solverfin-653-audit/issue-653.md",
+      "locator": "/tmp/solverfin-refreeze/issue-653.md",
       "sha256": "cc10c6b01f1224c6cc9bb4563e48ecd25b29421543dc46ae90f5ffffab6adf6f",
       "textual": true,
       "extract_source_id": null,

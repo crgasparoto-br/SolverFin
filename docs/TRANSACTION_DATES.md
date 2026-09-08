@@ -10,6 +10,8 @@ As três datas são datas civis no formato `YYYY-MM-DD`. Elas não carregam hor�
 
 O schema persistido atual mantém `occurredOn` e `plannedOn` obrigatórios por compatibilidade e `effectiveOn` anulável. Isso não torna os campos sinônimos: quando um fluxo não possui uma data planejada distinta, `plannedOn` pode coincidir com `occurredOn`; quando ainda não houve efeito de caixa, `effectiveOn` permanece ausente.
 
+No formulário de novo lançamento do Extrato, `occurredOn` e `plannedOn` recebem como sugestão inicial a data civil local do navegador. A sugestão é editável. Se `plannedOn` for apagado, o envio usa `occurredOn` como fallback. Para `posted`/`reconciled`, uma `effectiveOn` não informada também usa `occurredOn`; para `planned`/`suggested`, `effectiveOn` permanece ausente.
+
 ## Definições canônicas
 
 ### `occurredOn`

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "9d909e26c3d21b768d4f71337e94eddac8b9087e",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:pr656-2757bd7-a001",
+    "audited_head_sha": "2757bd7d0a33ba6abec601126a5723fa9509dee2",
+    "audit_report_sha256": "72221fc4f0e477c9b839067b7c0d9497b1fda61e6095e23023a82ede30afd648"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "evidence": [
+        ".audit/entregar-issue/issue-653/evidence/a001-regression.txt"
+      ],
+      "validations": [
+        "CI 34219974170 success on exact material head 9d909e26c3d21b768d4f71337e94eddac8b9087e",
+        "Statement visual validation 34219974144 success on exact material head 9d909e26c3d21b768d4f71337e94eddac8b9087e",
+        "Behavior regression proves blank effectiveOn omission on posted and reconciled transitions"
+      ]
+    }
+  ]
+}

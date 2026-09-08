@@ -1,0 +1,68 @@
+## Objetivo
+
+Corrigir o fluxo de criação manual de lançamentos em `/lancamentos` para evitar falhas de data efetiva, reduzir preenchimento repetitivo e garantir mensagens de validação visíveis ao usuário em pt-BR, sem alterar a semântica temporal canônica de `Transaction`.
+
+## Contexto
+
+No modal **Novo lançamento**, um lançamento efetivado pode falhar ao salvar com a mensagem em inglês `Posted or reconciled transactions require an effective date.`. O formulário também exige preenchimento manual de datas que podem ser derivadas de forma segura no fluxo de criação imediata.
+
+`docs/TRANSACTION_DATES.md` é a fonte canônica e distingue dois casos que não podem ser confundidos:
+
+- **criação manual já realizada** sem data efetiva distinta: `effectiveOn` deriva de `occurredOn`;
+- **transição posterior** de `planned`/`suggested` para `posted`/`reconciled` sem data efetiva explícita: permanece a regra canônica de usar a data civil UTC do instante da transição.
+
+## Escopo
+
+- modal **Novo lançamento** em `/lancamentos`;
+- payload de criação manual de `Transaction`;
+- mensagens de validação de `Transaction` que podem chegar à interface;
+- regressão de edição e clonagem apenas no que diz respeito à preservação das datas já hidratadas.
+
+## Requisitos funcionais
+
+1. Todas as mensagens produzidas por `TransactionError` e expostas pela API à interface devem estar em pt-BR, mantendo os códigos de erro existentes inalterados.
+2. Ao abrir **Novo lançamento**, preencher `Data do evento` com a data civil atual do navegador como sugestão editåvel, no formato esperado pelo formulário.
+3. A sugestão deve usar o dia local do navegador, sem derivar o dia por conversão UTC.
+4. Ao abrir uma nova criação, preencher inicialmente `Data prevista` com a mesma sugestão de `Data do evento`.
+5. `Data prevista` não deve bloquear o salvamento quando estiver vazia. Na criação manual, ausência de `plannedOn` deve resultar em `plannedOn = occurredOn`, conforme o contrato canônico.
+6. Na **criação manual** como `posted` ou `reconciled`, ausência de `Data efetiva` deve resultar em `effectiveOn = occurredOn`. O cliente não deve enviar `effectiveOn: null` para esse caso, pois `null` explícito é inválido para estados efetivados.
+7. Na criação como `planned` ou `suggested`, `effectiveOn` deve permanecer ausente/nulo e não pode ser fabricado a partir de outra data.
+8. Uma `Data efetiva` explicitamente informada pelo usuário deve ser preservada.
+9. Edição não pode aplicar a regra de criação imediata a uma transição de status já persistida. Ao alterar posteriormente um lançamento de `planned`/`suggested` para `posted`/`reconciled` sem `effectiveOn` explícito, deve continuar valendo a regra canônica da data civil UTC do instante da transição.
+10. Edição e clonagem devem continuar hidratando as datas persistidas do lançamento e não podem sobrescrevê-las pela data atual apenas por abrir o formulário.
+
+## Invariantes
+
+- **Fonte única (`must_be_single_source`)**: `docs/TRANSACTION_DATES.md` permanece a fonte de verdade para a semântica de `occurredOn`, `plannedOn` e `effectiveOn`.
+- **Não fazer (`must_not_behave`)**: não aplicar `effectiveOn = occurredOn` indiscriminadamente em edição/transição de status.
+- **Implementação proibida (`forbidden_implementation`)**: não enviar `effectiveOn: null` para uma nova transação `posted`/`reconciled` esperando que o domínio faça fallback; esse payload deve continuar inválido.
+- **Controle discriminante**: um teste de transição `planned -> posted` com `occurredOn` antigo deve provar que a data efetiva não volta para `occurredOn`; um teste de criação direta `posted` deve provar o contrário, usando `occurredOn` como fallback.
+
+## Critérios de aceite
+
+- [ ] abrir o modal de novo lançamento sugere a data local atual em `Data do evento` e `Data prevista`;
+- [ ] a sugestão de data não muda de dia por efeito de UTC em fusos negativos ou positivos;
+- [ ] apagar `Data prevista` e salvar uma nova criação resulta em `plannedOn = occurredOn`;
+- [ ] salvar uma nova criação como **Efetivado não conciliado** sem preencher `Data efetiva` não gera `TRANSACTION_EFFECTIVE_DATE_REQUIRED` e persiste `effectiveOn = occcurredOn`;
+- [ ] salvar uma nova criação como **Conciliado** sem preencher `Data efetiva` persiste `effectiveOn = occurredOn`;
+- [ ] salvar uma nova criação como **Previsto/pendente** não cria data efetiva;
+- [ ] uma data efetiva informada manualmente é preservada;
+- [ ] transicionar em edição um registro `planned`/`suggested` para `posted`/`reconciled` sem data efetiva não reutiliza `occurredOn`, preservando a regra temporal canônica de transição;
+- [ ] edição e clonagem preservam as datas já carregadas e não as substituem pela data atual ao abrir;
+- [ ] mensagens de validação de `Transaction` exibidas pela API estão em pt-BR e os respectivos códigos de erro permanecem os mesmos;
+- [ ] testes do formulário temporal e do domínio cobrem as regressões acima.
+
+## Considerações de testes
+
+- criação nova em data local próxima à virada UTC;
+- `plannedOn` vazio na criaçãe;
+- criação direta `posted` e `reconciled` sem `effectiveOn`;
+- criação `planned`/`suggested` sem `effectiveOn`;
+- `effectiveOn` expliícito;
+- transição posterior `planned -> posted` com `occurredOn` diferente do dia da transição;
+- hidratação de edição e clonagem;
+- mensagens de todos os `TransactionError` alcançáveis pela API, verificando texto pt-BR e estabilidade do `code`.
+
+## Impacto na documentação
+
+`docs/TRANSACTION_DATES.md` deve permanecer como fonte canônica. Não é esperada mudança senântica no documento; se a implementação exigir alterar alguma regra descrita nele, a documentação deve ser atualizada no mesmo ciclo antes da conclusão.

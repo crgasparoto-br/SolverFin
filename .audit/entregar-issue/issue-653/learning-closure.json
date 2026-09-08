@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:pr656-2757bd7-a001",
+    "finding_ids": [
+      "A-001"
+    ],
+    "audit_report_sha256": "72221fc4f0e477c9b839067b7c0d9497b1fda61e6095e23023a82ede30afd648"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The escape is localized to a competing secondary PATCH handler in this product flow and is closed by a behavior-level regression on the literal and sibling transition cases; no generic controller or Skill rule needs to be promoted."
+  },
+  "skill_changes": []
+}
