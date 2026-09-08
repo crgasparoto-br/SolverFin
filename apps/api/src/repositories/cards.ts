@@ -33,10 +33,18 @@ import {
   type UpdateCardPayload,
 } from "@solverfin/domain";
 
+import {
+  assertLinkedPaymentAccountCurrency,
+  normalizeRequiredCardCurrency,
+  resolveCanonicalCardPurchaseCurrency,
+} from "../card-currency-contract.js";
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { listCardInstrumentsForContext } from "./card-instruments.js";
 import { toDateOnly } from "./repository-date-utils.js";
+
+type CreateCardForContextPayload = CreateCardPayload & { currency?: string };
+type UpdateCardForContextPayload = UpdateCardPayload & { currency?: string };
 
 interface CardRow {
   id: string;
@@ -48,6 +56,7 @@ interface CardRow {
   closingDay: number;
   dueDay: number;
   creditLimitMinor: number | null;
+  currency: string | null;
   maskedIdentifier: string | null;
   institutionKey: string | null;
   brandKey: string | null;
@@ -79,7 +88,7 @@ interface RegisterCardPurchaseForContextOptions {
 }
 
 const CARD_COLUMNS = `"id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status",
-  "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey",
+  "closingDay", "dueDay", "creditLimitMinor", "currency", "maskedIdentifier", "institutionKey", "brandKey",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 const INVOICE_COLUMNS = `"id", "organizationId", "financialProfileId", "cardId", "paymentTransactionId",
@@ -105,31 +114,42 @@ export async function getCardForContext(context: TenantContext, cardId: EntityId
 
 export async function createCardForContext(
   context: TenantContext,
-  payload: CreateCardPayload,
+  payload: CreateCardForContextPayload,
 ): Promise<Card> {
-  const paymentAccount = payload.paymentAccountId
-    ? await findAccountRow(context, payload.paymentAccountId)
+  const { currency: currencyInput, ...domainPayload } = payload;
+  const paymentAccount = domainPayload.paymentAccountId
+    ? await findAccountRow(context, domainPayload.paymentAccountId)
     : undefined;
   const result = createCardDomain({
     id: randomUUID(),
     context,
     now: new Date().toISOString(),
-    payload,
+    payload: domainPayload,
     ...(paymentAccount ? { paymentAccount } : {}),
   });
+  const currency =
+    currencyInput === undefined ? undefined : normalizeRequiredCardCurrency(currencyInput);
 
-  await persistCardMutation(result);
+  if (currency !== undefined && paymentAccount !== undefined) {
+    assertLinkedPaymentAccountCurrency(currency, paymentAccount.currency);
+  }
 
-  return result.card;
+  const mutation: CardMutationResult =
+    currency === undefined ? result : { ...result, card: { ...result.card, currency } };
+
+  await persistCardMutation(mutation);
+
+  return mutation.card;
 }
 
 export async function updateCardForContext(
   context: TenantContext,
   cardId: EntityId,
-  payload: UpdateCardPayload,
+  payload: UpdateCardForContextPayload,
 ): Promise<Card> {
   const currentCard = await findCardRow(context, cardId);
-  const paymentAccountId = payload.paymentAccountId ?? currentCard?.paymentAccountId;
+  const { currency: currencyInput, ...domainPayload } = payload;
+  const paymentAccountId = domainPayload.paymentAccountId ?? currentCard?.paymentAccountId;
   const paymentAccount = paymentAccountId
     ? await findAccountRow(context, paymentAccountId)
     : undefined;
@@ -137,13 +157,22 @@ export async function updateCardForContext(
     context,
     card: currentCard,
     now: new Date().toISOString(),
-    payload,
+    payload: domainPayload,
     ...(paymentAccount ? { paymentAccount } : {}),
   });
+  const currency =
+    currencyInput === undefined ? result.card.currency : normalizeRequiredCardCurrency(currencyInput);
 
-  await persistCardMutation(result);
+  if (currency !== undefined && paymentAccount !== undefined) {
+    assertLinkedPaymentAccountCurrency(currency, paymentAccount.currency);
+  }
 
-  return result.card;
+  const mutation: CardMutationResult =
+    currency === result.card.currency ? result : { ...result, card: { ...result.card, currency } };
+
+  await persistCardMutation(mutation);
+
+  return mutation.card;
 }
 
 export async function archiveCardForContext(
@@ -206,6 +235,12 @@ export async function registerCardPurchaseForContext(
   forecastTransactions: readonly Transaction[];
 }> {
   const card = await findCardRow(context, cardId);
+  const canonicalPayload = card
+    ? {
+        ...payload,
+        currency: resolveCanonicalCardPurchaseCurrency(card.currency, payload.currency),
+      }
+    : payload;
   const shouldLoadInstruments =
     options.requireInstrumentContext === true || payload.cardInstrumentId !== undefined;
   const instruments = shouldLoadInstruments
@@ -233,7 +268,7 @@ export async function registerCardPurchaseForContext(
     ...(paymentAccount ? { paymentAccount } : {}),
     existingForecastTransactions,
     now,
-    payload,
+    payload: canonicalPayload,
     makeInvoiceId: () => randomUUID(),
     makeInstallmentId: () => randomUUID(),
     makeForecastTransactionId: () => randomUUID(),
@@ -540,12 +575,13 @@ async function persistCardMutation(result: CardMutationResult): Promise<void> {
     await executeQuery(
       `insert into "Card"
         ("id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status", "closingDay",
-         "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+         "dueDay", "creditLimitMinor", "currency", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
        on conflict ("id") do update set
          "paymentAccountId" = excluded."paymentAccountId", "name" = excluded."name",
          "status" = excluded."status", "closingDay" = excluded."closingDay", "dueDay" = excluded."dueDay",
-         "creditLimitMinor" = excluded."creditLimitMinor", "maskedIdentifier" = excluded."maskedIdentifier",
+         "creditLimitMinor" = excluded."creditLimitMinor", "currency" = excluded."currency",
+         "maskedIdentifier" = excluded."maskedIdentifier",
          "institutionKey" = excluded."institutionKey", "brandKey" = excluded."brandKey",
          "updatedAt" = excluded."updatedAt", "updatedByUserId" = excluded."updatedByUserId"`,
       [
@@ -558,6 +594,7 @@ async function persistCardMutation(result: CardMutationResult): Promise<void> {
         result.card.closingDay,
         result.card.dueDay,
         result.card.creditLimitMinor ?? null,
+        result.card.currency ?? null,
         result.card.maskedIdentifier ?? null,
         result.card.institutionKey ?? null,
         result.card.brandKey ?? null,
@@ -661,6 +698,7 @@ function mapCardRow(row: CardRow): Card {
 
   if (row.paymentAccountId !== null) card.paymentAccountId = row.paymentAccountId;
   if (row.creditLimitMinor !== null) card.creditLimitMinor = row.creditLimitMinor;
+  if (row.currency !== null) card.currency = row.currency;
   if (row.maskedIdentifier !== null) card.maskedIdentifier = row.maskedIdentifier;
   if (row.institutionKey !== null)
     card.institutionKey = row.institutionKey as Card["institutionKey"];
