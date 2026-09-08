@@ -1,7 +1,9 @@
-Canonical source integrity remediation for the current delivery packet:
+Canonical source and terminal handoff integrity remediation for the current delivery packet:
 - source is the complete issue body, stored as specification-sources/SRC-ISSUE-654.txt with 85 lines and SHA-256 162318c819d56b1d3ba2bf5d4aaf0999d2ed549a0cc704afbc12f42a3da233a4.
-- requirement closure preserves source_id, source_sha256, source_line and source_text for 41 extracted obligations; each is mapped to a distinct covered requirement.
-- validate_specification_coverage.py passes against the complete snapshot/closure pair.
-- the critical attack matrix uses reproducible positive, negative and regression controls instead of the previous tautology that repeated the requirement and cited only green CI.
-- the canonical handoff builder computes producer.skill_sha256 and issue_delta_sha256; these values are not supplied by hand-authored evidence.
-Material head: 8aef314f95ef3554c0e0b49d2be5824219407a84
+- requirement closure preserves source_id, source_sha256, source_line and source_text for 41 extracted obligations; each is mapped to a covered requirement.
+- validate_specification_coverage.py must pass against the complete snapshot/closure pair.
+- the critical attack matrix uses reproducible positive, negative and regression controls and is rebound to the exact material head.
+- the transport-sharded attack matrix is reconstructed, hash-checked and repacked; the previously inconsistent part-003 transport blob is not reused.
+- post-write drift is classified as post-write-refreeze; the final certificate must publish as a direct result-only child of the current material head and contain only allowlisted audit-result paths.
+- the canonical handoff builder computes producer.skill_sha256 and issue_delta_sha256; these values are not hand-authored.
+Material head: b7456f2f5020f13598572747cff49b105b71b36d

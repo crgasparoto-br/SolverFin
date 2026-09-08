@@ -1,23 +1,32 @@
 {
   "schema_version": 1,
+  "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "result": "REPROVADA",
-  "rejection_id": "audit-rejection:pr657-96c6f0f-merge-conflict",
-  "head_sha": "96c6f0f22ecf1b980d5cf87db73388e274b49e80",
-  "identity": {
-    "material_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
-    "published_handoff_head_sha": "96c6f0f22ecf1b980d5cf87db73388e274b49e80"
-  },
+  "validity": "independent",
+  "rejection_id": "audit-rejection:a46232c8-88b9-4e12-a71c-6a824d41eb55",
+  "head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
+  "base_sha": "82a3edd16209bd4d379db6f089b756933b35d4b0",
+  "pull_request_number": 657,
+  "issue_number": 654,
   "findings": [
     {
-      "id": "A-008",
+      "id": "A-002",
+      "title": "Escopo issue-local certificado diverge do snapshot Git",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "execution-state-gap",
-      "reason": "pull-request-merge-conflict",
-      "summary": "PR 657 had unresolved conflicts with current main (mergeable=false, rebaseable=false, mergeable_state=dirty), so green branch CI did not prove integration."
+      "category": "delivery-evidence-scope-binding",
+      "recovery_scope": "handoff-only",
+      "requires_refreeze": false,
+      "evidence": {
+        "material_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
+        "published_handoff_head_sha": "ddf0a1d46a5cbe644ddb17ca3871594011a70dd5",
+        "stale_work_item_start_sha": "fb52d2a12ec940d1335e3e347d2a3b69d3e34c56",
+        "corrected_work_item_start_sha": "82a3edd16209bd4d379db6f089b756933b35d4b0",
+        "observed_issue_changed_paths_count": 51,
+        "corrected_issue_delta_sha256": "b6b740ba66ba8521a7e2522081588f7c6475b466ae0f56c3435ff9a413679bb4"
+      }
     }
   ],
   "recommendations": []

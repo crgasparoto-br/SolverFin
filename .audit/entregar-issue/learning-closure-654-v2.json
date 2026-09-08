@@ -1,58 +1,16 @@
 {
   "schema_version": 1,
-  "classification": "systemic-escape",
+  "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:853486ba-25c6-45a2-ac48-cd93b9ee5b32",
+    "rejection_id": "audit-rejection:a46232c8-88b9-4e12-a71c-6a824d41eb55",
     "finding_ids": [
-      "A-005",
-      "A-006",
-      "A-007"
+      "A-002"
     ],
-    "audit_report_sha256": "c997dbee62a4433f95a79e9968e540de3d258aa63c26c8ffebc260cec592be4c"
+    "audit_report_sha256": "79d05f8cfb025d2e234e458e95f3e4ea54909aeab1430a6c2df4e857b84b1e10"
   },
   "generalized_learning": {
-    "escape_class": "delivery-evidence-contract-bypass",
-    "generalized_failure_pattern": "A delivery can appear green while the persisted specification/evidence packet is reduced, tautological, or hand-authored outside the canonical certificate builder.",
-    "plausible_wrong_implementation": "Summarize the source, cite only successful CI, and manually fill certificate fields that should be derived from exact artifacts and scope.",
-    "trigger_signals": [
-      "canonical specification source",
-      "handoff certificate provenance",
-      "negative-control discrimination",
-      "issue-local scope digest"
-    ],
-    "risk_families": [
-      "structural-contract"
-    ],
-    "reusable_control": "EVIDENCE-CONTRACT-INTEGRITY-001: require complete source-bound obligations, divergent negative controls, canonical builder provenance and deterministic prepublication validation.",
-    "prevention_rule": "Build the evidence packet from canonical source bytes and canonical certificate tooling before any remote handoff publication.",
-    "detection_rule": "Reject zero-obligation coverage, tautological controls, missing producer provenance, invalid scope digests, and remediation ledgers not bound to the source audit bytes.",
-    "transfer_cases": [
-      {
-        "surface": "specification-snapshot",
-        "case": "Remove one normative list item from a synthetic issue source; coverage validator must fail.",
-        "status": "passed"
-      },
-      {
-        "surface": "certificate-builder",
-        "case": "Omit derived producer provenance or alter the issue-local path set; certificate/preflight validation must fail.",
-        "status": "passed"
-      }
-    ],
-    "promotion_status": "promoted"
-  },
-  "skill_changes": [
-    {
-      "role": "prevention",
-      "status": "passed",
-      "change": "Canonical source snapshot plus certificate builder are mandatory before handoff publication.",
-      "evidence": "Installed delivery skill contains fail-closed source coverage and builder provenance rules."
-    },
-    {
-      "role": "detection",
-      "status": "passed",
-      "change": "Terminal validators rederive obligations and reject non-discriminating or incomplete evidence packets.",
-      "evidence": "Installed validators were executed against the rebuilt packet and passed only after full-source closure."
-    }
-  ]
+    "promotion_status": "not-required",
+    "reason": "The governing delivery contract already requires exact equality between the certified issue-local path set and the immutable Git compare; this remediation corrects the delivery evidence anchor rather than introducing a new global rule."
+  }
 }

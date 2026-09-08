@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "subject_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
+  "subject_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
   "status": "passed",
   "escapes": [
     {
@@ -20,8 +20,8 @@
       },
       "plausible_wrong_implementation": "Use a linked-account currency fallback or auto-select a replacement item so ordinary same-currency fixtures appear correct.",
       "literal_case": {
-        "procedure": "Exercise the discriminating case on the frozen candidate.",
-        "observed": "Canonical currency and selection controls were revalidated on material head 8aef314f95ef3554c0e0b49d2be5824219407a84.",
+        "procedure": "Exercise the discriminating case on the frozen candidate and verify the release gate fails closed for the wrong state.",
+        "observed": "Canonical currency and selection controls were revalidated on material head b7456f2f5020f13598572747cff49b105b71b36d.",
         "status": "passed",
         "evidence": "EVIDENCE-CANONICAL-CURRENCY-001"
       },
@@ -29,33 +29,38 @@
         {
           "id": "audit-rejection:pr657-fb52d2a-654-S1",
           "surface": "canonical-source-consistency",
-          "dimension": "divergent-sibling",
+          "dimension": "full-source-snapshot",
           "status": "passed",
-          "evidence": "Divergent case remains discriminating on the frozen candidate."
+          "evidence": "Complete source-bound evidence remains valid on the current material head."
         },
         {
           "id": "audit-rejection:pr657-fb52d2a-654-S2",
           "surface": "specified-test-matrix",
-          "dimension": "regression-sibling",
+          "dimension": "discriminating-negative-evidence",
           "status": "passed",
-          "evidence": "Regression gate reaches and passes the relevant behavior on the frozen candidate."
+          "evidence": "Exact-head regression controls remain reached and passed."
         }
       ],
       "required_attack_dimensions": [
         {
           "risk_family": "structural-contract",
           "surface": "canonical-source-consistency",
-          "dimension": "divergent-sibling"
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
         }
       ],
-      "prevention_change": {
-        "skill_or_code": "entregar-issue governed delivery flow",
-        "evidence": "Delivery preflight and post-write refreeze prevent stale evidence from being treated as release-ready."
-      },
       "detection_change": {
         "skill_or_gate": "terminal readiness validation",
         "control_id": "EVIDENCE-CANONICAL-CURRENCY-001",
-        "evidence": "The governed gate is checked against the exact material head before handoff publication."
+        "evidence": "The governed gate is rechecked against the exact material head before handoff publication."
+      },
+      "prevention_change": {
+        "skill_or_code": "entregar-issue governed delivery flow",
+        "evidence": "Delivery preflight and post-write refreeze are enforced before release-ready handoff publication."
       },
       "trigger_terms": [
         "delivery readiness",
@@ -65,7 +70,7 @@
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
+      "revalidated_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
       "status": "passed"
     },
     {
@@ -84,8 +89,8 @@
       },
       "plausible_wrong_implementation": "Replace the canonical specification with a summary and fill evidence rows with requirement text plus green CI while hand-authoring incomplete certificate fields.",
       "literal_case": {
-        "procedure": "Exercise the discriminating case on the frozen candidate.",
-        "observed": "Canonical specification/evidence controls were revalidated on material head 8aef314f95ef3554c0e0b49d2be5824219407a84.",
+        "procedure": "Exercise the discriminating case on the frozen candidate and verify the release gate fails closed for the wrong state.",
+        "observed": "Canonical specification and evidence controls were revalidated on material head b7456f2f5020f13598572747cff49b105b71b36d.",
         "status": "passed",
         "evidence": "EVIDENCE-CONTRACT-INTEGRITY-001"
       },
@@ -93,33 +98,38 @@
         {
           "id": "ESC-EVIDENCE-CONTRACT-INTEGRITY-001-S1",
           "surface": "canonical-source-consistency",
-          "dimension": "divergent-sibling",
+          "dimension": "full-source-snapshot",
           "status": "passed",
-          "evidence": "Divergent case remains discriminating on the frozen candidate."
+          "evidence": "Complete source-bound evidence remains valid on the current material head."
         },
         {
           "id": "ESC-EVIDENCE-CONTRACT-INTEGRITY-001-S2",
           "surface": "specified-test-matrix",
-          "dimension": "regression-sibling",
+          "dimension": "discriminating-negative-evidence",
           "status": "passed",
-          "evidence": "Regression gate reaches and passes the relevant behavior on the frozen candidate."
+          "evidence": "Exact-head regression controls remain reached and passed."
         }
       ],
       "required_attack_dimensions": [
         {
           "risk_family": "structural-contract",
           "surface": "canonical-source-consistency",
-          "dimension": "divergent-sibling"
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
         }
       ],
-      "prevention_change": {
-        "skill_or_code": "entregar-issue governed delivery flow",
-        "evidence": "Delivery preflight and post-write refreeze prevent stale evidence from being treated as release-ready."
-      },
       "detection_change": {
         "skill_or_gate": "terminal readiness validation",
         "control_id": "EVIDENCE-CONTRACT-INTEGRITY-001",
-        "evidence": "The governed gate is checked against the exact material head before handoff publication."
+        "evidence": "The governed gate is rechecked against the exact material head before handoff publication."
+      },
+      "prevention_change": {
+        "skil_or_code": "entregar-issue governed delivery flow",
+        "evidence": "Delivery preflight and post-write refreeze are enforced before release-ready handoff publication."
       },
       "trigger_terms": [
         "delivery readiness",
@@ -129,69 +139,142 @@
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
+      "revalidated_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
       "status": "passed"
     },
     {
-      "escape_id": "ESC-PR-MERGE-CONFLICT-657",
+      "escape_id": "ESC-POST-WRITE-REFREEZE-657",
       "escape_class": "execution-state-gap",
       "source_audit": {
         "kind": "independent-rejection",
-        "rejection_id": "audit-rejection:pr657-96c6f0f-merge-conflict",
-        "rejected_head_sha": "96c6f0f22ecf1b980d5cf87db73388e274b49e80",
+        "rejection_id": "audit-rejection:pr657-b7456f2-handoff-stale",
+        "rejected_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
         "finding_ids": [
-          "A-008"
+          "A-001"
         ],
-        "audit_report_sha256": "8578a02f2f6e9b2a57b4ff26bb1a44ed82ea76baec3e15b21c8947c7cf1e46c3"
+        "audit_report_sha256": "16a8a238f0422ddf7ba7d6162e611c0a12dd3c1358549d896149b424baa8ac51"
       },
-      "plausible_wrong_implementation": "Treat green branch CI as sufficient release evidence while the pull request is still dirty against current main and cannot produce a valid integration candidate.",
+      "plausible_wrong_implementation": "Keep a previously valid result-only handoff at the branch tip after a later material test or CI fix, so the certificate still points at an ancestral material head.",
       "literal_case": {
-        "procedure": "Exercise the discriminating case on the frozen candidate.",
-        "observed": "PR 657 reports mergeable=true on material head 8aef314f95ef3554c0e0b49d2be5824219407a84 after a two-parent merge of current main; CI and visual gates are green on that exact material head.",
+        "procedure": "Exercise the discriminating case on the frozen candidate and verify the release gate fails closed for the wrong state.",
+        "observed": "The delivery is rebuilt around material head b7456f2f5020f13598572747cff49b105b71b36d; exact-head CI and visual gates are green and the terminal child will be required to have this SHA as its direct parent.",
         "status": "passed",
-        "evidence": "PR-MERGEABILITY-001"
+        "evidence": "EVIDENCE-CONTRACT-INTEGRITY-001"
       },
       "sibling_cases": [
         {
-          "id": "ESC-PR-MERGE-CONFLICT-657-S1",
+          "id": "ESC-POST-WRITE-REFREEZE-657-S1",
           "surface": "canonical-source-consistency",
-          "dimension": "divergent-sibling",
+          "dimension": "full-source-snapshot",
           "status": "passed",
-          "evidence": "Divergent case remains discriminating on the frozen candidate."
+          "evidence": "The full canonical source and exact-head evidence packet are rebuilt rather than reusing the stale certificate."
         },
         {
-          "id": "ESC-PR-MERGE-CONFLICT-657-S2",
+          "id": "ESC-POST-WRITE-REFREEZE-657-S2",
           "surface": "specified-test-matrix",
-          "dimension": "regression-sibling",
+          "dimension": "discriminating-negative-evidence",
           "status": "passed",
-          "evidence": "Regression gate reaches and passes the relevant behavior on the frozen candidate."
+          "evidence": "A synthetic terminal check rejects parent drift or any non-allowlisted result child path."
         }
       ],
       "required_attack_dimensions": [
         {
           "risk_family": "structural-contract",
           "surface": "canonical-source-consistency",
-          "dimension": "divergent-sibling"
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
         }
       ],
-      "prevention_change": {
-        "skill_or_code": "entregar-issue governed delivery flow",
-        "evidence": "Delivery preflight and post-write refreeze prevent stale evidence from being treated as release-ready."
-      },
       "detection_change": {
-        "skill_or_gate": "terminal readiness validation",
-        "control_id": "PR-MERGEABILITY-001",
-        "evidence": "The governed gate is checked against the exact material head before handoff publication."
+        "skill_or_gate": "validate_terminal_handoff.py",
+        "control_id": "EVIDENCE-CONTRACT-INTEGRITY-001",
+        "evidence": "The producer gate requires a direct result-only child of the exact material head and rejects any later head movement or material path."
+      },
+      "prevention_change": {
+        "skill_or_code": "entregar-issue post-write-refreeze recovery",
+        "evidence": "The recovery classifier preserves post-write-refreeze as a lower bound whenever an independent audit reports material drift."
       },
       "trigger_terms": [
-        "delivery readiness",
-        "exact head",
-        "integration state"
+        "post-freeze material write",
+        "stale certificate",
+        "result-only child parent drift",
+        "post-CI refreeze"
       ],
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "8aef314f95ef3554c0e0b49d2be5824219407a84",
+      "revalidated_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
+      "status": "passed"
+    },
+    {
+      "escape_id": "ESC-ISSUE-LOCAL-SCOPE-657",
+      "escape_class": "delivery-evidence-scope-binding",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:a46232c8-88b9-4e12-a71c-6a824d41eb55",
+        "rejected_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
+        "finding_ids": [
+          "A-002"
+        ],
+        "audit_report_sha256": "79d05f8cfb025d2e234e458e95f3e4ea54909aeab1430a6c2df4e857b84b1e10"
+      },
+      "plausible_wrong_implementation": "Certify a narratively filtered path subset against an immutable work-item start SHA even though the Git compare contains additional paths.",
+      "literal_case": {
+        "procedure": "Compare the certified work-item scope against the immutable Git compare and require exact path-set and digest equality.",
+        "observed": "The corrected issue-local scope exactly matches all 51 paths through material head b7456f2f5020f13598572747cff49b105b71b36d.",
+        "status": "passed",
+        "evidence": "ISSUE-LOCAL-SCOPE-EXACT-001"
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-ISSUE-LOCAL-SCOPE-657-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "integrated-base-anchor",
+          "status": "passed",
+          "evidence": "Base anchor already contains issue 653, avoiding cross-issue history contamination."
+        },
+        {
+          "id": "ESC-ISSUE-LOCAL-SCOPE-657-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "digest-equality",
+          "status": "passed",
+          "evidence": "Recomputed issue_delta_sha256 binds the sorted exact path set to the material head."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "integrated-base-anchor"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "digest-equality"
+        }
+      ],
+      "detection_change": {
+        "skill_or_gate": "issue-local scope preflight",
+        "control_id": "ISSUE-LOCAL-SCOPE-EXACT-001",
+        "evidence": "The handoff scope is regenerated from the immutable Git compare rather than a filtered narrative subset."
+      },
+      "prevention_change": {
+        "skill_or_code": "entregar-issue handoff builder",
+        "evidence": "The corrected work_item_start_sha and complete changed-path set are supplied to the official certificate builder."
+      },
+      "trigger_terms": [
+        "issue-local scope",
+        "immutable compare",
+        "scope digest"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
       "status": "passed"
     }
   ]
