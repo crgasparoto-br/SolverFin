@@ -105,7 +105,10 @@ async function assertApiFailureRestoresTheFormWithoutLeakingTechnicalMessage(): 
     harness.statusNode.textContent,
     "Não foi possível concluir a alteração. Revise os dados e tente novamente.",
   );
-  assert.doesNotMatch(harness.statusNode.textContent, /Transaction account must be active/i);
+  assert.doesNotMatch(
+    harness.statusNode.textContent,
+    /Transaction account must be active/i,
+  );
   assert.equal(harness.statusNode.className, "form-status error full");
   assert.equal(harness.form.values.accountId, "account-archived");
   assert.equal(harness.form.values.description, originalDescription);
@@ -113,7 +116,8 @@ async function assertApiFailureRestoresTheFormWithoutLeakingTechnicalMessage(): 
 }
 
 async function assertTransferPayloadAndSafeValidationError(): Promise<void> {
-  const technicalMessage = "Transfer transactions require different source and destination accounts.";
+  const technicalMessage =
+    "Transfer transactions require different source and destination accounts.";
   const harness = createHarness({
     fetchResponse: Promise.resolve(errorResponse(technicalMessage)),
   });
@@ -131,7 +135,10 @@ async function assertTransferPayloadAndSafeValidationError(): Promise<void> {
     harness.statusNode.textContent,
     "Não foi possível concluir a alteração. Revise os dados e tente novamente.",
   );
-  assert.doesNotMatch(harness.statusNode.textContent, /different source and destination/i);
+  assert.doesNotMatch(
+    harness.statusNode.textContent,
+    /different source and destination/i,
+  );
   assert.equal(harness.submitButton.disabled, false);
 }
 
