@@ -228,7 +228,9 @@ async function updateCreditCardAccountHandler(
   const cardId = requireParam(match, "cardId");
   const currentCard = await getCreditCardAccountForContext(context, cardId);
   const requestedCurrency =
-    body.currency !== undefined ? normalizeRequiredCardCurrency(body.currency) : currentCard.currency;
+    body.currency !== undefined
+      ? normalizeRequiredCardCurrency(body.currency)
+      : currentCard.currency;
   const paymentAccountId =
     body.paymentAccountId !== undefined
       ? String(body.paymentAccountId)
@@ -267,7 +269,9 @@ async function updateCreditCardAccountHandler(
       : {}),
     ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
     ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
-    ...(body.paymentAccountId !== undefined ? { paymentAccountId: String(body.paymentAccountId) } : {}),
+    ...(body.paymentAccountId !== undefined
+      ? { paymentAccountId: String(body.paymentAccountId) }
+      : {}),
   });
 
   return json(200, { creditCardAccount });
