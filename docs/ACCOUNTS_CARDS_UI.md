@@ -27,10 +27,10 @@ Para contas, o detalhe mantém instituição, tipo, moeda, agência/conta, saldo
 A moeda nunca é inferida silenciosamente:
 
 - conta: usa a moeda declarada no próprio cadastro;
-- cartão: usa a moeda da conta de pagamento vinculada;
-- sem uma moeda determinável, a interface mostra `Moeda indisponível`/`moeda indisponível` em vez de assumir BRL.
+- cartão: usa `Card.currency` persistida como fonte canônica; a conta de pagamento vinculada deve ter a mesma moeda, mas não funciona como fallback de runtime;
+- cartão legado sem moeda configurada: a interface mostra `Moeda indisponível`/`moeda indisponível` e orienta a correção explícita, sem assumir BRL.
 
-Limites de cartão e instrumento seguem o mesmo contexto monetário da conta de pagamento.
+Limites de cartão e instrumento seguem o contexto monetário de `Card.currency`. Enquanto não houver conversão cambial, uma conta de pagamento vinculada precisa permanecer monetariamente compatível com o cartão.
 
 ## Ações e dialogs
 
@@ -74,8 +74,10 @@ O recorte é protegido por:
 ## Referências
 
 - issue #612;
+- issue #655 — `Card.currency` como fonte canônica da moeda do cartão e das novas compras, com compatibilidade obrigatória da conta de pagamento;
 - issue #607 — separação das fronteiras internas da tela;
 - issue #604 — mecanismo de migração dos pós-processadores;
+- `docs/CARDS.md`;
 - `docs/UI_PRIMITIVES.md`;
 - `docs/DESIGN_SYSTEM.md`;
 - `docs/SCREEN_ARCHETYPES.md`;
