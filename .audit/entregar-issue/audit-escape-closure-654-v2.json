@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "subject_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
+  "status": "passed",
+  "escapes": [
+    {
+      "escape_id": "audit-rejection:pr657-fb52d2a-654",
+      "escape_class": "canonical-currency-and-selection-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr657-fb52d2a-654",
+        "rejected_head_sha": "fb52d2a12ec940d1335e3e347d2a3b69d3e34c56",
+        "finding_ids": [
+          "A-001",
+          "A-002",
+          "A-003",
+          "A-004"
+        ]
+      },
+      "plausible_wrong_implementation": "Use a linked-account currency fallback or auto-select a replacement item so ordinary same-currency fixtures appear correct.",
+      "literal_case": {
+        "procedure": "Exercise divergent linked currency values and selection transitions on the frozen candidate.",
+        "observed": "Controls were revalidated on material head 381ca8eb30c5d9f570723ee9219cc81a23e4b125 with hashed frozen-source evidence.",
+        "status": "passed",
+        "evidence": ".audit/entregar-issue/evidence/currency-view-model.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "CUR-SOURCE-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "single-card-currency-source-sibling",
+          "status": "passed",
+          "evidence": "Divergent linked currency fixture."
+        },
+        {
+          "id": "CUR-SOURCE-S2",
+          "surface": "relational-semantic-integrity",
+          "dimension": "linked-currency-divergence-sibling",
+          "status": "passed",
+          "evidence": "Create/update producer boundary and no runtime fallback."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "single-card-currency-source"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "linked-currency-divergence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "canonical delivery evidence producer",
+        "evidence": "Card.currency is persisted/consumed independently and selection transitions are covered by concrete tests."
+      },
+      "detection_change": {
+        "skill_or_gate": "critical evidence prepublication gates",
+        "control_id": "EVIDENCE-CONTRACT-INTEGRITY-001",
+        "evidence": "Current matrix executes linked-currency divergence and canonical-source controls."
+      },
+      "trigger_terms": [
+        "canonical source",
+        "linked semantic dimension",
+        "selection transition"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
+      "status": "passed"
+    },
+    {
+      "escape_id": "ESC-EVIDENCE-CONTRACT-INTEGRITY-001",
+      "escape_class": "delivery-evidence-contract-bypass",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:853486ba-25c6-45a2-ac48-cd93b9ee5b32",
+        "rejected_head_sha": "3a49b3140eccf1b3129b7acb99cecb9c219300e4",
+        "finding_ids": [
+          "A-005",
+          "A-006",
+          "A-007"
+        ],
+        "audit_report_sha256": "c997dbee62a4433f95a79e9968e540de3d258aa63c26c8ffebc260cec592be4c"
+      },
+      "plausible_wrong_implementation": "Replace the canonical specification with a summary and fill evidence rows with requirement text plus green CI while hand-authoring incomplete certificate fields.",
+      "literal_case": {
+        "procedure": "Attempt to reduce the specification source or use status-only controls; require complete source-bound obligations and concrete discriminants before certificate construction.",
+        "observed": "Canonical validators were re-executed against material head 381ca8eb30c5d9f570723ee9219cc81a23e4b125 and rejected the reduced/tautological evidence pattern.",
+        "status": "passed",
+        "evidence": ".audit/entregar-issue/evidence/source-integrity-controls.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "EVIDENCE-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot-sibling",
+          "status": "passed",
+          "evidence": "A source summary omitting normative list items fails coverage."
+        },
+        {
+          "id": "EVIDENCE-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence-sibling",
+          "status": "passed",
+          "evidence": "A requirement-text-plus-green-CI control is replaced by a reproducible divergent fixture."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "canonical delivery evidence producer",
+        "evidence": "Full source snapshot and critical evidence matrix are built before handoff publication."
+      },
+      "detection_change": {
+        "skill_or_gate": "critical evidence prepublication gates",
+        "control_id": "EVIDENCE-CONTRACT-INTEGRITY-001",
+        "evidence": "Validators reject missing provenance, invalid scope digests, omitted obligations and non-discriminating controls."
+      },
+      "trigger_terms": [
+        "handoff provenance",
+        "canonical source",
+        "discriminating evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
+      "status": "passed"
+    }
+  ]
+}

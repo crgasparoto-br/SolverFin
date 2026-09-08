@@ -1,1 +1,44 @@
-{"schema_version":1,"status":"rejected","result":"REPROVADA","rejection_id":"audit-rejection:99eed414-1eda-4b79-b9aa-fc113662aba8","head_sha":"c89c5e803758a8185d489ca1a2216b1429a20ce6","findings":[{"id":"A-004","disposition":"blocking","status":"open","actionable":true,"remediation_mode":"targeted-remediation","category":"delivery-not-ready","reason":"terminal-evidence-stale","recovery_scope":"handoff-only","requires_refreeze":false,"summary":"The published requirement-closure Pass C still cited exact-head runs for ancestor 6e41988744d8009287681322e9256a0d833aa2a8 while the certified material head is 26cf290e33f1c715f053e34ba9b60956692b7408. Refresh Pass C and recertify the result-only child without material changes."}],"recommendations":[]}
+{
+  "schema_version": 1,
+  "status": "rejected",
+  "result": "REPROVADA",
+  "rejection_id": "audit-rejection:853486ba-25c6-45a2-ac48-cd93b9ee5b32",
+  "head_sha": "3a49b3140eccf1b3129b7acb99cecb9c219300e4",
+  "identity": {
+    "material_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
+    "published_handoff_head_sha": "3a49b3140eccf1b3129b7acb99cecb9c219300e4"
+  },
+  "findings": [
+    {
+      "id": "A-005",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "delivery-not-ready",
+      "reason": "invalid-handoff-provenance-and-scope-digest",
+      "summary": "Handoff lacks producer skill provenance and carries an invalid issue-local scope digest."
+    },
+    {
+      "id": "A-006",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "remediation-incomplete",
+      "reason": "audit-remediation-contract-mismatch",
+      "summary": "Remediation ledger does not satisfy the canonical all-actionable-items closure contract."
+    },
+    {
+      "id": "A-007",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "systemic-remediation",
+      "category": "evidence-integrity",
+      "reason": "reduced-specification-and-tautological-controls",
+      "summary": "Delivery evidence used a reduced paraphrase instead of the full canonical specification and controls that did not discriminate plausible wrong implementations."
+    }
+  ],
+  "recommendations": []
+}

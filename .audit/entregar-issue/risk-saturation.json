@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
+  "head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
   "families": [
     {
       "family": "authorization",
@@ -39,14 +39,22 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-REQ-012-02"
+        "NEG-REQ-004-01",
+        "NEG-REQ-019-01",
+        "NEG-REQ-020-01",
+        "NEG-REQ-024-03",
+        "NEG-REQ-025-01"
       ],
       "dimensions": [
         {
-          "surface": "extended-period-sequence",
-          "reason": "An extended window can have wrong period count/order while short windows pass.",
+          "surface": "state-transition",
+          "reason": "temporal-consistency behavior is materially observable for this canonical obligation.",
           "control_ids": [
-            "NEG-REQ-012-02"
+            "NEG-REQ-004-01",
+            "NEG-REQ-019-01",
+            "NEG-REQ-020-01",
+            "NEG-REQ-024-03",
+            "NEG-REQ-025-01"
           ],
           "status": "passed"
         }
@@ -55,22 +63,11 @@
     },
     {
       "family": "temporal-destination",
-      "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
-      "control_ids": [
-        "NEG-REQ-012-03"
-      ],
-      "dimensions": [
-        {
-          "surface": "extended-period-boundary",
-          "reason": "Period generation can drift at the far boundary of the requested extended interval.",
-          "control_ids": [
-            "NEG-REQ-012-03"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
     },
     {
       "family": "concurrency-atomicity",
@@ -109,52 +106,38 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "DELIVERY-TARGET-BINDING-001",
-        "HANDOFF-BASE-ORIGIN-001",
-        "NEG-REQ-002-01",
-        "NEG-REQ-005-02",
-        "TEST-REQ-012-EXTENDED-PERIOD",
-        "TEST-REQ-012-MULTICURRENCY"
+        "NEG-REQ-003-01",
+        "NEG-REQ-023-01",
+        "NEG-REQ-024-01",
+        "NEG-REQ-024-02",
+        "NEG-REQ-027-02",
+        "NEG-REQ-039-02"
       ],
       "dimensions": [
         {
-          "surface": "analysis-layer-order",
-          "reason": "All sections can exist while the detail matrix is still presented before the decision layers.",
+          "surface": "canonical-source-consistency",
+          "reason": "The discriminating-control obligation requires complete canonical source/evidence consistency.",
           "control_ids": [
-            "NEG-REQ-002-01"
+            "NEG-REQ-024-01",
+            "NEG-REQ-027-02"
           ],
           "status": "passed"
         },
         {
-          "surface": "delivery-target-binding",
-          "reason": "Delivery evidence can be internally coherent yet belong to a different target or origin.",
+          "surface": "relational-semantic-integrity",
+          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
           "control_ids": [
-            "DELIVERY-TARGET-BINDING-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-origin-inheritance",
-          "reason": "Delivery evidence can be internally coherent yet belong to a different target or origin.",
-          "control_ids": [
-            "HANDOFF-BASE-ORIGIN-001"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "semantic-identity-propagation",
-          "reason": "A presentation transform can drop target identity and group homonymous labels together.",
-          "control_ids": [
-            "NEG-REQ-005-02"
+            "NEG-REQ-003-01",
+            "NEG-REQ-023-01",
+            "NEG-REQ-024-02"
           ],
           "status": "passed"
         },
         {
           "surface": "specified-test-matrix",
-          "reason": "A single green scenario can mask omission of one explicitly required sibling test.",
+          "reason": "The acceptance criterion explicitly requires focused coverage across distinct test cases.",
           "control_ids": [
-            "TEST-REQ-012-EXTENDED-PERIOD",
-            "TEST-REQ-012-MULTICURRENCY"
+            "NEG-REQ-039-02"
           ],
           "status": "passed"
         }
@@ -166,14 +149,14 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-REQ-005-03"
+        "NEG-REQ-041-02"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Documentation can claim no destination exists even when canonical filters are supported.",
+          "reason": "The issue explicitly requires canonical documentation claims to be updated.",
           "control_ids": [
-            "NEG-REQ-005-03"
+            "NEG-REQ-041-02"
           ],
           "status": "passed"
         }

@@ -1,0 +1,7 @@
+Repository: crgasparoto-br/SolverFin
+Material head: 381ca8eb30c5d9f570723ee9219cc81a23e4b125
+CI run 34216384721: completed/success.
+Validate monorepo job reached and passed: Prisma schema, demo seed check, formatting, lint, typecheck, Prisma client generation, migrations, seed, tests and build.
+Integration API + PostgreSQL job reached and passed: migrations, seed, API integration tests and import statement consistency.
+Statement visual validation run 34216384621: completed/success.
+Chrome visual validation reached and passed the registered visual scenarios and secret-free evidence check.

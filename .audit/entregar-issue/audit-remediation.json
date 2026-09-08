@@ -1,1 +1,71 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","status":"closed","candidate_head_sha":"26cf290e33f1c715f053e34ba9b60956692b7408","remediation_mode":"targeted-remediation","source":{"rejection_id":"audit-rejection:99eed414-1eda-4b79-b9aa-fc113662aba8","audited_head_sha":"c89c5e803758a8185d489ca1a2216b1429a20ce6","audit_report_sha256":"89a765cedc0f4ebde4ed8bbf2b658a463ac0a36b29c30c4350607841e32206a6"},"items":[{"source_kind":"finding","source_id":"A-004","remediation_mode":"targeted-remediation","status":"fixed","closure_kind":"behavioral-fix","changed_files":[".audit/entregar-issue/requirement-closure.json",".audit/entregar-issue/requirement-closure.parts/part-000.b64",".audit/entregar-issue/audit-escape-closure-612.json",".audit/entregar-issue/learning-closure-612.json",".audit/entregar-issue/audit-remediation.json",".audit/entregar-issue/audit-source-result.json",".audit/entregar-issue/handoff-ready.json"],"evidence":["Pass C is rederived from SRC-ISSUE-612 and now binds all 14 requirements/obligations to exact material head 26cf290e33f1c715f053e34ba9b60956692b7408.","The stale ancestor 6e41988744d8009287681322e9256a0d833aa2a8 and its run IDs are absent from the refreshed requirement-closure logical artifact.","CI 34123653492 and Chrome visual 34123653512 remain terminal green on the unchanged material head; no product/test/documentation path is changed by this remediation."],"validations":["validate_specification_coverage.py passes on the refreshed logical closure.","validate_standard_evidence.py passes on exact material head 26cf290e33f1c715f053e34ba9b60956692b7408.","validate_audit_remediation.py, validate_learning_closure.py, validate_independent_rejection_closure.py and audit-escape lineage checks pass before handoff publication."]}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "381ca8eb30c5d9f570723ee9219cc81a23e4b125",
+  "remediation_mode": "mixed-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:853486ba-25c6-45a2-ac48-cd93b9ee5b32",
+    "audited_head_sha": "3a49b3140eccf1b3129b7acb99cecb9c219300e4",
+    "audit_report_sha256": "c997dbee62a4433f95a79e9968e540de3d258aa63c26c8ffebc260cec592be4c"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-005",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "delivery-evidence-rebuild",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json"
+      ],
+      "evidence": [
+        "Canonical handoff builder computes producer skill provenance and the issue-local scope digest from exact inputs."
+      ],
+      "validations": [
+        "build_handoff_certificate.py and validate_handoff_certificate.py pass before publication."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-006",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "delivery-evidence-rebuild",
+      "changed_files": [
+        ".audit/entregar-issue/audit-remediation.json",
+        ".audit/entregar-issue/audit-source-result.json"
+      ],
+      "evidence": [
+        "Ledger uses all-actionable-items, closed status, exact candidate SHA and SHA-256 binding to the source audit bytes."
+      ],
+      "validations": [
+        "validate_audit_remediation.py closes all actionable findings one-to-one."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-007",
+      "remediation_mode": "systemic-remediation",
+      "status": "fixed",
+      "closure_kind": "systemic-control-strengthening",
+      "changed_files": [
+        ".audit/entregar-issue/specification-snapshot.json",
+        ".audit/entregar-issue/specification-sources/SRC-ISSUE-654.txt",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/requirement-attack-matrix.json",
+        ".audit/entregar-issue/risk-saturation.json",
+        ".audit/entregar-issue/inherited-controls-654.json",
+        ".audit/entregar-issue/audit-escape-closure-654-v2.json",
+        ".audit/entregar-issue/learning-closure-654-v2.json"
+      ],
+      "evidence": [
+        "Complete canonical source is snapshotted with 85 lines and 41 source-bound obligations; critical evidence uses concrete divergent fixtures and hashed controls."
+      ],
+      "validations": [
+        "Specification coverage, attack matrix, risk saturation, inherited controls, learning closure and audit escape lineage validators pass."
+      ]
+    }
+  ]
+}

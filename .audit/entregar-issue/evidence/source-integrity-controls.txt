@@ -1,0 +1,7 @@
+Canonical source integrity remediation for the current delivery packet:
+- source is the complete issue body, stored as specification-sources/SRC-ISSUE-654.txt with 85 lines and SHA-256 162318c819d56b1d3ba2bf5d4aaf0999d2ed549a0cc704afbc12f42a3da233a4.
+- requirement closure preserves source_id, source_sha256, source_line and source_text for 41 extracted obligations; each is mapped to a distinct covered requirement.
+- validate_specification_coverage.py passes against the complete snapshot/closure pair.
+- the critical attack matrix uses reproducible positive, negative and regression controls instead of the previous tautology that repeated the requirement and cited only green CI.
+- the canonical handoff builder computes producer.skill_sha256 and issue_delta_sha256; these values are not supplied by hand-authored evidence.
+Material head: 381ca8eb30c5d9f570723ee9219cc81a23e4b125
