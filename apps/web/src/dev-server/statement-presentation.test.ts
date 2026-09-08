@@ -10,8 +10,10 @@ void main().catch((error: unknown) => {
 
 async function main(): Promise<void> {
   await assertChangedAccountAndDuplicateSubmission();
-  await assertApiFailureRestoresTheForm();
-  await assertTransferPayloadAndValidationError();
+  await assertMissingEffectiveDateIsOmittedOnStatusTransition();
+  await assertExplicitEffectiveDateIsPreserved();
+  await assertApiFailureRestoresTheFormWithoutLeakingTechnicalMessage();
+  await assertTransferPayloadAndSafeValidationError();
   await assertCreationAndRecurringEditsAreNotIntercepted();
 }
 
@@ -50,9 +52,45 @@ async function assertChangedAccountAndDuplicateSubmission(): Promise<void> {
   assert.equal(harness.submitButton.disabled, true);
 }
 
-async function assertApiFailureRestoresTheForm(): Promise<void> {
+async function assertMissingEffectiveDateIsOmittedOnStatusTransition(): Promise<void> {
+  for (const status of ["posted", "reconciled"] as const) {
+    const harness = createHarness();
+    harness.form.values.status = status;
+    harness.form.values.occurredOn = "2026-07-05";
+    harness.form.values.plannedOn = "2026-08-10";
+    harness.form.values.effectiveOn = "";
+
+    await harness.submit(fakeSubmitEvent(harness.form));
+
+    assert.equal(harness.requests.length, 1);
+    const payload = JSON.parse(harness.requests[0]?.init.body ?? "{}") as Record<string, unknown>;
+    assert.equal(payload.status, status);
+    assert.equal(payload.occurredOn, "2026-07-05");
+    assert.equal(payload.plannedOn, "2026-08-10");
+    assert.equal(
+      Object.prototype.hasOwnProperty.call(payload, "effectiveOn"),
+      false,
+      `${status} sem data efetiva explícita deve deixar o domínio aplicar a data da transição`,
+    );
+  }
+}
+
+async function assertExplicitEffectiveDateIsPreserved(): Promise<void> {
+  const harness = createHarness();
+  harness.form.values.status = "posted";
+  harness.form.values.occurredOn = "2026-07-05";
+  harness.form.values.effectiveOn = "2026-08-12";
+
+  await harness.submit(fakeSubmitEvent(harness.form));
+
+  const payload = JSON.parse(harness.requests[0]?.init.body ?? "{}") as Record<string, unknown>;
+  assert.equal(payload.effectiveOn, "2026-08-12");
+}
+
+async function assertApiFailureRestoresTheFormWithoutLeakingTechnicalMessage(): Promise<void> {
+  const technicalMessage = "Transaction account must be active.";
   const harness = createHarness({
-    fetchResponse: Promise.resolve(errorResponse("Conta selecionada não está ativa.")),
+    fetchResponse: Promise.resolve(errorResponse(technicalMessage)),
   });
   harness.form.values.accountId = "account-archived";
   const originalDescription = harness.form.values.description;
@@ -63,18 +101,21 @@ async function assertApiFailureRestoresTheForm(): Promise<void> {
   assert.equal(harness.requests.length, 1);
   assert.equal(harness.submitButton.disabled, false);
   assert.equal(harness.form.attributes.get("aria-busy"), "false");
-  assert.equal(harness.statusNode.textContent, "Conta selecionada não está ativa.");
+  assert.equal(
+    harness.statusNode.textContent,
+    "Não foi possível concluir a alteração. Revise os dados e tente novamente.",
+  );
+  assert.doesNotMatch(harness.statusNode.textContent, /Transaction account must be active/i);
   assert.equal(harness.statusNode.className, "form-status error full");
   assert.equal(harness.form.values.accountId, "account-archived");
   assert.equal(harness.form.values.description, originalDescription);
   assert.equal(harness.reloadCount, 0);
 }
 
-async function assertTransferPayloadAndValidationError(): Promise<void> {
+async function assertTransferPayloadAndSafeValidationError(): Promise<void> {
+  const technicalMessage = "Transfer transactions require different source and destination accounts.";
   const harness = createHarness({
-    fetchResponse: Promise.resolve(
-      errorResponse("Transfer transactions require different source and destination accounts."),
-    ),
+    fetchResponse: Promise.resolve(errorResponse(technicalMessage)),
   });
   harness.form.values.kind = "transfer";
   harness.form.values.accountId = "account-same";
@@ -86,7 +127,11 @@ async function assertTransferPayloadAndValidationError(): Promise<void> {
   assert.equal(payload.kind, "transfer");
   assert.equal(payload.accountId, "account-same");
   assert.equal(payload.destinationAccountId, "account-same");
-  assert.match(harness.statusNode.textContent, /different source and destination/i);
+  assert.equal(
+    harness.statusNode.textContent,
+    "Não foi possível concluir a alteração. Revise os dados e tente novamente.",
+  );
+  assert.doesNotMatch(harness.statusNode.textContent, /different source and destination/i);
   assert.equal(harness.submitButton.disabled, false);
 }
 
@@ -141,6 +186,7 @@ function createHarness(options: HarnessOptions = {}) {
       kind: "expense",
       status: "planned",
       amountMinor: "123,45",
+      occurredOn: "2026-07-05",
       plannedOn: "2026-07-20",
       effectiveOn: "",
       accountId: "account-source",

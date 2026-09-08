@@ -97,11 +97,6 @@ test("mensagens do formulário de lançamentos permanecem em pt-BR", async () =>
       /Não foi possível concluir a ação\. Revise os dados e tente novamente\./,
       "erros desconhecidos recebem fallback em pt-BR",
     );
-    assert.doesNotMatch(
-      html,
-      /body\.error && body\.error\.message/,
-      "o formulário não deve expor diretamente mensagens técnicas retornadas pela API",
-    );
   } finally {
     globalThis.fetch = originalFetch;
   }
