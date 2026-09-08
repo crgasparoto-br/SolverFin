@@ -166,6 +166,19 @@ export function renderAccountsCardsRuntimeScript(): string {
           });
           const empty = document.querySelector("[data-filter-empty]");
           if (empty) empty.hidden = visibleItems > 0 || items.length === 0;
+
+          const selectedLink = document.querySelector(
+            '[data-resource-master-item] .resource-master-link[aria-current="page"]',
+          );
+          const selectedItem = selectedLink && selectedLink.closest("[data-resource-master-item]");
+          if (selectedItem && selectedItem.hidden) {
+            selectedItem.classList.remove("is-selected");
+            selectedLink.removeAttribute("aria-current");
+            const selectedDetail = document.querySelector("[data-resource-detail]");
+            if (selectedDetail) selectedDetail.hidden = true;
+            const neutralDetail = document.querySelector("[data-filter-selection-empty]");
+            if (neutralDetail) neutralDetail.hidden = false;
+          }
         }
 
         [searchInput, kindSelect, currencySelect, statusSelect].forEach((control) => {

@@ -6,6 +6,7 @@ import type { ResourceMasterViewModel } from "./view-model.js";
 
 rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata();
 keepsCombinedFilterControlsInTheRouteRuntime();
+clearsSelectionWhenTheSelectedResourceIsFilteredOut();
 
 function rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata(): void {
   const resources: ResourceMasterViewModel[] = [
@@ -33,8 +34,9 @@ function rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata(): void {
   assert.match(html, /<option value="account">Contas<\/option>/);
   assert.match(html, /<option value="card">Cartões<\/option>/);
   assert.match(html, /data-master-currency/);
+  assert.match(html, /<option value="all">Todas as moedas<\/option>/);
   assert.match(html, /<option value="USD">USD<\/option>/);
-  assert.match(html, /<option value="unavailable">Indisponível<\/option>/);
+  assert.match(html, /<option value="unavailable">Moeda indisponível<\/option>/);
   assert.match(html, /data-kind="account" data-currency="USD"/);
   assert.match(html, /data-kind="card" data-currency="unavailable"/);
   assert.match(html, /Ajuste a busca ou os filtros de tipo, moeda e status/);
@@ -48,6 +50,16 @@ function keepsCombinedFilterControlsInTheRouteRuntime(): void {
   assert.match(script, /matchesKind/);
   assert.match(script, /matchesCurrency/);
   assert.match(script, /matchesSearch && matchesKind && matchesCurrency && matchesStatus/);
+}
+
+function clearsSelectionWhenTheSelectedResourceIsFilteredOut(): void {
+  const script = renderAccountsCardsRuntimeScript();
+
+  assert.match(script, /resource-master-link\[aria-current="page"\]/);
+  assert.match(script, /selectedItem && selectedItem\.hidden/);
+  assert.match(script, /removeAttribute\("aria-current"\)/);
+  assert.match(script, /classList\.remove\("is-selected"\)/);
+  assert.match(script, /data-filter-selection-empty/);
 }
 
 function resourceFixture(

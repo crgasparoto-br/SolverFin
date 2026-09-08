@@ -40,6 +40,7 @@ interface CardRecord {
   closingDay: number;
   dueDay: number;
   creditLimitMinor?: number;
+  currency?: string;
   maskedIdentifier?: string;
   institutionKey?: string;
 }
@@ -63,6 +64,7 @@ interface CategoryRecord {
   id: string;
   name: string;
   status?: string;
+  parentCategoryId?: string;
 }
 interface CardInstrumentRecord {
   id: string;
@@ -147,7 +149,7 @@ export async function renderCardsPageV2(
   url = new URL("http://solverfin.local/cartoes"),
 ): Promise<string> {
   const [cardsResult, invoicesResult, accountsResult, categoriesResult] = await Promise.all([
-    apiGet<{ cards: CardRecord[] }>(token, "/api/cards?status=all"),
+    apiGet<{ creditCardAccounts: CardRecord[] }>(token, "/api/credit-card-accounts?status=all"),
     apiGet<{ invoices: InvoiceRecord[] }>(token, "/api/invoices?status=all"),
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
     apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?kind=expense"),
@@ -156,9 +158,10 @@ export async function renderCardsPageV2(
   if (!cardsResult.ok) return renderErrorPage(cardsResult.error);
   if (!invoicesResult.ok) return renderErrorPage(invoicesResult.error);
 
-  const cards = cardsResult.data.cards.filter((card) => card.status !== "archived");
+  const cards = cardsResult.data.creditCardAccounts.filter((card) => card.status !== "archived");
   const invoices = invoicesResult.data.invoices;
   const selectedCard = resolveSelectedCard(cards, url.searchParams.get("cardId"));
+  const cardCurrency = normalizeCurrency(selectedCard?.currency);
   const cardInvoices = selectedCard ? invoicesForCard(invoices, selectedCard.id) : [];
   const selectedInvoice = resolveSelectedInvoice(cardInvoices, url);
   const presentation = resolvePresentation(url, selectedInvoice);
@@ -230,7 +233,14 @@ export async function renderCardsPageV2(
         "Acompanhe cada cartão pela fatura selecionada e revise as compras que a compõem.",
       actionsHtml: renderPageActions(selectedCard, activeInstruments),
     })}${renderDetailLayout({
-      masterHtml: renderCardMaster(cards, selectedCard, instruments, invoiceCurrency, url),
+      masterHtml: renderCardMaster(
+        cards,
+        selectedCard,
+        instruments,
+        cardCurrency,
+        invoiceCurrency,
+        url,
+      ),
       detailHtml: renderInvoiceDetail({
         card: selectedCard,
         invoices: cardInvoices,
@@ -252,7 +262,7 @@ export async function renderCardsPageV2(
   return renderShell(`
     <div class="cards-layout" data-cards-archetype="A3">
       ${content}
-      ${renderPurchaseModal(selectedCard, categories, activeInstruments, invoiceCurrency)}
+      ${renderPurchaseModal(selectedCard, categories, activeInstruments, cardCurrency)}
       ${renderPaymentModal(
         selectedInvoice,
         matchingPaymentAccounts,
@@ -262,8 +272,8 @@ export async function renderCardsPageV2(
       ${renderRecurrenceEditModal(
         categories,
         "card",
-        renderInstrumentOptions(activeInstruments, invoiceCurrency),
-        invoiceCurrency ?? "moeda indisponível",
+        renderInstrumentOptions(activeInstruments, cardCurrency),
+        cardCurrency ?? "moeda indisponível",
       )}
       ${clientScript()}
       ${recurrencesSectionScript()}
@@ -392,14 +402,18 @@ function renderPageActions(
   card: CardRecord | undefined,
   instruments: readonly CardInstrumentRecord[],
 ): string {
-  const disabled = !card || card.status !== "active" || instruments.length === 0;
+  const cardCurrency = normalizeCurrency(card?.currency);
+  const disabled =
+    !card || card.status !== "active" || instruments.length === 0 || cardCurrency === undefined;
   const reason = !card
     ? "Selecione um cartão"
-    : instruments.length === 0
-      ? "Cadastre um instrumento ativo em Contas e Cartões"
-      : card.status !== "active"
-        ? "O cartão selecionado não está ativo"
-        : "Registrar compra neste cartão";
+    : cardCurrency === undefined
+      ? "Defina a moeda padrão do cartão em Contas e Cartões"
+      : instruments.length === 0
+        ? "Cadastre um instrumento ativo em Contas e Cartões"
+        : card.status !== "active"
+          ? "O cartão selecionado não está ativo"
+          : "Registrar compra neste cartão";
   return `<button type="button" class="sf-button sf-button-primary" data-open-modal="purchase"${disabled ? " disabled" : ""} title="${escapeHtml(reason)}">Registrar compra</button>`;
 }
 
@@ -407,6 +421,7 @@ function renderCardMaster(
   cards: readonly CardRecord[],
   selectedCard: CardRecord | undefined,
   instruments: readonly CardInstrumentRecord[],
+  cardCurrency: string | undefined,
   invoiceCurrency: string | undefined,
   url: URL,
 ): string {
@@ -428,10 +443,13 @@ function renderCardMaster(
   const active = instruments.filter((instrument) => instrument.status === "active");
   const archived = instruments.filter((instrument) => instrument.status !== "active");
   const profileId = url.searchParams.get("profileId");
+  const manageHref = selectedCard
+    ? `/contas-cartoes?resource=${encodeURIComponent(`card:${selectedCard.id}`)}`
+    : "/contas-cartoes";
   return `<section class="cards-master-panel" aria-labelledby="cards-master-title">
     <div class="cards-master-heading">
       <div><span class="cards-kicker">Cartão</span><h2 id="cards-master-title">Selecionado</h2></div>
-      <a class="cards-edit-link" href="/contas-cartoes">Gerenciar</a>
+      <a class="cards-edit-link" href="${escapeHtml(manageHref)}">Gerenciar</a>
     </div>
     <form method="get" action="/cartoes" class="cards-card-picker" data-card-picker-form>
       ${profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(profileId)}">` : ""}
@@ -451,10 +469,16 @@ function renderCardMaster(
         : ""
     }
     <dl class="cards-master-meta">
+      <div><dt>Moeda padrão</dt><dd>${escapeHtml(cardCurrency ?? "Não informada")}</dd></div>
       <div><dt>Moeda da fatura</dt><dd>${escapeHtml(invoiceCurrency ?? "Indisponível")}</dd></div>
       <div><dt>Fechamento contratual</dt><dd>Dia ${escapeHtml(String(selectedCard?.closingDay ?? "-"))}</dd></div>
       <div><dt>Vencimento contratual</dt><dd>Dia ${escapeHtml(String(selectedCard?.dueDay ?? "-"))}</dd></div>
     </dl>
+    ${
+      selectedCard && !cardCurrency
+        ? `<p class="cards-card-warning" role="status">Defina a moeda padrão deste cartão antes de registrar novas compras. <a href="${escapeHtml(manageHref)}">Editar cartão</a></p>`
+        : ""
+    }
     <details class="cards-instrument-nav" open>
       <summary>Instrumentos <span>${active.length} ativos</span></summary>
       <ul>
@@ -462,14 +486,14 @@ function renderCardMaster(
           active
             .map(
               (instrument) =>
-                `<li><span>${escapeHtml(formatInstrumentLabel(instrument, invoiceCurrency))}</span>${instrument.isDefault ? "<strong>Padrão</strong>" : ""}</li>`,
+                `<li><span>${escapeHtml(formatInstrumentLabel(instrument, cardCurrency))}</span>${instrument.isDefault ? "<strong>Padrão</strong>" : ""}</li>`,
             )
             .join("") || "<li><span>Nenhum instrumento ativo.</span></li>"
         }
         ${archived
           .map(
             (instrument) =>
-              `<li class="muted"><span>${escapeHtml(formatInstrumentLabel(instrument, invoiceCurrency))}</span><small>Arquivado</small></li>`,
+              `<li class="muted"><span>${escapeHtml(formatInstrumentLabel(instrument, cardCurrency))}</span><small>Arquivado</small></li>`,
           )
           .join("")}
       </ul>
@@ -779,18 +803,22 @@ function renderPurchaseModal(
   selectedCard: CardRecord | undefined,
   categories: readonly CategoryRecord[],
   instruments: readonly CardInstrumentRecord[],
-  currency: string | undefined,
+  cardCurrency: string | undefined,
 ): string {
+  const canSave = Boolean(selectedCard && instruments.length > 0 && cardCurrency);
+  const cardSettingsHref = selectedCard
+    ? `/contas-cartoes?resource=${encodeURIComponent(`card:${selectedCard.id}`)}`
+    : "/contas-cartoes";
   return `<dialog class="cards-dialog" data-modal="purchase" aria-labelledby="cards-purchase-dialog-title">
     <section class="cards-dialog-panel">
       <header><div><span class="cards-kicker">Compra no cartão</span><h2 id="cards-purchase-dialog-title" data-purchase-modal-title>Registrar compra</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
       <form data-purchase-form data-path="/api/credit-card-accounts/${escapeHtml(selectedCard?.id ?? "")}/purchases">
         <input type="hidden" name="currentPurchaseId"><input type="hidden" name="recurrenceId">
-        <label>Valor${currency ? ` (${escapeHtml(currency)})` : ""}<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00"></label>
-        <label>Moeda<input name="currency" value="${escapeHtml(currency ?? "")}" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" required autocomplete="off"></label>
-        <label>Data<input name="occurredOn" type="date" required></label>
+        <label>Valor${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00"></label>
+        <label>Moeda<input name="currency" value="${escapeHtml(cardCurrency ?? "")}" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" required readonly aria-readonly="true" autocomplete="off"></label>
+        <label>Data<input name="occurredOn" type="date" required data-default-local-today></label>
         <label class="full">Descrição<input name="description" required placeholder="Compra no cartão"></label>
-        <label>Instrumento<select name="cardInstrumentId"${instruments.length === 0 ? " disabled" : " required"}>${renderInstrumentOptions(instruments, currency)}</select></label>
+        <label>Instrumento<select name="cardInstrumentId"${instruments.length === 0 ? " disabled" : " required"}>${renderInstrumentOptions(instruments, cardCurrency)}</select></label>
         <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
         <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
         <label data-purchase-field="totalInstallments" hidden>Parcelas<input name="totalInstallments" type="number" min="2" max="120" value="2"></label>
@@ -799,8 +827,13 @@ function renderPurchaseModal(
         <label data-purchase-field="interval" hidden>A cada<input name="interval" type="number" min="1" max="60" value="1"></label>
         <label data-purchase-field="frequency" hidden>Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label>
         <label data-purchase-field="endOn" hidden>Fim opcional<input name="endOn" type="date"></label>
+        ${
+          selectedCard && !cardCurrency
+            ? `<p class="form-status error full" role="status">Defina a moeda padrão do cartão antes de registrar uma compra. <a href="${escapeHtml(cardSettingsHref)}">Editar cartão em Contas e Cartões</a>.</p>`
+            : ""
+        }
         <p class="form-status full" data-form-status aria-live="polite"></p>
-        <button class="sf-button sf-button-primary full" type="submit"${selectedCard && instruments.length > 0 ? "" : " disabled"}>Salvar compra</button>
+        <button class="sf-button sf-button-primary full" type="submit"${canSave ? "" : " disabled"}>Salvar compra</button>
       </form>
     </section>
   </dialog>`;
@@ -857,13 +890,62 @@ function renderInstrumentOptions(
     .join("");
 }
 function renderCategoryOptions(categories: readonly CategoryRecord[]): string {
-  return categories
-    .filter((category) => category.status === undefined || category.status === "active")
-    .map(
-      (category) =>
-        `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`,
-    )
+  const activeCategories = categories.filter(
+    (category) => category.status === undefined || category.status === "active",
+  );
+  return buildCategoryHierarchy(activeCategories)
+    .map(({ category, path }) => {
+      const label = path.length > 1 ? path.join(" › ") : category.name;
+      return `<option value="${escapeHtml(category.id)}">${escapeHtml(label)}</option>`;
+    })
     .join("");
+}
+function buildCategoryHierarchy(
+  categories: readonly CategoryRecord[],
+): Array<{ category: CategoryRecord; path: string[] }> {
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const childrenByParent = new Map<string | undefined, CategoryRecord[]>();
+  const rootKey = undefined;
+
+  for (const category of categories) {
+    const parentId =
+      category.parentCategoryId &&
+      category.parentCategoryId !== category.id &&
+      categoryById.has(category.parentCategoryId)
+        ? category.parentCategoryId
+        : rootKey;
+    const children = childrenByParent.get(parentId) ?? [];
+    children.push(category);
+    childrenByParent.set(parentId, children);
+  }
+
+  for (const children of childrenByParent.values()) {
+    children.sort((left, right) =>
+      left.name.localeCompare(right.name, "pt-BR", { sensitivity: "base" }),
+    );
+  }
+
+  const ordered: Array<{ category: CategoryRecord; path: string[] }> = [];
+  const visited = new Set<string>();
+  const visit = (category: CategoryRecord, path: string[]): void => {
+    if (visited.has(category.id)) return;
+    visited.add(category.id);
+    const nextPath = [...path, category.name];
+    ordered.push({ category, path: nextPath });
+    for (const child of childrenByParent.get(category.id) ?? []) {
+      visit(child, nextPath);
+    }
+  };
+
+  for (const root of childrenByParent.get(rootKey) ?? []) {
+    visit(root, []);
+  }
+
+  for (const category of categories) {
+    if (!visited.has(category.id)) visit(category, []);
+  }
+
+  return ordered;
 }
 function renderAccountOptions(accounts: readonly AccountRecord[]): string {
   if (accounts.length === 0) return '<option value="">Nenhuma conta compatível</option>';
@@ -1053,6 +1135,10 @@ function clientScript(): string {
         return Math.round(Number.parseFloat(normalized || "0") * 100);
       };
       const minorToMoney = (value) => (Number(value || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const localToday = () => {
+        const now = new Date();
+        return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
+      };
       document.querySelectorAll("[data-money]").forEach((input) => input.addEventListener("input", () => {
         const digits = input.value.replace(/\\D/g, "");
         input.value = minorToMoney(digits ? Number.parseInt(digits, 10) : 0);
@@ -1092,6 +1178,8 @@ function clientScript(): string {
         purchaseForm.dataset.recurrenceId = "";
         purchaseForm.querySelector('[name="currentPurchaseId"]').value = "";
         purchaseForm.querySelector('[name="recurrenceId"]').value = "";
+        const occurredOnField = purchaseForm.querySelector('[name="occurredOn"]');
+        if (occurredOnField) occurredOnField.value = localToday();
         if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = false;
         const currencyField = purchaseForm.querySelector('[name="currency"]');
         if (currencyField) currencyField.disabled = false;
@@ -1163,6 +1251,11 @@ function clientScript(): string {
         const path = purchaseForm.dataset.path || "";
         const status = purchaseForm.querySelector("[data-form-status]");
         const currency = String(data.get("currency") || purchaseForm.querySelector('[name="currency"]')?.value || "").trim().toUpperCase();
+        if (method === "POST" && !/^[A-Z]{3}$/.test(currency)) {
+          status.textContent = "Defina a moeda padrão do cartão em Contas e Cartões antes de salvar a compra.";
+          status.className = "form-status error full";
+          return;
+        }
         const payload = {
           amountMinor: moneyToMinor(data.get("amountMinor")),
           occurredOn: String(data.get("occurredOn") || ""),
@@ -1287,6 +1380,7 @@ function css(): string {
     .cards-card-icon{align-items:center;display:inline-flex;height:26px;width:26px}.cards-card-icon .brand-icon,.cards-card-icon .brand-icon-wrap,.cards-card-icon img{height:26px;width:26px}
     .cards-card-identity>div{display:grid;gap:2px;min-width:0}.cards-card-identity>div span{color:var(--muted);font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .cards-master-meta{display:grid;gap:7px}.cards-master-meta>div{align-items:center;display:flex;gap:8px;justify-content:space-between}.cards-master-meta dt{color:var(--muted);font-size:.78rem}.cards-master-meta dd{font-size:.8rem;font-weight:750;text-align:right}
+    .cards-card-warning{background:var(--primary-soft);border-radius:var(--radius);font-size:.76rem;margin:0;padding:8px 9px}.cards-card-warning a{font-weight:800}
     .cards-instrument-nav{border-top:1px solid var(--line);padding-top:10px}.cards-instrument-nav summary{align-items:center;cursor:pointer;display:flex;font-weight:750;justify-content:space-between}.cards-instrument-nav summary span{color:var(--muted);font-size:.75rem}.cards-instrument-nav ul{display:grid;gap:7px;list-style:none;margin:10px 0 0;padding:0}.cards-instrument-nav li{align-items:start;display:flex;font-size:.78rem;gap:6px;justify-content:space-between}.cards-instrument-nav li span{min-width:0}.cards-instrument-nav li strong,.cards-instrument-nav li small{white-space:nowrap}
     .cards-detail-panel{display:grid;gap:0;overflow:hidden}
     .cards-invoice-navigation{border-bottom:1px solid var(--line);display:grid;gap:10px;padding:12px 14px}.cards-month-jump{align-items:end;display:flex;gap:6px}.cards-month-jump label{display:grid;font-size:.74rem;gap:4px}.cards-month-jump input{min-width:9.5rem}.cards-month-jump .sf-button{min-height:36px;white-space:nowrap}

@@ -26,20 +26,23 @@ A separação operacional entre os recursos ocorre por filtros explícitos no pr
 
 - **Buscar**: nome, instituição, identificadores, bandeira e moeda;
 - **Tipo**: `Todos`, `Contas` ou `Cartões`;
-- **Moeda**: lista somente as moedas existentes na coleção atual e inclui `Indisponível` quando houver recurso sem moeda determinável;
+- **Moeda**: `Todas as moedas`, os códigos existentes na coleção atual e `Moeda indisponível` quando houver recurso sem moeda determinável;
 - **Status**: `Todos`, `Ativos` ou `Inativos`.
 
 Os quatro filtros são cumulativos. Alterar um filtro não descarta os demais, e retornar todos aos valores neutros restaura a coleção completa. Quando a combinação não encontra recursos, o estado vazio orienta a ajustar busca, tipo, moeda ou status. Os filtros usam controles nativos e permanecem operáveis por teclado.
+
+Se o recurso selecionado continuar elegível, seleção e detalhe são preservados. Se qualquer filtro o excluir, a seleção visível é limpa e o detalhe passa para `Selecione um recurso`; limpar os filtros depois disso não seleciona o recurso anterior nem qualquer outro automaticamente. Uma nova seleção exige ação explícita do usuário.
 
 Para contas, o detalhe mantém instituição, tipo, moeda, agência/conta, saldo inicial e estado. Para cartões, mantém instituição, bandeira, conta de pagamento, fechamento/vencimento, moeda, limite e instrumentos internos.
 
 A moeda nunca é inferida silenciosamente:
 
 - conta: usa a moeda declarada no próprio cadastro;
-- cartão: usa a moeda da conta de pagamento vinculada;
-- sem uma moeda determinável, a interface mostra `Moeda indisponível`/`moeda indisponível` e o filtro usa a opção explícita `Indisponível`, em vez de assumir BRL.
+- cartão: usa exclusivamente `Card.currency`, persistida no cartão;
+- a conta de pagamento vinculada não é fallback runtime para a moeda do cartão;
+- cartão legado sem `Card.currency` permanece como `Moeda indisponível` no master/filtro e deve ser corrigido pela edição do cartão, sem assumir BRL.
 
-Limites de cartão e instrumento seguem o mesmo contexto monetário da conta de pagamento.
+Limites do cartão e de seus instrumentos usam o contexto monetário de `Card.currency`. Enquanto não existir conversão cambial, o domínio mantém separadamente a regra de compatibilidade entre a moeda do cartão e a conta de pagamento vinculada.
 
 ## Ações e dialogs
 
@@ -65,28 +68,30 @@ Os módulos históricos podem permanecer temporariamente no repositório como re
 
 No desktop, `DetailLayout` mantém master e detalhe lado a lado. Os filtros usam busca em largura total seguida de tipo, moeda e status. Em larguras intermediárias eles refluem para duas colunas; no mobile ficam em uma coluna, sem scroll horizontal acidental. `Dialog` usa os estilos e comportamento responsivo compartilhados da fundação; a rota mantém apenas estilos do conteúdo interno dos formulários e instrumentos.
 
-O gate visual cobre 1440×900, 1366×768 e 390×844, incluindo conteúdo longo, filtros combinados, busca vazia, foco/teclado, dialog e ações. O estado de perfil novo mostra `Nenhuma conta ou cartão cadastrado` no master e `Selecione um recurso` no detalhe.
+O gate visual cobre 1440×900, 1366×768 e 390×844, incluindo conteúdo longo, filtros combinados, seleção excluída por filtro, busca vazia, foco/teclado, dialog e ações. O estado de perfil novo mostra `Nenhuma conta ou cartão cadastrado` no master e `Selecione um recurso` no detalhe.
 
 ## Validação
 
 O recorte é protegido por:
 
-- testes do renderer/view-model para seleção A3 e moeda explícita, incluindo USD e moeda indisponível;
-- teste focado de filtros que exige metadados de tipo/moeda, opção de moeda indisponível e combinação de busca + tipo + moeda + status;
+- testes do renderer/view-model para seleção A3 e moeda explícita, incluindo USD e `Card.currency` ausente;
+- teste focado de filtros que exige metadados de tipo/moeda, labels `Todas as moedas`/`Moeda indisponível`, combinação de busca + tipo + moeda + status e limpeza de seleção quando o mestre selecionado é excluído;
 - `ui-boundaries:check`, que exige `renderDialog`, `renderDialogTrigger` e o controller compartilhado e rejeita controller/CSS modal específico da rota;
 - teste de manutenção da rota, que exige `data-sf-dialog-open`, `data-sf-dialog-close` e o script compartilhado na saída SSR;
 - `legacy-html-post-processors:check`, que exige budget residual 2 e proíbe o retorno da rota ao pipeline;
 - contrato SSR, que exige o marcador A3 e CSS da própria rota sem providers runtime aposentados;
-- `accounts-cards-interface.mjs`, que executa o fluxo A3 real e produz evidência de `DetailLayout`, ausência de tabs, filtros de tipo/moeda combinados, `Dialog`, desktop/mobile e responsabilidades legadas substituídas;
+- `accounts-cards-interface.mjs`, que executa o fluxo A3 real e produz evidência de `DetailLayout`, ausência de tabs, filtros de tipo/moeda combinados, limpeza do detalhe ao excluir a seleção, `Dialog`, desktop/mobile e responsabilidades legadas substituídas;
 - `issue-606-accounts-cards-empty.mjs` para o estado vazio de perfil novo;
 - suite, lint, typecheck e build do workspace Web.
 
 ## Referências
 
+- issue #655 — `Card.currency` como fonte canônica da moeda do cartão;
 - issue #654 — separação por filtro de tipo e filtro de moeda;
 - issue #612 — migração para A3 master-detail;
 - issue #607 — separação das fronteiras internas da tela;
 - issue #604 — mecanismo de migração dos pós-processadores;
+- `docs/CARDS.md`;
 - `docs/UI_PRIMITIVES.md`;
 - `docs/DESIGN_SYSTEM.md`;
 - `docs/SCREEN_ARCHETYPES.md`;

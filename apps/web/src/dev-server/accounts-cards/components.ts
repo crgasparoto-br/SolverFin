@@ -106,11 +106,13 @@ function renderCurrencyFilterOptions(resources: readonly ResourceMasterViewModel
   ).sort();
   const hasUnavailableCurrency = resources.some((resource) => !resource.currency);
   return [
-    '<option value="all">Todas</option>',
+    '<option value="all">Todas as moedas</option>',
     ...currencies.map(
       (currency) => `<option value="${escapeHtml(currency)}">${escapeHtml(currency)}</option>`,
     ),
-    ...(hasUnavailableCurrency ? ['<option value="unavailable">Indisponível</option>'] : []),
+    ...(hasUnavailableCurrency
+      ? ['<option value="unavailable">Moeda indisponível</option>']
+      : []),
   ].join("");
 }
 
@@ -127,7 +129,7 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
           <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong>${renderBadge({ label: formatGenericStatus(resource.status), tone: resource.status === "active" ? "positive" : "neutral" })}</span>
           <span>${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")} · ${escapeHtml(resource.institutionLabel)}</span>
           <span>${escapeHtml(resource.secondaryLabel)}</span>
-          <span class="resource-master-currency">${escapeHtml(resource.currencyLabel)}</span>
+          <span class="resource-master-currency">${escapeHtml(resource.currency ?? (resource.kind === "card" ? "Moeda indisponível" : resource.currencyLabel))}</span>
         </span>
       </a>
     </article>`;
@@ -144,9 +146,15 @@ export function renderSelectedResourceDetail(
     })}</section>`;
   }
 
-  return selected.kind === "account"
-    ? renderAccountDetail(selected.account, selected.currency)
-    : renderCardDetail(selected.card, accounts, selected.paymentAccount, selected.currency);
+  const detail =
+    selected.kind === "account"
+      ? renderAccountDetail(selected.account, selected.currency)
+      : renderCardDetail(selected.card, accounts, selected.paymentAccount, selected.currency);
+  const filteredEmpty = `<section class="resource-detail-panel resource-detail-empty" data-filter-selection-empty hidden>${renderEmptyState({
+    title: "Selecione um recurso",
+    description: "Escolha uma conta ou cartão na lista para consultar e manter o cadastro.",
+  })}</section>`;
+  return `${detail}${filteredEmpty}`;
 }
 
 function renderAccountDetail(account: AccountRecord, currency: string | undefined): string {
@@ -191,7 +199,7 @@ function renderCardDetail(
   const limit = formatAmountWithCurrency(card.creditLimitMinor ?? 0, currency);
   const currencyState = currency
     ? detailField("Moeda", currency)
-    : `<div class="resource-detail-field is-unavailable">${renderUnavailableState({ title: "Moeda indisponível", description: "Vincule uma conta de pagamento com moeda informada para definir o contexto monetário deste cartão." })}</div>`;
+    : `<div class="resource-detail-field is-unavailable">${renderUnavailableState({ title: "Moeda indisponível", description: "Edite o cartão e informe a moeda padrão antes de registrar novas compras." })}</div>`;
 
   return `
     <section class="resource-detail-panel" data-resource-detail="card" data-resource-key="card:${escapeHtml(card.id)}">
@@ -301,7 +309,7 @@ export function renderAccountItem(account: AccountRecord): string {
 
 export function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]): string {
   const viewModel = buildCardItemViewModel(card, accounts);
-  return `<article class="master-item card-account-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(viewModel.search)}"><div class="identity-mark card-mark" aria-hidden="true">${renderCardBrandIcon(viewModel.brandKey)}</div><div class="item-main"><div class="item-title-row"><strong>${escapeHtml(card.name)}</strong><span class="status-pill">${escapeHtml(formatGenericStatus(card.status))}</span></div><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(viewModel.brandLabel)} · fecha ${card.closingDay}, vence ${card.dueDay}</p></div><div class="amount-stack"><span>Limite total</span><strong>${viewModel.paymentAccountCurrency ? formatAmountWithCurrency(card.creditLimitMinor ?? 0, viewModel.paymentAccountCurrency) : "Moeda indisponível"}</strong></div>${renderCardEditDialog(card, accounts, viewModel.editDialogId)}</article>`;
+  return `<article class="master-item card-account-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(viewModel.search)}"><div class="identity-mark card-mark" aria-hidden="true">${renderCardBrandIcon(viewModel.brandKey)}</div><div class="item-main"><div class="item-title-row"><strong>${escapeHtml(card.name)}</strong><span class="status-pill">${escapeHtml(formatGenericStatus(card.status))}</span></div><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(viewModel.brandLabel)} · fecha ${card.closingDay}, vence ${card.dueDay}</p></div><div class="amount-stack"><span>Limite total</span><strong>${viewModel.cardCurrency ? formatAmountWithCurrency(card.creditLimitMinor ?? 0, viewModel.cardCurrency) : "Moeda indisponível"}</strong></div>${renderCardEditDialog(card, accounts, viewModel.editDialogId)}</article>`;
 }
 
 export function renderFilterEmptyState(title: string): string {

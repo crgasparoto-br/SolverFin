@@ -567,12 +567,13 @@ async function upsertDemoCards(client) {
   ] of rows) {
     await client.query(
       `INSERT INTO "Card"
-       ("id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status", "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt")
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       ("id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status", "currency", "closingDay", "dueDay", "creditLimitMinor", "maskedIdentifier", "institutionKey", "brandKey", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, 'BRL', $7, $8, $9, NULL, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        ON CONFLICT ("id") DO UPDATE SET
          "paymentAccountId" = EXCLUDED."paymentAccountId",
          "name" = EXCLUDED."name",
          "status" = EXCLUDED."status",
+         "currency" = EXCLUDED."currency",
          "closingDay" = EXCLUDED."closingDay",
          "dueDay" = EXCLUDED."dueDay",
          "creditLimitMinor" = EXCLUDED."creditLimitMinor",
