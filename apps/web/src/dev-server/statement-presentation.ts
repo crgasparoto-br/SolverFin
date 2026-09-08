@@ -288,13 +288,13 @@ export function statementPresentationScript(): string {
               amountMinor: moneyToMinor(data.get("amountMinor")),
               occurredOn,
               plannedOn,
-              effectiveOn: effectiveOn || null,
               accountId: String(data.get("accountId") || ""),
               description: String(data.get("description") || ""),
               note: String(data.get("note") || "") || null,
             };
             const destinationAccountId = String(data.get("destinationAccountId") || "");
             const categoryId = String(data.get("categoryId") || "");
+            if (effectiveOn) payload.effectiveOn = effectiveOn;
             if (destinationAccountId) payload.destinationAccountId = destinationAccountId;
             if (categoryId) payload.categoryId = categoryId;
             return payload;
@@ -327,11 +327,10 @@ export function statementPresentationScript(): string {
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(buildPayload(data)),
               });
-              const body = await response.json().catch(() => ({}));
 
               if (!response.ok) {
                 setStatus(
-                  (body.error && body.error.message) || "Não foi possível concluir a alteração.",
+                  "Não foi possível concluir a alteração. Revise os dados e tente novamente.",
                   "error",
                 );
                 setBusy(false);

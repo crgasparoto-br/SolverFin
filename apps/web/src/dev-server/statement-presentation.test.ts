@@ -10,6 +10,8 @@ void main().catch((error: unknown) => {
 
 async function main(): Promise<void> {
   await assertChangedAccountAndDuplicateSubmission();
+  await assertTransitionPayload();
+  await assertExplicitEffectiveOnPreserved();
   await assertApiFailureRestoresTheForm();
   await assertTransferPayloadAndValidationError();
   await assertCreationAndRecurringEditsAreNotIntercepted();
@@ -50,9 +52,40 @@ async function assertChangedAccountAndDuplicateSubmission(): Promise<void> {
   assert.equal(harness.submitButton.disabled, true);
 }
 
+async function assertTransitionPayload(): Promise<void> {
+  for (const status of ["posted", "reconciled"] as const) {
+    const harness = createHarness();
+    harness.form.values.status = status;
+    harness.form.values.occurredOn = "2026-07-05";
+    harness.form.values.plannedOn = "2026-08-10";
+    harness.form.values.effectiveOn = "";
+
+    await harness.submit(fakeSubmitEvent(harness.form));
+
+    const body = harness.requests[0]?.init.body ?? "{}";
+    const payload = JSON.parse(body) as Record<string, unknown>;
+    assert.equal(payload.status, status);
+    assert.equal(payload.occurredOn, "2026-07-05");
+    assert.equal(payload.plannedOn, "2026-08-10");
+    assert.equal("effectiveOn" in payload, false);
+  }
+}
+
+async function assertExplicitEffectiveOnPreserved(): Promise<void> {
+  const harness = createHarness();
+  harness.form.values.status = "posted";
+  harness.form.values.effectiveOn = "2026-08-12";
+
+  await harness.submit(fakeSubmitEvent(harness.form));
+
+  const body = harness.requests[0]?.init.body ?? "{}";
+  const payload = JSON.parse(body) as Record<string, unknown>;
+  assert.equal(payload.effectiveOn, "2026-08-12");
+}
+
 async function assertApiFailureRestoresTheForm(): Promise<void> {
   const harness = createHarness({
-    fetchResponse: Promise.resolve(errorResponse("Conta selecionada não está ativa.")),
+    fetchResponse: Promise.resolve(errorResponse("Backend technical error.")),
   });
   harness.form.values.accountId = "account-archived";
   const originalDescription = harness.form.values.description;
@@ -63,7 +96,11 @@ async function assertApiFailureRestoresTheForm(): Promise<void> {
   assert.equal(harness.requests.length, 1);
   assert.equal(harness.submitButton.disabled, false);
   assert.equal(harness.form.attributes.get("aria-busy"), "false");
-  assert.equal(harness.statusNode.textContent, "Conta selecionada não está ativa.");
+  assert.equal(
+    harness.statusNode.textContent,
+    "Não foi possível concluir a alteração. Revise os dados e tente novamente.",
+  );
+  assert.doesNotMatch(harness.statusNode.textContent, /technical error/i);
   assert.equal(harness.statusNode.className, "form-status error full");
   assert.equal(harness.form.values.accountId, "account-archived");
   assert.equal(harness.form.values.description, originalDescription);
@@ -72,9 +109,7 @@ async function assertApiFailureRestoresTheForm(): Promise<void> {
 
 async function assertTransferPayloadAndValidationError(): Promise<void> {
   const harness = createHarness({
-    fetchResponse: Promise.resolve(
-      errorResponse("Transfer transactions require different source and destination accounts."),
-    ),
+    fetchResponse: Promise.resolve(errorResponse("Backend technical error.")),
   });
   harness.form.values.kind = "transfer";
   harness.form.values.accountId = "account-same";
@@ -86,7 +121,11 @@ async function assertTransferPayloadAndValidationError(): Promise<void> {
   assert.equal(payload.kind, "transfer");
   assert.equal(payload.accountId, "account-same");
   assert.equal(payload.destinationAccountId, "account-same");
-  assert.match(harness.statusNode.textContent, /different source and destination/i);
+  assert.equal(
+    harness.statusNode.textContent,
+    "Não foi possível concluir a alteração. Revise os dados e tente novamente.",
+  );
+  assert.doesNotMatch(harness.statusNode.textContent, /technical error/i);
   assert.equal(harness.submitButton.disabled, false);
 }
 
@@ -141,6 +180,7 @@ function createHarness(options: HarnessOptions = {}) {
       kind: "expense",
       status: "planned",
       amountMinor: "123,45",
+      occurredOn: "2026-07-05",
       plannedOn: "2026-07-20",
       effectiveOn: "",
       accountId: "account-source",
