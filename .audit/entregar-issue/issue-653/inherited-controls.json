@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "head_sha": "9d909e26c3d21b768d4f71337e94eddac8b9087e",
+  "controls": [
+    {
+      "id": "ESC-A001-SECONDARY-PATCH-PARITY",
+      "status": "passed",
+      "head_sha": "9d909e26c3d21b768d4f71337e94eddac8b9087e",
+      "subject_sha": "9d909e26c3d21b768d4f71337e94eddac8b9087e",
+      "evidence": ".audit/entregar-issue/issue-653/evidence/a001-regression.txt",
+      "evidence_sha256": "0c2ffe5cdb4b5c1485ade60d300d6dc37fa785051ded58d3819359b444ae80e0",
+      "control_type": "test",
+      "procedure": "Submit both planned-to-posted and planned-to-reconciled edits through the captured secondary PATCH handler with blank effectiveOn and inspect the request bodies.",
+      "expected": "Both transition request bodies omit effectiveOn, while a separately provided effective date remains unchanged.",
+      "observed": "At the exact material head, both blank transition payloads omit effectiveOn and the explicit-date sibling remains preserved.",
+      "attack_control_id": "NEG-REQ-031-01",
+      "risk_family": "structural-contract",
+      "surface": "secondary-handler-parity",
+      "dimension": "null-vs-omission"
+    }
+  ],
+  "retired_controls": [],
+  "source_audits": [
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:pr656-2757bd7-a001",
+      "finding_ids": [
+        "A-001"
+      ],
+      "audited_head_sha": "2757bd7d0a33ba6abec601126a5723fa9509dee2"
+    }
+  ],
+  "unresolved_controls": []
+}
