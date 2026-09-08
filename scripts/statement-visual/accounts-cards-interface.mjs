@@ -354,11 +354,7 @@ async function validateFilter(cdp) {
     "Search did not filter the unified master list.",
   );
   assert.equal(state.emptyVisible, true, "Filtered empty state is not visible.");
-  assert.equal(
-    state.selectedMasterCountAfterEmpty,
-    0,
-    "Filtered-out resource kept aria-current.",
-  );
+  assert.equal(state.selectedMasterCountAfterEmpty, 0, "Filtered-out resource kept aria-current.");
   assert.equal(
     state.selectedClassCountAfterEmpty,
     0,
