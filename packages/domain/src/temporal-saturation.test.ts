@@ -32,6 +32,7 @@ const card: Card = {
   paymentAccountId: account.id,
   name: "Cartao temporal",
   status: "active",
+  currency: "BRL",
   closingDay: 20,
   dueDay: 10,
   createdAt: "2034-01-01T00:00:00.000Z",
