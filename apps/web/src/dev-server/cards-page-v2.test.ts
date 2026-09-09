@@ -89,6 +89,18 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             parentCategoryId: "category-food",
           },
           {
+            id: "category-zoo",
+            name: "Zoológico",
+            status: "active",
+            parentCategoryId: "category-food",
+          },
+          {
+            id: "category-academy",
+            name: "Academia",
+            status: "active",
+            parentCategoryId: "category-food",
+          },
+          {
             id: "category-orphan",
             name: "Categoria órfã",
             status: "active",
@@ -235,10 +247,17 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /name="occurredOn" type="date" required data-default-local-today/);
   assert.match(html, /occurredOnField\.value = localToday\(\)/);
   assert.match(html, /Alimentação › Bares e restaurantes/);
+  assert.match(html, /Alimentação › Zoológico/);
+  assert.match(html, /Alimentação › Academia/);
   assert.match(html, /Categoria órfã/);
   assert.ok(
     html.indexOf('value="category-food"') < html.indexOf('value="category-restaurants"'),
     "parent category must be rendered before its child",
+  );
+  assert.ok(
+    html.indexOf('value="category-restaurants"') < html.indexOf('value="category-zoo"') &&
+      html.indexOf('value="category-zoo"') < html.indexOf('value="category-academy"'),
+    "sibling categories must preserve the stable order received from the API",
   );
   assert.match(html, /Conta Dólar · USD/);
   assert.doesNotMatch(html, /Conta Real · BRL/);

@@ -919,12 +919,6 @@ function buildCategoryHierarchy(
     childrenByParent.set(parentId, children);
   }
 
-  for (const children of childrenByParent.values()) {
-    children.sort((left, right) =>
-      left.name.localeCompare(right.name, "pt-BR", { sensitivity: "base" }),
-    );
-  }
-
   const ordered: Array<{ category: CategoryRecord; path: string[] }> = [];
   const visited = new Set<string>();
   const visit = (category: CategoryRecord, path: string[]): void => {
