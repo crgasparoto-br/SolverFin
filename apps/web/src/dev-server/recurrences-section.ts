@@ -222,7 +222,7 @@ export function recurrencesSectionScript(): string {
         async function readResponse(response) {
           const body = await response.json().catch(() => ({}));
           if (!response.ok) {
-            return { body, message: (body.error && body.error.message) || "Não foi possível concluir a ação." };
+            return { body, message: body?.error?.message || "Não foi possível concluir a ação." };
           }
           if (Number(body.skippedCount || 0) > 0) {
             const count = Number(body.skippedCount);

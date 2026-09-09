@@ -1,0 +1,85 @@
+## Objetivo
+
+Melhorar a leitura e a filtragem da tela `/contas-cartoes`, permitindo distinguir rapidamente contas de cartões e restringir a lista por moeda sem abandonar o padrão A3 master-detail existente.
+
+## Contexto
+
+A tela atualmente apresenta contas e cartões em uma coleção master única. Isso dificulta a leitura quando existem muitos recursos de tipos diferentes. A separação deve ser feita por filtros na própria coleção master, sem reintroduzir abas nem perder o detalhe contextual.
+
+A issue #655 altera o contrato de moeda do cartão, adicionando `Card.currency` persistida. Esta issue deve consumir a **mesma resolução canônica de moeda usada pela apresentação do recurso**, sem criar uma segunda regra apenas para o filtro.
+
+## Dependência e ordem de entrega
+
+- implementar #655 antes desta issue ou no mesmo ciclo de entrega;
+- após #655, `Card.currency` é a fonte canônica da moeda do cartão;
+- cartões legados que permaneçam sem moeda configurada devem continuar representados como **Moeda indisponível**, sem fallback runtime para BRL ou para outra fonte concorrente.
+
+## Escopo
+
+- adicionar filtro explícito de tipo de recurso com opções `Todos`, `Contas` e `Cartões`;
+- adicionar filtro de moeda na área de filtros da lista master;
+- manter busca e filtro de status existentes;
+- aplicar busca, status, tipo e moeda de forma combinada sobre a mesma coleção master;
+- preservar o recurso selecionado enquanto ele continuar pertencendo ao resultado filtrado;
+- manter responsividade, teclado, foco e os estados A3 existentes;
+- diferenciar ausência real de recursos de uma combinação de filtros sem resultados.
+
+## Requisitos funcionais
+
+1. O filtro de tipo deve possuir exatamente os estados semânticos `Todos`, `Contas` e `Cartões`, sem criar uma navegação paralela por abas.
+2. O filtro de moeda deve oferecer `Todas as moedas` e os códigos monetários presentes na coleção carregada.
+3. Se existir ao menos um recurso sem moeda determinável, o filtro deve também oferecer uma opção explícita `Moeda indisponível`.
+4. As opções do filtro de moeda devem ser derivadas da coleção master carregada e da mesma resolução canônica usada para renderizar a moeda do recurso; o filtro não pode manter lógica própria de fallback.
+5. Busca, status, tipo e moeda devem ser aplicados de forma cumulativa. Limpar um filtro não pode limpar os demais.
+6. Ao limpar todos os filtros, todos os recursos elegíveis da coleção original voltam a aparecer.
+7. Se o recurso atualmente selecionado continuar no resultado após a alteração de filtros, a seleção e o detalhe devem ser preservados.
+8. Se a combinação de filtros excluir o recurso selecionado, a UI não deve selecionar silenciosamente outro recurso. A seleção visível deve ser limpa e o detalhe deve voltar ao estado neutro de seleção até uma nova escolha explícita do usuário.
+9. O estado sem resultados por filtro deve ser diferente do estado de coleção realmente vazia e deve orientar o usuário a ajustar busca, status, tipo ou moeda.
+10. Cartões sem moeda configurada devem continuar exibindo `Moeda indisponível` e só corresponder ao filtro especial `Moeda indisponível`; nunca devem entrar em `BRL` por fallback.
+
+## Invariantes
+
+- **Reutilização (`must_reuse`)**: o filtro deve reutilizar a resolução de moeda já usada pelo view-model/apresentação de `/contas-cartoes`; não criar um resolvedor monetário paralelo.
+- **Fonte única (`must_be_single_source`)**: após #655, a moeda do cartão vem de `Card.currency`; a conta continua usando sua própria moeda.
+- **Não depender (`must_not_depend_on`)**: a solução não pode voltar a depender de `applyLegacyHtmlPostProcessorPipeline()` nem dos pós-processadores aposentados de `accounts-cards`.
+- **Não fazer (`must_not_behave`)**: filtrar a coleção não pode trocar automaticamente o mestre selecionado por outro item apenas porque o anterior deixou de corresponder.
+- **Controle discriminante**: um teste com cartão legado sem moeda deve provar que ele aparece em `Moeda indisponível`, e não em `BRL`; um teste de seleção deve provar que filtrar o mestre selecionado não seleciona o primeiro resultado restante.
+
+## Fora de escopo
+
+- criar outro modelo de dados além do definido em #655;
+- criar conversão cambial;
+- somar ou consolidar moedas diferentes;
+- substituir o arquétipo A3 master-detail;
+- reintroduzir abas para separar contas de cartões;
+- alterar regras de instrumentos ou faturas.
+
+## Critérios de aceite
+
+- [ ] o usuário consegue exibir somente contas, somente cartões ou todos os recursos;
+- [ ] o usuário consegue filtrar por cada moeda presente na coleção;
+- [ ] quando aplicável, existe a opção `Moeda indisponível` e ela retorna somente recursos sem moeda determinável;
+- [ ] busca, status, tipo e moeda funcionam de forma combinada e podem ser limpos independentemente;
+- [ ] cartões sem moeda configurada não aparecem como BRL nem como qualquer outra moeda presumida;
+- [ ] um recurso selecionado continua selecionado quando ainda atende aos filtros;
+- [ ] se o recurso selecionado deixar de atender aos filtros, nenhum outro é selecionado automaticamente e o detalhe volta ao estado neutro;
+- [ ] ao limpar todos os filtros, todos os recursos elegíveis voltam a aparecer;
+- [ ] o estado sem resultados orienta a ajustar busca, status, tipo ou moeda e não é confundido com ausência total de contas/cartões;
+- [ ] a solução permanece funcional em desktop e mobile e preserva foco/teclado do A3;
+- [ ] a rota não reintroduz dependência dos pós-processadores HTML aposentados;
+- [ ] testes focados cobrem combinação de filtros, ao menos uma moeda não-BRL, `Moeda indisponível` e comportamento da seleção.
+
+## Considerações de testes
+
+- contas e cartões misturados com BRL e USD;
+- cartão sem `currency` após a migração da #655;
+- combinação busca + status + tipo + moeda;
+- limpeza independente de filtros;
+- recurso selecionado ainda elegível;
+- recurso selecionado excluído pelo filtro;
+- estado de coleção vazia versus estado sem resultado por filtros;
+- desktop e viewport mobile já cobertos pelo gate visual da rota.
+
+## Impacto na documentação
+
+Atualizar `docs/ACCOUNTS_CARDS_UI.md` para registrar os filtros da coleção master e substituir a descrição antiga que deriva a moeda do cartão pela conta de pagamento, alinhando-a ao contrato de moeda definido em #655. Manter compatibilidade com `docs/SCREEN_ARCHETYPES.md` e `docs/DESIGN_SYSTEM.md`.

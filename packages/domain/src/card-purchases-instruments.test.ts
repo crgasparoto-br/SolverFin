@@ -33,7 +33,6 @@ function runUsesDefaultInstrumentForPurchase(): void {
       occurredOn: "2026-06-15",
       amountMinor: 12345,
       description: "Compra com instrumento default",
-      currency: "BRL",
     },
     makeInvoiceId: (period) => `invoice-${setup.card.id}-${period.periodEndOn}`,
   });
@@ -44,6 +43,7 @@ function runUsesDefaultInstrumentForPurchase(): void {
     "purchase should use the active default instrument",
   );
   assertEqual(result.invoice.cardId, setup.card.id, "invoice should belong to the card group");
+  assertEqual(result.transaction.currency, "BRL", "purchase should derive currency from the card");
 }
 
 function runConsolidatesDifferentInstrumentsOnSameCardInvoice(): void {
@@ -67,7 +67,6 @@ function runConsolidatesDifferentInstrumentsOnSameCardInvoice(): void {
       occurredOn: "2026-06-15",
       amountMinor: 10000,
       description: "Compra no fisico titular",
-      currency: "BRL",
       cardInstrumentId: physicalInstrument.id,
     },
     makeInvoiceId: (period) => `invoice-${setup.card.id}-${period.periodEndOn}`,
@@ -83,7 +82,6 @@ function runConsolidatesDifferentInstrumentsOnSameCardInvoice(): void {
       occurredOn: "2026-06-18",
       amountMinor: 5000,
       description: "Compra no virtual adicional",
-      currency: "BRL",
       cardInstrumentId: virtualInstrument.id,
     },
     makeInvoiceId: (period) => `invoice-${setup.card.id}-${period.periodEndOn}`,
@@ -142,7 +140,6 @@ function runRejectsArchivedInstrumentForPurchase(): void {
           occurredOn: "2026-06-15",
           amountMinor: 1000,
           description: "Compra em instrumento arquivado",
-          currency: "BRL",
           cardInstrumentId: virtualInstrument.id,
         },
         makeInvoiceId: (period) => `invoice-${setup.card.id}-${period.periodEndOn}`,
@@ -155,17 +152,20 @@ function createCardWithInstruments(cardId: string): {
   card: Card;
   instruments: readonly CardInstrument[];
 } {
-  const card = createCard({
-    id: cardId,
-    context: tenantA,
-    now,
-    payload: {
-      name: `Cartao ${cardId}`,
-      closingDay: 20,
-      dueDay: 10,
-      creditLimitMinor: 100000,
-    },
-  }).card;
+  const card: Card = {
+    ...createCard({
+      id: cardId,
+      context: tenantA,
+      now,
+      payload: {
+        name: `Cartao ${cardId}`,
+        closingDay: 20,
+        dueDay: 10,
+        creditLimitMinor: 100000,
+      },
+    }).card,
+    currency: "BRL",
+  };
   const physicalResult = createCardInstrument({
     id: `instrument-${cardId}-physical`,
     context: tenantA,

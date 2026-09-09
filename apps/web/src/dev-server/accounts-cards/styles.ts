@@ -14,7 +14,9 @@ export function accountsCardsPageStyles(): string {
     .resource-master-panel { display: grid; gap: 12px; padding: 14px; position: sticky; top: 14px; }
     .resource-master-summary > div { align-items: baseline; display: flex; gap: 8px; justify-content: space-between; }
     .resource-master-summary span, .resource-master-copy > span:not(.resource-master-title) { color: var(--muted); font-size: .78rem; }
-    .resource-master-filters { display: grid; gap: 8px; grid-template-columns: minmax(0,1fr) 7.5rem; }
+    .resource-master-filters { display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .resource-master-filters > label:first-child { grid-column: 1 / -1; }
+    .resource-master-filters select, .resource-master-filters input { min-width: 0; width: 100%; }
     .resource-master-list { display: grid; gap: 6px; max-height: calc(100vh - 260px); overflow: auto; overscroll-behavior: contain; padding-right: 2px; }
     .resource-master-item { border: 1px solid transparent; border-radius: var(--radius); min-width: 0; }
     .resource-master-item.is-selected { background: var(--primary-soft); border-color: #c8dde5; }
@@ -71,7 +73,12 @@ export function accountsCardsPageStyles(): string {
     .instrument-edit-form { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); margin-top: 0; padding: 10px; }
     [data-resource-loading] { position: sticky; top: 8px; z-index: 20; }
     .form-status { font-size: .8rem; }
-    @media (max-width: 1050px) { .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: 260px minmax(0,1fr); } .resource-detail-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media (max-width: 1050px) {
+      .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: 260px minmax(0,1fr); }
+      .resource-detail-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .resource-master-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .resource-master-filters > label:first-child, .resource-master-filters > label:last-child { grid-column: 1 / -1; }
+    }
     @media (max-width: 760px) {
       main { padding: 12px; }
       .accounts-cards-a3-page .sf-page-header { align-items: stretch; display: grid; }
@@ -81,6 +88,7 @@ export function accountsCardsPageStyles(): string {
       .resource-master-panel { position: static; }
       .resource-master-list { max-height: none; }
       .resource-master-filters, .resource-detail-grid, .edit-grid, .resource-detail-heading, .instrument-item { grid-template-columns: 1fr; }
+      .resource-master-filters > label { grid-column: 1 / -1; }
       .resource-detail-heading .sf-badge { justify-self: start; }
       .resource-detail-identity { display: none; }
       .instrument-side { justify-items: start; }

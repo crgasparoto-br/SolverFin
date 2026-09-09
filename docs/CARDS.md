@@ -230,9 +230,9 @@ Exemplo minimo de criacao de instrumento em agrupador existente:
 
 ## Gestao na tela `Contas e Cartoes`
 
-A rota `/contas-cartoes` deve manter a listagem compacta e comparavel. Cada aba possui uma unica acao principal contextual, e busca e filtro de status permanecem disponiveis ao alternar entre `Contas` e `Cartoes`.
+A rota `/contas-cartoes` deve manter uma unica colecao master-detail A3, sem abas para separar contas e cartoes. Busca e filtros de tipo (`Todos`, `Contas`, `Cartoes`), moeda e status sao cumulativos e devem permanecer disponiveis no mesmo contexto da colecao mestre.
 
-Na aba `Cartoes`:
+No contexto de cartoes da colecao mestre:
 
 - o cadastro e a edicao do cartao exibem `Moeda` como dado do agrupador;
 - a linha do cartao mostra somente identificacao, instituicao, bandeira, moeda, datas, conta de pagamento, quantidade de instrumentos ativos, limite, status e acoes;
@@ -247,7 +247,7 @@ Na aba `Cartoes`:
 
 Acoes recorrentes de conta, cartao e instrumento usam icones da biblioteca do projeto com nome acessivel e tooltip em hover e foco. Arquivamento e exclusao exigem modal de confirmacao; cancelar ou fechar nao envia requisicao.
 
-A validacao visual permanente da rota usa `scripts/statement-visual/accounts-cards-interface.mjs` e cobre `1440x900`, `1366x768` e `390x844`, incluindo abas por teclado, persistencia de filtros, alvos de acao, CDI por icone, modal de instrumentos, formulario agrupado, arvore de acessibilidade, `Escape`, restauracao de foco e cancelamento de confirmacao sem chamada de API.
+A validacao visual permanente da rota usa `scripts/statement-visual/accounts-cards-interface.mjs` e cobre `1440x900`, `1366x768` e `390x844`, incluindo ausencia de abas, combinacao de busca/tipo/moeda/status, persistencia de filtros, alvos de acao, CDI por icone, modal de instrumentos, formulario agrupado, arvore de acessibilidade, `Escape`, restauracao de foco e cancelamento de confirmacao sem chamada de API.
 
 ## Hierarquia da tela `Cartoes`
 
@@ -276,6 +276,7 @@ No modal de nova compra:
 - `Moeda` vem da moeda padrao do cartao selecionado e nao e substituida por uma moeda generica;
 - `Data` abre com a data local atual como sugestao editavel;
 - `Categoria` exibe a arvore `parentCategoryId` em ordem pai/filho e apresenta o caminho hierarquico, por exemplo `Alimentacao › Bares e restaurantes`;
+- categorias irmas preservam a ordem estavel recebida da API; o cliente nao aplica uma ordenacao alfabetica concorrente;
 - categorias orfas continuam visiveis como opcoes de nivel raiz;
 - se o cartao nao tiver moeda padrao, a acao de nova compra fica indisponivel e a tela orienta a editar o cartao em `Contas e Cartoes`.
 
@@ -300,7 +301,7 @@ A cobertura automatizada deve proteger pelo menos:
 - soma de limites individuais respeitando o limite total;
 - compra em instrumentos diferentes gerando uma fatura unica por agrupador;
 - nova compra sugerindo moeda do cartao e data local atual;
-- seletor de categoria exibindo hierarquia pai/filho e mantendo categorias orfas;
+- seletor de categoria exibindo hierarquia pai/filho, mantendo categorias orfas e preservando a ordem de categorias irmas recebida da API;
 - fatura exibindo origem por instrumento;
 - parcelas e recorrencias preservando o instrumento da compra;
 - recorrencias preservando o instrumento definido na criacao;

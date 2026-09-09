@@ -38,6 +38,7 @@ async function createCreditCardAccount(
     name: `Cartao parcelas recorrentes ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 80_000,
     instruments: [
       {

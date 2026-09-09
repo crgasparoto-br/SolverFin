@@ -27,6 +27,24 @@ export type ApiLogger = (event: ApiLogEvent) => void;
 const DEFAULT_ERROR_MESSAGE = "Não foi possível concluir a ação. Tente novamente.";
 const UNEXPECTED_ERROR_CODE = "API_UNEXPECTED_ERROR";
 const CORRELATION_ID_HEADER = "x-correlation-id";
+const TRANSACTION_ERROR_MESSAGES: Readonly<Record<string, string>> = {
+  TRANSACTION_KIND_REQUIRED: "Informe o tipo do lançamento.",
+  TRANSACTION_KIND_INVALID: "O tipo de lançamento informado não é suportado.",
+  TRANSACTION_STATUS_INVALID: "A situação do lançamento informada não é suportada.",
+  TRANSACTION_SOURCE_INVALID: "A origem do lançamento informada não é suportada.",
+  TRANSACTION_AMOUNT_INVALID: "Informe um valor válido maior que zero.",
+  TRANSACTION_DATE_REQUIRED: "Informe a data do evento.",
+  TRANSACTION_EFFECTIVE_DATE_REQUIRED: "Lançamentos efetivados ou conciliados exigem data efetiva.",
+  TRANSACTION_ACCOUNT_REQUIRED: "Selecione uma conta para o lançamento.",
+  TRANSACTION_ACCOUNT_INVALID: "A conta selecionada não corresponde ao lançamento.",
+  TRANSACTION_ACCOUNT_ARCHIVED: "A conta selecionada precisa estar ativa.",
+  TRANSACTION_DESTINATION_ACCOUNT_REQUIRED: "Selecione a conta de destino da transferência.",
+  TRANSACTION_DESTINATION_ACCOUNT_INVALID: "A conta de destino da transferência é inválida.",
+  TRANSACTION_TRANSFER_SAME_ACCOUNT: "A conta de origem e a conta de destino devem ser diferentes.",
+  TRANSACTION_CURRENCY_MISMATCH: "A moeda do lançamento deve ser a mesma da conta.",
+  TRANSACTION_CATEGORY_INVALID: "A categoria selecionada é inválida.",
+  TRANSACTION_CATEGORY_ARCHIVED: "A categoria selecionada precisa estar ativa.",
+};
 
 export function resolveCorrelationId(
   headers: Readonly<Record<string, string | undefined>>,
@@ -94,6 +112,12 @@ function normalizeApiError(
     return databaseError;
   }
 
+  const transactionError = normalizeTransactionError(error);
+
+  if (transactionError) {
+    return transactionError;
+  }
+
   if (isApiErrorLike(error)) {
     const explicitStatusCode = readExplicitStatusCode(error.statusCode);
 
@@ -109,6 +133,26 @@ function normalizeApiError(
   }
 
   return unexpectedError(fallbackMessage);
+}
+
+function normalizeTransactionError(
+  error: unknown,
+): Required<Pick<ApiErrorLike, "code" | "statusCode" | "message">> | undefined {
+  if (!isApiErrorLike(error) || error.statusCode !== 400 || typeof error.code !== "string") {
+    return undefined;
+  }
+
+  const message = TRANSACTION_ERROR_MESSAGES[error.code];
+
+  if (message === undefined) {
+    return undefined;
+  }
+
+  return {
+    code: error.code,
+    statusCode: 400,
+    message,
+  };
 }
 
 function unexpectedError(

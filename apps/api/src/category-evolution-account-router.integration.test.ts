@@ -183,6 +183,7 @@ async function createCard(
       name: `${prefix} ${Date.now().toString(36)}`,
       closingDay: 20,
       dueDay: 10,
+      currency: "BRL",
       instruments: [
         {
           type: "physical",

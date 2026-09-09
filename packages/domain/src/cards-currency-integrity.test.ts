@@ -173,18 +173,21 @@ function runRejectsCrossCurrencyPaymentAccount(): void {
 
 function runSkipsCrossCurrencyPaymentForecast(): void {
   const account = createAccountFixture("forecast-brl", "BRL");
-  const card = createCard({
-    id: "card-with-brl-account",
-    context,
-    now,
-    paymentAccount: account,
-    payload: {
-      name: "Card with BRL account",
-      closingDay: 20,
-      dueDay: 10,
-      paymentAccountId: account.id,
-    },
-  }).card;
+  const card: Card = {
+    ...createCard({
+      id: "card-with-brl-account",
+      context,
+      now,
+      paymentAccount: account,
+      payload: {
+        name: "Card with BRL account",
+        closingDay: 20,
+        dueDay: 10,
+        paymentAccountId: account.id,
+      },
+    }).card,
+    currency: "USD",
+  };
   const result = registerCardPurchase({
     transactionId: "purchase-usd-no-brl-forecast",
     context,
@@ -211,12 +214,15 @@ function runSkipsCrossCurrencyPaymentForecast(): void {
 }
 
 function createCardFixture(): Card {
-  return createCard({
-    id: "card-currency",
-    context,
-    now,
-    payload: { name: "Currency card", closingDay: 20, dueDay: 10 },
-  }).card;
+  return {
+    ...createCard({
+      id: "card-currency",
+      context,
+      now,
+      payload: { name: "Currency card", closingDay: 20, dueDay: 10 },
+    }).card,
+    currency: "USD",
+  };
 }
 
 function createInvoiceFixture(

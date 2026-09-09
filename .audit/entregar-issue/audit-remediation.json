@@ -1,1 +1,40 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","status":"closed","candidate_head_sha":"26cf290e33f1c715f053e34ba9b60956692b7408","remediation_mode":"targeted-remediation","source":{"rejection_id":"audit-rejection:99eed414-1eda-4b79-b9aa-fc113662aba8","audited_head_sha":"c89c5e803758a8185d489ca1a2216b1429a20ce6","audit_report_sha256":"89a765cedc0f4ebde4ed8bbf2b658a463ac0a36b29c30c4350607841e32206a6"},"items":[{"source_kind":"finding","source_id":"A-004","remediation_mode":"targeted-remediation","status":"fixed","closure_kind":"behavioral-fix","changed_files":[".audit/entregar-issue/requirement-closure.json",".audit/entregar-issue/requirement-closure.parts/part-000.b64",".audit/entregar-issue/audit-escape-closure-612.json",".audit/entregar-issue/learning-closure-612.json",".audit/entregar-issue/audit-remediation.json",".audit/entregar-issue/audit-source-result.json",".audit/entregar-issue/handoff-ready.json"],"evidence":["Pass C is rederived from SRC-ISSUE-612 and now binds all 14 requirements/obligations to exact material head 26cf290e33f1c715f053e34ba9b60956692b7408.","The stale ancestor 6e41988744d8009287681322e9256a0d833aa2a8 and its run IDs are absent from the refreshed requirement-closure logical artifact.","CI 34123653492 and Chrome visual 34123653512 remain terminal green on the unchanged material head; no product/test/documentation path is changed by this remediation."],"validations":["validate_specification_coverage.py passes on the refreshed logical closure.","validate_standard_evidence.py passes on exact material head 26cf290e33f1c715f053e34ba9b60956692b7408.","validate_audit_remediation.py, validate_learning_closure.py, validate_independent_rejection_closure.py and audit-escape lineage checks pass before handoff publication."]}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:9b2cd0ce-a415-47e1-bf1a-52fc88c6b3a0",
+    "audited_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+    "audit_report_sha256": "43825be4a99623c11a8581a813a42c433e5811d2f81f267e9ec5cb0f321d20bc"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-003",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "post-write-refreeze",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/requirement-attack-matrix.json",
+        ".audit/entregar-issue/risk-saturation.json",
+        ".audit/entregar-issue/inherited-controls.json",
+        ".audit/entregar-issue/audit-escape-closure.json",
+        ".audit/entregar-issue/learning-closure.json"
+      ],
+      "evidence": [
+        "Material identity refrozen at c10f9f42b13fb7e63c892d314a25654a8d676565 after detecting post-freeze material writes.",
+        "Exact-head CI run 34361342238 and visual run 34361342341 are green on c10f9f42b13fb7e63c892d314a25654a8d676565.",
+        "The rebuilt packet is validated before publication and will be published only as a direct result-only child of the new material head."
+      ],
+      "validations": [
+        "PR #657 is open and mergeable=true on the refrozen material head.",
+        "The current requirement closure still contains 41 canonical requirements and obligations.",
+        "Terminal handoff guard must reject parent drift, non-allowlisted paths or any remote head movement after publication."
+      ]
+    }
+  ]
+}
