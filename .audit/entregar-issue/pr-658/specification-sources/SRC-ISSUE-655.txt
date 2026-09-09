@@ -1,0 +1,126 @@
+## Objetivo
+
+Melhorar o modal **Registrar compra** em `/cartoes` para reduzir preenchimento manual e tornar a moeda do cartão um contrato explícito e persistido, preservando faturas monomoeda, a semântica de datas e a hierarquia de categorias do SolverFin.
+
+## Contexto
+
+Hoje a moeda exibida no modal é derivada do contexto da fatura/compra e o cartão agrupador não possui moeda própria persistida. O domínio de compras também aceita `currency` opcional e possui fallback implícito para BRL quando o campo é omitido. Além disso, a data da nova compra não é inicializada com o dia atual e a lista de categorias aparece plana apesar de o domínio possuir `parentCategoryId`.
+
+`docs/ACCOUNTS_CARDS_UI.md` ainda documenta a moeda do cartão como derivada da conta de pagamento. Esta issue altera esse contrato: após a migração, **`Card.currency` passa a ser a fonte canônica da moeda do cartão e das novas compras**. Como conversão cambial não faz parte desta entrega, quando existir uma conta de pagamento vinculada sua moeda deve permanecer compatível com a moeda do cartão.
+
+## Escopo
+
+- adicionar `currency` persistida ao cartão agrupador;
+- expor e validar a moeda nos contratos de domínio/API e no cadastro/edição em `/contas-cartoes`;
+- migrar cartões legados quando a moeda puder ser inferida sem ambiguidade;
+- usar a moeda canônica do cartão em novas compras de `/cartoes`;
+- remover o fallback implícito para BRL do fluxo de compra com cartão;
+- preservar compatibilidade monetária com a conta de pagamento vinculada sem criar conversão cambial;
+- sugerir a data local atual ao abrir uma nova compra;
+- exibir categorias de despesa respeitando a árvore de `parentCategoryId`;
+- preservar edição de compras, instrumentos e demais regras existentes.
+
+## Modelo e migração
+
+1. `Card` deve possuir `currency` persistida e exposta nos tipos/contratos necessários.
+2. O campo pode permanecer anulável no schema persistido **somente para compatibilidade com cartões legados ainda não migrados**.
+3. Após esta mudança, a criação de um novo cartão deve exigir moeda válida; novos registros não podem nascer com `currency = null`.
+4. A moeda deve usar o contrato monetário existente do SolverFin, normalizada em maiúsculas e validada como código de moeda aceito pelo domínio.
+5. Cartões legados com `currency = null` podem ser preenchidos automaticamente apenas quando todas as evidências disponíveis apontarem para **um único código de moeda**. Podem ser consideradas, quando existentes, a moeda da conta de pagamento e moedas históricas monomoeda de faturas/compras do próprio cartão.
+6. Se as evidências disponíveis produzirem mais de uma moeda candidata, ou não houver evidência suficiente, a migration deve manter `currency = null` para revisão do usuário. Não usar BRL como fallback.
+7. A migration/backfill deve ser idempotente e não sobrescrever uma `Card.currency` já persistida.
+8. Um cartão legado sem moeda deve permitir definir `currency` na edição em `/contas-cartoes`.
+9. Depois que um cartão possuir histórico financeiro (compra/fatura), sua moeda persistida não deve poder ser alterada por este fluxo. A correção de moeda histórica fica fora do escopo; a API deve rejeitar a mudança com erro controlado e preservar os dados existentes. Cartão ainda sem uso pode ter a moeda corrigida antes do primeiro lançamento.
+10. Enquanto não houver conversão cambial no domínio, se `paymentAccountId` estiver definido, `Card.currency` deve coincidir com `Account.currency` da conta de pagamento. Criar/editar cartão ou trocar a conta de pagamento com moedas divergentes deve falhar com erro controlado, sem alterar o cartão. Cartões legados com sinais monetários conflitantes permanecem sem backfill automático para revisão.
+
+## Compra com cartão
+
+1. `Card.currency` é a **fonte única** para a moeda de uma nova compra.
+2. Ao abrir **Registrar compra**, a moeda deve ser exibida a partir do cartão selecionado e não deve ser editável como uma moeda independente da compra.
+3. O endpoint pode continuar aceitando `currency` no payload por compatibilidade, mas, quando informado, o valor deve coincidir com `Card.currency`. A moeda persistida na compra/fatura deve ser a moeda canônica do cartão.
+4. Se `currency` for omitida do payload e o cartão possuir moeda, o backend deve derivá-la de `Card.currency`; não usar BRL como valor padrão.
+5. Se o cartão ainda estiver sem moeda, o backend deve rejeitar a criação da compra com erro controlado. A UI deve impedir o envio e orientar em pt-BR a definir a moeda em **Contas e Cartões**.
+6. Antes de adicionar valor a uma fatura existente, o domínio deve confirmar que `Invoice.currency` coincide com `Card.currency`. Se houver divergência legada, rejeitar a nova compra sem alterar total da fatura, em vez de somar valores de moedas diferentes.
+7. Esta issue não introduz conversão cambial e não permite escolher uma moeda diferente por compra para o mesmo cartão.
+
+## Data da compra
+
+1. Ao abrir o modal para uma **nova** compra, `Data` deve ser preenchida com a data civil corrente do navegador no fuso local do usuário.
+2. A sugestão deve ser calculada sem converter o dia por UTC.
+3. Ao editar uma compra existente, preservar a data persistida; abrir o formulário não pode substituí-la pela data atual.
+
+## Hierarquia de categorias
+
+1. O seletor de `Categoria` deve trabalhar com categorias ativas compatíveis com compra (`kind = expense`).
+2. A árvore deve ser montada a partir de `parentCategoryId`, preservando o `categoryId` original como valor selecionado.
+3. Cada categoria pai deve aparecer antes de seus descendentes.
+4. A profundidade deve ser indicada visualmente para qualquer nível retornado pelo domínio, sem limitar a lógica apenas a pai/filho imediato.
+5. A ordenação entre irmãos deve preservar a ordenação estável recebida da coleção/API; esta issue não cria um novo campo persistido de ordenação.
+6. Categoria órfã presente no dataset não pode desaparecer: deve permanecer selecionável como item de nível superior de fallback, sem inventar um novo pai.
+7. A implementação não deve alterar a árvore persistida de categorias nem criar categorias automaticamente.
+
+## Invariantes
+
+- **Fonte única (`must_be_single_source`)**: `Card.currency` é a fonte canônica da moeda do cartão e das novas compras. A conta de pagamento não deve continuar como fallback runtime concorrente após a migração.
+- **Não fazer (`must_not_behave`)**: ausência de moeda no cartão nunca deve virar BRL silenciosamente.
+- **Não fazer (`must_not_behave`)**: uma compra não pode somar valor a uma fatura existente de moeda diferente.
+- **Precedência (`precedence_invariants`)**: moeda persistida do cartão vence qualquer `currency` opcional enviada pelo cliente; payload diferente deve falhar, não substituir a moeda do cartão.
+- **Restrição monetária (`must_not_behave`)**: sem conversão cambial, não persistir vínculo entre cartão e conta de pagamento com moedas diferentes.
+- **Implementação proibida (`forbidden_implementation`)**: manter `normalizeCurrency(currency = "BRL")` ou comportamento equivalente como fallback do fluxo de compra com cartão.
+- **Reutilização (`must_reuse`)**: a hierarquia deve usar `parentCategoryId` do contrato de categorias; não criar uma taxonomia paralela específica para `/cartoes`.
+- **Controles discriminantes**: teste com cartão sem moeda deve falhar mesmo quando o cliente omite `currency`; teste com fatura USD e cartão BRL deve provar que o total não é alterado; teste com cartão USD + conta de pagamento BRL deve provar que o vínculo é rejeitado; teste com categoria órfã deve provar que ela continua disponível.
+
+## Fora de escopo
+
+- conversão cambial ou cotação de moedas;
+- permitir moeda diferente por compra para o mesmo cartão;
+- corrigir/reclassificar automaticamente histórico financeiro em moeda divergente;
+- alterar a árvore persistida de categorias;
+- criar novas categorias automaticamente;
+- alterar a moeda da conta de pagamento ou implementar liquidação cambial entre conta e fatura.
+
+## Critérios de aceite
+
+- [ ] `Card` possui `currency` persistida e exposta nos contratos necessários;
+- [ ] novos cartões exigem moeda válida e não são criados com moeda nula;
+- [ ] cadastro e edição de cartão exibem o campo **Moeda**;
+- [ ] migration/backfill só preenche cartão legado quando existe uma única moeda candidata inequívoca e é idempotente;
+- [ ] cartão legado ambíguo permanece sem moeda e pode ser corrigido manualmente;
+- [ ] cartão com histórico financeiro não permite alterar a moeda por este fluxo;
+- [ ] cartão com conta de pagamento vinculada só aceita moeda igual à moeda dessa conta enquanto não existir conversão cambial;
+- [ ] trocar a conta de pagamento por outra de moeda divergente é rejeitado sem alteração parcial do cartão;
+- [ ] uma nova compra abre exibindo a moeda do cartão selecionado;
+- [ ] compra sem `currency` no payload usa `Card.currency`, nunca BRL implícito;
+- [ ] `currency` divergente enviada pelo cliente é rejeitada e não muda a moeda do cartão;
+- [ ] cartão legado sem moeda não cria compra e a UI orienta o usuário a definir a moeda em `/contas-cartoes`;
+- [ ] uma compra não é adicionada a fatura existente de moeda diferente;
+- [ ] `Data` de uma nova compra abre com o dia local atual e edição mantém a data persistida;
+- [ ] categorias de despesa aparecem em ordem hierárquica, com profundidade visível e `categoryId` original;
+- [ ] categorias órfãs continuam disponíveis para seleção;
+- [ ] fluxo continua acessível por teclado/foco e responsivo no modal existente;
+- [ ] testes cobrem moeda do cartão, compatibilidade com conta de pagamento, migração inequívoca/ambígua, ausência de moeda, divergência de moeda, fatura monomoeda, data padrão e hierarquia de categorias;
+- [ ] schema/migration, documentação de cartões e contratos afetados são atualizados;
+- [ ] validações relevantes do monorepo passam.
+
+## Considerações de testes
+
+- criação de cartão com BRL e USD;
+- criação sem moeda e moeda inválida;
+- cartão e conta de pagamento com mesma moeda versus moedas divergentes;
+- troca de conta de pagamento para conta de outra moeda;
+- backfill com uma única evidência, múltiplas evidências iguais, evidências conflitantes e ausência de evidência;
+- idempotência do backfill;
+- edição de moeda em cartão sem uso versus cartão com histórico;
+- compra omitindo `currency`, enviando a mesma moeda e enviando moeda divergente;
+- cartão legado sem moeda;
+- fatura existente com moeda divergente sem alteração do total;
+- data local próxima à virada UTC;
+- edição de compra preservando data;
+- árvore de categorias com múltiplos níveis, irmãos e categoria órfã.
+
+## Impacto na documentação
+
+- atualizar `docs/ACCOUNTS_CARDS_UI.md`, removendo a regra antiga de que a moeda do cartão é derivada da conta de pagamento e registrando `Card.currency` como fonte canônica, mantendo a exigência de compatibilidade monetária quando houver conta de pagamento vinculada;
+- manter `docs/API_CATEGORIES.md` como fonte para a hierarquia baseada em `parentCategoryId`;
+- atualizar a documentação/contrato de cartões e compras afetado pela nova propriedade e pelas validações de moeda;
+- a issue #654 deve consumir esta mesma fonte canônica ao implementar o filtro por moeda em `/contas-cartoes`.

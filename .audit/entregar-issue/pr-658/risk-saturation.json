@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "head_sha": "f3e7a1cc35849d21174d9fd432aa27edad363f59",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-002-01",
+        "NEG-REQ-010-01",
+        "NEG-REQ-031-01",
+        "NEG-REQ-060-01",
+        "NEG-REQ-063-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "reference-store",
+          "reason": "The reference-liveness risk can violate the canonical issue clause through the reference-store surface while an ordinary happy path still appears correct.",
+          "control_ids": [
+            "NEG-REQ-002-01",
+            "NEG-REQ-010-01",
+            "NEG-REQ-031-01",
+            "NEG-REQ-060-01",
+            "NEG-REQ-063-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-003-03",
+        "NEG-REQ-015-01",
+        "NEG-REQ-021-01",
+        "NEG-REQ-027-01",
+        "NEG-REQ-034-01",
+        "NEG-REQ-039-03",
+        "NEG-REQ-046-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "time-boundary",
+          "reason": "The temporal-consistency risk can violate the canonical issue clause through the time-boundary surface while an ordinary happy path still appears correct.",
+          "control_ids": [
+            "NEG-REQ-003-03",
+            "NEG-REQ-015-01",
+            "NEG-REQ-021-01",
+            "NEG-REQ-027-01",
+            "NEG-REQ-034-01",
+            "NEG-REQ-039-03",
+            "NEG-REQ-046-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-019-01",
+        "NEG-REQ-050-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Retry, callback duplication, replay or reprocessing can execute the same logical operation more than once.",
+          "control_ids": [
+            "NEG-REQ-019-01",
+            "NEG-REQ-050-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-003-01",
+        "NEG-REQ-003-02",
+        "NEG-REQ-018-01",
+        "NEG-REQ-039-01",
+        "NEG-REQ-039-02",
+        "NEG-REQ-042-01",
+        "NEG-REQ-045-01",
+        "NEG-REQ-064-01",
+        "NEG-REQ-070-01",
+        "NEG-REQ-070-02",
+        "NEG-REQ-073-01",
+        "NEG-REQ-073-02",
+        "TEST-REQ-064-01",
+        "TEST-REQ-064-02",
+        "TEST-REQ-064-03",
+        "TEST-REQ-064-04",
+        "TEST-REQ-064-05",
+        "TEST-REQ-064-06",
+        "TEST-REQ-064-07"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-contract",
+          "reason": "The structural-contract risk can violate the canonical issue clause through the canonical-contract surface while an ordinary happy path still appears correct.",
+          "control_ids": [
+            "NEG-REQ-018-01",
+            "NEG-REQ-042-01",
+            "NEG-REQ-045-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "Equivalent runtime, seed, import or maintenance paths can drift when they do not consume the same canonical product definition.",
+          "control_ids": [
+            "NEG-REQ-003-01",
+            "NEG-REQ-039-01",
+            "NEG-REQ-070-01",
+            "NEG-REQ-073-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "control_ids": [
+            "NEG-REQ-003-02",
+            "NEG-REQ-039-02",
+            "NEG-REQ-070-02",
+            "NEG-REQ-073-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "specified-test-matrix",
+          "reason": "A subset of green tests can satisfy the happy path while explicitly required sibling scenarios remain unexecuted.",
+          "control_ids": [
+            "NEG-REQ-064-01",
+            "TEST-REQ-064-01",
+            "TEST-REQ-064-02",
+            "TEST-REQ-064-03",
+            "TEST-REQ-064-04",
+            "TEST-REQ-064-05",
+            "TEST-REQ-064-06",
+            "TEST-REQ-064-07"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-065-01",
+        "NEG-REQ-072-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "The documentation risk can violate the canonical issue clause through the canonical-claims surface while an ordinary happy path still appears correct.",
+          "control_ids": [
+            "NEG-REQ-065-01",
+            "NEG-REQ-072-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}
