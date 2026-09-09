@@ -608,6 +608,7 @@ function fixtureExpression() {
       closingDay: 20,
       dueDay: 10,
       creditLimitMinor: 80000,
+      currency: "BRL",
       instruments: [{
         type: "physical",
         holder: "primary",
