@@ -28,10 +28,7 @@ export class CardCurrencyInvariantError extends Error {
 }
 
 export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurchaseResult {
-  const purchaseCurrency = resolvePurchaseCurrency(
-    input.card?.currency,
-    input.payload.currency,
-  );
+  const purchaseCurrency = resolvePurchaseCurrency(input.card?.currency, input.payload.currency);
   const result = registerCardPurchaseCore({
     ...input,
     payload: {
