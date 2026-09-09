@@ -35,8 +35,7 @@ assert.throws(
 assert.throws(
   () => resolveCanonicalCardPurchaseCurrency("BRL", "USD"),
   (error: unknown) =>
-    error instanceof CardCurrencyContractError &&
-    error.code === "CARD_PURCHASE_CURRENCY_MISMATCH",
+    error instanceof CardCurrencyContractError && error.code === "CARD_PURCHASE_CURRENCY_MISMATCH",
 );
 
 assert.doesNotThrow(() => assertLinkedPaymentAccountCurrency("usd", " USD "));
@@ -58,7 +57,7 @@ assert.throws(
 
 const migration = readFileSync(
   new URL(
-    "../../../prisma/migrations/20260907143000_add_card_default_currency/migration.sql",
+    "../../prisma/migrations/20260907143000_add_card_default_currency/migration.sql",
     import.meta.url,
   ),
   "utf8",
