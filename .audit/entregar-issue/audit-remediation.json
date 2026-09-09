@@ -3,35 +3,37 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
+  "candidate_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:a46232c8-88b9-4e12-a71c-6a824d41eb55",
-    "audited_head_sha": "b7456f2f5020f13598572747cff49b105b71b36d",
-    "audit_report_sha256": "79d05f8cfb025d2e234e458e95f3e4ea54909aeab1430a6c2df4e857b84b1e10"
+    "rejection_id": "audit-rejection:9b2cd0ce-a415-47e1-bf1a-52fc88c6b3a0",
+    "audited_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+    "audit_report_sha256": "43825be4a99623c11a8581a813a42c433e5811d2f81f267e9ec5cb0f321d20bc"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-002",
+      "source_id": "A-003",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "delivery-evidence-rebuild",
+      "closure_kind": "post-write-refreeze",
       "changed_files": [
         ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/audit-source-result.json"
+        ".audit/entregar-issue/requirement-attack-matrix.json",
+        ".audit/entregar-issue/risk-saturation.json",
+        ".audit/entregar-issue/inherited-controls.json",
+        ".audit/entregar-issue/audit-escape-closure.json",
+        ".audit/entregar-issue/learning-closure.json"
       ],
       "evidence": [
-        "The issue-local scope now anchors at current integrated base 82a3edd16209bd4d379db6f089b756933b35d4b0, which already contains issue 653.",
-        "The immutable compare 82a3edd16209bd4d379db6f089b756933b35d4b0..b7456f2f5020f13598572747cff49b105b71b36d contains exactly 51 changed paths and is preserved without narrative filtering.",
-        "The recomputed issue_delta_sha256 is b6b740ba66ba8521a7e2522081588f7c6475b466ae0f56c3435ff9a413679bb4."
+        "Material identity refrozen at c10f9f42b13fb7e63c892d314a25654a8d676565 after detecting post-freeze material writes.",
+        "Exact-head CI run 34361342238 and visual run 34361342341 are green on c10f9f42b13fb7e63c892d314a25654a8d676565.",
+        "The rebuilt packet is validated before publication and will be published only as a direct result-only child of the new material head."
       ],
       "validations": [
-        "PR 657 is open and mergeable=true on material head b7456f2f5020f13598572747cff49b105b71b36d.",
-        "CI run 34272331233 completed success on b7456f2f5020f13598572747cff49b105b71b36d.",
-        "Statement visual validation run 34272331042 completed success on b7456f2f5020f13598572747cff49b105b71b36d.",
-        "No material refreeze is required because remediation changes only result-only evidence."
+        "PR #657 is open and mergeable=true on the refrozen material head.",
+        "The current requirement closure still contains 41 canonical requirements and obligations.",
+        "Terminal handoff guard must reject parent drift, non-allowlisted paths or any remote head movement after publication."
       ]
     }
   ]

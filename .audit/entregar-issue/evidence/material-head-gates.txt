@@ -1,0 +1,13 @@
+SolverFin PR #657 material-head evidence
+material_head_sha=c10f9f42b13fb7e63c892d314a25654a8d676565
+base_sha=82a3edd16209bd4d379db6f089b756933b35d4b0
+CI workflow run 34361342238 / run_number 4909 completed success on material head.
+Validate monorepo job 102498811969 completed success: Check formatting, Lint, Typecheck, Apply migrations, Test and Build all passed.
+Integration API + PostgreSQL job 102498812189 completed success: Apply migrations, Seed demo data, Run API integration tests and Verify import statement consistency all passed.
+Statement visual validation run 34361342341 / run_number 3403 completed success on material head.
+Chrome visual validation job 102499255170 completed success: production web build, registered Chrome scenarios, secret-free evidence assertion and uploads passed.
+apps/web/src/dev-server/accounts-cards/filters.test.ts asserts exact type options, USD currency option, Moeda indisponível, combined search+kind+currency+status matching and clearing selection when the selected resource becomes hidden.
+apps/web/src/dev-server/accounts-cards/view-model.test.ts uses a BRL card linked to a USD payment account and asserts cardCurrency remains BRL; it also asserts a card without currency remains undefined and its search does not invent BRL.
+scripts/statement-visual/accounts-cards-interface.mjs exercises /contas-cartoes in 1440x900, 1366x768 and 390x844; it rejects tabs/legacy row menus, validates type/currency/status filters, combined matching, filtered-empty neutral detail and responsive A3 behavior.
+Post-freeze compare b7456f2f5020f13598572747cff49b105b71b36d..c10f9f42b13fb7e63c892d314a25654a8d676565 contains material API/domain/migration/test changes, proving the previous result-only handoff could not remain release-ready.
+Recovery applied: post-write-refreeze treats c10f9f42b13fb7e63c892d314a25654a8d676565 as the new material head; the next published handoff must be a direct result-only child containing only certified .audit/entregar-issue paths.
