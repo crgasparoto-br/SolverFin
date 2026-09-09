@@ -11,6 +11,7 @@ export * from "./cards-core.js";
 
 export type CardCurrencyInvariantErrorCode =
   | "CARD_PURCHASE_CURRENCY_REQUIRED"
+  | "CARD_PURCHASE_CURRENCY_MISMATCH"
   | "CARD_INVOICE_CURRENCY_MISMATCH"
   | "CARD_INVOICE_PAYMENT_ACCOUNT_CURRENCY_MISMATCH";
 
@@ -27,7 +28,10 @@ export class CardCurrencyInvariantError extends Error {
 }
 
 export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurchaseResult {
-  const purchaseCurrency = requirePurchaseCurrency(input.payload.currency);
+  const purchaseCurrency = resolvePurchaseCurrency(
+    input.card?.currency,
+    input.payload.currency,
+  );
   const result = registerCardPurchaseCore({
     ...input,
     payload: {
@@ -73,18 +77,35 @@ export function payInvoice(input: PayInvoiceInput): InvoicePaymentResult {
   return result;
 }
 
-function requirePurchaseCurrency(value: string | undefined): string {
-  const normalized = normalizeCurrency(value);
+function resolvePurchaseCurrency(
+  cardCurrencyValue: string | undefined,
+  payloadCurrencyValue: string | undefined,
+): string {
+  const cardCurrency = normalizeCurrency(cardCurrencyValue);
 
-  if (normalized === undefined) {
+  if (cardCurrency === undefined) {
     throw new CardCurrencyInvariantError(
       "CARD_PURCHASE_CURRENCY_REQUIRED",
-      "Card purchases require an explicit three-letter ISO currency.",
-      400,
+      "Card purchases require the card to have a valid three-letter ISO currency.",
+      409,
     );
   }
 
-  return normalized;
+  if (payloadCurrencyValue === undefined) {
+    return cardCurrency;
+  }
+
+  const payloadCurrency = normalizeCurrency(payloadCurrencyValue);
+
+  if (payloadCurrency === undefined || payloadCurrency !== cardCurrency) {
+    throw new CardCurrencyInvariantError(
+      "CARD_PURCHASE_CURRENCY_MISMATCH",
+      "Purchase currency must match the card currency.",
+      409,
+    );
+  }
+
+  return cardCurrency;
 }
 
 function requireCurrency(value: string | undefined): string {
