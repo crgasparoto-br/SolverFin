@@ -181,6 +181,7 @@ async function assertCardFilter(
     name: `Cartão selecionado issue 546 ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     paymentAccountId: paymentAccount.id,
     instruments: [
       {
@@ -201,6 +202,7 @@ async function assertCardFilter(
     name: `Outro cartão issue 546 ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     instruments: [
       {
         type: "physical",
@@ -214,6 +216,7 @@ async function assertCardFilter(
     name: `Cartão sem movimento issue 546 ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     instruments: [
       {
         type: "virtual",
