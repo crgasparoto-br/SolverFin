@@ -28,6 +28,7 @@ async function runUpdatesOnlyOpenFutureCardRecurrenceOccurrences(token: string):
     name: `Cartao escopo recorrencia ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 90_000,
     instruments: [
       {
