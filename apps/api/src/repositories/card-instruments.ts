@@ -227,9 +227,7 @@ export async function updateCreditCardAccountForContext(
     ...(paymentAccount ? { paymentAccount } : {}),
   });
   const updatedCard: Card =
-    requestedCurrency === undefined
-      ? result.card
-      : { ...result.card, currency: requestedCurrency };
+    requestedCurrency === undefined ? result.card : { ...result.card, currency: requestedCurrency };
   const mutation = addCurrencyToCardAudit(result, currentCard, updatedCard);
 
   await persistCardMutation(mutation);
