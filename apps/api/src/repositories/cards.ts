@@ -152,7 +152,9 @@ export async function updateCardForContext(
   const currentCard = getCardDomain(context, await findCardRow(context, cardId));
   const { currency: currencyInput, ...domainPayload } = payload;
   const requestedCurrency =
-    currencyInput === undefined ? currentCard.currency : normalizeRequiredCardCurrency(currencyInput);
+    currencyInput === undefined
+      ? currentCard.currency
+      : normalizeRequiredCardCurrency(currencyInput);
 
   if (currencyInput !== undefined && requestedCurrency !== undefined) {
     await assertCardCurrencyChangeAllowedForContext(
