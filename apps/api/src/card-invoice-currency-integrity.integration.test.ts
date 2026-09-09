@@ -39,6 +39,7 @@ async function main(): Promise<void> {
     closingDay: 20,
     dueDay: 10,
     creditLimitMinor: 500_000,
+    currency: "BRL",
     instruments: [
       {
         type: "physical",
@@ -81,7 +82,7 @@ async function assertRejectsCrossCurrencyPurchaseWithoutWrites(
         currency: "USD",
         cardInstrumentId: instrumentId,
       }),
-    hasCode("CARD_INVOICE_CURRENCY_MISMATCH"),
+    hasCode("CARD_PURCHASE_CURRENCY_MISMATCH"),
   );
 
   assert.equal(await readInvoiceTotal(baseline.invoice.id), beforeTotal);

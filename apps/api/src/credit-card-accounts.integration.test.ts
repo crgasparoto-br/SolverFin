@@ -36,6 +36,7 @@ async function runRejectsAccountWithoutActiveInstrument(token: string): Promise<
     name: "Cartao sem instrumento ativo",
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     instruments: [],
   });
 
@@ -48,6 +49,7 @@ async function runRejectsInstrumentLimitsAboveAccountLimit(token: string): Promi
     name: "Cartao limite instrumentos",
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 10_000,
     instruments: [
       {
@@ -73,6 +75,7 @@ async function runRegistersPurchaseWithDefaultInstrument(token: string): Promise
     name: `Cartao compra default ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 50_000,
     instruments: [
       {
@@ -121,6 +124,7 @@ async function runRejectsPurchaseWithArchivedInstrument(token: string): Promise<
     name: `Cartao instrumento arquivado ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 50_000,
     instruments: [
       {
@@ -176,6 +180,7 @@ async function runUpdatesCardPurchaseWithoutAccountId(token: string): Promise<vo
     name: `Cartao edicao compra ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 80_000,
     instruments: [
       {
@@ -260,6 +265,7 @@ async function runPreservesRecurrenceInstrumentAfterDefaultChange(token: string)
     name: `Cartao recorrencia instrumento ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 50_000,
     instruments: [
       {
@@ -326,6 +332,7 @@ async function runDoesNotLeaveCardRecurrenceInstallmentWhenPurchaseMaterializati
     name: `Cartao recorrencia falha ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 50_000,
     instruments: [
       {
@@ -393,6 +400,7 @@ async function runCreditCardAccountInstrumentLifecycle(token: string): Promise<v
     name: `Cartao agrupador integracao ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 50_000,
     institutionKey: "c6",
     brandKey: "mastercard",

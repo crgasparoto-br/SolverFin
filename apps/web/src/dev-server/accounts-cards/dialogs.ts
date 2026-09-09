@@ -33,6 +33,13 @@ function renderAccountsCardsDialog(input: {
   }).replace('class="sf-dialog"', 'class="sf-dialog master-dialog"');
 }
 
+function renderCardCurrencyOptions(selected?: string): string {
+  const placeholder = selected
+    ? ""
+    : '<option value="" disabled selected>Selecione a moeda</option>';
+  return `${placeholder}${renderCurrencyOptions(selected ?? "")}`;
+}
+
 export function renderAccountEditDialog(account: AccountRecord, dialogId: string): string {
   return renderAccountsCardsDialog({
     id: dialogId,
@@ -67,9 +74,10 @@ export function renderCardEditDialog(
         <label>Nome<input name="name" value="${escapeHtml(card.name)}" required /></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions(card.institutionKey)}</select></label>
         <label>Bandeira<select name="brandKey">${renderCardBrandOptions(card.brandKey)}</select></label>
+        <label>Moeda<select name="currency" required>${renderCardCurrencyOptions(card.currency)}</select></label>
         <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" value="${card.closingDay}" required /></label>
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
-        <label>Limite total (moeda da conta de pagamento)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
+        <label>Limite total (moeda do cartão)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
         <button type="submit" title="Salvar alterações do cartão">${icon("save", 14)} Salvar cartão</button>
       </form>
@@ -126,7 +134,7 @@ function renderCardInlineInstrumentForm(instrument: CardInstrumentRecord): strin
       <label>Titularidade<select name="holder" required>${renderInstrumentHolderOptions(instrument.holder)}</select></label>
       <label>Nome do instrumento<input name="name" value="${escapeHtml(instrument.name ?? "")}" /></label>
       <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
-      <label>Limite do instrumento (moeda da conta de pagamento)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
+      <label>Limite do instrumento (moeda do cartão)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
       <button type="submit" title="Salvar alterações do instrumento">${icon("save", 14)} Salvar instrumento</button>
     </form>`;
 }
@@ -145,7 +153,7 @@ export function renderCardInstrumentCreateDialog(
         <label>Titularidade<select name="holder" required>${renderInstrumentHolderOptions()}</select></label>
         <label>Nome do instrumento<input name="name" placeholder="Virtual titular" /></label>
         <label>Final mascarado<input name="maskedIdentifier" placeholder="**** 1234" /></label>
-        <label>Limite do instrumento (moeda da conta de pagamento)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
+        <label>Limite do instrumento (moeda do cartão)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <button type="submit" title="Criar novo instrumento">${icon("save", 14)} Criar instrumento</button>
       </form>`,
   });
@@ -167,7 +175,7 @@ export function renderCardInstrumentEditDialog(instrument: CardInstrumentRecord)
         <label>Titularidade<select name="holder" required>${renderInstrumentHolderOptions(instrument.holder)}</select></label>
         <label>Nome do instrumento<input name="name" value="${escapeHtml(instrument.name ?? "")}" /></label>
         <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
-        <label>Limite do instrumento (moeda da conta de pagamento)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
+        <label>Limite do instrumento (moeda do cartão)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
         <button type="submit" title="Salvar alterações do instrumento">${icon("save", 14)} Salvar instrumento</button>
       </form>`,
   });
@@ -202,15 +210,16 @@ export function renderCardDialog(accounts: AccountRecord[]): string {
         <label>Nome<input name="name" required /></label>
         <label>Instituição<select name="institutionKey">${renderInstitutionOptions()}</select></label>
         <label>Bandeira<select name="brandKey">${renderCardBrandOptions()}</select></label>
+        <label>Moeda<select name="currency" required>${renderCardCurrencyOptions()}</select></label>
         <label>Fecha dia<input name="closingDay" type="number" min="1" max="31" required /></label>
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" required /></label>
-        <label>Limite total (moeda da conta de pagamento)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
+        <label>Limite total (moeda do cartão)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts)}</select></label>
         <label>Tipo do instrumento<select name="instrumentType" required><option value="physical">Físico</option><option value="virtual">Virtual</option></select></label>
         <label>Titularidade<select name="instrumentHolder" required><option value="primary">Titular principal</option><option value="additional">Adicional</option></select></label>
         <label>Nome do instrumento<input name="instrumentName" placeholder="Físico titular" /></label>
         <label>Final mascarado<input name="instrumentMaskedIdentifier" placeholder="**** 1234" /></label>
-        <label>Limite do instrumento (moeda da conta de pagamento)<input name="instrumentCreditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
+        <label>Limite do instrumento (moeda do cartão)<input name="instrumentCreditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <button type="submit" title="Salvar novo cartão">${icon("save", 14)} Criar cartão</button>
       </form>`,
   });

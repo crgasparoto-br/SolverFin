@@ -79,7 +79,7 @@ export interface CardItemViewModel {
   brandKey: string;
   brandLabel: string;
   paymentAccountName: string;
-  paymentAccountCurrency: string | undefined;
+  cardCurrency: string | undefined;
   activeInstrumentCount: number;
   search: string;
   editDialogId: string;
@@ -154,9 +154,9 @@ function buildCardResource(
     institutionLabel: item.institutionLabel,
     brandKey: item.brandKey,
     secondaryLabel: `${item.brandLabel} · ${item.activeInstrumentCount} ${item.activeInstrumentCount === 1 ? "instrumento ativo" : "instrumentos ativos"}`,
-    currency: item.paymentAccountCurrency,
-    currencyLabel: item.paymentAccountCurrency ?? "Moeda indisponível",
-    search: [item.search, item.paymentAccountCurrency ?? "moeda indisponível", "cartão"]
+    currency: item.cardCurrency,
+    currencyLabel: item.cardCurrency ?? "Moeda não informada",
+    search: [item.search, item.cardCurrency ?? "moeda não informada", "cartão"]
       .join(" ")
       .toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(key)}`,
@@ -189,7 +189,7 @@ function resolveSelectedResource(
     key,
     card,
     paymentAccount,
-    currency: normalizeCurrency(paymentAccount?.currency),
+    currency: normalizeCurrency(card.currency),
   };
 }
 
@@ -233,7 +233,7 @@ export function buildCardItemViewModel(
     brandKey: brand.key,
     brandLabel: brand.label,
     paymentAccountName: paymentAccount?.name ?? "não vinculada",
-    paymentAccountCurrency: normalizeCurrency(paymentAccount?.currency),
+    cardCurrency: normalizeCurrency(card.currency),
     activeInstrumentCount: countActive(card.instruments),
     search: [
       card.name,
@@ -241,7 +241,7 @@ export function buildCardItemViewModel(
       brand.label,
       card.status,
       paymentAccount?.name ?? "",
-      normalizeCurrency(paymentAccount?.currency) ?? "",
+      normalizeCurrency(card.currency) ?? "",
       ...card.instruments.flatMap((instrument) => [
         instrument.name ?? "",
         instrument.maskedIdentifier ?? "",

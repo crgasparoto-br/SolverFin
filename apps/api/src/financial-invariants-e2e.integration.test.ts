@@ -225,6 +225,7 @@ async function invariantCardPurchaseSettlementDoesNotDoubleCountExpense(): Promi
     closingDay: 20,
     dueDay: 10,
     paymentAccountId: paymentAccount.id,
+    currency: "BRL",
   });
   const juneReference = new Date("2040-06-30T12:00:00.000Z");
   const julyReference = new Date("2040-07-31T12:00:00.000Z");
@@ -267,6 +268,7 @@ async function invariantInstallmentPurchaseIsDistributedAcrossInvoices(): Promis
     name: `FIN-E2E-002 cartao ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
   });
   const purchase = await registerCardPurchaseForContext(CONTEXT, card.id, {
     occurredOn: "2041-06-15",
@@ -611,6 +613,7 @@ async function invariantMutationRetryDoesNotDuplicateEffects(): Promise<void> {
     closingDay: 20,
     dueDay: 10,
     paymentAccountId: paymentAccount.id,
+    currency: "BRL",
   });
   const purchase = await registerCardPurchaseForContext(CONTEXT, card.id, {
     occurredOn: "2048-06-15",

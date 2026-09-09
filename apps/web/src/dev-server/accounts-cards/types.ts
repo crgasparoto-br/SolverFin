@@ -18,6 +18,7 @@ export interface CreditCardAccountRecord {
   closingDay: number;
   dueDay: number;
   creditLimitMinor?: number;
+  currency?: string;
   institutionKey?: string;
   brandKey?: string;
   paymentAccountId?: string;

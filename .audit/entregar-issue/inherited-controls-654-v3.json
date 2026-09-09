@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+  "source_audits": [
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:pr657-fb52d2a-654",
+      "finding_ids": [
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004"
+      ]
+    },
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:853486ba-25c6-45a2-ac48-cd93b9ee5b32",
+      "finding_ids": [
+        "A-005",
+        "A-006",
+        "A-007"
+      ]
+    },
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:pr657-b7456f2-handoff-stale",
+      "finding_ids": [
+        "A-001"
+      ]
+    },
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:a46232c8-88b9-4e12-a71c-6a824d41eb55",
+      "finding_ids": [
+        "A-002"
+      ]
+    },
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:9b2cd0ce-a415-47e1-bf1a-52fc88c6b3a0",
+      "finding_ids": [
+        "A-003"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "id": "INHERITED-CANONICAL-SOURCE-001",
+      "status": "passed",
+      "head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "subject_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "control_type": "procedure",
+      "risk_family": "structural-contract",
+      "surface": "canonical-source-consistency",
+      "dimension": "full-source-snapshot",
+      "attack_control_id": "NEG-REQ-024-01",
+      "evidence": "evidence/material-head-gates.txt",
+      "evidence_sha256": "3dfbe34d5dd16626d79a4f81c74f9cd43ffadcf4c416fc5377fa414442ca3251",
+      "procedure": "Re-execute the canonical-source-consistency discriminant against the refrozen material head and require the linked attack-matrix control to pass before handoff publication.",
+      "expected": "The canonical-source-consistency control is exact-head, discriminating and bound to the current material identity.",
+      "observed": "The canonical-source-consistency assertions and exact-head workflow evidence are bound to current material SHA c10f9f42b13fb7e63c892d314a25654a8d676565; the stale ancestral handoff is not reused."
+    },
+    {
+      "id": "INHERITED-SPECIFIED-MATRIX-001",
+      "status": "passed",
+      "head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "subject_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "control_type": "procedure",
+      "risk_family": "structural-contract",
+      "surface": "specified-test-matrix",
+      "dimension": "discriminating-negative-evidence",
+      "attack_control_id": "NEG-REQ-039-02",
+      "evidence": "evidence/material-head-gates.txt",
+      "evidence_sha256": "3dfbe34d5dd16626d79a4f81c74f9cd43ffadcf4c416fc5377fa414442ca3251",
+      "procedure": "Re-execute the specified-test-matrix discriminant against the refrozen material head and require the linked attack-matrix control to pass before handoff publication.",
+      "expected": "The specified-test-matrix control is exact-head, discriminating and bound to the current material identity.",
+      "observed": "The specified-test-matrix assertions and exact-head workflow evidence are bound to current material SHA c10f9f42b13fb7e63c892d314a25654a8d676565; the stale ancestral handoff is not reused."
+    },
+    {
+      "id": "REFREEZE-IDENTITY-001",
+      "status": "passed",
+      "head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "subject_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "control_type": "procedure",
+      "evidence": "evidence/material-head-gates.txt",
+      "evidence_sha256": "3dfbe34d5dd16626d79a4f81c74f9cd43ffadcf4c416fc5377fa414442ca3251",
+      "procedure": "Compare the prior certified material SHA with the current PR head; after any material delta, rebuild all readiness artifacts and require a direct result-only child of the new material head.",
+      "expected": "A stale ancestral certificate cannot be returned as release-ready after material writes; the terminal child must parent the refrozen head.",
+      "observed": "Post-freeze material changes were detected, c10f9f42b13fb7e63c892d314a25654a8d676565 was selected as the new material head, and all current readiness evidence is regenerated for that identity."
+    }
+  ],
+  "retired_controls": [],
+  "unresolved_controls": []
+}

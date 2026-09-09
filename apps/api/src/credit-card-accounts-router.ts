@@ -10,6 +10,12 @@ import {
 
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
+import {
+  assertCardCurrencyChangeAllowedForContext,
+  assertLinkedPaymentAccountCurrencyForContext,
+  normalizeRequiredCardCurrency,
+  resolveCanonicalCardPurchaseCurrency,
+} from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
@@ -175,11 +181,20 @@ async function createCreditCardAccountHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
+  const currency = normalizeRequiredCardCurrency(body.currency);
+  const paymentAccountId =
+    body.paymentAccountId !== undefined ? String(body.paymentAccountId) : undefined;
+
+  if (paymentAccountId !== undefined) {
+    await assertLinkedPaymentAccountCurrencyForContext(context, paymentAccountId, currency);
+  }
+
   const creditCardAccount = await createCreditCardAccountForContext(context, {
     name: String(body.name ?? ""),
     closingDay: Number(body.closingDay),
     dueDay: Number(body.dueDay),
     instruments: readInstruments(body.instruments),
+    currency,
     ...(body.creditLimitMinor !== undefined
       ? { creditLimitMinor: Number(body.creditLimitMinor) }
       : {}),
@@ -188,9 +203,7 @@ async function createCreditCardAccountHandler(
       : {}),
     ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
     ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
-    ...(body.paymentAccountId !== undefined
-      ? { paymentAccountId: String(body.paymentAccountId) }
-      : {}),
+    ...(paymentAccountId !== undefined ? { paymentAccountId } : {}),
   });
 
   return json(201, { creditCardAccount });
@@ -212,27 +225,54 @@ async function updateCreditCardAccountHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const creditCardAccount = await updateCreditCardAccountForContext(
-    context,
-    requireParam(match, "cardId"),
-    {
-      ...(body.name !== undefined ? { name: String(body.name) } : {}),
-      ...(body.status !== undefined ? { status: body.status as CardStatus } : {}),
-      ...(body.closingDay !== undefined ? { closingDay: Number(body.closingDay) } : {}),
-      ...(body.dueDay !== undefined ? { dueDay: Number(body.dueDay) } : {}),
-      ...(body.creditLimitMinor !== undefined
-        ? { creditLimitMinor: Number(body.creditLimitMinor) }
-        : {}),
-      ...(body.maskedIdentifier !== undefined
-        ? { maskedIdentifier: String(body.maskedIdentifier) }
-        : {}),
-      ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
-      ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
-      ...(body.paymentAccountId !== undefined
-        ? { paymentAccountId: String(body.paymentAccountId) }
-        : {}),
-    },
-  );
+  const cardId = requireParam(match, "cardId");
+  const currentCard = await getCreditCardAccountForContext(context, cardId);
+  const requestedCurrency =
+    body.currency !== undefined
+      ? normalizeRequiredCardCurrency(body.currency)
+      : currentCard.currency;
+  const paymentAccountId =
+    body.paymentAccountId !== undefined
+      ? String(body.paymentAccountId)
+      : currentCard.paymentAccountId;
+
+  if (body.currency !== undefined && requestedCurrency !== undefined) {
+    await assertCardCurrencyChangeAllowedForContext(
+      context,
+      cardId,
+      currentCard.currency,
+      requestedCurrency,
+    );
+  }
+
+  if (requestedCurrency !== undefined && paymentAccountId !== undefined) {
+    await assertLinkedPaymentAccountCurrencyForContext(
+      context,
+      paymentAccountId,
+      requestedCurrency,
+    );
+  }
+
+  const creditCardAccount = await updateCreditCardAccountForContext(context, cardId, {
+    ...(body.name !== undefined ? { name: String(body.name) } : {}),
+    ...(body.status !== undefined ? { status: body.status as CardStatus } : {}),
+    ...(body.closingDay !== undefined ? { closingDay: Number(body.closingDay) } : {}),
+    ...(body.dueDay !== undefined ? { dueDay: Number(body.dueDay) } : {}),
+    ...(body.creditLimitMinor !== undefined
+      ? { creditLimitMinor: Number(body.creditLimitMinor) }
+      : {}),
+    ...(body.currency !== undefined && requestedCurrency !== undefined
+      ? { currency: requestedCurrency }
+      : {}),
+    ...(body.maskedIdentifier !== undefined
+      ? { maskedIdentifier: String(body.maskedIdentifier) }
+      : {}),
+    ...(body.institutionKey !== undefined ? { institutionKey: String(body.institutionKey) } : {}),
+    ...(body.brandKey !== undefined ? { brandKey: String(body.brandKey) } : {}),
+    ...(body.paymentAccountId !== undefined
+      ? { paymentAccountId: String(body.paymentAccountId) }
+      : {}),
+  });
 
   return json(200, { creditCardAccount });
 }
@@ -293,9 +333,12 @@ async function registerCardPurchaseHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
+  const cardId = requireParam(match, "cardId");
+  const card = await getCreditCardAccountForContext(context, cardId);
+  const currency = resolveCanonicalCardPurchaseCurrency(card.currency, body.currency);
   const result = await registerCardPurchaseForContext(
     context,
-    requireParam(match, "cardId"),
+    cardId,
     {
       occurredOn: String(body.occurredOn ?? ""),
       amountMinor: Number(body.amountMinor),
@@ -303,7 +346,7 @@ async function registerCardPurchaseHandler(
       ...(body.cardInstrumentId !== undefined
         ? { cardInstrumentId: String(body.cardInstrumentId) }
         : {}),
-      ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+      currency,
       ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
       ...(body.totalInstallments !== undefined
         ? { totalInstallments: Number(body.totalInstallments) }

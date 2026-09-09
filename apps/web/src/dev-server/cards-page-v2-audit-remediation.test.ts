@@ -114,13 +114,14 @@ function createCardsFetchMock(
       return jsonResponse({ error: { message: input.failureMessage ?? "Falha simulada" } }, 503);
     }
 
-    if (url.pathname === "/api/cards") {
+    if (url.pathname === "/api/credit-card-accounts") {
       return jsonResponse({
-        cards: [
+        creditCardAccounts: [
           {
             id: "card-usd",
             name: "Cartão Viagem",
             status: "active",
+            currency: "USD",
             closingDay: 20,
             dueDay: 10,
             maskedIdentifier: "final 4242",

@@ -33,6 +33,7 @@ async function main(): Promise<void> {
     name: `Cartao materializacao recorrencia ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 100_000,
     instruments: [
       {

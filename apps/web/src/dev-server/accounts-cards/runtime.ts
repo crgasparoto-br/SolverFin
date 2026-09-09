@@ -128,6 +128,8 @@ export function renderAccountsCardsRuntimeScript(): string {
     <script>
       (() => {
         const searchInput = document.querySelector("[data-master-search]");
+        const kindSelect = document.querySelector("[data-master-kind]");
+        const currencySelect = document.querySelector("[data-master-currency]");
         const statusSelect = document.querySelector("[data-master-status]");
 
         function maskMoneyValue(raw) {
@@ -146,22 +148,44 @@ export function renderAccountsCardsRuntimeScript(): string {
 
         function applyFilters() {
           const term = String(searchInput && searchInput.value || "").trim().toLowerCase();
+          const kind = String(kindSelect && kindSelect.value || "all");
+          const currency = String(currencySelect && currencySelect.value || "all");
           const status = String(statusSelect && statusSelect.value || "all");
           let visibleItems = 0;
           const items = Array.from(document.querySelectorAll("[data-resource-master-item]"));
           items.forEach((item) => {
+            const itemKind = String(item.dataset.kind || "");
+            const itemCurrency = String(item.dataset.currency || "unavailable");
             const itemStatus = item.dataset.status;
             const matchesSearch = !term || String(item.dataset.search || "").includes(term);
+            const matchesKind = kind === "all" || itemKind === kind;
+            const matchesCurrency = currency === "all" || itemCurrency === currency;
             const matchesStatus = status === "all" || (status === "active" ? itemStatus === "active" : itemStatus !== "active");
-            item.hidden = !(matchesSearch && matchesStatus);
+            item.hidden = !(matchesSearch && matchesKind && matchesCurrency && matchesStatus);
             if (!item.hidden) visibleItems += 1;
           });
           const empty = document.querySelector("[data-filter-empty]");
           if (empty) empty.hidden = visibleItems > 0 || items.length === 0;
+
+          const selectedLink = document.querySelector(
+            '[data-resource-master-item] .resource-master-link[aria-current="page"]',
+          );
+          const selectedItem = selectedLink && selectedLink.closest("[data-resource-master-item]");
+          if (selectedItem && selectedItem.hidden) {
+            selectedItem.classList.remove("is-selected");
+            selectedLink.removeAttribute("aria-current");
+            const selectedDetail = document.querySelector("[data-resource-detail]");
+            if (selectedDetail) selectedDetail.hidden = true;
+            const neutralDetail = document.querySelector("[data-filter-selection-empty]");
+            if (neutralDetail) neutralDetail.hidden = false;
+          }
         }
 
-        [searchInput, statusSelect].forEach((control) => control && control.addEventListener("input", applyFilters));
-        statusSelect && statusSelect.addEventListener("change", applyFilters);
+        [searchInput, kindSelect, currencySelect, statusSelect].forEach((control) => {
+          if (!control) return;
+          control.addEventListener("input", applyFilters);
+          control.addEventListener("change", applyFilters);
+        });
         applyFilters();
       })();
     </script>`;

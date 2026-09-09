@@ -40,6 +40,7 @@ async function main(): Promise<void> {
     closingDay: 20,
     dueDay: 10,
     paymentAccountId: account.id,
+    currency: "BRL",
   });
 
   const purchase = await registerCardPurchaseForContext(context, card.id, {

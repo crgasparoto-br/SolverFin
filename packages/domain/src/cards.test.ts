@@ -382,18 +382,24 @@ function runRejectsInvalidInstallmentStart(): void {
 }
 
 function runKeepsSeparateInvoicesForSeparateCards(): void {
-  const physicalCard = createCard({
-    id: "card-c6-fisico",
-    context: tenantA,
-    now,
-    payload: { name: "C6 - Fisico", closingDay: 26, dueDay: 1 },
-  }).card;
-  const virtualCard = createCard({
-    id: "card-c6-virtual",
-    context: tenantA,
-    now,
-    payload: { name: "C6 - Virtual", closingDay: 26, dueDay: 1 },
-  }).card;
+  const physicalCard: Card = {
+    ...createCard({
+      id: "card-c6-fisico",
+      context: tenantA,
+      now,
+      payload: { name: "C6 - Fisico", closingDay: 26, dueDay: 1 },
+    }).card,
+    currency: "BRL",
+  };
+  const virtualCard: Card = {
+    ...createCard({
+      id: "card-c6-virtual",
+      context: tenantA,
+      now,
+      payload: { name: "C6 - Virtual", closingDay: 26, dueDay: 1 },
+    }).card,
+    currency: "BRL",
+  };
 
   const firstResult = registerCardPurchase({
     transactionId: "transaction-c6-physical",
@@ -651,33 +657,39 @@ function runTenantIsolation(): void {
 }
 
 function createCardFixture(): Card {
-  return createCard({
-    id: "card-fixture",
-    context: tenantA,
-    now,
-    payload: {
-      name: "Cartao fixture",
-      closingDay: 20,
-      dueDay: 10,
-      maskedIdentifier: "**** 1111",
-    },
-  }).card;
+  return {
+    ...createCard({
+      id: "card-fixture",
+      context: tenantA,
+      now,
+      payload: {
+        name: "Cartao fixture",
+        closingDay: 20,
+        dueDay: 10,
+        maskedIdentifier: "**** 1111",
+      },
+    }).card,
+    currency: "BRL",
+  };
 }
 
 function createCardFixtureWithPayment(): Card {
-  return createCard({
-    id: "card-fixture-payment",
-    context: tenantA,
-    now,
-    paymentAccount,
-    payload: {
-      name: "Cartao fixture",
-      closingDay: 20,
-      dueDay: 10,
-      maskedIdentifier: "**** 1111",
-      paymentAccountId: paymentAccount.id,
-    },
-  }).card;
+  return {
+    ...createCard({
+      id: "card-fixture-payment",
+      context: tenantA,
+      now,
+      paymentAccount,
+      payload: {
+        name: "Cartao fixture",
+        closingDay: 20,
+        dueDay: 10,
+        maskedIdentifier: "**** 1111",
+        paymentAccountId: paymentAccount.id,
+      },
+    }).card,
+    currency: "BRL",
+  };
 }
 
 function createAccountFixture(

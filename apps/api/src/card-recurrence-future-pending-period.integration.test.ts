@@ -34,6 +34,7 @@ async function main(): Promise<void> {
     name: `Cartao periodo fatura ${suffix}`,
     closingDay: 20,
     dueDay: 10,
+    currency: "BRL",
     creditLimitMinor: 80_000,
     instruments: [
       {

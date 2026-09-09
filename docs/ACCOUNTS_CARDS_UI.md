@@ -1,6 +1,6 @@
 # Fronteiras de UI — Contas e Cartões
 
-Este documento registra a arquitetura atual da rota `/contas-cartoes` após a migração da issue #612 para o arquétipo A3 master-detail.
+Este documento registra a arquitetura atual da rota `/contas-cartoes` após a migração da issue #612 para o arquétipo A3 master-detail e a evolução da issue #654 para filtragem explícita por tipo de recurso e moeda.
 
 ## Arquitetura da rota
 
@@ -9,28 +9,40 @@ O contrato público continua sendo `renderAccountsCardsPage`, mas a implementaç
 - `types.ts`: contratos de dados consumidos pela tela;
 - `view-model.ts`: coleção unificada de contas/cartões, seleção do recurso, labels, busca e contexto de moeda;
 - `presentation.ts`: formatação e pequenas primitivas de apresentação;
-- `components.ts`: master único, detalhe contextual, instrumentos e ações;
+- `components.ts`: master único, filtros de tipo/moeda, detalhe contextual, instrumentos e ações;
 - `dialogs.ts`: conteúdo dos fluxos de criação/edição, sempre composto pela primitive compartilhada `renderDialog`;
-- `runtime.ts`: formulários, busca/filtro, confirmação destrutiva e máscara monetária; não possui controller genérico de dialogs;
+- `runtime.ts`: formulários, filtros combinados de busca/tipo/moeda/status, confirmação destrutiva e máscara monetária; não possui controller genérico de dialogs;
 - `styles.ts`: estilos específicos do conteúdo da rota, sem duplicar a superfície modal da fundação;
 - `page.ts`: fetch, estados da página, composição SSR e inclusão única do controller compartilhado de UI;
 - `accounts-cards-page.ts`: facade de compatibilidade para imports existentes.
 
 A rota usa diretamente as primitives da Fase 3B, em especial `PageContainer`, `PageHeader`, `DetailLayout`, `Dialog`, `DialogTrigger`, `EmptyState`, `Loading`, `RecoverableError` e `UnavailableState`. A abertura, fechamento por `Escape` e restauração de foco dos dialogs de criação/edição são responsabilidade de `renderSolverFinUiInteractionsScriptTag()`; a rota não implementa um controller modal concorrente.
 
-## Composição A3
+## Composição A3 e filtros
 
-`/contas-cartoes` não usa mais abas para separar contas e cartões. A coluna master apresenta uma única coleção de recursos financeiros. A seleção é endereçável por `?resource=account:<id>` ou `?resource=card:<id>` e o detalhe mantém o recurso escolhido visível sem perder o contexto da lista.
+`/contas-cartoes` não usa abas para separar contas e cartões. A coluna master apresenta uma única coleção de recursos financeiros. A seleção é endereçável por `?resource=account:<id>` ou `?resource=card:<id>` e o detalhe mantém o recurso escolhido visível sem perder o contexto da lista.
+
+A separação operacional entre os recursos ocorre por filtros explícitos no próprio master:
+
+- **Buscar**: nome, instituição, identificadores, bandeira e moeda;
+- **Tipo**: `Todos`, `Contas` ou `Cartões`;
+- **Moeda**: `Todas as moedas`, os códigos existentes na coleção atual e `Moeda indisponível` quando houver recurso sem moeda determinável;
+- **Status**: `Todos`, `Ativos` ou `Inativos`.
+
+Os quatro filtros são cumulativos. Alterar um filtro não descarta os demais, e retornar todos aos valores neutros restaura a coleção completa. Quando a combinação não encontra recursos, o estado vazio orienta a ajustar busca, tipo, moeda ou status. Os filtros usam controles nativos e permanecem operáveis por teclado.
+
+Se o recurso selecionado continuar elegível, seleção e detalhe são preservados. Se qualquer filtro o excluir, a seleção visível é limpa e o detalhe passa para `Selecione um recurso`; limpar os filtros depois disso não seleciona o recurso anterior nem qualquer outro automaticamente. Uma nova seleção exige ação explícita do usuário.
 
 Para contas, o detalhe mantém instituição, tipo, moeda, agência/conta, saldo inicial e estado. Para cartões, mantém instituição, bandeira, conta de pagamento, fechamento/vencimento, moeda, limite e instrumentos internos.
 
 A moeda nunca é inferida silenciosamente:
 
 - conta: usa a moeda declarada no próprio cadastro;
-- cartão: usa a moeda da conta de pagamento vinculada;
-- sem uma moeda determinável, a interface mostra `Moeda indisponível`/`moeda indisponível` em vez de assumir BRL.
+- cartão: usa exclusivamente `Card.currency`, persistida no cartão;
+- a conta de pagamento vinculada não é fallback runtime para a moeda do cartão;
+- cartão legado sem `Card.currency` permanece como `Moeda indisponível` no master/filtro e deve ser corrigido pela edição do cartão, sem assumir BRL.
 
-Limites de cartão e instrumento seguem o mesmo contexto monetário da conta de pagamento.
+Limites do cartão e de seus instrumentos usam o contexto monetário de `Card.currency`. Enquanto não existir conversão cambial, o domínio mantém separadamente a regra de compatibilidade entre a moeda do cartão e a conta de pagamento vinculada.
 
 ## Ações e dialogs
 
@@ -40,7 +52,7 @@ A confirmação destrutiva também usa markup da primitive `Dialog`, embora sua 
 
 Ao abrir um dialog de criação/edição por teclado ou mouse, o foco entra no dialog e retorna ao acionador ao fechar. Cancelar uma confirmação destrutiva não dispara request e devolve o foco ao controle que a iniciou. Durante uma gravação, a rota apresenta estado de loading e mantém erro recuperável no próprio formulário em caso de falha.
 
-Os instrumentos ficam dentro do detalhe do cartão correspondente. Cadastro, edição, definição de default e arquivamento continuam usando os endpoints existentes; a issue #612 não altera o modelo de instrumentos.
+Os instrumentos ficam dentro do detalhe do cartão correspondente. Cadastro, edição, definição de default e arquivamento continuam usando os endpoints existentes; as issues #612 e #654 não alteram o modelo de instrumentos.
 
 ## Pós-processamento legado aposentado
 
@@ -54,28 +66,32 @@ Os módulos históricos podem permanecer temporariamente no repositório como re
 
 ## Responsividade e acessibilidade
 
-No desktop, `DetailLayout` mantém master e detalhe lado a lado. No mobile, a composição empilha sem scroll horizontal acidental. `Dialog` usa os estilos e comportamento responsivo compartilhados da fundação; a rota mantém apenas estilos do conteúdo interno dos formulários e instrumentos.
+No desktop, `DetailLayout` mantém master e detalhe lado a lado. Os filtros usam busca em largura total seguida de tipo, moeda e status. Em larguras intermediárias eles refluem para duas colunas; no mobile ficam em uma coluna, sem scroll horizontal acidental. `Dialog` usa os estilos e comportamento responsivo compartilhados da fundação; a rota mantém apenas estilos do conteúdo interno dos formulários e instrumentos.
 
-O gate visual cobre 1440×900, 1366×768 e 390×844, incluindo conteúdo longo, busca vazia, foco/teclado, dialog e ações. O estado de perfil novo mostra `Nenhuma conta ou cartão cadastrado` no master e `Selecione um recurso` no detalhe.
+O gate visual cobre 1440×900, 1366×768 e 390×844, incluindo conteúdo longo, filtros combinados, seleção excluída por filtro, busca vazia, foco/teclado, dialog e ações. O estado de perfil novo mostra `Nenhuma conta ou cartão cadastrado` no master e `Selecione um recurso` no detalhe.
 
 ## Validação
 
 O recorte é protegido por:
 
-- testes do renderer/view-model para seleção A3 e moeda explícita, incluindo USD e moeda indisponível;
+- testes do renderer/view-model para seleção A3 e moeda explícita, incluindo USD e `Card.currency` ausente;
+- teste focado de filtros que exige metadados de tipo/moeda, labels `Todas as moedas`/`Moeda indisponível`, combinação de busca + tipo + moeda + status e limpeza de seleção quando o mestre selecionado é excluído;
 - `ui-boundaries:check`, que exige `renderDialog`, `renderDialogTrigger` e o controller compartilhado e rejeita controller/CSS modal específico da rota;
 - teste de manutenção da rota, que exige `data-sf-dialog-open`, `data-sf-dialog-close` e o script compartilhado na saída SSR;
 - `legacy-html-post-processors:check`, que exige budget residual 2 e proíbe o retorno da rota ao pipeline;
 - contrato SSR, que exige o marcador A3 e CSS da própria rota sem providers runtime aposentados;
-- `accounts-cards-interface.mjs`, que executa o fluxo A3 real e produz evidência de `DetailLayout`, `Dialog`, desktop/mobile e responsabilidades legadas substituídas;
+- `accounts-cards-interface.mjs`, que executa o fluxo A3 real e produz evidência de `DetailLayout`, ausência de tabs, filtros de tipo/moeda combinados, limpeza do detalhe ao excluir a seleção, `Dialog`, desktop/mobile e responsabilidades legadas substituídas;
 - `issue-606-accounts-cards-empty.mjs` para o estado vazio de perfil novo;
 - suite, lint, typecheck e build do workspace Web.
 
 ## Referências
 
-- issue #612;
+- issue #655 — `Card.currency` como fonte canônica da moeda do cartão;
+- issue #654 — separação por filtro de tipo e filtro de moeda;
+- issue #612 — migração para A3 master-detail;
 - issue #607 — separação das fronteiras internas da tela;
 - issue #604 — mecanismo de migração dos pós-processadores;
+- `docs/CARDS.md`;
 - `docs/UI_PRIMITIVES.md`;
 - `docs/DESIGN_SYSTEM.md`;
 - `docs/SCREEN_ARCHETYPES.md`;

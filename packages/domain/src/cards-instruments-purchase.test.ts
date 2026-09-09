@@ -295,17 +295,20 @@ function createCardFixture(id: string): Card {
 }
 
 function createCardFixtureForTenant(id: string, context: TenantContext): Card {
-  return createCard({
-    id,
-    context,
-    now,
-    payload: {
-      name: `Cartao ${id}`,
-      closingDay: 20,
-      dueDay: 10,
-      creditLimitMinor: 100_000,
-    },
-  }).card;
+  return {
+    ...createCard({
+      id,
+      context,
+      now,
+      payload: {
+        name: `Cartao ${id}`,
+        closingDay: 20,
+        dueDay: 10,
+        creditLimitMinor: 100_000,
+      },
+    }).card,
+    currency: "BRL",
+  };
 }
 
 function createInstrumentGroup(card: Card): {

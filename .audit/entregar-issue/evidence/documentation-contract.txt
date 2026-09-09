@@ -1,0 +1,9 @@
+Material head: b7456f2f5020f13598572747cff49b105b71b36d
+Source: docs/ACCOUNTS_CARDS_UI.md (Git blob 6b430b636f4771443f2d3dbdeec01100bf6689e3)
+Observed canonical claims on the frozen source:
+- /contas-cartoes uses one A3 master list and does not use tabs to separate accounts/cards.
+- filters are Buscar, Tipo, Moeda and Status and are cumulative.
+- filtering out the selected resource clears selection/detail and does not auto-select another resource after reset.
+- card currency uses exclusively Card.currency; linked payment account is not a runtime fallback; missing Card.currency is Moeda indisponível.
+- route no longer passes through applyLegacyHtmlPostProcessorPipeline().
+- visual gate covers 1440x900, 1366x768 and 390x844 including combined filters, filtered selection, focus/keyboard and dialogs.

@@ -43,6 +43,7 @@ function runUsesDefaultInstrumentForPurchase(): void {
     "purchase should use the active default instrument",
   );
   assertEqual(result.invoice.cardId, setup.card.id, "invoice should belong to the card group");
+  assertEqual(result.transaction.currency, "BRL", "purchase should derive currency from the card");
 }
 
 function runConsolidatesDifferentInstrumentsOnSameCardInvoice(): void {
@@ -151,17 +152,20 @@ function createCardWithInstruments(cardId: string): {
   card: Card;
   instruments: readonly CardInstrument[];
 } {
-  const card = createCard({
-    id: cardId,
-    context: tenantA,
-    now,
-    payload: {
-      name: `Cartao ${cardId}`,
-      closingDay: 20,
-      dueDay: 10,
-      creditLimitMinor: 100000,
-    },
-  }).card;
+  const card: Card = {
+    ...createCard({
+      id: cardId,
+      context: tenantA,
+      now,
+      payload: {
+        name: `Cartao ${cardId}`,
+        closingDay: 20,
+        dueDay: 10,
+        creditLimitMinor: 100000,
+      },
+    }).card,
+    currency: "BRL",
+  };
   const physicalResult = createCardInstrument({
     id: `instrument-${cardId}-physical`,
     context: tenantA,

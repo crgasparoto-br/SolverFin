@@ -40,10 +40,10 @@ A Issue #612 migra `/contas-cartoes` para composição A3 direta sobre as primit
 Antes ou durante a composição estruturada são resolvidos:
 
 - seleção do recurso por `?resource=`;
-- busca e filtro de status do master;
+- busca e filtros do master;
 - instituição, tipo/bandeira, estado e identificadores;
-- moeda da conta ou moeda da conta de pagamento do cartão;
-- estado explícito `Moeda indisponível` quando a moeda não puder ser determinada;
+- moeda da conta ou `Card.currency` persistida do cartão; desde a Issue #655, a conta de pagamento vinculada deve ser monetariamente compatível, mas não é fallback runtime;
+- estado explícito `Moeda indisponível` quando um cartão legado ainda não possui moeda configurada, sem assumir BRL;
 - instrumentos dentro do detalhe do cartão;
 - ações primárias/secundárias, dialogs e confirmação destrutiva.
 
@@ -57,7 +57,7 @@ Os arquivos históricos desses adapters podem permanecer temporariamente como re
 
 ## Cartões A3 sem pós-processamento final
 
-A Issue #610 migrou `/cartoes` para `cards-page-v2.ts` e para o arquétipo A3. O renderer emite diretamente a hierarquia `cartão → fatura → compras`, incluindo seleção, filtros, ordenação, agrupamento, subtotais, moeda e liquidação.
+A Issue #610 migrou `/cartoes` para `cards-page-v2.ts` e para o arquétipo A3. O renderer emite diretamente a hierarquia `cartão → fatura → compras`, incluindo seleção, filtros, ordenação, agrupamentos, subtotais, moeda e liquidação.
 
 `/cartoes` também não deve voltar ao pipeline. Os adapters históricos `card-list-sorting`, `card-instrument-subtotals`, `cards-interface` e `cards-interface-finalizer` permanecem apenas como referência/depreciação e com evidence de aposentadoria no gate visual.
 

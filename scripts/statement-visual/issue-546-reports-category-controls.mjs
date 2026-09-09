@@ -91,6 +91,7 @@ async function seedScenario(cdp) {
             name: 'Cartão visual issue 546 ' + suffix,
             closingDay: 20,
             dueDay: 10,
+            currency: 'BRL',
             instruments: [{
               type: 'physical',
               holder: 'primary',

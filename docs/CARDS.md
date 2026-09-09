@@ -13,10 +13,13 @@ Dados que pertencem ao agrupador:
 - nome do cartao;
 - instituicao financeira;
 - bandeira;
+- moeda padrao ISO 4217;
 - dia de fechamento;
 - dia de vencimento;
 - conta padrao de pagamento;
 - limite total.
+
+A moeda padrao do cartao e o contexto monetario sugerido para novos lancamentos e para os limites do agrupador e de seus instrumentos. Ela pertence ao cartao e nao deve ser inferida em tempo de uso a partir da conta de pagamento.
 
 A fatura deve ser resolvida sempre pelo agrupador e pelo periodo. Ela nunca deve ser calculada por instrumento isolado.
 
@@ -43,7 +46,7 @@ O identificador mascarado nao pertence ao agrupador. Ele deve ficar no instrumen
 
 ## Regras de disponibilidade
 
-Um agrupador precisa de pelo menos um instrumento ativo para ficar disponivel em novos lancamentos.
+Um agrupador precisa de pelo menos um instrumento ativo e de uma moeda padrao valida para ficar disponivel em novos lancamentos.
 
 Quando um agrupador fica sem instrumentos ativos:
 
@@ -52,7 +55,13 @@ Quando um agrupador fica sem instrumentos ativos:
 - instrumentos arquivados podem continuar visiveis enquanto forem relevantes para consulta;
 - a tela deve explicar que nao ha instrumento ativo para novos lancamentos.
 
-Criar um novo instrumento ativo em um agrupador bloqueado deve ser o caminho principal para voltar a usar esse agrupador.
+Quando um agrupador legado nao possui moeda padrao:
+
+- novas compras ficam bloqueadas ate que a moeda seja configurada em `Contas e Cartoes`;
+- a interface nao deve substituir a ausencia por `BRL` ou por qualquer outra moeda implicita;
+- compras, faturas e recorrencias historicas continuam consultaveis com a moeda que ja possuem.
+
+Criar um novo instrumento ativo em um agrupador bloqueado deve ser o caminho principal para voltar a usar esse agrupador quando o problema for ausencia de instrumento. Configurar a moeda padrao do cartao e o caminho principal quando o bloqueio for monetario.
 
 ## Instrumento default
 
@@ -83,6 +92,10 @@ Parcelas devem preservar a origem da compra. A fatura consolida os valores por a
 
 Cada fatura e monomoeda. Uma compra so pode compor uma fatura existente quando a moeda ISO normalizada da compra for exatamente igual a moeda da fatura. Nao existe conversao cambial implicita nesse fluxo: divergencia de moeda deve ser rejeitada antes de persistir `Transaction`, `Installment`, `Invoice`, previsao ou auditoria relacionada a operacao.
 
+Novos cartoes criados pelo contrato HTTP de `credit-card-accounts` devem informar uma moeda ISO 4217 de tres letras. A tela `Cartoes` usa essa moeda do agrupador como valor padrao da nova compra. O campo e informativo no modal e nao deve ser usado como mecanismo para transformar um cartao em multi-moeda por compra.
+
+Para cartoes existentes, a migracao pode preencher a moeda apenas quando houver uma fonte inequivoca: uma unica moeda normalizada nas faturas, uma unica moeda nas transacoes do cartao ou, sem historico monetario do cartao, a moeda da conta de pagamento vinculada. Casos ambiguos permanecem sem moeda ate revisao do usuario; nao existe fallback generico para `BRL`.
+
 A mesma regra vale para parcelas futuras, recorrencias materializadas e movimentacao de compra entre periodos. Uma movimentacao deve validar a moeda da fatura de origem e, quando ja existir, da fatura de destino antes de alterar a compra ou qualquer total.
 
 Estados historicos em que uma compra esteja vinculada a uma fatura de moeda diferente nao podem ser agregados silenciosamente. Resumo, edicao, fechamento e movimentacao da fatura devem falhar de forma explicita ate a inconsistencia ser saneada.
@@ -97,9 +110,9 @@ Mudancas futuras no instrumento default nao alteram recorrencias existentes. O d
 
 ## Limites
 
-A bandeira e o limite total pertencem ao agrupador.
+A bandeira, a moeda padrao e o limite total pertencem ao agrupador.
 
-Instrumentos podem ter limite individual opcional. Quando houver limites individuais ativos, a soma desses limites nao deve ultrapassar o limite total do agrupador.
+Instrumentos podem ter limite individual opcional. Quando houver limites individuais ativos, a soma desses limites nao deve ultrapassar o limite total do agrupador. A exibicao desses limites usa a moeda padrao do cartao, sem inferencia pela conta de pagamento.
 
 ## Edicao de compra de cartao
 
@@ -108,7 +121,10 @@ A edicao de uma compra na tela `Cartoes` usa diretamente `PATCH /api/credit-card
 No modo de edicao:
 
 - o seletor de instrumento permanece visivel e editavel;
+- a data persistida da compra e preservada ao abrir o formulario;
 - o modo de repeticao fica oculto, pois repeticao so se aplica a criacao de compra.
+
+Na criacao de uma compra, o campo `Data` e inicializado no navegador com a data local atual. Esse preenchimento e apenas uma sugestao editavel e nao deve usar `toISOString()` como fonte de calendario local, para evitar deslocamento de dia por fuso horario.
 
 Compras de faturas `closed`, `paid` ou `cancelled` tem a acao de edicao desabilitada na tela e sao rejeitadas pela API com o codigo `CARD_PURCHASE_INVOICE_LOCKED` (HTTP 409) caso a chamada ocorra mesmo assim. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria.
 
@@ -156,6 +172,8 @@ O fluxo antigo de criar cartoes separados e vincular adicionais manualmente nao 
 
 O modelo novo nao deve depender de `CardAdditionalLink` para cadastro, compras, faturas, recorrencias, parcelas, previsoes ou exibicao principal. Se alguma rota ou tabela legada permanecer temporariamente por compatibilidade, ela deve ser documentada como legado e nao deve sustentar novos fluxos.
 
+Cartoes legados podem temporariamente possuir `currency = null` enquanto a migracao nao consegue determinar uma unica moeda segura. Essa nulabilidade existe somente para compatibilidade e saneamento; o cadastro HTTP de um novo agrupador continua exigindo moeda.
+
 ## Rotas principais
 
 As rotas de UI/API devem tratar o agrupador como recurso pai e instrumentos como recursos internos.
@@ -181,6 +199,7 @@ Exemplo minimo de criacao de agrupador com instrumento inicial:
   "name": "Cartao C6",
   "institutionKey": "c6",
   "brandKey": "mastercard",
+  "currency": "BRL",
   "closingDay": 20,
   "dueDay": 10,
   "paymentAccountId": "account-main",
@@ -211,22 +230,24 @@ Exemplo minimo de criacao de instrumento em agrupador existente:
 
 ## Gestao na tela `Contas e Cartoes`
 
-A rota `/contas-cartoes` deve manter a listagem compacta e comparavel. Cada aba possui uma unica acao principal contextual, e busca e filtro de status permanecem disponiveis ao alternar entre `Contas` e `Cartoes`.
+A rota `/contas-cartoes` deve manter uma unica colecao master-detail A3, sem abas para separar contas e cartoes. Busca e filtros de tipo (`Todos`, `Contas`, `Cartoes`), moeda e status sao cumulativos e devem permanecer disponiveis no mesmo contexto da colecao mestre.
 
-Na aba `Cartoes`:
+No contexto de cartoes da colecao mestre:
 
-- a linha do cartao mostra somente identificacao, instituicao, bandeira, datas, conta de pagamento, quantidade de instrumentos ativos, limite, status e acoes;
+- o cadastro e a edicao do cartao exibem `Moeda` como dado do agrupador;
+- a linha do cartao mostra somente identificacao, instituicao, bandeira, moeda, datas, conta de pagamento, quantidade de instrumentos ativos, limite, status e acoes;
 - a lista de instrumentos nao aparece expandida na linha nem dentro do modal de edicao do cartao;
 - a acao de icone `Ver instrumentos` abre um modal dedicado que identifica o cartao;
 - o modal lista nome, tipo, titularidade, identificador mascarado, limite individual, status e marcador de default de cada instrumento;
 - adicionar, editar, definir como padrao e arquivar instrumentos reutilizam os contratos de API existentes;
 - ausencia de instrumentos ou de instrumento ativo deve ser explicada no proprio modal, com a acao de adicionar como caminho principal;
+- ausencia de moeda padrao deve ser exibida como estado a corrigir, sem preencher `BRL` automaticamente;
 - dados sensiveis permanecem mascarados, e o modal deve suportar lista extensa com rolagem interna;
 - o modal fecha por controle identificado e por `Escape`, restaurando o foco para `Ver instrumentos`.
 
 Acoes recorrentes de conta, cartao e instrumento usam icones da biblioteca do projeto com nome acessivel e tooltip em hover e foco. Arquivamento e exclusao exigem modal de confirmacao; cancelar ou fechar nao envia requisicao.
 
-A validacao visual permanente da rota usa `scripts/statement-visual/accounts-cards-interface.mjs` e cobre `1440x900`, `1366x768` e `390x844`, incluindo abas por teclado, persistencia de filtros, alvos de acao, CDI por icone, modal de instrumentos, formulario agrupado, arvore de acessibilidade, `Escape`, restauracao de foco e cancelamento de confirmacao sem chamada de API.
+A validacao visual permanente da rota usa `scripts/statement-visual/accounts-cards-interface.mjs` e cobre `1440x900`, `1366x768` e `390x844`, incluindo ausencia de abas, combinacao de busca/tipo/moeda/status, persistencia de filtros, alvos de acao, CDI por icone, modal de instrumentos, formulario agrupado, arvore de acessibilidade, `Escape`, restauracao de foco e cancelamento de confirmacao sem chamada de API.
 
 ## Hierarquia da tela `Cartoes`
 
@@ -250,6 +271,15 @@ A lista de compras deve:
 - oferecer estado vazio especifico quando busca e filtros nao retornarem resultados;
 - manter identificadores de cartao sempre mascarados.
 
+No modal de nova compra:
+
+- `Moeda` vem da moeda padrao do cartao selecionado e nao e substituida por uma moeda generica;
+- `Data` abre com a data local atual como sugestao editavel;
+- `Categoria` exibe a arvore `parentCategoryId` em ordem pai/filho e apresenta o caminho hierarquico, por exemplo `Alimentacao › Bares e restaurantes`;
+- categorias irmas preservam a ordem estavel recebida da API; o cliente nao aplica uma ordenacao alfabetica concorrente;
+- categorias orfas continuam visiveis como opcoes de nivel raiz;
+- se o cartao nao tiver moeda padrao, a acao de nova compra fica indisponivel e a tela orienta a editar o cartao em `Contas e Cartoes`.
+
 Os modais de compra e pagamento devem ter titulo e descricao acessiveis, fechamento por controle identificado, foco inicial em campo interativo e layout de coluna unica nas viewports moveis.
 
 A validacao visual permanente usa `scripts/statement-visual/cards-interface.mjs` para os estados principal e modal em desktop e mobile, e `scripts/statement-visual/cards-interface-adversarial.mjs` para `1366x768`, arvore de acessibilidade, anuncio unico da regiao viva, agrupamentos recolhidos e fluxo completo por teclado. O workflow `Statement visual validation` deve preservar as evidencias `cards-desktop.png`, `cards-modal-desktop.png`, `cards-mobile.png`, `cards-modal-mobile.png`, `cards-compact-desktop.png`, `cards-collapsed-groups.png`, `cards-modal-compact-desktop.png`, `cards-interface.json` e `cards-interface-adversarial.json`.
@@ -258,7 +288,10 @@ A validacao visual permanente usa `scripts/statement-visual/cards-interface.mjs`
 
 A cobertura automatizada deve proteger pelo menos:
 
-- criacao de agrupador com instrumento inicial;
+- criacao de agrupador com instrumento inicial e moeda padrao valida;
+- persistencia e edicao da moeda padrao do agrupador;
+- cartao legado sem moeda bloqueando nova compra sem inventar `BRL`;
+- migracao de moeda somente a partir de contexto historico inequivoco;
 - criacao de instrumentos fisicos e virtuais;
 - titular principal e adicional como titularidade do instrumento, nao como cartao separado;
 - default unico por agrupador;
@@ -267,6 +300,8 @@ A cobertura automatizada deve proteger pelo menos:
 - agrupador bloqueado/inativo sem instrumento ativo;
 - soma de limites individuais respeitando o limite total;
 - compra em instrumentos diferentes gerando uma fatura unica por agrupador;
+- nova compra sugerindo moeda do cartao e data local atual;
+- seletor de categoria exibindo hierarquia pai/filho, mantendo categorias orfas e preservando a ordem de categorias irmas recebida da API;
 - fatura exibindo origem por instrumento;
 - parcelas e recorrencias preservando o instrumento da compra;
 - recorrencias preservando o instrumento definido na criacao;

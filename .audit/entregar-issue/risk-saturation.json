@@ -1,1 +1,166 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"risk_saturation","compression":"gzip","encoded_size":1384,"encoded_sha256":"1e4202210a31034c91bc1e338de7d1c9ca2180e1fa6847c9b0c5f2dd6065b403","decoded_size":6895,"decoded_sha256":"71734f4598a437ec2e67e9c68e6cf072cc338e014bf9137600ec89e834349d8b","parts":[{"path":"risk-saturation.parts/part-000.b64","size":1384,"sha256":"1e4202210a31034c91bc1e338de7d1c9ca2180e1fa6847c9b0c5f2dd6065b403"}]}
+{
+  "schema_version": 1,
+  "head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from the exact-head requirement attack matrix and canonical issue closure.",
+      "control_ids": [
+        "NEG-REQ-004-01",
+        "NEG-REQ-019-01",
+        "NEG-REQ-020-01",
+        "NEG-REQ-024-03",
+        "NEG-REQ-025-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "state-transition",
+          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
+          "control_ids": [
+            "NEG-REQ-004-01",
+            "NEG-REQ-019-01",
+            "NEG-REQ-020-01",
+            "NEG-REQ-024-03",
+            "NEG-REQ-025-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from the exact-head requirement attack matrix and canonical issue closure.",
+      "control_ids": [
+        "NEG-REQ-003-01",
+        "NEG-REQ-023-01",
+        "NEG-REQ-024-02",
+        "NEG-REQ-024-01",
+        "NEG-REQ-039-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
+          "control_ids": [
+            "NEG-REQ-024-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
+          "control_ids": [
+            "NEG-REQ-003-01",
+            "NEG-REQ-023-01",
+            "NEG-REQ-024-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "specified-test-matrix",
+          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
+          "control_ids": [
+            "NEG-REQ-039-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from the exact-head requirement attack matrix and canonical issue closure.",
+      "control_ids": [
+        "NEG-REQ-041-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
+          "control_ids": [
+            "NEG-REQ-041-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:a46232c8-88b9-4e12-a71c-6a824d41eb55",
+    "finding_ids": [
+      "A-002"
+    ],
+    "audit_report_sha256": "79d05f8cfb025d2e234e458e95f3e4ea54909aeab1430a6c2df4e857b84b1e10"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The governing delivery contract already requires exact equality between the certified issue-local path set and the immutable Git compare; this remediation corrects the delivery evidence anchor rather than introducing a new global rule."
+  }
+}

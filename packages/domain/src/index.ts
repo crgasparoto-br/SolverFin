@@ -163,6 +163,7 @@ export interface Card extends Traceable, TenantScoped {
   closingDay: number;
   dueDay: number;
   creditLimitMinor?: number;
+  currency?: string;
   maskedIdentifier?: string;
   institutionKey?: FinancialInstitutionKey | undefined;
   brandKey?: CardBrandKey | undefined;
