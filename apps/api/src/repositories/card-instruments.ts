@@ -157,16 +157,14 @@ export async function createCreditCardAccountForContext(
   }
 
   const now = new Date().toISOString();
-  let card: Card = {
-    ...createCardDomain({
-      id: randomUUID(),
-      context,
-      now,
-      payload: domainPayload,
-      ...(paymentAccount ? { paymentAccount } : {}),
-    }).card,
-    currency,
-  };
+  let card: Card = createCardDomain({
+    id: randomUUID(),
+    context,
+    now,
+    payload: domainPayload,
+    ...(paymentAccount ? { paymentAccount } : {}),
+  }).card;
+  card = { ...card, currency };
   let instruments: readonly CardInstrument[] = [];
 
   for (const instrumentPayload of instrumentPayloads) {
