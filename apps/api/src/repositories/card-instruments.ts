@@ -27,6 +27,11 @@ import {
   type UpdateCardPayload,
 } from "@solverfin/domain";
 
+import {
+  assertCardCurrencyChangeAllowedForContext,
+  assertLinkedPaymentAccountCurrency,
+  normalizeRequiredCardCurrency,
+} from "../card-currency-contract.js";
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 
@@ -41,7 +46,7 @@ export interface CreditCardAccountContract extends Card {
 type NewCardInstrumentPayload = Omit<CreateCardInstrumentPayload, "cardId">;
 
 export interface CreateCreditCardAccountPayload extends CreateCardPayload {
-  currency?: string;
+  currency: string;
   instruments: readonly NewCardInstrumentPayload[];
 }
 
@@ -142,20 +147,26 @@ export async function createCreditCardAccountForContext(
   assertHasActiveInstrumentPayload(payload.instruments);
 
   const { currency: currencyInput, instruments: instrumentPayloads, ...domainPayload } = payload;
+  const currency = normalizeRequiredCardCurrency(currencyInput);
   const paymentAccount = domainPayload.paymentAccountId
     ? await findAccountRow(context, domainPayload.paymentAccountId)
     : undefined;
-  const now = new Date().toISOString();
-  let card: Card = createCardDomain({
-    id: randomUUID(),
-    context,
-    now,
-    payload: domainPayload,
-    ...(paymentAccount ? { paymentAccount } : {}),
-  }).card;
-  if (currencyInput !== undefined) {
-    card = { ...card, currency: normalizeCardCurrency(currencyInput) };
+
+  if (paymentAccount !== undefined) {
+    assertLinkedPaymentAccountCurrency(currency, paymentAccount.currency);
   }
+
+  const now = new Date().toISOString();
+  let card: Card = {
+    ...createCardDomain({
+      id: randomUUID(),
+      context,
+      now,
+      payload: domainPayload,
+      ...(paymentAccount ? { paymentAccount } : {}),
+    }).card,
+    currency,
+  };
   let instruments: readonly CardInstrument[] = [];
 
   for (const instrumentPayload of instrumentPayloads) {
@@ -185,12 +196,29 @@ export async function updateCreditCardAccountForContext(
   cardId: EntityId,
   payload: UpdateCreditCardAccountPayload,
 ): Promise<CreditCardAccountContract> {
-  const currentCard = await findCardRow(context, cardId);
+  const currentCard = getCardDomain(context, await findCardRow(context, cardId));
   const { currency: currencyInput, ...domainPayload } = payload;
-  const paymentAccountId = domainPayload.paymentAccountId ?? currentCard?.paymentAccountId;
+  const requestedCurrency =
+    currencyInput === undefined ? currentCard.currency : normalizeRequiredCardCurrency(currencyInput);
+
+  if (currencyInput !== undefined && requestedCurrency !== undefined) {
+    await assertCardCurrencyChangeAllowedForContext(
+      context,
+      cardId,
+      currentCard.currency,
+      requestedCurrency,
+    );
+  }
+
+  const paymentAccountId = domainPayload.paymentAccountId ?? currentCard.paymentAccountId;
   const paymentAccount = paymentAccountId
     ? await findAccountRow(context, paymentAccountId)
     : undefined;
+
+  if (requestedCurrency !== undefined && paymentAccount !== undefined) {
+    assertLinkedPaymentAccountCurrency(requestedCurrency, paymentAccount.currency);
+  }
+
   const result = updateCardDomain({
     context,
     card: currentCard,
@@ -199,9 +227,9 @@ export async function updateCreditCardAccountForContext(
     ...(paymentAccount ? { paymentAccount } : {}),
   });
   const updatedCard: Card =
-    currencyInput === undefined
+    requestedCurrency === undefined
       ? result.card
-      : { ...result.card, currency: normalizeCardCurrency(currencyInput) };
+      : { ...result.card, currency: requestedCurrency };
   const mutation = addCurrencyToCardAudit(result, currentCard, updatedCard);
 
   await persistCardMutation(mutation);
@@ -550,19 +578,6 @@ function validateCreditLimit(value: number): number {
   }
 
   return value;
-}
-
-function normalizeCardCurrency(value: string): string {
-  const normalized = value.trim().toUpperCase();
-
-  if (!/^[A-Z]{3}$/.test(normalized)) {
-    throw cardInstrumentError(
-      "CARD_CURRENCY_INVALID",
-      "Informe uma moeda valida com tres letras, como BRL, USD ou EUR.",
-    );
-  }
-
-  return normalized;
 }
 
 function addCurrencyToCardAudit(
