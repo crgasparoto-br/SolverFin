@@ -31,6 +31,6 @@ assert.match(script, /description\.appendChild\(context\)/);
 assert.doesNotMatch(script, /insertAdjacentHTML\([^,]+,[^)]*data-purchase-item/);
 assert.match(styles, /flex-wrap:wrap/);
 assert.match(styles, /data-installment-purchase-edit=true/);
-assert.match(integratedScript, /cardInstallmentPurchaseScript/);
+assert.match(integratedScript, /Valor total da compra/);
 assert.match(integratedScript, /purchase\.installmentSequenceNumber\) return/);
 assert.ok(integratedStyles.includes(styles));
