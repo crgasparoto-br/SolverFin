@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "control": "post-handoff-material-write-requires-refreeze",
+  "governing_script": "skills/entregar-issue/scripts/classify_handoff_recovery.py",
+  "actual_case": {
+    "surface": "published-pr-head-after-stale-handoff",
+    "expected": "post-write-refreeze",
+    "observed": {
+      "auditor_recovery_scope": "post-write-refreeze",
+      "auditor_requires_refreeze": true,
+      "certified_material_head_sha": "f3e7a1cc35849d21174d9fd432aa27edad363f59",
+      "reason": "auditor-recovery-floor:post-write-refreeze",
+      "recovery_scope": "post-write-refreeze"
+    },
+    "status": "passed"
+  },
+  "transfer_cases": [
+    {
+      "id": "TRANSFER-CODE-WRITE",
+      "surface": "source-code-write-after-result-child",
+      "dimension": "material-path-outside-allowlist",
+      "expected": "post-write-refreeze",
+      "observed": {
+        "certified_material_head_sha": "f3e7a1cc35849d21174d9fd432aa27edad363f59",
+        "reason": "terminal-candidate-contains-material-paths",
+        "recovery_scope": "post-write-refreeze"
+      },
+      "status": "passed"
+    },
+    {
+      "id": "TRANSFER-HEAD-DRIFT",
+      "surface": "terminal-head-parent-drift",
+      "dimension": "parent-no-longer-certified-material",
+      "expected": "post-write-refreeze",
+      "observed": {
+        "certified_material_head_sha": "f3e7a1cc35849d21174d9fd432aa27edad363f59",
+        "reason": "current-parent-differs-from-certified-material",
+        "recovery_scope": "post-write-refreeze"
+      },
+      "status": "passed"
+    }
+  ]
+}
