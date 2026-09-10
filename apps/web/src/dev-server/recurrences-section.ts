@@ -1,3 +1,8 @@
+import {
+  cardInstallmentPurchaseScript,
+  cardInstallmentPurchaseStyles,
+} from "./card-installment-purchase-ui.js";
+
 export interface RecurrenceRecord {
   id: string;
   status: string;
@@ -122,7 +127,7 @@ export function renderRecurrenceEditModal(
 }
 
 export function recurrencesSectionStyles(): string {
-  return `.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.6875rem;font-weight:700;gap:3px;line-height:1;margin-left:6px;padding:2px 6px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:12px;width:12px}.secondary-button{background:var(--surface,#fff);border:1px solid var(--line,#cbd5e1);color:var(--primary)}.ghost-button{background:transparent;border:1px solid var(--line,#cbd5e1);color:var(--text)}.modal-panel form[data-form] label:has([name=editScope]){display:none}.modal-panel form[data-form][data-method=PATCH] label:has([name=repeatMode]),.modal-panel form[data-form][data-method=PATCH] [data-field=installments],.modal-panel form[data-form][data-method=PATCH] [data-field=installmentStart],.modal-panel form[data-form][data-method=PATCH] [data-field=installmentValueMode],.modal-panel form[data-form][data-method=PATCH] [data-field=interval],.modal-panel form[data-form][data-method=PATCH] [data-field=frequency],.modal-panel form[data-form][data-method=PATCH] [data-field=endOn]{display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}.recurrence-scope-panel{max-width:520px}.recurrence-scope-actions{display:grid;gap:8px}.recurrence-scope-actions button{min-height:36px;text-align:left}.recurrence-scope-panel [data-recurrence-scope-status].error{color:var(--danger,#b91c1c)}.recurrence-scope-panel [data-recurrence-scope-status].success{color:var(--success,#15803d)}.statement-heading-actions{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.account-summary .quick-actions[data-actions-moved=true]{display:none}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}.statement-heading-actions{justify-content:stretch}.statement-heading-actions button{width:100%}}`;
+  return `.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.6875rem;font-weight:700;gap:3px;line-height:1;margin-left:6px;padding:2px 6px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:12px;width:12px}.secondary-button{background:var(--surface,#fff);border:1px solid var(--line,#cbd5e1);color:var(--primary)}.ghost-button{background:transparent;border:1px solid var(--line,#cbd5e1);color:var(--text)}.modal-panel form[data-form] label:has([name=editScope]){display:none}.modal-panel form[data-form][data-method=PATCH] label:has([name=repeatMode]),.modal-panel form[data-form][data-method=PATCH] [data-field=installments],.modal-panel form[data-form][data-method=PATCH] [data-field=installmentStart],.modal-panel form[data-form][data-method=PATCH] [data-field=installmentValueMode],.modal-panel form[data-form][data-method=PATCH] [data-field=interval],.modal-panel form[data-form][data-method=PATCH] [data-field=frequency],.modal-panel form[data-form][data-method=PATCH] [data-field=endOn]{display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}.recurrence-scope-panel{max-width:520px}.recurrence-scope-actions{display:grid;gap:8px}.recurrence-scope-actions button{min-height:36px;text-align:left}.recurrence-scope-panel [data-recurrence-scope-status].error{color:var(--danger,#b91c1c)}.recurrence-scope-panel [data-recurrence-scope-status].success{color:var(--success,#15803d)}.statement-heading-actions{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.account-summary .quick-actions[data-actions-moved=true]{display:none}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}.statement-heading-actions{justify-content:stretch}.statement-heading-actions button{width:100%}}${cardInstallmentPurchaseStyles()}`;
 }
 
 export function recurrencesSectionScript(): string {
@@ -174,6 +179,7 @@ export function recurrencesSectionScript(): string {
         function setupCardPurchaseMoveAction() {
           document.querySelectorAll("[data-purchase]").forEach((node) => {
             const purchase = JSON.parse(node.textContent || "{}");
+            if (purchase.installmentSequenceNumber) return;
             const editButton = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
             if (!editButton || editButton.disabled) return;
             const menu = editButton.closest(".actions-menu");
@@ -513,7 +519,7 @@ export function recurrencesSectionScript(): string {
         document.querySelectorAll("[data-recurrence-action]").forEach((button) => button.addEventListener("click", async () => { const confirmation = button.dataset.recurrenceActionConfirm; if (confirmation && !window.confirm(confirmation)) return; button.disabled = true; const response = await send(button.dataset.recurrenceActionPath, button.dataset.recurrenceActionMethod || "POST", {}); if (!response.ok) { window.alert(await readMessage(response)); button.disabled = false; return; } window.setTimeout(() => window.location.reload(), 450); }));
       })();
     </script>
-  `;
+  ` + cardInstallmentPurchaseScript();
 }
 
 function renderFrequencyOptions(selected?: string): string {
