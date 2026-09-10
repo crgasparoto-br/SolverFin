@@ -34,6 +34,7 @@ import {
 } from "@solverfin/domain";
 
 import {
+  assertCardCurrencyChangeAllowedForContext,
   assertLinkedPaymentAccountCurrency,
   normalizeRequiredCardCurrency,
   resolveCanonicalCardPurchaseCurrency,
@@ -43,7 +44,7 @@ import { insertAuditLogEntry } from "./audit.js";
 import { listCardInstrumentsForContext } from "./card-instruments.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
-type CreateCardForContextPayload = CreateCardPayload & { currency?: string };
+type CreateCardForContextPayload = CreateCardPayload & { currency: string };
 type UpdateCardForContextPayload = UpdateCardPayload & { currency?: string };
 
 interface CardRow {
@@ -117,9 +118,15 @@ export async function createCardForContext(
   payload: CreateCardForContextPayload,
 ): Promise<Card> {
   const { currency: currencyInput, ...domainPayload } = payload;
+  const currency = normalizeRequiredCardCurrency(currencyInput);
   const paymentAccount = domainPayload.paymentAccountId
     ? await findAccountRow(context, domainPayload.paymentAccountId)
     : undefined;
+
+  if (paymentAccount !== undefined) {
+    assertLinkedPaymentAccountCurrency(currency, paymentAccount.currency);
+  }
+
   const result = createCardDomain({
     id: randomUUID(),
     context,
@@ -127,15 +134,10 @@ export async function createCardForContext(
     payload: domainPayload,
     ...(paymentAccount ? { paymentAccount } : {}),
   });
-  const currency =
-    currencyInput === undefined ? undefined : normalizeRequiredCardCurrency(currencyInput);
-
-  if (currency !== undefined && paymentAccount !== undefined) {
-    assertLinkedPaymentAccountCurrency(currency, paymentAccount.currency);
-  }
-
-  const mutation: CardMutationResult =
-    currency === undefined ? result : { ...result, card: { ...result.card, currency } };
+  const mutation: CardMutationResult = {
+    ...result,
+    card: { ...result.card, currency },
+  };
 
   await persistCardMutation(mutation);
 
@@ -147,12 +149,31 @@ export async function updateCardForContext(
   cardId: EntityId,
   payload: UpdateCardForContextPayload,
 ): Promise<Card> {
-  const currentCard = await findCardRow(context, cardId);
+  const currentCard = getCardDomain(context, await findCardRow(context, cardId));
   const { currency: currencyInput, ...domainPayload } = payload;
-  const paymentAccountId = domainPayload.paymentAccountId ?? currentCard?.paymentAccountId;
+  const requestedCurrency =
+    currencyInput === undefined
+      ? currentCard.currency
+      : normalizeRequiredCardCurrency(currencyInput);
+
+  if (currencyInput !== undefined && requestedCurrency !== undefined) {
+    await assertCardCurrencyChangeAllowedForContext(
+      context,
+      cardId,
+      currentCard.currency,
+      requestedCurrency,
+    );
+  }
+
+  const paymentAccountId = domainPayload.paymentAccountId ?? currentCard.paymentAccountId;
   const paymentAccount = paymentAccountId
     ? await findAccountRow(context, paymentAccountId)
     : undefined;
+
+  if (requestedCurrency !== undefined && paymentAccount !== undefined) {
+    assertLinkedPaymentAccountCurrency(requestedCurrency, paymentAccount.currency);
+  }
+
   const result = updateCardDomain({
     context,
     card: currentCard,
@@ -160,18 +181,10 @@ export async function updateCardForContext(
     payload: domainPayload,
     ...(paymentAccount ? { paymentAccount } : {}),
   });
-  const currency =
-    currencyInput === undefined
-      ? result.card.currency
-      : normalizeRequiredCardCurrency(currencyInput);
-
-  if (currency !== undefined && paymentAccount !== undefined) {
-    assertLinkedPaymentAccountCurrency(currency, paymentAccount.currency);
-  }
 
   let mutation: CardMutationResult = result;
-  if (currency !== undefined && currency !== result.card.currency) {
-    mutation = { ...result, card: { ...result.card, currency } };
+  if (requestedCurrency !== undefined && requestedCurrency !== result.card.currency) {
+    mutation = { ...result, card: { ...result.card, currency: requestedCurrency } };
   }
 
   await persistCardMutation(mutation);
