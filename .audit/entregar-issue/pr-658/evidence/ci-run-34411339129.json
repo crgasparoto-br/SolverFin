@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "material_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+  "workflow": {
+    "id": 34411339129,
+    "name": "CI",
+    "run_number": 4918,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "jobs": [
+    {
+      "id": 102666199787,
+      "name": "Validate monorepo",
+      "conclusion": "success",
+      "passed_steps": [
+        "Check environment example",
+        "Validate Prisma schema",
+        "Check demo seed script",
+        "Check formatting",
+        "Lint",
+        "Typecheck",
+        "Generate Prisma client",
+        "Apply migrations",
+        "Seed demo data",
+        "Test",
+        "Build"
+      ]
+    },
+    {
+      "id": 102666200075,
+      "name": "Integration API + PostgreSQL",
+      "conclusion": "success",
+      "passed_steps": [
+        "Generate Prisma client",
+        "Build packages",
+        "Apply migrations",
+        "Seed demo data",
+        "Run API integration tests",
+        "Verify import statement consistency"
+      ]
+    }
+  ],
+  "witnesses": [
+    {
+      "path": "apps/api/src/card-currency-write-boundary.integration.test.ts",
+      "git_blob_sha": "3b06992f3bb81f4ee4495af96dc8a53de7324917",
+      "role": "database write-boundary regression for missing currency, linked-account mismatch and historical currency lock"
+    },
+    {
+      "path": "apps/api/src/card-currency-contract.test.ts",
+      "git_blob_sha": "115d9e681cf4ee1b4dbd96d5c1ac98e5dc074e2a",
+      "role": "domain currency contract and migration invariants"
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2.test.ts",
+      "git_blob_sha": "3ab75798aaa78e2989774c459a9b981132747f93",
+      "role": "cards UI currency, hierarchy and missing-currency behavior"
+    }
+  ],
+  "observation": "The workflow and both jobs completed successfully on the exact material head. The listed test witnesses are repository blobs from the same immutable SHA and are exercised by the corresponding monorepo/API test steps."
+}
