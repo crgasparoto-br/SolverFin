@@ -28,3 +28,4 @@ Use ADR quando uma decisão muda stack, boundary, privacidade, tenant, auditoria
 - [0013 - Multi-moedas e agregação financeira explícita](./0013-multi-currency-financial-aggregation.md)
 - [0014 - Arquitetura incremental de interface por componentes e view-models](./0014-incremental-component-ui-architecture.md)
 - [0015 - Faixa segura para valores monetários em minor units](./0015-safe-monetary-minor-unit-range.md)
+- [0016 - Vínculo canônico entre compra parcelada, parcelas e faturas](./0016-canonical-card-purchase-installment-linkage.md)
