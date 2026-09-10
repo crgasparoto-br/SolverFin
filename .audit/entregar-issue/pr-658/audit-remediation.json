@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+  "remediation_mode": "systemic-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+    "audited_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+    "audit_report_sha256": "1d7f2e0164e0f63888dcdfc2f15fd260f066afa6713d90f60278ae88466ddc54"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "systemic-remediation",
+      "status": "fixed",
+      "evidence": [
+        "Old certificate was not reused.",
+        "Current material head was refrozen only after exact-head CI run 34411339129 completed success.",
+        "New terminal package is constrained to result-only audit paths."
+      ],
+      "validations": [
+        "validate_specification_coverage.py",
+        "validate_requirement_attack_matrix.py",
+        "validate_risk_saturation.py",
+        "validate_inherited_controls.py",
+        "validate_audit_escape_lineage.py",
+        "validate_learning_closure.py",
+        "validate_independent_rejection_closure.py",
+        "validate_terminal_handoff.py"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "f3e7a1cc35849d21174d9fd432aa27edad363f59",
+  "head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
   "families": [
     {
       "family": "authorization",
@@ -39,8 +39,8 @@
       ],
       "dimensions": [
         {
-          "surface": "reference-store",
-          "reason": "The reference-liveness risk can violate the canonical issue clause through the reference-store surface while an ordinary happy path still appears correct.",
+          "surface": "canonical-contract",
+          "reason": "Canonical obligation exposes reference-liveness through canonical-contract.",
           "control_ids": [
             "NEG-REQ-002-01",
             "NEG-REQ-010-01",
@@ -68,16 +68,23 @@
       ],
       "dimensions": [
         {
-          "surface": "time-boundary",
-          "reason": "The temporal-consistency risk can violate the canonical issue clause through the time-boundary surface while an ordinary happy path still appears correct.",
+          "surface": "canonical-contract",
+          "reason": "Canonical obligation exposes temporal-consistency through canonical-contract.",
           "control_ids": [
-            "NEG-REQ-003-03",
             "NEG-REQ-015-01",
             "NEG-REQ-021-01",
             "NEG-REQ-027-01",
             "NEG-REQ-034-01",
-            "NEG-REQ-039-03",
             "NEG-REQ-046-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "time-boundary",
+          "reason": "Canonical obligation exposes temporal-consistency through time-boundary.",
+          "control_ids": [
+            "NEG-REQ-003-03",
+            "NEG-REQ-039-03"
           ],
           "status": "passed"
         }
@@ -111,7 +118,7 @@
       "dimensions": [
         {
           "surface": "duplicate-processing",
-          "reason": "Retry, callback duplication, replay or reprocessing can execute the same logical operation more than once.",
+          "reason": "Canonical obligation exposes idempotency through duplicate-processing.",
           "control_ids": [
             "NEG-REQ-019-01",
             "NEG-REQ-050-01"
@@ -142,16 +149,68 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
+        "AUDIT-A-001-REFREEZE-01",
+        "NEG-REQ-001-01",
         "NEG-REQ-003-01",
         "NEG-REQ-003-02",
+        "NEG-REQ-004-01",
+        "NEG-REQ-005-01",
+        "NEG-REQ-006-01",
+        "NEG-REQ-007-01",
+        "NEG-REQ-008-01",
+        "NEG-REQ-009-01",
+        "NEG-REQ-011-01",
+        "NEG-REQ-012-01",
+        "NEG-REQ-013-01",
+        "NEG-REQ-014-01",
+        "NEG-REQ-016-01",
+        "NEG-REQ-017-01",
         "NEG-REQ-018-01",
+        "NEG-REQ-020-01",
+        "NEG-REQ-022-01",
+        "NEG-REQ-023-01",
+        "NEG-REQ-024-01",
+        "NEG-REQ-025-01",
+        "NEG-REQ-026-01",
+        "NEG-REQ-028-01",
+        "NEG-REQ-029-01",
+        "NEG-REQ-030-01",
+        "NEG-REQ-032-01",
+        "NEG-REQ-033-01",
+        "NEG-REQ-035-01",
+        "NEG-REQ-036-01",
+        "NEG-REQ-037-01",
+        "NEG-REQ-038-01",
         "NEG-REQ-039-01",
         "NEG-REQ-039-02",
+        "NEG-REQ-040-01",
+        "NEG-REQ-041-01",
         "NEG-REQ-042-01",
+        "NEG-REQ-043-01",
+        "NEG-REQ-044-01",
         "NEG-REQ-045-01",
+        "NEG-REQ-047-01",
+        "NEG-REQ-048-01",
+        "NEG-REQ-049-01",
+        "NEG-REQ-051-01",
+        "NEG-REQ-052-01",
+        "NEG-REQ-053-01",
+        "NEG-REQ-054-01",
+        "NEG-REQ-055-01",
+        "NEG-REQ-056-01",
+        "NEG-REQ-057-01",
+        "NEG-REQ-058-01",
+        "NEG-REQ-059-01",
+        "NEG-REQ-061-01",
+        "NEG-REQ-062-01",
         "NEG-REQ-064-01",
+        "NEG-REQ-066-01",
+        "NEG-REQ-067-01",
+        "NEG-REQ-068-01",
+        "NEG-REQ-069-01",
         "NEG-REQ-070-01",
         "NEG-REQ-070-02",
+        "NEG-REQ-071-01",
         "NEG-REQ-073-01",
         "NEG-REQ-073-02",
         "TEST-REQ-064-01",
@@ -165,17 +224,69 @@
       "dimensions": [
         {
           "surface": "canonical-contract",
-          "reason": "The structural-contract risk can violate the canonical issue clause through the canonical-contract surface while an ordinary happy path still appears correct.",
+          "reason": "Canonical obligation exposes structural-contract through canonical-contract.",
           "control_ids": [
+            "AUDIT-A-001-REFREEZE-01",
+            "NEG-REQ-001-01",
+            "NEG-REQ-004-01",
+            "NEG-REQ-005-01",
+            "NEG-REQ-006-01",
+            "NEG-REQ-007-01",
+            "NEG-REQ-008-01",
+            "NEG-REQ-009-01",
+            "NEG-REQ-011-01",
+            "NEG-REQ-012-01",
+            "NEG-REQ-013-01",
+            "NEG-REQ-014-01",
+            "NEG-REQ-016-01",
+            "NEG-REQ-017-01",
             "NEG-REQ-018-01",
+            "NEG-REQ-020-01",
+            "NEG-REQ-022-01",
+            "NEG-REQ-023-01",
+            "NEG-REQ-024-01",
+            "NEG-REQ-025-01",
+            "NEG-REQ-026-01",
+            "NEG-REQ-028-01",
+            "NEG-REQ-029-01",
+            "NEG-REQ-030-01",
+            "NEG-REQ-032-01",
+            "NEG-REQ-033-01",
+            "NEG-REQ-035-01",
+            "NEG-REQ-036-01",
+            "NEG-REQ-037-01",
+            "NEG-REQ-038-01",
+            "NEG-REQ-040-01",
+            "NEG-REQ-041-01",
             "NEG-REQ-042-01",
-            "NEG-REQ-045-01"
+            "NEG-REQ-043-01",
+            "NEG-REQ-044-01",
+            "NEG-REQ-045-01",
+            "NEG-REQ-047-01",
+            "NEG-REQ-048-01",
+            "NEG-REQ-049-01",
+            "NEG-REQ-051-01",
+            "NEG-REQ-052-01",
+            "NEG-REQ-053-01",
+            "NEG-REQ-054-01",
+            "NEG-REQ-055-01",
+            "NEG-REQ-056-01",
+            "NEG-REQ-057-01",
+            "NEG-REQ-058-01",
+            "NEG-REQ-059-01",
+            "NEG-REQ-061-01",
+            "NEG-REQ-062-01",
+            "NEG-REQ-066-01",
+            "NEG-REQ-067-01",
+            "NEG-REQ-068-01",
+            "NEG-REQ-069-01",
+            "NEG-REQ-071-01"
           ],
           "status": "passed"
         },
         {
           "surface": "canonical-source-consistency",
-          "reason": "Equivalent runtime, seed, import or maintenance paths can drift when they do not consume the same canonical product definition.",
+          "reason": "Canonical obligation exposes structural-contract through canonical-source-consistency.",
           "control_ids": [
             "NEG-REQ-003-01",
             "NEG-REQ-039-01",
@@ -186,7 +297,7 @@
         },
         {
           "surface": "relational-semantic-integrity",
-          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "reason": "Canonical obligation exposes structural-contract through relational-semantic-integrity.",
           "control_ids": [
             "NEG-REQ-003-02",
             "NEG-REQ-039-02",
@@ -197,7 +308,7 @@
         },
         {
           "surface": "specified-test-matrix",
-          "reason": "A subset of green tests can satisfy the happy path while explicitly required sibling scenarios remain unexecuted.",
+          "reason": "Canonical obligation exposes structural-contract through specified-test-matrix.",
           "control_ids": [
             "NEG-REQ-064-01",
             "TEST-REQ-064-01",
@@ -219,12 +330,23 @@
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
         "NEG-REQ-065-01",
-        "NEG-REQ-072-01"
+        "NEG-REQ-065-02",
+        "NEG-REQ-072-01",
+        "NEG-REQ-072-02"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "The documentation risk can violate the canonical issue clause through the canonical-claims surface while an ordinary happy path still appears correct.",
+          "reason": "Canonical obligation exposes documentation through canonical-claims.",
+          "control_ids": [
+            "NEG-REQ-065-02",
+            "NEG-REQ-072-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-contract",
+          "reason": "Canonical obligation exposes documentation through canonical-contract.",
           "control_ids": [
             "NEG-REQ-065-01",
             "NEG-REQ-072-01"

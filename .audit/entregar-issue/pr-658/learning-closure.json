@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "classification": "systemic-escape",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+    "audit_report_sha256": "1d7f2e0164e0f63888dcdfc2f15fd260f066afa6713d90f60278ae88466ddc54",
+    "finding_ids": [
+      "A-001"
+    ],
+    "repository": "crgasparoto-br/SolverFin",
+    "audited_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf"
+  },
+  "generalized_learning": {
+    "escape_class": "post-handoff-material-drift",
+    "generalized_failure_pattern": "A delivery certificate can become stale when material files are written after the certified freeze while the old result package remains published.",
+    "plausible_wrong_implementation": "Treat a published result-only certificate as permanently valid and continue changing material files without re-freezing the new material candidate.",
+    "trigger_signals": [
+      "fresh head differs from certified material identity",
+      "parent relationship no longer matches the certified material",
+      "paths outside the result-only allowlist appear after certification"
+    ],
+    "risk_families": [
+      "structural-contract"
+    ],
+    "reusable_control": "Classify every post-certificate head transition; any material path or parent drift requires a new material freeze before terminal handoff.",
+    "prevention_rule": "After a material freeze, any later material write invalidates the terminal certificate and requires final gates plus a new freeze.",
+    "detection_rule": "Before audit readiness, compare a fresh remote head, its parent and changed paths with the certified material identity and result-only allowlist.",
+    "transfer_cases": [
+      {
+        "surface": "source-write-after-certificate",
+        "dimension": "material-path-outside-allowlist",
+        "status": "passed"
+      },
+      {
+        "surface": "terminal-parent-lineage",
+        "dimension": "parent-no-longer-certified-material",
+        "status": "passed"
+      }
+    ],
+    "promotion_status": "promoted"
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "status": "passed",
+      "evidence": "The installed delivery skill already mandates post-write-refreeze after any material write and forbids handoff-only recovery when an auditor requires refreeze."
+    },
+    {
+      "role": "detection",
+      "status": "passed",
+      "evidence": "The installed recovery classifier and terminal handoff guard compare material identity, current head, parent lineage and post-handoff changed paths."
+    }
+  ]
+}

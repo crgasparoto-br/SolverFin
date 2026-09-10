@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "subject_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+  "source_rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+  "checks": [
+    {
+      "id": "A-001-MATERIAL-DRIFT",
+      "status": "passed",
+      "procedure": "Compare the previous certified material SHA against the fresh PR head and classify any later material path as post-write-refreeze.",
+      "observed": "The old certificate referenced f3e7a1cc35849d21174d9fd432aa27edad363f59; the current material head is 7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf, so the old certificate was not reused."
+    },
+    {
+      "id": "A-001-EXACT-HEAD-CI",
+      "status": "passed",
+      "procedure": "Require terminal green CI on the new material head before generating the new result-only certificate.",
+      "observed": "GitHub Actions run 34411339129 completed successfully for Validate monorepo and Integration API + PostgreSQL on the material head."
+    },
+    {
+      "id": "A-001-RESULT-ONLY-PARENT",
+      "status": "passed",
+      "procedure": "Construct the replacement handoff as a direct child of the new material head with only allowlisted audit-result paths.",
+      "observed": "Prepublication tree construction is anchored to material parent 7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf and contains only .audit/entregar-issue/pr-658 result paths."
+    }
+  ]
+}

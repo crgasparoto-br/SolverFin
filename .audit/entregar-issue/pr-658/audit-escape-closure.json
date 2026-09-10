@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-001",
+      "escape_class": "post-handoff-material-drift",
+      "status": "passed",
+      "revalidated_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+      "source_audit": {
+        "head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+        "rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+        "finding_id": "A-001",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "1d7f2e0164e0f63888dcdfc2f15fd260f066afa6713d90f60278ae88466ddc54"
+      },
+      "plausible_wrong_implementation": "Keep the old certificate after later material writes and treat CI success on the new head as sufficient without a fresh freeze and result-only handoff.",
+      "literal_case": {
+        "procedure": "Compare the stale certificate material identity with the fresh PR head, classify the material delta, rerun final exact-head gates and refreeze the current material candidate.",
+        "status": "passed",
+        "observed": "The stale certificate was rejected, the new material candidate is 7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf, and exact-head CI run 34411339129 is terminal green before new certificate publication."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-001-S1",
+          "surface": "source-write-after-certificate",
+          "dimension": "material-path-outside-allowlist",
+          "status": "passed",
+          "evidence": "The recovery rule classifies any source/test/config/docs write after certification as material drift requiring refreeze."
+        },
+        {
+          "id": "A-001-S2",
+          "surface": "terminal-parent-lineage",
+          "dimension": "parent-no-longer-certified-material",
+          "status": "passed",
+          "evidence": "The terminal guard requires the result-only child parent to equal the frozen material head and rejects lineage drift."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-contract",
+          "dimension": "post-handoff-material-drift"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-contract",
+          "dimension": "result-child-parent-drift"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue terminal handoff/refreeze policy",
+        "evidence": "Post-write-refreeze is mandatory after material writes; auditor recovery scope is a lower bound and cannot be downgraded."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff lineage guard",
+        "control_id": "AUDIT-A-001-REFREEZE-01",
+        "evidence": "Fresh head/parent/path comparison plus exact-head CI and result-only allowlist checks close the stale-handoff class."
+      },
+      "trigger_terms": [
+        "post-handoff material write",
+        "stale certificate",
+        "parent drift",
+        "path outside result allowlist"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ]
+    }
+  ]
+}
