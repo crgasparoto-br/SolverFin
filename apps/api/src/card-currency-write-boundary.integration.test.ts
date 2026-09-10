@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
@@ -55,6 +56,7 @@ async function main(): Promise<void> {
   await assertCreateMismatchRejectedWithoutWrites(brlAccount.id, usdAccount.id, suffix);
   await assertCreditCardRepositoryGuards(brlAccount.id, usdAccount.id, suffix);
   await assertCardRepositoryGuards(brlAccount.id, usdAccount.id, suffix);
+  await assertIndependentHistorySourceGuards(suffix);
 }
 
 async function assertMissingCurrencyRejectedWithoutWrites(suffix: string): Promise<void> {
@@ -208,6 +210,127 @@ async function assertCardRepositoryGuards(
   });
 }
 
+async function assertIndependentHistorySourceGuards(suffix: string): Promise<void> {
+  const groupedTransaction = await createCreditCardAccountForContext(CONTEXT, {
+    name: `Boundary grouped transaction-only ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    currency: "BRL",
+    instruments: [{ type: "physical", holder: "primary" }],
+  });
+  await insertStandaloneTransactionHistory(
+    groupedTransaction.id,
+    `Boundary grouped transaction-only history ${suffix}`,
+  );
+  assert.deepEqual(await readCardHistoryCounts(groupedTransaction.id), {
+    transactions: 1,
+    invoices: 0,
+  });
+  await assert.rejects(
+    () => updateCreditCardAccountForContext(CONTEXT, groupedTransaction.id, { currency: "USD" }),
+    hasCode("CARD_CURRENCY_LOCKED"),
+  );
+  assert.deepEqual(await readCardCurrencyAndAccount(groupedTransaction.id), {
+    currency: "BRL",
+    paymentAccountId: null,
+  });
+
+  const groupedInvoice = await createCreditCardAccountForContext(CONTEXT, {
+    name: `Boundary grouped invoice-only ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    currency: "BRL",
+    instruments: [{ type: "physical", holder: "primary" }],
+  });
+  await insertStandaloneInvoiceHistory(groupedInvoice.id);
+  assert.deepEqual(await readCardHistoryCounts(groupedInvoice.id), {
+    transactions: 0,
+    invoices: 1,
+  });
+  await assert.rejects(
+    () => updateCreditCardAccountForContext(CONTEXT, groupedInvoice.id, { currency: "USD" }),
+    hasCode("CARD_CURRENCY_LOCKED"),
+  );
+  assert.deepEqual(await readCardCurrencyAndAccount(groupedInvoice.id), {
+    currency: "BRL",
+    paymentAccountId: null,
+  });
+
+  const legacyTransaction = await createCardForContext(CONTEXT, {
+    name: `Boundary legacy transaction-only ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    currency: "BRL",
+  });
+  await insertStandaloneTransactionHistory(
+    legacyTransaction.id,
+    `Boundary legacy transaction-only history ${suffix}`,
+  );
+  assert.deepEqual(await readCardHistoryCounts(legacyTransaction.id), {
+    transactions: 1,
+    invoices: 0,
+  });
+  await assert.rejects(
+    () => updateCardForContext(CONTEXT, legacyTransaction.id, { currency: "USD" }),
+    hasCode("CARD_CURRENCY_LOCKED"),
+  );
+  assert.deepEqual(await readCardCurrencyAndAccount(legacyTransaction.id), {
+    currency: "BRL",
+    paymentAccountId: null,
+  });
+
+  const legacyInvoice = await createCardForContext(CONTEXT, {
+    name: `Boundary legacy invoice-only ${suffix}`,
+    closingDay: 20,
+    dueDay: 10,
+    currency: "BRL",
+  });
+  await insertStandaloneInvoiceHistory(legacyInvoice.id);
+  assert.deepEqual(await readCardHistoryCounts(legacyInvoice.id), {
+    transactions: 0,
+    invoices: 1,
+  });
+  await assert.rejects(
+    () => updateCardForContext(CONTEXT, legacyInvoice.id, { currency: "USD" }),
+    hasCode("CARD_CURRENCY_LOCKED"),
+  );
+  assert.deepEqual(await readCardCurrencyAndAccount(legacyInvoice.id), {
+    currency: "BRL",
+    paymentAccountId: null,
+  });
+}
+
+async function insertStandaloneTransactionHistory(
+  cardId: string,
+  description: string,
+): Promise<void> {
+  await query(
+    `insert into "Transaction"
+      ("id", "organizationId", "financialProfileId", "cardId", "kind", "status", "source",
+       "amountMinor", "currency", "occurredOn", "plannedOn", "description")
+     values ($1, $2, $3, $4, 'EXPENSE', 'PLANNED', 'MANUAL', $5, 'BRL', $6, $6, $7)`,
+    [randomUUID(), CONTEXT.organizationId, CONTEXT.financialProfileId, cardId, 100, "2031-12-01", description],
+  );
+}
+
+async function insertStandaloneInvoiceHistory(cardId: string): Promise<void> {
+  await query(
+    `insert into "Invoice"
+      ("id", "organizationId", "financialProfileId", "cardId", "status", "periodStartOn",
+       "periodEndOn", "dueOn", "totalAmountMinor", "currency")
+     values ($1, $2, $3, $4, 'OPEN', $5, $6, $7, 0, 'BRL')`,
+    [
+      randomUUID(),
+      CONTEXT.organizationId,
+      CONTEXT.financialProfileId,
+      cardId,
+      "2031-12-01",
+      "2031-12-31",
+      "2032-01-10",
+    ],
+  );
+}
+
 function hasCode(expectedCode: string): (error: unknown) => boolean {
   return (error: unknown) =>
     error instanceof Error && "code" in error && error.code === expectedCode;
@@ -220,6 +343,25 @@ async function countCardsByName(name: string): Promise<number> {
     [CONTEXT.organizationId, CONTEXT.financialProfileId, name],
   );
   return Number(rows[0]?.count ?? 0);
+}
+
+async function readCardHistoryCounts(
+  cardId: string,
+): Promise<{ transactions: number; invoices: number }> {
+  const rows = await query<{ transactions: number | string; invoices: number | string }>(
+    `select
+       (select count(*)::int from "Transaction"
+          where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3) as "transactions",
+       (select count(*)::int from "Invoice"
+          where "organizationId" = $1 and "financialProfileId" = $2 and "cardId" = $3) as "invoices"`,
+    [CONTEXT.organizationId, CONTEXT.financialProfileId, cardId],
+  );
+  const row = rows[0];
+  assert.ok(row, `Expected history counts for card ${cardId}.`);
+  return {
+    transactions: Number(row.transactions),
+    invoices: Number(row.invoices),
+  };
 }
 
 async function readCardCurrencyAndAccount(
