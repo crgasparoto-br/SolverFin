@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "result": "REPROVADA",
+  "validity": "Independente",
+  "release_allowed": false,
+  "rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+  "head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "pull_request_number": 658,
+    "issue_number": 655,
+    "base_sha": "eee4b17317c336cc5e78cf638335ae7ff9f501e8",
+    "merge_preview_sha": "5d659b34249e2eab29f1dac908a0ba2c114d4744"
+  },
+  "reason": "The published handoff certified an older material head and subsequent material commits made its evidence stale; independent audit required post-write-refreeze without identifying a new functional defect.",
+  "findings": [
+    {
+      "id": "A-001",
+      "title": "Handoff ficou obsoleto após alterações materiais",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "systemic-remediation",
+      "requested": "Freeze the current material head, regenerate exact-head evidence and publish a fresh terminal result-only handoff child.",
+      "observed": "The current PR head was six commits ahead of the material SHA named by the stale certificate, with source/config/test writes after certification.",
+      "failed_gate": null
+    }
+  ],
+  "recommendations": []
+}
