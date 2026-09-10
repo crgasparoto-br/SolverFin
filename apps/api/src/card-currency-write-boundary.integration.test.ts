@@ -378,7 +378,7 @@ async function readCardCurrencyAndAccount(
   const rows = await query<{ currency: string | null; paymentAccountId: string | null }>(
     `select "currency", "paymentAccountId" from "Card"
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [cardId, CONTEXT.organizationId, CONTEXT.financialProfileId, cardId],
+    [cardId, CONTEXT.organizationId, CONTEXT.financialProfileId],
   );
   const row = rows[0];
   assert.ok(row, `Expected card ${cardId}.`);
