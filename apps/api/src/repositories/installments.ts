@@ -85,7 +85,7 @@ export async function listInstallmentsForContext(
   addEqualsFilter(where, params, `i."recurrenceId"`, filters.recurrenceId);
   addEqualsFilter(where, params, `i."cardId"`, filters.cardId);
   addEqualsFilter(where, params, `i."cardInstrumentId"`, filters.cardInstrumentId);
-  addEqualsFilter(where, params, `t."invoiceId"`, filters.invoiceId);
+  addEqualsFilter(where, params, `coalesce(i."invoiceId", t."invoiceId")`, filters.invoiceId);
   addEqualsFilter(
     where,
     params,
@@ -94,31 +94,29 @@ export async function listInstallmentsForContext(
   );
 
   if (shouldHideCardInstallmentsWithLinkedPurchases(filters)) {
-    where.push(`not (i."cardId" is not null and t."id" is not null and t."invoiceId" is not null)`);
+    where.push(
+      `not (i."cardId" is not null and t."id" is not null and coalesce(i."invoiceId", t."invoiceId") is not null)`,
+    );
   }
 
   if (filters.status !== undefined && filters.status !== "all") {
     params.push(filters.status.toUpperCase());
     where.push(`i."status" = $${params.length}`);
   }
-
   if (filters.dueFrom !== undefined) {
     params.push(filters.dueFrom);
     where.push(`i."dueOn" >= $${params.length}`);
   }
-
   if (filters.dueTo !== undefined) {
     params.push(filters.dueTo);
     where.push(`i."dueOn" <= $${params.length}`);
   }
-
   if (filters.operationalFrom !== undefined) {
     params.push(filters.operationalFrom);
     where.push(
       `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", i."dueOn") >= $${params.length}`,
     );
   }
-
   if (filters.operationalTo !== undefined) {
     params.push(filters.operationalTo);
     where.push(
@@ -130,7 +128,8 @@ export async function listInstallmentsForContext(
     `select
        i."id", i."organizationId", i."financialProfileId", i."recurrenceId", i."cardId",
        i."cardInstrumentId", i."status", i."sequenceNumber", i."totalInstallments",
-       i."dueOn", i."amountMinor", i."currency",
+       i."dueOn", i."amountMinor", i."currency", i."transactionId" as "canonicalTransactionId",
+       i."invoiceId" as "canonicalInvoiceId",
        t."id" as "transactionId", t."status" as "transactionStatus", t."kind" as "transactionKind",
        t."source" as "transactionSource", t."accountId" as "transactionAccountId",
        t."cardId" as "transactionCardId", t."cardInstrumentId" as "transactionCardInstrumentId",
@@ -153,7 +152,7 @@ export async function listInstallmentsForContext(
        cat."status" as "categoryStatus"
      from "Installment" i
      left join "Transaction" t
-       on t."installmentId" = i."id"
+       on (t."id" = i."transactionId" or t."installmentId" = i."id")
       and t."organizationId" = i."organizationId"
       and t."financialProfileId" = i."financialProfileId"
      left join "Recurrence" r
@@ -161,7 +160,7 @@ export async function listInstallmentsForContext(
       and r."organizationId" = i."organizationId"
       and r."financialProfileId" = i."financialProfileId"
      left join "Invoice" inv
-       on inv."id" = t."invoiceId"
+       on inv."id" = coalesce(i."invoiceId", t."invoiceId")
       and inv."organizationId" = i."organizationId"
       and inv."financialProfileId" = i."financialProfileId"
      left join "Card" c
@@ -198,10 +197,7 @@ export async function updateInstallmentForContext(
     }
 
     const transactionId = readNestedId(current.transaction);
-
-    if (!transactionId) {
-      throwInstallmentEditBlocked("linked_transaction_missing");
-    }
+    if (!transactionId) throwInstallmentEditBlocked("linked_transaction_missing");
 
     await updateTransactionForContext(
       context,
@@ -218,12 +214,16 @@ async function lockInstallmentMutationRows(
   installmentId: EntityId,
 ): Promise<void> {
   await query(
-    `select "id"
-       from "Transaction"
-      where "installmentId" = $1
-        and "organizationId" = $2
-        and "financialProfileId" = $3
-      for update`,
+    `select t."id"
+       from "Installment" i
+       join "Transaction" t
+         on (t."id" = i."transactionId" or t."installmentId" = i."id")
+        and t."organizationId" = i."organizationId"
+        and t."financialProfileId" = i."financialProfileId"
+      where i."id" = $1
+        and i."organizationId" = $2
+        and i."financialProfileId" = $3
+      for update of t`,
     [installmentId, context.organizationId, context.financialProfileId],
   );
 
@@ -252,11 +252,9 @@ function buildTransactionUpdatePayload(payload: UpdateInstallmentPayload): {
   categoryId?: EntityId | null;
 } {
   const update: { description?: string; note?: string | null; categoryId?: EntityId | null } = {};
-
   if (payload.description !== undefined) update.description = payload.description;
   if (payload.note !== undefined) update.note = payload.note;
   if (payload.categoryId !== undefined) update.categoryId = payload.categoryId;
-
   return update;
 }
 
@@ -267,14 +265,12 @@ async function getInstallmentForMutation(
   const installment = (
     await listInstallmentsForContext(context, { installmentId, status: "all" })
   )[0];
-
   if (!installment) {
     throw Object.assign(new Error("Parcela nao encontrada."), {
       code: "TENANT_RESOURCE_NOT_FOUND",
       statusCode: 404,
     });
   }
-
   return installment;
 }
 
@@ -284,10 +280,7 @@ function addEqualsFilter(
   columnExpression: string,
   value: string | undefined,
 ): void {
-  if (value === undefined) {
-    return;
-  }
-
+  if (value === undefined) return;
   params.push(value);
   where.push(`${columnExpression} = $${params.length}`);
 }
@@ -300,31 +293,21 @@ function validateFilters(filters: ListInstallmentsFilters): void {
   ) {
     throwInstallmentsFilterInvalid("Status de parcela invalido.");
   }
-
   if (filters.dueFrom !== undefined && !isIsoDate(filters.dueFrom)) {
     throwInstallmentsFilterInvalid("Data inicial de vencimento invalida.");
   }
-
   if (filters.dueTo !== undefined && !isIsoDate(filters.dueTo)) {
     throwInstallmentsFilterInvalid("Data final de vencimento invalida.");
   }
-
-  if (
-    filters.dueFrom !== undefined &&
-    filters.dueTo !== undefined &&
-    filters.dueFrom > filters.dueTo
-  ) {
+  if (filters.dueFrom !== undefined && filters.dueTo !== undefined && filters.dueFrom > filters.dueTo) {
     throwInstallmentsFilterInvalid("Periodo de vencimento invertido.");
   }
-
   if (filters.operationalFrom !== undefined && !isIsoDate(filters.operationalFrom)) {
     throwInstallmentsFilterInvalid("Data operacional inicial invalida.");
   }
-
   if (filters.operationalTo !== undefined && !isIsoDate(filters.operationalTo)) {
     throwInstallmentsFilterInvalid("Data operacional final invalida.");
   }
-
   if (
     filters.operationalFrom !== undefined &&
     filters.operationalTo !== undefined &&
@@ -374,15 +357,11 @@ function mapInstallmentHistoryRow(row: Row): InstallmentHistoryItem {
   attachCard(installment, row);
   attachCardInstrument(installment, row);
   attachCategory(installment, row);
-
   return installment;
 }
 
 function attachTransaction(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.transactionId) {
-    return;
-  }
-
+  if (!row.transactionId) return;
   installment.transaction = {
     id: text(row.transactionId),
     status: lower(row.transactionStatus) as TransactionStatus,
@@ -404,10 +383,7 @@ function attachTransaction(installment: InstallmentHistoryItem, row: Row): void 
 }
 
 function attachRecurrence(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.recurrenceId) {
-    return;
-  }
-
+  if (!row.recurrenceId) return;
   installment.recurrence = {
     id: text(row.recurrenceId),
     status: lower(row.recurrenceStatus),
@@ -419,10 +395,7 @@ function attachRecurrence(installment: InstallmentHistoryItem, row: Row): void {
 }
 
 function attachInvoice(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.invoiceId) {
-    return;
-  }
-
+  if (!row.invoiceId) return;
   installment.invoice = {
     id: text(row.invoiceId),
     status: lower(row.invoiceStatus) as InvoiceStatus,
@@ -434,10 +407,7 @@ function attachInvoice(installment: InstallmentHistoryItem, row: Row): void {
 }
 
 function attachCard(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.cardId || !row.cardName) {
-    return;
-  }
-
+  if (!row.cardId || !row.cardName) return;
   installment.card = {
     id: text(row.cardId),
     name: text(row.cardName),
@@ -446,10 +416,7 @@ function attachCard(installment: InstallmentHistoryItem, row: Row): void {
 }
 
 function attachCardInstrument(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.cardInstrumentId) {
-    return;
-  }
-
+  if (!row.cardInstrumentId) return;
   installment.cardInstrument = {
     id: text(row.cardInstrumentId),
     cardId: text(row.cardId ?? row.transactionCardId),
@@ -463,10 +430,7 @@ function attachCardInstrument(installment: InstallmentHistoryItem, row: Row): vo
 }
 
 function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.categoryId || !row.categoryName) {
-    return;
-  }
-
+  if (!row.categoryId || !row.categoryName) return;
   installment.category = {
     id: text(row.categoryId),
     name: text(row.categoryName),
@@ -478,22 +442,10 @@ function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
 export function resolveEditBlockedReason(
   row: Readonly<Record<string, unknown>>,
 ): InstallmentEditBlockedReason | undefined {
-  if (!row.transactionId || !row.transactionStatus) {
-    return "linked_transaction_missing";
-  }
-
-  if (row.invoiceId) {
-    return "invoice_linked";
-  }
-
-  if (lower(row.status) !== "planned") {
-    return "installment_status_locked";
-  }
-
-  if (lower(row.transactionStatus) !== "planned") {
-    return "transaction_status_locked";
-  }
-
+  if (!row.transactionId || !row.transactionStatus) return "linked_transaction_missing";
+  if (row.invoiceId) return "invoice_linked";
+  if (lower(row.status) !== "planned") return "installment_status_locked";
+  if (lower(row.transactionStatus) !== "planned") return "transaction_status_locked";
   return undefined;
 }
 
@@ -518,7 +470,10 @@ function lower(value: unknown): string {
 }
 
 function numberValue(value: unknown): number {
-  return typeof value === "number" ? value : 0;
+  if (typeof value === "number") return value;
+  if (typeof value === "bigint") return Number(value);
+  if (typeof value === "string" && value.trim()) return Number(value);
+  return 0;
 }
 
 function dateOnly(value: unknown): string {
