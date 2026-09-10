@@ -37,8 +37,41 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   transactionId: EntityId,
   payload: MoveCardPurchaseInvoicePeriodPayload,
 ): Promise<MoveCardPurchaseInvoicePeriodResult> {
+  await assertPurchaseIsNotCanonicalInstallment(context, cardId, transactionId);
   await assertMoveCurrencyIntegrity(context, cardId, transactionId, payload);
   return moveCardPurchaseInvoicePeriodForContextCore(context, cardId, transactionId, payload);
+}
+
+async function assertPurchaseIsNotCanonicalInstallment(
+  context: TenantContext,
+  cardId: EntityId,
+  transactionId: EntityId,
+): Promise<void> {
+  const rows = await query<{ id: string }>(
+    `select i."id"
+       from "Installment" i
+       join "Transaction" t
+         on t."id" = i."transactionId"
+        and t."organizationId" = i."organizationId"
+        and t."financialProfileId" = i."financialProfileId"
+      where i."organizationId" = $1
+        and i."financialProfileId" = $2
+        and i."transactionId" = $3
+        and i."recurrenceId" is null
+        and t."cardId" = $4
+        and t."accountId" is null
+        and t."kind" = 'EXPENSE'
+      limit 1`,
+    [context.organizationId, context.financialProfileId, transactionId, cardId],
+  );
+
+  if (rows[0]) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_INSTALLMENT_STRUCTURE_LOCKED",
+      "Compras parceladas nao podem ser movidas entre faturas individualmente.",
+      409,
+    );
+  }
 }
 
 async function assertMoveCurrencyIntegrity(
