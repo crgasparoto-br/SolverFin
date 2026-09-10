@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-001",
+      "status": "passed",
+      "escape_class": "post-handoff-material-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+        "finding_id": "A-001",
+        "finding_ids": ["A-001"],
+        "audit_report_sha256": "22adeadcc8c9e24a03647f6c7055f2ce10c6b9eda48925f084d6c225390c474e"
+      },
+      "plausible_wrong_implementation": "Keep using a certificate bound to an older material head after later code, test, or configuration writes and infer readiness only from a green workflow.",
+      "revalidated_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+      "literal_case": {
+        "procedure": "Resolve the fresh PR identity, compare it with the material SHA recorded by the prior handoff, classify recovery with the independent auditor refreeze floor, and require exact-head terminal CI before package regeneration.",
+        "expected": "Material drift is classified as post-write-refreeze and a new handoff is built from the current frozen material candidate.",
+        "observed": "The recovery classifier returned post-write-refreeze and the exact material candidate completed both monorepo and API/PostgreSQL workflow jobs successfully.",
+        "status": "passed",
+        "evidence": "evidence/handoff-refreeze-controls.json; evidence/ci-run-34411339129.json",
+        "evidence_sha256": "f969aab88a224682643a5e35227d2c2077192d53a1add7aff9bd9b673a349fb1"
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-A001-S1",
+          "surface": "source-code-write-after-result-child",
+          "dimension": "material-path-outside-allowlist",
+          "status": "passed"
+        },
+        {
+          "id": "ESC-A001-S2",
+          "surface": "terminal-head-parent-drift",
+          "dimension": "parent-no-longer-certified-material",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The governing terminal handoff contract forbids publishing a stale certificate after a material write and requires a new freeze before result-only publication."
+      },
+      "detection_change": {
+        "evidence": "The recovery classifier was executed against the literal stale candidate and two synthetic transfer surfaces; all material-drift cases resolved to post-write-refreeze."
+      },
+      "required_risk_families": ["structural-contract"],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "terminal-handoff-identity",
+          "dimension": "material-path-outside-result-allowlist"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "post-handoff-material-drift",
+          "dimension": "current-parent-differs-from-certified-material"
+        }
+      ]
+    }
+  ]
+}
