@@ -6,6 +6,8 @@ import type { ResourceMasterViewModel } from "./view-model.js";
 
 rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata();
 keepsCombinedFilterControlsInTheRouteRuntime();
+persistsAndRestoresTheFourFilterControls();
+degradesUnsupportedPersistedSelectValuesToNeutralDefaults();
 clearsSelectionWhenTheSelectedResourceIsFilteredOut();
 
 function rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata(): void {
@@ -50,6 +52,29 @@ function keepsCombinedFilterControlsInTheRouteRuntime(): void {
   assert.match(script, /matchesKind/);
   assert.match(script, /matchesCurrency/);
   assert.match(script, /matchesSearch && matchesKind && matchesCurrency && matchesStatus/);
+}
+
+function persistsAndRestoresTheFourFilterControls(): void {
+  const script = renderAccountsCardsRuntimeScript();
+
+  assert.match(script, /solverfin:accounts-cards:filters:v1/);
+  assert.match(script, /sessionStorage\.getItem\(filterStorageKey\)/);
+  assert.match(script, /sessionStorage\.setItem\(filterStorageKey, JSON\.stringify\(currentFilterState\(\)\)\)/);
+  assert.match(script, /restorePersistedFilters\(\)/);
+  assert.match(script, /search: String\(searchInput && searchInput\.value \|\| ""\)/);
+  assert.match(script, /kind: String\(kindSelect && kindSelect\.value \|\| "all"\)/);
+  assert.match(script, /currency: String\(currencySelect && currencySelect\.value \|\| "all"\)/);
+  assert.match(script, /status: String\(statusSelect && statusSelect\.value \|\| "all"\)/);
+  assert.match(script, /persistFilters\(\);\s*applyFilters\(\);/);
+}
+
+function degradesUnsupportedPersistedSelectValuesToNeutralDefaults(): void {
+  const script = renderAccountsCardsRuntimeScript();
+
+  assert.match(script, /selectSupportsValue\(kindSelect, persisted\.kind\) \? persisted\.kind : "all"/);
+  assert.match(script, /selectSupportsValue\(currencySelect, persisted\.currency\) \? persisted\.currency : "all"/);
+  assert.match(script, /selectSupportsValue\(statusSelect, persisted\.status\) \? persisted\.status : "all"/);
+  assert.match(script, /catch \{\s*return null;\s*\}/);
 }
 
 function clearsSelectionWhenTheSelectedResourceIsFilteredOut(): void {
