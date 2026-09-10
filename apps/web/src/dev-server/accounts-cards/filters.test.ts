@@ -38,10 +38,7 @@ function rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata(): void {
   assert.match(html, /data-master-currency/);
   assert.match(html, /<option value="all">Todas as moedas<\/option>/);
   assert.match(html, /<option value="USD">USD<\/option>/);
-  assert.match(
-    html,
-    /<option value="unavailable">Moeda indisponível<\/option>/,
-  );
+  assert.match(html, /<option value="unavailable">Moeda indisponível<\/option>/);
   assert.match(html, /data-kind="account" data-currency="USD"/);
   assert.match(html, /data-kind="card" data-currency="unavailable"/);
   assert.match(html, /Ajuste a busca ou os filtros de tipo, moeda e status/);
@@ -54,10 +51,7 @@ function keepsCombinedFilterControlsInTheRouteRuntime(): void {
   assert.match(script, /data-master-currency/);
   assert.match(script, /matchesKind/);
   assert.match(script, /matchesCurrency/);
-  assert.match(
-    script,
-    /matchesSearch && matchesKind && matchesCurrency && matchesStatus/,
-  );
+  assert.match(script, /matchesSearch && matchesKind && matchesCurrency && matchesStatus/);
 }
 
 function persistsAndRestoresTheFourFilterControls(): void {
@@ -70,22 +64,10 @@ function persistsAndRestoresTheFourFilterControls(): void {
     /sessionStorage\.setItem\(filterStorageKey, JSON\.stringify\(currentFilterState\(\)\)\)/,
   );
   assert.match(script, /restorePersistedFilters\(\)/);
-  assert.match(
-    script,
-    /search: String\(searchInput && searchInput\.value \|\| ""\)/,
-  );
-  assert.match(
-    script,
-    /kind: String\(kindSelect && kindSelect\.value \|\| "all"\)/,
-  );
-  assert.match(
-    script,
-    /currency: String\(currencySelect && currencySelect\.value \|\| "all"\)/,
-  );
-  assert.match(
-    script,
-    /status: String\(statusSelect && statusSelect\.value \|\| "all"\)/,
-  );
+  assert.match(script, /search: String\(searchInput && searchInput\.value \|\| ""\)/);
+  assert.match(script, /kind: String\(kindSelect && kindSelect\.value \|\| "all"\)/);
+  assert.match(script, /currency: String\(currencySelect && currencySelect\.value \|\| "all"\)/);
+  assert.match(script, /status: String\(statusSelect && statusSelect\.value \|\| "all"\)/);
   assert.match(script, /persistFilters\(\);\s*applyFilters\(\);/);
 }
 
