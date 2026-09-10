@@ -1,8 +1,34 @@
 {
   "schema_version": 1,
-  "head_sha": "f3e7a1cc35849d21174d9fd432aa27edad363f59",
-  "source_audits": [],
-  "controls": [],
+  "head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+  "source_audits": [
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+      "finding_ids": [
+        "A-001"
+      ],
+      "audit_report_sha256": "22adeadcc8c9e24a03647f6c7055f2ce10c6b9eda48925f084d6c225390c474e"
+    }
+  ],
+  "controls": [
+    {
+      "id": "CTRL-HANDOFF-REFREEZE-001",
+      "status": "passed",
+      "head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+      "subject_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+      "evidence": "evidence/handoff-refreeze-controls.json",
+      "evidence_sha256": "f969aab88a224682643a5e35227d2c2077192d53a1add7aff9bd9b673a349fb1",
+      "control_type": "gate",
+      "procedure": "Before terminal publication, compare the fresh remote head lineage and changed paths with the material SHA and result-only allowlist recorded by the previous certificate; exercise a material-path drift case.",
+      "expected": "Any post-certificate material path or non-certified parent forces post-write-refreeze before a new handoff can be published.",
+      "observed": "The literal stale-candidate classification and two independent transfer surfaces all enforced the refreeze lower bound; a fresh exact-head package is required for the current material candidate.",
+      "attack_control_id": "NEG-REQ-066-REFREEZE-01",
+      "risk_family": "structural-contract",
+      "surface": "terminal-handoff-identity",
+      "dimension": "material-path-outside-result-allowlist"
+    }
+  ],
   "retired_controls": [],
   "unresolved_controls": []
 }
