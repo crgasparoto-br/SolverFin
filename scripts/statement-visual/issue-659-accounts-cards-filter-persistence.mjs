@@ -6,8 +6,7 @@ import { evaluate, launchChrome, navigate, setViewport } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const candidateSha =
   process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
@@ -24,11 +23,7 @@ try {
   await setViewport(browser.cdp, 1440, 900);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
-  assert.equal(
-    login.ok,
-    true,
-    `Demo login failed: ${login.status} ${login.body}`,
-  );
+  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
   for (const viewport of [
     { width: 1440, height: 900, name: "desktop" },
@@ -37,24 +32,13 @@ try {
     await setViewport(browser.cdp, viewport.width, viewport.height);
     await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
     await waitForControls(browser.cdp);
-    await evaluate(
-      browser.cdp,
-      `sessionStorage.removeItem(${JSON.stringify(storageKey)})`,
-    );
+    await evaluate(browser.cdp, `sessionStorage.removeItem(${JSON.stringify(storageKey)})`);
     await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
     await waitForControls(browser.cdp);
 
     const seed = await choosePersistableState(browser.cdp);
-    assert.equal(
-      seed.available,
-      true,
-      "Filter controls or resources are unavailable.",
-    );
-    assert.notEqual(
-      seed.currency,
-      "all",
-      "Demo seed does not expose a persisted currency option.",
-    );
+    assert.equal(seed.available, true, "Filter controls or resources are unavailable.");
+    assert.notEqual(seed.currency, "all", "Demo seed does not expose a persisted currency option.");
 
     await navigate(browser.cdp, `${baseUrl}${seed.resourceHref}`);
     await waitForControls(browser.cdp);
@@ -83,11 +67,7 @@ try {
     await navigate(browser.cdp, `${baseUrl}/contas-cartoes`);
     await waitForControls(browser.cdp);
     const afterReload = await readState(browser.cdp);
-    assert.deepEqual(
-      afterReload.filters,
-      seed.filters,
-      "Reload lost persisted filters.",
-    );
+    assert.deepEqual(afterReload.filters, seed.filters, "Reload lost persisted filters.");
 
     const afterSingleClear = await evaluate(
       browser.cdp,
@@ -177,9 +157,7 @@ await writeFile(
   join(outputDir, "issue-659-accounts-cards-filter-persistence.json"),
   `${JSON.stringify({ generatedAt: new Date().toISOString(), commit: candidateSha, scenarios }, null, 2)}\n`,
 );
-console.log(
-  "Issue #659 accounts/cards filter persistence visual validation passed.",
-);
+console.log("Issue #659 accounts/cards filter persistence visual validation passed.");
 
 async function choosePersistableState(cdp) {
   return evaluate(
