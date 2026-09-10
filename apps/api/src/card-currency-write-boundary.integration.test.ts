@@ -307,9 +307,17 @@ async function insertStandaloneTransactionHistory(
   await query(
     `insert into "Transaction"
       ("id", "organizationId", "financialProfileId", "cardId", "kind", "status", "source",
-       "amountMinor", "currency", "occurredOn", "plannedOn", "description")
-     values ($1, $2, $3, $4, 'EXPENSE', 'PLANNED', 'MANUAL', $5, 'BRL', $6, $6, $7)`,
-    [randomUUID(), CONTEXT.organizationId, CONTEXT.financialProfileId, cardId, 100, "2031-12-01", description],
+       "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt", "updatedAt")
+     values ($1, $2, $3, $4, 'EXPENSE', 'PLANNED', 'MANUAL', $5, 'BRL', $6, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+    [
+      randomUUID(),
+      CONTEXT.organizationId,
+      CONTEXT.financialProfileId,
+      cardId,
+      100,
+      "2031-12-01",
+      description,
+    ],
   );
 }
 
@@ -317,8 +325,8 @@ async function insertStandaloneInvoiceHistory(cardId: string): Promise<void> {
   await query(
     `insert into "Invoice"
       ("id", "organizationId", "financialProfileId", "cardId", "status", "periodStartOn",
-       "periodEndOn", "dueOn", "totalAmountMinor", "currency")
-     values ($1, $2, $3, $4, 'OPEN', $5, $6, $7, 0, 'BRL')`,
+       "periodEndOn", "dueOn", "totalAmountMinor", "currency", "createdAt", "updatedAt")
+     values ($1, $2, $3, $4, 'OPEN', $5, $6, $7, 0, 'BRL', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
     [
       randomUUID(),
       CONTEXT.organizationId,
@@ -370,7 +378,7 @@ async function readCardCurrencyAndAccount(
   const rows = await query<{ currency: string | null; paymentAccountId: string | null }>(
     `select "currency", "paymentAccountId" from "Card"
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [cardId, CONTEXT.organizationId, CONTEXT.financialProfileId],
+    [cardId, CONTEXT.organizationId, CONTEXT.financialProfileId, cardId],
   );
   const row = rows[0];
   assert.ok(row, `Expected card ${cardId}.`);
