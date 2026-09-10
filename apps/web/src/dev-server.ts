@@ -10,6 +10,7 @@ import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-in
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { apiGet, handleApiRequest } from "./dev-server/api.js";
+import { renderBudgetsPage } from "./dev-server/budgets-page.js";
 import { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2.js";
 import { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
@@ -46,8 +47,9 @@ export { enhanceAccountsCardsActionMenus } from "./dev-server/accounts-cards-act
 export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancement.js";
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 export { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
+export { renderBudgetsPage } from "./dev-server/budgets-page.js";
 export { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
-export { renderAccountsPage, renderBudgetsPage } from "./dev-server/pages.js";
+export { renderAccountsPage } from "./dev-server/pages.js";
 export { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2.js";
 export { renderCategoriesPage } from "./dev-server/categories-page.js";
 export { renderDashboardPage } from "./dev-server/dashboard-page.js";
@@ -219,6 +221,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       ],
     );
     sendHtml(response, 200, html);
+    return;
+  }
+
+  if (url.pathname === "/orcamentos" && token) {
+    sendHtml(response, 200, await renderBudgetsPage(token, url));
     return;
   }
 

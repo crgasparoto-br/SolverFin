@@ -68,6 +68,19 @@ Cada item sem orcamento preserva a moeda da transacao que originou o total. A me
 
 Transacoes sem categoria sao ignoradas nesse resumo porque nao ha categoria para associar a meta.
 
+## Interface operacional `/orcamentos`
+
+A rota `/orcamentos` usa o arquetipo A1 de acompanhamento operacional e consome os contratos acima sem recalcular valores financeiros no renderer.
+
+- Cada orcamento identifica categoria, periodo e moeda de forma explicita.
+- Valores monetarios usam a primitiva `Money` com a moeda nativa do orcamento; ausencia de moeda nunca vira BRL por fallback visual.
+- `Planejado` vem do proprio `Budget`; `Realizado`, percentual e status vem de `GET /api/budgets/:budgetId/usage`.
+- A resposta de uso so e apresentada quando categoria, periodo, valor planejado e moeda continuam coerentes com o orcamento exibido. Divergencia ou falha de leitura produz estado `Realizado indisponivel`, nunca `0` sintetico.
+- Filtros de moeda e estado atuam apenas sobre a colecao apresentada e nao consolidam moedas.
+- Criacao e edicao exigem moeda explicita e preservam periodo e categoria como parte do contexto do orcamento.
+- `committed`, `projected`, `available` e demais estados da Fase 4A nao sao calculados nem simulados nesta interface enquanto o contrato da #619 nao estiver implementado.
+- O Extrato atual exige contexto de conta para reproduzir um recorte. Como o uso do orcamento e agregado por categoria, periodo e moeda entre as fontes elegiveis, a interface nao fabrica um deep link parcial que descartaria esse contexto. Um drilldown so deve ser exposto quando existir rota/filtro canonico capaz de representar fielmente o mesmo recorte.
+
 ## Validacoes
 
 - Categoria do orcamento deve existir no tenant ativo.
