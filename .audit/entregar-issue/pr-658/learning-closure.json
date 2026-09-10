@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "classification": "systemic-escape",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+    "audit_report_sha256": "22adeadcc8c9e24a03647f6c7055f2ce10c6b9eda48925f084d6c225390c474e",
+    "finding_ids": [
+      "A-001"
+    ],
+    "repository": "crgasparoto-br/SolverFin",
+    "audited_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf"
+  },
+  "generalized_learning": {
+    "escape_class": "post-handoff-material-drift",
+    "generalized_failure_pattern": "A terminal delivery certificate can become stale when code, tests, configuration, schema, or other material paths are written after the certified material freeze while the old result package remains published.",
+    "plausible_wrong_implementation": "Treat an already published result-only certificate as permanently valid and continue changing material files without re-freezing the new material head and regenerating exact-head evidence.",
+    "trigger_signals": [
+      "current head differs from the certified material head",
+      "current parent is not the certified material head",
+      "paths outside the result-only allowlist appear after certification"
+    ],
+    "risk_families": [
+      "structural-contract"
+    ],
+    "reusable_control": "Classify every post-certificate head transition before handoff; any material path or parent drift is a mandatory post-write-refreeze, never a handoff-only repair.",
+    "prevention_rule": "After a material freeze, do not publish or preserve a terminal handoff across any subsequent material write; re-freeze the latest material candidate first.",
+    "detection_rule": "At terminal handoff, compare the fresh remote head, its parent, and changed paths against the certificate material head and result-only allowlist; fail closed on any material drift.",
+    "transfer_cases": [
+      {
+        "surface": "source-code-write-after-result-child",
+        "dimension": "material-path-outside-allowlist",
+        "status": "passed"
+      },
+      {
+        "surface": "terminal-head-parent-drift",
+        "dimension": "parent-no-longer-certified-material",
+        "status": "passed"
+      }
+    ],
+    "promotion_status": "promoted"
+  },
+  "skill_changes": [
+    {
+      "role": "prevention",
+      "status": "passed",
+      "evidence": "The governing delivery skill requires post-write-refreeze after any material write and terminal handoff only after exact material freeze; terminal-handoff reference sha256=20c2cd0b34df04d5295515bc8386aec77e70366cbd9bb99ed6d8714bb53b2569. validate_skill_genericity.py passed on the installed skill root."
+    },
+    {
+      "role": "detection",
+      "status": "passed",
+      "evidence": "classify_handoff_recovery.py enforces the auditor refreeze floor and detects material path/parent drift; transfer control evidence sha256=f969aab88a224682643a5e35227d2c2077192d53a1add7aff9bd9b673a349fb1. Targeted skill regression tests test_handoff_recovery_classifier.py and test_universal_post_write_handoff_guard.py passed 13/13."
+    }
+  ]
+}
