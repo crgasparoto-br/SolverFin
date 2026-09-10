@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:solverfin-pr658-handoff-stale-7080a2c1",
+    "audit_report_sha256": "22adeadcc8c9e24a03647f6c7055f2ce10c6b9eda48925f084d6c225390c474e",
+    "audited_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf"
+  },
+  "candidate_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+  "remediation_mode": "systemic-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "systemic-remediation",
+      "status": "fixed",
+      "changed_files": [
+        ".audit/entregar-issue/pr-658/handoff-ready.json",
+        ".audit/entregar-issue/pr-658/audit-remediation.json",
+        ".audit/entregar-issue/pr-658/audit-source-result.json",
+        ".audit/entregar-issue/pr-658/audit-escape-closure.json",
+        ".audit/entregar-issue/pr-658/learning-closure.json",
+        ".audit/entregar-issue/pr-658/requirement-attack-matrix.json",
+        ".audit/entregar-issue/pr-658/requirement-closure.json",
+        ".audit/entregar-issue/pr-658/risk-saturation.json",
+        ".audit/entregar-issue/pr-658/inherited-controls.json"
+      ],
+      "evidence": [
+        "evidence/handoff-refreeze-controls.json sha256=f969aab88a224682643a5e35227d2c2077192d53a1add7aff9bd9b673a349fb1",
+        "evidence/ci-run-34411339129.json sha256=1948b2aeeb4b931a35a89b9049bd9b41cd0894e0e0bd1a3ef72691518af95504"
+      ],
+      "validations": [
+        "classify_handoff_recovery.py -> post-write-refreeze",
+        "exact-head GitHub Actions CI run 34411339129 -> success",
+        "validate_learning_closure.py",
+        "validate_audit_escape_lineage.py",
+        "validate_handoff_readiness.py",
+        "validate_terminal_handoff.py"
+      ]
+    }
+  ],
+  "status": "closed"
+}
