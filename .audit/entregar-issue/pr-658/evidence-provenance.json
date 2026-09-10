@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+  "base_sha": "eee4b17317c336cc5e78cf638335ae7ff9f501e8",
+  "evidence": [
+    {
+      "evidence_id": "EV-CI-4918",
+      "kind": "behavioral",
+      "path": ".audit/entregar-issue/pr-658/evidence/ci-run-34411339129.json",
+      "sha256": "1948b2aeeb4b931a35a89b9049bd9b41cd0894e0e0bd1a3ef72691518af95504",
+      "subject_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+      "base_sha": "eee4b17317c336cc5e78cf638335ae7ff9f501e8",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions CI run 34411339129 plus GitHub immutable blob witnesses",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EV-HANDOFF-REFREEZE",
+      "kind": "structural",
+      "path": ".audit/entregar-issue/pr-658/evidence/handoff-refreeze-controls.json",
+      "sha256": "f969aab88a224682643a5e35227d2c2077192d53a1add7aff9bd9b673a349fb1",
+      "subject_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+      "base_sha": "eee4b17317c336cc5e78cf638335ae7ff9f501e8",
+      "freshness_policy": "exact-material-head",
+      "producer": "entregar-issue classify_handoff_recovery.py",
+      "status": "passed"
+    }
+  ]
+}
