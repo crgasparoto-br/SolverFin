@@ -10,48 +10,45 @@ afterEach(() => {
 });
 
 describe("budgets page issue 613", () => {
-  it(
-    "renders A1 with explicit currencies and backend realized values without future projections",
-    async () => {
-      globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
-        const url = new URL(String(input), "http://solverfin.test");
-        if (url.pathname === "/api/budgets") {
-          return json({
-            budgets: [
-              budget("budget-brl", "BRL", 100_000),
-              budget("budget-usd", "USD", 20_000),
-            ],
-          });
-        }
-        if (url.pathname === "/api/categories") {
-          return json({
-            categories: [{ id: "food", name: "Alimentação", kind: "expense", status: "active" }],
-          });
-        }
-        if (url.pathname === "/api/budgets/budget-brl/usage") {
-          return json({ usage: usage("budget-brl", "BRL", 100_000, 40_000, 40) });
-        }
-        if (url.pathname === "/api/budgets/budget-usd/usage") {
-          return json({ usage: usage("budget-usd", "USD", 20_000, 5_000, 25) });
-        }
-        return json({});
-      };
+  it("renders A1 with explicit currencies and backend realized values without future projections", async () => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input), "http://solverfin.test");
+      if (url.pathname === "/api/budgets") {
+        return json({
+          budgets: [
+            budget("budget-brl", "BRL", 100_000),
+            budget("budget-usd", "USD", 20_000),
+          ],
+        });
+      }
+      if (url.pathname === "/api/categories") {
+        return json({
+          categories: [{ id: "food", name: "Alimentação", kind: "expense", status: "active" }],
+        });
+      }
+      if (url.pathname === "/api/budgets/budget-brl/usage") {
+        return json({ usage: usage("budget-brl", "BRL", 100_000, 40_000, 40) });
+      }
+      if (url.pathname === "/api/budgets/budget-usd/usage") {
+        return json({ usage: usage("budget-usd", "USD", 20_000, 5_000, 25) });
+      }
+      return json({});
+    };
 
-      const html = await renderBudgetsPage("token");
+    const html = await renderBudgetsPage("token");
 
-      assert.match(html, /data-budgets-archetype="A1"/);
-      assert.match(html, /data-currency="BRL"/);
-      assert.match(html, /data-currency="USD"/);
-      assert.match(html, />Planejado</);
-      assert.match(html, />Realizado</);
-      assert.match(html, /40%/);
-      assert.match(html, /25%/);
-      assert.doesNotMatch(html, /Comprometido/);
-      assert.doesNotMatch(html, /Projetado/);
-      assert.doesNotMatch(html, />Disponível</);
-      assert.doesNotMatch(html, /Valor planejado \(R\$\)/);
-    },
-  );
+    assert.match(html, /data-budgets-archetype="A1"/);
+    assert.match(html, /data-currency="BRL"/);
+    assert.match(html, /data-currency="USD"/);
+    assert.match(html, />Planejado</);
+    assert.match(html, />Realizado</);
+    assert.match(html, /40%/);
+    assert.match(html, /25%/);
+    assert.doesNotMatch(html, /Comprometido/);
+    assert.doesNotMatch(html, /Projetado/);
+    assert.doesNotMatch(html, />Disponível</);
+    assert.doesNotMatch(html, /Valor planejado \(R\$\)/);
+  });
 
   it("does not turn a mismatched usage currency into a realized zero", async () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
