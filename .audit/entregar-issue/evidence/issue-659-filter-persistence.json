@@ -1,0 +1,180 @@
+{
+  "generatedAt": "2026-09-11T15:35:20.275Z",
+  "commit": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+  "scenarios": [
+    {
+      "viewport": "desktop",
+      "seed": {
+        "search": "Carteira dinheiro demo",
+        "kind": "account",
+        "currency": "BRL",
+        "status": "active"
+      },
+      "afterSelection": {
+        "filters": {
+          "search": "Carteira dinheiro demo",
+          "kind": "account",
+          "currency": "BRL",
+          "status": "active"
+        },
+        "location": "/contas-cartoes?resource=account%3A44444444-4444-4444-8444-444444444445",
+        "persisted": "{\"search\":\"Carteira dinheiro demo\",\"kind\":\"account\",\"currency\":\"BRL\",\"status\":\"active\"}",
+        "selectedCount": 1,
+        "neutralVisible": false
+      },
+      "afterReturn": {
+        "filters": {
+          "search": "Carteira dinheiro demo",
+          "kind": "account",
+          "currency": "BRL",
+          "status": "active"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{\"search\":\"Carteira dinheiro demo\",\"kind\":\"account\",\"currency\":\"BRL\",\"status\":\"active\"}",
+        "selectedCount": 1,
+        "neutralVisible": false
+      },
+      "afterReload": {
+        "filters": {
+          "search": "Carteira dinheiro demo",
+          "kind": "account",
+          "currency": "BRL",
+          "status": "active"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{\"search\":\"Carteira dinheiro demo\",\"kind\":\"account\",\"currency\":\"BRL\",\"status\":\"active\"}",
+        "selectedCount": 1,
+        "neutralVisible": false
+      },
+      "afterSingleClear": {
+        "search": "",
+        "kind": "account",
+        "currency": "BRL",
+        "status": "active"
+      },
+      "afterClearAll": {
+        "filters": {
+          "search": "",
+          "kind": "all",
+          "currency": "all",
+          "status": "all"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{\"search\":\"\",\"kind\":\"all\",\"currency\":\"all\",\"status\":\"all\"}",
+        "selectedCount": 1,
+        "neutralVisible": false
+      },
+      "invalid": {
+        "filters": {
+          "search": "persisted-search",
+          "kind": "all",
+          "currency": "all",
+          "status": "all"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{\"search\":\"persisted-search\",\"kind\":\"invalid-kind\",\"currency\":\"ZZZ\",\"status\":\"invalid-status\"}",
+        "selectedCount": 0,
+        "neutralVisible": true
+      },
+      "malformed": {
+        "filters": {
+          "search": "",
+          "kind": "all",
+          "currency": "all",
+          "status": "all"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{invalid-json",
+        "selectedCount": 1,
+        "neutralVisible": false
+      }
+    },
+    {
+      "viewport": "mobile",
+      "seed": {
+        "search": "Carteira dinheiro demo",
+        "kind": "account",
+        "currency": "BRL",
+        "status": "active"
+      },
+      "afterSelection": {
+        "filters": {
+          "search": "Carteira dinheiro demo",
+          "kind": "account",
+          "currency": "BRL",
+          "status": "active"
+        },
+        "location": "/contas-cartoes?resource=account%3A44444444-4444-4444-8444-444444444445",
+        "persisted": "{\"search\":\"Carteira dinheiro demo\",\"kind\":\"account\",\"currency\":\"BRL\",\"status\":\"active\"}",
+        "selectedCount": 1,
+        "neutralVisible": false
+      },
+      "afterReturn": {
+        "filters": {
+          "search": "Carteira dinheiro demo",
+          "kind": "account",
+          "currency": "BRL",
+          "status": "active"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{\"search\":\"Carteira dinheiro demo\",\"kind\":\"account\",\"currency\":\"BRL\",\"status\":\"active\"}",
+        "selectedCount": 1,
+        "neutralVisible": false
+      },
+      "afterReload": {
+        "filters": {
+          "search": "Carteira dinheiro demo",
+          "kind": "account",
+          "currency": "BRL",
+          "status": "active"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{\"search\":\"Carteira dinheiro demo\",\"kind\":\"account\",\"currency\":\"BRL\",\"status\":\"active\"}",
+        "selectedCount": 1,
+        "neutralVisible": false
+      },
+      "afterSingleClear": {
+        "search": "",
+        "kind": "account",
+        "currency": "BRL",
+        "status": "active"
+      },
+      "afterClearAll": {
+        "filters": {
+          "search": "",
+          "kind": "all",
+          "currency": "all",
+          "status": "all"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{\"search\":\"\",\"kind\":\"all\",\"currency\":\"all\",\"status\":\"all\"}",
+        "selectedCount": 1,
+        "neutralVisible": false
+      },
+      "invalid": {
+        "filters": {
+          "search": "persisted-search",
+          "kind": "all",
+          "currency": "all",
+          "status": "all"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{\"search\":\"persisted-search\",\"kind\":\"invalid-kind\",\"currency\":\"ZZZ\",\"status\":\"invalid-status\"}",
+        "selectedCount": 0,
+        "neutralVisible": true
+      },
+      "malformed": {
+        "filters": {
+          "search": "",
+          "kind": "all",
+          "currency": "all",
+          "status": "all"
+        },
+        "location": "/contas-cartoes",
+        "persisted": "{invalid-json",
+        "selectedCount": 1,
+        "neutralVisible": false
+      }
+    }
+  ]
+}
