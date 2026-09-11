@@ -66,7 +66,7 @@ async function assertConcurrentReconciliationPreservesPatch(
       note,
       categoryId,
     });
-    await waitForBlockedQuery('%from "Transaction"%for update%');
+    await waitForBlockedQuery('%from "Installment"%join "Transaction"%for update of t%');
 
     const reconciliation = apiRequest(token, "PATCH", `/api/transactions/${transactionId}`, {
       status: "reconciled",
