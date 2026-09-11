@@ -1,1 +1,6 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"inherited_controls","compression":"gzip","encoded_size":3420,"encoded_sha256":"c932963c6b6a9aa0fcf90f586ac9e06f67e21536b555f01e8f9a17ea5cd456a8","decoded_size":20605,"decoded_sha256":"ded9054359795712fb8c5da01217bcbfa5dbe4abdc84e93f43dc4c4734fcefbc","parts":[{"path":"inherited-controls.parts/part-000.b64","size":3420,"sha256":"c932963c6b6a9aa0fcf90f586ac9e06f67e21536b555f01e8f9a17ea5cd456a8"}]}
+{
+  "schema_version": 1,
+  "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "controls": [],
+  "unresolved_controls": []
+}

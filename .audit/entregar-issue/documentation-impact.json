@@ -1,18 +1,24 @@
 {
   "schema_version": 1,
-  "material_head_sha": "d8cd7762db7c4c8ac3cacd7dea36ff156b117618",
+  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "last_scanned_head": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "input_fingerprint": "b12ff8b1e4f566a98de79610e627e7eed476773c4fa785948d5e7e8ed60d2068",
   "status": "updated",
-  "changed_documentation": ["docs/UI_PRIMITIVES.md"],
-  "reviewed_existing_sources": [
-    "AGENTS.md",
-    "README.md",
-    "docs/ARCHITECTURE.md",
-    "docs/EVOLUTION_STRATEGY.md",
-    "docs/BRAND.md",
-    "docs/DESIGN_SYSTEM.md",
-    "docs/APP_SHELL.md",
-    "docs/adr/0014-incremental-component-ui-architecture.md",
-    ".github/copilot-instructions.md"
+  "context": {"repository":"crgasparoto-br/SolverFin","base_branch":"main","work_branch":"issue-662-fix-installment-purchases","pull_request":664,"mode":"internal-verification"},
+  "categories": ["functional", "api", "data", "interface", "tests"],
+  "instructions_consulted": ["AGENTS.md", ".github/copilot-instructions.md"],
+  "canonical_sources": [
+    {"path":"docs/API_CREDIT_CARDS_INVOICES.md","reason":"Invoice summary and edit contract changed.","action":"updated","status":"verificado"},
+    {"path":"docs/API_INSTALLMENTS.md","reason":"Installment linkage and invoice query contract changed.","action":"updated","status":"verificado"},
+    {"path":"docs/CARDS.md","reason":"Purchase input and visible occurrence semantics changed.","action":"updated","status":"verificado"},
+    {"path":"docs/STATUS_MATRIX.md","reason":"Issue capability status changed.","action":"updated","status":"verificado"}
   ],
-  "unresolved_contradictions": []
+  "discovery": {"root":"repository","mechanism":"rg --files plus targeted rg contract-term delta scan","include":["README.md","docs/**","AGENTS.md",".github/copilot-instructions.md"],"exclude":["node_modules/**",".git/**"],"discovered_paths":["README.md","docs/PRODUCT.md","docs/EVOLUTION_STRATEGY.md","docs/ARCHITECTURE.md","docs/BRAND.md","docs/DESIGN_SYSTEM.md","docs/adr/README.md","docs/API_CREDIT_CARDS_INVOICES.md","docs/API_INSTALLMENTS.md","docs/CARDS.md","docs/STATUS_MATRIX.md"],"declared_paths":["docs/API_CREDIT_CARDS_INVOICES.md","docs/API_INSTALLMENTS.md","docs/CARDS.md","docs/STATUS_MATRIX.md"],"omitted":[{"paths":"other docs/**","reason":"No installment purchase contract or status assertion affected by the delta."}]},
+  "old_contract_terms": ["ambiguous installment value", "mutable installment amount/date", "source purchase as invoice row"],
+  "new_contract_terms": ["valueInterpretation total", "transactionId and invoiceId", "CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED", "Parcela X de Y"],
+  "repository_wide_search": {"head_sha":"e8d828bdab40a73183c4387dbd7064925795c5a0","mechanism":"targeted rg for old/new contract terms and transitional status language","result":"No unresolved current-contract contradiction."},
+  "classified_occurrences": [],
+  "validations": [{"name":"format-check","status":"passed","evidence":".audit/entregar-issue/attestations/stdout.log"},{"name":"contract-consistency","status":"passed","evidence":"requirement-closure documentation_consistency"}],
+  "unresolved_contradictions": [],
+  "handoff": {"phase":"independent-audit","responsible_skill":"independent auditor","pending":["Re-derive documentation consistency independently."],"evidence":".audit/entregar-issue/attestations/stdout.log"}
 }

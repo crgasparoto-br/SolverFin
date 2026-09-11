@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "name": "material-head-full-gate",
+  "command": "npm run env:check && npm run startup:check && npm run integration-db-guard:check && DATABASE_URL=postgresql://solverfin:solverfin_dev_password@127.0.0.1:5432/solverfin?schema=public npm run prisma:validate && npm run db:seed:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
+  "cwd": "/tmp/solverfin-662-4sM7I4",
+  "exit_code": 0,
+  "started_at": "2026-09-11T02:24:50.149119Z",
+  "finished_at": "2026-09-11T02:27:12.777568Z",
+  "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "stdout_sha256": "6d87eac1a54e23bce23123a181b351ad3c047de15037746f48920cdaa8de4fea",
+  "stderr_sha256": "f0be17b355c9f69434b43ac5396c606d168d90e4558889eb88482c48103fe845",
+  "stdout_path": ".audit/entregar-issue/attestations/stdout.log",
+  "stderr_path": ".audit/entregar-issue/attestations/stderr.log",
+  "executor": "entregar-issue/run_attested_gate.py@2"
+}

@@ -1,166 +1,19 @@
 {
   "schema_version": 1,
-  "head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+  "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
   "families": [
-    {
-      "family": "authorization",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "tenant-isolation",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "public-boundary",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "reference-liveness",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "temporal-consistency",
-      "applicable": true,
-      "reason": "Derived from the exact-head requirement attack matrix and canonical issue closure.",
-      "control_ids": [
-        "NEG-REQ-004-01",
-        "NEG-REQ-019-01",
-        "NEG-REQ-020-01",
-        "NEG-REQ-024-03",
-        "NEG-REQ-025-01"
-      ],
-      "dimensions": [
-        {
-          "surface": "state-transition",
-          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
-          "control_ids": [
-            "NEG-REQ-004-01",
-            "NEG-REQ-019-01",
-            "NEG-REQ-020-01",
-            "NEG-REQ-024-03",
-            "NEG-REQ-025-01"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "temporal-destination",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "concurrency-atomicity",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "idempotency",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "rollback",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "historical-immutability",
-      "applicable": false,
-      "reason": "No current canonical requirement, inherited control or issue-local signal requires this risk family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "structural-contract",
-      "applicable": true,
-      "reason": "Derived from the exact-head requirement attack matrix and canonical issue closure.",
-      "control_ids": [
-        "NEG-REQ-003-01",
-        "NEG-REQ-023-01",
-        "NEG-REQ-024-02",
-        "NEG-REQ-024-01",
-        "NEG-REQ-039-02"
-      ],
-      "dimensions": [
-        {
-          "surface": "canonical-source-consistency",
-          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
-          "control_ids": [
-            "NEG-REQ-024-01"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "relational-semantic-integrity",
-          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
-          "control_ids": [
-            "NEG-REQ-003-01",
-            "NEG-REQ-023-01",
-            "NEG-REQ-024-02"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "specified-test-matrix",
-          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
-          "control_ids": [
-            "NEG-REQ-039-02"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "documentation",
-      "applicable": true,
-      "reason": "Derived from the exact-head requirement attack matrix and canonical issue closure.",
-      "control_ids": [
-        "NEG-REQ-041-02"
-      ],
-      "dimensions": [
-        {
-          "surface": "canonical-claims",
-          "reason": "This exact-head adversarial surface is materially observable for the canonical requirement family.",
-          "control_ids": [
-            "NEG-REQ-041-02"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    }
+    {"family":"authorization","applicable":false,"reason":"No authorization role or permission model changes in this scoped contract.","control_ids":[],"dimensions":[],"status":"not-applicable"},
+    {"family":"tenant-isolation","applicable":true,"reason":"Linked purchase and invoice queries cross tenant-owned persistence tables.","control_ids":["NEG-TENANT-001"],"dimensions":[{"surface":"invoice-installments-query","reason":"Organization and profile predicates bind every joined object.","control_ids":["NEG-TENANT-001"],"status":"passed"}],"status":"passed"},
+    {"family":"public-boundary","applicable":true,"reason":"The public PATCH boundary must reject structural installment fields.","control_ids":["NEG-BOUNDARY-001"],"dimensions":[{"surface":"installment-purchase-edit-endpoint","reason":"Crafted requests are rejected independently of readonly HTML.","control_ids":["NEG-BOUNDARY-001"],"status":"passed"}],"status":"passed"},
+    {"family":"reference-liveness","applicable":false,"reason":"No reusable, leased, expiring or cancellable reference is introduced.","control_ids":[],"dimensions":[],"status":"not-applicable"},
+    {"family":"temporal-consistency","applicable":true,"reason":"Input interpretation and installment start determine values across future periods.","control_ids":["NEG-INPUT-001"],"dimensions":[{"surface":"installment-input-semantics","reason":"Total versus per-installment mode and start sequence are discriminated.","control_ids":["NEG-INPUT-001"],"status":"passed"}],"status":"passed"},
+    {"family":"temporal-destination","applicable":false,"reason":"Destination invoice linkage is explicit persistence, with no fallback destination selection.","control_ids":[],"dimensions":[],"status":"not-applicable"},
+    {"family":"concurrency-atomicity","applicable":true,"reason":"Instrument mutation affects the purchase and all installment occurrences atomically.","control_ids":["NEG-ATOMIC-001"],"dimensions":[{"surface":"installment-purchase-edit-transaction","reason":"One transaction covers lock validation and every related update.","control_ids":["NEG-ATOMIC-001"],"status":"passed"}],"status":"passed"},
+    {"family":"idempotency","applicable":false,"reason":"The issue introduces no retry, duplicate-delivery or idempotency-key contract.","control_ids":[],"dimensions":[],"status":"not-applicable"},
+    {"family":"rollback","applicable":false,"reason":"Rollback risk is subsumed by the single atomic database transaction control.","control_ids":[],"dimensions":[],"status":"not-applicable"},
+    {"family":"historical-immutability","applicable":true,"reason":"Legacy records must remain untouched and locked invoices remain immutable.","control_ids":["NEG-PERSIST-001"],"dimensions":[{"surface":"installment-persistence-links","reason":"Migration avoids heuristic backfill while new writes persist explicit links.","control_ids":["NEG-PERSIST-001"],"status":"passed"}],"status":"passed"},
+    {"family":"structural-contract","applicable":true,"reason":"The read model must project one persisted occurrence without duplicating source purchases.","control_ids":["NEG-READ-001"],"dimensions":[{"surface":"invoice-occurrence-read-model","reason":"Row, subtotal and count consume the occurrence exactly once.","control_ids":["NEG-READ-001"],"status":"passed"}],"status":"passed"},
+    {"family":"documentation","applicable":true,"reason":"Public card and installment contracts changed materially.","control_ids":["NEG-DOC-001"],"dimensions":[{"surface":"installment-contract-documentation","reason":"Canonical documentation now mirrors the implemented value and edit contracts.","control_ids":["NEG-DOC-001"],"status":"passed"}],"status":"passed"}
   ],
   "material_families_missing_controls": []
 }

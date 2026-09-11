@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 662,
+  "cycles": [{"cycle":1,"material_head_sha":"e8d828bdab40a73183c4387dbd7064925795c5a0","implementation_status":"complete","local_gate":"passed","remote_gate":"pending","previous_audit_findings":0,"exact_head_ci_failures":0}],
+  "independent_audit_performed_by_implementer": false
+}

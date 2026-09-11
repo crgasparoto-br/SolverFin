@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "status": "passed-local-pending-remote",
+  "local_gate": {"status":"passed","attestation":".audit/entregar-issue/attestations/attestation.json","stdout_sha256":"6d87eac1a54e23bce23123a181b351ad3c047de15037746f48920cdaa8de4fea"},
+  "remote_gate": {"status":"pending","snapshot":".audit/entregar-issue/evidence-ci-snapshot-662.json","collection_count":1},
+  "failures": []
+}

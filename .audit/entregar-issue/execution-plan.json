@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "controller_context_id": "delivery-66f3eec6-b2e1-4cb2-9179-a5db2815ca86",
+  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "issue": 662,
+  "status": "completed",
+  "steps": [
+    {"id":"PLAN-001","status":"completed","work":"Normalize total/per-installment semantics and explicit links."},
+    {"id":"PLAN-002","status":"completed","work":"Project persisted occurrences in invoice queries, summaries and SSR UI."},
+    {"id":"PLAN-003","status":"completed","work":"Protect structural edits and propagate allowed instrument changes atomically."},
+    {"id":"PLAN-004","status":"completed","work":"Add discriminant domain, API integration and web regression controls."},
+    {"id":"PLAN-005","status":"completed","work":"Update documentation, run full gate, freeze, publish and certify handoff."}
+  ],
+  "delegations": [],
+  "unresolved": []
+}

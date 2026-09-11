@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "collected_at": "2026-09-11T02:30:46Z",
+  "collection_count_for_sha": 1,
+  "policy": "observe-only-no-polling",
+  "runs": [
+    {"database_id":34554901638,"workflow":"Statement visual validation","status":"in_progress","conclusion":null,"url":"https://github.com/crgasparoto-br/SolverFin/actions/runs/34554901638"},
+    {"database_id":34554901542,"workflow":"CI","status":"in_progress","conclusion":null,"url":"https://github.com/crgasparoto-br/SolverFin/actions/runs/34554901542"}
+  ],
+  "blocking_conclusions": [],
+  "remote_gate_status": "pending"
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "entries": [
+    {"specialty":"design-interface","applicable":true,"reason":"The issue changes visible card invoice rows and edit/create modal semantics.","result":"SSR, accessibility-oriented readonly semantics and responsive existing composition preserved."},
+    {"specialty":"documentacao-repositorio","applicable":true,"reason":"API, persistence and visible behavior contracts changed.","result":"Canonical card, invoice, installment and status documents updated."},
+    {"specialty":"fluxos-conversacionais","applicable":false,"reason":"No asynchronous conversational continuation, callback or queue contract changed."},
+    {"specialty":"corrigir-ci","applicable":false,"reason":"No exact-head terminal CI failure was supplied or observed in the single snapshot."},
+    {"specialty":"revisar-issue","applicable":false,"reason":"The issue contained testable acceptance criteria and no blocking ambiguity."}
+  ],
+  "unresolved": []
+}
