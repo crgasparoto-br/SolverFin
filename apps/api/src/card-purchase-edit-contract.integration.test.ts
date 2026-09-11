@@ -67,7 +67,7 @@ async function main(): Promise<void> {
   await assertCommonCardPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
   await assertInstallmentPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
   await assertRecurringCardPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
-  await assertLockedInvoiceRejectsCardPurchaseEdit(account.id, physicalInstrument, suffix);
+  await assertLockedInvoiceRejectsCardPurchaseEdit(suffix);
 }
 
 async function assertInstallmentPurchaseEdit(
@@ -267,15 +267,27 @@ async function assertRecurringCardPurchaseEdit(
   );
 }
 
-async function assertLockedInvoiceRejectsCardPurchaseEdit(
-  cardId: string,
-  physicalInstrument: ApiCardInstrument,
-  suffix: string,
-): Promise<void> {
+async function assertLockedInvoiceRejectsCardPurchaseEdit(suffix: string): Promise<void> {
   const lockedStatuses = ["CLOSED", "PAID", "CANCELLED"] as const;
 
   for (const [index, status] of lockedStatuses.entries()) {
-    const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    const account = await createCreditCardAccountForContext(CONTEXT, {
+      name: `Cartao fatura ${status} ${suffix}`,
+      closingDay: 20,
+      dueDay: 10,
+      currency: "BRL",
+      creditLimitMinor: 10_000,
+      instruments: [
+        {
+          type: "physical",
+          holder: "primary",
+          name: `Fisico ${status}`,
+          maskedIdentifier: `**** 7${index}7${index}`,
+        },
+      ],
+    });
+    const physicalInstrument = requireInstrument(account.instruments, "physical");
+    const purchase = await registerCardPurchaseForContext(CONTEXT, account.id, {
       occurredOn: `2028-0${6 + index}-08`,
       amountMinor: 4_000,
       description: `Compra fatura ${status} ${suffix}`,
@@ -289,7 +301,7 @@ async function assertLockedInvoiceRejectsCardPurchaseEdit(
 
     await assert.rejects(
       () =>
-        updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+        updateCardPurchaseForContext(CONTEXT, account.id, purchase.transaction.id, {
           amountMinor: 4_500,
         }),
       (error: unknown) =>
