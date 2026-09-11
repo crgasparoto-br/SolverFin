@@ -128,17 +128,12 @@ async function main(): Promise<void> {
     assert.equal(summary.purchasesCount, 1);
   }
 
-  const edited = await updateCardPurchaseForContext(
-    CONTEXT,
-    account.id,
-    purchase.transaction.id,
-    {
-      amountMinor: 10_000,
-      occurredOn: "2041-04-08",
-      description: `Compra parcelada editada ${suffix}`,
-      cardInstrumentId: virtual.id,
-    },
-  );
+  const edited = await updateCardPurchaseForContext(CONTEXT, account.id, purchase.transaction.id, {
+    amountMinor: 10_000,
+    occurredOn: "2041-04-08",
+    description: `Compra parcelada editada ${suffix}`,
+    cardInstrumentId: virtual.id,
+  });
   assert.equal(edited.transaction.amountMinor, 10_000);
   assert.equal(edited.transaction.description, `Compra parcelada editada ${suffix}`);
   assert.equal(edited.transaction.cardInstrumentId, virtual.id);
@@ -186,9 +181,7 @@ async function main(): Promise<void> {
     invoiceId: firstInvoice.id,
     cardId: account.id,
   });
-  const firstOccurrence = firstInvoicePurchases.find(
-    (item) => item.id === purchase.transaction.id,
-  );
+  const firstOccurrence = firstInvoicePurchases.find((item) => item.id === purchase.transaction.id);
   assert.equal(firstOccurrence?.installmentEditLocked, true);
 }
 

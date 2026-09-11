@@ -131,7 +131,8 @@ export function recurrencesSectionStyles(): string {
 }
 
 export function recurrencesSectionScript(): string {
-  return `
+  return (
+    `
     <script>
       (function () {
         function moneyToMinor(value) {
@@ -519,7 +520,8 @@ export function recurrencesSectionScript(): string {
         document.querySelectorAll("[data-recurrence-action]").forEach((button) => button.addEventListener("click", async () => { const confirmation = button.dataset.recurrenceActionConfirm; if (confirmation && !window.confirm(confirmation)) return; button.disabled = true; const response = await send(button.dataset.recurrenceActionPath, button.dataset.recurrenceActionMethod || "POST", {}); if (!response.ok) { window.alert(await readMessage(response)); button.disabled = false; return; } window.setTimeout(() => window.location.reload(), 450); }));
       })();
     </script>
-  ` + cardInstallmentPurchaseScript();
+  ` + cardInstallmentPurchaseScript()
+  );
 }
 
 function renderFrequencyOptions(selected?: string): string {

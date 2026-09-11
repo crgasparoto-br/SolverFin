@@ -257,7 +257,9 @@ export async function updateCardPurchaseForContext(
   assertCanonicalInstallmentMutationAllowed(current, payload);
 
   const nextDescription =
-    payload.description === undefined ? current.description : normalizeDescription(payload.description);
+    payload.description === undefined
+      ? current.description
+      : normalizeDescription(payload.description);
   const nextCategoryId =
     payload.categoryId === undefined ? current.categoryId : normalizeOptionalId(payload.categoryId);
   const nextCardInstrumentId = payload.cardInstrumentId ?? current.cardInstrumentId;
@@ -514,7 +516,9 @@ async function assertInvoiceCurrencyIntegrity(
   const mismatch =
     !invoiceCurrency ||
     rows.some(
-      (row) => row.purchaseCurrency !== null && normalizeCurrency(row.purchaseCurrency) !== invoiceCurrency,
+      (row) =>
+        row.purchaseCurrency !== null &&
+        normalizeCurrency(row.purchaseCurrency) !== invoiceCurrency,
     );
   if (mismatch) {
     throw new InvoiceContractError(

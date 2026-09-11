@@ -299,7 +299,11 @@ function validateFilters(filters: ListInstallmentsFilters): void {
   if (filters.dueTo !== undefined && !isIsoDate(filters.dueTo)) {
     throwInstallmentsFilterInvalid("Data final de vencimento invalida.");
   }
-  if (filters.dueFrom !== undefined && filters.dueTo !== undefined && filters.dueFrom > filters.dueTo) {
+  if (
+    filters.dueFrom !== undefined &&
+    filters.dueTo !== undefined &&
+    filters.dueFrom > filters.dueTo
+  ) {
     throwInstallmentsFilterInvalid("Periodo de vencimento invertido.");
   }
   if (filters.operationalFrom !== undefined && !isIsoDate(filters.operationalFrom)) {
