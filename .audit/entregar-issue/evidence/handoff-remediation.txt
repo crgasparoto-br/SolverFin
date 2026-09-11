@@ -1,0 +1,5 @@
+Independent rejection: audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d
+Finding: A-001 handoff-not-produced
+The inherited .audit/entregar-issue package in the material parent belongs to issue #654 / PR #657 and is not reused as evidence for issue #659 / PR #661.
+Remediation is result-only: rebuild the canonical package from issue #659, bind subject.issue_number=659 and subject.pull_request_number=661, bind all evidence to material head 3169ed0ae260bfd4240a4659583e2b7db0c8de63, then publish a direct result-only child whose changed paths are certificate-allowlisted.
+No product code, tests, documentation, or package.json content is changed by this remediation commit.

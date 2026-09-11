@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-001",
+      "escape_class": "handoff-not-produced",
+      "status": "passed",
+      "revalidated_head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d",
+        "audited_head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+        "finding_id": "A-001",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "98a741da2635291d2d67180f38c822e1c1a4d6e508388eb1e832e5676ddb2839"
+      },
+      "plausible_wrong_implementation": "Treat a foreign terminal certificate inherited from the base as if it belonged to the current issue and PR, skipping publication of a target-bound handoff.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Compare the inherited target identity with issue 659 / PR 661 and rebuild every certified current-target artifact instead of accepting the base certificate.",
+        "observed": "The current package source, remediation ledger and target identity are bound to issue 659 / PR 661 and material head 3169ed0ae260bfd4240a4659583e2b7db0c8de63."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-001-S1",
+          "surface": "delivery-target-binding",
+          "dimension": "inherited-foreign-certificate",
+          "status": "passed"
+        },
+        {
+          "id": "A-001-S2",
+          "surface": "delivery-target-binding",
+          "dimension": "wrong-pr-subject",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "The delivery target-binding gate classifies byte-identical foreign base certificates as inherited-base-artifact and forbids reuse."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "The rebuilt certificate subject and terminal handoff validation bind repository, issue, PR, branch, parent material SHA and allowlisted result paths."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "inherited-foreign-certificate"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "wrong-pr-subject"
+        }
+      ]
+    }
+  ]
+}

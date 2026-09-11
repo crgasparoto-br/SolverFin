@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d",
+    "audit_report_sha256": "98a741da2635291d2d67180f38c822e1c1a4d6e508388eb1e832e5676ddb2839",
+    "finding_ids": [
+      "A-001"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "This rejection is a targeted packaging failure. The installed delivery skill already has a generic inherited-base-artifact target-binding guard, so no new global rule is required."
+  }
+}

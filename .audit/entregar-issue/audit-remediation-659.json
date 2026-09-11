@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d",
+    "audited_head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+    "audit_report_sha256": "98a741da2635291d2d67180f38c822e1c1a4d6e508388eb1e832e5676ddb2839"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "result-only-handoff-rebuild",
+      "evidence": "evidence/handoff-remediation.txt records that the foreign base package is not reused and the current package is rebuilt for issue 659 / PR 661.",
+      "validations": [
+        "delivery target is issue 659 / PR 661",
+        "material product SHA remains 3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+        "current package is generated from issue 659 source and exact-head evidence"
+      ]
+    }
+  ]
+}

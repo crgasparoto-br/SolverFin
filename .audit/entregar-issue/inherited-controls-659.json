@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+  "controls": [],
+  "retired_controls": [],
+  "source_audits": [
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d",
+      "finding_ids": [
+        "A-001"
+      ]
+    }
+  ],
+  "unresolved_controls": []
+}
