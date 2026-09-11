@@ -1,0 +1,57 @@
+name: CI remediation PR 663
+
+on:
+  push:
+    branches:
+      - fix/662-installment-purchase-canonical-linkage
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Respect canonical installment cleanup dependencies
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("apps/api/src/financial-invariants-e2e.integration.test.ts")
+          text = path.read_text()
+          cleanup = text.index("async function cleanupFinancialInvariantFixtures")
+          tx = text.index('  await query(\n    `delete from "Transaction"\n', cleanup)
+          inst = text.index('  await query(\n    `delete from "Installment"\n', tx)
+          invoice = text.index('  await query(\n    `delete from "Invoice"\n', inst)
+          tx_block = text[tx:inst]
+          installment_block = text[inst:invoice]
+          path.write_text(text[:tx] + installment_block + tx_block + text[invoice:])
+          PY
+      - name: Apply repository formatter
+        run: npm run format
+      - name: Verify deterministic formatting
+        run: npm run format:check
+      - name: Commit remediation
+        shell: bash
+        run: |
+          git config user.name "solverit-ci-remediation"
+          git config user.email "actions@users.noreply.github.com"
+          git add \
+            apps/api/src/card-purchase-installment-contract.integration.test.ts \
+            apps/api/src/repositories/card-invoice-contracts.ts \
+            apps/api/src/repositories/installments.ts \
+            apps/api/src/financial-invariants-e2e.integration.test.ts \
+            apps/web/src/dev-server/recurrences-section.ts
+          if git diff --cached --quiet; then
+            echo "No remediation changes remain."
+            exit 0
+          fi
+          git commit -m "fix(ci): format branch and respect cleanup dependencies"
+          git push
