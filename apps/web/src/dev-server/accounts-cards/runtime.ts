@@ -131,6 +131,7 @@ export function renderAccountsCardsRuntimeScript(): string {
         const kindSelect = document.querySelector("[data-master-kind]");
         const currencySelect = document.querySelector("[data-master-currency]");
         const statusSelect = document.querySelector("[data-master-status]");
+        const filterStorageKey = "solverfin:accounts-cards:filters:v1";
 
         function maskMoneyValue(raw) {
           const digits = String(raw || "").replace(/\\D/g, "").replace(/^0+(?=\\d)/, "");
@@ -145,6 +146,48 @@ export function renderAccountsCardsRuntimeScript(): string {
           if (input.value) input.value = maskMoneyValue(input.value);
           input.addEventListener("input", () => { input.value = maskMoneyValue(input.value); });
         });
+
+        function selectSupportsValue(control, value) {
+          if (!control || typeof value !== "string") return false;
+          return Array.from(control.options || []).some((option) => option.value === value);
+        }
+
+        function readPersistedFilters() {
+          try {
+            const raw = window.sessionStorage.getItem(filterStorageKey);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function restorePersistedFilters() {
+          const persisted = readPersistedFilters();
+          if (!persisted) return;
+          if (searchInput) searchInput.value = typeof persisted.search === "string" ? persisted.search : "";
+          if (kindSelect) kindSelect.value = selectSupportsValue(kindSelect, persisted.kind) ? persisted.kind : "all";
+          if (currencySelect) currencySelect.value = selectSupportsValue(currencySelect, persisted.currency) ? persisted.currency : "all";
+          if (statusSelect) statusSelect.value = selectSupportsValue(statusSelect, persisted.status) ? persisted.status : "all";
+        }
+
+        function currentFilterState() {
+          return {
+            search: String(searchInput && searchInput.value || ""),
+            kind: String(kindSelect && kindSelect.value || "all"),
+            currency: String(currencySelect && currencySelect.value || "all"),
+            status: String(statusSelect && statusSelect.value || "all"),
+          };
+        }
+
+        function persistFilters() {
+          try {
+            window.sessionStorage.setItem(filterStorageKey, JSON.stringify(currentFilterState()));
+          } catch {
+            // Storage can be unavailable in restricted browser contexts; filtering still works in-memory.
+          }
+        }
 
         function applyFilters() {
           const term = String(searchInput && searchInput.value || "").trim().toLowerCase();
@@ -181,10 +224,15 @@ export function renderAccountsCardsRuntimeScript(): string {
           }
         }
 
+        restorePersistedFilters();
         [searchInput, kindSelect, currencySelect, statusSelect].forEach((control) => {
           if (!control) return;
-          control.addEventListener("input", applyFilters);
-          control.addEventListener("change", applyFilters);
+          const onFilterChange = () => {
+            persistFilters();
+            applyFilters();
+          };
+          control.addEventListener("input", onFilterChange);
+          control.addEventListener("change", onFilterChange);
         });
         applyFilters();
       })();
