@@ -38,8 +38,18 @@ async function main(): Promise<void> {
     currency: "BRL",
     creditLimitMinor: 500_000,
     instruments: [
-      { type: "physical", holder: "primary", name: "Fisico", maskedIdentifier: "**** 6621" },
-      { type: "virtual", holder: "primary", name: "Virtual", maskedIdentifier: "**** 6622" },
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico",
+        maskedIdentifier: "**** 6621",
+      },
+      {
+        type: "virtual",
+        holder: "primary",
+        name: "Virtual",
+        maskedIdentifier: "**** 6622",
+      },
     ],
   });
   const physical = requireInstrument(account.instruments, "physical");
@@ -170,11 +180,15 @@ async function main(): Promise<void> {
     `Compra parcelada editada ${suffix}`,
   );
 
+  const firstInvoice = invoices[0];
+  assert.ok(firstInvoice);
   const firstInvoicePurchases = await listCardPurchasesForContext(CONTEXT, {
-    invoiceId: invoices[0]?.id,
+    invoiceId: firstInvoice.id,
     cardId: account.id,
   });
-  const firstOccurrence = firstInvoicePurchases.find((item) => item.id === purchase.transaction.id);
+  const firstOccurrence = firstInvoicePurchases.find(
+    (item) => item.id === purchase.transaction.id,
+  );
   assert.equal(firstOccurrence?.installmentEditLocked, true);
 }
 
