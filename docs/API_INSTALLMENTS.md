@@ -168,6 +168,8 @@ profileId
 
 `accountId` filtra parcelas pela transacao vinculada a uma conta. No Extrato, `operationalFrom` e `operationalTo` acompanham a mesma precedencia de data exibida pela linha (`effectiveOn`, `plannedOn`, `occurredOn` e `dueOn` como fallback), inclusive quando a efetivacao ocorreu em mes diferente do vencimento.
 
+`invoiceId` usa o vínculo persistido direto da parcela quando ela pertence a uma compra parcelada manual. Para parcelas materializadas por recorrência, preserva a relação existente pela transação de ocorrência. A resposta `transaction` representa a compra de origem no primeiro caso, permitindo alcançar descrição, categoria, instrumento e valor total sem consulta por linha.
+
 Periodo invertido, data inexistente como `2026-02-31`, formato invalido ou status desconhecido retornam erro controlado `400 INSTALLMENTS_FILTER_INVALID`.
 
 ## Resposta de consulta
@@ -181,6 +183,7 @@ Periodo invertido, data inexistente como `2026-02-31`, formato invalido ou statu
       "status": "planned",
       "sequenceNumber": 2,
       "totalInstallments": 6,
+      "initialSequenceNumber": 1,
       "dueOn": "2026-08-05",
       "amountMinor": 12345,
       "currency": "BRL",
@@ -212,6 +215,8 @@ Periodo invertido, data inexistente como `2026-02-31`, formato invalido ou statu
 ```
 
 Vinculos opcionais ausentes sao omitidos. Isso permite renderizar historico parcial sem quebrar as telas quando uma parcela antiga nao tiver categoria, fatura, cartao, instrumento ou transacao carregavel.
+
+Para novas compras parceladas manuais, `transaction` e `invoice` são obrigatoriamente resolvíveis. Dados legados permanecem opcionais e não recebem associação heurística.
 
 ## Elegibilidade de manutencao
 

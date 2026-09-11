@@ -44,6 +44,7 @@ export interface InstallmentHistoryItem {
   status: InstallmentStatus;
   sequenceNumber: number;
   totalInstallments: number;
+  initialSequenceNumber?: number;
   dueOn: string;
   amountMinor: number;
   currency: string;
@@ -75,26 +76,28 @@ export async function listInstallmentsForContext(
   const where = [`i."organizationId" = $1`, `i."financialProfileId" = $2`];
 
   addEqualsFilter(where, params, `i."id"`, filters.installmentId);
-  addEqualsFilter(where, params, `t."id"`, filters.transactionId);
+  addEqualsFilter(where, params, `coalesce(t."id", p."id")`, filters.transactionId);
   if (filters.accountId !== undefined) {
     params.push(filters.accountId);
     where.push(
-      `(t."accountId" = $${params.length} or t."destinationAccountId" = $${params.length})`,
+      `(coalesce(t."accountId", p."accountId") = $${params.length} or coalesce(t."destinationAccountId", p."destinationAccountId") = $${params.length})`,
     );
   }
   addEqualsFilter(where, params, `i."recurrenceId"`, filters.recurrenceId);
   addEqualsFilter(where, params, `i."cardId"`, filters.cardId);
   addEqualsFilter(where, params, `i."cardInstrumentId"`, filters.cardInstrumentId);
-  addEqualsFilter(where, params, `t."invoiceId"`, filters.invoiceId);
+  addEqualsFilter(where, params, `coalesce(i."invoiceId", t."invoiceId")`, filters.invoiceId);
   addEqualsFilter(
     where,
     params,
-    `case when t."id" is not null then t."categoryId" else r."categoryId" end`,
+    `coalesce(t."categoryId", p."categoryId", r."categoryId")`,
     filters.categoryId,
   );
 
   if (shouldHideCardInstallmentsWithLinkedPurchases(filters)) {
-    where.push(`not (i."cardId" is not null and t."id" is not null and t."invoiceId" is not null)`);
+    where.push(
+      `not (i."cardId" is not null and coalesce(t."id", p."id") is not null and coalesce(i."invoiceId", t."invoiceId") is not null)`,
+    );
   }
 
   if (filters.status !== undefined && filters.status !== "all") {
@@ -115,14 +118,14 @@ export async function listInstallmentsForContext(
   if (filters.operationalFrom !== undefined) {
     params.push(filters.operationalFrom);
     where.push(
-      `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", i."dueOn") >= $${params.length}`,
+      `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", p."plannedOn", p."occurredOn", i."dueOn") >= $${params.length}`,
     );
   }
 
   if (filters.operationalTo !== undefined) {
     params.push(filters.operationalTo);
     where.push(
-      `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", i."dueOn") <= $${params.length}`,
+      `coalesce(t."effectiveOn", t."plannedOn", t."occurredOn", p."plannedOn", p."occurredOn", i."dueOn") <= $${params.length}`,
     );
   }
 
@@ -131,14 +134,26 @@ export async function listInstallmentsForContext(
        i."id", i."organizationId", i."financialProfileId", i."recurrenceId", i."cardId",
        i."cardInstrumentId", i."status", i."sequenceNumber", i."totalInstallments",
        i."dueOn", i."amountMinor", i."currency",
-       t."id" as "transactionId", t."status" as "transactionStatus", t."kind" as "transactionKind",
-       t."source" as "transactionSource", t."accountId" as "transactionAccountId",
-       t."cardId" as "transactionCardId", t."cardInstrumentId" as "transactionCardInstrumentId",
-       t."invoiceId" as "transactionInvoiceId", t."categoryId" as "transactionCategoryId",
-       t."recurrenceId" as "transactionRecurrenceId", t."amountMinor" as "transactionAmountMinor",
-       t."currency" as "transactionCurrency", t."occurredOn" as "transactionOccurredOn",
-       t."plannedOn" as "transactionPlannedOn", t."description" as "transactionDescription",
-       t."note" as "transactionNote",
+       (select min(si."sequenceNumber") from "Installment" si
+         where si."transactionId" = i."transactionId"
+           and si."organizationId" = i."organizationId"
+           and si."financialProfileId" = i."financialProfileId") as "initialSequenceNumber",
+       coalesce(t."id", p."id") as "transactionId",
+       coalesce(t."status", p."status") as "transactionStatus",
+       coalesce(t."kind", p."kind") as "transactionKind",
+       coalesce(t."source", p."source") as "transactionSource",
+       coalesce(t."accountId", p."accountId") as "transactionAccountId",
+       coalesce(t."cardId", p."cardId") as "transactionCardId",
+       coalesce(t."cardInstrumentId", p."cardInstrumentId") as "transactionCardInstrumentId",
+       coalesce(i."invoiceId", t."invoiceId") as "transactionInvoiceId",
+       coalesce(t."categoryId", p."categoryId") as "transactionCategoryId",
+       coalesce(t."recurrenceId", p."recurrenceId") as "transactionRecurrenceId",
+       coalesce(t."amountMinor", p."amountMinor") as "transactionAmountMinor",
+       coalesce(t."currency", p."currency") as "transactionCurrency",
+       coalesce(t."occurredOn", p."occurredOn") as "transactionOccurredOn",
+       coalesce(t."plannedOn", p."plannedOn") as "transactionPlannedOn",
+       coalesce(t."description", p."description") as "transactionDescription",
+       coalesce(t."note", p."note") as "transactionNote",
        r."status" as "recurrenceStatus", r."kind" as "recurrenceKind",
        r."frequency" as "recurrenceFrequency", r."interval" as "recurrenceInterval",
        r."description" as "recurrenceDescription",
@@ -156,12 +171,16 @@ export async function listInstallmentsForContext(
        on t."installmentId" = i."id"
       and t."organizationId" = i."organizationId"
       and t."financialProfileId" = i."financialProfileId"
+     left join "Transaction" p
+       on p."id" = i."transactionId"
+      and p."organizationId" = i."organizationId"
+      and p."financialProfileId" = i."financialProfileId"
      left join "Recurrence" r
        on r."id" = i."recurrenceId"
       and r."organizationId" = i."organizationId"
       and r."financialProfileId" = i."financialProfileId"
      left join "Invoice" inv
-       on inv."id" = t."invoiceId"
+       on inv."id" = coalesce(i."invoiceId", t."invoiceId")
       and inv."organizationId" = i."organizationId"
       and inv."financialProfileId" = i."financialProfileId"
      left join "Card" c
@@ -173,7 +192,7 @@ export async function listInstallmentsForContext(
       and ci."organizationId" = i."organizationId"
       and ci."financialProfileId" = i."financialProfileId"
      left join "Category" cat
-       on cat."id" = case when t."id" is not null then t."categoryId" else r."categoryId" end
+       on cat."id" = coalesce(t."categoryId", p."categoryId", r."categoryId")
       and cat."organizationId" = i."organizationId"
       and cat."financialProfileId" = i."financialProfileId"
      where ${where.join(" and ")}
@@ -366,6 +385,10 @@ function mapInstallmentHistoryRow(row: Row): InstallmentHistoryItem {
     currency: text(row.currency),
     editable: blockedReason === undefined,
   };
+
+  if (row.initialSequenceNumber !== null && row.initialSequenceNumber !== undefined) {
+    installment.initialSequenceNumber = numberValue(row.initialSequenceNumber);
+  }
 
   if (blockedReason !== undefined) installment.editBlockedReason = blockedReason;
   attachTransaction(installment, row);

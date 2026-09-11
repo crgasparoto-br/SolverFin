@@ -201,7 +201,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             occurredOn: "2026-08-19",
             plannedOn: "2026-08-19",
             description: "Táxi aeroporto",
-            amountMinor: 5000,
+            amountMinor: 15000,
             currency: "USD",
             status: "posted",
           },
@@ -217,6 +217,36 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             amountMinor: 1550,
             currency: "USD",
             status: "posted",
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/installments") {
+      assert.equal(url.searchParams.get("invoiceId"), "invoice-aug");
+      return jsonResponse({
+        installments: [
+          {
+            id: "installment-taxi-2",
+            sequenceNumber: 2,
+            totalInstallments: 3,
+            initialSequenceNumber: 1,
+            amountMinor: 5000,
+            currency: "USD",
+            invoice: { id: "invoice-aug" },
+            transaction: {
+              id: "purchase-taxi",
+              cardId: "card-usd",
+              cardInstrumentId: "instrument-virtual",
+              invoiceId: "invoice-jul",
+              categoryId: "category-restaurants",
+              occurredOn: "2026-07-19",
+              plannedOn: "2026-07-19",
+              description: "Táxi aeroporto",
+              amountMinor: 15000,
+              currency: "USD",
+              status: "posted",
+            },
           },
         ],
       });
@@ -270,6 +300,14 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Virtual - Titular principal · final 9001/);
   assert.match(html, /Hotel/);
   assert.match(html, /Táxi aeroporto/);
+  assert.match(html, /Parcela 2 de 3/);
+  assert.match(html, /Total da compra:[\s\S]*USD[\s\S]*150,00/);
+  assert.match(
+    html,
+    /name="installmentValueMode"><option value="total" selected>Valor total da compra<\/option><option value="per_installment">Valor da parcela/,
+  );
+  assert.match(html, /purchaseForm\.dataset\.installmentPurchase = isInstallmentPurchase/);
+  assert.match(html, /CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED|editingInstallment/);
   assert.match(html, /Café/);
   assert.match(html, /data-reconciliation-toggle="reconciled"/);
   assert.match(html, /data-reconciliation-toggle="unreconciled"/);
@@ -278,6 +316,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
 
   const recurrencesIndex = calledPaths.findIndex((path) => path.startsWith("/api/recurrences"));
   const purchasesIndex = calledPaths.indexOf("/api/invoices/invoice-aug/purchases");
+  assert.ok(
+    calledPaths.includes("/api/installments?invoiceId=invoice-aug&status=all"),
+    "invoice render must load the canonical installment occurrence in one request",
+  );
   assert.ok(
     recurrencesIndex >= 0 && purchasesIndex >= 0 && recurrencesIndex < purchasesIndex,
     "recurrences must be fetched before purchases so materialized purchases can appear in the same render",

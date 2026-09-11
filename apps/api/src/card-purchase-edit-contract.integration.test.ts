@@ -4,8 +4,12 @@ import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
-import { updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import {
+  summarizeInvoiceForContext,
+  updateCardPurchaseForContext,
+} from "./repositories/card-invoice-contracts.js";
 import { registerCardPurchaseForContext } from "./repositories/cards.js";
+import { listInstallmentsForContext } from "./repositories/installments.js";
 import {
   createRecurrenceForContext,
   generateInstallmentsForContext,
@@ -16,6 +20,11 @@ const CONTEXT: TenantContext = {
   financialProfileId: "33333333-3333-4333-8333-333333333331",
   financialProfileKind: "personal",
   userId: "11111111-1111-4111-8111-111111111111",
+};
+const OTHER_PROFILE_CONTEXT: TenantContext = {
+  ...CONTEXT,
+  financialProfileId: "33333333-3333-4333-8333-333333333332",
+  financialProfileKind: "mei",
 };
 
 void main()
@@ -56,8 +65,95 @@ async function main(): Promise<void> {
   const virtualInstrument = requireInstrument(account.instruments, "virtual");
 
   await assertCommonCardPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
+  await assertInstallmentPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
   await assertRecurringCardPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
   await assertLockedInvoiceRejectsCardPurchaseEdit(account.id, physicalInstrument, suffix);
+}
+
+async function assertInstallmentPurchaseEdit(
+  cardId: string,
+  physicalInstrument: ApiCardInstrument,
+  virtualInstrument: ApiCardInstrument,
+  suffix: string,
+): Promise<void> {
+  const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2028-05-08",
+    amountMinor: 10_000,
+    description: `Compra parcelada original ${suffix}`,
+    cardInstrumentId: physicalInstrument.id,
+    totalInstallments: 3,
+  });
+  const invoices = [purchase.invoice, ...purchase.futureInvoices];
+  assert.deepEqual(
+    await listInstallmentsForContext(OTHER_PROFILE_CONTEXT, {
+      transactionId: purchase.transaction.id,
+      status: "all",
+    }),
+    [],
+  );
+
+  for (const [index, invoice] of invoices.entries()) {
+    const occurrences = await listInstallmentsForContext(CONTEXT, {
+      invoiceId: invoice.id,
+      status: "all",
+    });
+    assert.equal(occurrences.length, 1);
+    assert.equal(occurrences[0]?.transaction?.id, purchase.transaction.id);
+    assert.equal(occurrences[0]?.invoice?.id, invoice.id);
+    assert.equal(occurrences[0]?.sequenceNumber, index + 1);
+    assert.equal(occurrences[0]?.amountMinor, [3_334, 3_333, 3_333][index]);
+    const summary = await summarizeInvoiceForContext(CONTEXT, invoice.id);
+    assert.equal(summary.purchasesCount, 1);
+    assert.equal(summary.unreconciledExpensesMinor, [3_334, 3_333, 3_333][index]);
+  }
+
+  for (const forbiddenPayload of [
+    { amountMinor: 12_000 },
+    { occurredOn: "2028-05-09" },
+    { invoiceId: purchase.invoice.id },
+    { status: "reconciled" },
+  ]) {
+    await assert.rejects(
+      () =>
+        updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, forbiddenPayload),
+      (error: unknown) =>
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED",
+    );
+  }
+
+  const updated = await updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+    description: `Compra parcelada editada ${suffix}`,
+    cardInstrumentId: virtualInstrument.id,
+  });
+  assert.equal(updated.transaction.amountMinor, 10_000);
+  assert.equal(updated.transaction.description, `Compra parcelada editada ${suffix}`);
+  assert.equal(updated.transaction.cardInstrumentId, virtualInstrument.id);
+
+  const rows = await query<{ cardInstrumentId: string; transactionId: string; invoiceId: string }>(
+    `select "cardInstrumentId", "transactionId", "invoiceId" from "Installment"
+      where "transactionId" = $1 order by "sequenceNumber"`,
+    [purchase.transaction.id],
+  );
+  assert.equal(rows.length, 3);
+  assert.deepEqual(
+    rows.map((row) => row.cardInstrumentId),
+    [virtualInstrument.id, virtualInstrument.id, virtualInstrument.id],
+  );
+  assert.ok(rows.every((row) => row.transactionId === purchase.transaction.id && row.invoiceId));
+
+  await query(`update "Invoice" set "status" = 'CLOSED' where "id" = $1`, [invoices[2]?.id]);
+  await assert.rejects(
+    () =>
+      updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+        description: `Nao deve persistir ${suffix}`,
+      }),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",
+  );
+  const unchanged = await readTransaction(purchase.transaction.id);
+  assert.equal(unchanged.cardInstrumentId, virtualInstrument.id);
 }
 
 async function assertCommonCardPurchaseEdit(
