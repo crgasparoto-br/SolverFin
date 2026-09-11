@@ -19,7 +19,7 @@ import {
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
-import { sharedShellStyles } from "./shared-styles.js";
+import { sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import {
   buildBudgetsPageViewModel,
   type BudgetPresentationFilters,
@@ -87,10 +87,26 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
         actionsHtml: newBudgetTrigger,
       })}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${renderSummaryGrid({
         childrenHtml: [
-          renderSummaryMetric("Orçamentos no recorte", String(viewModel.rows.length), "Períodos e moedas exibidos abaixo"),
-          renderSummaryMetric("Ativos", String(viewModel.activeCount), "Disponíveis para acompanhamento"),
-          renderSummaryMetric("Atenção", String(viewModel.attentionCount), "Próximos do limite ou excedidos"),
-          renderSummaryMetric("Moedas", String(new Set(viewModel.rows.map((row) => row.currency).filter(Boolean)).size), "Sempre analisadas separadamente"),
+          renderSummaryMetric(
+            "Orçamentos no recorte",
+            String(viewModel.rows.length),
+            "Períodos e moedas exibidos abaixo",
+          ),
+          renderSummaryMetric(
+            "Ativos",
+            String(viewModel.activeCount),
+            "Disponíveis para acompanhamento",
+          ),
+          renderSummaryMetric(
+            "Atenção",
+            String(viewModel.attentionCount),
+            "Próximos do limite ou excedidos",
+          ),
+          renderSummaryMetric(
+            "Moedas",
+            String(new Set(viewModel.rows.map((row) => row.currency).filter(Boolean)).size),
+            "Sempre analisadas separadamente",
+          ),
         ].join(""),
       })}${renderBudgetTable(viewModel.rows)}${renderNewBudgetDialog(categories)}${viewModel.rows
         .map((row) => renderBudgetEditDialog(row, categories))
@@ -347,6 +363,7 @@ function renderShell(content: string): string {
 
 function budgetsPageStyles(): string {
   return `${sharedShellStyles()}
+${sharedDialogStyles()}
     main { margin: 0 auto; max-width: 1440px; padding: 18px 20px; width: 100%; }
     .budgets-a1-page, [data-budgets-archetype="A1"] { display: grid; gap: 16px; min-width: 0; }
     .budgets-heading { display: contents; }

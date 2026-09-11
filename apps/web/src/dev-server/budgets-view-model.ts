@@ -145,7 +145,11 @@ function validateUsage(
     return undefined;
   }
   if (usage.plannedAmountMinor !== budget.plannedAmountMinor) return undefined;
-  if (!Number.isFinite(usage.actualAmountMinor) || !Number.isFinite(usage.usedPercent)) return undefined;
+  if (
+    !Number.isFinite(usage.actualAmountMinor) ||
+    !Number.isFinite(usage.usedPercent)
+  )
+    return undefined;
   return usage;
 }
 

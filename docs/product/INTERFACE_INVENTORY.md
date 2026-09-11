@@ -13,7 +13,7 @@ Este inventario registra o recorte navegavel revisado no fechamento da Fase 2. E
 | `/contas-cartoes`            | Contas e Cartoes            | Perfil financeiro                      | Cadastro mestre de instrumentos financeiros                           |
 | `/remuneracao-contas`        | Remuneracao pelo CDI        | Perfil financeiro; oculta da navegacao | Compatibilidade/fluxo especializado preservado pelo contrato de rotas |
 | `/categorias`                | Categorias                  | Perfil financeiro                      | Organizacao de receitas, despesas e transferencias                    |
-| `/orcamentos`                | Orcamentos                  | Perfil financeiro                      | Planejado x realizado por categoria, periodo e moeda                   |
+| `/orcamentos`                | Orcamentos                  | Perfil financeiro                      | Planejado x realizado por categoria, periodo e moeda                  |
 | `/assistente`                | Assistente financeiro       | Perfil financeiro                      | Consultas somente leitura com evidencia deterministica                |
 | `/inbox`                     | Inbox                       | Perfil financeiro                      | Revisao de mensagens, importacoes e sugestoes                         |
 | `/relatorios`                | Relatorios                  | Perfil financeiro                      | Analises e acompanhamento somente leitura                             |
