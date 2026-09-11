@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/tmp/solverfin-662-4sM7I4/.audit/entregar-issue/specification-snapshot.json",
+    "path": ".audit/entregar-issue/specification-snapshot.json",
     "sha256": "18b0b4a5c7aedeb393691a3d461f010a358b8992864b0a142058201e3436c0c6"
   },
   "primary_issue_source_id": "SRC-ISSUE-662",

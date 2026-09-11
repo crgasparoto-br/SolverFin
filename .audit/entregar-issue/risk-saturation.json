@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
   "families": [
     {"family":"authorization","applicable":false,"reason":"No authorization role or permission model changes in this scoped contract.","control_ids":[],"dimensions":[],"status":"not-applicable"},
     {"family":"tenant-isolation","applicable":true,"reason":"Linked purchase and invoice queries cross tenant-owned persistence tables.","control_ids":["NEG-TENANT-001"],"dimensions":[{"surface":"invoice-installments-query","reason":"Organization and profile predicates bind every joined object.","control_ids":["NEG-TENANT-001"],"status":"passed"}],"status":"passed"},
@@ -12,7 +12,7 @@
     {"family":"idempotency","applicable":false,"reason":"The issue introduces no retry, duplicate-delivery or idempotency-key contract.","control_ids":[],"dimensions":[],"status":"not-applicable"},
     {"family":"rollback","applicable":false,"reason":"Rollback risk is subsumed by the single atomic database transaction control.","control_ids":[],"dimensions":[],"status":"not-applicable"},
     {"family":"historical-immutability","applicable":true,"reason":"Legacy records must remain untouched and locked invoices remain immutable.","control_ids":["NEG-PERSIST-001"],"dimensions":[{"surface":"installment-persistence-links","reason":"Migration avoids heuristic backfill while new writes persist explicit links.","control_ids":["NEG-PERSIST-001"],"status":"passed"}],"status":"passed"},
-    {"family":"structural-contract","applicable":true,"reason":"The read model must project one persisted occurrence without duplicating source purchases.","control_ids":["NEG-READ-001"],"dimensions":[{"surface":"invoice-occurrence-read-model","reason":"Row, subtotal and count consume the occurrence exactly once.","control_ids":["NEG-READ-001"],"status":"passed"}],"status":"passed"},
+    {"family":"structural-contract","applicable":true,"reason":"The read model must project one persisted occurrence without duplicating source purchases and must preserve authoritative nullable occurrence fields.","control_ids":["NEG-READ-001","NEG-CATEGORY-PRECEDENCE-001"],"dimensions":[{"surface":"invoice-occurrence-read-model","reason":"Row, subtotal and count consume the occurrence exactly once.","control_ids":["NEG-READ-001"],"status":"passed"},{"surface":"installment-category-source-precedence","reason":"Explicit occurrence null wins over recurrence fallback while manual purchases resolve their source category.","control_ids":["NEG-CATEGORY-PRECEDENCE-001"],"status":"passed"}],"status":"passed"},
     {"family":"documentation","applicable":true,"reason":"Public card and installment contracts changed materially.","control_ids":["NEG-DOC-001"],"dimensions":[{"surface":"installment-contract-documentation","reason":"Canonical documentation now mirrors the implemented value and edit contracts.","control_ids":["NEG-DOC-001"],"status":"passed"}],"status":"passed"}
   ],
   "material_families_missing_controls": []

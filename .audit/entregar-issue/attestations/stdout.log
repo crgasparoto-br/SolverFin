@@ -160,175 +160,175 @@ TAP version 13
 # Subtest: login helper never exposes the raw authentication response
 ok 1 - login helper never exposes the raw authentication response
   ---
-  duration_ms: 0.992002
+  duration_ms: 1.110106
   type: 'test'
   ...
 # Subtest: clean and explicitly redacted evidence is accepted
 ok 2 - clean and explicitly redacted evidence is accepted
   ---
-  duration_ms: 14.322279
+  duration_ms: 11.162378
   type: 'test'
   ...
 # Subtest: literal session-token leak is rejected without echoing the secret
 ok 3 - literal session-token leak is rejected without echoing the secret
   ---
-  duration_ms: 1.505928
+  duration_ms: 1.652341
   type: 'test'
   ...
 # Subtest: authorization header sibling is rejected
 ok 4 - authorization header sibling is rejected
   ---
-  duration_ms: 0.369686
+  duration_ms: 0.348269
   type: 'test'
   ...
 # Subtest: session cookie sibling is rejected
 ok 5 - session cookie sibling is rejected
   ---
-  duration_ms: 0.209215
+  duration_ms: 0.209615
   type: 'test'
   ...
 # Subtest: raw auth payload sibling is rejected
 ok 6 - raw auth payload sibling is rejected
   ---
-  duration_ms: 0.181692
+  duration_ms: 0.192177
   type: 'test'
   ...
 # Subtest: canonical visual coverage contract is internally consistent
 ok 7 - canonical visual coverage contract is internally consistent
   ---
-  duration_ms: 9.569711
+  duration_ms: 6.072417
   type: 'test'
   ...
 # Subtest: equivalent route/state/layout/interaction/data fingerprints are rejected
 ok 8 - equivalent route/state/layout/interaction/data fingerprints are rejected
   ---
-  duration_ms: 2.058585
+  duration_ms: 2.104969
   type: 'test'
   ...
 # Subtest: critical component coverage cannot disappear silently
 ok 9 - critical component coverage cannot disappear silently
   ---
-  duration_ms: 1.91821
+  duration_ms: 0.877534
   type: 'test'
   ...
 # Subtest: a component fixture cannot satisfy critical structural real-flow coverage
 ok 10 - a component fixture cannot satisfy critical structural real-flow coverage
   ---
-  duration_ms: 0.922956
+  duration_ms: 0.816675
   type: 'test'
   ...
 # Subtest: a state fixture cannot impersonate a real structural filter flow
 ok 11 - a state fixture cannot impersonate a real structural filter flow
   ---
-  duration_ms: 1.351052
+  duration_ms: 1.377804
   type: 'test'
   ...
 # Subtest: a route-shaped record without real-browser execution cannot satisfy structural coverage
 ok 12 - a route-shaped record without real-browser execution cannot satisfy structural coverage
   ---
-  duration_ms: 1.887548
+  duration_ms: 1.750353
   type: 'test'
   ...
 # Subtest: a route-shaped record without an explicit component claim cannot satisfy structural coverage
 ok 13 - a route-shaped record without an explicit component claim cannot satisfy structural coverage
   ---
-  duration_ms: 3.801497
+  duration_ms: 2.472717
   type: 'test'
   ...
 # Subtest: canonical structural real-flow mappings cover only critical components
 ok 14 - canonical structural real-flow mappings cover only critical components
   ---
-  duration_ms: 0.620631
+  duration_ms: 0.326618
   type: 'test'
   ...
 # Subtest: a foundation fixture cannot substitute a pilot route alternate state
 ok 15 - a foundation fixture cannot substitute a pilot route alternate state
   ---
-  duration_ms: 1.664102
+  duration_ms: 1.084662
   type: 'test'
   ...
 # Subtest: a secondary coverage failure keeps its exact route and state identity
 ok 16 - a secondary coverage failure keeps its exact route and state identity
   ---
-  duration_ms: 1.232458
+  duration_ms: 0.909973
   type: 'test'
   ...
 # Subtest: candidate visual SHA replaces merge-preview SHA in child evidence
 ok 17 - candidate visual SHA replaces merge-preview SHA in child evidence
   ---
-  duration_ms: 0.566696
+  duration_ms: 0.520306
   type: 'test'
   ...
 # Subtest: new multi-coverage scenarios fail closed without a focused execution override
 ok 18 - new multi-coverage scenarios fail closed without a focused execution override
   ---
-  duration_ms: 0.570919
+  duration_ms: 0.509931
   type: 'test'
   ...
 # Subtest: focused overrides cannot retain interaction metadata without semantic assertions
 ok 19 - focused overrides cannot retain interaction metadata without semantic assertions
   ---
-  duration_ms: 2.006049
+  duration_ms: 1.907401
   type: 'test'
   ...
 # Subtest: semantic proof rejects a missing declared interaction while identity stays correct
 ok 20 - semantic proof rejects a missing declared interaction while identity stays correct
   ---
-  duration_ms: 0.753232
+  duration_ms: 0.635826
   type: 'test'
   ...
 # Subtest: semantic proof rejects a sibling route identity even when assertions are complete
 ok 21 - semantic proof rejects a sibling route identity even when assertions are complete
   ---
-  duration_ms: 0.595122
+  duration_ms: 1.946095
   type: 'test'
   ...
 # Subtest: legacy retirement evidence remains mandatory after an adapter disappears
 ok 22 - legacy retirement evidence remains mandatory after an adapter disappears
   ---
-  duration_ms: 1.639997
+  duration_ms: 0.838978
   type: 'test'
   ...
 # Subtest: legacy retirement mapping cannot survive when the mapped scenario drops its responsibility claim
 ok 23 - legacy retirement mapping cannot survive when the mapped scenario drops its responsibility claim
   ---
-  duration_ms: 1.418914
+  duration_ms: 1.369063
   type: 'test'
   ...
 # Subtest: a second legacy surface fails closed when metadata survives but equivalent behavior is unclaimed
 ok 24 - a second legacy surface fails closed when metadata survives but equivalent behavior is unclaimed
   ---
-  duration_ms: 1.420575
+  duration_ms: 1.321479
   type: 'test'
   ...
 # Subtest: budgets-normal requires observed mobile proof even without component or legacy claims
 ok 25 - budgets-normal requires observed mobile proof even without component or legacy claims
   ---
-  duration_ms: 1.948152
+  duration_ms: 1.611023
   type: 'test'
   ...
 # Subtest: dashboard-empty requires observed mobile proof even without component or legacy claims
 ok 26 - dashboard-empty requires observed mobile proof even without component or legacy claims
   ---
-  duration_ms: 3.972605
+  duration_ms: 1.333815
   type: 'test'
   ...
 # Subtest: accounts-cards-empty requires observed mobile proof even without component or legacy claims
 ok 27 - accounts-cards-empty requires observed mobile proof even without component or legacy claims
   ---
-  duration_ms: 0.209851
+  duration_ms: 0.145425
   type: 'test'
   ...
 # Subtest: supplemental empty-state records bind desktop-mobile metadata to observed assertions
 ok 28 - supplemental empty-state records bind desktop-mobile metadata to observed assertions
   ---
-  duration_ms: 0.283241
+  duration_ms: 0.245195
   type: 'test'
   ...
 # Subtest: component fixtures remain outside real-flow desktop-mobile behavior binding
 ok 29 - component fixtures remain outside real-flow desktop-mobile behavior binding
   ---
-  duration_ms: 0.189328
+  duration_ms: 0.158714
   type: 'test'
   ...
 1..29
@@ -339,7 +339,7 @@ ok 29 - component fixtures remain outside real-flow desktop-mobile behavior bind
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 161.47693
+# duration_ms 132.486622
 Visual coverage contract passed: 54 modules, 60 one-record executions, 60 coverage fingerprints, 7 pilot routes.
 
 > solverfin@0.1.0 build:packages
@@ -369,24 +369,24 @@ Visual coverage contract passed: 54 modules, 60 one-record executions, 60 covera
 [test] account-remuneration-contract.test.js
 
 [test] account-remuneration-diagnostics-messages-regression.test.js
-◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
 
 [test] account-remuneration-diagnostics-service.test.js
-◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
 
 [test] account-remuneration-scheduler.test.js
-◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
 TAP version 13
 # Subtest: runs once per UTC date after the configured hour
 ok 1 - runs once per UTC date after the configured hour
   ---
-  duration_ms: 1.154692
+  duration_ms: 1.143861
   type: 'test'
   ...
 # Subtest: does not run before the configured UTC hour
 ok 2 - does not run before the configured UTC hour
   ---
-  duration_ms: 0.176362
+  duration_ms: 0.184047
   type: 'test'
   ...
 1..2
@@ -397,17 +397,17 @@ ok 2 - does not run before the configured UTC hour
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 18.298874
+# duration_ms 20.144995
 
 [test] accounts-router-payload.test.js
 
 [test] accounts-router.test.js
-◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
 
 [test] admin-auth.test.js
 
 [test] admin-institutions-logo-router.test.js
-◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
 
 [test] admin-institutions-router.test.js
 ◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
@@ -420,58 +420,58 @@ ok 2 - does not run before the configured UTC hour
 [test] auth-credential-refresh.test.js
 
 [test] auth.test.js
-◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
 
 [test] bank-message-ai-inbox.test.js
 ◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
 
 [test] bank-message-inbox-router-auth.test.js
-◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
-
-[test] bank-message-inbox-router-consent.test.js
-◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
-
-[test] card-currency-contract.test.js
 ◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
 
+[test] bank-message-inbox-router-consent.test.js
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+
+[test] card-currency-contract.test.js
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+
 [test] category-evolution-account-filter.test.js
-◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
 TAP version 13
 # Subtest: category evolution source filter
     # Subtest: treats absent accountId and cardId as the all-sources contract
     ok 1 - treats absent accountId and cardId as the all-sources contract
       ---
-      duration_ms: 1.528771
+      duration_ms: 1.295162
       type: 'test'
       ...
     # Subtest: normalizes a valid account or card UUID
     ok 2 - normalizes a valid account or card UUID
       ---
-      duration_ms: 0.389856
+      duration_ms: 0.354005
       type: 'test'
       ...
     # Subtest: rejects empty or malformed source identifiers with a field-specific safe message
     ok 3 - rejects empty or malformed source identifiers with a field-specific safe message
       ---
-      duration_ms: 0.795054
+      duration_ms: 0.755056
       type: 'test'
       ...
     # Subtest: rejects accountId and cardId together before resolving a financial source
     ok 4 - rejects accountId and cardId together before resolving a financial source
       ---
-      duration_ms: 0.284201
+      duration_ms: 0.202876
       type: 'test'
       ...
     # Subtest: uses one public not-available contract for inaccessible accounts and cards
     ok 5 - uses one public not-available contract for inaccessible accounts and cards
       ---
-      duration_ms: 0.51963
+      duration_ms: 0.330268
       type: 'test'
       ...
     1..5
 ok 1 - category evolution source filter
   ---
-  duration_ms: 4.796558
+  duration_ms: 4.123916
   type: 'suite'
   ...
 1..1
@@ -482,40 +482,40 @@ ok 1 - category evolution source filter
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 26.884598
+# duration_ms 20.369592
 
 [test] category-evolution-report.test.js
-◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
 TAP version 13
 # Subtest: category evolution report
     # Subtest: builds monthly, annual and rolling periods from an injectable UTC reference
     ok 1 - builds monthly, annual and rolling periods from an injectable UTC reference
       ---
-      duration_ms: 2.257878
+      duration_ms: 2.178923
       type: 'test'
       ...
     # Subtest: rejects sent invalid filters instead of silently applying defaults
     ok 2 - rejects sent invalid filters instead of silently applying defaults
       ---
-      duration_ms: 0.691612
+      duration_ms: 0.640382
       type: 'test'
       ...
     # Subtest: aggregates hierarchy, uncategorized movements, currencies and percentages without double counting
     ok 3 - aggregates hierarchy, uncategorized movements, currencies and percentages without double counting
       ---
-      duration_ms: 1.827672
+      duration_ms: 1.420972
       type: 'test'
       ...
     # Subtest: rounds monetary averages half away from zero and returns null for zero denominators
     ok 4 - rounds monetary averages half away from zero and returns null for zero denominators
       ---
-      duration_ms: 0.396154
+      duration_ms: 0.41067
       type: 'test'
       ...
     1..4
 ok 1 - category evolution report
   ---
-  duration_ms: 6.463996
+  duration_ms: 5.806486
   type: 'suite'
   ...
 1..1
@@ -526,20 +526,20 @@ ok 1 - category evolution report
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 20.722767
+# duration_ms 14.497983
 
 [test] db-safe-integer.test.js
 TAP version 13
 # Subtest: postgres bigint parser preserves the supported money boundaries exactly
 ok 1 - postgres bigint parser preserves the supported money boundaries exactly
   ---
-  duration_ms: 1.2832
+  duration_ms: 1.243993
   type: 'test'
   ...
 # Subtest: postgres bigint parser rejects values that would lose JSON number precision
 ok 2 - postgres bigint parser rejects values that would lose JSON number precision
   ---
-  duration_ms: 1.44831
+  duration_ms: 1.885377
   type: 'test'
   ...
 1..2
@@ -550,12 +550,12 @@ ok 2 - postgres bigint parser rejects values that would lose JSON number precisi
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 17.257467
+# duration_ms 10.713166
 
 [test] errors.test.js
 
 [test] financial-assistant-router.test.js
-◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
 
 [test] financial-assistant-service.test.js
 ◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
@@ -563,7 +563,7 @@ ok 2 - postgres bigint parser rejects values that would lose JSON number precisi
 [test] financial-insight-regressions.test.js
 
 [test] financial-institutions-repository.test.js
-◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
 
 [test] import-reconciliation-temporal.test.js
 
@@ -573,18 +573,18 @@ ok 2 - postgres bigint parser rejects values that would lose JSON number precisi
 [test] institution-logo-upload.test.js
 
 [test] manual-installments.test.js
-◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
 TAP version 13
 # Subtest: preserva a ancora mensal apos fevereiro
 ok 1 - preserva a ancora mensal apos fevereiro
   ---
-  duration_ms: 0.907879
+  duration_ms: 0.999315
   type: 'test'
   ...
 # Subtest: distribui o resto nas ultimas sequencias do total original
 ok 2 - distribui o resto nas ultimas sequencias do total original
   ---
-  duration_ms: 0.724591
+  duration_ms: 0.797568
   type: 'test'
   ...
 1..2
@@ -595,43 +595,43 @@ ok 2 - distribui o resto nas ultimas sequencias do total original
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 17.463111
+# duration_ms 20.472827
 
 [test] mvp.test.js
-◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
 
 [test] ofx-import-amount-precision.test.js
-◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
 TAP version 13
 # Subtest: OFX TRNAMT cent precision
     # Subtest: keeps exact positive and negative cent values symmetric
     ok 1 - keeps exact positive and negative cent values symmetric
       ---
-      duration_ms: 24.343232
+      duration_ms: 25.662319
       type: 'test'
       ...
     # Subtest: rejects unsupported precision and punctuation without rounding or reinterpretation
     ok 2 - rejects unsupported precision and punctuation without rounding or reinterpretation
       ---
-      duration_ms: 3.769929
+      duration_ms: 4.01711
       type: 'test'
       ...
     # Subtest: preserves valid siblings when one row has unsupported precision
     ok 3 - preserves valid siblings when one row has unsupported precision
       ---
-      duration_ms: 1.085808
+      duration_ms: 1.041868
       type: 'test'
       ...
     # Subtest: keeps apparent amounts in comments and CDATA inactive
     ok 4 - keeps apparent amounts in comments and CDATA inactive
       ---
-      duration_ms: 1.069829
+      duration_ms: 1.085194
       type: 'test'
       ...
     1..4
 ok 1 - OFX TRNAMT cent precision
   ---
-  duration_ms: 33.094766
+  duration_ms: 34.236758
   type: 'suite'
   ...
 1..1
@@ -642,28 +642,28 @@ ok 1 - OFX TRNAMT cent precision
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 41.780769
+# duration_ms 42.966286
 
 [test] ofx-import-curdef-cardinality.test.js
-◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
 TAP version 13
 # Subtest: OFX CURDEF cardinality
     # Subtest: rejects empty and duplicate CURDEF tags instead of falling back to the account currency
     ok 1 - rejects empty and duplicate CURDEF tags instead of falling back to the account currency
       ---
-      duration_ms: 7.365529
+      duration_ms: 7.292606
       type: 'test'
       ...
     # Subtest: uses the selected account currency only when CURDEF is actually absent
     ok 2 - uses the selected account currency only when CURDEF is actually absent
       ---
-      duration_ms: 14.260105
+      duration_ms: 13.828304
       type: 'test'
       ...
     1..2
 ok 1 - OFX CURDEF cardinality
   ---
-  duration_ms: 22.652713
+  duration_ms: 22.266652
   type: 'suite'
   ...
 1..1
@@ -674,52 +674,52 @@ ok 1 - OFX CURDEF cardinality
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 32.068026
+# duration_ms 31.152212
 
 [test] ofx-import-direct-child-scope.test.js
-◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
 TAP version 13
 # Subtest: OFX canonical direct-child scope
     # Subtest: rejects canonical transaction fields nested in explicit extension containers
     ok 1 - rejects canonical transaction fields nested in explicit extension containers
       ---
-      duration_ms: 16.038534
+      duration_ms: 17.078488
       type: 'test'
       ...
     # Subtest: rejects canonical XML fields nested inside scalar elements
     ok 2 - rejects canonical XML fields nested inside scalar elements
       ---
-      duration_ms: 0.649191
+      duration_ms: 0.670034
       type: 'test'
       ...
     # Subtest: rejects unclosed intermediate containers in SGML and XML without declarations
     ok 3 - rejects unclosed intermediate containers in SGML and XML without declarations
       ---
-      duration_ms: 0.752092
+      duration_ms: 0.788195
       type: 'test'
       ...
     # Subtest: keeps supported scalar siblings and empty-value fallback semantics
     ok 4 - keeps supported scalar siblings and empty-value fallback semantics
       ---
-      duration_ms: 8.427798
+      duration_ms: 9.512876
       type: 'test'
       ...
     # Subtest: rejects CURDEF nested in another statement metadata container
     ok 5 - rejects CURDEF nested in another statement metadata container
       ---
-      duration_ms: 0.871315
+      duration_ms: 0.996608
       type: 'test'
       ...
     # Subtest: keeps apparent nested fields inactive inside comments and CDATA
     ok 6 - keeps apparent nested fields inactive inside comments and CDATA
       ---
-      duration_ms: 0.676778
+      duration_ms: 0.678742
       type: 'test'
       ...
     1..6
 ok 1 - OFX canonical direct-child scope
   ---
-  duration_ms: 28.621213
+  duration_ms: 31.102555
   type: 'suite'
   ...
 1..1
@@ -730,616 +730,616 @@ ok 1 - OFX canonical direct-child scope
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 40.10966
+# duration_ms 43.982678
 
 [test] ofx-import-input-parser-matrix.test.js
-◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
 TAP version 13
 # Subtest: OFX input parser attack matrix
     # Subtest: sgml-header accepts direct CURDEF
     ok 1 - sgml-header accepts direct CURDEF
       ---
-      duration_ms: 23.558672
+      duration_ms: 24.126788
       type: 'test'
       ...
     # Subtest: sgml-header rejects CURDEF in generic-container
     ok 2 - sgml-header rejects CURDEF in generic-container
       ---
-      duration_ms: 0.81191
+      duration_ms: 0.931206
       type: 'test'
       ...
     # Subtest: sgml-header rejects CURDEF in scalar-container
     ok 3 - sgml-header rejects CURDEF in scalar-container
       ---
-      duration_ms: 0.281549
+      duration_ms: 0.314208
       type: 'test'
       ...
     # Subtest: sgml-header accepts direct STMTTRN
     ok 4 - sgml-header accepts direct STMTTRN
       ---
-      duration_ms: 1.303487
+      duration_ms: 1.335997
       type: 'test'
       ...
     # Subtest: sgml-header rejects STMTTRN in generic-container
     ok 5 - sgml-header rejects STMTTRN in generic-container
       ---
-      duration_ms: 0.304377
+      duration_ms: 0.430283
       type: 'test'
       ...
     # Subtest: sgml-header rejects STMTTRN in scalar-container
     ok 6 - sgml-header rejects STMTTRN in scalar-container
       ---
-      duration_ms: 0.260528
+      duration_ms: 0.421397
       type: 'test'
       ...
     # Subtest: sgml-header accepts direct DTPOSTED
     ok 7 - sgml-header accepts direct DTPOSTED
       ---
-      duration_ms: 2.637265
+      duration_ms: 2.465811
       type: 'test'
       ...
     # Subtest: sgml-header rejects DTPOSTED in generic-container
     ok 8 - sgml-header rejects DTPOSTED in generic-container
       ---
-      duration_ms: 0.318118
+      duration_ms: 0.352488
       type: 'test'
       ...
     # Subtest: sgml-header rejects DTPOSTED in scalar-container
     ok 9 - sgml-header rejects DTPOSTED in scalar-container
       ---
-      duration_ms: 0.411695
+      duration_ms: 0.503556
       type: 'test'
       ...
     # Subtest: sgml-header accepts direct TRNAMT
     ok 10 - sgml-header accepts direct TRNAMT
       ---
-      duration_ms: 0.767874
+      duration_ms: 0.753492
       type: 'test'
       ...
     # Subtest: sgml-header rejects TRNAMT in generic-container
     ok 11 - sgml-header rejects TRNAMT in generic-container
       ---
-      duration_ms: 0.32159
+      duration_ms: 0.308803
       type: 'test'
       ...
     # Subtest: sgml-header rejects TRNAMT in scalar-container
     ok 12 - sgml-header rejects TRNAMT in scalar-container
       ---
-      duration_ms: 0.181077
+      duration_ms: 0.206979
       type: 'test'
       ...
     # Subtest: sgml-header accepts direct FITID
     ok 13 - sgml-header accepts direct FITID
       ---
-      duration_ms: 0.373081
+      duration_ms: 0.480794
       type: 'test'
       ...
     # Subtest: sgml-header rejects FITID in generic-container
     ok 14 - sgml-header rejects FITID in generic-container
       ---
-      duration_ms: 0.3071
+      duration_ms: 0.375093
       type: 'test'
       ...
     # Subtest: sgml-header rejects FITID in scalar-container
     ok 15 - sgml-header rejects FITID in scalar-container
       ---
-      duration_ms: 0.185485
+      duration_ms: 0.204136
       type: 'test'
       ...
     # Subtest: sgml-header accepts direct NAME
     ok 16 - sgml-header accepts direct NAME
       ---
-      duration_ms: 0.345319
+      duration_ms: 0.466563
       type: 'test'
       ...
     # Subtest: sgml-header rejects NAME in generic-container
     ok 17 - sgml-header rejects NAME in generic-container
       ---
-      duration_ms: 0.15974
+      duration_ms: 0.219175
       type: 'test'
       ...
     # Subtest: sgml-header rejects NAME in scalar-container
     ok 18 - sgml-header rejects NAME in scalar-container
       ---
-      duration_ms: 0.146915
+      duration_ms: 0.159791
       type: 'test'
       ...
     # Subtest: sgml-header accepts direct MEMO
     ok 19 - sgml-header accepts direct MEMO
       ---
-      duration_ms: 0.40131
+      duration_ms: 0.610649
       type: 'test'
       ...
     # Subtest: sgml-header rejects MEMO in generic-container
     ok 20 - sgml-header rejects MEMO in generic-container
       ---
-      duration_ms: 0.175582
+      duration_ms: 0.194075
       type: 'test'
       ...
     # Subtest: sgml-header rejects MEMO in scalar-container
     ok 21 - sgml-header rejects MEMO in scalar-container
       ---
-      duration_ms: 0.144632
+      duration_ms: 0.159872
       type: 'test'
       ...
     # Subtest: sgml-header accepts direct TRNTYPE
     ok 22 - sgml-header accepts direct TRNTYPE
       ---
-      duration_ms: 0.323851
+      duration_ms: 0.398239
       type: 'test'
       ...
     # Subtest: sgml-header rejects TRNTYPE in generic-container
     ok 23 - sgml-header rejects TRNTYPE in generic-container
       ---
-      duration_ms: 0.171661
+      duration_ms: 0.243177
       type: 'test'
       ...
     # Subtest: sgml-header rejects TRNTYPE in scalar-container
     ok 24 - sgml-header rejects TRNTYPE in scalar-container
       ---
-      duration_ms: 0.169047
+      duration_ms: 0.186112
       type: 'test'
       ...
     # Subtest: sgml-direct accepts direct CURDEF
     ok 25 - sgml-direct accepts direct CURDEF
       ---
-      duration_ms: 0.600393
+      duration_ms: 0.769039
       type: 'test'
       ...
     # Subtest: sgml-direct rejects CURDEF in generic-container
     ok 26 - sgml-direct rejects CURDEF in generic-container
       ---
-      duration_ms: 0.265878
+      duration_ms: 0.187394
       type: 'test'
       ...
     # Subtest: sgml-direct rejects CURDEF in scalar-container
     ok 27 - sgml-direct rejects CURDEF in scalar-container
       ---
-      duration_ms: 0.129813
+      duration_ms: 1.63358
       type: 'test'
       ...
     # Subtest: sgml-direct accepts direct STMTTRN
     ok 28 - sgml-direct accepts direct STMTTRN
       ---
-      duration_ms: 1.494984
+      duration_ms: 0.612742
       type: 'test'
       ...
     # Subtest: sgml-direct rejects STMTTRN in generic-container
     ok 29 - sgml-direct rejects STMTTRN in generic-container
       ---
-      duration_ms: 0.165252
+      duration_ms: 0.205654
       type: 'test'
       ...
     # Subtest: sgml-direct rejects STMTTRN in scalar-container
     ok 30 - sgml-direct rejects STMTTRN in scalar-container
       ---
-      duration_ms: 0.199333
+      duration_ms: 0.22161
       type: 'test'
       ...
     # Subtest: sgml-direct accepts direct DTPOSTED
     ok 31 - sgml-direct accepts direct DTPOSTED
       ---
-      duration_ms: 0.306828
+      duration_ms: 0.346919
       type: 'test'
       ...
     # Subtest: sgml-direct rejects DTPOSTED in generic-container
     ok 32 - sgml-direct rejects DTPOSTED in generic-container
       ---
-      duration_ms: 0.167816
+      duration_ms: 0.225717
       type: 'test'
       ...
     # Subtest: sgml-direct rejects DTPOSTED in scalar-container
     ok 33 - sgml-direct rejects DTPOSTED in scalar-container
       ---
-      duration_ms: 0.147243
+      duration_ms: 0.158267
       type: 'test'
       ...
     # Subtest: sgml-direct accepts direct TRNAMT
     ok 34 - sgml-direct accepts direct TRNAMT
       ---
-      duration_ms: 0.281398
+      duration_ms: 0.288434
       type: 'test'
       ...
     # Subtest: sgml-direct rejects TRNAMT in generic-container
     ok 35 - sgml-direct rejects TRNAMT in generic-container
       ---
-      duration_ms: 0.23088
+      duration_ms: 0.330108
       type: 'test'
       ...
     # Subtest: sgml-direct rejects TRNAMT in scalar-container
     ok 36 - sgml-direct rejects TRNAMT in scalar-container
       ---
-      duration_ms: 0.176891
+      duration_ms: 0.226315
       type: 'test'
       ...
     # Subtest: sgml-direct accepts direct FITID
     ok 37 - sgml-direct accepts direct FITID
       ---
-      duration_ms: 0.258865
+      duration_ms: 0.316424
       type: 'test'
       ...
     # Subtest: sgml-direct rejects FITID in generic-container
     ok 38 - sgml-direct rejects FITID in generic-container
       ---
-      duration_ms: 0.177119
+      duration_ms: 0.283132
       type: 'test'
       ...
     # Subtest: sgml-direct rejects FITID in scalar-container
     ok 39 - sgml-direct rejects FITID in scalar-container
       ---
-      duration_ms: 0.158305
+      duration_ms: 0.226895
       type: 'test'
       ...
     # Subtest: sgml-direct accepts direct NAME
     ok 40 - sgml-direct accepts direct NAME
       ---
-      duration_ms: 0.293026
+      duration_ms: 0.457359
       type: 'test'
       ...
     # Subtest: sgml-direct rejects NAME in generic-container
     ok 41 - sgml-direct rejects NAME in generic-container
       ---
-      duration_ms: 0.185664
+      duration_ms: 0.204145
       type: 'test'
       ...
     # Subtest: sgml-direct rejects NAME in scalar-container
     ok 42 - sgml-direct rejects NAME in scalar-container
       ---
-      duration_ms: 0.157384
+      duration_ms: 0.189722
       type: 'test'
       ...
     # Subtest: sgml-direct accepts direct MEMO
     ok 43 - sgml-direct accepts direct MEMO
       ---
-      duration_ms: 0.264514
+      duration_ms: 0.364277
       type: 'test'
       ...
     # Subtest: sgml-direct rejects MEMO in generic-container
     ok 44 - sgml-direct rejects MEMO in generic-container
       ---
-      duration_ms: 0.171428
+      duration_ms: 0.273724
       type: 'test'
       ...
     # Subtest: sgml-direct rejects MEMO in scalar-container
     ok 45 - sgml-direct rejects MEMO in scalar-container
       ---
-      duration_ms: 0.162195
+      duration_ms: 0.184667
       type: 'test'
       ...
     # Subtest: sgml-direct accepts direct TRNTYPE
     ok 46 - sgml-direct accepts direct TRNTYPE
       ---
-      duration_ms: 0.325861
+      duration_ms: 0.319025
       type: 'test'
       ...
     # Subtest: sgml-direct rejects TRNTYPE in generic-container
     ok 47 - sgml-direct rejects TRNTYPE in generic-container
       ---
-      duration_ms: 0.250996
+      duration_ms: 0.266686
       type: 'test'
       ...
     # Subtest: sgml-direct rejects TRNTYPE in scalar-container
     ok 48 - sgml-direct rejects TRNTYPE in scalar-container
       ---
-      duration_ms: 0.221502
+      duration_ms: 0.267789
       type: 'test'
       ...
     # Subtest: xml-declaration accepts direct CURDEF
     ok 49 - xml-declaration accepts direct CURDEF
       ---
-      duration_ms: 0.800855
+      duration_ms: 1.003766
       type: 'test'
       ...
     # Subtest: xml-declaration rejects CURDEF in generic-container
     ok 50 - xml-declaration rejects CURDEF in generic-container
       ---
-      duration_ms: 0.296745
+      duration_ms: 0.598021
       type: 'test'
       ...
     # Subtest: xml-declaration rejects CURDEF in scalar-container
     ok 51 - xml-declaration rejects CURDEF in scalar-container
       ---
-      duration_ms: 0.155373
+      duration_ms: 0.283987
       type: 'test'
       ...
     # Subtest: xml-declaration accepts direct STMTTRN
     ok 52 - xml-declaration accepts direct STMTTRN
       ---
-      duration_ms: 0.435526
+      duration_ms: 0.622468
       type: 'test'
       ...
     # Subtest: xml-declaration rejects STMTTRN in generic-container
     ok 53 - xml-declaration rejects STMTTRN in generic-container
       ---
-      duration_ms: 0.194298
+      duration_ms: 0.210729
       type: 'test'
       ...
     # Subtest: xml-declaration rejects STMTTRN in scalar-container
     ok 54 - xml-declaration rejects STMTTRN in scalar-container
       ---
-      duration_ms: 0.188867
+      duration_ms: 0.295408
       type: 'test'
       ...
     # Subtest: xml-declaration accepts direct DTPOSTED
     ok 55 - xml-declaration accepts direct DTPOSTED
       ---
-      duration_ms: 0.500357
+      duration_ms: 0.521823
       type: 'test'
       ...
     # Subtest: xml-declaration rejects DTPOSTED in generic-container
     ok 56 - xml-declaration rejects DTPOSTED in generic-container
       ---
-      duration_ms: 0.230052
+      duration_ms: 0.38883
       type: 'test'
       ...
     # Subtest: xml-declaration rejects DTPOSTED in scalar-container
     ok 57 - xml-declaration rejects DTPOSTED in scalar-container
       ---
-      duration_ms: 0.21288
+      duration_ms: 0.238727
       type: 'test'
       ...
     # Subtest: xml-declaration accepts direct TRNAMT
     ok 58 - xml-declaration accepts direct TRNAMT
       ---
-      duration_ms: 0.42434
+      duration_ms: 0.765145
       type: 'test'
       ...
     # Subtest: xml-declaration rejects TRNAMT in generic-container
     ok 59 - xml-declaration rejects TRNAMT in generic-container
       ---
-      duration_ms: 0.238472
+      duration_ms: 0.37573
       type: 'test'
       ...
     # Subtest: xml-declaration rejects TRNAMT in scalar-container
     ok 60 - xml-declaration rejects TRNAMT in scalar-container
       ---
-      duration_ms: 0.228552
+      duration_ms: 0.353925
       type: 'test'
       ...
     # Subtest: xml-declaration accepts direct FITID
     ok 61 - xml-declaration accepts direct FITID
       ---
-      duration_ms: 0.43346
+      duration_ms: 0.53786
       type: 'test'
       ...
     # Subtest: xml-declaration rejects FITID in generic-container
     ok 62 - xml-declaration rejects FITID in generic-container
       ---
-      duration_ms: 0.254995
+      duration_ms: 0.31298
       type: 'test'
       ...
     # Subtest: xml-declaration rejects FITID in scalar-container
     ok 63 - xml-declaration rejects FITID in scalar-container
       ---
-      duration_ms: 0.308065
+      duration_ms: 0.260539
       type: 'test'
       ...
     # Subtest: xml-declaration accepts direct NAME
     ok 64 - xml-declaration accepts direct NAME
       ---
-      duration_ms: 0.417738
+      duration_ms: 0.627892
       type: 'test'
       ...
     # Subtest: xml-declaration rejects NAME in generic-container
     ok 65 - xml-declaration rejects NAME in generic-container
       ---
-      duration_ms: 0.252153
+      duration_ms: 1.120313
       type: 'test'
       ...
     # Subtest: xml-declaration rejects NAME in scalar-container
     ok 66 - xml-declaration rejects NAME in scalar-container
       ---
-      duration_ms: 0.903555
+      duration_ms: 0.218769
       type: 'test'
       ...
     # Subtest: xml-declaration accepts direct MEMO
     ok 67 - xml-declaration accepts direct MEMO
       ---
-      duration_ms: 0.314856
+      duration_ms: 0.369124
       type: 'test'
       ...
     # Subtest: xml-declaration rejects MEMO in generic-container
     ok 68 - xml-declaration rejects MEMO in generic-container
       ---
-      duration_ms: 0.195731
+      duration_ms: 0.217646
       type: 'test'
       ...
     # Subtest: xml-declaration rejects MEMO in scalar-container
     ok 69 - xml-declaration rejects MEMO in scalar-container
       ---
-      duration_ms: 0.210951
+      duration_ms: 0.212709
       type: 'test'
       ...
     # Subtest: xml-declaration accepts direct TRNTYPE
     ok 70 - xml-declaration accepts direct TRNTYPE
       ---
-      duration_ms: 0.29738
+      duration_ms: 0.292171
       type: 'test'
       ...
     # Subtest: xml-declaration rejects TRNTYPE in generic-container
     ok 71 - xml-declaration rejects TRNTYPE in generic-container
       ---
-      duration_ms: 0.200952
+      duration_ms: 0.207848
       type: 'test'
       ...
     # Subtest: xml-declaration rejects TRNTYPE in scalar-container
     ok 72 - xml-declaration rejects TRNTYPE in scalar-container
       ---
-      duration_ms: 0.188428
+      duration_ms: 0.202549
       type: 'test'
       ...
     # Subtest: xml-no-declaration accepts direct CURDEF
     ok 73 - xml-no-declaration accepts direct CURDEF
       ---
-      duration_ms: 0.345173
+      duration_ms: 0.342694
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects CURDEF in generic-container
     ok 74 - xml-no-declaration rejects CURDEF in generic-container
       ---
-      duration_ms: 2.682546
+      duration_ms: 0.214557
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects CURDEF in scalar-container
     ok 75 - xml-no-declaration rejects CURDEF in scalar-container
       ---
-      duration_ms: 0.184411
+      duration_ms: 0.148657
       type: 'test'
       ...
     # Subtest: xml-no-declaration accepts direct STMTTRN
     ok 76 - xml-no-declaration accepts direct STMTTRN
       ---
-      duration_ms: 0.318143
+      duration_ms: 0.372789
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects STMTTRN in generic-container
     ok 77 - xml-no-declaration rejects STMTTRN in generic-container
       ---
-      duration_ms: 0.17628
+      duration_ms: 0.1791
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects STMTTRN in scalar-container
     ok 78 - xml-no-declaration rejects STMTTRN in scalar-container
       ---
-      duration_ms: 0.159523
+      duration_ms: 0.166984
       type: 'test'
       ...
     # Subtest: xml-no-declaration accepts direct DTPOSTED
     ok 79 - xml-no-declaration accepts direct DTPOSTED
       ---
-      duration_ms: 0.356063
+      duration_ms: 0.32196
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects DTPOSTED in generic-container
     ok 80 - xml-no-declaration rejects DTPOSTED in generic-container
       ---
-      duration_ms: 0.189966
+      duration_ms: 0.263538
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects DTPOSTED in scalar-container
     ok 81 - xml-no-declaration rejects DTPOSTED in scalar-container
       ---
-      duration_ms: 0.23971
+      duration_ms: 0.257473
       type: 'test'
       ...
     # Subtest: xml-no-declaration accepts direct TRNAMT
     ok 82 - xml-no-declaration accepts direct TRNAMT
       ---
-      duration_ms: 0.43873
+      duration_ms: 0.412615
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects TRNAMT in generic-container
     ok 83 - xml-no-declaration rejects TRNAMT in generic-container
       ---
-      duration_ms: 0.260806
+      duration_ms: 0.299545
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects TRNAMT in scalar-container
     ok 84 - xml-no-declaration rejects TRNAMT in scalar-container
       ---
-      duration_ms: 0.281452
+      duration_ms: 0.297701
       type: 'test'
       ...
     # Subtest: xml-no-declaration accepts direct FITID
     ok 85 - xml-no-declaration accepts direct FITID
       ---
-      duration_ms: 0.417872
+      duration_ms: 0.422419
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects FITID in generic-container
     ok 86 - xml-no-declaration rejects FITID in generic-container
       ---
-      duration_ms: 0.286272
+      duration_ms: 0.363249
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects FITID in scalar-container
     ok 87 - xml-no-declaration rejects FITID in scalar-container
       ---
-      duration_ms: 0.263943
+      duration_ms: 0.322731
       type: 'test'
       ...
     # Subtest: xml-no-declaration accepts direct NAME
     ok 88 - xml-no-declaration accepts direct NAME
       ---
-      duration_ms: 0.447015
+      duration_ms: 0.438261
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects NAME in generic-container
     ok 89 - xml-no-declaration rejects NAME in generic-container
       ---
-      duration_ms: 0.315514
+      duration_ms: 0.33923
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects NAME in scalar-container
     ok 90 - xml-no-declaration rejects NAME in scalar-container
       ---
-      duration_ms: 0.281145
+      duration_ms: 0.293078
       type: 'test'
       ...
     # Subtest: xml-no-declaration accepts direct MEMO
     ok 91 - xml-no-declaration accepts direct MEMO
       ---
-      duration_ms: 0.444377
+      duration_ms: 0.472237
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects MEMO in generic-container
     ok 92 - xml-no-declaration rejects MEMO in generic-container
       ---
-      duration_ms: 0.307007
+      duration_ms: 0.370523
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects MEMO in scalar-container
     ok 93 - xml-no-declaration rejects MEMO in scalar-container
       ---
-      duration_ms: 0.30788
+      duration_ms: 0.372948
       type: 'test'
       ...
     # Subtest: xml-no-declaration accepts direct TRNTYPE
     ok 94 - xml-no-declaration accepts direct TRNTYPE
       ---
-      duration_ms: 1.173094
+      duration_ms: 1.102562
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects TRNTYPE in generic-container
     ok 95 - xml-no-declaration rejects TRNTYPE in generic-container
       ---
-      duration_ms: 0.243414
+      duration_ms: 0.317381
       type: 'test'
       ...
     # Subtest: xml-no-declaration rejects TRNTYPE in scalar-container
     ok 96 - xml-no-declaration rejects TRNTYPE in scalar-container
       ---
-      duration_ms: 0.218669
+      duration_ms: 0.279575
       type: 'test'
       ...
     # Subtest: sgml-header ignores financial-looking comments and CDATA
     ok 97 - sgml-header ignores financial-looking comments and CDATA
       ---
-      duration_ms: 0.581476
+      duration_ms: 0.565555
       type: 'test'
       ...
     # Subtest: sgml-direct ignores financial-looking comments and CDATA
     ok 98 - sgml-direct ignores financial-looking comments and CDATA
       ---
-      duration_ms: 0.291287
+      duration_ms: 0.364165
       type: 'test'
       ...
     # Subtest: xml-declaration ignores financial-looking comments and CDATA
     ok 99 - xml-declaration ignores financial-looking comments and CDATA
       ---
-      duration_ms: 0.358207
+      duration_ms: 0.427843
       type: 'test'
       ...
     # Subtest: xml-no-declaration ignores financial-looking comments and CDATA
     ok 100 - xml-no-declaration ignores financial-looking comments and CDATA
       ---
-      duration_ms: 0.342911
+      duration_ms: 0.353765
       type: 'test'
       ...
     1..100
 ok 1 - OFX input parser attack matrix
   ---
-  duration_ms: 64.278809
+  duration_ms: 69.081911
   type: 'suite'
   ...
 1..1
@@ -1350,40 +1350,40 @@ ok 1 - OFX input parser attack matrix
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 106.04546
+# duration_ms 111.426604
 
 [test] ofx-import-pending-findings.test.js
-◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
 TAP version 13
 # Subtest: OFX transaction container scope
     # Subtest: rejects SGML transactions nested in an extension container
     ok 1 - rejects SGML transactions nested in an extension container
       ---
-      duration_ms: 7.157883
+      duration_ms: 7.324264
       type: 'test'
       ...
     # Subtest: rejects XML-without-declaration transactions nested in a wrapper
     ok 2 - rejects XML-without-declaration transactions nested in a wrapper
       ---
-      duration_ms: 0.595069
+      duration_ms: 0.599661
       type: 'test'
       ...
     # Subtest: rejects strict XML transactions nested in a Unicode container
     ok 3 - rejects strict XML transactions nested in a Unicode container
       ---
-      duration_ms: 0.494837
+      duration_ms: 0.491542
       type: 'test'
       ...
     # Subtest: keeps direct BANKTRANLIST children valid
     ok 4 - keeps direct BANKTRANLIST children valid
       ---
-      duration_ms: 13.540232
+      duration_ms: 13.965789
       type: 'test'
       ...
     1..4
 ok 1 - OFX transaction container scope
   ---
-  duration_ms: 22.921743
+  duration_ms: 23.58532
   type: 'suite'
   ...
 1..1
@@ -1394,7 +1394,7 @@ ok 1 - OFX transaction container scope
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 31.133523
+# duration_ms 32.581999
 
 [test] ofx-import-structure.test.js
 ◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
@@ -1403,55 +1403,55 @@ TAP version 13
     # Subtest: rejects STMTTRN outside the canonical BANKTRANLIST
     ok 1 - rejects STMTTRN outside the canonical BANKTRANLIST
       ---
-      duration_ms: 8.818762
+      duration_ms: 9.298165
       type: 'test'
       ...
     # Subtest: ignores comments and CDATA instead of parsing inactive transactions
     ok 2 - ignores comments and CDATA instead of parsing inactive transactions
       ---
-      duration_ms: 12.717194
+      duration_ms: 14.095737
       type: 'test'
       ...
     # Subtest: rejects processing instructions that could inject canonical OFX fields
     ok 3 - rejects processing instructions that could inject canonical OFX fields
       ---
-      duration_ms: 3.448514
+      duration_ms: 3.592683
       type: 'test'
       ...
     # Subtest: rejects duplicate canonical fields inside one STMTTRN
     ok 4 - rejects duplicate canonical fields inside one STMTTRN
       ---
-      duration_ms: 1.558965
+      duration_ms: 1.600668
       type: 'test'
       ...
     # Subtest: preserves structural offsets when inactive content follows astral Unicode
     ok 5 - preserves structural offsets when inactive content follows astral Unicode
       ---
-      duration_ms: 8.683403
+      duration_ms: 10.395759
       type: 'test'
       ...
     # Subtest: rejects CURDEF outside canonical statement metadata
     ok 6 - rejects CURDEF outside canonical statement metadata
       ---
-      duration_ms: 2.064223
+      duration_ms: 2.93801
       type: 'test'
       ...
     # Subtest: rejects multiple recognized statement sections instead of mixing contexts
     ok 7 - rejects multiple recognized statement sections instead of mixing contexts
       ---
-      duration_ms: 0.238728
+      duration_ms: 0.3575
       type: 'test'
       ...
     # Subtest: rejects malformed strict XML transaction nesting
     ok 8 - rejects malformed strict XML transaction nesting
       ---
-      duration_ms: 0.28225
+      duration_ms: 0.385741
       type: 'test'
       ...
     1..8
 ok 1 - OFX structural scope
   ---
-  duration_ms: 39.14618
+  duration_ms: 44.1244
   type: 'suite'
   ...
 1..1
@@ -1462,46 +1462,46 @@ ok 1 - OFX structural scope
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 48.921688
+# duration_ms 57.408869
 
 [test] ofx-import-unicode-container-scope.test.js
-◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
 TAP version 13
 # Subtest: OFX Unicode container scope
     # Subtest: rejects canonical transaction fields nested under Unicode-named containers
     ok 1 - rejects canonical transaction fields nested under Unicode-named containers
       ---
-      duration_ms: 15.435562
+      duration_ms: 17.736983
       type: 'test'
       ...
     # Subtest: rejects CURDEF nested under a Unicode-named statement container
     ok 2 - rejects CURDEF nested under a Unicode-named statement container
       ---
-      duration_ms: 0.260271
+      duration_ms: 0.254533
       type: 'test'
       ...
     # Subtest: rejects Unicode namespace prefixes on canonical currency and transaction fields
     ok 3 - rejects Unicode namespace prefixes on canonical currency and transaction fields
       ---
-      duration_ms: 0.525845
+      duration_ms: 0.599542
       type: 'test'
       ...
     # Subtest: keeps a closed Unicode extension compatible when canonical fields remain siblings
     ok 4 - keeps a closed Unicode extension compatible when canonical fields remain siblings
       ---
-      duration_ms: 5.647755
+      duration_ms: 6.012031
       type: 'test'
       ...
     # Subtest: keeps apparent Unicode containers inactive inside comments and CDATA
     ok 5 - keeps apparent Unicode containers inactive inside comments and CDATA
       ---
-      duration_ms: 2.809307
+      duration_ms: 4.087464
       type: 'test'
       ...
     1..5
 ok 1 - OFX Unicode container scope
   ---
-  duration_ms: 25.8358
+  duration_ms: 30.083121
   type: 'suite'
   ...
 1..1
@@ -1512,70 +1512,70 @@ ok 1 - OFX Unicode container scope
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 35.406498
+# duration_ms 52.879483
 
 [test] ofx-imports.test.js
-◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
 TAP version 13
 # Subtest: OFX import parser
     # Subtest: normalizes XML and SGML records using the amount sign as canonical direction
     ok 1 - normalizes XML and SGML records using the amount sign as canonical direction
       ---
-      duration_ms: 23.481593
+      duration_ms: 26.123032
       type: 'test'
       ...
     # Subtest: uses NAME, then MEMO, then FITID without returning unrelated raw fields
     ok 2 - uses NAME, then MEMO, then FITID without returning unrelated raw fields
       ---
-      duration_ms: 1.452021
+      duration_ms: 1.485451
       type: 'test'
       ...
     # Subtest: decodes XML entities in normalized descriptions and identifiers
     ok 3 - decodes XML entities in normalized descriptions and identifiers
       ---
-      duration_ms: 1.179783
+      duration_ms: 1.289552
       type: 'test'
       ...
     # Subtest: uses the selected account currency when CURDEF is absent
     ok 4 - uses the selected account currency when CURDEF is absent
       ---
-      duration_ms: 0.566455
+      duration_ms: 0.51912
       type: 'test'
       ...
     # Subtest: rejects a declared currency that differs from the selected account
     ok 5 - rejects a declared currency that differs from the selected account
       ---
-      duration_ms: 0.825012
+      duration_ms: 0.799181
       type: 'test'
       ...
     # Subtest: keeps valid rows, diagnoses invalid rows safely and blocks files with no valid rows
     ok 6 - keeps valid rows, diagnoses invalid rows safely and blocks files with no valid rows
       ---
-      duration_ms: 1.271302
+      duration_ms: 1.256641
       type: 'test'
       ...
     # Subtest: scopes batch and row identities by tenant, profile and selected account
     ok 7 - scopes batch and row identities by tenant, profile and selected account
       ---
-      duration_ms: 1.425528
+      duration_ms: 1.364982
       type: 'test'
       ...
     # Subtest: rejects arbitrary or truncated content even when it contains STMTTRN
     ok 8 - rejects arbitrary or truncated content even when it contains STMTTRN
       ---
-      duration_ms: 1.827786
+      duration_ms: 1.796118
       type: 'test'
       ...
     # Subtest: rejects missing transactions, unsupported extensions, invalid encoding and oversized files
     ok 9 - rejects missing transactions, unsupported extensions, invalid encoding and oversized files
       ---
-      duration_ms: 4.78992
+      duration_ms: 6.668164
       type: 'test'
       ...
     1..9
 ok 1 - OFX import parser
   ---
-  duration_ms: 38.381582
+  duration_ms: 42.891608
   type: 'suite'
   ...
 1..1
@@ -1586,7 +1586,7 @@ ok 1 - OFX import parser
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 50.018752
+# duration_ms 57.987417
 
 [test] oidc.test.js
 
@@ -1598,37 +1598,37 @@ TAP version 13
 # Subtest: invoice-linked installment takes precedence over planned transaction status
 ok 1 - invoice-linked installment takes precedence over planned transaction status
   ---
-  duration_ms: 0.926064
+  duration_ms: 1.050094
   type: 'test'
   ...
 # Subtest: invoice-linked installment takes precedence over posted transaction status
 ok 2 - invoice-linked installment takes precedence over posted transaction status
   ---
-  duration_ms: 0.127557
+  duration_ms: 0.133475
   type: 'test'
   ...
 # Subtest: invoice-linked installment takes precedence over reconciled transaction status
 ok 3 - invoice-linked installment takes precedence over reconciled transaction status
   ---
-  duration_ms: 0.088213
+  duration_ms: 0.114381
   type: 'test'
   ...
 # Subtest: invoice-linked installment takes precedence over cancelled transaction status
 ok 4 - invoice-linked installment takes precedence over cancelled transaction status
   ---
-  duration_ms: 0.432535
+  duration_ms: 0.102358
   type: 'test'
   ...
 # Subtest: invoice-linked reason takes precedence over a non-planned installment
 ok 5 - invoice-linked reason takes precedence over a non-planned installment
   ---
-  duration_ms: 1.392718
+  duration_ms: 0.137775
   type: 'test'
   ...
 # Subtest: non-invoice installments retain status-specific reasons
 ok 6 - non-invoice installments retain status-specific reasons
   ---
-  duration_ms: 0.182193
+  duration_ms: 0.202129
   type: 'test'
   ...
 1..6
@@ -1639,7 +1639,7 @@ ok 6 - non-invoice installments retain status-specific reasons
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.002359
+# duration_ms 12.301327
 
 [test] request-origin.test.js
 
@@ -1650,7 +1650,7 @@ TAP version 13
 # Subtest: API expõe todos os códigos TransactionError com mensagens em pt-BR
 ok 1 - API expõe todos os códigos TransactionError com mensagens em pt-BR
   ---
-  duration_ms: 1.123001
+  duration_ms: 1.165871
   type: 'test'
   ...
 1..1
@@ -1661,7 +1661,7 @@ ok 1 - API expõe todos os códigos TransactionError com mensagens em pt-BR
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 8.912385
+# duration_ms 9.538838
 
 [test] transaction-group-temporal-fields.test.js
 
@@ -1683,19 +1683,19 @@ TAP version 13
     # Subtest: derives dialog backdrop styling from the canonical color token
     ok 1 - derives dialog backdrop styling from the canonical color token
       ---
-      duration_ms: 1.144173
+      duration_ms: 1.244561
       type: 'test'
       ...
     # Subtest: derives strong-action foregrounds from canonical semantic color tokens
     ok 2 - derives strong-action foregrounds from canonical semantic color tokens
       ---
-      duration_ms: 0.48698
+      duration_ms: 0.534718
       type: 'test'
       ...
     1..2
 ok 1 - canonical design token source
   ---
-  duration_ms: 2.577063
+  duration_ms: 2.744479
   type: 'suite'
   ...
 1..1
@@ -1706,7 +1706,7 @@ ok 1 - canonical design token source
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.96059
+# duration_ms 16.648176
 
 [test] design-system/money.test.js
 TAP version 13
@@ -1714,49 +1714,49 @@ TAP version 13
     # Subtest: reuses the shared formatter with the explicit currency for BRL, USD and EUR
     ok 1 - reuses the shared formatter with the explicit currency for BRL, USD and EUR
       ---
-      duration_ms: 18.324665
+      duration_ms: 28.502512
       type: 'test'
       ...
     # Subtest: covers positive, negative, zero and the largest safe minor-unit value
     ok 2 - covers positive, negative, zero and the largest safe minor-unit value
       ---
-      duration_ms: 0.783404
+      duration_ms: 0.834177
       type: 'test'
       ...
     # Subtest: represents unavailable values without silently turning them into zero
     ok 3 - represents unavailable values without silently turning them into zero
       ---
-      duration_ms: 0.245201
+      duration_ms: 0.210304
       type: 'test'
       ...
     # Subtest: rejects missing currency before the shared BRL fallback can mask the error
     ok 4 - rejects missing currency before the shared BRL fallback can mask the error
       ---
-      duration_ms: 0.562881
+      duration_ms: 0.565744
       type: 'test'
       ...
     # Subtest: rejects a missing amount and requires null for the unavailable state
     ok 5 - rejects a missing amount and requires null for the unavailable state
       ---
-      duration_ms: 0.198258
+      duration_ms: 0.183488
       type: 'test'
       ...
     # Subtest: distinguishes native and converted presentation without converting the amount
     ok 6 - distinguishes native and converted presentation without converting the amount
       ---
-      duration_ms: 0.455558
+      duration_ms: 0.483712
       type: 'test'
       ...
     # Subtest: normalizes an explicit ISO-like currency code but never supplies one
     ok 7 - normalizes an explicit ISO-like currency code but never supplies one
       ---
-      duration_ms: 0.291174
+      duration_ms: 0.32713
       type: 'test'
       ...
     1..7
 ok 1 - Money primitive
   ---
-  duration_ms: 22.162174
+  duration_ms: 32.424671
   type: 'suite'
   ...
 1..1
@@ -1767,7 +1767,7 @@ ok 1 - Money primitive
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 33.640006
+# duration_ms 46.244267
 
 [test] design-system/primitives.test.js
 TAP version 13
@@ -1775,61 +1775,61 @@ TAP version 13
     # Subtest: escapes visible text and attributes while keeping native button semantics
     ok 1 - escapes visible text and attributes while keeping native button semantics
       ---
-      duration_ms: 1.211134
+      duration_ms: 1.215352
       type: 'test'
       ...
     # Subtest: models loading, empty, recoverable error, unavailable and permission states explicitly
     ok 2 - models loading, empty, recoverable error, unavailable and permission states explicitly
       ---
-      duration_ms: 0.486438
+      duration_ms: 0.475039
       type: 'test'
       ...
     # Subtest: renders dialog and drawer contracts with a shared modal focus lifecycle
     ok 3 - renders dialog and drawer contracts with a shared modal focus lifecycle
       ---
-      duration_ms: 0.513704
+      duration_ms: 0.500395
       type: 'test'
       ...
     # Subtest: keeps navigation tabs keyboard-native instead of claiming a custom tab role
     ok 4 - keeps navigation tabs keyboard-native instead of claiming a custom tab role
       ---
-      duration_ms: 0.238843
+      duration_ms: 0.249593
       type: 'test'
       ...
     # Subtest: allows two distinct route compositions to reuse the same structural primitives
     ok 5 - allows two distinct route compositions to reuse the same structural primitives
       ---
-      duration_ms: 0.567578
+      duration_ms: 0.547591
       type: 'test'
       ...
     # Subtest: renders cards, alerts, feedback and layout composition without financial rules
     ok 6 - renders cards, alerts, feedback and layout composition without financial rules
       ---
-      duration_ms: 0.393715
+      duration_ms: 0.375613
       type: 'test'
       ...
     # Subtest: keeps SSR output deterministic for the same input
     ok 7 - keeps SSR output deterministic for the same input
       ---
-      duration_ms: 0.159047
+      duration_ms: 0.191764
       type: 'test'
       ...
     # Subtest: rejects empty structural collections instead of emitting ambiguous markup
     ok 8 - rejects empty structural collections instead of emitting ambiguous markup
       ---
-      duration_ms: 0.58058
+      duration_ms: 0.563233
       type: 'test'
       ...
     # Subtest: publishes responsive, focus, overflow and component styles from the shared design system
     ok 9 - publishes responsive, focus, overflow and component styles from the shared design system
       ---
-      duration_ms: 1.828375
+      duration_ms: 1.686549
       type: 'test'
       ...
     1..9
 ok 1 - executable UI primitives
   ---
-  duration_ms: 7.521209
+  duration_ms: 7.368813
   type: 'suite'
   ...
 1..1
@@ -1840,7 +1840,7 @@ ok 1 - executable UI primitives
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 21.504588
+# duration_ms 19.667041
 
 [test] dev-server-account-identifier-privacy.test.js
 
@@ -1851,7 +1851,7 @@ ok 1 - executable UI primitives
 [test] dev-server-routing.test.js
 
 [test] dev-server.test.js
-◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
 
 [test] dev-server/account-remuneration-compact-row.test.js
 
@@ -1867,31 +1867,31 @@ TAP version 13
     # Subtest: keeps CDI configuration separate from the account form
     ok 1 - keeps CDI configuration separate from the account form
       ---
-      duration_ms: 0.859942
+      duration_ms: 0.808775
       type: 'test'
       ...
     # Subtest: submits only the remuneration contract and keeps persisted values on disable
     ok 2 - submits only the remuneration contract and keeps persisted values on disable
       ---
-      duration_ms: 0.248763
+      duration_ms: 0.236893
       type: 'test'
       ...
     # Subtest: degrades only CDI actions when configuration loading fails
     ok 3 - degrades only CDI actions when configuration loading fails
       ---
-      duration_ms: 0.16517
+      duration_ms: 0.188245
       type: 'test'
       ...
     # Subtest: keeps the modal open and preserves entered values after API errors
     ok 4 - keeps the modal open and preserves entered values after API errors
       ---
-      duration_ms: 0.258514
+      duration_ms: 0.249527
       type: 'test'
       ...
     1..4
 ok 1 - account remuneration modal integration
   ---
-  duration_ms: 2.676354
+  duration_ms: 2.605006
   type: 'suite'
   ...
 1..1
@@ -1902,7 +1902,7 @@ ok 1 - account remuneration modal integration
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 13.103608
+# duration_ms 12.045536
 
 [test] dev-server/account-remuneration-hardening.test.js
 
@@ -1918,19 +1918,19 @@ TAP version 13
     # Subtest: injects neutral styles in the document head
     ok 1 - injects neutral styles in the document head
       ---
-      duration_ms: 1.981228
+      duration_ms: 1.999776
       type: 'test'
       ...
     # Subtest: keeps the enhancement idempotent
     ok 2 - keeps the enhancement idempotent
       ---
-      duration_ms: 0.571977
+      duration_ms: 0.591517
       type: 'test'
       ...
     1..2
 ok 1 - accounts and cards contrast enhancement
   ---
-  duration_ms: 3.613747
+  duration_ms: 3.630663
   type: 'suite'
   ...
 1..1
@@ -1941,7 +1941,7 @@ ok 1 - accounts and cards contrast enhancement
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 13.859676
+# duration_ms 13.940846
 
 [test] dev-server/accounts-cards-hover-contrast.test.js
 
@@ -1950,19 +1950,19 @@ TAP version 13
 # Subtest: mantém o comportamento histórico do standardizer isolado
 ok 1 - mantém o comportamento histórico do standardizer isolado
   ---
-  duration_ms: 2.825019
+  duration_ms: 2.938147
   type: 'test'
   ...
 # Subtest: preserva confirmação, tooltips e agrupamento no código histórico
 ok 2 - preserva confirmação, tooltips e agrupamento no código histórico
   ---
-  duration_ms: 1.27133
+  duration_ms: 1.357627
   type: 'test'
   ...
 # Subtest: gate visual comprova o A3 direto sem tabs ou menus pós-processados
 ok 3 - gate visual comprova o A3 direto sem tabs ou menus pós-processados
   ---
-  duration_ms: 0.562926
+  duration_ms: 0.639944
   type: 'test'
   ...
 1..3
@@ -1973,7 +1973,7 @@ ok 3 - gate visual comprova o A3 direto sem tabs ou menus pós-processados
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 14.507381
+# duration_ms 15.073276
 
 [test] dev-server/accounts-cards/filters.test.js
 
@@ -2003,31 +2003,31 @@ TAP version 13
     # Subtest: groups purchases and renders instrument subtotals
     ok 1 - groups purchases and renders instrument subtotals
       ---
-      duration_ms: 23.422651
+      duration_ms: 20.517327
       type: 'test'
       ...
     # Subtest: lists instruments before the consolidated card total
     ok 2 - lists instruments before the consolidated card total
       ---
-      duration_ms: 1.015295
+      duration_ms: 0.865039
       type: 'test'
       ...
     # Subtest: preserves the purchase order received from the sorting enhancement
     ok 3 - preserves the purchase order received from the sorting enhancement
       ---
-      duration_ms: 0.747053
+      duration_ms: 0.68064
       type: 'test'
       ...
     # Subtest: is idempotent and supports filters and archived instruments
     ok 4 - is idempotent and supports filters and archived instruments
       ---
-      duration_ms: 0.706428
+      duration_ms: 0.655758
       type: 'test'
       ...
     1..4
 ok 1 - card instrument subtotals
   ---
-  duration_ms: 27.212455
+  duration_ms: 24.034223
   type: 'suite'
   ...
 1..1
@@ -2038,7 +2038,7 @@ ok 1 - card instrument subtotals
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 37.994383
+# duration_ms 33.952718
 
 [test] dev-server/cards-interface-enhancement.test.js
 TAP version 13
@@ -2046,31 +2046,31 @@ TAP version 13
     # Subtest: prioritizes the selected invoice and preserves its actions
     ok 1 - prioritizes the selected invoice and preserves its actions
       ---
-      duration_ms: 4.913379
+      duration_ms: 4.687118
       type: 'test'
       ...
     # Subtest: adds accessible search, reconciliation counters and result feedback
     ok 2 - adds accessible search, reconciliation counters and result feedback
       ---
-      duration_ms: 1.905782
+      duration_ms: 1.721961
       type: 'test'
       ...
     # Subtest: turns the purchases into a comparable desktop table and labelled mobile rows
     ok 3 - turns the purchases into a comparable desktop table and labelled mobile rows
       ---
-      duration_ms: 0.561684
+      duration_ms: 0.534324
       type: 'test'
       ...
     # Subtest: improves both dialogs and keeps the transformation isolated and idempotent
     ok 4 - improves both dialogs and keeps the transformation isolated and idempotent
       ---
-      duration_ms: 0.565504
+      duration_ms: 0.523382
       type: 'test'
       ...
     1..4
 ok 1 - cards interface enhancement
   ---
-  duration_ms: 9.20431
+  duration_ms: 8.634524
   type: 'suite'
   ...
 1..1
@@ -2081,7 +2081,7 @@ ok 1 - cards interface enhancement
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 18.555741
+# duration_ms 17.674994
 
 [test] dev-server/cards-interface-finalizer.test.js
 TAP version 13
@@ -2089,25 +2089,25 @@ TAP version 13
     # Subtest: adds the single idempotent controller for results, search helpers and modal focus
     ok 1 - adds the single idempotent controller for results, search helpers and modal focus
       ---
-      duration_ms: 3.352811
+      duration_ms: 2.814049
       type: 'test'
       ...
     # Subtest: moves search helpers from the hidden state input to the visible search field
     ok 2 - moves search helpers from the hidden state input to the visible search field
       ---
-      duration_ms: 0.689325
+      duration_ms: 0.697932
       type: 'test'
       ...
     # Subtest: aligns purchase situations with the icon-only statement status pattern
     ok 3 - aligns purchase situations with the icon-only statement status pattern
       ---
-      duration_ms: 0.243295
+      duration_ms: 0.243361
       type: 'test'
       ...
     1..3
 ok 1 - cards interface finalizer
   ---
-  duration_ms: 5.420654
+  duration_ms: 4.838047
   type: 'suite'
   ...
 1..1
@@ -2118,7 +2118,7 @@ ok 1 - cards interface finalizer
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 15.452512
+# duration_ms 14.078723
 
 [test] dev-server/cards-page-day-filter-controller.test.js
 
@@ -2131,31 +2131,31 @@ TAP version 13
 # Subtest: keeps installment purchase editing consistent for open invoices
 ok 1 - keeps installment purchase editing consistent for open invoices
   ---
-  duration_ms: 47.233992
+  duration_ms: 43.906752
   type: 'test'
   ...
 # Subtest: keeps installment purchase editing consistent for overdue invoices
 ok 2 - keeps installment purchase editing consistent for overdue invoices
   ---
-  duration_ms: 4.714761
+  duration_ms: 4.707299
   type: 'test'
   ...
 # Subtest: keeps installment purchase editing consistent for closed invoices
 ok 3 - keeps installment purchase editing consistent for closed invoices
   ---
-  duration_ms: 3.700145
+  duration_ms: 3.12936
   type: 'test'
   ...
 # Subtest: keeps installment purchase editing consistent for paid invoices
 ok 4 - keeps installment purchase editing consistent for paid invoices
   ---
-  duration_ms: 4.929689
+  duration_ms: 4.851091
   type: 'test'
   ...
 # Subtest: keeps installment purchase editing consistent for cancelled invoices
 ok 5 - keeps installment purchase editing consistent for cancelled invoices
   ---
-  duration_ms: 3.383266
+  duration_ms: 3.226391
   type: 'test'
   ...
 1..5
@@ -2166,7 +2166,7 @@ ok 5 - keeps installment purchase editing consistent for cancelled invoices
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 74.45968
+# duration_ms 70.02833
 
 [test] dev-server/cards-page-month-navigation.test.js
 
@@ -2186,37 +2186,37 @@ TAP version 13
     # Subtest: reorganizes the page around summary, search and hierarchy controls
     ok 1 - reorganizes the page around summary, search and hierarchy controls
       ---
-      duration_ms: 4.33325
+      duration_ms: 4.076833
       type: 'test'
       ...
     # Subtest: adds meaningful filters, group context and compact row states
     ok 2 - adds meaningful filters, group context and compact row states
       ---
-      duration_ms: 1.773418
+      duration_ms: 0.739865
       type: 'test'
       ...
     # Subtest: improves the category modal without changing its API hooks
     ok 3 - improves the category modal without changing its API hooks
       ---
-      duration_ms: 0.730994
+      duration_ms: 0.69101
       type: 'test'
       ...
     # Subtest: adds responsive and keyboard behavior for the operational flow
     ok 4 - adds responsive and keyboard behavior for the operational flow
       ---
-      duration_ms: 1.000805
+      duration_ms: 0.93958
       type: 'test'
       ...
     # Subtest: is idempotent, preserves the error state and ignores unrelated pages
     ok 5 - is idempotent, preserves the error state and ignores unrelated pages
       ---
-      duration_ms: 0.589918
+      duration_ms: 0.603332
       type: 'test'
       ...
     1..5
 ok 1 - categories design enhancement
   ---
-  duration_ms: 9.69531
+  duration_ms: 9.397234
   type: 'suite'
   ...
 1..1
@@ -2227,7 +2227,7 @@ ok 1 - categories design enhancement
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 18.932075
+# duration_ms 18.079874
 
 [test] dev-server/category-learning-controller.test.js
 
@@ -2237,19 +2237,19 @@ TAP version 13
     # Subtest: keeps the exact account selected by the Dashboard evidence index
     ok 1 - keeps the exact account selected by the Dashboard evidence index
       ---
-      duration_ms: 2.540621
+      duration_ms: 1.871654
       type: 'test'
       ...
     # Subtest: does not silently fall back to another currency when no matching account exists
     ok 2 - does not silently fall back to another currency when no matching account exists
       ---
-      duration_ms: 0.497685
+      duration_ms: 0.35953
       type: 'test'
       ...
     1..2
 ok 1 - dashboard currency drilldown
   ---
-  duration_ms: 5.210745
+  duration_ms: 3.383068
   type: 'suite'
   ...
 1..1
@@ -2260,7 +2260,7 @@ ok 1 - dashboard currency drilldown
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 15.607563
+# duration_ms 12.766664
 
 [test] dev-server/dashboard-drilldown-evidence.test.js
 TAP version 13
@@ -2268,37 +2268,37 @@ TAP version 13
     # Subtest: reproduces the Dashboard posted-income month predicate
     ok 1 - reproduces the Dashboard posted-income month predicate
       ---
-      duration_ms: 2.565684
+      duration_ms: 2.342401
       type: 'test'
       ...
     # Subtest: reproduces the Dashboard monthly variation evidence without transfers or invoice payments
     ok 2 - reproduces the Dashboard monthly variation evidence without transfers or invoice payments
       ---
-      duration_ms: 1.59417
+      duration_ms: 1.635104
       type: 'test'
       ...
     # Subtest: reproduces the Dashboard posted-expense month predicate
     ok 3 - reproduces the Dashboard posted-expense month predicate
       ---
-      duration_ms: 0.281859
+      duration_ms: 0.27228
       type: 'test'
       ...
     # Subtest: keeps only planned expenses for the commitments KPI
     ok 4 - keeps only planned expenses for the commitments KPI
       ---
-      duration_ms: 0.315141
+      duration_ms: 0.320995
       type: 'test'
       ...
     # Subtest: ignores unsupported drilldown filter values instead of broadening them into another meaning
     ok 5 - ignores unsupported drilldown filter values instead of broadening them into another meaning
       ---
-      duration_ms: 0.203214
+      duration_ms: 0.23331
       type: 'test'
       ...
     1..5
 ok 1 - dashboard KPI evidence drilldown
   ---
-  duration_ms: 6.197036
+  duration_ms: 5.987233
   type: 'suite'
   ...
 1..1
@@ -2309,7 +2309,7 @@ ok 1 - dashboard KPI evidence drilldown
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 20.761828
+# duration_ms 16.164361
 
 [test] dev-server/dashboard-page-currency.test.js
 TAP version 13
@@ -2317,13 +2317,13 @@ TAP version 13
     # Subtest: renders ordered currency sections, explicit money and complete per-account evidence
     ok 1 - renders ordered currency sections, explicit money and complete per-account evidence
       ---
-      duration_ms: 49.25278
+      duration_ms: 48.651841
       type: 'test'
       ...
     1..1
 ok 1 - dashboard multi-currency contract
   ---
-  duration_ms: 50.205545
+  duration_ms: 49.550187
   type: 'suite'
   ...
 1..1
@@ -2334,7 +2334,7 @@ ok 1 - dashboard multi-currency contract
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 99.813607
+# duration_ms 99.638909
 
 [test] dev-server/dashboard-page.test.js
 TAP version 13
@@ -2342,31 +2342,31 @@ TAP version 13
     # Subtest: renders an actionable cockpit on Phase 3B primitives without loading every transaction
     ok 1 - renders an actionable cockpit on Phase 3B primitives without loading every transaction
       ---
-      duration_ms: 49.991911
+      duration_ms: 47.908418
       type: 'test'
       ...
     # Subtest: renders a reachable loading state when dashboard sources are still pending
     ok 2 - renders a reachable loading state when dashboard sources are still pending
       ---
-      duration_ms: 77.494116
+      duration_ms: 77.770712
       type: 'test'
       ...
     # Subtest: shows a canonical empty state when there are no pending actions
     ok 3 - shows a canonical empty state when there are no pending actions
       ---
-      duration_ms: 7.812158
+      duration_ms: 7.468397
       type: 'test'
       ...
     # Subtest: surfaces a partial state when an optional operational source fails
     ok 4 - surfaces a partial state when an optional operational source fails
       ---
-      duration_ms: 6.252213
+      duration_ms: 7.219469
       type: 'test'
       ...
     1..4
 ok 1 - dev-server dashboard page
   ---
-  duration_ms: 143.210387
+  duration_ms: 142.11029
   type: 'suite'
   ...
 1..1
@@ -2377,7 +2377,7 @@ ok 1 - dev-server dashboard page
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 219.172571
+# duration_ms 216.81306
 
 [test] dev-server/dashboard-presenter.test.js
 TAP version 13
@@ -2385,43 +2385,43 @@ TAP version 13
     # Subtest: maps canonical financial values and gives each KPI complete per-account evidence
     ok 1 - maps canonical financial values and gives each KPI complete per-account evidence
       ---
-      duration_ms: 21.975311
+      duration_ms: 19.362948
       type: 'test'
       ...
     # Subtest: preserves filters and records availability without loading the complete transaction collection
     ok 2 - preserves filters and records availability without loading the complete transaction collection
       ---
-      duration_ms: 0.711091
+      duration_ms: 0.736128
       type: 'test'
       ...
     # Subtest: reserves explicit decision modules without fabricating financial amounts
     ok 3 - reserves explicit decision modules without fabricating financial amounts
       ---
-      duration_ms: 0.502891
+      duration_ms: 0.541996
       type: 'test'
       ...
     # Subtest: exposes the typed loading state before data sources are resolved
     ok 4 - exposes the typed loading state before data sources are resolved
       ---
-      duration_ms: 0.255709
+      duration_ms: 0.267064
       type: 'test'
       ...
     # Subtest: returns a typed empty state when the mandatory summary has no financial evidence
     ok 5 - returns a typed empty state when the mandatory summary has no financial evidence
       ---
-      duration_ms: 0.200473
+      duration_ms: 0.200983
       type: 'test'
       ...
     # Subtest: returns a typed error when the mandatory financial summary is unavailable
     ok 6 - returns a typed error when the mandatory financial summary is unavailable
       ---
-      duration_ms: 0.171138
+      duration_ms: 0.176133
       type: 'test'
       ...
     1..6
 ok 1 - dashboard presenter
   ---
-  duration_ms: 25.22189
+  duration_ms: 22.403233
   type: 'suite'
   ...
 1..1
@@ -2432,7 +2432,7 @@ ok 1 - dashboard presenter
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 38.861844
+# duration_ms 33.200925
 
 [test] dev-server/financial-assistant-page.test.js
 TAP version 13
@@ -2440,19 +2440,19 @@ TAP version 13
     # Subtest: renders an accessible read-only conversation without internal tenant identifiers
     ok 1 - renders an accessible read-only conversation without internal tenant identifiers
       ---
-      duration_ms: 22.667246
+      duration_ms: 23.335545
       type: 'test'
       ...
     # Subtest: renders explicit empty and upstream-error states
     ok 2 - renders explicit empty and upstream-error states
       ---
-      duration_ms: 3.203408
+      duration_ms: 3.94388
       type: 'test'
       ...
     1..2
 ok 1 - financial assistant page
   ---
-  duration_ms: 26.971758
+  duration_ms: 28.397938
   type: 'suite'
   ...
 1..1
@@ -2463,7 +2463,7 @@ ok 1 - financial assistant page
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 36.276363
+# duration_ms 38.254252
 
 [test] dev-server/financial-insight-fallback-issue-567.test.js
 
@@ -2476,19 +2476,19 @@ TAP version 13
 # Subtest: preserves the exact installment request after an ambiguous response
 ok 1 - preserves the exact installment request after an ambiguous response
   ---
-  duration_ms: 1.049338
+  duration_ms: 1.141801
   type: 'test'
   ...
 # Subtest: keeps the modal close action usable during ambiguous recovery
 ok 2 - keeps the modal close action usable during ambiguous recovery
   ---
-  duration_ms: 0.435427
+  duration_ms: 0.452349
   type: 'test'
   ...
 # Subtest: blocks blind retry for non-idempotent transaction and recurrence posts
 ok 3 - blocks blind retry for non-idempotent transaction and recurrence posts
   ---
-  duration_ms: 0.242864
+  duration_ms: 0.289489
   type: 'test'
   ...
 1..3
@@ -2499,14 +2499,14 @@ ok 3 - blocks blind retry for non-idempotent transaction and recurrence posts
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 11.123384
+# duration_ms 11.589716
 
 [test] dev-server/http-round-selection.test.js
 TAP version 13
 # Subtest: sendHtml aplica o padrão circular ao Extrato
 ok 1 - sendHtml aplica o padrão circular ao Extrato
   ---
-  duration_ms: 1.129289
+  duration_ms: 1.109059
   type: 'test'
   ...
 1..1
@@ -2517,7 +2517,7 @@ ok 1 - sendHtml aplica o padrão circular ao Extrato
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 9.882588
+# duration_ms 9.078527
 
 [test] dev-server/import-statement-navigation.test.js
 
@@ -2527,55 +2527,55 @@ TAP version 13
     # Subtest: orders roots and descendants recursively with complete paths
     ok 1 - orders roots and descendants recursively with complete paths
       ---
-      duration_ms: 11.58452
+      duration_ms: 11.45545
       type: 'test'
       ...
     # Subtest: sorts roots and siblings alphabetically in pt-BR
     ok 2 - sorts roots and siblings alphabetically in pt-BR
       ---
-      duration_ms: 0.407001
+      duration_ms: 0.403719
       type: 'test'
       ...
     # Subtest: distinguishes homonyms by full path and keeps kinds separate
     ok 3 - distinguishes homonyms by full path and keeps kinds separate
       ---
-      duration_ms: 0.595135
+      duration_ms: 0.573228
       type: 'test'
       ...
     # Subtest: uses controlled paths for missing parents and cycles
     ok 4 - uses controlled paths for missing parents and cycles
       ---
-      duration_ms: 0.519435
+      duration_ms: 0.645367
       type: 'test'
       ...
     # Subtest: preserves compatible IDs and clears incompatible or unavailable selections
     ok 5 - preserves compatible IDs and clears incompatible or unavailable selections
       ---
-      duration_ms: 0.652885
+      duration_ms: 1.764276
       type: 'test'
       ...
     # Subtest: keeps the native labeled selector and recalculates without replacing the focused control
     ok 6 - keeps the native labeled selector and recalculates without replacing the focused control
       ---
-      duration_ms: 2.906179
+      duration_ms: 1.550277
       type: 'test'
       ...
     # Subtest: loads the complete hierarchy exactly once in the canonical Inbox renderer
     ok 7 - loads the complete hierarchy exactly once in the canonical Inbox renderer
       ---
-      duration_ms: 0.258117
+      duration_ms: 0.238241
       type: 'test'
       ...
     # Subtest: is idempotent and ignores unrelated pages
     ok 8 - is idempotent and ignores unrelated pages
       ---
-      duration_ms: 0.529531
+      duration_ms: 0.487068
       type: 'test'
       ...
     1..8
 ok 1 - Inbox category hierarchy
   ---
-  duration_ms: 18.705643
+  duration_ms: 18.376472
   type: 'suite'
   ...
 1..1
@@ -2586,7 +2586,7 @@ ok 1 - Inbox category hierarchy
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 29.670251
+# duration_ms 29.388776
 
 [test] dev-server/inbox-category-hierarchy-first-render.test.js
 TAP version 13
@@ -2594,19 +2594,19 @@ TAP version 13
     # Subtest: uses one canonical category request and renders A6 directly on the first response
     ok 1 - uses one canonical category request and renders A6 directly on the first response
       ---
-      duration_ms: 57.168537
+      duration_ms: 51.783298
       type: 'test'
       ...
     # Subtest: keeps the canonical A6 and OFX workflow available when categories fail to load
     ok 2 - keeps the canonical A6 and OFX workflow available when categories fail to load
       ---
-      duration_ms: 12.691568
+      duration_ms: 11.318918
       type: 'test'
       ...
     1..2
 ok 1 - Inbox category hierarchy first render
   ---
-  duration_ms: 71.152977
+  duration_ms: 64.333549
   type: 'suite'
   ...
 1..1
@@ -2617,7 +2617,7 @@ ok 1 - Inbox category hierarchy first render
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 81.897323
+# duration_ms 73.788924
 
 [test] dev-server/inbox-category-root-selectable.test.js
 TAP version 13
@@ -2625,13 +2625,13 @@ TAP version 13
     # Subtest: keeps active root categories selectable alongside their descendants
     ok 1 - keeps active root categories selectable alongside their descendants
       ---
-      duration_ms: 11.960527
+      duration_ms: 11.445172
       type: 'test'
       ...
     1..1
 ok 1 - Inbox category root selection
   ---
-  duration_ms: 13.043551
+  duration_ms: 12.321
   type: 'suite'
   ...
 1..1
@@ -2642,7 +2642,7 @@ ok 1 - Inbox category root selection
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 25.21321
+# duration_ms 22.659431
 
 [test] dev-server/inbox-csv-import.test.js
 TAP version 13
@@ -2650,67 +2650,67 @@ TAP version 13
     # Subtest: keeps preview separate from persisted batch creation and requires consent
     ok 1 - keeps preview separate from persisted batch creation and requires consent
       ---
-      duration_ms: 2.356452
+      duration_ms: 2.49234
       type: 'test'
       ...
     # Subtest: renders only the normalized preview sample
     ok 2 - renders only the normalized preview sample
       ---
-      duration_ms: 0.255988
+      duration_ms: 0.263578
       type: 'test'
       ...
     # Subtest: preserves the opened batch in the URL and restores it after reload
     ok 3 - preserves the opened batch in the URL and restores it after reload
       ---
-      duration_ms: 0.304935
+      duration_ms: 0.288843
       type: 'test'
       ...
     # Subtest: supports complete filtering, eligibility and stable selection
     ok 4 - supports complete filtering, eligibility and stable selection
       ---
-      duration_ms: 0.23799
+      duration_ms: 0.23769
       type: 'test'
       ...
     # Subtest: confirms bulk totals and recovers state after request failures
     ok 5 - confirms bulk totals and recovers state after request failures
       ---
-      duration_ms: 0.223034
+      duration_ms: 0.247886
       type: 'test'
       ...
     # Subtest: shows profile, account and read-only final states with statement navigation
     ok 6 - shows profile, account and read-only final states with statement navigation
       ---
-      duration_ms: 0.420096
+      duration_ms: 0.408112
       type: 'test'
       ...
     # Subtest: supports transfer correction with another account and explicit direction
     ok 7 - supports transfer correction with another account and explicit direction
       ---
-      duration_ms: 0.307398
+      duration_ms: 0.300072
       type: 'test'
       ...
     # Subtest: uses the selected currency in bulk confirmation and revalidates transfer fields
     ok 8 - uses the selected currency in bulk confirmation and revalidates transfer fields
       ---
-      duration_ms: 0.339501
+      duration_ms: 0.344852
       type: 'test'
       ...
     # Subtest: does not retain raw CSV in browser storage
     ok 9 - does not retain raw CSV in browser storage
       ---
-      duration_ms: 0.375245
+      duration_ms: 0.417647
       type: 'test'
       ...
     # Subtest: exposes accessible modal, status and row actions
     ok 10 - exposes accessible modal, status and row actions
       ---
-      duration_ms: 0.503245
+      duration_ms: 0.486344
       type: 'test'
       ...
     1..10
 ok 1 - Inbox CSV import review contract
   ---
-  duration_ms: 6.640884
+  duration_ms: 6.893613
   type: 'suite'
   ...
 1..1
@@ -2721,26 +2721,26 @@ ok 1 - Inbox CSV import review contract
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 20.401893
+# duration_ms 20.883188
 
 [test] dev-server/inbox-date-filter-action-enhancement.test.js
 TAP version 13
 # Subtest: injeta botão explícito para aplicar o filtro de datas
 ok 1 - injeta botão explícito para aplicar o filtro de datas
   ---
-  duration_ms: 0.961008
+  duration_ms: 0.92727
   type: 'test'
   ...
 # Subtest: mantém ocultas as linhas removidas pelo filtro no layout tabular
 ok 2 - mantém ocultas as linhas removidas pelo filtro no layout tabular
   ---
-  duration_ms: 0.398029
+  duration_ms: 0.341532
   type: 'test'
   ...
 # Subtest: não duplica o botão e não altera páginas sem o aprimoramento da lista
 ok 3 - não duplica o botão e não altera páginas sem o aprimoramento da lista
   ---
-  duration_ms: 1.819501
+  duration_ms: 1.515356
   type: 'test'
   ...
 1..3
@@ -2751,50 +2751,50 @@ ok 3 - não duplica o botão e não altera páginas sem o aprimoramento da lista
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 11.541677
+# duration_ms 11.213967
 
 [test] dev-server/inbox-interface-enhancement.test.js
 TAP version 13
 # Subtest: organiza a inbox como uma lista operacional com navegação por seção
 ok 1 - organiza a inbox como uma lista operacional com navegação por seção
   ---
-  duration_ms: 3.097637
+  duration_ms: 3.281185
   type: 'test'
   ...
 # Subtest: isola estados claros e contínuos para os lotes da inbox
 ok 2 - isola estados claros e contínuos para os lotes da inbox
   ---
-  duration_ms: 0.735247
+  duration_ms: 0.531579
   type: 'test'
   ...
 # Subtest: mantém seleção compacta com alvos acessíveis e botões no padrão do design system
 ok 3 - mantém seleção compacta com alvos acessíveis e botões no padrão do design system
   ---
-  duration_ms: 0.480612
+  duration_ms: 0.447857
   type: 'test'
   ...
 # Subtest: mantém todos os dados financeiros integralmente acessíveis e contraste AA desabilitado
 ok 4 - mantém todos os dados financeiros integralmente acessíveis e contraste AA desabilitado
   ---
-  duration_ms: 1.428155
+  duration_ms: 1.418648
   type: 'test'
   ...
 # Subtest: usa tipografia operacional legível sem perder a lista contínua
 ok 5 - usa tipografia operacional legível sem perder a lista contínua
   ---
-  duration_ms: 0.400225
+  duration_ms: 0.41682
   type: 'test'
   ...
 # Subtest: usa navegação horizontal compacta e ações intrínsecas no mobile
 ok 6 - usa navegação horizontal compacta e ações intrínsecas no mobile
   ---
-  duration_ms: 0.408724
+  duration_ms: 0.396041
   type: 'test'
   ...
 # Subtest: não duplica os aprimoramentos quando aplicados novamente
 ok 7 - não duplica os aprimoramentos quando aplicados novamente
   ---
-  duration_ms: 0.293605
+  duration_ms: 0.358707
   type: 'test'
   ...
 1..7
@@ -2805,7 +2805,7 @@ ok 7 - não duplica os aprimoramentos quando aplicados novamente
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 17.480676
+# duration_ms 17.656621
 
 [test] dev-server/inbox-list-layout-enhancement.test.js
 TAP version 13
@@ -2813,43 +2813,43 @@ TAP version 13
     # Subtest: normalizes valid ISO and Brazilian dates
     ok 1 - normalizes valid ISO and Brazilian dates
       ---
-      duration_ms: 1.349847
+      duration_ms: 1.209579
       type: 'test'
       ...
     # Subtest: filters dates using inclusive boundaries
     ok 2 - filters dates using inclusive boundaries
       ---
-      duration_ms: 0.353584
+      duration_ms: 0.289514
       type: 'test'
       ...
     # Subtest: sorts rows across months and years and keeps missing dates last
     ok 3 - sorts rows across months and years and keeps missing dates last
       ---
-      duration_ms: 9.987172
+      duration_ms: 10.275416
       type: 'test'
       ...
     # Subtest: selects every eligible checkbox using one immutable bulk intent
     ok 4 - selects every eligible checkbox using one immutable bulk intent
       ---
-      duration_ms: 0.336567
+      duration_ms: 0.370454
       type: 'test'
       ...
     # Subtest: injects compact list styles, date controls, icons and visible-only bulk selection
     ok 5 - injects compact list styles, date controls, icons and visible-only bulk selection
       ---
-      duration_ms: 2.067365
+      duration_ms: 2.164147
       type: 'test'
       ...
     # Subtest: leaves unrelated pages untouched
     ok 6 - leaves unrelated pages untouched
       ---
-      duration_ms: 1.306696
+      duration_ms: 0.205685
       type: 'test'
       ...
     1..6
 ok 1 - Inbox list layout enhancement
   ---
-  duration_ms: 16.627743
+  duration_ms: 15.845931
   type: 'suite'
   ...
 1..1
@@ -2860,7 +2860,7 @@ ok 1 - Inbox list layout enhancement
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 25.785908
+# duration_ms 26.663523
 
 [test] dev-server/inbox-ofx-import-enhancement.test.js
 TAP version 13
@@ -2868,37 +2868,37 @@ TAP version 13
     # Subtest: accepts CSV and OFX while keeping mapping controls exclusive to CSV
     ok 1 - accepts CSV and OFX while keeping mapping controls exclusive to CSV
       ---
-      duration_ms: 6.593317
+      duration_ms: 6.415916
       type: 'test'
       ...
     # Subtest: uses separate OFX routes and omits CSV mapping fields from OFX payloads
     ok 2 - uses separate OFX routes and omits CSV mapping fields from OFX payloads
       ---
-      duration_ms: 3.890825
+      duration_ms: 3.780834
       type: 'test'
       ...
     # Subtest: renders a mixed history with source labels and localized preview states
     ok 3 - renders a mixed history with source labels and localized preview states
       ---
-      duration_ms: 3.133835
+      duration_ms: 3.22682
       type: 'test'
       ...
     # Subtest: reloads the persisted source of truth before enabling retry after an ambiguous creation failure
     ok 4 - reloads the persisted source of truth before enabling retry after an ambiguous creation failure
       ---
-      duration_ms: 3.545333
+      duration_ms: 3.530368
       type: 'test'
       ...
     # Subtest: preserves the query-string detail restoration and remains idempotent
     ok 5 - preserves the query-string detail restoration and remains idempotent
       ---
-      duration_ms: 4.098681
+      duration_ms: 4.413379
       type: 'test'
       ...
     1..5
 ok 1 - Inbox OFX import enhancement
   ---
-  duration_ms: 22.478722
+  duration_ms: 22.61997
   type: 'suite'
   ...
 1..1
@@ -2909,7 +2909,7 @@ ok 1 - Inbox OFX import enhancement
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 32.204618
+# duration_ms 33.210775
 
 [test] dev-server/inbox-page-ui.test.js
 
@@ -2919,31 +2919,31 @@ TAP version 13
     # Subtest: composes the canonical A6 review surface directly from Phase 3B primitives
     ok 1 - composes the canonical A6 review surface directly from Phase 3B primitives
       ---
-      duration_ms: 1.102355
+      duration_ms: 1.336344
       type: 'test'
       ...
     # Subtest: keeps the direct A6 composition intact while the legacy category adapter only enriches category behavior
     ok 2 - keeps the direct A6 composition intact while the legacy category adapter only enriches category behavior
       ---
-      duration_ms: 1.083389
+      duration_ms: 1.155688
       type: 'test'
       ...
     # Subtest: preserves observable insufficient-data and degraded-category states inside A6
     ok 3 - preserves observable insufficient-data and degraded-category states inside A6
       ---
-      duration_ms: 0.346435
+      duration_ms: 0.35457
       type: 'test'
       ...
     # Subtest: keeps intrinsic-height containment rules and retires the replaced legacy processors
     ok 4 - keeps intrinsic-height containment rules and retires the replaced legacy processors
       ---
-      duration_ms: 0.356338
+      duration_ms: 0.371511
       type: 'test'
       ...
     1..4
 ok 1 - Inbox review archetype
   ---
-  duration_ms: 4.096351
+  duration_ms: 4.496306
   type: 'suite'
   ...
 1..1
@@ -2954,7 +2954,7 @@ ok 1 - Inbox review archetype
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 13.590136
+# duration_ms 14.835282
 
 [test] dev-server/inbox-review-queue-enhancement.test.js
 TAP version 13
@@ -2962,19 +2962,19 @@ TAP version 13
     # Subtest: injects typed filters, discriminant states and version-aware decisions without exposing ids as labels
     ok 1 - injects typed filters, discriminant states and version-aware decisions without exposing ids as labels
       ---
-      duration_ms: 2.45668
+      duration_ms: 2.450937
       type: 'test'
       ...
     # Subtest: is idempotent when the same HTML is enhanced twice
     ok 2 - is idempotent when the same HTML is enhanced twice
       ---
-      duration_ms: 0.276953
+      duration_ms: 0.272375
       type: 'test'
       ...
     1..2
 ok 1 - Inbox unified AI review queue enhancement
   ---
-  duration_ms: 3.797393
+  duration_ms: 3.75613
   type: 'suite'
   ...
 1..1
@@ -2985,7 +2985,7 @@ ok 1 - Inbox unified AI review queue enhancement
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.881276
+# duration_ms 13.529441
 
 [test] dev-server/inbox-review-queue-target-enhancement.test.js
 
@@ -2994,25 +2994,25 @@ TAP version 13
 # Subtest: dimensiona todas as colunas para preservar o conteúdo integral
 ok 1 - dimensiona todas as colunas para preservar o conteúdo integral
   ---
-  duration_ms: 1.36671
+  duration_ms: 1.204489
   type: 'test'
   ...
 # Subtest: mantém a coluna de ações visível durante a rolagem interna
 ok 2 - mantém a coluna de ações visível durante a rolagem interna
   ---
-  duration_ms: 0.329912
+  duration_ms: 0.333143
   type: 'test'
   ...
 # Subtest: mantém conteúdo integral e coluna de seleção compacta no fluxo responsivo
 ok 3 - mantém conteúdo integral e coluna de seleção compacta no fluxo responsivo
   ---
-  duration_ms: 0.247771
+  duration_ms: 0.238156
   type: 'test'
   ...
 # Subtest: não duplica o aprimoramento
 ok 4 - não duplica o aprimoramento
   ---
-  duration_ms: 1.354042
+  duration_ms: 1.576554
   type: 'test'
   ...
 1..4
@@ -3023,26 +3023,26 @@ ok 4 - não duplica o aprimoramento
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.282456
+# duration_ms 11.892642
 
 [test] dev-server/inbox-status-and-actions-enhancement.test.js
 TAP version 13
 # Subtest: remove destaque de fundo da coluna status e aplica cores aos textos finais
 ok 1 - remove destaque de fundo da coluna status e aplica cores aos textos finais
   ---
-  duration_ms: 1.130913
+  duration_ms: 1.806477
   type: 'test'
   ...
 # Subtest: inclui tooltip descritivo, acessível e reposicionado para os botões de ações
 ok 2 - inclui tooltip descritivo, acessível e reposicionado para os botões de ações
   ---
-  duration_ms: 0.239958
+  duration_ms: 0.385675
   type: 'test'
   ...
 # Subtest: não duplica o aprimoramento
 ok 3 - não duplica o aprimoramento
   ---
-  duration_ms: 1.6549
+  duration_ms: 2.315438
   type: 'test'
   ...
 1..3
@@ -3053,44 +3053,44 @@ ok 3 - não duplica o aprimoramento
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 11.697883
+# duration_ms 15.597224
 
 [test] dev-server/inbox-status-control-enhancement.test.js
 TAP version 13
 # Subtest: marca como corrigido quando uma linha pendente foi editada
 ok 1 - marca como corrigido quando uma linha pendente foi editada
   ---
-  duration_ms: 0.84211
+  duration_ms: 0.832136
   type: 'test'
   ...
 # Subtest: marca como confirmado quando a sugestão foi aprovada
 ok 2 - marca como confirmado quando a sugestão foi aprovada
   ---
-  duration_ms: 0.190874
+  duration_ms: 0.197278
   type: 'test'
   ...
 # Subtest: não altera linhas ainda não corrigidas ou rejeitadas
 ok 3 - não altera linhas ainda não corrigidas ou rejeitadas
   ---
-  duration_ms: 0.135123
+  duration_ms: 0.133448
   type: 'test'
   ...
 # Subtest: injeta captura antecipada e atualização acessível do status
 ok 4 - injeta captura antecipada e atualização acessível do status
   ---
-  duration_ms: 1.721334
+  duration_ms: 1.609477
   type: 'test'
   ...
 # Subtest: inclui o filtro Corrigidos sem alterar a elegibilidade das linhas
 ok 5 - inclui o filtro Corrigidos sem alterar a elegibilidade das linhas
   ---
-  duration_ms: 0.326625
+  duration_ms: 0.294555
   type: 'test'
   ...
 # Subtest: não duplica o controle de status
 ok 6 - não duplica o controle de status
   ---
-  duration_ms: 0.182823
+  duration_ms: 0.18027
   type: 'test'
   ...
 1..6
@@ -3101,7 +3101,7 @@ ok 6 - não duplica o controle de status
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 14.867355
+# duration_ms 14.416245
 
 [test] dev-server/inbox-structured-payload-enhancement.test.js
 
@@ -3110,31 +3110,31 @@ TAP version 13
 # Subtest: adiciona uma visão tabular compacta e responsiva às linhas da inbox
 ok 1 - adiciona uma visão tabular compacta e responsiva às linhas da inbox
   ---
-  duration_ms: 2.571091
+  duration_ms: 2.774319
   type: 'test'
   ...
 # Subtest: preserva os dados e transforma apenas a apresentação das colunas
 ok 2 - preserva os dados e transforma apenas a apresentação das colunas
   ---
-  duration_ms: 0.347822
+  duration_ms: 0.340996
   type: 'test'
   ...
 # Subtest: usa ações compactas por ícone com nome acessível e tooltip
 ok 3 - usa ações compactas por ícone com nome acessível e tooltip
   ---
-  duration_ms: 0.256808
+  duration_ms: 0.287658
   type: 'test'
   ...
 # Subtest: mantém tabela no desktop e retorna ao fluxo vertical em telas menores
 ok 4 - mantém tabela no desktop e retorna ao fluxo vertical em telas menores
   ---
-  duration_ms: 0.325184
+  duration_ms: 0.324627
   type: 'test'
   ...
 # Subtest: não duplica o aprimoramento quando aplicado novamente
 ok 5 - não duplica o aprimoramento quando aplicado novamente
   ---
-  duration_ms: 1.307572
+  duration_ms: 1.634186
   type: 'test'
   ...
 1..5
@@ -3145,7 +3145,7 @@ ok 5 - não duplica o aprimoramento quando aplicado novamente
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 13.413761
+# duration_ms 14.316105
 
 [test] dev-server/issue-409-finalization.test.js
 
@@ -3156,25 +3156,25 @@ TAP version 13
 # Subtest: legacy HTML post-processors have a canonical, reducing inventory
 ok 1 - legacy HTML post-processors have a canonical, reducing inventory
   ---
-  duration_ms: 1.541756
+  duration_ms: 1.627888
   type: 'test'
   ...
 # Subtest: legacy HTML pipeline preserves the registered order including async adapters
 ok 2 - legacy HTML pipeline preserves the registered order including async adapters
   ---
-  duration_ms: 0.336358
+  duration_ms: 0.367497
   type: 'test'
   ...
 # Subtest: legacy HTML pipeline rejects adapters for a route retired from the inventory
 ok 3 - legacy HTML pipeline rejects adapters for a route retired from the inventory
   ---
-  duration_ms: 0.502411
+  duration_ms: 0.585909
   type: 'test'
   ...
 # Subtest: every route represented in the inventory has at least one residual adapter
 ok 4 - every route represented in the inventory has at least one residual adapter
   ---
-  duration_ms: 0.166344
+  duration_ms: 0.175685
   type: 'test'
   ...
 1..4
@@ -3185,21 +3185,21 @@ ok 4 - every route represented in the inventory has at least one residual adapte
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.169704
+# duration_ms 12.99888
 
 [test] dev-server/list-sorting-enhancement.test.js
 
 [test] dev-server/login-page-oidc.test.js
 
 [test] dev-server/maintenance-actions.test.js
-◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
 
 [test] dev-server/manual-installments-web.test.js
 TAP version 13
 # Subtest: parcelamento do Extrato usa uma requisicao canonica idempotente
 ok 1 - parcelamento do Extrato usa uma requisicao canonica idempotente
   ---
-  duration_ms: 6.354416
+  duration_ms: 7.304515
   type: 'test'
   ...
 1..1
@@ -3210,56 +3210,56 @@ ok 1 - parcelamento do Extrato usa uma requisicao canonica idempotente
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 11.583207
+# duration_ms 12.498031
 
 [test] dev-server/operational-installments.test.js
 TAP version 13
 # Subtest: builds one scoped account installments query for the selected month
 ok 1 - builds one scoped account installments query for the selected month
   ---
-  duration_ms: 1.168031
+  duration_ms: 1.072357
   type: 'test'
   ...
 # Subtest: uses the exact displayed day when the statement has a valid daily filter
 ok 2 - uses the exact displayed day when the statement has a valid daily filter
   ---
-  duration_ms: 1.287609
+  duration_ms: 1.469138
   type: 'test'
   ...
 # Subtest: builds the invoice query using invoiceId instead of isolated cardId
 ok 3 - builds the invoice query using invoiceId instead of isolated cardId
   ---
-  duration_ms: 0.213275
+  duration_ms: 0.19716
   type: 'test'
   ...
 # Subtest: sends only changed safe fields and uses null to remove category
 ok 4 - sends only changed safe fields and uses null to remove category
   ---
-  duration_ms: 0.819316
+  duration_ms: 0.802162
   type: 'test'
   ...
 # Subtest: preserves an archived historical category while editing other fields
 ok 5 - preserves an archived historical category while editing other fields
   ---
-  duration_ms: 0.351958
+  duration_ms: 0.291802
   type: 'test'
   ...
 # Subtest: formats unbounded recurrence installments without exposing zero as a total
 ok 6 - formats unbounded recurrence installments without exposing zero as a total
   ---
-  duration_ms: 0.155636
+  duration_ms: 0.159137
   type: 'test'
   ...
 # Subtest: translates stable backend block reasons
 ok 7 - translates stable backend block reasons
   ---
-  duration_ms: 0.199708
+  duration_ms: 0.201152
   type: 'test'
   ...
 # Subtest: controller preserves purchase editing and handles stale edit conflicts
 ok 8 - controller preserves purchase editing and handles stale edit conflicts
   ---
-  duration_ms: 0.737118
+  duration_ms: 0.735727
   type: 'test'
   ...
 1..8
@@ -3270,7 +3270,7 @@ ok 8 - controller preserves purchase editing and handles stale edit conflicts
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 16.77063
+# duration_ms 16.20488
 
 [test] dev-server/pages.test.js
 TAP version 13
@@ -3278,13 +3278,13 @@ TAP version 13
     # Subtest: renders placeholder pages with canonical private navigation
     ok 1 - renders placeholder pages with canonical private navigation
       ---
-      duration_ms: 4.117121
+      duration_ms: 3.668987
       type: 'test'
       ...
     1..1
 ok 1 - dev-server private placeholder pages
   ---
-  duration_ms: 4.9883
+  duration_ms: 4.512134
   type: 'suite'
   ...
 1..1
@@ -3295,7 +3295,7 @@ ok 1 - dev-server private placeholder pages
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.755298
+# duration_ms 11.94208
 
 [test] dev-server/password-reset.test.js
 
@@ -3316,19 +3316,19 @@ TAP version 13
     # Subtest: renders summary, visualization, highlights and detail for a 24-period multi-currency report
     ok 1 - renders summary, visualization, highlights and detail for a 24-period multi-currency report
       ---
-      duration_ms: 56.73713
+      duration_ms: 59.682453
       type: 'test'
       ...
     # Subtest: keeps installment summaries separated by currency and uses semantic detail tables
     ok 2 - keeps installment summaries separated by currency and uses semantic detail tables
       ---
-      duration_ms: 12.796355
+      duration_ms: 14.753806
       type: 'test'
       ...
     1..2
 ok 1 - issue 611 reports analysis archetype
   ---
-  duration_ms: 70.630213
+  duration_ms: 75.524193
   type: 'suite'
   ...
 1..1
@@ -3339,7 +3339,7 @@ ok 1 - issue 611 reports analysis archetype
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 80.635715
+# duration_ms 83.84523
 
 [test] dev-server/reports-analysis-state-issue-611.test.js
 TAP version 13
@@ -3347,43 +3347,43 @@ TAP version 13
     # Subtest: preserves summary, visualization, highlights and detail in loading
     ok 1 - preserves summary, visualization, highlights and detail in loading
       ---
-      duration_ms: 1.244295
+      duration_ms: 1.350732
       type: 'test'
       ...
     # Subtest: preserves summary, visualization, highlights and detail in empty
     ok 2 - preserves summary, visualization, highlights and detail in empty
       ---
-      duration_ms: 0.305312
+      duration_ms: 0.300839
       type: 'test'
       ...
     # Subtest: preserves summary, visualization, highlights and detail in filter-error
     ok 3 - preserves summary, visualization, highlights and detail in filter-error
       ---
-      duration_ms: 0.2421
+      duration_ms: 0.197751
       type: 'test'
       ...
     # Subtest: preserves summary, visualization, highlights and detail in api-error
     ok 4 - preserves summary, visualization, highlights and detail in api-error
       ---
-      duration_ms: 0.277418
+      duration_ms: 0.2814
       type: 'test'
       ...
     # Subtest: uses the same hierarchy for an empty installments report
     ok 5 - uses the same hierarchy for an empty installments report
       ---
-      duration_ms: 41.443845
+      duration_ms: 44.955505
       type: 'test'
       ...
     # Subtest: uses the same hierarchy when the installments API fails
     ok 6 - uses the same hierarchy when the installments API fails
       ---
-      duration_ms: 2.202915
+      duration_ms: 2.736892
       type: 'test'
       ...
     1..6
 ok 1 - issue 611 report state hierarchy
   ---
-  duration_ms: 46.984035
+  duration_ms: 51.168641
   type: 'suite'
   ...
 1..1
@@ -3394,7 +3394,7 @@ ok 1 - issue 611 report state hierarchy
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 59.048585
+# duration_ms 63.18637
 
 [test] dev-server/reports-analysis-view-model.test.js
 TAP version 13
@@ -3402,19 +3402,19 @@ TAP version 13
     # Subtest: keeps an extended category evolution period intact
     ok 1 - keeps an extended category evolution period intact
       ---
-      duration_ms: 1.13924
+      duration_ms: 1.040878
       type: 'test'
       ...
     # Subtest: partitions installment aggregates by currency before summing
     ok 2 - partitions installment aggregates by currency before summing
       ---
-      duration_ms: 10.610753
+      duration_ms: 10.388466
       type: 'test'
       ...
     1..2
 ok 1 - reports analysis view-model
   ---
-  duration_ms: 12.96221
+  duration_ms: 12.569264
   type: 'suite'
   ...
 1..1
@@ -3425,7 +3425,7 @@ ok 1 - reports analysis view-model
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 22.080789
+# duration_ms 22.134186
 
 [test] dev-server/reports-canonical-location.test.js
 TAP version 13
@@ -3433,31 +3433,31 @@ TAP version 13
     # Subtest: removes one empty source identifier produced by a legacy no-JavaScript all option
     ok 1 - removes one empty source identifier produced by a legacy no-JavaScript all option
       ---
-      duration_ms: 1.009995
+      duration_ms: 1.056657
       type: 'test'
       ...
     # Subtest: keeps simultaneous source parameters for explicit filter validation
     ok 2 - keeps simultaneous source parameters for explicit filter validation
       ---
-      duration_ms: 0.191513
+      duration_ms: 0.172044
       type: 'test'
       ...
     # Subtest: converts the no-JavaScript origin field to the canonical account or card parameter
     ok 3 - converts the no-JavaScript origin field to the canonical account or card parameter
       ---
-      duration_ms: 1.533587
+      duration_ms: 1.538627
       type: 'test'
       ...
     # Subtest: keeps canonical selected and malformed values for normal validation
     ok 4 - keeps canonical selected and malformed values for normal validation
       ---
-      duration_ms: 0.335488
+      duration_ms: 0.352561
       type: 'test'
       ...
     1..4
 ok 1 - reports canonical location
   ---
-  duration_ms: 4.233014
+  duration_ms: 4.258735
   type: 'suite'
   ...
 1..1
@@ -3468,7 +3468,7 @@ ok 1 - reports canonical location
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 13.847643
+# duration_ms 12.771509
 
 [test] dev-server/reports-category-evolution-issue-546.test.js
 TAP version 13
@@ -3476,37 +3476,37 @@ TAP version 13
     # Subtest: preserves the selected account, groups financial sources and renders section controls
     ok 1 - preserves the selected account, groups financial sources and renders section controls
       ---
-      duration_ms: 54.042327
+      duration_ms: 50.108997
       type: 'test'
       ...
     # Subtest: preserves a selected blocked card and sends only cardId to the report
     ok 2 - preserves a selected blocked card and sends only cardId to the report
       ---
-      duration_ms: 9.406432
+      duration_ms: 8.341714
       type: 'test'
       ...
     # Subtest: renders no partial source list when accounts or cards cannot be loaded
     ok 3 - renders no partial source list when accounts or cards cannot be loaded
       ---
-      duration_ms: 1.805244
+      duration_ms: 1.692518
       type: 'test'
       ...
     # Subtest: styles only negative result cells while preserving their textual sign
     ok 4 - styles only negative result cells while preserving their textual sign
       ---
-      duration_ms: 4.317722
+      duration_ms: 4.36522
       type: 'test'
       ...
     # Subtest: rejects two source filters locally before loading source lists
     ok 5 - rejects two source filters locally before loading source lists
       ---
-      duration_ms: 1.320919
+      duration_ms: 1.220728
       type: 'test'
       ...
     1..5
 ok 1 - reports category evolution issue 546
   ---
-  duration_ms: 72.072169
+  duration_ms: 66.854714
   type: 'suite'
   ...
 1..1
@@ -3517,7 +3517,7 @@ ok 1 - reports category evolution issue 546
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 82.552592
+# duration_ms 78.267098
 
 [test] dev-server/reports-drilldown-issue-611.test.js
 TAP version 13
@@ -3525,19 +3525,19 @@ TAP version 13
     # Subtest: keeps homonymous aggregates separated by canonical id
     ok 1 - keeps homonymous aggregates separated by canonical id
       ---
-      duration_ms: 10.721976
+      duration_ms: 12.287643
       type: 'test'
       ...
     # Subtest: navigates to the exact id and preserves compatible filters
     ok 2 - navigates to the exact id and preserves compatible filters
       ---
-      duration_ms: 49.158708
+      duration_ms: 49.134499
       type: 'test'
       ...
     1..2
 ok 1 - issue 611 report drilldown remediation
   ---
-  duration_ms: 60.954199
+  duration_ms: 62.490429
   type: 'suite'
   ...
 1..1
@@ -3548,7 +3548,7 @@ ok 1 - issue 611 report drilldown remediation
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 71.072203
+# duration_ms 73.68397
 
 [test] dev-server/reports-page.test.js
 TAP version 13
@@ -3556,19 +3556,19 @@ TAP version 13
     # Subtest: renders consolidated installment metrics, groupings and read-only rows
     ok 1 - renders consolidated installment metrics, groupings and read-only rows
       ---
-      duration_ms: 46.094787
+      duration_ms: 55.237962
       type: 'test'
       ...
     # Subtest: shows an empty state for periods without installments
     ok 2 - shows an empty state for periods without installments
       ---
-      duration_ms: 3.288235
+      duration_ms: 5.572914
       type: 'test'
       ...
     1..2
 ok 1 - dev-server reports page
   ---
-  duration_ms: 50.418628
+  duration_ms: 62.273015
   type: 'suite'
   ...
 1..1
@@ -3579,7 +3579,7 @@ ok 1 - dev-server reports page
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 58.991082
+# duration_ms 73.673092
 
 [test] dev-server/reports-route-page-shared.test.js
 TAP version 13
@@ -3587,19 +3587,19 @@ TAP version 13
     # Subtest: keeps active category navigation on the current URL
     ok 1 - keeps active category navigation on the current URL
       ---
-      duration_ms: 0.729604
+      duration_ms: 0.727989
       type: 'test'
       ...
     # Subtest: keeps active installment navigation on the current URL
     ok 2 - keeps active installment navigation on the current URL
       ---
-      duration_ms: 0.170598
+      duration_ms: 0.151126
       type: 'test'
       ...
     1..2
 ok 1 - reports view navigation
   ---
-  duration_ms: 1.88336
+  duration_ms: 1.905132
   type: 'suite'
   ...
 1..1
@@ -3610,7 +3610,7 @@ ok 1 - reports view navigation
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 11.130339
+# duration_ms 11.916595
 
 [test] dev-server/reports-route-page.test.js
 TAP version 13
@@ -3618,49 +3618,49 @@ TAP version 13
     # Subtest: selects the compatible view and rejects mixed implicit filters
     ok 1 - selects the compatible view and rejects mixed implicit filters
       ---
-      duration_ms: 1.825475
+      duration_ms: 2.464775
       type: 'test'
       ...
     # Subtest: renders the category evolution matrix with source groups and accessible table
     ok 2 - renders the category evolution matrix with source groups and accessible table
       ---
-      duration_ms: 58.685034
+      duration_ms: 49.045318
       type: 'test'
       ...
     # Subtest: preserves raw invalid filters in the correction form without requesting the API
     ok 3 - preserves raw invalid filters in the correction form without requesting the API
       ---
-      duration_ms: 8.870253
+      duration_ms: 5.968384
       type: 'test'
       ...
     # Subtest: renders an accessible currency-neutral matrix when the period has no movements
     ok 4 - renders an accessible currency-neutral matrix when the period has no movements
       ---
-      duration_ms: 3.806716
+      duration_ms: 2.548972
       type: 'test'
       ...
     # Subtest: renders an API error without presenting a partial report
     ok 5 - renders an API error without presenting a partial report
       ---
-      duration_ms: 4.154934
+      duration_ms: 2.567391
       type: 'test'
       ...
     # Subtest: stops safely when either source list cannot be loaded
     ok 6 - stops safely when either source list cannot be loaded
       ---
-      duration_ms: 2.95617
+      duration_ms: 1.770509
       type: 'test'
       ...
     # Subtest: preserves all consolidated installment indicators, groupings and explicit tenant navigation
     ok 7 - preserves all consolidated installment indicators, groupings and explicit tenant navigation
       ---
-      duration_ms: 16.661043
+      duration_ms: 10.49859
       type: 'test'
       ...
     1..7
 ok 1 - reports route page
   ---
-  duration_ms: 98.602437
+  duration_ms: 76.906443
   type: 'suite'
   ...
 1..1
@@ -3671,32 +3671,32 @@ ok 1 - reports route page
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 115.50842
+# duration_ms 92.379268
 
 [test] dev-server/round-selection-control-enhancement.test.js
 TAP version 13
 # Subtest: injeta o mesmo marcador circular no Extrato e na Inbox
 ok 1 - injeta o mesmo marcador circular no Extrato e na Inbox
   ---
-  duration_ms: 1.176497
+  duration_ms: 1.044473
   type: 'test'
   ...
 # Subtest: mantém alvo acessível, foco, estados e aparência circular
 ok 2 - mantém alvo acessível, foco, estados e aparência circular
   ---
-  duration_ms: 0.389195
+  duration_ms: 0.409295
   type: 'test'
   ...
 # Subtest: realça somente a linha selecionada do Extrato e preserva o fluxo responsivo
 ok 3 - realça somente a linha selecionada do Extrato e preserva o fluxo responsivo
   ---
-  duration_ms: 0.231707
+  duration_ms: 0.2382
   type: 'test'
   ...
 # Subtest: não altera documentos sem seleção e não duplica o enhancement
 ok 4 - não altera documentos sem seleção e não duplica o enhancement
   ---
-  duration_ms: 1.331403
+  duration_ms: 1.412776
   type: 'test'
   ...
 1..4
@@ -3707,7 +3707,7 @@ ok 4 - não altera documentos sem seleção e não duplica o enhancement
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.03917
+# duration_ms 12.077398
 
 [test] dev-server/routes.test.js
 TAP version 13
@@ -3715,55 +3715,55 @@ TAP version 13
     # Subtest: derives private navigation from the app shell route contract
     ok 1 - derives private navigation from the app shell route contract
       ---
-      duration_ms: 2.815816
+      duration_ms: 2.954579
       type: 'test'
       ...
     # Subtest: derives implemented routes from available private shell routes
     ok 2 - derives implemented routes from available private shell routes
       ---
-      duration_ms: 0.231184
+      duration_ms: 0.213935
       type: 'test'
       ...
     # Subtest: redirects active legacy /app routes to canonical private paths
     ok 3 - redirects active legacy /app routes to canonical private paths
       ---
-      duration_ms: 0.370049
+      duration_ms: 0.387849
       type: 'test'
       ...
     # Subtest: redirects retired payables routes to transactions
     ok 4 - redirects retired payables routes to transactions
       ---
-      duration_ms: 0.174232
+      duration_ms: 0.176831
       type: 'test'
       ...
     # Subtest: redirects the short accounts route to the implemented accounts and cards page
     ok 5 - redirects the short accounts route to the implemented accounts and cards page
       ---
-      duration_ms: 0.263513
+      duration_ms: 0.251709
       type: 'test'
       ...
     # Subtest: redirects the retired remuneration page to accounts and cards
     ok 6 - redirects the retired remuneration page to accounts and cards
       ---
-      duration_ms: 0.186687
+      duration_ms: 0.17367
       type: 'test'
       ...
     # Subtest: resolves public and private entry points by session state
     ok 7 - resolves public and private entry points by session state
       ---
-      duration_ms: 0.26647
+      duration_ms: 0.277768
       type: 'test'
       ...
     # Subtest: keeps unknown paths out of the private shell
     ok 8 - keeps unknown paths out of the private shell
       ---
-      duration_ms: 0.217104
+      duration_ms: 0.221113
       type: 'test'
       ...
     1..8
 ok 1 - dev-server route contract
   ---
-  duration_ms: 5.653085
+  duration_ms: 5.820314
   type: 'suite'
   ...
 1..1
@@ -3774,7 +3774,7 @@ ok 1 - dev-server route contract
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 16.79385
+# duration_ms 17.421056
 
 [test] dev-server/screen-view-model.test.js
 TAP version 13
@@ -3782,13 +3782,13 @@ TAP version 13
     # Subtest: keeps loading, success, empty and error explicit and carries screen context
     ok 1 - keeps loading, success, empty and error explicit and carries screen context
       ---
-      duration_ms: 1.184126
+      duration_ms: 1.265137
       type: 'test'
       ...
     1..1
 ok 1 - screen view-model states
   ---
-  duration_ms: 2.042236
+  duration_ms: 2.322604
   type: 'suite'
   ...
 1..1
@@ -3799,7 +3799,7 @@ ok 1 - screen view-model states
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 10.382224
+# duration_ms 11.50895
 
 [test] dev-server/session-cookie-bridge.test.js
 
@@ -3811,151 +3811,151 @@ TAP version 13
     # Subtest: publishes the canonical design-system variables before legacy shell aliases
     ok 1 - publishes the canonical design-system variables before legacy shell aliases
       ---
-      duration_ms: 3.681701
+      duration_ms: 3.262084
       type: 'test'
       ...
     # Subtest: derives executable SSR output from a changed canonical token without a second edit
     ok 2 - derives executable SSR output from a changed canonical token without a second edit
       ---
-      duration_ms: 0.502612
+      duration_ms: 0.523297
       type: 'test'
       ...
     # Subtest: publishes layout, density, motion and responsive foundation tokens
     ok 3 - publishes layout, density, motion and responsive foundation tokens
       ---
-      duration_ms: 0.389753
+      duration_ms: 0.420835
       type: 'test'
       ...
     # Subtest: gives positive, negative, neutral, attention and information states a non-color marker
     ok 4 - gives positive, negative, neutral, attention and information states a non-color marker
       ---
-      duration_ms: 0.408805
+      duration_ms: 0.403293
       type: 'test'
       ...
     # Subtest: uses the light statement hover palette for neutral controls globally
     ok 5 - uses the light statement hover palette for neutral controls globally
       ---
-      duration_ms: 1.539688
+      duration_ms: 1.566299
       type: 'test'
       ...
     # Subtest: maps legacy operational controls and close actions to the shared neutral contract
     ok 6 - maps legacy operational controls and close actions to the shared neutral contract
       ---
-      duration_ms: 0.670993
+      duration_ms: 0.670108
       type: 'test'
       ...
     # Subtest: keeps legacy semantic resting states outside the neutral base selector
     ok 7 - keeps legacy semantic resting states outside the neutral base selector
       ---
-      duration_ms: 0.776943
+      duration_ms: 0.730408
       type: 'test'
       ...
     # Subtest: keeps primary and destructive actions outside the neutral hover contract
     ok 8 - keeps primary and destructive actions outside the neutral hover contract
       ---
-      duration_ms: 0.456602
+      duration_ms: 0.506875
       type: 'test'
       ...
     # Subtest: keeps icon-only destructive controls red on hover and keyboard focus
     ok 9 - keeps icon-only destructive controls red on hover and keyboard focus
       ---
-      duration_ms: 0.588772
+      duration_ms: 0.563174
       type: 'test'
       ...
     # Subtest: keeps hidden elements out of layout when components define display rules
     ok 10 - keeps hidden elements out of layout when components define display rules
       ---
-      duration_ms: 0.630035
+      duration_ms: 0.613742
       type: 'test'
       ...
     # Subtest: applies the authenticated content width through the canonical layout token
     ok 11 - applies the authenticated content width through the canonical layout token
       ---
-      duration_ms: 0.453251
+      duration_ms: 0.4578
       type: 'test'
       ...
     # Subtest: account-remuneration-page.js composes its styles from sharedShellStyles()
     ok 12 - account-remuneration-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.229085
+      duration_ms: 0.206995
       type: 'test'
       ...
     # Subtest: accounts-cards/styles.js composes its styles from sharedShellStyles()
     ok 13 - accounts-cards/styles.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.158565
+      duration_ms: 0.131528
       type: 'test'
       ...
     # Subtest: admin-financial-indexes-page.js composes its styles from sharedShellStyles()
     ok 14 - admin-financial-indexes-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.149796
+      duration_ms: 0.145442
       type: 'test'
       ...
     # Subtest: admin-institutions-page.js composes its styles from sharedShellStyles()
     ok 15 - admin-institutions-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.168387
+      duration_ms: 0.171014
       type: 'test'
       ...
     # Subtest: cards-page-v2.js composes its styles from sharedShellStyles()
     ok 16 - cards-page-v2.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.422549
+      duration_ms: 0.444063
       type: 'test'
       ...
     # Subtest: categories-page.js composes its styles from sharedShellStyles()
     ok 17 - categories-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.299171
+      duration_ms: 0.28267
       type: 'test'
       ...
     # Subtest: dashboard-page.js composes its styles from sharedShellStyles()
     ok 18 - dashboard-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.167278
+      duration_ms: 0.155098
       type: 'test'
       ...
     # Subtest: financial-assistant-page.js composes its styles from sharedShellStyles()
     ok 19 - financial-assistant-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.20588
+      duration_ms: 0.210034
       type: 'test'
       ...
     # Subtest: inbox-page.js composes its styles from sharedShellStyles()
     ok 20 - inbox-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.437974
+      duration_ms: 0.433628
       type: 'test'
       ...
     # Subtest: pages.js composes its styles from sharedShellStyles()
     ok 21 - pages.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.334561
+      duration_ms: 0.371817
       type: 'test'
       ...
     # Subtest: reports-page.js composes its styles from sharedShellStyles()
     ok 22 - reports-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.15446
+      duration_ms: 0.203357
       type: 'test'
       ...
     # Subtest: settings-page.js composes its styles from sharedShellStyles()
     ok 23 - settings-page.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.26407
+      duration_ms: 0.270363
       type: 'test'
       ...
     # Subtest: transactions-page-v2.js composes its styles from sharedShellStyles()
     ok 24 - transactions-page-v2.js composes its styles from sharedShellStyles()
       ---
-      duration_ms: 0.399313
+      duration_ms: 0.396923
       type: 'test'
       ...
     1..24
 ok 1 - shared shell styles
   ---
-  duration_ms: 15.290557
+  duration_ms: 15.021771
   type: 'suite'
   ...
 1..1
@@ -3966,7 +3966,7 @@ ok 1 - shared shell styles
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 37.418713
+# duration_ms 35.736399
 
 [test] dev-server/shell-navigation-runtime.issue-480.test.js
 TAP version 13
@@ -3974,37 +3974,37 @@ TAP version 13
     # Subtest: executes the profile script and adds every catalog master route without duplicates
     ok 1 - executes the profile script and adds every catalog master route without duplicates
       ---
-      duration_ms: 7.198731
+      duration_ms: 8.294345
       type: 'test'
       ...
     # Subtest: keeps the common navigation for regular users and profile failures
     ok 2 - keeps the common navigation for regular users and profile failures
       ---
-      duration_ms: 3.971745
+      duration_ms: 5.1653
       type: 'test'
       ...
     # Subtest: does not duplicate routes already rendered by the server
     ok 3 - does not duplicate routes already rendered by the server
       ---
-      duration_ms: 1.343166
+      duration_ms: 1.72674
       type: 'test'
       ...
     # Subtest: preserves active state for every dynamically included master route
     ok 4 - preserves active state for every dynamically included master route
       ---
-      duration_ms: 2.304177
+      duration_ms: 2.893227
       type: 'test'
       ...
     # Subtest: keeps the explicit financial-index icon and accessible label contract
     ok 5 - keeps the explicit financial-index icon and accessible label contract
       ---
-      duration_ms: 1.204681
+      duration_ms: 1.254506
       type: 'test'
       ...
     1..5
 ok 1 - issue \#480 navigation runtime
   ---
-  duration_ms: 17.128668
+  duration_ms: 20.874091
   type: 'suite'
   ...
 1..1
@@ -4015,7 +4015,7 @@ ok 1 - issue \#480 navigation runtime
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 27.253456
+# duration_ms 33.44615
 
 [test] dev-server/shell-navigation.issue-480.test.js
 TAP version 13
@@ -4023,31 +4023,31 @@ TAP version 13
     # Subtest: serializes every navigable master route from the central route catalog
     ok 1 - serializes every navigable master route from the central route catalog
       ---
-      duration_ms: 3.152331
+      duration_ms: 3.670059
       type: 'test'
       ...
     # Subtest: renders an icon for every private navigation route included in the initial HTML
     ok 2 - renders an icon for every private navigation route included in the initial HTML
       ---
-      duration_ms: 1.128671
+      duration_ms: 1.239134
       type: 'test'
       ...
     # Subtest: keeps brand and logout fixed while only desktop navigation scrolls
     ok 3 - keeps brand and logout fixed while only desktop navigation scrolls
       ---
-      duration_ms: 0.690301
+      duration_ms: 0.902279
       type: 'test'
       ...
     # Subtest: rebuilds aria-controls from all secondary links after adding master routes
     ok 4 - rebuilds aria-controls from all secondary links after adding master routes
       ---
-      duration_ms: 0.265617
+      duration_ms: 0.30704
       type: 'test'
       ...
     1..4
 ok 1 - issue \#480 authenticated navigation
   ---
-  duration_ms: 6.340553
+  duration_ms: 7.248274
   type: 'suite'
   ...
 1..1
@@ -4058,7 +4058,7 @@ ok 1 - issue \#480 authenticated navigation
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 16.401673
+# duration_ms 17.326511
 
 [test] dev-server/shell-pages.test.js
 TAP version 13
@@ -4066,97 +4066,97 @@ TAP version 13
     # Subtest: derives exact route and module coverage from the canonical available routes
     ok 1 - derives exact route and module coverage from the canonical available routes
       ---
-      duration_ms: 1.863709
+      duration_ms: 2.12507
       type: 'test'
       ...
     # Subtest: /dashboard keeps its renderer connected to the expected SSR shell
     ok 2 - /dashboard keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.514504
+      duration_ms: 0.540321
       type: 'test'
       ...
     # Subtest: /lancamentos keeps its renderer connected to the expected SSR shell
     ok 3 - /lancamentos keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.931005
+      duration_ms: 1.135444
       type: 'test'
       ...
     # Subtest: /cartoes keeps its renderer connected to the expected SSR shell
     ok 4 - /cartoes keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.76787
+      duration_ms: 1.079564
       type: 'test'
       ...
     # Subtest: /contas-cartoes keeps its renderer connected to the expected SSR shell
     ok 5 - /contas-cartoes keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.295962
+      duration_ms: 0.490704
       type: 'test'
       ...
     # Subtest: /remuneracao-contas keeps its renderer connected to the expected SSR shell
     ok 6 - /remuneracao-contas keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.266829
+      duration_ms: 0.46075
       type: 'test'
       ...
     # Subtest: /categorias keeps its renderer connected to the expected SSR shell
     ok 7 - /categorias keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.37947
+      duration_ms: 2.537628
       type: 'test'
       ...
     # Subtest: /orcamentos keeps its renderer connected to the expected SSR shell
     ok 8 - /orcamentos keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 1.903602
+      duration_ms: 0.819054
       type: 'test'
       ...
     # Subtest: /assistente keeps its renderer connected to the expected SSR shell
     ok 9 - /assistente keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.487435
+      duration_ms: 0.699291
       type: 'test'
       ...
     # Subtest: /inbox keeps its renderer connected to the expected SSR shell
     ok 10 - /inbox keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.999306
+      duration_ms: 1.495374
       type: 'test'
       ...
     # Subtest: /relatorios keeps its renderer connected to the expected SSR shell
     ok 11 - /relatorios keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.266681
+      duration_ms: 0.379857
       type: 'test'
       ...
     # Subtest: /configuracoes keeps its renderer connected to the expected SSR shell
     ok 12 - /configuracoes keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.264956
+      duration_ms: 0.412533
       type: 'test'
       ...
     # Subtest: /admin/instituicoes keeps its renderer connected to the expected SSR shell
     ok 13 - /admin/instituicoes keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.296485
+      duration_ms: 0.451619
       type: 'test'
       ...
     # Subtest: /admin/indices-financeiros keeps its renderer connected to the expected SSR shell
     ok 14 - /admin/indices-financeiros keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.471839
+      duration_ms: 0.315672
       type: 'test'
       ...
     # Subtest: /login keeps its renderer connected to the expected SSR shell
     ok 15 - /login keeps its renderer connected to the expected SSR shell
       ---
-      duration_ms: 0.163918
+      duration_ms: 1.741089
       type: 'test'
       ...
     1..15
 ok 1 - SSR shell pages
   ---
-  duration_ms: 11.375803
+  duration_ms: 16.829033
   type: 'suite'
   ...
 1..1
@@ -4167,7 +4167,7 @@ ok 1 - SSR shell pages
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 24.615978
+# duration_ms 39.276852
 
 [test] dev-server/shell.test.js
 TAP version 13
@@ -4175,68 +4175,68 @@ TAP version 13
     # Subtest: renders a shared HTML document with escaped title and provided body
     ok 1 - renders a shared HTML document with escaped title and provided body
       ---
-      duration_ms: 0.872448
+      duration_ms: 0.833005
       type: 'test'
       ...
     1..1
 ok 1 - SSR shell document
   ---
-  duration_ms: 1.80202
+  duration_ms: 1.725381
   type: 'suite'
   ...
 # Subtest: authenticated SSR shell
     # Subtest: renders the shared shell with active navigation and logout handling
     ok 1 - renders the shared shell with active navigation and logout handling
       ---
-      duration_ms: 4.666465
+      duration_ms: 4.570955
       type: 'test'
       ...
     # Subtest: keeps statement presentation assets out of unrelated authenticated pages
     ok 2 - keeps statement presentation assets out of unrelated authenticated pages
       ---
-      duration_ms: 0.430385
+      duration_ms: 0.487045
       type: 'test'
       ...
     # Subtest: renders every navigable private route in the shared navigation
     ok 3 - renders every navigable private route in the shared navigation
       ---
-      duration_ms: 0.642747
+      duration_ms: 0.678732
       type: 'test'
       ...
     # Subtest: marks only the active navigable private route in the shared navigation
     ok 4 - marks only the active navigable private route in the shared navigation
       ---
-      duration_ms: 3.358741
+      duration_ms: 3.32746
       type: 'test'
       ...
     # Subtest: classifies navigable private routes into primary and secondary mobile groups
     ok 5 - classifies navigable private routes into primary and secondary mobile groups
       ---
-      duration_ms: 0.32238
+      duration_ms: 0.371522
       type: 'test'
       ...
     # Subtest: keeps the secondary navigation collapsed by default when a primary route is active
     ok 6 - keeps the secondary navigation collapsed by default when a primary route is active
       ---
-      duration_ms: 0.477341
+      duration_ms: 0.483182
       type: 'test'
       ...
     # Subtest: opens the secondary navigation by default when a secondary route is active
     ok 7 - opens the secondary navigation by default when a secondary route is active
       ---
-      duration_ms: 0.447949
+      duration_ms: 0.471935
       type: 'test'
       ...
     # Subtest: loads the current user and derives every master route from the central catalog
     ok 8 - loads the current user and derives every master route from the central catalog
       ---
-      duration_ms: 0.536001
+      duration_ms: 0.532718
       type: 'test'
       ...
     1..8
 ok 2 - authenticated SSR shell
   ---
-  duration_ms: 11.621133
+  duration_ms: 11.690447
   type: 'suite'
   ...
 1..2
@@ -4247,7 +4247,7 @@ ok 2 - authenticated SSR shell
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 26.801988
+# duration_ms 27.002303
 
 [test] dev-server/ssr-style-contract.test.js
 TAP version 13
@@ -4255,79 +4255,79 @@ TAP version 13
     # Subtest: has exact parity with every available canonical route, including public, hidden and master routes
     ok 1 - has exact parity with every available canonical route, including public, hidden and master routes
       ---
-      duration_ms: 2.024418
+      duration_ms: 1.96918
       type: 'test'
       ...
     # Subtest: reports every available route added without a contract
     ok 2 - reports every available route added without a contract
       ---
-      duration_ms: 0.330574
+      duration_ms: 0.347222
       type: 'test'
       ...
     # Subtest: accepts a representative normal-state route with its shared and page providers
     ok 3 - accepts a representative normal-state route with its shared and page providers
       ---
-      duration_ms: 1.236027
+      duration_ms: 1.230658
       type: 'test'
       ...
     # Subtest: rejects a generic error document that retains page CSS but loses normal route HTML
     ok 4 - rejects a generic error document that retains page CSS but loses normal route HTML
       ---
-      duration_ms: 0.679064
+      duration_ms: 0.591681
       type: 'test'
       ...
     # Subtest: rejects empty shared, page-specific, shell and conditional providers in one pass
     ok 5 - rejects empty shared, page-specific, shell and conditional providers in one pass
       ---
-      duration_ms: 0.333306
+      duration_ms: 0.317003
       type: 'test'
       ...
     # Subtest: rejects empty public login CSS
     ok 6 - rejects empty public login CSS
       ---
-      duration_ms: 0.263959
+      duration_ms: 0.267851
       type: 'test'
       ...
     # Subtest: rejects a registered auxiliary provider disconnected from final HTML
     ok 7 - rejects a registered auxiliary provider disconnected from final HTML
       ---
-      duration_ms: 0.214426
+      duration_ms: 0.223468
       type: 'test'
       ...
     # Subtest: rejects missing and empty marker-backed runtime style blocks
     ok 8 - rejects missing and empty marker-backed runtime style blocks
       ---
-      duration_ms: 1.002235
+      duration_ms: 1.060754
       type: 'test'
       ...
     # Subtest: tracks migrated remuneration and residual disclosure styles independently
     ok 9 - tracks migrated remuneration and residual disclosure styles independently
       ---
-      duration_ms: 0.571279
+      duration_ms: 0.599679
       type: 'test'
       ...
     # Subtest: rejects removal of the page provider even when an auxiliary provider remains
     ok 10 - rejects removal of the page provider even when an auxiliary provider remains
       ---
-      duration_ms: 0.447515
+      duration_ms: 0.460616
       type: 'test'
       ...
     # Subtest: requires the representative renderer to activate each conditional provider
     ok 11 - requires the representative renderer to activate each conditional provider
       ---
-      duration_ms: 0.2139
+      duration_ms: 0.218688
       type: 'test'
       ...
     # Subtest: accepts an explicitly shared-only authenticated route
     ok 12 - accepts an explicitly shared-only authenticated route
       ---
-      duration_ms: 0.168812
+      duration_ms: 0.176972
       type: 'test'
       ...
     1..12
 ok 1 - SSR style contract
   ---
-  duration_ms: 8.968929
+  duration_ms: 10.291013
   type: 'suite'
   ...
 1..1
@@ -4338,7 +4338,7 @@ ok 1 - SSR style contract
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 23.849747
+# duration_ms 24.761725
 
 [test] dev-server/statement-action-icons.test.js
 
@@ -4351,7 +4351,7 @@ TAP version 13
 # Subtest: statement A2 exposes active-profile runtime and keyboard listbox controls
 ok 1 - statement A2 exposes active-profile runtime and keyboard listbox controls
   ---
-  duration_ms: 1.09838
+  duration_ms: 1.090096
   type: 'test'
   ...
 1..1
@@ -4362,14 +4362,14 @@ ok 1 - statement A2 exposes active-profile runtime and keyboard listbox controls
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 9.063583
+# duration_ms 9.29772
 
 [test] dev-server/statement-list-archetype.test.js
 TAP version 13
 # Subtest: statement A2 archetype composes Phase 3B primitives without rewriting fragments
 ok 1 - statement A2 archetype composes Phase 3B primitives without rewriting fragments
   ---
-  duration_ms: 1.096453
+  duration_ms: 1.085429
   type: 'test'
   ...
 1..1
@@ -4380,12 +4380,12 @@ ok 1 - statement A2 archetype composes Phase 3B primitives without rewriting fra
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 10.001133
+# duration_ms 9.246517
 
 [test] dev-server/statement-presentation.test.js
 
 [test] dev-server/statement-recurrence-materialization.test.js
-◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
 
 [test] dev-server/transaction-bulk-selection-enhancement.test.js
 
@@ -4396,7 +4396,7 @@ TAP version 13
 # Subtest: keeps canonical installments selectable for bulk actions and blocks only grouping
 ok 1 - keeps canonical installments selectable for bulk actions and blocks only grouping
   ---
-  duration_ms: 1.292291
+  duration_ms: 1.10539
   type: 'test'
   ...
 1..1
@@ -4407,7 +4407,7 @@ ok 1 - keeps canonical installments selectable for bulk actions and blocks only 
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 9.622418
+# duration_ms 10.618895
 
 [test] dev-server/transaction-group-member-form-guard.test.js
 
@@ -4426,31 +4426,31 @@ TAP version 13
 # Subtest: selection exposes accessible controls and complete member data
 ok 1 - selection exposes accessible controls and complete member data
   ---
-  duration_ms: 0.994905
+  duration_ms: 1.022605
   type: 'test'
   ...
 # Subtest: group modal preserves selection on cancel and clears it only after success
 ok 2 - group modal preserves selection on cancel and clears it only after success
   ---
-  duration_ms: 0.341853
+  duration_ms: 0.396666
   type: 'test'
   ...
 # Subtest: member markup escapes untrusted descriptions and shows category and status
 ok 3 - member markup escapes untrusted descriptions and shows category and status
   ---
-  duration_ms: 0.228065
+  duration_ms: 0.26522
   type: 'test'
   ...
 # Subtest: currency, details and ungrouping follow the selected group
 ok 4 - currency, details and ungrouping follow the selected group
   ---
-  duration_ms: 0.242325
+  duration_ms: 0.410562
   type: 'test'
   ...
 # Subtest: account or period navigation naturally discards in-memory selection
 ok 5 - account or period navigation naturally discards in-memory selection
   ---
-  duration_ms: 0.423627
+  duration_ms: 0.534053
   type: 'test'
   ...
 1..5
@@ -4461,20 +4461,20 @@ ok 5 - account or period navigation naturally discards in-memory selection
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.728538
+# duration_ms 14.150028
 
 [test] dev-server/transactions-groups.test.js
 TAP version 13
 # Subtest: projects a group once and preserves the final statement balance
 ok 1 - projects a group once and preserves the final statement balance
   ---
-  duration_ms: 1.094583
+  duration_ms: 1.103872
   type: 'test'
   ...
 # Subtest: ignores invalid legacy groups and restores individual members
 ok 2 - ignores invalid legacy groups and restores individual members
   ---
-  duration_ms: 0.706895
+  duration_ms: 0.737658
   type: 'test'
   ...
 1..2
@@ -4485,7 +4485,7 @@ ok 2 - ignores invalid legacy groups and restores individual members
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 10.758236
+# duration_ms 11.60095
 
 [test] dev-server/transactions-import-visibility.test.js
 
@@ -4502,13 +4502,13 @@ TAP version 13
 # Subtest: novo lançamento sugere datas locais e aplica fallbacks temporais seguros
 ok 1 - novo lançamento sugere datas locais e aplica fallbacks temporais seguros
   ---
-  duration_ms: 47.359315
+  duration_ms: 43.384527
   type: 'test'
   ...
 # Subtest: mensagens do formulário de lançamentos permanecem em pt-BR
 ok 2 - mensagens do formulário de lançamentos permanecem em pt-BR
   ---
-  duration_ms: 4.395467
+  duration_ms: 4.252637
   type: 'test'
   ...
 1..2
@@ -4519,20 +4519,20 @@ ok 2 - mensagens do formulário de lançamentos permanecem em pt-BR
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 59.826451
+# duration_ms 55.467595
 
 [test] dev-server/transactions-page-v2.test.js
 TAP version 13
 # Subtest: A2 statement keeps account and USD currency explicit while sorting before render
 ok 1 - A2 statement keeps account and USD currency explicit while sorting before render
   ---
-  duration_ms: 47.189724
+  duration_ms: 50.388272
   type: 'test'
   ...
 # Subtest: A2 statement applies insight and text filters before rendering rows
 ok 2 - A2 statement applies insight and text filters before rendering rows
   ---
-  duration_ms: 5.307233
+  duration_ms: 6.026307
   type: 'test'
   ...
 1..2
@@ -4543,7 +4543,7 @@ ok 2 - A2 statement applies insight and text filters before rendering rows
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 60.367552
+# duration_ms 65.094676
 
 [test] dev-server/transactions-page.test.js
 
@@ -4627,31 +4627,31 @@ TAP version 13
 # Subtest: parses BCB SGS CDI entries and normalizes dates and factors
 ok 1 - parses BCB SGS CDI entries and normalizes dates and factors
   ---
-  duration_ms: 11.487115
+  duration_ms: 11.642579
   type: 'test'
   ...
 # Subtest: rejects duplicate or malformed CDI entries
 ok 2 - rejects duplicate or malformed CDI entries
   ---
-  duration_ms: 0.711212
+  duration_ms: 0.648979
   type: 'test'
   ...
 # Subtest: calculates account remuneration using CDI rate and configured percentage
 ok 3 - calculates account remuneration using CDI rate and configured percentage
   ---
-  duration_ms: 0.275471
+  duration_ms: 0.265237
   type: 'test'
   ...
 # Subtest: does not generate remuneration for zero or negative balances
 ok 4 - does not generate remuneration for zero or negative balances
   ---
-  duration_ms: 1.423682
+  duration_ms: 1.345373
   type: 'test'
   ...
 # Subtest: validates account remuneration percentage
 ok 5 - validates account remuneration percentage
   ---
-  duration_ms: 0.328421
+  duration_ms: 0.206611
   type: 'test'
   ...
 1..5
@@ -4662,7 +4662,7 @@ ok 5 - validates account remuneration percentage
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 24.187592
+# duration_ms 23.915369
 
 [test] imports.test.js
 
@@ -4671,19 +4671,19 @@ TAP version 13
 # Subtest: accepts the complete safe JSON integer boundary
 ok 1 - accepts the complete safe JSON integer boundary
   ---
-  duration_ms: 1.027886
+  duration_ms: 1.025486
   type: 'test'
   ...
 # Subtest: rejects values outside the exact JSON number range
 ok 2 - rejects values outside the exact JSON number range
   ---
-  duration_ms: 0.515162
+  duration_ms: 0.568547
   type: 'test'
   ...
 # Subtest: large aggregates remain exact and fail closed on overflow
 ok 3 - large aggregates remain exact and fail closed on overflow
   ---
-  duration_ms: 0.224576
+  duration_ms: 0.238373
   type: 'test'
   ...
 1..3
@@ -4694,7 +4694,7 @@ ok 3 - large aggregates remain exact and fail closed on overflow
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 12.050775
+# duration_ms 11.911714
 
 [test] payables-receivables-transition.test.js
 
@@ -4725,43 +4725,43 @@ TAP version 13
 # Subtest: validates compatible members and sums amountMinor exactly
 ok 1 - validates compatible members and sums amountMinor exactly
   ---
-  duration_ms: 0.935438
+  duration_ms: 0.9209
   type: 'test'
   ...
 # Subtest: rejects transfer
 ok 2 - rejects transfer
   ---
-  duration_ms: 0.557734
+  duration_ms: 0.527165
   type: 'test'
   ...
 # Subtest: rejects suggested
 ok 3 - rejects suggested
   ---
-  duration_ms: 0.123597
+  duration_ms: 0.121369
   type: 'test'
   ...
 # Subtest: rejects voided
 ok 4 - rejects voided
   ---
-  duration_ms: 1.11469
+  duration_ms: 1.399624
   type: 'test'
   ...
 # Subtest: rejects another group
 ok 5 - rejects another group
   ---
-  duration_ms: 0.143785
+  duration_ms: 0.138849
   type: 'test'
   ...
 # Subtest: rejects different account
 ok 6 - rejects different account
   ---
-  duration_ms: 0.133188
+  duration_ms: 0.118987
   type: 'test'
   ...
 # Subtest: does not disclose a member from another tenant
 ok 7 - does not disclose a member from another tenant
   ---
-  duration_ms: 0.187477
+  duration_ms: 0.195545
   type: 'test'
   ...
 1..7
@@ -4772,7 +4772,7 @@ ok 7 - does not disclose a member from another tenant
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 14.779372
+# duration_ms 14.156893
 
 [test] transactions-currency-invariant.test.js
 
@@ -4819,5 +4819,5 @@ ok 7 - does not disclose a member from another tenant
 > @solverfin/web@0.1.0 build
 > node ../../scripts/build-web.mjs
 
-◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
 [SolverFin SSR style contract] validated 14 available routes through the actual HTTP server, representative normal-state HTML, all registered providers, runtime post-processing and negative controls

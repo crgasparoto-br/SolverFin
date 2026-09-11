@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "material_head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
   "level": "high",
   "reasons": ["financial installment allocation", "tenant-scoped joined read model", "atomic multi-row mutation", "visible invoice UI"],
   "required_gates": ["domain", "api", "web", "ssr", "prisma", "documentation", "remote-ci"],
-  "local_limitations": ["PostgreSQL and real Chrome are unavailable locally; their integration workflows are captured as pending remote evidence."]
+  "local_limitations": ["The local Docker daemon is inaccessible; exact-head PostgreSQL and Chrome workflows passed remotely."]
 }

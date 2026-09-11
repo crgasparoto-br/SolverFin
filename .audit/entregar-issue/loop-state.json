@@ -1,19 +1,19 @@
 {
   "schema_version": 5,
   "contract_version": "2026-08-06.2",
-  "controller_revision": 1,
+  "controller_revision": 2,
   "metrics": {
     "issue_full_reads": 0,
     "documentation_full_scans": 0,
-    "subskill_calls": 0,
-    "full_suites": 0,
-    "freezes": 0,
-    "remote_collections": 0,
-    "reused_stages": 0,
+    "subskill_calls": 1,
+    "full_suites": 1,
+    "freezes": 1,
+    "remote_collections": 3,
+    "reused_stages": 1,
     "avoidable_invalidations": 0
   },
   "issue": 662,
-  "cycle": 1,
+  "cycle": 2,
   "state": "frozen",
   "single_invocation_mode": true,
   "controller_mode": "delivery-single-invocation",
@@ -23,26 +23,26 @@
     "issue": 662,
     "pull_request": 664,
     "branch": "issue-662-fix-installment-purchases",
-    "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+    "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
     "base_sha": "c31a1097c2e9a474be8ec64b5a702a07d672bead",
-    "merge_preview_sha": "8c5d9855e323931972f5fe036528571e106a8b23",
+    "merge_preview_sha": "0fc42cc531adf16423ec02964a4479e22a9fb765",
     "issue_snapshot_sha256": "f990cd3c3a13816af81cf1f8e5a9bb20020c666be08c472a7a2a750b75e07d95",
     "diff_sha256": "b12ff8b1e4f566a98de79610e627e7eed476773c4fa785948d5e7e8ed60d2068",
     "skills_sha256": "32cc0c8dbdae66331f6e0c28f4952346cc0f30e9dccd34d7296f8f520f97909e",
-    "captured_at": "2026-09-11T02:32:22.819443Z"
+    "captured_at": "2026-09-11T03:14:30.861554Z"
   },
   "current_identity": {
     "repository": "crgasparoto-br/SolverFin",
     "issue": 662,
     "pull_request": 664,
     "branch": "issue-662-fix-installment-purchases",
-    "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+    "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
     "base_sha": "c31a1097c2e9a474be8ec64b5a702a07d672bead",
-    "merge_preview_sha": "8c5d9855e323931972f5fe036528571e106a8b23",
+    "merge_preview_sha": "0fc42cc531adf16423ec02964a4479e22a9fb765",
     "issue_snapshot_sha256": "f990cd3c3a13816af81cf1f8e5a9bb20020c666be08c472a7a2a750b75e07d95",
     "diff_sha256": "b12ff8b1e4f566a98de79610e627e7eed476773c4fa785948d5e7e8ed60d2068",
     "skills_sha256": "32cc0c8dbdae66331f6e0c28f4952346cc0f30e9dccd34d7296f8f520f97909e",
-    "captured_at": "2026-09-11T02:32:22.819443Z"
+    "captured_at": "2026-09-11T03:14:30.861554Z"
   },
   "audit": {
     "validity": "absent",
@@ -85,7 +85,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "specification-snapshot",
@@ -93,7 +93,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "requirement-closure",
@@ -101,7 +101,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "risk-profile",
@@ -109,7 +109,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "documentation-impact",
@@ -117,7 +117,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "gate-report",
@@ -125,7 +125,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "source-manifest",
@@ -133,7 +133,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "requirements-rederivation",
@@ -141,7 +141,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "coverage-matrix",
@@ -149,7 +149,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "applicability-ledger",
@@ -157,7 +157,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "controller-audit-report",
@@ -165,7 +165,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "cycle-history",
@@ -173,7 +173,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     },
     {
       "name": "remote-gate",
@@ -181,7 +181,7 @@
       "status": "missing",
       "path": null,
       "sha256": null,
-      "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0"
+      "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f"
     }
   ],
   "risk_families": [

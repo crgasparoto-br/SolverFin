@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
   "issue": 662,
-  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+  "material_head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
   "complete": true,
   "discovery": {"issue_comments": 0, "attachments": 0, "subissues": 0, "declared_paths_reviewed": true, "omissions": []},
   "sources": [

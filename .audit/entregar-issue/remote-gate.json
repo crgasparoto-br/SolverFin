@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
-  "status": "pending",
-  "observation_policy": "single-snapshot-observe-only",
+  "material_head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
+  "status": "passed",
+  "observation_policy": "corrigir-ci-terminal-observation",
   "collection_count": 1,
   "snapshot_path": ".audit/entregar-issue/evidence-ci-snapshot-662.json",
   "runs": [
-    {"workflow":"CI","run_id":34554901542,"status":"in_progress","conclusion":null},
-    {"workflow":"Statement visual validation","run_id":34554901638,"status":"in_progress","conclusion":null}
+    {"workflow":"CI","run_id":34556643667,"status":"completed","conclusion":"success"},
+    {"workflow":"Statement visual validation","run_id":34556643720,"status":"completed","conclusion":"success"}
   ],
   "blocking_conclusions": []
 }

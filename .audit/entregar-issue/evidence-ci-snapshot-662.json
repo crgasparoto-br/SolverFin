@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
-  "collected_at": "2026-09-11T02:30:46Z",
+  "material_head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
+  "collected_at": "2026-09-11T03:06:55Z",
   "collection_count_for_sha": 1,
-  "policy": "observe-only-no-polling",
+  "policy": "corrigir-ci-terminal-observation",
   "runs": [
-    {"database_id":34554901638,"workflow":"Statement visual validation","status":"in_progress","conclusion":null,"url":"https://github.com/crgasparoto-br/SolverFin/actions/runs/34554901638"},
-    {"database_id":34554901542,"workflow":"CI","status":"in_progress","conclusion":null,"url":"https://github.com/crgasparoto-br/SolverFin/actions/runs/34554901542"}
+    {"database_id":34556643720,"workflow":"Statement visual validation","status":"completed","conclusion":"success","url":"https://github.com/crgasparoto-br/SolverFin/actions/runs/34556643720"},
+    {"database_id":34556643667,"workflow":"CI","status":"completed","conclusion":"success","url":"https://github.com/crgasparoto-br/SolverFin/actions/runs/34556643667"}
   ],
   "blocking_conclusions": [],
-  "remote_gate_status": "pending"
+  "remote_gate_status": "passed"
 }

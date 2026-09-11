@@ -2,21 +2,21 @@
   "schema_version": 1,
   "contract_version": "2026-08-06.2",
   "controller_context_id": "delivery-66f3eec6-b2e1-4cb2-9179-a5db2815ca86",
-  "controller_revision": 2,
-  "controller_cycle": 1,
+  "controller_revision": 3,
+  "controller_cycle": 2,
   "controller_cycle_limit": 10,
   "repository": "crgasparoto-br/SolverFin",
-  "repository_path": "/tmp/solverfin-662-4sM7I4",
+  "repository_path": "/tmp/solverfin-662-work",
   "issue": 662,
   "base_ref": "main",
   "branch": "issue-662-fix-installment-purchases",
   "pull_request": 664,
   "identity": {
-    "head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+    "head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
     "base_sha": "c31a1097c2e9a474be8ec64b5a702a07d672bead",
-    "merge_preview_sha": "8c5d9855e323931972f5fe036528571e106a8b23",
+    "merge_preview_sha": "0fc42cc531adf16423ec02964a4479e22a9fb765",
     "captured_at": "2026-09-11T02:21:44.797981Z",
-    "observed_at": "2026-09-11T02:21:44.797981Z"
+    "observed_at": "2026-09-11T03:06:55Z"
   },
   "permissions": {
     "may_write_code": true,
@@ -36,7 +36,7 @@
     "schema_version": 1,
     "repository": "crgasparoto-br/SolverFin",
     "issue": 662,
-    "material_head_sha": "e8d828bdab40a73183c4387dbd7064925795c5a0",
+    "material_head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
     "complete": true,
     "discovery": {
       "issue_comments": 0,
@@ -143,13 +143,13 @@
   "metrics": {
     "issue_full_reads": 1,
     "documentation_full_scans": 1,
-    "subskill_calls": 1,
-    "full_suites": 1,
-    "freezes": 1,
-    "remote_collections": 1,
-    "reused_stages": 0,
+    "subskill_calls": 2,
+    "full_suites": 2,
+    "freezes": 2,
+    "remote_collections": 4,
+    "reused_stages": 1,
     "avoidable_invalidations": 0
   },
   "created_at": "2026-09-11T02:21:44.797981Z",
-  "updated_at": "2026-09-11T02:32:12.235891Z"
+  "updated_at": "2026-09-11T03:14:30.861554Z"
 }
