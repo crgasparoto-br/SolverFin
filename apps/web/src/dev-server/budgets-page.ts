@@ -59,7 +59,8 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
     : renderAlert({
         tone: "attention",
         title: "Nomes de categorias parcialmente indisponíveis",
-        description: "Os valores e períodos permanecem disponíveis, mas alguns nomes podem não ser exibidos.",
+        description:
+          "Os valores e períodos permanecem disponíveis, mas alguns nomes podem não ser exibidos.",
       });
   const usageWarning =
     viewModel.unavailableUsageCount > 0
@@ -79,36 +80,40 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
   return renderShell(
     renderPageContainer({
       className: "budgets-a1-page",
-      childrenHtml: `<div data-budgets-archetype="A1"><div class="budgets-heading">${renderPageHeader({
-        eyebrow: "Planejamento por categoria",
-        title: "Orçamentos",
-        description:
-          "Compare o valor planejado com as despesas já realizadas em cada período e moeda, sem misturar moedas diferentes.",
-        actionsHtml: newBudgetTrigger,
-      })}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${renderSummaryGrid({
-        childrenHtml: [
-          renderSummaryMetric(
-            "Orçamentos no recorte",
-            String(viewModel.rows.length),
-            "Períodos e moedas exibidos abaixo",
-          ),
-          renderSummaryMetric(
-            "Ativos",
-            String(viewModel.activeCount),
-            "Disponíveis para acompanhamento",
-          ),
-          renderSummaryMetric(
-            "Atenção",
-            String(viewModel.attentionCount),
-            "Próximos do limite ou excedidos",
-          ),
-          renderSummaryMetric(
-            "Moedas",
-            String(new Set(viewModel.rows.map((row) => row.currency).filter(Boolean)).size),
-            "Sempre analisadas separadamente",
-          ),
-        ].join(""),
-      })}${renderBudgetTable(viewModel.rows)}${renderNewBudgetDialog(categories)}${viewModel.rows
+      childrenHtml: `<div data-budgets-archetype="A1"><div class="budgets-heading">${renderPageHeader(
+        {
+          eyebrow: "Planejamento por categoria",
+          title: "Orçamentos",
+          description:
+            "Compare o valor planejado com as despesas já realizadas em cada período e moeda, sem misturar moedas diferentes.",
+          actionsHtml: newBudgetTrigger,
+        },
+      )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${renderSummaryGrid(
+        {
+          childrenHtml: [
+            renderSummaryMetric(
+              "Orçamentos no recorte",
+              String(viewModel.rows.length),
+              "Períodos e moedas exibidos abaixo",
+            ),
+            renderSummaryMetric(
+              "Ativos",
+              String(viewModel.activeCount),
+              "Disponíveis para acompanhamento",
+            ),
+            renderSummaryMetric(
+              "Atenção",
+              String(viewModel.attentionCount),
+              "Próximos do limite ou excedidos",
+            ),
+            renderSummaryMetric(
+              "Moedas",
+              String(new Set(viewModel.rows.map((row) => row.currency).filter(Boolean)).size),
+              "Sempre analisadas separadamente",
+            ),
+          ].join(""),
+        },
+      )}${renderBudgetTable(viewModel.rows)}${renderNewBudgetDialog(categories)}${viewModel.rows
         .map((row) => renderBudgetEditDialog(row, categories))
         .join("")}${renderSolverFinUiInteractionsScriptTag()}${budgetRuntimeScript()}</div>`,
     }),
@@ -186,55 +191,57 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
     })}</section>`;
   }
 
-  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Acompanhamento</p><h2 id="budgets-list-title">Planejado e realizado</h2></div><span>${rows.length} orçamento${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable({
-    caption: "Orçamentos por categoria, período e moeda",
-    rows,
-    rowKey: (row) => row.id,
-    columns: [
-      {
-        id: "category",
-        header: "Categoria",
-        renderCell: (row) => `<strong>${renderText(row.categoryName)}</strong>`,
-      },
-      {
-        id: "period",
-        header: "Período",
-        renderCell: (row) =>
-          `<span class="budget-period">${renderText(formatDateOnly(row.periodStartOn))}<span aria-hidden="true"> → </span>${renderText(formatDateOnly(row.periodEndOn))}</span>`,
-      },
-      {
-        id: "currency",
-        header: "Moeda",
-        renderCell: (row) =>
-          row.currency
-            ? `<strong class="budget-currency">${renderText(row.currency)}</strong>`
-            : '<span class="budget-unavailable">Moeda indisponível</span>',
-      },
-      {
-        id: "planned",
-        header: "Planejado",
-        align: "end",
-        renderCell: (row) => renderBudgetMoney(row.plannedAmountMinor, row.currency),
-      },
-      {
-        id: "realized",
-        header: "Realizado",
-        align: "end",
-        renderCell: (row) => renderBudgetMoney(row.actualAmountMinor, row.currency),
-      },
-      {
-        id: "usage",
-        header: "Uso",
-        renderCell: renderUsageCell,
-      },
-      {
-        id: "actions",
-        header: "Ações",
-        align: "end",
-        renderCell: renderBudgetActions,
-      },
-    ],
-  })}</section>`;
+  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Acompanhamento</p><h2 id="budgets-list-title">Planejado e realizado</h2></div><span>${rows.length} orçamento${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable(
+    {
+      caption: "Orçamentos por categoria, período e moeda",
+      rows,
+      rowKey: (row) => row.id,
+      columns: [
+        {
+          id: "category",
+          header: "Categoria",
+          renderCell: (row) => `<strong>${renderText(row.categoryName)}</strong>`,
+        },
+        {
+          id: "period",
+          header: "Período",
+          renderCell: (row) =>
+            `<span class="budget-period">${renderText(formatDateOnly(row.periodStartOn))}<span aria-hidden="true"> → </span>${renderText(formatDateOnly(row.periodEndOn))}</span>`,
+        },
+        {
+          id: "currency",
+          header: "Moeda",
+          renderCell: (row) =>
+            row.currency
+              ? `<strong class="budget-currency">${renderText(row.currency)}</strong>`
+              : '<span class="budget-unavailable">Moeda indisponível</span>',
+        },
+        {
+          id: "planned",
+          header: "Planejado",
+          align: "end",
+          renderCell: (row) => renderBudgetMoney(row.plannedAmountMinor, row.currency),
+        },
+        {
+          id: "realized",
+          header: "Realizado",
+          align: "end",
+          renderCell: (row) => renderBudgetMoney(row.actualAmountMinor, row.currency),
+        },
+        {
+          id: "usage",
+          header: "Uso",
+          renderCell: renderUsageCell,
+        },
+        {
+          id: "actions",
+          header: "Ações",
+          align: "end",
+          renderCell: renderBudgetActions,
+        },
+      ],
+    },
+  )}</section>`;
 }
 
 function renderBudgetMoney(amountMinor: number | null, currency: string | undefined): string {

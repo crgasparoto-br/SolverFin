@@ -15,10 +15,7 @@ describe("budgets page issue 613", () => {
       const url = new URL(String(input), "http://solverfin.test");
       if (url.pathname === "/api/budgets") {
         return json({
-          budgets: [
-            budget("budget-brl", "BRL", 100_000),
-            budget("budget-usd", "USD", 20_000),
-          ],
+          budgets: [budget("budget-brl", "BRL", 100_000), budget("budget-usd", "USD", 20_000)],
         });
       }
       if (url.pathname === "/api/categories") {
