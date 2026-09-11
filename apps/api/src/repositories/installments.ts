@@ -90,7 +90,11 @@ export async function listInstallmentsForContext(
   addEqualsFilter(
     where,
     params,
-    `coalesce(t."categoryId", p."categoryId", r."categoryId")`,
+    `case
+       when t."id" is not null then t."categoryId"
+       when p."id" is not null then p."categoryId"
+       else r."categoryId"
+     end`,
     filters.categoryId,
   );
 
@@ -146,7 +150,10 @@ export async function listInstallmentsForContext(
        coalesce(t."cardId", p."cardId") as "transactionCardId",
        coalesce(t."cardInstrumentId", p."cardInstrumentId") as "transactionCardInstrumentId",
        coalesce(i."invoiceId", t."invoiceId") as "transactionInvoiceId",
-       coalesce(t."categoryId", p."categoryId") as "transactionCategoryId",
+       case
+         when t."id" is not null then t."categoryId"
+         else p."categoryId"
+       end as "transactionCategoryId",
        coalesce(t."recurrenceId", p."recurrenceId") as "transactionRecurrenceId",
        coalesce(t."amountMinor", p."amountMinor") as "transactionAmountMinor",
        coalesce(t."currency", p."currency") as "transactionCurrency",
@@ -192,7 +199,11 @@ export async function listInstallmentsForContext(
       and ci."organizationId" = i."organizationId"
       and ci."financialProfileId" = i."financialProfileId"
      left join "Category" cat
-       on cat."id" = coalesce(t."categoryId", p."categoryId", r."categoryId")
+       on cat."id" = case
+         when t."id" is not null then t."categoryId"
+         when p."id" is not null then p."categoryId"
+         else r."categoryId"
+       end
       and cat."organizationId" = i."organizationId"
       and cat."financialProfileId" = i."financialProfileId"
      where ${where.join(" and ")}
