@@ -1,5 +1,6 @@
-Independent rejection: audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d
-Finding: A-001 handoff-not-produced
-The inherited .audit/entregar-issue package in the material parent belongs to issue #654 / PR #657 and is not reused as evidence for issue #659 / PR #661.
-Remediation is result-only: rebuild the canonical package from issue #659, bind subject.issue_number=659 and subject.pull_request_number=661, bind all evidence to material head 3169ed0ae260bfd4240a4659583e2b7db0c8de63, then publish a direct result-only child whose changed paths are certificate-allowlisted.
-No product code, tests, documentation, or package.json content is changed by this remediation commit.
+Material head: cc1d2b9ba804adbfd34aa7f52577391f6dc987e2
+Target: crgasparoto-br/SolverFin issue #659 / PR #661
+A-001 remains closed: foreign/inherited certificates cannot satisfy current-target readiness, so this package is rebuilt for the current target.
+A-002 remains closed on the material head: db:repair:default-categories:user invokes prepare-local-env.mjs before seed-default-categories-for-user.mjs.
+A-003 is closed as result-only remediation: immutable compare c31a1097c2e9a474be8ec64b5a702a07d672bead..cc1d2b9ba804adbfd34aa7f52577391f6dc987e2 returns 27 normalized paths; handoff-ready.json now records exactly those 27 paths and issue_delta_sha256 6677794457940894b5725fbd37c95f10661ecfcf97b6b0b217f5fe5e84f263c7.
+No product code, tests, documentation or package.json content changes in this remediation; exact-head CI, API integration and Chrome visual evidence for the material head are reused unchanged.

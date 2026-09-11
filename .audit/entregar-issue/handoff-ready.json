@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-09-11T13:46:28.563273+00:00",
+  "created_at": "2026-09-11T18:31:34Z",
   "identity": {
-    "head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
-    "material_head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+    "head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+    "material_head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
     "base_sha": "c31a1097c2e9a474be8ec64b5a702a07d672bead",
-    "merge_preview_sha": "a068d9ad1cd0d128c9816b812180f9f379494de3",
-    "material_merge_preview_sha": "a068d9ad1cd0d128c9816b812180f9f379494de3"
+    "merge_preview_sha": "b70d4cdc63d84e8d62bebfd3974abb58149088d6",
+    "material_merge_preview_sha": "b70d4cdc63d84e8d62bebfd3974abb58149088d6"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -22,19 +22,8 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "c31a1097c2e9a474be8ec64b5a702a07d672bead",
-    "material_head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+    "material_head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
     "issue_changed_paths": [
-      "apps/web/src/dev-server/accounts-cards/filters.test.ts",
-      "apps/web/src/dev-server/accounts-cards/runtime.ts",
-      "docs/ACCOUNTS_CARDS_UI.md",
-      "package.json",
-      "scripts/statement-visual/issue-659-accounts-cards-filter-persistence.mjs"
-    ],
-    "issue_delta_sha256": "811b409b7cd982488d62539c4ab7651c31c902106a3a72d866c68e4e9df70fa5"
-  },
-  "certificate_commit_policy": {
-    "mode": "result-only-child",
-    "allowed_paths": [
       ".audit/entregar-issue/audit-escape-closure-659.json",
       ".audit/entregar-issue/audit-remediation-659.json",
       ".audit/entregar-issue/audit-source-result-659.json",
@@ -50,6 +39,48 @@
       ".audit/entregar-issue/requirement-attack-matrix.parts/part-000.b64",
       ".audit/entregar-issue/requirement-attack-matrix.parts/part-001.b64",
       ".audit/entregar-issue/requirement-attack-matrix.parts/part-002.b64",
+      ".audit/entregar-issue/requirement-closure.json",
+      ".audit/entregar-issue/requirement-closure.parts/part-000.b64",
+      ".audit/entregar-issue/requirement-closure.parts/part-001.b64",
+      ".audit/entregar-issue/requirement-closure.parts/part-002.b64",
+      ".audit/entregar-issue/risk-saturation.json",
+      ".audit/entregar-issue/specification-snapshot.json",
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE-659.txt",
+      "apps/web/src/dev-server/accounts-cards/filters.test.ts",
+      "apps/web/src/dev-server/accounts-cards/runtime.ts",
+      "docs/ACCOUNTS_CARDS_UI.md",
+      "package.json",
+      "scripts/statement-visual/issue-659-accounts-cards-filter-persistence.mjs"
+    ],
+    "issue_delta_sha256": "6677794457940894b5725fbd37c95f10661ecfcf97b6b0b217f5fe5e84f263c7"
+  },
+  "certificate_commit_policy": {
+    "mode": "result-only-child",
+    "allowed_paths": [
+      ".audit/entregar-issue/audit-escape-closure-659.json",
+      ".audit/entregar-issue/audit-remediation-659.json",
+      ".audit/entregar-issue/audit-source-result-659.json",
+      ".audit/entregar-issue/evidence/ci-exact-head.txt",
+      ".audit/entregar-issue/evidence/documentation-contract.txt",
+      ".audit/entregar-issue/evidence/handoff-remediation.txt",
+      ".audit/entregar-issue/evidence/issue-659-filter-persistence.json",
+      ".audit/entregar-issue/evidence/package-script-remediation.txt",
+      ".audit/entregar-issue/evidence/runtime-contract.txt",
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/inherited-controls-659.json",
+      ".audit/entregar-issue/learning-closure-659.json",
+      ".audit/entregar-issue/requirement-attack-matrix.json",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-000.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-001.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-002.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-003.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-004.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-005.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-006.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-007.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-008.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-009.b64",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-010.b64",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/requirement-closure.parts/part-000.b64",
       ".audit/entregar-issue/requirement-closure.parts/part-001.b64",
@@ -130,41 +161,81 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "19c227db0ff1dd1e42724dc0d0b2a564f1bc80f9feefd51970b7a11b64800704",
-      "logical_sha256": "66ca5872d7b4b3f6b9bf77818673d6e80cd64baab0c8bc5b730c8878fa74d365",
-      "logical_size": 193524,
+      "sha256": "829120cee8ce02ba5c94a8cde68578af2492942a6024e1883d82cee424bc39ec",
+      "logical_sha256": "f52a1beb24a06a14d61a3918cada98705f4e9b16e059312322eda0df4b402dd7",
+      "logical_size": 195780,
       "artifact_transport": {
         "format": "base64-shards-v1",
         "version": 1,
         "compression": "gzip",
-        "encoded_size": 12096,
-        "decoded_size": 193524,
-        "decoded_sha256": "66ca5872d7b4b3f6b9bf77818673d6e80cd64baab0c8bc5b730c8878fa74d365",
-        "encoded_sha256": "2d0a3deb74f05646980de8497d4d53f54812828f3b7ebb44374adb9379acedd4",
+        "encoded_size": 12820,
+        "decoded_size": 195780,
+        "decoded_sha256": "f52a1beb24a06a14d61a3918cada98705f4e9b16e059312322eda0df4b402dd7",
+        "encoded_sha256": "b477f8fb1e97bbcea10cf02bfa2a98e9c04430d890013d88aab667faaf709683",
         "parts": [
           {
             "path": "requirement-attack-matrix.parts/part-000.b64",
-            "size": 4096,
-            "sha256": "d2c6ef54f95a42efed75fa17697ed6c27a86bf8376f314a49c34ae16e36d4998"
+            "size": 1200,
+            "sha256": "3e6501d8d58f8f2a3320264ee73858e84b0fa547a938ad721731768bbd4ef978"
           },
           {
             "path": "requirement-attack-matrix.parts/part-001.b64",
-            "size": 4096,
-            "sha256": "9b50bd8ac0870eba24d7487ab7f35119182247e902cc82c28f34342256743947"
+            "size": 1200,
+            "sha256": "727ab06fa11e6fa495110522ef5bea48e808dd38c62f8fcdf68f27c4f3193cff"
           },
           {
             "path": "requirement-attack-matrix.parts/part-002.b64",
-            "size": 3904,
-            "sha256": "dec236d504712856b30a2bb31c2b086d7285128da5f5a5fedf18a49cf754cd35"
+            "size": 1200,
+            "sha256": "7f4e0207d4f55064c247f8f729e2fa0d833ee2f6d3804d2dc3bdaad9966d903e"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-003.b64",
+            "size": 1200,
+            "sha256": "5dc0b128ea9511902c808040bdb8f5d5ee1d85fcf50b5efbf602f2d5fb358035"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-004.b64",
+            "size": 1200,
+            "sha256": "489f5357f3534e0432607262d54190f1d261f9725577b26fc4b7d34c1438d5f4"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-005.b64",
+            "size": 1200,
+            "sha256": "8b57adf19573e8f0888cbff0e971e3ec0196a921a19375388610ec4b82563e46"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-006.b64",
+            "size": 1200,
+            "sha256": "fe9c4cd633b1708851eb101bdd4d70df8129f0d23a3fae095da6b12dac3f4c32"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-007.b64",
+            "size": 1200,
+            "sha256": "8ec3f05d2bd8a58bcc689337d3ffa74fbe295ea24c0e7616b58d42fc60be56e9"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-008.b64",
+            "size": 1200,
+            "sha256": "d1da15025ea62d711a23d5b7130f9758daad61679ea8b1be79ce6ef801df7e24"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-009.b64",
+            "size": 1200,
+            "sha256": "4d905da57be85f9586de79e3237aae17e8f56764d12f8cb150e25758fe6078e9"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-010.b64",
+            "size": 820,
+            "sha256": "b90a938b76595d4cb606e90c21dcbd3900864eaf7e8434b58e7dc1874ab4a8ff"
           }
         ]
       }
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "712ae4561f77df9ec7cefe413ed86889d7e257ad7ab29e0b44805b2c26f6c52b",
-      "logical_sha256": "712ae4561f77df9ec7cefe413ed86889d7e257ad7ab29e0b44805b2c26f6c52b",
-      "logical_size": 5338,
+      "sha256": "37d314565d2626d8d16e794e68cdf30cde0c23f373503892952440e3d15eeb62",
+      "logical_sha256": "37d314565d2626d8d16e794e68cdf30cde0c23f373503892952440e3d15eeb62",
+      "logical_size": 5699,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -172,9 +243,9 @@
     },
     "inherited_controls": {
       "name": "inherited-controls-659.json",
-      "sha256": "da9ed2b96fed35fc1ddd9b51314ee6c7aa423678a6babf6d55ac2451d2d671d1",
-      "logical_sha256": "da9ed2b96fed35fc1ddd9b51314ee6c7aa423678a6babf6d55ac2451d2d671d1",
-      "logical_size": 359,
+      "sha256": "2914429f98ce83cbcc980a5ad73e60f227c04090c1995f64f8e92eb35ae7b8cb",
+      "logical_sha256": "2914429f98ce83cbcc980a5ad73e60f227c04090c1995f64f8e92eb35ae7b8cb",
+      "logical_size": 2664,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -182,9 +253,9 @@
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure-659.json",
-      "sha256": "7341414aa7eee11388541fb3185c74037b8e02d30d48fb332ab7af9114a0b228",
-      "logical_sha256": "7341414aa7eee11388541fb3185c74037b8e02d30d48fb332ab7af9114a0b228",
-      "logical_size": 2552,
+      "sha256": "1164f1a4f5a2892d0cdb0b5a3becce4ec9ce6fc3c2475235ff10e485355d9187",
+      "logical_sha256": "1164f1a4f5a2892d0cdb0b5a3becce4ec9ce6fc3c2475235ff10e485355d9187",
+      "logical_size": 7732,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -192,9 +263,9 @@
     },
     "learning_closure": {
       "name": "learning-closure-659.json",
-      "sha256": "3fdb9720d53ef10eac44820c48c8bd51cf0d5ccea8827d684872013edd4e67cf",
-      "logical_sha256": "3fdb9720d53ef10eac44820c48c8bd51cf0d5ccea8827d684872013edd4e67cf",
-      "logical_size": 612,
+      "sha256": "b3d297d001a2e4fce05d42129388d29540a196e894709e391e4f9659a2e01b12",
+      "logical_sha256": "b3d297d001a2e4fce05d42129388d29540a196e894709e391e4f9659a2e01b12",
+      "logical_size": 704,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -202,9 +273,9 @@
     },
     "audit_remediation": {
       "name": "audit-remediation-659.json",
-      "sha256": "1c0fca84c8bb57fe6fcdbee35bcf8bc504c1018a09275d7d7bb3bf55eb3f8d78",
-      "logical_sha256": "1c0fca84c8bb57fe6fcdbee35bcf8bc504c1018a09275d7d7bb3bf55eb3f8d78",
-      "logical_size": 1133,
+      "sha256": "770bc5268a3bfc3fb32c70499c52b1a1ef69001fc04793e5960972e22edc8e01",
+      "logical_sha256": "770bc5268a3bfc3fb32c70499c52b1a1ef69001fc04793e5960972e22edc8e01",
+      "logical_size": 1425,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -212,9 +283,9 @@
     },
     "audit_source_result": {
       "name": "audit-source-result-659.json",
-      "sha256": "98a741da2635291d2d67180f38c822e1c1a4d6e508388eb1e832e5676ddb2839",
-      "logical_sha256": "98a741da2635291d2d67180f38c822e1c1a4d6e508388eb1e832e5676ddb2839",
-      "logical_size": 1055,
+      "sha256": "85e9b6665741535724fb9ec4a4bf72c0604cfa76e60d1ad62bd2f96c5c499bd9",
+      "logical_sha256": "85e9b6665741535724fb9ec4a4bf72c0604cfa76e60d1ad62bd2f96c5c499bd9",
+      "logical_size": 1116,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1

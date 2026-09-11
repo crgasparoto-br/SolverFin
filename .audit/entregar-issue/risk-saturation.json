@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+  "head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
   "families": [
     {
       "family": "authorization",
@@ -140,7 +140,8 @@
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
         "NEG-REQ-036-1",
-        "NEG-REQ-036-2"
+        "NEG-REQ-036-2",
+        "NEG-REQ-036-3"
       ],
       "dimensions": [
         {
@@ -156,6 +157,14 @@
           "reason": "The independent rejection requires proving that a foreign inherited certificate cannot stand in for the current target handoff.",
           "control_ids": [
             "NEG-REQ-036-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "package-script-contract",
+          "reason": "Independent audit A-002 requires a discriminating check that issue-specific work does not silently alter an unrelated documented operator command.",
+          "control_ids": [
+            "NEG-REQ-036-3"
           ],
           "status": "passed"
         }

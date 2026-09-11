@@ -1,12 +1,13 @@
 Repository: crgasparoto-br/SolverFin
 Pull request: 661
 Issue: 659
-Material head: 3169ed0ae260bfd4240a4659583e2b7db0c8de63
-CI workflow run: 34525617440 / run 4932 / completed success
-Validate monorepo job: 103033930575 / completed success
-Observed passed steps: Check formatting, Lint, Typecheck, Test, Build.
-Integration API + PostgreSQL job: 103033930256 / completed success.
-Statement visual workflow run: 34525617487 / run 3413 / completed success
-Chrome visual validation job: 103033799260 / completed success
-Visual artifact digest: sha256:f368265a8ec1b9ca10e20eafb69a59a24157a374fef9b7111f42c4da445e0111
-All listed executions are bound by GitHub Actions metadata to the material head above.
+Material head: cc1d2b9ba804adbfd34aa7f52577391f6dc987e2
+CI workflow run: 34616164006 / run 4954 / completed success
+Validate monorepo job: 103318512959 / completed success
+Observed passed steps: Check environment example, Validate Prisma schema, Check demo seed script, Check formatting, Lint, Typecheck, Apply migrations, Seed demo data, Test, Build.
+Integration API + PostgreSQL job: 103318512642 / completed success
+Observed integration steps: Build packages, Apply migrations, Seed demo data, Run API integration tests, Verify import statement consistency.
+Statement visual workflow run: 34616164055 / run 3435 / completed success
+Chrome visual validation job: 103318512436 / completed success
+Visual artifact digest: sha256:24407131bb72c2bd00eae2a84862d56d4c598514aaa53a36a78c907ca6880ed4
+All listed executions are bound by GitHub Actions metadata to the exact material head above.

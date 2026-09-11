@@ -1,4 +1,4 @@
-Material head: 3169ed0ae260bfd4240a4659583e2b7db0c8de63
+Material head: cc1d2b9ba804adbfd34aa7f52577391f6dc987e2
 Runtime path: apps/web/src/dev-server/accounts-cards/runtime.ts
 The PR implementation uses the versioned sessionStorage key solverfin:accounts-cards:filters:v1, restores persisted Search/Type/Currency/Status into the existing controls before the first applyFilters(), derives currentFilterState() from those controls, and persists before reapplying filters on input/change. Invalid persisted select values degrade to all; malformed storage is ignored.
 Focused test path: apps/web/src/dev-server/accounts-cards/filters.test.ts

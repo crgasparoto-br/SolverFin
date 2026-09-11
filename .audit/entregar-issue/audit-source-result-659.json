@@ -1,7 +1,7 @@
 {
   "contract_version": "2026-08-20.3",
-  "rejection_id": "audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d",
-  "head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+  "rejection_id": "audit-rejection:05070fb8-14d4-4b4a-8f13-5f6f2514e8d7",
+  "head_sha": "f5a976b610de50191b3b6218150c82d6f10c4e50",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 659,
@@ -9,21 +9,22 @@
     "base_ref": "main",
     "head_ref": "fix/659-persist-accounts-cards-filters",
     "base_sha": "c31a1097c2e9a474be8ec64b5a702a07d672bead",
-    "head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63"
+    "head_sha": "f5a976b610de50191b3b6218150c82d6f10c4e50",
+    "material_head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2"
   },
   "status": "rejected",
   "findings": [
     {
-      "id": "A-001",
+      "id": "A-003",
       "disposition": "blocking",
       "status": "open",
-      "severity": "blocking",
+      "severity": "high",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "reason": "handoff-not-produced",
+      "reason": "delivery-not-ready",
       "recovery_scope": "handoff-only",
       "requires_refreeze": false,
-      "summary": "The current target did not produce its own terminal handoff; the visible certificate was inherited from the immutable base and belongs to issue 654 / PR 657."
+      "summary": "handoff-ready.json certified only five issue_changed_paths although the immutable work_item_start_sha..material_head_sha compare contains 27 changed paths."
     }
   ],
   "recommendations": []

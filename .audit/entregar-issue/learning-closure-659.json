@@ -3,14 +3,14 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d",
-    "audit_report_sha256": "98a741da2635291d2d67180f38c822e1c1a4d6e508388eb1e832e5676ddb2839",
+    "rejection_id": "audit-rejection:05070fb8-14d4-4b4a-8f13-5f6f2514e8d7",
+    "audit_report_sha256": "85e9b6665741535724fb9ec4a4bf72c0604cfa76e60d1ad62bd2f96c5c499bd9",
     "finding_ids": [
-      "A-001"
+      "A-003"
     ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "This rejection is a targeted packaging failure. The installed delivery skill already has a generic inherited-base-artifact target-binding guard, so no new global rule is required."
+    "reason": "The rejection is a targeted terminal-certificate scope mismatch. The current delivery can close it by deriving issue_changed_paths and its digest from the immutable issue-local Git compare; no repository-, issue-, PR-, SHA- or path-specific global Skill rule is required."
   }
 }
