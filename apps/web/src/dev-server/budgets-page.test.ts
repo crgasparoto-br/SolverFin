@@ -25,9 +25,7 @@ describe("budgets page issue 613", () => {
         }
         if (url.pathname === "/api/categories") {
           return json({
-            categories: [
-              { id: "food", name: "Alimentação", kind: "expense", status: "active" },
-            ],
+            categories: [{ id: "food", name: "Alimentação", kind: "expense", status: "active" }],
           });
         }
         if (url.pathname === "/api/budgets/budget-brl/usage") {
@@ -62,9 +60,7 @@ describe("budgets page issue 613", () => {
         return json({ budgets: [budget("budget-brl", "BRL", 100_000)] });
       if (url.pathname === "/api/categories")
         return json({
-          categories: [
-            { id: "food", name: "Alimentação", kind: "expense", status: "active" },
-          ],
+          categories: [{ id: "food", name: "Alimentação", kind: "expense", status: "active" }],
         });
       if (url.pathname === "/api/budgets/budget-brl/usage") {
         return json({ usage: usage("budget-brl", "USD", 100_000, 40_000, 40) });
@@ -85,9 +81,7 @@ describe("budgets page issue 613", () => {
         return json({ budgets: [budget("budget-brl", "BRL", 100_000)] });
       if (url.pathname === "/api/categories")
         return json({
-          categories: [
-            { id: "food", name: "Alimentação", kind: "expense", status: "active" },
-          ],
+          categories: [{ id: "food", name: "Alimentação", kind: "expense", status: "active" }],
         });
       if (url.pathname === "/api/budgets/budget-brl/usage")
         return json({ usage: usage("budget-brl", "BRL", 100_000, 40_000, 40) });
