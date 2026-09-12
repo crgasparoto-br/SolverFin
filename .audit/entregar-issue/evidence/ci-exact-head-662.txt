@@ -1,0 +1,12 @@
+Repository: crgasparoto-br/SolverFin
+Pull request: 664
+Issue: 662
+Material head: 479513b213ceb877419813f36885f1ed09c799d9
+Integrated base head: b7e1cf8bd53a143b818aad56e62527e1efe78705
+Merge ancestry: first parent 1293b0c9e3216bd6aa097cd8dc66d8d0c8f08711; second parent b7e1cf8bd53a143b818aad56e62527e1efe78705.
+CI workflow run: 34644830282 / completed success
+Integration API + PostgreSQL job: 103412980594 / completed success
+Statement visual workflow run: 34644830362 / completed success
+Chrome visual validation job: 103412980715 / completed success
+Observed material checks: formatting, lint, typecheck, Prisma validation/migrations, seed, API integration tests, web tests, build and registered Chrome visual scenarios.
+The executions above are bound to the exact material head and predate only result-only handoff publication.
