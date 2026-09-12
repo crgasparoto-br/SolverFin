@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "head_sha": "479513b213ceb877419813f36885f1ed09c799d9",
+  "controls": [
+    {
+      "id": "IC-SPEC-SOURCE-001",
+      "status": "passed",
+      "head_sha": "479513b213ceb877419813f36885f1ed09c799d9",
+      "subject_sha": "479513b213ceb877419813f36885f1ed09c799d9",
+      "control_type": "gate",
+      "evidence": "evidence/handoff-remediation-662.txt",
+      "evidence_sha256": "d15bf6e18b5fef06caf11755c0c63cf758bf520f209bae4ec49b31a38922d76b",
+      "procedure": "Use the complete GitHub issue body as the primary specification source and require the official coverage validator to map every extracted canonical candidate.",
+      "expected": "A shortened or translated specification source cannot pass as the issue body, and every canonical candidate is represented in the closure.",
+      "observed": "The 346-line GitHub issue body produces 102 canonical obligations and validate_specification_coverage.py reports READY on the current material candidate."
+    }
+  ],
+  "retired_controls": [],
+  "source_audits": [
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:solverfin-pr664-1293b0c-delivery-not-ready",
+      "finding_ids": ["A-001", "A-002"]
+    },
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:solverfin-pr664-12af364-spec-source-drift",
+      "finding_ids": ["A-003"]
+    }
+  ],
+  "unresolved_controls": []
+}
