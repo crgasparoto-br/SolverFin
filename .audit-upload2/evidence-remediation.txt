@@ -1,0 +1,11 @@
+Repository: crgasparoto-br/SolverFin
+Pull request: 664
+Issue: 662
+Material head preserved: 479513b213ceb877419813f36885f1ed09c799d9
+Independent rejection: audit-rejection:solverfin-pr664-12af364-spec-source-drift
+Finding A-003: the prior critical handoff labeled a seven-requirement summary as the issue-body source and therefore could not prove SPEC-LIST-COVERAGE-001.
+Remediation: recapture the complete current GitHub issue #662 body verbatim as SRC-ISSUE-662; rebuild the specification snapshot, one-to-one requirement closure, adversarial attack matrix, risk saturation and terminal handoff without changing product code.
+Canonical source line count: 346.
+Canonical obligation candidates rederived by the entregar-issue extractor: 102.
+Validation target: validate_specification_coverage.py and critical validate_handoff_readiness.py must both return READY before publication.
+The immutable product material and successful exact-head CI/visual evidence remain unchanged.
