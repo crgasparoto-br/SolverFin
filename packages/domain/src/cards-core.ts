@@ -393,7 +393,12 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
 
   let knownInvoices: readonly Invoice[] = input.existingInvoices;
   const invoiceResults: { invoice: Invoice; auditEntry: AuditLogEntryDraft }[] = [];
-  const installmentSchedule: { sequenceNumber: number; dueOn: ISODate; amountMinor: number }[] = [];
+  const installmentSchedule: {
+    sequenceNumber: number;
+    dueOn: ISODate;
+    amountMinor: number;
+    invoiceId: EntityId;
+  }[] = [];
 
   for (let offset = 0; offset < remainingCount; offset += 1) {
     const sequenceNumber = installmentStart + offset;
@@ -417,6 +422,7 @@ export function registerCardPurchase(input: RegisterCardPurchaseInput): CardPurc
       sequenceNumber,
       dueOn: invoiceResult.invoice.dueOn,
       amountMinor: shareAmount,
+      invoiceId: invoiceResult.invoice.id,
     });
   }
 
@@ -833,7 +839,12 @@ function buildPurchaseInstallments(input: {
   transactionId: EntityId;
   currency: string;
   totalInstallments: number;
-  schedule: readonly { sequenceNumber: number; dueOn: ISODate; amountMinor: number }[];
+  schedule: readonly {
+    sequenceNumber: number;
+    dueOn: ISODate;
+    amountMinor: number;
+    invoiceId: EntityId;
+  }[];
   makeInstallmentId: ((sequenceNumber: number, dueOn: ISODate) => EntityId) | undefined;
 }): Installment[] {
   if (input.makeInstallmentId === undefined) {
@@ -854,6 +865,7 @@ function buildPurchaseInstallments(input: {
     amountMinor: item.amountMinor,
     currency: input.currency,
     transactionId: input.transactionId,
+    invoiceId: item.invoiceId,
     cardId: input.cardId,
     ...(input.cardInstrumentId !== undefined ? { cardInstrumentId: input.cardInstrumentId } : {}),
     createdAt: input.now,

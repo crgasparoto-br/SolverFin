@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 662,
+  "cycles": [
+    {"cycle":1,"material_head_sha":"e8d828bdab40a73183c4387dbd7064925795c5a0","implementation_status":"complete","local_gate":"passed","remote_gate":"failed","previous_audit_findings":0,"exact_head_ci_failures":1},
+    {"cycle":2,"material_head_sha":"4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f","implementation_status":"complete","local_gate":"passed","remote_gate":"passed","previous_audit_findings":0,"exact_head_ci_failures":0}
+  ],
+  "independent_audit_performed_by_implementer": false
+}

@@ -155,13 +155,32 @@ export async function summarizeInvoiceForContext(
   const invoice = await findInvoice(context, invoiceId);
   const card = await findCard(context, invoice.cardId);
   const [totals] = await query<PurchaseTotalsRow>(
-    `select
+    `with invoice_occurrences as (
+       select t."status", t."amountMinor"
+         from "Transaction" t
+        where t."organizationId" = $1 and t."financialProfileId" = $2
+          and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
+          and not exists (
+            select 1 from "Installment" pi
+             where pi."transactionId" = t."id"
+               and pi."organizationId" = t."organizationId"
+               and pi."financialProfileId" = t."financialProfileId"
+          )
+       union all
+       select p."status", i."amountMinor"
+         from "Installment" i
+         join "Transaction" p
+           on p."id" = i."transactionId"
+          and p."organizationId" = i."organizationId"
+          and p."financialProfileId" = i."financialProfileId"
+        where i."organizationId" = $1 and i."financialProfileId" = $2
+          and i."invoiceId" = $3 and i."cardId" = $4
+     )
+     select
         count(*)::int as "purchasesCount",
         coalesce(sum(case when "status" = 'RECONCILED' then "amountMinor" else 0 end), 0)::int as "reconciledExpensesMinor",
         coalesce(sum(case when "status" <> 'RECONCILED' then "amountMinor" else 0 end), 0)::int as "unreconciledExpensesMinor"
-       from "Transaction"
-       where "organizationId" = $1 and "financialProfileId" = $2 and "invoiceId" = $3 and "cardId" = $4
-         and "accountId" is null`,
+       from invoice_occurrences`,
     [context.organizationId, context.financialProfileId, invoice.id, invoice.cardId],
   );
   const amountDueMinor = calculateAmountDue(invoice);
@@ -303,6 +322,45 @@ export async function updateCardPurchaseForContext(
     );
   }
 
+  const purchaseInstallments = await query<{ id: string; invoiceStatus: string | null }>(
+    `select i."id", inv."status" as "invoiceStatus" from "Installment" i
+      left join "Invoice" inv
+        on inv."id" = i."invoiceId"
+       and inv."organizationId" = i."organizationId"
+       and inv."financialProfileId" = i."financialProfileId"
+      where i."transactionId" = $1 and i."organizationId" = $2 and i."financialProfileId" = $3`,
+    [current.id, context.organizationId, context.financialProfileId],
+  );
+  const isInstallmentPurchase = purchaseInstallments.length > 0;
+
+  if (
+    purchaseInstallments.some(
+      (installment) =>
+        installment.invoiceStatus !== null &&
+        LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(installment.invoiceStatus),
+    )
+  ) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_INVOICE_LOCKED",
+      "Compras parceladas com fatura fechada, paga ou cancelada nao podem ser editadas.",
+      409,
+    );
+  }
+
+  if (
+    isInstallmentPurchase &&
+    (payload.amountMinor !== undefined ||
+      payload.occurredOn !== undefined ||
+      payload.invoiceId !== undefined ||
+      payload.status !== undefined)
+  ) {
+    throw new InvoiceContractError(
+      "CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED",
+      "Valor e data do parcelamento nao podem ser alterados. Edite apenas descricao, categoria ou instrumento.",
+      409,
+    );
+  }
+
   const occurredOn = payload.occurredOn ?? toDateOnly(current.occurredOn);
 
   if (!isIsoDate(occurredOn)) {
@@ -384,6 +442,21 @@ export async function updateCardPurchaseForContext(
           nextAmountMinor,
           current.currency,
           now,
+        ],
+      );
+    }
+
+    if (isInstallmentPurchase && payload.cardInstrumentId !== undefined) {
+      await executeQuery(
+        `update "Installment" set "cardInstrumentId" = $4, "updatedAt" = $5, "updatedByUserId" = $6
+          where "transactionId" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+        [
+          current.id,
+          context.organizationId,
+          context.financialProfileId,
+          nextCardInstrumentId,
+          now,
+          context.userId,
         ],
       );
     }

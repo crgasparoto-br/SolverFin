@@ -1,0 +1,22 @@
+Repository: crgasparoto-br/SolverFin
+Pull request: 664
+Issue: 662
+Material head: a64f2a6772961400626f593947ec651dd4ba6b35
+Evidence profile: critical
+
+Canonical specification control:
+- The complete 346-line GitHub issue #662 body remains the primary issue-body source with SHA-256 570d89ed852d5939cad73e6887a95e320c988adb6adb7b4f5eef34719b911a48.
+- The existing specification closure still contains 102 canonical obligations and is not replaced by a summary.
+
+Internal discriminant hardening added after the prior handoff:
+- Public boundary: a real HTTP-router GET /api/installments?profileId=<target>&invoiceId=<future>&status=all returns exactly the persisted second occurrence of a three-installment manual card purchase and its origin transaction.
+- Tenant isolation: the same future invoice queried through a deliberately different financial profile returns zero installments; the sibling profile neither leaks rows nor influences the target result.
+- Rollback: a PostgreSQL trigger injects failure on Installment propagation after a card-purchase edit attempts Transaction and Installment changes; the operation rejects and the Transaction plus all Installment instrument values remain unchanged.
+- Concurrency atomicity: two parallel instrument edits race on the same purchase; after both settle, every Installment.cardInstrumentId equals the final Transaction.cardInstrumentId and the schedule has no mixed origin.
+- Chrome issue #662: creation selects Parcelado without touching value mode and observes installmentValueMode=total with explanatory division text; future invoice edit opens Parcela 2 de 3, displays purchase total and occurrence amount, keeps structure/date read-only, leaves description/instrument editable, and stays within desktop/mobile viewports.
+
+Exact-head execution evidence:
+- CI #4963 success on a64f2a6772961400626f593947ec651dd4ba6b35.
+- Statement visual #3443 success on the same material head.
+- Visual evidence artifact digest sha256:5cd96013498637beff10519bfb5724e454dcf59d4f39f5c2a175b27cb527c6e1.
+- No merge was performed.

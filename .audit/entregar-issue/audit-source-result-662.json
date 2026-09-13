@@ -1,0 +1,31 @@
+{
+  "contract_version": "2026-08-20.3",
+  "rejection_id": "audit-rejection:solverfin-pr664-12af364-spec-source-drift",
+  "head_sha": "12af3640498da93ff3dc790785fa58d82fd2cf56",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 662,
+    "pull_request_number": 664,
+    "base_ref": "main",
+    "head_ref": "issue-662-fix-installment-purchases",
+    "base_sha": "b7e1cf8bd53a143b818aad56e62527e1efe78705",
+    "head_sha": "12af3640498da93ff3dc790785fa58d82fd2cf56",
+    "material_head_sha": "479513b213ceb877419813f36885f1ed09c799d9"
+  },
+  "status": "rejected",
+  "findings": [
+    {
+      "id": "A-003",
+      "disposition": "blocking",
+      "status": "open",
+      "severity": "high",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "reason": "delivery-not-saturated",
+      "recovery_scope": "handoff-only",
+      "requires_refreeze": false,
+      "summary": "The critical handoff used a seven-requirement summary labeled as the canonical issue-body source, preventing independent SPEC-LIST-COVERAGE-001 rederivation from the full issue #662 contract."
+    }
+  ],
+  "recommendations": []
+}

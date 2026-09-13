@@ -309,14 +309,17 @@ export async function registerCardPurchaseForContext(
     for (const installment of result.installments) {
       await executeQuery(
         `insert into "Installment"
-          ("id", "organizationId", "financialProfileId", "recurrenceId", "cardId", "cardInstrumentId", "status",
-           "sequenceNumber", "totalInstallments", "dueOn", "amountMinor", "currency", "createdAt", "updatedAt")
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+          ("id", "organizationId", "financialProfileId", "recurrenceId", "transactionId", "invoiceId",
+           "cardId", "cardInstrumentId", "status", "sequenceNumber", "totalInstallments", "dueOn",
+           "amountMinor", "currency", "createdAt", "updatedAt")
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
         [
           installment.id,
           installment.organizationId,
           installment.financialProfileId,
           installment.recurrenceId ?? null,
+          installment.transactionId ?? null,
+          installment.invoiceId ?? null,
           installment.cardId ?? null,
           installment.cardInstrumentId ?? null,
           installment.status.toUpperCase(),
