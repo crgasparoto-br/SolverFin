@@ -69,9 +69,20 @@ async function main(): Promise<void> {
 
   const token = await loginAndReadToken();
   const otherProfileId = await createProfile(token, suffix);
-  await assertPublicInvoiceBoundary(token, purchase.transaction.id, futureInvoice.id, otherProfileId);
+  await assertPublicInvoiceBoundary(
+    token,
+    purchase.transaction.id,
+    futureInvoice.id,
+    otherProfileId,
+  );
   await assertAtomicRollback(account.id, purchase.transaction.id, physical.id, virtual.id, suffix);
-  await assertConcurrentInstrumentConsistency(account.id, purchase.transaction.id, physical.id, virtual.id, suffix);
+  await assertConcurrentInstrumentConsistency(
+    account.id,
+    purchase.transaction.id,
+    physical.id,
+    virtual.id,
+    suffix,
+  );
 }
 
 async function assertPublicInvoiceBoundary(
@@ -100,7 +111,10 @@ async function assertPublicInvoiceBoundary(
     `/api/installments?profileId=${otherProfileId}&invoiceId=${invoiceId}&status=all`,
   );
   assert.equal(crossProfile.statusCode, 200);
-  assert.deepEqual(readBody<{ installments: ApiInstallmentOccurrence[] }>(crossProfile).installments, []);
+  assert.deepEqual(
+    readBody<{ installments: ApiInstallmentOccurrence[] }>(crossProfile).installments,
+    [],
+  );
 }
 
 async function assertAtomicRollback(
@@ -139,11 +153,16 @@ async function assertAtomicRollback(
           description: `Nao pode persistir rollback ${suffix}`,
           cardInstrumentId: virtualInstrumentId,
         }),
-      (error: unknown) => error instanceof Error && error.message.includes("issue662 rollback probe"),
+      (error: unknown) =>
+        error instanceof Error && error.message.includes("issue662 rollback probe"),
     );
 
     const after = await readPurchaseState(transactionId);
-    assert.deepEqual(after, original, "Transaction update must roll back when installment propagation fails.");
+    assert.deepEqual(
+      after,
+      original,
+      "Transaction update must roll back when installment propagation fails.",
+    );
     assert.deepEqual(
       await readInstallmentInstruments(transactionId),
       originalInstallments,

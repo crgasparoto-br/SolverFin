@@ -184,11 +184,16 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     `${label}: purchase total is not exposed as secondary information`,
     state,
   );
-  check(state.repeatMode === "installment" && state.repeatModeDisabled, `${label}: repeat mode is not locked`, state);
+  check(
+    state.repeatMode === "installment" && state.repeatModeDisabled,
+    `${label}: repeat mode is not locked`,
+    state,
+  );
   check(state.totalAmountReadonly, `${label}: total purchase value is editable`, state);
   check(state.occurredOnReadonly, `${label}: installment date is editable`, state);
   check(
-    state.totalInstallmentsReadonly && state.totalInstallments === String(fixture.totalInstallments),
+    state.totalInstallmentsReadonly &&
+      state.totalInstallments === String(fixture.totalInstallments),
     `${label}: total installments are not preserved read-only`,
     state,
   );
@@ -203,7 +208,10 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     state,
   );
   check(
-    state.contextVisible && state.contextText.includes(`Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`),
+    state.contextVisible &&
+      state.contextText.includes(
+        `Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`,
+      ),
     `${label}: installment context is missing`,
     state,
   );
@@ -236,7 +244,9 @@ async function openInvoice(fixture) {
 }
 
 function invoiceRoute(fixture) {
-  return `/cartoes?cardId=${encodeURIComponent(fixture.cardId)}&invoiceId=${encodeURIComponent(fixture.invoiceId)}`;
+  const cardId = encodeURIComponent(fixture.cardId);
+  const invoiceId = encodeURIComponent(fixture.invoiceId);
+  return `/cartoes?cardId=${cardId}&invoiceId=${invoiceId}`;
 }
 
 async function waitFor(selector) {
