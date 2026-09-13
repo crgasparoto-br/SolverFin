@@ -1,18 +1,102 @@
 {
   "schema_version": 1,
-  "head_sha": "479513b213ceb877419813f36885f1ed09c799d9",
+  "head_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
   "controls": [
     {
       "id": "IC-SPEC-SOURCE-001",
       "status": "passed",
-      "head_sha": "479513b213ceb877419813f36885f1ed09c799d9",
-      "subject_sha": "479513b213ceb877419813f36885f1ed09c799d9",
+      "head_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "subject_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
       "control_type": "gate",
-      "evidence": "evidence/handoff-remediation-662.txt",
-      "evidence_sha256": "d15bf6e18b5fef06caf11755c0c63cf758bf520f209bae4ec49b31a38922d76b",
-      "procedure": "Use the complete GitHub issue body as the primary specification source and require the official coverage validator to map every extracted canonical candidate.",
-      "expected": "A shortened or translated specification source cannot pass as the issue body, and every canonical candidate is represented in the closure.",
-      "observed": "The 346-line GitHub issue body produces 102 canonical obligations and validate_specification_coverage.py reports READY on the current material candidate."
+      "evidence": ".audit/entregar-issue/evidence/handoff-remediation-662.txt",
+      "evidence_sha256": "0b684d42aed881de4ec03d9f7c5e0c358a0c2c5ad217fc9bc93fe1d6295b8fc6",
+      "attack_control_id": "NEG-102-A003",
+      "risk_family": "structural-contract",
+      "surface": "specification-source-fidelity",
+      "dimension": "full-issue-body",
+      "procedure": "Use the complete GitHub issue body as the primary specification source, verify its exact hash and require the official coverage validator to map every canonical candidate.",
+      "expected": "A shortened or translated specification source cannot pass as the issue body and every canonical candidate remains represented in the closure.",
+      "observed": "The exact 346-line issue body hash is preserved on the current candidate and validate_specification_coverage.py reports READY for all 102 obligations."
+    },
+    {
+      "id": "IC-I662-PUBLIC-BOUNDARY",
+      "status": "passed",
+      "head_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "subject_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "control_type": "test",
+      "evidence": ".audit/entregar-issue/evidence/handoff-remediation-662.txt",
+      "evidence_sha256": "0b684d42aed881de4ec03d9f7c5e0c358a0c2c5ad217fc9bc93fe1d6295b8fc6",
+      "attack_control_id": "NEG-099-02",
+      "risk_family": "public-boundary",
+      "surface": "invoice-filter-public-api",
+      "dimension": "manual-card-installment-invoice-query",
+      "procedure": "Exercise GET /api/installments through the authenticated router with a persisted future invoice of a manual card installment purchase.",
+      "expected": "The public API returns the correct future occurrence and canonical origin transaction rather than relying on repository-only fixtures.",
+      "observed": "The exact-head PostgreSQL integration run returned the second occurrence of three through the public installments API boundary."
+    },
+    {
+      "id": "IC-I662-TENANT-ISOLATION",
+      "status": "passed",
+      "head_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "subject_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "control_type": "test",
+      "evidence": ".audit/entregar-issue/evidence/handoff-remediation-662.txt",
+      "evidence_sha256": "0b684d42aed881de4ec03d9f7c5e0c358a0c2c5ad217fc9bc93fe1d6295b8fc6",
+      "attack_control_id": "NEG-099-03",
+      "risk_family": "tenant-isolation",
+      "surface": "tenant-scope-isolation",
+      "dimension": "cross-profile-exclusion",
+      "procedure": "Use two deliberately distinct financial profiles and query profile A invoiceId through profile B before rechecking the target profile result.",
+      "expected": "The sibling profile is excluded with zero foreign rows and cannot influence the target profile occurrence.",
+      "observed": "The exact-head PostgreSQL integration test returned an empty result for the distinct sibling profile and one canonical row for the target profile."
+    },
+    {
+      "id": "IC-I662-ROLLBACK",
+      "status": "passed",
+      "head_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "subject_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "control_type": "test",
+      "evidence": ".audit/entregar-issue/evidence/handoff-remediation-662.txt",
+      "evidence_sha256": "0b684d42aed881de4ec03d9f7c5e0c358a0c2c5ad217fc9bc93fe1d6295b8fc6",
+      "attack_control_id": "NEG-086-02",
+      "risk_family": "rollback",
+      "surface": "installment-edit-rollback",
+      "dimension": "installment-propagation-failure",
+      "procedure": "Inject a PostgreSQL trigger failure on Installment propagation during a card-purchase instrument edit and read back Transaction plus all Installment rows.",
+      "expected": "The edit rejects and no partial Transaction or Installment mutation survives the injected failure.",
+      "observed": "The exact-head integration test observed full rollback to the pre-edit transaction and three-installment schedule."
+    },
+    {
+      "id": "IC-I662-CONCURRENCY",
+      "status": "passed",
+      "head_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "subject_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "control_type": "test",
+      "evidence": ".audit/entregar-issue/evidence/handoff-remediation-662.txt",
+      "evidence_sha256": "0b684d42aed881de4ec03d9f7c5e0c358a0c2c5ad217fc9bc93fe1d6295b8fc6",
+      "attack_control_id": "NEG-086-03",
+      "risk_family": "concurrency-atomicity",
+      "surface": "instrument-propagation-concurrency",
+      "dimension": "parallel-instrument-edits",
+      "procedure": "Race two updates for the same installment purchase with deliberately different card instruments and reload the canonical purchase plus schedule.",
+      "expected": "Either contender may win, but every installment must equal the final Transaction instrument and no mixed schedule may remain.",
+      "observed": "The exact-head PostgreSQL integration test completed both parallel edits with all three Installment.cardInstrumentId values equal to the final Transaction.cardInstrumentId."
+    },
+    {
+      "id": "IC-I662-CHROME",
+      "status": "passed",
+      "head_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "subject_sha": "a64f2a6772961400626f593947ec651dd4ba6b35",
+      "control_type": "scenario",
+      "evidence": ".audit/entregar-issue/evidence/handoff-remediation-662.txt",
+      "evidence_sha256": "0b684d42aed881de4ec03d9f7c5e0c358a0c2c5ad217fc9bc93fe1d6295b8fc6",
+      "attack_control_id": "NEG-082-02",
+      "risk_family": "structural-contract",
+      "surface": "issue-662-browser-edit",
+      "dimension": "future-installment-readonly-context",
+      "procedure": "Run the issue #662 Chrome scenario on desktop and mobile, opening an untouched Parcelado creation modal and then editing the second future occurrence.",
+      "expected": "Creation defaults to total value semantics and future-occurrence edit exposes X/Y plus readonly structure with editable description/instrument and no overflow.",
+      "observed": "Statement visual validation #3443 passed at 1366x768 and 390x844 with failures=[] and preserved the visual evidence artifact digest."
     }
   ],
   "retired_controls": [],
@@ -20,12 +104,17 @@
     {
       "kind": "independent-rejection",
       "rejection_id": "audit-rejection:solverfin-pr664-1293b0c-delivery-not-ready",
-      "finding_ids": ["A-001", "A-002"]
+      "finding_ids": [
+        "A-001",
+        "A-002"
+      ]
     },
     {
       "kind": "independent-rejection",
       "rejection_id": "audit-rejection:solverfin-pr664-12af364-spec-source-drift",
-      "finding_ids": ["A-003"]
+      "finding_ids": [
+        "A-003"
+      ]
     }
   ],
   "unresolved_controls": []

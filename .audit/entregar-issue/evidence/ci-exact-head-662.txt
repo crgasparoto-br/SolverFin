@@ -1,12 +1,13 @@
 Repository: crgasparoto-br/SolverFin
 Pull request: 664
 Issue: 662
-Material head: 479513b213ceb877419813f36885f1ed09c799d9
-Integrated base head: b7e1cf8bd53a143b818aad56e62527e1efe78705
-Merge ancestry: first parent 1293b0c9e3216bd6aa097cd8dc66d8d0c8f08711; second parent b7e1cf8bd53a143b818aad56e62527e1efe78705.
-CI workflow run: 34644830282 / completed success
-Integration API + PostgreSQL job: 103412980594 / completed success
-Statement visual workflow run: 34644830362 / completed success
-Chrome visual validation job: 103412980715 / completed success
-Observed material checks: formatting, lint, typecheck, Prisma validation/migrations, seed, API integration tests, web tests, build and registered Chrome visual scenarios.
-The executions above are bound to the exact material head and predate only result-only handoff publication.
+Material head: a64f2a6772961400626f593947ec651dd4ba6b35
+Base head: b7e1cf8bd53a143b818aad56e62527e1efe78705
+CI workflow run: 34756041627 / #4963 / completed success
+Integration API + PostgreSQL: success on the exact material head, including card-purchase-installment-audit-controls.integration.test.ts
+Statement visual workflow run: 34756041625 / #3443 / completed success
+Visual artifact: statement-visual-evidence-a64f2a6772961400626f593947ec651dd4ba6b35
+Visual artifact digest: sha256:5cd96013498637beff10519bfb5724e454dcf59d4f39f5c2a175b27cb527c6e1
+Chrome issue-662 scenario: passed on desktop 1366x768 and mobile 390x844 with failures=[]
+Observed material checks include formatting, lint, typecheck, Prisma validation/migrations, seed, API integration tests, web tests, build and registered Chrome visual scenarios.
+PR state after CI: open, not merged, mergeable.
