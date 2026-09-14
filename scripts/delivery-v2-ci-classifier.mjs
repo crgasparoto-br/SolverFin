@@ -10,7 +10,11 @@ const POLICY = JSON.parse(
 ).riskPolicy;
 
 function normalizePath(value) {
-  return String(value || "").trim().replaceAll("\\", "/").replace(/^\.\//, "").toLowerCase();
+  return String(value || "")
+    .trim()
+    .replaceAll("\\", "/")
+    .replace(/^\.\//, "")
+    .toLowerCase();
 }
 
 function isDocsPath(path) {
