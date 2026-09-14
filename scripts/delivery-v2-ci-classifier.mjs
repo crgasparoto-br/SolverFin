@@ -3,21 +3,14 @@ import { fileURLToPath } from "node:url";
 import { resolveRiskProfile } from "../.delivery-v2/risk-profile.mjs";
 
 export const DELIVERY_V2_RISK_PROFILES = Object.freeze(["fast", "standard", "critical"]);
-export const DELIVERY_V2_REQUESTED_RISKS = Object.freeze([
-  "auto",
-  ...DELIVERY_V2_RISK_PROFILES,
-]);
+export const DELIVERY_V2_REQUESTED_RISKS = Object.freeze(["auto", ...DELIVERY_V2_RISK_PROFILES]);
 
 const POLICY = JSON.parse(
   readFileSync(new URL("../.delivery-v2/policy.json", import.meta.url), "utf8"),
 ).riskPolicy;
 
 function normalizePath(value) {
-  return String(value || "")
-    .trim()
-    .replaceAll("\\", "/")
-    .replace(/^\.\//, "")
-    .toLowerCase();
+  return String(value || "").trim().replaceAll("\\", "/").replace(/^\.\//, "").toLowerCase();
 }
 
 function isDocsPath(path) {
@@ -55,10 +48,7 @@ export function classifyDeliveryV2Ci({ requested = "auto", changedPaths = [] } =
 }
 
 function parseCliArgs(argv) {
-  const result = {
-    requested: process.env.DELIVERY_V2_REQUESTED_RISK || "auto",
-    pathsFile: null,
-  };
+  const result = { requested: process.env.DELIVERY_V2_REQUESTED_RISK || "auto", pathsFile: null };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--paths-file") result.pathsFile = argv[++index];
