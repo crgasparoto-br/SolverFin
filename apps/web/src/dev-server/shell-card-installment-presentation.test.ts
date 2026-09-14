@@ -11,10 +11,10 @@ const cardShell = renderAuthenticatedShell({
   content: installmentPurchaseContent,
 });
 
-assert.doesNotMatch(
+assert.match(
   cardShell,
   /data-operational-installments-styles/,
-  "cartões não deve carregar o decorador legado de parcelas que duplica a projeção nativa",
+  "cartões deve carregar o decorador operacional que materializa o contrato visual de parcelas",
 );
 assert.match(
   cardShell,
