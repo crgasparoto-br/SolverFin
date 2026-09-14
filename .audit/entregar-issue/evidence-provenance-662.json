@@ -1,1 +1,17 @@
-{"schema_version":1,"material_head_sha":"a64f2a6772961400626f593947ec651dd4ba6b35","base_sha":"b7e1cf8bd53a143b818aad56e62527e1efe78705","evidence":[{"evidence_id":"EV-CI-COUNT","kind":"quantitative","path":".audit/entregar-issue/evidence/ci-exact-head-662.txt","sha256":"df96bd09c97262d8de8ec34626b4d78ef8357bee2b6f990ac032453619ec6564","subject_sha":"a64f2a6772961400626f593947ec651dd4ba6b35","freshness_policy":"exact-material-head","producer":"GitHub Actions CI #4963 and Statement visual validation #3443","status":"passed"}]}
+{
+  "schema_version": 1,
+  "material_head_sha": "28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21",
+  "base_sha": "b7e1cf8bd53a143b818aad56e62527e1efe78705",
+  "evidence": [
+    {
+      "evidence_id": "EV-CI-COUNT",
+      "kind": "quantitative",
+      "path": ".audit/entregar-issue/evidence/ci-exact-head-662.txt",
+      "sha256": "a59463760aba1582a4b50a5f60b7f6d2555308f24c4eeef88c872c82826f1e36",
+      "subject_sha": "28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions CI #4968 and Statement visual validation #3448",
+      "status": "passed"
+    }
+  ]
+}

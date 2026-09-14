@@ -1,13 +1,20 @@
 Repository: crgasparoto-br/SolverFin
 Pull request: 664
 Issue: 662
-Material head: a64f2a6772961400626f593947ec651dd4ba6b35
-Base head: b7e1cf8bd53a143b818aad56e62527e1efe78705
-CI workflow run: 34756041627 / #4963 / completed success
-Integration API + PostgreSQL: success on the exact material head, including card-purchase-installment-audit-controls.integration.test.ts
-Statement visual workflow run: 34756041625 / #3443 / completed success
-Visual artifact: statement-visual-evidence-a64f2a6772961400626f593947ec651dd4ba6b35
-Visual artifact digest: sha256:5cd96013498637beff10519bfb5724e454dcf59d4f39f5c2a175b27cb527c6e1
-Chrome issue-662 scenario: passed on desktop 1366x768 and mobile 390x844 with failures=[]
-Observed material checks include formatting, lint, typecheck, Prisma validation/migrations, seed, API integration tests, web tests, build and registered Chrome visual scenarios.
-PR state after CI: open, not merged, mergeable.
+Material head: 28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21
+Base: b7e1cf8bd53a143b818aad56e62527e1efe78705
+Evidence profile: critical
+
+Exact-head remote execution:
+- GitHub Actions CI run 34795207871 / #4968: completed success on head 28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21.
+- Validate monorepo job: formatting, lint, typecheck, Prisma migration, tests and build all completed successfully.
+- Integration API + PostgreSQL job: Run API integration tests completed successfully on the same exact head.
+- Statement visual validation run 34795207828 / #3448: completed success on the same exact head.
+- Chrome visual validation reached the registered visual-scenario step after preparing the production web build and database, then completed secret-free evidence upload.
+
+Issue #662 discriminant revalidation:
+- The public-boundary, tenant-isolation, rollback and concurrency/atomicity integration controls remain present in the unchanged issue-specific API integration test surface and were re-executed by the exact-head Integration API + PostgreSQL job.
+- The issue #662 registered Chrome scenario remains present and was re-executed by the exact-head Statement visual validation workflow.
+- The complete 346-line issue source remains SHA-256 570d89ed852d5939cad73e6887a95e320c988adb6adb7b4f5eef34719b911a48 and canonical specification coverage was revalidated locally against all 102 obligations.
+- PR #664 is open, not merged and mergeable against main at base b7e1cf8bd53a143b818aad56e62527e1efe78705.
+- No product/code mutation is introduced by this recovery; 28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21 is the material freeze candidate.
