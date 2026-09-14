@@ -95,7 +95,7 @@ async function budgetsExposeUsageAndArchiveActions(): Promise<void> {
 
   assert.match(
     html,
-    /data-api-path="\/api\/budgets\/budget-1\/usage" title="Ver uso do orçamento">[\s\S]*?Uso<\/button>/,
+    /data-api-path="\/api\/budgets\/budget-1\/usage" title="Ver uso do orçamento">Atualizar uso<\/button>/,
   );
   assert.match(
     html,
