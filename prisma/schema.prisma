@@ -506,7 +506,8 @@ model Transaction {
   cardInstrument           CardInstrument?    @relation(fields: [cardInstrumentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   invoice                  Invoice?           @relation("InvoiceTransactions", fields: [invoiceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   recurrence               Recurrence?        @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
-  installment              Installment?       @relation(fields: [installmentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  installment              Installment?       @relation("TransactionInstallment", fields: [installmentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  purchaseInstallments     Installment[]      @relation("InstallmentPurchaseTransaction")
   importBatch              ImportBatch?       @relation(fields: [importBatchId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   aiSuggestion             AiSuggestion?      @relation(fields: [aiSuggestionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   paidInvoice              Invoice?           @relation("InvoicePaymentTransaction")
@@ -591,6 +592,8 @@ model Installment {
   organizationId     String            @db.Uuid
   financialProfileId String            @db.Uuid
   recurrenceId       String?           @db.Uuid
+  transactionId      String?           @db.Uuid
+  invoiceId          String?           @db.Uuid
   cardId             String?           @db.Uuid
   cardInstrumentId   String?           @db.Uuid
   status             InstallmentStatus @default(PLANNED)
@@ -604,17 +607,21 @@ model Installment {
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
-  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
-  recurrence       Recurrence?      @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
-  card             Card?            @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
-  cardInstrument   CardInstrument?  @relation(fields: [cardInstrumentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
-  transactions     Transaction[]
+  financialProfile  FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  recurrence        Recurrence?      @relation(fields: [recurrenceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  sourceTransaction Transaction?     @relation("InstallmentPurchaseTransaction", fields: [transactionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  invoice           Invoice?         @relation("InvoiceInstallments", fields: [invoiceId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  card              Card?            @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  cardInstrument    CardInstrument?  @relation(fields: [cardInstrumentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  transactions      Transaction[]    @relation("TransactionInstallment")
 
   @@unique([id, organizationId, financialProfileId])
   @@unique([organizationId, financialProfileId, recurrenceId, sequenceNumber])
+  @@unique([organizationId, financialProfileId, transactionId, sequenceNumber])
   @@index([organizationId, financialProfileId, dueOn])
   @@index([organizationId, financialProfileId, status])
   @@index([organizationId, financialProfileId, cardInstrumentId])
+  @@index([organizationId, financialProfileId, invoiceId])
 }
 
 model InstallmentCreationRequest {
@@ -654,6 +661,7 @@ model Invoice {
   financialProfile   FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   card               Card             @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   transactions       Transaction[]    @relation("InvoiceTransactions")
+  installments       Installment[]    @relation("InvoiceInstallments")
   paymentTransaction Transaction?     @relation("InvoicePaymentTransaction", fields: [paymentTransactionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
 
   @@unique([id, organizationId, financialProfileId])
@@ -812,7 +820,7 @@ model AuditLogEntry {
   occurredAt         DateTime        @default(now())
   actorKind          AuditActorKind
   actorId            String?         @db.Uuid
-  action              AuditAction
+  action             AuditAction
   entityKind         AuditEntityKind
   entityId           String          @db.Uuid
   correlationId      String?         @db.VarChar(120)

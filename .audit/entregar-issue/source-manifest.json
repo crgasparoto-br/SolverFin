@@ -1,14 +1,1 @@
-{
-  "schema_version": 1,
-  "repository": "crgasparoto-br/SolverFin",
-  "issue": 599,
-  "material_head_sha": "add47e998e7b17f4a91396ae0c099d8bb04af5c7",
-  "sources": [
-    {
-      "id": "SRC-ISSUE-599",
-      "path": ".audit/entregar-issue/specification-sources/SRC-ISSUE-599.txt",
-      "sha256": "5a57df6e09665f7ebf7f87c4bed2960f680174fc1a3532c1a1f2672f50a286ec",
-      "required": true
-    }
-  ]
-}
+{"schema_version":1,"repository":"crgasparoto-br/SolverFin","issue":662,"material_head_sha":"a64f2a6772961400626f593947ec651dd4ba6b35","complete":true,"discovery":{"issue_comments":0,"attachments":0,"subissues":0,"declared_paths_reviewed":true,"omissions":[]},"sources":[{"id":"SRC-ISSUE-662","type":"github-issue","locator":"https://github.com/crgasparoto-br/SolverFin/issues/662","path":".audit/entregar-issue/specification-sources/SRC-ISSUE-662.txt","sha256":"570d89ed852d5939cad73e6887a95e320c988adb6adb7b4f5eef34719b911a48","required":true,"complete":true},{"id":"SRC-AGENTS","type":"repository-instructions","locator":"AGENTS.md","path":"AGENTS.md","sha256":"e4484e3a161485fdcdd70340c7b09b00cfa8a1ce551d2cb75b95e9fda17ea497","required":true},{"id":"SRC-README","type":"repository-documentation","locator":"README.md","path":"README.md","sha256":"f3d90715285c89061e90e5b6936a2753c8d68b549fbd94385a873e6fbf5181c9","required":true},{"id":"SRC-PRODUCT","type":"repository-documentation","locator":"docs/PRODUCT.md","path":"docs/PRODUCT.md","sha256":"903d8de33bea99bf1f4a5df172a80c98b2d18af8033bfae990e03d737388a281","required":true},{"id":"SRC-EVOLUTION","type":"repository-documentation","locator":"docs/EVOLUTION_STRATEGY.md","path":"docs/EVOLUTION_STRATEGY.md","sha256":"292b9ce307d68ba5bc4b8bc6b96c0da870694fe20ab40630c2115ee980012044","required":true},{"id":"SRC-ARCHITECTURE","type":"repository-documentation","locator":"docs/ARCHITECTURE.md","path":"docs/ARCHITECTURE.md","sha256":"4396319c5390201a765602f65362baf4babb514acb7360717d41a60d3e7ecaa9","required":true},{"id":"SRC-BRAND","type":"repository-documentation","locator":"docs/BRAND.md","path":"docs/BRAND.md","sha256":"ec2c403cab66f13b71eddffe13327f8efa965db51b9cc29275744e550e7e0ed1","required":true},{"id":"SRC-DESIGN","type":"repository-documentation","locator":"docs/DESIGN_SYSTEM.md","path":"docs/DESIGN_SYSTEM.md","sha256":"03dca05e8729d9e15b783774a81bfb40ccf65377bbb5f89bc30e4af744a00147","required":true},{"id":"SRC-ADR","type":"repository-documentation","locator":"docs/adr/README.md","path":"docs/adr/README.md","sha256":"d44d8bce4a9507e6fc2c692844e985599e58fd1fa05f530bf6a6fc4315b9297e","required":true},{"id":"SRC-COPILOT","type":"repository-instructions","locator":".github/copilot-instructions.md","path":".github/copilot-instructions.md","sha256":"4d20aa2e4c40e03232e24613d129bff99e3e2c301587aa1fb3d782121f42aacf","required":true}],"contract_searches":{"old_terms":["valor por parcela implícito","parcela editável"],"new_terms":["purchase transactionId","invoiceId","CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED"],"unresolved":[]}}

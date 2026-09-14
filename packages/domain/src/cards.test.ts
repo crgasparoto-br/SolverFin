@@ -275,6 +275,16 @@ function runRegistersInstallmentPurchase(): void {
     result.transaction.id,
     "installment should reference purchase",
   );
+  assertEqual(
+    result.installments[0]?.invoiceId,
+    result.invoice.id,
+    "installment should reference the invoice whose total includes it",
+  );
+  assertEqual(
+    result.installments[1]?.invoiceId,
+    result.futureInvoices[0]?.id,
+    "future installment should reference its own invoice",
+  );
 }
 
 function runDistributesInstallmentsAcrossFutureInvoices(): void {

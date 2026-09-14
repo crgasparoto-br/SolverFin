@@ -122,7 +122,9 @@ No modo de edicao:
 
 - o seletor de instrumento permanece visivel e editavel;
 - a data persistida da compra e preservada ao abrir o formulario;
-- o modo de repeticao fica oculto, pois repeticao so se aplica a criacao de compra.
+- para compra simples, o modo de repeticao fica oculto e valor/data continuam editaveis;
+- para compra parcelada, o modal identifica `Parcelado`, mostra `Parcela X de Y`, valor da ocorrencia, total da compra, total de parcelas e parcela inicial; valor, data e estrutura ficam somente leitura;
+- descricao, categoria e instrumento continuam editaveis. A troca de instrumento atualiza atomicamente a compra e todas as parcelas ligadas ao mesmo cronograma.
 
 Na criacao de uma compra, o campo `Data` e inicializado no navegador com a data local atual. Esse preenchimento e apenas uma sugestao editavel e nao deve usar `toISOString()` como fonte de calendario local, para evitar deslocamento de dia por fuso horario.
 
@@ -279,6 +281,7 @@ No modal de nova compra:
 - categorias irmas preservam a ordem estavel recebida da API; o cliente nao aplica uma ordenacao alfabetica concorrente;
 - categorias orfas continuam visiveis como opcoes de nivel raiz;
 - se o cartao nao tiver moeda padrao, a acao de nova compra fica indisponivel e a tela orienta a editar o cartao em `Contas e Cartoes`.
+- ao selecionar `Parcelado`, `Valor total da compra` e a interpretacao padrao e informa que o valor sera dividido. `Valor da parcela` exige escolha explicita e informa que o total sera calculado a partir dela.
 
 Os modais de compra e pagamento devem ter titulo e descricao acessiveis, fechamento por controle identificado, foco inicial em campo interativo e layout de coluna unica nas viewports moveis.
 
@@ -314,7 +317,9 @@ A cobertura automatizada deve proteger pelo menos:
 
 ## Parcelas canônicas na fatura
 
-A tela de Cartões consulta parcelas pelo `invoiceId` selecionado e associa o metadado à compra por `transaction.id`. O indicador `Parcela X de Y` aparece na própria linha da compra, sem reintroduzir blocos separados de parcelas ou histórico.
+A tela de Cartões consulta parcelas uma vez pelo `invoiceId` selecionado e associa cada ocorrência à compra por `transaction.id`. O indicador `Parcela X de Y` e o `Installment.amountMinor` aparecem na própria linha, sem reintroduzir blocos separados de parcelas ou histórico. `Transaction.amountMinor` permanece o total da compra e pode aparecer somente como `Total da compra`; contagens e subtotais da fatura usam a ocorrência.
+
+Novas compras parceladas persistem, em cada `Installment`, os vínculos `transactionId` da compra econômica e `invoiceId` da fatura que recebeu aquela parcela. Registros legados sem prova inequívoca permanecem sem esses vínculos; descrição, valor, instrumento, data aproximada e ordem visual não são usados como backfill.
 
 A manutenção continua exclusivamente pelo endpoint da compra. O bloqueio `invoice_linked` pertence ao contrato de edição direta de parcelas, prevalece sobre motivos genéricos de situação da transação e não desabilita, por si só, uma compra que a situação da fatura permite editar. O indicador associa essa explicação por `aria-describedby` e oferece tooltip acionável por hover e foco de teclado. Faturas fechadas, pagas ou canceladas mantêm os bloqueios existentes; vencimento isolado não cria novo bloqueio.
 

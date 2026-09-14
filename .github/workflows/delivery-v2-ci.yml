@@ -1,0 +1,241 @@
+name: Delivery V2 CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: delivery-v2-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  classify:
+    name: Delivery V2 risk
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      risk_profile: ${{ steps.risk.outputs.risk_profile }}
+      docs_required: ${{ steps.risk.outputs.docs_required }}
+      code_changed: ${{ steps.risk.outputs.code_changed }}
+      web_changed: ${{ steps.risk.outputs.web_changed }}
+      api_changed: ${{ steps.risk.outputs.api_changed }}
+      database_required: ${{ steps.risk.outputs.database_required }}
+      reasons_json: ${{ steps.risk.outputs.reasons_json }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Collect changed paths
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+            require('node:fs').writeFileSync(
+              '/tmp/delivery-v2-changed-paths.json',
+              JSON.stringify(files.map((file) => file.filename))
+            );
+      - name: Classify PR deterministically
+        id: risk
+        env:
+          DELIVERY_V2_REQUESTED_RISK: ${{ vars.DELIVERY_V2_RISK_PROFILE || 'auto' }}
+        run: node scripts/delivery-v2-ci-classifier.mjs --paths-file /tmp/delivery-v2-changed-paths.json
+      - name: Publish classification summary
+        run: |
+          echo "## Delivery V2 risk" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Effective: \`${{ steps.risk.outputs.risk_profile }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Reasons: \`${{ steps.risk.outputs.reasons_json }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  merge_preview:
+    name: Merge preview compatibility
+    needs: classify
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        if: needs.classify.outputs.code_changed == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+        if: needs.classify.outputs.code_changed == 'true'
+      - name: Verify classifier package in merge preview
+        run: node .delivery-v2/verify.mjs
+      - name: FAST web type compatibility
+        if: needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true'
+        run: npm run typecheck --workspace @solverfin/web
+      - name: STANDARD or CRITICAL type compatibility
+        if: needs.classify.outputs.code_changed == 'true' && needs.classify.outputs.risk_profile != 'fast'
+        run: npm run typecheck
+
+  fast_validation:
+    name: FAST validation
+    needs: [classify, merge_preview]
+    if: ${{ always() && needs.classify.result == 'success' && needs.merge_preview.result == 'success' && needs.classify.outputs.risk_profile == 'fast' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VERIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.VERIFICATION_HEAD_SHA }}
+      - name: Verify exact head
+        run: test "$(git rev-parse HEAD)" = "$VERIFICATION_HEAD_SHA"
+      - run: node .delivery-v2/verify.mjs
+      - run: node --test scripts/delivery-v2-ci-classifier.test.mjs
+      - uses: actions/setup-node@v4
+        if: needs.classify.outputs.web_changed == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+        if: needs.classify.outputs.web_changed == 'true'
+      - name: Web typecheck
+        if: needs.classify.outputs.web_changed == 'true'
+        run: npm run typecheck --workspace @solverfin/web
+      - name: Web lint
+        if: needs.classify.outputs.web_changed == 'true'
+        run: npm run lint --workspace @solverfin/web
+      - name: Web tests
+        if: needs.classify.outputs.web_changed == 'true'
+        run: npm run test --workspace @solverfin/web
+      - name: Web build
+        if: needs.classify.outputs.web_changed == 'true'
+        run: npm run build --workspace @solverfin/web
+
+  standard_validation:
+    name: STANDARD validation
+    needs: [classify, merge_preview]
+    if: ${{ always() && needs.classify.result == 'success' && needs.merge_preview.result == 'success' && needs.classify.outputs.risk_profile == 'standard' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      VERIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.VERIFICATION_HEAD_SHA }}
+      - name: Verify exact head
+        run: test "$(git rev-parse HEAD)" = "$VERIFICATION_HEAD_SHA"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: node .delivery-v2/verify.mjs
+      - run: node --test scripts/delivery-v2-ci-classifier.test.mjs
+      - run: npm run format:check
+      - run: npm run lint --workspace @solverfin/web
+      - run: npm run typecheck --workspace @solverfin/web
+      - run: npm run test --workspace @solverfin/web
+      - run: npm run build --workspace @solverfin/web
+
+  critical_validation:
+    name: CRITICAL validation
+    needs: [classify, merge_preview]
+    if: ${{ always() && needs.classify.result == 'success' && needs.merge_preview.result == 'success' && needs.classify.outputs.risk_profile == 'critical' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      VERIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      NODE_ENV: test
+      DATABASE_URL: postgresql://solverfin:solverfin_ci_password@localhost:5432/solverfin_ci?schema=public
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: solverfin_ci
+          POSTGRES_USER: solverfin
+          POSTGRES_PASSWORD: solverfin_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U solverfin -d solverfin_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.VERIFICATION_HEAD_SHA }}
+      - name: Verify exact head
+        run: test "$(git rev-parse HEAD)" = "$VERIFICATION_HEAD_SHA"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: node .delivery-v2/verify.mjs
+      - run: node --test scripts/delivery-v2-ci-classifier.test.mjs
+      - run: npm run env:check
+      - run: npm run prisma:validate
+      - run: npm run db:seed:check
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run prisma:generate
+      - run: npm run db:deploy
+      - run: npm run db:seed
+      - run: npm run test
+      - run: npm run test:integration --workspace @solverfin/api
+      - run: npm run diagnose:import-statement-consistency -- --expect-zero
+      - run: npm run build
+
+  gate:
+    name: Delivery V2 gate
+    needs: [classify, merge_preview, fast_validation, standard_validation, critical_validation]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      RISK_PROFILE: ${{ needs.classify.outputs.risk_profile }}
+      CLASSIFY_RESULT: ${{ needs.classify.result }}
+      MERGE_PREVIEW_RESULT: ${{ needs.merge_preview.result }}
+      FAST_RESULT: ${{ needs.fast_validation.result }}
+      STANDARD_RESULT: ${{ needs.standard_validation.result }}
+      CRITICAL_RESULT: ${{ needs.critical_validation.result }}
+    steps:
+      - name: Enforce exactly one risk path
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$CLASSIFY_RESULT" = success
+          test "$MERGE_PREVIEW_RESULT" = success
+          case "$RISK_PROFILE" in
+            fast)
+              test "$FAST_RESULT" = success
+              test "$STANDARD_RESULT" = skipped
+              test "$CRITICAL_RESULT" = skipped
+              ;;
+            standard)
+              test "$FAST_RESULT" = skipped
+              test "$STANDARD_RESULT" = success
+              test "$CRITICAL_RESULT" = skipped
+              ;;
+            critical)
+              test "$FAST_RESULT" = skipped
+              test "$STANDARD_RESULT" = skipped
+              test "$CRITICAL_RESULT" = success
+              ;;
+            *)
+              echo "Invalid risk profile: $RISK_PROFILE" >&2
+              exit 2
+              ;;
+          esac

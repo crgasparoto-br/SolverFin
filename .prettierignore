@@ -24,3 +24,6 @@ apps/web/src/dev-server/cards-page.ts
 
 # Machine-generated audit handoff artifacts are validated by their owning contract and hashes.
 .audit/entregar-issue/
+
+# Generated Delivery V2 package is validated by its lock hashes and must not be reformatted.
+.delivery-v2/

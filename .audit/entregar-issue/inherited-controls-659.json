@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+  "controls": [
+    {
+      "id": "AUDIT-A-001-TARGET-BINDING",
+      "status": "passed",
+      "head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+      "subject_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+      "control_type": "procedure",
+      "evidence": "evidence/handoff-remediation.txt",
+      "evidence_sha256": "68dbe38f700a0b32ba99bf016dbb7bf90297c9b1d14a9e4017b41864748946e4",
+      "procedure": "Validate current repository, issue and PR subject against the rebuilt handoff instead of accepting an inherited foreign certificate.",
+      "expected": "A foreign or inherited certificate cannot satisfy readiness for issue 659 / PR 661.",
+      "observed": "Current package is explicitly rebuilt for issue 659 / PR 661 at material head cc1d2b9ba804adbfd34aa7f52577391f6dc987e2; prior foreign-target handoff is not reused.",
+      "attack_control_id": "NEG-REQ-036-2",
+      "risk_family": "structural-contract",
+      "surface": "delivery-target-binding",
+      "dimension": "inherited-foreign-certificate"
+    },
+    {
+      "id": "AUDIT-A-002-PACKAGE-SCOPE",
+      "status": "passed",
+      "head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+      "subject_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+      "control_type": "procedure",
+      "evidence": "evidence/package-script-remediation.txt",
+      "evidence_sha256": "bf3afc3cd17c16251cd246fcf39254e87de6fb0392a12a7e0341b2fed455218c",
+      "procedure": "Compare package operator commands around the issue-specific script change and reject any unrelated behavioral drift before handoff.",
+      "expected": "Issue #659 may add its visual gate but must not change the bootstrap behavior of the documented user category repair command.",
+      "observed": "At current material head cc1d2b9ba804adbfd34aa7f52577391f6dc987e2, the user repair command again runs prepare-local-env.mjs first; exact-head CI and Chrome visual validation pass after the isolated restoration.",
+      "attack_control_id": "NEG-REQ-036-3",
+      "risk_family": "structural-contract",
+      "surface": "package-script-contract",
+      "dimension": "unrelated-operation-drift"
+    }
+  ],
+  "retired_controls": [],
+  "source_audits": [
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d",
+      "finding_ids": [
+        "A-001"
+      ]
+    },
+    {
+      "kind": "independent-rejection",
+      "rejection_id": "audit-rejection:9f4a3e7e-3c7f-4a63-b5f4-fd9f6c7a2b11",
+      "finding_ids": [
+        "A-002"
+      ]
+    }
+  ],
+  "unresolved_controls": []
+}

@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-001",
+      "escape_class": "handoff-not-produced",
+      "status": "passed",
+      "revalidated_head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:0a09e23c-b31e-47f8-9e7d-b6e10115bf7d",
+        "audited_head_sha": "3169ed0ae260bfd4240a4659583e2b7db0c8de63",
+        "finding_id": "A-001",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "98a741da2635291d2d67180f38c822e1c1a4d6e508388eb1e832e5676ddb2839"
+      },
+      "plausible_wrong_implementation": "Treat a foreign terminal certificate inherited from the base as if it belonged to the current issue and PR, skipping publication of a target-bound handoff.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Revalidate the current package subject as issue 659 / PR 661 and rebuild the final certificate for the current material head.",
+        "observed": "The package remains bound to issue 659 / PR 661 and is revalidated on current material head cc1d2b9ba804adbfd34aa7f52577391f6dc987e2."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-001-S1",
+          "surface": "delivery-target-binding",
+          "dimension": "inherited-foreign-certificate",
+          "status": "passed"
+        },
+        {
+          "id": "A-001-S2",
+          "surface": "delivery-target-binding",
+          "dimension": "wrong-pr-subject",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "The target-binding guard rejects inherited or foreign certificates for the current target."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "The terminal certificate binds repository, issue, PR, branch, material parent and allowlisted result paths."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "inherited-foreign-certificate"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "wrong-pr-subject"
+        }
+      ]
+    },
+    {
+      "escape_id": "A-002",
+      "escape_class": "capability-operation-drift",
+      "status": "passed",
+      "revalidated_head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:9f4a3e7e-3c7f-4a63-b5f4-fd9f6c7a2b11",
+        "audited_head_sha": "0befdd9fb375acfe99a276cad1554dcf2bfb095d",
+        "finding_id": "A-002",
+        "finding_ids": [
+          "A-002"
+        ],
+        "audit_report_sha256": "80858d92634da988928007b368e8209c4028ffdebfd1184a160f68adb39fd731"
+      },
+      "plausible_wrong_implementation": "A feature-specific change accidentally alters an unrelated operational package command while feature tests remain green and fail to reveal the scope drift.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Compare the audited package command with the corrected candidate and verify prepare-local-env.mjs is restored before the user-specific category repair.",
+        "observed": "On current material head cc1d2b9ba804adbfd34aa7f52577391f6dc987e2, db:repair:default-categories:user invokes prepare-local-env.mjs before seed-default-categories-for-user.mjs; the corrective commit changes only that package.json line."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-002-S1",
+          "surface": "package-script-contract",
+          "dimension": "adjacent-default-category-repair-bootstrap",
+          "status": "passed"
+        },
+        {
+          "id": "A-002-S2",
+          "surface": "package-script-contract",
+          "dimension": "seed-bootstrap-preservation",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "The unrelated operator command is restored exactly to its bootstrap behavior without changing issue #659 product runtime."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "Scope review now explicitly attacks unrelated package-script drift and exact-head CI plus visual gates are rerun after correction."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "package-script-contract",
+          "dimension": "unrelated-operation-drift"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "package-script-contract",
+          "dimension": "adjacent-default-category-repair-bootstrap"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "package-script-contract",
+          "dimension": "seed-bootstrap-preservation"
+        }
+      ]
+    },
+    {
+      "escape_id": "A-003",
+      "escape_class": "delivery-scope-certificate-drift",
+      "status": "passed",
+      "revalidated_head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:05070fb8-14d4-4b4a-8f13-5f6f2514e8d7",
+        "audited_head_sha": "f5a976b610de50191b3b6218150c82d6f10c4e50",
+        "finding_id": "A-003",
+        "finding_ids": [
+          "A-003"
+        ],
+        "audit_report_sha256": "85e9b6665741535724fb9ec4a4bf72c0604cfa76e60d1ad62bd2f96c5c499bd9"
+      },
+      "plausible_wrong_implementation": "Build the certified issue-local scope from a manually filtered subset of product paths instead of the immutable work_item_start_sha..material_head_sha compare, while functional CI remains green.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Recompute the complete immutable Git compare from work_item_start_sha to material_head_sha and require exact set equality plus a deterministic scope digest before publishing the handoff.",
+        "observed": "The immutable issue-local compare contains exactly 27 normalized paths; the rebuilt certificate records all 27 and digest 6677794457940894b5725fbd37c95f10661ecfcf97b6b0b217f5fe5e84f263c7 on current material head cc1d2b9ba804adbfd34aa7f52577391f6dc987e2."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-003-S1",
+          "surface": "delivery-target-binding",
+          "dimension": "audit-artifact-omission-from-issue-local-delta",
+          "status": "passed"
+        },
+        {
+          "id": "A-003-S2",
+          "surface": "delivery-target-binding",
+          "dimension": "product-only-subset-scope-drift",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "The certificate scope is rebuilt from the complete immutable issue-local compare rather than a manually selected product-path subset."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "The issue_changed_paths set and issue_delta_sha256 are recomputed together and checked against the immutable compare before publication."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-target-binding",
+          "dimension": "issue-local-scope-exact-delta"
+        }
+      ]
+    }
+  ]
+}

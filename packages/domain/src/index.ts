@@ -238,6 +238,7 @@ export interface Installment extends Traceable, TenantScoped {
   amountMinor: number;
   currency: string;
   transactionId?: EntityId;
+  invoiceId?: EntityId;
   recurrenceId?: EntityId;
   cardId?: EntityId;
   cardInstrumentId?: EntityId;
