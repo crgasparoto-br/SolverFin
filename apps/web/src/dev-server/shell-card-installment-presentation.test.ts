@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 
 import { renderAuthenticatedShell } from "./shell.js";
 
+const installmentPurchaseContent =
+  '<article data-purchase-item><button data-edit-purchase="purchase-1">Editar compra</button><button data-move-purchase="purchase-1">Mover fatura</button><script type="application/json" data-purchase="purchase-1">{"id":"purchase-1","cardId":"card-1","installmentId":"installment-2"}</script></article>';
+
 const cardShell = renderAuthenticatedShell({
   activePathname: "/cartoes",
   currentLabel: "Cartões de Crédito",
-  content: '<article data-purchase-item><button data-edit-purchase="purchase-1">Editar compra</button><button data-move-purchase="purchase-1">Mover fatura</button><script type="application/json" data-purchase="purchase-1">{"id":"purchase-1","cardId":"card-1","installmentId":"installment-2"}</script></article>',
+  content: installmentPurchaseContent,
 });
 
 assert.doesNotMatch(
