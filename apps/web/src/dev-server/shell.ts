@@ -133,12 +133,8 @@ const groupLabelMap: Record<string, string> = {
 };
 
 function renderOperationalInstallmentsScript(activePathname: string): string {
-  if (activePathname !== "/lancamentos" && activePathname !== "/cartoes") return "";
-  const groupingGuard =
-    activePathname === "/lancamentos"
-      ? `<script>${transactionGroupInstallmentGuardScript()}</script>`
-      : "";
-  return `${groupingGuard}<script>${operationalInstallmentsController()}</script>`;
+  if (activePathname !== "/lancamentos") return "";
+  return `<script>${transactionGroupInstallmentGuardScript()}</script><script>${operationalInstallmentsController()}</script>`;
 }
 
 function hasStatementPresentation(content: string): boolean {
@@ -340,6 +336,15 @@ function cardPurchaseEditRouteScript(): string {
             return undefined;
           }
         }
+
+        function removeBlockedInstallmentMoveActions() {
+          document.querySelectorAll("[data-move-purchase]").forEach((button) => {
+            const purchase = findPurchase(button.dataset.movePurchase || "");
+            if (purchase && purchase.installmentId) button.remove();
+          });
+        }
+
+        removeBlockedInstallmentMoveActions();
 
         document.addEventListener("click", (event) => {
           const button = event.target && event.target.closest ? event.target.closest("[data-edit-purchase]") : undefined;
