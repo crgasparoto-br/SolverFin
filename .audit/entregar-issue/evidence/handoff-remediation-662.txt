@@ -1,0 +1,26 @@
+Repository: crgasparoto-br/SolverFin
+Pull request: 664
+Issue: 662
+Material head: 28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21
+Recovery: post-write-refreeze
+Independent rejection: audit-rejection:b0da7cd0-bd65-4f11-8fe3-95872a2b5999 / A-004
+Evidence profile: critical
+
+A-004 closure:
+- The previous handoff certified material head a64f2a6772961400626f593947ec651dd4ba6b35, but five later commits advanced the candidate to 28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21 and included material UI/test changes.
+- Recovery therefore uses post-write-refreeze rather than handoff-only and treats 28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21 as the new immutable material head.
+- CI #4968 and Statement visual #3448 both completed successfully on that exact material head before publication.
+- PR #664 is currently mergeable and has not been merged.
+- The next publication must be a direct result-only child of 28b6c4e84c7d1eb95c46e741d1d16bc74dd7ea21 and may change only certified .audit/entregar-issue result paths.
+
+Cumulative independent-audit controls:
+- A-001 stale material/certificate defense is revalidated by exact-head gates plus direct-parent terminal publication.
+- A-002 conflict ancestry defense remains satisfied because the current PR is mergeable and no conflict rewrite is performed in this recovery.
+- A-003 specification-source fidelity remains satisfied: the complete 346-line issue #662 source has SHA-256 570d89ed852d5939cad73e6887a95e320c988adb6adb7b4f5eef34719b911a48 and the unchanged closure contains 102 obligations.
+- A-004 adds an explicit post-handoff-material-write control: any material write after a published handoff invalidates the prior freeze and requires exact-head gates plus a new result-only child.
+
+Current exact-head evidence:
+- CI run 34795207871 / #4968: success.
+- Integration API + PostgreSQL job: success, including the issue-specific API integration suite.
+- Statement visual validation run 34795207828 / #3448: success, including registered Chrome visual scenarios.
+- No merge was performed.

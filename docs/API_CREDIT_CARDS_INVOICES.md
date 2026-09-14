@@ -184,7 +184,11 @@ Compras feitas por instrumentos diferentes do mesmo agrupador compartilham a mes
 
 `updateCardPurchaseForContext` (`PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId`) rejeita qualquer edicao quando a fatura vinculada estiver `CLOSED`, `PAID` ou `CANCELLED`, retornando o codigo `CARD_PURCHASE_INVOICE_LOCKED` com HTTP 409. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria. Se o estado historico tiver moeda divergente entre compra e fatura, `CARD_INVOICE_CURRENCY_MISMATCH` tambem bloqueia a edicao antes da mutacao.
 
-Compras parceladas criam parcelas planejadas. O valor total e dividido entre as parcelas, com centavos excedentes aplicados nas primeiras parcelas. Cada parcela preserva o `cardInstrumentId` escolhido na compra original quando o fluxo novo esta em uso.
+Compras parceladas criam parcelas planejadas. `Transaction.amountMinor` preserva o valor total canônico da compra; `Installment.amountMinor` preserva o valor da ocorrência e `Invoice.totalAmountMinor` recebe somente a ocorrência do período. O valor total e dividido pelo domínio, com centavos excedentes aplicados nas primeiras parcelas; o navegador não recompõe essa divisão.
+
+Cada nova parcela persiste `transactionId` para a compra de origem, `invoiceId` para a fatura que a contém e o `cardInstrumentId` escolhido. Assim, `GET /api/installments?invoiceId=...` devolve o cronograma de compras manuais em uma única consulta. Não há backfill por descrição, valor, instrumento ou proximidade de datas para registros legados ambíguos.
+
+Para uma compra parcelada existente, o `PATCH` operacional aceita somente descrição, categoria e instrumento. Valor, data, fatura e situação estrutural são rejeitados por `CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED` antes de qualquer mutação. A troca de instrumento atualiza a `Transaction` e todas as `Installment` da compra na mesma transação de banco.
 
 `installmentStart` permite registrar uma compra que ja esta em andamento. Informando `totalInstallments` e `installmentStart`, somente as parcelas de `installmentStart` ate o total sao criadas, e a fatura atual recebe a parcela `installmentStart`.
 

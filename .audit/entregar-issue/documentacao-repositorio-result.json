@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-06.2",
+  "skill": "documentacao-repositorio",
+  "mode": "internal-verification",
+  "status": "passed",
+  "summary": "Delta documental da issue 662 verificado sem contradições abertas.",
+  "findings": [],
+  "validations": [{"name":"delta-contract-scan","status":"passed"},{"name":"repository-format-check","status":"passed"}],
+  "artifacts": [{"path":".audit/entregar-issue/documentation-impact.json","kind":"documentation-impact"}],
+  "changed_files": ["docs/API_CREDIT_CARDS_INVOICES.md","docs/API_INSTALLMENTS.md","docs/CARDS.md","docs/STATUS_MATRIX.md"],
+  "documentation_impacts": [{"category":"api-data-interface","status":"verified"}],
+  "limitations": [],
+  "requires_refreeze": false,
+  "input_fingerprint": "b12ff8b1e4f566a98de79610e627e7eed476773c4fa785948d5e7e8ed60d2068",
+  "reused": false
+}

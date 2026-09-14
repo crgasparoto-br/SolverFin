@@ -78,7 +78,7 @@ interface CardInstrumentRecord {
 }
 interface CardPurchaseRecord {
   id: string;
-  financialProfileId: string;
+  financialProfileId?: string;
   cardId: string;
   cardInstrumentId?: string;
   invoiceId?: string;
@@ -89,8 +89,22 @@ interface CardPurchaseRecord {
   plannedOn?: string;
   description: string;
   amountMinor: number;
+  purchaseTotalAmountMinor?: number;
+  installmentSequenceNumber?: number;
+  totalInstallments?: number;
+  installmentStart?: number;
   currency: string;
   status: string;
+}
+interface InvoiceInstallmentRecord {
+  id: string;
+  sequenceNumber: number;
+  totalInstallments: number;
+  initialSequenceNumber?: number;
+  amountMinor: number;
+  currency: string;
+  transaction?: CardPurchaseRecord;
+  invoice?: { id: string };
 }
 interface InvoiceSummaryRecord {
   invoiceId: string;
@@ -186,7 +200,7 @@ export async function renderCardsPageV2(
   if (selectedCard && !recurrencesResult.ok) return renderErrorPage(recurrencesResult.error);
   const recurrences = recurrencesResult.ok ? recurrencesResult.data.recurrences : [];
 
-  const [summaryResult, purchasesResult] = selectedInvoice
+  const [summaryResult, purchasesResult, installmentsResult] = selectedInvoice
     ? await Promise.all([
         apiGet<{ summary: InvoiceSummaryRecord }>(
           token,
@@ -196,21 +210,30 @@ export async function renderCardsPageV2(
           token,
           `/api/invoices/${encodeURIComponent(selectedInvoice.id)}/purchases`,
         ),
+        apiGet<{ installments: InvoiceInstallmentRecord[] }>(
+          token,
+          `/api/installments?invoiceId=${encodeURIComponent(selectedInvoice.id)}&status=all`,
+        ),
       ])
     : ([
         { ok: true, data: { summary: undefined as InvoiceSummaryRecord | undefined } },
         { ok: true, data: { purchases: [] as CardPurchaseRecord[] } },
+        { ok: true, data: { installments: [] as InvoiceInstallmentRecord[] } },
       ] as const);
 
   if (selectedInvoice && !accountsResult.ok) return renderErrorPage(accountsResult.error);
   if (selectedInvoice && !categoriesResult.ok) return renderErrorPage(categoriesResult.error);
   if (!summaryResult.ok) return renderErrorPage(summaryResult.error);
   if (!purchasesResult.ok) return renderErrorPage(purchasesResult.error);
+  if (!installmentsResult.ok) return renderErrorPage(installmentsResult.error);
 
   const accounts = accountsResult.ok ? accountsResult.data.accounts : [];
   const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
   const summary = summaryResult.data.summary;
-  const canonicalPurchases = purchasesResult.data.purchases;
+  const canonicalPurchases = projectInvoicePurchases(
+    purchasesResult.data.purchases,
+    installmentsResult.data.installments ?? [],
+  );
   const invoiceCurrency = resolveInvoiceCurrency(selectedInvoice, canonicalPurchases);
   const visiblePurchases = sortPurchases(
     filterPurchases(canonicalPurchases, categories, presentation),
@@ -296,6 +319,37 @@ function invoicesForCard(invoices: readonly InvoiceRecord[], cardId: string): In
   return invoices
     .filter((invoice) => invoice.cardId === cardId)
     .sort((left, right) => right.periodEndOn.localeCompare(left.periodEndOn));
+}
+
+function projectInvoicePurchases(
+  purchases: readonly CardPurchaseRecord[],
+  installments: readonly InvoiceInstallmentRecord[],
+): CardPurchaseRecord[] {
+  const installmentTransactionIds = new Set(
+    installments.map((installment) => installment.transaction?.id).filter(isDefined),
+  );
+  const simpleAndRecurringPurchases = purchases.filter(
+    (purchase) => !installmentTransactionIds.has(purchase.id),
+  );
+  const installmentOccurrences = installments.flatMap((installment) => {
+    const purchase = installment.transaction;
+    if (!purchase || !installment.invoice?.id || !purchase.cardId) return [];
+    return [
+      {
+        ...purchase,
+        invoiceId: installment.invoice.id,
+        installmentId: installment.id,
+        amountMinor: installment.amountMinor,
+        currency: installment.currency,
+        purchaseTotalAmountMinor: purchase.amountMinor,
+        installmentSequenceNumber: installment.sequenceNumber,
+        totalInstallments: installment.totalInstallments,
+        installmentStart: installment.initialSequenceNumber ?? 1,
+      },
+    ];
+  });
+
+  return [...simpleAndRecurringPurchases, ...installmentOccurrences];
 }
 
 function resolveSelectedInvoice(
@@ -785,9 +839,13 @@ function renderPurchaseRow(
     : undefined;
   const locked = ["closed", "paid", "cancelled"].includes(selectedInvoice.status);
   const otherPeriods = invoices.filter((invoice) => invoice.id !== selectedInvoice.id);
+  const installmentLabel =
+    purchase.installmentSequenceNumber !== undefined && purchase.totalInstallments !== undefined
+      ? `Parcela ${purchase.installmentSequenceNumber} de ${purchase.totalInstallments}`
+      : undefined;
   return `<article class="cards-purchase-row" role="row" data-purchase-item data-reconciliation="${purchase.status === "reconciled" ? "reconciled" : "unreconciled"}">
     <time role="cell" data-label="Data" datetime="${escapeHtml(purchase.occurredOn)}">${formatDate(purchase.occurredOn)}</time>
-    <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${recurrence ? renderRecurrenceIndicator() : ""}</strong><span>${escapeHtml(category)}</span></div>
+    <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${recurrence ? renderRecurrenceIndicator() : ""}</strong>${installmentLabel ? `<span class="cards-installment-label">${escapeHtml(installmentLabel)}</span>` : ""}<span>${escapeHtml(category)}</span>${purchase.purchaseTotalAmountMinor !== undefined ? `<small>Total da compra: ${money(purchase.purchaseTotalAmountMinor, normalizeCurrency(purchase.currency))}</small>` : ""}</div>
     <span role="cell" data-label="Situação">${renderBadge({ label: formatPurchaseStatus(purchase.status), tone: purchase.status === "reconciled" ? "positive" : "information" })}</span>
     <strong role="cell" data-label="Valor" class="cards-purchase-amount">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
     <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}">•••</summary><div class="cards-purchase-menu actions-menu" role="menu">
@@ -814,7 +872,8 @@ function renderPurchaseModal(
       <header><div><span class="cards-kicker">Compra no cartão</span><h2 id="cards-purchase-dialog-title" data-purchase-modal-title>Registrar compra</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
       <form data-purchase-form data-path="/api/credit-card-accounts/${escapeHtml(selectedCard?.id ?? "")}/purchases">
         <input type="hidden" name="currentPurchaseId"><input type="hidden" name="recurrenceId">
-        <label>Valor${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00"></label>
+        <label><span data-purchase-amount-label>Valor${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}</span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00"></label>
+        <label data-purchase-field="installmentAmountMinor" hidden>Valor desta parcela${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}<input name="installmentAmountMinor" data-money inputmode="decimal" readonly aria-readonly="true"></label>
         <label>Moeda<input name="currency" value="${escapeHtml(cardCurrency ?? "")}" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" required readonly aria-readonly="true" autocomplete="off"></label>
         <label>Data<input name="occurredOn" type="date" required data-default-local-today></label>
         <label class="full">Descrição<input name="description" required placeholder="Compra no cartão"></label>
@@ -823,7 +882,8 @@ function renderPurchaseModal(
         <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
         <label data-purchase-field="totalInstallments" hidden>Parcelas<input name="totalInstallments" type="number" min="2" max="120" value="2"></label>
         <label data-purchase-field="installmentStart" hidden>Parcela inicial<input name="installmentStart" type="number" min="1" max="120" value="1"></label>
-        <label data-purchase-field="installmentValueMode" hidden>Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total</option></select></label>
+        <label data-purchase-field="installmentValueMode" hidden>Interpretação do valor<select name="installmentValueMode"><option value="total" selected>Valor total da compra</option><option value="per_installment">Valor da parcela</option></select><small data-installment-value-help>O valor será dividido pelo total de parcelas.</small></label>
+        <p class="cards-installment-context full" data-purchase-field="installmentContext" hidden aria-live="polite"></p>
         <label data-purchase-field="interval" hidden>A cada<input name="interval" type="number" min="1" max="60" value="1"></label>
         <label data-purchase-field="frequency" hidden>Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label>
         <label data-purchase-field="endOn" hidden>Fim opcional<input name="endOn" type="date"></label>
@@ -1160,8 +1220,14 @@ function clientScript(): string {
         setField("interval", mode === "fixed");
         setField("frequency", mode === "fixed");
         setField("endOn", mode === "fixed");
+        const help = purchaseForm?.querySelector("[data-installment-value-help]");
+        const valueMode = purchaseForm?.querySelector('[name="installmentValueMode"]')?.value;
+        if (help) help.textContent = valueMode === "per_installment"
+          ? "O valor informado será aplicado a cada parcela e o total da compra será calculado."
+          : "O valor será dividido pelo total de parcelas.";
       };
       repeatMode?.addEventListener("change", syncRepeatFields);
+      purchaseForm?.querySelector('[name="installmentValueMode"]')?.addEventListener("change", syncRepeatFields);
       const resetPurchaseForm = () => {
         if (!purchaseForm) return;
         purchaseForm.reset();
@@ -1170,10 +1236,21 @@ function clientScript(): string {
         purchaseForm.dataset.path = defaultPath;
         purchaseForm.dataset.currentPurchaseId = "";
         purchaseForm.dataset.recurrenceId = "";
+        purchaseForm.dataset.installmentPurchase = "false";
         purchaseForm.querySelector('[name="currentPurchaseId"]').value = "";
         purchaseForm.querySelector('[name="recurrenceId"]').value = "";
         const occurredOnField = purchaseForm.querySelector('[name="occurredOn"]');
-        if (occurredOnField) occurredOnField.value = localToday();
+        if (occurredOnField) { occurredOnField.value = localToday(); occurredOnField.readOnly = false; }
+        const amountField = purchaseForm.querySelector('[name="amountMinor"]');
+        if (amountField) amountField.readOnly = false;
+        const amountLabel = purchaseForm.querySelector("[data-purchase-amount-label]");
+        const amountCurrency = purchaseForm.querySelector('[name="currency"]')?.value || "";
+        if (amountLabel) amountLabel.textContent = "Valor" + (amountCurrency ? " (" + amountCurrency + ")" : "");
+        ["totalInstallments", "installmentStart"].forEach((name) => {
+          const field = purchaseForm.querySelector('[name="' + name + '"]');
+          if (field) field.readOnly = false;
+        });
+        if (repeatMode) repeatMode.disabled = false;
         if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = false;
         const currencyField = purchaseForm.querySelector('[name="currency"]');
         if (currencyField) currencyField.disabled = false;
@@ -1203,9 +1280,11 @@ function clientScript(): string {
           purchaseForm.dataset.method = "PATCH";
           purchaseForm.dataset.currentPurchaseId = purchase.id;
           purchaseForm.dataset.recurrenceId = purchase.recurrenceId || "";
+          const isInstallmentPurchase = Number.isInteger(purchase.installmentSequenceNumber) && Number.isInteger(purchase.totalInstallments);
+          purchaseForm.dataset.installmentPurchase = isInstallmentPurchase ? "true" : "false";
           purchaseForm.querySelector('[name="currentPurchaseId"]').value = purchase.id;
           purchaseForm.querySelector('[name="recurrenceId"]').value = purchase.recurrenceId || "";
-          purchaseForm.querySelector('[name="amountMinor"]').value = minorToMoney(purchase.amountMinor);
+          purchaseForm.querySelector('[name="amountMinor"]').value = minorToMoney(isInstallmentPurchase ? purchase.purchaseTotalAmountMinor : purchase.amountMinor);
           purchaseForm.querySelector('[name="occurredOn"]').value = purchase.occurredOn;
           purchaseForm.querySelector('[name="description"]').value = purchase.description || "";
           purchaseForm.querySelector('[name="categoryId"]').value = purchase.categoryId || "";
@@ -1215,8 +1294,32 @@ function clientScript(): string {
             currencyField.value = purchase.currency || currencyField.value;
             currencyField.disabled = true;
           }
-          if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = true;
+          if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = !isInstallmentPurchase;
+          if (isInstallmentPurchase) {
+            repeatMode.value = "installment";
+            repeatMode.disabled = true;
+            purchaseForm.querySelector('[name="amountMinor"]').readOnly = true;
+            purchaseForm.querySelector('[name="occurredOn"]').readOnly = true;
+            purchaseForm.querySelector('[name="totalInstallments"]').value = purchase.totalInstallments;
+            purchaseForm.querySelector('[name="totalInstallments"]').readOnly = true;
+            purchaseForm.querySelector('[name="installmentStart"]').value = purchase.installmentStart || 1;
+            purchaseForm.querySelector('[name="installmentStart"]').readOnly = true;
+            purchaseForm.querySelector('[name="installmentAmountMinor"]').value = minorToMoney(purchase.amountMinor);
+          }
           syncRepeatFields();
+          if (isInstallmentPurchase) {
+            setField("installmentValueMode", false);
+            setField("installmentAmountMinor", true);
+            setField("installmentContext", true);
+            const context = purchaseForm.querySelector('[data-purchase-field="installmentContext"]');
+            if (context) context.textContent = "Parcelado · Parcela " + purchase.installmentSequenceNumber + " de " + purchase.totalInstallments + ". Valor, data e estrutura do parcelamento são somente leitura.";
+            const amountLabel = purchaseForm.querySelector("[data-purchase-amount-label]");
+            const amountCurrency = purchaseForm.querySelector('[name="currency"]')?.value || "";
+            if (amountLabel) amountLabel.textContent = "Valor total da compra" + (amountCurrency ? " (" + amountCurrency + ")" : "");
+          } else {
+            setField("installmentAmountMinor", false);
+            setField("installmentContext", false);
+          }
           document.querySelector("[data-purchase-modal-title]").textContent = "Editar compra";
           lastDialogTrigger = button;
           document.querySelector('dialog[data-modal="purchase"]')?.showModal();
@@ -1250,11 +1353,12 @@ function clientScript(): string {
           status.className = "form-status error full";
           return;
         }
-        const payload = {
-          amountMinor: moneyToMinor(data.get("amountMinor")),
-          occurredOn: String(data.get("occurredOn") || ""),
-          description: String(data.get("description") || ""),
-        };
+        const editingInstallment = method === "PATCH" && purchaseForm.dataset.installmentPurchase === "true";
+        const payload = { description: String(data.get("description") || "") };
+        if (!editingInstallment) {
+          payload.amountMinor = moneyToMinor(data.get("amountMinor"));
+          payload.occurredOn = String(data.get("occurredOn") || "");
+        }
         const categoryId = String(data.get("categoryId") || "");
         const cardInstrumentId = String(data.get("cardInstrumentId") || "");
         if (categoryId) payload.categoryId = categoryId;

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "4e91bf5c36b76d5ca1e03d74d8c345bce9ce3c7f",
+  "status": "passed",
+  "local_gate": {"status":"passed","attestation":".audit/entregar-issue/attestations/attestation.json","stdout_sha256":"a94a9f72c6c15c9688c1c18500f75fcd561b7b28c406d715007e7c8d516231a1"},
+  "remote_gate": {"status":"passed","snapshot":".audit/entregar-issue/evidence-ci-snapshot-662.json","collection_count":1},
+  "failures": []
+}
