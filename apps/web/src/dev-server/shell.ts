@@ -133,6 +133,9 @@ const groupLabelMap: Record<string, string> = {
 };
 
 function renderOperationalInstallmentsScript(activePathname: string): string {
+  if (activePathname === "/cartoes") {
+    return `<script>${operationalInstallmentsController()}</script>`;
+  }
   if (activePathname !== "/lancamentos") return "";
   return `<script>${transactionGroupInstallmentGuardScript()}</script><script>${operationalInstallmentsController()}</script>`;
 }
