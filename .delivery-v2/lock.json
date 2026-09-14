@@ -1,0 +1,23 @@
+{
+  "canonicalClassifierFingerprint": "0c923371c284a71ac942cdc3b3edbde00cc578faa28c8be214c3291c89952efc",
+  "contract": "delivery-v2-classifier-package",
+  "files": {
+    "policy.json": "abfa98b42844051b6b5f186b290821eaece4dd2399643feb24b8d568a8b8aa32",
+    "repository-risk-policy.mjs": "05ca47ab7cbd9dbf8d41c9f3a5ec98cfd977758ef8e5f215b4c0f7d48e525a1f",
+    "risk-profile.mjs": "10cd3aa0d209cea00e053cec876c70db9156a4eac81a05d424ba0d6a1976501e",
+    "verify.mjs": "6b5b0332650a38546e6cacf3be0dda3ffcbf5c0b19f772191a46a0c10ead013e"
+  },
+  "packageFingerprint": "04027a5ad72e75cc34966bf52fc32bc623b9d8f1c593a48fa2d5b3afbabb7021",
+  "schemaVersion": 1,
+  "source": {
+    "commit": "00eb10545f2f7209ef649d2834300515e0b85106",
+    "repository": "crgasparoto-br/delivery-orchestrator"
+  },
+  "target": {
+    "baseBranch": "main",
+    "packageDir": ".delivery-v2",
+    "policySchemaVersion": 1,
+    "repository": "crgasparoto-br/SolverFin"
+  },
+  "verificationCommand": "node .delivery-v2/verify.mjs"
+}
