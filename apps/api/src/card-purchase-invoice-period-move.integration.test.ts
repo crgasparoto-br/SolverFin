@@ -57,7 +57,7 @@ async function main(): Promise<void> {
   await assertMoveCommonPurchase(account.id, physicalInstrument, suffix);
   await assertRejectsSamePeriod(account.id, physicalInstrument, suffix);
   await assertLockedOriginAndDestinationInvoices(account.id, physicalInstrument, suffix);
-  await assertMoveInstallmentPurchaseSelectedOccurrence(account.id, physicalInstrument, suffix);
+  await assertRejectInstallmentPurchaseMove(account.id, physicalInstrument, suffix);
   await assertMoveRecurringMaterializedOccurrence(account.id, physicalInstrument, suffix);
 }
 
@@ -195,7 +195,7 @@ async function assertLockedOriginAndDestinationInvoices(
   assert.equal(await readInvoiceTotal(movable.invoice.id), movable.invoice.totalAmountMinor);
 }
 
-async function assertMoveInstallmentPurchaseSelectedOccurrence(
+async function assertRejectInstallmentPurchaseMove(
   cardId: string,
   instrument: ApiCardInstrument,
   suffix: string,
@@ -207,22 +207,25 @@ async function assertMoveInstallmentPurchaseSelectedOccurrence(
     cardInstrumentId: instrument.id,
     totalInstallments: 3,
   });
+  const originalInvoiceId = purchase.invoice.id;
+  const originalInvoiceTotal = await readInvoiceTotal(originalInvoiceId);
 
-  const result = await moveCardPurchaseInvoicePeriodForContext(
-    CONTEXT,
-    cardId,
-    purchase.transaction.id,
-    { invoicePeriod: "2029-04" },
+  await assert.rejects(
+    () =>
+      moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, purchase.transaction.id, {
+        invoicePeriod: "2029-04",
+      }),
+    (error: unknown) =>
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED",
   );
 
   const row = await readTransaction(purchase.transaction.id);
-  assert.equal(result.transaction.installmentId, undefined);
   assert.equal(row.installmentId, null);
-  assert.equal(row.invoiceId, result.destinationInvoice.invoiceId);
-  assert.equal(result.transaction.cardInstrumentId, instrument.id);
-  assert.equal(result.transaction.amountMinor, 6_000);
-  assert.equal(await readInvoiceTotal(purchase.invoice.id), 0);
-  assert.equal(result.destinationInvoice.totalExpensesMinor, 2_000);
+  assert.equal(row.invoiceId, originalInvoiceId);
+  assert.equal(row.cardInstrumentId, instrument.id);
+  assert.equal(await readInvoiceTotal(originalInvoiceId), originalInvoiceTotal);
 }
 
 async function assertMoveRecurringMaterializedOccurrence(
