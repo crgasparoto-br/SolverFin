@@ -62,20 +62,20 @@ A composicao preserva os caminhos deterministas quando a integracao externa esta
 
 As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas da Fase 2. Evolucoes exigem issue propria.
 
-| Area                   | Estado atual         | Limite explicito                                 |
-| ---------------------- | -------------------- | ------------------------------------------------ |
-| Contas                 | Parcial              | Sem tela dedicada de detalhe                     |
-| Categorias             | Parcial              | Sem tela dedicada de detalhe                     |
-| Lancamentos / Extrato  | Feito no fluxo atual | Jornada operacional permanece no Extrato         |
-| Recorrencias           | Feito no fluxo atual | Sem rota propria                                 |
-| Parcelas               | Feito no fluxo atual | Sem rota propria; manutencao conservadora        |
-| Cartoes / Faturas      | Feito no fluxo atual | Cadastro mestre separado da rotina operacional   |
-| Orcamentos             | Parcial              | Sem tela dedicada de detalhe/uso                 |
-| Contas a pagar/receber | Legado               | Compatibilidade sem jornada operacional propria  |
-| Relatorios             | Feito                | Somente leitura no recorte atual                 |
-| Perfis financeiros     | Parcial              | Evolucoes multiusuario ficam em recorte separado |
-| Autenticacao produtiva | Feito no codigo      | Ativacao depende da configuracao do ambiente     |
-| Configuracoes          | Parcial              | Novas preferencias ficam em evolucao propria     |
+| Area                   | Estado atual         | Limite explicito                                                            |
+| ---------------------- | -------------------- | --------------------------------------------------------------------------- |
+| Contas                 | Parcial              | Sem tela dedicada de detalhe                                                |
+| Categorias             | Parcial              | Sem tela dedicada de detalhe                                                |
+| Lancamentos / Extrato  | Feito no fluxo atual | Jornada operacional permanece no Extrato                                    |
+| Recorrencias           | Feito no fluxo atual | Sem rota propria                                                            |
+| Parcelas               | Feito no fluxo atual | Sem rota propria; manutencao conservadora                                   |
+| Cartoes / Faturas      | Feito no fluxo atual | Cadastro mestre separado da rotina operacional                              |
+| Orcamentos             | Feito no fluxo atual | Planejado x realizado por categoria, periodo e moeda; evolucao #619 separada |
+| Contas a pagar/receber | Legado               | Compatibilidade sem jornada operacional propria                             |
+| Relatorios             | Feito                | Somente leitura no recorte atual                                            |
+| Perfis financeiros     | Parcial              | Evolucoes multiusuario ficam em recorte separado                            |
+| Autenticacao produtiva | Feito no codigo      | Ativacao depende da configuracao do ambiente                                |
+| Configuracoes          | Parcial              | Novas preferencias ficam em evolucao propria                                |
 
 ## Fase 3 - Integridade financeira, multi-moedas e fundacao de interface
 
@@ -90,6 +90,7 @@ A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas
 | Datas financeiras formalizadas                                | Feito     | #597, `docs/TRANSACTION_DATES.md`                                 |
 | Invariantes financeiros ponta a ponta                         | Feito     | #598, `apps/api/src/financial-invariants-e2e.integration.test.ts` |
 | Parcelas de cartão: valor, vínculo e edição conservadora      | Feito     | #662, `docs/CARDS.md`, `docs/API_INSTALLMENTS.md`                 |
+| Orcamentos migrados para acompanhamento multi-moedas          | Feito     | #613, `docs/API_BUDGETS_GOALS_ALERTS.md`                          |
 | Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`                                     |
 | View-models/presenters para separar UI de calculos            | Planejado | #590, ADR 0014                                                    |
 | Retirada gradual de pos-processamento textual de HTML         | Planejado | #590, ADR 0014                                                    |
