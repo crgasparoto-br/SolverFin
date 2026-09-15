@@ -85,15 +85,17 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
     .muted { color: var(--muted); line-height: var(--sf-line-height-normal); }
 
     /* ── Forms ── */
-    form { display: grid; gap: var(--sf-density-control-padding-inline); }
-    label { display: grid; gap: 6px; color: var(--text); font-weight: var(--sf-font-weight-semibold); font-size: var(--sf-font-size-sm); }
+    form { display: grid; gap: var(--sf-density-control-padding-inline); min-width: 0; }
+    label { display: grid; gap: 6px; color: var(--text); font-weight: var(--sf-font-weight-semibold); font-size: var(--sf-font-size-sm); min-width: 0; }
     input, select, textarea {
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       color: var(--text);
       font: inherit;
+      max-width: 100%;
       min-height: var(--sf-density-control-min-height);
+      min-width: 0;
       padding: 0 var(--sf-density-control-padding-inline);
       width: 100%;
       transition: border-color var(--sf-motion-fast), box-shadow var(--sf-motion-fast);
