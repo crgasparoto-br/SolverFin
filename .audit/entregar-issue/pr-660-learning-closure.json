@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
+    "audit_report_sha256": "46c7402b0c1cfe7863dc746b950d2392eb91da2fda8972fc66f701b4a40f609f",
+    "finding_ids": ["A-001"]
+  },
+  "generalized_learning": {"promotion_status": "not-required", "reason": "The rejection exposed a stale delivery packet for this target; the remediation is confined to rebuilding and target-binding the current handoff rather than changing a reusable product rule."}
+}

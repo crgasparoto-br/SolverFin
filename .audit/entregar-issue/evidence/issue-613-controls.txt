@@ -1,0 +1,7 @@
+SolverFin PR #660 / issue #613 exact-head evidence index.
+Material head: a08be9665c55f6925ad09bac1856969a851a56db
+Delivery V2 CI run 35031521041 (#13): completed success on the exact material head.
+Statement visual validation run 35031521069 (#3455): completed success on the exact material head.
+Behavioral controls are implemented in apps/web/src/dev-server/budgets-view-model.test.ts and budgets-page.test.ts.
+Visual controls include scripts/statement-visual/issue-606-budgets-pilot.mjs.
+Canonical documentation includes docs/API_BUDGETS_GOALS_ALERTS.md, docs/product/INTERFACE_INVENTORY.md, docs/STATUS_MATRIX.md and docs/EVOLUTION_STRATEGY.md.
