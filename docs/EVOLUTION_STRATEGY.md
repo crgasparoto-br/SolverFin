@@ -30,10 +30,11 @@ No dominio financeiro, entidades ja possuem moeda em diferentes contratos, e rel
 - Agregacoes padrao devem ser particionadas por moeda.
 - Uma moeda de referencia do perfil pode ser introduzida por issue propria, mas nao autoriza conversao implicita.
 - Quando houver conversao, a resposta deve manter moeda de origem, moeda de destino, taxa, instante/data de referencia e origem da cotacao suficientes para auditoria e reproducao.
+- Uma transferencia entre contas de moedas diferentes deve preservar os dois valores nativos como efeitos vinculados da mesma operacao; ela nao pode reutilizar um unico valor em duas moedas nem ser simulada como receita/despesa.
 - Dashboard, relatorios, orcamentos, metas, projecoes, insights e assistente devem preservar a moeda do calculo e nunca rotular como BRL um agregado misto.
 - Testes devem incluir perfis com pelo menos duas moedas para impedir regressao de somas cruzadas.
 
-A decisao arquitetural detalhada fica na ADR 0013.
+A decisao arquitetural detalhada fica na ADR 0013. O contrato operacional de transferencia cross-currency e evoluido pela issue #668 sem introduzir provider de cambio.
 
 ## Arquitetura-alvo da interface
 
@@ -136,7 +137,9 @@ A hierarquia deve ser **resumo/conclusao -> grafico/visualizacao -> destaques ->
 
 Prioridade mais alta. Corrigir semantica financeira que afeta saldos e gastos, estabelecer contrato de agregacao multi-moedas, formalizar datas e proteger invariantes com testes ponta a ponta.
 
-Epica operacional: #589.
+Epica operacional original: #589.
+
+A issue #668 e uma extensao posterior dessa integridade: ela fecha a lacuna de transferencias entre contas de moedas diferentes com dois valores nativos. Embora #589 esteja concluida, #668 deve ser tratada como pre-requisito financeiro antes da agenda/projecao da Fase 4A.
 
 ### Trilha B - Fundacao de interface
 
@@ -160,6 +163,8 @@ Epica operacional: #592.
 
 A Fase 4 reutiliza a semantica financeira da #589, as primitives/view-models da #590 e as superficies migradas da #591. Ela nao deve antecipar conversao cambial implicita nem criar recomendacao financeira regulada.
 
+Antes de #616 e #617, a #668 deve estar concluida para que uma transferencia `planned` cross-currency seja representada como uma unica identidade com dois efeitos nativos. #616 consome essa identidade na agenda; #617 aplica cada efeito somente a serie da respectiva moeda; #618 deriva o valor livre dessas series. Orçamentos continuam tratando transferencia como movimento de caixa, nao consumo economico.
+
 ## Dependencias entre fases e trilhas
 
 ```text
@@ -172,25 +177,42 @@ Fase 3B - Fundacao de interface   Contratos financeiros corretos
              |                          |
              v                          |
 Fase 3C - Migracao de telas <-----------+
-             |
-             v
+             |                          |
+             |                    #668 - transferencias cross-currency
+             |                          |
+             +--------------------------+
+                         |
+                         v
 Fase 4A - Previsibilidade e planejamento (#592)
 ```
 
-A fundacao visual pode avancar em paralelo a correcoes de dominio, mas uma tela nao deve cristalizar um numero agregado cuja semantica financeira ou moeda ainda esteja indefinida.
+A fundacao visual pode avancar em paralelo a correcoes de dominio, mas uma tela nao deve cristalizar um numero agregado cuja semantica financeira ou moeda ainda esteja indefinida. A sequencia operacional detalhada permanece nas issues abertas.
 
 ## Backlog operacional
 
 O backlog aberto no GitHub e a fonte de verdade do trabalho em execucao. O recorte criado para esta estrategia e:
 
 - **#589 - Fase 3A: Integridade financeira e multi-moedas**
-  - #593 a #599;
+  - #593 a #599 (concluidas no ciclo original);
+  - #668 como extensao posterior para transferencia cross-currency;
 - **#590 - Fase 3B: Fundacao de interface e arquitetura UI**
   - #600 a #607;
 - **#591 - Fase 3C: Migracao e redesign das telas centrais**
   - #608 a #615;
 - **#592 - Fase 4A: Previsibilidade financeira e planejamento**
+  - pre-requisito: #668 antes de #616/#617;
   - #616 a #621.
+
+Ordem estrutural da cadeia financeira da Fase 4A:
+
+```text
+#668 -> #616 -> #617 -> #618
+                 |       |
+                 +-----> #619 (tambem depende de #613)
+                 |
+                 +-----> #620
+#617 ------------------> #621 (alem das decisoes de produto proprias da #621)
+```
 
 As epicas mantem checklists e dependencias detalhadas. Este documento nao replica criterios completos das issues para evitar duas fontes de verdade operacionais.
 
@@ -224,16 +246,19 @@ A Fase 3 estrutural pode ser considerada concluida quando:
 6. Relatorios e demais superficies prioritarias apresentam hierarquia consistente e moeda explicita;
 7. a documentacao viva e as issues representam o estado real da migracao.
 
+A extensao #668 pode ser concluida apos o ciclo original da Fase 3 sem reabrir a epica #589, mas passa a ser requisito de integridade para a cadeia financeira da Fase 4A.
+
 ## Definicao de concluido da Fase 4A
 
 A primeira trilha da Fase 4 pode ser considerada concluida quando:
 
-1. existe uma fonte canonica de compromissos futuros sem dupla contagem;
-2. existe projecao 30/60/90 dias verificavel e separada por moeda;
-3. o valor livre para gastar possui formula deterministica e drilldown;
-4. orcamentos distinguem realizado, comprometido, disponivel e projetado;
-5. recorrencias futuras sao acionaveis dentro das jornadas existentes;
-6. insights priorizados possuem ciclo de vida e evidencia navegavel.
+1. transferencias cross-currency planejadas, quando suportadas por #668, preservam uma identidade com dois efeitos nativos sem conversao implicita;
+2. existe uma fonte canonica de compromissos futuros sem dupla contagem;
+3. existe projecao 30/60/90 dias verificavel e separada por moeda;
+4. o valor livre para gastar possui formula deterministica e drilldown;
+5. orcamentos distinguem realizado, comprometido, disponivel e projetado;
+6. recorrencias futuras sao acionaveis dentro das jornadas existentes;
+7. insights priorizados possuem ciclo de vida e evidencia navegavel.
 
 ## Governanca
 
