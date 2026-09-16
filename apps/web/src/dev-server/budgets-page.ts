@@ -173,7 +173,10 @@ async function loadUnbudgetedUsage(
         periodStartOn: period.periodStartOn,
         periodEndOn: period.periodEndOn,
       });
-      return apiGet<{ usage: BudgetUsageRecord[] }>(token, `/api/budgets/dashboard?${params}`);
+      return apiGet<{ usage: BudgetUsageRecord[] }>(
+        token,
+        `/api/budgets/dashboard?${params}`,
+      );
     }),
   );
   const unique = new Map<string, BudgetUsageRecord>();
@@ -213,7 +216,9 @@ function budgetDashboardPeriods(
   return [...periods.values()];
 }
 
-function currentMonthPeriod(now: Date = new Date()): Pick<BudgetRecord, "periodStartOn" | "periodEndOn"> {
+function currentMonthPeriod(
+  now: Date = new Date(),
+): Pick<BudgetRecord, "periodStartOn" | "periodEndOn"> {
   const year = now.getUTCFullYear();
   const monthIndex = now.getUTCMonth();
   const start = new Date(Date.UTC(year, monthIndex, 1));
