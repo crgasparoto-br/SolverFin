@@ -57,7 +57,11 @@ try {
       state: "normal",
       viewport: `${viewport.width}x${viewport.height}`,
       screenshot: screenshotName,
-      measurements,
+      measurements: {
+        ...measurements,
+        contentViewportWidth: measurements.viewportWidth,
+        viewportWidth: viewport.width,
+      },
     });
   }
 

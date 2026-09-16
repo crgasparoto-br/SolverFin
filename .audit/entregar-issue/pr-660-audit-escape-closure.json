@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-HANDOFF-TARGET-BINDING",
+      "escape_class": "handoff-target-binding-gap",
+      "status": "passed",
+      "plausible_wrong_implementation": "Reuse an inherited delivery certificate from a different issue and treat its presence at the root path as proof for the current pull request.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Inspect the inherited handoff target before rebuilding the package.",
+        "observed": "The rebuilt delivery controls bind issue #613 and PR #660 to the active exact material head 31a29b692512ef6b6b94e06567ab66f849d40f1f."
+      },
+      "sibling_cases": [
+        {
+          "id": "S1",
+          "surface": "handoff-subject",
+          "status": "passed"
+        },
+        {
+          "id": "S2",
+          "surface": "material-head-binding",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Require target-bound fresh handoff generation for the current repository, issue, PR, refs and material SHA."
+      },
+      "detection_change": {
+        "evidence": "Validate certificate subject and exact material identity before consuming inherited root artifacts."
+      },
+      "revalidated_head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
+        "audit_report_sha256": "46c7402b0c1cfe7863dc746b950d2392eb91da2fda8972fc66f701b4a40f609f",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "required_risk_families": [
+        "reference-liveness",
+        "documentation"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "canonical-contract-reference",
+          "dimension": "canonical-contract-reference-divergence"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "documentation-claims",
+          "dimension": "documentation-claims-divergence"
+        }
+      ]
+    }
+  ]
+}

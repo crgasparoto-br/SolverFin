@@ -98,6 +98,13 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
       width: 100%;
       transition: border-color var(--sf-motion-fast), box-shadow var(--sf-motion-fast);
     }
+    .cards-dialog,
+    .cards-dialog-panel,
+    .cards-dialog form,
+    .cards-dialog form label { min-width: 0; }
+    .cards-dialog form input,
+    .cards-dialog form select,
+    .cards-dialog form textarea { max-width: 100%; min-width: 0; }
     input:focus-visible, select:focus-visible, textarea:focus-visible {
       outline: none;
       border-color: var(--cyan);

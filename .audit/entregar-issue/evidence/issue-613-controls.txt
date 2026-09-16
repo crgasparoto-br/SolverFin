@@ -1,0 +1,9 @@
+SolverFin PR #660 / issue #613 exact-head evidence index.
+Material head: 31a29b692512ef6b6b94e06567ab66f849d40f1f
+Delivery V2 CI run 35037997598 (#18): completed success on the exact material head.
+Statement visual validation run 35037997607 (#3460): completed success on the exact material head.
+The Chrome job completed successfully and the issue 662 card installment purchase visual validation passed after 60 registered coverage executions.
+Behavioral controls are implemented in apps/web/src/dev-server/budgets-view-model.test.ts and budgets-page.test.ts.
+Visual controls include scripts/statement-visual/issue-606-budgets-pilot.mjs.
+The scoped mobile overflow remediation is in apps/web/src/dev-server/shared-styles.ts and was validated without weakening the visual gate.
+Canonical documentation includes docs/API_BUDGETS_GOALS_ALERTS.md, docs/product/INTERFACE_INVENTORY.md, docs/STATUS_MATRIX.md and docs/EVOLUTION_STRATEGY.md.

@@ -151,6 +151,8 @@ Epica operacional: #590.
 
 Migrar primeiro Dashboard, Extrato e Cartoes; usar o aprendizado dessas rotas para consolidar padroes antes de migrar Relatorios e demais superficies.
 
+Estado observado: `/orcamentos` foi migrada pela #613 para a fundacao compartilhada, com `Money` e view-model explicitos e acompanhamento de planejado x realizado por categoria, periodo e moeda. Os estados `committed`, `projected`, `available` e `overBudget`, assim como o bucket `Sem categoria`, permanecem fora desse recorte e continuam pertencendo a #619.
+
 Epica operacional: #591.
 
 ## Fase 4 - Decisao financeira e previsibilidade
