@@ -2,7 +2,24 @@
   "contract_version": "2026-08-20.3",
   "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
   "head_sha": "1f98343327d2f3afc8a946857388b633b1fc69a4",
-  "identity": {"repository": "crgasparoto-br/SolverFin", "issue_number": 613, "pull_request_number": 660, "head_sha": "1f98343327d2f3afc8a946857388b633b1fc69a4"},
-  "findings": [{"id": "A-001", "disposition": "blocking", "status": "open", "actionable": true, "remediation_mode": "targeted-remediation", "severity": "blocking", "category": "delivery-not-ready", "reason": "handoff-not-produced", "summary": "PR #660 did not publish a handoff bound to issue #613; the inherited root handoff belonged to issue #662 / PR #664."}],
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 613,
+    "pull_request_number": 660,
+    "head_sha": "1f98343327d2f3afc8a946857388b633b1fc69a4"
+  },
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "severity": "blocking",
+      "category": "delivery-not-ready",
+      "reason": "handoff-not-produced",
+      "summary": "PR #660 did not publish a handoff bound to issue #613; the inherited root handoff belonged to issue #662 / PR #664."
+    }
+  ],
   "recommendations": []
 }

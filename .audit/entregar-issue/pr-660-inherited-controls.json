@@ -1,18 +1,26 @@
 {
   "schema_version": 1,
-  "head_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
-  "source_audits": [{"kind": "independent-audit-outcome", "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0", "finding": "A-001 handoff target binding gap"}],
-  "controls": [{
-    "id": "AUDIT-HANDOFF-TARGET-613",
-    "status": "passed",
-    "head_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
-    "subject_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
-    "control_type": "procedure",
-    "procedure": "Resolve PR #660 and verify that the certified handoff subject binds repository, issue #613, PR #660, base ref, head ref, and exact material SHA.",
-    "expected": "The active handoff identifies only SolverFin issue #613 and PR #660 at the exact material candidate.",
-    "observed": "The delivery control is bound to SolverFin issue #613 and PR #660; active exact-head evidence now equals a08be9665c55f6925ad09bac1856969a851a56db.",
-    "evidence": "evidence/issue-613-controls.txt",
-    "evidence_sha256": "8daf21d117ddbbf528f4b497e6ab9fda67ddd79785d6943ec44125ce5353765c"
-  }],
+  "head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+  "source_audits": [
+    {
+      "kind": "independent-audit-outcome",
+      "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
+      "finding": "A-001 handoff target binding gap"
+    }
+  ],
+  "controls": [
+    {
+      "id": "AUDIT-HANDOFF-TARGET-613",
+      "status": "passed",
+      "head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+      "subject_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+      "control_type": "procedure",
+      "procedure": "Resolve PR #660 and verify that the certified handoff subject binds repository, issue #613, PR #660, base ref, head ref, and exact material SHA.",
+      "expected": "The active handoff identifies only SolverFin issue #613 and PR #660 at the exact material candidate.",
+      "observed": "The delivery control is bound to SolverFin issue #613 and PR #660; active exact-head evidence now equals 31a29b692512ef6b6b94e06567ab66f849d40f1f.",
+      "evidence": "evidence/issue-613-controls.txt",
+      "evidence_sha256": "8aa0842b251957d43e1f5efa87314ab8f59436e0503bc45f6d03815833d8736f"
+    }
+  ],
   "unresolved_controls": []
 }

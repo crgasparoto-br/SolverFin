@@ -7,17 +7,35 @@
     "audit_report_sha256": "46c7402b0c1cfe7863dc746b950d2392eb91da2fda8972fc66f701b4a40f609f",
     "audited_head_sha": "1f98343327d2f3afc8a946857388b633b1fc69a4"
   },
-  "candidate_head_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
+  "candidate_head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
   "remediation_mode": "targeted-remediation",
   "status": "closed",
-  "items": [{
-    "source_kind": "finding",
-    "source_id": "A-001",
-    "remediation_mode": "targeted-remediation",
-    "status": "fixed",
-    "closure_kind": "behavioral-fix",
-    "changed_files": ["docs/STATUS_MATRIX.md", "docs/EVOLUTION_STRATEGY.md", ".audit/entregar-issue/handoff-ready.json"],
-    "evidence": ["Fresh handoff package is rebuilt for SolverFin issue #613 and PR #660 on the exact material head.", "Repository status and evolution documentation now match the implemented budget migration."],
-    "validations": ["validate_specification_coverage.py passed", "validate_requirement_attack_matrix.py passed", "validate_risk_saturation.py passed", "exact-head CI required before certificate publication"]
-  }]
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "docs/STATUS_MATRIX.md",
+        "docs/EVOLUTION_STRATEGY.md",
+        ".audit/entregar-issue/handoff-ready.json",
+        "apps/web/src/dev-server/shared-styles.ts"
+      ],
+      "evidence": [
+        "Fresh handoff package is rebuilt for SolverFin issue #613 and PR #660 on the exact material head.",
+        "Repository status and evolution documentation now match the implemented budget migration.",
+        "Post-CI refreeze includes scoped cards-dialog overflow containment; issue 662 card installment purchase visual validation passed without relaxing the gate."
+      ],
+      "validations": [
+        "validate_specification_coverage.py passed",
+        "validate_requirement_attack_matrix.py passed",
+        "validate_risk_saturation.py passed",
+        "exact-head CI required before certificate publication",
+        "Delivery V2 CI #18 completed success on exact material head 31a29b692512ef6b6b94e06567ab66f849d40f1f",
+        "Statement visual validation #3460 completed success on exact material head 31a29b692512ef6b6b94e06567ab66f849d40f1f"
+      ]
+    }
+  ]
 }

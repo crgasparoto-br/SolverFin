@@ -4,7 +4,7 @@
   "source_audits": [
     {
       "kind": "independent-audit-outcome",
-      "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca2ca0",
+      "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
       "finding": "A-001 handoff target binding gap"
     }
   ],

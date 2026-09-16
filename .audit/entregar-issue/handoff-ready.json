@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-09-15T23:10:28.463266+00:00",
+  "created_at": "2026-09-16T00:19:47.497242+00:00",
   "identity": {
-    "head_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
-    "material_head_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
+    "head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+    "material_head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
     "base_sha": "47052e36dd1c3413095d8a8a37769677bff28d39",
-    "merge_preview_sha": "e5e8b579f1a44506f388233a389ace387a26a0b3",
-    "material_merge_preview_sha": "e5e8b579f1a44506f388233a389ace387a26a0b3"
+    "merge_preview_sha": "73d49a9313a290616598464d27c1d7ac60eff1c6",
+    "material_merge_preview_sha": "73d49a9313a290616598464d27c1d7ac60eff1c6"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -22,7 +22,7 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "c31a1097c2e9a474be8ec64b5a702a07d672bead",
-    "material_head_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
+    "material_head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
     "issue_changed_paths": [
       "apps/web/src/dev-server.ts",
       "apps/web/src/dev-server/budgets-page.test.ts",
@@ -30,13 +30,14 @@
       "apps/web/src/dev-server/budgets-view-model.test.ts",
       "apps/web/src/dev-server/budgets-view-model.ts",
       "apps/web/src/dev-server/maintenance-actions.test.ts",
+      "apps/web/src/dev-server/shared-styles.ts",
       "docs/API_BUDGETS_GOALS_ALERTS.md",
       "docs/EVOLUTION_STRATEGY.md",
       "docs/STATUS_MATRIX.md",
       "docs/product/INTERFACE_INVENTORY.md",
       "scripts/statement-visual/issue-606-budgets-pilot.mjs"
     ],
-    "issue_delta_sha256": "f7a43ca58065a9ea2c1ea9aa619c7628388140cb1ec30eeaed3aa1538202aedc"
+    "issue_delta_sha256": "8cd1e7571d4df4701ecb2e814fceee3a78616d753389835790ce6f65e958e4b8"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -129,8 +130,8 @@
     },
     "requirement_attack_matrix": {
       "name": "pr-660-requirement-attack-matrix.json",
-      "sha256": "0a417f506209db6b87a8e51461d1696517ca2531791c6516c0b1d06cbcbb74a5",
-      "logical_sha256": "f68005aa836e3865bf2faf30bf25583e00e24f4b9333a8b2e95678848bb4d5e8",
+      "sha256": "319659a47d7feac92123ffd34ca3c522c56485f125d7b8bedfb5c48b8e894a0f",
+      "logical_sha256": "d55bcdfd13ef1af8709a146b5ae10aa9568f1e36ed9422730eed07ad6a109042",
       "logical_size": 133096,
       "artifact_transport": {
         "format": "base64-shards-v1",
@@ -138,26 +139,26 @@
         "compression": "gzip",
         "encoded_size": 7336,
         "decoded_size": 133096,
-        "decoded_sha256": "f68005aa836e3865bf2faf30bf25583e00e24f4b9333a8b2e95678848bb4d5e8",
-        "encoded_sha256": "7f28d5ee1619ac98f39cdb0c96b98a162c9ae401c57a2124ff05a0c5d8e3c900",
+        "decoded_sha256": "d55bcdfd13ef1af8709a146b5ae10aa9568f1e36ed9422730eed07ad6a109042",
+        "encoded_sha256": "13de01e96eec19525660c7bef0bfb9086827fbeb660fa151e6e16269a64bd804",
         "parts": [
           {
             "path": "pr-660-requirement-attack-matrix.parts/part-000.b64",
             "size": 4096,
-            "sha256": "397f3a64622266a5c601f6b40cdfcd844935aeb8434c22bd1da073e463bb2bc5"
+            "sha256": "cb45f5c6d2af34f4576ca6597161cd73eda2ecc23cfd97704446c90fac5c7c29"
           },
           {
             "path": "pr-660-requirement-attack-matrix.parts/part-001.b64",
             "size": 3240,
-            "sha256": "85cca4cd078fe6075fad29421180499f44be274eb1f8136e3458b5949fffc846"
+            "sha256": "e6819f3700ed4975ce9660b3e900a23ad61bdb36ebdf7a479c3d0efd7e76a59a"
           }
         ]
       }
     },
     "risk_saturation": {
       "name": "pr-660-risk-saturation.json",
-      "sha256": "4b0ef5b798035145d3bf8afd612412675ee123b6085ff42da59828beddb106ca",
-      "logical_sha256": "4b0ef5b798035145d3bf8afd612412675ee123b6085ff42da59828beddb106ca",
+      "sha256": "29df5772937b7f114a815e2c93cfe8f5cbee4a8c06849d935c9fe22e19026a3b",
+      "logical_sha256": "29df5772937b7f114a815e2c93cfe8f5cbee4a8c06849d935c9fe22e19026a3b",
       "logical_size": 5178,
       "artifact_transport": {
         "format": "plain-json",
@@ -166,8 +167,8 @@
     },
     "inherited_controls": {
       "name": "pr-660-inherited-controls.json",
-      "sha256": "6b6334d6a4138c8211e4683ccf61754b83fa8601887905a9ff2f3e279d4b11fb",
-      "logical_sha256": "6b6334d6a4138c8211e4683ccf61754b83fa8601887905a9ff2f3e279d4b11fb",
+      "sha256": "6c020744effac522651ae5793c618e341fbc709a819063fbd975cfb6c0f1a400",
+      "logical_sha256": "6c020744effac522651ae5793c618e341fbc709a819063fbd975cfb6c0f1a400",
       "logical_size": 1187,
       "artifact_transport": {
         "format": "plain-json",
@@ -176,8 +177,8 @@
     },
     "evidence_provenance": {
       "name": "pr-660-evidence-provenance.json",
-      "sha256": "25b3df84ba86c360af1edaf158a80432fdc9b65084164e5d330f2b3d6e5cd90d",
-      "logical_sha256": "25b3df84ba86c360af1edaf158a80432fdc9b65084164e5d330f2b3d6e5cd90d",
+      "sha256": "fa794832ef0ddaa09c94b9b3a70b5c7b34bdaff5e85c568cc106c2597c5341d9",
+      "logical_sha256": "fa794832ef0ddaa09c94b9b3a70b5c7b34bdaff5e85c568cc106c2597c5341d9",
       "logical_size": 622,
       "artifact_transport": {
         "format": "plain-json",
@@ -186,8 +187,8 @@
     },
     "audit_escape_closure": {
       "name": "pr-660-audit-escape-closure.json",
-      "sha256": "8973e1cb03c10351576fc51893ab29859537b1858eb0aaed9f3007ee2a978d1d",
-      "logical_sha256": "8973e1cb03c10351576fc51893ab29859537b1858eb0aaed9f3007ee2a978d1d",
+      "sha256": "c2c4f99f4b4775ba348bb8fff0d6ba7296ac9ec132a0fbadb93bd73ee39916b2",
+      "logical_sha256": "c2c4f99f4b4775ba348bb8fff0d6ba7296ac9ec132a0fbadb93bd73ee39916b2",
       "logical_size": 2142,
       "artifact_transport": {
         "format": "plain-json",
@@ -206,9 +207,9 @@
     },
     "audit_remediation": {
       "name": "pr-660-audit-remediation.json",
-      "sha256": "ef216aa96a20af6583ea6b34c6c20fb060cd0fec241ae3bf8fdab3a39d27e2db",
-      "logical_sha256": "ef216aa96a20af6583ea6b34c6c20fb060cd0fec241ae3bf8fdab3a39d27e2db",
-      "logical_size": 1353,
+      "sha256": "c1a90537e94449ff060d8aa4ebd0cc2cb1859f3d2be259311ba2c210bb3a5d73",
+      "logical_sha256": "c1a90537e94449ff060d8aa4ebd0cc2cb1859f3d2be259311ba2c210bb3a5d73",
+      "logical_size": 1811,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1

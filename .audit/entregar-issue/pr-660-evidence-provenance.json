@@ -1,15 +1,17 @@
 {
   "schema_version": 1,
-  "material_head_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
-  "base_sha": "cdd5135a54b57865fa86e41fcb350021d4e63d7d",
-  "evidence": [{
-    "evidence_id": "BUDGET-METRICS-001",
-    "kind": "quantitative",
-    "path": "evidence/issue-613-controls.txt",
-    "sha256": "8daf21d117ddbbf528f4b497e6ab9fda67ddd79785d6943ec44125ce5353765c",
-    "subject_sha": "a08be9665c55f6925ad09bac1856969a851a56db",
-    "freshness_policy": "exact-material-head",
-    "producer": "GitHub Actions Delivery V2 CI #13 and Statement visual validation #3455",
-    "status": "passed"
-  }]
+  "material_head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+  "base_sha": "47052e36dd1c3413095d8a8a37769677bff28d39",
+  "evidence": [
+    {
+      "evidence_id": "BUDGET-METRICS-001",
+      "kind": "quantitative",
+      "path": "evidence/issue-613-controls.txt",
+      "sha256": "8aa0842b251957d43e1f5efa87314ab8f59436e0503bc45f6d03815833d8736f",
+      "subject_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Delivery V2 CI #18 and Statement visual validation #3460",
+      "status": "passed"
+    }
+  ]
 }
