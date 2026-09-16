@@ -30,6 +30,11 @@ import {
   type CategoryRecord,
 } from "./budgets-view-model.js";
 
+interface UnbudgetedUsageLoad {
+  usage: BudgetUsageRecord[];
+  failedPeriodCount: number;
+}
+
 export async function renderBudgetsPage(token: string, url?: URL): Promise<string> {
   const [budgetsResult, categoriesResult] = await Promise.all([
     apiGet<{ budgets: BudgetRecord[] }>(token, "/api/budgets?status=all"),
@@ -51,9 +56,18 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
 
   const budgets = budgetsResult.data.budgets;
   const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
-  const usageLoads = await loadBudgetUsage(token, budgets);
+  const [usageLoads, unbudgetedLoad] = await Promise.all([
+    loadBudgetUsage(token, budgets),
+    loadUnbudgetedUsage(token, budgets),
+  ]);
   const filters = readFilters(url);
-  const viewModel = buildBudgetsPageViewModel(budgets, categories, usageLoads, filters);
+  const viewModel = buildBudgetsPageViewModel(
+    budgets,
+    categories,
+    usageLoads,
+    filters,
+    unbudgetedLoad.usage,
+  );
   const categoryWarning = categoriesResult.ok
     ? ""
     : renderAlert({
@@ -68,6 +82,15 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
           tone: "attention",
           title: "Parte do realizado está indisponível",
           description: `${viewModel.unavailableUsageCount} orçamento${viewModel.unavailableUsageCount === 1 ? " não pôde" : "s não puderam"} ser conferido agora. Os valores não foram substituídos por zero.`,
+        })
+      : "";
+  const unbudgetedWarning =
+    unbudgetedLoad.failedPeriodCount > 0
+      ? renderAlert({
+          tone: "attention",
+          title: "Parte das despesas sem orçamento está indisponível",
+          description:
+            "Não foi possível conferir todas as categorias sem orçamento nos períodos exibidos. Tente novamente para atualizar o acompanhamento.",
         })
       : "";
 
@@ -85,26 +108,26 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
           eyebrow: "Planejamento por categoria",
           title: "Orçamentos",
           description:
-            "Compare o valor planejado com as despesas já realizadas em cada período e moeda, sem misturar moedas diferentes.",
+            "Compare planejado, realizado e restante em cada período e moeda. Categorias com despesas sem orçamento aparecem separadamente.",
           actionsHtml: newBudgetTrigger,
         },
-      )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${renderSummaryGrid(
+      )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderSummaryGrid(
         {
           childrenHtml: [
             renderSummaryMetric(
-              "Orçamentos no recorte",
+              "Itens no recorte",
               String(viewModel.rows.length),
-              "Períodos e moedas exibidos abaixo",
+              "Orçamentos e categorias sem orçamento",
             ),
             renderSummaryMetric(
               "Ativos",
               String(viewModel.activeCount),
-              "Disponíveis para acompanhamento",
+              "Orçamentos disponíveis para acompanhamento",
             ),
             renderSummaryMetric(
-              "Atenção",
-              String(viewModel.attentionCount),
-              "Próximos do limite ou excedidos",
+              "Sem orçamento",
+              String(viewModel.unbudgetedCount),
+              "Categorias com despesa realizada no período",
             ),
             renderSummaryMetric(
               "Moedas",
@@ -114,6 +137,7 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
           ].join(""),
         },
       )}${renderBudgetTable(viewModel.rows)}${renderNewBudgetDialog(categories)}${viewModel.rows
+        .filter((row) => row.source === "budget")
         .map((row) => renderBudgetEditDialog(row, categories))
         .join("")}${renderSolverFinUiInteractionsScriptTag()}${budgetRuntimeScript()}</div>`,
     }),
@@ -136,6 +160,68 @@ async function loadBudgetUsage(
     }),
   );
   return new Map(pairs);
+}
+
+async function loadUnbudgetedUsage(
+  token: string,
+  budgets: readonly BudgetRecord[],
+): Promise<UnbudgetedUsageLoad> {
+  const periods = budgetDashboardPeriods(budgets);
+  const results = await Promise.all(
+    periods.map(async (period) => {
+      const params = new URLSearchParams({
+        periodStartOn: period.periodStartOn,
+        periodEndOn: period.periodEndOn,
+      });
+      return apiGet<{ usage: BudgetUsageRecord[] }>(token, `/api/budgets/dashboard?${params}`);
+    }),
+  );
+  const unique = new Map<string, BudgetUsageRecord>();
+  let failedPeriodCount = 0;
+  for (const result of results) {
+    if (!result.ok) {
+      failedPeriodCount += 1;
+      continue;
+    }
+    for (const usage of result.data.usage) {
+      if (usage.status !== "unbudgeted") continue;
+      const key = [
+        usage.categoryId,
+        usage.periodStartOn,
+        usage.periodEndOn,
+        usage.currency.trim().toUpperCase(),
+      ].join(":");
+      unique.set(key, usage);
+    }
+  }
+  return { usage: [...unique.values()], failedPeriodCount };
+}
+
+function budgetDashboardPeriods(
+  budgets: readonly BudgetRecord[],
+): Array<Pick<BudgetRecord, "periodStartOn" | "periodEndOn">> {
+  const periods = new Map<string, Pick<BudgetRecord, "periodStartOn" | "periodEndOn">>();
+  const current = currentMonthPeriod();
+  periods.set(`${current.periodStartOn}:${current.periodEndOn}`, current);
+  for (const budget of budgets) {
+    if (budget.status !== "active") continue;
+    periods.set(`${budget.periodStartOn}:${budget.periodEndOn}`, {
+      periodStartOn: budget.periodStartOn,
+      periodEndOn: budget.periodEndOn,
+    });
+  }
+  return [...periods.values()];
+}
+
+function currentMonthPeriod(now: Date = new Date()): Pick<BudgetRecord, "periodStartOn" | "periodEndOn"> {
+  const year = now.getUTCFullYear();
+  const monthIndex = now.getUTCMonth();
+  const start = new Date(Date.UTC(year, monthIndex, 1));
+  const end = new Date(Date.UTC(year, monthIndex + 1, 0));
+  return {
+    periodStartOn: start.toISOString().slice(0, 10),
+    periodEndOn: end.toISOString().slice(0, 10),
+  };
 }
 
 function readFilters(url?: URL): BudgetPresentationFilters {
@@ -186,14 +272,14 @@ function renderSummaryMetric(label: string, value: string, detail: string): stri
 function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
   if (rows.length === 0) {
     return `<section class="budget-results panel">${renderEmptyState({
-      title: "Nenhum orçamento cadastrado.",
+      title: "Nenhum item para acompanhar.",
       description: "Crie um orçamento ou ajuste os filtros para acompanhar outra moeda ou estado.",
     })}</section>`;
   }
 
-  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Acompanhamento</p><h2 id="budgets-list-title">Planejado e realizado</h2></div><span>${rows.length} orçamento${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable(
+  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Acompanhamento</p><h2 id="budgets-list-title">Planejado, realizado e restante</h2></div><span>${rows.length} item${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable(
     {
-      caption: "Orçamentos por categoria, período e moeda",
+      caption: "Orçamentos e categorias sem orçamento por período e moeda",
       rows,
       rowKey: (row) => row.id,
       columns: [
@@ -220,13 +306,22 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
           id: "planned",
           header: "Planejado",
           align: "end",
-          renderCell: (row) => renderBudgetMoney(row.plannedAmountMinor, row.currency),
+          renderCell: (row) =>
+            row.source === "unbudgeted"
+              ? '<span class="budget-unbudgeted-plan">Sem orçamento</span>'
+              : renderBudgetMoney(row.plannedAmountMinor, row.currency),
         },
         {
           id: "realized",
           header: "Realizado",
           align: "end",
           renderCell: (row) => renderBudgetMoney(row.actualAmountMinor, row.currency),
+        },
+        {
+          id: "remaining",
+          header: "Restante",
+          align: "end",
+          renderCell: (row) => renderBudgetMoney(row.remainingAmountMinor, row.currency),
         },
         {
           id: "usage",
@@ -263,6 +358,9 @@ function renderUsageCell(row: BudgetRowViewModel): string {
 }
 
 function renderBudgetActions(row: BudgetRowViewModel): string {
+  if (row.source === "unbudgeted") {
+    return '<span class="budget-unbudgeted-action">Crie um orçamento para definir um valor planejado.</span>';
+  }
   const editDialogId = `edit-budget-dialog-${row.id}`;
   const editButton = renderDialogTrigger({
     dialogId: editDialogId,
@@ -311,11 +409,15 @@ function renderBudgetFields(
   categories: readonly CategoryRecord[],
   row?: BudgetRowViewModel,
 ): string {
+  const plannedValue =
+    row?.source === "budget" && row.plannedAmountMinor !== null
+      ? renderText(formatMoneyInput(row.plannedAmountMinor))
+      : "";
   return `<label>Categoria<select name="categoryId" required>${renderCategoryOptions(categories, row?.categoryId)}</select></label>
     <label>Início do período<input name="periodStartOn" type="date" value="${renderText(row?.periodStartOn ?? "")}" required></label>
     <label>Fim do período<input name="periodEndOn" type="date" value="${renderText(row?.periodEndOn ?? "")}" required></label>
     <label>Moeda<input name="currency" value="${renderText(row?.currency ?? "")}" inputmode="text" maxlength="3" pattern="[A-Za-z]{3}" placeholder="BRL" autocomplete="off" required></label>
-    <label>Valor planejado<input name="plannedAmountMinor" data-money value="${row ? renderText(formatMoneyInput(row.plannedAmountMinor)) : ""}" inputmode="decimal" placeholder="0,00" required></label>`;
+    <label>Valor planejado<input name="plannedAmountMinor" data-money value="${plannedValue}" inputmode="decimal" placeholder="0,00" required></label>`;
 }
 
 function renderCategoryOptions(
@@ -385,14 +487,15 @@ ${sharedDialogStyles()}
     .budget-section-heading h2 { margin: 0; }
     .budget-section-heading > span { color: var(--muted); font-size: .8rem; font-weight: 700; }
     .budget-results .sf-table-wrap { overflow-x: auto; }
-    .budget-results .sf-table { min-width: 940px; width: 100%; }
+    .budget-results .sf-table { min-width: 1040px; width: 100%; }
     .budget-results td { vertical-align: middle; }
     .budget-currency { letter-spacing: .04em; }
     .budget-period { white-space: nowrap; }
     .budget-usage { display: grid; gap: 6px; min-width: 150px; }
     .budget-usage > div { align-items: center; display: flex; flex-wrap: wrap; gap: 7px; justify-content: space-between; }
     .budget-usage progress { accent-color: var(--primary); height: 8px; width: 100%; }
-    .budget-usage-unavailable, .budget-unavailable { color: var(--muted); font-size: .8rem; font-weight: 650; }
+    .budget-usage-unavailable, .budget-unavailable, .budget-unbudgeted-action { color: var(--muted); font-size: .8rem; font-weight: 650; }
+    .budget-unbudgeted-plan { color: var(--muted); font-size: .8rem; font-weight: 750; }
     .budget-row-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; min-width: 250px; }
     .budget-row-actions button { white-space: nowrap; }
     .danger-button { background: var(--surface); border: 1px solid #fecaca; border-radius: var(--radius); color: var(--danger); font: inherit; font-weight: 650; padding: 0 12px; }
@@ -427,6 +530,7 @@ ${sharedDialogStyles()}
       .budget-results .sf-table td[data-column="currency"]::before { content: "Moeda"; }
       .budget-results .sf-table td[data-column="planned"]::before { content: "Planejado"; }
       .budget-results .sf-table td[data-column="realized"]::before { content: "Realizado"; }
+      .budget-results .sf-table td[data-column="remaining"]::before { content: "Restante"; }
       .budget-results .sf-table td[data-column="usage"]::before { content: "Uso"; }
       .budget-results .sf-table td[data-column="actions"]::before { content: "Ações"; }
       .budget-row-actions { justify-content: flex-start; min-width: 0; }

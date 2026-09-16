@@ -5,6 +5,7 @@ import {
   buildBudgetsPageViewModel,
   type BudgetRecord,
   type BudgetUsageLoad,
+  type BudgetUsageRecord,
   type CategoryRecord,
 } from "./budgets-view-model.js";
 
@@ -17,6 +18,7 @@ const categories: CategoryRecord[] = [
     status: "active",
     parentCategoryId: "parent",
   },
+  { id: "health", name: "Saúde", kind: "expense", status: "active" },
 ];
 
 const brlBudget: BudgetRecord = {
@@ -32,7 +34,7 @@ const brlBudget: BudgetRecord = {
 const usdBudget: BudgetRecord = {
   ...brlBudget,
   id: "usd",
-  plannedAmountMinor: 200_00,
+  plannedAmountMinor: 20_000,
   currency: "USD",
 };
 
@@ -55,20 +57,35 @@ function usage(budget: BudgetRecord, actualAmountMinor: number): BudgetUsageLoad
   };
 }
 
+function unbudgeted(currency = "BRL"): BudgetUsageRecord {
+  return {
+    categoryId: "health",
+    periodStartOn: "2026-09-01",
+    periodEndOn: "2026-09-30",
+    plannedAmountMinor: 0,
+    actualAmountMinor: 12_500,
+    remainingAmountMinor: -12_500,
+    usedPercent: 100,
+    alertThresholdPercent: 80,
+    status: "unbudgeted",
+    currency,
+  };
+}
+
 describe("budgets view-model issue 613", () => {
-  it("keeps budgets separated by currency and preserves backend realized values", () => {
+  it("keeps currencies separated and preserves backend realized and remaining values", () => {
     const loads = new Map<string, BudgetUsageLoad>([
       [brlBudget.id, usage(brlBudget, 30_000)],
-      [usdBudget.id, usage(usdBudget, 5_00)],
+      [usdBudget.id, usage(usdBudget, 500)],
     ]);
     const result = buildBudgetsPageViewModel([brlBudget, usdBudget], categories, loads);
 
     assert.deepEqual(result.currencies, ["BRL", "USD"]);
     assert.deepEqual(
-      result.rows.map((row) => [row.currency, row.plannedAmountMinor, row.actualAmountMinor]),
+      result.rows.map((row) => [row.currency, row.plannedAmountMinor, row.actualAmountMinor, row.remainingAmountMinor]),
       [
-        ["BRL", 100_000, 30_000],
-        ["USD", 20_000, 500],
+        ["BRL", 100_000, 30_000, 70_000],
+        ["USD", 20_000, 500, 19_500],
       ],
     );
     assert.equal(result.rows[0]?.categoryName, "Casa › Mercado");
@@ -87,6 +104,7 @@ describe("budgets view-model issue 613", () => {
     );
 
     assert.equal(result.rows[0]?.actualAmountMinor, null);
+    assert.equal(result.rows[0]?.remainingAmountMinor, null);
     assert.equal(result.rows[0]?.usedPercent, null);
     assert.equal(result.rows[0]?.usageStatus, "unavailable");
   });
@@ -97,13 +115,45 @@ describe("budgets view-model issue 613", () => {
       categories,
       new Map([
         [brlBudget.id, usage(brlBudget, 30_000)],
-        [usdBudget.id, usage(usdBudget, 5_00)],
+        [usdBudget.id, usage(usdBudget, 500)],
       ]),
       { currency: "usd" },
     );
 
     assert.equal(result.rows.length, 1);
     assert.equal(result.rows[0]?.id, "usd");
+    assert.equal(result.rows[0]?.currency, "USD");
+  });
+
+  it("keeps unbudgeted usage distinct without fabricating a zero-value budget", () => {
+    const result = buildBudgetsPageViewModel(
+      [brlBudget],
+      categories,
+      new Map([[brlBudget.id, usage(brlBudget, 30_000)]]),
+      {},
+      [unbudgeted()],
+    );
+    const row = result.rows.find((candidate) => candidate.source === "unbudgeted");
+
+    if (!row) throw new Error("unbudgeted row missing");
+    assert.equal(row.categoryName, "Saúde");
+    assert.equal(row.plannedAmountMinor, null);
+    assert.equal(row.actualAmountMinor, 12_500);
+    assert.equal(row.remainingAmountMinor, -12_500);
+    assert.equal(row.usedPercent, 100);
+    assert.equal(row.usageStatus, "unbudgeted");
+    assert.equal(row.currency, "BRL");
+    assert.equal(result.unbudgetedCount, 1);
+  });
+
+  it("applies currency filtering to unbudgeted rows without cross-currency relabeling", () => {
+    const result = buildBudgetsPageViewModel([], categories, new Map(), { currency: "USD" }, [
+      unbudgeted("BRL"),
+      unbudgeted("USD"),
+    ]);
+
+    assert.equal(result.rows.length, 1);
+    assert.equal(result.rows[0]?.source, "unbudgeted");
     assert.equal(result.rows[0]?.currency, "USD");
   });
 });

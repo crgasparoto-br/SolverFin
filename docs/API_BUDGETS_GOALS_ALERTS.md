@@ -50,6 +50,16 @@ Campos principais do resumo:
 
 Uma categoria pode possuir dados em BRL e USD no mesmo periodo sem que esses valores sejam somados. O resumo de dashboard de dominio mantém entradas independentes por combinação `currency + categoryId` e ordena os resultados por moeda e categoria. Quando o filtro opcional de moeda e informado, ele apenas restringe a moeda nativa analisada; quando e omitido, as moedas permanecem separadas. Nao ha conversao cambial ou fallback de apresentacao dentro da agregacao.
 
+### Resumo operacional por periodo
+
+`GET /api/budgets/dashboard?periodStartOn=YYYY-MM-DD&periodEndOn=YYYY-MM-DD` expoe o resumo canonico de `summarizeBudgetDashboard` para o perfil financeiro ativo.
+
+- O periodo e obrigatorio e aceita intervalos parciais validos do contrato de dominio.
+- `currency=XXX` e opcional; sem filtro, as moedas permanecem em itens separados.
+- Itens com orcamento incluem `budgetId` e os valores calculados pelo dominio.
+- Itens `unbudgeted` nao possuem `budgetId`; representam gasto realizado de categoria/moeda sem orcamento no recorte.
+- A rota nao converte moedas e nao cria bucket para transacoes sem categoria.
+
 ## Alertas
 
 Decisao de MVP:
@@ -72,10 +82,11 @@ Transacoes sem categoria sao ignoradas nesse resumo porque nao ha categoria para
 
 A rota `/orcamentos` usa o arquetipo A1 de acompanhamento operacional e consome os contratos acima sem recalcular valores financeiros no renderer.
 
-- Cada orcamento identifica categoria, periodo e moeda de forma explicita.
-- Valores monetarios usam a primitiva `Money` com a moeda nativa do orcamento; ausencia de moeda nunca vira BRL por fallback visual.
-- `Planejado` vem do proprio `Budget`; `Realizado`, percentual e status vem de `GET /api/budgets/:budgetId/usage`.
-- A resposta de uso so e apresentada quando categoria, periodo, valor planejado e moeda continuam coerentes com o orcamento exibido. Divergencia ou falha de leitura produz estado `Realizado indisponivel`, nunca `0` sintetico.
+- Cada item identifica categoria, periodo e moeda de forma explicita.
+- Valores monetarios usam a primitiva `Money` com a moeda nativa do item; ausencia de moeda nunca vira BRL por fallback visual.
+- Para orcamentos, `Planejado` vem do proprio `Budget`; `Realizado`, `Restante`, percentual e status vem de `GET /api/budgets/:budgetId/usage`.
+- A resposta de uso so e apresentada quando categoria, periodo, valor planejado e moeda continuam coerentes com o orcamento exibido. Divergencia ou falha de leitura produz estado indisponivel, nunca `0` sintetico para realizado ou restante.
+- Categorias com gasto realizado sem orcamento sao lidas de `GET /api/budgets/dashboard` e exibidas como `Sem orçamento`; o renderer nao converte `plannedAmountMinor=0` do resumo tecnico em um orcamento de valor zero e nao oferece editar/arquivar para um item sem `budgetId`.
 - Filtros de moeda e estado atuam apenas sobre a colecao apresentada e nao consolidam moedas.
 - Criacao e edicao exigem moeda explicita e preservam periodo e categoria como parte do contexto do orcamento.
 - `committed`, `projected`, `available` e demais estados da Fase 4A nao sao calculados nem simulados nesta interface enquanto o contrato da #619 nao estiver implementado.

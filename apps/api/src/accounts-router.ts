@@ -9,6 +9,7 @@ import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.j
 import { buildCreateAccountPayload, buildUpdateAccountPayload } from "./account-payloads.js";
 import { AuthError } from "./auth.js";
 import { auth } from "./auth-service.js";
+import { handleBudgetDashboardApiRequest } from "./budget-dashboard-router.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import {
   archiveAccountForContext,
@@ -47,6 +48,12 @@ route("POST", `${ACCOUNTS_BASE_PATH}/:accountId/archive`, archiveAccountHandler)
 export async function handleAccountsApiRequest(
   request: ApiRequest,
 ): Promise<ApiResponse | undefined> {
+  const budgetDashboardResult = await handleBudgetDashboardApiRequest(request);
+
+  if (budgetDashboardResult) {
+    return budgetDashboardResult;
+  }
+
   const adminResult = await handleAdminInstitutionsApiRequest(request);
 
   if (adminResult) {
