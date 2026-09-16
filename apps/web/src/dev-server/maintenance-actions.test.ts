@@ -230,6 +230,10 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
     return { recurrences: [] };
   }
 
+  if (pathname === "/api/budgets/dashboard") {
+    return { usage: [] };
+  }
+
   if (pathname === "/api/budgets") {
     return {
       budgets: [
