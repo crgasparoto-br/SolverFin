@@ -82,7 +82,12 @@ describe("budgets view-model issue 613", () => {
 
     assert.deepEqual(result.currencies, ["BRL", "USD"]);
     assert.deepEqual(
-      result.rows.map((row) => [row.currency, row.plannedAmountMinor, row.actualAmountMinor, row.remainingAmountMinor]),
+      result.rows.map((row) => [
+        row.currency,
+        row.plannedAmountMinor,
+        row.actualAmountMinor,
+        row.remainingAmountMinor,
+      ]),
       [
         ["BRL", 100_000, 30_000, 70_000],
         ["USD", 20_000, 500, 19_500],
