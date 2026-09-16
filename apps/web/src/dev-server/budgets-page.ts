@@ -173,10 +173,7 @@ async function loadUnbudgetedUsage(
         periodStartOn: period.periodStartOn,
         periodEndOn: period.periodEndOn,
       });
-      return apiGet<{ usage: BudgetUsageRecord[] }>(
-        token,
-        `/api/budgets/dashboard?${params}`,
-      );
+      return apiGet<{ usage: BudgetUsageRecord[] }>(token, `/api/budgets/dashboard?${params}`);
     }),
   );
   const unique = new Map<string, BudgetUsageRecord>();
