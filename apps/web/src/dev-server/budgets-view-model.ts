@@ -85,15 +85,16 @@ export function buildBudgetsPageViewModel(
       return normalizeCurrency(budget.currency) === normalizedFilterCurrency;
     })
     .map((budget) => buildBudgetRow(budget, categoryIndex, usageByBudgetId.get(budget.id)));
-  const unbudgetedRows = filters.status === "archived"
-    ? []
-    : unbudgetedUsage
-        .filter((usage) => usage.status === "unbudgeted")
-        .filter((usage) => {
-          if (!normalizedFilterCurrency) return true;
-          return normalizeCurrency(usage.currency) === normalizedFilterCurrency;
-        })
-        .map((usage) => buildUnbudgetedRow(usage, categoryIndex));
+  const unbudgetedRows =
+    filters.status === "archived"
+      ? []
+      : unbudgetedUsage
+          .filter((usage) => usage.status === "unbudgeted")
+          .filter((usage) => {
+            if (!normalizedFilterCurrency) return true;
+            return normalizeCurrency(usage.currency) === normalizedFilterCurrency;
+          })
+          .map((usage) => buildUnbudgetedRow(usage, categoryIndex));
   const rows = [...budgetRows, ...unbudgetedRows].sort(compareBudgetRows);
   const currencies = Array.from(
     new Set(
