@@ -3,38 +3,56 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
-    "audit_report_sha256": "46c7402b0c1cfe7863dc746b950d2392eb91da2fda8972fc66f701b4a40f609f",
-    "audited_head_sha": "1f98343327d2f3afc8a946857388b633b1fc69a4"
+    "rejection_id": "audit-rejection:920c53a8-8660-4597-8341-2b4f0a659678",
+    "audit_report_sha256": "85af2ddf909e0901083fcd1b5f2abfbc9aa5c5576c8969b147f82487c80835e9",
+    "audited_head_sha": "4e111ccb0f7e9dd0a5b27220139a3a9942221934"
   },
-  "candidate_head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+  "candidate_head_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
   "remediation_mode": "targeted-remediation",
   "status": "closed",
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-001",
+      "source_id": "A-004",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        "docs/STATUS_MATRIX.md",
-        "docs/EVOLUTION_STRATEGY.md",
-        ".audit/entregar-issue/handoff-ready.json",
-        "apps/web/src/dev-server/shared-styles.ts"
+        ".audit/entregar-issue/pr-660-audit-source-result.json",
+        ".audit/entregar-issue/pr-660-audit-remediation.json",
+        ".audit/entregar-issue/pr-660-audit-escape-closure.json",
+        ".audit/entregar-issue/pr-660-learning-closure.json",
+        ".audit/entregar-issue/handoff-ready.json"
       ],
       "evidence": [
-        "Fresh handoff package is rebuilt for SolverFin issue #613 and PR #660 on the exact material head.",
-        "Repository status and evolution documentation now match the implemented budget migration.",
-        "Post-CI refreeze includes scoped cards-dialog overflow containment; issue 662 card installment purchase visual validation passed without relaxing the gate."
+        "The active cumulative escape ledger now preserves A-001 from ea21bbba, A-002/A-003 from 6c8e0db1, and A-004/A-005 from 920c53a8.",
+        "The learning closure is bound to the latest independent rejection 920c53a8 and the certified source result contains both current blockers."
       ],
       "validations": [
-        "validate_specification_coverage.py passed",
-        "validate_requirement_attack_matrix.py passed",
-        "validate_risk_saturation.py passed",
-        "exact-head CI required before certificate publication",
-        "Delivery V2 CI #18 completed success on exact material head 31a29b692512ef6b6b94e06567ab66f849d40f1f",
-        "Statement visual validation #3460 completed success on exact material head 31a29b692512ef6b6b94e06567ab66f849d40f1f"
+        "validate_audit_remediation.py passed",
+        "validate_audit_escape_lineage.py passed",
+        "validate_independent_rejection_closure.py passed"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-005",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/evidence/issue-613-controls.txt"
+      ],
+      "evidence": [
+        "The remediation scope now starts at 3d70cae9bf28bc2fda00e2d4beb48d9b11e1a1fe, immediately before the material functional remediation cycle.",
+        "Immutable compare to f281ecf4 has 9 commits and exactly the 11 certified paths, excluding the earlier merge of main.",
+        "issue_delta_sha256 is recomputed from the immutable start SHA, material SHA, and exact sorted path set."
+      ],
+      "validations": [
+        "immutable Git compare verified exact 11-path scope",
+        "issue_delta_sha256 recomputed from canonical payload",
+        "material-head CI remains green and unchanged"
       ]
     }
   ]

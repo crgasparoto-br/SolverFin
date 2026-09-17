@@ -1,24 +1,36 @@
 {
   "contract_version": "2026-08-20.3",
-  "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
-  "head_sha": "1f98343327d2f3afc8a946857388b633b1fc69a4",
+  "rejection_id": "audit-rejection:920c53a8-8660-4597-8341-2b4f0a659678",
+  "head_sha": "4e111ccb0f7e9dd0a5b27220139a3a9942221934",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 613,
     "pull_request_number": 660,
-    "head_sha": "1f98343327d2f3afc8a946857388b633b1fc69a4"
+    "head_sha": "4e111ccb0f7e9dd0a5b27220139a3a9942221934",
+    "material_head_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937"
   },
   "findings": [
     {
-      "id": "A-001",
+      "id": "A-004",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "severity": "blocking",
+      "category": "remediation-incomplete",
+      "reason": "latest-independent-rejection-not-represented",
+      "summary": "The certified re-audit package omitted the later functional rejection audit-rejection:6c8e0db1-0f91-4bb2-b7af-613660a00203 and its findings A-002/A-003."
+    },
+    {
+      "id": "A-005",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
       "severity": "blocking",
       "category": "delivery-not-ready",
-      "reason": "handoff-not-produced",
-      "summary": "PR #660 did not publish a handoff bound to issue #613; the inherited root handoff belonged to issue #662 / PR #664."
+      "reason": "scope-identity-mismatch",
+      "summary": "The certified work_item_start_sha c31a1097... did not match the declared 17-path issue-local scope because that immutable delta also contained merged main work."
     }
   ],
   "recommendations": []

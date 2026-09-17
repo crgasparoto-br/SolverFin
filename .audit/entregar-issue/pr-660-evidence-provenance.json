@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "material_head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
-  "base_sha": "47052e36dd1c3413095d8a8a37769677bff28d39",
+  "material_head_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
+  "base_sha": "78798e3484413d660c76a9566a2129b0d42dde04",
   "evidence": [
     {
       "evidence_id": "BUDGET-METRICS-001",
       "kind": "quantitative",
       "path": "evidence/issue-613-controls.txt",
-      "sha256": "8aa0842b251957d43e1f5efa87314ab8f59436e0503bc45f6d03815833d8736f",
-      "subject_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+      "sha256": "ad941a235c4b7234ff1afdfe0652d075ffdfdea68c35991c5e86fe394e2c7af2",
+      "subject_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions Delivery V2 CI #18 and Statement visual validation #3460",
+      "producer": "GitHub Actions Delivery V2 CI #28 and Statement visual validation #3470",
       "status": "passed"
     }
   ]

@@ -9,7 +9,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Inspect the inherited handoff target before rebuilding the package.",
-        "observed": "The rebuilt delivery controls bind issue #613 and PR #660 to the active exact material head 31a29b692512ef6b6b94e06567ab66f849d40f1f."
+        "observed": "The rebuilt delivery controls bind issue #613 and PR #660 to the active exact material head f281ecf4fb1ac35987e305882c3d1f6c67354937."
       },
       "sibling_cases": [
         {
@@ -29,7 +29,7 @@
       "detection_change": {
         "evidence": "Validate certificate subject and exact material identity before consuming inherited root artifacts."
       },
-      "revalidated_head_sha": "31a29b692512ef6b6b94e06567ab66f849d40f1f",
+      "revalidated_head_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
@@ -52,6 +52,115 @@
           "risk_family": "documentation",
           "surface": "documentation-claims",
           "dimension": "documentation-claims-divergence"
+        }
+      ]
+    },
+    {
+      "escape_id": "ESC-BUDGET-OBSERVABILITY-CONTRACT",
+      "escape_class": "budget-observability-gap",
+      "status": "passed",
+      "plausible_wrong_implementation": "Render only planned and realized values for persisted budgets while discarding backend remaining values and omitting expenses that have no budget record.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Revalidate remainingAmountMinor and unbudgeted usage on the exact material head.",
+        "observed": "The exact material head f281ecf4fb1ac35987e305882c3d1f6c67354937 preserves backend remainingAmountMinor and renders unbudgeted usage as distinct rows."
+      },
+      "sibling_cases": [
+        {
+          "id": "S1",
+          "surface": "budget-view-model-remaining",
+          "status": "passed"
+        },
+        {
+          "id": "S2",
+          "surface": "budget-dashboard-unbudgeted",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Budget view-model tests preserve backend realized/remaining values and model unbudgeted rows without fabricated budgets."
+      },
+      "detection_change": {
+        "evidence": "Budget page tests assert the Restante column and a separate Sem orçamento operational row."
+      },
+      "revalidated_head_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:6c8e0db1-0f91-4bb2-b7af-613660a00203",
+        "finding_ids": [
+          "A-002",
+          "A-003"
+        ]
+      },
+      "required_risk_families": [
+        "reference-liveness",
+        "temporal-consistency"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "canonical-contract-reference",
+          "dimension": "backend-usage-field-preservation"
+        },
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "contract-phase-boundary",
+          "dimension": "unbudgeted-period-observability"
+        }
+      ]
+    },
+    {
+      "escape_id": "ESC-HANDOFF-LINEAGE-SCOPE",
+      "escape_class": "certified-handoff-lineage-scope-gap",
+      "status": "passed",
+      "plausible_wrong_implementation": "Publish a green result-only handoff that references only an older rejection and declares a narrow issue path list from a start SHA whose immutable Git delta contains unrelated merged work.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Cross-check cumulative rejection lineage and recompute issue-local scope from the immutable remediation baseline.",
+        "observed": "The active package closes A-004/A-005 on material head f281ecf4fb1ac35987e305882c3d1f6c67354937, preserves the earlier functional rejection, and binds scope to the exact 3d70cae9..f281ecf4 delta."
+      },
+      "sibling_cases": [
+        {
+          "id": "S1",
+          "surface": "independent-rejection-lineage",
+          "status": "passed"
+        },
+        {
+          "id": "S2",
+          "surface": "issue-local-scope-digest",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Reuse the existing cumulative-lineage and issue-local-scope contract with the correct latest rejection and remediation start SHA."
+      },
+      "detection_change": {
+        "evidence": "validate_independent_rejection_closure and immutable compare verification detect omitted rejection findings or scope/path drift before audit handoff."
+      },
+      "revalidated_head_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:920c53a8-8660-4597-8341-2b4f0a659678",
+        "audit_report_sha256": "85af2ddf909e0901083fcd1b5f2abfbc9aa5c5576c8969b147f82487c80835e9",
+        "finding_ids": [
+          "A-004",
+          "A-005"
+        ]
+      },
+      "required_risk_families": [
+        "reference-liveness",
+        "documentation"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "canonical-contract-reference",
+          "dimension": "independent-rejection-lineage"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "documentation-claims",
+          "dimension": "certified-scope-identity"
         }
       ]
     }

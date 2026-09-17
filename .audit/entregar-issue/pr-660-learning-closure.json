@@ -3,14 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:ea21bbba-659b-405b-9a74-6870bdca2ca0",
-    "audit_report_sha256": "46c7402b0c1cfe7863dc746b950d2392eb91da2fda8972fc66f701b4a40f609f",
+    "rejection_id": "audit-rejection:920c53a8-8660-4597-8341-2b4f0a659678",
+    "audit_report_sha256": "85af2ddf909e0901083fcd1b5f2abfbc9aa5c5576c8969b147f82487c80835e9",
     "finding_ids": [
-      "A-001"
+      "A-004",
+      "A-005"
     ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The rejection exposed a stale delivery packet for this target; the remediation is confined to rebuilding and target-binding the current handoff rather than changing a reusable product rule."
+    "reason": "The installed delivery contract already requires cumulative independent-rejection lineage and immutable issue-local scope validation; this rejection was caused by a stale local package choosing the wrong prior rejection and start SHA, so no new global rule is needed."
   }
 }
