@@ -12,7 +12,7 @@ Esta matriz registra o estado consolidado do SolverFin e separa o baseline concl
 ## Fontes de verdade
 
 - `docs/PRODUCT.md`: escopo, principios e fases de evolucao.
-- `docs/EVOLUTION_STRATEGY.md`: estrategia das Fases 3 e 4 e ordem de dependencias.
+- `docs/EVOLUTION_STRATEGY.md`: estrategia das Fases 3 a 7 e ordem de dependencias.
 - `docs/ARCHITECTURE.md`: arquitetura, CI e invariantes tecnicos.
 - `docs/RUNBOOK.md`: gate final e reproducao da regressao da Fase 2.
 - `docs/product/INTERFACE_INVENTORY.md`: recorte navegavel do baseline.
@@ -123,7 +123,7 @@ Os cenarios calculam deltas a partir de um baseline obtido imediatamente antes d
 - Multi-moedas e invariante imediato para novas implementacoes; nenhum trabalho novo deve introduzir agregado cruzado entre moedas.
 - Itens planejados so mudam para `Parcial` ou `Feito` quando houver implementacao verificavel e issue correspondente.
 
-## Fase 4 - Previsibilidade financeira e planejamento
+## Fase 4A - Previsibilidade financeira e planejamento
 
 A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contratos e superficies estruturados na Fase 3.
 
@@ -136,13 +136,14 @@ A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contr
 | Recorrencias futuras acionaveis nas jornadas existentes    | Planejado | #592 / #620           |
 | Insights priorizados, deduplicados e com drilldown         | Planejado | #592 / #621           |
 
-### Regras da Fase 4
+### Regras da Fase 4A
 
-- A Fase 4 nao corrige por conta propria semantica financeira que deveria estar resolvida na #589.
+- A Fase 4A nao corrige por conta propria semantica financeira que deveria estar resolvida na #589.
 - Projecoes e indicadores permanecem deterministas e separados por moeda sem conversao explicita.
-- A Fase 4 reutiliza components/view-models da #590 e superficies migradas da #591.
+- A Fase 4A reutiliza components/view-models da #590 e superficies migradas da #591.
 - Open Finance, provider de cambio, carteira completa de ativos e recomendacoes reguladas permanecem fora da epica #592.
 - Itens planejados so mudam para `Parcial` ou `Feito` quando houver implementacao verificavel e issue correspondente.
+- Fases 4B em diante descritas em `docs/PRODUCT.md` e `docs/EVOLUTION_STRATEGY.md` sao estrategicas e nao contam como implementadas nem como backlog operacional sem epica/issue propria.
 
 ## Decisoes de jornada preservadas
 
@@ -170,4 +171,4 @@ O SHA aprovado e o head do PR com os checks verdes no GitHub e nao e hardcoded n
 
 ## Limites fora da Fase 2
 
-As lacunas gerais marcadas como `Parcial` nesta matriz nao sao reclassificadas como trabalho da Fase 2. As Fases 3 e 4 seguem `docs/PRODUCT.md` e `docs/EVOLUTION_STRATEGY.md`, e cada capacidade exige issue propria.
+As lacunas gerais marcadas como `Parcial` nesta matriz nao sao reclassificadas como trabalho da Fase 2. As Fases 3, 4A e expansoes estrategicas posteriores seguem `docs/PRODUCT.md` e `docs/EVOLUTION_STRATEGY.md`, e cada capacidade exige issue propria.

@@ -17,6 +17,7 @@ O SolverFin e multi-moedas. Valores, saldos, relatorios e projecoes devem preser
 - Transformar o dashboard e as telas operacionais em superficies de decisao, nao apenas cadastros e listas.
 - Manter o usuario no controle de sugestoes e automacoes.
 - Proteger dados financeiros por padrao, com consentimento e rastreabilidade.
+- Evoluir da captura de dados para analise e decisao sem criar silos paralelos por canal, formato ou persona.
 
 ## Publico-alvo
 
@@ -81,6 +82,10 @@ O usuario tambem pode usar o **Assistente financeiro** (`/assistente`) para faze
 - **Separacao de contextos:** pessoal, familia, MEI e negocio nao devem se misturar sem acao explicita.
 - **Multi-moedas por contrato:** moeda acompanha o valor em todo o fluxo; agregacoes entre moedas diferentes exigem conversao explicita.
 - **IA como assistente:** IA sugere, explica e acelera; nao deve tomar decisoes irreversiveis sozinha.
+- **Entrada unica, canais multiplos:** arquivo, Open Finance, mensagem, WhatsApp ou API devem convergir para contratos normalizados, deduplicacao, conciliacao e revisao comuns, em vez de criar motores financeiros paralelos.
+- **Dimensoes antes de modulos paralelos:** categoria, rateio, centro, projeto, contato e tags devem formar uma base analitica reutilizavel para pessoa, familia, MEI e negocio.
+- **Colaboracao com menor privilegio:** acesso compartilhado deve ser explicito por organizacao/perfil e permitir evolucao de papeis e permissoes sem quebrar isolamento.
+- **Gestao empresarial sem virar ERP:** oferecer analise gerencial, planejamento e exportacoes uteis sem antecipar folha, estoque, fiscal ou contabilidade legal completa.
 - **Rotina mobile-first:** fluxos diarios devem funcionar bem no celular.
 - **MVP pragmatico:** priorizar controle financeiro essencial antes de integracoes sofisticadas.
 - **Interface enxuta:** telas devem priorizar dados, acoes e revisao, evitando textos longos e cards explicativos desnecessarios.
@@ -136,26 +141,103 @@ Priorizar a corretude do modelo financeiro e a qualidade estrutural da experienc
 
 O plano detalhado fica em `docs/EVOLUTION_STRATEGY.md`, com ADRs 0013 e 0014.
 
-### Fase 4 - Decisao financeira e integracoes
+### Fase 4A - Previsibilidade financeira e planejamento
 
-Sobre o core corrigido e a fundacao de interface estabilizada:
+Concluir a trilha operacional ja organizada na epica #592, sem interrompe-la por expansoes competitivas posteriores:
 
 - consolidar compromissos futuros;
 - oferecer projecao 30/60/90 dias;
 - calcular valor realmente livre para gastar por moeda/contrato valido;
 - tornar orcamentos operacionais e recorrencias mais acionaveis;
-- priorizar insights e alertas;
-- adicionar observabilidade, performance, troubleshooting e exportacoes profissionais/MEI;
-- avaliar Open Finance por ADR e estudo tecnico, sem antecipar semantica de conversao ou conciliacao.
+- priorizar insights e alertas com evidencia navegavel.
 
-Expansoes como metas avancadas, reserva de emergencia, dividas, carteira de investimentos, patrimonio, especializacoes MEI/negocio e colaboracao familiar devem reutilizar os contratos estabelecidos nas Fases 3 e 4.
+A Fase 4A continua sendo a prioridade funcional imediata depois dos pre-requisitos da Fase 3 e da extensao cross-currency #668.
+
+### Fase 4B - Automacao de entrada e conectividade
+
+Reduzir radicalmente o esforco de alimentar o SolverFin, reaproveitando a Inbox e os motores de revisao existentes:
+
+- avaliar e implementar Open Finance **somente leitura** via parceiro/agregador, com ADR, consentimento, revogacao, observabilidade e fallback manual;
+- comparar provedores por cobertura, qualidade dos dados, custo, sandbox, webhooks, renovacao de consentimento e SLA, sem fixar fornecedor no roadmap;
+- adicionar importacao de PDF e XLSX, inclusive extratos e faturas quando houver parser homologado, usando o mesmo pipeline de preview, normalizacao, deduplicacao, conciliacao e revisao;
+- tornar anexos existentes acessiveis nas jornadas operacionais para comprovantes, faturas, extratos, recibos e contratos;
+- oferecer exportacoes CSV, XLSX e PDF com filtros e moeda reproduziveis;
+- criar fundacao de notificacoes in-app/push/e-mail para eventos financeiros deterministas;
+- introduzir WhatsApp em etapas: primeiro consulta/captura; depois propostas revisaveis; nenhuma mutacao financeira irreversivel ocorre sem confirmacao e contrato proprio.
+
+O Assistente financeiro atual permanece somente leitura. Canais externos que capturem uma intencao de alteracao devem produzir proposta/revisao pelo contrato apropriado, nao transformar o assistente em executor silencioso.
+
+### Fase 4C - Dimensoes analiticas e colaboracao
+
+Criar a fundacao analitica que permite aumentar profundidade sem multiplicar modulos por persona:
+
+- suportar rateio de um lancamento em mais de uma categoria/alocacao, preservando a soma exata do valor e a moeda;
+- criar dimensoes reutilizaveis para tags, centros, projetos e contatos;
+- tratar clientes e fornecedores como papeis de um cadastro de contato/contraparte reutilizavel;
+- permitir relatorios e filtros por categoria, centro, projeto, contato, tag, conta, cartao, instrumento e responsavel;
+- evoluir organizacao/perfil para membros adicionais com papeis e permissoes explicitas, inicialmente em modelo simples como owner/admin/editor/viewer;
+- permitir acesso compartilhado familiar e empresarial sem misturar perfis nao autorizados;
+- aproveitar instrumentos de cartao para analises por titular/instrumento, preservando a fatura unica do agrupador.
+
+Qualquer modelo de rateio deve manter uma unica identidade financeira do lancamento e impedir dupla contabilizacao entre cabecalho e alocacoes.
+
+### Fase 4D - Metas, reservas e rotina financeira
+
+Sobre a previsibilidade da Fase 4A e os canais da Fase 4B:
+
+- criar dominio explicito de metas e reservas, sem desconto implicito de caixa antes da configuracao do usuario;
+- permitir metas pessoais, familiares e de negocio com valor alvo, prazo e progresso;
+- evoluir dividas e simulacao de quitacao sem transformar simulacao em recomendacao regulada;
+- detectar assinaturas/servicos recorrentes a partir de recorrencias e dados importados, sempre com evidencia e possibilidade de correcao;
+- criar fechamento mensal/retrospectiva com receitas, despesas, variacoes, faturas, orcamentos, compromissos e destaques deterministas;
+- usar a fundacao de notificacoes para vencimentos, fechamento de fatura, limite/orcamento, saldo projetado e consentimentos expirando;
+- permitir objetivos compartilhados quando o modelo de colaboracao da Fase 4C estiver disponivel.
+
+### Fase 5 - Gestao empresarial e MEI
+
+Aprofundar o uso profissional sem transformar o SolverFin em ERP ou sistema contabil legal completo:
+
+- oferecer visoes gerenciais por regime de caixa e competencia sobre os contratos de datas existentes;
+- criar DRE gerencial e DFC deterministicas;
+- oferecer posicao patrimonial/balanco gerencial somente quando o modelo de ativos e passivos suportar o calculo sem aproximacoes silenciosas;
+- criar KPIs e ponto de equilibrio com formulas documentadas e drilldown;
+- permitir planejamento por cenarios, por exemplo base/otimista/conservador, separado do realizado;
+- analisar resultado e margem por cliente, projeto, centro e outras dimensoes da Fase 4C;
+- oferecer exportacoes para contador e relatorios essenciais de MEI/autonomo;
+- avaliar integracoes contabeis e artefatos como Carne-Leao somente em issues proprias, com revisao fiscal/juridica adequada.
+
+Folha, estoque, emissao fiscal completa e contabilidade oficial permanecem fora do escopo padrao.
+
+### Fase 6 - Patrimonio e investimentos
+
+Expandir para patrimonio somente depois que captura, dimensoes e previsibilidade estiverem maduras:
+
+- consolidar patrimonio por classe de ativo/passivo preservando moedas nativas;
+- evoluir contas de investimento para posicoes/ativos com historico e eventos rastreaveis;
+- reutilizar Open Finance quando o parceiro contratado fornecer investimentos com qualidade suficiente;
+- adicionar benchmarks e indices financeiros com fonte/data auditaveis;
+- suportar importacao de notas de corretagem e eventos corporativos por contratos dedicados;
+- evoluir suporte a IR/apuracoes apenas com escopo e validacao proprios;
+- nunca oferecer recomendacao regulada de investimento como consequencia automatica da carteira.
+
+### Fase 7 - Plataforma e ecossistema
+
+Abrir o produto apenas depois que os contratos publicos e controles de autorizacao estiverem maduros:
+
+- disponibilizar API publica versionada com escopos, rate limits e auditoria;
+- oferecer MCP inicialmente somente leitura e com as mesmas fronteiras de tenant/perfil do produto;
+- permitir integracoes externas por adapters sem expor o dominio a dependencias de fornecedor;
+- avaliar aplicativo nativo e widgets somente quando a PWA demonstrar limitacao real de experiencia ou distribuicao;
+- tratar gamificacao, missoes e streaks como experimentos de retencao opcionais, nunca como requisito do core financeiro.
+
+As Fases 4B em diante sao direcao estrategica. Cada capacidade so entra no backlog operacional quando possuir epica/issue propria, dependencias, contrato e criterios de aceite. `docs/EVOLUTION_STRATEGY.md` define a ordem e os gates para essa promocao.
 
 ## Fora do MVP inicial
 
-- Integracao bancaria direta via Open Finance sem ADR e estudo tecnico.
+- Integracao bancaria direta via Open Finance permanece fora do MVP inicial; sua evolucao esta direcionada para a Fase 4B e exige ADR, parceiro/agregador e contrato de consentimento antes de producao.
 - Conversao cambial implicita ou sem fonte/taxa/data auditaveis.
 - Automacao irreversivel sem revisao humana.
-- App nativo completo antes da validacao da PWA.
+- App nativo completo antes da validacao da PWA; eventual avaliacao pertence a Fase 7.
 - Funcionalidades de ERP avancado, folha, estoque ou contabilidade completa.
 - Recomendacoes de investimento, credito ou consultoria financeira regulada.
 - Uso de dados reais em exemplos, seeds, fixtures ou demonstracoes publicas.
@@ -167,6 +249,11 @@ Expansoes como metas avancadas, reserva de emergencia, dividas, carteira de inve
 - Por quanto tempo mensagens bancarias brutas poderao ser mantidas apos normalizacao?
 - Quais relatorios MEI serao essenciais antes de integracoes com contador?
 - Qual politica de moeda de referencia e conversao sera adotada quando o produto passar a oferecer consolidados cambiais?
+- Qual parceiro/agregador atende melhor cobertura, custo, consentimento, SLA e qualidade de Open Finance quando a Fase 4B iniciar?
+- Quais intencoes capturadas por WhatsApp podem apenas consultar, quais podem gerar proposta e quais exigem confirmacao reforcada?
+- Qual e o menor modelo de rateio/dimensoes que atende pessoa, familia, MEI e negocio sem criar taxonomias paralelas?
+- Qual granularidade de permissao e necessaria alem de owner/admin/editor/viewer para familia e pequeno negocio?
+- Quais relatorios empresariais serao estritamente gerenciais e quais exigirao validacao contabil/fiscal externa?
 
 ## Regras para IA no produto
 
