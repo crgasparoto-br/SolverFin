@@ -1,10 +1,10 @@
-# Estrategia de evolucao - core multi-moedas e arquitetura de interface
+# Estrategia de evolucao do SolverFin
 
 ## Objetivo
 
 Este documento define a direcao de evolucao do SolverFin a partir do baseline atual. Ele nao declara funcionalidades futuras como implementadas; separa explicitamente o estado observado do produto da arquitetura-alvo e da ordem de entrega.
 
-As issues abertas no GitHub continuam sendo a fonte de verdade operacional do planejamento. Este documento registra os principios, dependencias e criterios que devem orientar essas issues.
+As issues abertas no GitHub continuam sendo a fonte de verdade operacional do planejamento. Este documento registra os principios, dependencias e criterios que devem orientar essas issues. As fases futuras descritas aqui so se tornam backlog operacional quando ganham epica/issue propria.
 
 ## Decisoes de direcao
 
@@ -15,12 +15,19 @@ As issues abertas no GitHub continuam sendo a fonte de verdade operacional do pl
 5. A migracao da interface sera incremental. O SSR, acessibilidade, responsividade e gates visuais atuais devem permanecer protegidos enquanto cada rota migra.
 6. Nao ha decisao de adotar React, Vue, Svelte ou outro framework neste ciclo. Componentizacao, view-models e contratos de interface devem melhorar independentemente dessa escolha futura.
 7. Regras e calculos financeiros permanecem fora da camada de apresentacao. A UI recebe modelos preparados e nao redefine semantica contabil, moeda, saldo ou fatura.
+8. Novos canais de entrada devem reutilizar normalizacao, deduplicacao, conciliacao, consentimento e revisao existentes; Open Finance, PDF, XLSX, WhatsApp e API nao criam motores financeiros paralelos.
+9. Profundidade analitica deve vir de uma fundacao generica de rateio e dimensoes antes de modulos isolados por persona.
+10. Colaboracao deve evoluir por membros, papeis e menor privilegio, preservando isolamento entre organizacoes e perfis financeiros.
+11. Capacidades empresariais devem permanecer gerenciais por padrao; folha, estoque, emissao fiscal completa e contabilidade legal exigem decisoes independentes e nao sao consequencia automatica do roadmap.
+12. Investimentos e patrimonio so devem expandir depois que captura, integridade, previsibilidade e autorizacao estiverem maduros; nenhum portfolio autoriza recomendacao regulada por IA.
 
 ## Estado atual que motiva a estrategia
 
 O baseline atual possui boa cobertura funcional, tenant/perfil financeiro, persistencia real, testes, acessibilidade e validacao visual. Ao mesmo tempo, a camada web acumulou renderers extensos, CSS especifico por pagina e pos-processadores de HTML ligados ao despacho HTTP. Esse desenho foi util para evoluir o MVP, mas aumenta o custo de manter hierarquia visual, responsividade e consistencia entre telas.
 
 No dominio financeiro, entidades ja possuem moeda em diferentes contratos, e relatorios ja preservam separacao por moeda em alguns fluxos. Entretanto, qualquer resumo, saldo, insight ou projecao que exponha um unico numero precisa provar que os valores pertencem a uma mesma moeda ou que houve conversao explicita.
+
+O produto ja possui Inbox, importacao revisavel, deduplicacao, conciliacao, regras, auditoria e assistente somente leitura. Essa fundacao permite planejar automacao de entrada mais ampla sem abrir mao de rastreabilidade. Por outro lado, o modelo operacional ainda e centrado em uma categoria por lancamento e em um owner por perfil, o que limita rateio, analise por projeto/cliente/centro e colaboracao. Essas lacunas devem ser resolvidas antes de aprofundar gestao empresarial.
 
 ## Invariantes multi-moedas
 
@@ -153,17 +160,137 @@ Migrar primeiro Dashboard, Extrato e Cartoes; usar o aprendizado dessas rotas pa
 
 Epica operacional: #591.
 
-## Fase 4 - Decisao financeira e previsibilidade
-
-### Trilha A - Previsibilidade financeira e planejamento
+## Fase 4A - Previsibilidade financeira e planejamento
 
 Depois que o core financeiro e as telas-base estiverem estabilizados, consolidar compromissos futuros, projecao 30/60/90 dias, livre para gastar, orcamentos operacionais, recorrencias e insights priorizados.
 
 Epica operacional: #592.
 
-A Fase 4 reutiliza a semantica financeira da #589, as primitives/view-models da #590 e as superficies migradas da #591. Ela nao deve antecipar conversao cambial implicita nem criar recomendacao financeira regulada.
+A Fase 4A reutiliza a semantica financeira da #589, as primitives/view-models da #590 e as superficies migradas da #591. Ela nao deve antecipar conversao cambial implicita nem criar recomendacao financeira regulada.
 
-Antes de #616 e #617, a #668 deve estar concluida para que uma transferencia `planned` cross-currency seja representada como uma unica identidade com dois efeitos nativos. #616 consome essa identidade na agenda; #617 aplica cada efeito somente a serie da respectiva moeda; #618 deriva o valor livre dessas series. Orçamentos continuam tratando transferencia como movimento de caixa, nao consumo economico.
+Antes de #616 e #617, a #668 deve estar concluida para que uma transferencia `planned` cross-currency seja representada como uma unica identidade com dois efeitos nativos. #616 consome essa identidade na agenda; #617 aplica cada efeito somente a serie da respectiva moeda; #618 deriva o valor livre dessas series. Orcamentos continuam tratando transferencia como movimento de caixa, nao consumo economico.
+
+A conclusao da #592 permanece a prioridade funcional atual. As fases competitivas posteriores nao devem interromper essa cadeia nem antecipar contratos que #616-#621 ainda precisam estabelecer.
+
+## Fase 4B - Automacao de entrada e conectividade
+
+Objetivo: reduzir o trabalho manual para obter e transportar dados ao SolverFin sem criar caminhos financeiros alternativos.
+
+### Ordem recomendada
+
+1. **Open Finance read-only via parceiro/agregador**: escolher fornecedor por ADR e estudo comparativo de cobertura, custo, sandbox, consentimento, refresh/webhooks, qualidade e SLA. Tokens e payloads brutos permanecem fora do dominio financeiro puro.
+2. **PDF e XLSX**: adicionar parsers homologados para extratos/faturas e planilhas, convergindo para o mesmo preview, lote, deduplicacao, conciliacao, revisao e auditoria de CSV/OFX.
+3. **Anexos na jornada operacional**: expor a fundacao `Attachment` para comprovantes, recibos, faturas, extratos e contratos, com retencao e mascaramento apropriados.
+4. **Exportacoes**: CSV, XLSX e PDF reproduziveis a partir de filtros, periodo e moeda conhecidos.
+5. **Notificacoes**: fundacao de entrega in-app/push/e-mail para eventos deterministas, sem provider de IA decidir severidade financeira.
+6. **WhatsApp**: iniciar por consulta e captura; depois permitir intencoes que produzam propostas revisaveis. O assistente canonico continua read-only e nenhuma mutacao irreversivel ocorre sem confirmacao/contrato explicito.
+
+### Invariantes
+
+- Todo dado importado passa por identidade, normalizacao e deduplicacao antes de gerar efeito financeiro.
+- Open Finance nao dispensa isolamento por perfil nem consentimento especifico/revogavel.
+- Falha de parceiro preserva CSV/OFX/inbox como fallback.
+- Um canal externo nunca recebe permissao maior do que o contexto autenticado e o escopo concedido.
+- A escolha do fornecedor nao pode vazar para contratos de dominio; adapters devem ser substituiveis.
+
+## Fase 4C - Dimensoes analiticas e colaboracao
+
+Objetivo: criar uma representacao analitica reutilizavel para pessoa, familia, MEI e pequeno negocio antes de construir relatorios empresariais profundos.
+
+### Fundacao de rateio
+
+- Um fato financeiro continua possuindo uma unica identidade e um unico valor monetario canonico.
+- Rateios podem distribuir esse valor entre categorias/alocacoes, mas a soma deve ser exatamente igual ao valor do fato na mesma moeda.
+- O cabecalho e as alocacoes nao podem ser somados como eventos independentes.
+- Migracao deve preservar lancamentos atuais com uma categoria como caso simples de uma unica alocacao, quando o contrato escolhido assim definir.
+
+### Dimensoes reutilizaveis
+
+Introduzir de forma incremental:
+
+- tags;
+- centros para custo/lucro ou recortes pessoais equivalentes;
+- projetos com periodo/status e orcamento opcional quando houver contrato;
+- contatos/contrapartes com papeis como cliente, fornecedor ou ambos;
+- filtros e relatorios por dimensao, conta, cartao, instrumento e responsavel.
+
+Evitar criar tabelas/fluxos diferentes para cada persona quando o mesmo conceito analitico puder ser compartilhado.
+
+### Colaboracao
+
+- Introduzir membros de organizacao/perfil com papeis claros, inicialmente um conjunto pequeno como owner/admin/editor/viewer.
+- Autorizacao deve ser deny-by-default fora dos recursos explicitamente compartilhados.
+- Usuario adicional nao implica acesso automatico a todos os perfis da organizacao.
+- Historico/auditoria identifica o ator que criou, revisou ou alterou o fato.
+- Instrumentos de cartao ja existentes podem sustentar analise de gastos por titular/instrumento sem quebrar a fatura unica do agrupador.
+
+## Fase 4D - Metas, reservas e rotina financeira
+
+Objetivo: transformar previsibilidade em acompanhamento continuo e acionavel.
+
+Capacidades prioritarias:
+
+- metas e reservas com valor alvo, prazo, progresso e moeda explicita;
+- reservas protegidas somente afetam indicadores como `freeToSpend` quando houver contrato deliberado e configuracao do usuario;
+- dividas e simulacoes de quitacao deterministicas, sem recomendacao regulada;
+- deteccao de assinaturas/servicos recorrentes com evidencia, correcao e supressao de falsos positivos;
+- fechamento mensal/retrospectiva com receitas, despesas, variacoes, faturas, orcamentos, compromissos e destaques verificaveis;
+- notificacoes para vencimentos, fechamento de fatura, limites/orcamentos, risco de saldo e consentimentos expirando;
+- metas compartilhadas quando a autorizacao da Fase 4C estiver disponivel.
+
+A Fase 4D deve reutilizar #617-#621 para horizonte e evidencia; ela nao cria uma segunda projecao financeira.
+
+## Fase 5 - Gestao empresarial e MEI
+
+Objetivo: aprofundar analise profissional com semantica gerencial clara, mantendo o SolverFin abaixo da complexidade de um ERP completo.
+
+### Capacidades
+
+- visoes por regime de caixa e competencia baseadas nos contratos de datas canonicos;
+- DRE gerencial deterministica;
+- DFC deterministica;
+- posicao patrimonial/balanco gerencial apenas quando ativos/passivos estiverem modelados com dados suficientes;
+- KPIs documentados e drilldown, incluindo ponto de equilibrio quando entradas necessarias estiverem definidas;
+- planejamento por cenarios, separando claramente base, otimista/conservador e realizado;
+- resultado/margem por cliente, projeto, centro e demais dimensoes;
+- exportacoes e pacotes para contador;
+- relatorios essenciais para MEI/autonomo;
+- avaliacao de integracoes contabeis e artefatos como Carne-Leao em issues proprias com revisao fiscal/juridica.
+
+### Limites
+
+- nao antecipar folha, estoque, emissao fiscal completa ou contabilidade oficial;
+- nao rotular relatorio gerencial como demonstracao contabil legal sem requisitos proprios;
+- calculos permanecem deterministas e multi-moedas seguem ADR 0013.
+
+## Fase 6 - Patrimonio e investimentos
+
+Objetivo: oferecer visao patrimonial e de carteira somente depois que o core de captura/analise estiver estavel.
+
+Capacidades candidatas:
+
+- ativos e passivos por classe e moeda;
+- posicoes de investimento e historico de movimentacoes;
+- dados de investimento vindos de Open Finance quando o parceiro contratado os suportar com qualidade;
+- indices e benchmarks com fonte/data auditaveis;
+- eventos corporativos;
+- importacao de notas de corretagem;
+- relatorios de rentabilidade e patrimonio com formulas documentadas;
+- suporte fiscal/IR apenas em escopo dedicado e validado.
+
+Ficam proibidos como consequencia implicita desta fase: recomendacao de compra/venda, suitability, credito ou aconselhamento regulado.
+
+## Fase 7 - Plataforma e ecossistema
+
+Objetivo: abrir contratos do SolverFin sem reduzir seguranca ou criar acoplamento irreversivel.
+
+Capacidades candidatas:
+
+- API publica versionada com scopes, rate limits, idempotencia quando aplicavel e auditoria;
+- MCP inicialmente somente leitura, respeitando tenant/perfil e os mesmos limites do assistente;
+- adapters para integracoes externas e contabeis;
+- aplicativo nativo e widgets apenas se a PWA demonstrar limitacao real de distribuicao/experiencia;
+- gamificacao, missoes e streaks somente como experimento opcional de retencao, sem bloquear ou distorcer rotinas financeiras.
 
 ## Dependencias entre fases e trilhas
 
@@ -184,13 +311,35 @@ Fase 3C - Migracao de telas <-----------+
                          |
                          v
 Fase 4A - Previsibilidade e planejamento (#592)
+                         |
+                         v
+Fase 4B - Automacao de entrada e conectividade
+                         |
+             +-----------+-----------+
+             |                       |
+             v                       v
+Fase 4C - Dimensoes            Fase 4D - Metas/rotina
+  e colaboracao                      |
+             |                       |
+             v                       |
+Fase 5 - Gestao empresarial          |
+             |                       |
+             +-----------+-----------+
+                         |
+                         v
+Fase 6 - Patrimonio e investimentos
+                         |
+                         v
+Fase 7 - Plataforma e ecossistema
 ```
 
-A fundacao visual pode avancar em paralelo a correcoes de dominio, mas uma tela nao deve cristalizar um numero agregado cuja semantica financeira ou moeda ainda esteja indefinida. A sequencia operacional detalhada permanece nas issues abertas.
+A fundacao visual pode avancar em paralelo a correcoes de dominio, mas uma tela nao deve cristalizar um numero agregado cuja semantica financeira ou moeda ainda esteja indefinida.
+
+Depois da Fase 4A, trabalhos de baixo acoplamento da 4B, como exportacoes ou exposicao de anexos existentes, podem ser antecipados por issue propria se nao desviarem a cadeia financeira critica. Fases 4C e 4D podem avancar parcialmente em paralelo depois da 4B; a Fase 5 depende principalmente da fundacao analitica da 4C, e a Fase 6 se beneficia da conectividade da 4B e dos objetivos/patrimonio da 4D.
 
 ## Backlog operacional
 
-O backlog aberto no GitHub e a fonte de verdade do trabalho em execucao. O recorte criado para esta estrategia e:
+O backlog aberto no GitHub e a fonte de verdade do trabalho em execucao. O recorte operacional atual e:
 
 - **#589 - Fase 3A: Integridade financeira e multi-moedas**
   - #593 a #599 (concluidas no ciclo original);
@@ -216,9 +365,22 @@ Ordem estrutural da cadeia financeira da Fase 4A:
 
 As epicas mantem checklists e dependencias detalhadas. Este documento nao replica criterios completos das issues para evitar duas fontes de verdade operacionais.
 
-## Expansoes posteriores
+As Fases 4B, 4C, 4D, 5, 6 e 7 **ainda nao sao backlog operacional por simples presenca neste documento**. Antes de iniciar uma delas, criar epica e subissues proporcionais ao risco, fechar decisoes de produto bloqueantes e criar/atualizar ADRs quando houver provider, modelo persistente, autorizacao ou contrato publico novo.
 
-Metas, reserva de emergencia, dividas, simulacao de quitacao, carteira de investimentos, patrimonio, Open Finance, especializacoes MEI/negocio e colaboracao familiar continuam relevantes, mas devem ser construidas sobre os contratos acima. Open Finance, em especial, nao deve anteceder a correcao das semanticas de saldo, liquidacao e multi-moedas.
+## Priorizacao das melhorias competitivas
+
+A ordem acima aplica tres filtros antes de promover uma capacidade:
+
+1. **Valor imediato para o usuario:** reduzir entrada manual e melhorar decisao vem antes de amplitudes como carteira completa de investimentos.
+2. **Reuso da arquitetura existente:** novas entradas reutilizam Inbox/importacao/revisao; novas analises reutilizam dimensoes; novos canais reutilizam autorizacao e auditoria.
+3. **Custo de irreversibilidade:** mudancas de modelo, autorizacao, provider externo ou contrato publico exigem ADR e testes discriminantes antes de virar dependencia de outras fases.
+
+Consequentemente:
+
+- Open Finance, PDF/XLSX, exportacoes e notificacoes possuem prioridade alta depois da #592;
+- rateio/dimensoes e colaboracao sao fundacao obrigatoria antes de DRE/DFC e analise empresarial profunda;
+- metas, reservas, assinaturas e fechamento mensal reutilizam previsibilidade em vez de criarem motor paralelo;
+- investimentos amplos, app nativo e gamificacao permanecem posteriores por custo/escopo e menor urgencia para o core.
 
 ## Criterios transversais de aceite
 
@@ -232,7 +394,11 @@ Toda issue desta estrategia deve, quando aplicavel:
 - cobrir loading, vazio, erro e sucesso quando a interface for alterada;
 - preferir cenarios de fluxo real a testes baseados apenas em transformacao textual de HTML;
 - atualizar documentacao/ADR quando estabelecer novo precedente;
-- evitar big-bang de frontend e manter o produto navegavel durante a migracao.
+- evitar big-bang de frontend e manter o produto navegavel durante a migracao;
+- para integracoes externas, provar consentimento, revogacao, retry/fallback, minimizacao e observabilidade segura;
+- para rateio/dimensoes, provar ausencia de dupla contabilizacao e preservacao exata do valor/moeda;
+- para colaboracao, provar autorizacao negativa entre perfis/usuarios nao permitidos;
+- para canais conversacionais, manter correlacao, idempotencia e confirmacao quando houver mutacao proposta.
 
 ## Definicao de concluido da Fase 3
 
@@ -260,12 +426,51 @@ A primeira trilha da Fase 4 pode ser considerada concluida quando:
 6. recorrencias futuras sao acionaveis dentro das jornadas existentes;
 7. insights priorizados possuem ciclo de vida e evidencia navegavel.
 
+## Gates para iniciar fases posteriores
+
+### Fase 4B
+
+- #592 concluida ou dependencias da capacidade antecipada explicitamente independentes;
+- ADR de Open Finance antes de selecionar provider/producao;
+- pipeline de importacao/revisao permanece fonte unica de normalizacao financeira.
+
+### Fase 4C
+
+- contrato de rateio e identidade financeira aprovado antes de migrar schema;
+- autorizacao de colaboracao definida antes de compartilhar perfis;
+- estrategia de compatibilidade para lancamentos existentes.
+
+### Fase 4D
+
+- #617/#618 disponiveis para qualquer indicador que use horizonte/livre para gastar;
+- fundacao de notificacao disponivel para canais externos quando a feature depender deles;
+- metas/reservas nao alteram caixa sem contrato explicito.
+
+### Fase 5
+
+- dimensoes da 4C suficientes para cliente/projeto/centro;
+- definicao documentada de caixa versus competencia;
+- limite entre relatorio gerencial e obrigacao contabil/fiscal explicito.
+
+### Fase 6
+
+- modelo patrimonial aprovado por ADR/issue propria;
+- qualquer dado externo de investimento preserva fonte, data e moeda;
+- nenhuma recomendacao regulada e inferida da existencia da carteira.
+
+### Fase 7
+
+- contratos publicos versionados e autorizacao madura;
+- API/MCP com scopes e auditoria;
+- app nativo somente mediante evidencia de necessidade alem da PWA.
+
 ## Governanca
 
 - `docs/PRODUCT.md` continua dono da visao de produto e das fases.
 - `docs/ARCHITECTURE.md` continua dono da arquitetura observada e das regras tecnicas gerais.
 - `docs/DESIGN_SYSTEM.md` continua dono das regras visuais executaveis.
 - `docs/APP_SHELL.md` continua dono do shell e do contrato SSR atual durante a transicao.
+- `docs/integrations/open-finance.md` permanece como estudo tecnico de referencia; uma decisao de provider/producao exige ADR atualizada na Fase 4B.
 - ADR 0013 registra a decisao multi-moedas.
 - ADR 0014 registra a estrategia de migracao da interface.
 - Issues e epicas no GitHub sao a fonte de verdade do trabalho aberto.
