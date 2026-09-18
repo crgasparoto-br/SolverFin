@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
+  "base_sha": "78798e3484413d660c76a9566a2129b0d42dde04",
+  "evidence": [
+    {
+      "evidence_id": "BUDGET-METRICS-001",
+      "kind": "quantitative",
+      "path": "evidence/issue-613-controls.txt",
+      "sha256": "ad941a235c4b7234ff1afdfe0652d075ffdfdea68c35991c5e86fe394e2c7af2",
+      "subject_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Delivery V2 CI #28 and Statement visual validation #3470",
+      "status": "passed"
+    }
+  ]
+}
