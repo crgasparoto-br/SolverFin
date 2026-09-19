@@ -160,17 +160,11 @@ export const solverFinSsrStyleContracts = [
   }),
   authenticated("categories", "/categorias", "categories-page.js", {
     representativeHtmlFragments: [
+      'data-secondary-route-foundation="categories"',
       'class="categories-workspace"',
-      "data-categories-design-enhanced",
+      'data-category-search-input',
     ],
     pageCssFragments: [".categories-workspace {"],
-    auxiliaryStyleProviders: [
-      cssProvider(
-        "runtime:categories-interface",
-        "categories-icons-enhancement.js",
-        ".category-summary {",
-      ),
-    ],
   }),
   authenticated("budgets", "/orcamentos", "pages.js", {
     representativeHtmlFragments: ['class="budgets-heading"'],
@@ -197,9 +191,12 @@ export const solverFinSsrStyleContracts = [
     pageCssFragments: [".secondary-heading {"],
   }),
   authenticated("adminInstitutions", "/admin/instituicoes", "admin-institutions-page.js", {
-    representativeHtmlFragments: ['class="admin-heading"'],
+    representativeHtmlFragments: [
+      'data-secondary-route-foundation="adminInstitutions"',
+      'class="admin-institution-list"',
+    ],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
-    pageCssFragments: [".admin-heading {"],
+    pageCssFragments: [".admin-institution-list {"],
   }),
   authenticated(
     "adminFinancialIndexes",

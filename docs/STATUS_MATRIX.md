@@ -98,7 +98,7 @@ A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas
 | Extrato migrado para novo padrao                              | Planejado | #591                                                              |
 | Cartoes/Faturas migrados para hierarquia cartao-fatura        | Planejado | #591                                                              |
 | Relatorios com resumo/visualizacao antes da matriz detalhada  | Planejado | #591                                                              |
-| Demais superficies convergentes aos arquetipos compartilhados | Planejado | #591                                                              |
+| Demais superficies convergentes aos arquetipos compartilhados | Feito     | #615, `docs/product/INTERFACE_INVENTORY.md`                       |
 
 ### Suite de invariantes financeiros E2E (#598)
 

@@ -1,7 +1,15 @@
+import {
+  renderMetricCard,
+  renderPageContainer,
+  renderPageHeader,
+  renderRecoverableError,
+  renderSummaryGrid,
+} from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
+import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
 interface CategoryRecord {
   id: string;
@@ -10,6 +18,8 @@ interface CategoryRecord {
   status: string;
   parentCategoryId?: string;
 }
+
+const categoriesPageModel = getSecondaryRoutePageViewModel("categories");
 
 interface CategorySummary {
   total: number;
@@ -31,7 +41,11 @@ export async function renderCategoriesPage(token: string): Promise<string> {
   if (!categories.ok) {
     return renderShell(
       "Categorias",
-      `<section class="sf-panel sf-error-state"><p class="sf-eyebrow">Erro ao carregar dados</p><h1>Categorias</h1><p class="sf-error" role="alert">${escapeHtml(categories.error)}</p><a class="sf-button" href="/categorias">Tentar novamente</a></section>`,
+      renderRecoverableError({
+        title: "Não foi possível carregar as categorias",
+        description: categories.error,
+        actionHtml: '<a class="sf-button" href="/categorias">Tentar novamente</a>',
+      }),
     );
   }
 
@@ -41,31 +55,54 @@ export async function renderCategoriesPage(token: string): Promise<string> {
   return renderShell(
     "Categorias",
     `
-        <section class="categories-hero" aria-labelledby="categories-title">
-          <div>
-            <p class="sf-eyebrow">Organizacao financeira</p>
-            <h1 id="categories-title">Categorias</h1>
-            <p class="sf-muted">Classifique receitas, despesas e transferencias com uma hierarquia simples para manter relatorios e lancamentos consistentes.</p>
-          </div>
-          <button class="sf-button" type="button" data-open-category-modal title="Criar nova categoria">${icon("plus", 14)} Nova categoria</button>
-        </section>
+        ${renderPageHeader({
+          eyebrow: categoriesPageModel.eyebrow,
+          title: categoriesPageModel.title,
+          description: categoriesPageModel.description,
+          actionsHtml: `<button class="sf-button" type="button" data-open-category-modal title="Criar nova categoria">${icon("plus", 14)} Nova categoria</button>`,
+        })}
+        ${renderSummaryGrid({
+          childrenHtml:
+            renderMetricCard({
+              label: "Total",
+              value: String(summary.total),
+              detail: "categorias cadastradas",
+            }) +
+            renderMetricCard({
+              label: "Ativas",
+              value: String(summary.active),
+              detail: "disponíveis para uso",
+              tone: "positive",
+            }) +
+            renderMetricCard({
+              label: "Arquivadas",
+              value: String(summary.archived),
+              detail: "mantidas no histórico",
+            }) +
+            renderMetricCard({
+              label: "Principais",
+              value: String(summary.roots),
+              detail: "sem categoria superior",
+              tone: "information",
+            }),
+        })}
 
         <section class="categories-workspace">
           <aside class="sf-panel categories-insights" aria-label="Distribuicao por tipo">
             <div class="section-heading compact">
               <div>
-                <h2>Mapa do catalogo</h2>
-                <p class="sf-muted">Visao rapida sem alterar dados.</p>
+                <h2>Visão geral do catálogo</h2>
+                <p class="sf-muted">Distribuição atual das categorias.</p>
               </div>
             </div>
             <div class="kind-meters">
               ${renderKindMeter("Despesa", summary.expense, summary.total, "expense")}
               ${renderKindMeter("Receita", summary.income, summary.total, "income")}
-              ${renderKindMeter("Transferencia", summary.transfer, summary.total, "transfer")}
+              ${renderKindMeter("Transferência", summary.transfer, summary.total, "transfer")}
             </div>
             <div class="catalog-note">
               <strong>${summary.roots} categorias principais</strong>
-              <p class="sf-muted">Use subcategorias apenas quando o detalhe ajudar na rotina ou nos relatorios.</p>
+              <p class="sf-muted">Use subcategorias apenas quando o detalhe ajudar na rotina ou nos relatórios.</p>
             </div>
           </aside>
 
@@ -76,14 +113,26 @@ export async function renderCategoriesPage(token: string): Promise<string> {
                 <p class="sf-muted">Use o menu de cada categoria para editar, arquivar ou excluir.</p>
               </div>
               <div class="category-toolbar-actions">
+                <label class="category-search" for="category-search-input">
+                  <span class="visually-hidden">Buscar categorias</span>
+                  <span aria-hidden="true">${icon("search", 14)}</span>
+                  <input id="category-search-input" type="search" autocomplete="off" placeholder="Buscar por nome ou caminho" data-category-search-input />
+                  <button class="category-search-clear" type="button" data-clear-category-search aria-label="Limpar busca" title="Limpar busca" hidden>${icon("x", 14)}</button>
+                </label>
                 <div class="filter-chips" aria-label="Filtros locais de categorias">
                   ${renderFilterButton("Todas", "all", true)}
                   ${renderFilterButton("Despesas", "expense")}
                   ${renderFilterButton("Receitas", "income")}
-                  ${renderFilterButton("Transferencias", "transfer")}
+                  ${renderFilterButton("Transferências", "transfer")}
                   ${renderFilterButton("Arquivadas", "archived")}
                 </div>
               </div>
+              <p class="category-results-status" data-category-results-status aria-live="polite"></p>
+            </div>
+            <div class="category-filter-empty" data-category-filter-empty hidden>
+              <strong>Nenhuma categoria encontrada</strong>
+              <p class="sf-muted">Revise a busca ou selecione outro filtro.</p>
+              <button class="secondary-button" type="button" data-reset-category-view>Limpar busca e filtros</button>
             </div>
             <div class="category-tree-list" data-category-list>
               ${renderCategoryTree(categoryItems)}
@@ -247,7 +296,7 @@ function renderCategoryActionMenu(category: CategoryRecord): string {
   const statusPath = `/api/categories/${category.id}/${isArchived ? "restore" : "archive"}`;
   const statusConfirm = isArchived
     ? ""
-    : "Arquivar esta categoria? Novos lancamentos nao devem usa-la.";
+    : "Arquivar esta categoria? Novos lançamentos nao devem usa-la.";
 
   return `
     <div class="category-action-menu">
@@ -255,7 +304,7 @@ function renderCategoryActionMenu(category: CategoryRecord): string {
       <div class="category-menu-popover" data-category-menu role="menu" hidden>
         <button type="button" role="menuitem" data-category-menu-action="edit" ${renderCategoryDataAttributes(category)} title="Editar categoria">${icon("pencil", 13)} Editar</button>
         <button type="button" role="menuitem" data-category-menu-action="request" data-api-method="POST" data-api-path="${escapeHtml(statusPath)}"${statusConfirm ? ` data-api-confirm="${escapeHtml(statusConfirm)}"` : ""} title="${isArchived ? "Restaurar categoria" : "Arquivar categoria"}">${isArchived ? icon("refresh-cw", 13) : icon("archive", 13)} ${statusLabel}</button>
-        <button class="danger-menu-item" type="button" role="menuitem" data-category-menu-action="request" data-api-method="DELETE" data-api-path="/api/categories/${escapeHtml(category.id)}" data-api-confirm="Excluir esta categoria? Ela so sera removida se nao tiver subcategorias, lancamentos ou outros registros vinculados." title="Excluir categoria">${icon("trash-2", 13)} Excluir</button>
+        <button class="danger-menu-item" type="button" role="menuitem" data-category-menu-action="request" data-api-method="DELETE" data-api-path="/api/categories/${escapeHtml(category.id)}" data-api-confirm="Excluir esta categoria? Ela so sera removida se nao tiver subcategorias, lançamentos ou outros registros vinculados." title="Excluir categoria">${icon("trash-2", 13)} Excluir</button>
       </div>
     </div>
   `;
@@ -280,7 +329,7 @@ function renderCategoryKindOptions(selected?: string): string {
   return [
     ["income", "Receita"],
     ["expense", "Despesa"],
-    ["transfer", "Transferencia"],
+    ["transfer", "Transferência"],
   ]
     .map(
       ([value, label]) =>
@@ -331,7 +380,7 @@ function getCategoryDisplayName(
 function formatCategoryKind(kind: string): string {
   if (kind === "income") return "Receita";
   if (kind === "expense") return "Despesa";
-  if (kind === "transfer") return "Transferencia";
+  if (kind === "transfer") return "Transferência";
   return kind;
 }
 
@@ -348,9 +397,12 @@ function renderEmptyState(title: string, description: string): string {
 function renderShell(currentLabel: string, content: string): string {
   return renderAuthenticatedShellDocument({
     activePathname: "/categorias",
-    content,
     currentLabel,
     styles: pageCss(),
+    content: renderPageContainer({
+      className: "secondary-route-page categories-page",
+      childrenHtml: `<div data-secondary-route-foundation="${categoriesPageModel.id}" data-route-archetype="${categoriesPageModel.archetype}" data-route-audience="${categoriesPageModel.audience}" data-operational-mode="${categoriesPageModel.operationalMode}">${content}</div>`,
+    }),
   });
 }
 
@@ -436,7 +488,7 @@ function categoryPageScript(): string {
       function categoryKindLabel(kind) {
         if (kind === "income") return "Receita";
         if (kind === "expense") return "Despesa";
-        if (kind === "transfer") return "Transferencia";
+        if (kind === "transfer") return "Transferência";
         return "";
       }
 
@@ -517,7 +569,7 @@ function categoryPageScript(): string {
         const restoreIconSvg = '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:4px"><polyline points="23 4 23 10 17 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         statusActionButton.innerHTML = isArchived ? restoreIconSvg + " Restaurar categoria" : archiveIconSvg + " Arquivar categoria";
         statusActionButton.dataset.apiPath = "/api/categories/" + button.dataset.categoryId + (button.dataset.categoryStatusValue === "archived" ? "/restore" : "/archive");
-        statusActionButton.dataset.apiConfirm = button.dataset.categoryStatusValue === "archived" ? "" : "Arquivar esta categoria? Novos lancamentos nao devem usa-la.";
+        statusActionButton.dataset.apiConfirm = button.dataset.categoryStatusValue === "archived" ? "" : "Arquivar esta categoria? Novos lançamentos nao devem usa-la.";
         resetStatus();
         openModal(button);
       }
@@ -648,33 +700,86 @@ function categoryPageScript(): string {
 
       const filterButtons = Array.from(document.querySelectorAll("[data-category-filter]"));
       const groups = Array.from(document.querySelectorAll(".category-kind-group"));
+      const searchInput = document.querySelector("[data-category-search-input]");
+      const clearSearchButton = document.querySelector("[data-clear-category-search]");
+      const filterEmpty = document.querySelector("[data-category-filter-empty]");
+      const resultsStatus = document.querySelector("[data-category-results-status]");
+      const resetViewButton = document.querySelector("[data-reset-category-view]");
+      let activeFilter = "all";
 
-      function matchesFilter(item, filter) {
-        return filter === "all" || item.dataset.categoryKind === filter || item.dataset.categoryStatus === filter;
+      function normalizeCategoryText(value) {
+        return String(value || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .trim();
       }
 
-      function applyFilterToNode(item, filter) {
-        const children = Array.from(item.querySelectorAll(":scope > .category-tree-children > [data-category-item]"));
-        const childMatches = children.map((child) => applyFilterToNode(child, filter)).some(Boolean);
-        const visible = matchesFilter(item, filter) || childMatches;
+      function matchesFilter(item) {
+        return activeFilter === "all" ||
+          item.dataset.categoryKind === activeFilter ||
+          item.dataset.categoryStatus === activeFilter;
+      }
+
+      function applyViewToNode(item, query) {
+        const children = Array.from(
+          item.querySelectorAll(":scope > .category-tree-children > [data-category-item]"),
+        );
+        const childMatches = children.map((child) => applyViewToNode(child, query)).some(Boolean);
+        const ownText = normalizeCategoryText(item.querySelector(".category-node-text")?.textContent);
+        const ownMatches = matchesFilter(item) && (!query || ownText.includes(query));
+        const visible = ownMatches || childMatches;
         item.hidden = !visible;
-        if (filter !== "all" && childMatches) setCategoryCollapsed(item, false);
+        if ((query || activeFilter !== "all") && childMatches) setCategoryCollapsed(item, false);
         return visible;
       }
 
-      function applyCategoryFilter(filter) {
-        filterButtons.forEach((candidate) => candidate.setAttribute("aria-pressed", String(candidate.dataset.categoryFilter === filter)));
+      function applyCategoryView() {
+        const query = normalizeCategoryText(searchInput?.value);
+        let visibleCount = 0;
         groups.forEach((group) => {
-          const rootItems = Array.from(group.querySelectorAll(":scope > .category-tree-nodes > [data-category-item]"));
-          const hasVisibleItems = filter === "all" || rootItems.map((item) => applyFilterToNode(item, filter)).some(Boolean);
-          if (filter === "all") rootItems.forEach((item) => applyFilterToNode(item, filter));
+          const rootItems = Array.from(
+            group.querySelectorAll(":scope > .category-tree-nodes > [data-category-item]"),
+          );
+          const hasVisibleItems = rootItems.map((item) => applyViewToNode(item, query)).some(Boolean);
           group.hidden = !hasVisibleItems;
         });
+        document.querySelectorAll("[data-category-item]").forEach((item) => {
+          if (!item.hidden) visibleCount += 1;
+        });
+        filterButtons.forEach((candidate) =>
+          candidate.setAttribute(
+            "aria-pressed",
+            String(candidate.dataset.categoryFilter === activeFilter),
+          ),
+        );
+        if (clearSearchButton) clearSearchButton.hidden = !query;
+        if (filterEmpty) filterEmpty.hidden = visibleCount > 0;
+        if (resultsStatus) {
+          resultsStatus.textContent =
+            visibleCount === 1 ? "1 categoria exibida" : visibleCount + " categorias exibidas";
+        }
       }
 
       filterButtons.forEach((button) => {
-        button.addEventListener("click", () => applyCategoryFilter(button.dataset.categoryFilter || "all"));
+        button.addEventListener("click", () => {
+          activeFilter = button.dataset.categoryFilter || "all";
+          applyCategoryView();
+        });
       });
+      searchInput?.addEventListener("input", applyCategoryView);
+      clearSearchButton?.addEventListener("click", () => {
+        searchInput.value = "";
+        searchInput.focus();
+        applyCategoryView();
+      });
+      resetViewButton?.addEventListener("click", () => {
+        activeFilter = "all";
+        searchInput.value = "";
+        applyCategoryView();
+        searchInput.focus();
+      });
+      applyCategoryView();
     </script>
   `;
 }
@@ -685,11 +790,11 @@ function pageCss(): string {
     [hidden] { display: none !important; } body.modal-open { overflow: hidden; }
     .sf-muted { color: var(--muted); line-height: 1.5; }
     main { display: grid; gap: 14px; margin: 0 auto; max-width: 1440px; padding: 18px 20px; width: 100%; }
-    .sf-button, button, .secondary-button { align-items: center; border: 0; border-radius: var(--radius); cursor: pointer; display: inline-flex; font: inherit; font-size: 0.8125rem; font-weight: 600; justify-content: center; min-height: 34px; padding: 0 12px; text-decoration: none; } .sf-button, button { background: var(--primary); color: white; } button:disabled { cursor: not-allowed; opacity: .55; } .sf-button.secondary, .secondary-button { background: var(--surface); border: 1px solid var(--line); color: var(--primary); } .sf-button.secondary:hover, .secondary-button:hover { background: var(--primary-soft); border-color: #c8dde5; } .danger-action { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .icon-button { background: var(--surface); border: 1px solid var(--line); color: var(--primary); min-height: 28px; padding: 0; width: 28px; } .icon-button:hover { background: var(--primary-soft); border-color: #c8dde5; }
+    .sf-button, button, .secondary-button { align-items: center; border: 0; border-radius: var(--radius); cursor: pointer; display: inline-flex; font: inherit; font-size: 0.8125rem; font-weight: 600; justify-content: center; min-height: 34px; padding: 0 12px; text-decoration: none; } .sf-button { min-height: 44px; } .sf-button, button { background: var(--primary); color: white; } button:disabled { cursor: not-allowed; opacity: .55; } .sf-button.secondary, .secondary-button { background: var(--surface); border: 1px solid var(--line); color: var(--primary); } .sf-button.secondary:hover, .secondary-button:hover { background: var(--primary-soft); border-color: #c8dde5; } .danger-action { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); } .icon-button { background: var(--surface); border: 1px solid var(--line); color: var(--primary); min-height: 28px; padding: 0; width: 28px; } .icon-button:hover { background: var(--primary-soft); border-color: #c8dde5; }
     .sf-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: grid; gap: 12px; min-width: 0; padding: 14px; } .sf-eyebrow { color: var(--cyan); font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; } .sf-error { background: var(--danger-bg); border: 1px solid #fecaca; border-radius: var(--radius); color: var(--danger); font-size: 0.8125rem; padding: 8px 10px; } .success { background: var(--success-bg); border: 1px solid #bbf7d0; border-radius: var(--radius); color: var(--success); font-size: 0.8125rem; padding: 8px 10px; } .form-status { grid-column: 1 / -1; }
     .categories-hero { align-items: center; display: flex; gap: 12px; justify-content: space-between; } .categories-hero > div { display: grid; gap: 4px; max-width: 760px; }
     .categories-workspace { align-items: start; display: grid; gap: 14px; grid-template-columns: minmax(14rem, .35fr) minmax(0, 1fr); } .categories-insights { position: sticky; top: 68px; } .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; } .section-heading.compact { align-items: start; } .kind-meters { display: grid; gap: 10px; } .kind-meter { display: grid; gap: 6px; } .kind-meter div:first-child { align-items: center; display: flex; justify-content: space-between; gap: 10px; } .kind-meter span { color: var(--muted); font-size: 0.8125rem; } .meter-track { background: var(--primary-soft); border-radius: 999px; height: 6px; overflow: hidden; } .meter-fill { border-radius: inherit; display: block; height: 100%; } .meter-expense { background: var(--danger); } .meter-income { background: var(--success); } .meter-transfer { background: var(--cyan); } .catalog-note { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: var(--radius); display: grid; gap: 4px; padding: 10px; font-size: 0.8125rem; }
-    .category-directory { padding: 0; overflow: hidden; } .category-toolbar { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) auto; padding: 12px 14px; } .category-toolbar > div:first-child { display: grid; gap: 3px; min-width: 0; } .category-toolbar-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; } .category-collapse-actions { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; padding: 3px; } .compact-button { background: transparent; border: 0; color: var(--primary); font-size: 0.8125rem; min-height: 28px; padding: 0 8px; } .compact-button:hover, .compact-button:focus-visible { background: var(--surface); box-shadow: inset 0 0 0 1px #d4e6ec; } .filter-chips { background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: var(--radius); display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end; padding: 2px; } .filter-chip { background: transparent; border: 0; border-radius: 4px; color: var(--primary); font-size: 0.8125rem; min-height: 28px; padding: 0 8px; } .filter-chip:hover, .filter-chip:focus-visible { background: rgba(255,255,255,.72); } .filter-chip[aria-pressed="true"] { background: var(--primary); color: white; }
+    .category-directory { padding: 0; overflow: hidden; } .category-toolbar { align-items: center; border-bottom: 1px solid var(--line); display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) auto; padding: 12px 14px; } .category-search { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 6px; grid-template-columns: auto minmax(12rem, 1fr) auto; min-width: min(100%, 320px); padding: 0 8px; }  .category-search input { border: 0; min-height: 44px; min-width: 0; padding: 0; } .category-search input:focus-visible { box-shadow: none; } .category-search-clear { background: transparent; color: var(--muted); min-height: 44px; padding: 0; width: 44px; } .category-results-status { color: var(--muted); font-size: 0.75rem; margin: 0; text-align: right; } .category-filter-empty { display: grid; gap: 6px; justify-items: start; padding: 18px; } .category-toolbar > div:first-child { display: grid; gap: 3px; min-width: 0; } .category-toolbar-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; } .category-collapse-actions { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; padding: 3px; } .compact-button { background: transparent; border: 0; color: var(--primary); font-size: 0.8125rem; min-height: 28px; padding: 0 8px; } .compact-button:hover, .compact-button:focus-visible { background: var(--surface); box-shadow: inset 0 0 0 1px #d4e6ec; } .filter-chips { background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: var(--radius); display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end; padding: 2px; } .filter-chip { background: transparent; border: 0; border-radius: 4px; color: var(--primary); font-size: 0.8125rem; min-height: 28px; padding: 0 8px; } .filter-chip:hover, .filter-chip:focus-visible { background: rgba(255,255,255,.72); } .filter-chip[aria-pressed="true"] { background: var(--primary); color: white; }
     .category-tree-list { display: grid; gap: 0; } .category-kind-group { border-bottom: 1px solid var(--line); display: grid; gap: 10px; padding: 12px 14px; } .category-kind-group:last-child { border-bottom: 0; } .category-kind-group header { align-items: center; display: flex; gap: 10px; justify-content: space-between; } .category-kind-group header > div:first-child { display: grid; gap: 3px; margin-right: auto; min-width: 0; } .kind-badge, .category-path { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: 0.6875rem; font-weight: 700; max-width: 100%; overflow-wrap: anywhere; padding: 3px 8px; } .kind-badge-expense { background: var(--danger-bg); color: var(--danger); } .kind-badge-income { background: var(--success-bg); color: var(--success); } .kind-badge-transfer { background: #e0f2fe; color: #0369a1; }
     .category-tree-nodes, .category-tree-children { display: grid; gap: 8px; } .category-tree-children { border-left: 2px solid var(--line); margin-left: 28px; padding-left: 12px; } .category-tree-node { background: #fbfdfe; border: 1px solid #d8e7ec; border-radius: var(--radius); display: grid; gap: 8px; padding: 10px; } .category-tree-child { background: var(--surface); } .category-node-row { align-items: start; display: grid; gap: 8px; grid-template-columns: auto minmax(0, 1fr) auto; } .category-collapse-button, .category-collapse-spacer { align-self: start; min-height: 26px; min-width: 26px; width: 26px; } .category-collapse-button { background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 999px; color: var(--primary); font-weight: 700; padding: 0; } .category-collapse-button:hover, .category-collapse-button:focus-visible { background: var(--primary); color: white; } .category-node-button { align-items: start; background: transparent; border: 0; color: inherit; display: grid; gap: 8px; grid-template-columns: auto minmax(0, 1fr) auto; justify-content: stretch; min-height: auto; padding: 0; text-align: left; width: 100%; } .category-node-button:hover + .category-action-menu .category-menu-button, .category-node-button:focus-visible + .category-action-menu .category-menu-button { background: var(--primary); color: white; } .category-node-text { display: grid; gap: 3px; min-width: 0; white-space: normal; } .category-node-text strong { font-size: 0.875rem; overflow-wrap: anywhere; } .category-node-text span { color: var(--muted); font-size: 0.8125rem; font-weight: 500; line-height: 1.4; } .category-action-menu { align-self: start; position: relative; } .category-menu-button { font-weight: 700; min-height: 26px; width: 26px; } .category-menu-button:hover, .category-menu-button[aria-expanded="true"] { background: var(--primary); color: white; } .category-menu-popover { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 12px 32px rgba(15,23,42,.14); display: grid; gap: 2px; min-width: 150px; padding: 4px; position: absolute; right: 0; top: calc(100% + 4px); z-index: 8; } .category-menu-popover button { background: transparent; color: var(--text); font-size: 0.8125rem; justify-content: flex-start; min-height: 30px; padding: 0 8px; width: 100%; } .category-menu-popover button:hover, .category-menu-popover button:focus-visible { background: var(--primary-soft); color: var(--primary); } .category-menu-popover .danger-menu-item { color: var(--danger); } .category-menu-popover .danger-menu-item:hover, .category-menu-popover .danger-menu-item:focus-visible { background: var(--danger-bg); color: var(--danger); } .category-dot { border-radius: 999px; height: 8px; margin-top: 6px; width: 8px; } .category-dot-expense { background: var(--danger); } .category-dot-income { background: var(--success); } .category-dot-transfer { background: var(--cyan); }
     .category-form { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); } .category-form .form-status, .full-span { grid-column: 1 / -1; } .empty-state { background: var(--bg); border: 1px dashed var(--line); border-radius: var(--radius-lg); display: grid; gap: 4px; padding: 14px; }

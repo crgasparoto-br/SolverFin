@@ -391,7 +391,7 @@ async function navigateWithRetry(cdp, url, label) {
 async function waitForSettings(cdp, section) {
   await waitForExpression(
     cdp,
-    `document.querySelector('.settings-section-link[aria-current="page"]')?.getAttribute('href') === '/configuracoes?section=${section}'`,
+    `document.querySelector('.sf-tab[aria-current="page"]')?.getAttribute('href') === '/configuracoes?section=${section}'`,
   );
 }
 
@@ -405,7 +405,7 @@ async function waitForReload(cdp, previousTimeOrigin, section) {
           timeOrigin: performance.timeOrigin,
           search: window.location.search,
           ready: document.readyState === 'complete',
-          active: document.querySelector('.settings-section-link[aria-current="page"]')?.getAttribute('href') || ''
+          active: document.querySelector('.sf-tab[aria-current="page"]')?.getAttribute('href') || ''
         })`,
       );
       if (

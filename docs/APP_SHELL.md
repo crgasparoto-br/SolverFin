@@ -86,10 +86,11 @@ O contrato registra os blocos runtime observados na composicao final:
 - Extrato: ordenacao; estilos estruturais de remuneracao emitidos por `list-sorting-enhancement.js`; affordance de divulgacao emitida por `account-remuneration-disclosure-enhancement.js`; modal de agrupamento; guarda de formulario do grupo; layout do modal; selecao em lote; layout da selecao; e seletor redondo;
 - Cartoes: navegacao de fatura, ordenacao, interface consolidada e alinhamento de status;
 - Contas e Cartoes: dialogo de instrumentos, abas neutras, modal de remuneracao e padronizacao final;
-- Categorias: CSS da interface aprimorada incorporado ao bloco principal;
 - Inbox: layout de lista, seletor redondo, interface principal, acessibilidade, tabela, filtro corrigido, acoes de status, legibilidade e acao explicita do filtro de data.
 
 No Extrato, `data-account-remuneration-statement-styles` pertence a `list-sorting-enhancement.js`, enquanto `data-account-remuneration-disclosure-affordance` pertence a `account-remuneration-disclosure-enhancement.js`. O manifesto registra esses provedores separadamente para que a presenca de um bloco nao possa mascarar a perda do outro.
+
+A #615 removeu `/categorias` do inventario de pos-processadores: resumo, busca, filtros e composicao responsiva agora saem diretamente de `categories-page.ts` sobre as primitives compartilhadas. `categories-icons-enhancement.ts` permanece apenas como referencia depreciada, sem import ou invocacao no runtime. As demais superficies secundarias da #615 compartilham `PageContainer` e `PageHeader`; `/remuneracao-contas` continua somente como renderer coberto e nao voltou para a navegacao.
 
 Blocos marcados por atributos `data-*` ou `id` precisam existir e conter CSS nao vazio. Para provedores sem bloco proprio, o contrato exige um fragmento CSS discriminante. Os controles negativos removem e esvaziam cada bloco marcado individualmente.
 

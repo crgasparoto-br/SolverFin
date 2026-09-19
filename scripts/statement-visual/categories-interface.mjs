@@ -302,12 +302,12 @@ async function waitForCategories(cdp) {
   for (let attempt = 0; attempt < 50; attempt += 1) {
     const ready = await evaluate(
       cdp,
-      `Boolean(document.querySelector('main[data-categories-design-enhanced] [data-category-list]'))`,
+      `Boolean(document.querySelector('[data-secondary-route-foundation="categories"] [data-category-list]'))`,
     );
     if (ready) return;
     await sleep(100);
   }
-  throw new Error("Categories design enhancement did not render.");
+  throw new Error("Categories shared foundation did not render.");
 }
 
 async function waitForModal(cdp) {

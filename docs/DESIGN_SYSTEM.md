@@ -97,6 +97,8 @@ O manifesto tipado em `apps/web/src/dev-server/ssr-style-contract.ts` registra q
 
 Os provedores runtime cobrem pos-processadores efetivamente ligados a diferentes rotas. Eles continuam sendo parte do contrato atual, mas a ADR 0014 classifica novos pos-processamentos textuais como nao preferenciais e os existentes como candidatos a retirada durante a migracao de cada rota.
 
+Na #615, `/categorias`, `/configuracoes`, `/assistente`, `/admin/instituicoes`, `/admin/indices-financeiros` e o renderer legado de `/remuneracao-contas` passaram a reutilizar diretamente `PageContainer` e `PageHeader`, com primitives adicionais conforme o arquetipo. O pos-processador de Categorias foi retirado do runtime, reduzindo o budget legado sem criar uma segunda fundacao.
+
 O portao nao usa somente busca em arquivos nem infere CSS especifico pela simples existencia de qualquer regra remanescente. Ele requisita cada rota pelo servidor Node `http` real, exige um fragmento do HTML normal da tela, compara os resultados completos dos provedores compartilhados e condicionais, valida cada provedor de pagina, auxiliar ou runtime e remove um provedor por vez nos controles negativos.
 
 Para provedores condicionais, o HTML servido deve produzir o fragmento registrado como gatilho. A validacao continua obrigatoria enquanto o contrato SSR for a protecao executavel da rota.

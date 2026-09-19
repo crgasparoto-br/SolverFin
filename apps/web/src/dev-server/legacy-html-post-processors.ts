@@ -1,6 +1,5 @@
 export type LegacyHtmlPostProcessorRoute =
   | "/contas-cartoes"
-  | "/categorias"
   | "/cartoes"
   | "/lancamentos"
   | "/inbox";
@@ -12,7 +11,6 @@ export type LegacyHtmlPostProcessorMigration =
 
 export type LegacyHtmlPostProcessorOwner =
   | "web-accounts-cards"
-  | "web-categories"
   | "web-cards"
   | "web-statement"
   | "web-inbox";
@@ -30,25 +28,11 @@ export interface LegacyHtmlPostProcessorInventoryEntry {
   fallbackAccessibility: string;
 }
 
-// Issues #610 and #612 migrate /cartoes and /contas-cartoes to direct structural renderers.
+// Issues #610, #612 and #615 migrate /cartoes, /contas-cartoes and /categorias to direct structural renderers.
 // Their former post-processors remain in the repository only as deprecated reference code.
-export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 2;
+export const LEGACY_HTML_POST_PROCESSOR_BUDGET = 1;
 
 export const LEGACY_HTML_POST_PROCESSOR_INVENTORY = [
-  {
-    id: "categories-icons-tooltips",
-    route: "/categorias",
-    order: 1,
-    owner: "web-categories",
-    module: "./categories-icons-enhancement.js",
-    exportName: "enhanceCategoriesIconsAndTooltips",
-    responsibility: "Decora categorias com icones e tooltips a partir do HTML final.",
-    migration: "component-props-slots",
-    replacementCriterion:
-      "Linhas de categoria recebem icone, label e ajuda como props/slots no renderer, sem localizar trechos HTML por string/regex.",
-    fallbackAccessibility:
-      "Texto da categoria continua suficiente sem o icone e qualquer ajuda visual mantem nome/descricao acessivel.",
-  },
   {
     id: "account-remuneration-disclosure",
     route: "/lancamentos",
