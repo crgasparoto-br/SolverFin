@@ -10,8 +10,7 @@ import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
-const accountRemunerationPageModel =
-  getSecondaryRoutePageViewModel("accountRemuneration");
+const accountRemunerationPageModel = getSecondaryRoutePageViewModel("accountRemuneration");
 
 interface ConfigurationRecord {
   id: string;
