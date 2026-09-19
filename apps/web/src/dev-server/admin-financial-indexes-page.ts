@@ -67,8 +67,7 @@ interface OperationRecord {
   diagnostics?: OperationDiagnostics | null;
 }
 
-const adminFinancialIndexesPageModel =
-  getSecondaryRoutePageViewModel("adminFinancialIndexes");
+const adminFinancialIndexesPageModel = getSecondaryRoutePageViewModel("adminFinancialIndexes");
 
 interface FinancialIndexStatusRecord {
   latestCdiRate: {
