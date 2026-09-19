@@ -56,8 +56,10 @@ async function profilesSectionRendersAsTheDefault(): Promise<void> {
     async () => {
       const html = await renderSettingsPage("token", new URL("https://example.test/configuracoes"));
 
-      assert.equal((html.match(/<h1>/g) ?? []).length, 1);
-      assert.match(html, /<h1>Configurações<\/h1>/);
+      assert.equal((html.match(/<h1(?:\s[^>]*)?>/g) ?? []).length, 1);
+      assert.match(html, /class="sf-page-header-title">Configurações<\/h1>/);
+      assert.match(html, /data-secondary-route-foundation="settings"/);
+      assert.match(html, /class="sf-tabs"/);
       assert.match(html, /href="\/configuracoes\?section=profiles" aria-current="page"/);
       assert.match(html, /href="\/configuracoes\?section=rules"/);
       assert.match(html, />Em uso<\/span>/);
