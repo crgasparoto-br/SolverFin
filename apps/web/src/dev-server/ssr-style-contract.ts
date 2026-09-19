@@ -160,17 +160,11 @@ export const solverFinSsrStyleContracts = [
   }),
   authenticated("categories", "/categorias", "categories-page.js", {
     representativeHtmlFragments: [
+      'data-secondary-route-foundation="categories"',
       'class="categories-workspace"',
-      "data-categories-design-enhanced",
+      'data-category-search-input',
     ],
     pageCssFragments: [".categories-workspace {"],
-    auxiliaryStyleProviders: [
-      cssProvider(
-        "runtime:categories-interface",
-        "categories-icons-enhancement.js",
-        ".category-summary {",
-      ),
-    ],
   }),
   authenticated("budgets", "/orcamentos", "pages.js", {
     representativeHtmlFragments: ['class="budgets-heading"'],
