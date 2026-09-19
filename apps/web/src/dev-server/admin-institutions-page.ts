@@ -1,6 +1,16 @@
+import {
+  renderMetricCard,
+  renderPageContainer,
+  renderPageHeader,
+  renderPermissionState,
+  renderSummaryGrid,
+} from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
+import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
+
+const adminInstitutionsPageModel = getSecondaryRoutePageViewModel("adminInstitutions");
 
 interface AdminInstitutionView {
   key: string;
@@ -44,15 +54,14 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
       currentLabel: "Admin - Instituições",
       showAdminNavigation: false,
       styles: adminPageStyles(),
-      content: `
-        <section class="panel admin-denied" role="alert">
-          <p class="eyebrow">Acesso restrito</p>
-          <h1>Admin global</h1>
-          <p class="error">${escapeHtml(result.error)}</p>
-          <p class="muted">A tela de instituições financeiras só fica disponível para usuários master configurados no backend.</p>
-          <a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>
-        </section>
-      `,
+      content: renderPageContainer({
+        className: "secondary-route-page admin-institutions-page",
+        childrenHtml: `<div data-secondary-route-foundation="${adminInstitutionsPageModel.id}" data-route-archetype="${adminInstitutionsPageModel.archetype}" data-route-audience="${adminInstitutionsPageModel.audience}" data-operational-mode="${adminInstitutionsPageModel.operationalMode}">${renderPermissionState({
+          title: "Acesso restrito",
+          description: `${result.error} A tela de instituições financeiras só fica disponível para usuários master configurados no backend.`,
+          actionHtml: '<a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>',
+        })}</div>`,
+      }),
     });
   }
 
@@ -64,21 +73,22 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
     currentLabel: "Admin - Instituições",
     showAdminNavigation: true,
     styles: adminPageStyles(),
-    content: `
-      <section class="admin-heading">
-        <div>
-          <p class="eyebrow">Admin global</p>
-          <h1>Instituições financeiras</h1>
-          <p class="muted">Catálogo compartilhado por todos os usuários para contas e cartões.</p>
-        </div>
-        <button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh" data-api-query="${escapeHtml(query)}">Atualizar bancos</button>
-      </section>
-      <section class="summary-grid" aria-label="Resumo do catálogo">
-        ${renderSummaryCard("Instituições", summary.total, "itens encontrados")}
-        ${renderSummaryCard("Ativas", summary.active, "disponíveis para seleção")}
-        ${renderSummaryCard("Com logo", summary.withLogo, "assets locais ou R2")}
-        ${renderSummaryCard("Fallback", summary.usingFallback, "usando iniciais acessíveis")}
-      </section>
+    content: renderPageContainer({
+      className: "secondary-route-page admin-institutions-page",
+      childrenHtml: `<div data-secondary-route-foundation="${adminInstitutionsPageModel.id}" data-route-archetype="${adminInstitutionsPageModel.archetype}" data-route-audience="${adminInstitutionsPageModel.audience}" data-operational-mode="${adminInstitutionsPageModel.operationalMode}">
+      ${renderPageHeader({
+        eyebrow: adminInstitutionsPageModel.eyebrow,
+        title: adminInstitutionsPageModel.title,
+        description: adminInstitutionsPageModel.description,
+        actionsHtml: `<button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh" data-api-query="${escapeHtml(query)}">Atualizar bancos</button>`,
+      })}
+      ${renderSummaryGrid({
+        childrenHtml:
+          renderSummaryCard("Instituições", summary.total, "itens encontrados") +
+          renderSummaryCard("Ativas", summary.active, "disponíveis para seleção") +
+          renderSummaryCard("Com logo", summary.withLogo, "assets locais ou R2") +
+          renderSummaryCard("Fallback", summary.usingFallback, "usando iniciais acessíveis"),
+      })}
       <section class="panel filters-panel">
         <form method="get" action="/admin/instituicoes" class="filters-grid">
           <label class="wide">Busca geral<input name="q" type="search" value="${escapeHtml(params.get("q") ?? "")}" placeholder="Nome, chave interna, COMPE ou ISPB" /></label>
@@ -164,7 +174,8 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
       ${dialogScript()}
       ${adminLogoUploadScript()}
       ${adminStatusScript()}
-    `,
+      </div>`,
+    }),
   });
 }
 
@@ -195,7 +206,11 @@ function buildAdminApiQuery(params: URLSearchParams): string {
 }
 
 function renderSummaryCard(title: string, value: number, subtitle: string): string {
-  return `<article class="metric-card"><span>${escapeHtml(title)}</span><strong>${value}</strong><p>${escapeHtml(subtitle)}</p></article>`;
+  return renderMetricCard({
+    label: title,
+    value: String(value),
+    detail: subtitle,
+  });
 }
 
 function renderInstitutionRow(institution: AdminInstitutionView, query: string): string {
