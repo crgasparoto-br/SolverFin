@@ -191,9 +191,12 @@ export const solverFinSsrStyleContracts = [
     pageCssFragments: [".secondary-heading {"],
   }),
   authenticated("adminInstitutions", "/admin/instituicoes", "admin-institutions-page.js", {
-    representativeHtmlFragments: ['class="admin-heading"'],
+    representativeHtmlFragments: [
+      'data-secondary-route-foundation="adminInstitutions"',
+      'class="admin-institution-list"',
+    ],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
-    pageCssFragments: [".admin-heading {"],
+    pageCssFragments: [".admin-institution-list {"],
   }),
   authenticated(
     "adminFinancialIndexes",
