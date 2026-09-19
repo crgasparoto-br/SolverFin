@@ -506,7 +506,7 @@ async function waitForSettings(cdp, section) {
   for (let attempt = 0; attempt < 50; attempt += 1) {
     const ready = await evaluate(
       cdp,
-      `document.querySelector('.settings-section-link[aria-current="page"]')?.getAttribute('href') === '/configuracoes?section=${section}'`,
+      `document.querySelector('.sf-tab[aria-current="page"]')?.getAttribute('href') === '/configuracoes?section=${section}'`,
     );
     if (ready) return;
     await sleep(100);
@@ -519,7 +519,7 @@ async function validateKeyboardNavigation(cdp, section) {
   const forward = section === "profiles";
   await evaluate(
     cdp,
-    `document.querySelector('.settings-section-link[aria-current="page"]')?.focus()`,
+    `document.querySelector('.sf-tab[aria-current="page"]')?.focus()`,
   );
   await pressKey(cdp, "Tab", forward ? 0 : 8);
   const focused = await evaluate(
@@ -544,7 +544,7 @@ async function validateKeyboardNavigation(cdp, section) {
 
   await evaluate(
     cdp,
-    `document.querySelector('.settings-section-link[aria-current="page"]')?.focus()`,
+    `document.querySelector('.sf-tab[aria-current="page"]')?.focus()`,
   );
   await pressKey(cdp, "Tab", forward ? 8 : 0);
   await pressKey(cdp, "Enter");
@@ -620,10 +620,10 @@ async function waitForDialog(cdp) {
 function measurementExpression(section) {
   return `(() => {
     const bodyText = document.body.innerText;
-    const active = document.querySelector('.settings-section-link[aria-current="page"]');
+    const active = document.querySelector('.sf-tab[aria-current="page"]');
     const dialog = document.querySelector('dialog[open]');
     const dialogRect = dialog?.getBoundingClientRect();
-    const links = Array.from(document.querySelectorAll('.settings-section-link'));
+    const links = Array.from(document.querySelectorAll('.sf-tab'));
     const expectedLinks = ['/configuracoes?section=profiles', '/configuracoes?section=rules'];
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },

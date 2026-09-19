@@ -412,7 +412,7 @@ async function inspectAssistant(cdp, scenario) {
       const actions = document.querySelector('.assistant-context-actions');
       const thread = document.querySelector('[data-assistant-thread]');
       const status = document.querySelector('[data-assistant-status]');
-      const readonly = document.querySelector('.assistant-readonly');
+      const readonly = document.querySelector('.sf-page-header-actions .sf-badge');
       const layout = document.querySelector('.assistant-layout');
       const visible = (element) => {
         if (!element) return false;
