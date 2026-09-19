@@ -27,17 +27,16 @@ Todas as rotas acima estavam marcadas como `available` no catalogo canonico no i
 
 A Fase 3C usa `apps/web/src/design-system/primitives.ts` como fundacao unica de composicao e `apps/web/src/dev-server/secondary-routes-view-model.ts` para o contrato de apresentacao, audiencia e modo operacional destas superficies.
 
-| Superficie | Estado terminal | Evidencia |
-| --- | --- | --- |
-| `/categorias` | Migrada | `categories-page.ts` emite cabecalho, resumo, busca e filtros diretamente; `categories-icons-enhancement.ts` ficou depreciado e desconectado do pipeline |
-| `/configuracoes` | Migrada | `settings-page.ts` usa `PageContainer`, `PageHeader` e tabs compartilhadas sem alterar perfis ou regras |
-| `/assistente` | Migrada | `financial-assistant-page.ts` usa a fundacao compartilhada com modo `read-only`; o contrato financeiro continua somente leitura |
-| `/admin/instituicoes` | Migrada | `admin-institutions-page.ts` usa cabecalho, resumo e estado de permissao compartilhados; audiencia continua master |
-| `/admin/indices-financeiros` | Migrada | `admin-financial-indexes-page.ts` usa cabecalho, resumo e erro recuperavel compartilhados; audiencia continua master |
-| `/remuneracao-contas` | Migrada como renderer legado | `account-remuneration-page.ts` usa primitives compartilhadas apenas no renderer de compatibilidade; a rota segue oculta e redirecionada no uso normal |
+| Superficie                   | Estado terminal              | Evidencia                                                                                                                                                |
+| ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/categorias`                | Migrada                      | `categories-page.ts` emite cabecalho, resumo, busca e filtros diretamente; `categories-icons-enhancement.ts` ficou depreciado e desconectado do pipeline |
+| `/configuracoes`             | Migrada                      | `settings-page.ts` usa `PageContainer`, `PageHeader` e tabs compartilhadas sem alterar perfis ou regras                                                  |
+| `/assistente`                | Migrada                      | `financial-assistant-page.ts` usa a fundacao compartilhada com modo `read-only`; o contrato financeiro continua somente leitura                          |
+| `/admin/instituicoes`        | Migrada                      | `admin-institutions-page.ts` usa cabecalho, resumo e estado de permissao compartilhados; audiencia continua master                                       |
+| `/admin/indices-financeiros` | Migrada                      | `admin-financial-indexes-page.ts` usa cabecalho, resumo e erro recuperavel compartilhados; audiencia continua master                                     |
+| `/remuneracao-contas`        | Migrada como renderer legado | `account-remuneration-page.ts` usa primitives compartilhadas apenas no renderer de compatibilidade; a rota segue oculta e redirecionada no uso normal    |
 
 O contrato executavel de cobertura esta em `secondary-routes-view-model.test.ts`, `secondary-routes-foundation.test.ts` e no manifesto SSR. Nenhuma linha acima introduz nova jornada de produto.
-
 
 ## Jornadas sem rota propria
 
