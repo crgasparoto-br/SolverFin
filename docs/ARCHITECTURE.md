@@ -35,6 +35,8 @@ A Fase 3 nao substitui o runtime atual em um unico corte. Ela introduz dois inva
 
 Esses invariantes valem para novo trabalho imediatamente. O codigo legado permanece suportado ate a issue de migracao correspondente, mas nao define a direcao preferencial para novas implementacoes.
 
+A #615 aplica essa direcao as superficies secundarias ainda `available`: elas passam a consumir as primitives executaveis e um view-model de apresentacao compartilhado. Categorias deixa de depender de pos-processamento textual no despacho HTTP; o renderer de remuneracao permanece uma excecao de compatibilidade coberta pelo SSR, sem reativacao da jornada publica.
+
 ## Stack inicial
 
 - TypeScript;
