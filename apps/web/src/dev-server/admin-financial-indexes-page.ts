@@ -1,8 +1,17 @@
 import { formatDateOnly } from "@solverfin/shared";
 
+import {
+  renderMetricCard,
+  renderPageContainer,
+  renderPageHeader,
+  renderRecoverableError,
+  renderSummaryGrid,
+} from "../design-system/primitives.js";
+
 import { apiGet } from "./api.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
+import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
 type ImportOutcome =
   | "IMPORTED"
@@ -58,6 +67,9 @@ interface OperationRecord {
   diagnostics?: OperationDiagnostics | null;
 }
 
+const adminFinancialIndexesPageModel =
+  getSecondaryRoutePageViewModel("adminFinancialIndexes");
+
 interface FinancialIndexStatusRecord {
   latestCdiRate: {
     referenceOn: string;
@@ -87,14 +99,12 @@ export async function renderAdminFinancialIndexesPage(token: string): Promise<st
   const period = defaultImportPeriod();
 
   return renderPage(`
-    <section class="page-heading">
-      <div>
-        <p class="eyebrow">Operação global</p>
-        <h1>Índices financeiros</h1>
-        <p class="muted">Acompanhe a atualização do CDI e execute o processamento diário das contas remuneradas.</p>
-      </div>
-      <a class="button-link secondary" href="/admin/instituicoes">Instituições</a>
-    </section>
+    ${renderPageHeader({
+      eyebrow: adminFinancialIndexesPageModel.eyebrow,
+      title: adminFinancialIndexesPageModel.title,
+      description: adminFinancialIndexesPageModel.description,
+      actionsHtml: '<a class="button-link secondary" href="/admin/instituicoes">Instituições</a>',
+    })}
 
     ${renderFinancialIndexSummary(status)}
 
@@ -133,17 +143,41 @@ export async function renderAdminFinancialIndexesPage(token: string): Promise<st
 }
 
 export function renderFinancialIndexSummary(status: FinancialIndexStatusRecord): string {
-  return `
-    <section class="summary-grid" aria-label="Resumo operacional">
-      ${summaryCard("Último CDI", status.latestCdiRate ? `${formatRate(status.latestCdiRate.dailyRatePercent)}%` : "Sem dados", status.latestCdiRate ? formatDate(status.latestCdiRate.referenceOn) : "Importe a série oficial")}
-      ${summaryCard("Configurações ativas", String(status.activeConfigurations), "Contas elegíveis com remuneração habilitada")}
-      ${summaryCard("Competências pendentes", String(status.pendingCompetences), status.pendingCompetences > 0 ? "Aguardam processamento" : "Nenhuma competência pendente")}
-      ${summaryCard("Configurações sem taxa", String(status.configurationsWithoutRates), status.configurationsWithoutRates > 0 ? "Importe o CDI necessário" : "Todas as configurações iniciadas possuem taxa")}
-    </section>`;
+  return renderSummaryGrid({
+    childrenHtml:
+      summaryCard(
+        "Último CDI",
+        status.latestCdiRate
+          ? `${formatRate(status.latestCdiRate.dailyRatePercent)}%`
+          : "Sem dados",
+        status.latestCdiRate
+          ? formatDate(status.latestCdiRate.referenceOn)
+          : "Importe a série oficial",
+      ) +
+      summaryCard(
+        "Configurações ativas",
+        String(status.activeConfigurations),
+        "Contas elegíveis com remuneração habilitada",
+      ) +
+      summaryCard(
+        "Competências pendentes",
+        String(status.pendingCompetences),
+        status.pendingCompetences > 0
+          ? "Aguardam processamento"
+          : "Nenhuma competência pendente",
+      ) +
+      summaryCard(
+        "Configurações sem taxa",
+        String(status.configurationsWithoutRates),
+        status.configurationsWithoutRates > 0
+          ? "Importe o CDI necessário"
+          : "Todas as configurações iniciadas possuem taxa",
+      ),
+  });
 }
 
 function summaryCard(label: string, value: string, description: string): string {
-  return `<article class="summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><p>${escapeHtml(description)}</p></article>`;
+  return renderMetricCard({ label, value, detail: description });
 }
 
 export function renderOperation(label: string, operation: OperationRecord | null): string {
@@ -209,22 +243,23 @@ function detail(label: string, value: string | number): string {
 }
 
 function renderError(error: string): string {
-  return `
-    <section class="error-state">
-      <p class="eyebrow">Acesso administrativo</p>
-      <h1>Índices financeiros</h1>
-      <p class="error" role="alert">${escapeHtml(error)}</p>
-      <a class="button-link" href="/admin/indices-financeiros">Tentar novamente</a>
-    </section>
-  `;
+  return renderRecoverableError({
+    title: "Não foi possível carregar os índices financeiros",
+    description: error,
+    actionHtml:
+      '<a class="button-link" href="/admin/indices-financeiros">Tentar novamente</a>',
+  });
 }
 
 function renderPage(content: string): string {
   return renderAuthenticatedShellDocument({
     activePathname: "/admin/indices-financeiros",
     currentLabel: "Admin - Índices financeiros",
-    content,
     styles: css(),
+    content: renderPageContainer({
+      className: "secondary-route-page admin-financial-indexes-page",
+      childrenHtml: `<div data-secondary-route-foundation="${adminFinancialIndexesPageModel.id}" data-route-archetype="${adminFinancialIndexesPageModel.archetype}" data-route-audience="${adminFinancialIndexesPageModel.audience}" data-operational-mode="${adminFinancialIndexesPageModel.operationalMode}">${content}</div>`,
+    }),
   });
 }
 
