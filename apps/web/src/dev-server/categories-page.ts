@@ -1,7 +1,15 @@
+import {
+  renderMetricCard,
+  renderPageContainer,
+  renderPageHeader,
+  renderRecoverableError,
+  renderSummaryGrid,
+} from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
+import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
 interface CategoryRecord {
   id: string;
@@ -10,6 +18,8 @@ interface CategoryRecord {
   status: string;
   parentCategoryId?: string;
 }
+
+const categoriesPageModel = getSecondaryRoutePageViewModel("categories");
 
 interface CategorySummary {
   total: number;
@@ -31,7 +41,11 @@ export async function renderCategoriesPage(token: string): Promise<string> {
   if (!categories.ok) {
     return renderShell(
       "Categorias",
-      `<section class="sf-panel sf-error-state"><p class="sf-eyebrow">Erro ao carregar dados</p><h1>Categorias</h1><p class="sf-error" role="alert">${escapeHtml(categories.error)}</p><a class="sf-button" href="/categorias">Tentar novamente</a></section>`,
+      renderRecoverableError({
+        title: "Não foi possível carregar as categorias",
+        description: categories.error,
+        actionHtml: '<a class="sf-button" href="/categorias">Tentar novamente</a>',
+      }),
     );
   }
 
@@ -41,14 +55,37 @@ export async function renderCategoriesPage(token: string): Promise<string> {
   return renderShell(
     "Categorias",
     `
-        <section class="categories-hero" aria-labelledby="categories-title">
-          <div>
-            <p class="sf-eyebrow">Organizacao financeira</p>
-            <h1 id="categories-title">Categorias</h1>
-            <p class="sf-muted">Classifique receitas, despesas e transferencias com uma hierarquia simples para manter relatorios e lancamentos consistentes.</p>
-          </div>
-          <button class="sf-button" type="button" data-open-category-modal title="Criar nova categoria">${icon("plus", 14)} Nova categoria</button>
-        </section>
+        ${renderPageHeader({
+          eyebrow: categoriesPageModel.eyebrow,
+          title: categoriesPageModel.title,
+          description: categoriesPageModel.description,
+          actionsHtml: `<button class="sf-button" type="button" data-open-category-modal title="Criar nova categoria">${icon("plus", 14)} Nova categoria</button>`,
+        })}
+        ${renderSummaryGrid({
+          childrenHtml:
+            renderMetricCard({
+              label: "Total",
+              value: String(summary.total),
+              detail: "categorias cadastradas",
+            }) +
+            renderMetricCard({
+              label: "Ativas",
+              value: String(summary.active),
+              detail: "disponíveis para uso",
+              tone: "positive",
+            }) +
+            renderMetricCard({
+              label: "Arquivadas",
+              value: String(summary.archived),
+              detail: "mantidas no histórico",
+            }) +
+            renderMetricCard({
+              label: "Principais",
+              value: String(summary.roots),
+              detail: "sem categoria superior",
+              tone: "information",
+            }),
+        })}
 
         <section class="categories-workspace">
           <aside class="sf-panel categories-insights" aria-label="Distribuicao por tipo">
@@ -348,9 +385,12 @@ function renderEmptyState(title: string, description: string): string {
 function renderShell(currentLabel: string, content: string): string {
   return renderAuthenticatedShellDocument({
     activePathname: "/categorias",
-    content,
     currentLabel,
     styles: pageCss(),
+    content: renderPageContainer({
+      className: "secondary-route-page categories-page",
+      childrenHtml: `<div data-secondary-route-foundation="${categoriesPageModel.id}" data-route-archetype="${categoriesPageModel.archetype}" data-route-audience="${categoriesPageModel.audience}" data-operational-mode="${categoriesPageModel.operationalMode}">${content}</div>`,
+    }),
   });
 }
 
