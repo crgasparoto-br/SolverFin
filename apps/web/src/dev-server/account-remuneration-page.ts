@@ -1,6 +1,17 @@
+import {
+  renderAlert,
+  renderEmptyState as renderFoundationEmptyState,
+  renderPageContainer,
+  renderPageHeader,
+  renderRecoverableError,
+} from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
+import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
+
+const accountRemunerationPageModel =
+  getSecondaryRoutePageViewModel("accountRemuneration");
 
 interface ConfigurationRecord {
   id: string;
@@ -43,19 +54,20 @@ export async function renderAccountRemunerationPage(token: string): Promise<stri
   const configurations = configurationResult.data.configurations;
 
   return renderPage(`
-    <section class="page-heading">
-      <div>
-        <p class="eyebrow">Contas remuneradas</p>
-        <h1>Remuneração pelo CDI</h1>
-        <p class="muted">Defina quais contas em reais geram uma receita prevista diária com base no saldo final do dia anterior.</p>
-      </div>
-      <a class="button-link secondary" href="/contas-cartoes">Voltar para contas</a>
-    </section>
+    ${renderPageHeader({
+      eyebrow: accountRemunerationPageModel.eyebrow,
+      title: accountRemunerationPageModel.title,
+      description:
+        "Defina quais contas em reais geram uma receita prevista diária com base no saldo final do dia anterior.",
+      actionsHtml: '<a class="button-link secondary" href="/contas-cartoes">Voltar para contas</a>',
+    })}
 
-    <section class="info-panel" aria-label="Como funciona">
-      <strong>Como o cálculo é feito</strong>
-      <p>O SolverFin usa a taxa diária oficial do CDI, aplica o percentual configurado e cria um lançamento previsto no dia seguinte. O valor pode ser ajustado no extrato sem perder o valor originalmente calculado.</p>
-    </section>
+    ${renderAlert({
+      tone: "information",
+      title: "Como o cálculo é feito",
+      description:
+        "O SolverFin usa a taxa diária oficial do CDI, aplica o percentual configurado e cria um lançamento previsto no dia seguinte. O valor pode ser ajustado no extrato sem perder o valor originalmente calculado.",
+    })}
 
     <section class="configuration-list" aria-label="Configurações por conta">
       ${
@@ -128,32 +140,30 @@ function renderCategoryOptions(categories: CategoryRecord[], selected?: string):
 }
 
 function renderEmptyState(): string {
-  return `
-    <div class="empty-state">
-      <strong>Nenhuma conta ativa encontrada.</strong>
-      <p>Cadastre uma conta em reais para configurar a remuneração pelo CDI.</p>
-      <a class="button-link" href="/contas-cartoes">Cadastrar conta</a>
-    </div>
-  `;
+  return renderFoundationEmptyState({
+    title: "Nenhuma conta ativa encontrada",
+    description: "Cadastre uma conta em reais para configurar a remuneração pelo CDI.",
+    actionHtml: '<a class="button-link" href="/contas-cartoes">Cadastrar conta</a>',
+  });
 }
 
 function renderError(error: string): string {
-  return `
-    <section class="error-state">
-      <p class="eyebrow">Não foi possível carregar</p>
-      <h1>Remuneração pelo CDI</h1>
-      <p class="error" role="alert">${escapeHtml(error)}</p>
-      <a class="button-link" href="/remuneracao-contas">Tentar novamente</a>
-    </section>
-  `;
+  return renderRecoverableError({
+    title: "Não foi possível carregar a remuneração pelo CDI",
+    description: error,
+    actionHtml: '<a class="button-link" href="/contas-cartoes">Voltar para contas</a>',
+  });
 }
 
 function renderPage(content: string): string {
   return renderAuthenticatedShellDocument({
     activePathname: "/remuneracao-contas",
     currentLabel: "Remuneração pelo CDI",
-    content,
     styles: css(),
+    content: renderPageContainer({
+      className: "secondary-route-page account-remuneration-page",
+      childrenHtml: `<div data-secondary-route-foundation="${accountRemunerationPageModel.id}" data-route-archetype="${accountRemunerationPageModel.archetype}" data-route-audience="${accountRemunerationPageModel.audience}" data-operational-mode="${accountRemunerationPageModel.operationalMode}">${content}</div>`,
+    }),
   });
 }
 
