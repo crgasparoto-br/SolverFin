@@ -1,7 +1,11 @@
+import { renderBadge, renderPageContainer, renderPageHeader } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
+import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
+
+const assistantPageModel = getSecondaryRoutePageViewModel("assistant");
 
 interface AssistantAnswer {
   status: "answered" | "needs_review" | "blocked";
@@ -47,15 +51,15 @@ export async function renderFinancialAssistantPage(token: string, url?: URL): Pr
     activePathname: "/assistente",
     currentLabel: "Assistente financeiro",
     styles: `${sharedShellStyles()}\n${financialAssistantPageStyles()}`,
-    content: `
-      <section class="assistant-heading">
-        <div>
-          <p class="eyebrow">Assistente financeiro</p>
-          <h1>Pergunte sobre seus dados financeiros</h1>
-          <p class="muted">Consulte períodos, gastos, saldo, faturas, parcelas e recorrências sem alterar nenhum registro.</p>
-        </div>
-        <span class="assistant-readonly">Somente leitura</span>
-      </section>
+    content: renderPageContainer({
+      className: "secondary-route-page assistant-page",
+      childrenHtml: `<div data-secondary-route-foundation="${assistantPageModel.id}" data-route-archetype="${assistantPageModel.archetype}" data-route-audience="${assistantPageModel.audience}" data-operational-mode="${assistantPageModel.operationalMode}">
+      ${renderPageHeader({
+        eyebrow: assistantPageModel.eyebrow,
+        title: assistantPageModel.title,
+        description: assistantPageModel.description,
+        actionsHtml: renderBadge({ label: "Somente leitura", tone: "information" }),
+      })}
 
       <section class="assistant-layout" data-financial-assistant data-conversation-id="${escapeHtml(conversation?.id ?? "")}">
         <div class="assistant-thread-panel panel">
@@ -99,7 +103,8 @@ export async function renderFinancialAssistantPage(token: string, url?: URL): Pr
         </form>
       </section>
       <script>${financialAssistantControllerScript()}</script>
-    `,
+      </div>`,
+    }),
   });
 }
 
