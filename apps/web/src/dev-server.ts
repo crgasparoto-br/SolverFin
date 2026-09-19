@@ -12,7 +12,6 @@ import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 import { apiGet, handleApiRequest } from "./dev-server/api.js";
 import { renderBudgetsPage } from "./dev-server/budgets-page.js";
 import { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2.js";
-import { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
 import { renderFinancialAssistantPage } from "./dev-server/financial-assistant-page.js";
@@ -48,7 +47,6 @@ export { enhanceAccountsCardsTabs } from "./dev-server/accounts-cards-enhancemen
 export { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
 export { standardizeAccountsCardsPage } from "./dev-server/accounts-cards-standardization.js";
 export { renderBudgetsPage } from "./dev-server/budgets-page.js";
-export { enhanceCategoriesIconsAndTooltips } from "./dev-server/categories-icons-enhancement.js";
 export { renderAccountsPage } from "./dev-server/pages.js";
 export { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2.js";
 export { renderCategoriesPage } from "./dev-server/categories-page.js";
@@ -180,17 +178,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/categorias" && token) {
-    const html = await applyLegacyHtmlPostProcessorPipeline(
-      "/categorias",
-      await renderCategoriesPage(token),
-      [
-        {
-          id: "categories-icons-tooltips",
-          transform: (currentHtml) => enhanceCategoriesIconsAndTooltips(currentHtml),
-        },
-      ],
-    );
-    sendHtml(response, 200, html);
+    sendHtml(response, 200, await renderCategoriesPage(token));
     return;
   }
 
