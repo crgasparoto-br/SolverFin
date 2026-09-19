@@ -87,8 +87,6 @@ const secondaryRoutePageModels = {
   },
 } as const satisfies Record<SecondaryRouteId, SecondaryRoutePageViewModel>;
 
-export function getSecondaryRoutePageViewModel(
-  id: SecondaryRouteId,
-): SecondaryRoutePageViewModel {
+export function getSecondaryRoutePageViewModel(id: SecondaryRouteId): SecondaryRoutePageViewModel {
   return secondaryRoutePageModels[id];
 }
