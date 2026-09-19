@@ -4,7 +4,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "..",
+);
 
 const routeSources = [
   ["categories", "categories-page.ts"],
@@ -27,7 +32,10 @@ describe("secondary route shared foundation issue 615", () => {
       assert.match(source, /renderPageHeader/);
       assert.match(source, /getSecondaryRoutePageViewModel/);
       assert.match(source, new RegExp(`data-secondary-route-foundation=.*\\$\\{`));
-      assert.match(source, new RegExp(`getSecondaryRoutePageViewModel\\("${routeId}"\\)`));
+      assert.match(
+        source,
+        new RegExp(`getSecondaryRoutePageViewModel\\("${routeId}"\\)`),
+      );
     }
   });
 
