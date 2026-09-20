@@ -47,15 +47,8 @@ if (!Number.isInteger(compatPort) || compatPort <= 0) {
   throw new Error("Invalid compatibility port.");
 }
 
-const [
-  slug,
-  foundationId,
-  archetype,
-  audience,
-  operationalMode,
-  readySelector,
-  compatibility,
-] = config;
+const [slug, foundationId, archetype, audience, operationalMode, readySelector, compatibility] =
+  config;
 const failures = [];
 let browser;
 let compat;
