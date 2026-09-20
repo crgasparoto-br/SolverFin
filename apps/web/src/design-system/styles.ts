@@ -60,6 +60,7 @@ ${buildSolverFinCssVariables(tokens)}
 .sf-page-container {
   margin-inline: auto;
   max-width: var(--sf-layout-content-max-width);
+  min-width: 0;
   padding-inline: var(--sf-layout-gutter-desktop);
   width: 100%;
 }
