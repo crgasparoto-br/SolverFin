@@ -13,7 +13,8 @@ import {
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const route = process.env.STATEMENT_VISUAL_ROUTE ?? "";
 const compatPort = Number(process.env.SOLVERFIN_SSR_COMPAT_PORT ?? 5191);
@@ -137,9 +138,17 @@ async function verify(cdp, width, height, label) {
     label + ": unexpected redirect",
     measurements,
   );
-  check(measurements.pageContainer, label + ": PageContainer missing", measurements);
+  check(
+    measurements.pageContainer,
+    label + ": PageContainer missing",
+    measurements,
+  );
   check(measurements.pageHeader, label + ": PageHeader missing", measurements);
-  check(measurements.headingVisible, label + ": heading not visible", measurements);
+  check(
+    measurements.headingVisible,
+    label + ": heading not visible",
+    measurements,
+  );
   check(
     measurements.noHorizontalOverflow,
     label + ": horizontal overflow",
@@ -223,7 +232,12 @@ async function verify(cdp, width, height, label) {
     );
   }
 
-  return { viewport: { width, height }, measurements, keyboard, screenshot: image };
+  return {
+    viewport: { width, height },
+    measurements,
+    keyboard,
+    screenshot: image,
+  };
 }
 
 async function waitReady(cdp) {
@@ -237,7 +251,9 @@ async function waitReady(cdp) {
     if (ready) return;
     await sleep(100);
   }
-  throw new Error("Timed out waiting for " + route + " to render " + readySelector);
+  throw new Error(
+    "Timed out waiting for " + route + " to render " + readySelector,
+  );
 }
 
 function measurementExpression() {
@@ -246,7 +262,7 @@ function measurementExpression() {
   );
   const routeSelector = JSON.stringify(readySelector);
   return `(() => {
-    const root = document.querySelector(${foundationSelector});
+    const root = document.querySelector^${foundationSelector});
     if (!root) throw new Error("foundation root missing");
     const visible = (element) => {
       if (!element) return false;
@@ -396,7 +412,8 @@ async function stopCompat(child) {
   const exited = new Promise((resolve) => child.once("exit", resolve));
   child.kill("SIGTERM");
   await Promise.race([exited, sleep(2000)]);
-  if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+  if (child.exitCode === null && child.signalCode === null)
+    child.kill("SIGKILL");
 }
 
 function check(condition, message, details) {
