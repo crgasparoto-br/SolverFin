@@ -24,9 +24,9 @@ Um adapter legado pode permanecer apenas enquanto tiver ID, rota, ordem, dono, r
 
 ## Inventário residual
 
-| Rota           | Ordem | Dono             | ID                                | Responsabilidade                                                                                                                     | Migração                |
-| -------------- | ----: | ---------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- |
-| `/lancamentos` |     1 | `web-statement`  | `account-remuneration-disclosure` | Preservar temporariamente seleção em massa, agrupamentos e disclosure de remuneração enquanto o último runtime é extraído do legado. | `temporary-processor`   |
+| Rota           | Ordem | Dono            | ID                                | Responsabilidade                                                                                                                     | Migração              |
+| -------------- | ----: | --------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `/lancamentos` |     1 | `web-statement` | `account-remuneration-disclosure` | Preservar temporariamente seleção em massa, agrupamentos e disclosure de remuneração enquanto o último runtime é extraído do legado. | `temporary-processor` |
 
 A #615 retirou `categories-icons-tooltips` do dispatcher e do inventário executável. A composição de `/categorias` agora sai diretamente de `categories-page.ts` sobre as primitives compartilhadas; o arquivo do enhancement permanece apenas como referência depreciada.
 
