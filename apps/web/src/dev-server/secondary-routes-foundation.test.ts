@@ -4,12 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
-const repoRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-  "..",
-  "..",
-);
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 const routeSources = [
   ["categories", "categories-page.ts"],
@@ -25,31 +20,23 @@ function read(relativePath: string): string {
 }
 
 describe("secondary route shared foundation issue 615", () => {
-  it(
-    "routes every scoped renderer through the existing page primitives and presentation model",
-    () => {
-      for (const [routeId, fileName] of routeSources) {
-        const source = read(path.join("apps", "web", "src", "dev-server", fileName));
-        assert.match(source, /renderPageContainer/);
-        assert.match(source, /renderPageHeader/);
-        assert.match(source, /getSecondaryRoutePageViewModel/);
-        assert.match(source, new RegExp(`data-secondary-route-foundation=.*\\$\\{`));
-        assert.match(
-          source,
-          new RegExp(`getSecondaryRoutePageViewModel\\("${routeId}"\\)`),
-        );
-      }
-    },
-  );
+  it("routes every scoped renderer through the existing page primitives and presentation model", () => {
+    for (const [routeId, fileName] of routeSources) {
+      const source = read(path.join("apps", "web", "src", "dev-server", fileName));
+      assert.match(source, /renderPageContainer/);
+      assert.match(source, /renderPageHeader/);
+      assert.match(source, /getSecondaryRoutePageViewModel/);
+      assert.match(source, new RegExp(`data-secondary-route-foundation=.*\\$\\{`));
+      assert.match(source, new RegExp(`getSecondaryRoutePageViewModel\\("${routeId}"\\)`));
+    }
+  });
 
   it("retires the categories string post-processor from the runtime pipeline", () => {
     const server = read(path.join("apps", "web", "src", "dev-server.ts"));
     const inventory = read(
       path.join("apps", "web", "src", "dev-server", "legacy-html-post-processors.ts"),
     );
-    const contract = read(
-      path.join("apps", "web", "src", "dev-server", "ssr-style-contract.ts"),
-    );
+    const contract = read(path.join("apps", "web", "src", "dev-server", "ssr-style-contract.ts"));
 
     assert.doesNotMatch(server, /enhanceCategoriesIconsAndTooltips/);
     assert.doesNotMatch(inventory, /id: "categories-icons-tooltips"/);
@@ -58,20 +45,17 @@ describe("secondary route shared foundation issue 615", () => {
     assert.doesNotMatch(contract, /runtime:categories-interface/);
   });
 
-  it(
-    "keeps assistant and remuneration modes explicit instead of creating new product journeys",
-    () => {
-      const assistant = read(
-        path.join("apps", "web", "src", "dev-server", "financial-assistant-page.ts"),
-      );
-      const remuneration = read(
-        path.join("apps", "web", "src", "dev-server", "account-remuneration-page.ts"),
-      );
+  it("keeps assistant and remuneration modes explicit instead of creating new product journeys", () => {
+    const assistant = read(
+      path.join("apps", "web", "src", "dev-server", "financial-assistant-page.ts"),
+    );
+    const remuneration = read(
+      path.join("apps", "web", "src", "dev-server", "account-remuneration-page.ts"),
+    );
 
-      assert.match(assistant, /Somente leitura/);
-      assert.match(assistant, /data-operational-mode/);
-      assert.match(remuneration, /data-operational-mode/);
-      assert.match(remuneration, /Voltar para contas/);
-    },
-  );
+    assert.match(assistant, /Somente leitura/);
+    assert.match(assistant, /data-operational-mode/);
+    assert.match(remuneration, /data-operational-mode/);
+    assert.match(remuneration, /Voltar para contas/);
+  });
 });

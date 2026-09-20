@@ -517,10 +517,7 @@ async function waitForSettings(cdp, section) {
 async function validateKeyboardNavigation(cdp, section) {
   const targetSection = section === "profiles" ? "rules" : "profiles";
   const forward = section === "profiles";
-  await evaluate(
-    cdp,
-    `document.querySelector('.sf-tab[aria-current="page"]')?.focus()`,
-  );
+  await evaluate(cdp, `document.querySelector('.sf-tab[aria-current="page"]')?.focus()`);
   await pressKey(cdp, "Tab", forward ? 0 : 8);
   const focused = await evaluate(
     cdp,
@@ -542,10 +539,7 @@ async function validateKeyboardNavigation(cdp, section) {
     `window.location.search === "?section=${targetSection}"`,
   );
 
-  await evaluate(
-    cdp,
-    `document.querySelector('.sf-tab[aria-current="page"]')?.focus()`,
-  );
+  await evaluate(cdp, `document.querySelector('.sf-tab[aria-current="page"]')?.focus()`);
   await pressKey(cdp, "Tab", forward ? 8 : 0);
   await pressKey(cdp, "Enter");
   await waitForSettings(cdp, section);

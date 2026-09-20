@@ -56,11 +56,14 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
       styles: adminPageStyles(),
       content: renderPageContainer({
         className: "secondary-route-page admin-institutions-page",
-        childrenHtml: `<div data-secondary-route-foundation="${adminInstitutionsPageModel.id}" data-route-archetype="${adminInstitutionsPageModel.archetype}" data-route-audience="${adminInstitutionsPageModel.audience}" data-operational-mode="${adminInstitutionsPageModel.operationalMode}">${renderPermissionState({
-          title: "Acesso restrito",
-          description: `${result.error} A tela de instituições financeiras só fica disponível para usuários master configurados no backend.`,
-          actionHtml: '<a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>',
-        })}</div>`,
+        childrenHtml: `<div data-secondary-route-foundation="${adminInstitutionsPageModel.id}" data-route-archetype="${adminInstitutionsPageModel.archetype}" data-route-audience="${adminInstitutionsPageModel.audience}" data-operational-mode="${adminInstitutionsPageModel.operationalMode}">${renderPermissionState(
+          {
+            title: "Acesso restrito",
+            description: `${result.error} A tela de instituições financeiras só fica disponível para usuários master configurados no backend.`,
+            actionHtml:
+              '<a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>',
+          },
+        )}</div>`,
       }),
     });
   }

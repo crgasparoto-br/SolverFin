@@ -161,9 +161,7 @@ export function renderFinancialIndexSummary(status: FinancialIndexStatusRecord):
       summaryCard(
         "Competências pendentes",
         String(status.pendingCompetences),
-        status.pendingCompetences > 0
-          ? "Aguardam processamento"
-          : "Nenhuma competência pendente",
+        status.pendingCompetences > 0 ? "Aguardam processamento" : "Nenhuma competência pendente",
       ) +
       summaryCard(
         "Configurações sem taxa",
@@ -245,8 +243,7 @@ function renderError(error: string): string {
   return renderRecoverableError({
     title: "Não foi possível carregar os índices financeiros",
     description: error,
-    actionHtml:
-      '<a class="button-link" href="/admin/indices-financeiros">Tentar novamente</a>',
+    actionHtml: '<a class="button-link" href="/admin/indices-financeiros">Tentar novamente</a>',
   });
 }
 

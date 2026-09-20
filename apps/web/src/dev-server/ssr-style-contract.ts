@@ -162,7 +162,7 @@ export const solverFinSsrStyleContracts = [
     representativeHtmlFragments: [
       'data-secondary-route-foundation="categories"',
       'class="categories-workspace"',
-      'data-category-search-input',
+      "data-category-search-input",
     ],
     pageCssFragments: [".categories-workspace {"],
   }),
