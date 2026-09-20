@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-HANDOFF-TARGET-615",
+      "escape_class": "handoff-target-binding-gap",
+      "status": "passed",
+      "plausible_wrong_implementation": "Treat a root handoff certificate inherited from the base as if it had been generated for the current issue and pull request.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Compare the root handoff identity against the current issue, PR, refs and exact material head before rebuilding the package.",
+        "observed": "The inherited foreign certificate was rejected and the rebuilt delivery package is bound to issue #615 / PR #671 at current material head 155344dccc4963d4915257f62f2a7b1b1e01e1ff."
+      },
+      "sibling_cases": [
+        {
+          "id": "S1",
+          "surface": "handoff-subject",
+          "dimension": "foreign-issue-pr-subject",
+          "status": "passed"
+        },
+        {
+          "id": "S2",
+          "surface": "base-inheritance",
+          "dimension": "same-blob-as-immutable-base",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Generate a fresh target-bound result-only handoff whenever inherited root artifacts belong to another issue or PR."
+      },
+      "detection_change": {
+        "evidence": "Run delivery_target_binding against the immutable base and current target before any artifact reuse."
+      },
+      "revalidated_head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
+        "audit_report_sha256": "22914513c90dbecfb64344702cd82f15d8e5848b0c4ce1ec28243b6d6905d026",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "required_risk_families": [
+        "reference-liveness",
+        "documentation"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "route-catalog-liveness",
+          "dimension": "route-catalog-liveness-divergence"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "documentation-claims",
+          "dimension": "documentation-claims-divergence"
+        }
+      ]
+    }
+  ]
+}

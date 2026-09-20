@@ -2,28 +2,23 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "validity": "independent",
-  "rejection_id": "audit-rejection:9b2cd0ce-a415-47e1-bf1a-52fc88c6b3a0",
-  "head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
-  "base_sha": "82a3edd16209bd4d379db6f089b756933b35d4b0",
-  "pull_request_number": 657,
-  "issue_number": 654,
+  "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
+  "head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue_number": 615,
+  "pull_request_number": 671,
   "findings": [
     {
-      "id": "A-003",
-      "title": "Handoff stale após escrita material pós-freeze",
+      "id": "A-001",
+      "severity": "blocking",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "delivery-evidence-identity",
-      "recovery_scope": "post-write-refreeze",
-      "requires_refreeze": true,
-      "evidence": {
-        "material_head_certified": "b7456f2f5020f13598572747cff49b105b71b36d",
-        "published_head_observed": "c10f9f42b13fb7e63c892d314a25654a8d676565",
-        "reason": "handoff-stale"
-      }
+      "category": "handoff-target-binding-gap",
+      "reason": "The active root handoff-ready.json is inherited unchanged from the immutable base and belongs to issue #613 / PR #660; no handoff was produced for issue #615 / PR #671.",
+      "recovery_scope": "fresh-handoff-required",
+      "requires_refreeze": false
     }
   ],
   "recommendations": []

@@ -2,38 +2,44 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
-  "status": "closed",
-  "candidate_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
-  "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:9b2cd0ce-a415-47e1-bf1a-52fc88c6b3a0",
-    "audited_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
-    "audit_report_sha256": "43825be4a99623c11a8581a813a42c433e5811d2f81f267e9ec5cb0f321d20bc"
+    "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
+    "audit_report_sha256": "22914513c90dbecfb64344702cd82f15d8e5848b0c4ce1ec28243b6d6905d026",
+    "audited_head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff"
   },
+  "candidate_head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+  "remediation_mode": "targeted-remediation",
+  "status": "closed",
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-003",
+      "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "post-write-refreeze",
+      "closure_kind": "fresh-handoff-rebuild",
       "changed_files": [
         ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/specification-snapshot.json",
+        ".audit/entregar-issue/requirement-closure.json",
         ".audit/entregar-issue/requirement-attack-matrix.json",
         ".audit/entregar-issue/risk-saturation.json",
-        ".audit/entregar-issue/inherited-controls.json",
-        ".audit/entregar-issue/audit-escape-closure.json",
-        ".audit/entregar-issue/learning-closure.json"
+        ".audit/entregar-issue/pr-671-inherited-controls.json",
+        ".audit/entregar-issue/audit-source-result.json",
+        ".audit/entregar-issue/audit-remediation.json",
+        ".audit/entregar-issue/pr-671-audit-escape-closure.json",
+        ".audit/entregar-issue/learning-closure.json",
+        ".audit/entregar-issue/evidence/issue-615-controls.txt"
       ],
       "evidence": [
-        "Material identity refrozen at c10f9f42b13fb7e63c892d314a25654a8d676565 after detecting post-freeze material writes.",
-        "Exact-head CI run 34361342238 and visual run 34361342341 are green on c10f9f42b13fb7e63c892d314a25654a8d676565.",
-        "The rebuilt packet is validated before publication and will be published only as a direct result-only child of the new material head."
+        "Remote blob bace9f6f0a3102fe04fece4953c193a8bb2d4678 is identical at base and pre-remediation head and binds issue #613 / PR #660.",
+        "The new package is reconstructed from issue #615, PR #671, exact-head CI evidence and the current 28-path issue delta without reusing foreign conclusions."
       ],
       "validations": [
-        "PR #657 is open and mergeable=true on the refrozen material head.",
-        "The current requirement closure still contains 41 canonical requirements and obligations.",
-        "Terminal handoff guard must reject parent drift, non-allowlisted paths or any remote head movement after publication."
+        "delivery_target_binding classified inherited-base-artifact",
+        "classify_handoff_recovery selected fresh-handoff-required",
+        "canonical specification coverage passed",
+        "requirement attack matrix validation passed",
+        "risk saturation validation passed"
       ]
     }
   ]

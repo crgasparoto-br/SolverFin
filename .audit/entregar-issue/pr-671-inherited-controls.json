@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+  "source_audits": [
+    {
+      "kind": "independent-audit-outcome",
+      "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
+      "finding": "A-001 inherited handoff target binding gap"
+    }
+  ],
+  "controls": [
+    {
+      "id": "AUDIT-HANDOFF-TARGET-615",
+      "status": "passed",
+      "head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+      "subject_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+      "control_type": "procedure",
+      "procedure": "Resolve PR #671 and verify repository, issue #615, PR #671, base ref, head ref and exact material SHA before accepting or publishing the handoff.",
+      "expected": "Only a fresh package bound to SolverFin issue #615 and PR #671 at the exact material candidate is eligible for independent audit.",
+      "observed": "The inherited #613/#660 blob was rejected; the current package inputs are bound to issue #615 / PR #671 and material head 155344dccc4963d4915257f62f2a7b1b1e01e1ff.",
+      "evidence": "evidence/issue-615-controls.txt",
+      "evidence_sha256": "051c7c5b6d2a6127ebd26cdc28b609d4c0b6722ac1fef4bfc80f9ca5a51a276b",
+      "attack_control_id": "REQ-002-NEG-3",
+      "risk_family": "reference-liveness",
+      "surface": "route-catalog-liveness",
+      "dimension": "route-catalog-liveness-divergence"
+    }
+  ],
+  "retired_controls": [],
+  "unresolved_controls": []
+}
