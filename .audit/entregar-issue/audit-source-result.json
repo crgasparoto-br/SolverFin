@@ -2,8 +2,8 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
-  "head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+  "rejection_id": "audit-rejection:615-94bd31bdb087",
+  "head_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
   "repository": "crgasparoto-br/SolverFin",
   "issue_number": 615,
   "pull_request_number": 671,
@@ -15,10 +15,48 @@
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "handoff-target-binding-gap",
-      "reason": "The active root handoff-ready.json is inherited unchanged from the immutable base and belongs to issue #613 / PR #660; no handoff was produced for issue #615 / PR #671.",
-      "recovery_scope": "fresh-handoff-required",
-      "requires_refreeze": false
+      "category": "post-write-handoff-drift",
+      "reason": "The certified handoff became stale after material writes; current head contained non-allowlisted material paths after the prior freeze.",
+      "recovery_scope": "post-write-refreeze",
+      "requires_refreeze": true
+    },
+    {
+      "id": "A-002",
+      "severity": "blocking",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "deterministic-ci-format-gate",
+      "reason": "CRITICAL validation failed at npm run format:check on the audited head.",
+      "recovery_scope": "post-write-refreeze",
+      "requires_refreeze": true,
+      "failed_gate": {
+        "name": "format-check",
+        "command": "npm run format:check",
+        "deterministic": true,
+        "subject_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
+        "observed_exit_code": 1
+      }
+    },
+    {
+      "id": "A-003",
+      "severity": "blocking",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "visual-validation-gate",
+      "reason": "Statement visual validation failed on the audited head.",
+      "recovery_scope": "post-write-refreeze",
+      "requires_refreeze": true,
+      "failed_gate": {
+        "name": "statement-visual",
+        "command": "npm run qa:statement-visual",
+        "deterministic": true,
+        "subject_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
+        "observed_exit_code": 1
+      }
     }
   ],
   "recommendations": []

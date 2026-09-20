@@ -3,14 +3,16 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
-    "audit_report_sha256": "22914513c90dbecfb64344702cd82f15d8e5848b0c4ce1ec28243b6d6905d026",
+    "rejection_id": "audit-rejection:615-94bd31bdb087",
+    "audit_report_sha256": "a56fa4edaac15b768129f9e37027115607b3687d4d08625c655dc20f5aa1a658",
     "finding_ids": [
-      "A-001"
+      "A-001",
+      "A-002",
+      "A-003"
     ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The installed delivery contract already rejects inherited-base artifacts and foreign target certificates; this cycle only failed to publish the current target package, so no new global prevention or detection rule is required."
+    "reason": "The installed delivery contract already requires post-write refreeze, exact deterministic gate replay and real-browser visual validation; this remediation closes target-specific material drift and gate failures without requiring a new global rule."
   }
 }

@@ -9,7 +9,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Compare the root handoff identity against the current issue, PR, refs and exact material head before rebuilding the package.",
-        "observed": "The inherited foreign certificate was rejected and the rebuilt delivery package is bound to issue #615 / PR #671 at current material head 155344dccc4963d4915257f62f2a7b1b1e01e1ff."
+        "observed": "The inherited foreign certificate remains rejected; current package inputs are bound to issue #615 / PR #671 at material head da21af37ceaed5a3c59608277f148a5ce7e04faa."
       },
       "sibling_cases": [
         {
@@ -31,7 +31,7 @@
       "detection_change": {
         "evidence": "Run delivery_target_binding against the immutable base and current target before any artifact reuse."
       },
-      "revalidated_head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+      "revalidated_head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
@@ -45,6 +45,76 @@
         "documentation"
       ],
       "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "route-catalog-liveness",
+          "dimension": "route-catalog-liveness-divergence"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "documentation-claims",
+          "dimension": "documentation-claims-divergence"
+        }
+      ]
+    },
+    {
+      "escape_id": "ESC-POSTWRITE-GATES-615",
+      "escape_class": "post-write-freeze-and-gate-drift",
+      "status": "passed",
+      "plausible_wrong_implementation": "Accept a previously certified candidate after later material writes without refreezing and replaying deterministic and browser gates on the new material head.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Treat all post-freeze material writes as dirty, replay the failed formatting and registered Chrome visual gates, then refreeze the exact green material head.",
+        "observed": "Material head da21af37ceaed5a3c59608277f148a5ce7e04faa passed Delivery V2 run 35540624712 including format check and Statement visual run 35540624747 including the admin-institutions overflow scenario."
+      },
+      "sibling_cases": [
+        {
+          "id": "S3",
+          "surface": "shared-foundation-contract",
+          "dimension": "post-freeze-material-write",
+          "status": "passed"
+        },
+        {
+          "id": "S4",
+          "surface": "route-catalog-liveness",
+          "dimension": "result-only-certificate-staleness",
+          "status": "passed"
+        },
+        {
+          "id": "S5",
+          "surface": "documentation-claims",
+          "dimension": "post-write-evidence-staleness",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The controller retained the post-write-refreeze floor and did not reuse the historical material certificate."
+      },
+      "detection_change": {
+        "evidence": "Exact deterministic gates were replayed on da21af37ceaed5a3c59608277f148a5ce7e04faa: Delivery V2 35540624712 and Chrome visual 35540624747 both succeeded."
+      },
+      "revalidated_head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:615-94bd31bdb087",
+        "audit_report_sha256": "a56fa4edaac15b768129f9e37027115607b3687d4d08625c655dc20f5aa1a658",
+        "finding_ids": [
+          "A-001",
+          "A-002",
+          "A-003"
+        ]
+      },
+      "required_risk_families": [
+        "structural-contract",
+        "reference-liveness",
+        "documentation"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "shared-foundation-contract",
+          "dimension": "shared-foundation-contract-divergence"
+        },
         {
           "risk_family": "reference-liveness",
           "surface": "route-catalog-liveness",

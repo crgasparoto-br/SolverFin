@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+  "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
   "families": [
     {
       "family": "authorization",
@@ -74,7 +74,7 @@
       "dimensions": [
         {
           "surface": "reporting-availability-window",
-          "reason": "A report can label a requested window complete even when retention or source availability makes only a suffix of that window observable.",
+          "reason": "temporal-consistency can regress independently at the secondary-route migration boundary.",
           "control_ids": [
             "REQ-019-NEG-1"
           ],
@@ -149,7 +149,7 @@
       "dimensions": [
         {
           "surface": "canonical-source-consistency",
-          "reason": "Equivalent runtime, seed, import or maintenance paths can drift when they do not consume the same canonical product definition.",
+          "reason": "structural-contract can regress independently at the secondary-route migration boundary.",
           "control_ids": [
             "REQ-002-NEG-1"
           ],
@@ -157,7 +157,7 @@
         },
         {
           "surface": "relational-semantic-integrity",
-          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "reason": "structural-contract can regress independently at the secondary-route migration boundary.",
           "control_ids": [
             "REQ-002-NEG-2"
           ],

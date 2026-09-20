@@ -1,17 +1,13 @@
 SolverFin issue #615 / PR #671 exact-head evidence index.
-Material head: 155344dccc4963d4915257f62f2a7b1b1e01e1ff
+Material head: da21af37ceaed5a3c59608277f148a5ce7e04faa
 Base SHA: f061e60bfc2d6043f0346c8d04afea7bc390d916
-Merge preview observed by PR metadata: 324c129b89d206b97e2dcd93572dfa3711b629a3
-Delivery V2 CI run 35504468839 completed success on the exact material head.
-CRITICAL validation job completed success and reached exact-head verification, env check, Prisma validation, seed checks, format check, lint, typecheck, Prisma generate/deploy/seed, npm test, API integration tests, consistency diagnostic and build.
-Delivery V2 gate completed success on the exact material head; STANDARD and FAST jobs were skipped because the classifier selected CRITICAL.
-Statement visual validation run 35504468858 completed success on the exact material head.
-Chrome visual validation completed success after building the web app and executing npm run qa:statement-visual against the exact PR head.
-Root npm test includes validate-financial-assistant-doc-contract, startup checks, integration DB guard, UI boundaries, legacy-html-post-processors check, visual coverage contract, package build and workspace tests.
-apps/web/src/dev-server/secondary-routes-view-model.test.ts enumerates all six scoped routes and asserts route status=available, expected audience and operational mode; it explicitly asserts admin routes require master, remuneration stays hidden, and assistant stays read-only.
-apps/web/src/dev-server/secondary-routes-foundation.test.ts enumerates all six route renderers and asserts renderPageContainer, renderPageHeader and getSecondaryRoutePageViewModel usage; it also asserts Categories is disconnected from the legacy string post-processor and assistant/remuneration modes remain explicit.
-apps/web/src/dev-server/legacy-html-post-processors.test.ts asserts /categorias is absent from the legacy pipeline and the residual post-processor budget is 1.
-docs/product/INTERFACE_INVENTORY.md contains a terminal matrix for /categorias, /configuracoes, /assistente, /admin/instituicoes, /admin/indices-financeiros and /remuneracao-contas.
-The terminal matrix records /remuneracao-contas as a legacy renderer, hidden from normal navigation, and records the assistant as read-only.
-The PR changes registered visual scripts for Categories, Settings and Assistant and the exact-head Chrome visual workflow passed.
-The current root handoff-ready.json blob is bace9f6f0a3102fe04fece4953c193a8bb2d4678 both at base and candidate before this remediation; its subject is issue #613 / PR #660, proving inherited-base-artifact for #615/#671.
+Merge preview observed by PR metadata: 1fdb2fd214c41d3f56b439f8a8c7b358362e803a
+Delivery V2 CI run 35540624712 completed success on material head da21af37ceaed5a3c59608277f148a5ce7e04faa.
+CRITICAL validation reached and passed format check, lint, typecheck, Prisma generate/deploy/seed, root tests, API integration, consistency diagnostic and build.
+Delivery V2 gate completed success; STANDARD and FAST paths were skipped because the classifier selected CRITICAL.
+Statement visual validation run 35540624747 completed success on material head da21af37ceaed5a3c59608277f148a5ce7e04faa.
+Chrome executed the registered Issue #615 scenarios for /admin/instituicoes, /admin/indices-financeiros and /remuneracao-contas at desktop/mobile viewports.
+The /admin/instituicoes regression specifically permits filter actions to wrap and the Chrome scenario reports no horizontal overflow at 1366x768 and 390x844.
+The unique Issue #615 entrypoints prevent duplicate visual-module registration while retaining the shared route runner.
+The current candidate preserves the six-route terminal matrix, master-only admin audience, read-only assistant and hidden legacy remuneration renderer.
+The prior certificate material 155344dccc4963d4915257f62f2a7b1b1e01e1ff is historical; material writes after that freeze triggered mandatory post-write refreeze.

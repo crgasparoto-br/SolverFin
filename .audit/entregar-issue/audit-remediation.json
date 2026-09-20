@@ -3,11 +3,11 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
-    "audit_report_sha256": "22914513c90dbecfb64344702cd82f15d8e5848b0c4ce1ec28243b6d6905d026",
-    "audited_head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff"
+    "rejection_id": "audit-rejection:615-94bd31bdb087",
+    "audit_report_sha256": "a56fa4edaac15b768129f9e37027115607b3687d4d08625c655dc20f5aa1a658",
+    "audited_head_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e"
   },
-  "candidate_head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+  "candidate_head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
   "remediation_mode": "targeted-remediation",
   "status": "closed",
   "items": [
@@ -16,30 +16,68 @@
       "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "fresh-handoff-rebuild",
-      "changed_files": [
-        ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/specification-snapshot.json",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/requirement-attack-matrix.json",
-        ".audit/entregar-issue/risk-saturation.json",
-        ".audit/entregar-issue/pr-671-inherited-controls.json",
-        ".audit/entregar-issue/audit-source-result.json",
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/pr-671-audit-escape-closure.json",
-        ".audit/entregar-issue/learning-closure.json",
-        ".audit/entregar-issue/evidence/issue-615-controls.txt"
-      ],
+      "closure_kind": "post-write-refreeze",
       "evidence": [
-        "Remote blob bace9f6f0a3102fe04fece4953c193a8bb2d4678 is identical at base and pre-remediation head and binds issue #613 / PR #660.",
-        "The new package is reconstructed from issue #615, PR #671, exact-head CI evidence and the current 28-path issue delta without reusing foreign conclusions."
+        "All material writes were incorporated into current material head da21af37ceaed5a3c59608277f148a5ce7e04faa; the historical certificate was not reused.",
+        "Both exact-head workflows completed successfully before recertification."
       ],
       "validations": [
-        "delivery_target_binding classified inherited-base-artifact",
-        "classify_handoff_recovery selected fresh-handoff-required",
-        "canonical specification coverage passed",
-        "requirement attack matrix validation passed",
-        "risk saturation validation passed"
+        "post-write refreeze recovery floor preserved",
+        "remote PR head and base re-read",
+        "material CI exact-head terminal green"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "deterministic-gate-replay",
+      "original_failed_gate": {
+        "name": "format-check",
+        "command": "npm run format:check",
+        "subject_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
+        "exit_code": 1
+      },
+      "revalidation": {
+        "command": "npm run format:check",
+        "equivalence": "exact-command-replay",
+        "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+        "exit_code": 0,
+        "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c"
+      },
+      "evidence": [
+        "Delivery V2 run 35540624712 passed the exact formatting command on da21af37ceaed5a3c59608277f148a5ce7e04faa."
+      ],
+      "validations": [
+        "CRITICAL validation passed format check before lint/typecheck/tests/build"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-003",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "deterministic-gate-replay",
+      "original_failed_gate": {
+        "name": "statement-visual",
+        "command": "npm run qa:statement-visual",
+        "subject_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
+        "exit_code": 1
+      },
+      "revalidation": {
+        "command": "npm run qa:statement-visual",
+        "equivalence": "exact-command-replay",
+        "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+        "exit_code": 0,
+        "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c"
+      },
+      "evidence": [
+        "Statement visual run 35540624747 passed the registered Chrome suite on da21af37ceaed5a3c59608277f148a5ce7e04faa."
+      ],
+      "validations": [
+        "admin institutions desktop overflow regression passed",
+        "all registered issue #615 secondary-route scenarios passed"
       ]
     }
   ]

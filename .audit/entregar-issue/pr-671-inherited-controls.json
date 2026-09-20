@@ -1,29 +1,66 @@
 {
   "schema_version": 1,
-  "head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+  "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
   "source_audits": [
     {
       "kind": "independent-audit-outcome",
       "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
       "finding": "A-001 inherited handoff target binding gap"
+    },
+    {
+      "kind": "independent-audit-outcome",
+      "rejection_id": "audit-rejection:615-94bd31bdb087",
+      "finding": "A-001/A-002/A-003 post-write refreeze and deterministic gate failures"
     }
   ],
   "controls": [
     {
       "id": "AUDIT-HANDOFF-TARGET-615",
       "status": "passed",
-      "head_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
-      "subject_sha": "155344dccc4963d4915257f62f2a7b1b1e01e1ff",
+      "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
       "control_type": "procedure",
-      "procedure": "Resolve PR #671 and verify repository, issue #615, PR #671, base ref, head ref and exact material SHA before accepting or publishing the handoff.",
-      "expected": "Only a fresh package bound to SolverFin issue #615 and PR #671 at the exact material candidate is eligible for independent audit.",
-      "observed": "The inherited #613/#660 blob was rejected; the current package inputs are bound to issue #615 / PR #671 and material head 155344dccc4963d4915257f62f2a7b1b1e01e1ff.",
+      "procedure": "Resolve PR #671 and verify repository, issue, PR, refs and exact material SHA before accepting or publishing the handoff.",
+      "expected": "Only a fresh package bound to issue #615 / PR #671 at the current material candidate is eligible.",
+      "observed": "Historical inherited and stale certificates are rejected; the current refreeze subject is material head da21af37ceaed5a3c59608277f148a5ce7e04faa.",
       "evidence": "evidence/issue-615-controls.txt",
-      "evidence_sha256": "051c7c5b6d2a6127ebd26cdc28b609d4c0b6722ac1fef4bfc80f9ca5a51a276b",
+      "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c",
       "attack_control_id": "REQ-002-NEG-3",
       "risk_family": "reference-liveness",
       "surface": "route-catalog-liveness",
       "dimension": "route-catalog-liveness-divergence"
+    },
+    {
+      "id": "AUDIT-FORMAT-GATE-615",
+      "status": "passed",
+      "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "control_type": "gate",
+      "procedure": "Replay npm run format:check as part of the CRITICAL exact-head validation after the final material edit.",
+      "expected": "Formatting gate exits zero before lint, typecheck, tests and build proceed.",
+      "observed": "Delivery V2 run 35540624712 on da21af37ceaed5a3c59608277f148a5ce7e04faa passed format check and continued through the remaining CRITICAL validation steps.",
+      "evidence": "evidence/issue-615-controls.txt",
+      "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c",
+      "attack_control_id": "REQ-001-NEG-1",
+      "risk_family": "structural-contract",
+      "surface": "shared-foundation-contract",
+      "dimension": "shared-foundation-contract-divergence"
+    },
+    {
+      "id": "AUDIT-VISUAL-OVERFLOW-615",
+      "status": "passed",
+      "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "control_type": "scenario",
+      "procedure": "Execute the registered Chrome route scenarios at desktop and mobile after the filter-action reflow regression is present.",
+      "expected": "No accidental horizontal overflow and keyboard-visible route content remain operable.",
+      "observed": "Statement visual run 35540624747 on da21af37ceaed5a3c59608277f148a5ce7e04faa passed the admin institutions, financial indexes and legacy remuneration registered scenarios, including desktop/mobile overflow checks.",
+      "evidence": "evidence/issue-615-controls.txt",
+      "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c",
+      "attack_control_id": "REQ-014-NEG-1",
+      "risk_family": "structural-contract",
+      "surface": "shared-foundation-contract",
+      "dimension": "shared-foundation-contract-divergence"
     }
   ],
   "retired_controls": [],
