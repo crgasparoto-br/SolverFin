@@ -32,6 +32,7 @@ export interface MetricCardProps {
   value: string;
   detail?: string;
   tone?: SemanticTone;
+  className?: string;
 }
 
 export interface DataTableColumn<Row> {
@@ -198,11 +199,12 @@ export function renderCard(props: CardProps): string {
 
 export function renderMetricCard(props: MetricCardProps): string {
   const tone = props.tone ?? "neutral";
+  const classes = classNames("sf-metric-card", props.className);
   const detail = props.detail
     ? `<span class="sf-metric-card-detail">${escapeHtml(props.detail)}</span>`
     : "";
 
-  return `<section class="sf-metric-card" data-tone="${tone}"><span class="sf-metric-card-label">${escapeHtml(props.label)}</span><strong class="sf-metric-card-value">${escapeHtml(props.value)}</strong>${detail}</section>`;
+  return `<section class="${escapeHtml(classes)}" data-tone="${tone}"><span class="sf-metric-card-label">${escapeHtml(props.label)}</span><strong class="sf-metric-card-value">${escapeHtml(props.value)}</strong>${detail}</section>`;
 }
 
 export function renderDataTable<Row>(props: DataTableProps<Row>): string {
