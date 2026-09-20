@@ -75,6 +75,9 @@ const SCENARIO_ENRICHMENTS = new Map([
   ["settings-interface", { components: ["FormLayout", "Dialog"] }],
   ["sidebar-navigation", { components: ["Drawer"] }],
   ["categories-interface", { legacyProcessorIds: ["categories-icons-tooltips"] }],
+  ["secondary-admin-institutions", { components: ["PageContainer", "PageHeader"] }],
+  ["secondary-admin-financial-indexes", { components: ["PageContainer", "PageHeader"] }],
+  ["secondary-account-remuneration-legacy", { components: ["PageContainer", "PageHeader"] }],
   [
     "cards-interface-adversarial",
     { legacyProcessorIds: ["cards-interface", "cards-interface-finalizer"] },

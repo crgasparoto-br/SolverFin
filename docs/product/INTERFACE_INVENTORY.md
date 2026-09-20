@@ -63,7 +63,7 @@ A regressao final deve preservar, quando aplicavel a cada interface:
 
 ## Evidencia visual
 
-O gate visual canonico e `.github/workflows/statement-visual-validation.yml`. A suite existente em `scripts/statement-visual/` cobre o Extrato, selecao/acoes, parcelas, relatorios, Inbox, configuracoes, interfaces de contas/cartoes, insights e assistente, alem dos cenarios complementares executados diretamente pelo workflow.
+O gate visual canonico e `.github/workflows/statement-visual-validation.yml`. A suite existente em `scripts/statement-visual/` cobre o Extrato, selecao/acoes, parcelas, relatorios, Inbox, configuracoes, interfaces de contas/cartoes, insights e assistente. A #615 acrescenta evidencia Chrome desktop/mobile, teclado, nomes acessiveis e overflow para `/categorias`, para as classes administrativas `/admin/instituicoes` e `/admin/indices-financeiros` e para o renderer interno de compatibilidade de `/remuneracao-contas`, sem reativar essa rota como jornada publica.
 
 A aprovacao do baseline da Fase 2 exige que o workflow visual conclua com sucesso no mesmo SHA candidato usado para a entrega de #569 e publique o artefato `statement-visual-evidence-<sha>`.
 
