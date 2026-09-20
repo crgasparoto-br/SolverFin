@@ -2,19 +2,11 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import {
-  evaluate,
-  launchChrome,
-  navigate,
-  screenshot,
-  setViewport,
-  sleep,
-} from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir =
-  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const route = process.env.STATEMENT_VISUAL_ROUTE ?? "";
 const compatPort = Number(process.env.SOLVERFIN_SSR_COMPAT_PORT ?? 5191);
@@ -112,15 +104,11 @@ await writeFile(
 
 if (failures.length) {
   for (const failure of failures) {
-    console.error(
-      "- " + failure.message + ": " + (failure.error?.message ?? ""),
-    );
+    console.error("- " + failure.message + ": " + (failure.error?.message ?? ""));
   }
   process.exitCode = 1;
 } else {
-  console.log(
-    "Issue #615 secondary-route visual validation passed for " + route + ".",
-  );
+  console.log("Issue #615 secondary-route visual validation passed for " + route + ".");
 }
 
 async function verify(cdp, width, height, label) {
@@ -129,61 +117,28 @@ async function verify(cdp, width, height, label) {
   await waitReady(cdp);
   const measurements = await evaluate(cdp, measurementExpression());
   const keyboard = await tabIntoPage(cdp);
-  const image =
-    "issue-615-" + slug + "-" + label + "-" + width + "x" + height + ".png";
+  const image = "issue-615-" + slug + "-" + label + "-" + width + "x" + height + ".png";
   await screenshot(cdp, join(outputDir, image));
 
-  check(
-    measurements.pathname === route,
-    label + ": unexpected redirect",
-    measurements,
-  );
-  check(
-    measurements.pageContainer,
-    label + ": PageContainer missing",
-    measurements,
-  );
+  check(measurements.pathname === route, label + ": unexpected redirect", measurements);
+  check(measurements.pageContainer, label + ": PageContainer missing", measurements);
   check(measurements.pageHeader, label + ": PageHeader missing", measurements);
-  check(
-    measurements.headingVisible,
-    label + ": heading not visible",
-    measurements,
-  );
-  check(
-    measurements.noHorizontalOverflow,
-    label + ": horizontal overflow",
-    measurements,
-  );
-  check(
-    measurements.unnamedInteractiveCount === 0,
-    label + ": unnamed controls",
-    measurements,
-  );
-  check(
-    measurements.foundation.id === foundationId,
-    label + ": foundation mismatch",
-    measurements,
-  );
+  check(measurements.headingVisible, label + ": heading not visible", measurements);
+  check(measurements.noHorizontalOverflow, label + ": horizontal overflow", measurements);
+  check(measurements.unnamedInteractiveCount === 0, label + ": unnamed controls", measurements);
+  check(measurements.foundation.id === foundationId, label + ": foundation mismatch", measurements);
   check(
     measurements.foundation.archetype === archetype,
     label + ": archetype mismatch",
     measurements,
   );
-  check(
-    measurements.foundation.audience === audience,
-    label + ": audience mismatch",
-    measurements,
-  );
+  check(measurements.foundation.audience === audience, label + ": audience mismatch", measurements);
   check(
     measurements.foundation.operationalMode === operationalMode,
     label + ": mode mismatch",
     measurements,
   );
-  check(
-    measurements.routeSpecific.ready,
-    label + ": route content missing",
-    measurements,
-  );
+  check(measurements.routeSpecific.ready, label + ": route content missing", measurements);
   check(
     !measurements.routeSpecific.restricted,
     label + ": permission denial rendered",
@@ -220,11 +175,7 @@ async function verify(cdp, width, height, label) {
     );
   }
   if (route === "/remuneracao-contas") {
-    check(
-      measurements.routeSpecific.infoAlert,
-      label + ": explanation missing",
-      measurements,
-    );
+    check(measurements.routeSpecific.infoAlert, label + ": explanation missing", measurements);
     check(
       measurements.routeSpecific.port === String(compatPort),
       label + ": compatibility server not used",
@@ -232,17 +183,11 @@ async function verify(cdp, width, height, label) {
     );
   }
 
-  return {
-    viewport: { width, height },
-    measurements,
-    keyboard,
-    screenshot: image,
-  };
+  return { viewport: { width, height }, measurements, keyboard, screenshot: image };
 }
 
 async function waitReady(cdp) {
-  const selector =
-    '[data-secondary-route-foundation="' + foundationId + '"] ' + readySelector;
+  const selector = '[data-secondary-route-foundation="' + foundationId + '"] ' + readySelector;
   for (let i = 0; i < 60; i += 1) {
     const ready = await evaluate(
       cdp,
@@ -251,18 +196,14 @@ async function waitReady(cdp) {
     if (ready) return;
     await sleep(100);
   }
-  throw new Error(
-    "Timed out waiting for " + route + " to render " + readySelector,
-  );
+  throw new Error("Timed out waiting for " + route + " to render " + readySelector);
 }
 
 function measurementExpression() {
-  const foundationSelector = JSON.stringify(
-    `[data-secondary-route-foundation="${foundationId}"]`,
-  );
+  const foundationSelector = JSON.stringify(`[data-secondary-route-foundation="${foundationId}"]`);
   const routeSelector = JSON.stringify(readySelector);
   return `(() => {
-    const root = document.querySelector^${foundationSelector});
+    const root = document.querySelector(${foundationSelector});
     if (!root) throw new Error("foundation root missing");
     const visible = (element) => {
       if (!element) return false;
@@ -332,9 +273,7 @@ function measurementExpression() {
 
 async function tabIntoPage(cdp) {
   await evaluate(cdp, "document.activeElement?.blur(); true");
-  const foundationSelector = JSON.stringify(
-    `[data-secondary-route-foundation="${foundationId}"]`,
-  );
+  const foundationSelector = JSON.stringify(`[data-secondary-route-foundation="${foundationId}"]`);
   const stateExpression = `(() => {
     const root = document.querySelector(${foundationSelector});
     const active = document.activeElement;
@@ -412,8 +351,7 @@ async function stopCompat(child) {
   const exited = new Promise((resolve) => child.once("exit", resolve));
   child.kill("SIGTERM");
   await Promise.race([exited, sleep(2000)]);
-  if (child.exitCode === null && child.signalCode === null)
-    child.kill("SIGKILL");
+  if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
 }
 
 function check(condition, message, details) {
