@@ -480,7 +480,7 @@ function adminPageStyles(): string {
     .metric-card p { color: var(--muted); font-size: 0.8125rem; margin: 0; }
     .filters-grid { display: grid; gap: 12px; grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(150px, 1fr)); }
     .filters-grid .wide { grid-column: span 2; }
-    .filter-actions { align-items: end; display: flex; gap: 10px; }
+    .filter-actions { align-items: end; display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
     .admin-actions-panel { align-items: center; display: flex; justify-content: space-between; }
     .list-panel { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
