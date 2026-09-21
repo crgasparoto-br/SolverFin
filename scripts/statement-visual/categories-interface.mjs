@@ -245,7 +245,7 @@ async function validateSearch(cdp) {
   await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
   await sleep(80);
 
-  return { query, ...result, pathQuery, pathCandidate, pathResult };
+  return { query, ...result, pathResult };
 }
 
 async function validateDesktopModal(cdp) {
