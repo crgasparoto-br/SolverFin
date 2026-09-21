@@ -32,6 +32,8 @@ export type TransactionErrorCode =
   | "TRANSACTION_ACCOUNT_ARCHIVED"
   | "TRANSACTION_DESTINATION_ACCOUNT_REQUIRED"
   | "TRANSACTION_DESTINATION_ACCOUNT_INVALID"
+  | "TRANSACTION_DESTINATION_AMOUNT_REQUIRED"
+  | "TRANSACTION_DESTINATION_AMOUNT_INVALID"
   | "TRANSACTION_TRANSFER_SAME_ACCOUNT"
   | "TRANSACTION_CURRENCY_MISMATCH"
   | "TRANSACTION_CATEGORY_INVALID"
@@ -86,6 +88,7 @@ export interface CreateTransactionPayload {
   source?: TransactionSource;
   currency?: string;
   destinationAccountId?: EntityId;
+  destinationAmountMinor?: number;
   categoryId?: EntityId;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
@@ -113,6 +116,7 @@ export interface UpdateTransactionPayload {
   description?: string;
   accountId?: EntityId;
   destinationAccountId?: EntityId;
+  destinationAmountMinor?: number;
   categoryId?: EntityId | null;
   organizationId?: EntityId;
   financialProfileId?: EntityId;
@@ -339,7 +343,13 @@ export function voidTransaction(
 export function buildTransactionMovements(
   transaction: Pick<
     Transaction,
-    "id" | "kind" | "amountMinor" | "accountId" | "destinationAccountId" | "status"
+    | "id"
+    | "kind"
+    | "amountMinor"
+    | "destinationAmountMinor"
+    | "accountId"
+    | "destinationAccountId"
+    | "status"
   >,
 ): TransactionMovement[] {
   if (transaction.status === "voided") {
@@ -379,7 +389,7 @@ export function buildTransactionMovements(
       transactionId: transaction.id,
       accountId: requireDestinationAccountId(transaction.destinationAccountId),
       direction: "credit",
-      amountMinor: transaction.amountMinor,
+      amountMinor: transaction.destinationAmountMinor ?? transaction.amountMinor,
     },
   ];
 }
@@ -408,11 +418,15 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
     input.existingTransaction?.categoryId,
   );
 
-  const currency = resolveTransactionCurrency(
-    input.payload.currency,
-    account,
-    destinationAccount,
+  const amountMinor = validateAmount(input.payload.amountMinor);
+  const currency = resolveTransactionCurrency(input.payload.currency, account);
+  const destinationValue = resolveTransferDestinationValue(
     input.kind,
+    amountMinor,
+    currency,
+    destinationAccount,
+    input.payload.destinationAmountMinor,
+    input.existingTransaction,
   );
   const status = validateTransactionStatus(input.payload.status ?? "posted");
   const occurredOn = validateTransactionDate(input.payload.occurredOn);
@@ -425,7 +439,7 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
     kind: input.kind,
     status,
     source: validateTransactionSource(input.payload.source ?? "manual"),
-    amountMinor: validateAmount(input.payload.amountMinor),
+    amountMinor,
     currency,
     occurredOn,
     plannedOn,
@@ -443,6 +457,8 @@ function buildTransaction(input: BuildTransactionInput): Transaction {
 
   if (input.kind === "transfer") {
     transaction.destinationAccountId = destinationAccount.id;
+    transaction.destinationAmountMinor = destinationValue?.amountMinor ?? amountMinor;
+    transaction.destinationCurrency = destinationValue?.currency ?? currency;
     transaction.transferGroupId =
       input.transferGroupId ?? input.existingTransaction?.transferGroupId ?? input.id;
   }
@@ -536,8 +552,6 @@ function assertDestinationAccount(input: BuildTransactionInput): Account {
 function resolveTransactionCurrency(
   requestedCurrency: string | undefined,
   account: Account,
-  destinationAccount: Account,
-  kind: TransactionKind,
 ): string {
   const sourceCurrency = normalizeCurrency(account.currency);
   const currency = normalizeCurrency(requestedCurrency ?? sourceCurrency);
@@ -549,14 +563,61 @@ function resolveTransactionCurrency(
     );
   }
 
-  if (kind === "transfer" && normalizeCurrency(destinationAccount.currency) !== currency) {
+  return currency;
+}
+
+function resolveTransferDestinationValue(
+  kind: TransactionKind,
+  sourceAmountMinor: number,
+  sourceCurrency: string,
+  destinationAccount: Account,
+  requestedDestinationAmountMinor: number | undefined,
+  existingTransaction: Transaction | undefined,
+): { amountMinor: number; currency: string } | undefined {
+  if (kind !== "transfer") {
+    if (requestedDestinationAmountMinor !== undefined) {
+      throw new TransactionError(
+        "TRANSACTION_DESTINATION_AMOUNT_INVALID",
+        "Only transfer transactions can define a destination amount.",
+      );
+    }
+    return undefined;
+  }
+
+  const destinationCurrency = normalizeCurrency(destinationAccount.currency);
+
+  if (destinationCurrency === sourceCurrency) {
+    if (
+      requestedDestinationAmountMinor !== undefined &&
+      requestedDestinationAmountMinor !== sourceAmountMinor
+    ) {
+      throw new TransactionError(
+        "TRANSACTION_DESTINATION_AMOUNT_INVALID",
+        "Same-currency transfers must use the same amount on both accounts.",
+      );
+    }
+
+    return { amountMinor: sourceAmountMinor, currency: destinationCurrency };
+  }
+
+  const destinationAmountMinor =
+    requestedDestinationAmountMinor ??
+    (existingTransaction?.destinationAccountId === destinationAccount.id &&
+    normalizeCurrency(existingTransaction.destinationCurrency ?? "") === destinationCurrency
+      ? existingTransaction.destinationAmountMinor
+      : undefined);
+
+  if (destinationAmountMinor === undefined) {
     throw new TransactionError(
-      "TRANSACTION_CURRENCY_MISMATCH",
-      "Transfer source and destination accounts must use the same currency.",
+      "TRANSACTION_DESTINATION_AMOUNT_REQUIRED",
+      "Cross-currency transfers require a destination amount.",
     );
   }
 
-  return currency;
+  return {
+    amountMinor: validateAmount(destinationAmountMinor),
+    currency: destinationCurrency,
+  };
 }
 
 function assertCategory(
