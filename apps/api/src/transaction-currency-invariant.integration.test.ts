@@ -168,7 +168,9 @@ async function main(): Promise<void> {
     listTransactionsForContext(CONTEXT, { accountId: usdAccount.id }),
   ]);
   const sourceView = sourceStatement.find((transaction) => transaction.id === planned.id);
-  const destinationView = destinationStatement.find((transaction) => transaction.id === planned.id);
+  const destinationView = destinationStatement.find(
+    (transaction) => transaction.id === planned.id,
+  );
   assert.ok(sourceView, "Source account statement must expose the transfer.");
   assert.ok(
     destinationView,
