@@ -203,8 +203,14 @@ async function validateSearch(cdp) {
       return null;
     })()`,
   );
-  assert.ok(pathCandidate, "Expected at least one nested category for path-search validation");
-  const pathQuery = pathCandidate.ancestor.slice(0, Math.min(4, pathCandidate.ancestor.length));
+  assert.ok(
+    pathCandidate,
+    "Expected at least one nested category for path-search validation",
+  );
+  const pathQuery = pathCandidate.ancestor.slice(
+    0,
+    Math.min(4, pathCandidate.ancestor.length),
+  );
 
   await evaluate(
     cdp,
