@@ -43,6 +43,7 @@ statementCalculationsIgnoreVoidedAndPendingOpeningEntries();
 projectedBalancesIncludePlannedEntriesAndTransfers();
 transferSummariesExcludeTransfersFromIncomeAndExpense();
 transferSignedAmountDependsOnSelectedAccount();
+crossCurrencyTransferUsesDestinationNativeAmount();
 
 function periodHelpersResolveMonthBoundaries(): void {
   assert.deepEqual(monthToPeriod("2026-02"), {
@@ -359,6 +360,19 @@ function transferSignedAmountDependsOnSelectedAccount(): void {
   assert.equal(signedAmount(transfer, "account-1"), -25000);
   assert.equal(signedAmount(transfer, "account-2"), 25000);
   assert.equal(signedAmount(transfer, "account-3"), 0);
+}
+
+function crossCurrencyTransferUsesDestinationNativeAmount(): void {
+  const transfer = transaction("cross-transfer", "transfer", "posted", 53_832, "2026-06-02", {
+    accountId: "account-1",
+    destinationAccountId: "account-2",
+    currency: "BRL",
+    destinationAmountMinor: 10_000,
+    destinationCurrency: "USD",
+  });
+
+  assert.equal(signedAmount(transfer, "account-1"), -53_832);
+  assert.equal(signedAmount(transfer, "account-2"), 10_000);
 }
 
 function transaction(
