@@ -825,6 +825,8 @@ function buildRedactedTransactionChanges(
     "source",
     "amountMinor",
     "currency",
+    "destinationAmountMinor",
+    "destinationCurrency",
     "occurredOn",
     "plannedOn",
     "effectiveOn",
