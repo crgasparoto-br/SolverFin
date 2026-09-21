@@ -67,6 +67,7 @@ Antes de remover qualquer model ou campo, criar um script idempotente que:
 - Nao criar `Transaction` sem `accountId`.
 - Nao migrar faturas de cartao para `PayableReceivable`; cartao permanece em `Invoice`.
 - Nao somar `PayableReceivable` em Dashboard, disponibilidade ou relatorios quando houver `Transaction` ou `Invoice` equivalente.
+- A agenda canonica de `GET /api/future-commitments` reutiliza este plano de transicao para classificar duplicidade legada; consumidores nao devem criar outra heuristica por valor/data.
 - Nao expor valores completos em logs de migracao; usar contadores, ids tecnicos e erros redigidos.
 
 ## Criterios para encerrar a compatibilidade

@@ -5,6 +5,7 @@ export * from "./categories.js";
 export * from "./category-learning.js";
 export * from "./ai-review-queue.js";
 export * from "./transactions.js";
+export * from "./future-commitments.js";
 export * from "./transaction-groups.js";
 export * from "./recurrences.js";
 export * from "./recurrence-calendar.js";

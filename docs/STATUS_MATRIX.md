@@ -132,7 +132,7 @@ A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contr
 
 | Capacidade de previsibilidade                              | Estado    | Contrato principal    |
 | ---------------------------------------------------------- | --------- | --------------------- |
-| Fonte canonica de compromissos futuros sem dupla contagem  | Planejado | #592 / #616           |
+| Fonte canonica de compromissos futuros sem dupla contagem  | Feito     | #616, `docs/API_FUTURE_COMMITMENTS.md` |
 | Projecao de fluxo de caixa 30/60/90 dias por moeda         | Planejado | #592 / #617, ADR 0013 |
 | Valor livre para gastar deterministico e explicavel        | Planejado | #592 / #618           |
 | Orcamentos com realizado/comprometido/disponivel/projetado | Planejado | #592 / #619           |
