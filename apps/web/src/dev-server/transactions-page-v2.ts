@@ -419,7 +419,11 @@ function renderRow(
   accountCurrency: string | undefined,
 ): string {
   const { transaction } = row;
-  const currency = resolveTransactionCurrency(transaction, selectedAccount?.id, accountCurrency);
+  const currency = resolveTransactionCurrency(
+    transaction,
+    selectedAccount?.id,
+    accountCurrency,
+  );
   if (transaction.group) return renderGroupRow(row, transaction.group, currency);
   const categoryName = transaction.categoryId
     ? (categories.find((category) => category.id === transaction.categoryId)?.name ??
