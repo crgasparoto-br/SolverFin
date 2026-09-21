@@ -146,7 +146,7 @@ Prioridade mais alta. Corrigir semantica financeira que afeta saldos e gastos, e
 
 Epica operacional original: #589.
 
-A issue #668 e uma extensao posterior dessa integridade: ela fecha a lacuna de transferencias entre contas de moedas diferentes com dois valores nativos. Embora #589 esteja concluida, #668 deve ser tratada como pre-requisito financeiro antes da agenda/projecao da Fase 4A.
+A issue #668 implementa a extensão posterior dessa integridade para transferencias entre contas de moedas diferentes com dois valores nativos vinculados à mesma identidade. Ela permanece o contrato financeiro que a agenda/projecao da Fase 4A deve reutilizar.
 
 ### Trilha B - Fundacao de interface
 
@@ -170,7 +170,7 @@ Epica operacional: #592.
 
 A Fase 4A reutiliza a semantica financeira da #589, as primitives/view-models da #590 e as superficies migradas da #591. Ela nao deve antecipar conversao cambial implicita nem criar recomendacao financeira regulada.
 
-Antes de #616 e #617, a #668 deve estar concluida para que uma transferencia `planned` cross-currency seja representada como uma unica identidade com dois efeitos nativos. #616 consome essa identidade na agenda; #617 aplica cada efeito somente a serie da respectiva moeda; #618 deriva o valor livre dessas series. Orcamentos continuam tratando transferencia como movimento de caixa, nao consumo economico.
+Com a representação de #668, uma transferencia `planned` cross-currency mantém uma única identidade com dois efeitos nativos. #616 deve consumir essa identidade na agenda; #617 aplica cada efeito somente à série da respectiva moeda; #618 deriva o valor livre dessas séries. Orcamentos continuam tratando transferencia como movimento de caixa, nao consumo economico.
 
 A conclusao da #592 permanece a prioridade funcional atual. As fases competitivas posteriores nao devem interromper essa cadeia nem antecipar contratos que #616-#621 ainda precisam estabelecer.
 
@@ -414,13 +414,13 @@ A Fase 3 estrutural pode ser considerada concluida quando:
 6. Relatorios e demais superficies prioritarias apresentam hierarquia consistente e moeda explicita;
 7. a documentacao viva e as issues representam o estado real da migracao.
 
-A extensao #668 pode ser concluida apos o ciclo original da Fase 3 sem reabrir a epica #589, mas passa a ser requisito de integridade para a cadeia financeira da Fase 4A.
+A extensão #668 complementa o ciclo original da Fase 3 sem reabrir a épica #589 e passa a integrar a base de integridade reutilizada pela cadeia financeira da Fase 4A.
 
 ## Definicao de concluido da Fase 4A
 
 A primeira trilha da Fase 4 pode ser considerada concluida quando:
 
-1. transferencias cross-currency planejadas, quando suportadas por #668, preservam uma identidade com dois efeitos nativos sem conversao implicita;
+1. transferencias cross-currency planejadas preservam a identidade e os dois efeitos nativos definidos por #668, sem conversao implicita;
 2. existe uma fonte canonica de compromissos futuros sem dupla contagem;
 3. existe projecao 30/60/90 dias verificavel e separada por moeda;
 4. o valor livre para gastar possui formula deterministica e drilldown;
