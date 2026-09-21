@@ -159,7 +159,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     ${renderModal(selectedAccount, accounts, categories, currency)}
     ${renderGroupModal(selectedAccount, currency)}
     ${renderRecurrenceEditModal(categories, "account", "", currency ?? "moeda indisponível")}
-    ${clientScript(currency)}
+    ${clientScript(currency, accounts)}
     ${recurrencesSectionScript()}
   `);
 }
@@ -419,7 +419,7 @@ function renderRow(
   accountCurrency: string | undefined,
 ): string {
   const { transaction } = row;
-  const currency = resolveTransactionCurrency(transaction, accountCurrency);
+  const currency = resolveTransactionCurrency(transaction, selectedAccount?.id, accountCurrency);
   if (transaction.group) return renderGroupRow(row, transaction.group, currency);
   const categoryName = transaction.categoryId
     ? (categories.find((category) => category.id === transaction.categoryId)?.name ??
@@ -572,7 +572,7 @@ function renderModal(
   categories: readonly CategoryRecord[],
   currency: string | undefined,
 ): string {
-  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit">Fechar</button></form><div><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>${selectedAccount ? `Novo lançamento em ${escapeHtml(selectedAccount.name)}` : "Selecione uma conta"}</h2><p class="muted">Conta e moeda vêm do contexto principal.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label>Tipo<select name="kind" required>${renderKindOptions()}</select></label><label>Valor (${escapeHtml(currency ?? "moeda indisponível")})<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label data-field="destinationAccountId">Conta destino<select name="destinationAccountId"><option value="">Apenas transferência</option>${renderAccountOptions(accounts)}</select></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label><label class="full">Descrição<input name="description" maxlength="240" required /></label><label class="full">Observação<textarea name="note" rows="3"></textarea></label><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form></section></dialog>`;
+  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit">Fechar</button></form><div><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>${selectedAccount ? `Novo lançamento em ${escapeHtml(selectedAccount.name)}` : "Selecione uma conta"}</h2><p class="muted">Conta e moeda vêm do contexto principal.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label>Tipo<select name="kind" required>${renderKindOptions()}</select></label><label>Valor origem (<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label data-field="destinationAccountId">Conta destino<select name="destinationAccountId"><option value="" data-currency="">Apenas transferência</option>${renderAccountOptions(accounts)}</select></label><label data-field="destinationAmountMinor" hidden>Valor destino (<span data-destination-currency>moeda destino</span>)<input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden>Taxa efetiva<output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label><label class="full">Descrição<input name="description" maxlength="240" required /></label><label class="full">Observação<textarea name="note" rows="3"></textarea></label><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form></section></dialog>`;
 }
 
 function renderGroupModal(
@@ -625,7 +625,7 @@ function renderAccountOptions(accounts: readonly AccountRecord[]): string {
   return accounts
     .map(
       (account) =>
-        `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)} · ${escapeHtml(resolveAccountCurrency(account) ?? "moeda indisponível")}</option>`,
+        `<option value="${escapeHtml(account.id)}" data-currency="${escapeHtml(resolveAccountCurrency(account) ?? "")}">${escapeHtml(account.name)} · ${escapeHtml(resolveAccountCurrency(account) ?? "moeda indisponível")}</option>`,
     )
     .join("");
 }
@@ -652,10 +652,16 @@ function renderReconcileIcon(isReconciled: boolean): string {
     : `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
-function clientScript(currency: string | undefined): string {
+function clientScript(
+  currency: string | undefined,
+  accounts: readonly AccountRecord[],
+): string {
   return String.raw`<script data-statement-a2-runtime="true">
   (() => {
     const statementCurrency = ${JSON.stringify(currency ?? "")};
+    const accountCurrencies = new Map(${serializeScriptJson(
+      accounts.map((account) => [account.id, resolveAccountCurrency(account) ?? ""]),
+    )});
     const modal = document.querySelector("[data-modal]");
     const form = document.querySelector("[data-form]");
     if (!form || !modal) return;
@@ -713,7 +719,9 @@ function clientScript(currency: string | undefined): string {
     const money = (minor, currencyCode) => /^[A-Z]{3}$/.test(currencyCode || "") ? (Number(minor || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: currencyCode }) : "Moeda indisponível";
     const currentLocalDate = () => { const now = new Date(); return String(now.getFullYear()) + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0"); };
     const moneyInput = form.querySelector("[data-money]");
-    moneyInput?.addEventListener("input", () => { const digits = moneyInput.value.replace(/\D/g, ""); moneyInput.value = minorToMoneyInput(digits ? parseInt(digits, 10) : 0); });
+    const destinationMoneyInput = form.querySelector("[data-destination-money]");
+    moneyInput?.addEventListener("input", () => { const digits = moneyInput.value.replace(/\D/g, ""); moneyInput.value = minorToMoneyInput(digits ? parseInt(digits, 10) : 0); syncEffectiveRate(); });
+    destinationMoneyInput?.addEventListener("input", () => { const digits = destinationMoneyInput.value.replace(/\D/g, ""); destinationMoneyInput.value = minorToMoneyInput(digits ? parseInt(digits, 10) : 0); syncEffectiveRate(); });
 
     const setFieldVisible = (name, visible) => { const field = form.querySelector('[data-field="' + name + '"]'); if (field) field.hidden = !visible; };
     const syncCategoryOptions = () => {
@@ -722,11 +730,44 @@ function clientScript(currency: string | undefined): string {
       Array.from(select.options).forEach((option) => { if (!option.dataset.kind) return; const visible = option.dataset.kind === form.kind.value; option.hidden = !visible; if (!visible && option.selected) selectedHidden = true; });
       if (selectedHidden) select.value = "";
     };
+    const sourceCurrency = () => accountCurrencies.get(String(form.accountId.value || "")) || statementCurrency;
+    const destinationCurrency = () => String(form.destinationAccountId.selectedOptions?.[0]?.dataset.currency || "");
+    const isCrossCurrencyTransfer = () => form.kind.value === "transfer" && Boolean(destinationCurrency()) && destinationCurrency() !== sourceCurrency();
+    const syncEffectiveRate = () => {
+      const output = form.querySelector("[data-effective-rate]");
+      const direction = form.querySelector("[data-effective-rate-direction]");
+      const sourceMinor = moneyToMinor(moneyInput?.value || "0");
+      const destinationMinor = moneyToMinor(destinationMoneyInput?.value || "0");
+      const source = sourceCurrency();
+      const destination = destinationCurrency();
+      if (direction) direction.textContent = source && destination ? destination + " por " + source : "";
+      if (!output) return;
+      output.textContent = sourceMinor > 0 && destinationMinor > 0
+        ? (destinationMinor / sourceMinor).toLocaleString("pt-BR", { maximumFractionDigits: 6 })
+        : "Informe os dois valores";
+    };
+    const syncTransferCurrencyState = () => {
+      const source = sourceCurrency();
+      const destination = destinationCurrency();
+      const crossCurrency = isCrossCurrencyTransfer();
+      const sourceNode = form.querySelector("[data-source-currency]");
+      const destinationNode = form.querySelector("[data-destination-currency]");
+      if (sourceNode) sourceNode.textContent = source || "moeda indisponível";
+      if (destinationNode) destinationNode.textContent = destination || "moeda destino";
+      setFieldVisible("destinationAmountMinor", crossCurrency);
+      setFieldVisible("effectiveRate", crossCurrency);
+      if (destinationMoneyInput) destinationMoneyInput.required = crossCurrency;
+      const installmentOption = form.repeatMode.querySelector('option[value="installment"]');
+      if (installmentOption) installmentOption.disabled = crossCurrency;
+      if (crossCurrency && form.repeatMode.value !== "single") form.repeatMode.value = "single";
+      syncEffectiveRate();
+    };
     const syncFieldVisibility = () => {
       const kind = form.kind.value;
       const fixedOption = form.repeatMode.querySelector('[data-repeat-option="fixed"]');
       if (fixedOption) fixedOption.disabled = kind === "transfer";
       if (kind === "transfer" && form.repeatMode.value === "fixed") form.repeatMode.value = "single";
+      syncTransferCurrencyState();
       const repeatMode = form.repeatMode.value;
       const usesGenericTemporalFields = repeatMode === "single" || form.dataset.method === "PATCH";
       setFieldVisible("occurredOn", usesGenericTemporalFields); form.occurredOn.required = usesGenericTemporalFields;
@@ -735,7 +776,15 @@ function clientScript(currency: string | undefined): string {
       ["interval", "frequency", "endOn"].forEach((name) => setFieldVisible(name, repeatMode === "fixed"));
       syncCategoryOptions();
     };
-    form.addEventListener("change", (event) => { if (event.target.name === "kind" || event.target.name === "repeatMode") syncFieldVisibility(); });
+    form.addEventListener("change", (event) => {
+      if (event.target.name === "destinationAccountId" && destinationMoneyInput) {
+        const nextCurrency = destinationCurrency();
+        const previousCurrency = destinationMoneyInput.dataset.currency || "";
+        if (previousCurrency && previousCurrency !== nextCurrency) destinationMoneyInput.value = "";
+        destinationMoneyInput.dataset.currency = nextCurrency;
+      }
+      if (event.target.name === "kind" || event.target.name === "repeatMode" || event.target.name === "destinationAccountId") syncFieldVisibility();
+    });
 
     const statusButtons = Array.from(form.querySelectorAll("[data-status-option]"));
     const statusLabel = form.querySelector("[data-status-label]");
@@ -774,6 +823,8 @@ function clientScript(currency: string | undefined): string {
       TRANSACTION_ACCOUNT_ARCHIVED: "A conta selecionada precisa estar ativa.",
       TRANSACTION_DESTINATION_ACCOUNT_REQUIRED: "Selecione a conta de destino da transferência.",
       TRANSACTION_DESTINATION_ACCOUNT_INVALID: "A conta de destino da transferência é inválida.",
+      TRANSACTION_DESTINATION_AMOUNT_REQUIRED: "Informe o valor que será creditado na conta de destino.",
+      TRANSACTION_DESTINATION_AMOUNT_INVALID: "O valor da conta de destino precisa ser maior que zero e compatível com a transferência.",
       TRANSACTION_TRANSFER_SAME_ACCOUNT: "A conta de origem e a conta de destino devem ser diferentes.",
       TRANSACTION_CURRENCY_MISMATCH: "A moeda do lançamento deve ser a mesma da conta.",
       TRANSACTION_CATEGORY_INVALID: "A categoria selecionada é inválida.",
@@ -792,7 +843,9 @@ function clientScript(currency: string | undefined): string {
       const result = { kind: String(data.get("kind")), amountMinor, occurredOn, plannedOn: normalizedPlannedOn, accountId: String(data.get("accountId")), description, status };
       if (normalizedEffectiveOn !== undefined) result.effectiveOn = normalizedEffectiveOn;
       const destinationAccountId = String(data.get("destinationAccountId") || ""); const categoryId = String(data.get("categoryId") || ""); const note = String(data.get("note") || "").trim();
-      if (destinationAccountId) result.destinationAccountId = destinationAccountId; if (categoryId) result.categoryId = categoryId; if (note) result.note = note; return result;
+      if (destinationAccountId) result.destinationAccountId = destinationAccountId;
+      if (isCrossCurrencyTransfer()) result.destinationAmountMinor = moneyToMinor(data.get("destinationAmountMinor"));
+      if (categoryId) result.categoryId = categoryId; if (note) result.note = note; return result;
     };
     const payload = () => { const data = new FormData(form); return basePayload(String(data.get("plannedOn") || ""), String(data.get("effectiveOn") || ""), moneyToMinor(data.get("amountMinor")), String(data.get("description") || "")); };
     const newIdempotencyKey = () => window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
@@ -801,7 +854,7 @@ function clientScript(currency: string | undefined): string {
     document.querySelectorAll("[data-transaction]").forEach((node) => {
       const transaction = JSON.parse(node.textContent);
       if (transaction.accountRemuneration) remunerationIds.add(transaction.id);
-      const hydrate = (selector, clone) => { const button = document.querySelector(selector + transaction.id + '"]'); if (!button) return; button.addEventListener("click", () => { form.reset(); form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id; form.dataset.method = clone ? "POST" : "PATCH"; form.kind.value = transaction.kind; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); }); };
+      const hydrate = (selector, clone) => { const button = document.querySelector(selector + transaction.id + '"]'); if (!button) return; button.addEventListener("click", () => { form.reset(); form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id; form.dataset.method = clone ? "POST" : "PATCH"; form.kind.value = transaction.kind; form.accountId.value = transaction.accountId || form.accountId.value; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); }); };
       hydrate('[data-edit="', false); hydrate('[data-clone="', true);
     });
     document.addEventListener("click", (event) => {
@@ -869,8 +922,17 @@ function resolveAccountCurrency(account: AccountRecord | undefined): string | un
 
 function resolveTransactionCurrency(
   transaction: TransactionRecord,
+  selectedAccountId: string | undefined,
   accountCurrency: string | undefined,
 ): string | undefined {
+  if (
+    transaction.kind === "transfer" &&
+    selectedAccountId !== undefined &&
+    transaction.destinationAccountId === selectedAccountId
+  ) {
+    return normalizeCurrency(transaction.destinationCurrency) ?? accountCurrency;
+  }
+
   return (
     normalizeCurrency(transaction.group?.currency) ??
     normalizeCurrency(transaction.currency) ??
