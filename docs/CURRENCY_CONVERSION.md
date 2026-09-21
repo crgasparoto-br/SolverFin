@@ -11,6 +11,23 @@ Este documento define o contrato transversal da issue #596 para futuras consolid
 - Falta, expiracao ou indisponibilidade de cotacao torna a conversao indisponivel. Nunca se usa taxa `1`, total `0` ou outra aproximacao silenciosa como fallback.
 - Dashboard, Relatorios e futuras projecoes devem compartilhar este contrato em vez de inventar representacoes locais.
 
+## Transferencia cross-currency nao e consolidacao cambial
+
+Uma transferencia entre contas de moedas diferentes possui dois valores nativos persistidos na mesma
+identidade de `Transaction`: `amountMinor/currency` para a origem e
+`destinationAmountMinor/destinationCurrency` para o destino. Exemplo: 53.832 BRL de débito e 10.000
+USD de crédito.
+
+Esses dois valores são a fonte financeira de verdade da operação. O sistema não calcula um deles a
+partir de uma cotação, não persiste taxa como terceira fonte e não exige provider externo. A interface
+pode mostrar a taxa efetiva `destinationAmount / sourceAmount` somente como informação derivada e
+read-only. Essa taxa não transforma a transferência em um valor convertido consolidável e nunca pode
+ser usada para reconstruir ou reescrever um dos valores nativos.
+
+Esta regra é distinta do contrato de moeda de referência deste documento: consolidação cambial converte
+um valor para fins de apresentação/agregação com evidência de cotação; transferência cross-currency
+apenas preserva os dois efeitos nativos reais de uma única movimentação.
+
 ## Moeda de referencia do perfil
 
 `ReferenceCurrencyPreference` representa a preferencia quando ela existir:
