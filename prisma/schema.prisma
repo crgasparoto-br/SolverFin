@@ -486,6 +486,8 @@ model Transaction {
   source               TransactionSource @default(MANUAL)
   amountMinor          BigInt             @db.BigInt
   currency             String            @default("BRL") @db.Char(3)
+  destinationAmountMinor BigInt?           @db.BigInt
+  destinationCurrency  String?            @db.Char(3)
   occurredOn           DateTime          @db.Date
   plannedOn            DateTime          @db.Date
   effectiveOn          DateTime?         @db.Date
