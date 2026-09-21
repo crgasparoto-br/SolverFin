@@ -50,6 +50,7 @@ test("A2 transfer form exposes native destination value and derived rate control
     assert.match(html, /data-currency="BRL">Conta principal · BRL<\/option>/);
     assert.match(html, /isCrossCurrencyTransfer/);
     assert.match(html, /destinationMinor \/ sourceMinor/);
+    assert.match(html, /event\.target\.name === "accountId"/);
     assert.match(html, /installmentOption\.disabled = crossCurrency/);
   } finally {
     globalThis.fetch = originalFetch;
