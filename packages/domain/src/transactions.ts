@@ -283,6 +283,10 @@ export function updateTransaction(input: UpdateTransactionInput): TransactionMut
     payload.destinationAccountId = nextDestinationAccountId;
   }
 
+  if (input.payload.destinationAmountMinor !== undefined) {
+    payload.destinationAmountMinor = input.payload.destinationAmountMinor;
+  }
+
   if (nextCategoryId !== undefined) {
     payload.categoryId = nextCategoryId;
   }
