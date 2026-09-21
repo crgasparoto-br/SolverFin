@@ -541,8 +541,7 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   if (row.note !== null) transaction.note = row.note;
   if (row.destinationAmountMinor !== null)
     transaction.destinationAmountMinor = row.destinationAmountMinor;
-  if (row.destinationCurrency !== null)
-    transaction.destinationCurrency = row.destinationCurrency;
+  if (row.destinationCurrency !== null) transaction.destinationCurrency = row.destinationCurrency;
   if (row.effectiveOn !== null) transaction.effectiveOn = toDateOnly(row.effectiveOn);
   if (row.accountId !== null) transaction.accountId = row.accountId;
   if (row.destinationAccountId !== null)
