@@ -182,40 +182,6 @@ async function validateSearch(cdp) {
   await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
   await sleep(80);
 
-  const pathCandidate = await evaluate(
-    cdp,
-    `(() => {
-      const normalize = (value) => String(value || '')
-        .normalize('NFD')
-        .replace(/[\\u0300-\\u036f]/g, '')
-        .toLocaleLowerCase('pt-BR')
-        .trim();
-      for (const item of Array.from(document.querySelectorAll('[data-category-item]'))) {
-        const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName?.trim() || '';
-        const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent?.trim() || '';
-        if (!name || !path || normalize(name) === normalize(path)) continue;
-        const ancestor = path
-          .split('>')
-          .map((part) => part.trim())
-          .find((part) => part && !normalize(name).includes(normalize(part)));
-        if (ancestor) return { name, path, ancestor };
-      }
-      return null;
-    })()`,
-  );
-  assert.ok(pathCandidate, "Expected at least one nested category for path-search validation");
-  const pathQuery = pathCandidate.ancestor.slice(0, Math.min(4, pathCandidate.ancestor.length));
-
-  await evaluate(
-    cdp,
-    `(() => {
-      const input = document.querySelector('[data-category-search-input]');
-      input.value = ${JSON.stringify(pathQuery)};
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    })()`,
-  );
-  await sleep(100);
-
   const pathResult = await evaluate(
     cdp,
     `(() => {
@@ -224,21 +190,43 @@ async function validateSearch(cdp) {
         .replace(/[\\u0300-\\u036f]/g, '')
         .toLocaleLowerCase('pt-BR')
         .trim();
-      const query = normalize(${JSON.stringify(pathQuery)});
-      const targetName = ${JSON.stringify(pathCandidate.name)};
       const items = Array.from(document.querySelectorAll('[data-category-item]'));
+      let candidate = null;
+
+      for (const item of items) {
+        const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName?.trim() || '';
+        const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent?.trim() || '';
+        if (!name || !path || normalize(name) === normalize(path)) continue;
+        const ancestor = path
+          .split('>')
+          .map((part) => part.trim())
+          .find((part) => part && !normalize(name).includes(normalize(part)));
+        if (ancestor) {
+          candidate = { item, name, path, ancestor };
+          break;
+        }
+      }
+
+      if (!candidate) return { candidateFound: false };
+      const query = candidate.ancestor.slice(0, Math.min(4, candidate.ancestor.length));
+      const input = document.querySelector('[data-category-search-input]');
+      input.value = query;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+
       const expectedMatchCount = items.filter((item) => {
         const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName || '';
         const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent || '';
-        return normalize(name + ' ' + path).includes(query);
+        return normalize(name + ' ' + path).includes(normalize(query));
       }).length;
-      const target = items.find((item) =>
-        item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName === targetName
-      );
       const status = document.querySelector('[data-category-results-status]')?.textContent?.trim() || '';
       const statusCount = Number(status.match(/\\d+/)?.[0] ?? -1);
+
       return {
-        targetVisible: Boolean(target && !target.hidden),
+        candidateFound: true,
+        name: candidate.name,
+        path: candidate.path,
+        query,
+        targetVisible: !candidate.item.hidden,
         expectedMatchCount,
         statusCount,
         status,
@@ -246,15 +234,12 @@ async function validateSearch(cdp) {
     })()`,
   );
 
-  check(
-    pathResult.targetVisible,
-    "Category search no longer matches an ancestor/path term",
-    { pathCandidate, pathQuery, pathResult },
-  );
+  check(pathResult.candidateFound, "Expected nested category for path search", pathResult);
+  check(pathResult.targetVisible, "Category path search lost ancestor matching", pathResult);
   check(
     pathResult.statusCount === pathResult.expectedMatchCount,
-    "Category search result count includes contextual parents instead of direct matches",
-    { pathCandidate, pathQuery, pathResult },
+    "Category search count is not direct-match only",
+    pathResult,
   );
 
   await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
