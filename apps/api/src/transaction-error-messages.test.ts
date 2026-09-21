@@ -19,7 +19,10 @@ const cases = [
   ["TRANSACTION_ACCOUNT_ARCHIVED", "A conta selecionada precisa estar ativa."],
   ["TRANSACTION_DESTINATION_ACCOUNT_REQUIRED", "Selecione a conta de destino da transferência."],
   ["TRANSACTION_DESTINATION_ACCOUNT_INVALID", "A conta de destino da transferência é inválida."],
-  ["TRANSACTION_DESTINATION_AMOUNT_REQUIRED", "Informe o valor que será creditado na conta de destino."],
+  [
+    "TRANSACTION_DESTINATION_AMOUNT_REQUIRED",
+    "Informe o valor que será creditado na conta de destino.",
+  ],
   [
     "TRANSACTION_DESTINATION_AMOUNT_INVALID",
     "O valor da conta de destino precisa ser maior que zero e compatível com a transferência.",
