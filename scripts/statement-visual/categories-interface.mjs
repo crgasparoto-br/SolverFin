@@ -181,7 +181,86 @@ async function validateSearch(cdp) {
 
   await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
   await sleep(80);
-  return { query, ...result };
+
+  const pathCandidate = await evaluate(
+    cdp,
+    `(() => {
+      const normalize = (value) => String(value || '')
+        .normalize('NFD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .toLocaleLowerCase('pt-BR')
+        .trim();
+      for (const item of Array.from(document.querySelectorAll('[data-category-item]'))) {
+        const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName?.trim() || '';
+        const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent?.trim() || '';
+        if (!name || !path || normalize(name) === normalize(path)) continue;
+        const ancestor = path
+          .split('>')
+          .map((part) => part.trim())
+          .find((part) => part && !normalize(name).includes(normalize(part)));
+        if (ancestor) return { name, path, ancestor };
+      }
+      return null;
+    })()`,
+  );
+  assert.ok(pathCandidate, "Expected at least one nested category for path-search validation");
+  const pathQuery = pathCandidate.ancestor.slice(0, Math.min(4, pathCandidate.ancestor.length));
+
+  await evaluate(
+    cdp,
+    `(() => {
+      const input = document.querySelector('[data-category-search-input]');
+      input.value = ${JSON.stringify(pathQuery)};
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    })()`,
+  );
+  await sleep(100);
+
+  const pathResult = await evaluate(
+    cdp,
+    `(() => {
+      const normalize = (value) => String(value || '')
+        .normalize('NFD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .toLocaleLowerCase('pt-BR')
+        .trim();
+      const query = normalize(${JSON.stringify(pathQuery)});
+      const targetName = ${JSON.stringify(pathCandidate.name)};
+      const items = Array.from(document.querySelectorAll('[data-category-item]'));
+      const expectedMatchCount = items.filter((item) => {
+        const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName || '';
+        const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent || '';
+        return normalize(name + ' ' + path).includes(query);
+      }).length;
+      const target = items.find((item) =>
+        item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName === targetName
+      );
+      const status = document.querySelector('[data-category-results-status]')?.textContent?.trim() || '';
+      const statusCount = Number(status.match(/\\d+/)?.[0] ?? -1);
+      return {
+        targetVisible: Boolean(target && !target.hidden),
+        expectedMatchCount,
+        statusCount,
+        status,
+      };
+    })()`,
+  );
+
+  check(
+    pathResult.targetVisible,
+    "Category search no longer matches an ancestor/path term",
+    { pathCandidate, pathQuery, pathResult },
+  );
+  check(
+    pathResult.statusCount === pathResult.expectedMatchCount,
+    "Category search result count includes contextual parents instead of direct matches",
+    { pathCandidate, pathQuery, pathResult },
+  );
+
+  await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
+  await sleep(80);
+
+  return { query, ...result, pathQuery, pathCandidate, pathResult };
 }
 
 async function validateDesktopModal(cdp) {

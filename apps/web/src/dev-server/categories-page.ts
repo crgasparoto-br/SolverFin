@@ -716,9 +716,21 @@ function categoryPageScript(): string {
         return String(value || "")
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
-          .toLowerCase()
+          .toLocaleLowerCase("pt-BR")
           .trim();
       }
+
+      const categoryItems = Array.from(document.querySelectorAll("[data-category-item]"));
+      categoryItems.forEach((item) => {
+        const button = item.querySelector(":scope > .category-node-row [data-edit-category]");
+        const name =
+          button?.dataset.categoryName ||
+          item.querySelector(":scope > .category-node-row .category-node-text strong")?.textContent ||
+          "";
+        const path = item.querySelector(":scope > .category-node-row .category-path");
+        const pathText = path?.textContent?.trim() || "";
+        item.dataset.categorySearchText = normalizeCategoryText(name + " " + pathText);
+      });
 
       function matchesFilter(item) {
         return activeFilter === "all" ||
@@ -731,10 +743,12 @@ function categoryPageScript(): string {
           item.querySelectorAll(":scope > .category-tree-children > [data-category-item]"),
         );
         const childMatches = children.map((child) => applyViewToNode(child, query)).some(Boolean);
-        const ownText = normalizeCategoryText(item.querySelector(".category-node-text")?.textContent);
-        const ownMatches = matchesFilter(item) && (!query || ownText.includes(query));
+        const ownMatches =
+          matchesFilter(item) &&
+          (!query || (item.dataset.categorySearchText || "").includes(query));
         const visible = ownMatches || childMatches;
         item.hidden = !visible;
+        item.dataset.categorySelfMatch = String(ownMatches);
         if ((query || activeFilter !== "all") && childMatches) setCategoryCollapsed(item, false);
         return visible;
       }
@@ -749,8 +763,8 @@ function categoryPageScript(): string {
           const hasVisibleItems = rootItems.map((item) => applyViewToNode(item, query)).some(Boolean);
           group.hidden = !hasVisibleItems;
         });
-        document.querySelectorAll("[data-category-item]").forEach((item) => {
-          if (!item.hidden) visibleCount += 1;
+        categoryItems.forEach((item) => {
+          if (item.dataset.categorySelfMatch === "true") visibleCount += 1;
         });
         filterButtons.forEach((candidate) =>
           candidate.setAttribute(
@@ -773,6 +787,12 @@ function categoryPageScript(): string {
         });
       });
       searchInput?.addEventListener("input", applyCategoryView);
+      searchInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && searchInput.value) {
+          searchInput.value = "";
+          applyCategoryView();
+        }
+      });
       clearSearchButton?.addEventListener("click", () => {
         searchInput.value = "";
         searchInput.focus();
