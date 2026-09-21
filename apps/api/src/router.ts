@@ -419,6 +419,9 @@ async function createTransactionHandler(
     ...(body.destinationAccountId !== undefined
       ? { destinationAccountId: String(body.destinationAccountId) }
       : {}),
+    ...(body.destinationAmountMinor !== undefined
+      ? { destinationAmountMinor: Number(body.destinationAmountMinor) }
+      : {}),
     ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
     ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
   });
@@ -509,6 +512,9 @@ async function updateTransactionHandler(
       ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
       ...(body.destinationAccountId !== undefined
         ? { destinationAccountId: String(body.destinationAccountId) }
+        : {}),
+      ...(body.destinationAmountMinor !== undefined
+        ? { destinationAmountMinor: Number(body.destinationAmountMinor) }
         : {}),
       ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
       ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
