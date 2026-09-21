@@ -335,10 +335,7 @@ function transaction(id: string, accountId: string, currency: string): Transacti
   };
 }
 
-function assertTransactionError(
-  code: TransactionError["code"],
-  action: () => unknown,
-): void {
+function assertTransactionError(code: TransactionError["code"], action: () => unknown): void {
   assert.throws(
     action,
     (error: unknown) => error instanceof TransactionError && error.code === code,
