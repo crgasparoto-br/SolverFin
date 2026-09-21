@@ -78,7 +78,16 @@ seguinte precedência:
 3. `occurredOn`.
 
 Lançamentos anulados não entram nas linhas ou totais operacionais. Transferências consideram a conta
-selecionada para definir o sinal da movimentação.
+selecionada para definir o sinal da movimentação. Em transferência cross-currency, a linha da origem
+usa `amountMinor/currency` e a linha do destino usa `destinationAmountMinor/destinationCurrency`;
+o Extrato não reutiliza o valor da origem com o rótulo da moeda destino.
+
+No modal de criação/edição, transferências na mesma moeda continuam com um único valor editável.
+Quando a conta destino possui outra moeda, o formulário revela **Valor origem**, **Valor destino** e
+**Taxa efetiva** somente leitura. A taxa exibida é derivada de `destinationAmount / sourceAmount` e
+não é persistida como fonte de verdade. Alterar o destino para outra moeda limpa o valor destino
+incompatível. Transferência cross-currency aceita somente ocorrência única neste contrato; recorrência
+e parcelamento continuam bloqueados no cliente e no backend.
 
 ## Isolamento e persistência
 
