@@ -35,6 +35,27 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
   }
 });
 
+test("A2 transfer form exposes native destination value and derived rate controls", async () => {
+  globalThis.fetch = mockFetch([]);
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+
+    assert.match(html, /Valor origem \(<span data-source-currency>USD<\/span>\)/);
+    assert.match(html, /name="destinationAmountMinor"/);
+    assert.match(html, /data-effective-rate/);
+    assert.match(html, /data-currency="BRL">Conta principal · BRL<\/option>/);
+    assert.match(html, /isCrossCurrencyTransfer/);
+    assert.match(html, /destinationMinor \/ sourceMinor/);
+    assert.match(html, /installmentOption\.disabled = crossCurrency/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("A2 statement applies insight and text filters before rendering rows", async () => {
   globalThis.fetch = mockFetch([
     transaction("matching", "Mercado Central 123", 4000, "2026-08-04", "expense", "category-food"),
@@ -72,6 +93,14 @@ function mockFetch(transactions: Record<string, unknown>[]) {
             status: "active",
             openingBalanceMinor: 10000,
             currency: "USD",
+          },
+          {
+            id: "account-brl",
+            name: "Conta principal",
+            kind: "checking",
+            status: "active",
+            openingBalanceMinor: 0,
+            currency: "BRL",
           },
         ],
       });
