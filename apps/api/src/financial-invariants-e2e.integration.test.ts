@@ -96,6 +96,11 @@ async function main(): Promise<void> {
       "retry de mutacao financeira nao cria efeitos duplicados",
       invariantMutationRetryDoesNotDuplicateEffects,
     );
+    await runInvariant(
+      "FIN-E2E-010",
+      "transferencia cross-currency preserva dois valores nativos sob uma identidade",
+      invariantCrossCurrencyTransferKeepsNativeLegs,
+    );
   } finally {
     await cleanupFinancialInvariantFixtures();
   }
@@ -372,6 +377,53 @@ async function invariantTransferDoesNotChangeEconomicResult(): Promise<void> {
 
   assertCurrencyDelta(await buildFinancialSummary(CONTEXT, reference), baseline, "BRL", {
     availableBalanceMinor: 0,
+    incomeMinor: 0,
+    expensesMinor: 0,
+    plannedCommitmentsMinor: 0,
+  });
+}
+
+async function invariantCrossCurrencyTransferKeepsNativeLegs(): Promise<void> {
+  const suffix = token();
+  const source = await createAccountForContext(CONTEXT, {
+    name: `FIN-E2E-010 origem BRL ${suffix}`,
+    kind: "checking",
+    currency: "BRL",
+    openingBalanceMinor: 0,
+  });
+  const destination = await createAccountForContext(CONTEXT, {
+    name: `FIN-E2E-010 destino USD ${suffix}`,
+    kind: "checking",
+    currency: "USD",
+    openingBalanceMinor: 0,
+  });
+  const reference = new Date("2043-05-31T12:00:00.000Z");
+  const baseline = await buildFinancialSummary(CONTEXT, reference);
+
+  const transfer = await createTransactionForContext(CONTEXT, {
+    accountId: source.id,
+    destinationAccountId: destination.id,
+    kind: "transfer",
+    status: "posted",
+    amountMinor: 53_832,
+    destinationAmountMinor: 10_000,
+    currency: "BRL",
+    occurredOn: "2043-05-10",
+    plannedOn: "2043-05-10",
+    effectiveOn: "2043-05-10",
+    description: `FIN-E2E-010 538,32 BRL para 100 USD ${suffix}`,
+  });
+
+  assert.equal(transfer.destinationCurrency, "USD");
+  assert.equal(transfer.destinationAmountMinor, 10_000);
+  assertCurrencyDelta(await buildFinancialSummary(CONTEXT, reference), baseline, "BRL", {
+    availableBalanceMinor: -53_832,
+    incomeMinor: 0,
+    expensesMinor: 0,
+    plannedCommitmentsMinor: 0,
+  });
+  assertCurrencyDelta(await buildFinancialSummary(CONTEXT, reference), baseline, "USD", {
+    availableBalanceMinor: 10_000,
     incomeMinor: 0,
     expensesMinor: 0,
     plannedCommitmentsMinor: 0,
