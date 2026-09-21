@@ -783,7 +783,7 @@ function clientScript(
         if (previousCurrency && previousCurrency !== nextCurrency) destinationMoneyInput.value = "";
         destinationMoneyInput.dataset.currency = nextCurrency;
       }
-      if (event.target.name === "kind" || event.target.name === "repeatMode" || event.target.name === "destinationAccountId") syncFieldVisibility();
+      if (event.target.name === "kind" || event.target.name === "repeatMode" || event.target.name === "accountId" || event.target.name === "destinationAccountId") syncFieldVisibility();
     });
 
     const statusButtons = Array.from(form.querySelectorAll("[data-status-option]"));
