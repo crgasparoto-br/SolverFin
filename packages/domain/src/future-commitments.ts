@@ -5,7 +5,6 @@ import type { TenantContext } from "./tenant.js";
 import type {
   Card,
   EntityId,
-  Installment,
   Invoice,
   ISODate,
   Recurrence,
@@ -79,6 +78,14 @@ export interface FutureCommitmentAgenda {
   currency?: string;
 }
 
+export interface FutureCommitmentInstallmentMarker {
+  id: EntityId;
+  organizationId: EntityId;
+  financialProfileId: EntityId;
+  recurrenceId?: EntityId;
+  dueOn: ISODate;
+}
+
 export interface BuildFutureCommitmentAgendaInput {
   context: TenantContext;
   from: ISODate;
@@ -88,7 +95,7 @@ export interface BuildFutureCommitmentAgendaInput {
   invoices?: readonly Invoice[];
   cards?: readonly Card[];
   recurrences?: readonly Recurrence[];
-  installments?: readonly Installment[];
+  installments?: readonly FutureCommitmentInstallmentMarker[];
   payablesReceivables?: readonly PayableReceivable[];
 }
 
