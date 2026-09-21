@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "head_sha": "33a73416233b9ad4150d5e0c82bda648f40bb1c5",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-616-018-02",
+        "NEG-REQ-616-038-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-context-authorization",
+          "reason": "Closes every applicable risk family on an explicit adversarial surface for the atomic obligation.",
+          "control_ids": [
+            "NEG-REQ-616-018-02",
+            "NEG-REQ-616-038-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-616-018-01",
+        "NEG-REQ-616-038-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "Discriminates the canonical behavior required by this atomic Issue #616 obligation.",
+          "control_ids": [
+            "NEG-REQ-616-018-01",
+            "NEG-REQ-616-038-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-616-010-01",
+        "NEG-REQ-616-017-02",
+        "NEG-REQ-616-026-01",
+        "NEG-REQ-616-032-01",
+        "NEG-REQ-616-037-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-period-selection",
+          "reason": "Discriminates the canonical behavior required by this atomic Issue #616 obligation.",
+          "control_ids": [
+            "NEG-REQ-616-010-01",
+            "NEG-REQ-616-017-02",
+            "NEG-REQ-616-026-01",
+            "NEG-REQ-616-032-01",
+            "NEG-REQ-616-037-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-616-010-02",
+        "NEG-REQ-616-017-03",
+        "NEG-REQ-616-032-02",
+        "NEG-REQ-616-037-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "future-state-transition",
+          "reason": "Closes every applicable risk family on an explicit adversarial surface for the atomic obligation.",
+          "control_ids": [
+            "NEG-REQ-616-010-02",
+            "NEG-REQ-616-017-03",
+            "NEG-REQ-616-032-02",
+            "NEG-REQ-616-037-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-616-034-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Retry, callback duplication, replay or reprocessing can execute the same logical operation more than once.",
+          "control_ids": [
+            "NEG-REQ-616-034-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-616-001-01",
+        "NEG-REQ-616-001-02",
+        "NEG-REQ-616-014-01",
+        "NEG-REQ-616-015-01",
+        "NEG-REQ-616-021-01",
+        "NEG-REQ-616-022-01",
+        "NEG-REQ-616-040-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "Discriminates the canonical behavior required by this atomic Issue #616 obligation.",
+          "control_ids": [
+            "NEG-REQ-616-001-01",
+            "NEG-REQ-616-014-01",
+            "NEG-REQ-616-021-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "control_ids": [
+            "NEG-REQ-616-001-02",
+            "NEG-REQ-616-015-01",
+            "NEG-REQ-616-022-01",
+            "NEG-REQ-616-040-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-616-017-01",
+        "NEG-REQ-616-041-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "Discriminates the canonical behavior required by this atomic Issue #616 obligation.",
+          "control_ids": [
+            "NEG-REQ-616-017-01",
+            "NEG-REQ-616-041-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

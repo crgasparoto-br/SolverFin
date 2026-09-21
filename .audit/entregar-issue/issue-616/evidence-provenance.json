@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "33a73416233b9ad4150d5e0c82bda648f40bb1c5",
+  "base_sha": "7213dfc454acebbc2de00658e22071d6b0a37a5c",
+  "evidence": [
+    {
+      "evidence_id": "EV-616-CARDINALITY",
+      "kind": "quantitative",
+      "status": "passed",
+      "path": ".audit/entregar-issue/issue-616/evidence/issue-616-controls.txt",
+      "sha256": "7023bcb90386fa978d12432a75454befd52b4bcb003ffea586f51e598a671dcb",
+      "subject_sha": "33a73416233b9ad4150d5e0c82bda648f40bb1c5",
+      "freshness_policy": "exact-material-head",
+      "procedure": "Execute exact-head Issue #616 cardinality controls for distinct commitments, recurrence replacement, and cross-currency effect count.",
+      "expected": "Two legitimate same-value/date commitments remain two; materialized recurrence leaves one representation; one cross-currency transfer has one identity and exactly two native effects.",
+      "observed": "Exact-head Delivery V2 CI run 35649302868 passed those controls on material head 33a73416233b9ad4150d5e0c82bda648f40bb1c5.",
+      "producer": "Delivery V2 CI run 35649302868 exact-head Issue #616 tests"
+    }
+  ]
+}
