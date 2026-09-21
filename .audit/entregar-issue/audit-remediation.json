@@ -3,11 +3,11 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:615-94bd31bdb087",
-    "audit_report_sha256": "a56fa4edaac15b768129f9e37027115607b3687d4d08625c655dc20f5aa1a658",
-    "audited_head_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e"
+    "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
+    "audit_report_sha256": "2cb324dc1038e90c163962851ec980ee2a2b8c1c7eccbab1ddc3932fe247245f",
+    "audited_head_sha": "72795e5dac810d24a02d79c654b460e31d84fcfe"
   },
-  "candidate_head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+  "candidate_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
   "remediation_mode": "targeted-remediation",
   "status": "closed",
   "items": [
@@ -16,68 +16,17 @@
       "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "post-write-refreeze",
+      "closure_kind": "behavior-regression-remediation",
       "evidence": [
-        "All material writes were incorporated into current material head da21af37ceaed5a3c59608277f148a5ce7e04faa; the historical certificate was not reused.",
-        "Both exact-head workflows completed successfully before recertification."
+        "The direct categories renderer on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 builds normalized categorySearchText from category name plus rendered hierarchy path.",
+        "Statement visual run 35551454360 passed the categories-interface browser scenario that searches a nested category by an ancestor-only term and checks direct-match result count.",
+        "Delivery V2 run 35551454448 completed success on the same material head, including format, lint, typecheck, tests, API integration and build."
       ],
       "validations": [
-        "post-write refreeze recovery floor preserved",
-        "remote PR head and base re-read",
-        "material CI exact-head terminal green"
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-002",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "deterministic-gate-replay",
-      "original_failed_gate": {
-        "name": "format-check",
-        "command": "npm run format:check",
-        "subject_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
-        "exit_code": 1
-      },
-      "revalidation": {
-        "command": "npm run format:check",
-        "equivalence": "exact-command-replay",
-        "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
-        "exit_code": 0,
-        "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c"
-      },
-      "evidence": [
-        "Delivery V2 run 35540624712 passed the exact formatting command on da21af37ceaed5a3c59608277f148a5ce7e04faa."
-      ],
-      "validations": [
-        "CRITICAL validation passed format check before lint/typecheck/tests/build"
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-003",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "deterministic-gate-replay",
-      "original_failed_gate": {
-        "name": "statement-visual",
-        "command": "npm run qa:statement-visual",
-        "subject_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
-        "exit_code": 1
-      },
-      "revalidation": {
-        "command": "npm run qa:statement-visual",
-        "equivalence": "exact-command-replay",
-        "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
-        "exit_code": 0,
-        "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c"
-      },
-      "evidence": [
-        "Statement visual run 35540624747 passed the registered Chrome suite on da21af37ceaed5a3c59608277f148a5ce7e04faa."
-      ],
-      "validations": [
-        "admin institutions desktop overflow regression passed",
-        "all registered issue #615 secondary-route scenarios passed"
+        "hierarchy/path search semantics preserved after retiring categories enhancement",
+        "contextual parent visibility does not inflate announced direct-match count",
+        "exact-head CRITICAL validation terminal green",
+        "exact-head Chrome visual validation terminal green"
       ]
     }
   ]

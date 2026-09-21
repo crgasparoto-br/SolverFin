@@ -2,8 +2,9 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:615-94bd31bdb087",
-  "head_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
+  "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
+  "head_sha": "72795e5dac810d24a02d79c654b460e31d84fcfe",
+  "material_head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
   "repository": "crgasparoto-br/SolverFin",
   "issue_number": 615,
   "pull_request_number": 671,
@@ -15,48 +16,10 @@
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "post-write-handoff-drift",
-      "reason": "The certified handoff became stale after material writes; current head contained non-allowlisted material paths after the prior freeze.",
+      "category": "adapter-support-drift",
+      "reason": "The direct /categorias renderer retained the placeholder \"Buscar por nome ou caminho\" but searched only .category-node-text, so hierarchy/path terms supported by the retired categories enhancement no longer matched. The displayed result count also included contextual parents instead of direct matches.",
       "recovery_scope": "post-write-refreeze",
       "requires_refreeze": true
-    },
-    {
-      "id": "A-002",
-      "severity": "blocking",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "category": "deterministic-ci-format-gate",
-      "reason": "CRITICAL validation failed at npm run format:check on the audited head.",
-      "recovery_scope": "post-write-refreeze",
-      "requires_refreeze": true,
-      "failed_gate": {
-        "name": "format-check",
-        "command": "npm run format:check",
-        "deterministic": true,
-        "subject_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
-        "observed_exit_code": 1
-      }
-    },
-    {
-      "id": "A-003",
-      "severity": "blocking",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "category": "visual-validation-gate",
-      "reason": "Statement visual validation failed on the audited head.",
-      "recovery_scope": "post-write-refreeze",
-      "requires_refreeze": true,
-      "failed_gate": {
-        "name": "statement-visual",
-        "command": "npm run qa:statement-visual",
-        "deterministic": true,
-        "subject_sha": "94bd31bdb087bb9de3e294bbd019d967fd34e31e",
-        "observed_exit_code": 1
-      }
     }
   ],
   "recommendations": []

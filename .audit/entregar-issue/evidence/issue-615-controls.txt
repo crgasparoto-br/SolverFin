@@ -1,13 +1,14 @@
 SolverFin issue #615 / PR #671 exact-head evidence index.
-Material head: da21af37ceaed5a3c59608277f148a5ce7e04faa
+Material head: 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512
 Base SHA: f061e60bfc2d6043f0346c8d04afea7bc390d916
-Merge preview observed by PR metadata: 1fdb2fd214c41d3f56b439f8a8c7b358362e803a
-Delivery V2 CI run 35540624712 completed success on material head da21af37ceaed5a3c59608277f148a5ce7e04faa.
-CRITICAL validation reached and passed format check, lint, typecheck, Prisma generate/deploy/seed, root tests, API integration, consistency diagnostic and build.
-Delivery V2 gate completed success; STANDARD and FAST paths were skipped because the classifier selected CRITICAL.
-Statement visual validation run 35540624747 completed success on material head da21af37ceaed5a3c59608277f148a5ce7e04faa.
-Chrome executed the registered Issue #615 scenarios for /admin/instituicoes, /admin/indices-financeiros and /remuneracao-contas at desktop/mobile viewports.
-The /admin/instituicoes regression specifically permits filter actions to wrap and the Chrome scenario reports no horizontal overflow at 1366x768 and 390x844.
-The unique Issue #615 entrypoints prevent duplicate visual-module registration while retaining the shared route runner.
+Merge preview observed by PR metadata: 41767c89b5ef688c28ce8cfc9937da07716ba22a
+Delivery V2 CI run 35551454448 completed success on material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512.
+CRITICAL validation job 106186972192 passed exact-head checkout, format check, lint, typecheck, Prisma generate/deploy/seed, root tests, API integration, consistency diagnostic and build.
+Statement visual validation run 35551454360 completed success on material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512.
+Chrome visual job 106186842262 passed the registered categories-interface scenario plus the Issue #615 admin institutions, financial indexes and legacy remuneration scenarios; 63 registered coverage executions passed.
+The categories renderer now constructs its search corpus from category name plus rendered hierarchy path and tracks direct self matches separately from contextual parent visibility.
+The categories-interface Chrome scenario selects a nested category, searches using only an ancestor/path term, requires the target child to remain visible, and requires the announced count to equal direct matching items rather than contextual parents.
+The legacy categories enhancement remains disconnected from the post-processor pipeline, so replacement coverage is exercised on the direct renderer instead of reactivating the deprecated adapter.
+Inherited controls for target binding, exact format gate and visual overflow were replayed on the current material head through the same successful CI and Chrome runs.
 The current candidate preserves the six-route terminal matrix, master-only admin audience, read-only assistant and hidden legacy remuneration renderer.
-The prior certificate material 155344dccc4963d4915257f62f2a7b1b1e01e1ff is historical; material writes after that freeze triggered mandatory post-write refreeze.
+Historical handoff material da21af37ceaed5a3c59608277f148a5ce7e04faa and published child 72795e5dac810d24a02d79c654b460e31d84fcfe are stale after the category-search remediation; this package refreezes the current exact green material head.

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+  "head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
   "source_audits": [
     {
       "kind": "independent-audit-outcome",
@@ -11,20 +11,25 @@
       "kind": "independent-audit-outcome",
       "rejection_id": "audit-rejection:615-94bd31bdb087",
       "finding": "A-001/A-002/A-003 post-write refreeze and deterministic gate failures"
+    },
+    {
+      "kind": "independent-audit-outcome",
+      "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
+      "finding": "A-001 category hierarchy/path search behavior lost during enhancement replacement"
     }
   ],
   "controls": [
     {
       "id": "AUDIT-HANDOFF-TARGET-615",
       "status": "passed",
-      "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
-      "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "subject_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
       "control_type": "procedure",
       "procedure": "Resolve PR #671 and verify repository, issue, PR, refs and exact material SHA before accepting or publishing the handoff.",
       "expected": "Only a fresh package bound to issue #615 / PR #671 at the current material candidate is eligible.",
-      "observed": "Historical inherited and stale certificates are rejected; the current refreeze subject is material head da21af37ceaed5a3c59608277f148a5ce7e04faa.",
+      "observed": "Historical inherited and stale certificates are rejected; the current refreeze subject is material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512.",
       "evidence": "evidence/issue-615-controls.txt",
-      "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c",
+      "evidence_sha256": "0e08ce96e9c84aabac35e5dc53bdbe9e91beceec22690b8df1e1086c94ec63ed",
       "attack_control_id": "REQ-002-NEG-3",
       "risk_family": "reference-liveness",
       "surface": "route-catalog-liveness",
@@ -33,14 +38,14 @@
     {
       "id": "AUDIT-FORMAT-GATE-615",
       "status": "passed",
-      "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
-      "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "subject_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
       "control_type": "gate",
       "procedure": "Replay npm run format:check as part of the CRITICAL exact-head validation after the final material edit.",
       "expected": "Formatting gate exits zero before lint, typecheck, tests and build proceed.",
-      "observed": "Delivery V2 run 35540624712 on da21af37ceaed5a3c59608277f148a5ce7e04faa passed format check and continued through the remaining CRITICAL validation steps.",
+      "observed": "Delivery V2 run 35551454448 on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 passed format check and continued through the remaining CRITICAL validation steps.",
       "evidence": "evidence/issue-615-controls.txt",
-      "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c",
+      "evidence_sha256": "0e08ce96e9c84aabac35e5dc53bdbe9e91beceec22690b8df1e1086c94ec63ed",
       "attack_control_id": "REQ-001-NEG-1",
       "risk_family": "structural-contract",
       "surface": "shared-foundation-contract",
@@ -49,18 +54,34 @@
     {
       "id": "AUDIT-VISUAL-OVERFLOW-615",
       "status": "passed",
-      "head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
-      "subject_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "subject_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
       "control_type": "scenario",
       "procedure": "Execute the registered Chrome route scenarios at desktop and mobile after the filter-action reflow regression is present.",
       "expected": "No accidental horizontal overflow and keyboard-visible route content remain operable.",
-      "observed": "Statement visual run 35540624747 on da21af37ceaed5a3c59608277f148a5ce7e04faa passed the admin institutions, financial indexes and legacy remuneration registered scenarios, including desktop/mobile overflow checks.",
+      "observed": "Statement visual run 35551454360 on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 passed the admin institutions, financial indexes and legacy remuneration registered scenarios, including desktop/mobile overflow checks.",
       "evidence": "evidence/issue-615-controls.txt",
-      "evidence_sha256": "09ed7402588ba117bcfc15fcdbc4d773bfb053dc4495857a4917beca5e7e3a7c",
+      "evidence_sha256": "0e08ce96e9c84aabac35e5dc53bdbe9e91beceec22690b8df1e1086c94ec63ed",
       "attack_control_id": "REQ-014-NEG-1",
       "risk_family": "structural-contract",
       "surface": "shared-foundation-contract",
       "dimension": "shared-foundation-contract-divergence"
+    },
+    {
+      "id": "AUDIT-CATEGORY-PATH-615",
+      "status": "passed",
+      "head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "subject_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "control_type": "scenario",
+      "procedure": "Run the registered categories-interface Chrome scenario on a seeded nested category; enter a query derived only from an ancestor/path segment and compare the announced result count with direct name+path matches.",
+      "expected": "The child category remains visible from path-only search and contextual parents do not inflate the direct-match result count after the legacy enhancement is retired.",
+      "observed": "Statement visual run 35551454360 on exact material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 passed categories-interface; 63 registered visual coverage executions passed overall.",
+      "evidence": "evidence/issue-615-controls.txt",
+      "evidence_sha256": "0e08ce96e9c84aabac35e5dc53bdbe9e91beceec22690b8df1e1086c94ec63ed",
+      "attack_control_id": "REQ-019-NEG-1",
+      "risk_family": "temporal-consistency",
+      "surface": "reporting-availability-window",
+      "dimension": "reporting-availability-window-divergence"
     }
   ],
   "retired_controls": [],

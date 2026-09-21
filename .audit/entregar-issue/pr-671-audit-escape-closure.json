@@ -9,7 +9,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Compare the root handoff identity against the current issue, PR, refs and exact material head before rebuilding the package.",
-        "observed": "The inherited foreign certificate remains rejected; current package inputs are bound to issue #615 / PR #671 at material head da21af37ceaed5a3c59608277f148a5ce7e04faa."
+        "observed": "The inherited foreign certificate remains rejected; current package inputs are bound to issue #615 / PR #671 at material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512."
       },
       "sibling_cases": [
         {
@@ -31,7 +31,7 @@
       "detection_change": {
         "evidence": "Run delivery_target_binding against the immutable base and current target before any artifact reuse."
       },
-      "revalidated_head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "revalidated_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
@@ -65,7 +65,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Treat all post-freeze material writes as dirty, replay the failed formatting and registered Chrome visual gates, then refreeze the exact green material head.",
-        "observed": "Material head da21af37ceaed5a3c59608277f148a5ce7e04faa passed Delivery V2 run 35540624712 including format check and Statement visual run 35540624747 including the admin-institutions overflow scenario."
+        "observed": "Material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 passed Delivery V2 run 35551454448 including format check and Statement visual run 35551454360 including the admin-institutions overflow scenario."
       },
       "sibling_cases": [
         {
@@ -91,9 +91,9 @@
         "evidence": "The controller retained the post-write-refreeze floor and did not reuse the historical material certificate."
       },
       "detection_change": {
-        "evidence": "Exact deterministic gates were replayed on da21af37ceaed5a3c59608277f148a5ce7e04faa: Delivery V2 35540624712 and Chrome visual 35540624747 both succeeded."
+        "evidence": "Exact deterministic gates were replayed on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512: Delivery V2 35551454448 and Chrome visual 35551454360 both succeeded."
       },
-      "revalidated_head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
+      "revalidated_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:615-94bd31bdb087",
@@ -124,6 +124,56 @@
           "risk_family": "documentation",
           "surface": "documentation-claims",
           "dimension": "documentation-claims-divergence"
+        }
+      ]
+    },
+    {
+      "escape_id": "ESC-CATEGORY-PATH-615",
+      "escape_class": "adapter-support-drift",
+      "status": "passed",
+      "plausible_wrong_implementation": "Disconnect the legacy Categories enhancement after reproducing only name search in the direct renderer, silently losing hierarchy-path matching while the UI still advertises search by name or path.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Use a nested category whose own name does not contain an ancestor term, search by that ancestor/path term in the real Chrome scenario, and require both child visibility and direct-match-only announced count.",
+        "observed": "On current exact material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512, Statement visual run 35551454360 passed categories-interface with the path-only nested-category search and direct-match count assertions."
+      },
+      "sibling_cases": [
+        {
+          "id": "S6",
+          "surface": "categories-search-corpus",
+          "dimension": "name-only-search-regression",
+          "status": "passed"
+        },
+        {
+          "id": "S7",
+          "surface": "categories-result-count",
+          "dimension": "context-parent-count-inflation",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The direct Categories renderer now builds normalized search text from category name plus rendered hierarchy path and records categorySelfMatch separately from contextual visibility."
+      },
+      "detection_change": {
+        "evidence": "The categories-interface Chrome regression on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 selects a nested category, searches by ancestor-only text and verifies target visibility plus direct-match count; visual run 35551454360 passed."
+      },
+      "revalidated_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
+        "audit_report_sha256": "2cb324dc1038e90c163962851ec980ee2a2b8c1c7eccbab1ddc3932fe247245f",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "required_risk_families": [
+        "temporal-consistency"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "reporting-availability-window",
+          "dimension": "reporting-availability-window-divergence"
         }
       ]
     }
