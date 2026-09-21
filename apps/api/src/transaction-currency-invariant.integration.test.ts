@@ -193,13 +193,11 @@ async function main(): Promise<void> {
   await updateTransactionForContext(CONTEXT, planned.id, { status: "posted" });
   const posted = await buildFinancialSummary(CONTEXT, REFERENCE);
   assert.equal(
-    block(posted, "BRL").availableBalanceMinor -
-      block(baseline, "BRL").availableBalanceMinor,
+    block(posted, "BRL").availableBalanceMinor - block(baseline, "BRL").availableBalanceMinor,
     -53_832,
   );
   assert.equal(
-    block(posted, "USD").availableBalanceMinor -
-      block(baseline, "USD").availableBalanceMinor,
+    block(posted, "USD").availableBalanceMinor - block(baseline, "USD").availableBalanceMinor,
     10_000,
   );
   assert.equal(block(posted, "BRL").incomeMinor, block(baseline, "BRL").incomeMinor);
@@ -217,13 +215,11 @@ async function main(): Promise<void> {
 
   const afterEdit = await buildFinancialSummary(CONTEXT, REFERENCE);
   assert.equal(
-    block(afterEdit, "BRL").availableBalanceMinor -
-      block(baseline, "BRL").availableBalanceMinor,
+    block(afterEdit, "BRL").availableBalanceMinor - block(baseline, "BRL").availableBalanceMinor,
     -60_000,
   );
   assert.equal(
-    block(afterEdit, "USD").availableBalanceMinor -
-      block(baseline, "USD").availableBalanceMinor,
+    block(afterEdit, "USD").availableBalanceMinor - block(baseline, "USD").availableBalanceMinor,
     12_000,
   );
 
@@ -239,10 +235,7 @@ async function main(): Promise<void> {
   );
 }
 
-function block(
-  summary: Awaited<ReturnType<typeof buildFinancialSummary>>,
-  currency: string,
-) {
+function block(summary: Awaited<ReturnType<typeof buildFinancialSummary>>, currency: string) {
   const value = summary.currencyBlocks.find((item) => item.currency === currency);
   assert.ok(value, `Expected ${currency} currency block`);
   return value;
