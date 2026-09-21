@@ -72,12 +72,7 @@ export function buildPayableReceivableTransitionPlan(
   const invoices = input.invoices ?? [];
   const cardsById = new Map((input.cards ?? []).map((card) => [card.id, card]));
   const items = input.payablesReceivables.map((payableReceivable) =>
-    planPayableReceivableTransition(
-      payableReceivable,
-      input.transactions,
-      invoices,
-      cardsById,
-    ),
+    planPayableReceivableTransition(payableReceivable, input.transactions, invoices, cardsById),
   );
   const summary = { ...emptySummary };
 
