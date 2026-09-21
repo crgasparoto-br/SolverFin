@@ -14,9 +14,12 @@ const now = "2026-08-19T12:00:00.000Z";
 
 rejectsCreateWhenTransactionCurrencyDiffersFromSourceAccount();
 createsCrossCurrencyTransferWithTwoNativeValues();
+createsReverseCrossCurrencyTransfer();
 requiresDestinationAmountForCrossCurrencyTransfer();
+rejectsNonPositiveDestinationAmount();
 keepsSameCurrencyTransfersOneToOne();
 preservesDestinationNativeValueWhenOnlySourceAmountChanges();
+requiresFreshDestinationAmountWhenDestinationCurrencyChanges();
 rejectsUpdateThatChangesOnlyTransactionCurrency();
 allowsCoherentAccountAndCurrencyChange();
 
@@ -78,6 +81,33 @@ function createsCrossCurrencyTransferWithTwoNativeValues(): void {
   );
 }
 
+function createsReverseCrossCurrencyTransfer(): void {
+  const usdAccount = account("account-usd-reverse", "USD");
+  const brlAccount = account("account-brl-reverse", "BRL");
+
+  const result = createTransaction({
+    id: "transaction-cross-currency-reverse",
+    context,
+    now,
+    account: usdAccount,
+    destinationAccount: brlAccount,
+    payload: {
+      kind: "transfer",
+      amountMinor: 10_000,
+      destinationAmountMinor: 53_832,
+      currency: "USD",
+      occurredOn: "2026-08-19",
+      accountId: usdAccount.id,
+      destinationAccountId: brlAccount.id,
+    },
+  });
+
+  assert.equal(result.transaction.currency, "USD");
+  assert.equal(result.transaction.amountMinor, 10_000);
+  assert.equal(result.transaction.destinationCurrency, "BRL");
+  assert.equal(result.transaction.destinationAmountMinor, 53_832);
+}
+
 function requiresDestinationAmountForCrossCurrencyTransfer(): void {
   const brlAccount = account("account-brl-required", "BRL");
   const usdAccount = account("account-usd-required", "USD");
@@ -99,6 +129,32 @@ function requiresDestinationAmountForCrossCurrencyTransfer(): void {
       },
     }),
   );
+}
+
+function rejectsNonPositiveDestinationAmount(): void {
+  const source = account("account-brl-invalid-destination", "BRL");
+  const destination = account("account-usd-invalid-destination", "USD");
+
+  for (const destinationAmountMinor of [0, -1]) {
+    assertTransactionError("TRANSACTION_DESTINATION_AMOUNT_INVALID", () =>
+      createTransaction({
+        id: `transaction-invalid-destination-${destinationAmountMinor}`,
+        context,
+        now,
+        account: source,
+        destinationAccount: destination,
+        payload: {
+          kind: "transfer",
+          amountMinor: 53_832,
+          destinationAmountMinor,
+          currency: "BRL",
+          occurredOn: "2026-08-19",
+          accountId: source.id,
+          destinationAccountId: destination.id,
+        },
+      }),
+    );
+  }
 }
 
 function keepsSameCurrencyTransfersOneToOne(): void {
@@ -157,6 +213,55 @@ function preservesDestinationNativeValueWhenOnlySourceAmountChanges(): void {
   assert.equal(updated.transaction.amountMinor, 60_000);
   assert.equal(updated.transaction.destinationAmountMinor, 10_000);
   assert.equal(updated.transaction.destinationCurrency, "USD");
+}
+
+function requiresFreshDestinationAmountWhenDestinationCurrencyChanges(): void {
+  const source = account("account-brl-destination-change", "BRL");
+  const usdDestination = account("account-usd-destination-change", "USD");
+  const eurDestination = account("account-eur-destination-change", "EUR");
+  const created = createTransaction({
+    id: "transaction-destination-change",
+    context,
+    now,
+    account: source,
+    destinationAccount: usdDestination,
+    payload: {
+      kind: "transfer",
+      amountMinor: 53_832,
+      destinationAmountMinor: 10_000,
+      currency: "BRL",
+      occurredOn: "2026-08-19",
+      accountId: source.id,
+      destinationAccountId: usdDestination.id,
+    },
+  }).transaction;
+
+  assertTransactionError("TRANSACTION_DESTINATION_AMOUNT_REQUIRED", () =>
+    updateTransaction({
+      context,
+      transaction: created,
+      now: "2026-08-19T13:00:00.000Z",
+      account: source,
+      destinationAccount: eurDestination,
+      payload: { destinationAccountId: eurDestination.id },
+    }),
+  );
+
+  const updated = updateTransaction({
+    context,
+    transaction: created,
+    now: "2026-08-19T13:00:00.000Z",
+    account: source,
+    destinationAccount: eurDestination,
+    payload: {
+      destinationAccountId: eurDestination.id,
+      destinationAmountMinor: 9_250,
+    },
+  });
+
+  assert.equal(updated.transaction.destinationAccountId, eurDestination.id);
+  assert.equal(updated.transaction.destinationCurrency, "EUR");
+  assert.equal(updated.transaction.destinationAmountMinor, 9_250);
 }
 
 function rejectsUpdateThatChangesOnlyTransactionCurrency(): void {
