@@ -422,6 +422,8 @@ const AUDITED_TRANSACTION_FIELDS = [
   "source",
   "amountMinor",
   "currency",
+  "destinationAmountMinor",
+  "destinationCurrency",
   "occurredOn",
   "plannedOn",
   "effectiveOn",
@@ -459,6 +461,14 @@ export function assertTransactionInvariant(transaction: Transaction): void {
       throw new Error("Transfer transactions require different source and destination accounts.");
     }
 
+    if (
+      transaction.destinationAmountMinor === undefined ||
+      transaction.destinationAmountMinor <= 0 ||
+      !transaction.destinationCurrency
+    ) {
+      throw new Error("Transfer transactions require a positive native destination value.");
+    }
+
     return;
   }
 
@@ -466,8 +476,12 @@ export function assertTransactionInvariant(transaction: Transaction): void {
     throw new Error("Income and expense transactions require an account or card.");
   }
 
-  if (transaction.destinationAccountId) {
-    throw new Error("Only transfer transactions can define a destination account.");
+  if (
+    transaction.destinationAccountId ||
+    transaction.destinationAmountMinor !== undefined ||
+    transaction.destinationCurrency !== undefined
+  ) {
+    throw new Error("Only transfer transactions can define destination-leg fields.");
   }
 }
 
