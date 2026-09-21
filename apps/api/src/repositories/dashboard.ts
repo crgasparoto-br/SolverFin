@@ -96,35 +96,42 @@ export async function buildFinancialSummary(
       [context.organizationId, context.financialProfileId],
     ),
     query<CurrencyTotalRow>(
-      `select upper(movement."currency") as "currency", coalesce(sum(
-         case
-           when movement."kind" = 'INCOME' and source_account."id" is not null
-             then movement."amountMinor"
-           when movement."kind" = 'EXPENSE' and source_account."id" is not null
-             then -movement."amountMinor"
-           when movement."kind" = 'TRANSFER'
-             then (case when destination_account."id" is not null then movement."amountMinor" else 0 end)
-                - (case when source_account."id" is not null then movement."amountMinor" else 0 end)
-           else 0
-         end
-       ), 0)::text as total
-         from "Transaction" movement
-         left join "Account" source_account
-           on source_account."id" = movement."accountId"
-          and source_account."organizationId" = movement."organizationId"
-          and source_account."financialProfileId" = movement."financialProfileId"
-          and source_account."status" = 'ACTIVE'
-         left join "Account" destination_account
-           on destination_account."id" = movement."destinationAccountId"
-          and destination_account."organizationId" = movement."organizationId"
-          and destination_account."financialProfileId" = movement."financialProfileId"
-          and destination_account."status" = 'ACTIVE'
-        where movement."organizationId" = $1
-          and movement."financialProfileId" = $2
-          and movement."status" in ('POSTED', 'RECONCILED')
-          and movement."effectiveOn" is not null
-          and movement."effectiveOn" <= $3::date
-        group by upper(movement."currency")`,
+      `select legs."currency", coalesce(sum(legs."amountMinor"), 0)::text as total
+         from (
+           select upper(source_account."currency") as "currency",
+                  case
+                    when movement."kind" = 'INCOME' then movement."amountMinor"
+                    when movement."kind" in ('EXPENSE', 'TRANSFER') then -movement."amountMinor"
+                    else 0
+                  end as "amountMinor"
+             from "Transaction" movement
+             join "Account" source_account
+               on source_account."id" = movement."accountId"
+              and source_account."organizationId" = movement."organizationId"
+              and source_account."financialProfileId" = movement."financialProfileId"
+              and source_account."status" = 'ACTIVE'
+            where movement."organizationId" = $1
+              and movement."financialProfileId" = $2
+              and movement."status" in ('POSTED', 'RECONCILED')
+              and movement."effectiveOn" is not null
+              and movement."effectiveOn" <= $3::date
+           union all
+           select upper(destination_account."currency") as "currency",
+                  coalesce(movement."destinationAmountMinor", movement."amountMinor") as "amountMinor"
+             from "Transaction" movement
+             join "Account" destination_account
+               on destination_account."id" = movement."destinationAccountId"
+              and destination_account."organizationId" = movement."organizationId"
+              and destination_account."financialProfileId" = movement."financialProfileId"
+              and destination_account."status" = 'ACTIVE'
+            where movement."organizationId" = $1
+              and movement."financialProfileId" = $2
+              and movement."kind" = 'TRANSFER'
+              and movement."status" in ('POSTED', 'RECONCILED')
+              and movement."effectiveOn" is not null
+              and movement."effectiveOn" <= $3::date
+         ) legs
+        group by legs."currency"`,
       [context.organizationId, context.financialProfileId, referenceDate],
     ),
     query<KindTotalRow>(
