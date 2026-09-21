@@ -49,7 +49,10 @@ test("A2 transfer form exposes native destination value and derived rate control
     assert.match(html, /data-effective-rate/);
     assert.match(html, /data-currency="BRL">Conta principal · BRL<\/option>/);
     assert.match(html, /isCrossCurrencyTransfer/);
-    assert.match(html, /destinationMinor \/ sourceMinor/);
+    assert.match(html, /BigInt\(destinationMinor\) \* scale/);
+    assert.doesNotMatch(html, /destinationMinor \/ sourceMinor/);
+    assert.match(html, /data-cross-currency-repeat-hint/);
+    assert.match(html, /recorrência e parcelamento não estão disponíveis/);
     assert.match(html, /event\.target\.name === "accountId"/);
     assert.match(html, /installmentOption\.disabled = crossCurrency/);
   } finally {
