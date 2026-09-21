@@ -194,6 +194,8 @@ export interface Transaction extends Traceable, TenantScoped {
   source: TransactionSource;
   amountMinor: number;
   currency: string;
+  destinationAmountMinor?: number;
+  destinationCurrency?: string;
   occurredOn: ISODate;
   plannedOn: ISODate;
   effectiveOn?: ISODate;
