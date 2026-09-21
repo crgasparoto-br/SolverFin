@@ -152,6 +152,8 @@ export function buildFutureCommitmentAgenda(
   const transitionPlan = buildPayableReceivableTransitionPlan({
     payablesReceivables,
     transactions,
+    invoices,
+    cards,
   });
   const legacyDuplicates = new Set(
     transitionPlan.items

@@ -34,6 +34,7 @@ Dependencias que precisam continuar funcionando durante a compatibilidade:
 | `pending` com `accountId` e sem transacao equivalente                       | criar `Transaction` planejada                 | `payable -> expense`, `receivable -> income`, `plannedOn = dueOn`, `effectiveOn` ausente |
 | `pending` sem `accountId`                                                   | revisao manual                                | `Transaction` exige conta; nao inferir automaticamente                                   |
 | `pending` com `Transaction` equivalente                                     | manter referencia legada                      | evita dupla contagem                                                                     |
+| `pending` payable com `Invoice` equivalente                                   | manter referencia legada                      | `Invoice` permanece a obrigacao canonica de caixa do cartao                            |
 | `settled` com `settlementTransactionId` valido                              | manter referencia legada                      | preservar auditoria e evitar recriacao                                                   |
 | `settled` sem link, mas com `Transaction` equivalente postada ou conciliada | vincular transacao existente em script futuro | nao criar duplicata                                                                      |
 | `settled` sem link nem equivalente                                          | revisao manual                                | risco de auditoria incompleta                                                            |
@@ -53,7 +54,7 @@ Durante a compatibilidade:
 Antes de remover qualquer model ou campo, criar um script idempotente que:
 
 1. leia todos os `PayableReceivable` por tenant e perfil financeiro;
-2. gere um plano usando `buildPayableReceivableTransitionPlan`;
+2. leia tambem `Invoice` e `Card` do mesmo tenant/perfil e gere um plano usando `buildPayableReceivableTransitionPlan`;
 3. crie `Transaction` planejada apenas para itens `create_planned_transaction` ainda sem equivalente;
 4. vincule `settlementTransactionId` apenas para itens `link_existing_settlement_transaction`;
 5. preserve `cancelled` e itens duplicados como historico legado;
@@ -67,6 +68,7 @@ Antes de remover qualquer model ou campo, criar um script idempotente que:
 - Nao criar `Transaction` sem `accountId`.
 - Nao migrar faturas de cartao para `PayableReceivable`; cartao permanece em `Invoice`.
 - Nao somar `PayableReceivable` em Dashboard, disponibilidade ou relatorios quando houver `Transaction` ou `Invoice` equivalente.
+- Para `Invoice`, a equivalencia legada exige payable no mesmo tenant/perfil, mesmo valor, moeda e vencimento e, quando o legado informa `accountId`, a mesma conta de pagamento do cartao. Receivables e contas divergentes permanecem distintos.
 - A agenda canonica de `GET /api/future-commitments` reutiliza este plano de transicao para classificar duplicidade legada; consumidores nao devem criar outra heuristica por valor/data.
 - Nao expor valores completos em logs de migracao; usar contadores, ids tecnicos e erros redigidos.
 

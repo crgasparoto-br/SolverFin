@@ -24,6 +24,8 @@ keepsCrossCurrencyTransferAsSingleLogicalCommitment();
 filtersCrossCurrencyEffectsWithoutChangingIdentity();
 replacesRecurrenceProjectionWhenOccurrenceMaterializes();
 keepsInvoiceAsCardCashCommitment();
+keepsInvoiceAheadOfEquivalentLegacyPayable();
+keepsDistinctLegacyPayableWhenInvoiceAccountDiffers();
 usesLegacyPayableOnlyAsFallback();
 updatesAndVoidsCrossCurrencyCommitmentAtomically();
 rejectsIncompleteCrossCurrencyLeg();
@@ -132,6 +134,43 @@ function keepsInvoiceAsCardCashCommitment(): void {
       accountId: "account-brl",
     },
   ]);
+}
+
+function keepsInvoiceAheadOfEquivalentLegacyPayable(): void {
+  const card = cardFixture("card-legacy-duplicate");
+  const invoice = invoiceFixture("invoice-legacy-duplicate", card.id, 25_000, "2037-10-18");
+  const legacy = payableFixture("legacy-invoice-duplicate", "payable", 25_000, "2037-10-18");
+
+  const agenda = build([], {
+    cards: [card],
+    invoices: [invoice],
+    payablesReceivables: [legacy],
+  });
+
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["invoice:invoice-legacy-duplicate"],
+  );
+}
+
+function keepsDistinctLegacyPayableWhenInvoiceAccountDiffers(): void {
+  const card = cardFixture("card-distinct-legacy");
+  const invoice = invoiceFixture("invoice-distinct-legacy", card.id, 25_000, "2037-10-18");
+  const legacy = {
+    ...payableFixture("legacy-distinct-account", "payable", 25_000, "2037-10-18"),
+    accountId: "account-other",
+  } satisfies PayableReceivable;
+
+  const agenda = build([], {
+    cards: [card],
+    invoices: [invoice],
+    payablesReceivables: [legacy],
+  });
+
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["invoice:invoice-distinct-legacy", "payable-receivable:legacy-distinct-account"],
+  );
 }
 
 function usesLegacyPayableOnlyAsFallback(): void {
