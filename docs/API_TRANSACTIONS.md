@@ -34,8 +34,8 @@ Campos principais de lancamento:
 - `kind`;
 - `status`;
 - `source`;
-- `amountMinor`;
-- `currency`;
+- `amountMinor` e `currency`, sempre referentes ao leg de origem;
+- `destinationAmountMinor` e `destinationCurrency` para transferencias, referentes ao leg nativo de destino;
 - `occurredOn`;
 - `plannedOn`;
 - `effectiveOn` opcional conforme estado;
@@ -105,12 +105,15 @@ Payload tentando trocar `organizationId` ou `financialProfileId` deve retornar:
 `Transaction.currency` representa a moeda nativa do valor persistido e deve ser semanticamente compatível com as contas que recebem seu efeito financeiro.
 
 - criação e edição exigem que `Transaction.currency` seja igual a `Account.currency` da conta de origem;
-- transferências exigem também que a conta de destino tenha a mesma moeda da origem e do lançamento;
-- trocar a conta de um lançamento para outra moeda só é permitido quando `currency` é alterada coerentemente na mesma mutação;
-- alterar apenas `currency` mantendo uma conta de outra moeda é rejeitado;
-- nenhuma dessas validações faz conversão cambial, reaproveita paridade ou reinterpreta `amountMinor` em outra moeda.
+- `amountMinor`/`currency` nunca mudam de significado: representam o valor nativo debitado da origem;
+- para transferencia na mesma moeda, o servidor mantém `destinationAmountMinor = amountMinor` e `destinationCurrency = currency`;
+- para transferencia entre moedas diferentes, `destinationAmountMinor` é obrigatório, positivo e representa o valor nativo creditado no destino;
+- `destinationCurrency` é derivada pelo servidor da `Account.currency` da conta de destino e não é uma moeda livre enviada pelo cliente;
+- trocar a conta de origem para outra moeda só é permitido quando `currency` é alterada coerentemente na mesma mutação;
+- trocar a conta de destino para outra moeda exige um valor destino compatível; o valor anterior não é reinterpretado em outra moeda;
+- nenhuma dessas validações faz conversão cambial, reaproveita paridade ou reconstrói um dos valores nativos por taxa.
 
-Uma relação incompatível na fronteira canônica retorna `400 TRANSACTION_CURRENCY_MISMATCH` antes da persistência. Como defesa em profundidade, o PostgreSQL também rejeita `INSERT`/`UPDATE` de `Transaction` cuja moeda divirja da conta de origem ou destino; a migration de ativação falha se já existir relação incompatível. Assim, produtores especializados que persistem lançamentos diretamente não conseguem introduzir estado monetariamente ambíguo e consumidores agregados podem confiar que `Account.currency` e `Transaction.currency` não descrevem moedas divergentes para o mesmo efeito de caixa.
+Uma relação incompatível na fronteira canônica retorna erro controlado antes da persistência. Como defesa em profundidade, o PostgreSQL também valida cada leg contra a moeda da respectiva conta, deriva `destinationCurrency` do destino e exige `destinationAmountMinor` quando as moedas diferem. Assim, produtores especializados que persistem lançamentos diretamente não conseguem introduzir estado monetariamente ambíguo.
 
 ## Transferências originadas por importação
 
@@ -193,7 +196,7 @@ Despesa:
 }
 ```
 
-Transferencia:
+Transferencia na mesma moeda:
 
 ```json
 {
@@ -206,10 +209,26 @@ Transferencia:
 }
 ```
 
+Transferencia cross-currency, caso normativo de 538,32 BRL para 100,00 USD:
+
+```json
+{
+  "kind": "transfer",
+  "amountMinor": 53832,
+  "currency": "BRL",
+  "destinationAmountMinor": 10000,
+  "occurredOn": "2026-06-15",
+  "accountId": "account-brl",
+  "destinationAccountId": "account-usd"
+}
+```
+
+A resposta preserva `currency: "BRL"`, `destinationAmountMinor: 10000` e expõe `destinationCurrency: "USD"`, derivada pelo servidor. Os dois valores pertencem à mesma identidade de `Transaction`; não são duas receitas/despesas independentes.
+
 ### PATCH /transactions/:transactionId
 
-Permite alterar tipo, status, fonte, valor, moeda, datas, descricao, conta,
-conta destino e categoria quando as validacoes forem atendidas. Alterações de `currency`, `accountId` ou `destinationAccountId` são validadas em conjunto pela invariância de moeda antes de qualquer persistência.
+Permite alterar tipo, status, fonte, valor de origem, `destinationAmountMinor`, moeda, datas, descricao, conta,
+conta destino e categoria quando as validacoes forem atendidas. Alterações de `currency`, `accountId`, `destinationAccountId` ou do valor destino são validadas em conjunto antes de qualquer persistência. `destinationCurrency` continua sendo derivada do cadastro da conta destino.
 
 Atualizar para `reconciled` define `reconciledAt` quando ainda nao existir e exige semantica efetiva coerente.
 
@@ -231,7 +250,8 @@ Regras principais:
 - anulacao antes da efetivacao nao pode criar `effectiveOn`;
 - conta de origem deve existir no tenant ativo e estar ativa;
 - moeda do lançamento deve ser igual à moeda da conta de origem;
-- transferência exige conta de destino na mesma moeda da origem e do lançamento;
+- transferência same-currency usa o mesmo valor nas duas pontas;
+- transferência cross-currency exige `destinationAmountMinor` inteiro positivo; `destinationCurrency` vem da conta destino;
 - categoria, quando enviada, deve existir no tenant ativo, estar ativa e ser
   compativel com o tipo do lancamento;
 - transferencia exige conta origem e destino diferentes;
@@ -261,6 +281,8 @@ Erros controlados do contrato de dominio:
 400 TRANSACTION_ACCOUNT_ARCHIVED
 400 TRANSACTION_DESTINATION_ACCOUNT_REQUIRED
 400 TRANSACTION_DESTINATION_ACCOUNT_INVALID
+400 TRANSACTION_DESTINATION_AMOUNT_REQUIRED
+400 TRANSACTION_DESTINATION_AMOUNT_INVALID
 400 TRANSACTION_TRANSFER_SAME_ACCOUNT
 400 TRANSACTION_CURRENCY_MISMATCH
 400 TRANSACTION_CATEGORY_INVALID
@@ -278,7 +300,8 @@ O pacote `@solverfin/domain` cobre:
 - criacao de despesa;
 - transferencia com movimentos coerentes;
 - rejeição de moeda divergente entre lançamento e conta de origem;
-- rejeição de transferência entre contas de moedas diferentes;
+- transferência cross-currency com dois valores nativos sob uma identidade lógica;
+- rejeição de cross-currency sem valor destino e preservação de transferências same-currency;
 - rejeição de edição que torne `currency` e conta incompatíveis, com caso positivo de troca coerente de conta e moeda;
 - valor invalido;
 - conta arquivada;
