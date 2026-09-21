@@ -618,8 +618,15 @@ function resolveTransferDestinationValue(
     );
   }
 
+  if (!Number.isInteger(destinationAmountMinor) || destinationAmountMinor <= 0) {
+    throw new TransactionError(
+      "TRANSACTION_DESTINATION_AMOUNT_INVALID",
+      "Cross-currency transfer destination amount must be a positive integer minor-unit amount.",
+    );
+  }
+
   return {
-    amountMinor: validateAmount(destinationAmountMinor),
+    amountMinor: destinationAmountMinor,
     currency: destinationCurrency,
   };
 }
