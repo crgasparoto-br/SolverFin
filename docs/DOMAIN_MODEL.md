@@ -76,8 +76,12 @@ Status iniciais:
 - `voided`: cancelado logicamente.
 
 Transferencias usam uma origem (`accountId`) e um destino
-(`destinationAccountId`) diferentes. Receitas e despesas exigem conta ou cartao
-e nao usam conta de destino.
+(`destinationAccountId`) diferentes e permanecem uma única `Transaction`. `amountMinor/currency`
+representam o leg nativo de origem; `destinationAmountMinor/destinationCurrency` representam o leg
+nativo de destino. Para mesma moeda, os valores das duas pontas são iguais. Para moedas diferentes, o
+valor destino é persistido explicitamente e a moeda destino é derivada da conta de destino, sem taxa ou
+provider como fonte financeira. Receitas e despesas exigem conta ou cartao e nao usam campos do leg de
+destino.
 
 ### Recorrencia e parcela
 
@@ -153,9 +157,9 @@ persistir payload financeiro completo quando metadados forem suficientes.
 
 ## Decisoes iniciais
 
-- Transferencia sera modelada como `Transaction` com tipo `transfer`, conta de
-  origem, conta de destino e `transferGroupId` opcional para futuras
-  representacoes em duas pontas.
+- Transferencia e modelada como uma única `Transaction` com tipo `transfer`, conta de origem,
+  conta de destino, dois valores nativos quando as moedas diferem e `transferGroupId` para
+  rastreabilidade; ela não é decomposta em receita e despesa independentes.
 - Anexos entram no modelo inicial como entidade propria, mas armazenamento,
   retencao e redacao ficam para issue futura.
 - Sugestoes de IA nao alteram dados finais sem revisao ou regra segura aprovada.
