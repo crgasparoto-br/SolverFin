@@ -168,9 +168,7 @@ async function main(): Promise<void> {
     listTransactionsForContext(CONTEXT, { accountId: usdAccount.id }),
   ]);
   const sourceView = sourceStatement.find((transaction) => transaction.id === planned.id);
-  const destinationView = destinationStatement.find(
-    (transaction) => transaction.id === planned.id,
-  );
+  const destinationView = destinationStatement.find((transaction) => transaction.id === planned.id);
   assert.ok(sourceView, "Source account statement must expose the transfer.");
   assert.ok(
     destinationView,
@@ -241,10 +239,7 @@ async function main(): Promise<void> {
   );
 }
 
-function block(
-  summary: Awaited<ReturnType<typeof buildFinancialSummary>>,
-  currency: string,
-) {
+function block(summary: Awaited<ReturnType<typeof buildFinancialSummary>>, currency: string) {
   const value = summary.currencyBlocks.find((item) => item.currency === currency);
   assert.ok(value, `Expected ${currency} currency block`);
   return value;

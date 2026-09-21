@@ -419,11 +419,7 @@ function renderRow(
   accountCurrency: string | undefined,
 ): string {
   const { transaction } = row;
-  const currency = resolveTransactionCurrency(
-    transaction,
-    selectedAccount?.id,
-    accountCurrency,
-  );
+  const currency = resolveTransactionCurrency(transaction, selectedAccount?.id, accountCurrency);
   if (transaction.group) return renderGroupRow(row, transaction.group, currency);
   const categoryName = transaction.categoryId
     ? (categories.find((category) => category.id === transaction.categoryId)?.name ??
@@ -656,10 +652,7 @@ function renderReconcileIcon(isReconciled: boolean): string {
     : `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
-function clientScript(
-  currency: string | undefined,
-  accounts: readonly AccountRecord[],
-): string {
+function clientScript(currency: string | undefined, accounts: readonly AccountRecord[]): string {
   return String.raw`<script data-statement-a2-runtime="true">
   (() => {
     const statementCurrency = ${JSON.stringify(currency ?? "")};
