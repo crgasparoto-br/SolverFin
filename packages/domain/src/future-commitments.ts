@@ -2,14 +2,7 @@ import { addRecurrenceFrequency } from "./recurrence-calendar.js";
 import { buildPayableReceivableTransitionPlan } from "./payables-receivables-transition.js";
 import type { PayableReceivable } from "./payables-receivables.js";
 import type { TenantContext } from "./tenant.js";
-import type {
-  Card,
-  EntityId,
-  Invoice,
-  ISODate,
-  Recurrence,
-  Transaction,
-} from "./index.js";
+import type { Card, EntityId, Invoice, ISODate, Recurrence, Transaction } from "./index.js";
 
 export type FutureCommitmentSourceKind =
   | "transaction"
@@ -232,7 +225,9 @@ function buildTransactionEffects(transaction: Transaction): FutureCommitmentMone
       throw incompleteTransfer(transaction.id);
     }
 
-    const destinationCurrency = normalizeCurrency(transaction.destinationCurrency ?? sourceCurrency);
+    const destinationCurrency = normalizeCurrency(
+      transaction.destinationCurrency ?? sourceCurrency,
+    );
     const destinationAmount =
       transaction.destinationAmountMinor ??
       (destinationCurrency === sourceCurrency ? sourceAmount : undefined);
@@ -416,7 +411,9 @@ function filterCommitmentCurrency(
   currency: string | undefined,
 ): FutureCommitment | undefined {
   if (!currency) return commitment;
-  const monetaryEffects = commitment.monetaryEffects.filter((effect) => effect.currency === currency);
+  const monetaryEffects = commitment.monetaryEffects.filter(
+    (effect) => effect.currency === currency,
+  );
   if (monetaryEffects.length === 0) return undefined;
   return { ...commitment, monetaryEffects };
 }

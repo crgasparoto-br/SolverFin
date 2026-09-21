@@ -70,7 +70,6 @@ Em Cartões, a parcela apenas identifica a compra. A manutenção continua usand
 
 As parcelas canônicas continuam selecionáveis para conciliar, desconciliar e excluir logicamente em massa. A restrição específica é a unificação: quando uma parcela canônica está selecionada, a ação **Unificar lançamentos** fica indisponível e explica que as demais ações em massa permanecem disponíveis.
 
-
 ## Agenda canonica de compromissos futuros (#616)
 
 A consulta `GET /api/future-commitments` trata `Recurrence` e `Installment` como regra e

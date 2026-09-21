@@ -3,10 +3,7 @@ import assert from "node:assert/strict";
 import type { Card, Installment, Invoice, Recurrence, Transaction } from "./index.js";
 import type { PayableReceivable } from "./payables-receivables.js";
 import type { TenantContext } from "./tenant.js";
-import {
-  buildFutureCommitmentAgenda,
-  FutureCommitmentError,
-} from "./future-commitments.js";
+import { buildFutureCommitmentAgenda, FutureCommitmentError } from "./future-commitments.js";
 
 const NOW = "2037-10-01T12:00:00.000Z";
 const CONTEXT: TenantContext = {
@@ -71,18 +68,25 @@ function filtersCrossCurrencyEffectsWithoutChangingIdentity(): void {
   const usd = build([transfer], { currency: "USD" });
 
   assert.equal(brl.commitments[0]?.id, "transaction:transfer-filter");
-  assert.deepEqual(brl.commitments[0]?.monetaryEffects.map((effect) => effect.currency), ["BRL"]);
+  assert.deepEqual(
+    brl.commitments[0]?.monetaryEffects.map((effect) => effect.currency),
+    ["BRL"],
+  );
   assert.equal(usd.commitments[0]?.id, "transaction:transfer-filter");
-  assert.deepEqual(usd.commitments[0]?.monetaryEffects.map((effect) => effect.currency), ["USD"]);
+  assert.deepEqual(
+    usd.commitments[0]?.monetaryEffects.map((effect) => effect.currency),
+    ["USD"],
+  );
 }
 
 function replacesRecurrenceProjectionWhenOccurrenceMaterializes(): void {
   const recurrence = recurrenceFixture("recurrence-rent", "2037-10-15");
   const projected = build([], { recurrences: [recurrence] });
 
-  assert.deepEqual(projected.commitments.map((item) => item.id), [
-    "recurrence:recurrence-rent:2037-10-15",
-  ]);
+  assert.deepEqual(
+    projected.commitments.map((item) => item.id),
+    ["recurrence:recurrence-rent:2037-10-15"],
+  );
 
   const materialized = {
     ...transaction("rent-october", "expense", 20_000, "2037-10-15"),
@@ -90,21 +94,17 @@ function replacesRecurrenceProjectionWhenOccurrenceMaterializes(): void {
     recurrenceId: recurrence.id,
     installmentId: "installment-rent-october",
   } satisfies Transaction;
-  const installment = installmentFixture(
-    "installment-rent-october",
-    recurrence.id,
-    "2037-10-15",
-  );
+  const installment = installmentFixture("installment-rent-october", recurrence.id, "2037-10-15");
   const agenda = build([materialized], {
     recurrences: [recurrence],
     installments: [installment],
   });
 
-  assert.deepEqual(agenda.commitments.map((item) => item.id), ["transaction:rent-october"]);
-  assert.equal(
-    agenda.commitments[0]?.replacementKey,
-    "recurrence:recurrence-rent:2037-10-15",
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["transaction:rent-october"],
   );
+  assert.equal(agenda.commitments[0]?.replacementKey, "recurrence:recurrence-rent:2037-10-15");
 }
 
 function keepsInvoiceAsCardCashCommitment(): void {
@@ -118,7 +118,10 @@ function keepsInvoiceAsCardCashCommitment(): void {
 
   const agenda = build([purchase], { cards: [card], invoices: [invoice] });
 
-  assert.deepEqual(agenda.commitments.map((item) => item.id), ["invoice:invoice-october"]);
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["invoice:invoice-october"],
+  );
   assert.deepEqual(agenda.commitments[0]?.monetaryEffects, [
     {
       id: "invoice:invoice-october:payment",
@@ -196,7 +199,10 @@ function isolatesTenantAndProfile(): void {
     financialProfileId: OTHER_CONTEXT.financialProfileId,
   } satisfies Transaction;
 
-  assert.deepEqual(build([own, foreign]).commitments.map((item) => item.id), ["transaction:own"]);
+  assert.deepEqual(
+    build([own, foreign]).commitments.map((item) => item.id),
+    ["transaction:own"],
+  );
 }
 
 function build(
