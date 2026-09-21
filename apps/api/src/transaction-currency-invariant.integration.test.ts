@@ -241,7 +241,10 @@ async function main(): Promise<void> {
   );
 }
 
-function block(summary: Awaited<ReturnType<typeof buildFinancialSummary>>, currency: string) {
+function block(
+  summary: Awaited<ReturnType<typeof buildFinancialSummary>>,
+  currency: string,
+) {
   const value = summary.currencyBlocks.find((item) => item.currency === currency);
   assert.ok(value, `Expected ${currency} currency block`);
   return value;
