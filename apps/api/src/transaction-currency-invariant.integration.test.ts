@@ -10,6 +10,7 @@ import {
   createTransactionForContext,
   getTransactionForContext,
   updateTransactionForContext,
+  voidTransactionForContext,
 } from "./repositories/transactions.js";
 
 const CONTEXT: TenantContext = {
@@ -34,18 +35,23 @@ async function main(): Promise<void> {
 
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
   const brlAccount = await createAccountForContext(CONTEXT, {
-    name: `Currency invariant BRL ${suffix}`,
+    name: `Cross currency BRL ${suffix}`,
+    kind: "checking",
+    currency: "BRL",
+    openingBalanceMinor: 0,
+  });
+  const brlDestination = await createAccountForContext(CONTEXT, {
+    name: `Same currency BRL ${suffix}`,
     kind: "checking",
     currency: "BRL",
     openingBalanceMinor: 0,
   });
   const usdAccount = await createAccountForContext(CONTEXT, {
-    name: `Currency invariant USD ${suffix}`,
+    name: `Cross currency USD ${suffix}`,
     kind: "checking",
     currency: "USD",
     openingBalanceMinor: 0,
   });
-  const afterAccounts = await buildFinancialSummary(CONTEXT, REFERENCE);
 
   await assert.rejects(
     () =>
@@ -69,11 +75,28 @@ async function main(): Promise<void> {
     /TRANSACTION_CURRENCY_MISMATCH/,
   );
 
-  const afterRejectedDirectWrite = await buildFinancialSummary(CONTEXT, REFERENCE);
-  assert.deepEqual(afterRejectedDirectWrite.currencyBlocks, afterAccounts.currencyBlocks);
-  assert.deepEqual(afterRejectedDirectWrite.recentItems, afterAccounts.recentItems);
+  await assert.rejects(
+    () =>
+      query(
+        `insert into "Transaction"
+          ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
+           "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
+           "effectiveOn", "description", "createdAt", "updatedAt")
+         values ($1, $2, $3, $4, $5, 'TRANSFER', 'POSTED', 'MANUAL', 53832, 'BRL',
+                 '2037-08-10', '2037-08-10', '2037-08-10', $6, now(), now())`,
+        [
+          randomUUID(),
+          CONTEXT.organizationId,
+          CONTEXT.financialProfileId,
+          brlAccount.id,
+          usdAccount.id,
+          `Direct cross currency without destination amount ${suffix}`,
+        ],
+      ),
+    /TRANSACTION_DESTINATION_AMOUNT_REQUIRED/,
+  );
 
-  await assertRejectsCurrencyMismatch(() =>
+  await assertRejects("TRANSACTION_CURRENCY_MISMATCH", () =>
     createTransactionForContext(CONTEXT, {
       accountId: brlAccount.id,
       kind: "expense",
@@ -87,56 +110,125 @@ async function main(): Promise<void> {
     }),
   );
 
-  await assertRejectsCurrencyMismatch(() =>
+  await assertRejects("TRANSACTION_DESTINATION_AMOUNT_REQUIRED", () =>
     createTransactionForContext(CONTEXT, {
       accountId: brlAccount.id,
       destinationAccountId: usdAccount.id,
       kind: "transfer",
-      status: "posted",
-      amountMinor: 77_000,
+      status: "planned",
+      amountMinor: 53_832,
       currency: "BRL",
       occurredOn: "2037-08-12",
       plannedOn: "2037-08-12",
-      effectiveOn: "2037-08-12",
-      description: `Invalid cross currency transfer ${suffix}`,
+      description: `Missing destination amount ${suffix}`,
     }),
   );
 
-  const afterRejectedCreates = await buildFinancialSummary(CONTEXT, REFERENCE);
-  assert.deepEqual(afterRejectedCreates.currencyBlocks, afterAccounts.currencyBlocks);
-  assert.deepEqual(afterRejectedCreates.recentItems, afterAccounts.recentItems);
-
-  const valid = await createTransactionForContext(CONTEXT, {
+  const sameCurrency = await createTransactionForContext(CONTEXT, {
     accountId: brlAccount.id,
-    kind: "expense",
-    status: "posted",
-    amountMinor: 1_234,
+    destinationAccountId: brlDestination.id,
+    kind: "transfer",
+    status: "planned",
+    amountMinor: 4_200,
     currency: "BRL",
-    occurredOn: "2037-08-13",
-    plannedOn: "2037-08-13",
-    effectiveOn: "2037-08-13",
-    description: `Valid BRL before invalid update ${suffix}`,
+    occurredOn: "2037-08-12",
+    plannedOn: "2037-08-12",
+    description: `Same currency transfer ${suffix}`,
   });
-  const beforeRejectedUpdate = await buildFinancialSummary(CONTEXT, REFERENCE);
+  assert.equal(sameCurrency.destinationAmountMinor, 4_200);
+  assert.equal(sameCurrency.destinationCurrency, "BRL");
 
-  await assertRejectsCurrencyMismatch(() =>
-    updateTransactionForContext(CONTEXT, valid.id, { currency: "USD" }),
+  const baseline = await buildFinancialSummary(CONTEXT, REFERENCE);
+  const planned = await createTransactionForContext(CONTEXT, {
+    accountId: brlAccount.id,
+    destinationAccountId: usdAccount.id,
+    kind: "transfer",
+    status: "planned",
+    amountMinor: 53_832,
+    destinationAmountMinor: 10_000,
+    currency: "BRL",
+    occurredOn: "2037-08-14",
+    plannedOn: "2037-08-14",
+    description: `538.32 BRL to 100 USD ${suffix}`,
+  });
+
+  assert.equal(planned.currency, "BRL");
+  assert.equal(planned.amountMinor, 53_832);
+  assert.equal(planned.destinationCurrency, "USD");
+  assert.equal(planned.destinationAmountMinor, 10_000);
+
+  const reread = await getTransactionForContext(CONTEXT, planned.id);
+  assert.equal(reread.id, planned.id);
+  assert.equal(reread.destinationAmountMinor, 10_000);
+  assert.equal(reread.destinationCurrency, "USD");
+
+  const beforePosting = await buildFinancialSummary(CONTEXT, REFERENCE);
+  assert.equal(
+    block(beforePosting, "BRL").availableBalanceMinor,
+    block(baseline, "BRL").availableBalanceMinor,
+  );
+  assert.equal(
+    block(beforePosting, "USD").availableBalanceMinor,
+    block(baseline, "USD").availableBalanceMinor,
   );
 
-  const persisted = await getTransactionForContext(CONTEXT, valid.id);
-  assert.equal(persisted.accountId, brlAccount.id);
-  assert.equal(persisted.currency, "BRL");
+  await updateTransactionForContext(CONTEXT, planned.id, { status: "posted" });
+  const posted = await buildFinancialSummary(CONTEXT, REFERENCE);
+  assert.equal(
+    block(posted, "BRL").availableBalanceMinor - block(baseline, "BRL").availableBalanceMinor,
+    -53_832,
+  );
+  assert.equal(
+    block(posted, "USD").availableBalanceMinor - block(baseline, "USD").availableBalanceMinor,
+    10_000,
+  );
+  assert.equal(block(posted, "BRL").incomeMinor, block(baseline, "BRL").incomeMinor);
+  assert.equal(block(posted, "BRL").expensesMinor, block(baseline, "BRL").expensesMinor);
+  assert.equal(block(posted, "USD").incomeMinor, block(baseline, "USD").incomeMinor);
+  assert.equal(block(posted, "USD").expensesMinor, block(baseline, "USD").expensesMinor);
 
-  const afterRejectedUpdate = await buildFinancialSummary(CONTEXT, REFERENCE);
-  assert.deepEqual(afterRejectedUpdate.currencyBlocks, beforeRejectedUpdate.currencyBlocks);
-  assert.deepEqual(afterRejectedUpdate.recentItems, beforeRejectedUpdate.recentItems);
+  const edited = await updateTransactionForContext(CONTEXT, planned.id, {
+    amountMinor: 60_000,
+    destinationAmountMinor: 12_000,
+  });
+  assert.equal(edited.id, planned.id);
+  assert.equal(edited.amountMinor, 60_000);
+  assert.equal(edited.destinationAmountMinor, 12_000);
+
+  const afterEdit = await buildFinancialSummary(CONTEXT, REFERENCE);
+  assert.equal(
+    block(afterEdit, "BRL").availableBalanceMinor - block(baseline, "BRL").availableBalanceMinor,
+    -60_000,
+  );
+  assert.equal(
+    block(afterEdit, "USD").availableBalanceMinor - block(baseline, "USD").availableBalanceMinor,
+    12_000,
+  );
+
+  await voidTransactionForContext(CONTEXT, planned.id);
+  const afterVoid = await buildFinancialSummary(CONTEXT, REFERENCE);
+  assert.equal(
+    block(afterVoid, "BRL").availableBalanceMinor,
+    block(baseline, "BRL").availableBalanceMinor,
+  );
+  assert.equal(
+    block(afterVoid, "USD").availableBalanceMinor,
+    block(baseline, "USD").availableBalanceMinor,
+  );
 }
 
-async function assertRejectsCurrencyMismatch(action: () => Promise<unknown>): Promise<void> {
+function block(summary: Awaited<ReturnType<typeof buildFinancialSummary>>, currency: string) {
+  const value = summary.currencyBlocks.find((item) => item.currency === currency);
+  assert.ok(value, `Expected ${currency} currency block`);
+  return value;
+}
+
+async function assertRejects(
+  code: TransactionError["code"],
+  action: () => Promise<unknown>,
+): Promise<void> {
   await assert.rejects(
     action,
-    (error: unknown) =>
-      error instanceof TransactionError &&
-      (error as TransactionError).code === "TRANSACTION_CURRENCY_MISMATCH",
+    (error: unknown) => error instanceof TransactionError && error.code === code,
   );
 }
