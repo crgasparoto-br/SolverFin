@@ -91,14 +91,14 @@ A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas
 | Invariantes financeiros ponta a ponta                         | Feito     | #598, `apps/api/src/financial-invariants-e2e.integration.test.ts` |
 | Parcelas de cartão: valor, vínculo e edição conservadora      | Feito     | #662, `docs/CARDS.md`, `docs/API_INSTALLMENTS.md`                 |
 | Orcamentos migrados para acompanhamento multi-moedas          | Feito     | #613, `docs/API_BUDGETS_GOALS_ALERTS.md`                          |
-| Design system operacional com primitivas executaveis          | Planejado | #590, `docs/DESIGN_SYSTEM.md`                                     |
-| View-models/presenters para separar UI de calculos            | Planejado | #590, ADR 0014                                                    |
+| Design system operacional com primitivas executaveis          | Feito     | #590, #601, `docs/DESIGN_SYSTEM.md`                               |
+| View-models/presenters para separar UI de calculos            | Feito     | #590, #603, ADR 0014                                              |
 | Retirada gradual de pos-processamento textual de HTML         | Planejado | #590, ADR 0014                                                    |
 | Dashboard migrado para cockpit de decisao                     | Planejado | #591                                                              |
 | Extrato migrado para novo padrao                              | Planejado | #591                                                              |
 | Cartoes/Faturas migrados para hierarquia cartao-fatura        | Planejado | #591                                                              |
 | Relatorios com resumo/visualizacao antes da matriz detalhada  | Planejado | #591                                                              |
-| Demais superficies convergentes aos arquetipos compartilhados | Planejado | #591                                                              |
+| Demais superficies convergentes aos arquetipos compartilhados | Feito     | #615, `docs/product/INTERFACE_INVENTORY.md`                       |
 
 ### Suite de invariantes financeiros E2E (#598)
 

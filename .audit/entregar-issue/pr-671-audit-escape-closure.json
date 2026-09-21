@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-HANDOFF-TARGET-615",
+      "escape_class": "handoff-target-binding-gap",
+      "status": "passed",
+      "plausible_wrong_implementation": "Treat a root handoff certificate inherited from the base as if it had been generated for the current issue and pull request.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Compare the root handoff identity against the current issue, PR, refs and exact material head before rebuilding the package.",
+        "observed": "The inherited foreign certificate remains rejected; current package inputs are bound to issue #615 / PR #671 at material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512."
+      },
+      "sibling_cases": [
+        {
+          "id": "S1",
+          "surface": "handoff-subject",
+          "dimension": "foreign-issue-pr-subject",
+          "status": "passed"
+        },
+        {
+          "id": "S2",
+          "surface": "base-inheritance",
+          "dimension": "same-blob-as-immutable-base",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Generate a fresh target-bound result-only handoff whenever inherited root artifacts belong to another issue or PR."
+      },
+      "detection_change": {
+        "evidence": "Run delivery_target_binding against the immutable base and current target before any artifact reuse."
+      },
+      "revalidated_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:877f7cf7-fd56-410b-9124-3eafb63ebb80",
+        "audit_report_sha256": "22914513c90dbecfb64344702cd82f15d8e5848b0c4ce1ec28243b6d6905d026",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "required_risk_families": [
+        "reference-liveness",
+        "documentation"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "route-catalog-liveness",
+          "dimension": "route-catalog-liveness-divergence"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "documentation-claims",
+          "dimension": "documentation-claims-divergence"
+        }
+      ]
+    },
+    {
+      "escape_id": "ESC-POSTWRITE-GATES-615",
+      "escape_class": "post-write-freeze-and-gate-drift",
+      "status": "passed",
+      "plausible_wrong_implementation": "Accept a previously certified candidate after later material writes without refreezing and replaying deterministic and browser gates on the new material head.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Treat all post-freeze material writes as dirty, replay the failed formatting and registered Chrome visual gates, then refreeze the exact green material head.",
+        "observed": "Material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 passed Delivery V2 run 35551454448 including format check and Statement visual run 35551454360 including the admin-institutions overflow scenario."
+      },
+      "sibling_cases": [
+        {
+          "id": "S3",
+          "surface": "shared-foundation-contract",
+          "dimension": "post-freeze-material-write",
+          "status": "passed"
+        },
+        {
+          "id": "S4",
+          "surface": "route-catalog-liveness",
+          "dimension": "result-only-certificate-staleness",
+          "status": "passed"
+        },
+        {
+          "id": "S5",
+          "surface": "documentation-claims",
+          "dimension": "post-write-evidence-staleness",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The controller retained the post-write-refreeze floor and did not reuse the historical material certificate."
+      },
+      "detection_change": {
+        "evidence": "Exact deterministic gates were replayed on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512: Delivery V2 35551454448 and Chrome visual 35551454360 both succeeded."
+      },
+      "revalidated_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:615-94bd31bdb087",
+        "audit_report_sha256": "a56fa4edaac15b768129f9e37027115607b3687d4d08625c655dc20f5aa1a658",
+        "finding_ids": [
+          "A-001",
+          "A-002",
+          "A-003"
+        ]
+      },
+      "required_risk_families": [
+        "structural-contract",
+        "reference-liveness",
+        "documentation"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "shared-foundation-contract",
+          "dimension": "shared-foundation-contract-divergence"
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "route-catalog-liveness",
+          "dimension": "route-catalog-liveness-divergence"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "documentation-claims",
+          "dimension": "documentation-claims-divergence"
+        }
+      ]
+    },
+    {
+      "escape_id": "ESC-CATEGORY-PATH-615",
+      "escape_class": "adapter-support-drift",
+      "status": "passed",
+      "plausible_wrong_implementation": "Disconnect the legacy Categories enhancement after reproducing only name search in the direct renderer, silently losing hierarchy-path matching while the UI still advertises search by name or path.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Use a nested category whose own name does not contain an ancestor term, search by that ancestor/path term in the real Chrome scenario, and require both child visibility and direct-match-only announced count.",
+        "observed": "On current exact material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512, Statement visual run 35551454360 passed categories-interface with the path-only nested-category search and direct-match count assertions."
+      },
+      "sibling_cases": [
+        {
+          "id": "S6",
+          "surface": "categories-search-corpus",
+          "dimension": "name-only-search-regression",
+          "status": "passed"
+        },
+        {
+          "id": "S7",
+          "surface": "categories-result-count",
+          "dimension": "context-parent-count-inflation",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The direct Categories renderer now builds normalized search text from category name plus rendered hierarchy path and records categorySelfMatch separately from contextual visibility."
+      },
+      "detection_change": {
+        "evidence": "The categories-interface Chrome regression on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 selects a nested category, searches by ancestor-only text and verifies target visibility plus direct-match count; visual run 35551454360 passed."
+      },
+      "revalidated_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
+        "audit_report_sha256": "2cb324dc1038e90c163962851ec980ee2a2b8c1c7eccbab1ddc3932fe247245f",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "required_risk_families": [
+        "temporal-consistency"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "reporting-availability-window",
+          "dimension": "reporting-availability-window-divergence"
+        }
+      ]
+    }
+  ]
+}

@@ -11,13 +11,18 @@ import {
 
 test("legacy HTML post-processors have a canonical, reducing inventory", () => {
   assert.equal(LEGACY_HTML_POST_PROCESSOR_INVENTORY.length, LEGACY_HTML_POST_PROCESSOR_BUDGET);
-  assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 2);
+  assert.equal(LEGACY_HTML_POST_PROCESSOR_BUDGET, 1);
 
   const ids = LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
 
   const routes = new Set<string>(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route));
   assert.equal(routes.has("/cartoes"), false);
+  assert.equal(
+    routes.has("/categorias"),
+    false,
+    "/categorias must stay off the legacy HTML pipeline after the issue #615 migration",
+  );
   assert.equal(
     routes.has("/contas-cartoes"),
     false,
@@ -26,7 +31,6 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
 
   const expectedOwnerByRoute: Record<LegacyHtmlPostProcessorRoute, LegacyHtmlPostProcessorOwner> = {
     "/contas-cartoes": "web-accounts-cards",
-    "/categorias": "web-categories",
     "/cartoes": "web-cards",
     "/lancamentos": "web-statement",
     "/inbox": "web-inbox",
@@ -52,20 +56,20 @@ test("legacy HTML post-processors have a canonical, reducing inventory", () => {
 });
 
 test("legacy HTML pipeline preserves the registered order including async adapters", async () => {
-  const result = await applyLegacyHtmlPostProcessorPipeline("/categorias", "rendered", [
+  const result = await applyLegacyHtmlPostProcessorPipeline("/lancamentos", "rendered", [
     {
-      id: "categories-icons-tooltips",
-      transform: async (html) => `${html}|icons`,
+      id: "account-remuneration-disclosure",
+      transform: async (html) => `${html}|disclosure`,
     },
   ]);
-  assert.equal(result, "rendered|icons");
+  assert.equal(result, "rendered|disclosure");
 });
 
 test("legacy HTML pipeline rejects adapters for a route retired from the inventory", async () => {
   await assert.rejects(
     applyLegacyHtmlPostProcessorPipeline("/contas-cartoes", "rendered", [
       {
-        id: "categories-icons-tooltips",
+        id: "account-remuneration-disclosure",
         transform: (html) => html,
       },
     ]),
@@ -74,7 +78,7 @@ test("legacy HTML pipeline rejects adapters for a route retired from the invento
 });
 
 test("every route represented in the inventory has at least one residual adapter", () => {
-  const expectedRoutes: LegacyHtmlPostProcessorRoute[] = ["/categorias", "/lancamentos"];
+  const expectedRoutes: LegacyHtmlPostProcessorRoute[] = ["/lancamentos"];
   assert.deepEqual(
     [...new Set(LEGACY_HTML_POST_PROCESSOR_INVENTORY.map((entry) => entry.route))],
     expectedRoutes,

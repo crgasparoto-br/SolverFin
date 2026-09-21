@@ -105,6 +105,12 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
     .cards-dialog form input,
     .cards-dialog form select,
     .cards-dialog form textarea { max-width: 100%; min-width: 0; }
+    .master-dialog,
+    .master-dialog form,
+    .master-dialog form label { min-width: 0; }
+    .master-dialog form input,
+    .master-dialog form select,
+    .master-dialog form textarea { max-width: 100%; min-width: 0; }
     input:focus-visible, select:focus-visible, textarea:focus-visible {
       outline: none;
       border-color: var(--cyan);

@@ -1,3 +1,8 @@
+/**
+ * @deprecated Issue #615 moved category search, filters, summary and responsive composition
+ * into categories-page.ts using the shared executable UI foundation. This module is retained
+ * temporarily as historical reference and is no longer imported by the runtime pipeline.
+ */
 import { icon } from "./icons.js";
 
 interface CategoryFilterPresentation {

@@ -2,38 +2,31 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
-  "status": "closed",
-  "candidate_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
-  "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:9b2cd0ce-a415-47e1-bf1a-52fc88c6b3a0",
-    "audited_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
-    "audit_report_sha256": "43825be4a99623c11a8581a813a42c433e5811d2f81f267e9ec5cb0f321d20bc"
+    "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
+    "audit_report_sha256": "2cb324dc1038e90c163962851ec980ee2a2b8c1c7eccbab1ddc3932fe247245f",
+    "audited_head_sha": "72795e5dac810d24a02d79c654b460e31d84fcfe"
   },
+  "candidate_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+  "remediation_mode": "targeted-remediation",
+  "status": "closed",
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-003",
+      "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "post-write-refreeze",
-      "changed_files": [
-        ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/requirement-attack-matrix.json",
-        ".audit/entregar-issue/risk-saturation.json",
-        ".audit/entregar-issue/inherited-controls.json",
-        ".audit/entregar-issue/audit-escape-closure.json",
-        ".audit/entregar-issue/learning-closure.json"
-      ],
+      "closure_kind": "behavior-regression-remediation",
       "evidence": [
-        "Material identity refrozen at c10f9f42b13fb7e63c892d314a25654a8d676565 after detecting post-freeze material writes.",
-        "Exact-head CI run 34361342238 and visual run 34361342341 are green on c10f9f42b13fb7e63c892d314a25654a8d676565.",
-        "The rebuilt packet is validated before publication and will be published only as a direct result-only child of the new material head."
+        "The direct categories renderer on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 builds normalized categorySearchText from category name plus rendered hierarchy path.",
+        "Statement visual run 35551454360 passed the categories-interface browser scenario that searches a nested category by an ancestor-only term and checks direct-match result count.",
+        "Delivery V2 run 35551454448 completed success on the same material head, including format, lint, typecheck, tests, API integration and build."
       ],
       "validations": [
-        "PR #657 is open and mergeable=true on the refrozen material head.",
-        "The current requirement closure still contains 41 canonical requirements and obligations.",
-        "Terminal handoff guard must reject parent drift, non-allowlisted paths or any remote head movement after publication."
+        "hierarchy/path search semantics preserved after retiring categories enhancement",
+        "contextual parent visibility does not inflate announced direct-match count",
+        "exact-head CRITICAL validation terminal green",
+        "exact-head Chrome visual validation terminal green"
       ]
     }
   ]

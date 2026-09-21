@@ -23,6 +23,21 @@ Este inventario registra o recorte navegavel revisado no fechamento da Fase 2. E
 
 Todas as rotas acima estavam marcadas como `available` no catalogo canonico no inicio da #569.
 
+### Convergencia das rotas secundarias - #615
+
+A Fase 3C usa `apps/web/src/design-system/primitives.ts` como fundacao unica de composicao e `apps/web/src/dev-server/secondary-routes-view-model.ts` para o contrato de apresentacao, audiencia e modo operacional destas superficies.
+
+| Superficie                   | Estado terminal              | Evidencia                                                                                                                                                |
+| ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/categorias`                | Migrada                      | `categories-page.ts` emite cabecalho, resumo, busca e filtros diretamente; `categories-icons-enhancement.ts` ficou depreciado e desconectado do pipeline |
+| `/configuracoes`             | Migrada                      | `settings-page.ts` usa `PageContainer`, `PageHeader` e tabs compartilhadas sem alterar perfis ou regras                                                  |
+| `/assistente`                | Migrada                      | `financial-assistant-page.ts` usa a fundacao compartilhada com modo `read-only`; o contrato financeiro continua somente leitura                          |
+| `/admin/instituicoes`        | Migrada                      | `admin-institutions-page.ts` usa cabecalho, resumo e estado de permissao compartilhados; audiencia continua master                                       |
+| `/admin/indices-financeiros` | Migrada                      | `admin-financial-indexes-page.ts` usa cabecalho, resumo e erro recuperavel compartilhados; audiencia continua master                                     |
+| `/remuneracao-contas`        | Migrada como renderer legado | `account-remuneration-page.ts` usa primitives compartilhadas apenas no renderer de compatibilidade; a rota segue oculta e redirecionada no uso normal    |
+
+O contrato executavel de cobertura esta em `secondary-routes-view-model.test.ts`, `secondary-routes-foundation.test.ts` e no manifesto SSR. Nenhuma linha acima introduz nova jornada de produto.
+
 ## Jornadas sem rota propria
 
 Alguns fluxos fazem parte do baseline, mas deliberadamente nao possuem tela independente:
@@ -48,7 +63,7 @@ A regressao final deve preservar, quando aplicavel a cada interface:
 
 ## Evidencia visual
 
-O gate visual canonico e `.github/workflows/statement-visual-validation.yml`. A suite existente em `scripts/statement-visual/` cobre o Extrato, selecao/acoes, parcelas, relatorios, Inbox, configuracoes, interfaces de contas/cartoes, insights e assistente, alem dos cenarios complementares executados diretamente pelo workflow.
+O gate visual canonico e `.github/workflows/statement-visual-validation.yml`. A suite existente em `scripts/statement-visual/` cobre o Extrato, selecao/acoes, parcelas, relatorios, Inbox, configuracoes, interfaces de contas/cartoes, insights e assistente. A #615 acrescenta evidencia Chrome desktop/mobile, teclado, nomes acessiveis e overflow para `/categorias`, para as classes administrativas `/admin/instituicoes` e `/admin/indices-financeiros` e para o renderer interno de compatibilidade de `/remuneracao-contas`, sem reativar essa rota como jornada publica.
 
 A aprovacao do baseline da Fase 2 exige que o workflow visual conclua com sucesso no mesmo SHA candidato usado para a entrega de #569 e publique o artefato `statement-visual-evidence-<sha>`.
 

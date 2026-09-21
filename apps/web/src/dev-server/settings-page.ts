@@ -1,7 +1,9 @@
+import { renderPageContainer, renderPageHeader, renderTabs } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
+import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
 interface FinancialProfilesResponse {
   activeProfileId?: string;
@@ -53,6 +55,7 @@ type SettingsSection = "profiles" | "rules";
 type DependencyState<T> = { ok: true; items: T[] } | { ok: false; error: string };
 
 const SETTINGS_PATH = "/configuracoes";
+const settingsPageModel = getSecondaryRoutePageViewModel("settings");
 const AMOUNT_INPUT_PATTERN = /^\d+(?:[.,]\d{1,2})?$/;
 
 export async function renderSettingsPage(
@@ -109,13 +112,11 @@ export function parseAutomationRuleAmountMinorInput(value: string): number | und
 
 function renderSettingsDocument(section: SettingsSection, selectedSection: string): string {
   return `
-    <section class="page-heading settings-heading">
-      <div>
-        <p class="eyebrow">Preferências financeiras</p>
-        <h1>Configurações</h1>
-        <p class="muted">Organize seus perfis financeiros e as regras que geram sugestões para revisão.</p>
-      </div>
-    </section>
+    ${renderPageHeader({
+      eyebrow: settingsPageModel.eyebrow,
+      title: settingsPageModel.title,
+      description: settingsPageModel.description,
+    })}
     ${renderSettingsNavigation(section)}
     ${selectedSection}
     ${settingsScript()}
@@ -124,12 +125,21 @@ function renderSettingsDocument(section: SettingsSection, selectedSection: strin
 }
 
 function renderSettingsNavigation(section: SettingsSection): string {
-  return `
-    <nav class="settings-sections" aria-label="Seções de Configurações">
-      <a class="settings-section-link" href="${SETTINGS_PATH}?section=profiles"${section === "profiles" ? ' aria-current="page"' : ""}>Perfis financeiros</a>
-      <a class="settings-section-link" href="${SETTINGS_PATH}?section=rules"${section === "rules" ? ' aria-current="page"' : ""}>Regras automáticas</a>
-    </nav>
-  `;
+  return renderTabs({
+    label: "Seções de Configurações",
+    items: [
+      {
+        label: "Perfis financeiros",
+        href: `${SETTINGS_PATH}?section=profiles`,
+        active: section === "profiles",
+      },
+      {
+        label: "Regras automáticas",
+        href: `${SETTINGS_PATH}?section=rules`,
+        active: section === "rules",
+      },
+    ],
+  });
 }
 
 function renderProfilesSection(
@@ -470,9 +480,12 @@ function renderEditIcon(): string {
 function renderShell(currentLabel: string, content: string): string {
   return renderAuthenticatedShellDocument({
     activePathname: SETTINGS_PATH,
-    content,
     currentLabel,
     styles: baseCss(),
+    content: renderPageContainer({
+      className: "secondary-route-page settings-page",
+      childrenHtml: `<div data-secondary-route-foundation="${settingsPageModel.id}" data-route-archetype="${settingsPageModel.archetype}" data-route-audience="${settingsPageModel.audience}" data-operational-mode="${settingsPageModel.operationalMode}">${content}</div>`,
+    }),
   });
 }
 
@@ -773,7 +786,7 @@ function baseCss(): string {
     .load-error { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius); display: grid; gap: 8px; padding: 12px; } .load-error p { color: var(--danger); margin: 0; overflow-wrap: anywhere; } .load-error .button-link { justify-self: start; }
     .empty-state { display: grid; gap: 8px; justify-items: start; }
     .full-span { grid-column: 1 / -1; }
-    @media (max-width: 760px) { main { padding: 16px; } .page-heading { align-items: stretch; display: grid; } .heading-actions { justify-content: stretch; } .heading-actions > * { flex: 1 1 auto; } .maintenance-summary, .section-heading, .rule-summary { align-items: stretch; display: grid; } .rule-detail-grid { grid-template-columns: 1fr; } .item-actions { justify-content: stretch; } .item-actions > * { flex: 1 1 auto; } }
+    @media (max-width: 760px) { main { padding: 16px; } .page-heading { align-items: stretch; display: grid; } .heading-actions { justify-content: stretch; } .heading-actions > * { flex: 1 1 auto; } .maintenance-summary, .section-heading, .rule-summary { align-items: stretch; display: grid; } .maintenance-summary > *, .section-heading > *, .rule-summary > * { min-width: 0; } .rule-detail-grid { grid-template-columns: 1fr; } .item-actions { justify-content: stretch; } .item-actions > * { flex: 1 1 auto; } .status-badge, .priority-badge, .settings-section-link { white-space: normal; } }
     @media (max-width: 430px) { .settings-section-link { flex: 1 0 auto; text-align: center; } .profile-links { display: grid; grid-template-columns: 1fr; } .profile-links .button-link { justify-content: center; } }
   `;
 }

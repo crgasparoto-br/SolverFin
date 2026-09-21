@@ -1,0 +1,51 @@
+Parent epic: #591
+Depends on: #601, #603, #604, #605, #606
+
+## Objetivo
+
+Migrar as rotas secundárias restantes para a fundação compartilhada depois que os padrões forem validados nas telas-piloto, eliminando duplicações visuais e legado de composição sem abrir novas jornadas de produto.
+
+## Escopo fechado
+
+Aplicar os arquétipos/primitives adequados, em entregas coesas e revisáveis, a todas as superfícies abaixo que continuarem `available` no catálogo canônico no momento da implementação:
+
+- `/categorias`;
+- `/configuracoes`;
+- `/assistente`;
+- `/admin/instituicoes`;
+- `/admin/indices-financeiros`;
+- renderer legado de `/remuneracao-contas` somente na medida necessária para preservar/simplificar a compatibilidade e o contrato SSR atuais, sem reativar a rota como jornada operacional.
+
+A implementação pode ser dividida em PRs por classe de rota dentro desta issue, desde que o estado de transição permaneça explícito. A issue só pode ser encerrada quando cada item listado tiver resultado terminal documentado: **migrado**, ou **não aplicável porque deixou de ser rota disponível por mudança versionada anterior**. “Não migrado ainda” não é resultado terminal.
+
+## Invariantes estruturais
+
+- **must_reuse:** cada rota deve usar primitives/layouts/view-models da fundação #590 em vez de criar uma segunda fundação específica para rotas secundárias.
+- **must_not_behave:** `/assistente` não pode ganhar mutações financeiras; rotas admin não podem perder sua distinção de audiência/permissão; `/remuneracao-contas` não pode voltar a ser rota operacional por efeito da migração.
+- **forbidden_implementation:** considerar a issue concluída após migrar apenas uma parte das rotas porque os critérios mencionam genericamente “rotas migradas”. O controle é uma matriz final com uma linha para cada superfície do escopo e seu estado terminal/evidência.
+
+## Critérios de aceite
+
+- [ ] existe matriz final cobrindo cada superfície do escopo fechado com estado terminal e evidência;
+- [ ] todas as rotas que permanecem `available` reutilizam primitives/layouts sem copiar shell ou padrões estruturais;
+- [ ] funcionalidades e permissões atuais são preservadas;
+- [ ] assistente mantém contrato somente leitura e fatos determinísticos;
+- [ ] rotas administrativas mantêm distinção de audiência/permissão;
+- [ ] `/remuneracao-contas` permanece compatibilidade/renderer legado, sem nova jornada pública;
+- [ ] enhancements substituídos são removidos/depreciados com cobertura equivalente;
+- [ ] acessibilidade e responsividade são validadas por classe de rota;
+- [ ] inventário de interfaces e documentação refletem o legado restante real.
+
+## Fora de escopo
+
+- novas funcionalidades de categoria/configuração/admin;
+- transformar remuneração em nova rota operacional;
+- alterar contrato do assistente financeiro.
+
+## Referências
+
+- #591
+- `docs/product/INTERFACE_INVENTORY.md`
+- `apps/web/src/app-shell/routes.ts`
+- `docs/APP_SHELL.md`
+- ADR 0014

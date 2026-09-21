@@ -12,6 +12,7 @@ const pageSource = readFileSync(
 adminInstitutionsPageUsesBackendOnlyUpload();
 adminInstitutionsPageKeepsLogoFallbackAndAccessiblePreview();
 adminInstitutionsPageKeepsRefreshIdempotentAction();
+adminInstitutionsPageAllowsFilterActionsToWrapWithoutHorizontalOverflow();
 
 function adminInstitutionsPageUsesBackendOnlyUpload(): void {
   assert.match(
@@ -41,4 +42,11 @@ function adminInstitutionsPageKeepsRefreshIdempotentAction(): void {
   assert.match(pageSource, /data-api-path="\/api\/admin\/institutions\/refresh"/);
   assert.match(pageSource, /Atualizando catálogo/);
   assert.match(pageSource, /Catálogo atualizado\./);
+}
+
+function adminInstitutionsPageAllowsFilterActionsToWrapWithoutHorizontalOverflow(): void {
+  assert.match(
+    pageSource,
+    /\.filter-actions \{ align-items: end; display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; \}/,
+  );
 }

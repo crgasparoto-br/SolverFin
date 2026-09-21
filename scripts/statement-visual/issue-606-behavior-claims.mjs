@@ -62,6 +62,13 @@ async function collectEvidence() {
   if (sourceScenario === "cards-interface-adversarial") return collectCardsAdversarialEvidence();
   if (sourceScenario === "financial-assistant") return collectFinancialAssistantEvidence();
   if (sourceScenario === "budgets-pilot-baseline") return collectBudgetsEvidence();
+  if (
+    sourceScenario === "secondary-admin-institutions" ||
+    sourceScenario === "secondary-admin-financial-indexes" ||
+    sourceScenario === "secondary-account-remuneration-legacy"
+  ) {
+    return collectSecondaryRouteEvidence();
+  }
   if (sourceScenario === "statement-profile-keyboard") {
     return collectStatementProfileKeyboardEvidence();
   }
@@ -422,6 +429,72 @@ async function collectFinancialAssistantEvidence() {
     files: [fileName],
     assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],
     observations: { widths: [...widths].sort((left, right) => left - right) },
+  };
+}
+
+async function collectSecondaryRouteEvidence() {
+  const fileByScenario = {
+    "secondary-admin-institutions": "issue-615-secondary-admin-instituicoes.json",
+    "secondary-admin-financial-indexes": "issue-615-secondary-admin-indices-financeiros.json",
+    "secondary-account-remuneration-legacy": "issue-615-secondary-remuneracao-contas.json",
+  };
+  const fileName = fileByScenario[sourceScenario];
+  assert.ok(fileName, `No issue #615 evidence file for ${sourceScenario}.`);
+
+  const report = await readEvidence(fileName);
+  assertNoFailures(report, fileName);
+  assert.equal(report.route, requestedRoute, `${fileName} route mismatch.`);
+
+  const viewports = [report.desktop, report.mobile];
+  assert.equal(report.desktop?.viewport?.width, 1366, `${fileName} has no 1366px desktop proof.`);
+  assert.equal(report.mobile?.viewport?.width, 390, `${fileName} has no 390px mobile proof.`);
+  assert.ok(
+    viewports.every((entry) => entry?.measurements?.pageContainer === true),
+    `${fileName} lost PageContainer evidence.`,
+  );
+  assert.ok(
+    viewports.every((entry) => entry?.measurements?.pageHeader === true),
+    `${fileName} lost PageHeader evidence.`,
+  );
+  assert.ok(
+    viewports.every((entry) => entry?.measurements?.noHorizontalOverflow === true),
+    `${fileName} contains horizontal overflow.`,
+  );
+  assert.ok(
+    viewports.every((entry) => entry?.measurements?.unnamedInteractiveCount === 0),
+    `${fileName} contains unnamed interactive controls.`,
+  );
+  assert.ok(
+    viewports.every(
+      (entry) =>
+        entry?.keyboard?.focusedInsidePage === true && entry?.keyboard?.focusedVisible === true,
+    ),
+    `${fileName} lacks keyboard focus evidence.`,
+  );
+  assert.ok(
+    viewports.every(
+      (entry) =>
+        entry?.measurements?.foundation?.id === report.expectedFoundation &&
+        entry?.measurements?.foundation?.archetype === report.expectedArchetype &&
+        entry?.measurements?.foundation?.audience === report.expectedAudience &&
+        entry?.measurements?.foundation?.operationalMode === report.expectedOperationalMode,
+    ),
+    `${fileName} contains a secondary-route contract mismatch.`,
+  );
+
+  return {
+    files: [fileName],
+    assertions: [
+      "behavior:component:PageContainer",
+      "behavior:component:PageHeader",
+      "behavior:layout:desktop",
+      "behavior:layout:mobile",
+    ],
+    observations: {
+      route: report.route,
+      desktop: report.desktop?.measurements,
+      mobile: report.mobile?.measurements,
+    },
   };
 }
 

@@ -14,7 +14,7 @@ Novas features não devem introduzir pós-processadores de HTML final como mecan
 
 Um adapter legado pode permanecer apenas enquanto tiver ID, rota, ordem, dono, responsabilidade, caminho de migração, critério de substituição e fallback/acessibilidade explícitos no inventário canônico.
 
-`LEGACY_HTML_POST_PROCESSOR_BUDGET` é monotônico e acompanha exatamente a quantidade de entradas residuais. A Issue #609 reduziu o orçamento para **9**, a Issue #610 para **5** e a Issue #612 reduz o orçamento para **2** ao retirar os três adapters de `/contas-cartoes`.
+`LEGACY_HTML_POST_PROCESSOR_BUDGET` é monotônico e acompanha exatamente a quantidade de entradas residuais. A Issue #609 reduziu o orçamento para **9**, a Issue #610 para **5**, a Issue #612 para **2** ao retirar os três adapters de `/contas-cartoes` e a Issue #615 para **1** ao retirar `categories-icons-tooltips` de `/categorias`.
 
 ## Classificações
 
@@ -24,10 +24,11 @@ Um adapter legado pode permanecer apenas enquanto tiver ID, rota, ordem, dono, r
 
 ## Inventário residual
 
-| Rota           | Ordem | Dono             | ID                                | Responsabilidade                                                                                                                     | Migração                |
-| -------------- | ----: | ---------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- |
-| `/categorias`  |     1 | `web-categories` | `categories-icons-tooltips`       | Decorar categorias com ícones e tooltips.                                                                                            | `component-props-slots` |
-| `/lancamentos` |     1 | `web-statement`  | `account-remuneration-disclosure` | Preservar temporariamente seleção em massa, agrupamentos e disclosure de remuneração enquanto o último runtime é extraído do legado. | `temporary-processor`   |
+| Rota           | Ordem | Dono            | ID                                | Responsabilidade                                                                                                                     | Migração              |
+| -------------- | ----: | --------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `/lancamentos` |     1 | `web-statement` | `account-remuneration-disclosure` | Preservar temporariamente seleção em massa, agrupamentos e disclosure de remuneração enquanto o último runtime é extraído do legado. | `temporary-processor` |
+
+A #615 retirou `categories-icons-tooltips` do dispatcher e do inventário executável. A composição de `/categorias` agora sai diretamente de `categories-page.ts` sobre as primitives compartilhadas; o arquivo do enhancement permanece apenas como referência depreciada.
 
 Os critérios completos de substituição e os fallbacks ficam no inventário TypeScript para que testes e revisão trabalhem sobre a mesma fonte.
 
@@ -81,7 +82,7 @@ Rotas sem entradas no inventário, como `/cartoes` e `/contas-cartoes`, não dev
 
 ## Guardrail de CI
 
-`legacy-html-post-processors:check`, executado por `npm test`, falha quando inventário, orçamento, despacho, ordem ou bindings deixam de representar o pipeline real. O teste canônico exige budget **2** e garante que `/cartoes` e `/contas-cartoes` permaneçam fora do inventário.
+`legacy-html-post-processors:check`, executado por `npm test`, falha quando inventário, orçamento, despacho, ordem ou bindings deixam de representar o pipeline real. O teste canônico exige budget **1** e garante que `/cartoes`, `/contas-cartoes` e `/categorias` permaneçam fora do inventário.
 
 Nas superfícies cobertas, adicionar pós-processamento textual fora do pipeline deixa de ser uma extensão silenciosa: qualquer exceção exige alterar inventário/orçamento e o contrato estrutural de forma auditável.
 

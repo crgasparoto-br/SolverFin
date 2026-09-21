@@ -142,9 +142,9 @@ async function inspectZoomReflow(cdp, desktopReferenceWidth) {
       };
       const root = document.querySelector('[data-financial-assistant]');
       const layout = document.querySelector('.assistant-layout');
-      const heading = document.querySelector('.assistant-heading');
-      const title = document.querySelector('.assistant-heading h1');
-      const readonly = document.querySelector('.assistant-readonly');
+      const heading = document.querySelector('.sf-page-header');
+      const title = document.querySelector('.sf-page-header-title');
+      const readonly = document.querySelector('.sf-page-header-actions .sf-badge');
       const composer = document.querySelector('[data-assistant-form]');
       const status = document.querySelector('[data-assistant-status]');
       const actions = document.querySelector('.assistant-context-actions');

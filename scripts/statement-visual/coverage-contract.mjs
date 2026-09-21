@@ -118,11 +118,31 @@ function coverage({
   };
 }
 
-function simpleScenario(id, module, route, archetype, state, layout, interaction, dataProfile) {
+function simpleScenario(
+  id,
+  module,
+  route,
+  archetype,
+  state,
+  layout,
+  interaction,
+  dataProfile,
+  audience = "authenticated",
+) {
   return {
     id,
     module,
-    coverage: [coverage({ route, archetype, state, layout, interaction, dataProfile })],
+    coverage: [
+      coverage({
+        route,
+        archetype,
+        audience,
+        state,
+        layout,
+        interaction,
+        dataProfile,
+      }),
+    ],
   };
 }
 
@@ -316,6 +336,39 @@ const simpleScenarios = [
   ["bank-message-ai-inbox", "scripts/statement-visual/bank-message-ai-inbox.mjs", "/inbox", "A6", "review", "responsive", "review-flow", "bank-message"],
   ["inbox-content-contrast", "scripts/statement-visual/inbox-interface-content-contrast.mjs", "/inbox", "A6", "normal", "responsive", "content-contrast", "review-content"],
   ["categories-interface", "scripts/statement-visual/categories-interface.mjs", "/categorias", "A4", "normal", "desktop-mobile", "keyboard-tooltips", "categories"],
+  [
+    "secondary-admin-institutions",
+    "scripts/statement-visual/issue-615-secondary-admin-institutions.mjs",
+    "/admin/instituicoes",
+    "admin-maintenance",
+    "normal",
+    "desktop-mobile",
+    "keyboard-focus-overflow",
+    "master-institutions",
+    "master",
+  ],
+  [
+    "secondary-admin-financial-indexes",
+    "scripts/statement-visual/issue-615-secondary-admin-financial-indexes.mjs",
+    "/admin/indices-financeiros",
+    "admin-operations",
+    "normal",
+    "desktop-mobile",
+    "keyboard-focus-overflow",
+    "master-financial-indexes",
+    "master",
+  ],
+  [
+    "secondary-account-remuneration-legacy",
+    "scripts/statement-visual/issue-615-secondary-account-remuneration.mjs",
+    "/remuneracao-contas",
+    "legacy-compatibility",
+    "compatibility-renderer",
+    "desktop-mobile",
+    "keyboard-focus-overflow",
+    "legacy-remuneration-renderer",
+    "financial-profile",
+  ],
   ["cards-interface-adversarial", "scripts/statement-visual/cards-interface-adversarial.mjs", "/cartoes", "A3", "long-content", "desktop-1366x768", "keyboard-focus-overflow", "long-purchase-content"],
 ].map((args) => simpleScenario(...args));
 
