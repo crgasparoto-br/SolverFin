@@ -146,7 +146,7 @@ function usesLegacyPayableOnlyAsFallback(): void {
 
   assert.deepEqual(
     agenda.commitments.map((item) => item.id),
-    ["transaction:energy-transaction", "payable-receivable:legacy-water"],
+    ["payable-receivable:legacy-water", "transaction:energy-transaction"],
   );
 }
 
