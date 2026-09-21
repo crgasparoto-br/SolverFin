@@ -9,6 +9,7 @@ import { buildFinancialSummary } from "./repositories/dashboard.js";
 import {
   createTransactionForContext,
   getTransactionForContext,
+  listTransactionsForContext,
   updateTransactionForContext,
   voidTransactionForContext,
 } from "./repositories/transactions.js";
@@ -161,6 +162,20 @@ async function main(): Promise<void> {
   assert.equal(reread.id, planned.id);
   assert.equal(reread.destinationAmountMinor, 10_000);
   assert.equal(reread.destinationCurrency, "USD");
+
+  const [sourceStatement, destinationStatement] = await Promise.all([
+    listTransactionsForContext(CONTEXT, { accountId: brlAccount.id }),
+    listTransactionsForContext(CONTEXT, { accountId: usdAccount.id }),
+  ]);
+  const sourceView = sourceStatement.find((transaction) => transaction.id === planned.id);
+  const destinationView = destinationStatement.find((transaction) => transaction.id === planned.id);
+  assert.ok(sourceView, "Source account statement must expose the transfer.");
+  assert.ok(destinationView, "Destination account statement must expose the same transfer identity.");
+  assert.equal(sourceView.id, destinationView.id);
+  assert.equal(sourceView.amountMinor, 53_832);
+  assert.equal(sourceView.currency, "BRL");
+  assert.equal(destinationView.destinationAmountMinor, 10_000);
+  assert.equal(destinationView.destinationCurrency, "USD");
 
   const beforePosting = await buildFinancialSummary(CONTEXT, REFERENCE);
   assert.equal(
