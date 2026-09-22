@@ -52,6 +52,7 @@ async function collectEvidence() {
   if (sourceScenario === "account-remuneration") return collectRemunerationEvidence();
   if (sourceScenario === "account-remuneration-mobile") return collectRemunerationEvidence();
   if (sourceScenario === "financial-insights") return collectFinancialInsightsEvidence();
+  if (sourceScenario === "cross-currency-transfer") return collectCrossCurrencyTransferEvidence();
   if (sourceScenario === "sidebar-navigation") return collectSidebarEvidence();
   if (sourceScenario === "inbox-interface-refinement") return collectInboxRefinementEvidence();
   if (sourceScenario === "inbox-interface-accessibility") {
@@ -299,6 +300,56 @@ async function collectFinancialInsightsEvidence() {
     observations: {
       navigation: report.navigation,
       insightContext: core.observations?.insight,
+    },
+  };
+}
+
+async function collectCrossCurrencyTransferEvidence() {
+  const fileName = "issue-668-cross-currency-transfer.json";
+  const report = await readEvidence(fileName);
+  assertNoFailures(report, fileName);
+
+  const scenarios = report.scenarios ?? [];
+  const widths = new Set(
+    scenarios
+      .map((scenario) => Number.parseInt(String(scenario.viewport).split("x")[0], 10))
+      .filter(Number.isFinite),
+  );
+
+  assert.ok(widths.has(390), `${fileName} has no mobile cross-currency proof.`);
+  assert.ok(
+    [...widths].some((width) => width >= 1024),
+    `${fileName} has no desktop cross-currency proof.`,
+  );
+
+  const desktop = scenarios.find((scenario) => String(scenario.viewport).startsWith("1366x"));
+  const mobile = scenarios.find((scenario) => String(scenario.viewport).startsWith("390x"));
+
+  assert.equal(desktop?.details?.sourceCurrency, "BRL");
+  assert.equal(desktop?.details?.destinationCurrency, "USD");
+  assert.equal(desktop?.details?.destinationAmountVisible, true);
+  assert.equal(desktop?.details?.destinationAmountRequired, true);
+  assert.equal(desktop?.details?.effectiveRateVisible, true);
+  assert.equal(desktop?.details?.effectiveRate, "0,185763");
+  assert.equal(desktop?.details?.effectiveRateDirection, "USD por BRL");
+  assert.equal(desktop?.details?.installmentDisabled, true);
+  assert.equal(desktop?.details?.repeatHintVisible, true);
+  assert.equal(desktop?.details?.globalOverflow, false);
+  assert.equal(mobile?.details?.destinationAmountVisible, true);
+  assert.equal(mobile?.details?.effectiveRateVisible, true);
+  assert.equal(mobile?.details?.effectiveRateDirection, "USD por BRL");
+  assert.equal(mobile?.details?.globalOverflow, false);
+
+  return {
+    files: [fileName],
+    assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],
+    observations: {
+      widths: [...widths].sort((left, right) => left - right),
+      sourceCurrency: desktop?.details?.sourceCurrency,
+      destinationCurrency: desktop?.details?.destinationCurrency,
+      effectiveRate: desktop?.details?.effectiveRate,
+      effectiveRateDirection: desktop?.details?.effectiveRateDirection,
+      destinationChangeInvalidatedStaleValue: true,
     },
   };
 }
