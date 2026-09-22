@@ -25,7 +25,9 @@ try {
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
   const fixture = await evaluate(browser.cdp, fixtureExpression());
 
-  const route = `/lancamentos?accountId=${encodeURIComponent(\n    fixture.sourceAccountId,\n  )}&month=2026-09`;
+  const route = `/lancamentos?accountId=${encodeURIComponent(
+    fixture.sourceAccountId,
+  )}&month=2026-09`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await openCreateModal(fixture.usdAccountId);
 
@@ -36,12 +38,32 @@ try {
   check(desktop.destinationAmountVisible, "Destination native amount is not visible", desktop);
   check(desktop.destinationAmountRequired, "Destination native amount is not required", desktop);
   check(desktop.effectiveRateVisible, "Derived effective rate is not visible", desktop);
-  check(\n    desktop.effectiveRate === "0,185763",\n    "Derived effective rate is not deterministic",\n    desktop,\n  );
-  check(\n    desktop.effectiveRateDirection === "USD por BRL",\n    "Effective-rate direction is ambiguous",\n    desktop,\n  );
-  check(\n    desktop.repeatMode === "single",\n    "Cross-currency transfer did not force single occurrence",\n    desktop,\n  );
-  check(\n    desktop.installmentDisabled,\n    "Installment option remains enabled for cross-currency transfer",\n    desktop,\n  );
+  check(
+    desktop.effectiveRate === "0,185763",
+    "Derived effective rate is not deterministic",
+    desktop,
+  );
+  check(
+    desktop.effectiveRateDirection === "USD por BRL",
+    "Effective-rate direction is ambiguous",
+    desktop,
+  );
+  check(
+    desktop.repeatMode === "single",
+    "Cross-currency transfer did not force single occurrence",
+    desktop,
+  );
+  check(
+    desktop.installmentDisabled,
+    "Installment option remains enabled for cross-currency transfer",
+    desktop,
+  );
   check(desktop.repeatHintVisible, "Cross-currency recurrence hint is not visible", desktop);
-  check(\n    !desktop.globalOverflow,\n    "Cross-currency transfer modal overflows desktop viewport",\n    desktop,\n  );
+  check(
+    !desktop.globalOverflow,
+    "Cross-currency transfer modal overflows desktop viewport",
+    desktop,
+  );
 
   const desktopScreenshot = "issue-668-cross-currency-transfer-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, desktopScreenshot));
@@ -54,9 +76,21 @@ try {
   });
 
   const currencyChange = await switchDestinationCurrency(fixture.eurAccountId);
-  check(\n    currencyChange.destinationCurrency === "EUR",\n    "Destination currency did not switch to EUR",\n    currencyChange,\n  );
-  check(\n    currencyChange.destinationAmount === "",\n    "Stale USD destination amount survived EUR destination change",\n    currencyChange,\n  );
-  check(\n    currencyChange.effectiveRate === "Informe os dois valores",\n    "Rate was not invalidated after destination currency change",\n    currencyChange,\n  );
+  check(
+    currencyChange.destinationCurrency === "EUR",
+    "Destination currency did not switch to EUR",
+    currencyChange,
+  );
+  check(
+    currencyChange.destinationAmount === "",
+    "Stale USD destination amount survived EUR destination change",
+    currencyChange,
+  );
+  check(
+    currencyChange.effectiveRate === "Informe os dois valores",
+    "Rate was not invalidated after destination currency change",
+    currencyChange,
+  );
 
   await switchDestinationCurrency(fixture.usdAccountId);
   await fillDestinationAmount(10_000);
@@ -64,9 +98,17 @@ try {
   await setViewport(browser.cdp, 390, 844);
   await sleep(100);
   const mobile = await readCrossCurrencyState();
-  check(\n    mobile.destinationAmountVisible,\n    "Destination native amount is not visible on mobile",\n    mobile,\n  );
+  check(
+    mobile.destinationAmountVisible,
+    "Destination native amount is not visible on mobile",
+    mobile,
+  );
   check(mobile.effectiveRateVisible, "Effective rate is not visible on mobile", mobile);
-  check(\n    mobile.effectiveRateDirection === "USD por BRL",\n    "Rate direction changed on mobile",\n    mobile,\n  );
+  check(
+    mobile.effectiveRateDirection === "USD por BRL",
+    "Rate direction changed on mobile",
+    mobile,
+  );
   check(!mobile.globalOverflow, "Cross-currency transfer modal overflows mobile viewport", mobile);
 
   const mobileScreenshot = "issue-668-cross-currency-transfer-390x844.png";
@@ -82,12 +124,32 @@ try {
   await setViewport(browser.cdp, 1366, 768);
   const saved = await submitTransfer(fixture);
   check(saved.status === 201, "Cross-currency transfer form did not persist successfully", saved);
-  check(\n    saved.requestBody?.amountMinor === 53_832,\n    "Source native amount changed in form payload",\n    saved,\n  );
-  check(\n    saved.requestBody?.destinationAmountMinor === 10_000,\n    "Destination native amount changed in form payload",\n    saved,\n  );
+  check(
+    saved.requestBody?.amountMinor === 53_832,
+    "Source native amount changed in form payload",
+    saved,
+  );
+  check(
+    saved.requestBody?.destinationAmountMinor === 10_000,
+    "Destination native amount changed in form payload",
+    saved,
+  );
   check(saved.persisted?.currency === "BRL", "Persisted source currency is not BRL", saved);
-  check(\n    saved.persisted?.destinationCurrency === "USD",\n    "Persisted destination currency is not USD",\n    saved,\n  );
-  check(\n    saved.persisted?.amountMinor === 53_832,\n    "Persisted source native amount is incorrect",\n    saved,\n  );
-  check(\n    saved.persisted?.destinationAmountMinor === 10_000,\n    "Persisted destination native amount is incorrect",\n    saved,\n  );
+  check(
+    saved.persisted?.destinationCurrency === "USD",
+    "Persisted destination currency is not USD",
+    saved,
+  );
+  check(
+    saved.persisted?.amountMinor === 53_832,
+    "Persisted source native amount is incorrect",
+    saved,
+  );
+  check(
+    saved.persisted?.destinationAmountMinor === 10_000,
+    "Persisted destination native amount is incorrect",
+    saved,
+  );
 } finally {
   await browser.close(outputDir);
 }
