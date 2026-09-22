@@ -3,14 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
-    "audit_report_sha256": "2cb324dc1038e90c163962851ec980ee2a2b8c1c7eccbab1ddc3932fe247245f",
+    "rejection_id": "audit-rejection:672-handoff-not-produced-ebb8c925",
+    "audit_report_sha256": "cc7e49b0dff2cc952f693ad7a92847887e76575dede624112ef4baa1a8c57953",
     "finding_ids": [
       "A-001"
     ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The delivery contract already requires preservation of current behavior and equivalent coverage when replacing an enhancement. This remediation closes a target-specific search-corpus and counting regression with a discriminant browser control, without requiring a new global Skill rule."
-  }
+    "reason": "The rejection concerns this delivery package binding and is closed by the existing target-binding and terminal-handoff controls; no new permanent global rule is required."
+  },
+  "skill_changes": []
 }

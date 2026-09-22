@@ -2,24 +2,26 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
-  "head_sha": "72795e5dac810d24a02d79c654b460e31d84fcfe",
-  "material_head_sha": "da21af37ceaed5a3c59608277f148a5ce7e04faa",
-  "repository": "crgasparoto-br/SolverFin",
-  "issue_number": 615,
-  "pull_request_number": 671,
+  "rejection_id": "audit-rejection:672-handoff-not-produced-ebb8c925",
+  "head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+  "identity": {
+    "head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 668,
+    "pull_request_number": 672
+  },
   "findings": [
     {
       "id": "A-001",
-      "severity": "blocking",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "adapter-support-drift",
-      "reason": "The direct /categorias renderer retained the placeholder \"Buscar por nome ou caminho\" but searched only .category-node-text, so hierarchy/path terms supported by the retired categories enhancement no longer matched. The displayed result count also included contextual parents instead of direct matches.",
-      "recovery_scope": "post-write-refreeze",
-      "requires_refreeze": true
+      "category": "delivery-not-ready",
+      "reason": "handoff-not-produced",
+      "recovery_scope": "handoff-only",
+      "requires_refreeze": false,
+      "summary": "Current handoff artifact is inherited from the base and belongs to Issue #615 / PR #671; publish a fresh target-bound handoff for Issue #668 / PR #672."
     }
   ],
   "recommendations": []

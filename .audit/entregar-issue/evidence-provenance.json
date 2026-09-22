@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "material_head_sha": "028aad97276a885b0e0001691407bde289118543",
-  "base_sha": "387b4f00e59004856781da187bd436bcba8b9352",
+  "material_head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
   "evidence": [
     {
-      "evidence_id": "EV-Q-001",
+      "evidence_id": "EVID-RATE-668-001",
       "kind": "quantitative",
-      "path": "evidence/focused-token-derivation.txt",
-      "sha256": "75012248ac95d70c92c1ef318768db0ac3a50b5fda93a9215c754a2a3af6a812",
-      "subject_sha": "028aad97276a885b0e0001691407bde289118543",
+      "status": "passed",
+      "path": "evidence/rate-derivation-668.txt",
+      "sha256": "b383a666dd90a8a69275b8bd45613de1bfd3bcef07bb7677101f9db437e4fc28",
+      "subject_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
       "freshness_policy": "exact-material-head",
-      "producer": "exact-head divergent token derivation control: primary=#123456 and contentMaxWidth=99rem, executed by CI test suite",
-      "status": "passed"
+      "producer": "GitHub Actions Delivery V2 CI run 35644229674 plus exact-head source inspection"
     }
-  ]
+  ],
+  "base_sha": "7213dfc454acebbc2de00658e22071d6b0a37a5c"
 }

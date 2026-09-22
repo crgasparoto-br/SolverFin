@@ -1,22 +1,24 @@
 {
   "schema_version": 1,
-  "head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
+  "head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
   "families": [
     {
       "family": "authorization",
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "REQ-011-NEG-1",
-        "REQ-017-NEG-1"
+        "NEG-REQ-001-01",
+        "NEG-REQ-020-01",
+        "NEG-REQ-048-01"
       ],
       "dimensions": [
         {
-          "surface": "permission-audience-boundary",
-          "reason": "authorization can regress independently at the secondary-route migration boundary.",
+          "surface": "public-operation-policy",
+          "reason": "Exercises the material authorization boundary required by REQ-048 on the exact frozen transfer candidate.",
           "control_ids": [
-            "REQ-011-NEG-1",
-            "REQ-017-NEG-1"
+            "NEG-REQ-001-01",
+            "NEG-REQ-020-01",
+            "NEG-REQ-048-01"
           ],
           "status": "passed"
         }
@@ -25,11 +27,22 @@
     },
     {
       "family": "tenant-isolation",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-020-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "Exercises the material tenant-isolation boundary required by REQ-020 on the exact frozen transfer candidate.",
+          "control_ids": [
+            "NEG-REQ-020-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "public-boundary",
@@ -44,14 +57,18 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "REQ-002-NEG-3"
+        "NEG-REQ-003-01",
+        "NEG-REQ-013-01",
+        "NEG-REQ-030-01"
       ],
       "dimensions": [
         {
-          "surface": "route-catalog-liveness",
-          "reason": "reference-liveness can regress independently at the secondary-route migration boundary.",
+          "surface": "persisted-reference-liveness",
+          "reason": "Exercises the material reference-liveness boundary required by REQ-030 on the exact frozen transfer candidate.",
           "control_ids": [
-            "REQ-002-NEG-3"
+            "NEG-REQ-003-01",
+            "NEG-REQ-013-01",
+            "NEG-REQ-030-01"
           ],
           "status": "passed"
         }
@@ -63,33 +80,14 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "REQ-001-NEG-2",
-        "REQ-002-NEG-4",
-        "REQ-009-NEG-1",
-        "REQ-011-NEG-2",
-        "REQ-012-NEG-1",
-        "REQ-014-NEG-2",
-        "REQ-019-NEG-1"
+        "NEG-REQ-021-01"
       ],
       "dimensions": [
         {
-          "surface": "reporting-availability-window",
-          "reason": "temporal-consistency can regress independently at the secondary-route migration boundary.",
+          "surface": "lifecycle-date-consistency",
+          "reason": "Exercises the material temporal-consistency boundary required by REQ-021 on the exact frozen transfer candidate.",
           "control_ids": [
-            "REQ-019-NEG-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "transition-terminal-state",
-          "reason": "temporal-consistency can regress independently at the secondary-route migration boundary.",
-          "control_ids": [
-            "REQ-001-NEG-2",
-            "REQ-002-NEG-4",
-            "REQ-009-NEG-1",
-            "REQ-011-NEG-2",
-            "REQ-012-NEG-1",
-            "REQ-014-NEG-2"
+            "NEG-REQ-021-01"
           ],
           "status": "passed"
         }
@@ -114,11 +112,22 @@
     },
     {
       "family": "idempotency",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-062-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Exercises the material idempotency boundary required by REQ-062 on the exact frozen transfer candidate.",
+          "control_ids": [
+            "NEG-REQ-062-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "rollback",
@@ -141,34 +150,37 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "REQ-001-NEG-1",
-        "REQ-002-NEG-1",
-        "REQ-002-NEG-2",
-        "REQ-014-NEG-1"
+        "NEG-REQ-010-01",
+        "NEG-REQ-018-01",
+        "NEG-REQ-019-01",
+        "NEG-REQ-023-01",
+        "NEG-REQ-028-01",
+        "NEG-REQ-042-01",
+        "NEG-REQ-044-01",
+        "NEG-REQ-059-01",
+        "NEG-REQ-067-02"
       ],
       "dimensions": [
         {
-          "surface": "canonical-source-consistency",
-          "reason": "structural-contract can regress independently at the secondary-route migration boundary.",
-          "control_ids": [
-            "REQ-002-NEG-1"
-          ],
-          "status": "passed"
-        },
-        {
           "surface": "relational-semantic-integrity",
-          "reason": "structural-contract can regress independently at the secondary-route migration boundary.",
+          "reason": "Exercises the material structural-contract boundary required by REQ-059 on the exact frozen transfer candidate.",
           "control_ids": [
-            "REQ-002-NEG-2"
+            "NEG-REQ-019-01",
+            "NEG-REQ-023-01",
+            "NEG-REQ-042-01",
+            "NEG-REQ-044-01",
+            "NEG-REQ-059-01"
           ],
           "status": "passed"
         },
         {
-          "surface": "shared-foundation-contract",
-          "reason": "structural-contract can regress independently at the secondary-route migration boundary.",
+          "surface": "structural-invariant",
+          "reason": "Exercises the material structural-contract boundary required by REQ-067 on the exact frozen transfer candidate.",
           "control_ids": [
-            "REQ-001-NEG-1",
-            "REQ-014-NEG-1"
+            "NEG-REQ-010-01",
+            "NEG-REQ-018-01",
+            "NEG-REQ-028-01",
+            "NEG-REQ-067-02"
           ],
           "status": "passed"
         }
@@ -180,14 +192,14 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "REQ-021-NEG-1"
+        "NEG-REQ-067-01"
       ],
       "dimensions": [
         {
-          "surface": "documentation-claims",
-          "reason": "documentation can regress independently at the secondary-route migration boundary.",
+          "surface": "canonical-claims",
+          "reason": "Exercises the material documentation boundary required by REQ-067 on the exact frozen transfer candidate.",
           "control_ids": [
-            "REQ-021-NEG-1"
+            "NEG-REQ-067-01"
           ],
           "status": "passed"
         }

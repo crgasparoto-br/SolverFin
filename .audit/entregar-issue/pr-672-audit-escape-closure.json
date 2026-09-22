@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-672-A001-HANDOFF-TARGET-BINDING",
+      "status": "passed",
+      "escape_class": "delivery-handoff-target-binding",
+      "revalidated_head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+      "plausible_wrong_implementation": "Reuse a valid but foreign handoff inherited from the base because its internal hashes still validate.",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:672-handoff-not-produced-ebb8c925",
+        "audit_report_sha256": "cc7e49b0dff2cc952f693ad7a92847887e76575dede624112ef4baa1a8c57953",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "literal_case": {
+        "procedure": "Compare the inherited handoff subject with the current Issue #668 / PR #672 identity.",
+        "expected": "Foreign inherited subject is rejected and a fresh target-bound package is required.",
+        "observed": "The inherited Issue #615 / PR #671 package is not reused; this package is rebuilt for Issue #668 / PR #672.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "base-inherited-certificate",
+          "procedure": "Reject byte-identical base certificate for another work item.",
+          "expected": "fresh-handoff-required",
+          "observed": "Target-binding classification requires fresh handoff.",
+          "status": "passed"
+        },
+        {
+          "surface": "foreign-target-certificate",
+          "procedure": "Reject a handoff whose subject does not match current issue and PR.",
+          "expected": "No evidence reuse across targets.",
+          "observed": "New certificate subject is generated from current target identity.",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "delivery_target_binding + builder subject binding prevents reuse before publication."
+      },
+      "detection_change": {
+        "evidence": "terminal target validation rechecks repository, issue, PR, base and head after publication."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "structural-invariant",
+          "dimension": "deliberately-divergent-input"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "structural-invariant",
+          "dimension": "alternate-invalid-boundary"
+        }
+      ]
+    }
+  ]
+}

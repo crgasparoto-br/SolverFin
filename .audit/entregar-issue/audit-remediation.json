@@ -2,31 +2,30 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
-  "source": {
-    "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
-    "audit_report_sha256": "2cb324dc1038e90c163962851ec980ee2a2b8c1c7eccbab1ddc3932fe247245f",
-    "audited_head_sha": "72795e5dac810d24a02d79c654b460e31d84fcfe"
-  },
-  "candidate_head_sha": "02c9d97b1c38e6a3944555c6ef5a66c9e2faf512",
-  "remediation_mode": "targeted-remediation",
   "status": "closed",
+  "candidate_head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:672-handoff-not-produced-ebb8c925",
+    "audited_head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+    "audit_report_sha256": "cc7e49b0dff2cc952f693ad7a92847887e76575dede624112ef4baa1a8c57953"
+  },
   "items": [
     {
       "source_kind": "finding",
       "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "behavior-regression-remediation",
+      "closure_kind": "fresh-target-handoff-rebuild",
+      "changed_files": [
+        ".audit/entregar-issue/*"
+      ],
       "evidence": [
-        "The direct categories renderer on 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512 builds normalized categorySearchText from category name plus rendered hierarchy path.",
-        "Statement visual run 35551454360 passed the categories-interface browser scenario that searches a nested category by an ancestor-only term and checks direct-match result count.",
-        "Delivery V2 run 35551454448 completed success on the same material head, including format, lint, typecheck, tests, API integration and build."
+        "evidence/handoff-remediation-672.txt"
       ],
       "validations": [
-        "hierarchy/path search semantics preserved after retiring categories enhancement",
-        "contextual parent visibility does not inflate announced direct-match count",
-        "exact-head CRITICAL validation terminal green",
-        "exact-head Chrome visual validation terminal green"
+        "Target binding was reclassified as inherited-base-artifact and fresh-handoff-required.",
+        "Material head remained exact and CI was already terminal green; only result artifacts are rebuilt."
       ]
     }
   ]

@@ -1,0 +1,29 @@
+SolverFin PR #672 / Issue #668 evidence snapshot
+material_head_sha=ebb8c9251096326e2849cec5c736e054f8a793d2
+base_sha=7213dfc454acebbc2de00658e22071d6b0a37a5c
+merge_preview_sha=ef3dec0b04a2e7285a3195c850e7dfd2c70164d1
+branch=feat/668-cross-currency-transfers
+
+Remote exact-head CI evidence:
+- Delivery V2 CI run 35644229674 completed success.
+- CRITICAL validation job 106480900601 completed success.
+- Exact-head verification completed success.
+- npm run env:check completed success.
+- npm run prisma:validate completed success.
+- npm run db:seed:check completed success.
+- npm run format:check completed success.
+- npm run lint completed success.
+- npm run typecheck completed success.
+- npm run prisma:generate completed success.
+- npm run db:deploy completed success.
+- npm run db:seed completed success.
+- npm run test completed success.
+- npm run test:integration --workspace @solverfin/api completed success.
+- npm run diagnose:import-statement-consistency -- --expect-zero completed success.
+- npm run build completed success.
+- Statement visual validation run 35644229733 completed success.
+- Chrome visual validation job 106480928214 completed success, including registered scenarios and secret-free evidence assertion.
+
+Observed candidate paths include domain transaction rules, API repository/router/errors, integration tests, transaction UI/statement rendering, financial-summary docs, transaction docs, Prisma schema and migration.
+
+The candidate-specific tests named in the PR diff include the normative 53832 BRL -> 10000 USD flow, reverse USD -> BRL, positive destination validation, same-currency 1:1 behavior, destination-currency change invalidation, lifecycle/update coverage, statement rendering, error messages and financial-summary currency blocks. These are treated as executed only within the exact-head CI suites that reached and passed npm run test and the API integration command.

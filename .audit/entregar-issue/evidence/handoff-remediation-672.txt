@@ -1,0 +1,4 @@
+Independent audit rejected PR #672 only because the visible .audit/entregar-issue/handoff-ready.json was inherited byte-for-byte from the base and belonged to Issue #615 / PR #671.
+The product material head ebb8c9251096326e2849cec5c736e054f8a793d2 remained stable and had terminal-green Delivery V2 CI run 35644229674 plus Statement visual validation run 35644229733.
+Recovery was classified as fresh-handoff-required because target binding was inherited-base-artifact. No product code, schema, test, UI or documentation change is required by finding A-001.
+This remediation rebuilds the canonical package for repository crgasparoto-br/SolverFin, Issue #668, PR #672, branch feat/668-cross-currency-transfers, with the same material head and publishes it only as a result-only child.
