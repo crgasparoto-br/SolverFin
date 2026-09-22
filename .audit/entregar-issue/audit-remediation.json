@@ -3,12 +3,12 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+  "candidate_head_sha": "aa18f309276210acfab5431356ea21c9bd33d242",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:672-handoff-not-produced-ebb8c925",
-    "audited_head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
-    "audit_report_sha256": "cc7e49b0dff2cc952f693ad7a92847887e76575dede624112ef4baa1a8c57953"
+    "rejection_id": "audit-rejection:2a79feed-b6ec-40bf-b9f5-1edfd15f125d",
+    "audited_head_sha": "80f8218e5b8f05ef99b2b05df29a96c784c8d1fd",
+    "audit_report_sha256": "3da7ded5b61c8680c0211496cfbe994cdd2b0f0d40c5e07cde61bdcf522454e0"
   },
   "items": [
     {
@@ -16,16 +16,33 @@
       "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "fresh-target-handoff-rebuild",
+      "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/*"
+        "prisma/migrations/20260921150000_support_cross_currency_transfer_native_values/migration.sql",
+        "apps/api/src/account-currency-invariant.integration.test.ts"
       ],
-      "evidence": [
-        "evidence/handoff-remediation-672.txt"
-      ],
+      "evidence": ["evidence/issue-668-controls.txt"],
       "validations": [
-        "Target binding was reclassified as inherited-base-artifact and fresh-handoff-required.",
-        "Material head remained exact and CI was already terminal green; only result artifacts are rebuilt."
+        "Delivery V2 CI run 35729699568 completed success on aa18f309276210acfab5431356ea21c9bd33d242.",
+        "CRITICAL validation job 106752176117 ran db:deploy and API integration successfully, including the adversarial direct-SQL destination-account currency invariant test."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "scripts/statement-visual/coverage-contract.mjs",
+        "scripts/statement-visual/issue-668-cross-currency-transfer.mjs",
+        "scripts/statement-visual/issue-606-behavior-claims.mjs",
+        "apps/web/src/dev-server/transactions-page-v2.ts"
+      ],
+      "evidence": ["evidence/issue-668-controls.txt", "evidence/rate-derivation-668.txt"],
+      "validations": [
+        "Statement visual validation run 35729699472 completed success on aa18f309276210acfab5431356ea21c9bd33d242.",
+        "Chrome visual validation job 106751929886 logged PASS for scenario cross-currency-transfer with native-values-rate-destination-change on desktop-mobile."
       ]
     }
   ]

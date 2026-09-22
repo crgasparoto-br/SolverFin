@@ -2,10 +2,11 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:672-handoff-not-produced-ebb8c925",
-  "head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+  "rejection_id": "audit-rejection:2a79feed-b6ec-40bf-b9f5-1edfd15f125d",
+  "head_sha": "80f8218e5b8f05ef99b2b05df29a96c784c8d1fd",
   "identity": {
-    "head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+    "head_sha": "80f8218e5b8f05ef99b2b05df29a96c784c8d1fd",
+    "material_head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 668,
     "pull_request_number": 672
@@ -17,11 +18,23 @@
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "delivery-not-ready",
-      "reason": "handoff-not-produced",
-      "recovery_scope": "handoff-only",
-      "requires_refreeze": false,
-      "summary": "Current handoff artifact is inherited from the base and belongs to Issue #615 / PR #671; publish a fresh target-bound handoff for Issue #668 / PR #672."
+      "category": "legacy-variant-gap",
+      "reason": "account-side-cross-currency-invariant",
+      "recovery_scope": "post-write-refreeze",
+      "requires_refreeze": true,
+      "summary": "The account-side database trigger still compared Transaction.currency for destination accounts, allowing a direct SQL Account.currency mutation to diverge from Transaction.destinationCurrency."
+    },
+    {
+      "id": "A-002",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "execution-state-gap",
+      "reason": "cross-currency-visual-scenario-missing",
+      "recovery_scope": "post-write-refreeze",
+      "requires_refreeze": true,
+      "summary": "The Chrome gate had no discriminant cross-currency transfer scenario covering native destination amount, derived rate, destination-currency change and stale-value invalidation."
     }
   ],
   "recommendations": []

@@ -1,17 +1,27 @@
 {
   "schema_version": 1,
-  "material_head_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+  "material_head_sha": "aa18f309276210acfab5431356ea21c9bd33d242",
+  "base_sha": "7213dfc454acebbc2de00658e22071d6b0a37a5c",
   "evidence": [
+    {
+      "evidence_id": "EVID-CONTROLS-668-002",
+      "kind": "behavioral",
+      "status": "passed",
+      "path": "evidence/issue-668-controls.txt",
+      "sha256": "88c22abbd4fbfc28bfdb805de0fdb951d24da981fca3d1c1d9ddb153428cb1d9",
+      "subject_sha": "aa18f309276210acfab5431356ea21c9bd33d242",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Delivery V2 CI run 35729699568 and Statement visual validation run 35729699472"
+    },
     {
       "evidence_id": "EVID-RATE-668-001",
       "kind": "quantitative",
       "status": "passed",
       "path": "evidence/rate-derivation-668.txt",
-      "sha256": "b383a666dd90a8a69275b8bd45613de1bfd3bcef07bb7677101f9db437e4fc28",
-      "subject_sha": "ebb8c9251096326e2849cec5c736e054f8a793d2",
+      "sha256": "6ddc845fcb706d46e164eadefb995730283de6590577fd2a24ef0ceca1139a63",
+      "subject_sha": "aa18f309276210acfab5431356ea21c9bd33d242",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions Delivery V2 CI run 35644229674 plus exact-head source inspection"
+      "producer": "GitHub Actions Delivery V2 CI run 35729699568 plus exact-head Chrome cross-currency-transfer scenario"
     }
-  ],
-  "base_sha": "7213dfc454acebbc2de00658e22071d6b0a37a5c"
+  ]
 }
