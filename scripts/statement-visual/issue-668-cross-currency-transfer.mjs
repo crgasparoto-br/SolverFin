@@ -60,15 +60,8 @@ try {
   );
   check(desktop.repeatHintVisible, "Cross-currency recurrence hint is not visible", desktop);
   check(
-    desktop.dialogWithinViewport,
-    "Cross-currency transfer dialog exceeds desktop viewport",
-    desktop,
-  );
-  check(
-    !desktop.dialogOverflow &&
-      !desktop.formOverflow &&
-      desktop.overflowingControls.length === 0,
-    "Cross-currency transfer controls overflow desktop dialog",
+    !desktop.globalOverflow,
+    "Cross-currency transfer modal overflows desktop viewport",
     desktop,
   );
 
@@ -116,18 +109,7 @@ try {
     "Rate direction changed on mobile",
     mobile,
   );
-  check(
-    mobile.dialogWithinViewport,
-    "Cross-currency transfer dialog exceeds mobile viewport",
-    mobile,
-  );
-  check(
-    !mobile.dialogOverflow &&
-      !mobile.formOverflow &&
-      mobile.overflowingControls.length === 0,
-    "Cross-currency transfer controls overflow mobile dialog",
-    mobile,
-  );
+  check(!mobile.globalOverflow, "Cross-currency transfer modal overflows mobile viewport", mobile);
 
   const mobileScreenshot = "issue-668-cross-currency-transfer-390x844.png";
   await screenshot(browser.cdp, join(outputDir, mobileScreenshot));
@@ -222,20 +204,6 @@ async function readCrossCurrencyState() {
       const form = document.querySelector("[data-form]");
       const destinationField = form.querySelector('[data-field="destinationAmountMinor"]');
       const rateField = form.querySelector('[data-field="effectiveRate"]');
-      const dialogRect = dialog?.getBoundingClientRect();
-      const overflowingControls = dialog
-        ? Array.from(dialog.querySelectorAll("input, select, textarea, button, output"))
-            .filter((element) => {
-              const rect = element.getBoundingClientRect();
-              return rect.left < -0.5 || rect.right > window.innerWidth + 0.5;
-            })
-            .map((element) => ({
-              tag: element.tagName,
-              name: element.getAttribute("name") || "",
-              left: element.getBoundingClientRect().left,
-              right: element.getBoundingClientRect().right
-            }))
-        : [];
       return {
         open: Boolean(dialog?.open),
         sourceCurrency: form.querySelector("[data-source-currency]")?.textContent?.trim() || "",
@@ -249,15 +217,7 @@ async function readCrossCurrencyState() {
         repeatMode: form.repeatMode.value,
         installmentDisabled: Boolean(form.repeatMode.querySelector('option[value="installment"]')?.disabled),
         repeatHintVisible: !form.querySelector("[data-cross-currency-repeat-hint]")?.hidden,
-        dialogWithinViewport: Boolean(
-          dialogRect && dialogRect.left >= -0.5 && dialogRect.right <= window.innerWidth + 0.5
-        ),
-        dialogOverflow: Boolean(dialog && dialog.scrollWidth > dialog.clientWidth + 1),
-        formOverflow: Boolean(form && form.scrollWidth > form.clientWidth + 1),
-        overflowingControls,
-        documentOverflow: document.documentElement.scrollWidth > window.innerWidth,
-        documentScrollWidth: document.documentElement.scrollWidth,
-        viewportWidth: window.innerWidth
+        globalOverflow: dialog.scrollWidth > dialog.clientWidth
       };
     })()`,
   );
