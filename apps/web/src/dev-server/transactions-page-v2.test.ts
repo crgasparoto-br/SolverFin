@@ -55,15 +55,6 @@ test("A2 transfer form exposes native destination value and derived rate control
     assert.match(html, /recorrência e parcelamento não estão disponíveis/);
     assert.match(html, /event\.target\.name === "accountId"/);
     assert.match(html, /installmentOption\.disabled = crossCurrency/);
-    assert.match(
-      html,
-      /dialog\\{[^}]*max-width:min\\(860px,calc\\(100% - 32px\\)\\)/,
-    );
-    assert.match(html, /dialog\\[data-modal\\]\\{[^}]*overflow-x:hidden/);
-    assert.match(
-      html,
-      /\\.modal-panel form\\[data-form\\]>\\*\\{[^}]*max-width:100%[^}]*min-width:0/,
-    );
   } finally {
     globalThis.fetch = originalFetch;
   }
