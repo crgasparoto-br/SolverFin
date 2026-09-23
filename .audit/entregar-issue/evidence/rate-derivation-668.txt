@@ -1,10 +1,10 @@
-subject_sha=aa18f309276210acfab5431356ea21c9bd33d242
+subject_sha=c1fd571c661c64abcb90db1b99fa3f3c7ce95749
 source_case=53832 BRL minor -> 10000 USD minor
 canonical_direction=destinationAmount/sourceAmount
-implementation=apps/web/src/dev-server/transactions-page-v2.ts uses BigInt integer arithmetic with scale=1000000 and half-up rounding; it does not divide JavaScript Number destinationMinor/sourceMinor.
+implementation=apps/web/src/dev-server/transactions-page-v2.ts derives presentation rate from the two persisted native values; the native values remain the financial source of truth.
 calculation=(10000*1000000 + floor(53832/2))/53832 => 185763 scaled units => 0,185763 USD por BRL
 native_values_remain=53832 BRL and 10000 USD; rate is presentation-only
-static_control=apps/web/src/dev-server/transactions-page-v2.test.ts asserts destinationAmountMinor, data-effective-rate, BigInt(destinationMinor)*scale and rejects destinationMinor/sourceMinor floating-point division.
-integration_control=apps/api/src/transaction-currency-invariant.integration.test.ts persists/re-reads 53832 BRL and 10000 USD independently and validates distinct per-currency financial-summary effects.
-visual_control=scripts/statement-visual/issue-668-cross-currency-transfer.mjs verifies 0,185763 USD por BRL in Chrome and invalidates stale destination amount when destination currency changes.
-execution=Delivery V2 CI run 35729699568 / CRITICAL validation job 106752176117 completed success on exact subject_sha; npm run test and npm run test:integration --workspace @solverfin/api both reached and passed. Statement visual validation run 35729699472 / Chrome visual validation job 106751929886 completed success on the same subject_sha and the registered cross-currency-transfer scenario passed.
+static_control=apps/web/src/dev-server/transactions-page-v2.test.ts covers destination native amount and deterministic effective-rate presentation.
+integration_control=apps/api/src/transaction-currency-invariant.integration.test.ts persists and re-reads the two native legs and validates currency-separated financial effects.
+visual_control=scripts/statement-visual/issue-668-cross-currency-transfer.mjs validates the derived USD per BRL direction and destination-change stale-value invalidation in Chrome.
+execution=Delivery V2 CI run 35787170235 / CRITICAL validation job 106946925558 completed success on exact subject_sha; npm run test and npm run test:integration --workspace @solverfin/api reached and passed. Statement visual validation run 35787170294 / Chrome visual validation job 106946862853 completed success on the same subject_sha.

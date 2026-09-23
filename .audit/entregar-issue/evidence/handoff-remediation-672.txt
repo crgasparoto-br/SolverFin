@@ -1,8 +1,10 @@
-SolverFin Issue #668 / PR #672 targeted remediation of independent audit rejection audit-rejection:2a79feed-b6ec-40bf-b9f5-1edfd15f125d.
-Material head refrozen at aa18f309276210acfab5431356ea21c9bd33d242 after functional remediation.
-Base SHA is 7213dfc454acebbc2de00658e22071d6b0a37a5c and merge preview is 375a5c72c38b1af2066596e4e1f86225c7bea1e0.
-A-001 is closed by a leg-aware Account-side database invariant plus direct-SQL cross-currency integration regression.
-A-002 is closed by the registered Chrome scenario cross-currency-transfer covering BRL -> USD native values, derived rate, USD -> EUR destination change, stale-value invalidation and desktop/mobile layout.
-Delivery V2 CI run 35729699568 and Statement visual validation run 35729699472 both completed success on the exact material head.
-The cumulative audit escape ledger preserves ESC-672-A001-HANDOFF-TARGET-BINDING and adds separate closures for A-001 and A-002 from the latest independent rejection.
-This handoff publication is result-only: no product code, schema, test, documentation or workflow material is modified by the certificate child.
+SolverFin PR #672 / Issue #668 terminal handoff remediation
+material_head_sha=c1fd571c661c64abcb90db1b99fa3f3c7ce95749
+base_sha=7213dfc454acebbc2de00658e22071d6b0a37a5c
+merge_preview_sha=d9d43e9d3e809ce7c6dac6c01d388951c25b678b
+rejection_id=audit-rejection:672-stale-handoff-c1fd571
+finding=A-003 stale handoff after material drift
+recovery=post-write-refreeze
+exact_head_ci=Delivery V2 CI run 35787170235 success
+exact_head_visual=Statement visual validation run 35787170294 success
+publication_policy=result-only-child; product code, schema, tests, docs and workflows are not modified by the terminal handoff commit

@@ -1,13 +1,15 @@
-SolverFin PR #672 / Issue #668 evidence snapshot
-material_head_sha=aa18f309276210acfab5431356ea21c9bd33d242
+SolverFin Issue #668 / PR #672 exact-head evidence snapshot
+material_head_sha=c1fd571c661c64abcb90db1b99fa3f3c7ce95749
 base_sha=7213dfc454acebbc2de00658e22071d6b0a37a5c
-merge_preview_sha=375a5c72c38b1af2066596e4e1f86225c7bea1e0
+merge_preview_sha=d9d43e9d3e809ce7c6dac6c01d388951c25b678b
 branch=feat/668-cross-currency-transfers
 
 Remote exact-head CI evidence:
-- Delivery V2 CI run 35729699568 completed success on aa18f309276210acfab5431356ea21c9bd33d242.
-- CRITICAL validation job 106752176117 completed success.
+- Delivery V2 CI run 35787170235 completed success on c1fd571c661c64abcb90db1b99fa3f3c7ce95749.
+- CRITICAL validation job 106946925558 completed success.
 - Verify exact head completed success.
+- node .delivery-v2/verify.mjs completed success.
+- node --test scripts/delivery-v2-ci-classifier.test.mjs completed success.
 - npm run env:check completed success.
 - npm run prisma:validate completed success.
 - npm run db:seed:check completed success.
@@ -21,14 +23,14 @@ Remote exact-head CI evidence:
 - npm run test:integration --workspace @solverfin/api completed success.
 - npm run diagnose:import-statement-consistency -- --expect-zero completed success.
 - npm run build completed success.
-- Statement visual validation run 35729699472 completed success on the same exact head.
-- Chrome visual validation job 106751929886 completed success.
-- Registered scenario cross-currency-transfer passed on /lancamentos with desktop-mobile layout and native-values-rate-destination-change interaction.
+- Statement visual validation run 35787170294 completed success on the same exact head.
+- Chrome visual validation job 106946862853 completed success.
+- Registered cross-currency-transfer scenario reached and passed in Chrome on the exact head.
 
-Independent-audit remediation controls now exercised on the exact material head:
-- apps/api/src/account-currency-invariant.integration.test.ts rejects a direct SQL Account.currency change on a destination account when Transaction.destinationCurrency would become incompatible.
-- prisma/migrations/20260921150000_support_cross_currency_transfer_native_values/migration.sql replaces the account-side invariant so source legs compare Transaction.currency and destination legs compare Transaction.destinationCurrency.
-- scripts/statement-visual/issue-668-cross-currency-transfer.mjs creates a BRL -> USD transfer, verifies distinct native values and derived rate, changes destination USD -> EUR and requires stale destination amount invalidation, then validates desktop and mobile behavior.
-- apps/web/src/dev-server/transactions-page-v2.ts contains the mobile overflow remediation exercised by the same visual gate.
+Candidate-specific controls remain in the material candidate:
+- apps/api/src/account-currency-invariant.integration.test.ts covers account-side destination-currency invariants through integration execution.
+- prisma/migrations/20260921150000_support_cross_currency_transfer_native_values/migration.sql enforces leg-aware account currency validation.
+- scripts/statement-visual/issue-668-cross-currency-transfer.mjs covers distinct BRL/USD native values, derived-rate presentation, destination currency change, stale destination amount invalidation, and responsive modal behavior.
+- apps/web/src/dev-server/transactions-page-v2.ts contains the cross-currency transfer UI behavior exercised by the Chrome gate.
 
-The exact-head CRITICAL unit/integration suite and Chrome visual scenario are the execution evidence for the candidate-specific controls above.
+This evidence snapshot is result-only metadata for the exact material head. No product code is changed by the terminal handoff publication.
