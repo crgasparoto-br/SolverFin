@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { createTransactionForContext } from "./repositories/transactions.js";
@@ -80,6 +81,53 @@ async function main(): Promise<void> {
       accountId: destination.id,
     },
   ]);
+
+  const recurrenceId = randomUUID();
+  const installmentId = randomUUID();
+  await query(
+    `insert into "Recurrence"
+      ("id", "organizationId", "financialProfileId", "accountId", "status", "kind", "frequency",
+       "interval", "startOn", "amountMinor", "currency", "description")
+     values ($1, $2, $3, $4, 'ACTIVE', 'EXPENSE', 'MONTHLY', 1, $5, $6, 'BRL', $7)`,
+    [
+      recurrenceId,
+      CONTEXT.organizationId,
+      CONTEXT.financialProfileId,
+      source.id,
+      "2037-11-25",
+      7_500,
+      `Future commitment recurrence ${suffix}`,
+    ],
+  );
+  await query(
+    `insert into "Installment"
+      ("id", "organizationId", "financialProfileId", "recurrenceId", "status", "sequenceNumber",
+       "totalInstallments", "dueOn", "amountMinor", "currency")
+     values ($1, $2, $3, $4, 'PLANNED', 1, 1, $5, $6, 'BRL')`,
+    [
+      installmentId,
+      CONTEXT.organizationId,
+      CONTEXT.financialProfileId,
+      recurrenceId,
+      "2037-11-25",
+      7_500,
+    ],
+  );
+
+  const markerAgendaResponse = await apiRequest(
+    token,
+    "GET",
+    "/api/future-commitments?from=2037-11-01&to=2037-11-30",
+  );
+  assert.equal(markerAgendaResponse.statusCode, 200);
+  const markerAgenda = readBody<ApiFutureCommitmentAgenda>(markerAgendaResponse);
+  assert.equal(
+    markerAgenda.commitments.some(
+      (item) => item.id === `recurrence:${recurrenceId}:2037-11-25`,
+    ),
+    false,
+    "an existing installment must suppress the same recurrence/date projection even without a linked Transaction",
+  );
 
   const invalid = await apiRequest(
     token,
