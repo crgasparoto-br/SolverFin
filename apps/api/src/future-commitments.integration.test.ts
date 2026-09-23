@@ -121,10 +121,9 @@ async function main(): Promise<void> {
   );
   assert.equal(markerAgendaResponse.statusCode, 200);
   const markerAgenda = readBody<ApiFutureCommitmentAgenda>(markerAgendaResponse);
+  const projectedId = `recurrence:${recurrenceId}:2037-11-25`;
   assert.equal(
-    markerAgenda.commitments.some(
-      (item) => item.id === `recurrence:${recurrenceId}:2037-11-25`,
-    ),
+    markerAgenda.commitments.some((item) => item.id === projectedId),
     false,
     "an existing installment must suppress the same recurrence/date projection even without a linked Transaction",
   );
