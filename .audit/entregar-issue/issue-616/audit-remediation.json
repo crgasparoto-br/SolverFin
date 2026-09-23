@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:616-673-handoff-stale-191327c",
+    "audited_head_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
+    "audit_report_sha256": "94a5aba557f09013df1f5df0f962ea8cf0d5ae92cb71f681f31af06701f74621"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-673-01",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "post-write-refreeze",
+      "evidence": [
+        {
+          "kind": "exact-head-ci",
+          "subject_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
+          "workflow_run_id": 35660219156,
+          "conclusion": "success",
+          "note": "CRITICAL validation passed on the exact material head before recertification."
+        }
+      ],
+      "validations": [
+        "Delivery V2 CI 35660219156 completed success on exact head",
+        "Material scope rebound to current 9-commit Issue #616 delta",
+        "Critical audit artifacts rebuilt and validated on current head"
+      ]
+    }
+  ]
+}

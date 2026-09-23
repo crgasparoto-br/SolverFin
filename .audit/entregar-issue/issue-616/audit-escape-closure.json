@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-A-673-01",
+      "escape_class": "published-candidate-identity-drift",
+      "source_audit": {
+        "rejection_id": "audit-rejection:616-673-handoff-stale-191327c",
+        "finding_id": "A-673-01",
+        "audit_report_sha256": "94a5aba557f09013df1f5df0f962ea8cf0d5ae92cb71f681f31af06701f74621"
+      },
+      "plausible_wrong_implementation": "Reuse an earlier result-only certificate after later material commits and treat green CI as if the old handoff still represented the current candidate.",
+      "literal_case": {
+        "status": "passed",
+        "evidence": "audit-remediation.json",
+        "observed": "The exact current material head 191327cc260aab8b500716e74ae61d7f0227fe43 was refrozen after green CI and all exact-head artifacts were rebound before publication."
+      },
+      "sibling_cases": [
+        {
+          "id": "post-handoff-material-test-change",
+          "surface": "terminal-identity",
+          "dimension": "material-write-after-handoff",
+          "status": "passed",
+          "evidence": "post-write-refreeze classification"
+        },
+        {
+          "id": "post-handoff-material-doc-change",
+          "surface": "terminal-identity",
+          "dimension": "documentation-write-after-handoff",
+          "status": "passed",
+          "evidence": "issue-local diff reconciliation"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Existing post-write-refreeze lower-bound rule retained; no new global rule required."
+      },
+      "detection_change": {
+        "evidence": "Terminal handoff validation requires direct parent plus result-only allowlist on the freshly observed head."
+      },
+      "status": "passed",
+      "revalidated_head_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "canonical-adversarial-case"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "canonical-adversarial-case"
+        }
+      ]
+    }
+  ]
+}
