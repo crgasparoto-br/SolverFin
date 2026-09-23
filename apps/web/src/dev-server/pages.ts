@@ -1063,7 +1063,7 @@ function getSignedTransactionAmount(
 
   if (transaction.kind === "transfer") {
     if (selectedAccountId && transaction.destinationAccountId === selectedAccountId) {
-      return transaction.amountMinor;
+      return transaction.destinationAmountMinor ?? transaction.amountMinor;
     }
 
     if (selectedAccountId && transaction.accountId === selectedAccountId) {
@@ -1226,6 +1226,8 @@ interface TransactionRecord {
   kind: string;
   status: string;
   amountMinor: number;
+  destinationAmountMinor?: number;
+  destinationCurrency?: string;
   occurredOn: string;
   accountId?: string;
   destinationAccountId?: string;

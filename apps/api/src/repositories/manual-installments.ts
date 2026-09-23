@@ -155,7 +155,7 @@ export async function createManualInstallmentsForContext(
       destinationAccount.currency.toUpperCase() !== account.currency.toUpperCase()
     ) {
       throw Object.assign(
-        new Error("A conta de destino deve usar a mesma moeda da conta de origem."),
+        new Error("Transferencias parceladas entre moedas diferentes ainda nao sao suportadas."),
         {
           code: "TRANSACTION_DESTINATION_ACCOUNT_INVALID",
           statusCode: 400,

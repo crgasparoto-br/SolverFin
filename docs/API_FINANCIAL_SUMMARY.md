@@ -43,13 +43,14 @@ Representa a posição de caixa das contas **ativas** daquela moeda na data de r
 1. soma o `openingBalanceMinor` das contas ativas da moeda;
 2. soma receitas `posted`/`reconciled` da mesma moeda vinculadas a conta ativa quando `effectiveOn` existe e é menor ou igual à data de referência;
 3. subtrai despesas nas mesmas condições;
-4. para transferências, debita a conta de origem ativa e credita a conta de destino ativa, sem introduzir conversão cambial.
+4. para transferências, debita a conta de origem ativa pelo valor/moeda nativos da origem e credita a conta de destino ativa pelo valor/moeda nativos do destino, sem introduzir conversão cambial.
 
 Consequências do contrato:
 
 - uma compra no cartão não reduz o saldo bancário apenas por representar despesa econômica;
 - o pagamento da fatura reduz a conta pagadora exatamente uma vez quando a transação de liquidação se torna efetiva;
 - uma transferência entre duas contas ativas do mesmo perfil e moeda tem efeito líquido zero no disponível agregado;
+- uma transferência cross-currency debita somente `amountMinor` no bloco da moeda de origem e credita somente `destinationAmountMinor` no bloco da moeda destino; os dois blocos nunca são somados entre si;
 - compromissos `planned`/`suggested` não reduzem o disponível antes de `effectiveOn` existir.
 
 ### `incomeMinor` e `expensesMinor`
@@ -165,7 +166,8 @@ Mudanças nesta área devem provar, no mesmo cenário integrado:
 
 - saldo inicial de conta;
 - receita e despesa realizadas;
-- transferência sem alteração do resultado econômico líquido;
+- transferência same-currency sem alteração do resultado econômico líquido;
+- transferência cross-currency com dois valores nativos, uma identidade e deltas independentes nos blocos de cada moeda;
 - compra de cartão sem redução antecipada do saldo bancário;
 - previsão de pagamento como compromisso enquanto ainda não efetiva;
 - pagamento da fatura reduzindo a conta pagadora uma única vez e sem duplicar despesa econômica;

@@ -159,7 +159,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     ${renderModal(selectedAccount, accounts, categories, currency)}
     ${renderGroupModal(selectedAccount, currency)}
     ${renderRecurrenceEditModal(categories, "account", "", currency ?? "moeda indisponível")}
-    ${clientScript(currency)}
+    ${clientScript(currency, accounts)}
     ${recurrencesSectionScript()}
   `);
 }
@@ -419,7 +419,7 @@ function renderRow(
   accountCurrency: string | undefined,
 ): string {
   const { transaction } = row;
-  const currency = resolveTransactionCurrency(transaction, accountCurrency);
+  const currency = resolveTransactionCurrency(transaction, selectedAccount?.id, accountCurrency);
   if (transaction.group) return renderGroupRow(row, transaction.group, currency);
   const categoryName = transaction.categoryId
     ? (categories.find((category) => category.id === transaction.categoryId)?.name ??
@@ -572,7 +572,7 @@ function renderModal(
   categories: readonly CategoryRecord[],
   currency: string | undefined,
 ): string {
-  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit">Fechar</button></form><div><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>${selectedAccount ? `Novo lançamento em ${escapeHtml(selectedAccount.name)}` : "Selecione uma conta"}</h2><p class="muted">Conta e moeda vêm do contexto principal.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label>Tipo<select name="kind" required>${renderKindOptions()}</select></label><label>Valor (${escapeHtml(currency ?? "moeda indisponível")})<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label data-field="destinationAccountId">Conta destino<select name="destinationAccountId"><option value="">Apenas transferência</option>${renderAccountOptions(accounts)}</select></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label><label class="full">Descrição<input name="description" maxlength="240" required /></label><label class="full">Observação<textarea name="note" rows="3"></textarea></label><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form></section></dialog>`;
+  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit">Fechar</button></form><div><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>${selectedAccount ? `Novo lançamento em ${escapeHtml(selectedAccount.name)}` : "Selecione uma conta"}</h2><p class="muted">Conta e moeda vêm do contexto principal.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label>Tipo<select name="kind" required>${renderKindOptions()}</select></label><label>Valor origem (<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)<input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label data-field="destinationAccountId">Conta destino<select name="destinationAccountId"><option value="" data-currency="">Apenas transferência</option>${renderAccountOptions(accounts)}</select></label><label data-field="destinationAmountMinor" hidden>Valor destino (<span data-destination-currency>moeda destino</span>)<input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden>Taxa efetiva<output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label><label class="full">Descrição<input name="description" maxlength="240" required /></label><label class="full">Observação<textarea name="note" rows="3"></textarea></label><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form></section></dialog>`;
 }
 
 function renderGroupModal(
@@ -625,7 +625,7 @@ function renderAccountOptions(accounts: readonly AccountRecord[]): string {
   return accounts
     .map(
       (account) =>
-        `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)} · ${escapeHtml(resolveAccountCurrency(account) ?? "moeda indisponível")}</option>`,
+        `<option value="${escapeHtml(account.id)}" data-currency="${escapeHtml(resolveAccountCurrency(account) ?? "")}">${escapeHtml(account.name)} · ${escapeHtml(resolveAccountCurrency(account) ?? "moeda indisponível")}</option>`,
     )
     .join("");
 }
@@ -652,10 +652,13 @@ function renderReconcileIcon(isReconciled: boolean): string {
     : `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
-function clientScript(currency: string | undefined): string {
+function clientScript(currency: string | undefined, accounts: readonly AccountRecord[]): string {
   return String.raw`<script data-statement-a2-runtime="true">
   (() => {
     const statementCurrency = ${JSON.stringify(currency ?? "")};
+    const accountCurrencies = new Map(${serializeScriptJson(
+      accounts.map((account) => [account.id, resolveAccountCurrency(account) ?? ""]),
+    )});
     const modal = document.querySelector("[data-modal]");
     const form = document.querySelector("[data-form]");
     if (!form || !modal) return;
@@ -713,7 +716,9 @@ function clientScript(currency: string | undefined): string {
     const money = (minor, currencyCode) => /^[A-Z]{3}$/.test(currencyCode || "") ? (Number(minor || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: currencyCode }) : "Moeda indisponível";
     const currentLocalDate = () => { const now = new Date(); return String(now.getFullYear()) + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0"); };
     const moneyInput = form.querySelector("[data-money]");
-    moneyInput?.addEventListener("input", () => { const digits = moneyInput.value.replace(/\D/g, ""); moneyInput.value = minorToMoneyInput(digits ? parseInt(digits, 10) : 0); });
+    const destinationMoneyInput = form.querySelector("[data-destination-money]");
+    moneyInput?.addEventListener("input", () => { const digits = moneyInput.value.replace(/\D/g, ""); moneyInput.value = minorToMoneyInput(digits ? parseInt(digits, 10) : 0); syncEffectiveRate(); });
+    destinationMoneyInput?.addEventListener("input", () => { const digits = destinationMoneyInput.value.replace(/\D/g, ""); destinationMoneyInput.value = minorToMoneyInput(digits ? parseInt(digits, 10) : 0); syncEffectiveRate(); });
 
     const setFieldVisible = (name, visible) => { const field = form.querySelector('[data-field="' + name + '"]'); if (field) field.hidden = !visible; };
     const syncCategoryOptions = () => {
@@ -722,11 +727,53 @@ function clientScript(currency: string | undefined): string {
       Array.from(select.options).forEach((option) => { if (!option.dataset.kind) return; const visible = option.dataset.kind === form.kind.value; option.hidden = !visible; if (!visible && option.selected) selectedHidden = true; });
       if (selectedHidden) select.value = "";
     };
+    const sourceCurrency = () => accountCurrencies.get(String(form.accountId.value || "")) || statementCurrency;
+    const destinationCurrency = () => String(form.destinationAccountId.selectedOptions?.[0]?.dataset.currency || "");
+    const isCrossCurrencyTransfer = () => form.kind.value === "transfer" && Boolean(destinationCurrency()) && destinationCurrency() !== sourceCurrency();
+    const formatEffectiveRate = (sourceMinor, destinationMinor) => {
+      if (!Number.isSafeInteger(sourceMinor) || !Number.isSafeInteger(destinationMinor) || sourceMinor <= 0 || destinationMinor <= 0) return "Informe os dois valores";
+      const scale = 1000000n;
+      const denominator = BigInt(sourceMinor);
+      const rounded = (BigInt(destinationMinor) * scale + denominator / 2n) / denominator;
+      const whole = rounded / scale;
+      const fraction = (rounded % scale).toString().padStart(6, "0").replace(/0+$/, "");
+      return fraction ? whole.toString() + "," + fraction : whole.toString();
+    };
+    const syncEffectiveRate = () => {
+      const output = form.querySelector("[data-effective-rate]");
+      const direction = form.querySelector("[data-effective-rate-direction]");
+      const sourceMinor = moneyToMinor(moneyInput?.value || "0");
+      const destinationMinor = moneyToMinor(destinationMoneyInput?.value || "0");
+      const source = sourceCurrency();
+      const destination = destinationCurrency();
+      if (direction) direction.textContent = source && destination ? destination + " por " + source : "";
+      if (!output) return;
+      output.textContent = formatEffectiveRate(sourceMinor, destinationMinor);
+    };
+    const syncTransferCurrencyState = () => {
+      const source = sourceCurrency();
+      const destination = destinationCurrency();
+      const crossCurrency = isCrossCurrencyTransfer();
+      const sourceNode = form.querySelector("[data-source-currency]");
+      const destinationNode = form.querySelector("[data-destination-currency]");
+      if (sourceNode) sourceNode.textContent = source || "moeda indisponível";
+      if (destinationNode) destinationNode.textContent = destination || "moeda destino";
+      setFieldVisible("destinationAmountMinor", crossCurrency);
+      setFieldVisible("effectiveRate", crossCurrency);
+      if (destinationMoneyInput) destinationMoneyInput.required = crossCurrency;
+      const repeatHint = form.querySelector("[data-cross-currency-repeat-hint]");
+      if (repeatHint) repeatHint.hidden = !crossCurrency;
+      const installmentOption = form.repeatMode.querySelector('option[value="installment"]');
+      if (installmentOption) installmentOption.disabled = crossCurrency;
+      if (crossCurrency && form.repeatMode.value !== "single") form.repeatMode.value = "single";
+      syncEffectiveRate();
+    };
     const syncFieldVisibility = () => {
       const kind = form.kind.value;
       const fixedOption = form.repeatMode.querySelector('[data-repeat-option="fixed"]');
       if (fixedOption) fixedOption.disabled = kind === "transfer";
       if (kind === "transfer" && form.repeatMode.value === "fixed") form.repeatMode.value = "single";
+      syncTransferCurrencyState();
       const repeatMode = form.repeatMode.value;
       const usesGenericTemporalFields = repeatMode === "single" || form.dataset.method === "PATCH";
       setFieldVisible("occurredOn", usesGenericTemporalFields); form.occurredOn.required = usesGenericTemporalFields;
@@ -735,7 +782,15 @@ function clientScript(currency: string | undefined): string {
       ["interval", "frequency", "endOn"].forEach((name) => setFieldVisible(name, repeatMode === "fixed"));
       syncCategoryOptions();
     };
-    form.addEventListener("change", (event) => { if (event.target.name === "kind" || event.target.name === "repeatMode") syncFieldVisibility(); });
+    form.addEventListener("change", (event) => {
+      if (event.target.name === "destinationAccountId" && destinationMoneyInput) {
+        const nextCurrency = destinationCurrency();
+        const previousCurrency = destinationMoneyInput.dataset.currency || "";
+        if (previousCurrency && previousCurrency !== nextCurrency) destinationMoneyInput.value = "";
+        destinationMoneyInput.dataset.currency = nextCurrency;
+      }
+      if (event.target.name === "kind" || event.target.name === "repeatMode" || event.target.name === "accountId" || event.target.name === "destinationAccountId") syncFieldVisibility();
+    });
 
     const statusButtons = Array.from(form.querySelectorAll("[data-status-option]"));
     const statusLabel = form.querySelector("[data-status-label]");
@@ -774,6 +829,8 @@ function clientScript(currency: string | undefined): string {
       TRANSACTION_ACCOUNT_ARCHIVED: "A conta selecionada precisa estar ativa.",
       TRANSACTION_DESTINATION_ACCOUNT_REQUIRED: "Selecione a conta de destino da transferência.",
       TRANSACTION_DESTINATION_ACCOUNT_INVALID: "A conta de destino da transferência é inválida.",
+      TRANSACTION_DESTINATION_AMOUNT_REQUIRED: "Informe o valor que será creditado na conta de destino.",
+      TRANSACTION_DESTINATION_AMOUNT_INVALID: "O valor da conta de destino precisa ser maior que zero e compatível com a transferência.",
       TRANSACTION_TRANSFER_SAME_ACCOUNT: "A conta de origem e a conta de destino devem ser diferentes.",
       TRANSACTION_CURRENCY_MISMATCH: "A moeda do lançamento deve ser a mesma da conta.",
       TRANSACTION_CATEGORY_INVALID: "A categoria selecionada é inválida.",
@@ -792,7 +849,9 @@ function clientScript(currency: string | undefined): string {
       const result = { kind: String(data.get("kind")), amountMinor, occurredOn, plannedOn: normalizedPlannedOn, accountId: String(data.get("accountId")), description, status };
       if (normalizedEffectiveOn !== undefined) result.effectiveOn = normalizedEffectiveOn;
       const destinationAccountId = String(data.get("destinationAccountId") || ""); const categoryId = String(data.get("categoryId") || ""); const note = String(data.get("note") || "").trim();
-      if (destinationAccountId) result.destinationAccountId = destinationAccountId; if (categoryId) result.categoryId = categoryId; if (note) result.note = note; return result;
+      if (destinationAccountId) result.destinationAccountId = destinationAccountId;
+      if (isCrossCurrencyTransfer()) result.destinationAmountMinor = moneyToMinor(data.get("destinationAmountMinor"));
+      if (categoryId) result.categoryId = categoryId; if (note) result.note = note; return result;
     };
     const payload = () => { const data = new FormData(form); return basePayload(String(data.get("plannedOn") || ""), String(data.get("effectiveOn") || ""), moneyToMinor(data.get("amountMinor")), String(data.get("description") || "")); };
     const newIdempotencyKey = () => window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
@@ -801,7 +860,7 @@ function clientScript(currency: string | undefined): string {
     document.querySelectorAll("[data-transaction]").forEach((node) => {
       const transaction = JSON.parse(node.textContent);
       if (transaction.accountRemuneration) remunerationIds.add(transaction.id);
-      const hydrate = (selector, clone) => { const button = document.querySelector(selector + transaction.id + '"]'); if (!button) return; button.addEventListener("click", () => { form.reset(); form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id; form.dataset.method = clone ? "POST" : "PATCH"; form.kind.value = transaction.kind; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); }); };
+      const hydrate = (selector, clone) => { const button = document.querySelector(selector + transaction.id + '"]'); if (!button) return; button.addEventListener("click", () => { form.reset(); form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id; form.dataset.method = clone ? "POST" : "PATCH"; form.kind.value = transaction.kind; form.accountId.value = transaction.accountId || form.accountId.value; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); }); };
       hydrate('[data-edit="', false); hydrate('[data-clone="', true);
     });
     document.addEventListener("click", (event) => {
@@ -869,8 +928,17 @@ function resolveAccountCurrency(account: AccountRecord | undefined): string | un
 
 function resolveTransactionCurrency(
   transaction: TransactionRecord,
+  selectedAccountId: string | undefined,
   accountCurrency: string | undefined,
 ): string | undefined {
+  if (
+    transaction.kind === "transfer" &&
+    selectedAccountId !== undefined &&
+    transaction.destinationAccountId === selectedAccountId
+  ) {
+    return normalizeCurrency(transaction.destinationCurrency) ?? accountCurrency;
+  }
+
   return (
     normalizeCurrency(transaction.group?.currency) ??
     normalizeCurrency(transaction.currency) ??
@@ -967,7 +1035,7 @@ function css(): string {
     .statement-status{align-items:center;border:1px solid currentColor;border-radius:999px;cursor:default;display:inline-flex;height:26px;justify-content:center;justify-self:start;padding:0;position:relative;width:26px}.statement-status-ok{background:var(--success-bg);color:var(--success)}.statement-status-posted{background:#e0f2fe;color:#0369a1}.statement-status-pending{background:var(--warning-bg);color:var(--warning)}.statement-status-planned{background:var(--primary-soft);color:var(--primary)}
     .actions{position:relative}.actions summary{align-items:center;background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:28px;justify-content:center;list-style:none;width:28px}.actions summary::-webkit-details-marker{display:none}.actions-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);display:grid;gap:2px;max-width:220px;padding:4px;position:absolute;right:0;top:34px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:var(--radius);color:var(--text);display:flex;font-size:.8125rem;font-weight:600;gap:8px;justify-content:flex-start;min-height:32px;padding:0 8px;text-align:left;white-space:nowrap}.actions-item.danger{color:var(--danger)}.actions-divider{border:0;border-top:1px solid var(--line);margin:3px 2px}
     .statement-row.account-remuneration-row{border-left:3px solid var(--primary)}.statement-row.account-remuneration-row .col-description{min-width:15rem}.statement-row.account-remuneration-row .description{align-items:baseline;column-gap:4px;display:grid;grid-template-columns:max-content minmax(0,1fr);min-width:0}.statement-row.account-remuneration-row .description>strong{grid-column:1;grid-row:1;overflow-wrap:normal;white-space:nowrap}.account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;grid-column:1/-1;grid-row:2;line-height:1.35}.account-remuneration-audit{background:transparent;border:0;display:block;grid-column:2;grid-row:1;justify-self:start;margin:0;max-width:100%;min-width:0}.account-remuneration-audit[open]{grid-column:1/-1;grid-row:3;margin:4px 0 0}.account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;line-height:1.2;list-style:none;padding:0;white-space:nowrap}.account-remuneration-audit summary::-webkit-details-marker{display:none}.account-remuneration-audit-content{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:4px;padding:8px}.account-remuneration-adjustment{border-radius:999px;font-size:.6875rem;font-weight:800;padding:2px 7px}.account-remuneration-audit-content .account-remuneration-adjustment{background:var(--warning-bg);color:var(--warning);justify-self:start}.account-remuneration-audit-content dl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));margin:0}.account-remuneration-audit-content dl div{min-width:0}.account-remuneration-audit-content dt{color:var(--muted);font-size:.625rem;font-weight:700;text-transform:uppercase}.account-remuneration-audit-content dd{font-size:.75rem;font-weight:700;margin:0;overflow-wrap:anywhere}@media(max-width:760px){.account-remuneration-audit-content dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    .empty{background:var(--bg);border:1px dashed var(--line);border-radius:var(--radius-lg);display:grid;gap:4px;margin:14px;padding:14px}dialog{border:0;border-radius:var(--radius-lg);box-shadow:0 24px 80px rgba(15,23,42,.24);max-width:min(860px,calc(100vw - 32px));padding:0;width:100%}dialog::backdrop{background:rgba(6,25,35,.48)}.modal-panel{display:grid;gap:14px;padding:18px}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.save-row{align-items:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}.status-icons{align-items:center;display:flex;gap:6px}.status-icon-btn{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;height:32px;justify-content:center;min-height:0;padding:0;width:32px}.status-icon-btn[data-status-option=posted].active{background:#e0f2fe;color:#0369a1}.status-icon-btn[data-status-option=reconciled].active{background:var(--success-bg);color:var(--success)}.status-icon-btn[data-status-option=planned].active{background:var(--warning-bg);color:var(--warning)}.status-label{color:var(--muted);font-size:.75rem;font-weight:600}
+    .empty{background:var(--bg);border:1px dashed var(--line);border-radius:var(--radius-lg);display:grid;gap:4px;margin:14px;padding:14px}dialog{border:0;border-radius:var(--radius-lg);box-shadow:0 24px 80px rgba(15,23,42,.24);max-width:min(860px,calc(100% - 32px));padding:0;width:100%}dialog[data-modal]{overflow-x:hidden}dialog::backdrop{background:rgba(6,25,35,.48)}.modal-panel{display:grid;gap:14px;max-width:100%;min-width:0;padding:18px;width:100%}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr));max-width:100%;min-width:0;width:100%}.modal-panel form[data-form]>*{max-width:100%;min-width:0}.modal-panel form[data-form] label{min-width:0}.modal-panel form[data-form] input,.modal-panel form[data-form] select,.modal-panel form[data-form] textarea,.modal-panel form[data-form] output{max-width:100%;min-width:0}.modal-panel form[data-form] output,.modal-panel form[data-form] .muted{overflow-wrap:anywhere}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.save-row{align-items:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}.status-icons{align-items:center;display:flex;gap:6px}.status-icon-btn{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;height:32px;justify-content:center;min-height:0;padding:0;width:32px}.status-icon-btn[data-status-option=posted].active{background:#e0f2fe;color:#0369a1}.status-icon-btn[data-status-option=reconciled].active{background:var(--success-bg);color:var(--success)}.status-icon-btn[data-status-option=planned].active{background:var(--warning-bg);color:var(--warning)}.status-label{color:var(--muted);font-size:.75rem;font-weight:600}
     @media(max-width:1279px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}.summary-totals{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:1100px){.filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}.statement-filter-actions{grid-column:1/-1}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){main{padding:14px 14px 24px}.filter-form,.modal-panel form[data-form],.group-modal-panel form,.summary-totals{grid-template-columns:1fr}.statement-filter-actions{align-items:stretch;display:grid}.statement-toolbar{align-items:stretch;display:grid}.save-row{align-items:stretch;flex-direction:column}.statement-table{overflow-x:visible}.statement-head{display:none}.statement-row.statement-body{align-items:center;display:flex;flex-wrap:wrap;gap:5px 8px;min-width:0;padding:10px}.statement-row.statement-body .col-select{left:auto;order:1;position:static}.statement-row.statement-body .col-date{color:var(--muted);flex:0 0 auto;font-size:.75rem;order:1;padding-left:0}.statement-row.statement-body .col-actions{margin-left:auto;order:2}.statement-row.statement-body .col-description{flex:1 1 100%;order:3}.statement-row.statement-body .col-category,.statement-row.statement-body .col-kind{color:var(--muted);font-size:.75rem;order:4}.statement-row.statement-body .col-status{order:5}.statement-row.statement-body .col-amount{font-size:.9375rem;margin-left:auto;order:6}.statement-row.statement-body .col-balance{color:var(--muted);font-size:.75rem;order:7}.statement-date-group{position:sticky;top:0;z-index:2}}

@@ -1,0 +1,10 @@
+SolverFin PR #672 / Issue #668 terminal handoff remediation
+material_head_sha=c1fd571c661c64abcb90db1b99fa3f3c7ce95749
+base_sha=7213dfc454acebbc2de00658e22071d6b0a37a5c
+merge_preview_sha=d9d43e9d3e809ce7c6dac6c01d388951c25b678b
+rejection_id=audit-rejection:672-stale-handoff-c1fd571
+finding=A-003 stale handoff after material drift
+recovery=post-write-refreeze
+exact_head_ci=Delivery V2 CI run 35787170235 success
+exact_head_visual=Statement visual validation run 35787170294 success
+publication_policy=result-only-child; product code, schema, tests, docs and workflows are not modified by the terminal handoff commit

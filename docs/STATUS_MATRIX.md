@@ -88,6 +88,7 @@ A Fase 3 esta **em execucao**. O trabalho operacional esta organizado nas epicas
 | Agregacao multi-moedas explicita                              | Feito     | #595, `docs/MULTI_CURRENCY_AGGREGATION.md`, ADR 0013              |
 | Contrato para consolidacao cambial auditavel futura           | Feito     | #596, `docs/CURRENCY_CONVERSION.md`, ADR 0013                     |
 | Datas financeiras formalizadas                                | Feito     | #597, `docs/TRANSACTION_DATES.md`                                 |
+| Transferencias cross-currency com dois valores nativos        | Feito     | #668, `docs/API_TRANSACTIONS.md`, `docs/TRANSACTIONS.md`          |
 | Invariantes financeiros ponta a ponta                         | Feito     | #598, `apps/api/src/financial-invariants-e2e.integration.test.ts` |
 | Parcelas de cartão: valor, vínculo e edição conservadora      | Feito     | #662, `docs/CARDS.md`, `docs/API_INSTALLMENTS.md`                 |
 | Orcamentos migrados para acompanhamento multi-moedas          | Feito     | #613, `docs/API_BUDGETS_GOALS_ALERTS.md`                          |
@@ -112,7 +113,8 @@ A suite `apps/api/src/financial-invariants-e2e.integration.test.ts` roda dentro 
 - `FIN-E2E-006`: compromisso `planned` conciliado deixa de ser futuro e passa a realizado sem dupla contabilizacao;
 - `FIN-E2E-007`: perfil com BRL e USD permanece separado em `currencyBlocks`, sem escalar unico sintetico;
 - `FIN-E2E-008`: filtro explicito de USD considera somente a moeda e o perfil solicitados, ignorando BRL do mesmo perfil e USD de perfil irmao;
-- `FIN-E2E-009`: retry de pagamento de fatura ja liquidada e rejeitado sem criar nova transacao nem alterar o resumo financeiro.
+- `FIN-E2E-009`: retry de pagamento de fatura ja liquidada e rejeitado sem criar nova transacao nem alterar o resumo financeiro;
+- `FIN-E2E-010`: transferencia 538,32 BRL -> 100,00 USD preserva uma identidade, debita somente BRL, credita somente USD e nao cria receita/despesa economica.
 
 Os cenarios calculam deltas a partir de um baseline obtido imediatamente antes de cada mutacao relevante; assim, nao dependem da ordem dos demais testes nem de um banco previamente vazio. O relogio do teste nao define competencia, planejamento ou efetivacao: todas as datas financeiras usadas nas expectativas sao literais e controladas.
 

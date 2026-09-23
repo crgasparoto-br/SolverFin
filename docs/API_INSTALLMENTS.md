@@ -54,7 +54,8 @@ Regras do payload:
 - `kind` aceita somente `income`, `expense` ou `transfer`;
 - `status` aceita somente `planned`, `posted` ou `reconciled`;
 - `destinationAccountId` e obrigatoria para `transfer` e deve ser `null` ou omitida para os demais tipos;
-- transferencias exigem contas ativas, distintas, do mesmo perfil e da mesma moeda;
+- transferencias parceladas exigem contas ativas, distintas e do mesmo perfil; neste contrato o parcelamento de transferencia permanece restrito à mesma moeda;
+- tentativa de parcelamento cross-currency é rejeitada no backend porque ainda não existe contrato para definir os dois valores nativos futuros;
 - `categoryId` pode ser UUID valido, `null` ou omitida;
 - `description` e obrigatoria, aparada e deve possuir de 1 a 240 caracteres;
 - `note` pode ser string, `null` ou omitida e e persistida separadamente da descricao;

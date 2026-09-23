@@ -48,6 +48,8 @@ interface TransactionRow {
   source: string;
   amountMinor: number;
   currency: string;
+  destinationAmountMinor: number | null;
+  destinationCurrency: string | null;
   occurredOn: Date;
   plannedOn: Date;
   effectiveOn: Date | null;
@@ -159,8 +161,8 @@ type TransactionMetadata = {
 
 const SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId",
   "categoryId", "cardId", "cardInstrumentId", "invoiceId", "recurrenceId", "installmentId", "importBatchId", "aiSuggestionId",
-  "transferGroupId", "transactionGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
-  "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
+  "transferGroupId", "transactionGroupId", "kind", "status", "source", "amountMinor", "currency",
+  "destinationAmountMinor", "destinationCurrency", "occurredOn", "plannedOn", "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
 export async function listTransactionsForContext(
   context: TenantContext,
@@ -247,7 +249,8 @@ export async function updateTransactionForContext(
       payload.status !== undefined ||
       payload.accountId !== undefined ||
       payload.currency !== undefined ||
-      payload.destinationAccountId !== undefined)
+      payload.destinationAccountId !== undefined ||
+      payload.destinationAmountMinor !== undefined)
   ) {
     throw new TransactionGroupError(
       "TRANSACTION_GROUP_MEMBER_UPDATE_BLOCKED",
@@ -389,18 +392,19 @@ export async function voidTransactionForContext(
 function buildInsertTransactionSql(): string {
   return `insert into "Transaction"
     ("id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "categoryId",
-     "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
-     "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`;
+     "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "destinationAmountMinor", "destinationCurrency",
+     "occurredOn", "plannedOn", "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)`;
 }
 
 function buildUpdateTransactionSql(): string {
   return `update "Transaction" set
       "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6, "transferGroupId" = $7,
       "kind" = $8, "status" = $9, "source" = $10, "amountMinor" = $11, "currency" = $12,
-      "occurredOn" = $13, "plannedOn" = $14, "effectiveOn" = $15, "description" = $16,
-      "note" = $17, "reconciledAt" = $18, "voidedAt" = $19, "createdAt" = $20, "updatedAt" = $21,
-      "createdByUserId" = $22, "updatedByUserId" = $23
+      "destinationAmountMinor" = $13, "destinationCurrency" = $14,
+      "occurredOn" = $15, "plannedOn" = $16, "effectiveOn" = $17, "description" = $18,
+      "note" = $19, "reconciledAt" = $20, "voidedAt" = $21, "createdAt" = $22, "updatedAt" = $23,
+      "createdByUserId" = $24, "updatedByUserId" = $25
     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
@@ -418,6 +422,8 @@ function buildTransactionParams(transaction: TransactionWithNote): unknown[] {
     transaction.source.toUpperCase(),
     transaction.amountMinor,
     transaction.currency,
+    transaction.destinationAmountMinor ?? null,
+    transaction.destinationCurrency ?? null,
     transaction.occurredOn,
     transaction.plannedOn,
     transaction.effectiveOn ?? null,
@@ -533,6 +539,9 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   };
 
   if (row.note !== null) transaction.note = row.note;
+  if (row.destinationAmountMinor !== null)
+    transaction.destinationAmountMinor = row.destinationAmountMinor;
+  if (row.destinationCurrency !== null) transaction.destinationCurrency = row.destinationCurrency;
   if (row.effectiveOn !== null) transaction.effectiveOn = toDateOnly(row.effectiveOn);
   if (row.accountId !== null) transaction.accountId = row.accountId;
   if (row.destinationAccountId !== null)

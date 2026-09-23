@@ -16,6 +16,8 @@ export interface TransactionRecord {
   source?: string;
   amountMinor: number;
   currency?: string;
+  destinationAmountMinor?: number;
+  destinationCurrency?: string;
   occurredOn: string;
   plannedOn: string;
   effectiveOn?: string;
@@ -318,7 +320,7 @@ export function signedAmount(
   if (transaction.kind === "income") return transaction.amountMinor;
   if (transaction.kind === "expense") return -transaction.amountMinor;
   if (transaction.kind === "transfer" && transaction.destinationAccountId === selectedAccountId) {
-    return transaction.amountMinor;
+    return transaction.destinationAmountMinor ?? transaction.amountMinor;
   }
   if (transaction.kind === "transfer" && transaction.accountId === selectedAccountId) {
     return -transaction.amountMinor;

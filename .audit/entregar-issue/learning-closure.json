@@ -1,16 +1,1 @@
-{
-  "schema_version": 1,
-  "classification": "implementation-only",
-  "source_event": {
-    "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:615-72795e5d-category-path-search",
-    "audit_report_sha256": "2cb324dc1038e90c163962851ec980ee2a2b8c1c7eccbab1ddc3932fe247245f",
-    "finding_ids": [
-      "A-001"
-    ]
-  },
-  "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "The delivery contract already requires preservation of current behavior and equivalent coverage when replacing an enhancement. This remediation closes a target-specific search-corpus and counting regression with a discriminant browser control, without requiring a new global Skill rule."
-  }
-}
+{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:672-stale-handoff-c1fd571","audit_report_sha256":"5128f6b98df191fadb88f27369d577a21c775c8b0d9265e87d4b02382f0e6e11","finding_ids":["A-003"]},"generalized_learning":{"promotion_status":"not-required","reason":"The rejection is a target-specific terminal publication gap after later material commits; the existing post-write-refreeze and result-only-child controls already define the required prevention and detection behavior."},"skill_changes":[]}

@@ -596,7 +596,7 @@ async function calculateClosingBalance(
        case
          when t."kind" = 'INCOME' and t."accountId" = $3 then t."amountMinor"
          when t."kind" = 'EXPENSE' and t."accountId" = $3 then -t."amountMinor"
-         when t."kind" = 'TRANSFER' and t."destinationAccountId" = $3 then t."amountMinor"
+         when t."kind" = 'TRANSFER' and t."destinationAccountId" = $3 then coalesce(t."destinationAmountMinor", t."amountMinor")
          when t."kind" = 'TRANSFER' and t."accountId" = $3 then -t."amountMinor"
          else 0
        end
