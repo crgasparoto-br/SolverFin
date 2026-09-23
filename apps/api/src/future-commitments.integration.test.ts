@@ -87,8 +87,8 @@ async function main(): Promise<void> {
   await query(
     `insert into "Recurrence"
       ("id", "organizationId", "financialProfileId", "accountId", "status", "kind", "frequency",
-       "interval", "startOn", "amountMinor", "currency", "description")
-     values ($1, $2, $3, $4, 'ACTIVE', 'EXPENSE', 'MONTHLY', 1, $5, $6, 'BRL', $7)`,
+       "interval", "startOn", "amountMinor", "currency", "description", "updatedAt")
+     values ($1, $2, $3, $4, 'ACTIVE', 'EXPENSE', 'MONTHLY', 1, $5, $6, 'BRL', $7, now())`,
     [
       recurrenceId,
       CONTEXT.organizationId,
@@ -102,8 +102,8 @@ async function main(): Promise<void> {
   await query(
     `insert into "Installment"
       ("id", "organizationId", "financialProfileId", "recurrenceId", "status", "sequenceNumber",
-       "totalInstallments", "dueOn", "amountMinor", "currency")
-     values ($1, $2, $3, $4, 'PLANNED', 1, 1, $5, $6, 'BRL')`,
+       "totalInstallments", "dueOn", "amountMinor", "currency", "updatedAt")
+     values ($1, $2, $3, $4, 'PLANNED', 1, 1, $5, $6, 'BRL', now())`,
     [
       installmentId,
       CONTEXT.organizationId,
