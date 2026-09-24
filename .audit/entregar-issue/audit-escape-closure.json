@@ -62,7 +62,7 @@
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
+      "revalidated_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
       "status": "passed"
     },
     {
@@ -76,8 +76,8 @@
       },
       "plausible_wrong_implementation": "Treat an absent mandatory source value as a known numeric zero because a downstream builder can synthesize a structurally complete object.",
       "literal_case": {
-        "procedure": "Request a 30-day projection for a currency with no opening-balance source and inspect the public freeToSpend block.",
-        "observed": "EUR without an opening-balance source returns status=unavailable and omits freeToSpend/minimum/deficit numeric fields on the corrected material head.",
+        "procedure": "Request a 30-day projection for EUR without an active EUR account and inspect freeToSpend.",
+        "observed": "EUR is unavailable and omits numeric fields on the exact material head.",
         "status": "passed",
         "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
       },
@@ -90,8 +90,15 @@
           "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
         },
         {
-          "id": "missing-source-omits-numerics",
+          "id": "commitment-only-currency-without-active-account",
           "surface": "public-api",
+          "dimension": "unfiltered-commitment-only-provenance",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        },
+        {
+          "id": "missing-source-omits-numerics",
+          "surface": "free-to-spend-contract",
           "dimension": "synthetic-zero-prevention",
           "status": "passed",
           "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
@@ -100,8 +107,8 @@
       "required_attack_dimensions": [
         {
           "risk_family": "structural-contract",
-          "surface": "public-api",
-          "dimension": "known-zero-vs-missing-source"
+          "surface": "canonical-source-consistency",
+          "dimension": "opening-balance-provenance"
         },
         {
           "risk_family": "public-boundary",
@@ -128,7 +135,7 @@
         "structural-contract",
         "public-boundary"
       ],
-      "revalidated_head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
+      "revalidated_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
       "status": "passed"
     }
   ]

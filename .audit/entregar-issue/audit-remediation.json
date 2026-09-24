@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
+  "candidate_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
   "remediation_mode": "targeted-remediation",
   "source": {
     "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
@@ -26,9 +26,9 @@
         "apps/api/src/cash-flow-projection.integration.test.ts"
       ],
       "validations": [
-        "Delivery V2 CI run 36030045019 completed success on exact material head 2174b49111e7080beafe0f77dfc995058bf10731.",
-        "Statement visual validation run 36030044744 completed success on the same exact material head.",
-        "The public API regression distinguishes a known zero JPY opening balance (available) from missing EUR opening-balance provenance (unavailable without numeric fields)."
+        "Delivery V2 CI run 36035406314 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
+        "Statement visual validation run 36035406276 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
+        "Regression covers known-zero JPY, filtered missing EUR, and unfiltered commitment-only EUR without active-account provenance."
       ]
     }
   ]

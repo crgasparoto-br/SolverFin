@@ -1,6 +1,7 @@
-PR 675 material head 2174b49111e7080beafe0f77dfc995058bf10731 is green.
-Finding A-002 is closed by preserving missing opening-balance provenance as unavailable instead of synthesized zero.
-Known zero remains available: the integration regression creates a JPY account with openingBalanceMinor=0 and expects available zero values.
-Missing source remains unavailable: EUR with no opening-balance source expects status=unavailable and no numeric free-to-spend fields.
-Delivery V2 CI run 36030045019 and Statement visual validation run 36030044744 both completed successfully on the exact material head.
-Target binding is revalidated for issue 618 / PR 675 on material head 2174b49111e7080beafe0f77dfc995058bf10731 before terminal publication.
+PR 675 material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c is green.
+Finding A-002 is closed for both the filtered missing-currency path and the unfiltered commitment-only currency path.
+Known zero remains available: JPY has an active account with openingBalanceMinor=0.
+Missing source remains unavailable: EUR has a future invoice commitment but no active EUR account/opening-balance source, and freeToSpend omits numeric fields.
+Delivery V2 CI run 36035406314 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.
+Statement visual validation run 36035406276 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.
+The Delivery V2 classifier selected riskProfile=critical for this PR.

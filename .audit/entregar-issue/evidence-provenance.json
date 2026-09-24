@@ -1,1 +1,16 @@
-{"schema_version":1,"material_head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","base_sha":"7213dfc454acebbc2de00658e22071d6b0a37a5c","evidence":[{"evidence_id":"EVID-CONTROLS-668-003","kind":"behavioral","status":"passed","path":"evidence/issue-668-controls.txt","sha256":"95440bbd6ce7244161474aff3997dbc0088c6f10a68a79a7b803710a27c88e79","subject_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","freshness_policy":"exact-material-head","producer":"GitHub Actions Delivery V2 CI run 35787170235 and Statement visual validation run 35787170294"},{"evidence_id":"EVID-RATE-668-001","kind":"quantitative","status":"passed","path":"evidence/rate-derivation-668.txt","sha256":"b1372e432600f0f46240e554d7d947ca8faaaed57e564f97925c3524b8905a89","subject_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","freshness_policy":"exact-material-head","producer":"GitHub Actions Delivery V2 CI run 35787170235 plus exact-head Chrome cross-currency-transfer scenario in run 35787170294"}]}
+{
+  "schema_version": 1,
+  "material_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "evidence": [
+    {
+      "evidence_id": "EVID-618-EXACT-HEAD",
+      "kind": "quantitative",
+      "status": "passed",
+      "path": "evidence/handoff-remediation-675.txt",
+      "sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d",
+      "freshness_policy": "exact-material-head",
+      "subject_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+      "producer": "GitHub Actions Delivery V2 CI run 36035406314"
+    }
+  ]
+}

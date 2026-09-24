@@ -1,1 +1,246 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"requirement-attack-matrix","compression":"gzip","encoded_size":16976,"encoded_sha256":"f7d3b8dea03dd1b1bfbe75e11a0a6902f30ab19675a2ea21018f3e13e17caf01","decoded_size":213798,"decoded_sha256":"06fbb91480e16f652adcc15b8bcc88b4ab821f54de6f645656b7fed09f3abb00","parts":[{"path":"requirement-attack-matrix.parts/part-000.b64","size":12288,"sha256":"da0fea0d0a55eba25d062298fd56c174eaa1d3ee8a3bb6707f1992668d346339"},{"path":"requirement-attack-matrix.parts/part-001.b64","size":4688,"sha256":"dac90fb555e7092c6801b22f8438183bc1c3c5030bad3bf9b1ee61614c0ab5c8"}]}
+{
+  "schema_version": 1,
+  "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "requirements": [
+    {
+      "requirement_id": "REQ-618",
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015"
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-001",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-002",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-003",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-004",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-005",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-006",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-007",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-008",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-009",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-010",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-011",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-012",
+          "primary_negative_control_id": "FREE-TO-SPEND-PUBLIC-001"
+        },
+        {
+          "obligation_id": "OBL-013",
+          "primary_negative_control_id": "FREE-TO-SPEND-PUBLIC-001"
+        },
+        {
+          "obligation_id": "OBL-014",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        },
+        {
+          "obligation_id": "OBL-015",
+          "primary_negative_control_id": "FREE-TO-SPEND-PROVENANCE-001"
+        }
+      ],
+      "source_texts": [
+        "Horizonte padrão é 30 dias e reutiliza exatamente `referenceDate`, `openingBalance` e série de #617.",
+        "`minimumProjectedBalance` considera a posição inicial e todos os 30 fechamentos.",
+        "`minimumBalanceOn` usa a primeira ocorrência temporal, incluindo `referenceDate` em caso de empate.",
+        "`freeToSpend` corresponde ao menor colchão financeiro não negativo da trajetória.",
+        "Déficit intermediário não é mascarado por receita posterior.",
+        "Orçamento sem compromisso materializado não reduz `freeToSpend`.",
+        "Limite de cartão/crédito não aumenta `freeToSpend`.",
+        "Não existe reserva mínima implícita.",
+        "Déficit produz `freeToSpend = 0` e `projectedDeficit > 0`.",
+        "BRL e USD permanecem independentes.",
+        "Transferência futura BRL -> USD afeta os dois indicadores apenas pelos respectivos pontos das séries de #617, sem compensação/conversão em #618.",
+        "Dado obrigatório insuficiente produz `unavailable` e omite campos numéricos sintéticos.",
+        "Saldo bruto, livre para gastar e déficit projetado são semanticamente distintos na UI/API.",
+        "Drilldown do ponto limitante reutiliza a evidência retornada pela projeção, sem recálculo frontend.",
+        "Cálculo não depende de IA."
+      ],
+      "risk_families": [
+        "structural-contract",
+        "public-boundary",
+        "documentation"
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "reason": "Opening-balance provenance must survive canonical projection reuse."
+        },
+        {
+          "risk_family": "public-boundary",
+          "surface": "free-to-spend-contract",
+          "reason": "Unavailable state must not expose synthetic numeric values at the public API boundary."
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "reason": "Canonical documentation must match the runtime availability semantics."
+        }
+      ],
+      "plausible_wrong_implementation": "Build a complete 30-day currency trajectory from a future commitment using an implicit opening zero and then publish that structurally valid block as available.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+        "procedure": "Run the full exact-head Delivery V2 CI including domain tests, API integration tests and build.",
+        "expected": "All issue 618 behavioral and integration regressions pass on the material head.",
+        "observed": "Delivery V2 CI run 36035406314 completed success on the exact material head.",
+        "evidence": "evidence/handoff-remediation-675.txt",
+        "evidence_sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d",
+        "evidence_kind": "quantitative",
+        "evidence_id": "EVID-618-EXACT-HEAD"
+      },
+      "negative_controls": [
+        {
+          "id": "FREE-TO-SPEND-PROVENANCE-001",
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "opening-balance-provenance",
+          "failure_mode": "A structurally complete projection can be published from synthesized numeric state when a mandatory source is absent.",
+          "plausible_wrong_implementation": "Treat a projected currency block as sufficient provenance even when that currency exists only because a future commitment introduced it.",
+          "control_type": "test",
+          "procedure": "Call the 30-day projection without a currency filter after creating a future EUR card invoice but no active EUR account, while keeping a real zero-balance JPY account.",
+          "expected": "Only currencies backed by a real active-account opening-balance source may publish numeric free-to-spend values.",
+          "observed": "Exact-head API integration observes commitment-only EUR as unavailable and real-zero JPY as available.",
+          "evidence": "evidence/handoff-remediation-675.txt",
+          "evidence_sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d",
+          "evidence_kind": "structural",
+          "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "FREE-TO-SPEND-PROVENANCE-001-S1",
+              "surface": "canonical-source-consistency",
+              "dimension": "known-zero-with-active-account",
+              "status": "passed"
+            },
+            {
+              "id": "FREE-TO-SPEND-PROVENANCE-001-S2",
+              "surface": "canonical-source-consistency",
+              "dimension": "commitment-only-without-active-account",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "FREE-TO-SPEND-PUBLIC-001",
+          "risk_family": "public-boundary",
+          "surface": "free-to-spend-contract",
+          "dimension": "unavailable-omits-synthetic-numerics",
+          "failure_mode": "A structurally complete projection can be published from synthesized numeric state when a mandatory source is absent.",
+          "plausible_wrong_implementation": "Treat a projected currency block as sufficient provenance even when that currency exists only because a future commitment introduced it.",
+          "control_type": "test",
+          "procedure": "Inspect the public API payload for commitment-only EUR and real-zero JPY.",
+          "expected": "Missing-source EUR must expose unavailable with no numeric fields; JPY remains available at zero.",
+          "observed": "Exact-head integration distinguishes the two public states.",
+          "evidence": "evidence/handoff-remediation-675.txt",
+          "evidence_sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d",
+          "evidence_kind": "behavioral",
+          "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "FREE-TO-SPEND-PUBLIC-001-S1",
+              "surface": "free-to-spend-contract",
+              "dimension": "known-zero-with-active-account",
+              "status": "passed"
+            },
+            {
+              "id": "FREE-TO-SPEND-PUBLIC-001-S2",
+              "surface": "free-to-spend-contract",
+              "dimension": "commitment-only-without-active-account",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "FREE-TO-SPEND-DOCS-001",
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "availability-semantics",
+          "failure_mode": "A structurally complete projection can be published from synthesized numeric state when a mandatory source is absent.",
+          "plausible_wrong_implementation": "Treat a projected currency block as sufficient provenance even when that currency exists only because a future commitment introduced it.",
+          "control_type": "test",
+          "procedure": "Compare the issue-linked API and Dashboard documentation with exact-head runtime behavior.",
+          "expected": "Documentation and runtime must distinguish unavailable from legitimate zero.",
+          "observed": "Exact-head runtime and canonical docs preserve that distinction.",
+          "evidence": "evidence/handoff-remediation-675.txt",
+          "evidence_sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d",
+          "evidence_kind": "documentation",
+          "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "FREE-TO-SPEND-DOCS-001-S1",
+              "surface": "canonical-claims",
+              "dimension": "known-zero-with-active-account",
+              "status": "passed"
+            },
+            {
+              "id": "FREE-TO-SPEND-DOCS-001-S2",
+              "surface": "canonical-claims",
+              "dimension": "commitment-only-without-active-account",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+          "procedure": "Run the full exact-head CRITICAL validation and statement visual validation workflows.",
+          "expected": "No regression in projection, Dashboard, integration or build gates.",
+          "observed": "Delivery V2 CI 36035406314 and visual validation 36035406276 both completed success.",
+          "evidence": "evidence/handoff-remediation-675.txt",
+          "evidence_sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d"
+        }
+      ]
+    }
+  ],
+  "uncovered_requirements": []
+}
