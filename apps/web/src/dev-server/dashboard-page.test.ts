@@ -44,6 +44,20 @@ describe("dev-server dashboard page", () => {
           from: "2026-07-02",
           to: "2026-07-31",
           currencyBlocks: [{ currency: "BRL", closingBalanceMinor: 480000 }],
+          freeToSpend: {
+            referenceDate: "2026-07-01",
+            horizonDays: 30,
+            currencyBlocks: [
+              {
+                currency: "BRL",
+                status: "available",
+                minimumProjectedBalanceMinor: 350000,
+                minimumBalanceOn: "2026-07-12",
+                freeToSpendMinor: 350000,
+                projectedDeficitMinor: 0,
+              },
+            ],
+          },
         });
       }
 
@@ -76,6 +90,10 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /Projeção de caixa — 30 dias/);
       assert.match(html, /Saldo projetado no fim do horizonte/);
       assert.match(html, /R\$\s*4\.800,00/);
+      assert.match(html, /Livre para gastar hoje/);
+      assert.match(html, /R\$\s*3\.500,00/);
+      assert.match(html, /Déficit projetado/);
+      assert.match(html, /Menor saldo projetado em 12\/07\/2026/);
       assert.match(html, /view=cash-flow/);
       assert.match(
         html,
