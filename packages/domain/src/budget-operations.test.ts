@@ -17,7 +17,7 @@ const now = "2038-08-01T12:00:00.000Z";
 
 coversProjectedBudgetWithoutDoubleCountingInvoice();
 keepsUnbudgetedAndUncategorizedWithoutSyntheticPlan();
-excludesInvoiceForecastAndPaymentFromUncategorizedConsumption();
+excludesInvoiceCashMovementsFromBudgetConsumption();
 movesConsumptionFromCommittedPeriodToRealizedPeriod();
 keepsCurrenciesAndTransfersOutsideBudgetConsumption();
 
@@ -138,7 +138,7 @@ function keepsUnbudgetedAndUncategorizedWithoutSyntheticPlan(): void {
   assert.equal(uncategorized.overBudgetAmountMinor, null);
 }
 
-function excludesInvoiceForecastAndPaymentFromUncategorizedConsumption(): void {
+function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
   const invoiceForecast = expense(
     "invoice-forecast",
     "planned",
@@ -168,19 +168,17 @@ function excludesInvoiceForecastAndPaymentFromUncategorizedConsumption(): void {
       effectiveOn: "2038-08-25",
     },
   );
-  const uncategorizedPurchase: Transaction = {
-    ...expense(
-      "card-purchase-uncategorized",
-      "posted",
-      "2038-08-10",
-      "2038-08-10",
-      8_000,
-      "BRL",
-    ),
-    cardId: "card-1",
-    invoiceId: "invoice-1",
-  };
+  const uncategorizedPurchase = expense(
+    "uncategorized-purchase",
+    "posted",
+    "2038-08-10",
+    "2038-08-10",
+    8_000,
+    "BRL",
+  );
   delete uncategorizedPurchase.accountId;
+  uncategorizedPurchase.cardId = "card-1";
+  uncategorizedPurchase.invoiceId = "invoice-1";
 
   const result = summarizeOperationalBudgetDashboard({
     context,
@@ -197,16 +195,9 @@ function excludesInvoiceForecastAndPaymentFromUncategorizedConsumption(): void {
   assert.equal(uncategorized.committedAmountMinor, 0);
   assert.deepEqual(
     uncategorized.realizedItems.map((item) => item.transactionId),
-    ["card-purchase-uncategorized"],
+    ["uncategorized-purchase"],
   );
-  assert.equal(
-    uncategorized.committedItems.some(
-      (item) =>
-        item.transactionId === "invoice-forecast" ||
-        item.transactionId === "invoice-payment",
-    ),
-    false,
-  );
+  assert.deepEqual(uncategorized.committedItems, []);
 }
 
 function movesConsumptionFromCommittedPeriodToRealizedPeriod(): void {
