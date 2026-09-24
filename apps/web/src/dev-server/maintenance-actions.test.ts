@@ -95,7 +95,7 @@ async function budgetsExposeUsageAndArchiveActions(): Promise<void> {
 
   assert.match(
     html,
-    /data-api-path="\/api\/budgets\/budget-1\/usage" title="Ver uso do orçamento">Atualizar uso<\/button>/,
+    /data-api-path="\/api\/budgets\/budget-1\/usage" title="Atualizar acompanhamento">Atualizar<\/button>/,
   );
   assert.match(
     html,
@@ -244,8 +244,35 @@ function resolveMockBody(pathname: string, searchParams: URLSearchParams): unkno
           periodStartOn: "2026-06-01",
           periodEndOn: "2026-06-30",
           plannedAmountMinor: 90000,
+          currency: "BRL",
         },
       ],
+    };
+  }
+
+  if (pathname === "/api/budgets/budget-1/usage") {
+    return {
+      usage: {
+        source: "budget",
+        budgetId: "budget-1",
+        categoryId: "category-1",
+        periodStartOn: "2026-06-01",
+        periodEndOn: "2026-06-30",
+        plannedAmountMinor: 90000,
+        actualAmountMinor: 30000,
+        realizedAmountMinor: 30000,
+        committedAmountMinor: 15000,
+        projectedAmountMinor: 45000,
+        remainingAmountMinor: 60000,
+        availableAmountMinor: 45000,
+        overBudgetAmountMinor: 0,
+        usedPercent: 33.3333333333,
+        alertThresholdPercent: 80,
+        status: "on_track",
+        currency: "BRL",
+        realizedItems: [],
+        committedItems: [],
+      },
     };
   }
 
