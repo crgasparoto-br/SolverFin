@@ -43,6 +43,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`TRANSACTIONS.md`](./TRANSACTIONS.md): lancamentos do Extrato, filtros, agrupamentos e invariantes dos membros.
 - [`TRANSACTION_DATES.md`](./TRANSACTION_DATES.md): contrato canonico de `occurredOn`, `plannedOn`, `effectiveOn`, precedencias por uso e transicoes de estado.
 - [`API_FINANCIAL_SUMMARY.md`](./API_FINANCIAL_SUMMARY.md): saldo disponivel, resultado economico mensal, compromissos e semantica de liquidacao no resumo financeiro.
+- [`API_FUTURE_COMMITMENTS.md`](./API_FUTURE_COMMITMENTS.md): agenda canonica de compromissos futuros, precedencia entre fontes e efeitos monetarios por moeda.
 - [`MULTI_CURRENCY_AGGREGATION.md`](./MULTI_CURRENCY_AGGREGATION.md): inventario e contrato transversal de agregacao financeira separada por moeda.
 - [`CURRENCY_CONVERSION.md`](./CURRENCY_CONVERSION.md): contrato de moeda de referencia, cotacao auditavel e representacao nativa/convertida/indisponivel.
 - [`API_TRANSACTIONS.md`](./API_TRANSACTIONS.md): contrato dos lancamentos usados como fonte financeira canonica.

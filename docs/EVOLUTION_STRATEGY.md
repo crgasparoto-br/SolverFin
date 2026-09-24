@@ -166,6 +166,8 @@ Epica operacional: #591.
 
 Depois que o core financeiro e as telas-base estiverem estabilizados, consolidar compromissos futuros, projecao 30/60/90 dias, livre para gastar, orcamentos operacionais, recorrencias e insights priorizados.
 
+A #616 estabelece a agenda backend canonica em `GET /api/future-commitments`, com identidade logica separada de efeitos monetarios e precedencia entre `Transaction`, `Invoice`, projecoes de `Recurrence` e fallback legado. #617, #619 e consumidores de Dashboard devem reutilizar essa fronteira em vez de reconstruir compromissos.
+
 Epica operacional: #592.
 
 A Fase 4A reutiliza a semantica financeira da #589, as primitives/view-models da #590 e as superficies migradas da #591. Ela nao deve antecipar conversao cambial implicita nem criar recomendacao financeira regulada.

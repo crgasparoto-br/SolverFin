@@ -41,6 +41,7 @@ export interface InstallmentHistoryItem {
   id: EntityId;
   organizationId: EntityId;
   financialProfileId: EntityId;
+  recurrenceId?: EntityId;
   status: InstallmentStatus;
   sequenceNumber: number;
   totalInstallments: number;
@@ -388,6 +389,7 @@ function mapInstallmentHistoryRow(row: Row): InstallmentHistoryItem {
     id: text(row.id),
     organizationId: text(row.organizationId),
     financialProfileId: text(row.financialProfileId),
+    ...(row.recurrenceId ? { recurrenceId: text(row.recurrenceId) } : {}),
     status: lower(row.status) as InstallmentStatus,
     sequenceNumber: numberValue(row.sequenceNumber),
     totalInstallments: numberValue(row.totalInstallments),

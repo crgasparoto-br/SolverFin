@@ -60,6 +60,7 @@ import {
   updateBudgetForContext,
 } from "./repositories/budgets.js";
 import { buildFinancialSummary } from "./repositories/dashboard.js";
+import { listFutureCommitmentsForContext } from "./repositories/future-commitments.js";
 import {
   cancelRecurrenceForContext,
   catchUpRecurrenceInstallmentsForContext,
@@ -118,6 +119,7 @@ const routes: Route[] = [];
 
 route("GET", "/api/financial-profiles", listProfilesHandler);
 route("GET", "/api/financial-summary", financialSummaryHandler);
+route("GET", "/api/future-commitments", listFutureCommitmentsHandler);
 
 route("GET", "/api/categories", listCategoriesHandler);
 route("POST", "/api/categories", createCategoryHandler);
@@ -279,6 +281,22 @@ async function financialSummaryHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   return json(200, await buildFinancialSummary(context));
+}
+
+async function listFutureCommitmentsHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const from = request.query.get("from") ?? "";
+  const to = request.query.get("to") ?? "";
+  const currency = request.query.get("currency") ?? undefined;
+  const agenda = await listFutureCommitmentsForContext(context, {
+    from,
+    to,
+    ...(currency ? { currency } : {}),
+  });
+
+  return json(200, agenda);
 }
 
 async function listCategoriesHandler(

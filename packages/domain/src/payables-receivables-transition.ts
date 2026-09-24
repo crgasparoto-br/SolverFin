@@ -1,5 +1,7 @@
 import type {
+  Card,
   EntityId,
+  Invoice,
   ISODate,
   Transaction,
   TransactionKind,
@@ -22,6 +24,8 @@ export type PayableReceivableTransitionDisposition =
 export interface PayableReceivableTransitionPlanInput {
   payablesReceivables: readonly PayableReceivable[];
   transactions: readonly Transaction[];
+  invoices?: readonly Invoice[];
+  cards?: readonly Card[];
 }
 
 export interface PlannedTransactionDraft {
@@ -44,6 +48,7 @@ export interface PayableReceivableTransitionPlanItem {
   disposition: PayableReceivableTransitionDisposition;
   reason: string;
   transactionId?: EntityId;
+  invoiceId?: EntityId;
   plannedTransactionDraft?: PlannedTransactionDraft;
 }
 
@@ -64,8 +69,10 @@ const emptySummary = {
 export function buildPayableReceivableTransitionPlan(
   input: PayableReceivableTransitionPlanInput,
 ): PayableReceivableTransitionPlan {
+  const invoices = input.invoices ?? [];
+  const cardsById = new Map((input.cards ?? []).map((card) => [card.id, card]));
   const items = input.payablesReceivables.map((payableReceivable) =>
-    planPayableReceivableTransition(payableReceivable, input.transactions),
+    planPayableReceivableTransition(payableReceivable, input.transactions, invoices, cardsById),
   );
   const summary = { ...emptySummary };
 
@@ -79,6 +86,8 @@ export function buildPayableReceivableTransitionPlan(
 function planPayableReceivableTransition(
   payableReceivable: PayableReceivable,
   transactions: readonly Transaction[],
+  invoices: readonly Invoice[],
+  cardsById: ReadonlyMap<EntityId, Card>,
 ): PayableReceivableTransitionPlanItem {
   if (payableReceivable.status === "cancelled") {
     return buildPlanItem(payableReceivable, {
@@ -91,12 +100,14 @@ function planPayableReceivableTransition(
     return planSettledPayableReceivable(payableReceivable, transactions);
   }
 
-  return planPendingPayableReceivable(payableReceivable, transactions);
+  return planPendingPayableReceivable(payableReceivable, transactions, invoices, cardsById);
 }
 
 function planPendingPayableReceivable(
   payableReceivable: PayableReceivable,
   transactions: readonly Transaction[],
+  invoices: readonly Invoice[],
+  cardsById: ReadonlyMap<EntityId, Card>,
 ): PayableReceivableTransitionPlanItem {
   const equivalentTransaction = findEquivalentTransaction(payableReceivable, transactions, {
     statuses: ["planned", "suggested", "posted", "reconciled"],
@@ -107,6 +118,15 @@ function planPendingPayableReceivable(
       disposition: "keep_legacy_duplicate_reference",
       transactionId: equivalentTransaction.id,
       reason: "an equivalent transaction already represents this pending legacy commitment.",
+    });
+  }
+
+  const equivalentInvoice = findEquivalentInvoice(payableReceivable, invoices, cardsById);
+  if (equivalentInvoice !== undefined) {
+    return buildPlanItem(payableReceivable, {
+      disposition: "keep_legacy_duplicate_reference",
+      invoiceId: equivalentInvoice.id,
+      reason: "an equivalent invoice already represents this pending legacy card commitment.",
     });
   }
 
@@ -171,6 +191,32 @@ function planSettledPayableReceivable(
   return buildPlanItem(payableReceivable, {
     disposition: "manual_review",
     reason: "settled legacy record has no valid settlement transaction to preserve or link.",
+  });
+}
+
+function findEquivalentInvoice(
+  payableReceivable: PayableReceivable,
+  invoices: readonly Invoice[],
+  cardsById: ReadonlyMap<EntityId, Card>,
+): Invoice | undefined {
+  if (payableReceivable.kind !== "payable") {
+    return undefined;
+  }
+
+  return invoices.find((invoice) => {
+    if (
+      invoice.organizationId !== payableReceivable.organizationId ||
+      invoice.financialProfileId !== payableReceivable.financialProfileId ||
+      !["open", "closed", "overdue"].includes(invoice.status) ||
+      invoice.totalAmountMinor !== payableReceivable.amountMinor ||
+      invoice.currency !== payableReceivable.currency ||
+      invoice.dueOn !== payableReceivable.dueOn
+    ) {
+      return false;
+    }
+
+    const card = cardsById.get(invoice.cardId);
+    return optionalFieldMatches(card?.paymentAccountId, payableReceivable.accountId);
   });
 }
 

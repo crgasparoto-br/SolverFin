@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-audit-rejection",
+    "rejection_id": "audit-rejection:616-673-handoff-stale-191327c",
+    "audit_report_sha256": "94a5aba557f09013df1f5df0f962ea8cf0d5ae92cb71f681f31af06701f74621",
+    "finding_ids": [
+      "A-673-01"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The existing generic post-write-refreeze and terminal handoff guards already cover material writes after freeze; this cycle only needs correct application to the current candidate."
+  }
+}

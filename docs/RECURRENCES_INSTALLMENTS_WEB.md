@@ -69,3 +69,17 @@ Em Cartões, a parcela apenas identifica a compra. A manutenção continua usand
 `Repetição = Parcelado` representa um conjunto finito canônico, não uma recorrência. O modal envia uma única tentativa com UUID idempotente; mantém a chave em timeout ou falha ambígua, gera nova chave quando os dados materiais mudam depois de rejeição e a descarta após sucesso, cancelamento ou novo fluxo. O botão permanece bloqueado durante o envio e o modal preserva os valores em falhas.
 
 As parcelas canônicas continuam selecionáveis para conciliar, desconciliar e excluir logicamente em massa. A restrição específica é a unificação: quando uma parcela canônica está selecionada, a ação **Unificar lançamentos** fica indisponível e explica que as demais ações em massa permanecem disponíveis.
+
+## Agenda canonica de compromissos futuros (#616)
+
+A consulta `GET /api/future-commitments` trata `Recurrence` e `Installment` como regra e
+proveniencia, nao como fontes concorrentes de caixa. Para recorrencias de conta ativas, uma ocorrencia
+ainda nao materializada pode aparecer como projecao com
+`replacementKey=recurrence:<recurrenceId>:<plannedOn>`. Quando uma `Installment` ou
+`Transaction` da mesma recorrencia/data existe, a projecao e retirada e a ocorrencia materializada
+prevalece.
+
+Parcelamento manual ja cria `Installment` e `Transaction` atomicamente; a agenda usa a
+`Transaction` como compromisso. Em cartoes, parcelas e compras pertencem a fatura, e a obrigacao de
+caixa top-level e a `Invoice`. Recorrencias de cartao nao sao projetadas diretamente antes da
+materializacao porque seu vencimento de caixa canonico depende da fatura.

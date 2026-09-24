@@ -1,4 +1,4 @@
-import type { PayableReceivable, Transaction } from "./index.js";
+import type { Card, Invoice, PayableReceivable, Transaction } from "./index.js";
 import { buildPayableReceivableTransitionPlan } from "./payables-receivables-transition.js";
 
 const baseLegacy = {
@@ -31,6 +31,9 @@ const baseTransaction = {
 
 runPlansPendingLegacyAsPlannedTransaction();
 runKeepsDuplicatePendingAsLegacyReference();
+runKeepsEquivalentInvoiceAsLegacyReference();
+runDoesNotCollapseInvoiceAgainstDifferentLegacyAccount();
+runDoesNotCollapseInvoiceAgainstReceivable();
 runPreservesSettledSettlementReference();
 runLinksSettledLegacyToEquivalentPostedTransaction();
 runKeepsCancelledRecordsAsHistory();
@@ -78,6 +81,65 @@ function runKeepsDuplicatePendingAsLegacyReference(): void {
     item?.transactionId,
     transaction.id,
     "duplicate should reference existing transaction",
+  );
+}
+
+function runKeepsEquivalentInvoiceAsLegacyReference(): void {
+  const payable = createLegacy("legacy-invoice-duplicate", "payable", "pending");
+  const card = createCard("card-invoice", "account-main");
+  const invoice = createInvoice("invoice-duplicate", card.id);
+  const plan = buildPayableReceivableTransitionPlan({
+    payablesReceivables: [payable],
+    transactions: [],
+    invoices: [invoice],
+    cards: [card],
+  });
+  const item = plan.items[0];
+
+  assertEqual(
+    item?.disposition,
+    "keep_legacy_duplicate_reference",
+    "equivalent invoice should keep pending payable as legacy reference",
+  );
+  assertEqual(item?.invoiceId, invoice.id, "duplicate should reference canonical invoice");
+}
+
+function runDoesNotCollapseInvoiceAgainstDifferentLegacyAccount(): void {
+  const payable = {
+    ...createLegacy("legacy-other-account", "payable", "pending"),
+    accountId: "account-other",
+  } satisfies PayableReceivable;
+  const card = createCard("card-other-account", "account-main");
+  const invoice = createInvoice("invoice-other-account", card.id);
+  const plan = buildPayableReceivableTransitionPlan({
+    payablesReceivables: [payable],
+    transactions: [],
+    invoices: [invoice],
+    cards: [card],
+  });
+
+  assertEqual(
+    plan.items[0]?.disposition,
+    "create_planned_transaction",
+    "same amount/date invoice must not suppress a payable for another account",
+  );
+}
+
+function runDoesNotCollapseInvoiceAgainstReceivable(): void {
+  const receivable = createLegacy("legacy-receivable", "receivable", "pending");
+  const card = createCard("card-receivable", "account-main");
+  const invoice = createInvoice("invoice-receivable", card.id);
+  const plan = buildPayableReceivableTransitionPlan({
+    payablesReceivables: [receivable],
+    transactions: [],
+    invoices: [invoice],
+    cards: [card],
+  });
+
+  assertEqual(
+    plan.items[0]?.disposition,
+    "create_planned_transaction",
+    "invoice must not suppress a receivable with matching amount/date",
   );
 }
 
@@ -165,6 +227,39 @@ function createLegacy(
     id,
     kind,
     status,
+  };
+}
+
+function createCard(id: string, paymentAccountId: string): Card {
+  return {
+    id,
+    organizationId: baseLegacy.organizationId,
+    financialProfileId: baseLegacy.financialProfileId,
+    name: id,
+    status: "active",
+    closingDay: 5,
+    dueDay: 10,
+    currency: "BRL",
+    paymentAccountId,
+    createdAt: baseLegacy.createdAt,
+    updatedAt: baseLegacy.updatedAt,
+  };
+}
+
+function createInvoice(id: string, cardId: string): Invoice {
+  return {
+    id,
+    organizationId: baseLegacy.organizationId,
+    financialProfileId: baseLegacy.financialProfileId,
+    cardId,
+    status: "open",
+    periodStartOn: "2026-06-01",
+    periodEndOn: "2026-06-30",
+    dueOn: baseLegacy.dueOn,
+    totalAmountMinor: baseLegacy.amountMinor,
+    currency: baseLegacy.currency,
+    createdAt: baseLegacy.createdAt,
+    updatedAt: baseLegacy.updatedAt,
   };
 }
 
