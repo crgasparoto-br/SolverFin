@@ -107,10 +107,7 @@ async function main(): Promise<void> {
   if (brlFreeToSpend.status === "available" && usdFreeToSpend.status === "available") {
     assert.equal(brlFreeToSpend.minimumProjectedBalanceMinor, baselineBrl - 53_832);
     assert.equal(brlFreeToSpend.freeToSpendMinor, Math.max(0, baselineBrl - 53_832));
-    assert.equal(
-      brlFreeToSpend.projectedDeficitMinor,
-      Math.max(0, -(baselineBrl - 53_832)),
-    );
+    assert.equal(brlFreeToSpend.projectedDeficitMinor, Math.max(0, -(baselineBrl - 53_832)));
     assert.equal(brlFreeToSpend.minimumBalanceOn, "2037-11-11");
     assert.equal(
       brlFreeToSpend.limitingPoint.movements[0]?.commitmentId,
