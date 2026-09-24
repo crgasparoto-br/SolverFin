@@ -31,10 +31,7 @@ function detectsIntermediateDeficitBeforeLaterIncome(): void {
   const income = movement("income", 320_000, "BRL", "2037-12-20");
   const deficit = point("2037-12-05", -20_000, [expense]);
   const recovery = point("2037-12-20", 300_000, [income]);
-  const result = indicator(
-    projection([block("BRL", 100_000, [deficit, recovery])]),
-    "BRL",
-  );
+  const result = indicator(projection([block("BRL", 100_000, [deficit, recovery])]), "BRL");
 
   assert.equal(result.status, "available");
   if (result.status !== "available") return;
@@ -48,10 +45,7 @@ function detectsIntermediateDeficitBeforeLaterIncome(): void {
 function keepsReferenceDateOnTiedMinimum(): void {
   const tied = point("2037-12-01", 100_000);
   const higher = point("2037-12-02", 120_000);
-  const result = indicator(
-    projection([block("BRL", 100_000, [tied, higher])]),
-    "BRL",
-  );
+  const result = indicator(projection([block("BRL", 100_000, [tied, higher])]), "BRL");
 
   assert.equal(result.status, "available");
   if (result.status !== "available") return;
