@@ -70,7 +70,7 @@ As linhas `Parcial` abaixo sao lacunas gerais do MVP e nao pendencias implicitas
 | Recorrencias           | Feito no fluxo atual | Sem rota propria                                                           |
 | Parcelas               | Feito no fluxo atual | Sem rota propria; manutencao conservadora                                  |
 | Cartoes / Faturas      | Feito no fluxo atual | Cadastro mestre separado da rotina operacional                             |
-| Orcamentos             | Feito no fluxo atual | Planejado, realizado, comprometido, projetado e disponivel por categoria, periodo e moeda; bucket Sem categoria na #619 |
+| Orcamentos             | Feito no fluxo atual | Contrato operacional completo por moeda na #619                     |
 | Contas a pagar/receber | Legado               | Compatibilidade sem jornada operacional propria                            |
 | Relatorios             | Feito                | Somente leitura no recorte atual                                           |
 | Perfis financeiros     | Parcial              | Evolucoes multiusuario ficam em recorte separado                           |
@@ -135,7 +135,7 @@ A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contr
 | Fonte canonica de compromissos futuros sem dupla contagem  | Feito     | #616, `docs/API_FUTURE_COMMITMENTS.md`   |
 | Projecao de fluxo de caixa 30/60/90 dias por moeda         | Feito     | #617, `docs/API_CASH_FLOW_PROJECTION.md` |
 | Valor livre para gastar deterministico e explicavel        | Feito     | #618, `docs/API_CASH_FLOW_PROJECTION.md` |
-| Orcamentos com realizado/comprometido/disponivel/projetado | Feito     | #619, `docs/API_BUDGETS_GOALS_ALERTS.md` |
+| Orcamentos com realizado/comprometido/disponivel/projetado | Feito     | #619                                     |
 | Recorrencias futuras acionaveis nas jornadas existentes    | Planejado | #592 / #620                              |
 | Insights priorizados, deduplicados e com drilldown         | Planejado | #592 / #621                              |
 

@@ -145,8 +145,12 @@ describe("budgets view-model issue 619", () => {
       {},
       [dashboardUsage("unbudgeted"), dashboardUsage("uncategorized")],
     );
-    const unbudgeted = result.rows.find((candidate) => candidate.source === "unbudgeted");
-    const uncategorized = result.rows.find((candidate) => candidate.source === "uncategorized");
+    const unbudgeted = result.rows.find(
+      (candidate) => candidate.source === "unbudgeted",
+    );
+    const uncategorized = result.rows.find(
+      (candidate) => candidate.source === "uncategorized",
+    );
 
     assert.ok(unbudgeted);
     assert.equal(unbudgeted.categoryName, "Saúde");
@@ -176,7 +180,13 @@ describe("budgets view-model issue 619", () => {
     );
 
     assert.equal(result.rows.every((row) => row.currency === "USD"), true);
-    assert.equal(result.rows.some((row) => row.source === "uncategorized"), true);
-    assert.equal(result.rows.some((row) => row.source === "unbudgeted"), false);
+    assert.equal(
+      result.rows.some((row) => row.source === "uncategorized"),
+      true,
+    );
+    assert.equal(
+      result.rows.some((row) => row.source === "unbudgeted"),
+      false,
+    );
   });
 });

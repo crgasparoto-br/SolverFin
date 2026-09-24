@@ -109,20 +109,30 @@ export function buildBudgetsPageViewModel(
   filters: BudgetPresentationFilters = {},
   dashboardUsage: readonly BudgetUsageRecord[] = [],
 ): BudgetsPageViewModel {
-  const categoryIndex = new Map(categories.map((category) => [category.id, category]));
+  const categoryIndex = new Map(
+    categories.map((category) => [category.id, category]),
+  );
   const normalizedFilterCurrency = normalizeCurrency(filters.currency);
   const budgetRows = budgets
-    .filter((budget) => filters.status === undefined || budget.status === filters.status)
+    .filter(
+      (budget) => filters.status === undefined || budget.status === filters.status,
+    )
     .filter((budget) => {
       if (!normalizedFilterCurrency) return true;
       return normalizeCurrency(budget.currency) === normalizedFilterCurrency;
     })
-    .map((budget) => buildBudgetRow(budget, categoryIndex, usageByBudgetId.get(budget.id)));
+    .map((budget) =>
+      buildBudgetRow(budget, categoryIndex, usageByBudgetId.get(budget.id)),
+    );
   const dashboardRows =
     filters.status === "archived"
       ? []
       : dashboardUsage
-          .filter((usage) => usage.source === "unbudgeted" || usage.source === "uncategorized")
+          .filter(
+            (usage) =>
+              usage.source === "unbudgeted" ||
+              usage.source === "uncategorized",
+          )
           .filter((usage) => {
             if (!normalizedFilterCurrency) return true;
             return normalizeCurrency(usage.currency) === normalizedFilterCurrency;
@@ -141,16 +151,21 @@ export function buildBudgetsPageViewModel(
   return {
     rows,
     currencies,
-    activeCount: rows.filter((row) => row.source === "budget" && row.status === "active").length,
+    activeCount: rows.filter(
+      (row) => row.source === "budget" && row.status === "active",
+    ).length,
     attentionCount: rows.filter(
       (row) =>
         row.usageStatus === "approaching" ||
         row.usageStatus === "exceeded" ||
         (row.overBudgetAmountMinor ?? 0) > 0,
     ).length,
-    unavailableUsageCount: rows.filter((row) => row.usageStatus === "unavailable").length,
+    unavailableUsageCount: rows.filter(
+      (row) => row.usageStatus === "unavailable",
+    ).length,
     unbudgetedCount: rows.filter((row) => row.source === "unbudgeted").length,
-    uncategorizedCount: rows.filter((row) => row.source === "uncategorized").length,
+    uncategorizedCount: rows.filter((row) => row.source === "uncategorized")
+      .length,
   };
 }
 
@@ -164,7 +179,8 @@ function buildBudgetRow(
   const usageUnavailableReason = acceptedUsage
     ? undefined
     : usageLoad?.ok === false
-      ? usageLoad.error || "Não foi possível carregar o acompanhamento deste orçamento."
+      ? usageLoad.error ||
+        "Não foi possível carregar o acompanhamento deste orçamento."
       : "O acompanhamento deste orçamento não está disponível com segurança.";
 
   return {
@@ -193,7 +209,9 @@ function buildBudgetRow(
         ? { alertThresholdPercent: budget.alertThresholdPercent }
         : {}),
     compositionItems: acceptedUsage
-      ? [...acceptedUsage.realizedItems, ...acceptedUsage.committedItems].sort(compareCompositionItems)
+      ? [...acceptedUsage.realizedItems, ...acceptedUsage.committedItems].sort(
+          compareCompositionItems,
+        )
       : [],
   };
 }
@@ -203,7 +221,8 @@ function buildDashboardRow(
   categoryIndex: ReadonlyMap<string, CategoryRecord>,
 ): BudgetRowViewModel {
   const currency = normalizeCurrency(usage.currency);
-  const source = usage.source === "uncategorized" ? "uncategorized" : "unbudgeted";
+  const source =
+    usage.source === "uncategorized" ? "uncategorized" : "unbudgeted";
   const categoryName =
     source === "uncategorized"
       ? "Sem categoria"
@@ -235,7 +254,9 @@ function buildDashboardRow(
     overBudgetAmountMinor: null,
     usedPercent: null,
     usageStatus: source,
-    compositionItems: [...usage.realizedItems, ...usage.committedItems].sort(compareCompositionItems),
+    compositionItems: [...usage.realizedItems, ...usage.committedItems].sort(
+      compareCompositionItems,
+    ),
   };
 }
 
@@ -246,10 +267,15 @@ function validateUsage(
   if (!usage || usage.source !== "budget") return undefined;
   const budgetCurrency = normalizeCurrency(budget.currency);
   const usageCurrency = normalizeCurrency(usage.currency);
-  if (!budgetCurrency || !usageCurrency || budgetCurrency !== usageCurrency) return undefined;
+  if (!budgetCurrency || !usageCurrency || budgetCurrency !== usageCurrency) {
+    return undefined;
+  }
   if (usage.budgetId !== budget.id) return undefined;
   if (usage.categoryId !== budget.categoryId) return undefined;
-  if (usage.periodStartOn !== budget.periodStartOn || usage.periodEndOn !== budget.periodEndOn) {
+  if (
+    usage.periodStartOn !== budget.periodStartOn ||
+    usage.periodEndOn !== budget.periodEndOn
+  ) {
     return undefined;
   }
   if (usage.plannedAmountMinor !== budget.plannedAmountMinor) return undefined;
@@ -263,7 +289,12 @@ function validateUsage(
   ) {
     return undefined;
   }
-  if (!Array.isArray(usage.realizedItems) || !Array.isArray(usage.committedItems)) return undefined;
+  if (
+    !Array.isArray(usage.realizedItems) ||
+    !Array.isArray(usage.committedItems)
+  ) {
+    return undefined;
+  }
   return usage;
 }
 
@@ -287,10 +318,15 @@ function buildCategoryPath(
   return path.join(" › ");
 }
 
-function compareBudgetRows(left: BudgetRowViewModel, right: BudgetRowViewModel): number {
+function compareBudgetRows(
+  left: BudgetRowViewModel,
+  right: BudgetRowViewModel,
+): number {
   const status = statusRank(left) - statusRank(right);
   if (status !== 0) return status;
-  const currency = (left.currency ?? "ZZZ").localeCompare(right.currency ?? "ZZZ");
+  const currency = (left.currency ?? "ZZZ").localeCompare(
+    right.currency ?? "ZZZ",
+  );
   if (currency !== 0) return currency;
   const period = right.periodStartOn.localeCompare(left.periodStartOn);
   if (period !== 0) return period;
