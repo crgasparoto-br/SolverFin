@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "3ff7a8b5e5b8180a486cdb3d85d836c5a654292e",
+  "base_sha": "e218f63bca49f5ef4a84f835affb52e1ecf55199",
+  "evidence": [
+    {
+      "evidence_id": "EV-ISSUE-617",
+      "kind": "quantitative",
+      "path": ".audit/entregar-issue/issue-617/evidence/issue-617-controls.txt",
+      "sha256": "ae63c6bb4e391874cf5670934841eb9967856eed5c4f6d239e74d0cb58d10e9b",
+      "subject_sha": "3ff7a8b5e5b8180a486cdb3d85d836c5a654292e",
+      "base_sha": "e218f63bca49f5ef4a84f835affb52e1ecf55199",
+      "freshness_policy": "exact-material-head",
+      "producer": "entregar-issue controller from exact-head GitHub CI and PR evidence",
+      "status": "passed"
+    }
+  ]
+}
