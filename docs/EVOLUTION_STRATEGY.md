@@ -166,7 +166,7 @@ Epica operacional: #591.
 
 Depois que o core financeiro e as telas-base estiverem estabilizados, consolidar compromissos futuros, projecao 30/60/90 dias, livre para gastar, orcamentos operacionais, recorrencias e insights priorizados.
 
-A #616 estabelece a agenda backend canonica em `GET /api/future-commitments`, com identidade logica separada de efeitos monetarios e precedencia entre `Transaction`, `Invoice`, projecoes de `Recurrence` e fallback legado. A #617 materializa `GET /api/cash-flow-projection` sobre essa fronteira e sobre a posicao financeira da #594, produzindo series diarias continuas de 30/60/90 dias por moeda; #619 e demais consumidores devem reutilizar esses contratos em vez de reconstruir compromissos ou saldos.
+A #616 estabelece a agenda backend canonica em `GET /api/future-commitments`, com identidade logica separada de efeitos monetarios e precedencia entre `Transaction`, `Invoice`, projecoes de `Recurrence` e fallback legado. A #617 materializa `GET /api/cash-flow-projection` sobre essa fronteira e sobre a posicao financeira da #594, produzindo series diarias continuas de 30/60/90 dias por moeda. A #618 deriva, no proprio contrato de 30 dias, o menor saldo da trajetoria, o valor livre para gastar e o deficit projetado sem nova consulta de compromissos; #619 e demais consumidores devem reutilizar esses contratos em vez de reconstruir compromissos ou saldos.
 
 Epica operacional: #592.
 
