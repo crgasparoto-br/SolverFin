@@ -15,10 +15,8 @@ marksIncompleteProjectionUnavailableWithoutSyntheticNumbers();
 marksMissingRequestedCurrencyUnavailable();
 
 function preservesCashWhenTrajectoryStaysPositive(): void {
-  const result = indicator(
-    projection([block("BRL", 500_000, [point("2037-12-02", 180_000)])]),
-    "BRL",
-  );
+  const minimum = point("2037-12-02", 180_000);
+  const result = indicator(projection([block("BRL", 500_000, [minimum])]), "BRL");
 
   assert.equal(result.status, "available");
   if (result.status !== "available") return;
@@ -29,13 +27,12 @@ function preservesCashWhenTrajectoryStaysPositive(): void {
 }
 
 function detectsIntermediateDeficitBeforeLaterIncome(): void {
+  const expense = movement("expense", -120_000, "BRL", "2037-12-05");
+  const income = movement("income", 320_000, "BRL", "2037-12-20");
+  const deficit = point("2037-12-05", -20_000, [expense]);
+  const recovery = point("2037-12-20", 300_000, [income]);
   const result = indicator(
-    projection([
-      block("BRL", 100_000, [
-        point("2037-12-05", -20_000, [movement("expense", -120_000, "BRL", "2037-12-05")]),
-        point("2037-12-20", 300_000, [movement("income", 320_000, "BRL", "2037-12-20")]),
-      ]),
-    ]),
+    projection([block("BRL", 100_000, [deficit, recovery])]),
     "BRL",
   );
 
@@ -49,13 +46,10 @@ function detectsIntermediateDeficitBeforeLaterIncome(): void {
 }
 
 function keepsReferenceDateOnTiedMinimum(): void {
+  const tied = point("2037-12-01", 100_000);
+  const higher = point("2037-12-02", 120_000);
   const result = indicator(
-    projection([
-      block("BRL", 100_000, [
-        point("2037-12-01", 100_000),
-        point("2037-12-02", 120_000),
-      ]),
-    ]),
+    projection([block("BRL", 100_000, [tied, higher])]),
     "BRL",
   );
 
@@ -68,16 +62,11 @@ function keepsReferenceDateOnTiedMinimum(): void {
 }
 
 function keepsCurrenciesIndependentAcrossCrossCurrencyTransfer(): void {
-  const result = buildFreeToSpendSummary(
-    projection([
-      block("BRL", 100_000, [
-        point("2037-12-02", 46_168, [movement("transfer", -53_832, "BRL", "2037-12-02")]),
-      ]),
-      block("USD", 20_000, [
-        point("2037-12-02", 30_000, [movement("transfer", 10_000, "USD", "2037-12-02")]),
-      ]),
-    ]),
-  );
+  const brlEffect = movement("transfer", -53_832, "BRL", "2037-12-02");
+  const usdEffect = movement("transfer", 10_000, "USD", "2037-12-02");
+  const brlBlock = block("BRL", 100_000, [point("2037-12-02", 46_168, [brlEffect])]);
+  const usdBlock = block("USD", 20_000, [point("2037-12-02", 30_000, [usdEffect])]);
+  const result = buildFreeToSpendSummary(projection([brlBlock, usdBlock]));
 
   const brl = result.currencyBlocks.find((item) => item.currency === "BRL");
   const usd = result.currencyBlocks.find((item) => item.currency === "USD");
@@ -151,6 +140,7 @@ function block(
     }
     return point(date, previous);
   });
+
   return {
     currency,
     openingBalanceMinor,
