@@ -7,9 +7,7 @@ import type { ISODate } from "./index.js";
 
 export const FREE_TO_SPEND_HORIZON_DAYS = 30 as const;
 
-export type FreeToSpendUnavailableReason =
-  | "projection-unavailable"
-  | "projection-incomplete";
+export type FreeToSpendUnavailableReason = "projection-unavailable" | "projection-incomplete";
 
 export interface FreeToSpendLimitingPoint {
   position: "opening" | "closing";
@@ -78,7 +76,9 @@ export function buildFreeToSpendSummary(
     currencyBlocks: [...new Set(currencies)]
       .sort((left, right) => left.localeCompare(right))
       .map((currency) => {
-        const block = projection.currencyBlocks.find((candidate) => candidate.currency === currency);
+        const block = projection.currencyBlocks.find(
+          (candidate) => candidate.currency === currency,
+        );
         if (!block) {
           return {
             currency,
