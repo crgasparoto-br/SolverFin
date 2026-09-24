@@ -1,0 +1,4 @@
+PR 675 material head 24202286118db8f1886cd45c3774a8a9545bd24a remained unchanged.
+Base and head had the same inherited foreign handoff blob for issue 668 / PR 672.
+A fresh package is rebuilt for issue 618 / PR 675.
+Delivery V2 CI run 36009560729 and Statement visual validation run 36009561056 both completed successfully on the exact material head.

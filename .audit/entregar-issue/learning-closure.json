@@ -1,1 +1,17 @@
-{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:672-stale-handoff-c1fd571","audit_report_sha256":"5128f6b98df191fadb88f27369d577a21c775c8b0d9265e87d4b02382f0e6e11","finding_ids":["A-003"]},"generalized_learning":{"promotion_status":"not-required","reason":"The rejection is a target-specific terminal publication gap after later material commits; the existing post-write-refreeze and result-only-child controls already define the required prevention and detection behavior."},"skill_changes":[]}
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
+    "finding_ids": [
+      "A-001"
+    ],
+    "audit_report_sha256": "82ae1e40046bc3439802b526acfbe09520e4690f1e9ab5c77b25a647c7cab78d"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The existing target-binding and inherited-base-artifact controls already define the required prevention and detection behavior; this remediation applies that existing rule to the current target."
+  },
+  "skill_changes": []
+}

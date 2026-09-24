@@ -1,1 +1,42 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","status":"closed","candidate_head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","remediation_mode":"targeted-remediation","source":{"rejection_id":"audit-rejection:672-stale-handoff-c1fd571","audited_head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","audit_report_sha256":"5128f6b98df191fadb88f27369d577a21c775c8b0d9265e87d4b02382f0e6e11"},"items":[{"source_kind":"finding","source_id":"A-003","remediation_mode":"targeted-remediation","status":"fixed","closure_kind":"post-write-refreeze-handoff-rebuild","changed_files":[".audit/entregar-issue/handoff-ready.json",".audit/entregar-issue/audit-remediation.json",".audit/entregar-issue/audit-source-result.json",".audit/entregar-issue/requirement-attack-matrix.json",".audit/entregar-issue/risk-saturation.json",".audit/entregar-issue/evidence-provenance.json",".audit/entregar-issue/pr-672-audit-escape-closure.json",".audit/entregar-issue/learning-closure.json"],"evidence":["evidence/handoff-remediation-672.txt"],"validations":["Delivery V2 CI run 35787170235 completed success on exact material head c1fd571c661c64abcb90db1b99fa3f3c7ce95749.","Statement visual validation run 35787170294 completed success on the same exact material head.","Terminal handoff is rebuilt as one result-only child whose parent is the exact material head and whose changed paths are restricted to .audit/entregar-issue artifacts."]}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
+    "audited_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+    "audit_report_sha256": "82ae1e40046bc3439802b526acfbe09520e4690f1e9ab5c77b25a647c7cab78d"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "fresh-handoff-rebuild",
+      "changed_files": [
+        ".audit/entregar-issue/audit-escape-closure.json",
+        ".audit/entregar-issue/audit-remediation.json",
+        ".audit/entregar-issue/audit-source-result.json",
+        ".audit/entregar-issue/evidence/handoff-remediation-675.txt",
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/learning-closure.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/specification-snapshot.json",
+        ".audit/entregar-issue/specification-sources/SRC-ISSUE-618.txt",
+        ".audit/entregar-issue/standard-evidence.json"
+      ],
+      "evidence": [
+        "evidence/handoff-remediation-675.txt"
+      ],
+      "validations": [
+        "PR identity re-read as open/clean on exact material head.",
+        "Delivery V2 CI run 36009560729 completed success on exact material head.",
+        "Statement visual validation run 36009561056 completed success on exact material head."
+      ]
+    }
+  ]
+}
