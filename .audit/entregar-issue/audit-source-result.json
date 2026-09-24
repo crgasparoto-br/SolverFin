@@ -1,1 +1,27 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","status":"rejected","rejection_id":"audit-rejection:672-stale-handoff-c1fd571","head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","identity":{"head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","material_head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","repository":"crgasparoto-br/SolverFin","issue_number":668,"pull_request_number":672},"findings":[{"id":"A-003","disposition":"blocking","status":"open","actionable":true,"remediation_mode":"targeted-remediation","category":"execution-state-gap","reason":"stale-handoff-after-material-drift","recovery_scope":"post-write-refreeze","requires_refreeze":true,"summary":"The certified handoff remained bound to aa18f309276210acfab5431356ea21c9bd33d242 after material code/test commits advanced PR #672 to c1fd571c661c64abcb90db1b99fa3f3c7ce95749."}],"recommendations":[]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
+  "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+  "identity": {
+    "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+    "material_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 618,
+    "pull_request_number": 675
+  },
+  "findings": [
+    {
+      "id": "A-002",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "availability-provenance-gap",
+      "reason": "missing-opening-balance-synthesized-as-zero",
+      "summary": "A requested currency without an opening-balance source could be represented as a complete zero-valued projection and published as available."
+    }
+  ],
+  "recommendations": []
+}

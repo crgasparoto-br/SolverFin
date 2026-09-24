@@ -258,13 +258,50 @@ function renderCashFlowProjection(
             renderCard({
               title: item.currency,
               className: "cash-flow-dashboard-card",
-              bodyHtml: `<p class="muted">Saldo projetado no fim do horizonte</p><strong class="cash-flow-dashboard-value">${renderMoney(item.closingBalance)}</strong>`,
+              bodyHtml: renderCashFlowDecisionMetrics(item),
               footerHtml: `<a class="text-link" href="${escapeHtml(item.href)}">Ver série diária e evidências</a>`,
             }),
           )
           .join("")}
       </div>
     </section>
+  `;
+}
+
+function renderCashFlowDecisionMetrics(
+  item: DashboardCashFlowProjectionViewModel["currencies"][number],
+): string {
+  const freeToSpend =
+    item.freeToSpend.status === "available"
+      ? `
+        <div class="cash-flow-dashboard-metric">
+          <span>Livre para gastar hoje</span>
+          <strong class="cash-flow-dashboard-value">${renderMoney(item.freeToSpend.amount)}</strong>
+          <small>Menor saldo projetado em ${escapeHtml(item.freeToSpend.minimumBalanceOnLabel)}.</small>
+        </div>
+        <div class="cash-flow-dashboard-metric">
+          <span>Déficit projetado</span>
+          <strong>${renderMoney(item.freeToSpend.projectedDeficit)}</strong>
+          <small>Zero quando toda a trajetória de 30 dias permanece não negativa.</small>
+        </div>
+      `
+      : `
+        <div class="cash-flow-dashboard-metric" data-free-to-spend="unavailable">
+          <span>Livre para gastar hoje</span>
+          <strong>Indisponível</strong>
+          <small>A projeção canônica de 30 dias não possui base suficiente para publicar este valor.</small>
+        </div>
+      `;
+
+  return `
+    <div class="cash-flow-dashboard-metrics">
+      <div class="cash-flow-dashboard-metric">
+        <span>Saldo projetado no fim do horizonte</span>
+        <strong class="cash-flow-dashboard-value">${renderMoney(item.closingBalance)}</strong>
+        <small>Saldo no 30º dia; não representa o valor livre para gastar.</small>
+      </div>
+      ${freeToSpend}
+    </div>
   `;
 }
 
@@ -417,6 +454,11 @@ function dashboardStyles(): string {
     .cash-flow-section { display:grid; gap:10px; }
     .cash-flow-dashboard-grid { display:grid; gap:12px; grid-template-columns:repeat(3,minmax(0,1fr)); }
     .cash-flow-dashboard-card .sf-card-body { display:grid; gap:6px; }
+    .cash-flow-dashboard-metrics { display:grid; gap:10px; }
+    .cash-flow-dashboard-metric { border-top:1px solid var(--line); display:grid; gap:2px; padding-top:8px; }
+    .cash-flow-dashboard-metric:first-child { border-top:0; padding-top:0; }
+    .cash-flow-dashboard-metric > span { color:var(--muted); font-size:0.8125rem; }
+    .cash-flow-dashboard-metric > small { color:var(--muted); line-height:1.4; }
     .cash-flow-dashboard-value { color:var(--primary); font-size:1.15rem; }
     .next-actions { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }

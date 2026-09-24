@@ -47,6 +47,20 @@ function successfulInput(): DashboardPresenterInput {
         referenceDate: "2026-08-18",
         horizonDays: 30,
         currencyBlocks: [{ currency: "USD", closingBalanceMinor: 10_345 }],
+        freeToSpend: {
+          referenceDate: "2026-08-18",
+          horizonDays: 30,
+          currencyBlocks: [
+            {
+              currency: "USD",
+              status: "available",
+              minimumProjectedBalanceMinor: 8_500,
+              minimumBalanceOn: "2026-08-22",
+              freeToSpendMinor: 8_500,
+              projectedDeficitMinor: 0,
+            },
+          ],
+        },
       },
     },
     filters: { profileId: "profile-1" },
@@ -108,6 +122,12 @@ describe("dashboard presenter", () => {
     assert.deepEqual(model.content.cashFlowProjection?.currencies[0]?.closingBalance, {
       amountMinor: 10_345,
       currency: "USD",
+    });
+    assert.deepEqual(model.content.cashFlowProjection?.currencies[0]?.freeToSpend, {
+      status: "available",
+      amount: { amountMinor: 8_500, currency: "USD" },
+      projectedDeficit: { amountMinor: 0, currency: "USD" },
+      minimumBalanceOnLabel: "22/08/2026",
     });
     assert.match(model.content.cashFlowProjection?.currencies[0]?.href ?? "", /view=cash-flow/);
     assert.equal(model.content.dataQuality.status, "complete");

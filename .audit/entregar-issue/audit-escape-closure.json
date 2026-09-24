@@ -1,1 +1,142 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"audit_escape_closure","compression":"gzip","encoded_size":5792,"encoded_sha256":"ae94f6042c0d373e6d4bc50f981f3503fa9a5c130acdf56bcfef74f685130d94","decoded_size":34361,"decoded_sha256":"0f5c6e8c6e2ef8e8a3ceaa5ea824f22a1d8959b5ed903b44a53f8ac2d6370d5d","parts":[{"path":"audit-escape-closure.parts/part-000.b64","size":5792,"sha256":"ae94f6042c0d373e6d4bc50f981f3503fa9a5c130acdf56bcfef74f685130d94"}]}
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-001",
+      "escape_class": "foreign-handoff-target-binding",
+      "source_audit": {
+        "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+        "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
+        "finding_id": "A-001",
+        "audit_report_sha256": "82ae1e40046bc3439802b526acfbe09520e4690f1e9ab5c77b25a647c7cab78d"
+      },
+      "plausible_wrong_implementation": "Treat an inherited audit package for a previous delivery as if it certified the current issue and pull request.",
+      "literal_case": {
+        "procedure": "Compare root handoff bytes and subject on base versus current material head.",
+        "observed": "The inherited handoff is historical/foreign while the current exact material head is certified only by the freshly rebuilt package.",
+        "status": "passed",
+        "evidence": "evidence/handoff-remediation-675.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "foreign-subject",
+          "surface": "handoff-subject",
+          "dimension": "foreign-target",
+          "status": "passed",
+          "evidence": "evidence/handoff-remediation-675.txt"
+        },
+        {
+          "id": "missing-current-package",
+          "surface": "handoff-presence",
+          "dimension": "current-target-absence",
+          "status": "passed",
+          "evidence": "evidence/handoff-remediation-675.txt"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-subject",
+          "dimension": "foreign-target"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-presence",
+          "dimension": "current-target-absence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "existing delivery target binding control",
+        "evidence": "Current target package is rebuilt instead of reusing inherited bytes."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff target binding",
+        "control_id": "HANDOFF-TARGET-001",
+        "evidence": "Fresh package subject is issue 618 / PR 675."
+      },
+      "trigger_terms": [
+        "inherited-base-artifact",
+        "foreign-target",
+        "handoff-not-produced"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-002",
+      "escape_class": "missing-source-synthetic-zero",
+      "source_audit": {
+        "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+        "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
+        "finding_id": "A-002",
+        "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
+      },
+      "plausible_wrong_implementation": "Treat an absent mandatory source value as a known numeric zero because a downstream builder can synthesize a structurally complete object.",
+      "literal_case": {
+        "procedure": "Request a 30-day projection for EUR without an active EUR account and inspect freeToSpend.",
+        "observed": "EUR is unavailable and omits numeric fields on the exact material head.",
+        "status": "passed",
+        "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+      },
+      "sibling_cases": [
+        {
+          "id": "known-zero-remains-available",
+          "surface": "public-api",
+          "dimension": "known-zero-vs-missing",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        },
+        {
+          "id": "commitment-only-currency-without-active-account",
+          "surface": "public-api",
+          "dimension": "unfiltered-commitment-only-provenance",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        },
+        {
+          "id": "missing-source-omits-numerics",
+          "surface": "free-to-spend-contract",
+          "dimension": "synthetic-zero-prevention",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "opening-balance-provenance"
+        },
+        {
+          "risk_family": "public-boundary",
+          "surface": "free-to-spend-contract",
+          "dimension": "unavailable-omits-synthetic-numerics"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "apps/api/src/repositories/cash-flow-projection.ts",
+        "evidence": "Availability now uses the presence of an opening-balance source instead of treating a synthesized zero projection as sufficient provenance."
+      },
+      "detection_change": {
+        "skill_or_gate": "API integration regression",
+        "control_id": "FREE-TO-SPEND-AVAIL-001",
+        "evidence": "Integration coverage exercises both known zero and missing-source currencies through the public API."
+      },
+      "trigger_terms": [
+        "unavailable",
+        "fallback zero",
+        "missing source",
+        "synthetic zero"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "public-boundary"
+      ],
+      "revalidated_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+      "status": "passed"
+    }
+  ]
+}

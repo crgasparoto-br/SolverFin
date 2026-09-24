@@ -1,7 +1,10 @@
 import {
+  attachFreeToSpendIndicator,
   buildCashFlowProjection,
+  FREE_TO_SPEND_HORIZON_DAYS,
   resolveCashFlowProjectionWindow,
   type CashFlowProjection,
+  type CashFlowProjectionWithFreeToSpend,
   type TenantContext,
 } from "@solverfin/domain";
 
@@ -17,7 +20,7 @@ export interface CashFlowProjectionFilters {
 export async function buildCashFlowProjectionForContext(
   context: TenantContext,
   filters: CashFlowProjectionFilters,
-): Promise<CashFlowProjection> {
+): Promise<CashFlowProjection | CashFlowProjectionWithFreeToSpend> {
   const window = resolveCashFlowProjectionWindow(filters.referenceDate, filters.horizonDays);
   const [summary, agenda] = await Promise.all([
     buildFinancialSummary(context, new Date(`${window.referenceDate}T00:00:00.000Z`)),
@@ -30,16 +33,43 @@ export async function buildCashFlowProjectionForContext(
 
   const requestedCurrency = filters.currency?.trim().toUpperCase();
   const openingBalances = summary.currencyBlocks
-    .filter((block) => requestedCurrency === undefined || block.currency === requestedCurrency)
+    .filter(
+      (block) =>
+        (requestedCurrency === undefined || block.currency === requestedCurrency) &&
+        block.accounts?.some((account) => account.status === "active"),
+    )
     .map((block) => ({
       currency: block.currency,
       amountMinor: block.availableBalanceMinor,
     }));
 
-  return buildCashFlowProjection({
+  const projection = buildCashFlowProjection({
     window,
     openingBalances,
     commitments: agenda.commitments,
     ...(filters.currency ? { currency: filters.currency } : {}),
   });
+
+  if (window.horizonDays !== FREE_TO_SPEND_HORIZON_DAYS) {
+    return projection;
+  }
+
+  const projectionWithFreeToSpend = attachFreeToSpendIndicator(projection);
+  const openingBalanceCurrencies = new Set(openingBalances.map((balance) => balance.currency));
+
+  return {
+    ...projectionWithFreeToSpend,
+    freeToSpend: {
+      ...projectionWithFreeToSpend.freeToSpend,
+      currencyBlocks: projectionWithFreeToSpend.freeToSpend.currencyBlocks.map((block) =>
+        openingBalanceCurrencies.has(block.currency)
+          ? block
+          : {
+              currency: block.currency,
+              status: "unavailable" as const,
+              reason: "projection-unavailable" as const,
+            },
+      ),
+    },
+  };
 }

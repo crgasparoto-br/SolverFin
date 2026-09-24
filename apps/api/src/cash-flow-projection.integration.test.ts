@@ -5,6 +5,7 @@ import type { TenantContext } from "@solverfin/domain";
 import { closePool } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { createAccountForContext } from "./repositories/accounts.js";
+import { createCardForContext, registerCardPurchaseForContext } from "./repositories/cards.js";
 import { buildFinancialSummary } from "./repositories/dashboard.js";
 import {
   createTransactionForContext,
@@ -45,6 +46,25 @@ async function main(): Promise<void> {
     currency: "USD",
     openingBalanceMinor: 20_000,
   });
+  await createAccountForContext(CONTEXT, {
+    name: `Projection zero JPY ${suffix}`,
+    kind: "checking",
+    currency: "JPY",
+    openingBalanceMinor: 0,
+  });
+  const eurCardWithoutPaymentAccount = await createCardForContext(CONTEXT, {
+    name: `Projection EUR no opening source ${suffix}`,
+    closingDay: 15,
+    dueDay: 20,
+    creditLimitMinor: 50_000,
+    currency: "EUR",
+  });
+  await registerCardPurchaseForContext(CONTEXT, eurCardWithoutPaymentAccount.id, {
+    occurredOn: "2037-11-11",
+    amountMinor: 12_000,
+    description: `Projection EUR commitment without opening source ${suffix}`,
+    currency: "EUR",
+  });
 
   await createTransactionForContext(CONTEXT, {
     accountId: brl.id,
@@ -80,6 +100,7 @@ async function main(): Promise<void> {
   const projection90 = await getProjection(token, 90);
   const brl30 = projectionBlock(projection30, "BRL");
   const usd30 = projectionBlock(projection30, "USD");
+  const eur30 = projectionBlock(projection30, "EUR");
 
   assert.equal(projection30.referenceDate, REFERENCE_DATE);
   assert.equal(projection30.from, "2037-11-11");
@@ -89,6 +110,17 @@ async function main(): Promise<void> {
   assert.equal(projectionBlock(projection90, "BRL").points.length, 90);
   assert.equal(brl30.openingBalanceMinor, baselineBrl);
   assert.equal(usd30.openingBalanceMinor, baselineUsd);
+  assert.equal(eur30.openingBalanceMinor, 0);
+
+  const eurFreeToSpend = freeToSpendBlock(projection30, "EUR");
+  assert.deepEqual(eurFreeToSpend, {
+    currency: "EUR",
+    status: "unavailable",
+    reason: "projection-unavailable",
+  });
+  assert.equal("freeToSpendMinor" in eurFreeToSpend, false);
+  assert.equal("minimumProjectedBalanceMinor" in eurFreeToSpend, false);
+  assert.equal("projectedDeficitMinor" in eurFreeToSpend, false);
 
   const brlMovement = findMovement(brl30, `transaction:${transfer.id}`);
   const usdMovement = findMovement(usd30, `transaction:${transfer.id}`);
@@ -99,6 +131,51 @@ async function main(): Promise<void> {
   assert.equal(brlMovement.commitmentId, usdMovement.commitmentId);
   assert.equal(brl30.points[0]?.closingBalanceMinor, baselineBrl - 53_832);
   assert.equal(usd30.points[0]?.closingBalanceMinor, baselineUsd + 10_000);
+
+  const brlFreeToSpend = freeToSpendBlock(projection30, "BRL");
+  const usdFreeToSpend = freeToSpendBlock(projection30, "USD");
+  assert.equal(brlFreeToSpend.status, "available");
+  assert.equal(usdFreeToSpend.status, "available");
+  if (brlFreeToSpend.status === "available" && usdFreeToSpend.status === "available") {
+    assert.equal(brlFreeToSpend.minimumProjectedBalanceMinor, baselineBrl - 53_832);
+    assert.equal(brlFreeToSpend.freeToSpendMinor, Math.max(0, baselineBrl - 53_832));
+    assert.equal(brlFreeToSpend.projectedDeficitMinor, Math.max(0, -(baselineBrl - 53_832)));
+    assert.equal(brlFreeToSpend.minimumBalanceOn, "2037-11-11");
+    assert.equal(
+      brlFreeToSpend.limitingPoint.movements[0]?.commitmentId,
+      `transaction:${transfer.id}`,
+    );
+
+    assert.equal(usdFreeToSpend.minimumProjectedBalanceMinor, baselineUsd);
+    assert.equal(usdFreeToSpend.freeToSpendMinor, Math.max(0, baselineUsd));
+    assert.equal(usdFreeToSpend.projectedDeficitMinor, Math.max(0, -baselineUsd));
+    assert.equal(usdFreeToSpend.minimumBalanceOn, REFERENCE_DATE);
+  }
+
+  assert.equal("freeToSpend" in projection60, false);
+  assert.equal("freeToSpend" in projection90, false);
+
+  const knownZeroProjection = await getProjection(token, 30, "JPY");
+  const knownZeroFreeToSpend = freeToSpendBlock(knownZeroProjection, "JPY");
+  assert.equal(knownZeroFreeToSpend.status, "available");
+  if (knownZeroFreeToSpend.status === "available") {
+    assert.equal(knownZeroFreeToSpend.minimumProjectedBalanceMinor, 0);
+    assert.equal(knownZeroFreeToSpend.freeToSpendMinor, 0);
+    assert.equal(knownZeroFreeToSpend.projectedDeficitMinor, 0);
+  }
+
+  const missingOpeningProjection = await getProjection(token, 30, "EUR");
+  const missingOpeningBlock = projectionBlock(missingOpeningProjection, "EUR");
+  assert.equal(missingOpeningBlock.openingBalanceMinor, 0);
+  const missingOpeningFreeToSpend = freeToSpendBlock(missingOpeningProjection, "EUR");
+  assert.deepEqual(missingOpeningFreeToSpend, {
+    currency: "EUR",
+    status: "unavailable",
+    reason: "projection-unavailable",
+  });
+  assert.equal("freeToSpendMinor" in missingOpeningFreeToSpend, false);
+  assert.equal("minimumProjectedBalanceMinor" in missingOpeningFreeToSpend, false);
+  assert.equal("projectedDeficitMinor" in missingOpeningFreeToSpend, false);
 
   await voidTransactionForContext(CONTEXT, transfer.id);
   const afterVoid = await getProjection(token, 30);
@@ -120,11 +197,17 @@ async function main(): Promise<void> {
   assert.equal(readErrorCode(invalid), "CASH_FLOW_PROJECTION_HORIZON_INVALID");
 }
 
-async function getProjection(token: string, horizonDays: number): Promise<ApiCashFlowProjection> {
+async function getProjection(
+  token: string,
+  horizonDays: number,
+  currency?: string,
+): Promise<ApiCashFlowProjection> {
   const response = await apiRequest(
     token,
     "GET",
-    `/api/cash-flow-projection?referenceDate=${REFERENCE_DATE}&horizonDays=${horizonDays}`,
+    `/api/cash-flow-projection?referenceDate=${REFERENCE_DATE}&horizonDays=${horizonDays}${
+      currency ? `&currency=${encodeURIComponent(currency)}` : ""
+    }`,
   );
   assert.equal(response.statusCode, 200);
   return readBody<ApiCashFlowProjection>(response);
@@ -172,6 +255,14 @@ function projectionBlock(projection: ApiCashFlowProjection, currency: string) {
   return result;
 }
 
+function freeToSpendBlock(projection: ApiCashFlowProjection, currency: string) {
+  const result = projection.freeToSpend?.currencyBlocks.find(
+    (block) => block.currency === currency,
+  );
+  assert.ok(result, `expected free-to-spend block ${currency}`);
+  return result;
+}
+
 function findMovement(
   block: ApiCashFlowProjection["currencyBlocks"][number],
   commitmentId: string,
@@ -211,4 +302,33 @@ interface ApiCashFlowProjection {
       }>;
     }>;
   }>;
+  freeToSpend?: {
+    referenceDate: string;
+    horizonDays: 30;
+    currencyBlocks: Array<
+      | {
+          currency: string;
+          status: "available";
+          minimumProjectedBalanceMinor: number;
+          minimumBalanceOn: string;
+          freeToSpendMinor: number;
+          projectedDeficitMinor: number;
+          limitingPoint: {
+            position: "opening" | "closing";
+            date: string;
+            balanceMinor: number;
+            movements: Array<{
+              commitmentId: string;
+              amountMinor: number;
+              currency: string;
+            }>;
+          };
+        }
+      | {
+          currency: string;
+          status: "unavailable";
+          reason: string;
+        }
+    >;
+  };
 }

@@ -1,1 +1,35 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","status":"closed","candidate_head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","remediation_mode":"targeted-remediation","source":{"rejection_id":"audit-rejection:672-stale-handoff-c1fd571","audited_head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","audit_report_sha256":"5128f6b98df191fadb88f27369d577a21c775c8b0d9265e87d4b02382f0e6e11"},"items":[{"source_kind":"finding","source_id":"A-003","remediation_mode":"targeted-remediation","status":"fixed","closure_kind":"post-write-refreeze-handoff-rebuild","changed_files":[".audit/entregar-issue/handoff-ready.json",".audit/entregar-issue/audit-remediation.json",".audit/entregar-issue/audit-source-result.json",".audit/entregar-issue/requirement-attack-matrix.json",".audit/entregar-issue/risk-saturation.json",".audit/entregar-issue/evidence-provenance.json",".audit/entregar-issue/pr-672-audit-escape-closure.json",".audit/entregar-issue/learning-closure.json"],"evidence":["evidence/handoff-remediation-672.txt"],"validations":["Delivery V2 CI run 35787170235 completed success on exact material head c1fd571c661c64abcb90db1b99fa3f3c7ce95749.","Statement visual validation run 35787170294 completed success on the same exact material head.","Terminal handoff is rebuilt as one result-only child whose parent is the exact material head and whose changed paths are restricted to .audit/entregar-issue artifacts."]}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
+    "audited_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+    "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "targeted-regression",
+      "changed_files": [
+        "apps/api/src/repositories/cash-flow-projection.ts",
+        "apps/api/src/cash-flow-projection.integration.test.ts"
+      ],
+      "evidence": [
+        "evidence/handoff-remediation-675.txt",
+        "apps/api/src/cash-flow-projection.integration.test.ts"
+      ],
+      "validations": [
+        "Delivery V2 CI run 36035406314 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
+        "Statement visual validation run 36035406276 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
+        "Regression covers known-zero JPY, filtered missing EUR, and unfiltered commitment-only EUR without active-account provenance."
+      ]
+    }
+  ]
+}

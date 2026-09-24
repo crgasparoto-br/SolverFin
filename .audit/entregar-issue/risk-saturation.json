@@ -1,1 +1,135 @@
-{"schema_version":1,"head_sha":"c1fd571c661c64abcb90db1b99fa3f3c7ce95749","families":[{"family":"documentation","applicable":true,"reason":"Derived from requirement attack matrix.","control_ids":["NEG-REQ-067-01"],"dimensions":[{"surface":"canonical-claims","reason":"Exercises the material documentation boundary on the exact frozen transfer candidate.","control_ids":["NEG-REQ-067-01"],"status":"passed"}],"status":"passed"},{"family":"reference-liveness","applicable":true,"reason":"Derived from requirement attack matrix.","control_ids":["NEG-REQ-003-01","NEG-REQ-013-01","NEG-REQ-030-01"],"dimensions":[{"surface":"persisted-reference-liveness","reason":"Exercises the material reference-liveness boundary on the exact frozen transfer candidate.","control_ids":["NEG-REQ-003-01","NEG-REQ-013-01","NEG-REQ-030-01"],"status":"passed"}],"status":"passed"},{"family":"public-boundary","applicable":false,"reason":"No current contract or diff signal requires this family.","control_ids":[],"dimensions":[],"status":"not-applicable"},{"family":"rollback","applicable":false,"reason":"No current contract or diff signal requires this family.","control_ids":[],"dimensions":[],"status":"not-applicable"},{"family":"temporal-consistency","applicable":true,"reason":"Derived from requirement attack matrix.","control_ids":["NEG-REQ-021-01"],"dimensions":[{"surface":"lifecycle-date-consistency","reason":"Exercises the material temporal-consistency boundary on the exact frozen transfer candidate.","control_ids":["NEG-REQ-021-01"],"status":"passed"}],"status":"passed"},{"family":"idempotency","applicable":true,"reason":"Derived from requirement attack matrix.","control_ids":["NEG-REQ-062-01"],"dimensions":[{"surface":"duplicate-processing","reason":"Exercises the material idempotency boundary on the exact frozen transfer candidate.","control_ids":["NEG-REQ-062-01"],"status":"passed"}],"status":"passed"},{"family":"tenant-isolation","applicable":true,"reason":"Derived from requirement attack matrix.","control_ids":["NEG-REQ-020-02"],"dimensions":[{"surface":"tenant-scope-isolation","reason":"Exercises the material tenant-isolation boundary on the exact frozen transfer candidate.","control_ids":["NEG-REQ-020-02"],"status":"passed"}],"status":"passed"},{"family":"authorization","applicable":true,"reason":"Derived from requirement attack matrix.","control_ids":["NEG-REQ-001-01","NEG-REQ-020-01","NEG-REQ-048-01"],"dimensions":[{"surface":"public-operation-policy","reason":"Exercises the material authorization boundary on the exact frozen transfer candidate.","control_ids":["NEG-REQ-001-01","NEG-REQ-020-01","NEG-REQ-048-01"],"status":"passed"}],"status":"passed"},{"family":"structural-contract","applicable":true,"reason":"Derived from requirement attack matrix.","control_ids":["NEG-REQ-010-01","NEG-REQ-018-01","NEG-REQ-019-01","NEG-REQ-023-01","NEG-REQ-028-01","NEG-REQ-042-01","NEG-REQ-044-01","NEG-REQ-059-01","NEG-REQ-067-02"],"dimensions":[{"surface":"relational-semantic-integrity","reason":"Exercises the material structural-contract boundary on the exact frozen transfer candidate.","control_ids":["NEG-REQ-019-01","NEG-REQ-023-01","NEG-REQ-042-01","NEG-REQ-044-01","NEG-REQ-059-01"],"status":"passed"},{"surface":"structural-invariant","reason":"Exercises the material structural-contract boundary on the exact frozen transfer candidate.","control_ids":["NEG-REQ-010-01","NEG-REQ-018-01","NEG-REQ-028-01","NEG-REQ-067-02"],"status":"passed"}],"status":"passed"},{"family":"temporal-destination","applicable":false,"reason":"No current contract or diff signal requires this family.","control_ids":[],"dimensions":[],"status":"not-applicable"},{"family":"historical-immutability","applicable":false,"reason":"No current contract or diff signal requires this family.","control_ids":[],"dimensions":[],"status":"not-applicable"},{"family":"concurrency-atomicity","applicable":false,"reason":"No current contract or diff signal requires this family.","control_ids":[],"dimensions":[],"status":"not-applicable"}]}
+{
+  "schema_version": 1,
+  "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": true,
+      "reason": "Unavailable is a public API and UI state.",
+      "control_ids": [
+        "FREE-TO-SPEND-PUBLIC-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "free-to-spend-contract",
+          "reason": "Synthetic numerics are forbidden when the mandatory source is absent.",
+          "control_ids": [
+            "FREE-TO-SPEND-PUBLIC-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Canonical projection reuse requires real opening-balance provenance.",
+      "control_ids": [
+        "FREE-TO-SPEND-PROVENANCE-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "Commitment-only currency otherwise synthesizes opening zero.",
+          "control_ids": [
+            "FREE-TO-SPEND-PROVENANCE-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Canonical documentation changes are part of the issue contract.",
+      "control_ids": [
+        "FREE-TO-SPEND-DOCS-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "Documentation must match exact-head runtime semantics.",
+          "control_ids": [
+            "FREE-TO-SPEND-DOCS-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ]
+}
