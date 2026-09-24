@@ -328,8 +328,10 @@ async function validateConflictAccountDesktop(fixture) {
   });
 
   await evaluate(browser.cdp, `document.querySelector("[data-installment-reload]").click()`);
-  await sleep(300);
-  const reloaded = await readAccountModal(fixture.archivedCategoryId);
+  const reloaded = await waitForAccountModal(
+    fixture.archivedCategoryId,
+    (modal) => modal.title === "Detalhes da parcela",
+  );
   check(
     reloaded.title === "Detalhes da parcela",
     "Reload did not reflect the blocked state",
@@ -503,6 +505,16 @@ async function waitForCardLine(transactionId) {
       throw new Error("Timed out waiting for card installment decoration");
     })()`,
   );
+}
+
+async function waitForAccountModal(categoryId, predicate) {
+  let modal;
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    modal = await readAccountModal(categoryId);
+    if (predicate(modal)) return modal;
+    await sleep(100);
+  }
+  return modal;
 }
 
 async function readAccountModal(categoryId) {
