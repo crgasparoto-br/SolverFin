@@ -23,12 +23,23 @@ keepsCurrenciesAndTransfersOutsideBudgetConsumption();
 
 function coversProjectedBudgetWithoutDoubleCountingInvoice(): void {
   const budget = makeBudget("budget-food", "food", "BRL", "2038-08-01", "2038-08-31", 100_000);
-  const transactions: Transaction[] = [
-    expense("posted-food", "posted", "2038-08-04", "2038-08-04", 25_000, "BRL", "food"),
-    expense("card-purchase", "planned", "2038-08-20", "2038-08-20", 30_000, "BRL", "food", {
+  const cardPurchase = expense(
+    "card-purchase",
+    "planned",
+    "2038-08-20",
+    "2038-08-20",
+    30_000,
+    "BRL",
+    "food",
+    {
       invoiceId: "invoice-1",
       cardId: "card-1",
-    }),
+    },
+  );
+  delete cardPurchase.accountId;
+  const transactions: Transaction[] = [
+    expense("posted-food", "posted", "2038-08-04", "2038-08-04", 25_000, "BRL", "food"),
+    cardPurchase,
   ];
   const commitments: FutureCommitment[] = [
     {
