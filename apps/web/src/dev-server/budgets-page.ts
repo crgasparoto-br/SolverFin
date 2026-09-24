@@ -30,7 +30,7 @@ import {
   type CategoryRecord,
 } from "./budgets-view-model.js";
 
-interface UnbudgetedUsageLoad {
+interface BudgetDashboardUsageLoad {
   usage: BudgetUsageRecord[];
   failedPeriodCount: number;
 }
@@ -56,9 +56,9 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
 
   const budgets = budgetsResult.data.budgets;
   const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
-  const [usageLoads, unbudgetedLoad] = await Promise.all([
+  const [usageLoads, dashboardLoad] = await Promise.all([
     loadBudgetUsage(token, budgets),
-    loadUnbudgetedUsage(token, budgets),
+    loadBudgetDashboardUsage(token, budgets),
   ]);
   const filters = readFilters(url);
   const viewModel = buildBudgetsPageViewModel(
@@ -66,7 +66,7 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
     categories,
     usageLoads,
     filters,
-    unbudgetedLoad.usage,
+    dashboardLoad.usage,
   );
   const categoryWarning = categoriesResult.ok
     ? ""
@@ -85,7 +85,7 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
         })
       : "";
   const unbudgetedWarning =
-    unbudgetedLoad.failedPeriodCount > 0
+    dashboardLoad.failedPeriodCount > 0
       ? renderAlert({
           tone: "attention",
           title: "Parte das despesas sem orçamento está indisponível",
@@ -108,17 +108,12 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
           eyebrow: "Planejamento por categoria",
           title: "Orçamentos",
           description:
-            "Compare planejado, realizado e restante em cada período e moeda. Categorias com despesas sem orçamento aparecem separadamente.",
+            "Acompanhe planejado, realizado, comprometido, projetado e disponível por período e moeda. Itens sem orçamento ou sem categoria permanecem separados.",
           actionsHtml: newBudgetTrigger,
         },
       )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderSummaryGrid(
         {
           childrenHtml: [
-            renderSummaryMetric(
-              "Itens no recorte",
-              String(viewModel.rows.length),
-              "Orçamentos e categorias sem orçamento",
-            ),
             renderSummaryMetric(
               "Ativos",
               String(viewModel.activeCount),
@@ -127,7 +122,12 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
             renderSummaryMetric(
               "Sem orçamento",
               String(viewModel.unbudgetedCount),
-              "Categorias com despesa realizada no período",
+              "Categorias identificadas sem valor planejado",
+            ),
+            renderSummaryMetric(
+              "Sem categoria",
+              String(viewModel.uncategorizedCount),
+              "Itens que ainda precisam ser categorizados",
             ),
             renderSummaryMetric(
               "Moedas",
@@ -162,10 +162,10 @@ async function loadBudgetUsage(
   return new Map(pairs);
 }
 
-async function loadUnbudgetedUsage(
+async function loadBudgetDashboardUsage(
   token: string,
   budgets: readonly BudgetRecord[],
-): Promise<UnbudgetedUsageLoad> {
+): Promise<BudgetDashboardUsageLoad> {
   const periods = budgetDashboardPeriods(budgets);
   const results = await Promise.all(
     periods.map(async (period) => {
@@ -184,9 +184,10 @@ async function loadUnbudgetedUsage(
       continue;
     }
     for (const usage of result.data.usage) {
-      if (usage.status !== "unbudgeted") continue;
+      if (usage.source !== "unbudgeted" && usage.source !== "uncategorized") continue;
       const key = [
-        usage.categoryId,
+        usage.source,
+        usage.categoryId ?? "uncategorized",
         usage.periodStartOn,
         usage.periodEndOn,
         usage.currency.trim().toUpperCase(),
@@ -279,9 +280,9 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
     })}</section>`;
   }
 
-  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Acompanhamento</p><h2 id="budgets-list-title">Planejado, realizado e restante</h2></div><span>${rows.length} item${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable(
+  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Acompanhamento</p><h2 id="budgets-list-title">Planejado, realizado, comprometido e projetado</h2></div><span>${rows.length} item${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable(
     {
-      caption: "Orçamentos e categorias sem orçamento por período e moeda",
+      caption: "Orçamentos, categorias sem orçamento e itens sem categoria por período e moeda",
       rows,
       rowKey: (row) => row.id,
       columns: [
@@ -309,9 +310,9 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
           header: "Planejado",
           align: "end",
           renderCell: (row) =>
-            row.source === "unbudgeted"
-              ? '<span class="budget-unbudgeted-plan">Sem orçamento</span>'
-              : renderBudgetMoney(row.plannedAmountMinor, row.currency),
+            row.source === "budget"
+              ? renderBudgetMoney(row.plannedAmountMinor, row.currency)
+              : `<span class="budget-unbudgeted-plan">${row.source === "uncategorized" ? "Sem categoria" : "Sem orçamento"}</span>`,
         },
         {
           id: "realized",
@@ -320,25 +321,46 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
           renderCell: (row) => renderBudgetMoney(row.actualAmountMinor, row.currency),
         },
         {
-          id: "remaining",
-          header: "Restante",
+          id: "committed",
+          header: "Comprometido",
           align: "end",
-          renderCell: (row) => renderBudgetMoney(row.remainingAmountMinor, row.currency),
+          renderCell: (row) => renderBudgetMoney(row.committedAmountMinor, row.currency),
+        },
+        {
+          id: "projected",
+          header: "Projetado",
+          align: "end",
+          renderCell: (row) => renderBudgetMoney(row.projectedAmountMinor, row.currency),
+        },
+        {
+          id: "available",
+          header: "Disponível",
+          align: "end",
+          renderCell: (row) => renderAvailableCell(row),
         },
         {
           id: "usage",
-          header: "Uso",
+          header: "Realizado",
           renderCell: renderUsageCell,
         },
         {
           id: "actions",
-          header: "Ações",
+          header: "Detalhes e ações",
           align: "end",
           renderCell: renderBudgetActions,
         },
       ],
     },
   )}</section>`;
+}
+
+function renderAvailableCell(row: BudgetRowViewModel): string {
+  if (row.source !== "budget") {
+    return '<span class="budget-unavailable">Não se aplica sem orçamento</span>';
+  }
+  const amount = renderBudgetMoney(row.availableAmountMinor, row.currency);
+  if ((row.overBudgetAmountMinor ?? 0) <= 0) return amount;
+  return `<div class="budget-available">${amount}<span class="budget-over">Estouro: ${renderBudgetMoney(row.overBudgetAmountMinor, row.currency)}</span></div>`;
 }
 
 function renderBudgetMoney(amountMinor: number | null, currency: string | undefined): string {
@@ -360,8 +382,12 @@ function renderUsageCell(row: BudgetRowViewModel): string {
 }
 
 function renderBudgetActions(row: BudgetRowViewModel): string {
+  const details = renderCompositionDetails(row);
   if (row.source === "unbudgeted") {
-    return '<span class="budget-unbudgeted-action">Crie um orçamento para definir um valor planejado.</span>';
+    return `<div class="budget-row-actions">${details}<span class="budget-unbudgeted-action">Crie um orçamento para definir um valor planejado.</span></div>`;
+  }
+  if (row.source === "uncategorized") {
+    return `<div class="budget-row-actions">${details}<a class="button-link secondary-button" href="/lancamentos">Abrir Extrato para categorizar</a></div>`;
   }
   const editDialogId = `edit-budget-dialog-${row.id}`;
   const editButton = renderDialogTrigger({
@@ -370,12 +396,25 @@ function renderBudgetActions(row: BudgetRowViewModel): string {
     variant: "secondary",
     className: "secondary-button",
   }).replace("<button ", `<button data-open-dialog="${renderText(editDialogId)}" `);
-  const refreshButton = `<button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${renderText(row.id)}/usage" title="Ver uso do orçamento">Atualizar uso</button>`;
+  const refreshButton = `<button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${renderText(row.id)}/usage" title="Atualizar acompanhamento">Atualizar</button>`;
   const archiveButton =
     row.status === "archived"
       ? ""
       : `<button type="button" class="danger-button" data-api-action data-api-method="POST" data-api-path="/api/budgets/${renderText(row.id)}/archive" data-api-confirm="Arquivar este orçamento?">Arquivar</button>`;
-  return `<div class="budget-row-actions">${refreshButton}${editButton}${archiveButton}</div>`;
+  return `<div class="budget-row-actions">${details}${refreshButton}${editButton}${archiveButton}</div>`;
+}
+
+function renderCompositionDetails(row: BudgetRowViewModel): string {
+  if (row.compositionItems.length === 0) {
+    return '<span class="budget-unavailable">Sem itens no recorte</span>';
+  }
+  const items = row.compositionItems
+    .map(
+      (item) =>
+        `<li><span><strong>${item.state === "realized" ? "Realizado" : "Comprometido"}</strong> · ${renderText(formatDateOnly(item.date))} · ${renderText(item.description)}</span><span>${renderBudgetMoney(item.amountMinor, item.currency)}</span></li>`,
+    )
+    .join("");
+  return `<details class="budget-composition"><summary>Ver itens (${row.compositionItems.length})</summary><ul>${items}</ul></details>`;
 }
 
 function renderNewBudgetDialog(categories: readonly CategoryRecord[]): string {
@@ -489,7 +528,7 @@ ${sharedDialogStyles()}
     .budget-section-heading h2 { margin: 0; }
     .budget-section-heading > span { color: var(--muted); font-size: .8rem; font-weight: 700; }
     .budget-results .sf-table-wrap { overflow-x: auto; }
-    .budget-results .sf-table { min-width: 1040px; width: 100%; }
+    .budget-results .sf-table { min-width: 1320px; width: 100%; }
     .budget-results td { vertical-align: middle; }
     .budget-currency { letter-spacing: .04em; }
     .budget-period { white-space: nowrap; }
@@ -500,6 +539,13 @@ ${sharedDialogStyles()}
     .budget-unbudgeted-plan { color: var(--muted); font-size: .8rem; font-weight: 750; }
     .budget-row-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; min-width: 250px; }
     .budget-row-actions button { white-space: nowrap; }
+    .budget-available { display: grid; gap: 3px; }
+    .budget-over { color: var(--danger); font-size: .76rem; font-weight: 750; }
+    .budget-composition { min-width: 180px; }
+    .budget-composition summary { cursor: pointer; font-weight: 700; }
+    .budget-composition ul { display: grid; gap: 6px; list-style: none; margin: 8px 0 0; padding: 0; }
+    .budget-composition li { display: grid; gap: 2px; text-align: left; }
+    .budget-composition li > span:last-child { font-weight: 750; }
     .danger-button { background: var(--surface); border: 1px solid #fecaca; border-radius: var(--radius); color: var(--danger); font: inherit; font-weight: 650; padding: 0 12px; }
     .secondary-button { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); font: inherit; font-weight: 650; padding: 0 12px; }
     .budget-edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -532,9 +578,11 @@ ${sharedDialogStyles()}
       .budget-results .sf-table td[data-column="currency"]::before { content: "Moeda"; }
       .budget-results .sf-table td[data-column="planned"]::before { content: "Planejado"; }
       .budget-results .sf-table td[data-column="realized"]::before { content: "Realizado"; }
-      .budget-results .sf-table td[data-column="remaining"]::before { content: "Restante"; }
+      .budget-results .sf-table td[data-column="committed"]::before { content: "Comprometido"; }
+      .budget-results .sf-table td[data-column="projected"]::before { content: "Projetado"; }
+      .budget-results .sf-table td[data-column="available"]::before { content: "Disponível"; }
       .budget-results .sf-table td[data-column="usage"]::before { content: "Uso"; }
-      .budget-results .sf-table td[data-column="actions"]::before { content: "Ações"; }
+      .budget-results .sf-table td[data-column="actions"]::before { content: "Detalhes e ações"; }
       .budget-row-actions { justify-content: flex-start; min-width: 0; }
       .budget-row-actions button { flex: 1 1 130px; white-space: normal; }
       .budget-period { white-space: normal; }

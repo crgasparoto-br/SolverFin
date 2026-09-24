@@ -9,18 +9,45 @@ export interface BudgetRecord {
   alertThresholdPercent?: number;
 }
 
+export interface BudgetCompositionItemRecord {
+  id: string;
+  state: "realized" | "committed";
+  description: string;
+  date: string;
+  amountMinor: number;
+  currency: string;
+  categoryId?: string;
+  transactionId?: string;
+  commitmentId?: string;
+}
+
 export interface BudgetUsageRecord {
+  source: "budget" | "unbudgeted" | "uncategorized";
   budgetId?: string;
-  categoryId: string;
+  categoryId?: string;
   periodStartOn: string;
   periodEndOn: string;
-  plannedAmountMinor: number;
+  plannedAmountMinor: number | null;
   actualAmountMinor: number;
-  remainingAmountMinor: number;
-  usedPercent: number;
-  alertThresholdPercent: number;
-  status: "no_activity" | "on_track" | "approaching" | "exceeded" | "unbudgeted" | string;
+  realizedAmountMinor: number;
+  committedAmountMinor: number;
+  projectedAmountMinor: number;
+  remainingAmountMinor: number | null;
+  availableAmountMinor: number | null;
+  overBudgetAmountMinor: number | null;
+  usedPercent: number | null;
+  alertThresholdPercent: number | null;
+  status:
+    | "no_activity"
+    | "on_track"
+    | "approaching"
+    | "exceeded"
+    | "unbudgeted"
+    | "uncategorized"
+    | string;
   currency: string;
+  realizedItems: BudgetCompositionItemRecord[];
+  committedItems: BudgetCompositionItemRecord[];
 }
 
 export interface CategoryRecord {
@@ -39,20 +66,25 @@ export interface BudgetUsageLoad {
 
 export interface BudgetRowViewModel {
   id: string;
-  source: "budget" | "unbudgeted";
+  source: "budget" | "unbudgeted" | "uncategorized";
   status: string;
-  categoryId: string;
+  categoryId?: string;
   categoryName: string;
   periodStartOn: string;
   periodEndOn: string;
   plannedAmountMinor: number | null;
   currency?: string;
   actualAmountMinor: number | null;
+  committedAmountMinor: number | null;
+  projectedAmountMinor: number | null;
   remainingAmountMinor: number | null;
+  availableAmountMinor: number | null;
+  overBudgetAmountMinor: number | null;
   usedPercent: number | null;
   usageStatus: BudgetUsageRecord["status"] | "unavailable";
   usageUnavailableReason?: string;
   alertThresholdPercent?: number;
+  compositionItems: BudgetCompositionItemRecord[];
 }
 
 export interface BudgetsPageViewModel {
@@ -62,6 +94,7 @@ export interface BudgetsPageViewModel {
   attentionCount: number;
   unavailableUsageCount: number;
   unbudgetedCount: number;
+  uncategorizedCount: number;
 }
 
 export interface BudgetPresentationFilters {
@@ -74,7 +107,7 @@ export function buildBudgetsPageViewModel(
   categories: readonly CategoryRecord[],
   usageByBudgetId: ReadonlyMap<string, BudgetUsageLoad>,
   filters: BudgetPresentationFilters = {},
-  unbudgetedUsage: readonly BudgetUsageRecord[] = [],
+  dashboardUsage: readonly BudgetUsageRecord[] = [],
 ): BudgetsPageViewModel {
   const categoryIndex = new Map(categories.map((category) => [category.id, category]));
   const normalizedFilterCurrency = normalizeCurrency(filters.currency);
@@ -85,22 +118,22 @@ export function buildBudgetsPageViewModel(
       return normalizeCurrency(budget.currency) === normalizedFilterCurrency;
     })
     .map((budget) => buildBudgetRow(budget, categoryIndex, usageByBudgetId.get(budget.id)));
-  const unbudgetedRows =
+  const dashboardRows =
     filters.status === "archived"
       ? []
-      : unbudgetedUsage
-          .filter((usage) => usage.status === "unbudgeted")
+      : dashboardUsage
+          .filter((usage) => usage.source === "unbudgeted" || usage.source === "uncategorized")
           .filter((usage) => {
             if (!normalizedFilterCurrency) return true;
             return normalizeCurrency(usage.currency) === normalizedFilterCurrency;
           })
-          .map((usage) => buildUnbudgetedRow(usage, categoryIndex));
-  const rows = [...budgetRows, ...unbudgetedRows].sort(compareBudgetRows);
+          .map((usage) => buildDashboardRow(usage, categoryIndex));
+  const rows = [...budgetRows, ...dashboardRows].sort(compareBudgetRows);
   const currencies = Array.from(
     new Set(
       [
         ...budgets.map((budget) => normalizeCurrency(budget.currency)),
-        ...unbudgetedUsage.map((usage) => normalizeCurrency(usage.currency)),
+        ...dashboardUsage.map((usage) => normalizeCurrency(usage.currency)),
       ].filter((currency): currency is string => currency !== undefined),
     ),
   ).sort((left, right) => left.localeCompare(right));
@@ -110,10 +143,14 @@ export function buildBudgetsPageViewModel(
     currencies,
     activeCount: rows.filter((row) => row.source === "budget" && row.status === "active").length,
     attentionCount: rows.filter(
-      (row) => row.usageStatus === "approaching" || row.usageStatus === "exceeded",
+      (row) =>
+        row.usageStatus === "approaching" ||
+        row.usageStatus === "exceeded" ||
+        (row.overBudgetAmountMinor ?? 0) > 0,
     ).length,
     unavailableUsageCount: rows.filter((row) => row.usageStatus === "unavailable").length,
     unbudgetedCount: rows.filter((row) => row.source === "unbudgeted").length,
+    uncategorizedCount: rows.filter((row) => row.source === "uncategorized").length,
   };
 }
 
@@ -127,8 +164,8 @@ function buildBudgetRow(
   const usageUnavailableReason = acceptedUsage
     ? undefined
     : usageLoad?.ok === false
-      ? usageLoad.error || "Não foi possível carregar o realizado deste orçamento."
-      : "O realizado deste orçamento não está disponível com segurança.";
+      ? usageLoad.error || "Não foi possível carregar o acompanhamento deste orçamento."
+      : "O acompanhamento deste orçamento não está disponível com segurança.";
 
   return {
     id: budget.id,
@@ -140,41 +177,65 @@ function buildBudgetRow(
     periodEndOn: budget.periodEndOn,
     plannedAmountMinor: budget.plannedAmountMinor,
     ...(currency ? { currency } : {}),
-    actualAmountMinor: acceptedUsage?.actualAmountMinor ?? null,
+    actualAmountMinor: acceptedUsage?.realizedAmountMinor ?? null,
+    committedAmountMinor: acceptedUsage?.committedAmountMinor ?? null,
+    projectedAmountMinor: acceptedUsage?.projectedAmountMinor ?? null,
     remainingAmountMinor: acceptedUsage?.remainingAmountMinor ?? null,
+    availableAmountMinor: acceptedUsage?.availableAmountMinor ?? null,
+    overBudgetAmountMinor: acceptedUsage?.overBudgetAmountMinor ?? null,
     usedPercent: acceptedUsage?.usedPercent ?? null,
     usageStatus: acceptedUsage?.status ?? "unavailable",
     ...(usageUnavailableReason ? { usageUnavailableReason } : {}),
-    ...(acceptedUsage
+    ...(acceptedUsage?.alertThresholdPercent !== null &&
+    acceptedUsage?.alertThresholdPercent !== undefined
       ? { alertThresholdPercent: acceptedUsage.alertThresholdPercent }
       : budget.alertThresholdPercent !== undefined
         ? { alertThresholdPercent: budget.alertThresholdPercent }
         : {}),
+    compositionItems: acceptedUsage
+      ? [...acceptedUsage.realizedItems, ...acceptedUsage.committedItems].sort(compareCompositionItems)
+      : [],
   };
 }
 
-function buildUnbudgetedRow(
+function buildDashboardRow(
   usage: BudgetUsageRecord,
   categoryIndex: ReadonlyMap<string, CategoryRecord>,
 ): BudgetRowViewModel {
   const currency = normalizeCurrency(usage.currency);
+  const source = usage.source === "uncategorized" ? "uncategorized" : "unbudgeted";
+  const categoryName =
+    source === "uncategorized"
+      ? "Sem categoria"
+      : usage.categoryId
+        ? buildCategoryPath(usage.categoryId, categoryIndex)
+        : "Categoria não localizada";
+
   return {
-    id: `unbudgeted:${usage.categoryId}:${usage.periodStartOn}:${usage.periodEndOn}:${currency ?? "unknown"}`,
-    source: "unbudgeted",
+    id: [
+      source,
+      usage.categoryId ?? "uncategorized",
+      usage.periodStartOn,
+      usage.periodEndOn,
+      currency ?? "unknown",
+    ].join(":"),
+    source,
     status: "active",
-    categoryId: usage.categoryId,
-    categoryName: buildCategoryPath(usage.categoryId, categoryIndex),
+    ...(usage.categoryId ? { categoryId: usage.categoryId } : {}),
+    categoryName,
     periodStartOn: usage.periodStartOn,
     periodEndOn: usage.periodEndOn,
     plannedAmountMinor: null,
     ...(currency ? { currency } : {}),
-    actualAmountMinor: Number.isFinite(usage.actualAmountMinor) ? usage.actualAmountMinor : null,
-    remainingAmountMinor: Number.isFinite(usage.remainingAmountMinor)
-      ? usage.remainingAmountMinor
-      : null,
-    usedPercent: Number.isFinite(usage.usedPercent) ? usage.usedPercent : null,
-    usageStatus: "unbudgeted",
-    alertThresholdPercent: usage.alertThresholdPercent,
+    actualAmountMinor: finiteOrNull(usage.realizedAmountMinor),
+    committedAmountMinor: finiteOrNull(usage.committedAmountMinor),
+    projectedAmountMinor: finiteOrNull(usage.projectedAmountMinor),
+    remainingAmountMinor: null,
+    availableAmountMinor: null,
+    overBudgetAmountMinor: null,
+    usedPercent: null,
+    usageStatus: source,
+    compositionItems: [...usage.realizedItems, ...usage.committedItems].sort(compareCompositionItems),
   };
 }
 
@@ -182,23 +243,27 @@ function validateUsage(
   budget: BudgetRecord,
   usage: BudgetUsageRecord | undefined,
 ): BudgetUsageRecord | undefined {
-  if (!usage) return undefined;
+  if (!usage || usage.source !== "budget") return undefined;
   const budgetCurrency = normalizeCurrency(budget.currency);
   const usageCurrency = normalizeCurrency(usage.currency);
   if (!budgetCurrency || !usageCurrency || budgetCurrency !== usageCurrency) return undefined;
-  if (usage.budgetId && usage.budgetId !== budget.id) return undefined;
+  if (usage.budgetId !== budget.id) return undefined;
   if (usage.categoryId !== budget.categoryId) return undefined;
   if (usage.periodStartOn !== budget.periodStartOn || usage.periodEndOn !== budget.periodEndOn) {
     return undefined;
   }
   if (usage.plannedAmountMinor !== budget.plannedAmountMinor) return undefined;
   if (
-    !Number.isFinite(usage.actualAmountMinor) ||
-    !Number.isFinite(usage.remainingAmountMinor) ||
+    !Number.isFinite(usage.realizedAmountMinor) ||
+    !Number.isFinite(usage.committedAmountMinor) ||
+    !Number.isFinite(usage.projectedAmountMinor) ||
+    !Number.isFinite(usage.availableAmountMinor) ||
+    !Number.isFinite(usage.overBudgetAmountMinor) ||
     !Number.isFinite(usage.usedPercent)
   ) {
     return undefined;
   }
+  if (!Array.isArray(usage.realizedItems) || !Array.isArray(usage.committedItems)) return undefined;
   return usage;
 }
 
@@ -233,10 +298,23 @@ function compareBudgetRows(left: BudgetRowViewModel, right: BudgetRowViewModel):
 }
 
 function statusRank(row: BudgetRowViewModel): number {
+  if (row.source === "budget" && row.status === "active") return 0;
   if (row.source === "unbudgeted") return 1;
-  if (row.status === "active") return 0;
-  if (row.status === "archived") return 2;
-  return 3;
+  if (row.source === "uncategorized") return 2;
+  if (row.status === "archived") return 3;
+  return 4;
+}
+
+function compareCompositionItems(
+  left: BudgetCompositionItemRecord,
+  right: BudgetCompositionItemRecord,
+): number {
+  const date = left.date.localeCompare(right.date);
+  return date === 0 ? left.id.localeCompare(right.id) : date;
+}
+
+function finiteOrNull(value: number): number | null {
+  return Number.isFinite(value) ? value : null;
 }
 
 function normalizeCurrency(value: string | undefined): string | undefined {

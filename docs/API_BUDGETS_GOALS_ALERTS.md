@@ -1,110 +1,214 @@
 # Orcamentos, metas e alertas basicos
 
-Este documento descreve o contrato de dominio e API para controle mensal por categoria, calculo de uso percentual e alertas basicos.
+Este documento descreve o contrato de dominio e API para acompanhamento de orcamentos por categoria, periodo e moeda.
 
 ## Escopo entregue
 
 - Criacao, listagem, leitura, edicao e arquivamento de orcamentos.
-- Orcamento mensal por categoria de despesa e contexto financeiro.
-- Calculo de uso com base em transacoes realizadas do periodo e da mesma moeda do orcamento.
-- Resumo para dashboard com categorias orcadas e categorias com gasto sem orcamento.
-- Status basico de acompanhamento: `no_activity`, `on_track`, `approaching`, `exceeded` e `unbudgeted`.
+- Orcamento por categoria de despesa e contexto financeiro.
+- Acompanhamento separado de valor planejado, realizado, comprometido, projetado e disponivel.
+- Resumo operacional com categorias orcadas, categorias identificadas sem orcamento e bucket analitico **Sem categoria**.
 - Persistencia real e rotas HTTP para os fluxos de orcamento existentes.
 - Auditoria redigida para criacao e atualizacao de orcamentos.
+- Separacao multi-moedas sem conversao implicita.
 
 ## Periodo padrao
 
-Decisao de MVP: o periodo padrao e mes calendario.
+A criacao por mes usa mes calendario.
 
 `getMonthlyBudgetPeriod("2026-06")` retorna:
 
-- `periodStartOn`: `2026-06-01`
-- `periodEndOn`: `2026-06-30`
+- `periodStartOn: 2026-06-01`
+- `periodEndOn: 2026-06-30`
 
-Tambem e possivel informar um periodo parcial explicitamente. O dominio valida que o fim seja igual ou posterior ao inicio.
+Tambem e possivel informar periodo parcial explicitamente. O fim deve ser igual ou posterior ao inicio.
 
-## Calculo de uso e moeda
+## Contrato de consumo orcamentario
 
-O uso de um orcamento considera somente transacoes:
+Para uma combinacao **categoria + periodo + moeda** com orcamento ativo:
 
-- do mesmo tenant/contexto financeiro;
+```text
+planned   = valor configurado do orcamento
+realized  = despesas economicas confirmadas no periodo
+committed = despesas futuras deterministicas conhecidas, ainda nao realizadas
+projected = realized + committed
+available = planned - projected
+overBudget = max(0, -available)
+```
+
+A API preserva os nomes legados `actualAmountMinor` e `remainingAmountMinor` por compatibilidade:
+
+- `actualAmountMinor` e igual a `realizedAmountMinor`;
+- `remainingAmountMinor` continua significando `planned - realized`;
+- para decisao futura, use `availableAmountMinor`, que considera `committed`.
+
+Nenhuma dessas formulas e recalculada na interface.
+
+### Realizado
+
+O realizado inclui somente `Transaction`:
+
+- do mesmo tenant e perfil financeiro;
 - do tipo `expense`;
 - com status `posted` ou `reconciled`;
-- com `occurredOn` dentro do periodo;
-- vinculadas a categoria do orcamento;
-- com `currency` igual a moeda nativa do orcamento.
+- com `occurredOn` dentro do periodo exato do orcamento;
+- com a mesma categoria;
+- com a mesma moeda nativa.
 
-A consulta persistida usada por `summarizeBudgetUsageForContext` aplica tambem o filtro de moeda no SQL. O dominio repete a verificacao antes da soma, evitando que um chamador em memoria misture moedas por engano.
+`planned`, `suggested`, `pending_review`, `duplicate` e `voided` nao entram no realizado.
 
-Transacoes `planned`, `suggested` ou `voided` nao entram no uso realizado do MVP.
+### Comprometido
 
-Campos principais do resumo:
+O comprometido usa a semantica temporal de `plannedOn` e reutiliza a agenda canonica de compromissos futuros da #616.
 
-- `plannedAmountMinor`: valor planejado do orcamento.
-- `actualAmountMinor`: soma realizada na mesma moeda.
-- `remainingAmountMinor`: planejado menos realizado.
-- `usedPercent`: percentual arredondado para duas casas decimais.
-- `alertThresholdPercent`: limite de aproximacao, configuravel por orcamento.
-- `status`: status de acompanhamento.
-- `currency`: moeda explicita do calculo.
+Duas fontes economicas sao consideradas sem dupla contagem:
 
-Uma categoria pode possuir dados em BRL e USD no mesmo periodo sem que esses valores sejam somados. O resumo de dashboard de dominio mantém entradas independentes por combinação `currency + categoryId` e ordena os resultados por moeda e categoria. Quando o filtro opcional de moeda e informado, ele apenas restringe a moeda nativa analisada; quando e omitido, as moedas permanecem separadas. Nao ha conversao cambial ou fallback de apresentacao dentro da agregacao.
+1. `Transaction expense/planned` ainda sem `effectiveOn`, inclusive compra de cartao categorizada vinculada a fatura;
+2. compromissos canonicos nao materializados de recorrencia e legado elegivel, depois da deduplicacao da agenda #616.
+
+A composicao orcamentaria nao usa:
+
+- `Invoice` como categoria;
+- pagamento/forecast de fatura como segunda despesa;
+- transferencias internas, same-currency ou cross-currency;
+- receitas;
+- conversao cambial.
+
+Quando uma ocorrencia deixa de ser futura e passa a `posted` ou `reconciled`, ela deixa de compor `committed`. Se `plannedOn` e `occurredOn` estiverem em periodos diferentes, o valor sai do periodo planejado e aparece como realizado apenas no periodo ocorrido.
+
+## Contrato de resposta
+
+`GET /api/budgets/:budgetId/usage` retorna um item `source=budget` com:
+
+- `budgetId`, `categoryId`, periodo e `currency`;
+- `plannedAmountMinor`;
+- `actualAmountMinor` e `realizedAmountMinor`;
+- `committedAmountMinor`;
+- `projectedAmountMinor`;
+- `remainingAmountMinor` para compatibilidade;
+- `availableAmountMinor`;
+- `overBudgetAmountMinor`;
+- `usedPercent`, `alertThresholdPercent` e o status historico existente;
+- `realizedItems[]` e `committedItems[]` para composicao/drilldown.
+
+`availableAmountMinor` pode ser negativo. `overBudgetAmountMinor` so e calculado quando existe um `plannedAmountMinor` real.
 
 ### Resumo operacional por periodo
 
-`GET /api/budgets/dashboard?periodStartOn=YYYY-MM-DD&periodEndOn=YYYY-MM-DD` expoe o resumo canonico de `summarizeBudgetDashboard` para o perfil financeiro ativo.
+`GET /api/budgets/dashboard?periodStartOn=YYYY-MM-DD&periodEndOn=YYYY-MM-DD` expoe o resumo operacional para o perfil financeiro ativo.
 
-- O periodo e obrigatorio e aceita intervalos parciais validos do contrato de dominio.
-- `currency=XXX` e opcional; sem filtro, as moedas permanecem em itens separados.
-- Itens com orcamento incluem `budgetId` e os valores calculados pelo dominio.
-- Itens `unbudgeted` nao possuem `budgetId`; representam gasto realizado de categoria/moeda sem orcamento no recorte.
-- A rota nao converte moedas e nao cria bucket para transacoes sem categoria.
+- O periodo e obrigatorio.
+- `currency=XXX` e opcional.
+- Sem filtro de moeda, os itens permanecem separados por moeda.
+- A rota nunca converte nem soma moedas diferentes.
+- Itens com orcamento usam `source=budget`.
+- Categoria identificada com consumo e sem orcamento ativo usa `source=unbudgeted`.
+- Consumo sem categoria usa `source=uncategorized`.
 
-## Alertas
+## Categorias identificadas sem orcamento
 
-Decisao de MVP:
+`source=unbudgeted` preserva categoria, moeda, periodo, realizado, comprometido, projetado e composicao.
 
-- O alerta de aproximacao e configuravel por orcamento via `alertThresholdPercent`.
-- Quando nao informado, o padrao e 80%.
-- A partir de 100%, ou quando o uso passa do planejado, o status e `exceeded`.
-- Orcamento com valor zero e algum gasto tambem fica `exceeded`.
-- Orcamento sem gasto fica `no_activity`.
+Nao existe orcamento implicito:
 
-## Categorias sem orcamento
+- `plannedAmountMinor = null`;
+- `remainingAmountMinor = null`;
+- `availableAmountMinor = null`;
+- `overBudgetAmountMinor = null`;
+- `usedPercent = null`;
+- `alertThresholdPercent = null`.
 
-`summarizeBudgetDashboard` inclui categorias com gasto realizado sem orcamento como itens `unbudgeted`.
+Um item `unbudgeted` nao e equivalente a um orcamento de valor zero e nao deve ser classificado como excedido apenas por possuir consumo.
 
-Cada item sem orcamento preserva a moeda da transacao que originou o total. A mesma categoria pode portanto gerar, por exemplo, um item BRL e outro USD; nenhum dos dois recebe uma moeda sintetica.
+## Sem categoria
 
-Transacoes sem categoria sao ignoradas nesse resumo porque nao ha categoria para associar a meta.
+`source=uncategorized` e o bucket analitico **Sem categoria**.
+
+Ele:
+
+- preserva moeda e periodo;
+- inclui realizado e comprometido ainda sem categoria;
+- calcula apenas `projected = realized + committed`;
+- nao recebe `planned=0`;
+- mantem `planned`, `remaining`, `available`, `overBudget`, percentual e limiar como `null`;
+- nao reduz o orcamento de outra categoria;
+- expoe `realizedItems[]` e `committedItems[]` para localizar os itens e permitir categorizacao posterior.
+
+## Fatura multicategoria
+
+O orcamento usa as ocorrencias economicas categorizadas das compras.
+
+Exemplo: uma fatura de 2.000 formada por Alimentacao 800, Transporte 400, Saude 500 e Sem categoria 300 distribui o consumo nesses quatro recortes. O registro `Invoice` e o pagamento da fatura nao adicionam outros 2.000 ao orcamento.
+
+## Transferencias
+
+Transferencias internas nao constituem consumo economico de categoria.
+
+Isso vale para:
+
+- transferencia na mesma moeda;
+- transferencia cross-currency com dois valores nativos;
+- debito da conta de origem;
+- credito da conta de destino.
+
+Nenhum leg entra em `realized` ou `committed`.
+
+## Multi-moedas
+
+Moeda faz parte da identidade do agregado.
+
+- BRL e USD da mesma categoria permanecem em itens diferentes.
+- Um filtro de moeda apenas restringe os itens retornados.
+- Nao existe fallback de BRL nem consolidacao automatica.
+- A ordenacao do dashboard e deterministica por moeda, categoria e tipo de origem.
 
 ## Interface operacional `/orcamentos`
 
-A rota `/orcamentos` usa o arquetipo A1 de acompanhamento operacional e consome os contratos acima sem recalcular valores financeiros no renderer.
+A rota usa o arquetipo A1 e consome os valores calculados pelo backend.
 
-- Cada item identifica categoria, periodo e moeda de forma explicita.
-- Valores monetarios usam a primitiva `Money` com a moeda nativa do item; ausencia de moeda nunca vira BRL por fallback visual.
-- Para orcamentos, `Planejado` vem do proprio `Budget`; `Realizado`, `Restante`, percentual e status vem de `GET /api/budgets/:budgetId/usage`.
-- A resposta de uso so e apresentada quando categoria, periodo, valor planejado e moeda continuam coerentes com o orcamento exibido. Divergencia ou falha de leitura produz estado indisponivel, nunca `0` sintetico para realizado ou restante.
-- Categorias com gasto realizado sem orcamento sao lidas de `GET /api/budgets/dashboard` e exibidas como `Sem orçamento`; o renderer nao converte `plannedAmountMinor=0` do resumo tecnico em um orcamento de valor zero e nao oferece editar/arquivar para um item sem `budgetId`.
-- Filtros de moeda e estado atuam apenas sobre a colecao apresentada e nao consolidam moedas.
-- Criacao e edicao exigem moeda explicita e preservam periodo e categoria como parte do contexto do orcamento.
-- `committed`, `projected`, `available` e demais estados da Fase 4A nao sao calculados nem simulados nesta interface enquanto o contrato da #619 nao estiver implementado.
-- O Extrato atual exige contexto de conta para reproduzir um recorte. Como o uso do orcamento e agregado por categoria, periodo e moeda entre as fontes elegiveis, a interface nao fabrica um deep link parcial que descartaria esse contexto. Um drilldown so deve ser exposto quando existir rota/filtro canonico capaz de representar fielmente o mesmo recorte.
+A tabela apresenta, por item:
+
+- categoria ou **Sem categoria**;
+- periodo;
+- moeda;
+- planejado;
+- realizado;
+- comprometido;
+- projetado;
+- disponivel;
+- status do realizado;
+- composicao de itens para drilldown.
+
+Para `unbudgeted`, o planejado aparece como **Sem orçamento**. Para `uncategorized`, aparece como **Sem categoria**. O disponivel e explicitamente inaplicavel quando nao existe orcamento real.
+
+A tela nao calcula `committed`, `projected`, `available` nem `overBudget`.
+
+## Alertas e status existente
+
+O status historico preservado continua baseado no realizado para compatibilidade:
+
+- `no_activity`;
+- `on_track`;
+- `approaching`;
+- `exceeded`;
+- `unbudgeted`.
+
+A condicao futura de estouro e representada numericamente por `overBudgetAmountMinor`; ela nao reinterpreta silenciosamente o status historico.
 
 ## Validacoes
 
 - Categoria do orcamento deve existir no tenant ativo.
-- Categoria deve estar ativa.
-- Nesta etapa MVP, a categoria deve ser de despesa.
+- Categoria deve estar ativa e ser de despesa.
 - Valor planejado deve ser inteiro em unidades menores e pode ser zero.
-- Moeda usa formato ISO 4217.
+- Moeda usa ISO 4217.
 - Limiar de alerta deve ser inteiro de 1 a 100.
-- Testes de agregacao devem incluir mais de uma moeda quando houver valores da mesma categoria e periodo.
+- Testes de agregacao cobrem moedas distintas, periodo planejado versus ocorrido e ausencia de dupla contabilizacao de fatura/transferencia.
 
 ## Fora de escopo
 
-- Conversao cambial, taxa de cambio ou consolidacao entre moedas.
-- Alertas push, e-mail ou notificacoes externas.
-- Planejamento financeiro avancado.
-- Recomendacao automatica por IA.
+- rollover automatico;
+- conversao cambial automatica;
+- previsao estatistica ou IA;
+- inferencia automatica de categoria;
+- orcamento implicito para `Sem categoria` ou `unbudgeted`;
+- alertas push, e-mail ou notificacoes externas.

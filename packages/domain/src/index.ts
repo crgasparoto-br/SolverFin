@@ -8,6 +8,7 @@ export * from "./transactions.js";
 export * from "./future-commitments.js";
 export * from "./cash-flow-projection.js";
 export * from "./free-to-spend.js";
+export * from "./budget-operations.js";
 export * from "./transaction-groups.js";
 export * from "./recurrences.js";
 export * from "./recurrence-calendar.js";
