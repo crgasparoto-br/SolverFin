@@ -312,7 +312,7 @@ function collectRealizedItems(
         transaction.currency === currency &&
         transaction.categoryId === categoryId,
     )
-    .map((transaction) => ({
+    .map((transaction): BudgetConsumptionItem => ({
       id: `realized:${transaction.id}`,
       state: "realized",
       description: transaction.description,
