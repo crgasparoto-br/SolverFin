@@ -1,7 +1,10 @@
 import {
+  attachFreeToSpendIndicator,
   buildCashFlowProjection,
+  FREE_TO_SPEND_HORIZON_DAYS,
   resolveCashFlowProjectionWindow,
   type CashFlowProjection,
+  type CashFlowProjectionWithFreeToSpend,
   type TenantContext,
 } from "@solverfin/domain";
 
@@ -17,7 +20,7 @@ export interface CashFlowProjectionFilters {
 export async function buildCashFlowProjectionForContext(
   context: TenantContext,
   filters: CashFlowProjectionFilters,
-): Promise<CashFlowProjection> {
+): Promise<CashFlowProjection | CashFlowProjectionWithFreeToSpend> {
   const window = resolveCashFlowProjectionWindow(filters.referenceDate, filters.horizonDays);
   const [summary, agenda] = await Promise.all([
     buildFinancialSummary(context, new Date(`${window.referenceDate}T00:00:00.000Z`)),
@@ -36,10 +39,14 @@ export async function buildCashFlowProjectionForContext(
       amountMinor: block.availableBalanceMinor,
     }));
 
-  return buildCashFlowProjection({
+  const projection = buildCashFlowProjection({
     window,
     openingBalances,
     commitments: agenda.commitments,
     ...(filters.currency ? { currency: filters.currency } : {}),
   });
+
+  return window.horizonDays === FREE_TO_SPEND_HORIZON_DAYS
+    ? attachFreeToSpendIndicator(projection)
+    : projection;
 }
