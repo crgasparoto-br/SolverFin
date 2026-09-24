@@ -10,7 +10,7 @@ afterEach(() => {
 });
 
 describe("budgets page issue 619", () => {
-  it("renders operational budget metrics from the backend without rebuilding projections", async () => {
+  it("renders operational budget metrics without rebuilding projections", async () => {
     globalThis.fetch = baseFetch();
 
     const html = await renderBudgetsPage("token");
