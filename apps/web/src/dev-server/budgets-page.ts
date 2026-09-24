@@ -339,11 +339,6 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
           renderCell: (row) => renderAvailableCell(row),
         },
         {
-          id: "usage",
-          header: "Realizado",
-          renderCell: renderUsageCell,
-        },
-        {
           id: "actions",
           header: "Detalhes e ações",
           align: "end",
@@ -528,7 +523,7 @@ ${sharedDialogStyles()}
     .budget-section-heading h2 { margin: 0; }
     .budget-section-heading > span { color: var(--muted); font-size: .8rem; font-weight: 700; }
     .budget-results .sf-table-wrap { overflow-x: auto; }
-    .budget-results .sf-table { min-width: 1320px; width: 100%; }
+    .budget-results .sf-table { min-width: 1080px; width: 100%; }
     .budget-results td { vertical-align: middle; }
     .budget-currency { letter-spacing: .04em; }
     .budget-period { white-space: nowrap; }
@@ -537,11 +532,11 @@ ${sharedDialogStyles()}
     .budget-usage progress { accent-color: var(--primary); height: 8px; width: 100%; }
     .budget-usage-unavailable, .budget-unavailable, .budget-unbudgeted-action { color: var(--muted); font-size: .8rem; font-weight: 650; }
     .budget-unbudgeted-plan { color: var(--muted); font-size: .8rem; font-weight: 750; }
-    .budget-row-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; min-width: 250px; }
+    .budget-row-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; min-width: 190px; }
     .budget-row-actions button { white-space: nowrap; }
     .budget-available { display: grid; gap: 3px; }
     .budget-over { color: var(--danger); font-size: .76rem; font-weight: 750; }
-    .budget-composition { min-width: 180px; }
+    .budget-composition { min-width: 140px; }
     .budget-composition summary { cursor: pointer; font-weight: 700; }
     .budget-composition ul { display: grid; gap: 6px; list-style: none; margin: 8px 0 0; padding: 0; }
     .budget-composition li { display: grid; gap: 2px; text-align: left; }
@@ -581,7 +576,6 @@ ${sharedDialogStyles()}
       .budget-results .sf-table td[data-column="committed"]::before { content: "Comprometido"; }
       .budget-results .sf-table td[data-column="projected"]::before { content: "Projetado"; }
       .budget-results .sf-table td[data-column="available"]::before { content: "Disponível"; }
-      .budget-results .sf-table td[data-column="usage"]::before { content: "Uso"; }
       .budget-results .sf-table td[data-column="actions"]::before { content: "Detalhes e ações"; }
       .budget-row-actions { justify-content: flex-start; min-width: 0; }
       .budget-row-actions button { flex: 1 1 130px; white-space: normal; }
