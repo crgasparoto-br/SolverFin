@@ -32,12 +32,8 @@ function detectsIntermediateDeficitBeforeLaterIncome(): void {
   const result = indicator(
     projection([
       block("BRL", 100_000, [
-        point("2037-12-05", -20_000, [
-          movement("expense", -120_000, "BRL", "2037-12-05"),
-        ]),
-        point("2037-12-20", 300_000, [
-          movement("income", 320_000, "BRL", "2037-12-20"),
-        ]),
+        point("2037-12-05", -20_000, [movement("expense", -120_000, "BRL", "2037-12-05")]),
+        point("2037-12-20", 300_000, [movement("income", 320_000, "BRL", "2037-12-20")]),
       ]),
     ]),
     "BRL",
@@ -75,14 +71,10 @@ function keepsCurrenciesIndependentAcrossCrossCurrencyTransfer(): void {
   const result = buildFreeToSpendSummary(
     projection([
       block("BRL", 100_000, [
-        point("2037-12-02", 46_168, [
-          movement("transfer", -53_832, "BRL", "2037-12-02"),
-        ]),
+        point("2037-12-02", 46_168, [movement("transfer", -53_832, "BRL", "2037-12-02")]),
       ]),
       block("USD", 20_000, [
-        point("2037-12-02", 30_000, [
-          movement("transfer", 10_000, "USD", "2037-12-02"),
-        ]),
+        point("2037-12-02", 30_000, [movement("transfer", 10_000, "USD", "2037-12-02")]),
       ]),
     ]),
   );
