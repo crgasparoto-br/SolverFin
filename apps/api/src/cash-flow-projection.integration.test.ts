@@ -100,6 +100,26 @@ async function main(): Promise<void> {
   assert.equal(brl30.points[0]?.closingBalanceMinor, baselineBrl - 53_832);
   assert.equal(usd30.points[0]?.closingBalanceMinor, baselineUsd + 10_000);
 
+  const brlFreeToSpend = freeToSpendBlock(projection30, "BRL");
+  const usdFreeToSpend = freeToSpendBlock(projection30, "USD");
+  assert.equal(brlFreeToSpend.status, "available");
+  assert.equal(usdFreeToSpend.status, "available");
+  if (brlFreeToSpend.status === "available" && usdFreeToSpend.status === "available") {
+    assert.equal(brlFreeToSpend.minimumProjectedBalanceMinor, baselineBrl - 53_832);
+    assert.equal(brlFreeToSpend.freeToSpendMinor, Math.max(0, baselineBrl - 53_832));
+    assert.equal(brlFreeToSpend.projectedDeficitMinor, Math.max(0, -(baselineBrl - 53_832)));
+    assert.equal(brlFreeToSpend.minimumBalanceOn, "2037-11-11");
+    assert.equal(brlFreeToSpend.limitingPoint.movements[0]?.commitmentId, `transaction:${transfer.id}`);
+
+    assert.equal(usdFreeToSpend.minimumProjectedBalanceMinor, baselineUsd);
+    assert.equal(usdFreeToSpend.freeToSpendMinor, Math.max(0, baselineUsd));
+    assert.equal(usdFreeToSpend.projectedDeficitMinor, Math.max(0, -baselineUsd));
+    assert.equal(usdFreeToSpend.minimumBalanceOn, REFERENCE_DATE);
+  }
+
+  assert.equal("freeToSpend" in projection60, false);
+  assert.equal("freeToSpend" in projection90, false);
+
   await voidTransactionForContext(CONTEXT, transfer.id);
   const afterVoid = await getProjection(token, 30);
   assert.equal(
@@ -172,6 +192,12 @@ function projectionBlock(projection: ApiCashFlowProjection, currency: string) {
   return result;
 }
 
+function freeToSpendBlock(projection: ApiCashFlowProjection, currency: string) {
+  const result = projection.freeToSpend?.currencyBlocks.find((block) => block.currency === currency);
+  assert.ok(result, `expected free-to-spend block ${currency}`);
+  return result;
+}
+
 function findMovement(
   block: ApiCashFlowProjection["currencyBlocks"][number],
   commitmentId: string,
@@ -211,4 +237,33 @@ interface ApiCashFlowProjection {
       }>;
     }>;
   }>;
+  freeToSpend?: {
+    referenceDate: string;
+    horizonDays: 30;
+    currencyBlocks: Array<
+      | {
+          currency: string;
+          status: "available";
+          minimumProjectedBalanceMinor: number;
+          minimumBalanceOn: string;
+          freeToSpendMinor: number;
+          projectedDeficitMinor: number;
+          limitingPoint: {
+            position: "opening" | "closing";
+            date: string;
+            balanceMinor: number;
+            movements: Array<{
+              commitmentId: string;
+              amountMinor: number;
+              currency: string;
+            }>;
+          };
+        }
+      | {
+          currency: string;
+          status: "unavailable";
+          reason: string;
+        }
+    >;
+  };
 }
