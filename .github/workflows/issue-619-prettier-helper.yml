@@ -23,8 +23,7 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
       - name: Apply repository Prettier
-        run: |
-          npx prettier --write             apps/web/src/dev-server/budgets-view-model.test.ts             apps/web/src/dev-server/budgets-view-model.ts             docs/STATUS_MATRIX.md             packages/domain/src/budget-operations.test.ts             packages/domain/src/budget-operations.ts
+        run: npx prettier --write apps/web/src/dev-server/budgets-page.test.ts apps/web/src/dev-server/budgets-view-model.test.ts apps/web/src/dev-server/budgets-view-model.ts docs/STATUS_MATRIX.md packages/domain/src/budget-operations.test.ts packages/domain/src/budget-operations.ts
       - name: Commit formatter output
         run: |
           if git diff --quiet; then
@@ -33,6 +32,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             apps/web/src/dev-server/budgets-view-model.test.ts             apps/web/src/dev-server/budgets-view-model.ts             docs/STATUS_MATRIX.md             packages/domain/src/budget-operations.test.ts             packages/domain/src/budget-operations.ts
+          git add apps/web/src/dev-server/budgets-page.test.ts apps/web/src/dev-server/budgets-view-model.test.ts apps/web/src/dev-server/budgets-view-model.ts docs/STATUS_MATRIX.md packages/domain/src/budget-operations.test.ts packages/domain/src/budget-operations.ts
           git commit -m "style: apply repository prettier for issue 619"
           git push origin HEAD:tooling/619-prettier
