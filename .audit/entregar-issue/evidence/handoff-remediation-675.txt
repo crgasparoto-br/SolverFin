@@ -1,4 +1,6 @@
-PR 675 material head 24202286118db8f1886cd45c3774a8a9545bd24a remained unchanged.
-Base and head had the same inherited foreign handoff blob for issue 668 / PR 672.
-A fresh package is rebuilt for issue 618 / PR 675.
-Delivery V2 CI run 36009560729 and Statement visual validation run 36009561056 both completed successfully on the exact material head.
+PR 675 material head 2174b49111e7080beafe0f77dfc995058bf10731 is green.
+Finding A-002 is closed by preserving missing opening-balance provenance as unavailable instead of synthesized zero.
+Known zero remains available: the integration regression creates a JPY account with openingBalanceMinor=0 and expects available zero values.
+Missing source remains unavailable: EUR with no opening-balance source expects status=unavailable and no numeric free-to-spend fields.
+Delivery V2 CI run 36030045019 and Statement visual validation run 36030044744 both completed successfully on the exact material head.
+Target binding is revalidated for issue 618 / PR 675 on material head 2174b49111e7080beafe0f77dfc995058bf10731 before terminal publication.

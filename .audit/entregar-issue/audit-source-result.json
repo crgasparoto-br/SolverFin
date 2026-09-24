@@ -1,19 +1,26 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
   "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+  "identity": {
+    "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+    "material_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 618,
+    "pull_request_number": 675
+  },
   "findings": [
     {
-      "id": "A-001",
+      "id": "A-002",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "delivery-not-ready",
-      "reason": "handoff-not-produced",
-      "recovery_scope": "fresh-handoff-required",
-      "summary": "The inherited root handoff belongs to issue 668 / PR 672 and cannot certify issue 618 / PR 675."
+      "category": "availability-provenance-gap",
+      "reason": "missing-opening-balance-synthesized-as-zero",
+      "summary": "A requested currency without an opening-balance source could be represented as a complete zero-valued projection and published as available."
     }
   ],
   "recommendations": []

@@ -3,39 +3,32 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+  "candidate_head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
+    "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
     "audited_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
-    "audit_report_sha256": "82ae1e40046bc3439802b526acfbe09520e4690f1e9ab5c77b25a647c7cab78d"
+    "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-001",
+      "source_id": "A-002",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "fresh-handoff-rebuild",
+      "closure_kind": "targeted-regression",
       "changed_files": [
-        ".audit/entregar-issue/audit-escape-closure.json",
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/audit-source-result.json",
-        ".audit/entregar-issue/evidence/handoff-remediation-675.txt",
-        ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/learning-closure.json",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/specification-snapshot.json",
-        ".audit/entregar-issue/specification-sources/SRC-ISSUE-618.txt",
-        ".audit/entregar-issue/standard-evidence.json"
+        "apps/api/src/repositories/cash-flow-projection.ts",
+        "apps/api/src/cash-flow-projection.integration.test.ts"
       ],
       "evidence": [
-        "evidence/handoff-remediation-675.txt"
+        "evidence/handoff-remediation-675.txt",
+        "apps/api/src/cash-flow-projection.integration.test.ts"
       ],
       "validations": [
-        "PR identity re-read as open/clean on exact material head.",
-        "Delivery V2 CI run 36009560729 completed success on exact material head.",
-        "Statement visual validation run 36009561056 completed success on exact material head."
+        "Delivery V2 CI run 36030045019 completed success on exact material head 2174b49111e7080beafe0f77dfc995058bf10731.",
+        "Statement visual validation run 36030044744 completed success on the same exact material head.",
+        "The public API regression distinguishes a known zero JPY opening balance (available) from missing EUR opening-balance provenance (unavailable without numeric fields)."
       ]
     }
   ]

@@ -62,7 +62,73 @@
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+      "revalidated_head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-002",
+      "escape_class": "missing-source-synthetic-zero",
+      "source_audit": {
+        "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+        "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
+        "finding_id": "A-002",
+        "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
+      },
+      "plausible_wrong_implementation": "Treat an absent mandatory source value as a known numeric zero because a downstream builder can synthesize a structurally complete object.",
+      "literal_case": {
+        "procedure": "Request a 30-day projection for a currency with no opening-balance source and inspect the public freeToSpend block.",
+        "observed": "EUR without an opening-balance source returns status=unavailable and omits freeToSpend/minimum/deficit numeric fields on the corrected material head.",
+        "status": "passed",
+        "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+      },
+      "sibling_cases": [
+        {
+          "id": "known-zero-remains-available",
+          "surface": "public-api",
+          "dimension": "known-zero-vs-missing",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        },
+        {
+          "id": "missing-source-omits-numerics",
+          "surface": "public-api",
+          "dimension": "synthetic-zero-prevention",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "public-api",
+          "dimension": "known-zero-vs-missing-source"
+        },
+        {
+          "risk_family": "public-boundary",
+          "surface": "free-to-spend-contract",
+          "dimension": "unavailable-omits-synthetic-numerics"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "apps/api/src/repositories/cash-flow-projection.ts",
+        "evidence": "Availability now uses the presence of an opening-balance source instead of treating a synthesized zero projection as sufficient provenance."
+      },
+      "detection_change": {
+        "skill_or_gate": "API integration regression",
+        "control_id": "FREE-TO-SPEND-AVAIL-001",
+        "evidence": "Integration coverage exercises both known zero and missing-source currencies through the public API."
+      },
+      "trigger_terms": [
+        "unavailable",
+        "fallback zero",
+        "missing source",
+        "synthetic zero"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "public-boundary"
+      ],
+      "revalidated_head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
       "status": "passed"
     }
   ]

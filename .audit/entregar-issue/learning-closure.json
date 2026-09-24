@@ -3,15 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
+    "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
     "finding_ids": [
-      "A-001"
+      "A-002"
     ],
-    "audit_report_sha256": "82ae1e40046bc3439802b526acfbe09520e4690f1e9ab5c77b25a647c7cab78d"
+    "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The existing target-binding and inherited-base-artifact controls already define the required prevention and detection behavior; this remediation applies that existing rule to the current target."
+    "reason": "The defect is closed by a repository regression at the public API boundary; existing delivery controls already require discriminating negative controls, so no permanent Skill rule is added."
   },
   "skill_changes": []
 }

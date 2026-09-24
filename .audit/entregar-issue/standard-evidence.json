@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+  "head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
   "requirements": [
     {
       "requirement_id": "REQ-618",
@@ -10,18 +10,18 @@
         "apps/api/src/cash-flow-projection.integration.test.ts",
         "apps/web/src/dev-server/dashboard-presenter.test.ts",
         "apps/web/src/dev-server/dashboard-page.test.ts",
-        "GitHub Actions Delivery V2 CI run 36009560729 completed success on exact material head"
+        "GitHub Actions Delivery V2 CI run 36030045019 completed success on exact material head"
       ],
       "primary_negative_control": {
         "id": "NEG-618-CANONICAL-TRAJECTORY",
-        "procedure": "Exercise intermediate deficit followed by later income, reference-date tie, BRL/USD independence, and unavailable projection using only the canonical #617 projection.",
-        "expected": "The minimum is selected across opening balance plus all daily closings, first occurrence wins, currencies remain independent, and unavailable never synthesizes numeric zero.",
-        "observed": "Domain/API/UI regression suites on the exact material head encode the discriminating scenarios and both exact-head workflows completed successfully.",
+        "procedure": "Exercise intermediate deficit followed by later income, reference-date tie, BRL/USD independence, known-zero opening balance, missing opening-balance provenance, and unavailable projection through domain/API boundaries.",
+        "expected": "The minimum is derived only from the canonical projection, known numeric zero remains available, missing mandatory opening-balance provenance is unavailable without synthetic numeric fields, and currencies remain independent.",
+        "observed": "Exact-head domain/API/UI regression coverage passed; JPY with a real zero account remained available while requested EUR with no opening-balance source returned unavailable and omitted numeric free-to-spend fields.",
         "status": "passed"
       },
       "regression_evidence": [
-        "Delivery V2 CI run 36009560729 success on exact material head",
-        "Statement visual validation run 36009561056 success on exact material head"
+        "Delivery V2 CI run 36030045019 success on exact material head",
+        "Statement visual validation run 36030044744 success on exact material head"
       ]
     }
   ]
