@@ -5,6 +5,10 @@ import type { TenantContext } from "@solverfin/domain";
 import { closePool } from "./db.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { createAccountForContext } from "./repositories/accounts.js";
+import {
+  createCardForContext,
+  registerCardPurchaseForContext,
+} from "./repositories/cards.js";
 import { buildFinancialSummary } from "./repositories/dashboard.js";
 import {
   createTransactionForContext,
@@ -51,6 +55,19 @@ async function main(): Promise<void> {
     currency: "JPY",
     openingBalanceMinor: 0,
   });
+  const eurCardWithoutPaymentAccount = await createCardForContext(CONTEXT, {
+    name: `Projection EUR no opening source ${suffix}`,
+    closingDay: 15,
+    dueDay: 20,
+    creditLimitMinor: 50_000,
+    currency: "EUR",
+  });
+  await registerCardPurchaseForContext(CONTEXT, eurCardWithoutPaymentAccount.id, {
+    occurredOn: "2037-11-11",
+    amountMinor: 12_000,
+    description: `Projection EUR commitment without opening source ${suffix}`,
+    currency: "EUR",
+  });
 
   await createTransactionForContext(CONTEXT, {
     accountId: brl.id,
@@ -86,6 +103,7 @@ async function main(): Promise<void> {
   const projection90 = await getProjection(token, 90);
   const brl30 = projectionBlock(projection30, "BRL");
   const usd30 = projectionBlock(projection30, "USD");
+  const eur30 = projectionBlock(projection30, "EUR");
 
   assert.equal(projection30.referenceDate, REFERENCE_DATE);
   assert.equal(projection30.from, "2037-11-11");
@@ -95,6 +113,17 @@ async function main(): Promise<void> {
   assert.equal(projectionBlock(projection90, "BRL").points.length, 90);
   assert.equal(brl30.openingBalanceMinor, baselineBrl);
   assert.equal(usd30.openingBalanceMinor, baselineUsd);
+  assert.equal(eur30.openingBalanceMinor, 0);
+
+  const eurFreeToSpend = freeToSpendBlock(projection30, "EUR");
+  assert.deepEqual(eurFreeToSpend, {
+    currency: "EUR",
+    status: "unavailable",
+    reason: "projection-unavailable",
+  });
+  assert.equal("freeToSpendMinor" in eurFreeToSpend, false);
+  assert.equal("minimumProjectedBalanceMinor" in eurFreeToSpend, false);
+  assert.equal("projectedDeficitMinor" in eurFreeToSpend, false);
 
   const brlMovement = findMovement(brl30, `transaction:${transfer.id}`);
   const usdMovement = findMovement(usd30, `transaction:${transfer.id}`);
