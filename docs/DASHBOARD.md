@@ -9,6 +9,8 @@ A implementação SSR fica em `apps/web/src/dev-server/dashboard-page.ts` e `app
 O Dashboard funciona como cockpit financeiro orientado à decisão. Ele deve responder rapidamente:
 
 - como está a posição financeira atual;
+- quanto está livre para gastar hoje sem tornar negativa a trajetória determinística dos próximos 30 dias;
+- se existe déficit projetado e em qual ponto da trajetória ocorre o menor saldo;
 - o que mudou no mês, por meio da variação líquida postada por moeda;
 - quais entradas e despesas postadas ou reconciliadas pertencem ao período;
 - quais compromissos estão previstos;
@@ -47,13 +49,13 @@ Os estilos compartilhados são fornecidos por `sharedShellStyles()`, que inclui 
 
 Cada moeda tem cinco indicadores principais. O card navega primeiro para um índice de evidências da própria moeda no Dashboard. Esse índice apresenta uma entrada explícita para cada conta relacionada ao bloco; contas ativas abrem o Extrato já filtrado por `accountId` e moeda, enquanto contas inativas permanecem identificadas como evidência histórica sem oferecer uma ação operacional enganosa.
 
-- Disponível estimado: somente contas ativas da moeda, com acesso ao Extrato individual de cada conta;
+- Saldo das contas: posição atual das contas ativas da moeda, com acesso ao Extrato individual de cada conta;
 - Variação líquida do mês: contas da moeda relacionadas ao agregado, com `evidence=posted` nas contas ativas;
 - Receitas do mês: contas da moeda relacionadas ao agregado, com `kind=income&evidence=posted` nas contas ativas;
 - Despesas do mês: contas da moeda relacionadas ao agregado, com `kind=expense&evidence=posted` nas contas ativas;
 - Compromissos previstos: contas da moeda relacionadas ao agregado, com `kind=expense&evidence=planned` nas contas ativas.
 
-Contas inativas continuam visíveis como referência histórica para variação, receitas, despesas e compromissos, mas não recebem link para um Extrato que poderia resolver para outra conta. Elas também não participam do índice do disponível estimado. Assim, duas ou mais contas ativas na mesma moeda nunca são reduzidas arbitrariamente à primeira conta encontrada.
+Contas inativas continuam visíveis como referência histórica para variação, receitas, despesas e compromissos, mas não recebem link para um Extrato que poderia resolver para outra conta. Elas também não participam do índice do saldo atual das contas. Assim, duas ou mais contas ativas na mesma moeda nunca são reduzidas arbitrariamente à primeira conta encontrada.
 
 A variação líquida é calculada no contrato agregado do backend como receitas postadas/reconciliadas menos despesas postadas/reconciliadas da mesma moeda e do mesmo mês. O frontend apenas apresenta `netVariationMinor`; ele não reconstitui nem inventa a regra financeira.
 
@@ -74,7 +76,9 @@ O cache transitório do loading existe apenas para atravessar o reload do estado
 
 ## Orçamento, projeções e insights
 
-Os módulos de decisão continuam sendo pontos de navegação para capacidades existentes. Desde a issue #617, o Dashboard apresenta também o saldo ao fim do horizonte de 30 dias por moeda consumindo `GET /api/cash-flow-projection`; ele não reconstrói a série, não soma compromissos e não converte moedas no frontend. O link de cada moeda abre a mesma série canônica em Relatórios, com evidências navegáveis.
+Os módulos de decisão continuam sendo pontos de navegação para capacidades existentes. Desde a issue #617, o Dashboard apresenta o saldo ao fim do horizonte de 30 dias por moeda consumindo `GET /api/cash-flow-projection`. A #618 acrescenta, no mesmo payload de 30 dias, `freeToSpend` e `projectedDeficit` derivados no domínio a partir da trajetória canônica.
+
+A interface mantém três conceitos explícitos e separados: **saldo das contas** (posição atual), **saldo projetado no fim do horizonte** (posição no 30º dia) e **livre para gastar hoje** (menor colchão não negativo de toda a trajetória). O déficit projetado é mostrado separadamente e o ponto limitante informa a primeira data do menor saldo. O frontend não reconstrói a série, não soma compromissos, não desconta orçamento, não adiciona crédito e não converte moedas. O link de cada moeda abre a mesma série canônica em Relatórios, com evidências navegáveis.
 
 O módulo de insights navega pela rota canônica `/assistente`.
 
