@@ -51,26 +51,21 @@ export async function buildCashFlowProjectionForContext(
   }
 
   const projectionWithFreeToSpend = attachFreeToSpendIndicator(projection);
-  if (
-    requestedCurrency !== undefined &&
-    !openingBalances.some((balance) => balance.currency === requestedCurrency)
-  ) {
-    return {
-      ...projectionWithFreeToSpend,
-      freeToSpend: {
-        ...projectionWithFreeToSpend.freeToSpend,
-        currencyBlocks: projectionWithFreeToSpend.freeToSpend.currencyBlocks.map((block) =>
-          block.currency === requestedCurrency
-            ? {
-                currency: requestedCurrency,
-                status: "unavailable" as const,
-                reason: "projection-unavailable" as const,
-              }
-            : block,
-        ),
-      },
-    };
-  }
+  const openingBalanceCurrencies = new Set(openingBalances.map((balance) => balance.currency));
 
-  return projectionWithFreeToSpend;
+  return {
+    ...projectionWithFreeToSpend,
+    freeToSpend: {
+      ...projectionWithFreeToSpend.freeToSpend,
+      currencyBlocks: projectionWithFreeToSpend.freeToSpend.currencyBlocks.map((block) =>
+        openingBalanceCurrencies.has(block.currency)
+          ? block
+          : {
+              currency: block.currency,
+              status: "unavailable" as const,
+              reason: "projection-unavailable" as const,
+            },
+      ),
+    },
+  };
 }
