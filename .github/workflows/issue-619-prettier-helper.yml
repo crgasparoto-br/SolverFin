@@ -46,8 +46,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git -C target status --short
-          git -C target status --porcelain | sed -E 's/^.. //' | sort > /tmp/actual-paths.txt
+          find target/.audit/entregar-issue/issue-619 -type f -print | sed 's#^target/##' | sort > /tmp/actual-paths.txt
           cat > /tmp/expected-paths.txt <<'EOF'
           .audit/entregar-issue/issue-619/handoff-ready.json
           .audit/entregar-issue/issue-619/inherited-controls.json
@@ -60,6 +59,7 @@ jobs:
           EOF
           sort /tmp/expected-paths.txt -o /tmp/expected-paths.txt
           diff -u /tmp/expected-paths.txt /tmp/actual-paths.txt
+          test -z "$(git -C target status --porcelain --untracked-files=no)"
 
       - name: Publish result-only child
         shell: bash
@@ -71,5 +71,7 @@ jobs:
           git -C target commit -m "chore: certify issue 619 handoff"
           parent="$(git -C target rev-parse HEAD^)"
           test "$parent" = "898fad2d4b1b7b8f548a454347019c93b4061b49"
+          changed="$(git -C target diff-tree --no-commit-id --name-only -r HEAD | sort)"
+          diff -u /tmp/expected-paths.txt <(printf '%s\n' "$changed")
           git -C target push origin HEAD:feat/619-budget-projections
           echo "published_handoff_head=$(git -C target rev-parse HEAD)"
