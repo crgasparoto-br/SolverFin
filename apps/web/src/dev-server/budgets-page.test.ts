@@ -137,10 +137,7 @@ describe("budgets page issue 619", () => {
     assert.match(html, /data-open-dialog="new-budget-dialog"/);
     assert.match(html, /id="edit-budget-dialog-budget-brl"/);
     assert.match(html, /name="currency"[^>]*value="BRL"/);
-    assert.match(
-      html,
-      /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-brl"/,
-    );
+    assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-brl"/);
   });
 });
 
