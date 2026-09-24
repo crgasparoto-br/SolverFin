@@ -405,7 +405,9 @@ function presentDataQuality(
     !cashFlowProjection.ok ||
     cashFlowProjection.data.horizonDays !== 30 ||
     !cashFlowProjection.data.freeToSpend ||
-    cashFlowProjection.data.freeToSpend.currencyBlocks.some((block) => block.status === "unavailable")
+    cashFlowProjection.data.freeToSpend.currencyBlocks.some(
+      (block) => block.status === "unavailable",
+    )
   ) {
     return {
       status: "partial",
