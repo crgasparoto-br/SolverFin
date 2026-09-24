@@ -1,22 +1,9 @@
-import type {
-  Budget,
-  EntityId,
-  FutureCommitment,
-  ISODate,
-  Transaction,
-} from "./index.js";
-import {
-  listBudgets,
-  summarizeBudgetUsage,
-  type BudgetUsageStatus,
-} from "./budgets.js";
+import type { Budget, EntityId, FutureCommitment, ISODate, Transaction } from "./index.js";
+import { listBudgets, summarizeBudgetUsage, type BudgetUsageStatus } from "./budgets.js";
 import type { TenantContext } from "./tenant.js";
 import { listTenantScopedResources } from "./tenant-authorization.js";
 
-export type OperationalBudgetSource =
-  | "budget"
-  | "unbudgeted"
-  | "uncategorized";
+export type OperationalBudgetSource = "budget" | "unbudgeted" | "uncategorized";
 export type BudgetConsumptionState = "realized" | "committed";
 
 export interface BudgetConsumptionItem {
@@ -136,17 +123,13 @@ export function summarizeOperationalBudgetDashboard(
   if (periodEndOn < periodStartOn) {
     throw new Error("Budget dashboard period must end on or after it starts.");
   }
-  const currency = input.currency
-    ? normalizeCurrency(input.currency)
-    : undefined;
+  const currency = input.currency ? normalizeCurrency(input.currency) : undefined;
 
   const budgets = listBudgets(input.context, input.budgets, {
     status: "active",
     periodStartOn,
     periodEndOn,
-  }).filter(
-    (budget) => currency === undefined || budget.currency === currency,
-  );
+  }).filter((budget) => currency === undefined || budget.currency === currency);
 
   const summaries = budgets.map((budget) =>
     summarizeOperationalBudgetUsage({
@@ -158,9 +141,7 @@ export function summarizeOperationalBudgetDashboard(
   );
 
   const budgetedKeys = new Set(
-    budgets.map((budget) =>
-      categoryCurrencyKey(budget.categoryId, budget.currency),
-    ),
+    budgets.map((budget) => categoryCurrencyKey(budget.categoryId, budget.currency)),
   );
   const grouped = new Map<
     string,
@@ -173,10 +154,7 @@ export function summarizeOperationalBudgetDashboard(
   >();
 
   const candidateCurrencies = new Set<string>();
-  for (const transaction of listTenantScopedResources(
-    input.context,
-    input.transactions,
-  )) {
+  for (const transaction of listTenantScopedResources(input.context, input.transactions)) {
     const normalized = safeCurrency(transaction.currency);
     if (normalized && (currency === undefined || normalized === currency)) {
       candidateCurrencies.add(normalized);
@@ -267,9 +245,7 @@ export function summarizeOperationalBudgetDashboard(
   return summaries.sort((left, right) => {
     const currencyOrder = left.currency.localeCompare(right.currency);
     if (currencyOrder !== 0) return currencyOrder;
-    const categoryOrder = (left.categoryId ?? "\uffff").localeCompare(
-      right.categoryId ?? "\uffff",
-    );
+    const categoryOrder = (left.categoryId ?? "\uffff").localeCompare(right.categoryId ?? "\uffff");
     if (categoryOrder !== 0) return categoryOrder;
     return sourceRank(left.source) - sourceRank(right.source);
   });
@@ -333,16 +309,18 @@ function collectRealizedItems(
         transaction.currency === currency &&
         transaction.categoryId === categoryId,
     )
-    .map((transaction): BudgetConsumptionItem => ({
-      id: `realized:${transaction.id}`,
-      state: "realized",
-      description: transaction.description,
-      date: transaction.occurredOn,
-      amountMinor: transaction.amountMinor,
-      currency: transaction.currency,
-      ...(transaction.categoryId ? { categoryId: transaction.categoryId } : {}),
-      transactionId: transaction.id,
-    }))
+    .map(
+      (transaction): BudgetConsumptionItem => ({
+        id: `realized:${transaction.id}`,
+        state: "realized",
+        description: transaction.description,
+        date: transaction.occurredOn,
+        amountMinor: transaction.amountMinor,
+        currency: transaction.currency,
+        ...(transaction.categoryId ? { categoryId: transaction.categoryId } : {}),
+        transactionId: transaction.id,
+      }),
+    )
     .sort(compareItems);
 }
 
@@ -423,14 +401,8 @@ function isCommittedTransaction(transaction: Transaction): boolean {
   );
 }
 
-function committedAmountForCurrency(
-  commitment: FutureCommitment,
-  currency: string,
-): number {
-  if (
-    commitment.source.kind === "invoice" ||
-    commitment.source.kind === "transaction"
-  ) {
+function committedAmountForCurrency(commitment: FutureCommitment, currency: string): number {
+  if (commitment.source.kind === "invoice" || commitment.source.kind === "transaction") {
     return 0;
   }
   return commitment.monetaryEffects
@@ -442,18 +414,12 @@ function sumItems(items: readonly BudgetConsumptionItem[]): number {
   return items.reduce((total, item) => total + item.amountMinor, 0);
 }
 
-function compareItems(
-  left: BudgetConsumptionItem,
-  right: BudgetConsumptionItem,
-): number {
+function compareItems(left: BudgetConsumptionItem, right: BudgetConsumptionItem): number {
   const dateOrder = left.date.localeCompare(right.date);
   return dateOrder === 0 ? left.id.localeCompare(right.id) : dateOrder;
 }
 
-function categoryCurrencyKey(
-  categoryId: EntityId | undefined,
-  currency: string,
-): string {
+function categoryCurrencyKey(categoryId: EntityId | undefined, currency: string): string {
   return `${currency}\u0000${categoryId ?? ""}`;
 }
 
@@ -475,10 +441,7 @@ function validateDate(value: string): ISODate {
     throw new Error("Budget dashboard period must use YYYY-MM-DD.");
   }
   const parsed = new Date(`${value}T00:00:00.000Z`);
-  if (
-    Number.isNaN(parsed.getTime()) ||
-    parsed.toISOString().slice(0, 10) !== value
-  ) {
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
     throw new Error("Budget dashboard period contains an invalid date.");
   }
   return value;
