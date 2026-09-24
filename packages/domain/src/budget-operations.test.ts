@@ -17,6 +17,7 @@ const now = "2038-08-01T12:00:00.000Z";
 
 coversProjectedBudgetWithoutDoubleCountingInvoice();
 keepsUnbudgetedAndUncategorizedWithoutSyntheticPlan();
+excludesInvoiceForecastAndPaymentFromUncategorizedConsumption();
 movesConsumptionFromCommittedPeriodToRealizedPeriod();
 keepsCurrenciesAndTransfersOutsideBudgetConsumption();
 
@@ -135,6 +136,75 @@ function keepsUnbudgetedAndUncategorizedWithoutSyntheticPlan(): void {
   assert.equal(uncategorized.projectedAmountMinor, 10_000);
   assert.equal(uncategorized.availableAmountMinor, null);
   assert.equal(uncategorized.overBudgetAmountMinor, null);
+}
+
+function excludesInvoiceForecastAndPaymentFromUncategorizedConsumption(): void {
+  const invoiceForecast = expense(
+    "invoice-forecast",
+    "planned",
+    "2038-08-25",
+    "2038-08-25",
+    30_000,
+    "BRL",
+    undefined,
+    {
+      cardId: "card-1",
+      invoiceId: "invoice-1",
+      accountId: "checking-brl",
+    },
+  );
+  const invoicePayment = expense(
+    "invoice-payment",
+    "posted",
+    "2038-08-25",
+    "2038-08-25",
+    30_000,
+    "BRL",
+    undefined,
+    {
+      cardId: "card-1",
+      invoiceId: "invoice-1",
+      accountId: "checking-brl",
+      effectiveOn: "2038-08-25",
+    },
+  );
+  const uncategorizedPurchase: Transaction = {
+    ...expense(
+      "card-purchase-uncategorized",
+      "posted",
+      "2038-08-10",
+      "2038-08-10",
+      8_000,
+      "BRL",
+    ),
+    cardId: "card-1",
+    invoiceId: "invoice-1",
+  };
+  delete uncategorizedPurchase.accountId;
+
+  const result = summarizeOperationalBudgetDashboard({
+    context,
+    budgets: [],
+    transactions: [invoiceForecast, invoicePayment, uncategorizedPurchase],
+    commitments: [],
+    periodStartOn: "2038-08-01",
+    periodEndOn: "2038-08-31",
+  });
+
+  const uncategorized = result.find((item) => item.source === "uncategorized");
+  assert.ok(uncategorized);
+  assert.equal(uncategorized.realizedAmountMinor, 8_000);
+  assert.equal(uncategorized.committedAmountMinor, 0);
+  assert.deepEqual(
+    uncategorized.realizedItems.map((item) => item.transactionId),
+    ["card-purchase-uncategorized"],
+  );
+  assert.equal(
+    uncategorized.committedItems.some(
+      (item) => item.transactionId === "invoice-forecast" || item.transactionId === "invoice-payment",
+    ),
+    false,
+  );
 }
 
 function movesConsumptionFromCommittedPeriodToRealizedPeriod(): void {

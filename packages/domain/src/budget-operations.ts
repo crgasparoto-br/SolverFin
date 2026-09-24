@@ -264,6 +264,7 @@ function collectRelevantCategories(
   for (const transaction of listTenantScopedResources(context, transactions)) {
     if (
       transaction.kind === "expense" &&
+      !isInvoiceCashTransaction(transaction) &&
       transaction.currency === currency &&
       ((isRealized(transaction) &&
         transaction.occurredOn >= periodStartOn &&
@@ -303,6 +304,7 @@ function collectRealizedItems(
     .filter(
       (transaction) =>
         transaction.kind === "expense" &&
+        !isInvoiceCashTransaction(transaction) &&
         isRealized(transaction) &&
         transaction.occurredOn >= periodStartOn &&
         transaction.occurredOn <= periodEndOn &&
@@ -339,6 +341,7 @@ function collectCommittedItems(
   for (const transaction of scopedTransactions) {
     if (
       !isCommittedTransaction(transaction) ||
+      isInvoiceCashTransaction(transaction) ||
       transaction.plannedOn < periodStartOn ||
       transaction.plannedOn > periodEndOn ||
       transaction.currency !== currency ||
@@ -387,6 +390,14 @@ function collectCommittedItems(
   }
 
   return items.sort(compareItems);
+}
+
+function isInvoiceCashTransaction(transaction: Transaction): boolean {
+  return (
+    transaction.invoiceId !== undefined &&
+    transaction.cardId !== undefined &&
+    transaction.accountId !== undefined
+  );
 }
 
 function isRealized(transaction: Transaction): boolean {
