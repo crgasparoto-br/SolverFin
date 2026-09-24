@@ -52,6 +52,25 @@ export interface DashboardCashFlowProjection {
     currency: string;
     closingBalanceMinor: number;
   }>;
+  freeToSpend?: {
+    referenceDate: string;
+    horizonDays: 30;
+    currencyBlocks: Array<
+      | {
+          currency: string;
+          status: "available";
+          minimumProjectedBalanceMinor: number;
+          minimumBalanceOn: string;
+          freeToSpendMinor: number;
+          projectedDeficitMinor: number;
+        }
+      | {
+          currency: string;
+          status: "unavailable";
+          reason: "projection-unavailable" | "projection-incomplete";
+        }
+    >;
+  };
 }
 
 export interface DashboardCashFlowProjectionViewModel {
@@ -60,6 +79,16 @@ export interface DashboardCashFlowProjectionViewModel {
   currencies: readonly {
     currency: string;
     closingBalance: MoneyViewModel;
+    freeToSpend:
+      | {
+          status: "available";
+          amount: MoneyViewModel;
+          projectedDeficit: MoneyViewModel;
+          minimumBalanceOnLabel: string;
+        }
+      | {
+          status: "unavailable";
+        };
     href: string;
   }[];
 }
@@ -208,8 +237,8 @@ function presentCurrencySummary(
       metric(
         block,
         "available",
-        "Disponível estimado",
-        "Saldo das contas ativas",
+        "Saldo das contas",
+        "Posição atual das contas ativas",
         block.availableBalanceMinor,
         {},
         accounts.filter((account) => account.status === "active"),
@@ -338,15 +367,30 @@ function presentCashFlowProjection(
   return {
     referenceDateLabel: formatDateOnly(projection.referenceDate),
     horizonDays: projection.horizonDays,
-    currencies: projection.currencyBlocks.map((block) => ({
-      currency: block.currency,
-      closingBalance: money(block.closingBalanceMinor, block.currency),
-      href: `/relatorios?view=cash-flow&referenceDate=${encodeURIComponent(
-        projection.referenceDate,
-      )}&horizonDays=${projection.horizonDays}#cash-flow-${encodeURIComponent(
-        block.currency.toLowerCase(),
-      )}`,
-    })),
+    currencies: projection.currencyBlocks.map((block) => {
+      const freeToSpend = projection.freeToSpend?.currencyBlocks.find(
+        (candidate) => candidate.currency === block.currency,
+      );
+
+      return {
+        currency: block.currency,
+        closingBalance: money(block.closingBalanceMinor, block.currency),
+        freeToSpend:
+          freeToSpend?.status === "available"
+            ? {
+                status: "available" as const,
+                amount: money(freeToSpend.freeToSpendMinor, block.currency),
+                projectedDeficit: money(freeToSpend.projectedDeficitMinor, block.currency),
+                minimumBalanceOnLabel: formatDateOnly(freeToSpend.minimumBalanceOn),
+              }
+            : { status: "unavailable" as const },
+        href: `/relatorios?view=cash-flow&referenceDate=${encodeURIComponent(
+          projection.referenceDate,
+        )}&horizonDays=${projection.horizonDays}#cash-flow-${encodeURIComponent(
+          block.currency.toLowerCase(),
+        )}`,
+      };
+    }),
   };
 }
 
@@ -355,7 +399,14 @@ function presentDataQuality(
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
   cashFlowProjection: ApiSuccess<DashboardCashFlowProjection> | ApiFailure,
 ): DashboardDataQualityViewModel {
-  if (!pendingReview.ok || !openInvoices.ok || !cashFlowProjection.ok) {
+  if (
+    !pendingReview.ok ||
+    !openInvoices.ok ||
+    !cashFlowProjection.ok ||
+    cashFlowProjection.data.horizonDays !== 30 ||
+    !cashFlowProjection.data.freeToSpend ||
+    cashFlowProjection.data.freeToSpend.currencyBlocks.some((block) => block.status === "unavailable")
+  ) {
     return {
       status: "partial",
       title: "Dados parciais",
