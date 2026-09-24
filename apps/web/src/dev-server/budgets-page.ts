@@ -3,7 +3,6 @@ import { formatDateOnly } from "@solverfin/shared";
 import { renderMoney } from "../design-system/money.js";
 import {
   renderAlert,
-  renderBadge,
   renderDataTable,
   renderDialog,
   renderDialogTrigger,
@@ -367,15 +366,6 @@ function renderBudgetMoney(amountMinor: number | null, currency: string | undefi
   });
 }
 
-function renderUsageCell(row: BudgetRowViewModel): string {
-  if (row.usageStatus === "unavailable" || row.usedPercent === null) {
-    return `<span class="budget-usage-unavailable" title="${renderText(row.usageUnavailableReason ?? "Realizado indisponível")}">Realizado indisponível</span>`;
-  }
-  const label = formatUsageStatus(row.usageStatus);
-  const tone = usageTone(row.usageStatus);
-  return `<div class="budget-usage"><div>${renderBadge({ label, tone })}<strong>${renderText(formatPercent(row.usedPercent))}</strong></div><progress max="100" value="${Math.max(0, Math.min(100, row.usedPercent))}" aria-label="${renderText(`${label}: ${formatPercent(row.usedPercent)}`)}"></progress></div>`;
-}
-
 function renderBudgetActions(row: BudgetRowViewModel): string {
   const details = renderCompositionDetails(row);
   if (row.source === "unbudgeted") {
@@ -475,26 +465,6 @@ function renderCategoryOptions(
 
 function formatMoneyInput(amountMinor: number): string {
   return (amountMinor / 100).toFixed(2).replace(".", ",");
-}
-
-function formatPercent(value: number): string {
-  return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 }).format(value)}%`;
-}
-
-function formatUsageStatus(status: string): string {
-  if (status === "no_activity") return "Sem movimentação";
-  if (status === "on_track") return "Dentro do planejado";
-  if (status === "approaching") return "Próximo do limite";
-  if (status === "exceeded") return "Limite excedido";
-  if (status === "unbudgeted") return "Sem orçamento";
-  return "Situação disponível";
-}
-
-function usageTone(status: string): "positive" | "negative" | "neutral" | "attention" {
-  if (status === "exceeded") return "negative";
-  if (status === "approaching") return "attention";
-  if (status === "on_track") return "positive";
-  return "neutral";
 }
 
 function renderShell(content: string): string {
