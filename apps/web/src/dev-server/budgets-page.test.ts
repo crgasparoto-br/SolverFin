@@ -9,8 +9,8 @@ afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
-describe("budgets page issue 613", () => {
-  it("renders A1 with explicit currencies, remaining and backend realized values without future projections", async () => {
+describe("budgets page issue 619", () => {
+  it("renders operational budget metrics without rebuilding projections", async () => {
     globalThis.fetch = baseFetch();
 
     const html = await renderBudgetsPage("token");
@@ -20,83 +20,116 @@ describe("budgets page issue 613", () => {
     assert.match(html, /data-currency="USD"/);
     assert.match(html, />Planejado</);
     assert.match(html, />Realizado</);
-    assert.match(html, />Restante</);
-    assert.match(html, /data-column="remaining"/);
-    assert.match(html, /40%/);
-    assert.match(html, /25%/);
-    assert.doesNotMatch(html, /Comprometido/);
-    assert.doesNotMatch(html, /Projetado/);
-    assert.doesNotMatch(html, />Disponível</);
+    assert.match(html, />Comprometido</);
+    assert.match(html, />Projetado</);
+    assert.match(html, />Disponível</);
+    assert.match(html, /data-column="committed"/);
+    assert.match(html, /data-column="projected"/);
+    assert.match(html, /data-column="available"/);
+    assert.doesNotMatch(html, /data-column="remaining"/);
     assert.doesNotMatch(html, /Valor planejado \(R\$\)/);
   });
 
-  it("does not turn a mismatched usage currency into realized or remaining zero", async () => {
+  it("does not turn mismatched usage into synthetic realized or projected zero", async () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input), "http://solverfin.test");
       if (url.pathname === "/api/budgets/dashboard") return json({ usage: [] });
-      if (url.pathname === "/api/budgets")
+      if (url.pathname === "/api/budgets") {
         return json({ budgets: [budget("budget-brl", "BRL", 100_000)] });
+      }
       if (url.pathname === "/api/categories") return categoriesJson();
       if (url.pathname === "/api/budgets/budget-brl/usage") {
-        return json({ usage: usage("budget-brl", "USD", 100_000, 40_000, 40) });
+        return json({
+          usage: usage("budget-brl", "USD", 100_000, 40_000, 10_000),
+        });
       }
       return json({});
     };
 
     const html = await renderBudgetsPage("token");
-    assert.match(html, /Realizado indisponível/);
     assert.match(html, /data-money-availability="unavailable"/);
     assert.doesNotMatch(html, /data-column="realized"[^]*R\$\s*0,00/);
-    assert.doesNotMatch(html, /data-column="remaining"[^]*R\$\s*0,00/);
+    assert.doesNotMatch(html, /data-column="committed"[^]*R\$\s*0,00/);
+    assert.doesNotMatch(html, /data-column="projected"[^]*R\$\s*0,00/);
+    assert.doesNotMatch(html, /data-column="available"[^]*R\$\s*0,00/);
   });
 
-  it("renders backend unbudgeted usage as a distinct operational item without maintenance actions", async () => {
+  it("renders unbudgeted usage without fabricating planned or available amounts", async () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input), "http://solverfin.test");
       if (url.pathname === "/api/budgets/dashboard") {
         return json({
           usage: [
-            {
+            unbudgetedUsage({
               categoryId: "health",
-              periodStartOn: "2026-09-01",
-              periodEndOn: "2026-09-30",
-              plannedAmountMinor: 0,
-              actualAmountMinor: 12_500,
-              remainingAmountMinor: -12_500,
-              usedPercent: 100,
-              alertThresholdPercent: 80,
-              status: "unbudgeted",
-              currency: "BRL",
-            },
+              realizedAmountMinor: 12_500,
+              committedAmountMinor: 2_500,
+            }),
           ],
         });
       }
-      if (url.pathname === "/api/budgets")
+      if (url.pathname === "/api/budgets") {
         return json({ budgets: [budget("budget-brl", "BRL", 100_000)] });
+      }
       if (url.pathname === "/api/categories") return categoriesJson();
-      if (url.pathname === "/api/budgets/budget-brl/usage")
-        return json({ usage: usage("budget-brl", "BRL", 100_000, 40_000, 40) });
+      if (url.pathname === "/api/budgets/budget-brl/usage") {
+        return json({
+          usage: usage("budget-brl", "BRL", 100_000, 40_000, 10_000),
+        });
+      }
       return json({});
     };
 
     const html = await renderBudgetsPage("token");
     assert.match(html, /Saúde/);
     assert.match(html, /Sem orçamento/);
+    assert.match(html, /Não se aplica sem orçamento/);
     assert.match(html, /Crie um orçamento para definir um valor planejado/);
-    assert.match(html, /data-column="remaining"/);
+    assert.match(html, /data-column="committed"/);
+    assert.match(html, /data-column="projected"/);
     assert.doesNotMatch(html, /edit-budget-dialog-unbudgeted:/);
     assert.doesNotMatch(html, /\/api\/budgets\/unbudgeted:/);
+  });
+
+  it("renders uncategorized usage as a separate bucket with a categorization action", async () => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input), "http://solverfin.test");
+      if (url.pathname === "/api/budgets/dashboard") {
+        return json({
+          usage: [
+            unbudgetedUsage({
+              source: "uncategorized",
+              realizedAmountMinor: 4_000,
+              committedAmountMinor: 6_000,
+            }),
+          ],
+        });
+      }
+      if (url.pathname === "/api/budgets") return json({ budgets: [] });
+      if (url.pathname === "/api/categories") return categoriesJson();
+      return json({});
+    };
+
+    const html = await renderBudgetsPage("token");
+    assert.match(html, /Sem categoria/);
+    assert.match(html, /Abrir Extrato para categorizar/);
+    assert.match(html, /Não se aplica sem orçamento/);
+    assert.doesNotMatch(html, /edit-budget-dialog-uncategorized:/);
   });
 
   it("keeps creation and editing contextual with explicit currency", async () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const url = new URL(String(input), "http://solverfin.test");
       if (url.pathname === "/api/budgets/dashboard") return json({ usage: [] });
-      if (url.pathname === "/api/budgets")
+      if (url.pathname === "/api/budgets") {
         return json({ budgets: [budget("budget-brl", "BRL", 100_000)] });
+      }
       if (url.pathname === "/api/categories") return categoriesJson();
-      if (url.pathname === "/api/budgets/budget-brl/usage")
-        return json({ usage: usage("budget-brl", "BRL", 100_000, 40_000, 40) });
+      if (url.pathname === "/api/budgets/budget-brl/usage") {
+        return json({
+          usage: usage("budget-brl", "BRL", 100_000, 40_000, 10_000),
+        });
+      }
       return json({});
     };
 
@@ -104,7 +137,10 @@ describe("budgets page issue 613", () => {
     assert.match(html, /data-open-dialog="new-budget-dialog"/);
     assert.match(html, /id="edit-budget-dialog-budget-brl"/);
     assert.match(html, /name="currency"[^>]*value="BRL"/);
-    assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-brl"/);
+    assert.match(
+      html,
+      /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-brl"/,
+    );
   });
 });
 
@@ -119,10 +155,14 @@ function baseFetch() {
     }
     if (url.pathname === "/api/categories") return categoriesJson();
     if (url.pathname === "/api/budgets/budget-brl/usage") {
-      return json({ usage: usage("budget-brl", "BRL", 100_000, 40_000, 40) });
+      return json({
+        usage: usage("budget-brl", "BRL", 100_000, 40_000, 10_000),
+      });
     }
     if (url.pathname === "/api/budgets/budget-usd/usage") {
-      return json({ usage: usage("budget-usd", "USD", 20_000, 5_000, 25) });
+      return json({
+        usage: usage("budget-usd", "USD", 20_000, 5_000, 1_000),
+      });
     }
     return json({});
   };
@@ -153,21 +193,59 @@ function usage(
   budgetId: string,
   currency: string,
   plannedAmountMinor: number,
-  actualAmountMinor: number,
-  usedPercent: number,
+  realizedAmountMinor: number,
+  committedAmountMinor: number,
 ) {
+  const projectedAmountMinor = realizedAmountMinor + committedAmountMinor;
   return {
+    source: "budget",
     budgetId,
     categoryId: "food",
     periodStartOn: "2026-09-01",
     periodEndOn: "2026-09-30",
     plannedAmountMinor,
-    actualAmountMinor,
-    remainingAmountMinor: plannedAmountMinor - actualAmountMinor,
-    usedPercent,
+    actualAmountMinor: realizedAmountMinor,
+    realizedAmountMinor,
+    committedAmountMinor,
+    projectedAmountMinor,
+    remainingAmountMinor: plannedAmountMinor - realizedAmountMinor,
+    availableAmountMinor: plannedAmountMinor - projectedAmountMinor,
+    overBudgetAmountMinor: Math.max(0, projectedAmountMinor - plannedAmountMinor),
+    usedPercent: (realizedAmountMinor / plannedAmountMinor) * 100,
     alertThresholdPercent: 80,
     status: "on_track",
     currency,
+    realizedItems: [],
+    committedItems: [],
+  };
+}
+
+function unbudgetedUsage(input: {
+  source?: "unbudgeted" | "uncategorized";
+  categoryId?: string;
+  realizedAmountMinor: number;
+  committedAmountMinor: number;
+}) {
+  const projectedAmountMinor = input.realizedAmountMinor + input.committedAmountMinor;
+  return {
+    source: input.source ?? "unbudgeted",
+    ...(input.categoryId ? { categoryId: input.categoryId } : {}),
+    periodStartOn: "2026-09-01",
+    periodEndOn: "2026-09-30",
+    plannedAmountMinor: null,
+    actualAmountMinor: input.realizedAmountMinor,
+    realizedAmountMinor: input.realizedAmountMinor,
+    committedAmountMinor: input.committedAmountMinor,
+    projectedAmountMinor,
+    remainingAmountMinor: null,
+    availableAmountMinor: null,
+    overBudgetAmountMinor: null,
+    usedPercent: null,
+    alertThresholdPercent: null,
+    status: input.source ?? "unbudgeted",
+    currency: "BRL",
+    realizedItems: [],
+    committedItems: [],
   };
 }
 
