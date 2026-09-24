@@ -5,7 +5,7 @@ import {
 } from "./reports-analysis-archetype.js";
 import { reportPageStyles } from "./reports-route-page-styles.js";
 
-export type ReportsView = "category-evolution" | "installments";
+export type ReportsView = "category-evolution" | "installments" | "cash-flow";
 
 export function renderReportHeading(title: string, description: string): string {
   return `
@@ -21,10 +21,12 @@ export function renderReportViewNavigation(selected: ReportsView, profileId?: st
     selected === "category-evolution" ? "#" : `/relatorios?view=category-evolution${suffix}`;
   const installmentsHref =
     selected === "installments" ? "#" : `/relatorios?view=installments${suffix}`;
+  const cashFlowHref = selected === "cash-flow" ? "#" : `/relatorios?view=cash-flow${suffix}`;
   return `
     <nav class="report-view-tabs" aria-label="Visões de relatórios">
       <a href="${categoryHref}"${selected === "category-evolution" ? ' aria-current="page"' : ""}>Evolução por categoria</a>
       <a href="${installmentsHref}"${selected === "installments" ? ' aria-current="page"' : ""}>Parcelas consolidadas</a>
+      <a href="${cashFlowHref}"${selected === "cash-flow" ? ' aria-current="page"' : ""}>Projeção de caixa</a>
     </nav>`;
 }
 

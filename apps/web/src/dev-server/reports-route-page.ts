@@ -7,6 +7,7 @@ import {
 } from "./reports-analysis-archetype.js";
 import { buildCategoryEvolutionAnalysisViewModel } from "./reports-analysis-view-model.js";
 import { renderCategoryEvolutionRuntime } from "./reports-category-evolution-runtime.js";
+import { renderCashFlowProjectionView } from "./cash-flow-projection-view.js";
 import { renderInstallmentsView } from "./reports-installments-view.js";
 import {
   escapeReportHtml as escapeHtml,
@@ -113,6 +114,7 @@ interface RenderedCategoryBranch {
 
 const LEGACY_FILTERS = ["month", "status", "cardId", "categoryId"] as const;
 const EVOLUTION_FILTERS = ["interval", "start", "periods", "accountId"] as const;
+const CASH_FLOW_FILTERS = ["referenceDate", "horizonDays"] as const;
 const INTERVAL_LIMITS: Record<ReportInterval, { defaultPeriods: number; maxPeriods: number }> = {
   monthly: { defaultPeriods: 12, maxPeriods: 24 },
   annual: { defaultPeriods: 3, maxPeriods: 10 },
@@ -138,27 +140,39 @@ export async function renderReportsRoutePage(
     );
   }
 
-  return resolution.view === "installments"
-    ? renderInstallmentsView(token, url)
-    : renderCategoryEvolutionView(token, url, referenceDate);
+  if (resolution.view === "installments") return renderInstallmentsView(token, url);
+  if (resolution.view === "cash-flow") {
+    return renderCashFlowProjectionView(token, url, referenceDate);
+  }
+  return renderCategoryEvolutionView(token, url, referenceDate);
 }
 
 export function resolveReportsView(url: URL): ViewResolution {
   const explicit = url.searchParams.get("view");
   if (explicit !== null) {
-    if (explicit === "category-evolution" || explicit === "installments") return { view: explicit };
-    return { error: "Visão inválida. Escolha Evolução por categoria ou Parcelas consolidadas." };
+    if (
+      explicit === "category-evolution" ||
+      explicit === "installments" ||
+      explicit === "cash-flow"
+    ) {
+      return { view: explicit };
+    }
+    return {
+      error:
+        "Visão inválida. Escolha Evolução por categoria, Parcelas consolidadas ou Projeção de caixa.",
+    };
   }
 
   const hasLegacy = LEGACY_FILTERS.some((key) => url.searchParams.has(key));
   const hasEvolution = EVOLUTION_FILTERS.some((key) => url.searchParams.has(key));
-  if (hasLegacy && hasEvolution) {
+  const hasCashFlow = CASH_FLOW_FILTERS.some((key) => url.searchParams.has(key));
+  if ([hasLegacy, hasEvolution, hasCashFlow].filter(Boolean).length > 1) {
     return {
-      error:
-        "Os filtros de evolução e parcelas foram misturados. Escolha uma visão para continuar.",
+      error: "Filtros de visões diferentes foram misturados. Escolha uma visão para continuar.",
     };
   }
   if (hasLegacy) return { view: "installments" };
+  if (hasCashFlow) return { view: "cash-flow" };
   return { view: "category-evolution" };
 }
 

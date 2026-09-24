@@ -41,6 +41,14 @@ function successfulInput(): DashboardPresenterInput {
     },
     pendingReview: { ok: true, data: { messages: [{ id: "review-1" }] } },
     openInvoices: { ok: true, data: { invoices: [{ dueOn: "2026-08-28" }] } },
+    cashFlowProjection: {
+      ok: true,
+      data: {
+        referenceDate: "2026-08-18",
+        horizonDays: 30,
+        currencyBlocks: [{ currency: "USD", closingBalanceMinor: 10_345 }],
+      },
+    },
     filters: { profileId: "profile-1" },
   };
 }
@@ -97,6 +105,11 @@ describe("dashboard presenter", () => {
       currency: "USD",
     });
     assert.equal(model.content.nextActions[0]?.href, "#dashboard-evidence-usd-planned");
+    assert.deepEqual(model.content.cashFlowProjection?.currencies[0]?.closingBalance, {
+      amountMinor: 10_345,
+      currency: "USD",
+    });
+    assert.match(model.content.cashFlowProjection?.currencies[0]?.href ?? "", /view=cash-flow/);
     assert.equal(model.content.dataQuality.status, "complete");
   });
 
@@ -111,6 +124,11 @@ describe("dashboard presenter", () => {
     assert.deepEqual(model.context.filters, { profileId: "profile-1" });
     assert.deepEqual(model.context.provenance, [
       { source: "api", resource: "/api/financial-summary", availability: "available" },
+      {
+        source: "api",
+        resource: "/api/cash-flow-projection?horizonDays=30",
+        availability: "available",
+      },
       {
         source: "api",
         resource: "/api/bank-message-inbox?status=pending_review",
@@ -147,6 +165,10 @@ describe("dashboard presenter", () => {
   it("returns a typed empty state when the mandatory summary has no financial evidence", () => {
     const input = successfulInput();
     input.summary = { ok: true, data: { currencyBlocks: [], recentItems: [] } };
+    input.cashFlowProjection = {
+      ok: true,
+      data: { referenceDate: "2026-08-18", horizonDays: 30, currencyBlocks: [] },
+    };
 
     const model = presentDashboard(input);
 

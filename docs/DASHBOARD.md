@@ -22,6 +22,7 @@ Nenhum total combina moedas diferentes. Cada bloco de indicadores preserva a moe
 O Dashboard consome contratos agregados e operacionais específicos:
 
 - `/api/financial-summary`: blocos financeiros por moeda, referências das contas que podem fornecer evidência e itens recentes;
+- `/api/cash-flow-projection?horizonDays=30`: saldo projetado diário canônico por moeda, com data de referência e evidências dos compromissos;
 - `/api/bank-message-inbox?status=pending_review`: quantidade de itens aguardando revisão;
 - `/api/invoices?status=open`: faturas em aberto.
 
@@ -73,7 +74,7 @@ O cache transitório do loading existe apenas para atravessar o reload do estado
 
 ## Orçamento, projeções e insights
 
-Os módulos de decisão são apenas pontos de navegação para capacidades existentes. O Dashboard não fabrica valores de orçamento, projeção 30/60/90 ou insights financeiros no frontend. Novos números devem vir de contratos determinísticos próprios antes de serem exibidos no cockpit.
+Os módulos de decisão continuam sendo pontos de navegação para capacidades existentes. Desde a issue #617, o Dashboard apresenta também o saldo ao fim do horizonte de 30 dias por moeda consumindo `GET /api/cash-flow-projection`; ele não reconstrói a série, não soma compromissos e não converte moedas no frontend. O link de cada moeda abre a mesma série canônica em Relatórios, com evidências navegáveis.
 
 O módulo de insights navega pela rota canônica `/assistente`.
 

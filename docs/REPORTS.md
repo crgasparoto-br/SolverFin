@@ -8,10 +8,11 @@ A area transforma dados canonicos do perfil financeiro em consultas somente leit
 
 ## Visoes disponiveis
 
-A rota `/relatorios` possui duas visoes:
+A rota `/relatorios` possui tres visoes:
 
 - **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
-- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais.
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
 
 Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
 
@@ -120,6 +121,14 @@ Somente as celulas negativas da linha **Resultado**, inclusive **Media** e **Tot
 A carga inicial renderiza diretamente `ready`, `empty`, `filter-error` ou `api-error`. Resumo, visualizacao e destaques precedem a matriz quando ha dados monetarios. A tendencia usa estrutura textual acessivel alem das barras de apoio visual. A matriz usa tabela semantica, cabecalhos de coluna/linha, rotulos acessiveis de periodo e sinal textual em todos os estados, inclusive no recorte vazio. Em desktop, cabecalho e descricao permanecem fixos durante a rolagem quando suportado. Em telas menores, filtros e camadas analiticas quebram em linhas e a matriz rola horizontalmente sem cortar dados. Botoes de secao e categoria operam por mouse e teclado e possuem foco visivel.
 
 O drilldown da evolucao continua condicionado a existir um destino canonico que represente fielmente o intervalo e a origem selecionados. Nao se cria link parcial para `/lancamentos` quando a rota de destino perderia parte do recorte anual, rolling-year, conta/cartao ou outra dimensao material.
+
+## Projecao de caixa
+
+A visao `view=cash-flow` consome diretamente `GET /api/cash-flow-projection`. Os filtros sao `referenceDate=AAAA-MM-DD` e `horizonDays=30|60|90`; quando a data nao e informada, a web resolve sua referencia injetada para montar uma URL explicita da API.
+
+Cada moeda recebe bloco independente com saldo inicial, saldo no fim do horizonte e tabela diaria continua. A interface apresenta `netMovementMinor`, `closingBalanceMinor` e `movements` devolvidos pelo backend sem recalcular saldos, preencher lacunas ou somar moedas.
+
+As evidencias preservam o `commitmentId` canonico. Movimentos com conta vinculada podem abrir o Extrato planejado da respectiva conta e moeda; faturas abrem Cartoes. Uma transferencia cross-currency portanto aparece nas duas series nativas com o mesmo compromisso logico, sem conversao implicita.
 
 ## Parcelas consolidadas
 
