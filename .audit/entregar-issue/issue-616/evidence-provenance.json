@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "material_head_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
-  "base_sha": "7213dfc454acebbc2de00658e22071d6b0a37a5c",
+  "material_head_sha": "82806dd44de9ee1f9b446fcbcebfaaff3f3422a9",
+  "base_sha": "c1298d6c84fb4569d98fd890b5c570f3180de292",
   "evidence": [
     {
       "evidence_id": "EV-616-CARDINALITY",
       "kind": "quantitative",
       "status": "passed",
       "path": ".audit/entregar-issue/issue-616/evidence/issue-616-controls.txt",
-      "sha256": "e541942429120ac08466b9fe9875875d1d42b0cbf46c313f1c25aad8336f44ba",
-      "subject_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
+      "sha256": "317f6f33f2b5d7418a4a6fd75831d4673ce3a9ab921974164f91a03b1a616424",
+      "subject_sha": "82806dd44de9ee1f9b446fcbcebfaaff3f3422a9",
       "freshness_policy": "exact-material-head",
       "procedure": "Execute exact-head Issue #616 cardinality controls for distinct commitments, recurrence replacement, cross-currency effect count, and PayableReceivable/Invoice precedence.",
       "expected": "Two legitimate same-value/date commitments remain two; materialized recurrence leaves one representation; one cross-currency transfer has one identity and exactly two native effects; equivalent Invoice suppresses legacy PayableReceivable duplication.",
-      "observed": "Exact-head Delivery V2 CI run 35660219156 passed the CRITICAL validation, domain tests, API integration tests and build on material head 191327cc260aab8b500716e74ae61d7f0227fe43.",
-      "producer": "Delivery V2 CI run 35660219156 exact-head Issue #616 tests"
+      "observed": "Exact-head Delivery V2 CI run 35918557868 passed the CRITICAL validation, domain tests, API integration tests and build on material head 82806dd44de9ee1f9b446fcbcebfaaff3f3422a9.",
+      "producer": "Delivery V2 CI run 35918557868 exact-head Issue #616 tests"
     }
   ]
 }

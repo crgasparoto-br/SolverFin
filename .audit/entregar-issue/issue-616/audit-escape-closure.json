@@ -13,7 +13,7 @@
       "literal_case": {
         "status": "passed",
         "evidence": "audit-remediation.json",
-        "observed": "The exact current material head 191327cc260aab8b500716e74ae61d7f0227fe43 was refrozen after green CI and all exact-head artifacts were rebound before publication."
+        "observed": "The exact current material head 82806dd44de9ee1f9b446fcbcebfaaff3f3422a9 was refrozen after Delivery V2 CI run 35918557868 completed successfully and all exact-head artifacts were rebound before publication."
       },
       "sibling_cases": [
         {
@@ -38,7 +38,7 @@
         "evidence": "Terminal handoff validation requires direct parent plus result-only allowlist on the freshly observed head."
       },
       "status": "passed",
-      "revalidated_head_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
+      "revalidated_head_sha": "82806dd44de9ee1f9b446fcbcebfaaff3f3422a9",
       "required_risk_families": [
         "structural-contract"
       ],

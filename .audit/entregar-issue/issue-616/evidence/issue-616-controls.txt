@@ -1,9 +1,9 @@
 Issue #616 exact-head evidence
-material_head_sha=191327cc260aab8b500716e74ae61d7f0227fe43
+material_head_sha=82806dd44de9ee1f9b446fcbcebfaaff3f3422a9
 work_item_start_sha=ebb8c9251096326e2849cec5c736e054f8a793d2
-Delivery V2 CI run 35660219156: completed success on exact material head. CRITICAL validation, merge preview compatibility, format, lint, typecheck, domain tests, integration tests and build gates reached their expected terminal state.
-Statement visual validation run 35660219142: completed success on exact material head.
+Delivery V2 CI run 35918557868: completed success on exact material head. CRITICAL validation, merge preview compatibility, format, lint, typecheck, domain tests, API integration tests and build gates reached their expected terminal state.
+Statement visual validation run 35918557861: completed success on exact material head.
 Primary behavioral controls: packages/domain/src/future-commitments.test.ts and packages/domain/src/payables-receivables-transition.test.ts.
 Public-boundary control: apps/api/src/future-commitments.integration.test.ts.
 The domain suite preserves two legitimate equal-value/date commitments, one logical cross-currency transfer with BRL and USD native effects, currency-filter identity, recurrence projection replacement after materialization, Invoice precedence over card purchase, PayableReceivable fallback precedence including equivalent Invoice handling, atomic edit/void lifecycle, fail-closed incomplete cross-currency state, and tenant/profile isolation.
-The API integration suite creates distinct BRL and USD accounts under the authenticated personal profile, persists one planned cross-currency transfer, queries BRL and USD independently while preserving the same logical transaction identity, and rejects an invalid period.
+The API integration suite creates distinct BRL and USD accounts under the authenticated personal profile, persists one planned cross-currency transfer, validates recurring materialization markers without duplicate commitments, queries BRL and USD independently while preserving the same logical transaction identity, and rejects an invalid period.
