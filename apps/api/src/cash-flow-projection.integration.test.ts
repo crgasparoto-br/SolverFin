@@ -107,9 +107,15 @@ async function main(): Promise<void> {
   if (brlFreeToSpend.status === "available" && usdFreeToSpend.status === "available") {
     assert.equal(brlFreeToSpend.minimumProjectedBalanceMinor, baselineBrl - 53_832);
     assert.equal(brlFreeToSpend.freeToSpendMinor, Math.max(0, baselineBrl - 53_832));
-    assert.equal(brlFreeToSpend.projectedDeficitMinor, Math.max(0, -(baselineBrl - 53_832)));
+    assert.equal(
+      brlFreeToSpend.projectedDeficitMinor,
+      Math.max(0, -(baselineBrl - 53_832)),
+    );
     assert.equal(brlFreeToSpend.minimumBalanceOn, "2037-11-11");
-    assert.equal(brlFreeToSpend.limitingPoint.movements[0]?.commitmentId, `transaction:${transfer.id}`);
+    assert.equal(
+      brlFreeToSpend.limitingPoint.movements[0]?.commitmentId,
+      `transaction:${transfer.id}`,
+    );
 
     assert.equal(usdFreeToSpend.minimumProjectedBalanceMinor, baselineUsd);
     assert.equal(usdFreeToSpend.freeToSpendMinor, Math.max(0, baselineUsd));
@@ -193,7 +199,9 @@ function projectionBlock(projection: ApiCashFlowProjection, currency: string) {
 }
 
 function freeToSpendBlock(projection: ApiCashFlowProjection, currency: string) {
-  const result = projection.freeToSpend?.currencyBlocks.find((block) => block.currency === currency);
+  const result = projection.freeToSpend?.currencyBlocks.find(
+    (block) => block.currency === currency,
+  );
   assert.ok(result, `expected free-to-spend block ${currency}`);
   return result;
 }
