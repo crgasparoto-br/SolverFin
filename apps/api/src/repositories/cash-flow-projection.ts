@@ -33,7 +33,11 @@ export async function buildCashFlowProjectionForContext(
 
   const requestedCurrency = filters.currency?.trim().toUpperCase();
   const openingBalances = summary.currencyBlocks
-    .filter((block) => requestedCurrency === undefined || block.currency === requestedCurrency)
+    .filter(
+      (block) =>
+        (requestedCurrency === undefined || block.currency === requestedCurrency) &&
+        block.accounts?.some((account) => account.status === "active"),
+    )
     .map((block) => ({
       currency: block.currency,
       amountMinor: block.availableBalanceMinor,
