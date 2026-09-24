@@ -105,9 +105,7 @@ async function main(): Promise<void> {
   assert.equal(
     afterVoid.currencyBlocks.some((block) =>
       block.points.some((point) =>
-        point.movements.some(
-          (movement) => movement.commitmentId === `transaction:${transfer.id}`,
-        ),
+        point.movements.some((movement) => movement.commitmentId === `transaction:${transfer.id}`),
       ),
     ),
     false,

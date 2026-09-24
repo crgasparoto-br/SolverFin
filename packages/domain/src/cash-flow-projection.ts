@@ -102,9 +102,7 @@ export function resolveCashFlowProjectionWindow(
   };
 }
 
-export function buildCashFlowProjection(
-  input: BuildCashFlowProjectionInput,
-): CashFlowProjection {
+export function buildCashFlowProjection(input: BuildCashFlowProjectionInput): CashFlowProjection {
   const requestedCurrency = normalizeOptionalCurrency(input.currency);
   const openingByCurrency = new Map<string, number>();
   const movementsByCurrencyAndDate = new Map<string, Map<ISODate, CashFlowProjectionMovement[]>>();
@@ -126,10 +124,7 @@ export function buildCashFlowProjection(
   }
 
   for (const commitment of input.commitments) {
-    if (
-      commitment.plannedOn < input.window.from ||
-      commitment.plannedOn > input.window.to
-    )
+    if (commitment.plannedOn < input.window.from || commitment.plannedOn > input.window.to)
       continue;
 
     for (const effect of commitment.monetaryEffects) {

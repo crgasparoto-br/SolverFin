@@ -17,9 +17,7 @@ rejectsInvalidReferenceDateAndHorizon();
 
 function exactThirtyDayWindowAndContinuousSeries(): void {
   const projection = project(30, [
-    commitment("rent", "2037-12-03", [
-      effect("rent-brl", -20_000, "BRL", "source_account"),
-    ]),
+    commitment("rent", "2037-12-03", [effect("rent-brl", -20_000, "BRL", "source_account")]),
   ]);
 
   const brl = block(projection, "BRL");
@@ -50,14 +48,15 @@ function keepsReferenceDateOutOfFutureMovements(): void {
     commitment("already-open", "2037-11-30", [
       effect("already-open-brl", -5_000, "BRL", "source_account"),
     ]),
-    commitment("future", "2037-12-01", [
-      effect("future-brl", -7_000, "BRL", "source_account"),
-    ]),
+    commitment("future", "2037-12-01", [effect("future-brl", -7_000, "BRL", "source_account")]),
   ]);
 
   const first = block(projection, "BRL").points[0];
   assert.equal(first?.netMovementMinor, -7_000);
-  assert.deepEqual(first?.movements.map((movement) => movement.commitmentId), ["future"]);
+  assert.deepEqual(
+    first?.movements.map((movement) => movement.commitmentId),
+    ["future"],
+  );
 }
 
 function separatesCurrenciesAndPreservesCrossCurrencyEvidence(): void {
@@ -83,12 +82,8 @@ function separatesCurrenciesAndPreservesCrossCurrencyEvidence(): void {
 
 function groupsSameDayMovementsWithoutCrossCurrencyAggregation(): void {
   const projection = project(30, [
-    commitment("income", "2037-12-04", [
-      effect("income-brl", 30_000, "BRL", "source_account"),
-    ]),
-    commitment("expense", "2037-12-04", [
-      effect("expense-brl", -12_000, "BRL", "source_account"),
-    ]),
+    commitment("income", "2037-12-04", [effect("income-brl", 30_000, "BRL", "source_account")]),
+    commitment("expense", "2037-12-04", [effect("expense-brl", -12_000, "BRL", "source_account")]),
     commitment("usd-expense", "2037-12-04", [
       effect("expense-usd", -5_000, "USD", "source_account"),
     ]),
@@ -115,7 +110,10 @@ function filtersOneCurrencyWithoutInventingConversion(): void {
   });
 
   assert.equal(projection.currency, "USD");
-  assert.deepEqual(projection.currencyBlocks.map((item) => item.currency), ["USD"]);
+  assert.deepEqual(
+    projection.currencyBlocks.map((item) => item.currency),
+    ["USD"],
+  );
   assert.equal(projection.currencyBlocks[0]?.points[1]?.netMovementMinor, 10_000);
 }
 
