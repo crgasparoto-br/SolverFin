@@ -46,7 +46,31 @@ export async function buildCashFlowProjectionForContext(
     ...(filters.currency ? { currency: filters.currency } : {}),
   });
 
-  return window.horizonDays === FREE_TO_SPEND_HORIZON_DAYS
-    ? attachFreeToSpendIndicator(projection)
-    : projection;
+  if (window.horizonDays !== FREE_TO_SPEND_HORIZON_DAYS) {
+    return projection;
+  }
+
+  const projectionWithFreeToSpend = attachFreeToSpendIndicator(projection);
+  if (
+    requestedCurrency !== undefined &&
+    !openingBalances.some((balance) => balance.currency === requestedCurrency)
+  ) {
+    return {
+      ...projectionWithFreeToSpend,
+      freeToSpend: {
+        ...projectionWithFreeToSpend.freeToSpend,
+        currencyBlocks: projectionWithFreeToSpend.freeToSpend.currencyBlocks.map((block) =>
+          block.currency === requestedCurrency
+            ? {
+                currency: requestedCurrency,
+                status: "unavailable" as const,
+                reason: "projection-unavailable" as const,
+              }
+            : block,
+        ),
+      },
+    };
+  }
+
+  return projectionWithFreeToSpend;
 }

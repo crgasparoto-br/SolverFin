@@ -45,6 +45,12 @@ async function main(): Promise<void> {
     currency: "USD",
     openingBalanceMinor: 20_000,
   });
+  await createAccountForContext(CONTEXT, {
+    name: `Projection zero JPY ${suffix}`,
+    kind: "checking",
+    currency: "JPY",
+    openingBalanceMinor: 0,
+  });
 
   await createTransactionForContext(CONTEXT, {
     accountId: brl.id,
@@ -123,6 +129,28 @@ async function main(): Promise<void> {
   assert.equal("freeToSpend" in projection60, false);
   assert.equal("freeToSpend" in projection90, false);
 
+  const knownZeroProjection = await getProjection(token, 30, "JPY");
+  const knownZeroFreeToSpend = freeToSpendBlock(knownZeroProjection, "JPY");
+  assert.equal(knownZeroFreeToSpend.status, "available");
+  if (knownZeroFreeToSpend.status === "available") {
+    assert.equal(knownZeroFreeToSpend.minimumProjectedBalanceMinor, 0);
+    assert.equal(knownZeroFreeToSpend.freeToSpendMinor, 0);
+    assert.equal(knownZeroFreeToSpend.projectedDeficitMinor, 0);
+  }
+
+  const missingOpeningProjection = await getProjection(token, 30, "EUR");
+  const missingOpeningBlock = projectionBlock(missingOpeningProjection, "EUR");
+  assert.equal(missingOpeningBlock.openingBalanceMinor, 0);
+  const missingOpeningFreeToSpend = freeToSpendBlock(missingOpeningProjection, "EUR");
+  assert.deepEqual(missingOpeningFreeToSpend, {
+    currency: "EUR",
+    status: "unavailable",
+    reason: "projection-unavailable",
+  });
+  assert.equal("freeToSpendMinor" in missingOpeningFreeToSpend, false);
+  assert.equal("minimumProjectedBalanceMinor" in missingOpeningFreeToSpend, false);
+  assert.equal("projectedDeficitMinor" in missingOpeningFreeToSpend, false);
+
   await voidTransactionForContext(CONTEXT, transfer.id);
   const afterVoid = await getProjection(token, 30);
   assert.equal(
@@ -143,11 +171,17 @@ async function main(): Promise<void> {
   assert.equal(readErrorCode(invalid), "CASH_FLOW_PROJECTION_HORIZON_INVALID");
 }
 
-async function getProjection(token: string, horizonDays: number): Promise<ApiCashFlowProjection> {
+async function getProjection(
+  token: string,
+  horizonDays: number,
+  currency?: string,
+): Promise<ApiCashFlowProjection> {
   const response = await apiRequest(
     token,
     "GET",
-    `/api/cash-flow-projection?referenceDate=${REFERENCE_DATE}&horizonDays=${horizonDays}`,
+    `/api/cash-flow-projection?referenceDate=${REFERENCE_DATE}&horizonDays=${horizonDays}${
+      currency ? `&currency=${encodeURIComponent(currency)}` : ""
+    }`,
   );
   assert.equal(response.statusCode, 200);
   return readBody<ApiCashFlowProjection>(response);
