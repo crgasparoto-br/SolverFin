@@ -15,6 +15,8 @@ import { apiGet } from "./api.js";
 import {
   presentDashboard,
   presentDashboardLoading,
+  type DashboardCashFlowProjection,
+  type DashboardCashFlowProjectionViewModel,
   type DashboardContentViewModel,
   type DashboardCurrencySummaryViewModel,
   type DashboardDecisionModuleViewModel,
@@ -59,10 +61,12 @@ function dashboardLoadEntry(token: string): DashboardLoadEntry {
 
   const promise = Promise.all([
     apiGet<DashboardFinancialSummary>(token, "/api/financial-summary"),
+    apiGet<DashboardCashFlowProjection>(token, "/api/cash-flow-projection?horizonDays=30"),
     apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
     apiGet<{ invoices: DashboardOpenInvoice[] }>(token, "/api/invoices?status=open"),
-  ]).then(([summary, pendingReview, openInvoices]) => ({
+  ]).then(([summary, cashFlowProjection, pendingReview, openInvoices]) => ({
     summary,
+    cashFlowProjection,
     pendingReview,
     openInvoices,
     filters: {},
@@ -151,6 +155,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
     </section>
     ${renderCurrencyNavigator(content.currencySummaries)}
     ${renderCurrencySummaries(content.currencySummaries)}
+    ${renderCashFlowProjection(content.cashFlowProjection)}
     <section class="panel next-actions" aria-label="Próximas ações">
       <div class="section-heading">
         <div><p class="eyebrow">Ação</p><h2>Próximas ações</h2></div>
@@ -230,6 +235,36 @@ function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
       <p class="muted">${escapeHtml(metric.evidenceTitle)}</p>
       <div class="evidence-links">${evidenceItems}</div>
     </details>
+  `;
+}
+
+function renderCashFlowProjection(
+  projection: DashboardCashFlowProjectionViewModel | undefined,
+): string {
+  if (!projection) return "";
+
+  return `
+    <section class="cash-flow-section" aria-labelledby="dashboard-cash-flow-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Horizonte</p>
+          <h2 id="dashboard-cash-flow-title">Projeção de caixa — ${projection.horizonDays} dias</h2>
+          <p class="muted">Referência: ${escapeHtml(projection.referenceDateLabel)}. Cada moeda mantém sua própria série.</p>
+        </div>
+      </div>
+      <div class="cash-flow-dashboard-grid">
+        ${projection.currencies
+          .map((item) =>
+            renderCard({
+              title: item.currency,
+              className: "cash-flow-dashboard-card",
+              bodyHtml: `<p class="muted">Saldo projetado no fim do horizonte</p><strong class="cash-flow-dashboard-value">${renderMoney(item.closingBalance)}</strong>`,
+              footerHtml: `<a class="text-link" href="${escapeHtml(item.href)}">Ver série diária e evidências</a>`,
+            }),
+          )
+          .join("")}
+      </div>
+    </section>
   `;
 }
 
@@ -379,6 +414,10 @@ function dashboardStyles(): string {
     .evidence-static { background: var(--surface-soft); border: 1px dashed var(--line); border-radius: var(--radius); display: grid; gap: 2px; padding: 7px 10px; }
     .evidence-static strong { color: var(--primary); font-size: 0.8125rem; }
     .evidence-static small { color: var(--muted); font-size: 0.75rem; }
+    .cash-flow-section { display:grid; gap:10px; }
+    .cash-flow-dashboard-grid { display:grid; gap:12px; grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .cash-flow-dashboard-card .sf-card-body { display:grid; gap:6px; }
+    .cash-flow-dashboard-value { color:var(--primary); font-size:1.15rem; }
     .next-actions { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
     .quick-links { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -393,8 +432,8 @@ function dashboardStyles(): string {
     .row div > span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
     .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
     .row > strong { text-align: right; white-space: nowrap; }
-    @media (max-width: 1024px) { .currency-summary .sf-summary-grid, .decision-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } }
-    @media (max-width: 760px) { .currency-summary .sf-summary-grid, .decision-grid { grid-template-columns: 1fr; } .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } .evidence-links { display: grid; } }
+    @media (max-width: 1024px) { .currency-summary .sf-summary-grid, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) { .currency-summary .sf-summary-grid, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: 1fr; } .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } .evidence-links { display: grid; } }
   `;
 }
 

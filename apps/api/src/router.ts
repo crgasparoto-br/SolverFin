@@ -60,6 +60,7 @@ import {
   updateBudgetForContext,
 } from "./repositories/budgets.js";
 import { buildFinancialSummary } from "./repositories/dashboard.js";
+import { buildCashFlowProjectionForContext } from "./repositories/cash-flow-projection.js";
 import { listFutureCommitmentsForContext } from "./repositories/future-commitments.js";
 import {
   cancelRecurrenceForContext,
@@ -119,6 +120,7 @@ const routes: Route[] = [];
 
 route("GET", "/api/financial-profiles", listProfilesHandler);
 route("GET", "/api/financial-summary", financialSummaryHandler);
+route("GET", "/api/cash-flow-projection", cashFlowProjectionHandler);
 route("GET", "/api/future-commitments", listFutureCommitmentsHandler);
 
 route("GET", "/api/categories", listCategoriesHandler);
@@ -281,6 +283,25 @@ async function financialSummaryHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   return json(200, await buildFinancialSummary(context));
+}
+
+async function cashFlowProjectionHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const referenceDate =
+    request.query.get("referenceDate") ?? new Date().toISOString().slice(0, 10);
+  const horizonValue = request.query.get("horizonDays") ?? "30";
+  const currency = request.query.get("currency")?.trim() || undefined;
+
+  return json(
+    200,
+    await buildCashFlowProjectionForContext(context, {
+      referenceDate,
+      horizonDays: Number(horizonValue),
+      ...(currency ? { currency } : {}),
+    }),
+  );
 }
 
 async function listFutureCommitmentsHandler(

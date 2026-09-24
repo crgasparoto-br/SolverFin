@@ -36,6 +36,17 @@ describe("dev-server dashboard page", () => {
         });
       }
 
+      if (url.pathname === "/api/cash-flow-projection") {
+        assert.equal(url.searchParams.get("horizonDays"), "30");
+        return jsonResponse({
+          referenceDate: "2026-07-01",
+          horizonDays: 30,
+          from: "2026-07-02",
+          to: "2026-07-31",
+          currencyBlocks: [{ currency: "BRL", closingBalanceMinor: 480000 }],
+        });
+      }
+
       if (url.pathname === "/api/bank-message-inbox") {
         assert.equal(url.searchParams.get("status"), "pending_review");
         return jsonResponse({ messages: [{ id: "message-1" }] });
@@ -62,6 +73,10 @@ describe("dev-server dashboard page", () => {
         /href="#dashboard-evidence-brl-variation" aria-label="Ver evidências em BRL"/,
       );
       assert.match(html, /Compromissos previstos em BRL/);
+      assert.match(html, /Projeção de caixa — 30 dias/);
+      assert.match(html, /Saldo projetado no fim do horizonte/);
+      assert.match(html, /R\$\s*4\.800,00/);
+      assert.match(html, /view=cash-flow/);
       assert.match(
         html,
         /href="#dashboard-evidence-brl-available" aria-label="Ver evidências em BRL"/,
@@ -110,7 +125,7 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /\.metric-drilldown:focus-visible/);
       assert.match(
         html,
-        /\.currency-summary \.sf-summary-grid, \.decision-grid \{ grid-template-columns: 1fr;/,
+        /\.currency-summary \.sf-summary-grid, \.decision-grid, \.cash-flow-dashboard-grid \{ grid-template-columns: 1fr;/,
       );
     } finally {
       globalThis.fetch = originalFetch;
@@ -151,6 +166,17 @@ describe("dev-server dashboard page", () => {
         });
       }
 
+      if (url.pathname === "/api/cash-flow-projection") {
+        assert.equal(url.searchParams.get("horizonDays"), "30");
+        return jsonResponse({
+          referenceDate: "2026-07-01",
+          horizonDays: 30,
+          from: "2026-07-02",
+          to: "2026-07-31",
+          currencyBlocks: [{ currency: "BRL", closingBalanceMinor: 480000 }],
+        });
+      }
+
       if (url.pathname === "/api/bank-message-inbox") return jsonResponse({ messages: [] });
       if (url.pathname === "/api/invoices") return jsonResponse({ invoices: [] });
       throw new Error(`Endpoint inesperado no Dashboard: ${url.pathname}${url.search}`);
@@ -185,6 +211,17 @@ describe("dev-server dashboard page", () => {
           recentItems: [],
         });
       }
+      if (url.pathname === "/api/cash-flow-projection") {
+        assert.equal(url.searchParams.get("horizonDays"), "30");
+        return jsonResponse({
+          referenceDate: "2026-07-01",
+          horizonDays: 30,
+          from: "2026-07-02",
+          to: "2026-07-31",
+          currencyBlocks: [{ currency: "BRL", closingBalanceMinor: 480000 }],
+        });
+      }
+
       if (url.pathname === "/api/bank-message-inbox") {
         return new Response(JSON.stringify({ error: "temporarily unavailable" }), {
           status: 503,

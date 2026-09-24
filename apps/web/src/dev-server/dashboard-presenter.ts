@@ -45,6 +45,25 @@ export interface DashboardFinancialSummary {
   recentItems: DashboardFinancialSummaryItem[];
 }
 
+export interface DashboardCashFlowProjection {
+  referenceDate: string;
+  horizonDays: number;
+  currencyBlocks: Array<{
+    currency: string;
+    closingBalanceMinor: number;
+  }>;
+}
+
+export interface DashboardCashFlowProjectionViewModel {
+  referenceDateLabel: string;
+  horizonDays: number;
+  currencies: readonly {
+    currency: string;
+    closingBalance: MoneyViewModel;
+    href: string;
+  }[];
+}
+
 export interface DashboardMetricEvidenceLinkViewModel {
   label: string;
   href?: string;
@@ -98,6 +117,7 @@ export interface DashboardDecisionModuleViewModel {
 
 export interface DashboardContentViewModel {
   currencySummaries: readonly DashboardCurrencySummaryViewModel[];
+  cashFlowProjection?: DashboardCashFlowProjectionViewModel;
   nextActions: readonly DashboardNextActionViewModel[];
   recentItems: readonly DashboardRecentItemViewModel[];
   dataQuality: DashboardDataQualityViewModel;
@@ -110,6 +130,7 @@ export interface DashboardPresenterInput {
   summary: ApiSuccess<DashboardFinancialSummary> | ApiFailure;
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure;
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure;
+  cashFlowProjection: ApiSuccess<DashboardCashFlowProjection> | ApiFailure;
   filters: Readonly<Record<string, string>>;
 }
 
@@ -141,7 +162,8 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
 
   if (
     input.summary.data.currencyBlocks.length === 0 &&
-    input.summary.data.recentItems.length === 0
+    input.summary.data.recentItems.length === 0 &&
+    (!input.cashFlowProjection.ok || input.cashFlowProjection.data.currencyBlocks.length === 0)
   ) {
     return emptyScreen(context, {
       title: "Ainda não há dados financeiros para este perfil.",
@@ -151,6 +173,9 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
 
   return successScreen(context, {
     currencySummaries: input.summary.data.currencyBlocks.map(presentCurrencySummary),
+    ...(input.cashFlowProjection.ok
+      ? { cashFlowProjection: presentCashFlowProjection(input.cashFlowProjection.data) }
+      : {}),
     nextActions: presentNextActions(
       input.summary.data.currencyBlocks,
       input.pendingReview,
@@ -163,7 +188,11 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
       occurredOnLabel: formatDateOnly(item.occurredOn),
       amount: money(item.amountMinor, item.currency),
     })),
-    dataQuality: presentDataQuality(input.pendingReview, input.openInvoices),
+    dataQuality: presentDataQuality(
+      input.pendingReview,
+      input.openInvoices,
+      input.cashFlowProjection,
+    ),
     decisionModules: decisionModules(),
   });
 }
@@ -303,11 +332,30 @@ function presentNextActions(
   return actions;
 }
 
+function presentCashFlowProjection(
+  projection: DashboardCashFlowProjection,
+): DashboardCashFlowProjectionViewModel {
+  return {
+    referenceDateLabel: formatDateOnly(projection.referenceDate),
+    horizonDays: projection.horizonDays,
+    currencies: projection.currencyBlocks.map((block) => ({
+      currency: block.currency,
+      closingBalance: money(block.closingBalanceMinor, block.currency),
+      href: `/relatorios?view=cash-flow&referenceDate=${encodeURIComponent(
+        projection.referenceDate,
+      )}&horizonDays=${projection.horizonDays}#cash-flow-${encodeURIComponent(
+        block.currency.toLowerCase(),
+      )}`,
+    })),
+  };
+}
+
 function presentDataQuality(
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
+  cashFlowProjection: ApiSuccess<DashboardCashFlowProjection> | ApiFailure,
 ): DashboardDataQualityViewModel {
-  if (!pendingReview.ok || !openInvoices.ok) {
+  if (!pendingReview.ok || !openInvoices.ok || !cashFlowProjection.ok) {
     return {
       status: "partial",
       title: "Dados parciais",
@@ -352,6 +400,7 @@ function decisionModules(): DashboardDecisionModuleViewModel[] {
 function dashboardProvenance(input: DashboardPresenterInput): ScreenDataProvenance[] {
   return [
     provenance("/api/financial-summary", input.summary.ok),
+    provenance("/api/cash-flow-projection?horizonDays=30", input.cashFlowProjection.ok),
     provenance("/api/bank-message-inbox?status=pending_review", input.pendingReview.ok),
     provenance("/api/invoices?status=open", input.openInvoices.ok),
   ];
