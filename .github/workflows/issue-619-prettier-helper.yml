@@ -1,13 +1,75 @@
-name: Issue 619 Handoff Staging
+name: Issue 619 Publish Handoff
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - tooling/619-prettier
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  staging:
+  publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - run: echo "Issue 619 handoff package is being staged."
+      - name: Checkout tooling package
+        uses: actions/checkout@v4
+        with:
+          ref: tooling/619-prettier
+          path: tooling
+
+      - name: Checkout material branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/619-budget-projections
+          fetch-depth: 0
+          path: target
+
+      - name: Verify frozen material head
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="898fad2d4b1b7b8f548a454347019c93b4061b49"
+          actual="$(git -C target rev-parse HEAD)"
+          test "$actual" = "$expected"
+          echo "material_head=$actual"
+
+      - name: Materialize certified handoff package
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat tooling/.delivery-v2/issue-619-handoff/part-*.b64 | base64 -d > /tmp/issue-619-handoff.tgz
+          tar -xzf /tmp/issue-619-handoff.tgz -C target
+
+      - name: Verify result-only delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C target status --short
+          git -C target status --porcelain | sed -E 's/^.. //' | sort > /tmp/actual-paths.txt
+          cat > /tmp/expected-paths.txt <<'EOF'
+          .audit/entregar-issue/issue-619/handoff-ready.json
+          .audit/entregar-issue/issue-619/inherited-controls.json
+          .audit/entregar-issue/issue-619/requirement-attack-matrix.json
+          .audit/entregar-issue/issue-619/requirement-attack-matrix.parts/part-000.b64
+          .audit/entregar-issue/issue-619/requirement-closure.json
+          .audit/entregar-issue/issue-619/risk-saturation.json
+          .audit/entregar-issue/issue-619/specification-snapshot.json
+          .audit/entregar-issue/issue-619/specification-sources/SRC-ISSUE-619.txt
+          EOF
+          sort /tmp/expected-paths.txt -o /tmp/expected-paths.txt
+          diff -u /tmp/expected-paths.txt /tmp/actual-paths.txt
+
+      - name: Publish result-only child
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C target config user.name "github-actions[bot]"
+          git -C target config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C target add .audit/entregar-issue/issue-619
+          git -C target commit -m "chore: certify issue 619 handoff"
+          parent="$(git -C target rev-parse HEAD^)"
+          test "$parent" = "898fad2d4b1b7b8f548a454347019c93b4061b49"
+          git -C target push origin HEAD:feat/619-budget-projections
+          echo "published_handoff_head=$(git -C target rev-parse HEAD)"
