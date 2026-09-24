@@ -42,7 +42,6 @@ Movimentos já efetivos em `referenceDate` pertencem ao saldo inicial e não vol
 
 Dashboard e Relatórios consomem este mesmo endpoint. As duas superfícies apresentam valores retornados pelo backend; nenhuma delas executa aritmética financeira, conversão cambial ou reconstrução de série.
 
-
 ## Valor livre para gastar (#618)
 
 Quando `horizonDays=30`, a resposta inclui também `freeToSpend`, derivado **exclusivamente** de `referenceDate`, `openingBalanceMinor` e dos 30 `closingBalanceMinor` já produzidos pela projeção. A API não consulta novamente transações, faturas, recorrências, orçamento, limite de crédito ou qualquer agenda paralela para calcular o indicador.
