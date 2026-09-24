@@ -17,7 +17,9 @@ rejectsInvalidReferenceDateAndHorizon();
 
 function exactThirtyDayWindowAndContinuousSeries(): void {
   const projection = project(30, [
-    commitment("rent", "2037-12-03", [effect("rent-brl", -20_000, "BRL", "source_account")]),
+    commitment("rent", "2037-12-03", [
+      effect("rent-brl", -20_000, "BRL", "source_account"),
+    ]),
   ]);
 
   const brl = block(projection, "BRL");

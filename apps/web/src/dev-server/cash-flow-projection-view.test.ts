@@ -4,7 +4,9 @@ import { afterEach, describe, it } from "node:test";
 import { renderReportsRoutePage } from "./reports-route-page.js";
 
 const originalFetch = globalThis.fetch;
-afterEach(() => { globalThis.fetch = originalFetch; });
+afterEach(() => {
+  globalThis.fetch = originalFetch;
+});
 
 describe("cash flow projection report", () => {
   it("renders the canonical daily series per currency without recalculating balances", async () => {
@@ -15,25 +17,71 @@ describe("cash flow projection report", () => {
       assert.equal(url.searchParams.get("horizonDays"), "30");
       assert.equal(url.searchParams.get("profileId"), "profile-1");
       return jsonResponse({
-        referenceDate: "2026-09-20", horizonDays: 30, from: "2026-09-21", to: "2026-10-20",
+        referenceDate: "2026-09-20",
+        horizonDays: 30,
+        from: "2026-09-21",
+        to: "2026-10-20",
         currencyBlocks: [
-          { currency: "BRL", openingBalanceMinor: 100000, closingBalanceMinor: 77777, points: [
-            { date: "2026-09-21", netMovementMinor: -53832, closingBalanceMinor: 77777, movements: [
-              { commitmentId: "transaction:transfer-1", effectId: "source", description: "Transferência viagem", source: { kind: "transaction", id: "transfer-1" }, amountMinor: -53832, currency: "BRL", accountId: "account-brl" },
-            ] },
-            { date: "2026-09-22", netMovementMinor: 0, closingBalanceMinor: 77777, movements: [] },
-          ] },
-          { currency: "USD", openingBalanceMinor: 20000, closingBalanceMinor: 33333, points: [
-            { date: "2026-09-21", netMovementMinor: 10000, closingBalanceMinor: 33333, movements: [
-              { commitmentId: "transaction:transfer-1", effectId: "destination", description: "Transferência viagem", source: { kind: "transaction", id: "transfer-1" }, amountMinor: 10000, currency: "USD", accountId: "account-usd" },
-            ] },
-          ] },
+          {
+            currency: "BRL",
+            openingBalanceMinor: 100000,
+            closingBalanceMinor: 77777,
+            points: [
+              {
+                date: "2026-09-21",
+                netMovementMinor: -53832,
+                closingBalanceMinor: 77777,
+                movements: [
+                  {
+                    commitmentId: "transaction:transfer-1",
+                    effectId: "source",
+                    description: "Transferência viagem",
+                    source: { kind: "transaction", id: "transfer-1" },
+                    amountMinor: -53832,
+                    currency: "BRL",
+                    accountId: "account-brl",
+                  },
+                ],
+              },
+              {
+                date: "2026-09-22",
+                netMovementMinor: 0,
+                closingBalanceMinor: 77777,
+                movements: [],
+              },
+            ],
+          },
+          {
+            currency: "USD",
+            openingBalanceMinor: 20000,
+            closingBalanceMinor: 33333,
+            points: [
+              {
+                date: "2026-09-21",
+                netMovementMinor: 10000,
+                closingBalanceMinor: 33333,
+                movements: [
+                  {
+                    commitmentId: "transaction:transfer-1",
+                    effectId: "destination",
+                    description: "Transferência viagem",
+                    source: { kind: "transaction", id: "transfer-1" },
+                    amountMinor: 10000,
+                    currency: "USD",
+                    accountId: "account-usd",
+                  },
+                ],
+              },
+            ],
+          },
         ],
       });
     };
     const html = await renderReportsRoutePage(
       "token",
-      new URL("http://localhost/relatorios?view=cash-flow&referenceDate=2026-09-20&horizonDays=30&profileId=profile-1"),
+      new URL(
+        "http://localhost/relatorios?view=cash-flow&referenceDate=2026-09-20&horizonDays=30&profileId=profile-1",
+      ),
       new Date("2026-09-20T12:00:00.000Z"),
     );
     assert.match(html, /Projeção de caixa/);
@@ -51,7 +99,10 @@ describe("cash flow projection report", () => {
 
   it("rejects an invalid horizon before calling the API", async () => {
     let calls = 0;
-    globalThis.fetch = async (): Promise<Response> => { calls += 1; return jsonResponse({}); };
+    globalThis.fetch = async (): Promise<Response> => {
+      calls += 1;
+      return jsonResponse({});
+    };
     const html = await renderReportsRoutePage(
       "token",
       new URL("http://localhost/relatorios?view=cash-flow&referenceDate=2026-09-20&horizonDays=45"),
@@ -62,5 +113,8 @@ describe("cash flow projection report", () => {
   });
 });
 function jsonResponse(body: unknown): Response {
-  return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json; charset=utf-8" } });
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
 }

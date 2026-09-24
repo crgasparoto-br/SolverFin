@@ -200,7 +200,10 @@ function renderPoint(point: CashFlowProjectionPoint, currency: string): string {
   `;
 }
 
-function renderEvidence(movements: readonly CashFlowProjectionMovement[], currency: string): string {
+function renderEvidence(
+  movements: readonly CashFlowProjectionMovement[],
+  currency: string,
+): string {
   if (movements.length === 0) return '<span class="muted">Sem movimento</span>';
   return movements
     .map((movement) => {
@@ -215,15 +218,23 @@ function renderEvidence(movements: readonly CashFlowProjectionMovement[], curren
 function evidenceHref(movement: CashFlowProjectionMovement, currency: string): string | undefined {
   if (movement.source.kind === "invoice" || movement.cardId) return "/cartoes";
   if (!movement.accountId) return undefined;
-  const query = new URLSearchParams({ currency, accountId: movement.accountId, evidence: "planned" });
+  const query = new URLSearchParams({
+    currency,
+    accountId: movement.accountId,
+    evidence: "planned",
+  });
   return `/lancamentos?${query.toString()}`;
 }
 function sourceLabel(kind: CashFlowProjectionMovement["source"]["kind"]): string {
   switch (kind) {
-    case "invoice": return "Fatura prevista";
-    case "recurrence_projection": return "Recorrência prevista";
-    case "payable_receivable": return "Compromisso financeiro";
-    case "transaction": return "Lançamento planejado";
+    case "invoice":
+      return "Fatura prevista";
+    case "recurrence_projection":
+      return "Recorrência prevista";
+    case "payable_receivable":
+      return "Compromisso financeiro";
+    case "transaction":
+      return "Lançamento planejado";
   }
 }
 function buildApiPath(filters: CashFlowFilters): string {

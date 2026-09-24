@@ -21,8 +21,7 @@ export function renderReportViewNavigation(selected: ReportsView, profileId?: st
     selected === "category-evolution" ? "#" : `/relatorios?view=category-evolution${suffix}`;
   const installmentsHref =
     selected === "installments" ? "#" : `/relatorios?view=installments${suffix}`;
-  const cashFlowHref =
-    selected === "cash-flow" ? "#" : `/relatorios?view=cash-flow${suffix}`;
+  const cashFlowHref = selected === "cash-flow" ? "#" : `/relatorios?view=cash-flow${suffix}`;
   return `
     <nav class="report-view-tabs" aria-label="Visões de relatórios">
       <a href="${categoryHref}"${selected === "category-evolution" ? ' aria-current="page"' : ""}>Evolução por categoria</a>

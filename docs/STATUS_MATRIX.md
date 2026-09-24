@@ -130,14 +130,14 @@ Os cenarios calculam deltas a partir de um baseline obtido imediatamente antes d
 
 A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contratos e superficies estruturados na Fase 3.
 
-| Capacidade de previsibilidade                              | Estado    | Contrato principal                     |
-| ---------------------------------------------------------- | --------- | -------------------------------------- |
-| Fonte canonica de compromissos futuros sem dupla contagem  | Feito     | #616, `docs/API_FUTURE_COMMITMENTS.md` |
+| Capacidade de previsibilidade                              | Estado    | Contrato principal                       |
+| ---------------------------------------------------------- | --------- | ---------------------------------------- |
+| Fonte canonica de compromissos futuros sem dupla contagem  | Feito     | #616, `docs/API_FUTURE_COMMITMENTS.md`   |
 | Projecao de fluxo de caixa 30/60/90 dias por moeda         | Feito     | #617, `docs/API_CASH_FLOW_PROJECTION.md` |
-| Valor livre para gastar deterministico e explicavel        | Planejado | #592 / #618                            |
-| Orcamentos com realizado/comprometido/disponivel/projetado | Planejado | #592 / #619                            |
-| Recorrencias futuras acionaveis nas jornadas existentes    | Planejado | #592 / #620                            |
-| Insights priorizados, deduplicados e com drilldown         | Planejado | #592 / #621                            |
+| Valor livre para gastar deterministico e explicavel        | Planejado | #592 / #618                              |
+| Orcamentos com realizado/comprometido/disponivel/projetado | Planejado | #592 / #619                              |
+| Recorrencias futuras acionaveis nas jornadas existentes    | Planejado | #592 / #620                              |
+| Insights priorizados, deduplicados e com drilldown         | Planejado | #592 / #621                              |
 
 ### Regras da Fase 4A
 

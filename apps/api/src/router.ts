@@ -289,8 +289,7 @@ async function cashFlowProjectionHandler(
   request: ApiRequest,
   context: TenantContext,
 ): Promise<ApiResponse> {
-  const referenceDate =
-    request.query.get("referenceDate") ?? new Date().toISOString().slice(0, 10);
+  const referenceDate = request.query.get("referenceDate") ?? new Date().toISOString().slice(0, 10);
   const horizonValue = request.query.get("horizonDays") ?? "30";
   const currency = request.query.get("currency")?.trim() || undefined;
 

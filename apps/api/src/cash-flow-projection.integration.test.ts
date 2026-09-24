@@ -58,10 +58,7 @@ async function main(): Promise<void> {
     description: `Reference date expense ${suffix}`,
   });
 
-  const summary = await buildFinancialSummary(
-    CONTEXT,
-    new Date(`${REFERENCE_DATE}T00:00:00.000Z`),
-  );
+  const summary = await buildFinancialSummary(CONTEXT, new Date(`${REFERENCE_DATE}T00:00:00.000Z`));
   const baselineBrl = financialSummaryBlock(summary, "BRL").availableBalanceMinor;
   const baselineUsd = financialSummaryBlock(summary, "USD").availableBalanceMinor;
 

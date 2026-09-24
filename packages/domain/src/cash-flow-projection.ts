@@ -126,7 +126,11 @@ export function buildCashFlowProjection(
   }
 
   for (const commitment of input.commitments) {
-    if (commitment.plannedOn < input.window.from || commitment.plannedOn > input.window.to) continue;
+    if (
+      commitment.plannedOn < input.window.from ||
+      commitment.plannedOn > input.window.to
+    )
+      continue;
 
     for (const effect of commitment.monetaryEffects) {
       const currency = normalizeCurrency(effect.currency);
@@ -202,7 +206,10 @@ function buildCurrencyBlock(
   return { currency, openingBalanceMinor, closingBalanceMinor, points };
 }
 
-function compareMovements(left: CashFlowProjectionMovement, right: CashFlowProjectionMovement): number {
+function compareMovements(
+  left: CashFlowProjectionMovement,
+  right: CashFlowProjectionMovement,
+): number {
   const byCommitment = left.commitmentId.localeCompare(right.commitmentId);
   return byCommitment === 0 ? left.effectId.localeCompare(right.effectId) : byCommitment;
 }
