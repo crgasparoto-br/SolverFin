@@ -202,7 +202,8 @@ function excludesInvoiceForecastAndPaymentFromUncategorizedConsumption(): void {
   assert.equal(
     uncategorized.committedItems.some(
       (item) =>
-        item.transactionId === "invoice-forecast" || item.transactionId === "invoice-payment",
+        item.transactionId === "invoice-forecast" ||
+        item.transactionId === "invoice-payment",
     ),
     false,
   );
