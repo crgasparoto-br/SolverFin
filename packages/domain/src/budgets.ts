@@ -479,11 +479,20 @@ function isBudgetTransaction(
 ): boolean {
   return (
     transaction.kind === "expense" &&
+    !isInvoiceCashTransaction(transaction) &&
     REALIZED_TRANSACTION_STATUSES.includes(
       transaction.status as (typeof REALIZED_TRANSACTION_STATUSES)[number],
     ) &&
     transaction.occurredOn >= periodStartOn &&
     transaction.occurredOn <= periodEndOn
+  );
+}
+
+function isInvoiceCashTransaction(transaction: Transaction): boolean {
+  return (
+    transaction.invoiceId !== undefined &&
+    transaction.cardId !== undefined &&
+    transaction.accountId !== undefined
   );
 }
 

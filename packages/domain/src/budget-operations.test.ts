@@ -213,6 +213,28 @@ function keepsConsumptionOutsidePartialBudgetWindowsAsUnbudgeted(): void {
 }
 
 function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
+  const budget = makeBudget(
+    "budget-food-invoice-cash",
+    "food",
+    "BRL",
+    "2038-08-01",
+    "2038-08-31",
+    100_000,
+  );
+  const categorizedPurchase = expense(
+    "categorized-purchase",
+    "posted",
+    "2038-08-10",
+    "2038-08-10",
+    8_000,
+    "BRL",
+    "food",
+    {
+      cardId: "card-1",
+      invoiceId: "invoice-1",
+    },
+  );
+  delete categorizedPurchase.accountId;
   const invoiceForecast = expense(
     "invoice-forecast",
     "planned",
@@ -220,21 +242,21 @@ function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
     "2038-08-25",
     30_000,
     "BRL",
-    undefined,
+    "food",
     {
       cardId: "card-1",
       invoiceId: "invoice-1",
       accountId: "checking-brl",
     },
   );
-  const invoicePayment = expense(
-    "invoice-payment",
+  const postedInvoicePayment = expense(
+    "invoice-payment-posted",
     "posted",
     "2038-08-25",
     "2038-08-25",
     30_000,
     "BRL",
-    undefined,
+    "food",
     {
       cardId: "card-1",
       invoiceId: "invoice-1",
@@ -242,12 +264,27 @@ function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
       effectiveOn: "2038-08-25",
     },
   );
+  const reconciledInvoicePayment = expense(
+    "invoice-payment-reconciled",
+    "reconciled",
+    "2038-08-26",
+    "2038-08-26",
+    10_000,
+    "BRL",
+    "food",
+    {
+      cardId: "card-2",
+      invoiceId: "invoice-2",
+      accountId: "checking-brl",
+      effectiveOn: "2038-08-26",
+    },
+  );
   const uncategorizedPurchase = expense(
     "uncategorized-purchase",
     "posted",
-    "2038-08-10",
-    "2038-08-10",
-    8_000,
+    "2038-08-11",
+    "2038-08-11",
+    6_000,
     "BRL",
   );
   delete uncategorizedPurchase.accountId;
@@ -256,16 +293,34 @@ function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
 
   const result = summarizeOperationalBudgetDashboard({
     context,
-    budgets: [],
-    transactions: [invoiceForecast, invoicePayment, uncategorizedPurchase],
+    budgets: [budget],
+    transactions: [
+      categorizedPurchase,
+      invoiceForecast,
+      postedInvoicePayment,
+      reconciledInvoicePayment,
+      uncategorizedPurchase,
+    ],
     commitments: [],
     periodStartOn: "2038-08-01",
     periodEndOn: "2038-08-31",
   });
 
+  const food = result.find((item) => item.budgetId === budget.id);
+  assert.ok(food);
+  assert.equal(food.realizedAmountMinor, 8_000);
+  assert.equal(food.committedAmountMinor, 0);
+  assert.equal(food.projectedAmountMinor, 8_000);
+  assert.equal(food.availableAmountMinor, 92_000);
+  assert.deepEqual(
+    food.realizedItems.map((item) => item.transactionId),
+    ["categorized-purchase"],
+  );
+  assert.deepEqual(food.committedItems, []);
+
   const uncategorized = result.find((item) => item.source === "uncategorized");
   assert.ok(uncategorized);
-  assert.equal(uncategorized.realizedAmountMinor, 8_000);
+  assert.equal(uncategorized.realizedAmountMinor, 6_000);
   assert.equal(uncategorized.committedAmountMinor, 0);
   assert.deepEqual(
     uncategorized.realizedItems.map((item) => item.transactionId),
