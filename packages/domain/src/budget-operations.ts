@@ -397,10 +397,7 @@ function collectCommittedItems(
   return items.sort(compareItems);
 }
 
-function isCoveredByBudget(
-  item: BudgetConsumptionItem,
-  budgets: readonly Budget[],
-): boolean {
+function isCoveredByBudget(item: BudgetConsumptionItem, budgets: readonly Budget[]): boolean {
   return budgets.some(
     (budget) => item.date >= budget.periodStartOn && item.date <= budget.periodEndOn,
   );
