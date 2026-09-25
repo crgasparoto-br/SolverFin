@@ -1,8 +1,1 @@
-{
-  "schema_version": 1,
-  "head_sha": "898fad2d4b1b7b8f548a454347019c93b4061b49",
-  "source_audits": [],
-  "controls": [],
-  "retired_controls": [],
-  "unresolved_controls": []
-}
+{"schema_version":1,"head_sha":"489391b2979fc39f23a6e57794bc6d511df7baa0","source_audits":[{"kind":"independent-rejection","rejection_id":"audit-rejection:solverfin-pr676-invoice-settlement-budget-consumption-v1","finding_ids":["AUD-676-001"]}],"controls":[{"id":"CTRL-619-INVOICE-CASH","status":"passed","head_sha":"489391b2979fc39f23a6e57794bc6d511df7baa0","subject_sha":"489391b2979fc39f23a6e57794bc6d511df7baa0","evidence":".audit/entregar-issue/issue-619/evidence/issue-619-controls.txt","evidence_sha256":"9852561b422724b6d009ce01f6bb23d8842a0a075c2075a3c4258efb66c470c8","control_type":"test","procedure":"Execute the invoice cash regression with forecast/payment linked to an invoice and compare against the invoice-linked economic purchase.","expected":"Invoice cash forecast and payment are absent from budget consumption while the economic purchase remains.","observed":"Current exact-head regression excludes invoice cash movements and preserves the economic purchase on 489391b2979fc39f23a6e57794bc6d511df7baa0.","attack_control_id":"NEG-REQ-003-01","risk_family":"semantic-effect","surface":"canonical-budget-contract","dimension":"forbidden-alternative-path"}],"retired_controls":[],"unresolved_controls":[]}

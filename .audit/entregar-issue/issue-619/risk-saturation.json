@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "898fad2d4b1b7b8f548a454347019c93b4061b49",
+  "head_sha": "489391b2979fc39f23a6e57794bc6d511df7baa0",
   "families": [
     {
       "family": "authorization",
@@ -57,14 +57,13 @@
       ],
       "dimensions": [
         {
-          "surface": "economic-competence",
-          "reason": "The canonical text for REQ-039 exercises temporal-consistency behavior at the economic-competence boundary.",
+          "surface": "canonical-budget-contract",
+          "reason": "Canonical issue #619 requirement REQ-039 exercises temporal-consistency at canonical-budget-contract.",
           "control_ids": [
             "NEG-REQ-001-01",
             "NEG-REQ-002-01",
             "NEG-REQ-005-01",
             "NEG-REQ-006-01",
-            "NEG-REQ-008-01",
             "NEG-REQ-019-01",
             "NEG-REQ-020-01",
             "NEG-REQ-025-01",
@@ -75,6 +74,14 @@
             "NEG-REQ-035-01",
             "NEG-REQ-037-01",
             "NEG-REQ-039-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "economic-competence",
+          "reason": "Canonical issue #619 requirement REQ-008 exercises temporal-consistency at economic-competence.",
+          "control_ids": [
+            "NEG-REQ-008-01"
           ],
           "status": "passed"
         }
@@ -99,7 +106,7 @@
       "dimensions": [
         {
           "surface": "period-migration",
-          "reason": "The canonical text for REQ-039 exercises temporal-destination behavior at the period-migration boundary.",
+          "reason": "Canonical issue #619 requirement REQ-039 requires adversarial coverage for temporal-destination.",
           "control_ids": [
             "NEG-REQ-001-02",
             "NEG-REQ-002-02",
@@ -163,8 +170,8 @@
       ],
       "dimensions": [
         {
-          "surface": "canonical-budget-path",
-          "reason": "The canonical text for REQ-021 exercises structural-contract behavior at the canonical-budget-path boundary.",
+          "surface": "canonical-budget-contract",
+          "reason": "Canonical issue #619 requirement REQ-021 exercises structural-contract at canonical-budget-contract.",
           "control_ids": [
             "NEG-REQ-004-01",
             "NEG-REQ-007-01",
@@ -175,7 +182,7 @@
         },
         {
           "surface": "relational-semantic-integrity",
-          "reason": "The canonical text for REQ-041 exercises structural-contract behavior at the relational-semantic-integrity boundary.",
+          "reason": "Canonical issue #619 requirement REQ-041 exercises structural-contract at relational-semantic-integrity.",
           "control_ids": [
             "NEG-REQ-015-01",
             "NEG-REQ-029-01",
@@ -191,14 +198,14 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-REQ-045-01"
+        "NEG-REQ-045-DOC"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "The canonical text for REQ-045 exercises documentation behavior at the canonical-claims boundary.",
+          "reason": "Issue #619 explicitly requires canonical budget documentation to be updated consistently.",
           "control_ids": [
-            "NEG-REQ-045-01"
+            "NEG-REQ-045-DOC"
           ],
           "status": "passed"
         }

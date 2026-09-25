@@ -2,14 +2,14 @@
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
   "issue": 619,
-  "created_at": "2026-09-24T21:08:12.528649+00:00",
+  "created_at": "2026-09-25T01:37:10.855837+00:00",
   "primary_source_id": "SRC-ISSUE-619",
   "sources": [
     {
       "id": "SRC-ISSUE-619",
       "kind": "issue-body",
       "path": "specification-sources/SRC-ISSUE-619.txt",
-      "locator": "/mnt/data/solverfin-619-handoff/issue-619.txt",
+      "locator": "/tmp/source619.txt",
       "sha256": "a095fd3e9435d7c0f1ec97cf0867e62e54706e2d37d40f56829bd815a074c3c0",
       "textual": true,
       "extract_source_id": null,
