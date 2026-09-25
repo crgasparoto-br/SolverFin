@@ -102,12 +102,12 @@ Quando uma ocorrencia deixa de ser futura e passa a `posted` ou `reconciled`, el
 - Sem filtro de moeda, os itens permanecem separados por moeda.
 - A rota nunca converte nem soma moedas diferentes.
 - Itens com orcamento usam `source=budget`.
-- Categoria identificada com consumo e sem orcamento ativo usa `source=unbudgeted`.
+- Categoria identificada com consumo cuja data economica nao esteja coberta por um orcamento ativo da mesma categoria e moeda usa `source=unbudgeted`.
 - Consumo sem categoria usa `source=uncategorized`.
 
 ## Categorias identificadas sem orcamento
 
-`source=unbudgeted` preserva categoria, moeda, periodo, realizado, comprometido, projetado e composicao.
+`source=unbudgeted` preserva categoria, moeda, periodo, realizado, comprometido, projetado e composicao. A cobertura e decidida por item: `occurredOn` governa o realizado e `plannedOn` governa o comprometido. Em consultas maiores que um orcamento parcial, consumos antes, depois ou em lacunas entre orcamentos permanecem `unbudgeted` em vez de desaparecer.
 
 Nao existe orcamento implicito:
 

@@ -17,6 +17,7 @@ const now = "2038-08-01T12:00:00.000Z";
 
 coversProjectedBudgetWithoutDoubleCountingInvoice();
 keepsUnbudgetedAndUncategorizedWithoutSyntheticPlan();
+keepsConsumptionOutsidePartialBudgetWindowsAsUnbudgeted();
 excludesInvoiceCashMovementsFromBudgetConsumption();
 movesConsumptionFromCommittedPeriodToRealizedPeriod();
 keepsCurrenciesAndTransfersOutsideBudgetConsumption();
@@ -147,6 +148,68 @@ function keepsUnbudgetedAndUncategorizedWithoutSyntheticPlan(): void {
   assert.equal(uncategorized.projectedAmountMinor, 10_000);
   assert.equal(uncategorized.availableAmountMinor, null);
   assert.equal(uncategorized.overBudgetAmountMinor, null);
+}
+
+function keepsConsumptionOutsidePartialBudgetWindowsAsUnbudgeted(): void {
+  const earlyBudget = makeBudget(
+    "budget-food-early",
+    "food",
+    "BRL",
+    "2038-08-05",
+    "2038-08-10",
+    100_000,
+  );
+  const lateBudget = makeBudget(
+    "budget-food-late",
+    "food",
+    "BRL",
+    "2038-08-20",
+    "2038-08-25",
+    100_000,
+  );
+  const result = summarizeOperationalBudgetDashboard({
+    context,
+    budgets: [earlyBudget, lateBudget],
+    transactions: [
+      expense("before-realized", "posted", "2038-08-02", "2038-08-02", 1_000, "BRL", "food"),
+      expense("before-committed", "planned", "2038-08-03", "2038-08-03", 2_000, "BRL", "food"),
+      expense("early-realized", "posted", "2038-08-06", "2038-08-06", 3_000, "BRL", "food"),
+      expense("early-committed", "planned", "2038-08-07", "2038-08-07", 4_000, "BRL", "food"),
+      expense("gap-realized", "posted", "2038-08-15", "2038-08-15", 5_000, "BRL", "food"),
+      expense("gap-committed", "planned", "2038-08-16", "2038-08-16", 6_000, "BRL", "food"),
+      expense("late-realized", "posted", "2038-08-21", "2038-08-21", 7_000, "BRL", "food"),
+      expense("late-committed", "planned", "2038-08-22", "2038-08-22", 8_000, "BRL", "food"),
+      expense("after-realized", "posted", "2038-08-28", "2038-08-28", 9_000, "BRL", "food"),
+      expense("after-committed", "planned", "2038-08-29", "2038-08-29", 10_000, "BRL", "food"),
+    ],
+    commitments: [],
+    periodStartOn: "2038-08-01",
+    periodEndOn: "2038-08-31",
+  });
+
+  const unbudgeted = result.find(
+    (item) => item.source === "unbudgeted" && item.categoryId === "food",
+  );
+  assert.ok(unbudgeted);
+  assert.equal(unbudgeted.realizedAmountMinor, 15_000);
+  assert.equal(unbudgeted.committedAmountMinor, 18_000);
+  assert.equal(unbudgeted.projectedAmountMinor, 33_000);
+  assert.deepEqual(
+    unbudgeted.realizedItems.map((item) => item.transactionId),
+    ["before-realized", "gap-realized", "after-realized"],
+  );
+  assert.deepEqual(
+    unbudgeted.committedItems.map((item) => item.transactionId),
+    ["before-committed", "gap-committed", "after-committed"],
+  );
+
+  const early = result.find((item) => item.budgetId === earlyBudget.id);
+  assert.equal(early?.realizedAmountMinor, 3_000);
+  assert.equal(early?.committedAmountMinor, 4_000);
+
+  const late = result.find((item) => item.budgetId === lateBudget.id);
+  assert.equal(late?.realizedAmountMinor, 7_000);
+  assert.equal(late?.committedAmountMinor, 8_000);
 }
 
 function excludesInvoiceCashMovementsFromBudgetConsumption(): void {

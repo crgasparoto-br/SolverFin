@@ -140,9 +140,16 @@ export function summarizeOperationalBudgetDashboard(
     }),
   );
 
-  const budgetedKeys = new Set(
-    budgets.map((budget) => categoryCurrencyKey(budget.categoryId, budget.currency)),
-  );
+  const budgetCoverage = new Map<string, Budget[]>();
+  for (const budget of budgets) {
+    const key = categoryCurrencyKey(budget.categoryId, budget.currency);
+    const current = budgetCoverage.get(key);
+    if (current) {
+      current.push(budget);
+    } else {
+      budgetCoverage.set(key, [budget]);
+    }
+  }
   const grouped = new Map<
     string,
     {
@@ -178,12 +185,10 @@ export function summarizeOperationalBudgetDashboard(
       periodEndOn,
       candidateCurrency,
     )) {
-      if (
-        categoryId !== undefined &&
-        budgetedKeys.has(categoryCurrencyKey(categoryId, candidateCurrency))
-      ) {
-        continue;
-      }
+      const coverage =
+        categoryId === undefined
+          ? []
+          : (budgetCoverage.get(categoryCurrencyKey(categoryId, candidateCurrency)) ?? []);
 
       const realizedItems = collectRealizedItems(
         input.context,
@@ -192,7 +197,7 @@ export function summarizeOperationalBudgetDashboard(
         periodEndOn,
         candidateCurrency,
         categoryId,
-      );
+      ).filter((item) => !isCoveredByBudget(item, coverage));
       const committedItems = collectCommittedItems(
         input.context,
         input.transactions,
@@ -201,7 +206,7 @@ export function summarizeOperationalBudgetDashboard(
         periodEndOn,
         candidateCurrency,
         categoryId,
-      );
+      ).filter((item) => !isCoveredByBudget(item, coverage));
       if (realizedItems.length === 0 && committedItems.length === 0) continue;
 
       grouped.set(categoryCurrencyKey(categoryId, candidateCurrency), {
@@ -390,6 +395,15 @@ function collectCommittedItems(
   }
 
   return items.sort(compareItems);
+}
+
+function isCoveredByBudget(
+  item: BudgetConsumptionItem,
+  budgets: readonly Budget[],
+): boolean {
+  return budgets.some(
+    (budget) => item.date >= budget.periodStartOn && item.date <= budget.periodEndOn,
+  );
 }
 
 function isInvoiceCashTransaction(transaction: Transaction): boolean {
