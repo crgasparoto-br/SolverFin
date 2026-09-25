@@ -188,7 +188,7 @@ export function summarizeOperationalBudgetDashboard(
       const coverage =
         categoryId === undefined
           ? []
-          : (budgetCoverage.get(categoryCurrencyKey(categoryId, candidateCurrency)) ?? []);
+          : budgetCoverage.get(categoryCurrencyKey(categoryId, candidateCurrency)) ?? [];
 
       const realizedItems = collectRealizedItems(
         input.context,
