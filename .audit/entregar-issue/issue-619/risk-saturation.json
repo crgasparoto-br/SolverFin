@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "489391b2979fc39f23a6e57794bc6d511df7baa0",
+  "head_sha": "5b71ddcd3f32d7e634734ed432a935223a6ccfd3",
   "families": [
     {
       "family": "authorization",
@@ -44,6 +44,7 @@
         "NEG-REQ-005-01",
         "NEG-REQ-006-01",
         "NEG-REQ-008-01",
+        "NEG-REQ-012-PARTIAL-WINDOW",
         "NEG-REQ-019-01",
         "NEG-REQ-020-01",
         "NEG-REQ-025-01",
@@ -53,7 +54,8 @@
         "NEG-REQ-034-01",
         "NEG-REQ-035-01",
         "NEG-REQ-037-01",
-        "NEG-REQ-039-01"
+        "NEG-REQ-039-01",
+        "NEG-REQ-012-PARTIAL-WINDOW-CLASSIFICATION"
       ],
       "dimensions": [
         {
@@ -82,6 +84,22 @@
           "reason": "Canonical issue #619 requirement REQ-008 exercises temporal-consistency at economic-competence.",
           "control_ids": [
             "NEG-REQ-008-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "partial-budget-coverage",
+          "reason": "Partial budget windows require item-level date coverage so uncovered realized and committed consumption remains unbudgeted.",
+          "control_ids": [
+            "NEG-REQ-012-PARTIAL-WINDOW"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "unbudgeted-classification",
+          "reason": "Uncovered realized and committed items must remain observable as unbudgeted when no exact partial budget window covers their economic date.",
+          "control_ids": [
+            "NEG-REQ-012-PARTIAL-WINDOW-CLASSIFICATION"
           ],
           "status": "passed"
         }
