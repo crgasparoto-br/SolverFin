@@ -88,9 +88,13 @@ async function cardsA3PreservesProfileAcrossInvoiceNavigation(): Promise<void> {
   );
 
   assert.match(html, /name="profileId" value="profile-explicit"/);
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   assert.match(
     html,
-    /invoiceId=invoice-jul[^"]*profileId=profile-explicit|profileId=profile-explicit[^"]*invoiceId=invoice-jul/,
+    new RegExp(
+      `month=${currentMonth}[^"]*profileId=profile-explicit|profileId=profile-explicit[^"]*month=${currentMonth}`,
+    ),
   );
   assert.match(html, /data-reconciliation-toggle="unreconciled" aria-current="page"/);
   assert.doesNotMatch(html, /data-reconciliation-toggle="[^"]+" aria-pressed=/);
