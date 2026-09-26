@@ -623,14 +623,31 @@ function renderInvoiceNavigation(
   cardId: string,
   url: URL,
 ): string {
+  const firstMonth = currentMonth();
   const visibleInvoices = invoices
-    .filter((invoice) => invoice.periodEndOn.slice(0, 7) >= currentMonth())
+    .filter((invoice) => invoice.periodEndOn.slice(0, 7) >= firstMonth)
     .sort((left, right) => left.periodEndOn.localeCompare(right.periodEndOn));
-  const tabs = visibleInvoices.map((invoice) => ({
-    label: `${formatInvoicePeriod(invoice)} · ${formatInvoiceStatus(invoice.status)}`,
-    href: buildInvoiceHref(url, cardId, invoice),
-    active: invoice.id === selectedInvoice?.id,
-  }));
+  const currentInvoice = visibleInvoices.find(
+    (invoice) => invoice.periodEndOn.slice(0, 7) === firstMonth,
+  );
+  const tabs = [
+    ...(currentInvoice
+      ? []
+      : [
+          {
+            label: `${formatMonth(firstMonth)} · Sem fatura`,
+            href: buildMonthHref(url, cardId, firstMonth),
+            active:
+              selectedInvoice === undefined &&
+              normalizeMonth(url.searchParams.get("month")) === firstMonth,
+          },
+        ]),
+    ...visibleInvoices.map((invoice) => ({
+      label: `${formatInvoicePeriod(invoice)} · ${formatInvoiceStatus(invoice.status)}`,
+      href: buildInvoiceHref(url, cardId, invoice),
+      active: invoice.id === selectedInvoice?.id,
+    })),
+  ];
   const month =
     selectedInvoice?.periodEndOn.slice(0, 7) ??
     normalizeMonth(url.searchParams.get("month")) ??
@@ -1080,6 +1097,16 @@ function buildInvoiceHref(url: URL, cardId: string, invoice: InvoiceRecord): str
   next.searchParams.set("cardId", cardId);
   next.searchParams.set("invoiceId", invoice.id);
   next.searchParams.set("month", invoice.periodEndOn.slice(0, 7));
+  const profileId = url.searchParams.get("profileId");
+  if (profileId) next.searchParams.set("profileId", profileId);
+  return `${next.pathname}${next.search}`;
+}
+function buildMonthHref(url: URL, cardId: string, month: string): string {
+  const next = new URL(url);
+  next.pathname = "/cartoes";
+  next.search = "";
+  next.searchParams.set("cardId", cardId);
+  next.searchParams.set("month", month);
   const profileId = url.searchParams.get("profileId");
   if (profileId) next.searchParams.set("profileId", profileId);
   return `${next.pathname}${next.search}`;
