@@ -71,6 +71,19 @@ try {
     details: created,
   });
 
+  const keyboard = await readKeyboardOrder();
+  check(
+    keyboard.order.join(">") === "kind>source>destination",
+    "Keyboard order does not go Tipo > Conta origem > Conta destino",
+    keyboard,
+  );
+  check(
+    keyboard.sourceName === "Conta origem" && keyboard.destinationName === "Conta destino",
+    "Account fields lack accessible labels",
+    keyboard,
+  );
+  check(keyboard.sourceFocusVisible, "Read-only source has no visible focus indicator", keyboard);
+
   const sameAccount = await submitWithSameAccount(fixture.sourceId);
   check(!sameAccount.valid, "Source equal to destination passes validation", sameAccount);
   check(
@@ -262,6 +275,48 @@ async function readTransferState() {
       };
     })()`,
   );
+}
+
+async function pressTab() {
+  const key = { key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 };
+  await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyDown", ...key });
+  await browser.cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...key });
+  await sleep(50);
+}
+
+async function readKeyboardOrder() {
+  await evaluate(browser.cdp, `document.querySelector("[data-form]").kind.focus()`);
+  const describe = `(() => {
+    const active = document.activeElement;
+    if (active?.name === "kind") return "kind";
+    if (active?.matches?.("[data-source-account-display]")) return "source";
+    if (active?.name === "destinationAccountId") return "destination";
+    return active?.name || active?.tagName || "";
+  })()`;
+  const order = [await evaluate(browser.cdp, describe)];
+  await pressTab();
+  order.push(await evaluate(browser.cdp, describe));
+  const sourceFocus = await evaluate(
+    browser.cdp,
+    `(() => {
+      const style = getComputedStyle(document.activeElement);
+      return style.outlineStyle !== "none" || style.boxShadow !== "none";
+    })()`,
+  );
+  await pressTab();
+  order.push(await evaluate(browser.cdp, describe));
+  const names = await evaluate(
+    browser.cdp,
+    `(() => {
+      const form = document.querySelector("[data-form]");
+      const labelText = (control) => control.labels?.[0]?.querySelector(".field-label")?.textContent?.trim() || "";
+      return {
+        sourceName: labelText(form.querySelector("[data-source-account-display]")),
+        destinationName: labelText(form.destinationAccountId)
+      };
+    })()`,
+  );
+  return { order, sourceFocusVisible: sourceFocus, ...names };
 }
 
 async function submitWithSameAccount(sourceId) {
