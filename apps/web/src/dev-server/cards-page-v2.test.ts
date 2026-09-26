@@ -269,7 +269,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Itens da fatura/);
   assert.match(html, /name="cardId" data-card-select/);
   assert.match(html, /type="month" name="month"/);
-  assert.match(html, /invoiceId=invoice-jul/);
+  assert.match(html, /Sem fatura/);
+  assert.doesNotMatch(html, /invoiceId=invoice-jul/);
   assert.match(html, /data-currency="USD"/);
   assert.match(html, /Moeda padrão<\/dt><dd>USD/);
   assert.match(html, /Moeda da fatura<\/dt><dd>USD/);
