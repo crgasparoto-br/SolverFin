@@ -1,0 +1,41 @@
+## Objetivo
+
+Corrigir a navegação mensal de faturas em `/cartoes` para que a sequência visível comece no mês corrente e avance apenas para meses futuros, em ordem cronológica crescente.
+
+## Contexto
+
+A navegação reutilizava a coleção de faturas em ordem decrescente e podia apresentar primeiro meses anteriores ou meses mais distantes. A correção deve afetar somente a navegação mensal, sem alterar contratos financeiros, criação/fechamento de faturas ou a API.
+
+## Escopo
+
+- exibir o mês corrente na navegação mesmo quando ainda não existir fatura para ele;
+- exibir faturas do mês corrente e de meses futuros;
+- não incluir meses anteriores nessa sequência de navegação;
+- ordenar os meses futuros cronologicamente da esquerda para a direita;
+- preservar `cardId`, `month` e `profileId` nos links aplicáveis;
+- manter a seleção de fatura existente quando houver fatura correspondente.
+
+## Fora de escopo
+
+- alterar regras de materialização de recorrências;
+- alterar criação, fechamento, pagamento ou composição financeira das faturas;
+- migrations ou mudanças de API;
+- redesenhar a tela de Cartões.
+
+## Critérios de aceite
+
+- [ ] o mês corrente é o primeiro mês elegível da navegação;
+- [ ] quando o mês corrente não possui fatura, a navegação exibe estado equivalente a **Sem fatura**;
+- [ ] faturas de meses anteriores não aparecem na sequência corrente/futura;
+- [ ] próximos meses aparecem em ordem cronológica crescente;
+- [ ] `profileId` continua preservado nos links gerados;
+- [ ] testes cobrem mês anterior, mês corrente sem fatura e pelo menos dois meses futuros;
+- [ ] a suíte e os gates aplicáveis permanecem verdes.
+
+## Testes
+
+Cobrir de forma discriminante uma coleção fora de ordem contendo mês anterior, próximo mês e mês futuro mais distante, garantindo que uma implementação que apenas preserve a ordem retornada pela API falhe no teste.
+
+## Impacto documental
+
+Sem alteração documental esperada: trata-se de correção localizada do comportamento de navegação já existente em `/cartoes`.
