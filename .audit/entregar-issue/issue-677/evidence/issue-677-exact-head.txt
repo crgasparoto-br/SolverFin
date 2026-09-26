@@ -1,0 +1,50 @@
+subject_sha=7965173a5f26795221f3983aaa19ff5b6350773d
+generated_at=2026-09-26T14:06:24Z
+
+## domain: recurrences-transfer.test.js
+[test] recurrences-transfer.test.js
+✔ same-currency transfer recurrence keeps source and destination as distinct fields (2.763497ms)
+✔ materialized transfer occurrences preserve both legs, amount and currency without duplicates (1.242306ms)
+✔ transfer recurrence rejects the same account as source and destination (0.562981ms)
+✔ transfer recurrence requires a destination account (0.194527ms)
+✔ cross-currency transfer recurrence stays blocked (#668) (0.232502ms)
+✔ transfer recurrence rejects archived or foreign destination accounts (0.285978ms)
+✔ income and expense recurrences cannot carry a destination account (0.200128ms)
+✔ editing a transfer recurrence keeps or replaces the destination and drops it when the kind changes (0.606175ms)
+✔ pause, resume and cancel keep both legs of a transfer recurrence (0.394222ms)
+✔ listing by account includes transfer recurrences on either leg (1.064931ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16.404853
+## web: transactions-page-v2.test.js
+✔ A2 transfer form exposes native destination value and derived rate controls (3.979052ms)
+✔ A2 transfer form shows the statement account as read-only source next to the destination (#677) (3.00907ms)
+✔ A2 transfer script keeps source/destination single-sourced and allows fixed same-currency transfers (#677) (3.194226ms)
+150 compiled test file(s) passed.
+## api integration: transfer-recurrence.integration.test.js
+exit_code=0
+## api integration: transaction-account-recurrence.integration.test.js (#473 regression)
+exit_code=0
+## mutation controls (expected: mutated build FAILS the integration control)
+MUT-1 keep stale rule destination on expanded edit: exit_code=1
+MUT-2 ignore destination leg in account listing/catch-up: exit_code=1
+MUT-3 materialize occurrence without destination leg: exit_code=1
+RESTORED build: exit_code=0
+## chrome: scripts/statement-visual/issue-677-transfer-source-destination.mjs
+Issue 677 transfer source/destination visual validation passed.
+exit_code=0
+report_commit= 7965173a5f26795221f3983aaa19ff5b6350773d  failures= 0
+scenario 1366x768 | transfer creation with read-only source and selectable destination | issue-677-transfer-source-destination-1366x768.png
+scenario 1366x768 | cross-currency destination keeps single occurrence and native values | issue-677-transfer-cross-currency-1366x768.png
+scenario 1366x768 | transfer edit opened from the destination statement shows persisted source | issue-677-transfer-edit-from-destination-1366x768.png
+scenario 390x844 | transfer modal stacked on mobile | issue-677-transfer-source-destination-390x844.png
+## behavior adapter: issue-606-behavior-claims.mjs (transfer-source-destination)
+exit_code=0
+## GitHub Actions on exact material head 7965173a5f26795221f3983aaa19ff5b6350773d
+GitHub Actions Delivery V2 CI run 36247349537 success
+GitHub Actions Statement visual validation run 36247349514 success

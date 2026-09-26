@@ -1,0 +1,1895 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/tmp/claude-1000/-home-ubuntu-projetos/01cd5c09-1865-4e8d-9c9c-f428ea39652c/scratchpad/handoff/specification-snapshot.json",
+    "sha256": "9fbe5cbd257a92d94377805aa81f2ecead80f066d786d92d649d7555d7a68cad"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-677",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "2917794edbf790e8d7a564d27381723319589c595e3ec6b87565b112de820e5d",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 5,
+      "source_text": "Na tela de **novo lançamento da conta**, quando o tipo selecionado for **Transferência**, exibir de forma explícita e separada a **Conta origem** e a **Conta destino**, eliminando a dependência do título/contexto do Extrato para identificar qual conta será debitada.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "f778bf960063c708eeeb1d443351dff17c48010111c9929c9c4fd0aa7e8b384a",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 9,
+      "source_text": "Hoje o modal de lançamento aberto a partir do Extrato identifica a conta atual no título/contexto, mas no formulário de transferência exibe apenas o campo **Conta destino**. Isso torna a origem implícita.",
+      "flags": [
+        "negative",
+        "freshness",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "0194190d54e95966fb672e88d6c889fdc3886a4f59466ab921378c8da6566f42",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 11,
+      "source_text": "O contrato financeiro da transferência já existe e não deve ser redefinido nesta issue:",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-TENANT-CONTRACT"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "3c92fa2245f38cff4142f9dbf039270f61af1c87754b675b058ab5f10f6e6784",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 13,
+      "source_text": "`docs/API_TRANSACTIONS.md` é a fonte canônica do contrato de API, incluindo `accountId`, `destinationAccountId`, validação de origem != destino e semântica monetária;",
+      "flags": [
+        "atomicity",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-TENANT-CONTRACT"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "1b3878a6f50ce312b03c253cd10feb72d231a1d1d4c0b671d80231f5f9cfc243",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 18,
+      "source_text": "Esta issue amplia o fluxo de transferência em três frentes coordenadas: tornar visíveis as duas pontas da operação, melhorar a composição visual do modal e permitir **Repetição = Fixo** para transferências **na mesma moeda**, reutilizando o contrato canônico de recorrências. Transferências cross-currency continuam com ocorrência única nesta entrega, preservando #668.",
+      "flags": [
+        "atomicity",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "34944306209eaa8a4acb08491f97c2719379f75f74866aaae2cfd2b8d6f3bbab",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 22,
+      "source_text": "Exibir **Conta origem** e **Conta destino** simultaneamente quando `Tipo = Transferência`.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "cffc147ac06886681ccd832ab7362a9918534ffba8d775a8175968b3c7d25958",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 23,
+      "source_text": "Tornar a conta origem explicitamente visível no modo de criação.",
+      "flags": [
+        "observable",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "952d706afea3a5a182928cd51e69382b1e7f11d5cc3b711908794a519c4465ac",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 24,
+      "source_text": "Preservar o fluxo atual de seleção da conta origem pelo contexto do Extrato.",
+      "flags": [
+        "freshness",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "3eb968f218ef598ad1652d1b4cb53f876d4e2eb9f8831eb098dd2d160dbcedf9",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 25,
+      "source_text": "Preservar criação/edição de transferências same-currency e cross-currency já suportadas.",
+      "flags": [
+        "exhaustive"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "c4b3d0c638cd0544c5fdba2e78e010ea7e1661e84915f41042cc180055c6e832",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 26,
+      "source_text": "Cobrir regressão visual e funcional do modal.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "4001b83a21950b1e814d3d1b1d82eddabef295339f7287eee623d0903396540b",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 27,
+      "source_text": "Revisar quebras de texto, alinhamento e proporção dos campos do pop-up.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "ced3b61cc6bd4ea2fbffc3355767880f5ed35720ac1e35bbd0998875c9a287dd",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 28,
+      "source_text": "Permitir **Repetição = Fixo** em transferências same-currency.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-FIXED-TRANSFER"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "d877b3676bc89d488a23fcbba6d3c78b50133722519cd35645c3459a8fac8dd9",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 29,
+      "source_text": "Preservar o bloqueio de repetição fixa/parcelada em transferências cross-currency conforme #668.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "e3684e23c6bc85dab0e4cb4cec6bb80fd4770c88a3571869d236d137d966c8be",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 35,
+      "source_text": "Ao abrir **Novo lançamento** a partir do Extrato, a **Conta origem** deve ser preenchida com a conta atualmente selecionada no contexto principal da tela.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-015",
+      "candidate_key": "f313039b128619dc82f7662d0010426b75304fdf4d28354364fce749e2227806",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 37,
+      "source_text": "O usuário deve enxergar no próprio formulário qual conta será debitada, sem depender apenas do título `Novo lançamento em ...`.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "91b50722f38c6195a5b4c52d7fce570bbbecd0b8a681a80477bec808bf8d7989",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 38,
+      "source_text": "O campo deve apresentar pelo menos **nome da conta e moeda**.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-017",
+      "candidate_key": "79a7e2e89f900cdc5fd4f1ab8078946ff891d987f40eae71a5f217877b34c2c8",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 42,
+      "source_text": "Quando `Tipo = Transferência`, exibir **Conta destino** separadamente da origem.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-018",
+      "candidate_key": "176b8d80ddf7c6cfff172203b39d1457dcf5b2328fd6a1eb64cdcffb78b98d9b",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 43,
+      "source_text": "A conta destino deve continuar sendo selecionável entre contas elegíveis do mesmo tenant/perfil, conforme o contrato existente.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-019",
+      "candidate_key": "10c1f1bb8ebf9e5304393a5236350628ea7989a7d1531417d9f54734f194d4ad",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 44,
+      "source_text": "A opção correspondente à própria conta origem não deve produzir uma transferência válida.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-020",
+      "candidate_key": "12ddd7c15eae74ba51460942963c8186225504417afd4a849762d8d03b0fe5dd",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 45,
+      "source_text": "Se a UI mantiver a origem disponível na lista por limitação do componente, selecionar origem = destino deve gerar validação clara antes do salvamento; preferencialmente a opção deve ficar indisponível quando o padrão existente permitir isso.",
+      "flags": [
+        "observable",
+        "temporal",
+        "review-surface",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-021",
+      "candidate_key": "12ce63bdde6c0f1623dfca00605edab09791ebf4fabf87a79f5f8ad566284f03",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 46,
+      "source_text": "O campo deve apresentar pelo menos **nome da conta e moeda**.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-022",
+      "candidate_key": "6895f52baf7797383e23042d01f6a594790c46c2f0767a061f8ecef008ee7dee",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 52,
+      "source_text": "Para uma transferência existente, origem e destino devem permanecer distinguíveis antes do salvamento.",
+      "flags": [
+        "temporal",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-EDIT-SOURCE"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-023",
+      "candidate_key": "0fbc17b7519d0d2d6e7be96dcdf696ed22a8512b77daed73052cc325a6439251",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 56,
+      "source_text": "Ao trocar de **Transferência** para um tipo que não possua destino, ocultar os campos específicos de destino e não enviar estado residual incompatível.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-KIND-SWITCH"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-024",
+      "candidate_key": "0f35421d3bea51f188cf5ce796f82d85ca830a2c0df76266c2219a0abde447af",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 61,
+      "source_text": "Quando `Tipo = Transferência` e as contas origem/destino possuírem a **mesma moeda**, a opção `Repetição = Fixo` deve ser permitida.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-FIXED-TRANSFER"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-025",
+      "candidate_key": "576b4ba014567ff089f0becfdb1b73b438e52d5522738207684c7e6e60c36158",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 62,
+      "source_text": "A recorrência deve preservar, em cada ocorrência materializada, a mesma conta origem, conta destino, valor e moeda da transferência configurada, salvo edição posterior permitida pelos fluxos existentes.",
+      "flags": [
+        "exhaustive",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-FIXED-TRANSFER"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-026",
+      "candidate_key": "63b1f96b94cdce742abf4ce1c3738406aeeac0f62ee1022d8b9136782b6651c4",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 63,
+      "source_text": "O primeiro vencimento e as ocorrências futuras devem aparecer no Extrato como transferências reais, mantendo uma única identidade lógica por ocorrência e sem serem reinterpretadas como receita/despesa.",
+      "flags": [
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-FIXED-TRANSFER"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-027",
+      "candidate_key": "eb2171f49953687dfc306ad5004cfde046fa654152775cd9eea64486e396aa18",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 64,
+      "source_text": "A geração deve reutilizar o mecanismo canônico de recorrências e sua proteção contra duplicidade; não criar um segundo agendador específico para transferências.",
+      "flags": [
+        "negative",
+        "atomicity",
+        "structural",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-FIXED-TRANSFER"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-028",
+      "candidate_key": "160d0877eec3aea221906fc31ccda7a25192457a4b89cee5f2c47517555c27a4",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 65,
+      "source_text": "Pausar, retomar, cancelar e editar a recorrência devem seguir os fluxos canônicos já descritos em `docs/RECURRENCES_INSTALLMENTS_WEB.md` e `docs/API_RECURRENCES_INSTALLMENTS.md`.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-FIXED-TRANSFER"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-029",
+      "candidate_key": "56030474580360fee6992097898742c06116f42ec3246b0a6bf6fe7548b721ee",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 66,
+      "source_text": "A recorrência de transferência precisa preservar **origem e destino**; o contrato atual de recorrência, hoje centrado em `kind=income|expense` e um único `accountId`, deverá ser estendido de forma coerente para representar transferências, incluindo `destinationAccountId`.",
+      "flags": [
+        "freshness",
+        "atomicity",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-FIXED-TRANSFER"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-030",
+      "candidate_key": "394deab050d206ae63c9b2cb16770db7d02f0a017eb000bb61bdf2900f16cfe9",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 68,
+      "source_text": "Transferências cross-currency continuam aceitando somente ocorrência única nesta entrega, conforme #668; não inventar valor/taxa futura.",
+      "flags": [
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-031",
+      "candidate_key": "935cffd686e226ebec0e36894628a256f068a60d166d2c4e090c20f2b91879f8",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 72,
+      "source_text": "Preservar integralmente #668 e `docs/API_TRANSACTIONS.md`.",
+      "flags": [
+        "exhaustive"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-032",
+      "candidate_key": "f711910d173622714458fac208ed28fee27de98542d40457ffc5059cc5fecc60",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 75,
+      "source_text": "Quando as moedas diferirem, continuar exibindo **Valor origem**, **Valor destino** e **Taxa efetiva** derivada/read-only conforme o contrato atual.",
+      "flags": [
+        "freshness",
+        "review-surface",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-033",
+      "candidate_key": "e4d4b7f3bbfbfcb04b2b6a10a72f9e7477ff257f6384eccf621e1154880a3b50",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 76,
+      "source_text": "Alterar destino/moeda deve continuar invalidando somente o estado cambial incompatível; esta issue não pode introduzir reaproveitamento silencioso de valor destino de outra moeda.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-034",
+      "candidate_key": "84678cd44f9f39677332d95e3c2b405efa559a66604b7bbde48d521e39529ef4",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 80,
+      "source_text": "Revisar labels e textos auxiliares para evitar quebras anti-naturais, como moeda ou parênteses isolados em linha própria.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-035",
+      "candidate_key": "a22cc33aecae7fb1c5e45e59a1225aa49479fc1e653d6d6f2892f4e9185d35c6",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 81,
+      "source_text": "Sempre que houver espaço suficiente, manter rótulos curtos como **Valor origem (BRL)** e **Valor destino (USD)** em composição legível.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-036",
+      "candidate_key": "a78ef9d78ca81fb93afd8f8eea938fefe8115b5ac7869a4db031c748aee992d5",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 82,
+      "source_text": "Campos de mesma hierarquia devem ter alturas e proporções coerentes no grid.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-037",
+      "candidate_key": "cdda9211421ea20a1aa67f4fb46609b8a74f481fc29b0885661faec02552c3b1",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 83,
+      "source_text": "Campos com conteúdo curto podem ser menores, mas sem criar retângulos visualmente desproporcionais em relação aos campos vizinhos.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-038",
+      "candidate_key": "82d7162985871801b9182ec2baf671787371526e568646eb2e4b348f35118cea",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 84,
+      "source_text": "**Descrição** e **Observação** devem ocupar largura compatível com conteúdo textual.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-039",
+      "candidate_key": "e2a6455a8ce222ecaabd7f206eb648d6aeded8c37aa5caf3848686a69dac899f",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 85,
+      "source_text": "Labels, inputs, mensagens e ações devem manter alinhamento e espaçamento consistentes.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-040",
+      "candidate_key": "26bdb3543409c66720f455045d9fe5d43b82391c96856a700202d4bc72b6061d",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 86,
+      "source_text": "Em viewport menor, o formulário deve reorganizar/empilhar campos em vez de comprimi-los a ponto de provocar quebras artificiais.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-041",
+      "candidate_key": "74699d4f0e05fab8ca315b8460da798f21f0258074f98f9998e3a45fc99080e8",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 87,
+      "source_text": "A revisão visual deve preservar foco, navegação por teclado e labels acessíveis.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-042",
+      "candidate_key": "cc2c18a06c043dfd95ead5cc75d0f6d43b8a680227418f02b43e610c421a9d24",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 98,
+      "source_text": "C6 · BRL [somente leitura na criação]",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-043",
+      "candidate_key": "8a3bffe5e6671199d7425da9f62f63ceef33ac5b898c1999b92f5fcf0691802b",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 110,
+      "source_text": "O usuário consegue identificar, antes de salvar, qual conta será debitada e qual será creditada.",
+      "flags": [
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-044",
+      "candidate_key": "b1554859d4a91ee2233c95c59c66571af646ef0a90959eea5761b17b8cd0b62d",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 111,
+      "source_text": "Na criação, a origem exibida corresponde à conta do contexto atual do Extrato.",
+      "flags": [
+        "freshness",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-045",
+      "candidate_key": "1401385c6150b37f38dacf7b9ff3a62a2bf09fb5217ba7aa6a1d7c6872eafd80",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 112,
+      "source_text": "Na edição, a origem exibida corresponde à conta realmente persistida no lançamento.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-EDIT-SOURCE"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-046",
+      "candidate_key": "9c9c7beb653604dc11166a484b1be8d2ce603448955e50890dd93c0e5da4ee73",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 116,
+      "source_text": "Reutilizar o contrato de contas/tenant já existente em `docs/API_TRANSACTIONS.md`.",
+      "flags": [
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-TENANT-CONTRACT"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-047",
+      "candidate_key": "b906f4099343f7ae573411574ebb562b752cb4d354764f61ca06ba7cae74d7cf",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 117,
+      "source_text": "Reutilizar o comportamento de edição de conta definido em #473.",
+      "flags": [
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-EDIT-SOURCE"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-048",
+      "candidate_key": "334d374435ca50bff99a7b7a4c1c7dcacc956c140044939026595451a3861c1e",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 118,
+      "source_text": "Reutilizar o contrato cross-currency definido em #668.",
+      "flags": [
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-049",
+      "candidate_key": "7353a0a7a604cc3c1da4b9bdfcb2b038040c4e3b929b59a537c9585a9a54d05d",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 122,
+      "source_text": "Não usar apenas o título do modal como representação da origem.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-050",
+      "candidate_key": "c363c2200a43c79241fb69a773413358db67abcc44c95f5bf2d445e8da8e1cc1",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 123,
+      "source_text": "Não permitir que uma transferência válida tenha origem e destino iguais.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-051",
+      "candidate_key": "53216e54c825c863948b6b24d422801afcb3bcd273e0fcb62b9c42f0358ed956",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 124,
+      "source_text": "Não trocar silenciosamente a origem quando o usuário escolhe o destino.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-052",
+      "candidate_key": "97bde12dd9b7f8ef4b8a6cc224a985266d6a569392854b78f27c9f7decc19dfc",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 131,
+      "source_text": "A issue não cria outro estado financeiro concorrente apenas para apresentação.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-053",
+      "candidate_key": "1c0f60139b9d7a6ba8e7db243fe83061dd2452689601a639a6284e914ff5c899",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 136,
+      "source_text": "Resolver a solicitação apenas renomeando **Conta destino** ou repetindo o nome da conta no título.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-054",
+      "candidate_key": "302386ecd3109fe14c8129cadb2c4332a04b10cd0ad9678cf314947e99f80cd7",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 139,
+      "source_text": "**Controle discriminante:** um teste do modal deve abrir `/lancamentos` com a conta A selecionada, iniciar uma transferência, provar que **Conta origem = A** está visível e read-only, escolher conta B como destino e verificar que o payload mantém `accountId=A` e envia `destinationAccountId=B`. Uma implementação com dois seletores independentes na criação ou com origem apenas no título falha nesse controle.",
+      "flags": [
+        "observable",
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-055",
+      "candidate_key": "756103b24ffe7278f8a3e0c86cb935a783435a8a463fe07d46fabb38aa8fc948",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 149,
+      "source_text": "conta destino inativa, inválida ou fora do tenant/perfil continua seguindo as validações existentes.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-TENANT-CONTRACT"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-056",
+      "candidate_key": "c691040073ecf6dc3625218ab54335bdce7b3731f6602197e5a455ee43a580e4",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 153,
+      "source_text": "Erro de origem = destino deve impedir o salvamento e indicar claramente que é necessário escolher outra conta destino.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-057",
+      "candidate_key": "582b408c40b4a1ddf757d779eedfdbda2344b0ee9fea70b72fb49a009f492799",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 154,
+      "source_text": "Falhas de validação da conta destino devem seguir o padrão atual do modal/API e preservar os dados preenchidos quando o fluxo existente já faz isso.",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-058",
+      "candidate_key": "8139a7cc529e329ba699b7295abc11d070450467a1dfb43106e5cb2e63839ddf",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 155,
+      "source_text": "Nenhum erro deve expor existência ou dados de conta fora do tenant/perfil ativo.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-TENANT-CONTRACT"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-059",
+      "candidate_key": "7d23dd8299ced64a979ed0a9d55cd9409b3bd2ba309824419aa2f0abf0b00f7d",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 159,
+      "source_text": "[ ] Ao selecionar **Transferência**, **Conta origem** e **Conta destino** ficam visíveis simultaneamente.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-060",
+      "candidate_key": "d8f6770c94837e2c604a971f4e1791da28d34fedb3bb97335e0b6958049c577a",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 160,
+      "source_text": "[ ] Na criação, **Conta origem** mostra a conta atual do Extrato e é somente leitura.",
+      "flags": [
+        "negative",
+        "freshness",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-061",
+      "candidate_key": "14bcab243483aa0238b54096b843f00bce96275832de2703902bff9764669f14",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 161,
+      "source_text": "[ ] A origem é identificável no corpo do formulário sem depender do título do modal.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-062",
+      "candidate_key": "41f17c1e1429407cc5e27ad78c5fdd86d09a52238388376b9cf8d8c112e2a5df",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 162,
+      "source_text": "[ ] **Conta destino** permanece selecionável e apresenta nome e moeda.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-063",
+      "candidate_key": "12e307fa36a3e88f6b1e4c44acd11f32ecaeaaa5ed8b23e10dd4131c4b37a017",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 163,
+      "source_text": "[ ] Origem e destino iguais não podem ser salvos.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-064",
+      "candidate_key": "97cb8078dfd9712ce9832ccd946a4e74335111ed598ce533575400ce978197a1",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 164,
+      "source_text": "[ ] Na edição, a origem exibida vem do lançamento persistido, mesmo que o filtro atual do Extrato aponte para outra conta.",
+      "flags": [
+        "freshness",
+        "aftermath",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-EDIT-SOURCE"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-065",
+      "candidate_key": "08252577bd3688e7fff6f17a94d1297bc0e3588a811def917ff99ca39db0f7f9",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 165,
+      "source_text": "[ ] A edição continua respeitando as regras já definidas em #473.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-EDIT-SOURCE"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-066",
+      "candidate_key": "df4cdc612a2782784045ec2be5e6c114404bf2e07b88254340c90c4954335e41",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 166,
+      "source_text": "[ ] Transferências same-currency continuam funcionando sem regressão.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-067",
+      "candidate_key": "73ad526be6fbf064e0dfb15f14483c5188a0d7924fefd082c933df68a21ac569",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 167,
+      "source_text": "[ ] Transferências cross-currency continuam obedecendo #668 e exibindo corretamente os campos financeiros existentes.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-068",
+      "candidate_key": "4b8cce356778efc1edc9dd5026c8922951020512f760224e7371a7cd7b707bb5",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 168,
+      "source_text": "[ ] Trocar o tipo remove estado de destino incompatível do payload.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-KIND-SWITCH"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-069",
+      "candidate_key": "d9a5a39bef0a8e33f74bf50bb5787fca7157da8a9aa54f1c2bfe9cf46275e455",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 169,
+      "source_text": "[ ] O payload de criação mantém a conta atual em `accountId` e a escolha do usuário em `destinationAccountId`.",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-070",
+      "candidate_key": "9b01cb334decdec3a296a2750462af654c2e36a643527e72fa1bc026d4f8b5b0",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 170,
+      "source_text": "[ ] O modal mantém labels e navegação por teclado compatíveis com o padrão atual.",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-071",
+      "candidate_key": "f1acd4fd78ea4508d50a2caa9c425a1b1aae653d62d2877b129cd37ea394e1b8",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 171,
+      "source_text": "[ ] O gate visual cobre o modal alterado em desktop e mobile conforme o contrato do Extrato.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-LAYOUT-A11Y"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-072",
+      "candidate_key": "b4b5b00d7dfbcc4a5b1c4a564957887f3490f40f1f7bcd5eee9a95483a086e96",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 178,
+      "source_text": "origem inicial derivada do contexto do Extrato;",
+      "flags": [
+        "review-surface",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-073",
+      "candidate_key": "49aa31fb7fe17c121322f75621e929c4e567de4b87f0a7c48f54cb02628417fc",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 188,
+      "source_text": "preservação de origem/destino nas ocorrências recorrentes;",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-FIXED-TRANSFER"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-074",
+      "candidate_key": "0d3ea863914c14a5a861982d9c844d8f14269b01c2f262c65c53f655f31d7ef6",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 191,
+      "source_text": "bloqueio explícito de repetição em transferência cross-currency;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-CROSS-CURRENCY"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-075",
+      "candidate_key": "e347b78438088e1b36f6effddbf5be9dff41a3a23283e38f6a1d097ebdf0079b",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 196,
+      "source_text": "A implementação deve atualizar `docs/TRANSACTIONS.md` para registrar, no contrato operacional do Extrato, que transferências exibem explicitamente origem e destino no formulário e que a origem permanece contextual/read-only na criação.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-DOCS"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-076",
+      "candidate_key": "aed544784af66741a81d8bc21109fcfde92e879de46897a79d47de2594faec17",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 198,
+      "source_text": "A implementação também deve atualizar `docs/RECURRENCES_INSTALLMENTS_WEB.md` e `docs/API_RECURRENCES_INSTALLMENTS.md`, pois permitir repetição fixa para transferência altera de forma durável o contrato de recorrências e exige representar origem/destino.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-DOCS"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-077",
+      "candidate_key": "6ad6e76f8b2a7ad657dcf10492cd9fd9e0d8a41b991c47a09ff8af1b4b9e8ba6",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 200,
+      "source_text": "`docs/API_TRANSACTIONS.md` deve ser atualizado somente se a integração da recorrência exigir mudança observável no contrato de criação/leitura de transferências.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-DOCS"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-078",
+      "candidate_key": "021a838d35d60c74d64c0179e37172a8afe2361398d4e1738526740517eec26d",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 202,
+      "source_text": "Não atualizar a documentação agora apenas para declarar como vigente um comportamento que ainda não foi implementado.",
+      "flags": [
+        "negative",
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-DOCS"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    },
+    {
+      "id": "OBL-079",
+      "candidate_key": "c6e22993c0c65e6be83719afd8e6681a7008f339f72084db9929d4edf489ed8a",
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "source_line": 215,
+      "source_text": "**Pronta.** A origem permanece contextual/read-only na criação conforme #473. A nova capacidade de repetição fixa fica delimitada a transferências same-currency; cross-currency permanece ocorrência única conforme #668. A implementação deve estender o contrato canônico de recorrência para transportar também a conta destino, sem criar um mecanismo paralelo.",
+      "flags": [
+        "negative",
+        "atomicity",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-677-SOURCE-DESTINATION"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Implementado e verificado no material head desta entrega."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-677",
+      "source_sha256": "6bf12f7c492c0f33868cb58bb3872d59256bc19b82ab810ddd1071f624df489d",
+      "candidate_count": 79,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020",
+        "OBL-021",
+        "OBL-022",
+        "OBL-023",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
+        "OBL-027",
+        "OBL-028",
+        "OBL-029",
+        "OBL-030",
+        "OBL-031",
+        "OBL-032",
+        "OBL-033",
+        "OBL-034",
+        "OBL-035",
+        "OBL-036",
+        "OBL-037",
+        "OBL-038",
+        "OBL-039",
+        "OBL-040",
+        "OBL-041",
+        "OBL-042",
+        "OBL-043",
+        "OBL-044",
+        "OBL-045",
+        "OBL-046",
+        "OBL-047",
+        "OBL-048",
+        "OBL-049",
+        "OBL-050",
+        "OBL-051",
+        "OBL-052",
+        "OBL-053",
+        "OBL-054",
+        "OBL-055",
+        "OBL-056",
+        "OBL-057",
+        "OBL-058",
+        "OBL-059",
+        "OBL-060",
+        "OBL-061",
+        "OBL-062",
+        "OBL-063",
+        "OBL-064",
+        "OBL-065",
+        "OBL-066",
+        "OBL-067",
+        "OBL-068",
+        "OBL-069",
+        "OBL-070",
+        "OBL-071",
+        "OBL-072",
+        "OBL-073",
+        "OBL-074",
+        "OBL-075",
+        "OBL-076",
+        "OBL-077",
+        "OBL-078",
+        "OBL-079"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "A issue exige accountId/destinationAccountId como fontes unicas, proibe seletor editavel de origem na criacao, proibe duas transacoes por transferencia e exige reuso do mecanismo canonico de recorrencias.",
+    "entries": [
+      {
+        "id": "STRUCT-677-SINGLE-SOURCE",
+        "obligation_ids": [
+          "OBL-001",
+          "OBL-002",
+          "OBL-005",
+          "OBL-006",
+          "OBL-007",
+          "OBL-008",
+          "OBL-014",
+          "OBL-015",
+          "OBL-016",
+          "OBL-017",
+          "OBL-018",
+          "OBL-019",
+          "OBL-020",
+          "OBL-021",
+          "OBL-042",
+          "OBL-043",
+          "OBL-044",
+          "OBL-049",
+          "OBL-050",
+          "OBL-051",
+          "OBL-052",
+          "OBL-053",
+          "OBL-054",
+          "OBL-056",
+          "OBL-057",
+          "OBL-059",
+          "OBL-060",
+          "OBL-061",
+          "OBL-062",
+          "OBL-063",
+          "OBL-069",
+          "OBL-072",
+          "OBL-079",
+          "OBL-023",
+          "OBL-068"
+        ],
+        "plausible_wrong_implementation": "Adicionar um segundo campo name=accountId/select editavel de origem na criacao, ou manter destinationAccountId residual no payload de tipos sem destino.",
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/transactions-page-v2.test.ts",
+          "scripts/statement-visual/issue-677-transfer-source-destination.mjs"
+        ]
+      },
+      {
+        "id": "STRUCT-677-CANONICAL-RECURRENCE",
+        "obligation_ids": [
+          "OBL-012",
+          "OBL-024",
+          "OBL-025",
+          "OBL-026",
+          "OBL-027",
+          "OBL-028",
+          "OBL-029",
+          "OBL-073"
+        ],
+        "plausible_wrong_implementation": "Criar um agendador especifico para transferencias ou materializar duas transacoes (debito e credito) por ocorrencia.",
+        "negative_control_evidence": [
+          "packages/domain/src/recurrences-transfer.test.ts",
+          "apps/api/src/transfer-recurrence.integration.test.ts"
+        ]
+      },
+      {
+        "id": "STRUCT-677-MUST-REUSE",
+        "obligation_ids": [
+          "OBL-046",
+          "OBL-047",
+          "OBL-048"
+        ],
+        "plausible_wrong_implementation": "Reimplement tenant/account lookups, a new account-edit flow or a new cross-currency rule instead of reusing API_TRANSACTIONS, #473 and #668.",
+        "negative_control_evidence": [
+          "apps/api/src/transfer-recurrence.integration.test.ts",
+          "apps/api/src/transaction-account-recurrence.integration.test.ts",
+          "scripts/statement-visual/issue-668-cross-currency-transfer.mjs"
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "passed",
+    "applicability_reason": "A 'origem' exigida e a conta de origem persistida (Transaction.accountId/Recurrence.accountId); a edicao le o registro persistido e nao o filtro atual do Extrato. Nao ha historico/versionamento novo.",
+    "entries": [
+      {
+        "id": "READ-677-PERSISTED-SOURCE",
+        "obligation_ids": [
+          "OBL-022",
+          "OBL-045",
+          "OBL-047",
+          "OBL-064",
+          "OBL-065"
+        ],
+        "consumer": "apps/web/src/dev-server/transactions-page-v2.ts (hidratacao da edicao) + recurring-card-scope-controller.ts (seletor de conta #473)",
+        "producer": "Transaction.accountId / Recurrence.accountId",
+        "evidence": [
+          "scripts/statement-visual/issue-677-transfer-source-destination.mjs (edicao aberta no extrato da conta destino exibe a origem persistida)",
+          "apps/api/src/transfer-recurrence.integration.test.ts (edicao de destino preserva accountId da regra e das ocorrencias)"
+        ]
+      }
+    ],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "accountId e destinationAccountId continuam as unicas fontes de origem/destino em Transaction e agora tambem em Recurrence; a exibicao somente leitura deriva de accountId sem estado concorrente.",
+    "entries": [
+      {
+        "id": "CANON-677",
+        "surfaces": [
+          "packages/domain/src/recurrences.ts",
+          "apps/api/src/repositories/recurrences.ts",
+          "apps/api/src/repositories/recurring-account-transaction-edit.ts",
+          "apps/api/src/repositories/transactions.ts",
+          "prisma/migrations/20260926120000_support_transfer_recurrences/migration.sql"
+        ],
+        "evidence": [
+          "apps/api/src/transfer-recurrence.integration.test.ts"
+        ]
+      }
+    ],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Mudanca normativa: recorrencia passa a aceitar kind=transfer com destinationAccountId e o modal passa a exibir origem/destino.",
+    "old_contract_terms": [
+      "kind (income ou expense)",
+      "Tipo (Entrada/Saida) do lancamento vira o kind",
+      "Transferencia cross-currency aceita somente ocorrencia unica"
+    ],
+    "new_contract_terms": [
+      "kind (income, expense ou transfer)",
+      "destinationAccountId",
+      "Transferencia fixa (#677)",
+      "RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED",
+      "Conta origem somente leitura na criacao"
+    ],
+    "occurrences": [
+      {
+        "path": "docs/API_RECURRENCES_INSTALLMENTS.md",
+        "term": "kind (income ou expense)",
+        "disposition": "updated"
+      },
+      {
+        "path": "docs/RECURRENCES_INSTALLMENTS_WEB.md",
+        "term": "Tipo (Entrada/Saida)",
+        "disposition": "updated"
+      },
+      {
+        "path": "docs/TRANSACTIONS.md",
+        "term": "Transferencia cross-currency aceita somente ocorrencia unica",
+        "disposition": "preserved-and-extended"
+      },
+      {
+        "path": "docs/API_TRANSACTIONS.md",
+        "term": "PATCH applyToFuturePlanned",
+        "disposition": "updated"
+      },
+      {
+        "path": "docs/API_REPORTS.md",
+        "term": "kind igual a income ou expense",
+        "disposition": "unaffected-report-filter"
+      },
+      {
+        "path": "docs/API_FINANCIAL_SUMMARY.md",
+        "term": "kind igual a income ou expense",
+        "disposition": "unaffected-summary-filter"
+      }
+    ],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "grep -rn -i 'income` ou `expense|Entrada/Saida|recorr.*transfer|transfer.*recorr|Conta destino|conta origem' docs README.md"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": [],
+    "findings": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-677-CROSS-CURRENCY",
+      "REQ-677-DOCS",
+      "REQ-677-EDIT-SOURCE",
+      "REQ-677-FIXED-TRANSFER",
+      "REQ-677-KIND-SWITCH",
+      "REQ-677-LAYOUT-A11Y",
+      "REQ-677-SOURCE-DESTINATION",
+      "REQ-677-TENANT-CONTRACT"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013",
+      "OBL-014",
+      "OBL-015",
+      "OBL-016",
+      "OBL-017",
+      "OBL-018",
+      "OBL-019",
+      "OBL-020",
+      "OBL-021",
+      "OBL-022",
+      "OBL-023",
+      "OBL-024",
+      "OBL-025",
+      "OBL-026",
+      "OBL-027",
+      "OBL-028",
+      "OBL-029",
+      "OBL-030",
+      "OBL-031",
+      "OBL-032",
+      "OBL-033",
+      "OBL-034",
+      "OBL-035",
+      "OBL-036",
+      "OBL-037",
+      "OBL-038",
+      "OBL-039",
+      "OBL-040",
+      "OBL-041",
+      "OBL-042",
+      "OBL-043",
+      "OBL-044",
+      "OBL-045",
+      "OBL-046",
+      "OBL-047",
+      "OBL-048",
+      "OBL-049",
+      "OBL-050",
+      "OBL-051",
+      "OBL-052",
+      "OBL-053",
+      "OBL-054",
+      "OBL-055",
+      "OBL-056",
+      "OBL-057",
+      "OBL-058",
+      "OBL-059",
+      "OBL-060",
+      "OBL-061",
+      "OBL-062",
+      "OBL-063",
+      "OBL-064",
+      "OBL-065",
+      "OBL-066",
+      "OBL-067",
+      "OBL-068",
+      "OBL-069",
+      "OBL-070",
+      "OBL-071",
+      "OBL-072",
+      "OBL-073",
+      "OBL-074",
+      "OBL-075",
+      "OBL-076",
+      "OBL-077",
+      "OBL-078",
+      "OBL-079"
+    ],
+    "evidence": [
+      "packages/domain/src/recurrences-transfer.test.ts",
+      "apps/api/src/transfer-recurrence.integration.test.ts",
+      "apps/web/src/dev-server/transactions-page-v2.test.ts",
+      "scripts/statement-visual/issue-677-transfer-source-destination.mjs"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

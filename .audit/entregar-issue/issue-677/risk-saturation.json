@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "SRC-DST-AUTHZ-001",
+        "TENANT-DESTINATION-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "The distinct tenant/profile scope is excluded: generic not-found error, no rule persisted and no leak of the foreign account.",
+          "control_ids": [
+            "TENANT-DESTINATION-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "tenant-scoped-destination",
+          "reason": "Rejected with TENANT_RESOURCE_NOT_FOUND / TenantAuthorizationError and no rule persisted.",
+          "control_ids": [
+            "SRC-DST-AUTHZ-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "SRC-DST-TENANT-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "The other profile account is excluded from the P1 transfer: rejected with the generic tenant not-found contract, no leak and nothing persisted.",
+          "control_ids": [
+            "SRC-DST-TENANT-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "DOCS-LIVENESS-001",
+        "EDIT-LIVENESS-001",
+        "FIXED-DESTINATION-LIVENESS-001",
+        "LAYOUT-KEYBOARD-001",
+        "SRC-DST-LIVENESS-001",
+        "XCUR-LIVENESS-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "destination-account-liveness",
+          "reason": "Archived or unknown destination is rejected at write time instead of being accepted and failing later.",
+          "control_ids": [
+            "SRC-DST-LIVENESS-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "destination-currency-change",
+          "reason": "Destination amount is cleared on currency change; no silent reuse of a value from another currency.",
+          "control_ids": [
+            "XCUR-LIVENESS-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "destination-statement-catch-up",
+          "reason": "Catch-up from the destination statement materializes due dates and the recurrence is listed for the destination; the mutated build fails.",
+          "control_ids": [
+            "FIXED-DESTINATION-LIVENESS-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "doc-references",
+          "reason": "All referenced files/constraints exist.",
+          "control_ids": [
+            "DOCS-LIVENESS-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "keyboard-focus-labels",
+          "reason": "Focus moves Tipo > Conta origem > Conta destino, the read-only source shows a visible focus indicator and both controls are labelled.",
+          "control_ids": [
+            "LAYOUT-KEYBOARD-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "persisted-destination-liveness",
+          "reason": "Destination select shows the persisted destination B and stays visible for transfers.",
+          "control_ids": [
+            "EDIT-LIVENESS-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "EDIT-TEMPORAL-001",
+        "SRC-DST-TEMPORAL-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "create-uses-current-context",
+          "reason": "The read-only source reflects the statement account at the moment the modal opens (A), not a stale value.",
+          "control_ids": [
+            "SRC-DST-TEMPORAL-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "future-occurrence-edit",
+          "reason": "Occurrence #1 keeps the old destination/amount; #2-#4 receive the new destination and amount.",
+          "control_ids": [
+            "EDIT-TEMPORAL-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "EDIT-PERSISTED-SOURCE-001",
+        "FIXED-MATERIALIZATION-001",
+        "SRC-DST-RELATIONAL-001",
+        "SRC-DST-SINGLE-SOURCE-001",
+        "TENANT-CANONICAL-001",
+        "TENANT-RELATIONAL-001",
+        "XCUR-RELATIONAL-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-recurrence-materialization",
+          "reason": "Occurrence ids are stable on replay and each carries accountId, destinationAccountId, destinationAmountMinor=amountMinor, destinationCurrency; the mutated build fails.",
+          "control_ids": [
+            "FIXED-MATERIALIZATION-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "No drift between the canonical rule definition and runtime occurrences: both paths keep accountId as the source and destinationAccountId as the destination.",
+          "control_ids": [
+            "TENANT-CANONICAL-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "persisted-source-hydration",
+          "reason": "Edit select value is A (persisted), never B (filter).",
+          "control_ids": [
+            "EDIT-PERSISTED-SOURCE-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "Recurrence_transfer_accounts_check rejects all three incompatible linked-account relations (fail-closed, no write).",
+          "control_ids": [
+            "SRC-DST-RELATIONAL-001",
+            "TENANT-RELATIONAL-001",
+            "XCUR-RELATIONAL-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "single-source-account-field",
+          "reason": "Exactly one enabled accountId (the statement account), no editable source selector on create, and the display is never submitted.",
+          "control_ids": [
+            "SRC-DST-SINGLE-SOURCE-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "DOCS-CLAIMS-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "No canonical document still restricts account recurrences to income/expense; report/summary filters remain intentionally unaffected.",
+          "control_ids": [
+            "DOCS-CLAIMS-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

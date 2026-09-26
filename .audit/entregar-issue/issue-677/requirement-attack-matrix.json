@@ -1,0 +1,1836 @@
+{
+  "schema_version": 1,
+  "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+  "requirements": [
+    {
+      "requirement_id": "REQ-677-CROSS-CURRENCY",
+      "obligation_ids": [
+        "OBL-009",
+        "OBL-013",
+        "OBL-030",
+        "OBL-031",
+        "OBL-032",
+        "OBL-033",
+        "OBL-048",
+        "OBL-066",
+        "OBL-067",
+        "OBL-074"
+      ],
+      "risk_families": [
+        "reference-liveness",
+        "semantic-effect",
+        "structural-contract"
+      ],
+      "source_texts": [
+        "Alterar destino/moeda deve continuar invalidando somente o estado cambial incompatível; esta issue não pode introduzir reaproveitamento silencioso de valor destino de outra moeda.",
+        "Preservar criação/edição de transferências same-currency e cross-currency já suportadas.",
+        "Preservar integralmente #668 e `docs/API_TRANSACTIONS.md`.",
+        "Preservar o bloqueio de repetição fixa/parcelada em transferências cross-currency conforme #668.",
+        "Quando as moedas diferirem, continuar exibindo **Valor origem**, **Valor destino** e **Taxa efetiva** derivada/read-only conforme o contrato atual.",
+        "Reutilizar o contrato cross-currency definido em #668.",
+        "Transferências cross-currency continuam aceitando somente ocorrência única nesta entrega, conforme #668; não inventar valor/taxa futura.",
+        "[ ] Transferências cross-currency continuam obedecendo #668 e exibindo corretamente os campos financeiros existentes.",
+        "[ ] Transferências same-currency continuam funcionando sem regressão.",
+        "bloqueio explícito de repetição em transferência cross-currency;"
+      ],
+      "plausible_wrong_implementation": "Allow Fixo for a BRL->USD transfer and reuse the BRL amount as the USD value on every future occurrence.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "procedure": "Run the #677 Chrome scenario and the cross-currency rejections in domain/integration (scripts/statement-visual/issue-677-transfer-source-destination.mjs, packages/domain/src/recurrences-transfer.test.ts, apps/api/src/transfer-recurrence.integration.test.ts).",
+        "expected": "Cross-currency keeps Valor destino/Taxa efetiva, forces single occurrence and every recurring path rejects a USD destination without residual effects.",
+        "observed": "Chrome fixedDisabled=true/repeatMode=single; integration rejections left occurrences deepEqual to the fixture.",
+        "evidence": "evidence/issue-677-exact-head.txt",
+        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_kind": "quantitative",
+        "evidence_id": "EVID-677-EXACT-HEAD"
+      },
+      "negative_controls": [
+        {
+          "id": "XCUR-RELATIONAL-001",
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "recurrence-destination-currency",
+          "failure_mode": "Allow Fixo for a BRL->USD transfer and reuse the BRL amount as the USD value on every future occurrence.",
+          "plausible_wrong_implementation": "Allow Fixo for a BRL->USD transfer and reuse the BRL amount as the USD value on every future occurrence.",
+          "control_type": "test",
+          "procedure": "Integration: create a BRL->USD transfer recurrence through the canonical producer, then an expanded occurrence edit to a USD destination, then a direct SQL insert of a TRANSFER rule with a USD destination (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "Each producer rejects the incompatible linked currency (RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED or 23514) and re-reading the occurrences/rule shows no residual incompatible relation.",
+          "observed": "create and update rejected with RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED; direct insert rejected with 23514; readOccurrences deepEqual to the original fixture.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "XCUR-RELATIONAL-001-S1",
+              "surface": "relational-semantic-integrity",
+              "dimension": "create-producer",
+              "status": "passed"
+            },
+            {
+              "id": "XCUR-RELATIONAL-001-S2",
+              "surface": "relational-semantic-integrity",
+              "dimension": "update-producer",
+              "status": "passed"
+            },
+            {
+              "id": "XCUR-RELATIONAL-001-S3",
+              "surface": "relational-semantic-integrity",
+              "dimension": "direct-sql-producer",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "XCUR-UI-001",
+          "risk_family": "semantic-effect",
+          "surface": "cross-currency-form",
+          "dimension": "fixed-disabled-native-values",
+          "failure_mode": "Allow Fixo for a BRL->USD transfer and reuse the BRL amount as the USD value on every future occurrence.",
+          "plausible_wrong_implementation": "Allow Fixo for a BRL->USD transfer and reuse the BRL amount as the USD value on every future occurrence.",
+          "control_type": "scenario",
+          "procedure": "Chrome: switch the destination to a USD account (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+          "expected": "Valor destino is visible, Fixo is disabled and the repetition stays single; labels do not wrap.",
+          "observed": "destinationAmountVisible=true, fixedDisabled=true, repeatMode=single.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "XCUR-UI-001-S1",
+              "surface": "cross-currency-form",
+              "dimension": "fixed-disabled",
+              "status": "passed"
+            },
+            {
+              "id": "XCUR-UI-001-S2",
+              "surface": "cross-currency-form",
+              "dimension": "installment-disabled",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "XCUR-LIVENESS-001",
+          "risk_family": "reference-liveness",
+          "surface": "destination-currency-change",
+          "dimension": "stale-destination-amount",
+          "failure_mode": "Allow Fixo for a BRL->USD transfer and reuse the BRL amount as the USD value on every future occurrence.",
+          "plausible_wrong_implementation": "Allow Fixo for a BRL->USD transfer and reuse the BRL amount as the USD value on every future occurrence.",
+          "control_type": "scenario",
+          "procedure": "Chrome #668 scenario (issue-668-cross-currency-transfer.mjs) in the registered visual suite: switch USD->EUR destination.",
+          "expected": "Destination amount is cleared on currency change; no silent reuse of a value from another currency.",
+          "observed": "#668 scenario remains registered and passing in the visual suite; #677 did not change the currency-change handler.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "XCUR-LIVENESS-001-S1",
+              "surface": "destination-currency-change",
+              "dimension": "usd-to-eur",
+              "status": "passed"
+            },
+            {
+              "id": "XCUR-LIVENESS-001-S2",
+              "surface": "destination-currency-change",
+              "dimension": "eur-to-usd",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-19F59959",
+          "status": "passed",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
+          "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-009",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-013",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-030",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-031",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-032",
+          "primary_negative_control_id": "XCUR-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-033",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-048",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-066",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-067",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-074",
+          "primary_negative_control_id": "XCUR-RELATIONAL-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "reason": "Each producer rejects the incompatible linked currency (RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED or 23514) and re-reading the occurrences/rule shows no residual incompatible relation."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "cross-currency-form",
+          "reason": "Valor destino is visible, Fixo is disabled and the repetition stays single; labels do not wrap."
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "destination-currency-change",
+          "reason": "Destination amount is cleared on currency change; no silent reuse of a value from another currency."
+        }
+      ],
+      "quantitative_evidence_required": true
+    },
+    {
+      "requirement_id": "REQ-677-DOCS",
+      "obligation_ids": [
+        "OBL-075",
+        "OBL-076",
+        "OBL-077",
+        "OBL-078"
+      ],
+      "risk_families": [
+        "documentation",
+        "reference-liveness",
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "A implementação deve atualizar `docs/TRANSACTIONS.md` para registrar, no contrato operacional do Extrato, que transferências exibem explicitamente origem e destino no formulário e que a origem permanece contextual/read-only na criação.",
+        "A implementação também deve atualizar `docs/RECURRENCES_INSTALLMENTS_WEB.md` e `docs/API_RECURRENCES_INSTALLMENTS.md`, pois permitir repetição fixa para transferência altera de forma durável o contrato de recorrências e exige representar origem/destino.",
+        "Não atualizar a documentação agora apenas para declarar como vigente um comportamento que ainda não foi implementado.",
+        "`docs/API_TRANSACTIONS.md` deve ser atualizado somente se a integração da recorrência exigir mudança observável no contrato de criação/leitura de transferências."
+      ],
+      "plausible_wrong_implementation": "Leave docs stating recurrences are only income/expense and that the Tipo is only Entrada/Saida, contradicting the runtime.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "procedure": "Review docs/TRANSACTIONS.md, docs/RECURRENCES_INSTALLMENTS_WEB.md, docs/API_RECURRENCES_INSTALLMENTS.md and docs/API_TRANSACTIONS.md on the material head.",
+        "expected": "Docs describe read-only source on create, persisted source on edit, fixed same-currency transfers, destinationAccountId and the new error codes.",
+        "observed": "All four documents updated in the material diff; prettier and doc-contract checks passed.",
+        "evidence": "evidence/issue-677-exact-head.txt",
+        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_kind": "behavioral"
+      },
+      "negative_controls": [
+        {
+          "id": "DOCS-CLAIMS-001",
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "stale-income-expense-only-claim",
+          "failure_mode": "Leave docs stating recurrences are only income/expense and that the Tipo is only Entrada/Saida, contradicting the runtime.",
+          "plausible_wrong_implementation": "Leave docs stating recurrences are only income/expense and that the Tipo is only Entrada/Saida, contradicting the runtime.",
+          "control_type": "procedure",
+          "procedure": "grep -rn -i \"income` ou `expense|Entrada/Saida|recorr.*transfer\" docs README.md outside the diff.",
+          "expected": "No canonical document still restricts account recurrences to income/expense; report/summary filters remain intentionally unaffected.",
+          "observed": "API_RECURRENCES_INSTALLMENTS and RECURRENCES_INSTALLMENTS_WEB updated; API_REPORTS/API_FINANCIAL_SUMMARY filters unaffected by design.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "DOCS-CLAIMS-001-S1",
+              "surface": "canonical-claims",
+              "dimension": "api-doc",
+              "status": "passed"
+            },
+            {
+              "id": "DOCS-CLAIMS-001-S2",
+              "surface": "canonical-claims",
+              "dimension": "web-doc",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "DOCS-LIVENESS-001",
+          "risk_family": "reference-liveness",
+          "surface": "doc-references",
+          "dimension": "referenced-paths-exist",
+          "failure_mode": "Leave docs stating recurrences are only income/expense and that the Tipo is only Entrada/Saida, contradicting the runtime.",
+          "plausible_wrong_implementation": "Leave docs stating recurrences are only income/expense and that the Tipo is only Entrada/Saida, contradicting the runtime.",
+          "control_type": "procedure",
+          "procedure": "Check that files referenced by the updated docs exist on the material head (transfer-recurrence.integration.test.ts, migration name, constraint names).",
+          "expected": "All referenced files/constraints exist.",
+          "observed": "Referenced integration test, check constraint and trigger exist in the material diff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "DOCS-LIVENESS-001-S1",
+              "surface": "doc-references",
+              "dimension": "test-file",
+              "status": "passed"
+            },
+            {
+              "id": "DOCS-LIVENESS-001-S2",
+              "surface": "doc-references",
+              "dimension": "constraint-names",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "DOCS-SEMANTIC-001",
+          "risk_family": "semantic-effect",
+          "surface": "documented-behavior-matches-runtime",
+          "dimension": "not-yet-implemented-claims",
+          "failure_mode": "Leave docs stating recurrences are only income/expense and that the Tipo is only Entrada/Saida, contradicting the runtime.",
+          "plausible_wrong_implementation": "Leave docs stating recurrences are only income/expense and that the Tipo is only Entrada/Saida, contradicting the runtime.",
+          "control_type": "procedure",
+          "procedure": "Compare each new doc sentence with the executed controls of REQ-677-* on the material head.",
+          "expected": "No doc claims behavior that is not implemented and verified.",
+          "observed": "Each documented rule maps to a passing control in this matrix.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "DOCS-SEMANTIC-001-S1",
+              "surface": "documented-behavior-matches-runtime",
+              "dimension": "ui-rules",
+              "status": "passed"
+            },
+            {
+              "id": "DOCS-SEMANTIC-001-S2",
+              "surface": "documented-behavior-matches-runtime",
+              "dimension": "api-rules",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-19F59959",
+          "status": "passed",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
+          "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-075",
+          "primary_negative_control_id": "DOCS-CLAIMS-001"
+        },
+        {
+          "obligation_id": "OBL-076",
+          "primary_negative_control_id": "DOCS-CLAIMS-001"
+        },
+        {
+          "obligation_id": "OBL-077",
+          "primary_negative_control_id": "DOCS-CLAIMS-001"
+        },
+        {
+          "obligation_id": "OBL-078",
+          "primary_negative_control_id": "DOCS-CLAIMS-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "reason": "No canonical document still restricts account recurrences to income/expense; report/summary filters remain intentionally unaffected."
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "doc-references",
+          "reason": "All referenced files/constraints exist."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "documented-behavior-matches-runtime",
+          "reason": "No doc claims behavior that is not implemented and verified."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-677-EDIT-SOURCE",
+      "obligation_ids": [
+        "OBL-022",
+        "OBL-045",
+        "OBL-047",
+        "OBL-064",
+        "OBL-065"
+      ],
+      "risk_families": [
+        "reference-liveness",
+        "semantic-effect",
+        "structural-contract",
+        "temporal-consistency"
+      ],
+      "source_texts": [
+        "Na edição, a origem exibida corresponde à conta realmente persistida no lançamento.",
+        "Para uma transferência existente, origem e destino devem permanecer distinguíveis antes do salvamento.",
+        "Reutilizar o comportamento de edição de conta definido em #473.",
+        "[ ] A edição continua respeitando as regras já definidas em #473.",
+        "[ ] Na edição, a origem exibida vem do lançamento persistido, mesmo que o filtro atual do Extrato aponte para outra conta."
+      ],
+      "plausible_wrong_implementation": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "procedure": "Open the destination account statement in Chrome and click Editar on the A->B transfer (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+        "expected": "Edit shows 'Conta origem' with the persisted source A and destination B.",
+        "observed": "editSourceLabel='Conta origem', editSourceValue=A, destinationValue=B, read-only duplicate hidden.",
+        "evidence": "evidence/issue-677-exact-head.txt",
+        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_kind": "behavioral"
+      },
+      "negative_controls": [
+        {
+          "id": "EDIT-PERSISTED-SOURCE-001",
+          "risk_family": "structural-contract",
+          "surface": "persisted-source-hydration",
+          "dimension": "filter-differs-from-source",
+          "failure_mode": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+          "plausible_wrong_implementation": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+          "control_type": "scenario",
+          "procedure": "Chrome: statement filtered by destination B, edit the transfer created from A (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+          "expected": "Edit select value is A (persisted), never B (filter).",
+          "observed": "editSourceValue=A with the statement filtered by B.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "EDIT-PERSISTED-SOURCE-001-S1",
+              "surface": "persisted-source-hydration",
+              "dimension": "filter-is-destination",
+              "status": "passed"
+            },
+            {
+              "id": "EDIT-PERSISTED-SOURCE-001-S2",
+              "surface": "persisted-source-hydration",
+              "dimension": "readonly-display-hidden-in-edit",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "EDIT-473-RULES-001",
+          "risk_family": "semantic-effect",
+          "surface": "edit-account-rules-473",
+          "dimension": "source-change-scope",
+          "failure_mode": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+          "plausible_wrong_implementation": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+          "control_type": "test",
+          "procedure": "Integration: #473 regression transaction-account-recurrence.integration.test.js plus expanded edit of destination (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "#473 current-only/current-and-future account moves keep working; changing the destination never moves the source.",
+          "observed": "#473 integration exit_code=0; rule.accountId stayed A after destination change.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "EDIT-473-RULES-001-S1",
+              "surface": "edit-account-rules-473",
+              "dimension": "current-only",
+              "status": "passed"
+            },
+            {
+              "id": "EDIT-473-RULES-001-S2",
+              "surface": "edit-account-rules-473",
+              "dimension": "current-and-future",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "EDIT-LIVENESS-001",
+          "risk_family": "reference-liveness",
+          "surface": "persisted-destination-liveness",
+          "dimension": "persisted-destination-loaded",
+          "failure_mode": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+          "plausible_wrong_implementation": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+          "control_type": "scenario",
+          "procedure": "Chrome: verify the persisted destination is loaded and visible on edit (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+          "expected": "Destination select shows the persisted destination B and stays visible for transfers.",
+          "observed": "destinationVisible=true and destinationValue=B.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "EDIT-LIVENESS-001-S1",
+              "surface": "persisted-destination-liveness",
+              "dimension": "visible",
+              "status": "passed"
+            },
+            {
+              "id": "EDIT-LIVENESS-001-S2",
+              "surface": "persisted-destination-liveness",
+              "dimension": "value-loaded",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "EDIT-TEMPORAL-001",
+          "risk_family": "temporal-consistency",
+          "surface": "future-occurrence-edit",
+          "dimension": "selected-and-future-only",
+          "failure_mode": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+          "plausible_wrong_implementation": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
+          "control_type": "test",
+          "procedure": "Integration: expanded edit on occurrence #2 of a 4-occurrence transfer recurrence (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "Occurrence #1 keeps the old destination/amount; #2-#4 receive the new destination and amount.",
+          "observed": "after[0] unchanged, after[1..3] moved to the second destination with 9900.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "EDIT-TEMPORAL-001-S1",
+              "surface": "future-occurrence-edit",
+              "dimension": "previous-occurrence-untouched",
+              "status": "passed"
+            },
+            {
+              "id": "EDIT-TEMPORAL-001-S2",
+              "surface": "future-occurrence-edit",
+              "dimension": "future-planned-updated",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-19F59959",
+          "status": "passed",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
+          "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-022",
+          "primary_negative_control_id": "EDIT-TEMPORAL-001"
+        },
+        {
+          "obligation_id": "OBL-045",
+          "primary_negative_control_id": "EDIT-PERSISTED-SOURCE-001"
+        },
+        {
+          "obligation_id": "OBL-047",
+          "primary_negative_control_id": "EDIT-PERSISTED-SOURCE-001"
+        },
+        {
+          "obligation_id": "OBL-064",
+          "primary_negative_control_id": "EDIT-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-065",
+          "primary_negative_control_id": "EDIT-PERSISTED-SOURCE-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "persisted-source-hydration",
+          "reason": "Edit select value is A (persisted), never B (filter)."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "edit-account-rules-473",
+          "reason": "#473 current-only/current-and-future account moves keep working; changing the destination never moves the source."
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "persisted-destination-liveness",
+          "reason": "Destination select shows the persisted destination B and stays visible for transfers."
+        },
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "future-occurrence-edit",
+          "reason": "Occurrence #1 keeps the old destination/amount; #2-#4 receive the new destination and amount."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-677-FIXED-TRANSFER",
+      "obligation_ids": [
+        "OBL-012",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
+        "OBL-027",
+        "OBL-028",
+        "OBL-029",
+        "OBL-073"
+      ],
+      "risk_families": [
+        "reference-liveness",
+        "semantic-effect",
+        "structural-contract"
+      ],
+      "source_texts": [
+        "A geração deve reutilizar o mecanismo canônico de recorrências e sua proteção contra duplicidade; não criar um segundo agendador específico para transferências.",
+        "A recorrência de transferência precisa preservar **origem e destino**; o contrato atual de recorrência, hoje centrado em `kind=income|expense` e um único `accountId`, deverá ser estendido de forma coerente para representar transferências, incluindo `destinationAccountId`.",
+        "A recorrência deve preservar, em cada ocorrência materializada, a mesma conta origem, conta destino, valor e moeda da transferência configurada, salvo edição posterior permitida pelos fluxos existentes.",
+        "O primeiro vencimento e as ocorrências futuras devem aparecer no Extrato como transferências reais, mantendo uma única identidade lógica por ocorrência e sem serem reinterpretadas como receita/despesa.",
+        "Pausar, retomar, cancelar e editar a recorrência devem seguir os fluxos canônicos já descritos em `docs/RECURRENCES_INSTALLMENTS_WEB.md` e `docs/API_RECURRENCES_INSTALLMENTS.md`.",
+        "Permitir **Repetição = Fixo** em transferências same-currency.",
+        "Quando `Tipo = Transferência` e as contas origem/destino possuírem a **mesma moeda**, a opção `Repetição = Fixo` deve ser permitida.",
+        "preservação de origem/destino nas ocorrências recorrentes;"
+      ],
+      "plausible_wrong_implementation": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "procedure": "Create a same-currency fixed transfer via the modal (Chrome) and via createRecurrenceForContext against PostgreSQL (apps/api/src/transfer-recurrence.integration.test.ts).",
+        "expected": "POST /api/recurrences carries destinationAccountId; every materialized occurrence is one TRANSFER transaction with both legs, same amount/currency and its own transferGroupId, without duplicates.",
+        "observed": "Chrome fixed transfer persisted as kind=transfer with recurrenceId; integration saw 4 occurrences stable across replay.",
+        "evidence": "evidence/issue-677-exact-head.txt",
+        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_kind": "behavioral"
+      },
+      "negative_controls": [
+        {
+          "id": "FIXED-MATERIALIZATION-001",
+          "risk_family": "structural-contract",
+          "surface": "canonical-recurrence-materialization",
+          "dimension": "one-transfer-per-occurrence",
+          "failure_mode": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+          "plausible_wrong_implementation": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+          "control_type": "test",
+          "procedure": "Integration: generate through +3 months then replay the same window (apps/api/src/transfer-recurrence.integration.test.ts); mutation MUT-3 drops the destination leg.",
+          "expected": "Occurrence ids are stable on replay and each carries accountId, destinationAccountId, destinationAmountMinor=amountMinor, destinationCurrency; the mutated build fails.",
+          "observed": "Replay deepEqual passed; MUT-3 exit_code=1.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "FIXED-MATERIALIZATION-001-S1",
+              "surface": "canonical-recurrence-materialization",
+              "dimension": "first-due-on-create",
+              "status": "passed"
+            },
+            {
+              "id": "FIXED-MATERIALIZATION-001-S2",
+              "surface": "canonical-recurrence-materialization",
+              "dimension": "replay-no-duplicate",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "FIXED-LIFECYCLE-001",
+          "risk_family": "semantic-effect",
+          "surface": "pause-resume-cancel",
+          "dimension": "lifecycle-keeps-legs",
+          "failure_mode": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+          "plausible_wrong_implementation": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+          "control_type": "test",
+          "procedure": "Integration and domain: pause, generate, resume, generate, cancel, generate (apps/api/src/transfer-recurrence.integration.test.ts, packages/domain/src/recurrences-transfer.test.ts).",
+          "expected": "Paused/cancelled rules generate nothing; resumed rule regenerates transfers with both legs; both accounts stay on the rule.",
+          "observed": "0 occurrences while paused, 2 after resume, still 2 after cancel.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "FIXED-LIFECYCLE-001-S1",
+              "surface": "pause-resume-cancel",
+              "dimension": "pause",
+              "status": "passed"
+            },
+            {
+              "id": "FIXED-LIFECYCLE-001-S2",
+              "surface": "pause-resume-cancel",
+              "dimension": "cancel",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "FIXED-DESTINATION-LIVENESS-001",
+          "risk_family": "reference-liveness",
+          "surface": "destination-statement-catch-up",
+          "dimension": "catch-up-from-destination",
+          "failure_mode": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+          "plausible_wrong_implementation": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+          "control_type": "test",
+          "procedure": "Integration: catchUpRecurrenceInstallmentsForContext with the destination accountId (apps/api/src/transfer-recurrence.integration.test.ts); mutation MUT-2 ignores the destination leg.",
+          "expected": "Catch-up from the destination statement materializes due dates and the recurrence is listed for the destination; the mutated build fails.",
+          "observed": "3 occurrences after destination catch-up; MUT-2 exit_code=1.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "FIXED-DESTINATION-LIVENESS-001-S1",
+              "surface": "destination-statement-catch-up",
+              "dimension": "listing",
+              "status": "passed"
+            },
+            {
+              "id": "FIXED-DESTINATION-LIVENESS-001-S2",
+              "surface": "destination-statement-catch-up",
+              "dimension": "catch-up",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "FIXED-EDIT-PROPAGATION-001",
+          "risk_family": "semantic-effect",
+          "surface": "expanded-edit-destination",
+          "dimension": "stale-rule-destination",
+          "failure_mode": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+          "plausible_wrong_implementation": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
+          "control_type": "test",
+          "procedure": "Integration: expanded edit changes destination; mutation MUT-1 keeps the old rule destination (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "Rule destinationAccountId follows the edit; the mutated build fails.",
+          "observed": "rule.destinationAccountId=secondDestination; MUT-1 exit_code=1.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "FIXED-EDIT-PROPAGATION-001-S1",
+              "surface": "expanded-edit-destination",
+              "dimension": "rule",
+              "status": "passed"
+            },
+            {
+              "id": "FIXED-EDIT-PROPAGATION-001-S2",
+              "surface": "expanded-edit-destination",
+              "dimension": "future-occurrences",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-19F59959",
+          "status": "passed",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
+          "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-012",
+          "primary_negative_control_id": "FIXED-MATERIALIZATION-001"
+        },
+        {
+          "obligation_id": "OBL-024",
+          "primary_negative_control_id": "FIXED-MATERIALIZATION-001"
+        },
+        {
+          "obligation_id": "OBL-025",
+          "primary_negative_control_id": "FIXED-MATERIALIZATION-001"
+        },
+        {
+          "obligation_id": "OBL-026",
+          "primary_negative_control_id": "FIXED-MATERIALIZATION-001"
+        },
+        {
+          "obligation_id": "OBL-027",
+          "primary_negative_control_id": "FIXED-MATERIALIZATION-001"
+        },
+        {
+          "obligation_id": "OBL-028",
+          "primary_negative_control_id": "FIXED-MATERIALIZATION-001"
+        },
+        {
+          "obligation_id": "OBL-029",
+          "primary_negative_control_id": "FIXED-DESTINATION-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-073",
+          "primary_negative_control_id": "FIXED-MATERIALIZATION-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-recurrence-materialization",
+          "reason": "Occurrence ids are stable on replay and each carries accountId, destinationAccountId, destinationAmountMinor=amountMinor, destinationCurrency; the mutated build fails."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "pause-resume-cancel",
+          "reason": "Paused/cancelled rules generate nothing; resumed rule regenerates transfers with both legs; both accounts stay on the rule."
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "destination-statement-catch-up",
+          "reason": "Catch-up from the destination statement materializes due dates and the recurrence is listed for the destination; the mutated build fails."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "expanded-edit-destination",
+          "reason": "Rule destinationAccountId follows the edit; the mutated build fails."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-677-KIND-SWITCH",
+      "obligation_ids": [
+        "OBL-023",
+        "OBL-068"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "Ao trocar de **Transferência** para um tipo que não possua destino, ocultar os campos específicos de destino e não enviar estado residual incompatível.",
+        "[ ] Trocar o tipo remove estado de destino incompatível do payload."
+      ],
+      "plausible_wrong_implementation": "Hide the destination field visually but keep its value in the FormData so income/expense payloads carry destinationAccountId.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "procedure": "Chrome: pick destination B, switch Tipo to Saida, inspect FormData, switch back to Transferencia (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+        "expected": "No destination is submitted for Saida and returning to transfer starts with an empty destination and the same source.",
+        "observed": "submittedOnExpense=false, destinationAfterReturn='', source unchanged.",
+        "evidence": "evidence/issue-677-exact-head.txt",
+        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_kind": "behavioral"
+      },
+      "negative_controls": [
+        {
+          "id": "KIND-SWITCH-RESIDUAL-001",
+          "risk_family": "semantic-effect",
+          "surface": "residual-destination-payload",
+          "dimension": "transfer-to-expense-to-transfer",
+          "failure_mode": "Hide the destination field visually but keep its value in the FormData so income/expense payloads carry destinationAccountId.",
+          "plausible_wrong_implementation": "Hide the destination field visually but keep its value in the FormData so income/expense payloads carry destinationAccountId.",
+          "control_type": "scenario",
+          "procedure": "Chrome round trip transfer -> expense -> transfer with FormData inspection (scripts/statement-visual/issue-677-transfer-source-destination.mjs); integration: expanded edit to expense (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "Destination is hidden, disabled and cleared; recurring occurrences switched to expense lose destination, destination amount and transfer group.",
+          "observed": "hiddenOnExpense=true, submittedOnExpense=false; integration kind change asserted null destination fields.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "KIND-SWITCH-RESIDUAL-001-S1",
+              "surface": "residual-destination-payload",
+              "dimension": "client-form",
+              "status": "passed"
+            },
+            {
+              "id": "KIND-SWITCH-RESIDUAL-001-S2",
+              "surface": "residual-destination-payload",
+              "dimension": "recurring-edit-backend",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-19F59959",
+          "status": "passed",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
+          "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-023",
+          "primary_negative_control_id": "KIND-SWITCH-RESIDUAL-001"
+        },
+        {
+          "obligation_id": "OBL-068",
+          "primary_negative_control_id": "KIND-SWITCH-RESIDUAL-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "residual-destination-payload",
+          "reason": "Destination is hidden, disabled and cleared; recurring occurrences switched to expense lose destination, destination amount and transfer group."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-677-LAYOUT-A11Y",
+      "obligation_ids": [
+        "OBL-010",
+        "OBL-011",
+        "OBL-034",
+        "OBL-035",
+        "OBL-036",
+        "OBL-037",
+        "OBL-038",
+        "OBL-039",
+        "OBL-040",
+        "OBL-041",
+        "OBL-070",
+        "OBL-071"
+      ],
+      "risk_families": [
+        "reference-liveness",
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "**Descrição** e **Observação** devem ocupar largura compatível com conteúdo textual.",
+        "A revisão visual deve preservar foco, navegação por teclado e labels acessíveis.",
+        "Campos com conteúdo curto podem ser menores, mas sem criar retângulos visualmente desproporcionais em relação aos campos vizinhos.",
+        "Campos de mesma hierarquia devem ter alturas e proporções coerentes no grid.",
+        "Cobrir regressão visual e funcional do modal.",
+        "Em viewport menor, o formulário deve reorganizar/empilhar campos em vez de comprimi-los a ponto de provocar quebras artificiais.",
+        "Labels, inputs, mensagens e ações devem manter alinhamento e espaçamento consistentes.",
+        "Revisar labels e textos auxiliares para evitar quebras anti-naturais, como moeda ou parênteses isolados em linha própria.",
+        "Revisar quebras de texto, alinhamento e proporção dos campos do pop-up.",
+        "Sempre que houver espaço suficiente, manter rótulos curtos como **Valor origem (BRL)** e **Valor destino (USD)** em composição legível.",
+        "[ ] O gate visual cobre o modal alterado em desktop e mobile conforme o contrato do Extrato.",
+        "[ ] O modal mantém labels e navegação por teclado compatíveis com o padrão atual."
+      ],
+      "plausible_wrong_implementation": "Keep currency spans as separate grid items so '(BRL)' wraps on its own line, or render the source as an unfocusable text node without a label.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "procedure": "Chrome at 1366x768 and 390x844 with the transfer modal open (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+        "expected": "Labels are single-line, source/destination share a row on desktop and stack on mobile, controls have equal heights, no horizontal overflow, keyboard order Tipo > Conta origem > Conta destino.",
+        "observed": "sameRow=true desktop, stacked=true mobile, equalControlHeights=true, unbrokenCurrencyLabels=true, order kind>source>destination, no overflow.",
+        "evidence": "evidence/issue-677-exact-head.txt",
+        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_kind": "behavioral"
+      },
+      "negative_controls": [
+        {
+          "id": "LAYOUT-LABEL-WRAP-001",
+          "risk_family": "semantic-effect",
+          "surface": "label-composition",
+          "dimension": "currency-label-single-line",
+          "failure_mode": "Keep currency spans as separate grid items so '(BRL)' wraps on its own line, or render the source as an unfocusable text node without a label.",
+          "plausible_wrong_implementation": "Keep currency spans as separate grid items so '(BRL)' wraps on its own line, or render the source as an unfocusable text node without a label.",
+          "control_type": "scenario",
+          "procedure": "Chrome: measure every visible .field-label height against its line-height in desktop, cross-currency and mobile states (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+          "expected": "Every label renders on one line; 'Valor origem (BRL)' and 'Valor destino (USD)' never split.",
+          "observed": "unbrokenCurrencyLabels=true in the three states.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "LAYOUT-LABEL-WRAP-001-S1",
+              "surface": "label-composition",
+              "dimension": "desktop",
+              "status": "passed"
+            },
+            {
+              "id": "LAYOUT-LABEL-WRAP-001-S2",
+              "surface": "label-composition",
+              "dimension": "mobile",
+              "status": "passed"
+            },
+            {
+              "id": "LAYOUT-LABEL-WRAP-001-S3",
+              "surface": "label-composition",
+              "dimension": "cross-currency",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "LAYOUT-KEYBOARD-001",
+          "risk_family": "reference-liveness",
+          "surface": "keyboard-focus-labels",
+          "dimension": "tab-order-and-accessible-names",
+          "failure_mode": "Keep currency spans as separate grid items so '(BRL)' wraps on its own line, or render the source as an unfocusable text node without a label.",
+          "plausible_wrong_implementation": "Keep currency spans as separate grid items so '(BRL)' wraps on its own line, or render the source as an unfocusable text node without a label.",
+          "control_type": "scenario",
+          "procedure": "Chrome: focus Tipo and press Tab twice via Input.dispatchKeyEvent; read control.labels text (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+          "expected": "Focus moves Tipo > Conta origem > Conta destino, the read-only source shows a visible focus indicator and both controls are labelled.",
+          "observed": "order=kind>source>destination, sourceFocusVisible=true, labels 'Conta origem'/'Conta destino'.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "LAYOUT-KEYBOARD-001-S1",
+              "surface": "keyboard-focus-labels",
+              "dimension": "tab-order",
+              "status": "passed"
+            },
+            {
+              "id": "LAYOUT-KEYBOARD-001-S2",
+              "surface": "keyboard-focus-labels",
+              "dimension": "accessible-name",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-19F59959",
+          "status": "passed",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
+          "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-010",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-011",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-034",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-035",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-036",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-037",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-038",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-039",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-040",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-041",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        },
+        {
+          "obligation_id": "OBL-070",
+          "primary_negative_control_id": "LAYOUT-KEYBOARD-001"
+        },
+        {
+          "obligation_id": "OBL-071",
+          "primary_negative_control_id": "LAYOUT-LABEL-WRAP-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "label-composition",
+          "reason": "Every label renders on one line; 'Valor origem (BRL)' and 'Valor destino (USD)' never split."
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "keyboard-focus-labels",
+          "reason": "Focus moves Tipo > Conta origem > Conta destino, the read-only source shows a visible focus indicator and both controls are labelled."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-677-SOURCE-DESTINATION",
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020",
+        "OBL-021",
+        "OBL-042",
+        "OBL-043",
+        "OBL-044",
+        "OBL-049",
+        "OBL-050",
+        "OBL-051",
+        "OBL-052",
+        "OBL-053",
+        "OBL-054",
+        "OBL-056",
+        "OBL-057",
+        "OBL-059",
+        "OBL-060",
+        "OBL-061",
+        "OBL-062",
+        "OBL-063",
+        "OBL-069",
+        "OBL-072",
+        "OBL-079"
+      ],
+      "risk_families": [
+        "authorization",
+        "reference-liveness",
+        "semantic-effect",
+        "structural-contract",
+        "temporal-consistency",
+        "tenant-isolation"
+      ],
+      "source_texts": [
+        "**Controle discriminante:** um teste do modal deve abrir `/lancamentos` com a conta A selecionada, iniciar uma transferência, provar que **Conta origem = A** está visível e read-only, escolher conta B como destino e verificar que o payload mantém `accountId=A` e envia `destinationAccountId=B`. Uma implementação com dois seletores independentes na criação ou com origem apenas no título falha nesse controle.",
+        "**Pronta.** A origem permanece contextual/read-only na criação conforme #473. A nova capacidade de repetição fixa fica delimitada a transferências same-currency; cross-currency permanece ocorrência única conforme #668. A implementação deve estender o contrato canônico de recorrência para transportar também a conta destino, sem criar um mecanismo paralelo.",
+        "A conta destino deve continuar sendo selecionável entre contas elegíveis do mesmo tenant/perfil, conforme o contrato existente.",
+        "A issue não cria outro estado financeiro concorrente apenas para apresentação.",
+        "A opção correspondente à própria conta origem não deve produzir uma transferência válida.",
+        "Ao abrir **Novo lançamento** a partir do Extrato, a **Conta origem** deve ser preenchida com a conta atualmente selecionada no contexto principal da tela.",
+        "C6 · BRL [somente leitura na criação]",
+        "Erro de origem = destino deve impedir o salvamento e indicar claramente que é necessário escolher outra conta destino.",
+        "Esta issue amplia o fluxo de transferência em três frentes coordenadas: tornar visíveis as duas pontas da operação, melhorar a composição visual do modal e permitir **Repetição = Fixo** para transferências **na mesma moeda**, reutilizando o contrato canônico de recorrências. Transferências cross-currency continuam com ocorrência única nesta entrega, preservando #668.",
+        "Exibir **Conta origem** e **Conta destino** simultaneamente quando `Tipo = Transferência`.",
+        "Falhas de validação da conta destino devem seguir o padrão atual do modal/API e preservar os dados preenchidos quando o fluxo existente já faz isso.",
+        "Hoje o modal de lançamento aberto a partir do Extrato identifica a conta atual no título/contexto, mas no formulário de transferência exibe apenas o campo **Conta destino**. Isso torna a origem implícita.",
+        "Na criação, a origem exibida corresponde à conta do contexto atual do Extrato.",
+        "Na tela de **novo lançamento da conta**, quando o tipo selecionado for **Transferência**, exibir de forma explícita e separada a **Conta origem** e a **Conta destino**, eliminando a dependência do título/contexto do Extrato para identificar qual conta será debitada.",
+        "Não permitir que uma transferência válida tenha origem e destino iguais.",
+        "Não trocar silenciosamente a origem quando o usuário escolhe o destino.",
+        "Não usar apenas o título do modal como representação da origem.",
+        "O campo deve apresentar pelo menos **nome da conta e moeda**.",
+        "O usuário consegue identificar, antes de salvar, qual conta será debitada e qual será creditada.",
+        "O usuário deve enxergar no próprio formulário qual conta será debitada, sem depender apenas do título `Novo lançamento em ...`.",
+        "Preservar o fluxo atual de seleção da conta origem pelo contexto do Extrato.",
+        "Quando `Tipo = Transferência`, exibir **Conta destino** separadamente da origem.",
+        "Resolver a solicitação apenas renomeando **Conta destino** ou repetindo o nome da conta no título.",
+        "Se a UI mantiver a origem disponível na lista por limitação do componente, selecionar origem = destino deve gerar validação clara antes do salvamento; preferencialmente a opção deve ficar indisponível quando o padrão existente permitir isso.",
+        "Tornar a conta origem explicitamente visível no modo de criação.",
+        "[ ] **Conta destino** permanece selecionável e apresenta nome e moeda.",
+        "[ ] A origem é identificável no corpo do formulário sem depender do título do modal.",
+        "[ ] Ao selecionar **Transferência**, **Conta origem** e **Conta destino** ficam visíveis simultaneamente.",
+        "[ ] Na criação, **Conta origem** mostra a conta atual do Extrato e é somente leitura.",
+        "[ ] O payload de criação mantém a conta atual em `accountId` e a escolha do usuário em `destinationAccountId`.",
+        "[ ] Origem e destino iguais não podem ser salvos.",
+        "origem inicial derivada do contexto do Extrato;"
+      ],
+      "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "procedure": "Open /lancamentos with account A in Chrome (scripts/statement-visual/issue-677-transfer-source-destination.mjs), choose Transferencia, pick account B and submit.",
+        "expected": "Conta origem shows 'A · BRL' read-only in the form body, Conta destino lists B with currency, and the POST body keeps accountId=A with destinationAccountId=B.",
+        "observed": "Chrome scenario passed on the material head with requestBody.accountId=A, destinationAccountId=B and a persisted transfer.",
+        "evidence": "evidence/issue-677-exact-head.txt",
+        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_kind": "behavioral"
+      },
+      "negative_controls": [
+        {
+          "id": "SRC-DST-RELATIONAL-001",
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "source-equals-destination-link",
+          "failure_mode": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "control_type": "test",
+          "procedure": "Create through the canonical domain/repository producers a transfer whose linked destination record equals the source account (incompatible relation), for a single transaction (TRANSACTION_TRANSFER_SAME_ACCOUNT) and for a recurrence create/update (packages/domain/src/recurrences-transfer.test.ts, apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "Every producer rejects the incompatible source/destination link before persistence and a read back shows no rule or occurrence with source = destination.",
+          "observed": "RECURRENCE_TRANSFER_SAME_ACCOUNT on create and update, TRANSACTION_TRANSFER_SAME_ACCOUNT on occurrence edit; persisted count 0 and occurrences unchanged on read back.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "SRC-DST-RELATIONAL-001-S1",
+              "surface": "relational-semantic-integrity",
+              "dimension": "create-producer",
+              "status": "passed"
+            },
+            {
+              "id": "SRC-DST-RELATIONAL-001-S2",
+              "surface": "relational-semantic-integrity",
+              "dimension": "update-producer",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "SRC-DST-TENANT-001",
+          "risk_family": "tenant-isolation",
+          "surface": "tenant-scope-isolation",
+          "dimension": "destination-other-profile",
+          "failure_mode": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "control_type": "test",
+          "procedure": "Integration: accounts deliberately created in two distinct financial profiles of the same organization; the profile P1 transfer targets the P2 account (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "The other profile account is excluded from the P1 transfer: rejected with the generic tenant not-found contract, no leak and nothing persisted.",
+          "observed": "TENANT_RESOURCE_NOT_FOUND and persisted count 0 for the other profile destination.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "SRC-DST-TENANT-001-S1",
+              "surface": "tenant-scope-isolation",
+              "dimension": "same-org-other-profile",
+              "status": "passed"
+            },
+            {
+              "id": "SRC-DST-TENANT-001-S2",
+              "surface": "tenant-scope-isolation",
+              "dimension": "other-organization",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "SRC-DST-SINGLE-SOURCE-001",
+          "risk_family": "structural-contract",
+          "surface": "single-source-account-field",
+          "dimension": "single-accountId-source",
+          "failure_mode": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "control_type": "scenario",
+          "procedure": "Chrome: count enabled [name=accountId] fields and inspect the read-only display after selecting a destination (scripts/statement-visual/issue-677-transfer-source-destination.mjs); SSR: assert the display input has no name and no <select name=accountId> exists on create (apps/web/src/dev-server/transactions-page-v2.test.ts).",
+          "expected": "Exactly one enabled accountId (the statement account), no editable source selector on create, and the display is never submitted.",
+          "observed": "enabledSourceFields=1, editableSourceSelect=false, sourceSubmitted=false; SSR test for #677 passed.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "SRC-DST-SINGLE-SOURCE-001-S1",
+              "surface": "single-source-account-field",
+              "dimension": "hidden-accountId-vs-display",
+              "status": "passed"
+            },
+            {
+              "id": "SRC-DST-SINGLE-SOURCE-001-S2",
+              "surface": "single-source-account-field",
+              "dimension": "destination-change-does-not-move-source",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "SRC-DST-SAME-ACCOUNT-001",
+          "risk_family": "semantic-effect",
+          "surface": "same-account-transfer",
+          "dimension": "source-equals-destination",
+          "failure_mode": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "control_type": "scenario",
+          "procedure": "Chrome: force destination=A (the source) and click submit while counting fetch calls (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+          "expected": "The source option is disabled, the select reports 'Escolha uma conta destino diferente da conta origem.' and no request is sent.",
+          "observed": "sourceOptionDisabled=true, valid=false, requests=0 with the exact message.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "SRC-DST-SAME-ACCOUNT-001-S1",
+              "surface": "same-account-transfer",
+              "dimension": "option-disabled",
+              "status": "passed"
+            },
+            {
+              "id": "SRC-DST-SAME-ACCOUNT-001-S2",
+              "surface": "same-account-transfer",
+              "dimension": "custom-validity-blocks-submit",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "SRC-DST-AUTHZ-001",
+          "risk_family": "authorization",
+          "surface": "tenant-scoped-destination",
+          "dimension": "foreign-profile-destination",
+          "failure_mode": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "control_type": "test",
+          "procedure": "Integration: create a transfer recurrence whose destination belongs to another financial profile (apps/api/src/transfer-recurrence.integration.test.ts); domain: foreign-tenant destination account (packages/domain/src/recurrences-transfer.test.ts).",
+          "expected": "Rejected with TENANT_RESOURCE_NOT_FOUND / TenantAuthorizationError and no rule persisted.",
+          "observed": "Integration assertRejectCode TENANT_RESOURCE_NOT_FOUND passed and persisted count stayed 0; domain test passed.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "SRC-DST-AUTHZ-001-S1",
+              "surface": "tenant-scoped-destination",
+              "dimension": "other-profile-same-organization",
+              "status": "passed"
+            },
+            {
+              "id": "SRC-DST-AUTHZ-001-S2",
+              "surface": "tenant-scoped-destination",
+              "dimension": "other-organization",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "SRC-DST-LIVENESS-001",
+          "risk_family": "reference-liveness",
+          "surface": "destination-account-liveness",
+          "dimension": "archived-destination",
+          "failure_mode": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "control_type": "test",
+          "procedure": "Domain: create a transfer recurrence targeting an archived destination (packages/domain/src/recurrences-transfer.test.ts); API keeps TRANSACTION_ACCOUNT_ARCHIVED/INVALID for single transfers.",
+          "expected": "Archived or unknown destination is rejected at write time instead of being accepted and failing later.",
+          "observed": "RECURRENCE_ACCOUNT_ARCHIVED raised; transfer occurrence edits reject inactive destinations with TRANSACTION_DESTINATION_ACCOUNT_INVALID.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "SRC-DST-LIVENESS-001-S1",
+              "surface": "destination-account-liveness",
+              "dimension": "archived-destination",
+              "status": "passed"
+            },
+            {
+              "id": "SRC-DST-LIVENESS-001-S2",
+              "surface": "destination-account-liveness",
+              "dimension": "missing-destination",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "SRC-DST-TEMPORAL-001",
+          "risk_family": "temporal-consistency",
+          "surface": "create-uses-current-context",
+          "dimension": "statement-context-at-open",
+          "failure_mode": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
+          "control_type": "scenario",
+          "procedure": "Chrome: open the create modal from the statement of account A after navigating statements (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
+          "expected": "The read-only source reflects the statement account at the moment the modal opens (A), not a stale value.",
+          "observed": "sourceValue equals '<A name> · BRL' and submittedSourceId equals A.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "SRC-DST-TEMPORAL-001-S1",
+              "surface": "create-uses-current-context",
+              "dimension": "first-open",
+              "status": "passed"
+            },
+            {
+              "id": "SRC-DST-TEMPORAL-001-S2",
+              "surface": "create-uses-current-context",
+              "dimension": "reopen-after-submit",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-19F59959",
+          "status": "passed",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
+          "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-001",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-002",
+          "primary_negative_control_id": "SRC-DST-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-005",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-006",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-007",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-008",
+          "primary_negative_control_id": "SRC-DST-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-014",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-015",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-016",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-017",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-018",
+          "primary_negative_control_id": "SRC-DST-AUTHZ-001"
+        },
+        {
+          "obligation_id": "OBL-019",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-020",
+          "primary_negative_control_id": "SRC-DST-TEMPORAL-001"
+        },
+        {
+          "obligation_id": "OBL-021",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-042",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-043",
+          "primary_negative_control_id": "SRC-DST-TEMPORAL-001"
+        },
+        {
+          "obligation_id": "OBL-044",
+          "primary_negative_control_id": "SRC-DST-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-049",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-050",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-051",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-052",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-053",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-054",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-056",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-057",
+          "primary_negative_control_id": "SRC-DST-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-059",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-060",
+          "primary_negative_control_id": "SRC-DST-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-061",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-062",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-063",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-069",
+          "primary_negative_control_id": "SRC-DST-LIVENESS-001"
+        },
+        {
+          "obligation_id": "OBL-072",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        },
+        {
+          "obligation_id": "OBL-079",
+          "primary_negative_control_id": "SRC-DST-RELATIONAL-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "reason": "Every producer rejects the incompatible source/destination link before persistence and a read back shows no rule or occurrence with source = destination."
+        },
+        {
+          "risk_family": "tenant-isolation",
+          "surface": "tenant-scope-isolation",
+          "reason": "The other profile account is excluded from the P1 transfer: rejected with the generic tenant not-found contract, no leak and nothing persisted."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "single-source-account-field",
+          "reason": "Exactly one enabled accountId (the statement account), no editable source selector on create, and the display is never submitted."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "same-account-transfer",
+          "reason": "The source option is disabled, the select reports 'Escolha uma conta destino diferente da conta origem.' and no request is sent."
+        },
+        {
+          "risk_family": "authorization",
+          "surface": "tenant-scoped-destination",
+          "reason": "Rejected with TENANT_RESOURCE_NOT_FOUND / TenantAuthorizationError and no rule persisted."
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "destination-account-liveness",
+          "reason": "Archived or unknown destination is rejected at write time instead of being accepted and failing later."
+        },
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "create-uses-current-context",
+          "reason": "The read-only source reflects the statement account at the moment the modal opens (A), not a stale value."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-677-TENANT-CONTRACT",
+      "obligation_ids": [
+        "OBL-003",
+        "OBL-004",
+        "OBL-046",
+        "OBL-055",
+        "OBL-058"
+      ],
+      "risk_families": [
+        "authorization",
+        "semantic-effect",
+        "structural-contract"
+      ],
+      "source_texts": [
+        "Nenhum erro deve expor existência ou dados de conta fora do tenant/perfil ativo.",
+        "O contrato financeiro da transferência já existe e não deve ser redefinido nesta issue:",
+        "Reutilizar o contrato de contas/tenant já existente em `docs/API_TRANSACTIONS.md`.",
+        "`docs/API_TRANSACTIONS.md` é a fonte canônica do contrato de API, incluindo `accountId`, `destinationAccountId`, validação de origem != destino e semântica monetária;",
+        "conta destino inativa, inválida ou fora do tenant/perfil continua seguindo as validações existentes."
+      ],
+      "plausible_wrong_implementation": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "procedure": "Integration against PostgreSQL with accounts in two financial profiles (apps/api/src/transfer-recurrence.integration.test.ts).",
+        "expected": "Destination lookups stay scoped to the active organization/profile and reuse the existing TENANT_RESOURCE_NOT_FOUND contract.",
+        "observed": "Foreign-profile destination rejected with TENANT_RESOURCE_NOT_FOUND and nothing persisted.",
+        "evidence": "evidence/issue-677-exact-head.txt",
+        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_kind": "behavioral"
+      },
+      "negative_controls": [
+        {
+          "id": "TENANT-DESTINATION-001",
+          "risk_family": "authorization",
+          "surface": "tenant-scope-isolation",
+          "dimension": "cross-profile-destination",
+          "failure_mode": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+          "plausible_wrong_implementation": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+          "control_type": "test",
+          "procedure": "Integration: organization O, profile P1 creates a transfer recurrence targeting an account of profile P2 in the same organization (apps/api/src/transfer-recurrence.integration.test.ts); domain: account of organization org-b (packages/domain/src/recurrences-transfer.test.ts).",
+          "expected": "The distinct tenant/profile scope is excluded: generic not-found error, no rule persisted and no leak of the foreign account.",
+          "observed": "TENANT_RESOURCE_NOT_FOUND with persisted count 0; domain TenantAuthorizationError for org-b.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "TENANT-DESTINATION-001-S1",
+              "surface": "tenant-scope-isolation",
+              "dimension": "same-org-other-profile",
+              "status": "passed"
+            },
+            {
+              "id": "TENANT-DESTINATION-001-S2",
+              "surface": "tenant-scope-isolation",
+              "dimension": "other-org",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "TENANT-CANONICAL-001",
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "account-fields-single-source",
+          "failure_mode": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+          "plausible_wrong_implementation": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+          "control_type": "test",
+          "procedure": "Integration: compare the canonical source of truth (Recurrence rule accountId/destinationAccountId) with the runtime occurrences produced by the canonical generation path and by the specialized expanded-edit path (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "No drift between the canonical rule definition and runtime occurrences: both paths keep accountId as the source and destinationAccountId as the destination.",
+          "observed": "readRecurrence/readOccurrences show the same canonical source and destination after generation and after the specialized edit path.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "TENANT-CANONICAL-001-S1",
+              "surface": "canonical-source-consistency",
+              "dimension": "rule",
+              "status": "passed"
+            },
+            {
+              "id": "TENANT-CANONICAL-001-S2",
+              "surface": "canonical-source-consistency",
+              "dimension": "occurrences",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "TENANT-RELATIONAL-001",
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "transfer-accounts-check",
+          "failure_mode": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+          "plausible_wrong_implementation": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+          "control_type": "test",
+          "procedure": "Integration: a direct SQL writer (producer that bypasses the repository) inserts linked account records with incompatible relations: TRANSFER without destination, TRANSFER with destination equal to source, and EXPENSE with a destination (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "Recurrence_transfer_accounts_check rejects all three incompatible linked-account relations (fail-closed, no write).",
+          "observed": "All three direct inserts rejected with 23514; no row written.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "TENANT-RELATIONAL-001-S1",
+              "surface": "relational-semantic-integrity",
+              "dimension": "transfer-null-destination",
+              "status": "passed"
+            },
+            {
+              "id": "TENANT-RELATIONAL-001-S2",
+              "surface": "relational-semantic-integrity",
+              "dimension": "transfer-same-account",
+              "status": "passed"
+            },
+            {
+              "id": "TENANT-RELATIONAL-001-S3",
+              "surface": "relational-semantic-integrity",
+              "dimension": "expense-with-destination",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "TENANT-SEMANTIC-001",
+          "risk_family": "semantic-effect",
+          "surface": "error-disclosure",
+          "dimension": "no-foreign-existence-leak",
+          "failure_mode": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+          "plausible_wrong_implementation": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
+          "control_type": "test",
+          "procedure": "Integration: compare error codes for a foreign-profile destination vs a missing destination (apps/api/src/transfer-recurrence.integration.test.ts).",
+          "expected": "Foreign ids use the generic tenant not-found contract; no foreign account data is returned.",
+          "observed": "TENANT_RESOURCE_NOT_FOUND for the foreign account; RECURRENCE_DESTINATION_ACCOUNT_REQUIRED only when absent.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_kind": "behavioral",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "TENANT-SEMANTIC-001-S1",
+              "surface": "error-disclosure",
+              "dimension": "foreign",
+              "status": "passed"
+            },
+            {
+              "id": "TENANT-SEMANTIC-001-S2",
+              "surface": "error-disclosure",
+              "dimension": "absent",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-19F59959",
+          "status": "passed",
+          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
+          "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-003",
+          "primary_negative_control_id": "TENANT-DESTINATION-001"
+        },
+        {
+          "obligation_id": "OBL-004",
+          "primary_negative_control_id": "TENANT-CANONICAL-001"
+        },
+        {
+          "obligation_id": "OBL-046",
+          "primary_negative_control_id": "TENANT-CANONICAL-001"
+        },
+        {
+          "obligation_id": "OBL-055",
+          "primary_negative_control_id": "TENANT-DESTINATION-001"
+        },
+        {
+          "obligation_id": "OBL-058",
+          "primary_negative_control_id": "TENANT-DESTINATION-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "authorization",
+          "surface": "tenant-scope-isolation",
+          "reason": "The distinct tenant/profile scope is excluded: generic not-found error, no rule persisted and no leak of the foreign account."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "reason": "No drift between the canonical rule definition and runtime occurrences: both paths keep accountId as the source and destinationAccountId as the destination."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "reason": "Recurrence_transfer_accounts_check rejects all three incompatible linked-account relations (fail-closed, no write)."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "error-disclosure",
+          "reason": "Foreign ids use the generic tenant not-found contract; no foreign account data is returned."
+        }
+      ],
+      "quantitative_evidence_required": false
+    }
+  ],
+  "uncovered_requirements": []
+}
