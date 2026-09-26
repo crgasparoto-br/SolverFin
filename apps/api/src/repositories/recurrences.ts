@@ -7,6 +7,7 @@ import {
   getRecurrence as getRecurrenceDomain,
   listRecurrences as listRecurrencesDomain,
   pauseRecurrence as pauseRecurrenceDomain,
+  RecurrenceError,
   resumeRecurrence as resumeRecurrenceDomain,
   updateRecurrence as updateRecurrenceDomain,
   type Account,
@@ -312,6 +313,7 @@ export async function generateInstallmentsForContext(
   maxOccurrences?: number,
 ): Promise<GenerateRecurrenceInstallmentsResult> {
   const recurrence = await findRecurrenceRow(context, recurrenceId);
+  await assertTransferRecurrenceReferencesLive(context, recurrence);
   const existingInstallments = await listInstallmentsByRecurrence(context, recurrenceId);
   const now = new Date().toISOString();
 
@@ -413,6 +415,83 @@ export async function catchUpRecurrenceInstallmentsForContext(
 
   for (const recurrence of recurrences) {
     await generateInstallmentsForContext(context, recurrence.id, through);
+  }
+}
+
+async function assertTransferRecurrenceReferencesLive(
+  context: TenantContext,
+  recurrence: Recurrence | undefined,
+): Promise<void> {
+  if (recurrence?.kind !== "transfer") {
+    return;
+  }
+
+  if (!recurrence.accountId) {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_REQUIRED",
+      "Transfer recurrences require a source account.",
+    );
+  }
+
+  if (!recurrence.destinationAccountId) {
+    throw new RecurrenceError(
+      "RECURRENCE_DESTINATION_ACCOUNT_REQUIRED",
+      "Transfer recurrences require a destination account.",
+    );
+  }
+
+  const [sourceAccount, destinationAccount] = await Promise.all([
+    findAccountRow(context, recurrence.accountId),
+    findAccountRow(context, recurrence.destinationAccountId),
+  ]);
+
+  if (!sourceAccount) {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_INVALID",
+      "Recurrence source account is no longer available.",
+    );
+  }
+
+  if (!destinationAccount) {
+    throw new RecurrenceError(
+      "RECURRENCE_DESTINATION_ACCOUNT_INVALID",
+      "Recurrence destination account is no longer available.",
+    );
+  }
+
+  if (sourceAccount.status !== "active") {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_ARCHIVED",
+      "Recurrence source account must be active before materializing a transfer.",
+    );
+  }
+
+  if (destinationAccount.status !== "active") {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_ARCHIVED",
+      "Recurrence destination account must be active before materializing a transfer.",
+    );
+  }
+
+  if (sourceAccount.id === destinationAccount.id) {
+    throw new RecurrenceError(
+      "RECURRENCE_TRANSFER_SAME_ACCOUNT",
+      "Transfer recurrences require different source and destination accounts.",
+    );
+  }
+
+  const sourceCurrency = sourceAccount.currency.trim().toUpperCase();
+  const destinationCurrency = destinationAccount.currency.trim().toUpperCase();
+  const recurrenceCurrency = recurrence.currency.trim().toUpperCase();
+
+  if (
+    destinationCurrency !== sourceCurrency ||
+    recurrenceCurrency !== sourceCurrency
+  ) {
+    throw new RecurrenceError(
+      "RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED",
+      "Transfer recurrences require source and destination accounts in the same currency.",
+    );
   }
 }
 
