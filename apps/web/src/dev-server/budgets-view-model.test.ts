@@ -38,45 +38,65 @@ const usdBudget: BudgetRecord = {
   currency: "USD",
 };
 
-function usage(budget: BudgetRecord, actualAmountMinor: number): BudgetUsageLoad {
+function usage(budget: BudgetRecord, realized: number, committed = 0): BudgetUsageLoad {
+  const projected = realized + committed;
   return {
     ok: true,
     usage: {
+      source: "budget",
       budgetId: budget.id,
       categoryId: budget.categoryId,
       periodStartOn: budget.periodStartOn,
       periodEndOn: budget.periodEndOn,
       plannedAmountMinor: budget.plannedAmountMinor,
-      actualAmountMinor,
-      remainingAmountMinor: budget.plannedAmountMinor - actualAmountMinor,
-      usedPercent: (actualAmountMinor / budget.plannedAmountMinor) * 100,
+      actualAmountMinor: realized,
+      realizedAmountMinor: realized,
+      committedAmountMinor: committed,
+      projectedAmountMinor: projected,
+      remainingAmountMinor: budget.plannedAmountMinor - realized,
+      availableAmountMinor: budget.plannedAmountMinor - projected,
+      overBudgetAmountMinor: Math.max(0, projected - budget.plannedAmountMinor),
+      usedPercent: (realized / budget.plannedAmountMinor) * 100,
       alertThresholdPercent: 80,
-      status: actualAmountMinor > budget.plannedAmountMinor ? "exceeded" : "on_track",
+      status: realized > budget.plannedAmountMinor ? "exceeded" : "on_track",
       currency: budget.currency ?? "BRL",
+      realizedItems: [],
+      committedItems: [],
     },
   };
 }
 
-function unbudgeted(currency = "BRL"): BudgetUsageRecord {
+function dashboardUsage(
+  source: "unbudgeted" | "uncategorized",
+  currency = "BRL",
+): BudgetUsageRecord {
   return {
-    categoryId: "health",
+    source,
+    ...(source === "unbudgeted" ? { categoryId: "health" } : {}),
     periodStartOn: "2026-09-01",
     periodEndOn: "2026-09-30",
-    plannedAmountMinor: 0,
+    plannedAmountMinor: null,
     actualAmountMinor: 12_500,
-    remainingAmountMinor: -12_500,
-    usedPercent: 100,
-    alertThresholdPercent: 80,
-    status: "unbudgeted",
+    realizedAmountMinor: 12_500,
+    committedAmountMinor: 2_500,
+    projectedAmountMinor: 15_000,
+    remainingAmountMinor: null,
+    availableAmountMinor: null,
+    overBudgetAmountMinor: null,
+    usedPercent: null,
+    alertThresholdPercent: null,
+    status: source,
     currency,
+    realizedItems: [],
+    committedItems: [],
   };
 }
 
-describe("budgets view-model issue 613", () => {
-  it("keeps currencies separated and preserves backend realized and remaining values", () => {
+describe("budgets view-model issue 619", () => {
+  it("preserves backend realized, committed, projected and available values by currency", () => {
     const loads = new Map<string, BudgetUsageLoad>([
-      [brlBudget.id, usage(brlBudget, 30_000)],
-      [usdBudget.id, usage(usdBudget, 500)],
+      [brlBudget.id, usage(brlBudget, 30_000, 20_000)],
+      [usdBudget.id, usage(usdBudget, 500, 1_000)],
     ]);
     const result = buildBudgetsPageViewModel([brlBudget, usdBudget], categories, loads);
 
@@ -86,18 +106,20 @@ describe("budgets view-model issue 613", () => {
         row.currency,
         row.plannedAmountMinor,
         row.actualAmountMinor,
-        row.remainingAmountMinor,
+        row.committedAmountMinor,
+        row.projectedAmountMinor,
+        row.availableAmountMinor,
       ]),
       [
-        ["BRL", 100_000, 30_000, 70_000],
-        ["USD", 20_000, 500, 19_500],
+        ["BRL", 100_000, 30_000, 20_000, 50_000, 50_000],
+        ["USD", 20_000, 500, 1_000, 1_500, 18_500],
       ],
     );
     assert.equal(result.rows[0]?.categoryName, "Casa › Mercado");
   });
 
   it("fails closed when usage currency or period does not match the budget", () => {
-    const mismatched = usage(brlBudget, 30_000);
+    const mismatched = usage(brlBudget, 30_000, 20_000);
     if (!mismatched.usage) throw new Error("fixture missing usage");
     mismatched.usage.currency = "USD";
     mismatched.usage.periodEndOn = "2026-10-31";
@@ -109,12 +131,39 @@ describe("budgets view-model issue 613", () => {
     );
 
     assert.equal(result.rows[0]?.actualAmountMinor, null);
-    assert.equal(result.rows[0]?.remainingAmountMinor, null);
-    assert.equal(result.rows[0]?.usedPercent, null);
+    assert.equal(result.rows[0]?.committedAmountMinor, null);
+    assert.equal(result.rows[0]?.projectedAmountMinor, null);
+    assert.equal(result.rows[0]?.availableAmountMinor, null);
     assert.equal(result.rows[0]?.usageStatus, "unavailable");
   });
 
-  it("filters currency without aggregating or relabeling another currency", () => {
+  it("keeps unbudgeted and uncategorized rows distinct without fabricating planned zero", () => {
+    const result = buildBudgetsPageViewModel(
+      [brlBudget],
+      categories,
+      new Map([[brlBudget.id, usage(brlBudget, 30_000, 20_000)]]),
+      {},
+      [dashboardUsage("unbudgeted"), dashboardUsage("uncategorized")],
+    );
+    const unbudgeted = result.rows.find((candidate) => candidate.source === "unbudgeted");
+    const uncategorized = result.rows.find((candidate) => candidate.source === "uncategorized");
+
+    assert.ok(unbudgeted);
+    assert.equal(unbudgeted.categoryName, "Saúde");
+    assert.equal(unbudgeted.plannedAmountMinor, null);
+    assert.equal(unbudgeted.availableAmountMinor, null);
+    assert.equal(unbudgeted.projectedAmountMinor, 15_000);
+
+    assert.ok(uncategorized);
+    assert.equal(uncategorized.categoryName, "Sem categoria");
+    assert.equal(uncategorized.plannedAmountMinor, null);
+    assert.equal(uncategorized.availableAmountMinor, null);
+    assert.equal(uncategorized.projectedAmountMinor, 15_000);
+    assert.equal(result.unbudgetedCount, 1);
+    assert.equal(result.uncategorizedCount, 1);
+  });
+
+  it("filters every source by native currency without relabeling", () => {
     const result = buildBudgetsPageViewModel(
       [brlBudget, usdBudget],
       categories,
@@ -122,43 +171,21 @@ describe("budgets view-model issue 613", () => {
         [brlBudget.id, usage(brlBudget, 30_000)],
         [usdBudget.id, usage(usdBudget, 500)],
       ]),
-      { currency: "usd" },
+      { currency: "USD" },
+      [dashboardUsage("unbudgeted", "BRL"), dashboardUsage("uncategorized", "USD")],
     );
 
-    assert.equal(result.rows.length, 1);
-    assert.equal(result.rows[0]?.id, "usd");
-    assert.equal(result.rows[0]?.currency, "USD");
-  });
-
-  it("keeps unbudgeted usage distinct without fabricating a zero-value budget", () => {
-    const result = buildBudgetsPageViewModel(
-      [brlBudget],
-      categories,
-      new Map([[brlBudget.id, usage(brlBudget, 30_000)]]),
-      {},
-      [unbudgeted()],
+    assert.equal(
+      result.rows.every((row) => row.currency === "USD"),
+      true,
     );
-    const row = result.rows.find((candidate) => candidate.source === "unbudgeted");
-
-    if (!row) throw new Error("unbudgeted row missing");
-    assert.equal(row.categoryName, "Saúde");
-    assert.equal(row.plannedAmountMinor, null);
-    assert.equal(row.actualAmountMinor, 12_500);
-    assert.equal(row.remainingAmountMinor, -12_500);
-    assert.equal(row.usedPercent, 100);
-    assert.equal(row.usageStatus, "unbudgeted");
-    assert.equal(row.currency, "BRL");
-    assert.equal(result.unbudgetedCount, 1);
-  });
-
-  it("applies currency filtering to unbudgeted rows without cross-currency relabeling", () => {
-    const result = buildBudgetsPageViewModel([], categories, new Map(), { currency: "USD" }, [
-      unbudgeted("BRL"),
-      unbudgeted("USD"),
-    ]);
-
-    assert.equal(result.rows.length, 1);
-    assert.equal(result.rows[0]?.source, "unbudgeted");
-    assert.equal(result.rows[0]?.currency, "USD");
+    assert.equal(
+      result.rows.some((row) => row.source === "uncategorized"),
+      true,
+    );
+    assert.equal(
+      result.rows.some((row) => row.source === "unbudgeted"),
+      false,
+    );
   });
 });

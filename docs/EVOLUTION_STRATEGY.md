@@ -158,7 +158,7 @@ Epica operacional: #590.
 
 Migrar primeiro Dashboard, Extrato e Cartoes; usar o aprendizado dessas rotas para consolidar padroes antes de migrar Relatorios e demais superficies.
 
-Estado observado: `/orcamentos` foi migrada pela #613 para a fundacao compartilhada, com `Money` e view-model explicitos e acompanhamento de planejado x realizado por categoria, periodo e moeda. Os estados `committed`, `projected`, `available` e `overBudget`, assim como o bucket `Sem categoria`, permanecem fora desse recorte e continuam pertencendo a #619.
+Estado observado: `/orcamentos` foi migrada pela #613 para a fundacao compartilhada e evoluida pela #619 para acompanhamento de planejado, realizado, comprometido, projetado e disponivel por categoria, periodo e moeda. O backend preserva `unbudgeted` sem fabricar orcamento de valor zero e materializa o bucket `Sem categoria` sem `planned`, `available` ou `overBudget` sinteticos.
 
 Epica operacional: #591.
 
@@ -166,7 +166,7 @@ Epica operacional: #591.
 
 Depois que o core financeiro e as telas-base estiverem estabilizados, consolidar compromissos futuros, projecao 30/60/90 dias, livre para gastar, orcamentos operacionais, recorrencias e insights priorizados.
 
-A #616 estabelece a agenda backend canonica em `GET /api/future-commitments`, com identidade logica separada de efeitos monetarios e precedencia entre `Transaction`, `Invoice`, projecoes de `Recurrence` e fallback legado. A #617 materializa `GET /api/cash-flow-projection` sobre essa fronteira e sobre a posicao financeira da #594, produzindo series diarias continuas de 30/60/90 dias por moeda. A #618 deriva, no proprio contrato de 30 dias, o menor saldo da trajetoria, o valor livre para gastar e o deficit projetado sem nova consulta de compromissos; #619 e demais consumidores devem reutilizar esses contratos em vez de reconstruir compromissos ou saldos.
+A #616 estabelece a agenda backend canonica em `GET /api/future-commitments`, com identidade logica separada de efeitos monetarios e precedencia entre `Transaction`, `Invoice`, projecoes de `Recurrence` e fallback legado. A #617 materializa `GET /api/cash-flow-projection` sobre essa fronteira e sobre a posicao financeira da #594, produzindo series diarias continuas de 30/60/90 dias por moeda. A #618 deriva, no proprio contrato de 30 dias, o menor saldo da trajetoria, o valor livre para gastar e o deficit projetado. A #619 passa a reutilizar a agenda #616 para compromissos orcamentarios nao materializados e mantem compras categorizadas como ocorrencias economicas, sem usar `Invoice` ou pagamento de fatura como segunda despesa.
 
 Epica operacional: #592.
 
