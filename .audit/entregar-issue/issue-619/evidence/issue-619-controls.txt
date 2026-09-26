@@ -1,8 +1,8 @@
 SolverFin issue #619 exact-head remediation evidence
-material_head_sha=5b71ddcd3f32d7e634734ed432a935223a6ccfd3
+material_head_sha=10dc5230eaca80c23cbe2f29ab062beaebef4854
 base_sha=26d2539ab3252f8b549011ab9bf41d79be44dc08
-Delivery V2 CI run 36127312655 completed success on exact material head.
-Statement visual validation run 36127312685 completed success on exact material head.
+Delivery V2 CI run 36191538438 CRITICAL validation completed success on exact material head; npm run test was reached and passed.
+Statement visual validation run 36191538441 completed success on exact material head.
 Regression packages/domain/src/budget-operations.test.ts::excludesInvoiceCashMovementsFromBudgetConsumption proves invoice forecast/payment transactions with invoiceId+cardId+accountId do not enter realized/committed or Sem categoria, while an invoice-linked card purchase without accountId remains economic budget consumption.
 Regression packages/domain/src/budget-operations.test.ts::keepsConsumptionOutsidePartialBudgetWindowsAsUnbudgeted proves a wider dashboard period with partial category/currency budgets preserves realized and committed consumption before, between and after budget windows as unbudgeted while in-window items remain budgeted.
 packages/domain/src/budget-operations.ts resolves budget coverage per item date against active budget periods instead of suppressing an entire category+currency when any overlapping budget exists.
