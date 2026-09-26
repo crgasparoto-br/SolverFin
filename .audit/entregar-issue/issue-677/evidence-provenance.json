@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "material_head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+  "material_head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
   "base_sha": "26d2539ab3252f8b549011ab9bf41d79be44dc08",
   "evidence": [
     {
@@ -8,10 +8,10 @@
       "kind": "quantitative",
       "status": "passed",
       "path": "evidence/issue-677-exact-head.txt",
-      "sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+      "sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
       "freshness_policy": "exact-material-head",
-      "subject_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
-      "producer": "Local exact-head reruns (domain, web, PostgreSQL integration, Chrome, mutation controls) plus GitHub Actions runs recorded in the evidence file"
+      "subject_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+      "producer": "GitHub Actions exact-head CI plus targeted PostgreSQL reference-liveness regression"
     }
   ]
 }

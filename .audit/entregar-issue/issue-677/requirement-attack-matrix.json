@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+  "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
   "requirements": [
     {
       "requirement_id": "REQ-677-CROSS-CURRENCY",
@@ -36,12 +36,12 @@
       "plausible_wrong_implementation": "Allow Fixo for a BRL->USD transfer and reuse the BRL amount as the USD value on every future occurrence.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
         "procedure": "Run the #677 Chrome scenario and the cross-currency rejections in domain/integration (scripts/statement-visual/issue-677-transfer-source-destination.mjs, packages/domain/src/recurrences-transfer.test.ts, apps/api/src/transfer-recurrence.integration.test.ts).",
         "expected": "Cross-currency keeps Valor destino/Taxa efetiva, forces single occurrence and every recurring path rejects a USD destination without residual effects.",
         "observed": "Chrome fixedDisabled=true/repeatMode=single; integration rejections left occurrences deepEqual to the fixture.",
         "evidence": "evidence/issue-677-exact-head.txt",
-        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
         "evidence_kind": "quantitative",
         "evidence_id": "EVID-677-EXACT-HEAD"
       },
@@ -58,9 +58,9 @@
           "expected": "Each producer rejects the incompatible linked currency (RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED or 23514) and re-reading the occurrences/rule shows no residual incompatible relation.",
           "observed": "create and update rejected with RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED; direct insert rejected with 23514; readOccurrences deepEqual to the original fixture.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -95,9 +95,9 @@
           "expected": "Valor destino is visible, Fixo is disabled and the repetition stays single; labels do not wrap.",
           "observed": "destinationAmountVisible=true, fixedDisabled=true, repeatMode=single.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -126,9 +126,9 @@
           "expected": "Destination amount is cleared on currency change; no silent reuse of a value from another currency.",
           "observed": "#668 scenario remains registered and passing in the visual suite; #677 did not change the currency-change handler.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -150,11 +150,11 @@
         {
           "id": "REG-19F59959",
           "status": "passed",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
           "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5"
         }
       ],
       "obligation_control_map": [
@@ -240,12 +240,12 @@
       "plausible_wrong_implementation": "Leave docs stating recurrences are only income/expense and that the Tipo is only Entrada/Saida, contradicting the runtime.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
         "procedure": "Review docs/TRANSACTIONS.md, docs/RECURRENCES_INSTALLMENTS_WEB.md, docs/API_RECURRENCES_INSTALLMENTS.md and docs/API_TRANSACTIONS.md on the material head.",
         "expected": "Docs describe read-only source on create, persisted source on edit, fixed same-currency transfers, destinationAccountId and the new error codes.",
         "observed": "All four documents updated in the material diff; prettier and doc-contract checks passed.",
         "evidence": "evidence/issue-677-exact-head.txt",
-        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
@@ -261,9 +261,9 @@
           "expected": "No canonical document still restricts account recurrences to income/expense; report/summary filters remain intentionally unaffected.",
           "observed": "API_RECURRENCES_INSTALLMENTS and RECURRENCES_INSTALLMENTS_WEB updated; API_REPORTS/API_FINANCIAL_SUMMARY filters unaffected by design.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -292,9 +292,9 @@
           "expected": "All referenced files/constraints exist.",
           "observed": "Referenced integration test, check constraint and trigger exist in the material diff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -323,9 +323,9 @@
           "expected": "No doc claims behavior that is not implemented and verified.",
           "observed": "Each documented rule maps to a passing control in this matrix.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -347,11 +347,11 @@
         {
           "id": "REG-19F59959",
           "status": "passed",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
           "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5"
         }
       ],
       "obligation_control_map": [
@@ -416,12 +416,12 @@
       "plausible_wrong_implementation": "Hydrate the edit form from the statement filter, showing the destination statement account as the source.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
         "procedure": "Open the destination account statement in Chrome and click Editar on the A->B transfer (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
         "expected": "Edit shows 'Conta origem' with the persisted source A and destination B.",
         "observed": "editSourceLabel='Conta origem', editSourceValue=A, destinationValue=B, read-only duplicate hidden.",
         "evidence": "evidence/issue-677-exact-head.txt",
-        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
@@ -437,9 +437,9 @@
           "expected": "Edit select value is A (persisted), never B (filter).",
           "observed": "editSourceValue=A with the statement filtered by B.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -468,9 +468,9 @@
           "expected": "#473 current-only/current-and-future account moves keep working; changing the destination never moves the source.",
           "observed": "#473 integration exit_code=0; rule.accountId stayed A after destination change.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -499,9 +499,9 @@
           "expected": "Destination select shows the persisted destination B and stays visible for transfers.",
           "observed": "destinationVisible=true and destinationValue=B.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -530,9 +530,9 @@
           "expected": "Occurrence #1 keeps the old destination/amount; #2-#4 receive the new destination and amount.",
           "observed": "after[0] unchanged, after[1..3] moved to the second destination with 9900.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -554,11 +554,11 @@
         {
           "id": "REG-19F59959",
           "status": "passed",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
           "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5"
         }
       ],
       "obligation_control_map": [
@@ -637,12 +637,12 @@
       "plausible_wrong_implementation": "Create a separate transfer scheduler or materialize two independent income/expense transactions per occurrence, or keep the destination only on the first occurrence.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
         "procedure": "Create a same-currency fixed transfer via the modal (Chrome) and via createRecurrenceForContext against PostgreSQL (apps/api/src/transfer-recurrence.integration.test.ts).",
         "expected": "POST /api/recurrences carries destinationAccountId; every materialized occurrence is one TRANSFER transaction with both legs, same amount/currency and its own transferGroupId, without duplicates.",
         "observed": "Chrome fixed transfer persisted as kind=transfer with recurrenceId; integration saw 4 occurrences stable across replay.",
         "evidence": "evidence/issue-677-exact-head.txt",
-        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
@@ -658,9 +658,9 @@
           "expected": "Occurrence ids are stable on replay and each carries accountId, destinationAccountId, destinationAmountMinor=amountMinor, destinationCurrency; the mutated build fails.",
           "observed": "Replay deepEqual passed; MUT-3 exit_code=1.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -689,9 +689,9 @@
           "expected": "Paused/cancelled rules generate nothing; resumed rule regenerates transfers with both legs; both accounts stay on the rule.",
           "observed": "0 occurrences while paused, 2 after resume, still 2 after cancel.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -720,9 +720,9 @@
           "expected": "Catch-up from the destination statement materializes due dates and the recurrence is listed for the destination; the mutated build fails.",
           "observed": "3 occurrences after destination catch-up; MUT-2 exit_code=1.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -751,9 +751,9 @@
           "expected": "Rule destinationAccountId follows the edit; the mutated build fails.",
           "observed": "rule.destinationAccountId=secondDestination; MUT-1 exit_code=1.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -769,17 +769,35 @@
               "status": "passed"
             }
           ]
+        },
+        {
+          "id": "FIXED-POST-CREATE-LIVENESS-001",
+          "risk_family": "reference-liveness",
+          "surface": "future-destination-reference-liveness",
+          "dimension": "active-at-materialization",
+          "failure_mode": "Validate the destination only when the recurrence is created, then continue materializing future transfers after that destination is archived.",
+          "plausible_wrong_implementation": "Persist a valid destinationAccountId at creation time and never re-check its current eligibility before later recurrence materialization.",
+          "control_type": "test",
+          "procedure": "PostgreSQL integration creates a future transfer recurrence, archives the destination account, then calls generateInstallmentsForContext for the due date.",
+          "expected": "Generation fails with RECURRENCE_ACCOUNT_ARCHIVED and persists zero occurrences.",
+          "observed": "CRITICAL integration suite passed on the exact material head; the regression asserted RECURRENCE_ACCOUNT_ARCHIVED and zero persisted occurrences.",
+          "evidence": "evidence/issue-677-exact-head.txt",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
+          "evidence_kind": "behavioral",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+          "status": "passed",
+          "sibling_cases": []
         }
       ],
       "regression_controls": [
         {
           "id": "REG-19F59959",
           "status": "passed",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
           "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5"
         }
       ],
       "obligation_control_map": [
@@ -836,6 +854,11 @@
           "risk_family": "semantic-effect",
           "surface": "expanded-edit-destination",
           "reason": "Rule destinationAccountId follows the edit; the mutated build fails."
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "future-destination-reference-liveness",
+          "reason": "The materialization entrypoint re-resolves both persisted account references and rejects an archived or otherwise incoherent destination before any installment/transaction write."
         }
       ],
       "quantitative_evidence_required": false
@@ -856,12 +879,12 @@
       "plausible_wrong_implementation": "Hide the destination field visually but keep its value in the FormData so income/expense payloads carry destinationAccountId.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
         "procedure": "Chrome: pick destination B, switch Tipo to Saida, inspect FormData, switch back to Transferencia (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
         "expected": "No destination is submitted for Saida and returning to transfer starts with an empty destination and the same source.",
         "observed": "submittedOnExpense=false, destinationAfterReturn='', source unchanged.",
         "evidence": "evidence/issue-677-exact-head.txt",
-        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
@@ -877,9 +900,9 @@
           "expected": "Destination is hidden, disabled and cleared; recurring occurrences switched to expense lose destination, destination amount and transfer group.",
           "observed": "hiddenOnExpense=true, submittedOnExpense=false; integration kind change asserted null destination fields.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -901,11 +924,11 @@
         {
           "id": "REG-19F59959",
           "status": "passed",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
           "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5"
         }
       ],
       "obligation_control_map": [
@@ -964,12 +987,12 @@
       "plausible_wrong_implementation": "Keep currency spans as separate grid items so '(BRL)' wraps on its own line, or render the source as an unfocusable text node without a label.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
         "procedure": "Chrome at 1366x768 and 390x844 with the transfer modal open (scripts/statement-visual/issue-677-transfer-source-destination.mjs).",
         "expected": "Labels are single-line, source/destination share a row on desktop and stack on mobile, controls have equal heights, no horizontal overflow, keyboard order Tipo > Conta origem > Conta destino.",
         "observed": "sameRow=true desktop, stacked=true mobile, equalControlHeights=true, unbrokenCurrencyLabels=true, order kind>source>destination, no overflow.",
         "evidence": "evidence/issue-677-exact-head.txt",
-        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
@@ -985,9 +1008,9 @@
           "expected": "Every label renders on one line; 'Valor origem (BRL)' and 'Valor destino (USD)' never split.",
           "observed": "unbrokenCurrencyLabels=true in the three states.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1022,9 +1045,9 @@
           "expected": "Focus moves Tipo > Conta origem > Conta destino, the read-only source shows a visible focus indicator and both controls are labelled.",
           "observed": "order=kind>source>destination, sourceFocusVisible=true, labels 'Conta origem'/'Conta destino'.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1046,11 +1069,11 @@
         {
           "id": "REG-19F59959",
           "status": "passed",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
           "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5"
         }
       ],
       "obligation_control_map": [
@@ -1199,12 +1222,12 @@
       "plausible_wrong_implementation": "Show the source only in the modal title, or add a second editable source selector that also submits accountId, letting the destination choice overwrite the source.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
         "procedure": "Open /lancamentos with account A in Chrome (scripts/statement-visual/issue-677-transfer-source-destination.mjs), choose Transferencia, pick account B and submit.",
         "expected": "Conta origem shows 'A · BRL' read-only in the form body, Conta destino lists B with currency, and the POST body keeps accountId=A with destinationAccountId=B.",
         "observed": "Chrome scenario passed on the material head with requestBody.accountId=A, destinationAccountId=B and a persisted transfer.",
         "evidence": "evidence/issue-677-exact-head.txt",
-        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
@@ -1220,9 +1243,9 @@
           "expected": "Every producer rejects the incompatible source/destination link before persistence and a read back shows no rule or occurrence with source = destination.",
           "observed": "RECURRENCE_TRANSFER_SAME_ACCOUNT on create and update, TRANSACTION_TRANSFER_SAME_ACCOUNT on occurrence edit; persisted count 0 and occurrences unchanged on read back.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1251,9 +1274,9 @@
           "expected": "The other profile account is excluded from the P1 transfer: rejected with the generic tenant not-found contract, no leak and nothing persisted.",
           "observed": "TENANT_RESOURCE_NOT_FOUND and persisted count 0 for the other profile destination.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1282,9 +1305,9 @@
           "expected": "Exactly one enabled accountId (the statement account), no editable source selector on create, and the display is never submitted.",
           "observed": "enabledSourceFields=1, editableSourceSelect=false, sourceSubmitted=false; SSR test for #677 passed.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1313,9 +1336,9 @@
           "expected": "The source option is disabled, the select reports 'Escolha uma conta destino diferente da conta origem.' and no request is sent.",
           "observed": "sourceOptionDisabled=true, valid=false, requests=0 with the exact message.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1344,9 +1367,9 @@
           "expected": "Rejected with TENANT_RESOURCE_NOT_FOUND / TenantAuthorizationError and no rule persisted.",
           "observed": "Integration assertRejectCode TENANT_RESOURCE_NOT_FOUND passed and persisted count stayed 0; domain test passed.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1375,9 +1398,9 @@
           "expected": "Archived or unknown destination is rejected at write time instead of being accepted and failing later.",
           "observed": "RECURRENCE_ACCOUNT_ARCHIVED raised; transfer occurrence edits reject inactive destinations with TRANSACTION_DESTINATION_ACCOUNT_INVALID.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1406,9 +1429,9 @@
           "expected": "The read-only source reflects the statement account at the moment the modal opens (A), not a stale value.",
           "observed": "sourceValue equals '<A name> · BRL' and submittedSourceId equals A.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1430,11 +1453,11 @@
         {
           "id": "REG-19F59959",
           "status": "passed",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
           "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5"
         }
       ],
       "obligation_control_map": [
@@ -1634,12 +1657,12 @@
       "plausible_wrong_implementation": "Resolve the destination account without tenant/profile scope so a foreign account id is accepted or its existence leaks through a distinct error.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
         "procedure": "Integration against PostgreSQL with accounts in two financial profiles (apps/api/src/transfer-recurrence.integration.test.ts).",
         "expected": "Destination lookups stay scoped to the active organization/profile and reuse the existing TENANT_RESOURCE_NOT_FOUND contract.",
         "observed": "Foreign-profile destination rejected with TENANT_RESOURCE_NOT_FOUND and nothing persisted.",
         "evidence": "evidence/issue-677-exact-head.txt",
-        "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+        "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
@@ -1655,9 +1678,9 @@
           "expected": "The distinct tenant/profile scope is excluded: generic not-found error, no rule persisted and no leak of the foreign account.",
           "observed": "TENANT_RESOURCE_NOT_FOUND with persisted count 0; domain TenantAuthorizationError for org-b.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1686,9 +1709,9 @@
           "expected": "No drift between the canonical rule definition and runtime occurrences: both paths keep accountId as the source and destinationAccountId as the destination.",
           "observed": "readRecurrence/readOccurrences show the same canonical source and destination after generation and after the specialized edit path.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1717,9 +1740,9 @@
           "expected": "Recurrence_transfer_accounts_check rejects all three incompatible linked-account relations (fail-closed, no write).",
           "observed": "All three direct inserts rejected with 23514; no row written.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1754,9 +1777,9 @@
           "expected": "Foreign ids use the generic tenant not-found contract; no foreign account data is returned.",
           "observed": "TENANT_RESOURCE_NOT_FOUND for the foreign account; RECURRENCE_DESTINATION_ACCOUNT_REQUIRED only when absent.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
           "evidence_kind": "behavioral",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "status": "passed",
           "sibling_cases": [
             {
@@ -1778,11 +1801,11 @@
         {
           "id": "REG-19F59959",
           "status": "passed",
-          "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+          "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
           "procedure": "Full exact-head gate: format:check, lint, typecheck, test, build and test:integration (PostgreSQL, 120 files).",
           "observed": "All commands exited 0 locally; remote Delivery V2 CI and Statement visual validation are recorded in the handoff.",
           "evidence": "evidence/issue-677-exact-head.txt",
-          "evidence_sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0"
+          "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5"
         }
       ],
       "obligation_control_map": [

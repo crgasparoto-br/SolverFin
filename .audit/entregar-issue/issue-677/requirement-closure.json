@@ -1885,7 +1885,8 @@
       "packages/domain/src/recurrences-transfer.test.ts",
       "apps/api/src/transfer-recurrence.integration.test.ts",
       "apps/web/src/dev-server/transactions-page-v2.test.ts",
-      "scripts/statement-visual/issue-677-transfer-source-destination.mjs"
+      "scripts/statement-visual/issue-677-transfer-source-destination.mjs",
+      "apps/api/src/repositories/recurrences.ts"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

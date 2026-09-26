@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+  "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
   "families": [
     {
       "family": "authorization",
@@ -67,7 +67,8 @@
         "FIXED-DESTINATION-LIVENESS-001",
         "LAYOUT-KEYBOARD-001",
         "SRC-DST-LIVENESS-001",
-        "XCUR-LIVENESS-001"
+        "XCUR-LIVENESS-001",
+        "FIXED-POST-CREATE-LIVENESS-001"
       ],
       "dimensions": [
         {
@@ -115,6 +116,14 @@
           "reason": "Destination select shows the persisted destination B and stays visible for transfers.",
           "control_ids": [
             "EDIT-LIVENESS-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "future-destination-reference-liveness",
+          "reason": "Persisted transfer account references are re-resolved at materialization time; inactive/incoherent destinations fail before occurrence writes.",
+          "control_ids": [
+            "FIXED-POST-CREATE-LIVENESS-001"
           ],
           "status": "passed"
         }

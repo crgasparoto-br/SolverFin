@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-001",
+      "escape_class": "persisted-reference-liveness-gap",
+      "source_audit": {
+        "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+        "rejection_id": "audit-rejection:pr678-reference-liveness-20260926",
+        "finding_id": "A-001",
+        "audit_report_sha256": "66301927a34de61d354440ccff247d2603153501f1f7a9ce88f7310691ec7afc"
+      },
+      "plausible_wrong_implementation": "Validate a referenced resource only when a rule is created, then apply the stale reference later without checking current eligibility.",
+      "literal_case": {
+        "procedure": "Create future recurring transfer with active destination, archive destination, then materialize due date.",
+        "observed": "Exact-head integration on a27be3b3ccb7be91405c12fc4faef8835db96ac6 rejects with RECURRENCE_ACCOUNT_ARCHIVED and persists zero occurrences.",
+        "status": "passed",
+        "evidence": "evidence/issue-677-exact-head.txt"
+      },
+      "sibling_cases": [],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "future-destination-reference-liveness",
+          "dimension": "active-at-materialization"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "apps/api/src/repositories/recurrences.ts",
+        "evidence": "Materialization re-resolves source and destination and checks status, identity and currency before writes."
+      },
+      "detection_change": {
+        "skill_or_gate": "API PostgreSQL integration regression",
+        "control_id": "FIXED-POST-CREATE-LIVENESS-001",
+        "evidence": "apps/api/src/transfer-recurrence.integration.test.ts"
+      },
+      "trigger_terms": [
+        "persisted reference",
+        "future materialization",
+        "reference liveness"
+      ],
+      "required_risk_families": [
+        "reference-liveness"
+      ],
+      "revalidated_head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+      "status": "passed"
+    }
+  ]
+}
