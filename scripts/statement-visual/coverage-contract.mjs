@@ -310,6 +310,7 @@ const simpleScenarios = [
   ["manual-installments", "scripts/statement-visual/issue-553-manual-installments-v2.mjs", "/lancamentos", "A2", "editing", "dialog", "submit-retry", "manual-installments"],
   ["transfer-destination-visibility", "scripts/statement-visual/issue-553-transfer-destination-visibility.mjs", "/lancamentos", "A2", "transfer", "responsive", "cross-account-visibility", "transfer-installment"],
   ["cross-currency-transfer", "scripts/statement-visual/issue-668-cross-currency-transfer.mjs", "/lancamentos", "A2", "cross-currency-transfer", "desktop-mobile", "native-values-rate-destination-change", "BRL-USD-EUR"],
+  ["transfer-source-destination", "scripts/statement-visual/issue-677-transfer-source-destination.mjs", "/lancamentos", "A2", "transfer-accounts", "desktop-mobile", "source-readonly-destination-select", "BRL-BRL-USD-fixed"],
   ["ambiguous-recovery", "scripts/statement-visual/issue-553-ambiguous-recovery.mjs", "/lancamentos", "A2", "recoverable-error", "dialog", "recovery", "masked-timeout"],
   ["ambiguous-close", "scripts/statement-visual/issue-553-ambiguous-close.mjs", "/lancamentos", "A2", "recoverable-error", "dialog", "keyboard-focus", "recovery-close"],
   ["non-idempotent-ambiguity", "scripts/statement-visual/issue-553-non-idempotent-ambiguity.mjs", "/lancamentos", "A2", "ambiguous", "dialog", "no-blind-retry", "non-idempotent"],

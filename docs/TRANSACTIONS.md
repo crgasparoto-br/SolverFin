@@ -82,12 +82,30 @@ selecionada para definir o sinal da movimentação. Em transferência cross-curr
 usa `amountMinor/currency` e a linha do destino usa `destinationAmountMinor/destinationCurrency`;
 o Extrato não reutiliza o valor da origem com o rótulo da moeda destino.
 
+Quando `Tipo = Transferência`, o formulário exibe lado a lado **Conta origem** e **Conta destino**,
+ambas com nome e moeda. Na criação, a origem é a conta do contexto principal do Extrato e aparece
+somente leitura no corpo do formulário; ela continua sendo enviada apenas como `accountId`, sem um
+segundo seletor capaz de trocar a origem. A **Conta destino** é selecionável entre as contas do perfil,
+a própria origem fica indisponível e, se ainda assim coincidir com a origem, o formulário bloqueia o
+envio com a mensagem "Escolha uma conta destino diferente da conta origem.". Na edição, a origem
+exibida é a conta persistida do lançamento — mesmo quando o filtro do Extrato aponta para outra conta,
+como no extrato da conta destino — e segue as regras de troca de conta de #473. Trocar o tipo para
+Entrada ou Saída oculta e desabilita os campos de transferência, limpa o destino e o valor destino e
+não envia `destinationAccountId`; voltar para Transferência exige escolher o destino novamente.
+
+Os rótulos de moeda (**Valor origem (BRL)**, **Valor destino (USD)**) formam uma única linha de
+rótulo, sem parênteses ou moeda isolados. O grid do modal usa três colunas no desktop, duas em
+larguras intermediárias e uma coluna no mobile, mantendo alturas coerentes entre campos da mesma
+linha; **Descrição** e **Observação** ocupam a largura total.
+
 No modal de criação/edição, transferências na mesma moeda continuam com um único valor editável.
 Quando a conta destino possui outra moeda, o formulário revela **Valor origem**, **Valor destino** e
 **Taxa efetiva** somente leitura. A taxa exibida é derivada de `destinationAmount / sourceAmount` e
 não é persistida como fonte de verdade. Alterar o destino para outra moeda limpa o valor destino
 incompatível. Transferência cross-currency aceita somente ocorrência única neste contrato; recorrência
-e parcelamento continuam bloqueados no cliente e no backend.
+e parcelamento continuam bloqueados no cliente e no backend. Transferência na mesma moeda aceita
+**Repetição = Fixo** (#677): a recorrência guarda origem e destino e cada ocorrência materializada é
+uma transferência real no Extrato das duas contas.
 
 ## Isolamento e persistência
 

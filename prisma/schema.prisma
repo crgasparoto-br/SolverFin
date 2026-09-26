@@ -367,7 +367,8 @@ model Account {
   transactions        Transaction[]       @relation("TransactionAccount")
   incomingTransfers   Transaction[]       @relation("TransactionDestinationAccount")
   paymentCards        Card[]              @relation("CardPaymentAccount")
-  recurrences         Recurrence[]
+  recurrences         Recurrence[]        @relation("RecurrenceAccount")
+  incomingRecurrences Recurrence[]        @relation("RecurrenceDestinationAccount")
   payablesReceivables PayableReceivable[]
   importBatches       ImportBatch[]       @relation("ImportBatchDefaultAccount")
   transactionGroups   TransactionGroup[]
@@ -557,6 +558,7 @@ model Recurrence {
   organizationId     String              @db.Uuid
   financialProfileId String              @db.Uuid
   accountId          String?             @db.Uuid
+  destinationAccountId String?           @db.Uuid
   cardId             String?             @db.Uuid
   cardInstrumentId   String?             @db.Uuid
   categoryId         String?             @db.Uuid
@@ -575,7 +577,8 @@ model Recurrence {
   updatedAt          DateTime            @updatedAt
 
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
-  account          Account?         @relation(fields: [accountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  account          Account?         @relation("RecurrenceAccount", fields: [accountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  destinationAccount Account?       @relation("RecurrenceDestinationAccount", fields: [destinationAccountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   card             Card?            @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   cardInstrument   CardInstrument?  @relation(fields: [cardInstrumentId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   category         Category?        @relation(fields: [categoryId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
@@ -587,6 +590,7 @@ model Recurrence {
   @@index([organizationId, financialProfileId, startOn])
   @@index([organizationId, financialProfileId, cardId])
   @@index([organizationId, financialProfileId, cardInstrumentId])
+  @@index([organizationId, financialProfileId, destinationAccountId])
 }
 
 model Installment {

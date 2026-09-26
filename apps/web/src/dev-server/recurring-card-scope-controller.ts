@@ -149,7 +149,9 @@ export function recurringCardScopeControllerScript(): string {
           });
 
           accountField.appendChild(accountSelect);
-          form.insertBefore(accountField, firstField);
+          // Transfers show the persisted source next to the destination (#677).
+          const sourceField = form.querySelector('[data-field="sourceAccount"]');
+          form.insertBefore(accountField, sourceField || firstField);
 
           const createAccountId = accountInput.value;
           const formDialog = typeof form.closest === "function" ? form.closest("dialog") : null;
@@ -242,7 +244,9 @@ export function recurringCardScopeControllerScript(): string {
           };
           const destinationAccountId = String(data.get("destinationAccountId") || "");
           const categoryId = String(data.get("categoryId") || "");
-          if (destinationAccountId) payload.destinationAccountId = destinationAccountId;
+          if (destinationAccountId && payload.kind === "transfer") {
+            payload.destinationAccountId = destinationAccountId;
+          }
           if (categoryId) payload.categoryId = categoryId;
           if (scope === "current_and_future") payload.applyToFuturePlanned = true;
           return payload;

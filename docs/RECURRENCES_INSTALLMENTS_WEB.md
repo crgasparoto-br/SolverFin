@@ -13,7 +13,8 @@ A rota dedicada `/recorrencias` foi removida, e a primeira versao da gestao embu
 
 Em cada tela (Extrato ou Cartoes), com uma conta ou cartao selecionado:
 
-- Criar recorrencia: continua acontecendo via o modal de novo lancamento/nova compra existente, escolhendo Repeticao = "Fixo". Para recorrencias de conta, o "Tipo" (Entrada/Saida) do lancamento vira o `kind` da recorrencia; para cartao, o `kind` e sempre `expense`. Nao ha formulario de criacao avulso.
+- Criar recorrencia: continua acontecendo via o modal de novo lancamento/nova compra existente, escolhendo Repeticao = "Fixo". Para recorrencias de conta, o "Tipo" (Entrada/Saida/Transferencia) do lancamento vira o `kind` da recorrencia; para cartao, o `kind` e sempre `expense`. Nao ha formulario de criacao avulso.
+- Transferencia fixa (#677): com `Tipo = Transferencia` e contas origem/destino na mesma moeda, `Repeticao = Fixo` envia `accountId` (conta do Extrato) e `destinationAccountId` (conta escolhida) para `POST /api/recurrences`. Cada vencimento materializado e uma unica `Transaction` de transferencia, com as duas pontas, visivel no Extrato da origem e do destino; nao vira receita/despesa. Quando o destino tem outra moeda, a opcao Fixo fica indisponivel e a transferencia continua com ocorrencia unica (#668).
 - Cada lancamento da lista (Movimentacoes/Compras) que pertence a uma recorrencia mostra um indicador visual (icone de repeticao ao lado da descricao). O menu de acoes mantem **Editar** como ponto unico de edicao da ocorrencia e oferece **Pausar/Retomar recorrencia** e **Cancelar recorrencia** quando aplicavel. Esses dados vem de `GET /api/recurrences?accountId=...` ou `?cardId=...&status=all` — essa mesma chamada materializa automaticamente qualquer vencimento pendente (catch-up) antes da lista de lancamentos ser buscada.
 - A edicao da ocorrencia usa o endpoint operacional do lancamento ou compra e, quando recorrente, solicita o escopo antes do envio. A rota `PATCH /api/recurrences/:recurrenceId` permanece para manutencao da regra de recorrencia quando usada por fluxos especificos.
 - Pausar, retomar e cancelar conforme o status atual, direto do menu do lancamento.
@@ -55,6 +56,8 @@ Para um lançamento não recorrente, a nova `accountId` é aplicada somente ao r
 - **Este lançamento e os próximos** altera a ocorrência selecionada, as ocorrências futuras elegíveis com status `planned` e a `accountId` da regra de recorrência usada nas próximas materializações.
 
 Ocorrências anteriores, efetivadas, conciliadas, anuladas ou não elegíveis permanecem inalteradas. Transferências continuam exigindo contas de origem e destino diferentes.
+
+Em uma transferência fixa, o escopo **Este lançamento e os próximos** também propaga a conta destino para as ocorrências planejadas elegíveis e para `destinationAccountId` da regra. Um destino em outra moeda é rejeitado com `RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED` sem alterar nenhuma ocorrência, porque o valor da origem não pode ser reinterpretado em outra moeda nas próximas materializações. Trocar o tipo para Entrada ou Saída remove o destino da regra e das ocorrências atualizadas.
 
 ## Parcelas canônicas incorporadas às linhas
 

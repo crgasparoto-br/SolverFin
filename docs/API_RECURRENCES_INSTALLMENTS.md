@@ -14,7 +14,7 @@ Recorrencia representa uma regra de geracao futura com:
 - `organizationId`;
 - `financialProfileId`;
 - `status`;
-- `kind` (`income` ou `expense`);
+- `kind` (`income`, `expense` ou `transfer`);
 - `frequency`;
 - `startOn`;
 - `endOn` opcional;
@@ -22,12 +22,25 @@ Recorrencia representa uma regra de geracao futura com:
 - `currency`;
 - `description`;
 - `accountId` opcional;
+- `destinationAccountId` opcional, somente para `kind=transfer`;
 - `cardId` opcional;
 - `categoryId` opcional.
 
 Uma recorrencia pertence a exatamente um destino: `accountId` (lancamento fixo de conta) ou `cardId` (compra fixa/assinatura no cartao), nunca os dois nem nenhum. `createRecurrence`/`updateRecurrence` rejeitam com `RECURRENCE_TARGET_REQUIRED` quando faltam os dois e `RECURRENCE_TARGET_CONFLICT` quando ambos sao informados.
 
 Recorrencia vinculada a `cardId` tem `kind` sempre forcado para `expense` (compra de cartao nunca e receita). Recorrencia vinculada a `accountId` exige `kind` explicito no payload — sem ele, `createRecurrence`/`updateRecurrence` rejeitam com `RECURRENCE_KIND_REQUIRED`. Quando uma `categoryId` e informada, a categoria precisa ter o mesmo `kind` da recorrencia, senao a operacao rejeita com `RECURRENCE_CATEGORY_KIND_MISMATCH`.
+
+### Transferencia fixa (#677)
+
+Recorrencia de conta com `kind=transfer` representa uma transferencia repetida entre duas contas do mesmo tenant/perfil: `accountId` e a conta de origem e `destinationAccountId` a conta de destino. Regras:
+
+- `destinationAccountId` e obrigatorio para `transfer` (`RECURRENCE_DESTINATION_ACCOUNT_REQUIRED`) e proibido para `income`/`expense` (`RECURRENCE_DESTINATION_ACCOUNT_INVALID`);
+- origem e destino precisam ser diferentes (`RECURRENCE_TRANSFER_SAME_ACCOUNT`), ativos (`RECURRENCE_ACCOUNT_ARCHIVED`) e do tenant ativo (`404 TENANT_RESOURCE_NOT_FOUND`);
+- origem, destino e `currency` da recorrencia precisam ter a mesma moeda (`RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED`). Transferencia entre moedas diferentes continua com ocorrencia unica conforme `API_TRANSACTIONS.md`, sem valor ou taxa futura inventados;
+- editar a regra preserva a origem ao trocar o destino; mudar o `kind` para `income`/`expense` remove `destinationAccountId`;
+- `GET /api/recurrences?accountId=` lista a transferencia fixa tanto no extrato da origem quanto no do destino, e o catch-up dessa consulta materializa os vencimentos pendentes a partir de qualquer uma das contas.
+
+O PostgreSQL reforca o contrato para produtores que escrevem a regra diretamente: `Recurrence_transfer_accounts_check` exige destino presente e diferente da origem somente em `TRANSFER`, e o trigger `RecurrenceTransferCurrencyInvariant` rejeita destino ou `currency` em moeda diferente da conta de origem. Regras legadas `TRANSFER` sem destino recuperavel nao sao alteradas pela migracao; a restricao vale para toda nova escrita.
 
 Parcela representa uma previsao gerada ou uma compra parcelada com:
 
@@ -127,7 +140,7 @@ Padroes:
 
 ### Geracao sem duplicidade
 
-`generateRecurrenceInstallments` gera apenas parcelas planejadas que ainda nao existem para a combinacao `recurrenceId + sequenceNumber`. A partir de cada parcela, tambem monta a `Transaction` correspondente (`kind` da recorrencia, `status: planned`, `source: recurrence`, `recurrenceId`/`installmentId` preenchidos) — gerar parcelas materializa lancamentos reais, visiveis no extrato/fatura, e nao so um registro de controle.
+`generateRecurrenceInstallments` gera apenas parcelas planejadas que ainda nao existem para a combinacao `recurrenceId + sequenceNumber`. A partir de cada parcela, tambem monta a `Transaction` correspondente (`kind` da recorrencia, `status: planned`, `source: recurrence`, `recurrenceId`/`installmentId` preenchidos) — gerar parcelas materializa lancamentos reais, visiveis no extrato/fatura, e nao so um registro de controle. Em transferencia fixa, cada ocorrencia e uma unica `Transaction` `transfer` com `accountId`, `destinationAccountId`, `destinationAmountMinor = amountMinor`, `destinationCurrency = currency` e `transferGroupId` proprio; nao ha duas transacoes independentes nem reinterpretacao como receita/despesa.
 
 Reexecutar a geracao com a mesma janela nao deve duplicar parcelas ja existentes.
 
@@ -197,6 +210,10 @@ Erros controlados do contrato de dominio:
 400 RECURRENCE_ACCOUNT_REQUIRED
 400 RECURRENCE_ACCOUNT_INVALID
 400 RECURRENCE_ACCOUNT_ARCHIVED
+400 RECURRENCE_DESTINATION_ACCOUNT_REQUIRED
+400 RECURRENCE_DESTINATION_ACCOUNT_INVALID
+400 RECURRENCE_TRANSFER_SAME_ACCOUNT
+400 RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED
 400 RECURRENCE_TARGET_REQUIRED
 400 RECURRENCE_TARGET_CONFLICT
 400 RECURRENCE_CARD_INVALID
@@ -230,7 +247,10 @@ O pacote `@solverfin/domain` cobre:
 - edicao de regra futura;
 - compra parcelada fixa;
 - cancelamento apenas de parcelas futuras planejadas;
-- isolamento por tenant.
+- isolamento por tenant;
+- transferencia fixa: duas pontas preservadas, materializacao sem duplicidade, origem = destino, destino ausente, cross-currency, pausa/retomada/cancelamento e listagem pelas duas contas.
+
+A API cobre a transferencia fixa em `apps/api/src/transfer-recurrence.integration.test.ts` contra PostgreSQL real, incluindo edicao ampliada, rejeicao cross-currency sem efeito residual e as restricoes diretas no banco.
 
 Todos os exemplos usam dados ficticios.
 
@@ -240,7 +260,7 @@ A edição ampliada é sempre relativa à ocorrência selecionada. Quando houver
 
 ### Lançamentos de conta
 
-PATCH /api/transactions/:transactionId aceita applyToFuturePlanned: true. A operação atualiza, em uma única transação de banco:
+PATCH /api/transactions/:transactionId aceita applyToFuturePlanned: true. Para transferência fixa, o tipo `transfer` é aceito e o destino precisa permanecer diferente da origem e na mesma moeda (`RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED`). A operação atualiza, em uma única transação de banco:
 
 - o lançamento selecionado e sua parcela;
 - a regra da recorrência, incluindo o recálculo de startOn pela posição da ocorrência;
