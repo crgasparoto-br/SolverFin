@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "04f2179a04f7a6a3be228d8c4a6c2cbed7f84db9",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:c72b2214a09d91a9",
+    "audited_head_sha": "04f2179a04f7a6a3be228d8c4a6c2cbed7f84db9",
+    "audit_report_sha256": "cc7f49f70aa69ff54ce849f8347e781bd7a2219d51fbf941afadea03ccded68c"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "targeted-handoff-rebuild",
+      "evidence": [
+        "A canonical issue now exists for the PR target; foreign inherited handoff bytes are not reused; a fresh current-target standard handoff package is rebuilt from issue #680 and the exact material SHA."
+      ],
+      "validations": [
+        "Exact material CI is already terminal green; delivery target binding is rederived against issue #680 / PR #679; terminal result-only validation is required before completion."
+      ]
+    }
+  ]
+}

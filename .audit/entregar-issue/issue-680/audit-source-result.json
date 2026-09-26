@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:c72b2214a09d91a9",
+  "head_sha": "04f2179a04f7a6a3be228d8c4a6c2cbed7f84db9",
+  "identity": {
+    "head_sha": "04f2179a04f7a6a3be228d8c4a6c2cbed7f84db9",
+    "repository": "crgasparoto-br/SolverFin",
+    "pull_request_number": 679
+  },
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "category": "delivery-not-ready",
+      "reason": "handoff-not-produced",
+      "remediation_mode": "targeted-remediation",
+      "summary": "The handoff-ready certificate at the audited head was inherited unchanged from the immutable base and belonged to another delivery."
+    }
+  ],
+  "recommendations": []
+}
