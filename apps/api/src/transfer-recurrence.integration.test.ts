@@ -64,6 +64,7 @@ async function main(): Promise<void> {
   await assertMaterializesTransferOccurrences(accounts, suffix);
   await assertCatchUpFromDestinationStatement(accounts, suffix);
   await assertRejectsInvalidTransferRecurrences(accounts, suffix);
+  await assertRejectsArchivedDestinationBeforeFutureMaterialization(accounts, suffix);
   await assertDatabaseRejectsIncoherentTransferRule(accounts, suffix);
   await assertLifecycleKeepsBothLegs(accounts, suffix);
   await assertExpandedEditPreservesSourceAndMovesDestination(accounts, suffix);
@@ -192,6 +193,53 @@ async function assertRejectsInvalidTransferRecurrences(
     [CONTEXT.organizationId, CONTEXT.financialProfileId, description],
   );
   assert.equal(persisted[0]?.count, 0, "rejected recurrences must not persist any rule");
+}
+
+async function assertRejectsArchivedDestinationBeforeFutureMaterialization(
+  accounts: Accounts,
+  suffix: string,
+): Promise<void> {
+  const destinationAccountId = await createAccount(
+    CONTEXT,
+    `Destino liveness issue 677 ${suffix}`,
+    "BRL",
+  );
+  const startOn = addDaysIso(todayIso(), 1);
+  const recurrence = await createRecurrenceForContext(CONTEXT, {
+    frequency: "monthly",
+    startOn,
+    amountMinor: 6_500,
+    description: `Transferencia liveness 677 ${suffix}`,
+    kind: "transfer",
+    accountId: accounts.source,
+    destinationAccountId,
+  });
+
+  assert.equal(
+    (await readOccurrences(recurrence.id)).length,
+    0,
+    "future recurrence must not materialize on create",
+  );
+
+  await query(
+    `update "Account"
+        set "status" = 'ARCHIVED', "updatedAt" = now()
+      where "id" = $1
+        and "organizationId" = $2
+        and "financialProfileId" = $3`,
+    [destinationAccountId, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+
+  await assertRejectCode(
+    () => generateInstallmentsForContext(CONTEXT, recurrence.id, startOn),
+    "RECURRENCE_ACCOUNT_ARCHIVED",
+  );
+
+  assert.equal(
+    (await readOccurrences(recurrence.id)).length,
+    0,
+    "archived destination must prevent every future transfer from being persisted",
+  );
 }
 
 async function assertDatabaseRejectsIncoherentTransferRule(
