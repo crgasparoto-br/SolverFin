@@ -484,10 +484,7 @@ async function assertTransferRecurrenceReferencesLive(
   const destinationCurrency = destinationAccount.currency.trim().toUpperCase();
   const recurrenceCurrency = recurrence.currency.trim().toUpperCase();
 
-  if (
-    destinationCurrency !== sourceCurrency ||
-    recurrenceCurrency !== sourceCurrency
-  ) {
+  if (destinationCurrency !== sourceCurrency || recurrenceCurrency !== sourceCurrency) {
     throw new RecurrenceError(
       "RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED",
       "Transfer recurrences require source and destination accounts in the same currency.",
