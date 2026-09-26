@@ -48,6 +48,12 @@ const TRANSACTION_ERROR_MESSAGES: Readonly<Record<string, string>> = {
   TRANSACTION_CURRENCY_MISMATCH: "A moeda do lançamento deve ser a mesma da conta.",
   TRANSACTION_CATEGORY_INVALID: "A categoria selecionada é inválida.",
   TRANSACTION_CATEGORY_ARCHIVED: "A categoria selecionada precisa estar ativa.",
+  RECURRENCE_DESTINATION_ACCOUNT_REQUIRED:
+    "Selecione a conta de destino da transferência recorrente.",
+  RECURRENCE_DESTINATION_ACCOUNT_INVALID: "A conta de destino da recorrência é inválida.",
+  RECURRENCE_TRANSFER_SAME_ACCOUNT: "A conta de origem e a conta de destino devem ser diferentes.",
+  RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED:
+    "Transferências fixas exigem contas de origem e destino na mesma moeda.",
 };
 
 export function resolveCorrelationId(

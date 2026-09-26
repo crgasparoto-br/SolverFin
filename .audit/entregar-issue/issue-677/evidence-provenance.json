@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+  "base_sha": "26d2539ab3252f8b549011ab9bf41d79be44dc08",
+  "evidence": [
+    {
+      "evidence_id": "EVID-677-EXACT-HEAD",
+      "kind": "quantitative",
+      "status": "passed",
+      "path": "evidence/issue-677-exact-head.txt",
+      "sha256": "2e3c49f8cba8cdd561e7d0c92509cb877d817d802f1c4f9b3ddd56ec12dcaaa0",
+      "freshness_policy": "exact-material-head",
+      "subject_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+      "producer": "Local exact-head reruns (domain, web, PostgreSQL integration, Chrome, mutation controls) plus GitHub Actions runs recorded in the evidence file"
+    }
+  ]
+}

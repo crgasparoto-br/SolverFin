@@ -270,7 +270,8 @@ async function accountHasUsage(context: TenantContext, accountId: EntityId): Pro
          where "organizationId" = $1 and "financialProfileId" = $2 and "paymentAccountId" = $3
        ) or exists(
          select 1 from "Recurrence"
-         where "organizationId" = $1 and "financialProfileId" = $2 and "accountId" = $3
+         where "organizationId" = $1 and "financialProfileId" = $2
+           and ("accountId" = $3 or "destinationAccountId" = $3)
        ) or exists(
          select 1 from "PayableReceivable"
          where "organizationId" = $1 and "financialProfileId" = $2 and "accountId" = $3

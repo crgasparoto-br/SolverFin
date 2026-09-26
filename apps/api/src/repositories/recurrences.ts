@@ -67,6 +67,7 @@ interface RecurrenceRow {
   organizationId: string;
   financialProfileId: string;
   accountId: string | null;
+  destinationAccountId: string | null;
   cardId: string | null;
   cardInstrumentId: string | null;
   categoryId: string | null;
@@ -122,7 +123,7 @@ interface FuturePendingCardOccurrenceUpdate {
   dueOn: ISODate;
 }
 
-const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId",
+const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "cardId", "cardInstrumentId", "categoryId",
   "status", "kind", "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
@@ -159,6 +160,9 @@ export async function createRecurrenceForContext(
   payload: CreateRecurrenceForContextPayload,
 ): Promise<Recurrence> {
   const account = payload.accountId ? await findAccountRow(context, payload.accountId) : undefined;
+  const destinationAccount = payload.destinationAccountId
+    ? await findAccountRow(context, payload.destinationAccountId)
+    : undefined;
   const card = payload.cardId ? await findCardRow(context, payload.cardId) : undefined;
   const category = payload.categoryId
     ? await findCategoryRow(context, payload.categoryId)
@@ -172,6 +176,7 @@ export async function createRecurrenceForContext(
     now: new Date().toISOString(),
     payload,
     ...(account ? { account } : {}),
+    ...(destinationAccount ? { destinationAccount } : {}),
     ...(card ? { card } : {}),
     ...(category ? { category } : {}),
   });
@@ -208,7 +213,12 @@ export async function updateRecurrenceForContext(
     recurrencePayload.cardId ??
     (recurrencePayload.accountId !== undefined ? undefined : currentRecurrence?.cardId);
   const categoryId = recurrencePayload.categoryId ?? currentRecurrence?.categoryId;
+  const destinationAccountId =
+    recurrencePayload.destinationAccountId ?? currentRecurrence?.destinationAccountId;
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
+  const destinationAccount = destinationAccountId
+    ? await findAccountRow(context, destinationAccountId)
+    : undefined;
   const card = cardId ? await findCardRow(context, cardId) : undefined;
   const category = categoryId ? await findCategoryRow(context, categoryId) : undefined;
 
@@ -220,6 +230,7 @@ export async function updateRecurrenceForContext(
     now: new Date().toISOString(),
     payload: recurrencePayload,
     ...(account ? { account } : {}),
+    ...(destinationAccount ? { destinationAccount } : {}),
     ...(card ? { card } : {}),
     ...(category ? { category } : {}),
   });
@@ -691,10 +702,11 @@ async function persistRecurrenceMutation(result: RecurrenceMutationResult): Prom
       `insert into "Recurrence"
         ("id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId", "status", "kind",
          "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description", "createdAt",
-         "updatedAt", "createdByUserId", "updatedByUserId")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+         "updatedAt", "createdByUserId", "updatedByUserId", "destinationAccountId")
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
        on conflict ("id") do update set
-         "accountId" = excluded."accountId", "cardId" = excluded."cardId", "cardInstrumentId" = excluded."cardInstrumentId",
+         "accountId" = excluded."accountId", "destinationAccountId" = excluded."destinationAccountId",
+         "cardId" = excluded."cardId", "cardInstrumentId" = excluded."cardInstrumentId",
          "categoryId" = excluded."categoryId", "status" = excluded."status", "kind" = excluded."kind",
          "frequency" = excluded."frequency", "interval" = excluded."interval", "startOn" = excluded."startOn",
          "endOn" = excluded."endOn", "amountMinor" = excluded."amountMinor", "currency" = excluded."currency",
@@ -728,6 +740,7 @@ function buildRecurrenceParams(recurrence: Recurrence): unknown[] {
     recurrence.updatedAt,
     recurrence.createdByUserId ?? null,
     recurrence.updatedByUserId ?? null,
+    recurrence.destinationAccountId ?? null,
   ];
 }
 
@@ -735,8 +748,10 @@ function buildInsertRecurrenceTransactionSql(): string {
   return `insert into "Transaction"
     ("id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId", "recurrenceId",
      "installmentId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
-     "description", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+     "description", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId",
+     "destinationAccountId", "destinationAmountMinor", "destinationCurrency", "transferGroupId")
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21,
+     $22, $23, $24, $25)`;
 }
 
 function buildRecurrenceTransactionParams(transaction: Transaction): unknown[] {
@@ -762,6 +777,10 @@ function buildRecurrenceTransactionParams(transaction: Transaction): unknown[] {
     transaction.updatedAt,
     transaction.createdByUserId ?? null,
     transaction.updatedByUserId ?? null,
+    transaction.destinationAccountId ?? null,
+    transaction.destinationAmountMinor ?? null,
+    transaction.destinationCurrency ?? null,
+    transaction.transferGroupId ?? null,
   ];
 }
 
@@ -976,6 +995,7 @@ function mapRecurrenceRow(row: RecurrenceRow): Recurrence {
   };
 
   if (row.accountId !== null) recurrence.accountId = row.accountId;
+  if (row.destinationAccountId !== null) recurrence.destinationAccountId = row.destinationAccountId;
   if (row.cardId !== null) recurrence.cardId = row.cardId;
   if (row.cardInstrumentId !== null) recurrence.cardInstrumentId = row.cardInstrumentId;
   if (row.categoryId !== null) recurrence.categoryId = row.categoryId;

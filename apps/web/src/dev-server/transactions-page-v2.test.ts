@@ -44,7 +44,10 @@ test("A2 transfer form exposes native destination value and derived rate control
       new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
     );
 
-    assert.match(html, /Valor origem \(<span data-source-currency>USD<\/span>\)/);
+    assert.match(
+      html,
+      /<span class="field-label">Valor origem <span class="nowrap">\(<span data-source-currency>USD<\/span>\)<\/span><\/span>/,
+    );
     assert.match(html, /name="destinationAmountMinor"/);
     assert.match(html, /data-effective-rate/);
     assert.match(html, /data-currency="BRL">Conta principal · BRL<\/option>/);
@@ -55,6 +58,113 @@ test("A2 transfer form exposes native destination value and derived rate control
     assert.match(html, /recorrência e parcelamento não estão disponíveis/);
     assert.match(html, /event\.target\.name === "accountId"/);
     assert.match(html, /installmentOption\.disabled = crossCurrency/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 transfer form shows the statement account as read-only source next to the destination (#677)", async () => {
+  globalThis.fetch = mockFetch([]);
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    const form = html.slice(
+      html.indexOf("<form data-form"),
+      html.indexOf("</form>", html.indexOf("<form data-form")),
+    );
+
+    const source =
+      /<label data-field="sourceAccount" hidden><span class="field-label">Conta origem<\/span><input ([^>]*)\/><\/label>/.exec(
+        form,
+      );
+    assert.ok(source, "source account field is rendered in the form body");
+    assert.match(source[1] ?? "", /data-source-account-display/);
+    assert.match(source[1] ?? "", /value="Conta internacional · USD"/, "name and currency");
+    assert.match(source[1] ?? "", /readonly aria-readonly="true"/);
+    assert.doesNotMatch(
+      source[1] ?? "",
+      /name=/,
+      "read-only display never submits a second source",
+    );
+    assert.equal((form.match(/name="accountId"/g) ?? []).length, 1, "single source of accountId");
+    assert.doesNotMatch(
+      form,
+      /<select name="accountId"/,
+      "creation has no editable source selector",
+    );
+
+    assert.match(
+      form,
+      /<label data-field="destinationAccountId" hidden><span class="field-label">Conta destino<\/span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino<\/option>/,
+    );
+    assert.ok(
+      form.indexOf('data-field="sourceAccount"') <
+        form.indexOf('data-field="destinationAccountId"') &&
+        form.indexOf('data-field="destinationAccountId"') < form.indexOf('name="amountMinor"'),
+      "source and destination are adjacent and precede the amounts",
+    );
+    assert.match(
+      form,
+      /<span class="field-label">Valor destino <span class="nowrap">\(<span data-destination-currency>moeda destino<\/span>\)<\/span><\/span>/,
+    );
+    assert.match(form, /<span class="rate-value"><output data-effective-rate>/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 transfer script keeps source/destination single-sourced and allows fixed same-currency transfers (#677)", async () => {
+  globalThis.fetch = mockFetch([]);
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+
+    assert.match(
+      html,
+      /const accountLabels = new Map\(\[\["account-usd","Conta internacional · USD"\]/,
+    );
+    assert.match(
+      html,
+      /const sourceAccountId = \(\) => String\(Array\.from\(form\.querySelectorAll\('\[name="accountId"\]'\)\)\.find\(\(field\) => !field\.disabled\)/,
+    );
+    assert.match(
+      html,
+      /destinationSelect\.disabled = !transfer;/,
+      "non-transfer kinds never submit a destination",
+    );
+    assert.match(
+      html,
+      /option\.disabled = option\.value === sourceId/,
+      "source is unavailable as destination",
+    );
+    assert.match(html, /Escolha uma conta destino diferente da conta origem\./);
+    assert.match(
+      html,
+      /if \(!transfer\) \{\s*destinationSelect\.value = "";/,
+      "leaving transfer clears residual state",
+    );
+    assert.match(
+      html,
+      /fixedOption\.disabled = crossCurrency;/,
+      "fixed is blocked only for cross-currency",
+    );
+    assert.doesNotMatch(html, /fixedOption\.disabled = kind === "transfer"/);
+    assert.match(
+      html,
+      /if \(destinationAccountId && result\.kind === "transfer"\) result\.destinationAccountId/,
+    );
+    assert.match(
+      html,
+      /accountId: item\.accountId, destinationAccountId: item\.destinationAccountId/,
+    );
+    assert.match(html, /if \(!form\.checkValidity\(\)\) \{ form\.reportValidity\(\); return; \}/);
+    assert.match(html, /RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED: "Transferências fixas exigem/);
   } finally {
     globalThis.fetch = originalFetch;
   }
