@@ -51,7 +51,6 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
           invoiceFor("invoice-later", laterMonth),
           invoiceFor("invoice-previous", previousMonth),
           invoiceFor("invoice-next", nextMonth),
-          invoiceFor("invoice-current", currentMonth),
         ],
       });
     }
@@ -62,12 +61,6 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
       return jsonResponse({ instruments: [] });
     }
     if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
-    if (url.pathname === "/api/invoices/invoice-current/summary") return jsonResponse({});
-    if (url.pathname === "/api/invoices/invoice-current/purchases") {
-      return jsonResponse({ purchases: [] });
-    }
-    if (url.pathname === "/api/installments") return jsonResponse({ installments: [] });
-
     return jsonResponse({});
   };
 
@@ -76,12 +69,13 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
     new URL(`http://solverfin.local/cartoes?cardId=card-1&month=${currentMonth}`),
   );
 
-  const navigation = /<div class="cards-invoice-navigation"[\s\S]*?<\/div>\s*<\/div>/.exec(html)?.[0] ?? html;
-  const currentIndex = navigation.indexOf("invoice-current");
+  const navigation =
+    /<div class="cards-invoice-navigation"[\s\S]*?<\/div>\s*<\/div>/.exec(html)?.[0] ?? html;
+  const currentIndex = navigation.indexOf("Sem fatura");
   const nextIndex = navigation.indexOf("invoice-next");
   const laterIndex = navigation.indexOf("invoice-later");
 
-  assert.ok(currentIndex >= 0, "mês corrente deve aparecer na navegação");
+  assert.ok(currentIndex >= 0, "mês corrente deve aparecer mesmo sem fatura criada");
   assert.ok(nextIndex > currentIndex, "próximo mês deve aparecer à direita do mês corrente");
   assert.ok(laterIndex > nextIndex, "meses futuros devem seguir ordem cronológica crescente");
   assert.equal(
