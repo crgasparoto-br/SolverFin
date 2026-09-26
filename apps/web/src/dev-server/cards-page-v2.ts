@@ -623,7 +623,10 @@ function renderInvoiceNavigation(
   cardId: string,
   url: URL,
 ): string {
-  const tabs = invoices.map((invoice) => ({
+  const visibleInvoices = invoices
+    .filter((invoice) => invoice.periodEndOn.slice(0, 7) >= currentMonth())
+    .sort((left, right) => left.periodEndOn.localeCompare(right.periodEndOn));
+  const tabs = visibleInvoices.map((invoice) => ({
     label: `${formatInvoicePeriod(invoice)} · ${formatInvoiceStatus(invoice.status)}`,
     href: buildInvoiceHref(url, cardId, invoice),
     active: invoice.id === selectedInvoice?.id,
