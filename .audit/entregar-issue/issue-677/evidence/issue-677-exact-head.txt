@@ -1,0 +1,20 @@
+subject_sha=a27be3b3ccb7be91405c12fc4faef8835db96ac6
+generated_at=2026-09-26T19:00:00Z
+
+## independent audit remediation
+rejection_id=audit-rejection:pr678-reference-liveness-20260926
+finding_id=A-001
+finding=reference-liveness after recurrence creation
+
+## temporal liveness regression
+test=assertRejectsArchivedDestinationBeforeFutureMaterialization
+file=apps/api/src/transfer-recurrence.integration.test.ts
+procedure=create a future same-currency transfer recurrence with an active destination; archive that destination; call generateInstallmentsForContext for the due date
+expected=RECURRENCE_ACCOUNT_ARCHIVED and zero materialized occurrences
+observed=the PostgreSQL integration suite passed on the exact material head; the test asserts both the error code and zero persisted occurrences
+negative_control=without generation-time liveness validation, the archived destination remains referenced and the regression fails because an occurrence can be materialized
+
+## GitHub Actions exact material head
+Delivery V2 CI run 36263974098 completed success
+CRITICAL validation completed success including format, lint, typecheck, test, PostgreSQL integration, consistency diagnostic and build
+Statement visual validation run 36263974112 completed success

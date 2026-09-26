@@ -53,6 +53,9 @@ async function collectEvidence() {
   if (sourceScenario === "account-remuneration-mobile") return collectRemunerationEvidence();
   if (sourceScenario === "financial-insights") return collectFinancialInsightsEvidence();
   if (sourceScenario === "cross-currency-transfer") return collectCrossCurrencyTransferEvidence();
+  if (sourceScenario === "transfer-source-destination") {
+    return collectTransferSourceDestinationEvidence();
+  }
   if (sourceScenario === "sidebar-navigation") return collectSidebarEvidence();
   if (sourceScenario === "inbox-interface-refinement") return collectInboxRefinementEvidence();
   if (sourceScenario === "inbox-interface-accessibility") {
@@ -350,6 +353,46 @@ async function collectCrossCurrencyTransferEvidence() {
       effectiveRate: desktop?.details?.effectiveRate,
       effectiveRateDirection: desktop?.details?.effectiveRateDirection,
       destinationChangeInvalidatedStaleValue: true,
+    },
+  };
+}
+
+async function collectTransferSourceDestinationEvidence() {
+  const fileName = "issue-677-transfer-source-destination.json";
+  const report = await readEvidence(fileName);
+  assertNoFailures(report, fileName);
+
+  const scenarios = report.scenarios ?? [];
+  const desktop = scenarios.find(
+    (scenario) =>
+      String(scenario.viewport).startsWith("1366x") && scenario.details?.sourceValue !== undefined,
+  );
+  const mobile = scenarios.find((scenario) => String(scenario.viewport).startsWith("390x"));
+
+  assert.ok(desktop, `${fileName} has no desktop transfer-account proof.`);
+  assert.ok(mobile, `${fileName} has no mobile transfer-account proof.`);
+  assert.equal(desktop.details.sourceVisible, true);
+  assert.equal(desktop.details.destinationVisible, true);
+  assert.equal(desktop.details.sourceReadOnly, true);
+  assert.equal(desktop.details.sourceSubmitted, false);
+  assert.equal(desktop.details.enabledSourceFields, 1);
+  assert.equal(desktop.details.editableSourceSelect, false);
+  assert.equal(desktop.details.sourceOptionDisabled, true);
+  assert.equal(desktop.details.sameRow, true);
+  assert.equal(desktop.details.unbrokenCurrencyLabels, true);
+  assert.equal(desktop.details.globalOverflow, false);
+  assert.equal(mobile.details.stacked, true);
+  assert.equal(mobile.details.unbrokenCurrencyLabels, true);
+  assert.equal(mobile.details.globalOverflow, false);
+
+  return {
+    files: [fileName],
+    assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],
+    observations: {
+      desktopSource: desktop.details.sourceValue,
+      readOnlySource: desktop.details.sourceReadOnly,
+      sourceOptionDisabled: desktop.details.sourceOptionDisabled,
+      mobileStacked: mobile.details.stacked,
     },
   };
 }

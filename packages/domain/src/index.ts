@@ -230,6 +230,7 @@ export interface Recurrence extends Traceable, TenantScoped {
   currency: string;
   description: string;
   accountId?: EntityId;
+  destinationAccountId?: EntityId;
   cardId?: EntityId;
   cardInstrumentId?: EntityId;
   categoryId?: EntityId;

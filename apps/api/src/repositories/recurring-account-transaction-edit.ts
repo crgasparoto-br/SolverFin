@@ -135,14 +135,19 @@ export async function updateRecurringAccountTransactionForContext(
         "Selecione uma conta para o lancamento.",
       );
     }
-    await assertActiveAccount(executeQuery, context, accountId);
-
-    const destinationAccountId = payload.destinationAccountId ?? selected.destinationAccountId;
-    if (destinationAccountId) {
-      await assertActiveAccount(executeQuery, context, destinationAccountId);
-    }
+    const sourceCurrency = await assertActiveAccount(executeQuery, context, accountId);
 
     const kind = normalizeKind(payload.kind ?? selected.kind);
+    const currency = normalizeCurrency(payload.currency ?? selected.currency);
+    const destinationAccountId =
+      kind === "TRANSFER"
+        ? await resolveTransferDestination(executeQuery, context, {
+            accountId,
+            destinationAccountId: payload.destinationAccountId ?? selected.destinationAccountId,
+            sourceCurrency,
+            currency,
+          })
+        : null;
     const status = normalizeStatus(payload.status ?? selected.status);
     const amountMinor = validateAmount(payload.amountMinor ?? selected.amountMinor);
     const plannedOn = payload.plannedOn ?? toDateOnly(selected.plannedOn);
@@ -155,7 +160,6 @@ export async function updateRecurringAccountTransactionForContext(
         : payload.effectiveOn;
     const description = normalizeDescription(payload.description ?? selected.description);
     const note = payload.note === undefined ? selected.note : normalizeOptionalText(payload.note);
-    const currency = normalizeCurrency(payload.currency ?? selected.currency);
     const categoryId = payload.categoryId ?? selected.categoryId;
 
     assertIsoDate(plannedOn, "TRANSACTION_PLANNED_DATE_INVALID");
@@ -201,7 +205,8 @@ export async function updateRecurringAccountTransactionForContext(
          "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6,
          "kind" = $7, "status" = $8, "amountMinor" = $9, "currency" = $10,
          "occurredOn" = $11, "plannedOn" = $12, "effectiveOn" = $13,
-         "description" = $14, "note" = $15, "updatedAt" = $16, "updatedByUserId" = $17
+         "description" = $14, "note" = $15, "updatedAt" = $16, "updatedByUserId" = $17,
+         "transferGroupId" = case when $7::"TransactionKind" = 'TRANSFER' then coalesce("transferGroupId", "id") else null end
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
       [
         selected.id,
@@ -240,7 +245,8 @@ export async function updateRecurringAccountTransactionForContext(
       `update "Recurrence" set
          "accountId" = $4, "categoryId" = $5, "kind" = $6,
          "amountMinor" = $7, "currency" = $8, "description" = $9,
-         "startOn" = $10, "updatedAt" = $11, "updatedByUserId" = $12
+         "startOn" = $10, "updatedAt" = $11, "updatedByUserId" = $12,
+         "destinationAccountId" = $13
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
       [
         selected.recurrenceId,
@@ -255,6 +261,7 @@ export async function updateRecurringAccountTransactionForContext(
         recurrenceStartOn,
         now,
         context.userId,
+        destinationAccountId,
       ],
     );
 
@@ -272,7 +279,8 @@ export async function updateRecurringAccountTransactionForContext(
            "kind" = $7, "amountMinor" = $8, "currency" = $9,
            "occurredOn" = $10, "plannedOn" = $10, "effectiveOn" = null,
            "description" = $11, "note" = $12,
-           "updatedAt" = $13, "updatedByUserId" = $14
+           "updatedAt" = $13, "updatedByUserId" = $14,
+           "transferGroupId" = case when $7::"TransactionKind" = 'TRANSFER' then coalesce("transferGroupId", "id") else null end
          where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
         [
           row.id,
@@ -447,9 +455,9 @@ async function assertActiveAccount(
   executeQuery: typeof query,
   context: TenantContext,
   accountId: EntityId,
-): Promise<void> {
-  const rows = await executeQuery<{ id: string }>(
-    `select "id" from "Account"
+): Promise<string> {
+  const rows = await executeQuery<{ id: string; currency: string }>(
+    `select "id", "currency" from "Account"
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
        and "status" = 'ACTIVE'`,
     [accountId, context.organizationId, context.financialProfileId],
@@ -460,6 +468,53 @@ async function assertActiveAccount(
       "Selecione uma conta ativa.",
     );
   }
+  return rows[0].currency.trim().toUpperCase();
+}
+
+async function resolveTransferDestination(
+  executeQuery: typeof query,
+  context: TenantContext,
+  input: {
+    accountId: EntityId;
+    destinationAccountId: EntityId | null;
+    sourceCurrency: string;
+    currency: string;
+  },
+): Promise<EntityId> {
+  if (!input.destinationAccountId) {
+    throw new RecurringAccountEditError(
+      "TRANSACTION_DESTINATION_ACCOUNT_REQUIRED",
+      "Selecione a conta de destino da transferencia.",
+    );
+  }
+  if (input.destinationAccountId === input.accountId) {
+    throw new RecurringAccountEditError(
+      "TRANSACTION_TRANSFER_SAME_ACCOUNT",
+      "A conta de origem e a conta de destino devem ser diferentes.",
+    );
+  }
+  const rows = await executeQuery<{ id: string; currency: string }>(
+    `select "id", "currency" from "Account"
+     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+       and "status" = 'ACTIVE'`,
+    [input.destinationAccountId, context.organizationId, context.financialProfileId],
+  );
+  if (!rows[0]) {
+    throw new RecurringAccountEditError(
+      "TRANSACTION_DESTINATION_ACCOUNT_INVALID",
+      "A conta de destino da transferencia e invalida.",
+    );
+  }
+  // Recurring transfers stay same-currency (#668): a destination in another currency would
+  // silently reinterpret the source amount on every future occurrence.
+  const destinationCurrency = rows[0].currency.trim().toUpperCase();
+  if (destinationCurrency !== input.sourceCurrency || input.currency !== input.sourceCurrency) {
+    throw new RecurringAccountEditError(
+      "RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED",
+      "Transferencias fixas exigem contas de origem e destino na mesma moeda.",
+    );
+  }
+  return input.destinationAccountId;
 }
 
 async function assertCategory(
@@ -496,10 +551,10 @@ function buildSkipped(
 
 function normalizeKind(value: string): string {
   const normalized = value.toUpperCase();
-  if (normalized !== "INCOME" && normalized !== "EXPENSE") {
+  if (normalized !== "INCOME" && normalized !== "EXPENSE" && normalized !== "TRANSFER") {
     throw new RecurringAccountEditError(
       "TRANSACTION_KIND_INVALID",
-      "O tipo do lancamento recorrente deve ser entrada ou saida.",
+      "O tipo do lancamento recorrente deve ser entrada, saida ou transferencia.",
     );
   }
   return normalized;

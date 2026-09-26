@@ -618,6 +618,9 @@ async function createRecurrenceHandler(
     description: String(body.description ?? ""),
     ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
     ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+    ...(body.destinationAccountId !== undefined && body.destinationAccountId !== null
+      ? { destinationAccountId: String(body.destinationAccountId) }
+      : {}),
     ...(body.cardId !== undefined ? { cardId: String(body.cardId) } : {}),
     ...(body.cardInstrumentId !== undefined
       ? { cardInstrumentId: String(body.cardInstrumentId) }
@@ -657,6 +660,9 @@ async function updateRecurrenceHandler(
     ...(body.description !== undefined ? { description: String(body.description) } : {}),
     ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
     ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+    ...(body.destinationAccountId !== undefined && body.destinationAccountId !== null
+      ? { destinationAccountId: String(body.destinationAccountId) }
+      : {}),
     ...(body.cardId !== undefined ? { cardId: String(body.cardId) } : {}),
     ...(body.cardInstrumentId !== undefined
       ? { cardInstrumentId: String(body.cardInstrumentId) }

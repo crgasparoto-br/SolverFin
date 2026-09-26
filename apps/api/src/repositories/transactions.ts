@@ -297,6 +297,10 @@ export async function updateTransactionForContext(
   });
   const transaction = attachNote(result.transaction, prepared.note);
 
+  if (prepared.metadata.applyToFuturePlanned === true && currentTransaction?.recurrenceId) {
+    assertRecurringTransferSameCurrency(transaction);
+  }
+
   await withTransaction(async (executeQuery) => {
     await executeQuery(buildUpdateTransactionSql(), buildTransactionParams(transaction));
     await syncInstallmentById(
@@ -670,7 +674,8 @@ async function updateFuturePlannedTransactions(
         "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6,
         "kind" = $7, "amountMinor" = $8, "currency" = $9,
         "occurredOn" = $10, "plannedOn" = $11, "effectiveOn" = null,
-        "description" = $12, "note" = $13, "updatedAt" = $14, "updatedByUserId" = $15
+        "description" = $12, "note" = $13, "updatedAt" = $14, "updatedByUserId" = $15,
+        "transferGroupId" = case when $7::"TransactionKind" = 'TRANSFER' then coalesce("transferGroupId", "id") else null end
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
       [
         row.id,
@@ -751,7 +756,8 @@ async function updateRecurrenceRuleFromTransaction(
     `update "Recurrence" set
       "accountId" = $4, "categoryId" = $5, "kind" = $6, "amountMinor" = $7,
       "currency" = $8, "description" = $9,
-      "startOn" = coalesce($10, "startOn"), "updatedAt" = $11, "updatedByUserId" = $12
+      "startOn" = coalesce($10, "startOn"), "updatedAt" = $11, "updatedByUserId" = $12,
+      "destinationAccountId" = $13
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
     [
       currentTransaction.recurrenceId,
@@ -766,8 +772,26 @@ async function updateRecurrenceRuleFromTransaction(
       startOn ?? null,
       updatedTransaction.updatedAt,
       context.userId,
+      updatedTransaction.kind === "transfer"
+        ? (updatedTransaction.destinationAccountId ?? null)
+        : null,
     ],
   );
+}
+
+function assertRecurringTransferSameCurrency(transaction: Transaction): void {
+  if (
+    transaction.kind === "transfer" &&
+    transaction.destinationCurrency !== undefined &&
+    transaction.destinationCurrency !== transaction.currency
+  ) {
+    // Recurring transfers stay same-currency (#668); future occurrences cannot reuse the source
+    // amount as a value in another currency.
+    throw Object.assign(
+      new Error("Transferências fixas exigem contas de origem e destino na mesma moeda."),
+      { code: "RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED", statusCode: 400 },
+    );
+  }
 }
 
 async function readInstallmentSequence(

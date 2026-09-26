@@ -230,6 +230,8 @@ A resposta preserva `currency: "BRL"`, `destinationAmountMinor: 10000` e expõe 
 Permite alterar tipo, status, fonte, valor de origem, `destinationAmountMinor`, moeda, datas, descricao, conta,
 conta destino e categoria quando as validacoes forem atendidas. Alterações de `currency`, `accountId`, `destinationAccountId` ou do valor destino são validadas em conjunto antes de qualquer persistência. `destinationCurrency` continua sendo derivada do cadastro da conta destino.
 
+Quando o lançamento pertence a uma transferência fixa e a edição usa `applyToFuturePlanned: true`, o destino continua obrigatoriamente na mesma moeda da origem: um destino em outra moeda retorna `400 RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED` antes de qualquer persistência (#677). A edição somente do lançamento selecionado continua seguindo as regras cross-currency acima.
+
 Atualizar para `reconciled` define `reconciledAt` quando ainda nao existir e exige semantica efetiva coerente.
 
 Atualizar para `voided` define `voidedAt` quando ainda nao existir e nao cria efeito de caixa por causa da anulacao: um `planned`/`suggested` continua sem `effectiveOn`, enquanto um registro que ja possuia `effectiveOn` preserva esse valor historico. Se um `voided` sem historico efetivo for posteriormente reativado para `posted`/`reconciled` sem `effectiveOn` explicito, a data civil UTC da transicao e usada como nova data efetiva.

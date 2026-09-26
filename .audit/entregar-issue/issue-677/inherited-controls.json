@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+  "source_audits": [
+    {
+      "rejection_id": "audit-rejection:pr678-reference-liveness-20260926",
+      "head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+      "finding_ids": [
+        "A-001"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "id": "FIXED-POST-CREATE-LIVENESS-001",
+      "source_rejection_id": "audit-rejection:pr678-reference-liveness-20260926",
+      "source_finding_id": "A-001",
+      "risk_family": "reference-liveness",
+      "surface": "future-destination-reference-liveness",
+      "control_type": "test",
+      "procedure": "Create a future transfer recurrence with an active destination, archive the destination, then materialize the due date through generateInstallmentsForContext.",
+      "expected": "RECURRENCE_ACCOUNT_ARCHIVED and zero persisted future occurrences.",
+      "observed": "Exact-head PostgreSQL integration gate passed on a27be3b3ccb7be91405c12fc4faef8835db96ac6; the regression asserts the archived destination blocks materialization and leaves occurrence count at zero.",
+      "evidence": "evidence/issue-677-exact-head.txt",
+      "evidence_sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
+      "head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+      "subject_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+      "status": "passed",
+      "dimension": "active-at-materialization",
+      "attack_control_id": "FIXED-POST-CREATE-LIVENESS-001"
+    }
+  ],
+  "retired_controls": [],
+  "unresolved_controls": []
+}

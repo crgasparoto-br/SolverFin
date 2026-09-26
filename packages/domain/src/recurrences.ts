@@ -36,6 +36,10 @@ export type RecurrenceErrorCode =
   | "RECURRENCE_ACCOUNT_REQUIRED"
   | "RECURRENCE_ACCOUNT_INVALID"
   | "RECURRENCE_ACCOUNT_ARCHIVED"
+  | "RECURRENCE_DESTINATION_ACCOUNT_REQUIRED"
+  | "RECURRENCE_DESTINATION_ACCOUNT_INVALID"
+  | "RECURRENCE_TRANSFER_SAME_ACCOUNT"
+  | "RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED"
   | "RECURRENCE_TARGET_REQUIRED"
   | "RECURRENCE_TARGET_CONFLICT"
   | "RECURRENCE_CARD_INVALID"
@@ -70,6 +74,7 @@ export interface CreateRecurrenceInput {
   now: ISODateTime;
   payload: CreateRecurrencePayload;
   account?: Account;
+  destinationAccount?: Account;
   card?: Card;
   category?: Category;
 }
@@ -83,6 +88,7 @@ export interface CreateRecurrencePayload {
   description: string;
   kind?: TransactionKind;
   accountId?: EntityId;
+  destinationAccountId?: EntityId;
   cardId?: EntityId;
   currency?: string;
   categoryId?: EntityId;
@@ -96,6 +102,7 @@ export interface UpdateRecurrenceInput {
   now: ISODateTime;
   payload: UpdateRecurrencePayload;
   account?: Account;
+  destinationAccount?: Account;
   card?: Card;
   category?: Category;
 }
@@ -110,6 +117,7 @@ export interface UpdateRecurrencePayload {
   description?: string;
   kind?: TransactionKind;
   accountId?: EntityId;
+  destinationAccountId?: EntityId;
   cardId?: EntityId;
   currency?: string;
   categoryId?: EntityId;
@@ -196,6 +204,13 @@ export function createRecurrence(input: CreateRecurrenceInput): RecurrenceMutati
     cardId: payload.cardId,
   });
   const kind = resolveRecurrenceKind(target.card !== undefined, payload.kind);
+  const destinationAccount = assertRecurrenceDestination(input.context, {
+    kind,
+    account: target.account,
+    destinationAccount: input.destinationAccount,
+    destinationAccountId: payload.destinationAccountId,
+    currency: payload.currency,
+  });
   assertCategory(input.context, input.category, payload.categoryId, kind);
 
   const recurrence: Recurrence = {
@@ -218,6 +233,10 @@ export function createRecurrence(input: CreateRecurrenceInput): RecurrenceMutati
 
   if (target.account !== undefined) {
     recurrence.accountId = target.account.id;
+  }
+
+  if (destinationAccount !== undefined) {
+    recurrence.destinationAccountId = destinationAccount.id;
   }
 
   if (target.card !== undefined) {
@@ -255,7 +274,9 @@ export function listRecurrences(
       filters.status === "all" ||
       recurrence.status === filters.status;
     const accountMatches =
-      filters.accountId === undefined || recurrence.accountId === filters.accountId;
+      filters.accountId === undefined ||
+      recurrence.accountId === filters.accountId ||
+      recurrence.destinationAccountId === filters.accountId;
     const cardMatches = filters.cardId === undefined || recurrence.cardId === filters.cardId;
     const categoryMatches =
       filters.categoryId === undefined || recurrence.categoryId === filters.categoryId;
@@ -297,6 +318,15 @@ export function updateRecurrence(input: UpdateRecurrenceInput): RecurrenceMutati
     target.card !== undefined,
     input.payload.kind ?? currentRecurrence.kind,
   );
+  const destinationAccount = assertRecurrenceDestination(input.context, {
+    kind: nextKind,
+    account: target.account,
+    destinationAccount: input.destinationAccount,
+    destinationAccountId:
+      input.payload.destinationAccountId ??
+      (nextKind === "transfer" ? currentRecurrence.destinationAccountId : undefined),
+    currency: input.payload.currency ?? currentRecurrence.currency,
+  });
   assertCategory(
     input.context,
     input.category,
@@ -320,6 +350,12 @@ export function updateRecurrence(input: UpdateRecurrenceInput): RecurrenceMutati
   if (target.card !== undefined) {
     updatedRecurrence.cardId = target.card.id;
     delete updatedRecurrence.accountId;
+  }
+
+  if (destinationAccount !== undefined) {
+    updatedRecurrence.destinationAccountId = destinationAccount.id;
+  } else {
+    delete updatedRecurrence.destinationAccountId;
   }
 
   return {
@@ -630,6 +666,14 @@ function buildRecurrenceTransaction(input: {
     transaction.accountId = input.recurrence.accountId;
   }
 
+  if (input.recurrence.kind === "transfer" && input.recurrence.destinationAccountId !== undefined) {
+    // Same-currency transfer: both legs carry the source amount under one logical identity.
+    transaction.destinationAccountId = input.recurrence.destinationAccountId;
+    transaction.destinationAmountMinor = input.installment.amountMinor;
+    transaction.destinationCurrency = input.installment.currency;
+    transaction.transferGroupId = input.id;
+  }
+
   if (input.recurrence.cardId !== undefined) {
     transaction.cardId = input.recurrence.cardId;
   }
@@ -775,14 +819,81 @@ function resolveRecurrenceKind(
     );
   }
 
-  if (kind !== "income" && kind !== "expense") {
+  if (kind !== "income" && kind !== "expense" && kind !== "transfer") {
     throw new RecurrenceError(
       "RECURRENCE_KIND_INVALID",
-      "Recurrence kind must be income or expense.",
+      "Recurrence kind must be income, expense or transfer.",
     );
   }
 
   return kind;
+}
+
+interface RecurrenceDestinationInput {
+  kind: TransactionKind;
+  account: Account | undefined;
+  destinationAccount: Account | undefined;
+  destinationAccountId: EntityId | undefined;
+  currency: string | undefined;
+}
+
+function assertRecurrenceDestination(
+  context: TenantContext,
+  input: RecurrenceDestinationInput,
+): Account | undefined {
+  if (input.kind !== "transfer") {
+    if (input.destinationAccountId !== undefined) {
+      throw new RecurrenceError(
+        "RECURRENCE_DESTINATION_ACCOUNT_INVALID",
+        "Only transfer recurrences can define a destination account.",
+      );
+    }
+
+    return undefined;
+  }
+
+  if (!input.destinationAccountId) {
+    throw new RecurrenceError(
+      "RECURRENCE_DESTINATION_ACCOUNT_REQUIRED",
+      "Transfer recurrences require a destination account.",
+    );
+  }
+
+  const destinationAccount = getTenantScopedResource(context, input.destinationAccount);
+
+  if (destinationAccount.id !== input.destinationAccountId) {
+    throw new RecurrenceError(
+      "RECURRENCE_DESTINATION_ACCOUNT_INVALID",
+      "Recurrence destination account id does not match.",
+    );
+  }
+
+  if (input.account !== undefined && input.account.id === destinationAccount.id) {
+    throw new RecurrenceError(
+      "RECURRENCE_TRANSFER_SAME_ACCOUNT",
+      "Transfer recurrences require different source and destination accounts.",
+    );
+  }
+
+  if (destinationAccount.status !== "active") {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_ARCHIVED",
+      "Recurrence destination account must be active.",
+    );
+  }
+
+  const sourceCurrency = normalizeCurrency(input.account?.currency);
+  const destinationCurrency = normalizeCurrency(destinationAccount.currency);
+  const requestedCurrency = normalizeCurrency(input.currency ?? sourceCurrency);
+
+  if (destinationCurrency !== sourceCurrency || requestedCurrency !== sourceCurrency) {
+    throw new RecurrenceError(
+      "RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED",
+      "Transfer recurrences require source and destination accounts in the same currency.",
+    );
+  }
+
+  return destinationAccount;
 }
 
 function validateFrequency(frequency: RecurrenceFrequency | undefined): RecurrenceFrequency {
@@ -1023,6 +1134,7 @@ function buildRedactedRecurrenceChanges(
     "currency",
     "description",
     "accountId",
+    "destinationAccountId",
     "categoryId",
   ] as const satisfies readonly (keyof Recurrence)[];
   const changes: Record<string, "changed" | "added" | "removed"> = {};

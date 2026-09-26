@@ -7,6 +7,7 @@ import {
   getRecurrence as getRecurrenceDomain,
   listRecurrences as listRecurrencesDomain,
   pauseRecurrence as pauseRecurrenceDomain,
+  RecurrenceError,
   resumeRecurrence as resumeRecurrenceDomain,
   updateRecurrence as updateRecurrenceDomain,
   type Account,
@@ -67,6 +68,7 @@ interface RecurrenceRow {
   organizationId: string;
   financialProfileId: string;
   accountId: string | null;
+  destinationAccountId: string | null;
   cardId: string | null;
   cardInstrumentId: string | null;
   categoryId: string | null;
@@ -122,7 +124,7 @@ interface FuturePendingCardOccurrenceUpdate {
   dueOn: ISODate;
 }
 
-const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId",
+const RECURRENCE_COLUMNS = `"id", "organizationId", "financialProfileId", "accountId", "destinationAccountId", "cardId", "cardInstrumentId", "categoryId",
   "status", "kind", "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description",
   "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 
@@ -159,6 +161,9 @@ export async function createRecurrenceForContext(
   payload: CreateRecurrenceForContextPayload,
 ): Promise<Recurrence> {
   const account = payload.accountId ? await findAccountRow(context, payload.accountId) : undefined;
+  const destinationAccount = payload.destinationAccountId
+    ? await findAccountRow(context, payload.destinationAccountId)
+    : undefined;
   const card = payload.cardId ? await findCardRow(context, payload.cardId) : undefined;
   const category = payload.categoryId
     ? await findCategoryRow(context, payload.categoryId)
@@ -172,6 +177,7 @@ export async function createRecurrenceForContext(
     now: new Date().toISOString(),
     payload,
     ...(account ? { account } : {}),
+    ...(destinationAccount ? { destinationAccount } : {}),
     ...(card ? { card } : {}),
     ...(category ? { category } : {}),
   });
@@ -208,7 +214,12 @@ export async function updateRecurrenceForContext(
     recurrencePayload.cardId ??
     (recurrencePayload.accountId !== undefined ? undefined : currentRecurrence?.cardId);
   const categoryId = recurrencePayload.categoryId ?? currentRecurrence?.categoryId;
+  const destinationAccountId =
+    recurrencePayload.destinationAccountId ?? currentRecurrence?.destinationAccountId;
   const account = accountId ? await findAccountRow(context, accountId) : undefined;
+  const destinationAccount = destinationAccountId
+    ? await findAccountRow(context, destinationAccountId)
+    : undefined;
   const card = cardId ? await findCardRow(context, cardId) : undefined;
   const category = categoryId ? await findCategoryRow(context, categoryId) : undefined;
 
@@ -220,6 +231,7 @@ export async function updateRecurrenceForContext(
     now: new Date().toISOString(),
     payload: recurrencePayload,
     ...(account ? { account } : {}),
+    ...(destinationAccount ? { destinationAccount } : {}),
     ...(card ? { card } : {}),
     ...(category ? { category } : {}),
   });
@@ -301,6 +313,7 @@ export async function generateInstallmentsForContext(
   maxOccurrences?: number,
 ): Promise<GenerateRecurrenceInstallmentsResult> {
   const recurrence = await findRecurrenceRow(context, recurrenceId);
+  await assertTransferRecurrenceReferencesLive(context, recurrence);
   const existingInstallments = await listInstallmentsByRecurrence(context, recurrenceId);
   const now = new Date().toISOString();
 
@@ -402,6 +415,80 @@ export async function catchUpRecurrenceInstallmentsForContext(
 
   for (const recurrence of recurrences) {
     await generateInstallmentsForContext(context, recurrence.id, through);
+  }
+}
+
+async function assertTransferRecurrenceReferencesLive(
+  context: TenantContext,
+  recurrence: Recurrence | undefined,
+): Promise<void> {
+  if (recurrence?.kind !== "transfer") {
+    return;
+  }
+
+  if (!recurrence.accountId) {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_REQUIRED",
+      "Transfer recurrences require a source account.",
+    );
+  }
+
+  if (!recurrence.destinationAccountId) {
+    throw new RecurrenceError(
+      "RECURRENCE_DESTINATION_ACCOUNT_REQUIRED",
+      "Transfer recurrences require a destination account.",
+    );
+  }
+
+  const [sourceAccount, destinationAccount] = await Promise.all([
+    findAccountRow(context, recurrence.accountId),
+    findAccountRow(context, recurrence.destinationAccountId),
+  ]);
+
+  if (!sourceAccount) {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_INVALID",
+      "Recurrence source account is no longer available.",
+    );
+  }
+
+  if (!destinationAccount) {
+    throw new RecurrenceError(
+      "RECURRENCE_DESTINATION_ACCOUNT_INVALID",
+      "Recurrence destination account is no longer available.",
+    );
+  }
+
+  if (sourceAccount.status !== "active") {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_ARCHIVED",
+      "Recurrence source account must be active before materializing a transfer.",
+    );
+  }
+
+  if (destinationAccount.status !== "active") {
+    throw new RecurrenceError(
+      "RECURRENCE_ACCOUNT_ARCHIVED",
+      "Recurrence destination account must be active before materializing a transfer.",
+    );
+  }
+
+  if (sourceAccount.id === destinationAccount.id) {
+    throw new RecurrenceError(
+      "RECURRENCE_TRANSFER_SAME_ACCOUNT",
+      "Transfer recurrences require different source and destination accounts.",
+    );
+  }
+
+  const sourceCurrency = sourceAccount.currency.trim().toUpperCase();
+  const destinationCurrency = destinationAccount.currency.trim().toUpperCase();
+  const recurrenceCurrency = recurrence.currency.trim().toUpperCase();
+
+  if (destinationCurrency !== sourceCurrency || recurrenceCurrency !== sourceCurrency) {
+    throw new RecurrenceError(
+      "RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED",
+      "Transfer recurrences require source and destination accounts in the same currency.",
+    );
   }
 }
 
@@ -691,10 +778,11 @@ async function persistRecurrenceMutation(result: RecurrenceMutationResult): Prom
       `insert into "Recurrence"
         ("id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId", "status", "kind",
          "frequency", "interval", "startOn", "endOn", "amountMinor", "currency", "description", "createdAt",
-         "updatedAt", "createdByUserId", "updatedByUserId")
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+         "updatedAt", "createdByUserId", "updatedByUserId", "destinationAccountId")
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
        on conflict ("id") do update set
-         "accountId" = excluded."accountId", "cardId" = excluded."cardId", "cardInstrumentId" = excluded."cardInstrumentId",
+         "accountId" = excluded."accountId", "destinationAccountId" = excluded."destinationAccountId",
+         "cardId" = excluded."cardId", "cardInstrumentId" = excluded."cardInstrumentId",
          "categoryId" = excluded."categoryId", "status" = excluded."status", "kind" = excluded."kind",
          "frequency" = excluded."frequency", "interval" = excluded."interval", "startOn" = excluded."startOn",
          "endOn" = excluded."endOn", "amountMinor" = excluded."amountMinor", "currency" = excluded."currency",
@@ -728,6 +816,7 @@ function buildRecurrenceParams(recurrence: Recurrence): unknown[] {
     recurrence.updatedAt,
     recurrence.createdByUserId ?? null,
     recurrence.updatedByUserId ?? null,
+    recurrence.destinationAccountId ?? null,
   ];
 }
 
@@ -735,8 +824,10 @@ function buildInsertRecurrenceTransactionSql(): string {
   return `insert into "Transaction"
     ("id", "organizationId", "financialProfileId", "accountId", "cardId", "cardInstrumentId", "categoryId", "recurrenceId",
      "installmentId", "kind", "status", "source", "amountMinor", "currency", "occurredOn", "plannedOn",
-     "description", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
-   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`;
+     "description", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId",
+     "destinationAccountId", "destinationAmountMinor", "destinationCurrency", "transferGroupId")
+   values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21,
+     $22, $23, $24, $25)`;
 }
 
 function buildRecurrenceTransactionParams(transaction: Transaction): unknown[] {
@@ -762,6 +853,10 @@ function buildRecurrenceTransactionParams(transaction: Transaction): unknown[] {
     transaction.updatedAt,
     transaction.createdByUserId ?? null,
     transaction.updatedByUserId ?? null,
+    transaction.destinationAccountId ?? null,
+    transaction.destinationAmountMinor ?? null,
+    transaction.destinationCurrency ?? null,
+    transaction.transferGroupId ?? null,
   ];
 }
 
@@ -976,6 +1071,7 @@ function mapRecurrenceRow(row: RecurrenceRow): Recurrence {
   };
 
   if (row.accountId !== null) recurrence.accountId = row.accountId;
+  if (row.destinationAccountId !== null) recurrence.destinationAccountId = row.destinationAccountId;
   if (row.cardId !== null) recurrence.cardId = row.cardId;
   if (row.cardInstrumentId !== null) recurrence.cardInstrumentId = row.cardInstrumentId;
   if (row.categoryId !== null) recurrence.categoryId = row.categoryId;

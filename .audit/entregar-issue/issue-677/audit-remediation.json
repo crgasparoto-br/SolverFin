@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:pr678-reference-liveness-20260926",
+    "audited_head_sha": "7965173a5f26795221f3983aaa19ff5b6350773d",
+    "audit_report_sha256": "66301927a34de61d354440ccff247d2603153501f1f7a9ce88f7310691ec7afc"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "targeted-regression",
+      "changed_files": [
+        "apps/api/src/repositories/recurrences.ts",
+        "apps/api/src/transfer-recurrence.integration.test.ts"
+      ],
+      "evidence": [
+        "evidence/issue-677-exact-head.txt",
+        "apps/api/src/transfer-recurrence.integration.test.ts"
+      ],
+      "validations": [
+        "Delivery V2 CI run 36263974098 completed success on exact material head a27be3b3ccb7be91405c12fc4faef8835db96ac6.",
+        "Statement visual validation run 36263974112 completed success on exact material head a27be3b3ccb7be91405c12fc4faef8835db96ac6.",
+        "Temporal regression creates with active destination, archives it before due date, then proves RECURRENCE_ACCOUNT_ARCHIVED and zero persisted occurrences."
+      ]
+    }
+  ]
+}
