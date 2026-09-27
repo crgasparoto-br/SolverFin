@@ -1,38 +1,46 @@
 import {
-  summarizeBudgetDashboard,
-  type BudgetUsageSummary,
+  summarizeOperationalBudgetDashboard,
+  type OperationalBudgetUsageSummary,
   type TenantContext,
 } from "@solverfin/domain";
 
-import { listBudgetsForContext } from "./budgets.js";
-import { listTransactionsForContext } from "./transactions.js";
+import { listBudgetsForContext, listBudgetTransactionsForContext } from "./budgets.js";
+import { listFutureCommitmentsForContext } from "./future-commitments.js";
 
 export async function summarizeBudgetDashboardForContext(
   context: TenantContext,
   periodStartOn: string,
   periodEndOn: string,
   currency?: string,
-): Promise<BudgetUsageSummary[]> {
+): Promise<OperationalBudgetUsageSummary[]> {
   const input = {
     context,
     budgets: [],
     transactions: [],
+    commitments: [],
     periodStartOn,
     periodEndOn,
     ...(currency ? { currency } : {}),
   };
 
   // Validate the public period/currency contract before issuing repository reads.
-  summarizeBudgetDashboard(input);
+  summarizeOperationalBudgetDashboard(input);
 
-  const [budgets, transactions] = await Promise.all([
+  const [budgets, budgetTransactions, agenda] = await Promise.all([
     listBudgetsForContext(context, { status: "all", periodStartOn, periodEndOn }),
-    listTransactionsForContext(context, { occurredFrom: periodStartOn, occurredTo: periodEndOn }),
+    listBudgetTransactionsForContext(context, periodStartOn, periodEndOn),
+    listFutureCommitmentsForContext(context, {
+      from: periodStartOn,
+      to: periodEndOn,
+      ...(currency ? { currency } : {}),
+    }),
   ]);
 
-  return summarizeBudgetDashboard({
+  return summarizeOperationalBudgetDashboard({
     ...input,
     budgets,
-    transactions,
+    transactions: budgetTransactions.transactions,
+    invoicePaymentTransactionIds: budgetTransactions.invoicePaymentTransactionIds,
+    commitments: agenda.commitments,
   });
 }

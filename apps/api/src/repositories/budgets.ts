@@ -5,25 +5,24 @@ import {
   createBudget as createBudgetDomain,
   getBudget as getBudgetDomain,
   listBudgets as listBudgetsDomain,
-  summarizeBudgetUsage as summarizeBudgetUsageDomain,
+  summarizeOperationalBudgetUsage,
   updateBudget as updateBudgetDomain,
   type Budget,
   type BudgetMutationResult,
   type BudgetStatus,
-  type BudgetUsageSummary,
+  type OperationalBudgetUsageSummary,
   type Category,
   type CreateBudgetPayload,
   type EntityId,
   type ListBudgetsFilters,
   type TenantContext,
-  type Transaction,
-  type TransactionKind,
-  type TransactionStatus,
   type UpdateBudgetPayload,
 } from "@solverfin/domain";
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { listFutureCommitmentsForContext } from "./future-commitments.js";
+import { listTransactionsForPeriodForContext } from "./transactions.js";
 
 interface BudgetRow {
   id: string;
@@ -120,22 +119,57 @@ export async function archiveBudgetForContext(
   return result.budget;
 }
 
+export async function listBudgetTransactionsForContext(
+  context: TenantContext,
+  periodStartOn: string,
+  periodEndOn: string,
+) {
+  const [transactions, invoicePaymentRows] = await Promise.all([
+    listTransactionsForPeriodForContext(context, periodStartOn, periodEndOn),
+    query<{ paymentTransactionId: string }>(
+      `select "paymentTransactionId"
+       from "Invoice"
+       where "organizationId" = $1
+         and "financialProfileId" = $2
+         and "paymentTransactionId" is not null`,
+      [context.organizationId, context.financialProfileId],
+    ),
+  ]);
+
+  return {
+    transactions,
+    invoicePaymentTransactionIds: new Set(
+      invoicePaymentRows.map((row) => row.paymentTransactionId),
+    ),
+  };
+}
+
 export async function summarizeBudgetUsageForContext(
   context: TenantContext,
   budgetId: EntityId,
-): Promise<BudgetUsageSummary> {
+): Promise<OperationalBudgetUsageSummary> {
   const budget = await findBudgetRow(context, budgetId);
-  const transactions = budget
-    ? await listTransactionsForCategoryPeriod(
-        context,
-        budget.categoryId,
-        budget.periodStartOn,
-        budget.periodEndOn,
-        budget.currency,
-      )
-    : [];
+  const [budgetTransactions, agenda] = budget
+    ? await Promise.all([
+        listBudgetTransactionsForContext(context, budget.periodStartOn, budget.periodEndOn),
+        listFutureCommitmentsForContext(context, {
+          from: budget.periodStartOn,
+          to: budget.periodEndOn,
+          currency: budget.currency,
+        }),
+      ])
+    : [
+        { transactions: [], invoicePaymentTransactionIds: new Set<EntityId>() },
+        { commitments: [] },
+      ];
 
-  return summarizeBudgetUsageDomain({ context, budget, transactions });
+  return summarizeOperationalBudgetUsage({
+    context,
+    budget,
+    transactions: budgetTransactions.transactions,
+    invoicePaymentTransactionIds: budgetTransactions.invoicePaymentTransactionIds,
+    commitments: agenda.commitments,
+  });
 }
 
 async function persistBudgetMutation(result: BudgetMutationResult): Promise<void> {
@@ -170,69 +204,6 @@ async function persistBudgetMutation(result: BudgetMutationResult): Promise<void
       ],
     );
     await insertAuditLogEntry(executeQuery, result.auditEntry);
-  });
-}
-
-async function listTransactionsForCategoryPeriod(
-  context: TenantContext,
-  categoryId: EntityId,
-  periodStartOn: string,
-  periodEndOn: string,
-  currency: string,
-): Promise<Transaction[]> {
-  const rows = await query<{
-    id: string;
-    organizationId: string;
-    financialProfileId: string;
-    accountId: string | null;
-    categoryId: string | null;
-    kind: string;
-    status: string;
-    source: string;
-    amountMinor: number;
-    currency: string;
-    occurredOn: Date;
-    plannedOn: Date;
-    description: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }>(
-    `select "id", "organizationId", "financialProfileId", "accountId", "categoryId", "kind", "status",
-            "source", "amountMinor", "currency", "occurredOn", "plannedOn", "description", "createdAt", "updatedAt"
-     from "Transaction"
-     where "organizationId" = $1 and "financialProfileId" = $2 and "categoryId" = $3
-       and "occurredOn" >= $4 and "occurredOn" <= $5 and upper("currency") = upper($6)`,
-    [
-      context.organizationId,
-      context.financialProfileId,
-      categoryId,
-      periodStartOn,
-      periodEndOn,
-      currency,
-    ],
-  );
-
-  return rows.map((row) => {
-    const transaction: Transaction = {
-      id: row.id,
-      organizationId: row.organizationId,
-      financialProfileId: row.financialProfileId,
-      kind: row.kind.toLowerCase() as TransactionKind,
-      status: row.status.toLowerCase() as TransactionStatus,
-      source: row.source.toLowerCase() as Transaction["source"],
-      amountMinor: row.amountMinor,
-      currency: row.currency,
-      occurredOn: row.occurredOn.toISOString().slice(0, 10),
-      plannedOn: row.plannedOn.toISOString().slice(0, 10),
-      description: row.description,
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
-    };
-
-    if (row.accountId !== null) transaction.accountId = row.accountId;
-    if (row.categoryId !== null) transaction.categoryId = row.categoryId;
-
-    return transaction;
   });
 }
 

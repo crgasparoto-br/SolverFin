@@ -1,0 +1,192 @@
+Parent epic: #592
+Depends on: #595, #613, #616, #617
+Specification version: 3
+
+## Objetivo
+
+Evoluir Orçamentos para diferenciar `planned`, `realized`, `committed`, `projected`, `available` e `overBudget` por categoria, período e moeda, sem confundir consumo econômico com obrigação de caixa.
+
+## Contrato de produto
+
+Para uma combinação **categoria + período + moeda** que possua orçamento ativo:
+
+```text
+planned = valor configurado do orçamento
+realized = despesas econômicas confirmadas da categoria no período
+committed = despesas futuras determinísticas da categoria no período, ainda não realizadas
+projected = realized + committed
+available = planned - projected
+overBudget = max(0, -available)
+```
+
+Orçamento mede **consumo econômico da categoria**. #617 mede **trajetória de caixa**. Pagamento de fatura e transferências internas não constituem novo consumo orçamentário.
+
+## Definições normativas
+
+### Planejado
+- valor do orçamento ativo para categoria, período e moeda.
+
+### Realizado
+- reutiliza a regra determinística de `docs/FINANCIAL_INSIGHTS.md`/`docs/API_BUDGETS_GOALS_ALERTS.md`;
+- somente `expense` confirmada (`posted`/`reconciled`), mesma categoria/moeda e `occurredOn` no período exato do orçamento;
+- evento realizado deixa de compor `committed`.
+
+### Comprometido
+- consumo futuro determinístico conhecido da categoria, ainda não realizado;
+- reutiliza identidade/deduplicação de #616;
+- para compra/cartão, a ocorrência econômica categorizada é a fonte da composição; `Invoice` permanece obrigação de caixa, não fonte de categoria;
+- enquanto futuro, a competência usa `plannedOn` conforme #597.
+
+### Projetado
+`projected = realized + committed`; não inclui previsão estatística, média histórica, IA ou gasto hipotético.
+
+### Disponível/estouro
+- `available = planned - projected`, inclusive quando negativo;
+- `overBudget = max(0, -available)`.
+
+## Sem categoria
+
+A issue altera deliberadamente o comportamento atual de `docs/API_BUDGETS_GOALS_ALERTS.md`, que hoje ignora transações sem categoria no dashboard de orçamento.
+
+No novo contrato:
+
+- despesas/compromissos sem categoria aparecem em bucket analítico **Sem categoria**, por período e moeda;
+- o bucket preserva `realized`, `committed` e `projected = realized + committed`;
+- ele **não possui orçamento implícito**: `planned` fica ausente/nulo, nunca `0` sintetizado;
+- por não existir `planned`, `available` e `overBudget` ficam ausentes/nulos para esse bucket; não marcar todo gasto sem categoria como estouro de orçamento;
+- itens sem categoria não reduzem orçamento de outra categoria;
+- o drilldown deve permitir localizar os itens para categorização posterior.
+
+## Categorias com gasto e sem orçamento
+
+Preservar o conceito existente `unbudgeted` de `docs/API_BUDGETS_GOALS_ALERTS.md` para categoria identificada que possui consumo mas não orçamento ativo:
+
+- moeda e categoria continuam explícitas;
+- não fabricar `planned=0` para reutilizar a fórmula de orçamento ativo;
+- a UI/API deve distinguir `unbudgeted` de `Sem categoria` e de orçamento excedido;
+- esta issue pode enriquecer o item com realizado/comprometido/projetado, mas `available/overBudget` só existem quando houver `planned` real.
+
+## Transferências
+
+Transferências, inclusive a representação cross-currency de #668, permanecem fora do consumo econômico do orçamento:
+
+- nenhum leg de transferência entra em `realized` ou `committed`;
+- débito BRL de uma transferência não vira despesa orçamentária;
+- crédito USD não vira receita/compensação orçamentária;
+- #619 não converte nem compensa moedas.
+
+## Competência temporal
+
+- futuro: compromisso pertence ao período de `plannedOn`;
+- realizado: sai integralmente de `committed` e entra em `realized` no período de `occurredOn`;
+- se `plannedOn` e `occurredOn` estiverem em períodos diferentes, o valor migra de período sem coexistir nos dois estados;
+- data de pagamento da fatura não redefine a competência das compras.
+
+## Fatura multicategoria
+
+Uma fatura de 2.000 composta por:
+
+```text
+Alimentação = 800
+Transporte = 400
+Saúde = 500
+Sem categoria = 300
+```
+
+usa essa composição econômica. A `Invoice`/pagamento de 2.000 não adiciona outros 2.000 ao orçamento.
+
+## Escopo
+
+- preservar `planned`/`realized` existentes e adicionar `committed`, `projected`, `available`, `overBudget`;
+- calcular estados no backend/domínio por categoria, período e moeda;
+- reutilizar #616 para compromissos futuros e #597 para datas;
+- expor composição/drilldown de `realized`, `committed`, `unbudgeted` e `Sem categoria`;
+- consumir a UI migrada por #613 sem fórmulas financeiras no renderer;
+- manter transferências e liquidação de fatura fora do consumo econômico.
+
+## Invariantes estruturais
+
+### `must_reuse`
+- regra atual de realizado em `docs/FINANCIAL_INSIGHTS.md` e `docs/API_BUDGETS_GOALS_ALERTS.md`;
+- identidade/deduplicação de #616;
+- semântica temporal de #597;
+- contrato multi-moedas de #595.
+
+### `must_be_single_source`
+A ocorrência econômica categorizada é a fonte da composição orçamentária. `Invoice` e pagamento de fatura são fonte de obrigação de caixa, não uma segunda composição por categoria.
+
+### `must_behave`
+- futuro compõe `committed`; após efetivação compõe `realized` e sai de `committed`;
+- `available` negativo é preservado;
+- `Sem categoria` preserva consumo sem inventar orçamento;
+- `unbudgeted` não é tratado como orçamento de valor zero.
+
+### `must_not_behave`
+- mesmo evento não pode estar simultaneamente em `realized` e `committed`;
+- não somar `Invoice` + compras;
+- não atribuir toda fatura a uma categoria;
+- não manter comprometido no período antigo depois da realização em outro período;
+- não limitar `available` a zero;
+- não descartar item sem categoria;
+- não transformar `Sem categoria`/`unbudgeted` em `planned=0`;
+- não contabilizar transferências, inclusive cross-currency, como consumo.
+
+### `must_not_depend_on`
+- IA/provider;
+- fórmula no frontend;
+- conversão cambial automática.
+
+### `forbidden_implementation`
+Usar o total da `Invoice` como categoria, somar compra + pagamento, inferir categoria, ou calcular `available` para itens sem orçamento usando zero sintético.
+
+**Controle discriminante:** cenário com fatura multicategoria, item sem categoria, categoria `unbudgeted`, pagamento da fatura, transferência 538,32 BRL -> 100 USD e compromisso que muda de agosto para setembro. Os totais orçamentários devem refletir somente consumo econômico da categoria e preservar os estados sem orçamento.
+
+## Critérios de aceite
+
+- [ ] `planned`, `realized`, `committed`, `projected`, `available`, `overBudget` possuem definição única.
+- [ ] `projected = realized + committed` sem IA/previsão estatística.
+- [ ] `available = planned - projected` e pode ser negativo.
+- [ ] `overBudget = max(0, -available)` somente quando existe orçamento/planned real.
+- [ ] Evento não aparece simultaneamente como realizado e comprometido.
+- [ ] Efetivação em período diferente remove compromisso do período planejado e registra realizado no período ocorrido.
+- [ ] Fatura multicategoria usa compras/ocorrências; pagamento não consome orçamento novamente.
+- [ ] `Sem categoria` aparece por moeda/período com `planned/available/overBudget` ausentes, não zero.
+- [ ] Categoria `unbudgeted` permanece distinta de `Sem categoria` e de `exceeded`.
+- [ ] Transferências same-currency e cross-currency não entram em `realized`/`committed`.
+- [ ] Moedas não são agregadas implicitamente.
+- [ ] Drilldown identifica itens de `realized`, `committed`, `unbudgeted` e `Sem categoria`.
+- [ ] UI #613 consome valores do backend sem recálculo financeiro.
+
+## Testes
+
+Cobrir orçamento sem movimento, parcial, comprometido, excedido, `unbudgeted`, `Sem categoria`, fatura multicategoria, pagamento de fatura, transferência cross-currency, mudança de período e múltiplas moedas.
+
+## Impacto na documentação
+
+Na implementação, atualizar `docs/API_BUDGETS_GOALS_ALERTS.md` (especialmente `Sem categoria`/`unbudgeted`), `docs/FINANCIAL_INSIGHTS.md` quando aplicável e os contratos de Orçamentos; atualizar `docs/EVOLUTION_STRATEGY.md`/`docs/STATUS_MATRIX.md` quando a capacidade passar a implementada.
+
+## Fora de escopo
+
+- rollover automático;
+- conversão cambial automática;
+- previsão estatística/IA;
+- inferência automática de categoria;
+- orçamento implícito para `Sem categoria`/`unbudgeted`.
+
+## Readiness
+
+**Pronta após #613, #616 e #617.** O comportamento de itens sem orçamento e a exclusão de transferências estão agora explícitos.
+
+## Referências
+
+- #592
+- #595
+- #597
+- #613
+- #616
+- #617
+- #668
+- ADR 0013
+- `docs/FINANCIAL_INSIGHTS.md`
+- `docs/API_BUDGETS_GOALS_ALERTS.md`
+- `docs/CARDS.md`

@@ -115,12 +115,14 @@ export interface SummarizeBudgetUsageInput {
   context: TenantContext;
   budget: Budget | undefined;
   transactions: readonly Transaction[];
+  invoicePaymentTransactionIds?: ReadonlySet<EntityId>;
 }
 
 export interface SummarizeBudgetDashboardInput {
   context: TenantContext;
   budgets: readonly Budget[];
   transactions: readonly Transaction[];
+  invoicePaymentTransactionIds?: ReadonlySet<EntityId>;
   periodStartOn: ISODate;
   periodEndOn?: ISODate;
   /** Optional native-currency filter. Omitting it preserves separate summaries per currency. */
@@ -265,6 +267,7 @@ export function summarizeBudgetUsage(input: SummarizeBudgetUsageInput): BudgetUs
     budget.periodStartOn,
     budget.periodEndOn,
     budget.currency,
+    input.invoicePaymentTransactionIds,
   );
 
   return buildBudgetUsageSummary(budget, actualAmountMinor);
@@ -291,6 +294,7 @@ export function summarizeBudgetDashboard(
         budget.periodStartOn,
         budget.periodEndOn,
         budget.currency,
+        input.invoicePaymentTransactionIds,
       ),
     ),
   );
@@ -304,6 +308,7 @@ export function summarizeBudgetDashboard(
     period.periodStartOn,
     period.periodEndOn,
     currencyFilter,
+    input.invoicePaymentTransactionIds,
   );
 
   for (const item of unbudgetedAmounts.values()) {
@@ -414,9 +419,17 @@ function sumActualAmount(
   periodStartOn: ISODate,
   periodEndOn: ISODate,
   currency: string,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId> | undefined,
 ): number {
   return listTenantScopedResources(context, transactions)
-    .filter((transaction) => isBudgetTransaction(transaction, periodStartOn, periodEndOn))
+    .filter((transaction) =>
+      isBudgetRealizedTransaction(
+        transaction,
+        periodStartOn,
+        periodEndOn,
+        invoicePaymentTransactionIds,
+      ),
+    )
     .filter(
       (transaction) => transaction.categoryId === categoryId && transaction.currency === currency,
     )
@@ -436,11 +449,19 @@ function sumUnbudgetedActualAmounts(
   periodStartOn: ISODate,
   periodEndOn: ISODate,
   currencyFilter: string | undefined,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId> | undefined,
 ): Map<string, UnbudgetedCurrencyAmount> {
   const totals = new Map<string, UnbudgetedCurrencyAmount>();
 
   for (const transaction of listTenantScopedResources(context, transactions)) {
-    if (!isBudgetTransaction(transaction, periodStartOn, periodEndOn)) {
+    if (
+      !isBudgetRealizedTransaction(
+        transaction,
+        periodStartOn,
+        periodEndOn,
+        invoicePaymentTransactionIds,
+      )
+    ) {
       continue;
     }
 
@@ -472,13 +493,20 @@ function budgetCategoryCurrencyKey(categoryId: EntityId, currency: string): stri
   return `${currency}\u0000${categoryId}`;
 }
 
-function isBudgetTransaction(
+export function isBudgetRealizedTransaction(
   transaction: Transaction,
   periodStartOn: ISODate,
   periodEndOn: ISODate,
+  invoicePaymentTransactionIds?: ReadonlySet<EntityId>,
 ): boolean {
+  const isInvoicePayment =
+    invoicePaymentTransactionIds !== undefined
+      ? invoicePaymentTransactionIds.has(transaction.id)
+      : transaction.invoiceId !== undefined && transaction.accountId !== undefined;
+
   return (
     transaction.kind === "expense" &&
+    !isInvoicePayment &&
     REALIZED_TRANSACTION_STATUSES.includes(
       transaction.status as (typeof REALIZED_TRANSACTION_STATUSES)[number],
     ) &&

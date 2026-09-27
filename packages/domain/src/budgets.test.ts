@@ -36,6 +36,7 @@ const incomeCategory = createCategoryFixture(tenantA, "category-income", "income
 runCreatesBudgetWithMonthlyPeriod();
 runRejectsArchivedOrIncomeCategory();
 runSummarizesNormalUsage();
+runExcludesCategorizedInvoicePaymentsFromRealizedUsage();
 runSummarizesNoData();
 runSummarizesZeroBudget();
 runSummarizesDashboardWithUnbudgetedCategory();
@@ -130,6 +131,69 @@ function runSummarizesNormalUsage(): void {
   assertEqual(summary.remainingAmountMinor, 20000, "summary should calculate remaining amount");
   assertEqual(summary.usedPercent, 80, "summary should calculate usage percent");
   assertEqual(summary.status, "approaching", "summary should flag threshold usage");
+}
+
+function runExcludesCategorizedInvoicePaymentsFromRealizedUsage(): void {
+  const budget = createBudgetFixture("budget-invoice-payment", foodCategory, 100000, 80);
+  const categorizedPurchase = createTransactionFixture(
+    "card-purchase-categorized",
+    foodCategory.id,
+    "2026-06-10",
+    10000,
+    "posted",
+  );
+  delete categorizedPurchase.accountId;
+  categorizedPurchase.cardId = "card-1";
+  categorizedPurchase.invoiceId = "invoice-1";
+
+  const postedPayment = createTransactionFixture(
+    "invoice-payment-posted",
+    foodCategory.id,
+    "2026-06-20",
+    30000,
+    "posted",
+  );
+  postedPayment.cardId = "card-1";
+  postedPayment.invoiceId = "invoice-1";
+  postedPayment.effectiveOn = "2026-06-20";
+
+  const reconciledPayment = createTransactionFixture(
+    "invoice-payment-reconciled",
+    foodCategory.id,
+    "2026-06-21",
+    40000,
+    "reconciled",
+  );
+  reconciledPayment.cardId = "card-2";
+  reconciledPayment.invoiceId = "invoice-2";
+  reconciledPayment.effectiveOn = "2026-06-21";
+
+  const transactions = [categorizedPurchase, postedPayment, reconciledPayment];
+  const summary = summarizeBudgetUsage({ context: tenantA, budget, transactions });
+  const dashboard = summarizeBudgetDashboard({
+    context: tenantA,
+    budgets: [budget],
+    transactions,
+    periodStartOn: "2026-06-01",
+    periodEndOn: "2026-06-30",
+  });
+  const dashboardSummary = dashboard.find((item) => item.budgetId === budget.id);
+
+  assertEqual(
+    summary.actualAmountMinor,
+    10000,
+    "categorized invoice payments must not consume realized budget",
+  );
+  assertEqual(
+    summary.remainingAmountMinor,
+    90000,
+    "remaining budget must ignore categorized invoice payments",
+  );
+  assertEqual(
+    dashboardSummary?.actualAmountMinor,
+    10000,
+    "dashboard must ignore categorized invoice payments",
+  );
 }
 
 function runSummarizesNoData(): void {
