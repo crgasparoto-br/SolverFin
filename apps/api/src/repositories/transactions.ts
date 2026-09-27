@@ -179,6 +179,28 @@ export async function listTransactionsForContext(
   return attachAccountRemunerationMetadata(context, transactions);
 }
 
+export async function listTransactionsForPeriodForContext(
+  context: TenantContext,
+  periodStartOn: ISODate,
+  periodEndOn: ISODate,
+): Promise<TransactionWithAccountRemuneration[]> {
+  const rows = await query<TransactionRow>(
+    `select ${SELECT_COLUMNS} from "Transaction"
+     where "organizationId" = $1 and "financialProfileId" = $2
+       and (
+         ("occurredOn" >= $3 and "occurredOn" <= $4)
+         or ("plannedOn" >= $3 and "plannedOn" <= $4)
+       )
+     order by "plannedOn" desc, "effectiveOn" desc nulls last, "createdAt" desc`,
+    [context.organizationId, context.financialProfileId, periodStartOn, periodEndOn],
+  );
+
+  const transactions = listTransactionsDomain(context, rows.map(mapTransactionRow), {
+    status: "all",
+  });
+  return attachAccountRemunerationMetadata(context, transactions);
+}
+
 export async function getTransactionForContext(
   context: TenantContext,
   transactionId: EntityId,

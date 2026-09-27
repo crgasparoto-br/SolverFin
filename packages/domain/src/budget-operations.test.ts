@@ -37,7 +37,6 @@ function coversProjectedBudgetWithoutDoubleCountingInvoice(): void {
       cardId: "card-1",
     },
   );
-  delete cardPurchase.accountId;
   const transactions: Transaction[] = [
     expense("posted-food", "posted", "2038-08-04", "2038-08-04", 25_000, "BRL", "food"),
     cardPurchase,
@@ -234,7 +233,6 @@ function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
       invoiceId: "invoice-1",
     },
   );
-  delete categorizedPurchase.accountId;
   const invoiceForecast = expense(
     "invoice-forecast",
     "planned",
@@ -242,7 +240,7 @@ function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
     "2038-08-25",
     30_000,
     "BRL",
-    "food",
+    undefined,
     {
       cardId: "card-1",
       invoiceId: "invoice-1",
@@ -273,7 +271,6 @@ function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
     "BRL",
     "food",
     {
-      cardId: "card-2",
       invoiceId: "invoice-2",
       accountId: "checking-brl",
       effectiveOn: "2038-08-26",
@@ -302,6 +299,10 @@ function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
       uncategorizedPurchase,
     ],
     commitments: [],
+    invoicePaymentTransactionIds: new Set([
+      "invoice-payment-posted",
+      "invoice-payment-reconciled",
+    ]),
     periodStartOn: "2038-08-01",
     periodEndOn: "2038-08-31",
   });

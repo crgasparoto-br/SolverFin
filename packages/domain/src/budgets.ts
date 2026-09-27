@@ -115,12 +115,14 @@ export interface SummarizeBudgetUsageInput {
   context: TenantContext;
   budget: Budget | undefined;
   transactions: readonly Transaction[];
+  invoicePaymentTransactionIds?: ReadonlySet<EntityId>;
 }
 
 export interface SummarizeBudgetDashboardInput {
   context: TenantContext;
   budgets: readonly Budget[];
   transactions: readonly Transaction[];
+  invoicePaymentTransactionIds?: ReadonlySet<EntityId>;
   periodStartOn: ISODate;
   periodEndOn?: ISODate;
   /** Optional native-currency filter. Omitting it preserves separate summaries per currency. */
@@ -130,6 +132,7 @@ export interface SummarizeBudgetDashboardInput {
 const ALLOWED_BUDGET_STATUSES: readonly BudgetStatus[] = ["active", "archived"];
 const DEFAULT_ALERT_THRESHOLD_PERCENT = 80;
 const REALIZED_TRANSACTION_STATUSES = ["posted", "reconciled"] as const;
+const EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS: ReadonlySet<EntityId> = new Set();
 
 export function getMonthlyBudgetPeriod(
   month: string,
@@ -265,6 +268,7 @@ export function summarizeBudgetUsage(input: SummarizeBudgetUsageInput): BudgetUs
     budget.periodStartOn,
     budget.periodEndOn,
     budget.currency,
+    input.invoicePaymentTransactionIds ?? EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
   );
 
   return buildBudgetUsageSummary(budget, actualAmountMinor);
@@ -291,6 +295,7 @@ export function summarizeBudgetDashboard(
         budget.periodStartOn,
         budget.periodEndOn,
         budget.currency,
+        input.invoicePaymentTransactionIds ?? EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
       ),
     ),
   );
@@ -304,6 +309,7 @@ export function summarizeBudgetDashboard(
     period.periodStartOn,
     period.periodEndOn,
     currencyFilter,
+    input.invoicePaymentTransactionIds ?? EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
   );
 
   for (const item of unbudgetedAmounts.values()) {
@@ -414,9 +420,17 @@ function sumActualAmount(
   periodStartOn: ISODate,
   periodEndOn: ISODate,
   currency: string,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId>,
 ): number {
   return listTenantScopedResources(context, transactions)
-    .filter((transaction) => isBudgetTransaction(transaction, periodStartOn, periodEndOn))
+    .filter((transaction) =>
+      isBudgetRealizedTransaction(
+        transaction,
+        periodStartOn,
+        periodEndOn,
+        invoicePaymentTransactionIds,
+      ),
+    )
     .filter(
       (transaction) => transaction.categoryId === categoryId && transaction.currency === currency,
     )
@@ -436,11 +450,19 @@ function sumUnbudgetedActualAmounts(
   periodStartOn: ISODate,
   periodEndOn: ISODate,
   currencyFilter: string | undefined,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId>,
 ): Map<string, UnbudgetedCurrencyAmount> {
   const totals = new Map<string, UnbudgetedCurrencyAmount>();
 
   for (const transaction of listTenantScopedResources(context, transactions)) {
-    if (!isBudgetTransaction(transaction, periodStartOn, periodEndOn)) {
+    if (
+      !isBudgetRealizedTransaction(
+        transaction,
+        periodStartOn,
+        periodEndOn,
+        invoicePaymentTransactionIds,
+      )
+    ) {
       continue;
     }
 
@@ -472,14 +494,15 @@ function budgetCategoryCurrencyKey(categoryId: EntityId, currency: string): stri
   return `${currency}\u0000${categoryId}`;
 }
 
-function isBudgetTransaction(
+export function isBudgetRealizedTransaction(
   transaction: Transaction,
   periodStartOn: ISODate,
   periodEndOn: ISODate,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId> = EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
 ): boolean {
   return (
     transaction.kind === "expense" &&
-    !isInvoiceCashTransaction(transaction) &&
+    !invoicePaymentTransactionIds.has(transaction.id) &&
     REALIZED_TRANSACTION_STATUSES.includes(
       transaction.status as (typeof REALIZED_TRANSACTION_STATUSES)[number],
     ) &&
@@ -488,13 +511,6 @@ function isBudgetTransaction(
   );
 }
 
-function isInvoiceCashTransaction(transaction: Transaction): boolean {
-  return (
-    transaction.invoiceId !== undefined &&
-    transaction.cardId !== undefined &&
-    transaction.accountId !== undefined
-  );
-}
 
 function assertBudgetCategory(
   context: TenantContext,

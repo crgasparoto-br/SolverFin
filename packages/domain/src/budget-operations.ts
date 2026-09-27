@@ -1,5 +1,10 @@
 import type { Budget, EntityId, FutureCommitment, ISODate, Transaction } from "./index.js";
-import { listBudgets, summarizeBudgetUsage, type BudgetUsageStatus } from "./budgets.js";
+import {
+  isBudgetRealizedTransaction,
+  listBudgets,
+  summarizeBudgetUsage,
+  type BudgetUsageStatus,
+} from "./budgets.js";
 import type { TenantContext } from "./tenant.js";
 import { listTenantScopedResources } from "./tenant-authorization.js";
 
@@ -44,6 +49,7 @@ export interface SummarizeOperationalBudgetUsageInput {
   context: TenantContext;
   budget: Budget | undefined;
   transactions: readonly Transaction[];
+  invoicePaymentTransactionIds?: ReadonlySet<EntityId>;
   commitments?: readonly FutureCommitment[];
 }
 
@@ -51,6 +57,7 @@ export interface SummarizeOperationalBudgetDashboardInput {
   context: TenantContext;
   budgets: readonly Budget[];
   transactions: readonly Transaction[];
+  invoicePaymentTransactionIds?: ReadonlySet<EntityId>;
   commitments?: readonly FutureCommitment[];
   periodStartOn: ISODate;
   periodEndOn: ISODate;
@@ -64,6 +71,7 @@ export function summarizeOperationalBudgetUsage(
     context: input.context,
     budget: input.budget,
     transactions: input.transactions,
+    invoicePaymentTransactionIds: input.invoicePaymentTransactionIds,
   });
   const budget = input.budget;
   if (!budget) {
@@ -78,6 +86,7 @@ export function summarizeOperationalBudgetUsage(
     budget.periodEndOn,
     budget.currency,
     budget.categoryId,
+    input.invoicePaymentTransactionIds,
   );
   const committedItems = collectCommittedItems(
     input.context,
@@ -137,6 +146,7 @@ export function summarizeOperationalBudgetDashboard(
       budget,
       transactions: input.transactions,
       commitments: input.commitments ?? [],
+      invoicePaymentTransactionIds: input.invoicePaymentTransactionIds,
     }),
   );
 
@@ -184,6 +194,7 @@ export function summarizeOperationalBudgetDashboard(
       periodStartOn,
       periodEndOn,
       candidateCurrency,
+      input.invoicePaymentTransactionIds,
     )) {
       const coverage =
         categoryId === undefined
@@ -197,6 +208,7 @@ export function summarizeOperationalBudgetDashboard(
         periodEndOn,
         candidateCurrency,
         categoryId,
+        input.invoicePaymentTransactionIds,
       ).filter((item) => !isCoveredByBudget(item, coverage));
       const committedItems = collectCommittedItems(
         input.context,
@@ -263,18 +275,21 @@ function collectRelevantCategories(
   periodStartOn: ISODate,
   periodEndOn: ISODate,
   currency: string,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId> | undefined,
 ): Array<EntityId | undefined> {
   const keys = new Set<string>();
 
   for (const transaction of listTenantScopedResources(context, transactions)) {
     if (
-      transaction.kind === "expense" &&
-      !isInvoiceCashTransaction(transaction) &&
       transaction.currency === currency &&
-      ((isRealized(transaction) &&
-        transaction.occurredOn >= periodStartOn &&
-        transaction.occurredOn <= periodEndOn) ||
+      (isBudgetRealizedTransaction(
+        transaction,
+        periodStartOn,
+        periodEndOn,
+        invoicePaymentTransactionIds,
+      ) ||
         (isCommittedTransaction(transaction) &&
+          !isInvoiceForecastTransaction(transaction) &&
           transaction.plannedOn >= periodStartOn &&
           transaction.plannedOn <= periodEndOn))
     ) {
@@ -304,15 +319,17 @@ function collectRealizedItems(
   periodEndOn: ISODate,
   currency: string,
   categoryId: EntityId | undefined,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId> | undefined,
 ): BudgetConsumptionItem[] {
   return listTenantScopedResources(context, transactions)
     .filter(
       (transaction) =>
-        transaction.kind === "expense" &&
-        !isInvoiceCashTransaction(transaction) &&
-        isRealized(transaction) &&
-        transaction.occurredOn >= periodStartOn &&
-        transaction.occurredOn <= periodEndOn &&
+        isBudgetRealizedTransaction(
+          transaction,
+          periodStartOn,
+          periodEndOn,
+          invoicePaymentTransactionIds,
+        ) &&
         transaction.currency === currency &&
         transaction.categoryId === categoryId,
     )
@@ -346,7 +363,7 @@ function collectCommittedItems(
   for (const transaction of scopedTransactions) {
     if (
       !isCommittedTransaction(transaction) ||
-      isInvoiceCashTransaction(transaction) ||
+      isInvoiceForecastTransaction(transaction) ||
       transaction.plannedOn < periodStartOn ||
       transaction.plannedOn > periodEndOn ||
       transaction.currency !== currency ||
@@ -403,16 +420,16 @@ function isCoveredByBudget(item: BudgetConsumptionItem, budgets: readonly Budget
   );
 }
 
-function isInvoiceCashTransaction(transaction: Transaction): boolean {
+function isInvoiceForecastTransaction(transaction: Transaction): boolean {
   return (
+    transaction.kind === "expense" &&
+    transaction.status === "planned" &&
+    transaction.source === "manual" &&
     transaction.invoiceId !== undefined &&
-    transaction.cardId !== undefined &&
-    transaction.accountId !== undefined
+    transaction.accountId !== undefined &&
+    transaction.effectiveOn === undefined &&
+    transaction.categoryId === undefined
   );
-}
-
-function isRealized(transaction: Transaction): boolean {
-  return transaction.status === "posted" || transaction.status === "reconciled";
 }
 
 function isCommittedTransaction(transaction: Transaction): boolean {

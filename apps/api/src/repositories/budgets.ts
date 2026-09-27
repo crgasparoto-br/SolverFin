@@ -22,7 +22,7 @@ import {
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { listFutureCommitmentsForContext } from "./future-commitments.js";
-import { listTransactionsForContext } from "./transactions.js";
+import { listTransactionsForPeriodForContext } from "./transactions.js";
 
 interface BudgetRow {
   id: string;
@@ -119,26 +119,55 @@ export async function archiveBudgetForContext(
   return result.budget;
 }
 
+export async function listBudgetTransactionsForContext(
+  context: TenantContext,
+  periodStartOn: string,
+  periodEndOn: string,
+) {
+  const [transactions, invoicePaymentRows] = await Promise.all([
+    listTransactionsForPeriodForContext(context, periodStartOn, periodEndOn),
+    query<{ paymentTransactionId: string }>(
+      `select "paymentTransactionId"
+       from "Invoice"
+       where "organizationId" = $1
+         and "financialProfileId" = $2
+         and "paymentTransactionId" is not null`,
+      [context.organizationId, context.financialProfileId],
+    ),
+  ]);
+
+  return {
+    transactions,
+    invoicePaymentTransactionIds: new Set(
+      invoicePaymentRows.map((row) => row.paymentTransactionId),
+    ),
+  };
+}
+
 export async function summarizeBudgetUsageForContext(
   context: TenantContext,
   budgetId: EntityId,
 ): Promise<OperationalBudgetUsageSummary> {
   const budget = await findBudgetRow(context, budgetId);
-  const [transactions, agenda] = budget
+  const [budgetTransactions, agenda] = budget
     ? await Promise.all([
-        listTransactionsForContext(context, { status: "all" }),
+        listBudgetTransactionsForContext(context, budget.periodStartOn, budget.periodEndOn),
         listFutureCommitmentsForContext(context, {
           from: budget.periodStartOn,
           to: budget.periodEndOn,
           currency: budget.currency,
         }),
       ])
-    : [[], { commitments: [] }];
+    : [
+        { transactions: [], invoicePaymentTransactionIds: new Set<EntityId>() },
+        { commitments: [] },
+      ];
 
   return summarizeOperationalBudgetUsage({
     context,
     budget,
-    transactions,
+    transactions: budgetTransactions.transactions,
+    invoicePaymentTransactionIds: budgetTransactions.invoicePaymentTransactionIds,
     commitments: agenda.commitments,
   });
 }

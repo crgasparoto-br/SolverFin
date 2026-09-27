@@ -4,9 +4,8 @@ import {
   type TenantContext,
 } from "@solverfin/domain";
 
-import { listBudgetsForContext } from "./budgets.js";
+import { listBudgetsForContext, listBudgetTransactionsForContext } from "./budgets.js";
 import { listFutureCommitmentsForContext } from "./future-commitments.js";
-import { listTransactionsForContext } from "./transactions.js";
 
 export async function summarizeBudgetDashboardForContext(
   context: TenantContext,
@@ -27,9 +26,9 @@ export async function summarizeBudgetDashboardForContext(
   // Validate the public period/currency contract before issuing repository reads.
   summarizeOperationalBudgetDashboard(input);
 
-  const [budgets, transactions, agenda] = await Promise.all([
+  const [budgets, budgetTransactions, agenda] = await Promise.all([
     listBudgetsForContext(context, { status: "all", periodStartOn, periodEndOn }),
-    listTransactionsForContext(context, { status: "all" }),
+    listBudgetTransactionsForContext(context, periodStartOn, periodEndOn),
     listFutureCommitmentsForContext(context, {
       from: periodStartOn,
       to: periodEndOn,
@@ -40,7 +39,8 @@ export async function summarizeBudgetDashboardForContext(
   return summarizeOperationalBudgetDashboard({
     ...input,
     budgets,
-    transactions,
+    transactions: budgetTransactions.transactions,
+    invoicePaymentTransactionIds: budgetTransactions.invoicePaymentTransactionIds,
     commitments: agenda.commitments,
   });
 }
