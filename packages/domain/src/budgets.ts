@@ -132,7 +132,6 @@ export interface SummarizeBudgetDashboardInput {
 const ALLOWED_BUDGET_STATUSES: readonly BudgetStatus[] = ["active", "archived"];
 const DEFAULT_ALERT_THRESHOLD_PERCENT = 80;
 const REALIZED_TRANSACTION_STATUSES = ["posted", "reconciled"] as const;
-const EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS: ReadonlySet<EntityId> = new Set();
 
 export function getMonthlyBudgetPeriod(
   month: string,
