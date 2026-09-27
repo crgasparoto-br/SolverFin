@@ -295,8 +295,7 @@ export function summarizeBudgetDashboard(
         budget.periodStartOn,
         budget.periodEndOn,
         budget.currency,
-        input.invoicePaymentTransactionIds ??
-          EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
+        input.invoicePaymentTransactionIds ?? EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
       ),
     ),
   );
