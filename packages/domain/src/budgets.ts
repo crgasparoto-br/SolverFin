@@ -268,7 +268,7 @@ export function summarizeBudgetUsage(input: SummarizeBudgetUsageInput): BudgetUs
     budget.periodStartOn,
     budget.periodEndOn,
     budget.currency,
-    input.invoicePaymentTransactionIds ?? EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
+    input.invoicePaymentTransactionIds,
   );
 
   return buildBudgetUsageSummary(budget, actualAmountMinor);
@@ -295,7 +295,7 @@ export function summarizeBudgetDashboard(
         budget.periodStartOn,
         budget.periodEndOn,
         budget.currency,
-        input.invoicePaymentTransactionIds ?? EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
+        input.invoicePaymentTransactionIds,
       ),
     ),
   );
@@ -309,7 +309,7 @@ export function summarizeBudgetDashboard(
     period.periodStartOn,
     period.periodEndOn,
     currencyFilter,
-    input.invoicePaymentTransactionIds ?? EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
+    input.invoicePaymentTransactionIds,
   );
 
   for (const item of unbudgetedAmounts.values()) {
@@ -420,7 +420,7 @@ function sumActualAmount(
   periodStartOn: ISODate,
   periodEndOn: ISODate,
   currency: string,
-  invoicePaymentTransactionIds: ReadonlySet<EntityId>,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId> | undefined,
 ): number {
   return listTenantScopedResources(context, transactions)
     .filter((transaction) =>
@@ -450,7 +450,7 @@ function sumUnbudgetedActualAmounts(
   periodStartOn: ISODate,
   periodEndOn: ISODate,
   currencyFilter: string | undefined,
-  invoicePaymentTransactionIds: ReadonlySet<EntityId>,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId> | undefined,
 ): Map<string, UnbudgetedCurrencyAmount> {
   const totals = new Map<string, UnbudgetedCurrencyAmount>();
 
@@ -498,12 +498,16 @@ export function isBudgetRealizedTransaction(
   transaction: Transaction,
   periodStartOn: ISODate,
   periodEndOn: ISODate,
-  invoicePaymentTransactionIds: ReadonlySet<EntityId> = EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
+  invoicePaymentTransactionIds?: ReadonlySet<EntityId>,
 ): boolean {
+  const isInvoicePayment =
+    invoicePaymentTransactionIds !== undefined
+      ? invoicePaymentTransactionIds.has(transaction.id)
+      : transaction.invoiceId !== undefined && transaction.accountId !== undefined;
+
   return (
     transaction.kind === "expense" &&
-    !invoicePaymentTransactionIds.has(transaction.id) &&
-    !(transaction.invoiceId !== undefined && transaction.accountId !== undefined) &&
+    !isInvoicePayment &&
     REALIZED_TRANSACTION_STATUSES.includes(
       transaction.status as (typeof REALIZED_TRANSACTION_STATUSES)[number],
     ) &&
