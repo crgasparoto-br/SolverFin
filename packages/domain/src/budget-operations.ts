@@ -71,7 +71,9 @@ export function summarizeOperationalBudgetUsage(
     context: input.context,
     budget: input.budget,
     transactions: input.transactions,
-    invoicePaymentTransactionIds: input.invoicePaymentTransactionIds,
+    ...(input.invoicePaymentTransactionIds
+      ? { invoicePaymentTransactionIds: input.invoicePaymentTransactionIds }
+      : {}),
   });
   const budget = input.budget;
   if (!budget) {
@@ -146,7 +148,9 @@ export function summarizeOperationalBudgetDashboard(
       budget,
       transactions: input.transactions,
       commitments: input.commitments ?? [],
-      invoicePaymentTransactionIds: input.invoicePaymentTransactionIds,
+      ...(input.invoicePaymentTransactionIds
+        ? { invoicePaymentTransactionIds: input.invoicePaymentTransactionIds }
+        : {}),
     }),
   );
 
