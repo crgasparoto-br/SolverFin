@@ -299,10 +299,7 @@ function excludesInvoiceCashMovementsFromBudgetConsumption(): void {
       uncategorizedPurchase,
     ],
     commitments: [],
-    invoicePaymentTransactionIds: new Set([
-      "invoice-payment-posted",
-      "invoice-payment-reconciled",
-    ]),
+    invoicePaymentTransactionIds: new Set(["invoice-payment-posted", "invoice-payment-reconciled"]),
     periodStartOn: "2038-08-01",
     periodEndOn: "2038-08-31",
   });

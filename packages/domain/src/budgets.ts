@@ -498,7 +498,8 @@ export function isBudgetRealizedTransaction(
   transaction: Transaction,
   periodStartOn: ISODate,
   periodEndOn: ISODate,
-  invoicePaymentTransactionIds: ReadonlySet<EntityId> = EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
+  invoicePaymentTransactionIds: ReadonlySet<EntityId> =
+    EMPTY_INVOICE_PAYMENT_TRANSACTION_IDS,
 ): boolean {
   return (
     transaction.kind === "expense" &&
@@ -510,7 +511,6 @@ export function isBudgetRealizedTransaction(
     transaction.occurredOn <= periodEndOn
   );
 }
-
 
 function assertBudgetCategory(
   context: TenantContext,
