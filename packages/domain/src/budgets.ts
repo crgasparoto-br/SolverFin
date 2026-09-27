@@ -503,6 +503,7 @@ export function isBudgetRealizedTransaction(
   return (
     transaction.kind === "expense" &&
     !invoicePaymentTransactionIds.has(transaction.id) &&
+    !(transaction.invoiceId !== undefined && transaction.accountId !== undefined) &&
     REALIZED_TRANSACTION_STATUSES.includes(
       transaction.status as (typeof REALIZED_TRANSACTION_STATUSES)[number],
     ) &&
