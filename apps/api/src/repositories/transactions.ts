@@ -11,6 +11,7 @@ import {
   type Category,
   type CreateTransactionPayload,
   type EntityId,
+  type ISODate,
   type ListTransactionsFilters,
   type RecurrenceFrequency,
   type Transaction,
