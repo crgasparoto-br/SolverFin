@@ -294,12 +294,13 @@ function resolvesProjectedAndMaterializedNextRecurrence(): void {
 function resolvesCardRecurrenceInsideCanonicalInvoice(): void {
   const card = cardFixture("card-recurring-context");
   const invoice = invoiceFixture("invoice-recurring-context", card.id, 90_000, "2037-10-20");
+  const accountRecurrence = recurrenceFixture("card-recurrence-context", "2037-10-05");
+  const { accountId: _accountId, ...recurrenceBase } = accountRecurrence;
   const recurrence = {
-    ...recurrenceFixture("card-recurrence-context", "2037-10-05"),
-    accountId: undefined,
+    ...recurrenceBase,
     cardId: card.id,
     amountMinor: 15_000,
-  } as Recurrence;
+  } satisfies Recurrence;
   const purchase = {
     ...transaction("card-recurring-purchase", "expense", 15_000, "2037-10-05"),
     cardId: card.id,
@@ -330,6 +331,21 @@ function resolvesCardRecurrenceInsideCanonicalInvoice(): void {
     transactionId: purchase.id,
     installmentId: "card-recurring-installment",
   });
+  const currentPurchase = {
+    ...purchase,
+    id: "card-current-purchase",
+    plannedOn: "2037-09-28",
+    occurredOn: "2037-09-28",
+  } satisfies Transaction;
+  const currentOnly = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [recurrence.id],
+    transactions: [currentPurchase],
+    invoices: [invoice],
+    recurrences: [recurrence],
+  });
+  assert.equal(currentOnly[0]?.nextOccurrence, undefined);
 }
 
 function doesNotInventNextOccurrenceForEndedOrCancelledSeries(): void {
