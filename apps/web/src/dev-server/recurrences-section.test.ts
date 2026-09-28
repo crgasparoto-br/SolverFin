@@ -68,3 +68,15 @@ assert.match(script, /event\.key !== "Tab"/);
 assert.match(script, /scopeModal\.addEventListener\("cancel"/);
 assert.match(script, /if \(!scopeOperation \|\| scopeBusy\) return/);
 assert.match(script, /button\.disabled = busy/);
+
+assert.match(menu, /Contexto da recorrência/);
+assert.match(menu, /Status: Ativa/);
+assert.match(menu, /Frequência: mensal/);
+assert.match(menu, /Ocorrência atual: materializada/);
+assert.match(menu, /data-recurrence-next="recurrence-1"/);
+assert.match(script, /\/api\/future-commitments\/recurrences\?ids=/);
+assert.match(script, /Próxima ocorrência: Sem próxima ocorrência/);
+assert.match(script, /Próxima ocorrência: indisponível no momento/);
+assert.match(script, /occurrence\.state === "projected"/);
+assert.match(script, /Cartão · fatura vinculada/);
+assert.doesNotMatch(script, /addRecurrenceFrequency|setUTCMonth|setUTCDate/);
