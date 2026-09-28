@@ -126,7 +126,10 @@ async function main(): Promise<void> {
     `/api/future-commitments/recurrences?ids=${recurrenceId}&asOf=not-a-date`,
   );
   assert.equal(invalidRecurrenceContext.statusCode, 400);
-  assert.equal(readErrorCode(invalidRecurrenceContext), "FUTURE_COMMITMENT_PERIOD_INVALID");
+  assert.equal(
+    readErrorCode(invalidRecurrenceContext),
+    "FUTURE_COMMITMENT_PERIOD_INVALID",
+  );
 
   await query(
     `insert into "Installment"
