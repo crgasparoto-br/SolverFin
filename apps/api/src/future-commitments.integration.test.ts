@@ -220,7 +220,6 @@ function readErrorCode(response: ApiResponse): string | undefined {
   return readBody<{ error?: { code?: string } }>(response).error?.code;
 }
 
-
 interface ApiFutureRecurrenceContextResponse {
   asOf: string;
   recurrences: Array<{
