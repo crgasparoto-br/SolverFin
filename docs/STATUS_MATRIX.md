@@ -136,7 +136,7 @@ A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contr
 | Projecao de fluxo de caixa 30/60/90 dias por moeda         | Feito     | #617, `docs/API_CASH_FLOW_PROJECTION.md` |
 | Valor livre para gastar deterministico e explicavel        | Feito     | #618, `docs/API_CASH_FLOW_PROJECTION.md` |
 | Orcamentos com realizado/comprometido/disponivel/projetado | Feito     | #619                                     |
-| Recorrencias futuras acionaveis nas jornadas existentes    | Planejado | #592 / #620                              |
+| Recorrencias futuras acionaveis nas jornadas existentes    | Feito     | #620, `docs/RECURRENCES_INSTALLMENTS_WEB.md` |
 | Insights priorizados, deduplicados e com drilldown         | Planejado | #592 / #621                              |
 
 ### Regras da Fase 4A
