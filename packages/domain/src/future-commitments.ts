@@ -352,10 +352,7 @@ function buildRecurrenceProjections(
     return [];
   }
 
-  const amountMinor = validatePositiveAmount(
-    recurrence.amountMinor,
-    recurrence.id,
-  );
+  const amountMinor = validatePositiveAmount(recurrence.amountMinor, recurrence.id);
   const currency = normalizeCurrency(recurrence.currency);
   const commitments: FutureCommitment[] = [];
 
@@ -542,7 +539,9 @@ function findNextMaterializedRecurrenceOccurrence(
       originKind: "account",
       ...(sourceEffect.accountId ? { accountId: sourceEffect.accountId } : {}),
       transactionId: transaction.id,
-      ...(transaction.installmentId ? { installmentId: transaction.installmentId } : {}),
+      ...(transaction.installmentId
+        ? { installmentId: transaction.installmentId }
+        : {}),
     });
   }
 
