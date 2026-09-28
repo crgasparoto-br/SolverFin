@@ -367,6 +367,8 @@ Ordem estrutural da cadeia financeira da Fase 4A:
 #617 ------------------> #621 (alem das decisoes de produto proprias da #621)
 ```
 
+A #620 implementa a perna de recorrencias acionaveis sobre a fonte canonica da #616: os menus existentes de Extrato e Cartoes exibem status/frequencia e consultam a proxima ocorrencia sem rota de produto paralela nem calculo de calendario no frontend.
+
 As epicas mantem checklists e dependencias detalhadas. Este documento nao replica criterios completos das issues para evitar duas fontes de verdade operacionais.
 
 As Fases 4B, 4C, 4D, 5, 6 e 7 **ainda nao sao backlog operacional por simples presenca neste documento**. Antes de iniciar uma delas, criar epica e subissues proporcionais ao risco, fechar decisoes de produto bloqueantes e criar/atualizar ADRs quando houver provider, modelo persistente, autorizacao ou contrato publico novo.
