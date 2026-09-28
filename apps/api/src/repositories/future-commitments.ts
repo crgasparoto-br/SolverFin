@@ -46,7 +46,6 @@ export async function listFutureCommitmentsForContext(
   });
 }
 
-
 export async function listFutureRecurrenceContextsForContext(
   context: TenantContext,
   recurrenceIds: readonly string[],
