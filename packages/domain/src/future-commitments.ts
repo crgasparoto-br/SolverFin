@@ -352,7 +352,10 @@ function buildRecurrenceProjections(
     return [];
   }
 
-  const amountMinor = validatePositiveAmount(recurrence.amountMinor, recurrence.id);
+  const amountMinor = validatePositiveAmount(
+    recurrence.amountMinor,
+    recurrence.id,
+  );
   const currency = normalizeCurrency(recurrence.currency);
   const commitments: FutureCommitment[] = [];
 
@@ -408,7 +411,9 @@ export function buildFutureRecurrenceContexts(
   input: BuildFutureRecurrenceContextsInput,
 ): FutureRecurrenceContext[] {
   const asOf = validateDate(input.asOf);
-  const requestedIds = input.recurrenceIds ? new Set(input.recurrenceIds) : undefined;
+  const requestedIds = input.recurrenceIds
+    ? new Set(input.recurrenceIds)
+    : undefined;
   const transactions = scopeToContext(input.context, input.transactions ?? []);
   const invoices = scopeToContext(input.context, input.invoices ?? []);
   const recurrences = scopeToContext(input.context, input.recurrences ?? []).filter(
@@ -475,7 +480,11 @@ function findNextMaterializedRecurrenceOccurrence(
   const candidates: FutureRecurrenceOccurrence[] = [];
 
   for (const transaction of transactions) {
-    if (transaction.recurrenceId !== recurrence.id || transaction.status === "voided") continue;
+    if (
+      transaction.recurrenceId !== recurrence.id ||
+      transaction.status === "voided"
+    )
+      continue;
 
     if (transaction.invoiceId !== undefined) {
       if (transaction.plannedOn <= asOf) continue;
@@ -487,7 +496,10 @@ function findNextMaterializedRecurrenceOccurrence(
       ) {
         continue;
       }
-      const amountMinor = validatePositiveAmount(transaction.amountMinor, transaction.id);
+      const amountMinor = validatePositiveAmount(
+        transaction.amountMinor,
+        transaction.id,
+      );
       candidates.push({
         recurrenceId: recurrence.id,
         commitmentId: `invoice:${invoice.id}`,
@@ -501,7 +513,9 @@ function findNextMaterializedRecurrenceOccurrence(
           : {}),
         invoiceId: invoice.id,
         transactionId: transaction.id,
-        ...(transaction.installmentId ? { installmentId: transaction.installmentId } : {}),
+        ...(transaction.installmentId
+          ? { installmentId: transaction.installmentId }
+          : {}),
       });
       continue;
     }
@@ -534,7 +548,9 @@ function findNextMaterializedRecurrenceOccurrence(
 
   return candidates.sort((left, right) => {
     const dateOrder = left.plannedOn.localeCompare(right.plannedOn);
-    return dateOrder === 0 ? left.commitmentId.localeCompare(right.commitmentId) : dateOrder;
+    return dateOrder === 0
+      ? left.commitmentId.localeCompare(right.commitmentId)
+      : dateOrder;
   })[0];
 }
 
@@ -561,7 +577,8 @@ function findNextProjectedRecurrenceOccurrence(
       offset,
       recurrence.interval,
     );
-    if (recurrence.endOn !== undefined && plannedOn > recurrence.endOn) return undefined;
+    if (recurrence.endOn !== undefined && plannedOn > recurrence.endOn)
+      return undefined;
     if (plannedOn <= asOf) continue;
 
     const replacementKey = recurrenceOccurrenceKey(recurrence.id, plannedOn);
