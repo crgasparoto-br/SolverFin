@@ -478,6 +478,7 @@ function findNextMaterializedRecurrenceOccurrence(
     if (transaction.recurrenceId !== recurrence.id || transaction.status === "voided") continue;
 
     if (transaction.invoiceId !== undefined) {
+      if (transaction.plannedOn <= asOf) continue;
       const invoice = invoicesById.get(transaction.invoiceId);
       if (
         invoice === undefined ||
