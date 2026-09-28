@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import type { Card, Installment, Invoice, Recurrence, Transaction } from "./index.js";
 import type { PayableReceivable } from "./payables-receivables.js";
 import type { TenantContext } from "./tenant.js";
-import { buildFutureCommitmentAgenda, FutureCommitmentError } from "./future-commitments.js";
+import {
+  buildFutureCommitmentAgenda,
+  buildFutureRecurrenceContexts,
+  FutureCommitmentError,
+} from "./future-commitments.js";
 
 const NOW = "2037-10-01T12:00:00.000Z";
 const CONTEXT: TenantContext = {
@@ -30,6 +34,9 @@ usesLegacyPayableOnlyAsFallback();
 updatesAndVoidsCrossCurrencyCommitmentAtomically();
 rejectsIncompleteCrossCurrencyLeg();
 isolatesTenantAndProfile();
+resolvesProjectedAndMaterializedNextRecurrence();
+resolvesCardRecurrenceInsideCanonicalInvoice();
+doesNotInventNextOccurrenceForEndedOrCancelledSeries();
 
 function preservesLegitimateEqualCommitments(): void {
   const left = transaction("transaction-left", "expense", 12_000, "2037-10-10");
@@ -242,6 +249,108 @@ function isolatesTenantAndProfile(): void {
     build([own, foreign]).commitments.map((item) => item.id),
     ["transaction:own"],
   );
+}
+
+function resolvesProjectedAndMaterializedNextRecurrence(): void {
+  const recurrence = recurrenceFixture("recurrence-context", "2037-10-15");
+  const projected = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [recurrence.id],
+    recurrences: [recurrence],
+  });
+
+  assert.deepEqual(projected[0]?.nextOccurrence, {
+    recurrenceId: recurrence.id,
+    commitmentId: "recurrence:recurrence-context:2037-10-15",
+    plannedOn: "2037-10-15",
+    amountMinor: -20_000,
+    currency: "BRL",
+    state: "projected",
+    originKind: "account",
+    accountId: "account-brl",
+  });
+
+  const materializedTransaction = {
+    ...transaction("context-materialized", "expense", 20_000, "2037-10-15"),
+    source: "recurrence",
+    recurrenceId: recurrence.id,
+    installmentId: "context-installment",
+  } satisfies Transaction;
+  const materialized = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [recurrence.id],
+    transactions: [materializedTransaction],
+    recurrences: [recurrence],
+    installments: [installmentFixture("context-installment", recurrence.id, "2037-10-15")],
+  });
+
+  assert.equal(materialized[0]?.nextOccurrence?.state, "materialized");
+  assert.equal(materialized[0]?.nextOccurrence?.commitmentId, "transaction:context-materialized");
+  assert.equal(materialized[0]?.nextOccurrence?.plannedOn, "2037-10-15");
+}
+
+function resolvesCardRecurrenceInsideCanonicalInvoice(): void {
+  const card = cardFixture("card-recurring-context");
+  const invoice = invoiceFixture("invoice-recurring-context", card.id, 90_000, "2037-10-20");
+  const recurrence = {
+    ...recurrenceFixture("card-recurrence-context", "2037-10-05"),
+    accountId: undefined,
+    cardId: card.id,
+    amountMinor: 15_000,
+  } as Recurrence;
+  const purchase = {
+    ...transaction("card-recurring-purchase", "expense", 15_000, "2037-10-05"),
+    cardId: card.id,
+    invoiceId: invoice.id,
+    recurrenceId: recurrence.id,
+    installmentId: "card-recurring-installment",
+  } satisfies Transaction;
+
+  const contexts = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [recurrence.id],
+    transactions: [purchase],
+    invoices: [invoice],
+    recurrences: [recurrence],
+  });
+
+  assert.deepEqual(contexts[0]?.nextOccurrence, {
+    recurrenceId: recurrence.id,
+    commitmentId: "invoice:invoice-recurring-context",
+    plannedOn: "2037-10-20",
+    amountMinor: -15_000,
+    currency: "BRL",
+    state: "materialized",
+    originKind: "card",
+    cardId: card.id,
+    invoiceId: invoice.id,
+    transactionId: purchase.id,
+    installmentId: "card-recurring-installment",
+  });
+}
+
+function doesNotInventNextOccurrenceForEndedOrCancelledSeries(): void {
+  const ended = {
+    ...recurrenceFixture("ended-recurrence", "2037-09-01"),
+    endOn: "2037-09-30",
+  } satisfies Recurrence;
+  const cancelled = {
+    ...recurrenceFixture("cancelled-recurrence", "2037-10-15"),
+    status: "cancelled",
+  } satisfies Recurrence;
+
+  const contexts = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [ended.id, cancelled.id],
+    recurrences: [ended, cancelled],
+  });
+
+  assert.equal(contexts[0]?.nextOccurrence, undefined);
+  assert.equal(contexts[1]?.nextOccurrence, undefined);
 }
 
 function build(
