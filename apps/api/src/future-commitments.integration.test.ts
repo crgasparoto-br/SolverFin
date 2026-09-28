@@ -120,6 +120,14 @@ async function main(): Promise<void> {
     accountId: source.id,
   });
 
+  const invalidRecurrenceContext = await apiRequest(
+    token,
+    "GET",
+    `/api/future-commitments/recurrences?ids=${recurrenceId}&asOf=not-a-date`,
+  );
+  assert.equal(invalidRecurrenceContext.statusCode, 400);
+  assert.equal(readErrorCode(invalidRecurrenceContext), "FUTURE_COMMITMENT_PERIOD_INVALID");
+
   await query(
     `insert into "Installment"
       ("id", "organizationId", "financialProfileId", "recurrenceId", "status", "sequenceNumber",
