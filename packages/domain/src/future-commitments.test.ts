@@ -37,6 +37,9 @@ isolatesTenantAndProfile();
 resolvesProjectedAndMaterializedNextRecurrence();
 resolvesCardRecurrenceInsideCanonicalInvoice();
 doesNotInventNextOccurrenceForEndedOrCancelledSeries();
+resolvesSupportedRecurrenceFrequenciesForContext();
+keepsOnlyMaterializedFutureOccurrenceWhilePaused();
+isolatesFutureRecurrenceContextAcrossTenant();
 
 function preservesLegitimateEqualCommitments(): void {
   const left = transaction("transaction-left", "expense", 12_000, "2037-10-10");
@@ -367,6 +370,124 @@ function doesNotInventNextOccurrenceForEndedOrCancelledSeries(): void {
 
   assert.equal(contexts[0]?.nextOccurrence, undefined);
   assert.equal(contexts[1]?.nextOccurrence, undefined);
+}
+
+function resolvesSupportedRecurrenceFrequenciesForContext(): void {
+  const daily = {
+    ...recurrenceFixture("recurrence-daily", "2037-10-02"),
+    frequency: "daily",
+  } satisfies Recurrence;
+  const weekly = {
+    ...recurrenceFixture("recurrence-weekly", "2037-10-08"),
+    frequency: "weekly",
+  } satisfies Recurrence;
+  const monthly = {
+    ...recurrenceFixture("recurrence-monthly", "2037-09-01"),
+    frequency: "monthly",
+  } satisfies Recurrence;
+  const yearly = {
+    ...recurrenceFixture("recurrence-yearly", "2036-10-02"),
+    frequency: "yearly",
+  } satisfies Recurrence;
+
+  const contexts = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [daily.id, weekly.id, monthly.id, yearly.id],
+    recurrences: [daily, weekly, monthly, yearly],
+  });
+  const byId = new Map(contexts.map((context) => [context.recurrenceId, context]));
+
+  assert.equal(
+    byId.get(daily.id)?.nextOccurrence?.plannedOn,
+    "2037-10-02",
+    "daily recurrence must use the canonical calendar",
+  );
+  assert.equal(
+    byId.get(weekly.id)?.nextOccurrence?.plannedOn,
+    "2037-10-08",
+    "weekly recurrence must use the canonical calendar",
+  );
+  assert.equal(
+    byId.get(monthly.id)?.nextOccurrence?.plannedOn,
+    "2037-11-01",
+    "monthly recurrence must skip the as-of occurrence and return the next future date",
+  );
+  assert.equal(
+    byId.get(yearly.id)?.nextOccurrence?.plannedOn,
+    "2037-10-02",
+    "yearly recurrence must use the canonical calendar",
+  );
+}
+
+function keepsOnlyMaterializedFutureOccurrenceWhilePaused(): void {
+  const paused = {
+    ...recurrenceFixture("recurrence-paused", "2037-10-15"),
+    status: "paused",
+  } satisfies Recurrence;
+  const materialized = {
+    ...transaction("paused-materialized", "expense", 20_000, "2037-10-15"),
+    source: "recurrence",
+    recurrenceId: paused.id,
+    installmentId: "paused-installment",
+  } satisfies Transaction;
+
+  const withMaterialized = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [paused.id],
+    transactions: [materialized],
+    recurrences: [paused],
+    installments: [installmentFixture("paused-installment", paused.id, "2037-10-15")],
+  });
+  assert.equal(withMaterialized[0]?.nextOccurrence?.state, "materialized");
+  assert.equal(withMaterialized[0]?.nextOccurrence?.plannedOn, "2037-10-15");
+
+  const withoutMaterialized = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [paused.id],
+    recurrences: [paused],
+  });
+  assert.equal(
+    withoutMaterialized[0]?.nextOccurrence,
+    undefined,
+    "paused recurrence must not invent a new projection",
+  );
+}
+
+function isolatesFutureRecurrenceContextAcrossTenant(): void {
+  const own = recurrenceFixture("recurrence-tenant-scope", "2037-10-15");
+  const foreignTransaction = {
+    ...transaction("foreign-recurrence-occurrence", "expense", 99_000, "2037-10-05"),
+    organizationId: OTHER_CONTEXT.organizationId,
+    financialProfileId: OTHER_CONTEXT.financialProfileId,
+    recurrenceId: own.id,
+  } satisfies Transaction;
+  const foreignRecurrence = {
+    ...recurrenceFixture("foreign-recurrence", "2037-10-03"),
+    organizationId: OTHER_CONTEXT.organizationId,
+    financialProfileId: OTHER_CONTEXT.financialProfileId,
+  } satisfies Recurrence;
+
+  const contexts = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [own.id, foreignRecurrence.id],
+    transactions: [foreignTransaction],
+    recurrences: [own, foreignRecurrence],
+  });
+
+  assert.deepEqual(
+    contexts.map((context) => context.recurrenceId),
+    [own.id],
+    "foreign recurrence definitions must not be exposed",
+  );
+  assert.equal(
+    contexts[0]?.nextOccurrence?.commitmentId,
+    "recurrence:recurrence-tenant-scope:2037-10-15",
+    "foreign materialized rows must not influence the active tenant projection",
+  );
 }
 
 function build(
