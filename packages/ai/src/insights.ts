@@ -1,6 +1,6 @@
 import { formatMinorCurrency } from "@solverfin/shared";
 
-export const FINANCIAL_INSIGHT_CALCULATION_VERSION = "financial-insights-v2" as const;
+export const FINANCIAL_INSIGHT_CALCULATION_VERSION = "financial-insights-v3" as const;
 
 export type FinancialInsightKind =
   | "category_spending_increase"
@@ -84,6 +84,25 @@ export interface FinancialInsightNavigation {
   view: "transactions" | "budgets" | "cash_flow";
   categoryId?: string;
   merchantKey?: string;
+  referenceDate?: string;
+  horizonDays?: 30 | 60 | 90;
+}
+
+/**
+ * Evidence read from the canonical cash-flow projection (`GET /api/cash-flow-projection`, #617)
+ * for a single currency. The insight engine never rebuilds the agenda: it only turns the
+ * canonical minimum of the series into a `negative_balance_risk` when it is below zero.
+ */
+export interface InsightCashFlowProjectionEvidence {
+  referenceDate: string;
+  horizonDays: 30 | 60 | 90;
+  horizonEndOn: string;
+  minimumProjectedBalanceMinor: number;
+  minimumBalanceOn: string;
+  projectedDeficitMinor: number;
+  closingBalanceMinor: number;
+  /** Fingerprint of the canonical series evidence that justified the minimum. */
+  sourceFingerprint: string;
 }
 
 export interface FinancialInsight {
@@ -114,9 +133,7 @@ export interface GenerateFinancialInsightsInput {
   };
   transactions: readonly InsightTransaction[];
   budgets?: readonly InsightBudget[];
-  projectedBalanceMinor?: number;
-  projectedBalanceSourceFingerprint?: string;
-  projectionPeriodEndOn?: string;
+  cashFlowProjection?: InsightCashFlowProjectionEvidence;
   currency?: string;
   increaseThresholdPercent?: number;
   minimumComparableTransactionCount?: number;
@@ -201,7 +218,7 @@ export function generateFinancialInsights(
   const actionable = [
     ...buildSpendingIncreaseInsights(input, current, previous, currency, commonLimitations),
     ...buildSubscriptionInsights(input, realized, currency, commonLimitations),
-    ...buildNegativeBalanceInsight(input, currency, commonLimitations),
+    ...buildNegativeBalanceInsight(input, currency),
     ...buildBudgetInsights(input, realized, currency, commonLimitations),
   ];
   if (current.length === 0) {
@@ -429,9 +446,9 @@ function buildSubscriptionInsights(
 function buildNegativeBalanceInsight(
   input: GenerateFinancialInsightsInput,
   currency: string,
-  commonLimitations: readonly string[],
 ): FinancialInsight[] {
-  if (input.projectedBalanceMinor === undefined || input.projectedBalanceMinor >= 0) return [];
+  const projection = input.cashFlowProjection;
+  if (projection === undefined || projection.minimumProjectedBalanceMinor >= 0) return [];
 
   return [
     {
@@ -440,21 +457,44 @@ function buildNegativeBalanceInsight(
       confidence: "medium",
       title: "Risco de saldo negativo",
       explanation:
-        "A projecao deterministica para o fim do periodo fica abaixo de zero. Revise compromissos planejados e premissas antes de decidir.",
+        "A projecao de caixa canonica fica abaixo de zero dentro do horizonte. Revise os compromissos previstos antes de decidir.",
       currency,
       evidence: {
         label: "saldo_projetado",
-        currentAmountMinor: input.projectedBalanceMinor,
-        periodStartOn: input.currentPeriod.startOn,
-        periodEndOn: input.projectionPeriodEndOn ?? input.currentPeriod.endOn,
+        items: [
+          {
+            label: "menor_saldo_projetado",
+            value: projection.minimumProjectedBalanceMinor,
+            unit: "minor_currency",
+          },
+          {
+            label: "deficit_projetado",
+            value: projection.projectedDeficitMinor,
+            unit: "minor_currency",
+          },
+          {
+            label: "saldo_fim_horizonte",
+            value: projection.closingBalanceMinor,
+            unit: "minor_currency",
+          },
+          { label: "horizonte_dias", value: projection.horizonDays, unit: "count" },
+        ],
+        currentAmountMinor: projection.minimumProjectedBalanceMinor,
+        periodStartOn: projection.referenceDate,
+        periodEndOn: projection.horizonEndOn,
       },
       filters: { currency },
       limitations: [
-        ...commonLimitations,
-        "A projecao considera saldos de abertura, movimentos confirmados e lancamentos planejados no horizonte.",
+        `Valores calculados isoladamente em ${currency}; moedas diferentes nao sao somadas.`,
+        `O menor saldo projetado ocorre em ${projection.minimumBalanceOn}, segundo a projecao de caixa canonica de ${projection.horizonDays} dias.`,
+        "A projecao considera apenas compromissos ja registrados na agenda financeira desta moeda.",
       ],
-      navigation: { view: "cash_flow" },
-      sources: [input.projectedBalanceSourceFingerprint ?? "projected_balance"],
+      navigation: {
+        view: "cash_flow",
+        referenceDate: projection.referenceDate,
+        horizonDays: projection.horizonDays,
+      },
+      sources: [projection.sourceFingerprint],
     },
   ];
 }

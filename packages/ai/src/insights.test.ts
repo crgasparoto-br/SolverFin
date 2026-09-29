@@ -19,6 +19,7 @@ probableSubscriptionRequiresConsecutiveStableMonths();
 interruptedRecurrenceDoesNotTrigger();
 unreviewedAndForeignCurrencyRowsAreExcluded();
 budgetNegativeBalanceAndMonthlySummaryAreDeterministic();
+nonNegativeCanonicalProjectionDoesNotCreateRisk();
 insufficientDataDoesNotInventInsight();
 void providerNarrativeIsAdvisoryOnly();
 
@@ -138,6 +139,31 @@ function unreviewedAndForeignCurrencyRowsAreExcluded(): void {
   assert.ok(summary.limitations.some((item) => item.includes("BRL")));
 }
 
+function nonNegativeCanonicalProjectionDoesNotCreateRisk(): void {
+  const insights = generateFinancialInsights({
+    organizationId,
+    financialProfileId,
+    currentPeriod,
+    previousPeriod,
+    currency: "BRL",
+    cashFlowProjection: {
+      referenceDate: "2026-06-01",
+      horizonDays: 30,
+      horizonEndOn: "2026-07-01",
+      minimumProjectedBalanceMinor: 0,
+      minimumBalanceOn: "2026-06-20",
+      projectedDeficitMinor: 0,
+      closingBalanceMinor: 1000,
+      sourceFingerprint: "sha256-projection",
+    },
+    transactions: [tx("expense-a", "2026-06-10", 9000, "market")],
+  });
+  assert.equal(
+    insights.some((insight) => insight.kind === "negative_balance_risk"),
+    false,
+  );
+}
+
 function budgetNegativeBalanceAndMonthlySummaryAreDeterministic(): void {
   const insights = generateFinancialInsights({
     organizationId,
@@ -145,9 +171,16 @@ function budgetNegativeBalanceAndMonthlySummaryAreDeterministic(): void {
     currentPeriod,
     previousPeriod,
     currency: "BRL",
-    projectedBalanceMinor: -2500,
-    projectedBalanceSourceFingerprint: "sha256-projection",
-    projectionPeriodEndOn: "2026-06-30",
+    cashFlowProjection: {
+      referenceDate: "2026-06-01",
+      horizonDays: 30,
+      horizonEndOn: "2026-07-01",
+      minimumProjectedBalanceMinor: -2500,
+      minimumBalanceOn: "2026-06-20",
+      projectedDeficitMinor: 2500,
+      closingBalanceMinor: 1000,
+      sourceFingerprint: "sha256-projection",
+    },
     budgets: [
       {
         id: "budget-market",
@@ -191,8 +224,26 @@ function budgetNegativeBalanceAndMonthlySummaryAreDeterministic(): void {
   const negative = findInsight(insights, "negative_balance_risk");
   const budget = findInsight(insights, "budget_exceeded");
   const summary = findInsight(insights, "monthly_summary");
+  assert.equal(negative.severity, "critical");
   assert.equal(negative.evidence.currentAmountMinor, -2500);
-  assert.equal(negative.evidence.periodEndOn, "2026-06-30");
+  assert.equal(negative.evidence.periodStartOn, "2026-06-01");
+  assert.equal(negative.evidence.periodEndOn, "2026-07-01");
+  assert.deepEqual(
+    negative.evidence.items?.map((item) => [item.label, item.value]),
+    [
+      ["menor_saldo_projetado", -2500],
+      ["deficit_projetado", 2500],
+      ["saldo_fim_horizonte", 1000],
+      ["horizonte_dias", 30],
+    ],
+  );
+  assert.deepEqual(negative.navigation, {
+    view: "cash_flow",
+    referenceDate: "2026-06-01",
+    horizonDays: 30,
+  });
+  assert.deepEqual(negative.sources, ["sha256-projection"]);
+  assert.ok(negative.limitations.some((item) => item.includes("2026-06-20")));
   assert.equal(budget.evidence.currentAmountMinor, 18000);
   assert.equal(budget.evidence.previousAmountMinor, 12000);
   assert.equal(budget.evidence.deltaAmountMinor, 6000);
