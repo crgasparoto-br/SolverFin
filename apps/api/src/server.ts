@@ -12,6 +12,7 @@ import { handleAccountRemunerationApiRequest } from "./account-remuneration-rout
 import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
 import { assertLocalAuthAllowed, auditSecurityEvent, isDemoAuthAllowed } from "./auth-service.js";
 import { handleCategorizationAwareAiReviewQueueApiRequest } from "./categorization-aware-ai-review-router.js";
+import { handleFinancialInsightQueueApiRequest } from "./financial-insight-queue-router.js";
 import { handleCategorizationAwareImportBatchesApiRequest } from "./categorization-aware-import-router.js";
 import { handleCategoryLearningApiRequest } from "./category-learning-router.js";
 import { assertTrustedCognitoEnvironment } from "./cognito-config.js";
@@ -178,6 +179,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (aiReviewQueueResult) {
       writeResponse(response, aiReviewQueueResult);
+      return;
+    }
+
+    const financialInsightQueueResult = await handleFinancialInsightQueueApiRequest(apiRequest);
+
+    if (financialInsightQueueResult) {
+      writeResponse(response, financialInsightQueueResult);
       return;
     }
 

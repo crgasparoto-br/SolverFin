@@ -13,6 +13,7 @@ import {
 import { renderMoney } from "../design-system/money.js";
 import { apiGet } from "./api.js";
 import {
+  DASHBOARD_FINANCIAL_INSIGHTS_RESOURCE,
   presentDashboard,
   presentDashboardLoading,
   type DashboardCashFlowProjection,
@@ -27,6 +28,11 @@ import {
   type DashboardRecentItemViewModel,
   type DashboardScreenViewModel,
 } from "./dashboard-presenter.js";
+import type { FinancialInsightQueueApiPage } from "./financial-insight-queue-presenter.js";
+import {
+  financialInsightQueueStyles,
+  renderDashboardFinancialInsights,
+} from "./financial-insight-queue-view.js";
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
@@ -64,11 +70,13 @@ function dashboardLoadEntry(token: string): DashboardLoadEntry {
     apiGet<DashboardCashFlowProjection>(token, "/api/cash-flow-projection?horizonDays=30"),
     apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
     apiGet<{ invoices: DashboardOpenInvoice[] }>(token, "/api/invoices?status=open"),
-  ]).then(([summary, cashFlowProjection, pendingReview, openInvoices]) => ({
+    apiGet<FinancialInsightQueueApiPage>(token, DASHBOARD_FINANCIAL_INSIGHTS_RESOURCE),
+  ]).then(([summary, cashFlowProjection, pendingReview, openInvoices, financialInsights]) => ({
     summary,
     cashFlowProjection,
     pendingReview,
     openInvoices,
+    financialInsights,
     filters: {},
   }));
   const entry: DashboardLoadEntry = { promise };
@@ -156,6 +164,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
     ${renderCurrencyNavigator(content.currencySummaries)}
     ${renderCurrencySummaries(content.currencySummaries)}
     ${renderCashFlowProjection(content.cashFlowProjection)}
+    ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
     <section class="panel next-actions" aria-label="Próximas ações">
       <div class="section-heading">
         <div><p class="eyebrow">Ação</p><h2>Próximas ações</h2></div>
@@ -419,6 +428,7 @@ function dashboardEvidenceScript(): string {
 function dashboardStyles(): string {
   return `
     ${sharedShellStyles()}
+    ${financialInsightQueueStyles()}
     main { display: grid; gap: 16px; padding: 20px 0; width: 100%; }
     .sf-page-container { display: grid; gap: 16px; }
     .dashboard-hero { align-items: start; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); }

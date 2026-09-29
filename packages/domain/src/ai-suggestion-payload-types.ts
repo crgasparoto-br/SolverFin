@@ -12,7 +12,8 @@ export type AiSuggestionPayloadStatus =
   | "approved"
   | "edited"
   | "rejected"
-  | "expired";
+  | "expired"
+  | "resolved";
 
 export type AiSuggestionPayloadOrigin =
   | {
@@ -190,13 +191,21 @@ export interface InsightNavigationV2 {
   view: "transactions" | "budgets" | "cash_flow";
   categoryId?: string;
   merchantKey?: string;
+  /** Canonical #617 slice for `cash_flow` navigation: reference date of the projection. */
+  referenceDate?: string;
+  /** Canonical #617 slice for `cash_flow` navigation: projection horizon. */
+  horizonDays?: 30 | 60 | 90;
 }
+
+export type InsightSeverityV2 = "info" | "warning" | "critical";
 
 export interface InsightSuggestionPayloadV2 extends AiSuggestionPayloadBase<"insight"> {
   payloadVersion: 2;
   insightType: "anomaly" | "trend" | "summary" | "opportunity";
   insightKind: VerifiableFinancialInsightKind;
   insightKey: string;
+  /** Deterministic severity from the detector; absent only on snapshots created before #621. */
+  severity?: InsightSeverityV2;
   title: string;
   summary: string;
   periodStartOn: string;

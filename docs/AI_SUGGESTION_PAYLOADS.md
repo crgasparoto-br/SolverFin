@@ -29,6 +29,7 @@ Campos específicos:
 - `insightType`: classe apresentacional (`anomaly`, `trend`, `summary` ou `opportunity`);
 - `insightKind`: detector determinístico (`category_spending_increase`, `merchant_spending_increase`, `probable_subscription`, `negative_balance_risk`, `budget_exceeded` ou `monthly_summary`);
 - `insightKey`: identidade lógica interna do detector/escopo;
+- `severity` opcional (`info`, `warning` ou `critical`), emitida deterministicamente pelo detector desde a #621 e usada pela política de prioridade de `docs/FINANCIAL_INSIGHTS.md`;
 - `title` e `summary`;
 - `periodStartOn` e `periodEndOn`;
 - `currency` e `filters`;
@@ -37,7 +38,11 @@ Campos específicos:
 - `limitations[]`;
 - `calculationVersion`;
 - `dataFingerprint`: identidade interna dos dados/evidências usados pelo cálculo;
-- `relatedEntityIds` e `navigation` opcionais para referências escopadas.
+- `relatedEntityIds` e `navigation` opcionais para referências escopadas. `navigation.view = cash_flow` pode carregar o par obrigatório `referenceDate` + `horizonDays` (`30`, `60` ou `90`) que identifica o recorte canônico de `GET /api/cash-flow-projection`; o par é rejeitado em outras views ou quando incompleto.
+
+A validação existe no parser de domínio e no trigger `validateAiSuggestionInsightPayloadV2` (migração `20260929120000_actionable_financial_insight_queue`). Snapshots anteriores sem `severity`/recorte continuam válidos.
+
+Para `kind = INSIGHT`, o status `RESOLVED` (#621) registra que o usuário encerrou explicitamente aquele snapshot; `snoozedUntil` é uma coluna relacional (não faz parte do payload nem do fingerprint) que oculta temporariamente uma pendência. Restrições de banco impedem `RESOLVED` e `snoozedUntil` fora de `INSIGHT`.
 
 Evidência `minor_currency` precisa carregar a mesma moeda do insight. Evidências de contagem/percentual não carregam moeda. Filtros também precisam declarar a mesma moeda. `dataFingerprint` segue `sha256-<64 hex>`.
 

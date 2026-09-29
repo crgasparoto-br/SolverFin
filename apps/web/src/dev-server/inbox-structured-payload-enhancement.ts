@@ -323,7 +323,7 @@ function insightDetails(proposal: PublicInsightProposal): {
   const navigation =
     proposal.navigation === undefined
       ? ""
-      : renderInsightNavigation(proposal.navigation, proposal.periodStartOn);
+      : renderInsightNavigation(proposal.navigation, proposal.periodStartOn, proposal.currency);
   return {
     title: proposal.title,
     description: "",
@@ -371,6 +371,10 @@ function formatEvidenceLabel(proposal: PublicInsightProposalV2, label: string): 
     despesas_periodo_anterior: "Despesas no período anterior",
     variacao_despesas_percentual: "Variação das despesas",
     diferenca: "Diferença",
+    menor_saldo_projetado: "Menor saldo projetado",
+    deficit_projetado: "Déficit projetado",
+    saldo_fim_horizonte: "Saldo no fim do horizonte",
+    horizonte_dias: "Horizonte (dias)",
   };
   const exactLabel = exact[label];
   if (exactLabel !== undefined) return exactLabel;
@@ -415,7 +419,7 @@ function resolveInsightCriterion(proposal: PublicInsightProposalV2): string {
     case "probable_subscription":
       return "Pelo menos 3 meses consecutivos com variação de valor de até 20% em relação à média dos meses observados.";
     case "negative_balance_risk":
-      return "Saldo agregado projetado abaixo de zero até o fim do horizonte mensal.";
+      return "Menor saldo da projeção de caixa canônica abaixo de zero dentro do horizonte, por moeda.";
     case "budget_exceeded":
       return "Despesas realizadas confirmadas da categoria acima do orçamento ativo, na mesma moeda e dentro da janela do orçamento.";
     case "monthly_summary":
@@ -434,21 +438,39 @@ function renderInsightFilters(proposal: PublicInsightProposalV2): string {
   if (proposal.filters.categoryId === undefined && proposal.filters.merchantKey === undefined) {
     items.push(
       proposal.insightKind === "negative_balance_risk"
-        ? "<li>Escopo: contas e lançamentos elegíveis do perfil na moeda informada.</li>"
+        ? "<li>Escopo: projeção de caixa canônica do perfil na moeda informada.</li>"
         : "<li>Escopo: lançamentos realizados elegíveis do perfil no período.</li>",
     );
   }
   return items.join("");
 }
 
-function renderInsightNavigation(navigation: InsightNavigationV2, periodStartOn: string): string {
+function renderInsightNavigation(
+  navigation: InsightNavigationV2,
+  periodStartOn: string,
+  currency: string,
+): string {
   const destination =
     navigation.view === "budgets"
       ? { href: "/orcamentos", label: "Abrir orçamentos" }
       : navigation.view === "cash_flow"
-        ? { href: "/relatorios", label: "Abrir relatórios" }
+        ? { href: "/relatorios", label: "Ver projeção de caixa" }
         : { href: "/lancamentos", label: "Abrir lançamentos" };
   const params = new URLSearchParams();
+
+  if (
+    navigation.view === "cash_flow" &&
+    navigation.referenceDate !== undefined &&
+    navigation.horizonDays !== undefined
+  ) {
+    params.set("view", "cash-flow");
+    params.set("referenceDate", navigation.referenceDate);
+    params.set("horizonDays", String(navigation.horizonDays));
+    const href = `${destination.href}?${params.toString()}#cash-flow-${encodeURIComponent(
+      currency.toLowerCase(),
+    )}`;
+    return `<p><a href="${escapeHtml(href)}" data-insight-navigation="true">${destination.label}</a></p>`;
+  }
 
   if (navigation.view === "transactions") {
     const month = periodStartOn.slice(0, 7);

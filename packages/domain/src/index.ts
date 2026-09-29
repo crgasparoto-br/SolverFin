@@ -112,7 +112,13 @@ export type AiSuggestionKind =
   | "deduplication"
   | "reconciliation"
   | "insight";
-export type AiSuggestionStatus = "pending_review" | "approved" | "edited" | "rejected" | "expired";
+export type AiSuggestionStatus =
+  | "pending_review"
+  | "approved"
+  | "edited"
+  | "rejected"
+  | "expired"
+  | "resolved";
 
 export type AttachmentKind = "receipt" | "invoice" | "statement" | "message" | "other";
 export type AttachmentStatus = "active" | "redacted" | "deleted";
@@ -382,6 +388,8 @@ export interface AiSuggestion extends Traceable, TenantScoped {
   model?: string;
   reviewedByUserId?: EntityId;
   reviewedAt?: ISODateTime;
+  /** Insight-only: pending snapshot hidden from active surfaces until this instant (#621). */
+  snoozedUntil?: ISODateTime;
 }
 
 export interface Attachment extends Traceable, TenantScoped {

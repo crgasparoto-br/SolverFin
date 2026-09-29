@@ -154,6 +154,7 @@ enum AiSuggestionStatus {
   EDITED
   REJECTED
   EXPIRED
+  RESOLVED
 }
 
 enum AttachmentKind {
@@ -783,6 +784,7 @@ model AiSuggestion {
   model              String?            @db.VarChar(120)
   reviewedByUserId   String?            @db.Uuid
   reviewedAt         DateTime?
+  snoozedUntil       DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 

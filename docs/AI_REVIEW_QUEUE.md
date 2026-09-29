@@ -44,6 +44,20 @@ Para `deduplication` e `reconciliation`, o detalhe resolve o `targetTransactionI
 
 Para `insight` V2, o bloco estruturado apresenta título, resumo, período, confiança, evidências numéricas e limitações. Chaves técnicas de evidência são convertidas para rótulos de produto antes da renderização. Quando o payload autoriza navegação, a Inbox oferece link para a área financeira relacionada (`/lancamentos`, `/orcamentos` ou `/relatorios`). `insightKey`, `dataFingerprint`, provider/model e IDs técnicos não aparecem como texto visível.
 
+## Fila acionável de insights (#621)
+
+A Inbox apresenta a seção **Insights financeiros** (`/inbox#financial-insights`) antes de “Outras sugestões”. Ela consome `GET /api/financial-insights` e é a mesma fonte lógica usada pelo Dashboard: deduplicação por equivalência, ordenação canônica `critical > warning > info` com desempate fixo por tipo e paginação progressiva (**Mostrar mais insights**, via `?insights=N`, de 10 em 10 até 100 itens por página renderizada).
+
+Cada item oferece:
+
+- **Resolver**: `POST /api/financial-insights/:id/resolve` com `{ expectedFingerprint }`; grava `RESOLVED` somente para aquele snapshot;
+- **Adiar**: diálogo com 1, 7 ou 30 dias e `POST /api/financial-insights/:id/snooze` com `{ expectedFingerprint, durationDays }`;
+- deep link para a evidência (Extrato, Orçamentos ou série de caixa em Relatórios).
+
+Nenhuma dessas ações altera lançamentos, faturas ou orçamentos. Fingerprint ausente retorna `428`, fingerprint divergente ou snapshot já encerrado retorna `409`, item de outro perfil retorna `404` e duração fora de 1/7/30 retorna `400`.
+
+A fila unificada de “Outras sugestões” continua cobrindo os cinco tipos, inclusive `insight`, com aprovação/rejeição audit-only; a seção **Insights financeiros** é a visão priorizada e acionável do mesmo conjunto. O filtro **Pendentes** oculta snapshots adiados até `snoozedUntil`, e o novo filtro **Resolvidas** lista as decisões `RESOLVED`.
+
 ## Campos editáveis
 
 A edição nunca muda arbitrariamente o payload inteiro.
@@ -77,6 +91,9 @@ Rejeitar encerra a sugestão sem aplicar o efeito proposto. Rejeitar uma candida
 ```http
 GET /api/ai-review-queue
 GET /api/ai-review-queue/:suggestionId/payload
+GET /api/financial-insights?state=active|snoozed|resolved&limit=1..100&offset=0
+POST /api/financial-insights/:suggestionId/resolve
+POST /api/financial-insights/:suggestionId/snooze
 POST /api/ai-review-queue/:suggestionId/approve
 POST /api/ai-review-queue/:suggestionId/edit
 POST /api/ai-review-queue/:suggestionId/reject
@@ -103,6 +120,10 @@ A listagem pode retornar, além de `suggestions[]`, o bloco informativo:
 
 Esse bloco não representa sugestão revisável e não possui efeito de aprovação/rejeição.
 
+Itens da listagem podem trazer `snoozedUntil` quando um insight pendente foi adiado. Com `status=pending_review` (padrão), insights adiados ficam fora da resposta até o vencimento.
+
+`GET /api/financial-insights` executa a mesma varredura idempotente de insights antes de listar e responde `{ priorityPolicyVersion, state, total, offset, limit, nextOffset?, items[] }`. Cada item contém `id`, `state`, `severity`, `fingerprint` (precondição das ações), `confidence`, `snoozedUntil`/`resolvedAt` quando aplicável e a projeção pública `proposal` do payload V2 — sem `insightKey`, `dataFingerprint`, provider ou model.
+
 Decisões e edições exigem `expectedFingerprint`. A interface sempre lê a versão atual imediatamente antes da ação e envia esse fingerprint. A ausência da precondição retorna `AI_REVIEW_EXPECTED_FINGERPRINT_REQUIRED` com HTTP `428`. Se outra aba, sessão, origem ou lançamento alvo mudar antes da gravação, a API retorna conflito/obsolescência controlada e nenhuma parte do efeito é confirmada.
 
 A mesma decisão repetida sobre um item já resolvido retorna o resultado persistido quando a operação é idempotente. Uma decisão oposta ou transição incompatível retorna conflito controlado.
@@ -127,7 +148,7 @@ Regras principais:
 - apenas `POSTED`/`RECONCILED` entram no realizado; dados pendentes de revisão são excluídos e declarados como limitação;
 - moedas nunca são somadas entre si;
 - amostra insuficiente não cria item artificial na fila e é devolvida como estado informativo;
-- `financial-insights-v2` e `dataFingerprint` formam parte da identidade interna de geração;
+- a versão de cálculo (`financial-insights-v3` desde a #621) e `dataFingerprint` formam parte da identidade interna de geração;
 - varreduras concorrentes convergem com advisory lock por organização/perfil;
 - pendência equivalente do próprio scanner é reutilizada; mudança do snapshot expira apenas pendências administradas pelo scanner e permite nova versão;
 - `INSIGHT` V1 e itens de outros produtores permanecem fora dessa expiração automática;

@@ -272,6 +272,10 @@ function inboxReviewRuntimeScript(): string {
             despesas_periodo_anterior: "Despesas no período anterior",
             variacao_despesas_percentual: "Variação das despesas",
             diferenca: "Diferença",
+            menor_saldo_projetado: "Menor saldo projetado",
+            deficit_projetado: "Déficit projetado",
+            saldo_fim_horizonte: "Saldo no fim do horizonte",
+            horizonte_dias: "Horizonte (dias)",
           };
           if (labels[label]) return labels[label];
           if (label === "valor_atual") return proposal.insightKind === "budget_exceeded" ? "Despesas realizadas" : "Gasto no período atual";
@@ -289,7 +293,7 @@ function inboxReviewRuntimeScript(): string {
         };
         const criterion = (proposal) => {
           if (proposal.insightKind === "monthly_summary") return "Existe ao menos um lançamento realizado no período; o resumo usa apenas lançamentos confirmados ou conciliados.";
-          if (proposal.insightKind === "negative_balance_risk") return "Saldo agregado projetado abaixo de zero até o fim do horizonte mensal.";
+          if (proposal.insightKind === "negative_balance_risk") return "Menor saldo da projeção de caixa canônica abaixo de zero dentro do horizonte, por moeda.";
           if (proposal.insightKind === "budget_exceeded") return "Despesas realizadas confirmadas da categoria acima do orçamento ativo, na mesma moeda e dentro da janela do orçamento.";
           if (proposal.insightKind === "probable_subscription") return "Pelo menos 3 meses consecutivos com variação de valor de até 20% em relação à média dos meses observados.";
           return "Aumento de pelo menos 25% com no mínimo 2 lançamentos realizados em cada período comparável.";
@@ -306,7 +310,15 @@ function inboxReviewRuntimeScript(): string {
             if (navigation.categoryId) params.set("categoryId", navigation.categoryId);
           } else if (navigation.view === "cash_flow") {
             path = "/relatorios";
-            label = "Abrir relatórios";
+            label = "Ver projeção de caixa";
+            if (navigation.referenceDate && navigation.horizonDays) {
+              params.set("view", "cash-flow");
+              params.set("referenceDate", navigation.referenceDate);
+              params.set("horizonDays", String(navigation.horizonDays));
+              const currency = String(proposal.currency || "").toLowerCase();
+              const query = params.toString();
+              return '<p><a href="' + escapeHtml(path + "?" + query + (currency ? "#cash-flow-" + encodeURIComponent(currency) : "")) + '" data-insight-navigation="true">' + escapeHtml(label) + '</a></p>';
+            }
           } else {
             const month = String(proposal.periodStartOn || "").slice(0, 7);
             if (/^\d{4}-\d{2}$/.test(month)) params.set("month", month);

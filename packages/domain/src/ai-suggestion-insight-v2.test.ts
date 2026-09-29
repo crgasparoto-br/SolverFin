@@ -14,6 +14,8 @@ validatesVerifiableInsightV2();
 publicProjectionScopesIdentifiers();
 rejectsCurrencyMismatchAndUnknownFields();
 detectsNumericEvidenceTampering();
+acceptsSeverityAndCanonicalCashFlowNavigation();
+rejectsInvalidSeverityAndPartialProjectionSlice();
 
 function buildValidPayload() {
   return buildAiSuggestionPayload({
@@ -134,6 +136,55 @@ function detectsNumericEvidenceTampering(): void {
       ),
     hasCode("AI_SUGGESTION_PAYLOAD_OBSOLETE"),
   );
+}
+
+function acceptsSeverityAndCanonicalCashFlowNavigation(): void {
+  const payload = buildAiSuggestionPayload({
+    payload: {
+      ...withoutFingerprint(buildValidPayload()),
+      insightKind: "negative_balance_risk",
+      severity: "critical",
+      filters: { currency: "BRL" },
+      navigation: { view: "cash_flow", referenceDate: "2026-08-11", horizonDays: 30 },
+    },
+  });
+  const read = readAiSuggestionPayload(payload, "insight");
+  assert.equal(read.state, "current");
+  const scoped = toPublicAiSuggestionPayload(payload, { includeScopedEntityIds: true });
+  if (scoped.suggestionKind !== "insight" || scoped.payloadVersion !== 2) {
+    assert.fail("Expected public insight V2.");
+  }
+  assert.equal(scoped.proposal.severity, "critical");
+  assert.deepEqual(scoped.proposal.navigation, {
+    view: "cash_flow",
+    referenceDate: "2026-08-11",
+    horizonDays: 30,
+  });
+}
+
+function rejectsInvalidSeverityAndPartialProjectionSlice(): void {
+  const base = withoutFingerprint(buildValidPayload());
+  const invalid = [
+    { ...base, severity: "urgent" },
+    { ...base, navigation: { view: "cash_flow", referenceDate: "2026-08-11" } },
+    { ...base, navigation: { view: "cash_flow", referenceDate: "2026-08-11", horizonDays: 45 } },
+    {
+      ...base,
+      navigation: { view: "transactions", referenceDate: "2026-08-11", horizonDays: 30 },
+    },
+  ];
+  for (const candidate of invalid) {
+    assert.throws(
+      () => requireCurrentAiSuggestionPayload({ ...candidate, fingerprint: "pending" }, "insight"),
+      hasCode("AI_SUGGESTION_PAYLOAD_INVALID"),
+    );
+  }
+}
+
+function withoutFingerprint<T extends { fingerprint: string }>(payload: T): Omit<T, "fingerprint"> {
+  const copy: Partial<T> = { ...payload };
+  delete copy.fingerprint;
+  return copy as Omit<T, "fingerprint">;
 }
 
 function hasCode(code: string): (error: unknown) => boolean {

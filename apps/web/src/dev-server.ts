@@ -218,7 +218,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/inbox" && token) {
-    sendHtml(response, 200, await renderInboxPage(token));
+    sendHtml(response, 200, await renderInboxPage(token, url));
     return;
   }
 

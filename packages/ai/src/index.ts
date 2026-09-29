@@ -2,6 +2,7 @@ export * from "./assistant.js";
 export * from "./bank-message-parser.js";
 export * from "./classification-result.js";
 export * from "./extraction.js";
+export * from "./insight-priority.js";
 export * from "./insights.js";
 export * from "./openai-provider.js";
 export * from "./provider-errors.js";

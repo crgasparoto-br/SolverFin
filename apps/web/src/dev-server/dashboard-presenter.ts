@@ -2,6 +2,12 @@ import { formatDateOnly } from "@solverfin/shared";
 
 import type { ApiFailure, ApiSuccess } from "./api.js";
 import {
+  DASHBOARD_FINANCIAL_INSIGHT_LIMIT,
+  presentFinancialInsightQueue,
+  type FinancialInsightQueueApiPage,
+  type FinancialInsightQueueViewModel,
+} from "./financial-insight-queue-presenter.js";
+import {
   emptyScreen,
   errorScreen,
   loadingScreen,
@@ -147,6 +153,8 @@ export interface DashboardDecisionModuleViewModel {
 export interface DashboardContentViewModel {
   currencySummaries: readonly DashboardCurrencySummaryViewModel[];
   cashFlowProjection?: DashboardCashFlowProjectionViewModel;
+  /** Top canonical insights (#621): deduplicated and ordered by the API, limited to 3. */
+  financialInsights?: FinancialInsightQueueViewModel;
   nextActions: readonly DashboardNextActionViewModel[];
   recentItems: readonly DashboardRecentItemViewModel[];
   dataQuality: DashboardDataQualityViewModel;
@@ -160,8 +168,11 @@ export interface DashboardPresenterInput {
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure;
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure;
   cashFlowProjection: ApiSuccess<DashboardCashFlowProjection> | ApiFailure;
+  financialInsights?: ApiSuccess<FinancialInsightQueueApiPage> | ApiFailure;
   filters: Readonly<Record<string, string>>;
 }
+
+export const DASHBOARD_FINANCIAL_INSIGHTS_RESOURCE = `/api/financial-insights?state=active&limit=${DASHBOARD_FINANCIAL_INSIGHT_LIMIT}`;
 
 type DashboardDrilldownKind = "income" | "expense";
 type DashboardDrilldownEvidence = "posted" | "planned";
@@ -205,6 +216,9 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
     ...(input.cashFlowProjection.ok
       ? { cashFlowProjection: presentCashFlowProjection(input.cashFlowProjection.data) }
       : {}),
+    ...(input.financialInsights === undefined
+      ? {}
+      : { financialInsights: presentDashboardFinancialInsights(input.financialInsights) }),
     nextActions: presentNextActions(
       input.summary.data.currencyBlocks,
       input.pendingReview,
@@ -394,6 +408,16 @@ function presentCashFlowProjection(
   };
 }
 
+function presentDashboardFinancialInsights(
+  result: ApiSuccess<FinancialInsightQueueApiPage> | ApiFailure,
+): FinancialInsightQueueViewModel {
+  const model = presentFinancialInsightQueue(result, { evidenceLimit: 2 });
+  // Defensive presentation cap only: the API already returns the canonical first items.
+  return model.status === "ready"
+    ? { ...model, items: model.items.slice(0, DASHBOARD_FINANCIAL_INSIGHT_LIMIT) }
+    : model;
+}
+
 function presentDataQuality(
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
@@ -456,6 +480,9 @@ function dashboardProvenance(input: DashboardPresenterInput): ScreenDataProvenan
     provenance("/api/cash-flow-projection?horizonDays=30", input.cashFlowProjection.ok),
     provenance("/api/bank-message-inbox?status=pending_review", input.pendingReview.ok),
     provenance("/api/invoices?status=open", input.openInvoices.ok),
+    ...(input.financialInsights === undefined
+      ? []
+      : [provenance(DASHBOARD_FINANCIAL_INSIGHTS_RESOURCE, input.financialInsights.ok)]),
   ];
 }
 

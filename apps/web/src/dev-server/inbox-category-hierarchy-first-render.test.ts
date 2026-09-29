@@ -25,8 +25,8 @@ describe("Inbox category hierarchy first render", () => {
       const html = await renderInboxPage("first-render-token");
       const categoryRequests = requests.filter((path) => path.startsWith("/api/categories"));
 
-      assert.equal(requests.length, 5);
-      assert.equal(new Set(requests).size, 5);
+      assert.equal(requests.length, 6);
+      assert.equal(new Set(requests).size, 6);
       assert.deepEqual(
         new Set(requests),
         new Set([
@@ -35,6 +35,7 @@ describe("Inbox category hierarchy first render", () => {
           "/api/accounts",
           "/api/categories?status=all",
           "/api/financial-profiles",
+          "/api/financial-insights?state=active&limit=10",
         ]),
       );
       assert.deepEqual(categoryRequests, ["/api/categories?status=all"]);

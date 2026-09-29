@@ -66,6 +66,7 @@ export interface AiReviewQueueItem {
   model?: string;
   reviewedByUserId?: EntityId;
   reviewedAt?: string;
+  snoozedUntil?: string;
   createdAt: string;
 }
 
@@ -89,6 +90,7 @@ interface AiSuggestionRow {
   model: string | null;
   reviewedByUserId: string | null;
   reviewedAt: Date | null;
+  snoozedUntil?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,9 +115,10 @@ const AI_SUGGESTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileI
 export async function listAiReviewQueueForContext(
   context: TenantContext,
   filters: AiReviewQueueListFilters = {},
+  now = new Date(),
 ): Promise<AiReviewQueueItem[]> {
   const rows = await query<AiSuggestionRow>(
-    `select ${AI_SUGGESTION_SELECT_COLUMNS} from "AiSuggestion"
+    `select ${AI_SUGGESTION_SELECT_COLUMNS}, "snoozedUntil" from "AiSuggestion"
      where "organizationId" = $1 and "financialProfileId" = $2
      order by "createdAt" asc`,
     [context.organizationId, context.financialProfileId],
@@ -123,7 +126,7 @@ export async function listAiReviewQueueForContext(
 
   return rows
     .map(mapAiSuggestionRow)
-    .filter((suggestion) => matchesFilters(suggestion, filters))
+    .filter((suggestion) => matchesFilters(suggestion, filters, now))
     .filter(
       (suggestion) =>
         filters.includeLowConfidence === true || suggestion.confidence >= LOW_CONFIDENCE_THRESHOLD,
@@ -335,9 +338,12 @@ async function lockSuggestionForContext(
 function matchesFilters(
   suggestion: PersistedAiSuggestion,
   filters: AiReviewQueueListFilters,
+  now: Date,
 ): boolean {
   const status = filters.status ?? "pending_review";
   if (status !== "all" && suggestion.status !== status) return false;
+  // A snoozed insight snapshot stays out of the default pending view until `snoozedUntil`.
+  if (status === "pending_review" && isSnoozed(suggestion, now)) return false;
   if (filters.kind !== undefined && suggestion.kind !== filters.kind) return false;
   return true;
 }
@@ -373,6 +379,9 @@ function buildQueueItem(suggestion: PersistedAiSuggestion): AiReviewQueueItem {
     item.reviewedByUserId = suggestion.reviewedByUserId;
   }
   if (suggestion.reviewedAt !== undefined) item.reviewedAt = suggestion.reviewedAt;
+  if (suggestion.snoozedUntil !== undefined && suggestion.status === "pending_review") {
+    item.snoozedUntil = suggestion.snoozedUntil;
+  }
   return item;
 }
 
@@ -719,9 +728,19 @@ function mapAiSuggestionRow(row: AiSuggestionRow): PersistedAiSuggestion {
     ...(row.model === null ? {} : { model: row.model }),
     ...(row.reviewedByUserId === null ? {} : { reviewedByUserId: row.reviewedByUserId }),
     ...(row.reviewedAt === null ? {} : { reviewedAt: row.reviewedAt.toISOString() }),
+    ...(row.snoozedUntil === undefined || row.snoozedUntil === null
+      ? {}
+      : { snoozedUntil: row.snoozedUntil.toISOString() }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
+}
+
+function isSnoozed(suggestion: PersistedAiSuggestion, now: Date): boolean {
+  return (
+    suggestion.snoozedUntil !== undefined &&
+    new Date(suggestion.snoozedUntil).getTime() > now.getTime()
+  );
 }
 
 function isImportExtractionSuggestion(suggestion: PersistedAiSuggestion): boolean {
