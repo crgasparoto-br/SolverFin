@@ -78,7 +78,7 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
   );
   assert.match(
     currentNavigation,
-    /rel="next"[^>]*href="[^"]*invoiceId=invoice-next/,
+    /href="[^"]*invoiceId=invoice-next[^"]*" rel="next"/,
     "próxima deve apontar para a primeira fatura futura",
   );
   assert.equal(
@@ -102,12 +102,12 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
 
   assert.match(
     nextNavigation,
-    new RegExp(`rel="prev"[^>]*href="[^"]*month=${currentMonth}`),
+    new RegExp(`href="[^"]*month=${currentMonth}[^"]*" rel="prev"`),
     "ao avançar, Anterior deve retornar ao mês corrente",
   );
   assert.match(
     nextNavigation,
-    /rel="next"[^>]*href="[^"]*invoiceId=invoice-later/,
+    /href="[^"]*invoiceId=invoice-later[^"]*" rel="next"/,
     "Próxima deve avançar cronologicamente para a fatura seguinte",
   );
   assert.match(
