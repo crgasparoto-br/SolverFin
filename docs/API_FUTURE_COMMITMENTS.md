@@ -75,6 +75,33 @@ Recorrencias de cartao nao sao projetadas diretamente pela agenda: o vencimento 
 nasce da `Invoice`. Quando a compra recorrente e materializada, a fatura resultante passa a
 representar o compromisso.
 
+## Contexto acionavel de recorrencias (#620)
+
+`GET /api/future-commitments/recurrences?ids=<id1,id2,...>` e a visao read-only da mesma
+fronteira canonica usada pela agenda para responder, por recorrencia, qual e a proxima ocorrencia
+financeira conhecida. O parametro opcional `asOf=YYYY-MM-DD` fixa a data de referencia; sem ele o
+servidor usa a data corrente.
+
+A resposta devolve `recurrences[]` com `recurrenceId` e, quando existir,
+`nextOccurrence` contendo `plannedOn`, `amountMinor` assinado, `currency`, `state`
+(`materialized` ou `projected`), `originKind` (`account` ou `card`) e os identificadores de
+origem disponiveis. As regras sao:
+
+- para conta, uma ocorrencia materializada futura prevalece sobre a projecao da mesma data; quando
+  ainda nao existe materializacao, a projecao usa o mesmo calendario canonico da agenda;
+- recorrencias pausadas nao criam nova projecao, mas uma ocorrencia futura ja materializada continua
+  sendo reportada porque permanece um compromisso real;
+- recorrencias canceladas ou concluidas nao possuem proxima ocorrencia no contexto da serie;
+- para cartao, a API nao inventa uma compra futura. Somente uma compra recorrente ja materializada e
+  ligada a uma `Invoice` futura pode aparecer; a data monetaria e o vencimento da fatura e o valor
+  exibido e a contribuicao nativa daquela compra, sem transformar a compra em um segundo compromisso
+  top-level;
+- nenhum caminho calcula cambio, converte moeda ou reconstitui efeito ausente.
+
+Essa visao existe para consumidores contextuais como os menus de `/lancamentos` e `/cartoes`.
+Ela nao altera `commitments[]`, nao entra em agregacoes 30/60/90 e nao cria uma segunda fonte de
+previsao.
+
 ## Lifecycle
 
 - editar data, conta ou valor de uma `Transaction` planejada altera a consulta seguinte sem manter

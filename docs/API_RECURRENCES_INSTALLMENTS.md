@@ -6,6 +6,19 @@ Este contrato descreve a API inicial para contas recorrentes, assinaturas e comp
 
 A futura API HTTP deve chamar esse contrato para gerar previsoes sem duplicar, pausar ou cancelar recorrencias e manter tenant/contexto consistente.
 
+## Leitura do proximo compromisso (#620)
+
+A regra continua sendo administrada pelos endpoints de recorrencia, mas a leitura do seu proximo
+impacto financeiro pertence a fronteira canonica de compromissos futuros:
+`GET /api/future-commitments/recurrences?ids=...`. O consumidor nao deve derivar a proxima data
+somando dias/meses no frontend nem concatenar novamente `Recurrence`, `Installment`,
+`Transaction` e `Invoice`.
+
+Para conta, a resposta pode ser uma ocorrencia `projected` ou `materialized`; materializacao
+prevalece na mesma data. Para cartao, somente ocorrencia materializada associada a fatura futura e
+exposta: nao ha projecao local de fatura ou compra. Cancelamento/conclusao da serie resulta em
+ausencia de `nextOccurrence`; pausa impede nova projecao, preservando compromisso ja materializado.
+
 ## Modelo
 
 Recorrencia representa uma regra de geracao futura com:

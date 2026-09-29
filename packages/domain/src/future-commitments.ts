@@ -71,6 +71,39 @@ export interface FutureCommitmentAgenda {
   currency?: string;
 }
 
+export type FutureRecurrenceOccurrenceState = "materialized" | "projected";
+export type FutureRecurrenceOriginKind = "account" | "card";
+
+export interface FutureRecurrenceOccurrence {
+  recurrenceId: EntityId;
+  commitmentId: string;
+  plannedOn: ISODate;
+  amountMinor: number;
+  currency: string;
+  state: FutureRecurrenceOccurrenceState;
+  originKind: FutureRecurrenceOriginKind;
+  accountId?: EntityId;
+  cardId?: EntityId;
+  invoiceId?: EntityId;
+  transactionId?: EntityId;
+  installmentId?: EntityId;
+}
+
+export interface FutureRecurrenceContext {
+  recurrenceId: EntityId;
+  nextOccurrence?: FutureRecurrenceOccurrence;
+}
+
+export interface BuildFutureRecurrenceContextsInput {
+  context: TenantContext;
+  asOf: ISODate;
+  recurrenceIds?: readonly EntityId[];
+  transactions?: readonly Transaction[];
+  invoices?: readonly Invoice[];
+  recurrences?: readonly Recurrence[];
+  installments?: readonly FutureCommitmentInstallmentMarker[];
+}
+
 export interface FutureCommitmentInstallmentMarker {
   id: EntityId;
   organizationId: EntityId;
@@ -369,6 +402,182 @@ function buildRecurrenceProjections(
   }
 
   return commitments;
+}
+
+export function buildFutureRecurrenceContexts(
+  input: BuildFutureRecurrenceContextsInput,
+): FutureRecurrenceContext[] {
+  const asOf = validateDate(input.asOf);
+  const requestedIds = input.recurrenceIds ? new Set(input.recurrenceIds) : undefined;
+  const transactions = scopeToContext(input.context, input.transactions ?? []);
+  const invoices = scopeToContext(input.context, input.invoices ?? []);
+  const recurrences = scopeToContext(input.context, input.recurrences ?? []).filter(
+    (recurrence) => requestedIds === undefined || requestedIds.has(recurrence.id),
+  );
+  const installments = scopeToContext(input.context, input.installments ?? []);
+  const invoicesById = new Map(invoices.map((invoice) => [invoice.id, invoice]));
+  const materializedRecurrenceDates = new Set<string>();
+
+  for (const transaction of transactions) {
+    if (transaction.recurrenceId) {
+      materializedRecurrenceDates.add(
+        recurrenceOccurrenceKey(transaction.recurrenceId, transaction.plannedOn),
+      );
+    }
+  }
+  for (const installment of installments) {
+    if (installment.recurrenceId) {
+      materializedRecurrenceDates.add(
+        recurrenceOccurrenceKey(installment.recurrenceId, installment.dueOn),
+      );
+    }
+  }
+
+  return recurrences.map((recurrence) => {
+    if (recurrence.status === "cancelled" || recurrence.status === "completed") {
+      return { recurrenceId: recurrence.id };
+    }
+
+    const materialized = findNextMaterializedRecurrenceOccurrence(
+      recurrence,
+      asOf,
+      transactions,
+      invoicesById,
+    );
+    const projected =
+      recurrence.status === "active"
+        ? findNextProjectedRecurrenceOccurrence(recurrence, asOf, materializedRecurrenceDates)
+        : undefined;
+    const nextOccurrence =
+      materialized === undefined
+        ? projected
+        : projected === undefined || materialized.plannedOn <= projected.plannedOn
+          ? materialized
+          : projected;
+
+    return {
+      recurrenceId: recurrence.id,
+      ...(nextOccurrence ? { nextOccurrence } : {}),
+    };
+  });
+}
+
+function findNextMaterializedRecurrenceOccurrence(
+  recurrence: Recurrence,
+  asOf: ISODate,
+  transactions: readonly Transaction[],
+  invoicesById: ReadonlyMap<EntityId, Invoice>,
+): FutureRecurrenceOccurrence | undefined {
+  const candidates: FutureRecurrenceOccurrence[] = [];
+
+  for (const transaction of transactions) {
+    if (transaction.recurrenceId !== recurrence.id || transaction.status === "voided") continue;
+
+    if (transaction.invoiceId !== undefined) {
+      if (transaction.plannedOn <= asOf) continue;
+      const invoice = invoicesById.get(transaction.invoiceId);
+      if (
+        invoice === undefined ||
+        !INVOICE_FUTURE_STATUSES.has(invoice.status) ||
+        invoice.dueOn <= asOf
+      ) {
+        continue;
+      }
+      const amountMinor = validatePositiveAmount(transaction.amountMinor, transaction.id);
+      candidates.push({
+        recurrenceId: recurrence.id,
+        commitmentId: `invoice:${invoice.id}`,
+        plannedOn: invoice.dueOn,
+        amountMinor: -amountMinor,
+        currency: normalizeCurrency(transaction.currency),
+        state: "materialized",
+        originKind: "card",
+        ...((transaction.cardId ?? recurrence.cardId)
+          ? { cardId: (transaction.cardId ?? recurrence.cardId) as EntityId }
+          : {}),
+        invoiceId: invoice.id,
+        transactionId: transaction.id,
+        ...(transaction.installmentId ? { installmentId: transaction.installmentId } : {}),
+      });
+      continue;
+    }
+
+    if (
+      transaction.status !== "planned" ||
+      transaction.effectiveOn !== undefined ||
+      transaction.plannedOn <= asOf
+    ) {
+      continue;
+    }
+
+    const effects = buildTransactionEffects(transaction);
+    const sourceEffect = effects.find((effect) => effect.role === "source_account") ?? effects[0];
+    if (!sourceEffect) continue;
+    candidates.push({
+      recurrenceId: recurrence.id,
+      commitmentId: `transaction:${transaction.id}`,
+      plannedOn: transaction.plannedOn,
+      amountMinor: sourceEffect.amountMinor,
+      currency: sourceEffect.currency,
+      state: "materialized",
+      originKind: "account",
+      ...(sourceEffect.accountId ? { accountId: sourceEffect.accountId } : {}),
+      transactionId: transaction.id,
+      ...(transaction.installmentId ? { installmentId: transaction.installmentId } : {}),
+    });
+  }
+
+  return candidates.sort((left, right) => {
+    const dateOrder = left.plannedOn.localeCompare(right.plannedOn);
+    return dateOrder === 0 ? left.commitmentId.localeCompare(right.commitmentId) : dateOrder;
+  })[0];
+}
+
+function findNextProjectedRecurrenceOccurrence(
+  recurrence: Recurrence,
+  asOf: ISODate,
+  materializedRecurrenceDates: ReadonlySet<string>,
+): FutureRecurrenceOccurrence | undefined {
+  if (
+    recurrence.accountId === undefined ||
+    recurrence.cardId !== undefined ||
+    recurrence.kind === "transfer"
+  ) {
+    return undefined;
+  }
+
+  const amountMinor = validatePositiveAmount(recurrence.amountMinor, recurrence.id);
+  const currency = normalizeCurrency(recurrence.currency);
+
+  for (let offset = 0; offset < MAX_RECURRENCE_OCCURRENCES_PER_QUERY; offset += 1) {
+    const plannedOn = addRecurrenceFrequency(
+      recurrence.startOn,
+      recurrence.frequency,
+      offset,
+      recurrence.interval,
+    );
+    if (recurrence.endOn !== undefined && plannedOn > recurrence.endOn) return undefined;
+    if (plannedOn <= asOf) continue;
+
+    const replacementKey = recurrenceOccurrenceKey(recurrence.id, plannedOn);
+    if (materializedRecurrenceDates.has(replacementKey)) continue;
+
+    return {
+      recurrenceId: recurrence.id,
+      commitmentId: replacementKey,
+      plannedOn,
+      amountMinor: recurrence.kind === "income" ? amountMinor : -amountMinor,
+      currency,
+      state: "projected",
+      originKind: "account",
+      accountId: recurrence.accountId,
+    };
+  }
+
+  throw new FutureCommitmentError(
+    "FUTURE_COMMITMENT_PERIOD_INVALID",
+    "A recorrencia excede o limite seguro para localizar a proxima ocorrencia.",
+  );
 }
 
 function buildLegacyCommitment(

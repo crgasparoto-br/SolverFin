@@ -28,6 +28,13 @@ export function renderRecurrenceActionMenuItems(recurrence: RecurrenceRecord): s
   const canCancel = recurrence.status !== "cancelled" && recurrence.status !== "completed";
 
   return `
+    <div class="recurrence-context" role="group" aria-label="Contexto da recorrência">
+      <strong>Recorrência</strong>
+      <span>Status: ${escapeHtml(formatRecurrenceStatus(recurrence.status))}</span>
+      <span>Frequência: ${escapeHtml(formatRecurrenceFrequency(recurrence.frequency, recurrence.interval))}</span>
+      <span>Ocorrência atual: materializada</span>
+      <span data-recurrence-next="${escapeHtml(recurrence.id)}">Próxima ocorrência: carregando...</span>
+    </div>
     <hr class="actions-divider" />
     ${canPause ? renderRecurrenceActionMenuButton("Pausar recorrência", `/api/recurrences/${recurrence.id}/pause`, "Pausar esta recorrência? Novas parcelas não devem ser geradas enquanto ela estiver pausada.") : ""}
     ${canResume ? renderRecurrenceActionMenuButton("Retomar recorrência", `/api/recurrences/${recurrence.id}/resume`) : ""}
@@ -122,7 +129,7 @@ export function renderRecurrenceEditModal(
 }
 
 export function recurrencesSectionStyles(): string {
-  return `.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.6875rem;font-weight:700;gap:3px;line-height:1;margin-left:6px;padding:2px 6px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:12px;width:12px}.secondary-button{background:var(--surface,#fff);border:1px solid var(--line,#cbd5e1);color:var(--primary)}.ghost-button{background:transparent;border:1px solid var(--line,#cbd5e1);color:var(--text)}.modal-panel form[data-form] label:has([name=editScope]){display:none}.modal-panel form[data-form][data-method=PATCH] label:has([name=repeatMode]),.modal-panel form[data-form][data-method=PATCH] [data-field=installments],.modal-panel form[data-form][data-method=PATCH] [data-field=installmentStart],.modal-panel form[data-form][data-method=PATCH] [data-field=installmentValueMode],.modal-panel form[data-form][data-method=PATCH] [data-field=interval],.modal-panel form[data-form][data-method=PATCH] [data-field=frequency],.modal-panel form[data-form][data-method=PATCH] [data-field=endOn]{display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}.recurrence-scope-panel{max-width:520px}.recurrence-scope-actions{display:grid;gap:8px}.recurrence-scope-actions button{min-height:36px;text-align:left}.recurrence-scope-panel [data-recurrence-scope-status].error{color:var(--danger,#b91c1c)}.recurrence-scope-panel [data-recurrence-scope-status].success{color:var(--success,#15803d)}.statement-heading-actions{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.account-summary .quick-actions[data-actions-moved=true]{display:none}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}.statement-heading-actions{justify-content:stretch}.statement-heading-actions button{width:100%}}`;
+  return `.recurrence-context{display:grid;gap:3px;max-width:280px;padding:8px 10px;white-space:normal}.recurrence-context strong{font-size:.75rem}.recurrence-context span{color:var(--muted,#64748b);font-size:.75rem;line-height:1.35}.recurrence-indicator{align-items:center;background:#e0f2fe;border:1px solid #bae6fd;border-radius:999px;color:#0369a1;display:inline-flex;font-size:.6875rem;font-weight:700;gap:3px;line-height:1;margin-left:6px;padding:2px 6px;text-transform:uppercase;vertical-align:middle}.recurrence-indicator svg{display:block;height:12px;width:12px}.secondary-button{background:var(--surface,#fff);border:1px solid var(--line,#cbd5e1);color:var(--primary)}.ghost-button{background:transparent;border:1px solid var(--line,#cbd5e1);color:var(--text)}.modal-panel form[data-form] label:has([name=editScope]){display:none}.modal-panel form[data-form][data-method=PATCH] label:has([name=repeatMode]),.modal-panel form[data-form][data-method=PATCH] [data-field=installments],.modal-panel form[data-form][data-method=PATCH] [data-field=installmentStart],.modal-panel form[data-form][data-method=PATCH] [data-field=installmentValueMode],.modal-panel form[data-form][data-method=PATCH] [data-field=interval],.modal-panel form[data-form][data-method=PATCH] [data-field=frequency],.modal-panel form[data-form][data-method=PATCH] [data-field=endOn]{display:none}[data-recurrence-edit-form],[data-recurrence-installments-form]{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}[data-recurrence-edit-form] button,[data-recurrence-installments-form] button{grid-column:1/-1}.recurrence-scope-panel{max-width:520px}.recurrence-scope-actions{display:grid;gap:8px}.recurrence-scope-actions button{min-height:36px;text-align:left}.recurrence-scope-panel [data-recurrence-scope-status].error{color:var(--danger,#b91c1c)}.recurrence-scope-panel [data-recurrence-scope-status].success{color:var(--success,#15803d)}.statement-heading-actions{align-items:center;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.account-summary .quick-actions[data-actions-moved=true]{display:none}@media(max-width:760px){[data-recurrence-edit-form],[data-recurrence-installments-form]{grid-template-columns:1fr}.statement-heading-actions{justify-content:stretch}.statement-heading-actions button{width:100%}}`;
 }
 
 export function recurrencesSectionScript(): string {
@@ -218,6 +225,71 @@ export function recurrencesSectionScript(): string {
         async function send(path, method, body) {
           return fetch(path, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
         }
+        function formatFutureRecurrenceDate(value) {
+          const date = new Date(String(value) + "T00:00:00.000Z");
+          if (Number.isNaN(date.getTime())) return String(value || "");
+          return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(date);
+        }
+
+        function formatFutureRecurrenceMoney(amountMinor, currency) {
+          const normalizedCurrency = String(currency || "").toUpperCase();
+          try {
+            return new Intl.NumberFormat("pt-BR", {
+              style: "currency",
+              currency: normalizedCurrency,
+            }).format(Number(amountMinor || 0) / 100);
+          } catch (_error) {
+            return (Number(amountMinor || 0) / 100).toLocaleString("pt-BR", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }) + (normalizedCurrency ? " " + normalizedCurrency : "");
+          }
+        }
+
+        function renderFutureRecurrenceContext(node, context) {
+          const occurrence = context && context.nextOccurrence;
+          if (!occurrence) {
+            node.textContent = "Próxima ocorrência: Sem próxima ocorrência";
+            return;
+          }
+          const origin = occurrence.originKind === "card"
+            ? (occurrence.invoiceId ? "Cartão · fatura vinculada" : "Cartão")
+            : "Conta";
+          const state = occurrence.state === "projected" ? "projetada" : "materializada";
+          node.textContent =
+            "Próxima ocorrência: " +
+            formatFutureRecurrenceDate(occurrence.plannedOn) +
+            " · " +
+            formatFutureRecurrenceMoney(occurrence.amountMinor, occurrence.currency) +
+            " · " +
+            origin +
+            " · " +
+            state;
+        }
+
+        async function loadFutureRecurrenceContexts() {
+          const nodes = Array.from(document.querySelectorAll("[data-recurrence-next]"));
+          if (nodes.length === 0) return;
+          const ids = Array.from(new Set(nodes.map((node) => node.dataset.recurrenceNext).filter(Boolean)));
+          try {
+            const response = await fetch(
+              "/api/future-commitments/recurrences?ids=" + encodeURIComponent(ids.join(",")),
+            );
+            if (!response.ok) throw new Error("future recurrence context unavailable");
+            const payload = await response.json();
+            const byId = new Map(
+              Array.isArray(payload.recurrences)
+                ? payload.recurrences.map((context) => [context.recurrenceId, context])
+                : [],
+            );
+            nodes.forEach((node) => renderFutureRecurrenceContext(node, byId.get(node.dataset.recurrenceNext)));
+          } catch (_error) {
+            nodes.forEach((node) => {
+              node.textContent = "Próxima ocorrência: indisponível no momento";
+            });
+          }
+        }
+
 
         async function readResponse(response) {
           const body = await response.json().catch(() => ({}));
@@ -495,6 +567,7 @@ export function recurrencesSectionScript(): string {
         setupCardPurchaseMoveAction();
         setupTransactionFormOverride();
         setupCardPurchaseFormOverride();
+        loadFutureRecurrenceContexts();
         const modal = document.querySelector("[data-recurrence-modal]");
         const modalStatus = modal && modal.querySelector("[data-recurrence-modal-status]");
         const installmentsForm = modal && modal.querySelector("[data-recurrence-installments-form]");
@@ -514,6 +587,25 @@ export function recurrencesSectionScript(): string {
       })();
     </script>
   `;
+}
+
+function formatRecurrenceStatus(status: string): string {
+  if (status === "active") return "Ativa";
+  if (status === "paused") return "Pausada";
+  if (status === "cancelled") return "Cancelada";
+  if (status === "completed") return "Concluída";
+  return status;
+}
+
+function formatRecurrenceFrequency(frequency: string, interval = 1): string {
+  const labels: Record<string, string> = {
+    daily: "diária",
+    weekly: "semanal",
+    monthly: "mensal",
+    yearly: "anual",
+  };
+  const label = labels[frequency] ?? frequency;
+  return interval > 1 ? `A cada ${interval} períodos · ${label}` : label;
 }
 
 function renderFrequencyOptions(selected?: string): string {

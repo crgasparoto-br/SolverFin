@@ -1,6 +1,8 @@
 import {
   buildFutureCommitmentAgenda,
+  buildFutureRecurrenceContexts,
   type FutureCommitmentAgenda,
+  type FutureRecurrenceContext,
   type TenantContext,
 } from "@solverfin/domain";
 
@@ -41,5 +43,28 @@ export async function listFutureCommitmentsForContext(
     installments,
     payablesReceivables,
     ...(filters.currency ? { currency: filters.currency } : {}),
+  });
+}
+
+export async function listFutureRecurrenceContextsForContext(
+  context: TenantContext,
+  recurrenceIds: readonly string[],
+  asOf: string,
+): Promise<FutureRecurrenceContext[]> {
+  const [transactions, invoices, recurrences, installments] = await Promise.all([
+    listTransactionsForContext(context, { status: "all" }),
+    listInvoicesForContext(context, { status: "all" }),
+    listRecurrencesForContext(context, { status: "all" }),
+    listInstallmentsForContext(context, { status: "all" }),
+  ]);
+
+  return buildFutureRecurrenceContexts({
+    context,
+    asOf,
+    recurrenceIds,
+    transactions,
+    invoices,
+    recurrences,
+    installments,
   });
 }

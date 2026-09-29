@@ -99,6 +99,33 @@ async function main(): Promise<void> {
       `Future commitment recurrence ${suffix}`,
     ],
   );
+  const recurrenceContextResponse = await apiRequest(
+    token,
+    "GET",
+    `/api/future-commitments/recurrences?ids=${recurrenceId}&asOf=2037-11-01`,
+  );
+  assert.equal(recurrenceContextResponse.statusCode, 200);
+  const recurrenceContext = readBody<ApiFutureRecurrenceContextResponse>(recurrenceContextResponse);
+  assert.equal(recurrenceContext.asOf, "2037-11-01");
+  assert.deepEqual(recurrenceContext.recurrences[0]?.nextOccurrence, {
+    recurrenceId,
+    commitmentId: `recurrence:${recurrenceId}:2037-11-25`,
+    plannedOn: "2037-11-25",
+    amountMinor: -7_500,
+    currency: "BRL",
+    state: "projected",
+    originKind: "account",
+    accountId: source.id,
+  });
+
+  const invalidRecurrenceContext = await apiRequest(
+    token,
+    "GET",
+    `/api/future-commitments/recurrences?ids=${recurrenceId}&asOf=not-a-date`,
+  );
+  assert.equal(invalidRecurrenceContext.statusCode, 400);
+  assert.equal(readErrorCode(invalidRecurrenceContext), "FUTURE_COMMITMENT_PERIOD_INVALID");
+
   await query(
     `insert into "Installment"
       ("id", "organizationId", "financialProfileId", "recurrenceId", "status", "sequenceNumber",
@@ -189,6 +216,25 @@ function readBody<TBody>(response: Pick<ApiResponse, "body">): TBody {
 
 function readErrorCode(response: ApiResponse): string | undefined {
   return readBody<{ error?: { code?: string } }>(response).error?.code;
+}
+
+interface ApiFutureRecurrenceContextResponse {
+  asOf: string;
+  recurrences: Array<{
+    recurrenceId: string;
+    nextOccurrence?: {
+      recurrenceId: string;
+      commitmentId: string;
+      plannedOn: string;
+      amountMinor: number;
+      currency: string;
+      state: "materialized" | "projected";
+      originKind: "account" | "card";
+      accountId?: string;
+      cardId?: string;
+      invoiceId?: string;
+    };
+  }>;
 }
 
 interface ApiFutureCommitmentAgenda {

@@ -61,7 +61,10 @@ import {
 } from "./repositories/budgets.js";
 import { buildFinancialSummary } from "./repositories/dashboard.js";
 import { buildCashFlowProjectionForContext } from "./repositories/cash-flow-projection.js";
-import { listFutureCommitmentsForContext } from "./repositories/future-commitments.js";
+import {
+  listFutureCommitmentsForContext,
+  listFutureRecurrenceContextsForContext,
+} from "./repositories/future-commitments.js";
 import {
   cancelRecurrenceForContext,
   catchUpRecurrenceInstallmentsForContext,
@@ -121,6 +124,7 @@ const routes: Route[] = [];
 route("GET", "/api/financial-profiles", listProfilesHandler);
 route("GET", "/api/financial-summary", financialSummaryHandler);
 route("GET", "/api/cash-flow-projection", cashFlowProjectionHandler);
+route("GET", "/api/future-commitments/recurrences", listFutureRecurrenceContextsHandler);
 route("GET", "/api/future-commitments", listFutureCommitmentsHandler);
 
 route("GET", "/api/categories", listCategoriesHandler);
@@ -301,6 +305,28 @@ async function cashFlowProjectionHandler(
       ...(currency ? { currency } : {}),
     }),
   );
+}
+
+async function listFutureRecurrenceContextsHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const recurrenceIds = (request.query.get("ids") ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (recurrenceIds.length === 0) {
+    return json(200, { recurrences: [] });
+  }
+
+  const asOf = request.query.get("asOf") ?? new Date().toISOString().slice(0, 10);
+  const recurrences = await listFutureRecurrenceContextsForContext(
+    context,
+    [...new Set(recurrenceIds)].slice(0, 100),
+    asOf,
+  );
+
+  return json(200, { recurrences, asOf });
 }
 
 async function listFutureCommitmentsHandler(
