@@ -61,6 +61,32 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
       return jsonResponse({ instruments: [] });
     }
     if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
+    if (url.pathname === "/api/invoices/invoice-next/summary") {
+      return jsonResponse({
+        summary: {
+          amountDueMinor: 0,
+          cardId: "card-1",
+          cardName: "Cartão principal",
+          cardTotals: [],
+          closingOn: `${nextMonth}-20`,
+          dueOn: `${shiftMonth(nextMonth, 1)}-10`,
+          financialProfileId: "profile-1",
+          invoiceId: "invoice-next",
+          periodStartOn: `${nextMonth}-01`,
+          previousBalanceMinor: 0,
+          purchasesCount: 0,
+          reconciledExpensesMinor: 0,
+          status: "open",
+          totalExpensesMinor: 0,
+          totalPaidMinor: 0,
+          unreconciledExpensesMinor: 0,
+        },
+      });
+    }
+    if (url.pathname === "/api/invoices/invoice-next/purchases") {
+      return jsonResponse({ purchases: [] });
+    }
+    if (url.pathname === "/api/installments") return jsonResponse({ installments: [] });
     return jsonResponse({});
   };
 
