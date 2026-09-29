@@ -446,11 +446,7 @@ export function buildFutureRecurrenceContexts(
     );
     const projected =
       recurrence.status === "active"
-        ? findNextProjectedRecurrenceOccurrence(
-            recurrence,
-            asOf,
-            materializedRecurrenceDates,
-          )
+        ? findNextProjectedRecurrenceOccurrence(recurrence, asOf, materializedRecurrenceDates)
         : undefined;
     const nextOccurrence =
       materialized === undefined
@@ -496,7 +492,7 @@ function findNextMaterializedRecurrenceOccurrence(
         currency: normalizeCurrency(transaction.currency),
         state: "materialized",
         originKind: "card",
-        ...(transaction.cardId ?? recurrence.cardId
+        ...((transaction.cardId ?? recurrence.cardId)
           ? { cardId: (transaction.cardId ?? recurrence.cardId) as EntityId }
           : {}),
         invoiceId: invoice.id,
@@ -533,9 +529,7 @@ function findNextMaterializedRecurrenceOccurrence(
 
   return candidates.sort((left, right) => {
     const dateOrder = left.plannedOn.localeCompare(right.plannedOn);
-    return dateOrder === 0
-      ? left.commitmentId.localeCompare(right.commitmentId)
-      : dateOrder;
+    return dateOrder === 0 ? left.commitmentId.localeCompare(right.commitmentId) : dateOrder;
   })[0];
 }
 
