@@ -170,7 +170,10 @@ async function validateCards(cdp) {
   const mobileStructure = await inspectCardsStructure(cdp);
   assert.equal(mobileStructure.pageFits, true, "Cards mobile page overflows horizontally.");
   assert.equal(mobileStructure.summaryVisible, true, "Cards mobile summary is not visible.");
-  assert.ok(mobileStructure.periodNavigation, "Cards compact invoice period navigation is not present on mobile.");
+  assert.ok(
+    mobileStructure.periodNavigation,
+    "Cards compact invoice period navigation is not present on mobile.",
+  );
   assert.ok(mobileStructure.purchaseCount > 0, "Cards mobile rendered no purchases.");
 
   return {
