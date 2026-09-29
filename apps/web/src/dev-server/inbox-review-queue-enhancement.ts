@@ -41,7 +41,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           '<label>Status<select data-review-filter="status">' +
             '<option value="pending_review">Pendentes</option><option value="approved">Aprovadas</option>' +
             '<option value="rejected">Rejeitadas</option><option value="edited">Editadas</option>' +
-            '<option value="expired">Expiradas</option><option value="all">Todos</option></select></label>' +
+            '<option value="expired">Expiradas</option><option value="resolved">Resolvidas</option><option value="all">Todos</option></select></label>' +
           '<label>Confiança<select data-review-filter="confidence">' +
             '<option value="all">Todas</option><option value="low">Baixa confiança</option>' +
             '<option value="normal">Normal</option></select></label>' +
@@ -80,7 +80,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           return labels[origin] || origin || "sistema";
         }
         function formatStatus(status) {
-          const labels = { pending_review: "Pendente", approved: "Aprovada", edited: "Editada", rejected: "Rejeitada", expired: "Expirada" };
+          const labels = { pending_review: "Pendente", approved: "Aprovada", edited: "Editada", rejected: "Rejeitada", expired: "Expirada", resolved: "Resolvida" };
           return labels[status] || status;
         }
         function formatTarget(kind) {
@@ -139,9 +139,15 @@ export function enhanceInboxReviewQueue(html: string): string {
           });
           window.history.replaceState({}, "", url.pathname + url.search + url.hash);
         }
+        function isSnoozed(item) {
+          return Boolean(item.snoozedUntil) && new Date(item.snoozedUntil).getTime() > Date.now();
+        }
         function matches(item) {
+          // Insights have a dedicated prioritized section; they appear here only when filtered explicitly.
+          if (kindFilter.value === "all" && item.kind === "insight") return false;
           if (kindFilter.value !== "all" && item.kind !== kindFilter.value) return false;
           if (statusFilter.value !== "all" && item.status !== statusFilter.value) return false;
+          if (statusFilter.value === "pending_review" && isSnoozed(item)) return false;
           if (confidenceFilter.value === "low" && item.risk !== "low_confidence") return false;
           if (confidenceFilter.value === "normal" && item.risk === "low_confidence") return false;
           return true;

@@ -2,6 +2,14 @@ import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
 import {
+  presentFinancialInsightQueue,
+  type FinancialInsightQueueApiPage,
+} from "./financial-insight-queue-presenter.js";
+import {
+  financialInsightQueueStyles,
+  renderInboxFinancialInsights,
+} from "./financial-insight-queue-view.js";
+import {
   enhanceInboxCategoryHierarchy,
   type CategoryRecord,
 } from "./inbox-category-hierarchy-enhancement.js";
@@ -73,17 +81,26 @@ interface ReviewQueueResponse {
   };
 }
 
-export async function renderInboxPage(token: string): Promise<string> {
-  const [messages, reviewQueue, accounts, categories, profiles] = await Promise.all([
-    apiGet<{ messages: BankMessageInboxRecord[] }>(token, "/api/bank-message-inbox?status=all"),
-    apiGet<ReviewQueueResponse>(
-      token,
-      "/api/ai-review-queue?status=pending_review&includeLowConfidence=true",
-    ),
-    apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
-    apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?status=all"),
-    apiGet<FinancialProfilesResponse>(token, "/api/financial-profiles"),
-  ]);
+const INBOX_INSIGHTS_PAGE_SIZE = 10;
+const INBOX_INSIGHTS_MAX = 100;
+
+export async function renderInboxPage(token: string, url?: URL): Promise<string> {
+  const insightsLimit = resolveInboxInsightsLimit(url);
+  const [messages, reviewQueue, accounts, categories, profiles, financialInsights] =
+    await Promise.all([
+      apiGet<{ messages: BankMessageInboxRecord[] }>(token, "/api/bank-message-inbox?status=all"),
+      apiGet<ReviewQueueResponse>(
+        token,
+        "/api/ai-review-queue?status=pending_review&includeLowConfidence=true",
+      ),
+      apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts"),
+      apiGet<{ categories: CategoryRecord[] }>(token, "/api/categories?status=all"),
+      apiGet<FinancialProfilesResponse>(token, "/api/financial-profiles"),
+      apiGet<FinancialInsightQueueApiPage>(
+        token,
+        `/api/financial-insights?state=active&limit=${insightsLimit}`,
+      ),
+    ]);
 
   if (!messages.ok) return renderShell(renderError(messages.error));
 
@@ -93,8 +110,11 @@ export async function renderInboxPage(token: string): Promise<string> {
   const categoryOptions = categories.ok
     ? categories.data.categories.filter((category) => category.status === "active")
     : [];
+  // Insights have their own prioritized section; "Outras sugestões" keeps the remaining kinds.
   const suggestions = reviewQueue.ok
-    ? reviewQueue.data.suggestions.filter((suggestion) => suggestion.origin !== "import")
+    ? reviewQueue.data.suggestions.filter(
+        (suggestion) => suggestion.origin !== "import" && suggestion.kind !== "insight",
+      )
     : [];
   const activeProfile = profiles.ok
     ? profiles.data.profiles.find((profile) => profile.id === profiles.data.activeProfileId)
@@ -108,7 +128,17 @@ export async function renderInboxPage(token: string): Promise<string> {
   const financialInsightFallbackHtml = reviewQueue.ok
     ? renderFinancialInsightFallback(reviewQueue.data.financialInsights?.insufficientData ?? [])
     : "";
+  const nextInsightsLimit = Math.min(insightsLimit + INBOX_INSIGHTS_PAGE_SIZE, INBOX_INSIGHTS_MAX);
+  const insightsHtml = renderInboxFinancialInsights(
+    presentFinancialInsightQueue(financialInsights),
+    {
+      ...(nextInsightsLimit > insightsLimit
+        ? { moreHref: `/inbox?insights=${nextInsightsLimit}#financial-insights` }
+        : {}),
+    },
+  );
   const suggestionsHtml = `
+    ${insightsHtml}
     <section class="panel list-panel inbox-review-group" aria-labelledby="inbox-review-suggestions-title">
       <div class="section-heading">
         <h2 id="inbox-review-suggestions-title">Outras sugestões</h2>
@@ -1019,6 +1049,12 @@ function apiFormScript(): string {
   `;
 }
 
+function resolveInboxInsightsLimit(url: URL | undefined): number {
+  const raw = Number(url?.searchParams.get("insights") ?? INBOX_INSIGHTS_PAGE_SIZE);
+  if (!Number.isInteger(raw) || raw < INBOX_INSIGHTS_PAGE_SIZE) return INBOX_INSIGHTS_PAGE_SIZE;
+  return Math.min(raw, INBOX_INSIGHTS_MAX);
+}
+
 function renderShell(content: string): string {
   return renderAuthenticatedShellDocument({
     activePathname: "/inbox",
@@ -1102,6 +1138,7 @@ function baseCss(): string {
     ${sharedShellStyles()}
     ${sharedDialogStyles()}
     ${inboxReviewArchetypeStyles()}
+    ${financialInsightQueueStyles()}
     .small-note { font-size: 0.8125rem; }
     textarea, input[type="file"] { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); font: inherit; font-size: 0.875rem; line-height: 1.5; padding: 8px 10px; width: 100%; }
     textarea { min-height: 36px; resize: vertical; }
