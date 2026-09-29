@@ -122,10 +122,9 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
 }
 
 function invoiceNavigation(html: string): string {
-  return (
-    /<div class="cards-invoice-navigation"[\s\S]*?<\/details>\s*<\/div>/.exec(html)?.[0] ??
-    html
-  );
+  const navigation =
+    /<div class="cards-invoice-navigation"[\s\S]*?<\/details>\s*<\/div>/.exec(html)?.[0] ?? html;
+  return navigation;
 }
 
 function shiftMonth(month: string, offset: number): string {
