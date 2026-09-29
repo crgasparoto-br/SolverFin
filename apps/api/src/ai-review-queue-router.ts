@@ -60,6 +60,7 @@ interface PublicAiReviewQueueItem {
   provider?: string;
   createdAt: string;
   reviewedAt?: string;
+  snoozedUntil?: string;
 }
 
 const BASE_PATH = "/api/ai-review-queue";
@@ -197,6 +198,7 @@ function toPublicQueueItem(item: AiReviewQueueItem): PublicAiReviewQueueItem {
     ...(item.provider === undefined ? {} : { provider: item.provider }),
     createdAt: item.createdAt,
     ...(item.reviewedAt === undefined ? {} : { reviewedAt: item.reviewedAt }),
+    ...(item.snoozedUntil === undefined ? {} : { snoozedUntil: item.snoozedUntil }),
   };
 }
 

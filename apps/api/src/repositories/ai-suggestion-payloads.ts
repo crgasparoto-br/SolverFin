@@ -120,7 +120,8 @@ function parseStatus(value: string): AiSuggestionPayloadStatus {
     status !== "approved" &&
     status !== "edited" &&
     status !== "rejected" &&
-    status !== "expired"
+    status !== "expired" &&
+    status !== "resolved"
   ) {
     throw new AiSuggestionPayloadRepositoryError(
       "AI_SUGGESTION_PAYLOAD_INVALID",

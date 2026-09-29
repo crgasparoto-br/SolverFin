@@ -5,9 +5,10 @@ import {
   generateFinancialInsights,
   type FinancialInsight,
   type InsightBudget,
+  type InsightCashFlowProjectionEvidence,
   type InsightTransaction,
 } from "@solverfin/ai";
-import type { TenantContext } from "@solverfin/domain";
+import type { CashFlowProjectionWithFreeToSpend, TenantContext } from "@solverfin/domain";
 import {
   buildAiSuggestionPayload,
   readAiSuggestionPayload,
@@ -17,9 +18,12 @@ import {
 
 import { withSharedTransaction, type QueryExecutor } from "./db.js";
 import { insertAuditLogEntry } from "./repositories/audit.js";
+import { buildCashFlowProjectionForContext } from "./repositories/cash-flow-projection.js";
 
 const INSIGHT_PROVIDER = "solverfin-rule";
 const HISTORY_MONTHS = 6;
+/** Horizon of the canonical #617 series used by `negative_balance_risk` (same as #618). */
+const RISK_PROJECTION_HORIZON_DAYS = 30;
 
 interface InsightTransactionRow {
   id: string;
@@ -41,13 +45,6 @@ interface InsightBudgetRow {
   currency: string;
   periodStartOn: Date;
   periodEndOn: Date;
-  updatedAt: Date;
-}
-
-interface InsightAccountRow {
-  id: string;
-  currency: string;
-  openingBalanceMinor: number;
   updatedAt: Date;
 }
 
@@ -99,7 +96,7 @@ export async function ensureFinancialInsightsForContext(
 ): Promise<FinancialInsightScanResult> {
   return withSharedTransaction(async (executeQuery) => {
     await lockInsightScan(context, executeQuery);
-    const snapshot = await loadSnapshot(context, executeQuery);
+    const snapshot = await loadSnapshot(context, executeQuery, now);
     const insufficientData: FinancialInsightFallback[] = [];
     const desired = buildDesiredInsights(context, snapshot, now, insufficientData);
     const existing = await listExistingInsights(context, executeQuery);
@@ -153,7 +150,7 @@ export async function ensureFinancialInsightsForContext(
 interface InsightSnapshot {
   transactions: InsightTransactionRow[];
   budgets: InsightBudgetRow[];
-  accounts: InsightAccountRow[];
+  cashFlowProjection: Map<string, InsightCashFlowProjectionEvidence>;
   categories: Map<string, string>;
   currencies: string[];
 }
@@ -161,6 +158,7 @@ interface InsightSnapshot {
 async function loadSnapshot(
   context: TenantContext,
   executeQuery: QueryExecutor,
+  now: Date,
 ): Promise<InsightSnapshot> {
   const transactions = await executeQuery<InsightTransactionRow>(
     `select "id", "kind", "status", "amountMinor", "currency", "occurredOn", "plannedOn",
@@ -177,13 +175,12 @@ async function loadSnapshot(
       order by "periodStartOn" asc, "id" asc`,
     [context.organizationId, context.financialProfileId],
   );
-  const accounts = await executeQuery<InsightAccountRow>(
-    `select "id", "currency", "openingBalanceMinor", "updatedAt"
-       from "Account"
-      where "organizationId" = $1 and "financialProfileId" = $2
-      order by "id" asc`,
-    [context.organizationId, context.financialProfileId],
-  );
+  // The canonical #617 series runs inside the same shared transaction/snapshot as the scan.
+  const projection = (await buildCashFlowProjectionForContext(context, {
+    referenceDate: resolvePeriods(now).current.endOn,
+    horizonDays: RISK_PROJECTION_HORIZON_DAYS,
+  })) as CashFlowProjectionWithFreeToSpend;
+  const cashFlowProjection = mapCashFlowProjectionEvidence(projection);
   const categoryRows = await executeQuery<CategoryRow>(
     `select "id", "name" from "Category"
       where "organizationId" = $1 and "financialProfileId" = $2`,
@@ -192,12 +189,12 @@ async function loadSnapshot(
   const currencySet = new Set<string>();
   for (const row of transactions) currencySet.add(normalizeCurrency(row.currency));
   for (const row of budgets) currencySet.add(normalizeCurrency(row.currency));
-  for (const row of accounts) currencySet.add(normalizeCurrency(row.currency));
+  for (const currency of cashFlowProjection.keys()) currencySet.add(currency);
 
   return {
     transactions,
     budgets,
-    accounts,
+    cashFlowProjection,
     categories: new Map(categoryRows.map((row) => [row.id, row.name])),
     currencies: [...currencySet].sort(),
   };
@@ -220,12 +217,7 @@ function buildDesiredInsights(
       periods.historyStartOn,
     );
     const budgets = mapInsightBudgets(context, snapshot.budgets, currency);
-    const projectedBalance = calculateProjectedBalance(
-      snapshot.accounts,
-      snapshot.transactions,
-      currency,
-      periods.projectionEndOn,
-    );
+    const cashFlowProjection = snapshot.cashFlowProjection.get(currency);
     const generate = (scopedTransactions: readonly InsightTransaction[]) =>
       generateFinancialInsights({
         organizationId: context.organizationId,
@@ -234,13 +226,7 @@ function buildDesiredInsights(
         previousPeriod: periods.previous,
         transactions: scopedTransactions,
         budgets,
-        ...(projectedBalance === undefined
-          ? {}
-          : {
-              projectedBalanceMinor: projectedBalance.amountMinor,
-              projectedBalanceSourceFingerprint: projectedBalance.sourceFingerprint,
-              projectionPeriodEndOn: periods.projectionEndOn,
-            }),
+        ...(cashFlowProjection === undefined ? {} : { cashFlowProjection }),
         currency,
       });
     const baselineInsights = generate(transactions);
@@ -350,40 +336,50 @@ function resolveBudgetHistoryStartOn(
   return earliestStartOn;
 }
 
-function calculateProjectedBalance(
-  accounts: readonly InsightAccountRow[],
-  transactions: readonly InsightTransactionRow[],
-  currency: string,
-  projectionEndOn: string,
-): { amountMinor: number; sourceFingerprint: string } | undefined {
-  const scopedAccounts = accounts.filter((row) => normalizeCurrency(row.currency) === currency);
-  if (scopedAccounts.length === 0) return undefined;
-
-  let amountMinor = scopedAccounts.reduce((sum, row) => sum + row.openingBalanceMinor, 0);
-  const sources: string[] = scopedAccounts.map(
-    (row) => `account:${row.id}:${row.openingBalanceMinor}:${row.updatedAt.toISOString()}`,
-  );
-
-  for (const row of transactions) {
-    if (normalizeCurrency(row.currency) !== currency) continue;
-    const status = row.status.toLowerCase();
-    const realized = status === "posted" || status === "reconciled";
-    const planned = status === "planned";
-    const effectiveOn = planned ? toDateOnly(row.plannedOn) : toDateOnly(row.occurredOn);
-    if ((!realized && !planned) || effectiveOn > projectionEndOn) continue;
-
-    const kind = row.kind.toLowerCase();
-    if (kind === "income") amountMinor += row.amountMinor;
-    if (kind === "expense") amountMinor -= row.amountMinor;
-    sources.push(
-      `transaction:${row.id}:${kind}:${status}:${row.amountMinor}:${effectiveOn}:${row.updatedAt.toISOString()}`,
+/**
+ * Reads the risk evidence exclusively from the canonical #617 series (via the #618 minimum).
+ * Currencies whose projection is unavailable/incomplete produce no risk evidence: the scan
+ * never falls back to a parallel projection.
+ */
+function mapCashFlowProjectionEvidence(
+  projection: CashFlowProjectionWithFreeToSpend,
+): Map<string, InsightCashFlowProjectionEvidence> {
+  const result = new Map<string, InsightCashFlowProjectionEvidence>();
+  const horizonDays = projection.horizonDays;
+  for (const block of projection.currencyBlocks) {
+    const currency = normalizeCurrency(block.currency);
+    const indicator = projection.freeToSpend.currencyBlocks.find(
+      (candidate) => normalizeCurrency(candidate.currency) === currency,
     );
+    if (indicator === undefined || indicator.status !== "available") continue;
+    result.set(currency, {
+      referenceDate: projection.referenceDate,
+      horizonDays,
+      horizonEndOn: projection.to,
+      minimumProjectedBalanceMinor: indicator.minimumProjectedBalanceMinor,
+      minimumBalanceOn: indicator.minimumBalanceOn,
+      projectedDeficitMinor: indicator.projectedDeficitMinor,
+      closingBalanceMinor: block.closingBalanceMinor,
+      sourceFingerprint: fingerprint({
+        source: "cash-flow-projection",
+        currency,
+        referenceDate: projection.referenceDate,
+        horizonDays,
+        openingBalanceMinor: block.openingBalanceMinor,
+        points: block.points.map((point) => ({
+          date: point.date,
+          closingBalanceMinor: point.closingBalanceMinor,
+          movements: point.movements.map((movement) => ({
+            commitmentId: movement.commitmentId,
+            effectId: movement.effectId,
+            amountMinor: movement.amountMinor,
+            role: movement.role,
+          })),
+        })),
+      }),
+    });
   }
-
-  return {
-    amountMinor,
-    sourceFingerprint: fingerprint(sources.sort()),
-  };
+  return result;
 }
 
 function buildDesiredInsight(
@@ -423,6 +419,7 @@ function buildDesiredInsight(
       insightType: insightType(insight.kind),
       insightKind: insight.kind,
       insightKey,
+      severity: insight.severity,
       title: insight.title,
       summary: insight.explanation,
       periodStartOn: insight.evidence.periodStartOn,
@@ -665,7 +662,6 @@ function resolvePeriods(now: Date) {
   const previousEnd = new Date(
     Date.UTC(previousStart.getUTCFullYear(), previousStart.getUTCMonth(), comparableDay),
   );
-  const projectionEnd = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth() + 1, 0));
   const historyStart = new Date(
     Date.UTC(currentStart.getUTCFullYear(), currentStart.getUTCMonth() - (HISTORY_MONTHS - 1), 1),
   );
@@ -673,7 +669,6 @@ function resolvePeriods(now: Date) {
     current: { startOn: toDateOnly(currentStart), endOn: toDateOnly(utc) },
     previous: { startOn: toDateOnly(previousStart), endOn: toDateOnly(previousEnd) },
     historyStartOn: toDateOnly(historyStart),
-    projectionEndOn: toDateOnly(projectionEnd),
   };
 }
 
