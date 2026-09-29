@@ -70,11 +70,7 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
   );
   const currentNavigation = invoiceNavigation(currentHtml);
 
-  assert.match(
-    currentNavigation,
-    /Sem fatura/,
-    "mês corrente sem fatura deve manter o estado",
-  );
+  assert.match(currentNavigation, /Sem fatura/, "mês corrente sem fatura deve manter o estado");
   assert.match(
     currentNavigation,
     /cards-invoice-period-link-previous is-disabled/,
