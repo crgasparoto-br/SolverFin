@@ -638,8 +638,8 @@ function renderInvoiceNavigation(
   for (const invoice of visibleInvoices) {
     periods.set(invoice.periodEndOn.slice(0, 7), invoice);
   }
-  if (selectedMonth >= firstMonth && !periods.has(selectedMonth)) {
-    periods.set(selectedMonth, undefined);
+  if (!periods.has(selectedMonth)) {
+    periods.set(selectedMonth, selectedInvoice);
   }
   const orderedPeriods = [...periods.entries()].sort(([left], [right]) =>
     left.localeCompare(right),
@@ -680,7 +680,7 @@ function renderInvoiceNavigation(
         <input type="hidden" name="cardId" value="${escapeHtml(cardId)}">
         ${profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(profileId)}">` : ""}
         <label for="cards-invoice-month">Mês e ano</label>
-        <input id="cards-invoice-month" type="month" name="month" min="${escapeHtml(firstMonth)}" value="${escapeHtml(selectedMonth)}" data-invoice-month-input>
+        <input id="cards-invoice-month" type="month" name="month" value="${escapeHtml(selectedMonth)}" data-invoice-month-input>
         <button type="submit" class="sf-button sf-button-secondary">Ir</button>
       </form>
     </details>
