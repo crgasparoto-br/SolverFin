@@ -9,7 +9,6 @@ import {
   renderPageContainer,
   renderPageHeader,
   renderSummaryGrid,
-  renderTabs,
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
@@ -627,43 +626,64 @@ function renderInvoiceNavigation(
   const visibleInvoices = invoices
     .filter((invoice) => invoice.periodEndOn.slice(0, 7) >= firstMonth)
     .sort((left, right) => left.periodEndOn.localeCompare(right.periodEndOn));
-  const currentInvoice = visibleInvoices.find(
-    (invoice) => invoice.periodEndOn.slice(0, 7) === firstMonth,
-  );
-  const tabs = [
-    ...(currentInvoice
-      ? []
-      : [
-          {
-            label: `${formatMonth(firstMonth)} · Sem fatura`,
-            href: buildMonthHref(url, cardId, firstMonth),
-            active:
-              selectedInvoice === undefined &&
-              normalizeMonth(url.searchParams.get("month")) === firstMonth,
-          },
-        ]),
-    ...visibleInvoices.map((invoice) => ({
-      label: `${formatInvoicePeriod(invoice)} · ${formatInvoiceStatus(invoice.status)}`,
-      href: buildInvoiceHref(url, cardId, invoice),
-      active: invoice.id === selectedInvoice?.id,
-    })),
-  ];
-  const month =
+  const selectedMonth =
     selectedInvoice?.periodEndOn.slice(0, 7) ??
     normalizeMonth(url.searchParams.get("month")) ??
-    currentMonth();
+    firstMonth;
+  const periods = new Map<string, InvoiceRecord | undefined>();
+  periods.set(
+    firstMonth,
+    visibleInvoices.find((invoice) => invoice.periodEndOn.slice(0, 7) === firstMonth),
+  );
+  for (const invoice of visibleInvoices) {
+    periods.set(invoice.periodEndOn.slice(0, 7), invoice);
+  }
+  if (selectedMonth >= firstMonth && !periods.has(selectedMonth)) {
+    periods.set(selectedMonth, undefined);
+  }
+  const orderedPeriods = [...periods.entries()].sort(([left], [right]) =>
+    left.localeCompare(right),
+  );
+  const selectedIndex = Math.max(
+    0,
+    orderedPeriods.findIndex(([month]) => month === selectedMonth),
+  );
+  const previousPeriod = selectedIndex > 0 ? orderedPeriods[selectedIndex - 1] : undefined;
+  const nextPeriod =
+    selectedIndex < orderedPeriods.length - 1 ? orderedPeriods[selectedIndex + 1] : undefined;
+  const navigationHref = ([month, invoice]: [string, InvoiceRecord | undefined]): string =>
+    invoice ? buildInvoiceHref(url, cardId, invoice) : buildMonthHref(url, cardId, month);
   const profileId = url.searchParams.get("profileId");
+  const status = selectedInvoice ? formatInvoiceStatus(selectedInvoice.status) : "Sem fatura";
+
   return `<div class="cards-invoice-navigation" data-invoice-navigation>
-    <div class="cards-invoice-navigation-head"><div><span class="cards-kicker">Faturas</span><strong>Navegar por período</strong></div>
+    <div class="cards-invoice-period-row" aria-label="Navegação entre faturas">
+      ${
+        previousPeriod
+          ? `<a class="cards-invoice-period-link cards-invoice-period-link-previous" href="${escapeHtml(navigationHref(previousPeriod))}" rel="prev"><span aria-hidden="true">‹</span><span><strong>Anterior</strong><small>${escapeHtml(formatMonth(previousPeriod[0]))}</small></span></a>`
+          : `<span class="cards-invoice-period-link cards-invoice-period-link-previous is-disabled" aria-disabled="true"><span aria-hidden="true">‹</span><span><strong>Anterior</strong></span></span>`
+      }
+      <div class="cards-invoice-current" aria-current="page">
+        <span class="cards-kicker">Fatura</span>
+        <strong>${escapeHtml(formatMonth(selectedMonth))}</strong>
+        <span class="cards-invoice-period-status">${escapeHtml(status)}</span>
+      </div>
+      ${
+        nextPeriod
+          ? `<a class="cards-invoice-period-link cards-invoice-period-link-next" href="${escapeHtml(navigationHref(nextPeriod))}" rel="next"><span><strong>Próxima</strong><small>${escapeHtml(formatMonth(nextPeriod[0]))}</small></span><span aria-hidden="true">›</span></a>`
+          : `<span class="cards-invoice-period-link cards-invoice-period-link-next is-disabled" aria-disabled="true"><span><strong>Próxima</strong></span><span aria-hidden="true">›</span></span>`
+      }
+    </div>
+    <details class="cards-month-picker">
+      <summary>Escolher outro mês</summary>
       <form method="get" action="/cartoes" class="cards-month-jump">
         <input type="hidden" name="cardId" value="${escapeHtml(cardId)}">
         ${profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(profileId)}">` : ""}
-        <label for="cards-invoice-month">Ir para mês</label>
-        <input id="cards-invoice-month" type="month" name="month" value="${escapeHtml(month)}" data-invoice-month-input>
+        <label for="cards-invoice-month">Mês e ano</label>
+        <input id="cards-invoice-month" type="month" name="month" min="${escapeHtml(firstMonth)}" value="${escapeHtml(selectedMonth)}" data-invoice-month-input>
         <button type="submit" class="sf-button sf-button-secondary">Ir</button>
       </form>
-    </div>
-    ${tabs.length > 0 ? renderTabs({ label: "Faturas do cartão", items: tabs }) : ""}
+    </details>
   </div>`;
 }
 
@@ -1498,9 +1518,8 @@ function css(): string {
     .cards-a3-page .sf-detail-layout-master,.cards-a3-page .sf-detail-layout-detail{min-width:0}
     .cards-master-panel,.cards-detail-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);min-width:0}
     .cards-master-panel{display:grid;gap:14px;padding:14px;position:sticky;top:70px}
-    .cards-master-heading,.cards-invoice-navigation-head,.cards-section-heading{align-items:center;display:flex;gap:10px;justify-content:space-between}
+    .cards-master-heading,.cards-section-heading{align-items:center;display:flex;gap:10px;justify-content:space-between}
     .cards-master-heading h2,.cards-section-heading h3{font-size:1rem;margin:2px 0 0}
-    .cards-invoice-navigation-head>div{display:grid;gap:2px}
     .cards-kicker{color:var(--muted);font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
     .cards-edit-link{font-size:.82rem;font-weight:700}
     .cards-card-picker{display:grid;gap:6px}.cards-card-picker select{width:100%}
@@ -1511,8 +1530,7 @@ function css(): string {
     .cards-card-warning{background:var(--primary-soft);border-radius:var(--radius);font-size:.76rem;margin:0;padding:8px 9px}.cards-card-warning a{font-weight:800}
     .cards-instrument-nav{border-top:1px solid var(--line);padding-top:10px}.cards-instrument-nav summary{align-items:center;cursor:pointer;display:flex;font-weight:750;justify-content:space-between}.cards-instrument-nav summary span{color:var(--muted);font-size:.75rem}.cards-instrument-nav ul{display:grid;gap:7px;list-style:none;margin:10px 0 0;padding:0}.cards-instrument-nav li{align-items:start;display:flex;font-size:.78rem;gap:6px;justify-content:space-between}.cards-instrument-nav li span{min-width:0}.cards-instrument-nav li strong,.cards-instrument-nav li small{white-space:nowrap}
     .cards-detail-panel{display:grid;gap:0;overflow:hidden}
-    .cards-invoice-navigation{border-bottom:1px solid var(--line);display:grid;gap:10px;padding:12px 14px}.cards-month-jump{align-items:end;display:flex;gap:6px}.cards-month-jump label{display:grid;font-size:.74rem;gap:4px}.cards-month-jump input{min-width:9.5rem}.cards-month-jump .sf-button{min-height:36px;white-space:nowrap}
-    .cards-invoice-navigation .sf-tabs{display:flex;gap:6px;max-width:100%;overflow-x:auto;padding-bottom:2px}.cards-invoice-navigation .sf-tab{border:1px solid var(--line);border-radius:999px;flex:0 0 auto;font-size:.76rem;padding:6px 10px}.cards-invoice-navigation .sf-tab[aria-current="page"]{background:var(--primary-soft);border-color:var(--primary);color:var(--primary);font-weight:800}
+    .cards-invoice-navigation{border-bottom:1px solid var(--line);display:grid;gap:8px;padding:12px 14px}.cards-invoice-period-row{align-items:center;display:grid;gap:10px;grid-template-columns:minmax(0,1fr) minmax(180px,auto) minmax(0,1fr)}.cards-invoice-current{align-items:center;display:grid;gap:2px;justify-items:center;min-width:0;text-align:center}.cards-invoice-current>strong{font-size:1rem}.cards-invoice-period-status{background:var(--primary-soft);border-radius:999px;color:var(--primary);font-size:.72rem;font-weight:800;padding:3px 8px}.cards-invoice-period-link{align-items:center;border:1px solid transparent;border-radius:var(--radius);color:var(--text);display:flex;gap:8px;min-height:48px;padding:6px 8px;text-decoration:none}.cards-invoice-period-link:hover{background:var(--bg);border-color:var(--line)}.cards-invoice-period-link>span:not([aria-hidden]){display:grid;gap:1px;min-width:0}.cards-invoice-period-link strong{font-size:.78rem}.cards-invoice-period-link small{color:var(--muted);font-size:.7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cards-invoice-period-link-next{justify-content:flex-end;text-align:right}.cards-invoice-period-link.is-disabled{color:var(--muted);cursor:not-allowed;opacity:.5}.cards-invoice-period-link.is-disabled:hover{background:transparent;border-color:transparent}.cards-month-picker{justify-self:center;position:relative}.cards-month-picker>summary{border-radius:999px;color:var(--primary);cursor:pointer;font-size:.76rem;font-weight:750;list-style:none;padding:5px 9px}.cards-month-picker>summary::-webkit-details-marker{display:none}.cards-month-picker>summary:hover{background:var(--primary-soft)}.cards-month-jump{align-items:end;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);display:flex;gap:6px;left:50%;padding:10px;position:absolute;top:calc(100% + 4px);transform:translateX(-50%);z-index:30}.cards-month-jump label{display:grid;font-size:.74rem;gap:4px}.cards-month-jump input{min-width:9.5rem}.cards-month-jump .sf-button{min-height:36px;white-space:nowrap}
     .cards-invoice-header{align-items:start;border-bottom:1px solid var(--line);display:grid;gap:12px;grid-template-columns:minmax(0,1fr) auto;padding:16px 18px}.cards-invoice-title-block{display:grid;gap:5px}.cards-invoice-title-row{align-items:center;display:flex;gap:8px}.cards-invoice-title-block h2{font-size:1.25rem}.cards-invoice-title-block p{color:var(--muted);font-size:.82rem}.cards-invoice-primary{display:grid;gap:4px;justify-items:end;min-width:230px}.cards-invoice-primary>span{color:var(--muted);font-size:.76rem}.cards-invoice-primary>strong{font-size:1.45rem}.cards-invoice-actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:5px}.cards-settlement-note{background:var(--primary-soft);border-radius:var(--radius);font-size:.78rem;grid-column:1/-1;margin:0;padding:8px 10px}
     .cards-invoice-summary{border-bottom:1px solid var(--line);display:grid;gap:9px;padding:12px 18px}.cards-invoice-summary .sf-summary-grid{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}.cards-summary-metric{background:var(--bg);border-radius:var(--radius);display:grid;gap:3px;padding:10px}.cards-summary-metric>span,.cards-summary-metric>small{color:var(--muted);font-size:.72rem}.cards-summary-metric>strong{font-size:.95rem}.cards-limit-detail{display:flex;flex-wrap:wrap;gap:14px}.cards-limit-detail>div{display:flex;font-size:.76rem;gap:5px}.cards-limit-detail dt{color:var(--muted)}.cards-limit-detail dd{font-weight:750}
     .cards-detail-panel .sf-filter-bar{border-bottom:1px solid var(--line);display:grid;gap:8px;padding:12px 18px}.cards-purchase-filter-form{align-items:end;display:grid;gap:8px;grid-template-columns:minmax(12rem,1.2fr) minmax(10rem,.7fr) minmax(10rem,.6fr) auto}.cards-purchase-filter-form label{display:grid;font-size:.76rem;gap:5px}.cards-purchase-filter-form input,.cards-purchase-filter-form select{width:100%}.cards-reconciliation-filters{align-items:center;display:flex;flex-wrap:wrap;gap:6px}.cards-filter-chip{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:999px;display:inline-flex;font-size:.74rem;font-weight:700;gap:6px;min-height:32px;padding:4px 9px}.cards-filter-chip.is-active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}.cards-filter-chip small{font-weight:800}.cards-results-status{color:var(--muted);font-size:.76rem;margin-left:auto}
@@ -1522,7 +1540,7 @@ function css(): string {
     .cards-dialog{border:0;border-radius:var(--radius);max-height:90vh;max-width:min(680px,calc(100vw - 24px));padding:0;width:100%}.cards-dialog::backdrop{background:rgba(15,23,42,.45)}.cards-dialog-panel{display:grid;gap:14px;padding:18px}.cards-dialog-panel>header{align-items:start;display:flex;gap:12px;justify-content:space-between}.cards-dialog-panel h2{font-size:1.1rem}.cards-dialog-close{background:transparent;border:0;font-size:1.4rem;min-height:44px;min-width:44px}.cards-dialog form{display:grid;gap:10px;grid-template-columns:1fr 1fr}.cards-dialog form label{display:grid;gap:5px}.cards-dialog .full{grid-column:1/-1}.cards-payment-explanation{background:var(--primary-soft);border-radius:var(--radius);font-size:.82rem;padding:9px 10px}.form-status{min-height:20px}.success{color:var(--success)}.error{color:var(--danger)}.money-unavailable{color:var(--muted);font-size:.78rem}
     .cards-load-error{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:8px;padding:18px}.cards-load-error .sf-button{justify-self:start}
     @media(max-width:1050px){.cards-a3-page .sf-detail-layout{grid-template-columns:240px minmax(0,1fr)}.cards-invoice-summary .sf-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cards-purchase-table-head,.cards-purchase-row{grid-template-columns:5.5rem minmax(0,1fr) 7rem 8rem 3rem}.cards-purchase-filter-form{grid-template-columns:1fr 1fr}}
-    @media(max-width:760px){.cards-a3-page{padding:12px}.cards-a3-page .sf-page-header{align-items:stretch;display:grid}.cards-a3-page .sf-page-header-actions{justify-content:stretch}.cards-a3-page .sf-page-header-actions .sf-button{width:100%}.cards-a3-page .sf-detail-layout{display:grid;grid-template-columns:1fr}.cards-master-panel{position:static}.cards-master-meta,.cards-instrument-nav{display:none}.cards-card-identity{grid-template-columns:auto minmax(0,1fr)}.cards-card-identity .sf-badge{grid-column:2}.cards-invoice-navigation-head{align-items:stretch;display:grid}.cards-month-jump{display:grid;grid-template-columns:minmax(0,1fr) auto}.cards-month-jump label{min-width:0}.cards-month-jump input{min-width:0;width:100%}.cards-invoice-header{grid-template-columns:1fr;padding:14px}.cards-invoice-primary{justify-items:start;min-width:0}.cards-invoice-actions{justify-content:flex-start}.cards-invoice-summary{padding:12px 14px}.cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr 1fr}.cards-detail-panel .sf-filter-bar{padding:12px 14px}.cards-purchase-filter-form{grid-template-columns:1fr}.cards-reconciliation-filters{align-items:stretch}.cards-results-status{flex-basis:100%;margin-left:0}.cards-purchase-groups{padding:12px 14px}.cards-purchase-table-head{display:none}.cards-purchase-row{align-items:start;grid-template-columns:minmax(0,1fr) auto;padding:10px}.cards-purchase-row>[data-label]::before{color:var(--muted);content:attr(data-label);display:block;font-size:.66rem;font-weight:750;margin-bottom:2px;text-transform:uppercase}.cards-purchase-row time{grid-column:1}.cards-purchase-description{grid-column:1}.cards-purchase-row>[data-label="Situação"]{grid-column:1}.cards-purchase-amount{grid-column:2;grid-row:1;text-align:right}.cards-purchase-actions{grid-column:2;grid-row:2 / span 2}.cards-dialog form{grid-template-columns:1fr}.cards-dialog .full{grid-column:auto}}
+    @media(max-width:760px){.cards-a3-page{padding:12px}.cards-a3-page .sf-page-header{align-items:stretch;display:grid}.cards-a3-page .sf-page-header-actions{justify-content:stretch}.cards-a3-page .sf-page-header-actions .sf-button{width:100%}.cards-a3-page .sf-detail-layout{display:grid;grid-template-columns:1fr}.cards-master-panel{position:static}.cards-master-meta,.cards-instrument-nav{display:none}.cards-card-identity{grid-template-columns:auto minmax(0,1fr)}.cards-card-identity .sf-badge{grid-column:2}.cards-invoice-period-row{gap:5px;grid-template-columns:minmax(0,.75fr) minmax(130px,1.5fr) minmax(0,.75fr)}.cards-invoice-period-link{gap:4px;min-height:44px;padding:5px}.cards-invoice-period-link small{display:none}.cards-invoice-period-link strong{font-size:.72rem}.cards-invoice-current>strong{font-size:.9rem}.cards-month-picker{justify-self:stretch}.cards-month-picker>summary{text-align:center}.cards-month-jump{display:grid;grid-template-columns:minmax(0,1fr) auto;left:0;right:0;transform:none}.cards-month-jump label{min-width:0}.cards-month-jump input{min-width:0;width:100%}.cards-invoice-header{grid-template-columns:1fr;padding:14px}.cards-invoice-primary{justify-items:start;min-width:0}.cards-invoice-actions{justify-content:flex-start}.cards-invoice-summary{padding:12px 14px}.cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr 1fr}.cards-detail-panel .sf-filter-bar{padding:12px 14px}.cards-purchase-filter-form{grid-template-columns:1fr}.cards-reconciliation-filters{align-items:stretch}.cards-results-status{flex-basis:100%;margin-left:0}.cards-purchase-groups{padding:12px 14px}.cards-purchase-table-head{display:none}.cards-purchase-row{align-items:start;grid-template-columns:minmax(0,1fr) auto;padding:10px}.cards-purchase-row>[data-label]::before{color:var(--muted);content:attr(data-label);display:block;font-size:.66rem;font-weight:750;margin-bottom:2px;text-transform:uppercase}.cards-purchase-row time{grid-column:1}.cards-purchase-description{grid-column:1}.cards-purchase-row>[data-label="Situação"]{grid-column:1}.cards-purchase-amount{grid-column:2;grid-row:1;text-align:right}.cards-purchase-actions{grid-column:2;grid-row:2 / span 2}.cards-dialog form{grid-template-columns:1fr}.cards-dialog .full{grid-column:auto}}
     @media(max-width:430px){.cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr}.cards-invoice-actions{display:grid;width:100%}.cards-invoice-actions .sf-button{width:100%}.cards-filter-chip{flex:1 1 auto;justify-content:center}}
   `;
 }
