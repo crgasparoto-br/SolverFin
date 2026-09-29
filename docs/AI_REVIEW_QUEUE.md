@@ -56,7 +56,7 @@ Cada item oferece:
 
 Nenhuma dessas ações altera lançamentos, faturas ou orçamentos. Fingerprint ausente retorna `428`, fingerprint divergente ou snapshot já encerrado retorna `409`, item de outro perfil retorna `404` e duração fora de 1/7/30 retorna `400`.
 
-Como os insights têm seção própria, “Outras sugestões” com tipo **Todos** não repete insights; eles continuam acessíveis pelo filtro **Insights**, que mantém aprovação/rejeição audit-only. O filtro **Pendentes** oculta snapshots adiados até `snoozedUntil`, e o novo filtro **Resolvidas** lista as decisões `RESOLVED`.
+A fila unificada de “Outras sugestões” continua cobrindo os cinco tipos, inclusive `insight`, com aprovação/rejeição audit-only; a seção **Insights financeiros** é a visão priorizada e acionável do mesmo conjunto. O filtro **Pendentes** oculta snapshots adiados até `snoozedUntil`, e o novo filtro **Resolvidas** lista as decisões `RESOLVED`.
 
 ## Campos editáveis
 

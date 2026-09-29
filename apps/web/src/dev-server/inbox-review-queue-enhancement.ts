@@ -143,8 +143,6 @@ export function enhanceInboxReviewQueue(html: string): string {
           return Boolean(item.snoozedUntil) && new Date(item.snoozedUntil).getTime() > Date.now();
         }
         function matches(item) {
-          // Insights have a dedicated prioritized section; they appear here only when filtered explicitly.
-          if (kindFilter.value === "all" && item.kind === "insight") return false;
           if (kindFilter.value !== "all" && item.kind !== kindFilter.value) return false;
           if (statusFilter.value !== "all" && item.status !== statusFilter.value) return false;
           if (statusFilter.value === "pending_review" && isSnoozed(item)) return false;

@@ -110,11 +110,8 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
   const categoryOptions = categories.ok
     ? categories.data.categories.filter((category) => category.status === "active")
     : [];
-  // Insights have their own prioritized section; "Outras sugestões" keeps the remaining kinds.
   const suggestions = reviewQueue.ok
-    ? reviewQueue.data.suggestions.filter(
-        (suggestion) => suggestion.origin !== "import" && suggestion.kind !== "insight",
-      )
+    ? reviewQueue.data.suggestions.filter((suggestion) => suggestion.origin !== "import")
     : [];
   const activeProfile = profiles.ok
     ? profiles.data.profiles.find((profile) => profile.id === profiles.data.activeProfileId)
