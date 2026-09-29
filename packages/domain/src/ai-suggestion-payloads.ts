@@ -320,6 +320,9 @@ function parseCurrentInsightV2(record: Record<string, unknown>): InsightSuggesti
       "monthly_summary",
     ]),
     insightKey: expectString(record.insightKey, 256),
+    ...(record.severity === undefined
+      ? {}
+      : { severity: expectOneOf(record.severity, ["info", "warning", "critical"]) }),
     title: expectString(record.title, 300),
     summary: expectString(record.summary, 2000),
     periodStartOn: expectIsoDate(record.periodStartOn),
@@ -404,11 +407,23 @@ function parseInsightComparison(value: unknown): InsightComparisonV2 {
 
 function parseInsightNavigation(value: unknown): InsightNavigationV2 {
   const record = expectRecord(value);
-  assertAllowedKeys(record, ["view", "categoryId", "merchantKey"]);
+  assertAllowedKeys(record, ["view", "categoryId", "merchantKey", "referenceDate", "horizonDays"]);
+  const view = expectOneOf(record.view, ["transactions", "budgets", "cash_flow"]);
+  const hasReferenceDate = record.referenceDate !== undefined;
+  const hasHorizonDays = record.horizonDays !== undefined;
+  if (hasReferenceDate !== hasHorizonDays) invalid();
+  if (hasReferenceDate && view !== "cash_flow") invalid();
+  if (hasHorizonDays && ![30, 60, 90].includes(record.horizonDays as number)) invalid();
   return {
-    view: expectOneOf(record.view, ["transactions", "budgets", "cash_flow"]),
+    view,
     ...optionalString(record, "categoryId", 128),
     ...optionalString(record, "merchantKey", 256),
+    ...(hasReferenceDate
+      ? {
+          referenceDate: expectIsoDate(record.referenceDate),
+          horizonDays: record.horizonDays as 30 | 60 | 90,
+        }
+      : {}),
   };
 }
 
@@ -426,6 +441,7 @@ function assertAllowedInsightV2Keys(record: Record<string, unknown>): void {
     "insightType",
     "insightKind",
     "insightKey",
+    "severity",
     "title",
     "summary",
     "periodStartOn",

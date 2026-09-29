@@ -8,6 +8,7 @@ import type {
   ImportLineDirection,
   InsightComparisonV2,
   InsightNavigationV2,
+  InsightSeverityV2,
   InsightNumericEvidenceV2,
   InsightSuggestionPayloadV1,
   InsightSuggestionPayloadV2,
@@ -55,6 +56,7 @@ export interface PublicInsightProposalV1 {
 export interface PublicInsightProposalV2 {
   insightType: InsightSuggestionPayloadV2["insightType"];
   insightKind: VerifiableFinancialInsightKind;
+  severity?: InsightSeverityV2;
   title: string;
   summary: string;
   periodStartOn: string;
@@ -209,6 +211,7 @@ export function toPublicAiSuggestionPayload(
         proposal: {
           insightType: payload.insightType,
           insightKind: payload.insightKind,
+          ...(payload.severity === undefined ? {} : { severity: payload.severity }),
           title: payload.title,
           summary: payload.summary,
           periodStartOn: payload.periodStartOn,
@@ -241,6 +244,12 @@ export function toPublicAiSuggestionPayload(
                   ...(payload.navigation.merchantKey === undefined
                     ? {}
                     : { merchantKey: payload.navigation.merchantKey }),
+                  ...(payload.navigation.referenceDate === undefined
+                    ? {}
+                    : {
+                        referenceDate: payload.navigation.referenceDate,
+                        horizonDays: payload.navigation.horizonDays,
+                      }),
                 },
               }),
         },
