@@ -129,7 +129,9 @@ async function validatePage(cdp, viewportKind) {
         settlementCopy,
         currencies,
         cardSelect: Boolean(document.querySelector('[data-card-select]')),
-        invoiceTabs: document.querySelectorAll('.cards-invoice-navigation .sf-tab').length,
+        invoicePeriodNavigation: Boolean(document.querySelector('.cards-invoice-period-row')),
+        previousPeriodControl: Boolean(document.querySelector('.cards-invoice-period-link-previous')),
+        nextPeriodControl: Boolean(document.querySelector('.cards-invoice-period-link-next')),
         monthInput: Boolean(document.querySelector('[data-invoice-month-input]')),
         mobileDateLabel: firstDate ? getComputedStyle(firstDate, '::before').content.replaceAll('"', '') : '',
         mobileStatusLabel: firstStatus ? getComputedStyle(firstStatus, '::before').content.replaceAll('"', '') : '',
@@ -165,8 +167,8 @@ async function validatePage(cdp, viewportKind) {
   );
   check(measurements.cardSelect, "Card master selector is unavailable", measurements);
   check(
-    measurements.invoiceTabs > 0 && measurements.monthInput,
-    "Invoice navigation is incomplete",
+    measurements.invoicePeriodNavigation && measurements.previousPeriodControl && measurements.nextPeriodControl && measurements.monthInput,
+    "Invoice period navigation is incomplete",
     measurements,
   );
   check(measurements.searchVisible, "Purchase search is unavailable", measurements);
