@@ -105,9 +105,7 @@ async function main(): Promise<void> {
     `/api/future-commitments/recurrences?ids=${recurrenceId}&asOf=2037-11-01`,
   );
   assert.equal(recurrenceContextResponse.statusCode, 200);
-  const recurrenceContext = readBody<ApiFutureRecurrenceContextResponse>(
-    recurrenceContextResponse,
-  );
+  const recurrenceContext = readBody<ApiFutureRecurrenceContextResponse>(recurrenceContextResponse);
   assert.equal(recurrenceContext.asOf, "2037-11-01");
   assert.deepEqual(recurrenceContext.recurrences[0]?.nextOccurrence, {
     recurrenceId,
@@ -126,10 +124,7 @@ async function main(): Promise<void> {
     `/api/future-commitments/recurrences?ids=${recurrenceId}&asOf=not-a-date`,
   );
   assert.equal(invalidRecurrenceContext.statusCode, 400);
-  assert.equal(
-    readErrorCode(invalidRecurrenceContext),
-    "FUTURE_COMMITMENT_PERIOD_INVALID",
-  );
+  assert.equal(readErrorCode(invalidRecurrenceContext), "FUTURE_COMMITMENT_PERIOD_INVALID");
 
   await query(
     `insert into "Installment"
