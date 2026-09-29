@@ -26,7 +26,8 @@ O Dashboard consome contratos agregados e operacionais específicos:
 - `/api/financial-summary`: blocos financeiros por moeda, referências das contas que podem fornecer evidência e itens recentes;
 - `/api/cash-flow-projection?horizonDays=30`: saldo projetado diário canônico por moeda, com data de referência e evidências dos compromissos;
 - `/api/bank-message-inbox?status=pending_review`: quantidade de itens aguardando revisão;
-- `/api/invoices?status=open`: faturas em aberto.
+- `/api/invoices?status=open`: faturas em aberto;
+- `/api/financial-insights?state=active&limit=3`: principais insights ativos já deduplicados e ordenados pela política canônica (#621).
 
 A rota não baixa indiscriminadamente `/api/transactions?status=all` para recompor indicadores que já existem no `financial-summary`. As referências de conta são metadados leves (`id`, nome e status); nenhum cálculo financeiro novo é executado no frontend.
 
@@ -81,6 +82,12 @@ Os módulos de decisão continuam sendo pontos de navegação para capacidades e
 A interface mantém três conceitos explícitos e separados: **saldo das contas** (posição atual), **saldo projetado no fim do horizonte** (posição no 30º dia) e **livre para gastar hoje** (menor colchão não negativo de toda a trajetória). O déficit projetado é mostrado separadamente e o ponto limitante informa a primeira data do menor saldo. O frontend não reconstrói a série, não soma compromissos, não desconta orçamento, não adiciona crédito e não converte moedas. O link de cada moeda abre a mesma série canônica em Relatórios, com evidências navegáveis.
 
 O módulo de insights navega pela rota canônica `/assistente`.
+
+### Principais insights (#621)
+
+A seção **Principais insights** mostra no máximo **3 insights ativos** do perfil financeiro ativo. O limite é global ao perfil (não por moeda) e é aplicado pela API depois da deduplicação e da ordenação canônica descritas em `docs/FINANCIAL_INSIGHTS.md`; o presenter apenas mantém um corte defensivo e nunca reordena. Cada item exibe severidade, tipo, moeda, título, período, até duas evidências e o deep link para o recorte que justificou o insight. Insights resolvidos ou adiados não ocupam essas posições.
+
+Quando existem mais itens ativos, a seção oferece **Ver todos os insights (N)** para `/inbox#financial-insights`. Falha da fila mostra estado indisponível somente na seção; os indicadores financeiros permanecem visíveis.
 
 ## Responsividade e acessibilidade
 

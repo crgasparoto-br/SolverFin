@@ -21,7 +21,7 @@ A implementação canônica está em `@solverfin/ai` e é materializada como `Ai
 - `category_spending_increase`: aumento relevante de despesa por categoria;
 - `merchant_spending_increase`: aumento relevante de despesa por merchant normalizado;
 - `probable_subscription`: recorrência provável em meses consecutivos com valor estável;
-- `negative_balance_risk`: saldo agregado projetado abaixo de zero no horizonte atual;
+- `negative_balance_risk`: menor saldo da projeção de caixa canônica (#617) abaixo de zero no horizonte de 30 dias, por moeda;
 - `budget_exceeded`: realizado da categoria acima do orçamento ativo na mesma moeda e dentro do período exato do orçamento;
 - `monthly_summary`: resumo do período atual com receitas, despesas, saldo realizado, comparação de despesas e principais variações por categoria.
 
@@ -43,13 +43,19 @@ O padrão exige pelo menos três meses consecutivos com o mesmo `merchantKey`. O
 
 ### Risco de saldo negativo
 
-A projeção agrega, por moeda:
+Desde a issue #621, `negative_balance_risk` não possui projeção própria. A única fonte da trajetória financeira é a série canônica de `GET /api/cash-flow-projection` (#617), no horizonte de 30 dias, com o menor saldo derivado pelo contrato de valor livre para gastar (#618) — ver `docs/API_CASH_FLOW_PROJECTION.md`.
 
-- saldo de abertura das contas;
-- receitas e despesas `POSTED`/`RECONCILED` já ocorridas;
-- receitas e despesas `PLANNED` até o fim do horizonte mensal.
+Regras:
 
-Transferências internas não alteram o saldo agregado do perfil na mesma moeda. A projeção é uma estimativa determinística e a própria limitação é exibida ao usuário.
+- o scanner chama a mesma composição usada pelo endpoint (`buildCashFlowProjectionForContext`), dentro da transação da varredura, com `referenceDate` igual à data corrente UTC da varredura;
+- o insight é emitido, por moeda, somente quando `minimumProjectedBalanceMinor < 0` em um bloco `available`; blocos `unavailable` não produzem risco nem caem em projeção alternativa;
+- o scanner não reconstrói agenda de `Transaction`, `Invoice`, recorrência ou parcela;
+- transferência cross-currency (#668) afeta cada moeda somente pelo efeito já presente na respectiva série; não há soma nem conversão entre moedas;
+- a evidência publica `menor_saldo_projetado`, `deficit_projetado`, `saldo_fim_horizonte` e `horizonte_dias`, todos copiados da série canônica; a limitação informa a data do menor saldo;
+- `sources` recebe um fingerprint da série da moeda (saldo inicial, pontos e efeitos), de modo que mudança da série altera o `dataFingerprint`;
+- a navegação é `cash_flow` com `referenceDate` e `horizonDays`, e o deep link abre `/relatorios?view=cash-flow&referenceDate=…&horizonDays=…#cash-flow-<moeda>`, reproduzindo o recorte que justificou o risco.
+
+O resultado continua sendo uma estimativa determinística sobre compromissos já registrados.
 
 ### Orçamento excedido
 
@@ -70,7 +76,7 @@ Ausência de base anterior é explicitada como limitação e não inventa uma va
 Valores históricos e comparações usam apenas `POSTED` e `RECONCILED`.
 
 - `SUGGESTED`, `PENDING_REVIEW` e `DUPLICATE` não entram nos totais e geram limitação quando presentes no escopo;
-- `PLANNED` não entra no realizado histórico; é usado somente na projeção de saldo quando aplicável;
+- `PLANNED` não entra no realizado histórico; compromissos futuros chegam ao risco de saldo apenas pela série canônica da #617;
 - `VOIDED` é ignorado.
 
 Essa separação impede que dados ainda não confirmados alterem anomalias, orçamentos ou resumo mensal.
@@ -81,7 +87,7 @@ Não existe soma entre moedas. Cada execução gera conjuntos independentes por 
 
 ## Persistência, compatibilidade e idempotência
 
-A versão de cálculo atual é `financial-insights-v2`.
+A versão de cálculo atual é `financial-insights-v3`. A mudança de `v2` para `v3` (#621) acompanha a troca da fonte de `negative_balance_risk` e a persistência de `severity`; pela regra de identidade, pendências `v2` do scanner expiram na primeira varredura e podem ser recriadas como snapshots `v3`.
 
 A identidade lógica usa:
 
@@ -106,6 +112,7 @@ O payload persistido mantém, além do envelope comum:
 
 - `insightType` e `insightKind`;
 - `insightKey` interno;
+- `severity` (`info | warning | critical`) atribuída deterministicamente pelo detector (opcional apenas em snapshots anteriores à #621);
 - título e resumo;
 - período;
 - moeda e filtros;
@@ -122,6 +129,46 @@ Esses rótulos são chaves técnicas do contrato e não são exibidos diretament
 
 A projeção pública da Inbox omite `insightKey`, `dataFingerprint`, provider/model e metadados internos. IDs escopados só são retornados no detalhe autenticado quando necessários para navegação ou controles e não são usados como rótulos visíveis.
 
+## Fila acionável: prioridade, deduplicação e ciclo de vida (#621)
+
+A fila de insights é um único conjunto lógico consumido pelo Dashboard e pela Inbox, publicado por `GET /api/financial-insights`. A ordem de processamento é sempre: **deduplicação por equivalência → ordenação canônica → limite de apresentação**.
+
+### Política de prioridade (`financial-insight-priority-v1`)
+
+A implementação executável fica em `packages/ai/src/insight-priority.ts`.
+
+1. Severidade: `critical > warning > info`, reutilizando o vocabulário de `FinancialInsightSeverity`.
+2. Tipo, dentro da mesma severidade: `negative_balance_risk`, `budget_exceeded`, `category_spending_increase`, `merchant_spending_increase`, `probable_subscription`, `monthly_summary`.
+3. Empate residual por identidade estável: `currency`, `periodStartOn`, `insightKey` e `dataFingerprint`.
+
+`confidence`, `createdAt`, título e ordem SQL/persistência nunca participam. A tabela de precedência é tipada sobre todos os tipos acionáveis; um novo tipo exige posição explícita e nova versão da política. Snapshots anteriores à #621 sem `severity` usam a severidade mínima que o detector do tipo emite (`negative_balance_risk → critical`, `budget_exceeded → warning`, demais `info`).
+
+### Deduplicação
+
+Dentro do mesmo tipo, snapshots equivalentes (mesmo `insightKind`, `insightKey`, `calculationVersion` e `dataFingerprint`) aparecem uma única vez; a cópia mantida é escolhida pelo identificador persistido, não pela data de criação. Tipos diferentes coexistem mesmo quando compartilham categoria, período, moeda ou evidência — por exemplo, `budget_exceeded` e `category_spending_increase` sobre a mesma categoria. Não existe supressão transversal implícita; uma relação de dominância futura exige contrato próprio versionado.
+
+### Estados da fila
+
+| Estado     | Persistência                                                               | Superfícies                          |
+| ---------- | -------------------------------------------------------------------------- | ------------------------------------ |
+| `active`   | `PENDING_REVIEW` sem `snoozedUntil` futuro                                 | Dashboard (até 3) e Inbox (completa) |
+| `snoozed`  | `PENDING_REVIEW` com `snoozedUntil > agora`                                | `state=snoozed`; fora da fila padrão |
+| `resolved` | `RESOLVED`, com `reviewedAt` (= `resolvedAt`) e `reviewedByUserId` do ator | `state=resolved` (histórico)         |
+
+`APPROVED`, `REJECTED`, `EDITED` e `EXPIRED` mantêm o significado anterior e não aparecem na fila acionável.
+
+### Resolver
+
+`RESOLVED` é uma decisão explícita do usuário sobre **um snapshot** (linha + `dataFingerprint`). É terminal (os triggers de payload rejeitam qualquer mudança posterior de status/payload), registra auditoria com o ator autenticado e não cria, altera, concilia nem apaga dado financeiro. Como o scanner não recria fingerprints já resolvidos, o mesmo snapshot não volta; um novo `dataFingerprint` gerado por mudança real de evidência cria um novo insight ativo normalmente. Mudança natural de evidência continua expirando a pendência antiga (`EXPIRED`), nunca a transforma em `RESOLVED`.
+
+### Adiar
+
+O usuário pode adiar um insight ativo por 1, 7 ou 30 dias (`snoozedUntil`). O adiamento pertence à linha/snapshot: enquanto `agora < snoozedUntil`, ele sai do Dashboard, da fila ativa e do filtro padrão “Pendentes” da fila de revisão; ao vencer, volta a `active` se ainda for a pendência válida. Se a evidência mudar antes do prazo, o scanner expira o snapshot adiado e o novo fingerprint aparece imediatamente, sem herdar o adiamento. Não existe adiamento indefinido.
+
+### Limitação conhecida da identidade
+
+A identidade reutiliza o contrato existente: o período faz parte da evidência e, portanto, do `dataFingerprint`. Para tipos cujo período termina na data corrente (aumentos, resumo) ou cujo horizonte é móvel (risco de saldo), a passagem do dia gera um novo snapshot, que pode reaparecer depois de resolvido ou adiado. Alterar essa identidade exige contrato próprio.
+
 ## Inbox e decisão
 
 Antes de listar `GET /api/ai-review-queue`, o backend atualiza os insights do perfil ativo. A resposta inclui `financialInsights.insufficientData[]` para moedas sem base realizada suficiente; esse estado é informativo e nunca aparece como `AiSuggestion`.
@@ -135,7 +182,7 @@ A Inbox mostra:
 - filtros efetivos, com moeda e escopo de categoria/estabelecimento quando aplicável, sem exibir UUID de categoria como rótulo;
 - evidências verificáveis em linguagem de produto;
 - limitações;
-- link para a área relacionada (`/lancamentos`, `/orcamentos` ou `/relatorios`) quando aplicável;
+- link para a área relacionada (`/lancamentos`, `/orcamentos` ou `/relatorios` no recorte canônico da projeção) quando aplicável;
 - um estado compacto de “insights aguardando dados” quando o cálculo retornar `insufficient_data`.
 
 O critério visível é derivado de `insightKind`, que é estruturado e versionado; os filtros visíveis vêm de `proposal.filters`. Quando a categoria é identificada por ID para navegação, a Inbox descreve o escopo semanticamente e mantém o identificador técnico fora do texto apresentado.
@@ -162,7 +209,8 @@ A cobertura deve preservar:
 - exclusão explícita de dados não revisados;
 - isolamento por organização, perfil e moeda;
 - orçamento com janela parcial do mês sem contar despesas externas ao período;
-- saldo negativo e resumo com receitas, despesas, saldo e principais variações estruturadas;
+- saldo negativo derivado exclusivamente da série canônica da #617, inclusive com transferência cross-currency planejada, e resumo com receitas, despesas, saldo e principais variações estruturadas;
+- política de prioridade independente da ordem de persistência e de `confidence`, limite de 3 no Dashboard após deduplicação/ordenação, coexistência entre tipos e ciclo `RESOLVED`/adiamento vinculado ao `dataFingerprint`;
 - provider narrativo válido, contraditório com algarismos, contraditório apenas em palavras e indisponível sem alterar evidência;
 - payload V2 estrito e projeção pública redigida;
 - persistência, reexecução idempotente e substituição de pendência após mudança dos dados;
