@@ -515,8 +515,7 @@ function findNextMaterializedRecurrenceOccurrence(
     }
 
     const effects = buildTransactionEffects(transaction);
-    const sourceEffect =
-      effects.find((effect) => effect.role === "source_account") ?? effects[0];
+    const sourceEffect = effects.find((effect) => effect.role === "source_account") ?? effects[0];
     if (!sourceEffect) continue;
     candidates.push({
       recurrenceId: recurrence.id,
