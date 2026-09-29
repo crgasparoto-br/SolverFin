@@ -167,7 +167,10 @@ async function validatePage(cdp, viewportKind) {
   );
   check(measurements.cardSelect, "Card master selector is unavailable", measurements);
   check(
-    measurements.invoicePeriodNavigation && measurements.previousPeriodControl && measurements.nextPeriodControl && measurements.monthInput,
+    measurements.invoicePeriodNavigation &&
+      measurements.previousPeriodControl &&
+      measurements.nextPeriodControl &&
+      measurements.monthInput,
     "Invoice period navigation is incomplete",
     measurements,
   );
