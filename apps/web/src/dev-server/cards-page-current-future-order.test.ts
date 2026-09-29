@@ -70,7 +70,11 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
   );
   const currentNavigation = invoiceNavigation(currentHtml);
 
-  assert.match(currentNavigation, /Sem fatura/, "mês corrente sem fatura deve manter o estado");
+  assert.match(
+    currentNavigation,
+    /Sem fatura/,
+    "mês corrente sem fatura deve manter o estado",
+  );
   assert.match(
     currentNavigation,
     /cards-invoice-period-link-previous is-disabled/,
@@ -118,7 +122,10 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
 }
 
 function invoiceNavigation(html: string): string {
-  return /<div class="cards-invoice-navigation"[\s\S]*?<\/details>\s*<\/div>/.exec(html)?.[0] ?? html;
+  return (
+    /<div class="cards-invoice-navigation"[\s\S]*?<\/details>\s*<\/div>/.exec(html)?.[0] ??
+    html
+  );
 }
 
 function shiftMonth(month: string, offset: number): string {
