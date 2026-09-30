@@ -1,0 +1,323 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "specification-snapshot.json",
+    "sha256": "2c7e4a7b9e37e47bcd58bab9ee8e4c72ba2e815b4a2979169c13320ebe326529"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-685",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "77becaf0321b9dce768b0026cd7f92536b2631bb94193b9f311a82351cf15faa",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 3,
+      "source_text": "Remover a repetição do código da moeda nos indicadores do resumo da fatura em `/cartoes`, preservando a moeda explícita fornecida pela primitiva `Money`.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "bee2a368dc122ff8276079030e57f99bbef54b2c6559f3d81eff977cb4fcfdb9",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 7,
+      "source_text": "Na rota `/cartoes?cardId=<id>&month=<AAAA-MM>`, os cards **Total da fatura**, **Conciliado**, **Não conciliado** e **Limite disponível** exibem o valor monetário com a moeda e, logo abaixo, repetem o mesmo código (por exemplo, `BRL`).",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "54cc74796e990bc38703fcb33fa08d396dbb8af35c1e863071342d4de0fbadbf",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 13,
+      "source_text": "ajustar o resumo da fatura em `apps/web/src/dev-server/cards-page-v2.ts`;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "1187fd9372a5461010b7e17e5e4ef281e5ffa649d197862969f07f29517fdc00",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 14,
+      "source_text": "manter a moeda explícita por meio da primitiva `Money`;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "e5b70bb0166d193868d08e73ce92cd1dd83eb0b23393981c1503865896151da6",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 15,
+      "source_text": "adicionar regressão automatizada em `cards-page-v2.test.ts`;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "6b162e25e29a79c8a40f5e281d8aa8a314fa5dc8d6357268a4609d7352eb927c",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 16,
+      "source_text": "não alterar cálculos, agregações, API ou semântica financeira.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "89e31d3d7bd11404f489369ab1500062c11b60584a96a6278e55210f698cda71",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 20,
+      "source_text": "cada indicador monetário do resumo exibe o código da moeda apenas uma vez;",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "e4278bf3bfc98eb8643751b5be430a2ad8b1aba75649cbfda4dc1b8595c7114b",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 21,
+      "source_text": "o comportamento vale para BRL, USD e outras moedas suportadas, sem hardcode;",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "e54f1dcc949f6166569c31b9fbd6187c7fcccd38e081dd4b3f6ffd20398ece21",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 22,
+      "source_text": "a moeda continua explícita no valor monetário conforme o contrato multi-moedas;",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "3b9ea9a4e8a679643b15f4059ea6a8b5b4fa94553d9ac3b1f3d60dca2f411e21",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 23,
+      "source_text": "o estado de indisponibilidade não inventa moeda nem valor;",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "23016015ebc33b5501f6782b97c6fad9f4412057a7e4ad72e2366a470e0e4fbe",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 24,
+      "source_text": "testes focados da tela passam e nenhuma regra financeira é alterada.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "2a2b2e8e901fcf22eca14eec39760f6145088a8a2f5aef7faeb80d926ac64be8",
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "source_line": 29,
+      "source_text": "preservar as verificações existentes de moeda explícita e hierarquia da fatura.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, exact-head CI, and focused renderer regression evidence."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-685",
+      "source_sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "candidate_count": 12,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "The canonical issue is a localized renderer composition correction and contains no structural architecture or canonical-path obligation.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "The issue does not change history, timeline, pagination, versioning, authorship, origin, or other read-model semantics.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "No competing canonical source or producer/consumer consistency rule is introduced by removing a duplicated presentation suffix.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "The correction changes no durable API, route, authorization, default, policy, seed, trigger, or documented product contract.",
+    "old_contract_terms": [],
+    "new_contract_terms": [],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "The issue-local diff is restricted to the cards renderer and its regression test; no canonical documentation path changed."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": [
+      "All extracted canonical obligations from issue #685 are represented; none was deferred or dropped."
+    ]
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-001",
+      "REQ-002",
+      "REQ-003",
+      "REQ-004",
+      "REQ-005",
+      "REQ-006"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012"
+    ],
+    "evidence": [
+      "Rederivation used the exact issue body and the issue-local diff only; the inherited issue-680 handoff was not reused as current evidence."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}
