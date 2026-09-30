@@ -734,14 +734,8 @@ function renderInvoiceSummary(
           "Total da fatura",
           money(summary?.totalExpensesMinor ?? invoice.totalAmountMinor, currency),
         ),
-        summaryMetric(
-          "Conciliado",
-          money(summary?.reconciledExpensesMinor ?? 0, currency),
-        ),
-        summaryMetric(
-          "Não conciliado",
-          money(summary?.unreconciledExpensesMinor ?? 0, currency),
-        ),
+        summaryMetric("Conciliado", money(summary?.reconciledExpensesMinor ?? 0, currency)),
+        summaryMetric("Não conciliado", money(summary?.unreconciledExpensesMinor ?? 0, currency)),
         summaryMetric(
           "Limite disponível",
           totals.length > 0 ? money(limitAvailable, currency) : "Indisponível",
