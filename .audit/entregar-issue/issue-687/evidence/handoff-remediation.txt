@@ -1,0 +1,6 @@
+Material head: 012709fbae9af6a5d0872f89383e1cea97bfdfc7
+Base: 281e5b033eb3d9bbf865024bc394f8ace4b8d222
+PR: 688
+Issue: 687
+CI: exact-head green (Delivery V2 gate, CRITICAL validation, Chrome visual validation, Merge preview compatibility, Delivery V2 risk).
+Finding AUD-688-001 closed by fresh result-only handoff rebuild; no material code change.

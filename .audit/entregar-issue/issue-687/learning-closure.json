@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:pr688-handoff-not-produced-012709f",
+    "audit_report_sha256": "b7ef48bb3eccee930b275e19697c8c3c3b92949f4012ca047c18c129b9967290",
+    "finding_ids": [
+      "AUD-688-001"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The delivery contract already rejects inherited-base target artifacts. The corrective action is limited to publishing the missing current-target handoff package."
+  },
+  "skill_changes": []
+}

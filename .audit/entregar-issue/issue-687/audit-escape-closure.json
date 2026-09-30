@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-688-AUD-688-001-HANDOFF-TARGET",
+      "status": "passed",
+      "escape_class": "current-target-handoff-not-produced",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr688-handoff-not-produced-012709f",
+        "audit_report_sha256": "b7ef48bb3eccee930b275e19697c8c3c3b92949f4012ca047c18c129b9967290",
+        "finding_ids": [
+          "AUD-688-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Treat a handoff certificate inherited unchanged from the base branch as if it certified a newly implemented work item on another branch.",
+      "literal_case": {
+        "procedure": "Compare the root handoff artifact at immutable base and material head, then rebuild the package for issue 687 / PR 688.",
+        "expected": "Inherited foreign-target bytes are rejected and a fresh current-target package is produced.",
+        "observed": "The issue-685 root handoff was byte-identical in base and material head; this result-only package binds issue 687 / PR 688.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "target-binding",
+          "dimension": "foreign-issue-certificate",
+          "status": "passed"
+        },
+        {
+          "surface": "target-binding",
+          "dimension": "inherited-base-certificate",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Fresh certificate subject and specification snapshot bind repository, issue 687 and PR 688."
+      },
+      "detection_change": {
+        "evidence": "Independent rejection is retained in audit remediation/source result and terminal binding must be current-target."
+      },
+      "required_risk_families": [
+        "delivery-target-binding"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "delivery-target-binding",
+          "surface": "handoff-certificate",
+          "dimension": "foreign-target-reuse"
+        }
+      ],
+      "revalidated_head_sha": "012709fbae9af6a5d0872f89383e1cea97bfdfc7"
+    }
+  ]
+}

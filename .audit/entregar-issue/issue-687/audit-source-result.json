@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:pr688-handoff-not-produced-012709f",
+  "head_sha": "012709fbae9af6a5d0872f89383e1cea97bfdfc7",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 687,
+    "pull_request_number": 688,
+    "head_sha": "012709fbae9af6a5d0872f89383e1cea97bfdfc7",
+    "base_sha": "281e5b033eb3d9bbf865024bc394f8ace4b8d222"
+  },
+  "findings": [
+    {
+      "id": "AUD-688-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "severity": "blocking",
+      "remediation_mode": "targeted-remediation",
+      "category": "delivery-not-ready",
+      "summary": "The PR inherited a byte-identical handoff certificate for issue 685 and had not produced a certificate bound to issue 687 / PR 688."
+    }
+  ],
+  "recommendations": []
+}

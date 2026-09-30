@@ -1,0 +1,205 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "specification-snapshot.json",
+    "sha256": "331f33561a8b6fd8019ecda025967c483b8d07cd2ec24de832fdeb0d3447c8d8"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-687",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "cf619976ea8f9de48dcb969dfe08418aa48e8f23a92bbafabf823b253f0bd108",
+      "source_id": "SRC-ISSUE-687",
+      "source_sha256": "e34532ac8af7432b3566257b2cf063c46f5a005d46b080a71ebf7096100ffe93",
+      "source_line": 8,
+      "source_text": "Abrir `/cartoes` sem `month` ou `invoiceId` deve iniciar na competência corrente.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, focused regression evidence, and exact-head CI."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "81c9342895c5409ffc27c2ba44ef211ba522b1f2c266010e3260f5cead473acf",
+      "source_id": "SRC-ISSUE-687",
+      "source_sha256": "e34532ac8af7432b3566257b2cf063c46f5a005d46b080a71ebf7096100ffe93",
+      "source_line": 9,
+      "source_text": "Se existir fatura da competência corrente, ela deve ser selecionada independentemente de existirem faturas abertas futuras.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, focused regression evidence, and exact-head CI."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "757feb4b58e00cc425a8f131770e19e0c5f41f240c2c1d00b1a28eb4bc99266f",
+      "source_id": "SRC-ISSUE-687",
+      "source_sha256": "e34532ac8af7432b3566257b2cf063c46f5a005d46b080a71ebf7096100ffe93",
+      "source_line": 10,
+      "source_text": "Se não existir fatura corrente, a tela deve permanecer no mês corrente com estado `Sem fatura` e permitir navegar para a primeira competência futura.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, focused regression evidence, and exact-head CI."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "908fd7ee68b96659a2c4bafbe8746c54e57eb4e612ed0fd9c9626d7b4242547e",
+      "source_id": "SRC-ISSUE-687",
+      "source_sha256": "e34532ac8af7432b3566257b2cf063c46f5a005d46b080a71ebf7096100ffe93",
+      "source_line": 11,
+      "source_text": "`month` e `invoiceId` explícitos continuam tendo precedência.",
+      "flags": [
+        "precedence"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, focused regression evidence, and exact-head CI."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "aa309cd4de57d3fb20817d8c92976758f3a248ac7e57270526b81e8ecbd13c7b",
+      "source_id": "SRC-ISSUE-687",
+      "source_sha256": "e34532ac8af7432b3566257b2cf063c46f5a005d46b080a71ebf7096100ffe93",
+      "source_line": 12,
+      "source_text": "Adicionar regressão cobrindo uma fatura aberta distante no futuro.",
+      "flags": [
+        "temporal",
+        "temporal-destination"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Covered by the material-head implementation, focused regression evidence, and exact-head CI."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-687",
+      "source_sha256": "e34532ac8af7432b3566257b2cf063c46f5a005d46b080a71ebf7096100ffe93",
+      "candidate_count": 5,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "Explicit month and invoiceId precedence is a structural selection invariant and was preserved.",
+    "entries": [
+      {
+        "id": "STRUCT-PRECEDENCE-001",
+        "status": "passed",
+        "requirement_ids": [
+          "REQ-004"
+        ],
+        "evidence": [
+          "Explicit invoiceId/month branches precede the implicit current-month selection, and maintenance coverage passes explicit parameters."
+        ],
+        "obligation_ids": [
+          "OBL-004"
+        ],
+        "plausible_wrong_implementation": "Apply implicit current-month selection before honoring explicit month or invoiceId parameters.",
+        "negative_control_evidence": [
+          "maintenance-actions.test.ts renders /cartoes with explicit invoiceId=invoice-1 and month=2026-06, and exact-head CRITICAL CI completed successfully."
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "The issue changes only initial card invoice selection and does not alter history, pagination, versioning, authorship, origin, or read-model semantics.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "The issue does not introduce or reconcile competing canonical data sources; it changes selection among invoices already returned by the existing API.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "The user-visible default selection behavior changes, so repository claims were considered for semantic drift; no durable external documentation contract requiring an update was identified.",
+    "old_contract_terms": [
+      "first open invoice as implicit default"
+    ],
+    "new_contract_terms": [
+      "current month as implicit default"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "The change is localized to /cartoes initial selection and its regression tests; no canonical product documentation path in the PR asserts the obsolete future-first default."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": [
+      "All five acceptance criteria extracted from issue #687 are represented as covered obligations; none was deferred or dropped."
+    ]
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-001",
+      "REQ-002",
+      "REQ-003",
+      "REQ-004",
+      "REQ-005"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005"
+    ],
+    "evidence": [
+      "Rederivation used the exact issue body and current PR diff; inherited issue-685 handoff was not reused."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}
