@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:solverfin-685-4f372842-handoff-not-produced",
+    "audit_report_sha256": "66a1c6bf8721457b45b553d8ef0a0f96ede97fa231a9d8d10b692dc9816f19fb",
+    "finding_ids": [
+      "A-001"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The delivery skill already requires current-target binding and rejects inherited-base artifacts. This rejection exposed a missing terminal publication for this delivery, so the corrective action is limited to rebuilding and publishing the governed handoff package."
+  },
+  "skill_changes": []
+}
