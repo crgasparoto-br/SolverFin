@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:pr688-implicit-no-current-gap-3351f22",
+  "head_sha": "3351f22f23fa15e227fdd2693cc6e8f6334c89bb",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 687,
+    "pull_request_number": 688,
+    "head_sha": "3351f22f23fa15e227fdd2693cc6e8f6334c89bb",
+    "base_sha": "281e5b033eb3d9bbf865024bc394f8ace4b8d222"
+  },
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "severity": "blocking",
+      "remediation_mode": "targeted-remediation",
+      "category": "evidence-control-gap",
+      "summary": "The no-current-invoice negative control passed an explicit month parameter, so it did not exercise the implicit /cartoes fallback required by issue #687."
+    }
+  ],
+  "recommendations": []
+}

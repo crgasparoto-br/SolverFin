@@ -79,7 +79,10 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
 }
 
 async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void> {
-  const html = await renderCardsPage("token");
+  const html = await renderCardsPage(
+    "token",
+    new URL("http://solverfin.test/cartoes?cardId=card-1&invoiceId=invoice-1&month=2026-06"),
+  );
 
   assert.match(html, /Cartões de Crédito/);
   assert.match(html, /Salvar compra/);

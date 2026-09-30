@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:pr688-implicit-no-current-gap-3351f22",
+    "audit_report_sha256": "087c62666c65acea1c9b298760d0caf2ec057d7986344f71616554def3941baa",
+    "finding_ids": [
+      "A-001"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The existing evidence contract already requires a discriminating negative control. This remediation corrects the issue-specific control so it exercises the implicit route instead of the explicit month branch."
+  },
+  "skill_changes": []
+}

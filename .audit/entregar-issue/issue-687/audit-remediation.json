@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "5c6e4b9ed79d76cb3f3ac96158e506d789597490",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:pr688-implicit-no-current-gap-3351f22",
+    "audited_head_sha": "3351f22f23fa15e227fdd2693cc6e8f6334c89bb",
+    "audit_report_sha256": "087c62666c65acea1c9b298760d0caf2ec057d7986344f71616554def3941baa"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "targeted-regression-remediation",
+      "changed_files": [
+        "apps/web/src/dev-server/cards-page-current-future-order.test.ts",
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/issue-687/standard-evidence.json",
+        ".audit/entregar-issue/issue-687/audit-source-result.json",
+        ".audit/entregar-issue/issue-687/audit-remediation.json",
+        ".audit/entregar-issue/issue-687/audit-escape-closure.json",
+        ".audit/entregar-issue/issue-687/learning-closure.json",
+        ".audit/entregar-issue/issue-687/evidence/handoff-remediation.txt"
+      ],
+      "evidence": [
+        "evidence/handoff-remediation.txt"
+      ],
+      "validations": [
+        "The no-current-invoice regression now renders /cartoes?cardId=card-1 without month or invoiceId on 5c6e4b9ed79d76cb3f3ac96158e506d789597490.",
+        "Delivery V2 CI run 36759522361 completed successfully on exact head 5c6e4b9ed79d76cb3f3ac96158e506d789597490.",
+        "Statement visual validation run 36759522355 completed successfully on exact head 5c6e4b9ed79d76cb3f3ac96158e506d789597490."
+      ]
+    }
+  ]
+}

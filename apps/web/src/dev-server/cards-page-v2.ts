@@ -362,7 +362,9 @@ function resolveSelectedInvoice(
   }
   const month = normalizeMonth(url.searchParams.get("month"));
   if (month) return invoices.find((invoice) => invoice.periodEndOn.slice(0, 7) === month);
-  return invoices.find((invoice) => invoice.status === "open") ?? invoices[0];
+
+  const monthNow = currentMonth();
+  return invoices.find((invoice) => invoice.periodEndOn.slice(0, 7) === monthNow);
 }
 
 function resolvePresentation(url: URL, invoice: InvoiceRecord | undefined): CardPresentation {
