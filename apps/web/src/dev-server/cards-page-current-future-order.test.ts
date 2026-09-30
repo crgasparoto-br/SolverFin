@@ -49,6 +49,121 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
       return jsonResponse({
         invoices: [
           invoiceFor("invoice-later", laterMonth),
+          invoiceFor("invoice-current", currentMonth),
+          invoiceFor("invoice-previous", previousMonth),
+          invoiceFor("invoice-next", nextMonth),
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+    if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+    if (url.pathname === "/api/credit-card-accounts/card-1/instruments") {
+      return jsonResponse({ instruments: [] });
+    }
+    if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
+    if (url.pathname === "/api/invoices/invoice-current/summary") {
+      return jsonResponse({
+        summary: {
+          amountDueMinor: 0,
+          cardId: "card-1",
+          cardName: "Cartão principal",
+          cardTotals: [],
+          closingOn: `${currentMonth}-20`,
+          dueOn: `${shiftMonth(currentMonth, 1)}-10`,
+          financialProfileId: "profile-1",
+          invoiceId: "invoice-current",
+          periodStartOn: `${currentMonth}-01`,
+          previousBalanceMinor: 0,
+          purchasesCount: 0,
+          reconciledExpensesMinor: 0,
+          status: "open",
+          totalExpensesMinor: 0,
+          totalPaidMinor: 0,
+          unreconciledExpensesMinor: 0,
+        },
+      });
+    }
+    if (url.pathname === "/api/invoices/invoice-current/purchases") {
+      return jsonResponse({ purchases: [] });
+    }
+    if (url.pathname === "/api/invoices/invoice-next/summary") {
+      return jsonResponse({
+        summary: {
+          amountDueMinor: 0,
+          cardId: "card-1",
+          cardName: "Cartão principal",
+          cardTotals: [],
+          closingOn: `${nextMonth}-20`,
+          dueOn: `${shiftMonth(nextMonth, 1)}-10`,
+          financialProfileId: "profile-1",
+          invoiceId: "invoice-next",
+          periodStartOn: `${nextMonth}-01`,
+          previousBalanceMinor: 0,
+          purchasesCount: 0,
+          reconciledExpensesMinor: 0,
+          status: "open",
+          totalExpensesMinor: 0,
+          totalPaidMinor: 0,
+          unreconciledExpensesMinor: 0,
+        },
+      });
+    }
+    if (url.pathname === "/api/invoices/invoice-next/purchases") {
+      return jsonResponse({ purchases: [] });
+    }
+    if (url.pathname === "/api/installments") return jsonResponse({ installments: [] });
+    return jsonResponse({});
+  };
+
+  const initialHtml = await renderCardsPageV2(
+    "session-token",
+    new URL("http://solverfin.local/cartoes?cardId=card-1"),
+  );
+  const initialNavigation = invoiceNavigation(initialHtml);
+  assert.match(
+    initialNavigation,
+    new RegExp(`name="month" value="${currentMonth}"`),
+    "entrada sem competência deve permanecer no mês corrente",
+  );
+  assert.equal(
+    initialNavigation.includes("Sem fatura"),
+    false,
+    "fatura corrente existente deve ser selecionada na entrada implícita",
+  );
+  assert.match(
+    initialNavigation,
+    /invoiceId=invoice-current/,
+    "fatura corrente deve vencer uma fatura aberta futura mesmo quando a futura vem primeiro",
+  );
+  assert.equal(
+    initialNavigation.includes("invoice-later"),
+    false,
+    "fatura aberta distante no futuro não pode virar a seleção inicial",
+  );
+
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const url = new URL(String(input));
+
+    if (url.pathname === "/api/credit-card-accounts") {
+      return jsonResponse({
+        creditCardAccounts: [
+          {
+            id: "card-1",
+            name: "Cartão principal",
+            status: "active",
+            closingDay: 20,
+            dueDay: 10,
+            currency: "BRL",
+          },
+        ],
+      });
+    }
+
+    if (url.pathname === "/api/invoices") {
+      return jsonResponse({
+        invoices: [
+          invoiceFor("invoice-later", laterMonth),
           invoiceFor("invoice-previous", previousMonth),
           invoiceFor("invoice-next", nextMonth),
         ],
@@ -89,27 +204,6 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
     if (url.pathname === "/api/installments") return jsonResponse({ installments: [] });
     return jsonResponse({});
   };
-
-  const initialHtml = await renderCardsPageV2(
-    "session-token",
-    new URL("http://solverfin.local/cartoes?cardId=card-1"),
-  );
-  const initialNavigation = invoiceNavigation(initialHtml);
-  assert.match(
-    initialNavigation,
-    new RegExp(`name="month" value="${currentMonth}"`),
-    "entrada sem competência deve permanecer no mês corrente",
-  );
-  assert.match(
-    initialNavigation,
-    /Sem fatura/,
-    "entrada inicial não deve saltar para fatura futura",
-  );
-  assert.equal(
-    initialNavigation.includes("invoice-later"),
-    false,
-    "fatura aberta distante no futuro não pode virar a seleção inicial",
-  );
 
   const currentHtml = await renderCardsPageV2(
     "session-token",
