@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "012709fbae9af6a5d0872f89383e1cea97bfdfc7",
+  "head_sha": "f709cfbf16d61ae23db7a61bcceeafc87482e31f",
   "requirements": [
     {
       "requirement_id": "REQ-001",
@@ -13,74 +13,74 @@
         "status": "passed",
         "procedure": "Render /cartoes with a current-month invoice and a later open invoice returned in future-first order.",
         "expected": "The implicit selection remains on currentMonth/current invoice, not the future open invoice.",
-        "observed": "cards-page-current-future-order.test.ts covers the future-first ordering and CRITICAL validation run 36728913550 completed success on exact head 012709fbae9af6a5d0872f89383e1cea97bfdfc7."
+        "observed": "cards-page-current-future-order.test.ts covers future-first ordering and CRITICAL validation run 36747738682 completed successfully on exact head f709cfbf16d61ae23db7a61bcceeafc87482e31f."
       },
       "regression_evidence": [
-        "Focused regression file cards-page-current-future-order.test.ts is part of the PR and exact-head CI is green."
+        "Focused regression cards-page-current-future-order.test.ts is part of the material head and exact-head CI is green."
       ]
     },
     {
       "requirement_id": "REQ-002",
       "positive_evidence": [
-        "cards-page-v2.ts resolves the current-month invoice by invoiceMonth(invoice) === currentMonth rather than first open invoice."
+        "cards-page-v2.ts resolves the current-month invoice by comparing invoice period month to currentMonth rather than selecting the first open invoice."
       ],
       "primary_negative_control": {
         "id": "NC-CURRENT-INVOICE-WINS",
         "status": "passed",
         "procedure": "Provide both current and future open invoices with the future invoice first.",
         "expected": "Current-month invoice is selected.",
-        "observed": "The regression deliberately includes a distant future open invoice while expecting the current invoice."
+        "observed": "The regression fixture contains distinct current and distant-future open invoices and asserts current-month presentation while excluding the distant future invoice."
       },
       "regression_evidence": [
-        "CRITICAL validation and Chrome visual validation both succeeded on the exact material head."
+        "CRITICAL validation and Chrome visual validation succeeded on the exact material head."
       ]
     },
     {
       "requirement_id": "REQ-003",
       "positive_evidence": [
-        "When no current-month invoice exists and no explicit parameters are present, selectedMonth remains currentMonth and selectedInvoice is undefined, rendering Sem fatura while navigation exposes the nearest future month."
+        "When no current-month invoice exists and no explicit parameters are present, selectedInvoice remains undefined for currentMonth, rendering Sem fatura while navigation exposes the nearest future month."
       ],
       "primary_negative_control": {
         "id": "NC-NO-CURRENT-INVOICE",
         "status": "passed",
         "procedure": "Render without a current-month invoice but with future invoices available.",
         "expected": "Stay on currentMonth with Sem fatura and permit forward navigation.",
-        "observed": "cards-page-current-future-order.test.ts asserts current month navigation and next future invoice behavior."
+        "observed": "cards-page-current-future-order.test.ts asserts current month, Sem fatura, no past navigation and the nearest future invoice as next."
       },
       "regression_evidence": [
-        "Chrome visual validation succeeded on exact head."
+        "Chrome visual validation run 36747738684 succeeded on exact head."
       ]
     },
     {
       "requirement_id": "REQ-004",
       "positive_evidence": [
-        "Explicit invoiceId and explicit month branches remain before the implicit default branch; maintenance coverage now passes invoiceId and month explicitly."
+        "Explicit invoiceId and explicit month branches remain before the implicit current-month default branch; maintenance coverage supplies both parameters explicitly."
       ],
       "primary_negative_control": {
         "id": "NC-EXPLICIT-PRECEDENCE",
         "status": "passed",
-        "procedure": "Render with explicit invoiceId/month and assert selected invoice actions remain available.",
+        "procedure": "Render with explicit invoiceId/month and assert invoice maintenance actions remain available.",
         "expected": "Explicit parameters override implicit current-month selection.",
-        "observed": "maintenance-actions.test.ts was adjusted to select invoice-1 explicitly; exact-head CI succeeded."
+        "observed": "maintenance-actions.test.ts renders /cartoes with invoiceId=invoice-1 and month=2026-06; exact-head CI succeeded."
       },
       "regression_evidence": [
-        "maintenance-actions.test.ts is included in the PR and exact-head CI is green."
+        "maintenance-actions.test.ts is included in the material scope and exact-head CI is green."
       ]
     },
     {
       "requirement_id": "REQ-005",
       "positive_evidence": [
-        "apps/web/src/dev-server/cards-page-current-future-order.test.ts is a new focused regression covering a future open invoice."
+        "apps/web/src/dev-server/cards-page-current-future-order.test.ts contains focused regression coverage with a distant future open invoice before the current invoice in API order."
       ],
       "primary_negative_control": {
         "id": "NC-REGRESSION-DISCRIMINANT",
         "status": "passed",
-        "procedure": "Use current and future invoice months with different IDs and future-first API order.",
-        "expected": "A wrong implementation that chooses first open invoice fails the test.",
-        "observed": "The fixture uses distinct current/future invoices and asserts current-month behavior, making first-open selection discriminant."
+        "procedure": "Use distinct current and future invoice months and IDs in future-first API order.",
+        "expected": "An implementation that selects the first open future invoice fails the current-month and distant-future exclusion assertions.",
+        "observed": "The fixture uses distinct invoice IDs/months, asserts the current month is presented, verifies an invoice is selected, and excludes the distant future invoice from the initial navigation."
       },
       "regression_evidence": [
-        "CRITICAL validation run 36728913550 and Chrome visual validation run 36728913618 succeeded on exact head."
+        "CRITICAL validation run 36747738682 and Chrome visual validation run 36747738684 succeeded on exact head."
       ]
     }
   ]

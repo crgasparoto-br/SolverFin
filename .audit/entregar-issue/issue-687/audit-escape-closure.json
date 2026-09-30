@@ -15,9 +15,9 @@
       },
       "plausible_wrong_implementation": "Treat a handoff certificate inherited unchanged from the base branch as if it certified a newly implemented work item on another branch.",
       "literal_case": {
-        "procedure": "Compare the root handoff artifact at immutable base and material head, then rebuild the package for issue 687 / PR 688.",
+        "procedure": "Compare the root handoff artifact at immutable base and material head, then rebuild the package for the current issue and pull request.",
         "expected": "Inherited foreign-target bytes are rejected and a fresh current-target package is produced.",
-        "observed": "The issue-685 root handoff was byte-identical in base and material head; this result-only package binds issue 687 / PR 688.",
+        "observed": "The current package remains bound to issue 687 / PR 688 after refreezing the latest material head.",
         "status": "passed"
       },
       "sibling_cases": [
@@ -33,10 +33,10 @@
         }
       ],
       "prevention_change": {
-        "evidence": "Fresh certificate subject and specification snapshot bind repository, issue 687 and PR 688."
+        "evidence": "Fresh certificate subject and specification snapshot bind the current repository, issue and pull request."
       },
       "detection_change": {
-        "evidence": "Independent rejection is retained in audit remediation/source result and terminal binding must be current-target."
+        "evidence": "Terminal binding rejects inherited or foreign-target handoff artifacts."
       },
       "required_risk_families": [
         "delivery-target-binding"
@@ -48,7 +48,56 @@
           "dimension": "foreign-target-reuse"
         }
       ],
-      "revalidated_head_sha": "012709fbae9af6a5d0872f89383e1cea97bfdfc7"
+      "revalidated_head_sha": "f709cfbf16d61ae23db7a61bcceeafc87482e31f"
+    },
+    {
+      "escape_id": "ESC-688-A-001-POST-HANDOFF-DRIFT",
+      "status": "passed",
+      "escape_class": "post-handoff-material-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr688-post-handoff-material-drift-f709cfb",
+        "audit_report_sha256": "883ee9f289719cd5ccb569162fb3559ab80e4227332218ad53687457b6b2dbff",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Reuse a result-only handoff after later commits changed material application or test paths, while continuing to claim the older material head as certified.",
+      "literal_case": {
+        "procedure": "Compare the certified material head with the current PR head and classify every path changed after the published handoff.",
+        "expected": "Any post-handoff material path forces a new final gate, material freeze and fresh result-only child.",
+        "observed": "The current head was treated as new material after a regression test changed beyond the previous result-only handoff, and the package was rebuilt for the new material identity.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "handoff-liveness",
+          "dimension": "post-handoff-test-change",
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-liveness",
+          "dimension": "post-handoff-source-change",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The material-dirty latch requires refreeze before a new handoff whenever any non-allowlisted path changes after freeze."
+      },
+      "detection_change": {
+        "evidence": "Terminal validation compares published handoff identity with the fresh remote head and rejects material drift."
+      },
+      "required_risk_families": [
+        "delivery-target-binding"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "delivery-target-binding",
+          "surface": "result-only-child",
+          "dimension": "post-handoff-material-drift"
+        }
+      ],
+      "revalidated_head_sha": "f709cfbf16d61ae23db7a61bcceeafc87482e31f"
     }
   ]
 }

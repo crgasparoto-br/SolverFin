@@ -3,37 +3,36 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "012709fbae9af6a5d0872f89383e1cea97bfdfc7",
+  "candidate_head_sha": "f709cfbf16d61ae23db7a61bcceeafc87482e31f",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:pr688-handoff-not-produced-012709f",
-    "audited_head_sha": "012709fbae9af6a5d0872f89383e1cea97bfdfc7",
-    "audit_report_sha256": "b7ef48bb3eccee930b275e19697c8c3c3b92949f4012ca047c18c129b9967290"
+    "rejection_id": "audit-rejection:pr688-post-handoff-material-drift-f709cfb",
+    "audited_head_sha": "f709cfbf16d61ae23db7a61bcceeafc87482e31f",
+    "audit_report_sha256": "883ee9f289719cd5ccb569162fb3559ab80e4227332218ad53687457b6b2dbff"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "AUD-688-001",
+      "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "result-only-handoff-rebuild",
+      "closure_kind": "post-write-refreeze-and-result-only-handoff",
       "changed_files": [
         ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/issue-687/specification-snapshot.json",
-        ".audit/entregar-issue/issue-687/requirement-closure.json",
         ".audit/entregar-issue/issue-687/standard-evidence.json",
         ".audit/entregar-issue/issue-687/audit-source-result.json",
         ".audit/entregar-issue/issue-687/audit-remediation.json",
         ".audit/entregar-issue/issue-687/audit-escape-closure.json",
-        ".audit/entregar-issue/issue-687/learning-closure.json"
+        ".audit/entregar-issue/issue-687/learning-closure.json",
+        ".audit/entregar-issue/issue-687/evidence/handoff-remediation.txt"
       ],
       "evidence": [
         "evidence/handoff-remediation.txt"
       ],
       "validations": [
-        "Exact-head CI is green on 012709fbae9af6a5d0872f89383e1cea97bfdfc7.",
-        "PR changed paths remain limited to cards-page-v2.ts and two regression test files.",
-        "Fresh handoff subject is SolverFin issue #687 / PR #688 on branch fix/687-cards-current-month."
+        "Exact-head CI is green on f709cfbf16d61ae23db7a61bcceeafc87482e31f.",
+        "Current PR head was refrozen after post-handoff material drift.",
+        "Fresh result-only handoff is built as a direct child of the current material head and only changes allowlisted audit paths."
       ]
     }
   ]

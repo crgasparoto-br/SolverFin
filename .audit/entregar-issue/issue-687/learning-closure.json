@@ -3,15 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:pr688-handoff-not-produced-012709f",
-    "audit_report_sha256": "b7ef48bb3eccee930b275e19697c8c3c3b92949f4012ca047c18c129b9967290",
+    "rejection_id": "audit-rejection:pr688-post-handoff-material-drift-f709cfb",
+    "audit_report_sha256": "883ee9f289719cd5ccb569162fb3559ab80e4227332218ad53687457b6b2dbff",
     "finding_ids": [
-      "AUD-688-001"
+      "A-001"
     ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The delivery contract already rejects inherited-base target artifacts. The corrective action is limited to publishing the missing current-target handoff package."
+    "reason": "The delivery contract already requires post-write refreeze when material paths change after a handoff. This remediation applies the existing control to the current delivery rather than adding a new global rule."
   },
   "skill_changes": []
 }
