@@ -1,6 +1,6 @@
-Material head: f709cfbf16d61ae23db7a61bcceeafc87482e31f
+Material head: 5c6e4b9ed79d76cb3f3ac96158e506d789597490
 Base: 281e5b033eb3d9bbf865024bc394f8ace4b8d222
 PR: 688
 Issue: 687
-CI: exact-head green (Delivery V2 gate, CRITICAL validation, Chrome visual validation, Merge preview compatibility, Delivery V2 risk).
-Audit finding A-001 (audit-rejection:pr688-post-handoff-material-drift-f709cfb) closed by post-write refreeze on the current head and fresh result-only handoff generation; no functional source change was required by this remediation.
+CI: exact-head green (Delivery V2 CI run 36759522361; Statement visual validation run 36759522355).
+Audit finding A-001 (audit-rejection:pr688-implicit-no-current-gap-3351f22) closed by changing the no-current-invoice regression to call /cartoes?cardId=card-1 without month or invoiceId, proving the implicit fallback remains on current month with Sem fatura and navigates to the nearest future invoice.

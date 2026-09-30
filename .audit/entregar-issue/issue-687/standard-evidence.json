@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "f709cfbf16d61ae23db7a61bcceeafc87482e31f",
+  "head_sha": "5c6e4b9ed79d76cb3f3ac96158e506d789597490",
   "requirements": [
     {
       "requirement_id": "REQ-001",
@@ -11,9 +11,9 @@
       "primary_negative_control": {
         "id": "NC-FUTURE-OPEN-NOT-DEFAULT",
         "status": "passed",
-        "procedure": "Render /cartoes with a current-month invoice and a later open invoice returned in future-first order.",
+        "procedure": "Render /cartoes without month or invoiceId with a current-month invoice and a later open invoice returned in future-first order.",
         "expected": "The implicit selection remains on currentMonth/current invoice, not the future open invoice.",
-        "observed": "cards-page-current-future-order.test.ts covers future-first ordering and CRITICAL validation run 36747738682 completed successfully on exact head f709cfbf16d61ae23db7a61bcceeafc87482e31f."
+        "observed": "cards-page-current-future-order.test.ts exercises the implicit route and Delivery V2 CI run 36759522361 passed on exact head 5c6e4b9ed79d76cb3f3ac96158e506d789597490."
       },
       "regression_evidence": [
         "Focused regression cards-page-current-future-order.test.ts is part of the material head and exact-head CI is green."
@@ -27,12 +27,12 @@
       "primary_negative_control": {
         "id": "NC-CURRENT-INVOICE-WINS",
         "status": "passed",
-        "procedure": "Provide both current and future open invoices with the future invoice first.",
+        "procedure": "Provide both current and future open invoices with the future invoice first and render without month or invoiceId.",
         "expected": "Current-month invoice is selected.",
         "observed": "The regression fixture contains distinct current and distant-future open invoices and asserts current-month presentation while excluding the distant future invoice."
       },
       "regression_evidence": [
-        "CRITICAL validation and Chrome visual validation succeeded on the exact material head."
+        "Delivery V2 CI run 36759522361 and Statement visual validation run 36759522355 succeeded on exact material head 5c6e4b9ed79d76cb3f3ac96158e506d789597490."
       ]
     },
     {
@@ -43,12 +43,12 @@
       "primary_negative_control": {
         "id": "NC-NO-CURRENT-INVOICE",
         "status": "passed",
-        "procedure": "Render without a current-month invoice but with future invoices available.",
-        "expected": "Stay on currentMonth with Sem fatura and permit forward navigation.",
-        "observed": "cards-page-current-future-order.test.ts asserts current month, Sem fatura, no past navigation and the nearest future invoice as next."
+        "procedure": "Render /cartoes?cardId=card-1 with no month or invoiceId, no current-month invoice, and future invoices available.",
+        "expected": "Stay on currentMonth with Sem fatura and permit forward navigation to the nearest future invoice.",
+        "observed": "cards-page-current-future-order.test.ts now invokes the implicit route without month/invoiceId and asserts Sem fatura, disabled previous navigation, and invoice-next as next; Delivery V2 CI run 36759522361 passed on exact head 5c6e4b9ed79d76cb3f3ac96158e506d789597490."
       },
       "regression_evidence": [
-        "Chrome visual validation run 36747738684 succeeded on exact head."
+        "Exact-head Delivery V2 CI run 36759522361 and Statement visual validation run 36759522355 both succeeded on 5c6e4b9ed79d76cb3f3ac96158e506d789597490."
       ]
     },
     {
@@ -61,10 +61,10 @@
         "status": "passed",
         "procedure": "Render with explicit invoiceId/month and assert invoice maintenance actions remain available.",
         "expected": "Explicit parameters override implicit current-month selection.",
-        "observed": "maintenance-actions.test.ts renders /cartoes with invoiceId=invoice-1 and month=2026-06; exact-head CI succeeded."
+        "observed": "maintenance-actions.test.ts renders /cartoes with invoiceId=invoice-1 and month=2026-06; exact-head CI run 36759522361 succeeded on 5c6e4b9ed79d76cb3f3ac96158e506d789597490."
       },
       "regression_evidence": [
-        "maintenance-actions.test.ts is included in the material scope and exact-head CI is green."
+        "maintenance-actions.test.ts remains in the material scope and exact-head CI is green."
       ]
     },
     {
@@ -77,10 +77,10 @@
         "status": "passed",
         "procedure": "Use distinct current and future invoice months and IDs in future-first API order.",
         "expected": "An implementation that selects the first open future invoice fails the current-month and distant-future exclusion assertions.",
-        "observed": "The fixture uses distinct invoice IDs/months, asserts the current month is presented, verifies an invoice is selected, and excludes the distant future invoice from the initial navigation."
+        "observed": "The fixture uses distinct invoice IDs/months, asserts the current month is presented, verifies the current invoice is selected, and excludes the distant future invoice from the initial navigation."
       },
       "regression_evidence": [
-        "CRITICAL validation run 36747738682 and Chrome visual validation run 36747738684 succeeded on exact head."
+        "Delivery V2 CI run 36759522361 and Statement visual validation run 36759522355 succeeded on exact head 5c6e4b9ed79d76cb3f3ac96158e506d789597490."
       ]
     }
   ]

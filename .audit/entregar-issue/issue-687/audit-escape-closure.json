@@ -48,7 +48,7 @@
           "dimension": "foreign-target-reuse"
         }
       ],
-      "revalidated_head_sha": "f709cfbf16d61ae23db7a61bcceeafc87482e31f"
+      "revalidated_head_sha": "5c6e4b9ed79d76cb3f3ac96158e506d789597490"
     },
     {
       "escape_id": "ESC-688-A-001-POST-HANDOFF-DRIFT",
@@ -97,7 +97,56 @@
           "dimension": "post-handoff-material-drift"
         }
       ],
-      "revalidated_head_sha": "f709cfbf16d61ae23db7a61bcceeafc87482e31f"
+      "revalidated_head_sha": "5c6e4b9ed79d76cb3f3ac96158e506d789597490"
+    },
+    {
+      "escape_id": "ESC-688-A-001-IMPLICIT-NO-CURRENT-GAP",
+      "status": "passed",
+      "escape_class": "implicit-default-negative-control-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr688-implicit-no-current-gap-3351f22",
+        "audit_report_sha256": "087c62666c65acea1c9b298760d0caf2ec057d7986344f71616554def3941baa",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Make the explicit month branch correct while leaving the implicit no-month fallback able to select a future invoice; a test that supplies month=currentMonth would still pass.",
+      "literal_case": {
+        "procedure": "Render /cartoes?cardId=card-1 without month or invoiceId, with no current-month invoice and at least one future invoice.",
+        "expected": "The page remains on the current month with Sem fatura and Next points to the nearest future invoice.",
+        "observed": "The focused regression now exercises that exact implicit route and the exact-head CI passed on 5c6e4b9ed79d76cb3f3ac96158e506d789597490.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "cards-default-selection",
+          "dimension": "current-invoice-present-with-future-first-order",
+          "status": "passed"
+        },
+        {
+          "surface": "cards-selection-precedence",
+          "dimension": "explicit-month-and-invoiceId",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The regression test was changed to omit month and invoiceId in the no-current-invoice scenario."
+      },
+      "detection_change": {
+        "evidence": "NC-NO-CURRENT-INVOICE now explicitly requires the implicit route, so an implementation that fixes only the explicit month branch fails the control."
+      },
+      "required_risk_families": [
+        "temporal-destination"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "temporal-destination",
+          "surface": "cards-default-selection",
+          "dimension": "implicit-no-current-invoice"
+        }
+      ],
+      "revalidated_head_sha": "5c6e4b9ed79d76cb3f3ac96158e506d789597490"
     }
   ]
 }
