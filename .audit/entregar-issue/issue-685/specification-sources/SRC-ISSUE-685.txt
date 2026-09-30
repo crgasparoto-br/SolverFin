@@ -1,0 +1,29 @@
+## Objetivo
+
+Remover a repetição do código da moeda nos indicadores do resumo da fatura em `/cartoes`, preservando a moeda explícita fornecida pela primitiva `Money`.
+
+## Contexto
+
+Na rota `/cartoes?cardId=<id>&month=<AAAA-MM>`, os cards **Total da fatura**, **Conciliado**, **Não conciliado** e **Limite disponível** exibem o valor monetário com a moeda e, logo abaixo, repetem o mesmo código (por exemplo, `BRL`).
+
+A causa observada é a composição do `summaryMetric`: o valor já é renderizado pela primitiva `Money`, que inclui o código da moeda, e o card adiciona um segundo `<small>` com a mesma moeda.
+
+## Escopo
+
+- ajustar o resumo da fatura em `apps/web/src/dev-server/cards-page-v2.ts`;
+- manter a moeda explícita por meio da primitiva `Money`;
+- adicionar regressão automatizada em `cards-page-v2.test.ts`;
+- não alterar cálculos, agregações, API ou semântica financeira.
+
+## Critérios de aceite
+
+- cada indicador monetário do resumo exibe o código da moeda apenas uma vez;
+- o comportamento vale para BRL, USD e outras moedas suportadas, sem hardcode;
+- a moeda continua explícita no valor monetário conforme o contrato multi-moedas;
+- o estado de indisponibilidade não inventa moeda nem valor;
+- testes focados da tela passam e nenhuma regra financeira é alterada.
+
+## Testes
+
+- cobrir no teste de `/cartoes` que os quatro indicadores do resumo não adicionam um segundo código de moeda fora da primitiva `Money`;
+- preservar as verificações existentes de moeda explícita e hierarquia da fatura.
