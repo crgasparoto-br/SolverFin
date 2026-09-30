@@ -202,7 +202,7 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
 
   const currentHtml = await renderCardsPageV2(
     "session-token",
-    new URL(`http://solverfin.local/cartoes?cardId=card-1&month=${currentMonth}`),
+    new URL("http://solverfin.local/cartoes?cardId=card-1"),
   );
   const currentNavigation = invoiceNavigation(currentHtml);
 
