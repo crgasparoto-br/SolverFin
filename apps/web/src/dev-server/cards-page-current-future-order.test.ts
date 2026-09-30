@@ -90,6 +90,23 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
     return jsonResponse({});
   };
 
+  const initialHtml = await renderCardsPageV2(
+    "session-token",
+    new URL("http://solverfin.local/cartoes?cardId=card-1"),
+  );
+  const initialNavigation = invoiceNavigation(initialHtml);
+  assert.match(
+    initialNavigation,
+    new RegExp(`<strong>${formatMonthLabel(currentMonth)}</strong>`),
+    "entrada sem competência deve permanecer no mês corrente",
+  );
+  assert.match(initialNavigation, /Sem fatura/, "entrada inicial não deve saltar para fatura futura");
+  assert.equal(
+    initialNavigation.includes("invoice-later"),
+    false,
+    "fatura aberta distante no futuro não pode virar a seleção inicial",
+  );
+
   const currentHtml = await renderCardsPageV2(
     "session-token",
     new URL(`http://solverfin.local/cartoes?cardId=card-1&month=${currentMonth}`),
@@ -147,6 +164,16 @@ function invoiceNavigation(html: string): string {
   const navigation =
     /<div class="cards-invoice-navigation"[\s\S]*?<\/details>\s*<\/div>/.exec(html)?.[0] ?? html;
   return navigation;
+}
+
+function formatMonthLabel(month: string): string {
+  const [year, monthNumber] = month.split("-").map(Number) as [number, number];
+  const label = new Date(Date.UTC(year, monthNumber - 1, 1)).toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function shiftMonth(month: string, offset: number): string {
