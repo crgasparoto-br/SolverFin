@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 685,
+  "created_at": "2026-09-30T13:21:07+00:00",
+  "primary_source_id": "SRC-ISSUE-685",
+  "sources": [
+    {
+      "id": "SRC-ISSUE-685",
+      "kind": "issue-body",
+      "path": "specification-sources/SRC-ISSUE-685.txt",
+      "locator": "https://github.com/crgasparoto-br/SolverFin/issues/685",
+      "sha256": "cab51489d6aed48a3535f271d41e468716d8cbd286d15cb8f998c52124684b47",
+      "textual": true,
+      "extract_source_id": null,
+      "required": true,
+      "line_count": 29
+    }
+  ]
+}
