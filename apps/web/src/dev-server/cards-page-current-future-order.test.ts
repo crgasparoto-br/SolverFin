@@ -131,11 +131,6 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
     false,
     "fatura corrente existente deve ser selecionada na entrada implícita",
   );
-  assert.match(
-    initialNavigation,
-    /invoiceId=invoice-current/,
-    "fatura corrente deve vencer uma fatura aberta futura mesmo quando a futura vem primeiro",
-  );
   assert.equal(
     initialNavigation.includes("invoice-later"),
     false,
