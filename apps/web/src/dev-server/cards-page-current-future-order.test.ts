@@ -61,28 +61,92 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
       return jsonResponse({ instruments: [] });
     }
     if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
+    if (url.pathname === "/api/invoices/invoice-next/summary") {
+      return jsonResponse({
+        summary: {
+          amountDueMinor: 0,
+          cardId: "card-1",
+          cardName: "Cartão principal",
+          cardTotals: [],
+          closingOn: `${nextMonth}-20`,
+          dueOn: `${shiftMonth(nextMonth, 1)}-10`,
+          financialProfileId: "profile-1",
+          invoiceId: "invoice-next",
+          periodStartOn: `${nextMonth}-01`,
+          previousBalanceMinor: 0,
+          purchasesCount: 0,
+          reconciledExpensesMinor: 0,
+          status: "open",
+          totalExpensesMinor: 0,
+          totalPaidMinor: 0,
+          unreconciledExpensesMinor: 0,
+        },
+      });
+    }
+    if (url.pathname === "/api/invoices/invoice-next/purchases") {
+      return jsonResponse({ purchases: [] });
+    }
+    if (url.pathname === "/api/installments") return jsonResponse({ installments: [] });
     return jsonResponse({});
   };
 
-  const html = await renderCardsPageV2(
+  const currentHtml = await renderCardsPageV2(
     "session-token",
     new URL(`http://solverfin.local/cartoes?cardId=card-1&month=${currentMonth}`),
   );
+  const currentNavigation = invoiceNavigation(currentHtml);
 
-  const navigation =
-    /<div class="cards-invoice-navigation"[\s\S]*?<\/div>\s*<\/div>/.exec(html)?.[0] ?? html;
-  const currentIndex = navigation.indexOf("Sem fatura");
-  const nextIndex = navigation.indexOf("invoice-next");
-  const laterIndex = navigation.indexOf("invoice-later");
-
-  assert.ok(currentIndex >= 0, "mês corrente deve aparecer mesmo sem fatura criada");
-  assert.ok(nextIndex > currentIndex, "próximo mês deve aparecer à direita do mês corrente");
-  assert.ok(laterIndex > nextIndex, "meses futuros devem seguir ordem cronológica crescente");
-  assert.equal(
-    navigation.includes("invoice-previous"),
-    false,
-    "meses anteriores ao corrente não devem preceder a navegação futura",
+  assert.match(currentNavigation, /Sem fatura/, "mês corrente sem fatura deve manter o estado");
+  assert.match(
+    currentNavigation,
+    /cards-invoice-period-link-previous is-disabled/,
+    "mês corrente deve ser o primeiro período elegível",
   );
+  assert.match(
+    currentNavigation,
+    /href="[^"]*invoiceId=invoice-next[^"]*" rel="next"/,
+    "próxima deve apontar para a primeira fatura futura",
+  );
+  assert.equal(
+    currentNavigation.includes("invoice-previous"),
+    false,
+    "faturas anteriores ao mês corrente não devem entrar na navegação",
+  );
+  assert.equal(
+    currentNavigation.includes("invoice-later"),
+    false,
+    "a navegação compacta deve expor somente o vizinho imediato",
+  );
+
+  const nextHtml = await renderCardsPageV2(
+    "session-token",
+    new URL(
+      `http://solverfin.local/cartoes?cardId=card-1&invoiceId=invoice-next&month=${nextMonth}`,
+    ),
+  );
+  const nextNavigation = invoiceNavigation(nextHtml);
+
+  assert.match(
+    nextNavigation,
+    new RegExp(`href="[^"]*month=${currentMonth}[^"]*" rel="prev"`),
+    "ao avançar, Anterior deve retornar ao mês corrente",
+  );
+  assert.match(
+    nextNavigation,
+    /href="[^"]*invoiceId=invoice-later[^"]*" rel="next"/,
+    "Próxima deve avançar cronologicamente para a fatura seguinte",
+  );
+  assert.match(
+    nextNavigation,
+    /data-invoice-month-input/,
+    "seletor direto de mês deve continuar disponível",
+  );
+}
+
+function invoiceNavigation(html: string): string {
+  const navigation =
+    /<div class="cards-invoice-navigation"[\s\S]*?<\/details>\s*<\/div>/.exec(html)?.[0] ?? html;
+  return navigation;
 }
 
 function shiftMonth(month: string, offset: number): string {
