@@ -494,7 +494,7 @@ export function parseTransactionExtractionPayload(
   if (targetKind === null) return undefined;
   if (
     value.invoicePeriod !== undefined &&
-    (typeof value.invoicePeriod !== "string" || !/^\\d{4}-\\d{2}$/.test(value.invoicePeriod))
+    (typeof value.invoicePeriod !== "string" || !/^\d{4}-\d{2}$/.test(value.invoicePeriod))
   )
     return undefined;
   const installmentSequence = parseOptionalPositiveInteger(value.installmentSequence);
