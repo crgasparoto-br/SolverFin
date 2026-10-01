@@ -192,3 +192,12 @@ Mudanças redigidas continuam indicando transição/proposta alterada sem regist
 ## Validação
 
 A cobertura da fila inclui contratos de payload, edição por tipo, versão otimista, replay idempotente, concorrência de decisões, rollback e isolamento. A issue #566 adiciona cenários discriminantes do scanner determinístico generalizado. A issue #567 adiciona payload `insight` V2, isolamento por moeda, exclusão de dados não revisados, persistência/reexecução/substituição idempotente, preservação de V1 de outro produtor, estado observável de dados insuficientes e renderização/navegação contextual com linguagem de produto.
+
+
+## Importações PDF/XLSX (#690)
+
+Extrações de `xlsx` e `pdf` usam a mesma `AiSuggestion kind=transaction_extraction` da fila unificada. A origem continua sendo `import`; o payload V2 pode apontar para conta ou cartão. Nenhum conteúdo binário bruto é persistido na fila.
+
+Para fatura de cartão, a aprovação pela fila deve continuar delegando ao serviço de importação e ao domínio canônico de cartões. O fingerprint inclui cartão, instrumento/hint mascarado, período e parcelamento quando presentes. Alterar o instrumento durante a revisão muda o fingerprint e invalida candidatos determinísticos antigos, como ocorre com as demais correções.
+
+Deduplicação e conciliação permanecem as mesmas sugestões determinísticas tenant-scoped; `cardId` participa da comparação quando a origem é uma compra de cartão.
