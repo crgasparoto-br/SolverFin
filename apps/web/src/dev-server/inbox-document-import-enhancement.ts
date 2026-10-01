@@ -53,13 +53,13 @@ export function enhanceInboxDocumentImport(html: string): string {
         <label id="csv-line-card-instrument-field" hidden>Instrumento do cartão<select name="cardInstrumentId"></select></label>`,
     ],
     [
-      `          const accountById = new Map(accounts.map((account) => [account.id, account]));
-          const categoryById = new Map(categories.map((category) => [category.id, category]));`,
-      `          const accountById = new Map(accounts.map((account) => [account.id, account]));
-          const categoryById = new Map(categories.map((category) => [category.id, category]));
-          const cards = [];
-          const cardById = new Map();
-          let cardsLoaded = false;`,
+      `        const accountById = new Map(accounts.map((account) => [account.id, account]));
+        const categoryById = new Map(categories.map((category) => [category.id, category]));`,
+      `        const accountById = new Map(accounts.map((account) => [account.id, account]));
+        const categoryById = new Map(categories.map((category) => [category.id, category]));
+        const cards = [];
+        const cardById = new Map();
+        let cardsLoaded = false;`,
     ],
     [
       `          const labels = { csv: "CSV", ofx: "OFX", bank_message: "Mensagem bancária", manual: "Manual" };`,
