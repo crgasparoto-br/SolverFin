@@ -110,3 +110,19 @@ Erros inesperados de persistência retornam erro público genérico com `correla
 ## Privacidade
 
 O payload persiste apenas dados normalizados necessários à proposta. Não deve conter prompt bruto, arquivo bruto, mensagem bancária bruta, credencial, token, cabeçalho, stack trace ou resposta integral de provider. Auditoria registra campos alterados de forma redigida.
+
+
+## Extensão V2 para documentos financeiros (#690)
+
+`transaction_extraction` V2 aceita, de forma opcional e compatível com os produtores anteriores:
+
+- `targetKind: account|card`;
+- `cardId`;
+- `cardInstrumentId`;
+- `cardInstrumentHint` mascarado;
+- `invoicePeriod` em `AAAA-MM`;
+- `installmentSequence` e `installmentTotal`.
+
+As origens de importação reconhecidas no envelope passam a incluir `xlsx` e `pdf`. Esses campos entram no fingerprint para que troca de cartão, instrumento, período ou parcelamento torne candidaturas antigas obsoletas.
+
+Na projeção pública, IDs de cartão/instrumento só são incluídos quando `includeScopedEntityIds` foi habilitado depois do recorte tenant/profile. Hint mascarado, período e metadados de parcelamento podem ser exibidos por serem necessários à revisão; arquivo bruto, parser interno completo e dados não normalizados continuam fora do payload.
