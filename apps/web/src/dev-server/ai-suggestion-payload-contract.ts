@@ -146,6 +146,13 @@ function parseTransactionProposal(
     "accountId",
     "otherAccountId",
     "categoryId",
+    "targetKind",
+    "cardId",
+    "cardInstrumentId",
+    "cardInstrumentHint",
+    "invoicePeriod",
+    "installmentSequence",
+    "installmentTotal",
   ]);
   const kind = expectOneOf(record.kind, ["income", "expense", "transfer"] as const);
   const direction =
@@ -168,6 +175,21 @@ function parseTransactionProposal(
     ...optionalString(record, "accountId"),
     ...optionalString(record, "otherAccountId"),
     ...optionalString(record, "categoryId"),
+    ...(payloadVersion === 2 && record.targetKind !== undefined
+      ? { targetKind: expectOneOf(record.targetKind, ["account", "card"] as const) }
+      : {}),
+    ...(payloadVersion === 2 ? optionalString(record, "cardId") : {}),
+    ...(payloadVersion === 2 ? optionalString(record, "cardInstrumentId") : {}),
+    ...(payloadVersion === 2 ? optionalString(record, "cardInstrumentHint") : {}),
+    ...(payloadVersion === 2 && record.invoicePeriod !== undefined
+      ? { invoicePeriod: expectString(record.invoicePeriod) }
+      : {}),
+    ...(payloadVersion === 2 && record.installmentSequence !== undefined
+      ? { installmentSequence: expectPositiveInteger(record.installmentSequence) }
+      : {}),
+    ...(payloadVersion === 2 && record.installmentTotal !== undefined
+      ? { installmentTotal: expectPositiveInteger(record.installmentTotal) }
+      : {}),
   };
 }
 
