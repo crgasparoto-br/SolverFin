@@ -180,9 +180,7 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
   );
   assert.match(
     historicalInvoiceNavigation,
-    new RegExp(
-      `href="[^"]*invoiceId=invoice-current[^"]*month=${currentMonth}[^"]*" rel="next"`,
-    ),
+    new RegExp(`href="[^"]*invoiceId=invoice-current[^"]*month=${currentMonth}[^"]*" rel="next"`),
     "consulta histórica deve avançar exatamente um mês usando a fatura existente",
   );
 
@@ -198,9 +196,7 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
   );
   assert.match(
     historicalMissingNavigation,
-    new RegExp(
-      `href="[^"]*invoiceId=invoice-previous[^"]*month=${previousMonth}[^"]*" rel="next"`,
-    ),
+    new RegExp(`href="[^"]*invoiceId=invoice-previous[^"]*month=${previousMonth}[^"]*" rel="next"`),
     "mês histórico sem fatura deve avançar para a fatura histórica adjacente sem saltos",
   );
 
