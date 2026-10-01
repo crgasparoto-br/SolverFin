@@ -343,14 +343,15 @@ Fase 4A - Previsibilidade e planejamento (#592)
                          |
                          v
 Fase 4B1 - Automacao sem Open Finance (#689)
-                         |
+             |                       |
+             |                       +----> Fase 4B2 - Open Finance
+             |                              (adiada; nao bloqueante)
+             |
              +-----------+-----------+
              |                       |
              v                       v
 Fase 4C - Dimensoes            Fase 4D - Metas/rotina
   e colaboracao                      |
-             |
-             +---- Fase 4B2 - Open Finance (adiada; nao bloqueante)
              |                       |
              v                       |
 Fase 5 - Gestao empresarial          |
