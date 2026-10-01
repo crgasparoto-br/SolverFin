@@ -127,6 +127,8 @@ enum PayableReceivableStatus {
 enum ImportSourceKind {
   CSV
   OFX
+  XLSX
+  PDF
   BANK_MESSAGE
   MANUAL
 }
@@ -750,6 +752,12 @@ model ImportBatch {
   problems           Json             @default("[]")
   csvDelimiter       String?          @db.VarChar(1)
   csvMapping         Json?
+  defaultCardId      String?          @db.Uuid
+  documentClass      String?          @db.VarChar(40)
+  parserId           String?          @db.VarChar(120)
+  parserVersion      String?          @db.VarChar(40)
+  xlsxSheetName      String?          @db.VarChar(120)
+  xlsxMapping        Json?
   receivedAt         DateTime         @default(now())
   completedAt        DateTime?
   createdAt          DateTime         @default(now())
@@ -763,6 +771,7 @@ model ImportBatch {
   @@unique([organizationId, financialProfileId, sourceHash])
   @@index([organizationId, financialProfileId, sourceKind, status])
   @@index([organizationId, financialProfileId, defaultAccountId])
+  @@index([organizationId, financialProfileId, defaultCardId])
   @@index([organizationId, financialProfileId, contentHash])
   @@index([organizationId, financialProfileId, receivedAt])
 }
