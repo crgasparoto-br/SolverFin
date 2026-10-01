@@ -101,11 +101,7 @@ export async function previewStructuredImportForContext(
     }
 
     let cardInstrumentId: string | undefined;
-    if (
-      payload.documentClass === "credit_card_invoice" &&
-      payload.cardId &&
-      row.maskedInstrument
-    ) {
+    if (payload.documentClass === "credit_card_invoice" && payload.cardId && row.maskedInstrument) {
       const matches = await findMatchingInstruments(context, payload.cardId, row.maskedInstrument);
       if (matches.length === 1) cardInstrumentId = matches[0]!.id;
       else {
@@ -467,10 +463,7 @@ async function resolveTarget(
     );
   }
   if (target.status !== "ACTIVE") {
-    throw new ImportReviewError(
-      "IMPORT_CARD_INVALID",
-      "Cartao selecionado precisa estar ativo.",
-    );
+    throw new ImportReviewError("IMPORT_CARD_INVALID", "Cartao selecionado precisa estar ativo.");
   }
   if (!target.currency) {
     throw new ImportReviewError(

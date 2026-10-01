@@ -368,23 +368,15 @@ function parseFixturePdfRows(
     }
 
     const kind =
-      documentClass === "credit_card_invoice"
-        ? "expense"
-        : signed < 0
-          ? "expense"
-          : "income";
+      documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
     const direction =
-      documentClass === "credit_card_invoice"
-        ? "outflow"
-        : signed < 0
-          ? "outflow"
-          : "inflow";
+      documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
     const installment = parseInstallment(installmentRaw);
     const externalId =
       documentClass === "bank_statement" ? safeText(externalOrInstrument, 120) : undefined;
     const maskedInstrument =
       documentClass === "credit_card_invoice"
-        ? safeText(externalOrInstrument, 32) ?? invoiceInstrument
+        ? (safeText(externalOrInstrument, 32) ?? invoiceInstrument)
         : undefined;
     rows.push({
       rowNumber,
@@ -480,22 +472,15 @@ function normalizeMappedRow(
       rowNumber,
       severity: "warning",
       code: "IMPORT_INSTALLMENT_REVIEW_REQUIRED",
-      message: "Parcelamento incompleto ou inconsistente foi mantido para revisao sem ser inventado.",
+      message:
+        "Parcelamento incompleto ou inconsistente foi mantido para revisao sem ser inventado.",
     });
   }
 
   const kind =
-    documentClass === "credit_card_invoice"
-      ? "expense"
-      : signed < 0
-        ? "expense"
-        : "income";
+    documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
   const direction =
-    documentClass === "credit_card_invoice"
-      ? "outflow"
-      : signed < 0
-        ? "outflow"
-        : "inflow";
+    documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
   const row: StructuredImportRow = {
     rowNumber,
     occurredOn,
@@ -616,10 +601,7 @@ function findEndOfCentralDirectory(bytes: Buffer): number {
 function requireZipText(entries: ReadonlyMap<string, Buffer>, path: string): string {
   const entry = entries.get(path);
   if (!entry) {
-    throw new StructuredImportError(
-      "IMPORT_XLSX_INVALID",
-      "Estrutura OOXML obrigatoria ausente.",
-    );
+    throw new StructuredImportError("IMPORT_XLSX_INVALID", "Estrutura OOXML obrigatoria ausente.");
   }
   return entry.toString("utf8");
 }
@@ -796,7 +778,10 @@ function normalizeCurrency(value: string | undefined): string | undefined {
 }
 
 function safeText(value: string | undefined, max: number): string | undefined {
-  const normalized = value?.replace(/[\u0000-\u001f\u007f]/g, " ").trim().replace(/\s+/g, " ");
+  const normalized = value
+    ?.replace(/[\u0000-\u001f\u007f]/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
   return normalized && normalized.length <= max ? normalized : undefined;
 }
 
@@ -813,11 +798,7 @@ function parseInstallment(
   if (!match) return undefined;
   const installmentSequence = Number(match[1]);
   const installmentTotal = Number(match[2]);
-  if (
-    installmentSequence < 1 ||
-    installmentTotal < 1 ||
-    installmentSequence > installmentTotal
-  )
+  if (installmentSequence < 1 || installmentTotal < 1 || installmentSequence > installmentTotal)
     return undefined;
   return { installmentSequence, installmentTotal };
 }

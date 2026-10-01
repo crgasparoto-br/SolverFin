@@ -2513,10 +2513,7 @@ function mapImportBatchRow(row: ImportBatchRow): ImportBatch {
     ...(row.xlsxSheetName === null ? {} : { xlsxSheetName: row.xlsxSheetName }),
     ...(isRecord(row.xlsxMapping)
       ? {
-          xlsxMapping: row.xlsxMapping as Record<
-            string,
-            string | number | boolean | undefined
-          >,
+          xlsxMapping: row.xlsxMapping as Record<string, string | number | boolean | undefined>,
         }
       : {}),
     ...(row.completedAt === null ? {} : { completedAt: row.completedAt.toISOString() }),
