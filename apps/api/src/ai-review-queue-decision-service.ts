@@ -721,6 +721,13 @@ function buildEditedTransactionPayload(
     ...(accountId === undefined ? {} : { accountId }),
     ...(categoryId === undefined ? {} : { categoryId }),
     ...(current.externalId === undefined ? {} : { externalId: current.externalId }),
+    ...(current.payloadVersion !== 2 || current.targetKind === undefined ? {} : { targetKind: current.targetKind }),
+    ...(current.payloadVersion !== 2 || current.cardId === undefined ? {} : { cardId: current.cardId }),
+    ...(current.payloadVersion !== 2 || current.cardInstrumentId === undefined ? {} : { cardInstrumentId: current.cardInstrumentId }),
+    ...(current.payloadVersion !== 2 || current.cardInstrumentHint === undefined ? {} : { cardInstrumentHint: current.cardInstrumentHint }),
+    ...(current.payloadVersion !== 2 || current.invoicePeriod === undefined ? {} : { invoicePeriod: current.invoicePeriod }),
+    ...(current.payloadVersion !== 2 || current.installmentSequence === undefined ? {} : { installmentSequence: current.installmentSequence }),
+    ...(current.payloadVersion !== 2 || current.installmentTotal === undefined ? {} : { installmentTotal: current.installmentTotal }),
   };
 
   if (current.payloadVersion === 1 && kind !== "transfer" && otherAccountId === undefined) {
