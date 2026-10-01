@@ -344,3 +344,19 @@ Consequencias do contrato:
 - repetir o pagamento de uma fatura ja paga e rejeitado por `CARD_INVOICE_ALREADY_PAID` antes de criar outra transacao, preservando a idempotencia financeira do fluxo.
 
 Relatorios que exponham despesa economica devem documentar explicitamente essa exclusao. O contrato atual de evolucao por categoria esta em `docs/API_REPORTS.md`.
+
+
+## Importação de faturas PDF/XLSX (#690)
+
+Faturas importadas por `/api/import-batches/pdf` ou `/api/import-batches/xlsx` não criam um modelo financeiro paralelo. Cada linha revisável referencia o `Card` canônico e, quando confirmado, um `CardInstrument` canônico.
+
+A aprovação chama `registerCardPurchaseForContext` dentro da mesma transação que resolve a `AiSuggestion`. A compra resultante recebe `source=import`, `importBatchId` e `aiSuggestionId`; resolução/criação de `Invoice`, parcelas e projeções continua pertencendo ao domínio de cartões.
+
+Regras específicas:
+
+- a moeda da linha deve coincidir com a moeda canônica do cartão; não há FX implícito;
+- identificador mascarado único pode pré-selecionar o instrumento, mas ambiguidade ou ausência bloqueia a aprovação até revisão explícita;
+- `invoicePeriod`, quando fornecido pela origem, precisa coincidir com o período da fatura calculado pelo domínio;
+- parcelamento só é materializado quando sequência e total foram extraídos de forma consistente;
+- total da fatura, pagamento, saldo anterior e linhas de resumo não são tratados como compras;
+- deduplicação/conciliação usa o mesmo detector determinístico compartilhado, incluindo `cardId` como evidência.
