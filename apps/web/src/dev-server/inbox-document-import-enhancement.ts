@@ -363,12 +363,12 @@ export function enhanceInboxDocumentImport(html: string): string {
     'name="documentClass"',
     'name="cardId"',
     'name="sheetName"',
-    'csv-line-card-instrument-field',
+    "csv-line-card-instrument-field",
     'name.endsWith(".xlsx")',
     'name.endsWith(".pdf")',
-    'contentBase64: arrayBufferToBase64',
-    'function currentXlsxMapping()',
-    'function normalizeStructuredPreview(result)',
+    "contentBase64: arrayBufferToBase64",
+    "function currentXlsxMapping()",
+    "function normalizeStructuredPreview(result)",
   ];
 
   if (!requiredEnhancements.every((fragment) => enhanced.includes(fragment))) return html;
