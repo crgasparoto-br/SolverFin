@@ -166,17 +166,23 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
 
   const historicalInvoiceHtml = await renderCardsPageV2(
     "session-token",
-    new URL(`http://solverfin.local/cartoes?cardId=card-1&month=${previousMonth}&profileId=profile-1`),
+    new URL(
+      `http://solverfin.local/cartoes?cardId=card-1&month=${previousMonth}&profileId=profile-1`,
+    ),
   );
   const historicalInvoiceNavigation = invoiceNavigation(historicalInvoiceHtml);
   assert.match(
     historicalInvoiceNavigation,
-    new RegExp(`href="[^"]*month=${olderMonth}[^"]*profileId=profile-1[^"]*" rel="prev"|href="[^"]*profileId=profile-1[^"]*month=${olderMonth}[^"]*" rel="prev"`),
+    new RegExp(
+      `href="[^"]*month=${olderMonth}[^"]*profileId=profile-1[^"]*" rel="prev"|href="[^"]*profileId=profile-1[^"]*month=${olderMonth}[^"]*" rel="prev"`,
+    ),
     "consulta histórica deve permitir voltar exatamente um mês e preservar profileId",
   );
   assert.match(
     historicalInvoiceNavigation,
-    new RegExp(`href="[^"]*invoiceId=invoice-current[^"]*month=${currentMonth}[^"]*" rel="next"`),
+    new RegExp(
+      `href="[^"]*invoiceId=invoice-current[^"]*month=${currentMonth}[^"]*" rel="next"`,
+    ),
     "consulta histórica deve avançar exatamente um mês usando a fatura existente",
   );
 
@@ -192,7 +198,9 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
   );
   assert.match(
     historicalMissingNavigation,
-    new RegExp(`href="[^"]*invoiceId=invoice-previous[^"]*month=${previousMonth}[^"]*" rel="next"`),
+    new RegExp(
+      `href="[^"]*invoiceId=invoice-previous[^"]*month=${previousMonth}[^"]*" rel="next"`,
+    ),
     "mês histórico sem fatura deve avançar para a fatura histórica adjacente sem saltos",
   );
 
