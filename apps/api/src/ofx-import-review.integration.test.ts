@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { closePool, query } from "./db.js";
+import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
     await assertConfigurationChangeUsesDistinctBatch(token, fixtures);
     await assertEditBulkConcurrencyAndDiscard(token, fixtures);
     await assertDeterministicDeduplicationAndReconciliation(token, fixtures);
+    await assertStructuredDocumentApiBoundaries(token, fixtures);
     await assertTenantIsolationAndMixedListing(token, created.importBatch.id);
     await assertRawContentWasNotPersisted(fixtures.suffix);
   });
@@ -485,6 +487,117 @@ async function createTransaction(
   return readBody<{ transaction: { id: string } }>(response).transaction;
 }
 
+async function assertStructuredDocumentApiBoundaries(
+  token: string,
+  fixtures: Fixtures,
+): Promise<void> {
+  const xlsxBoundary = await apiRequest(token, "POST", "/api/import-batches/xlsx/preview", {
+    originalFileName: `empty-${fixtures.suffix}.xlsx`,
+    contentBase64: "",
+    documentClass: "bank_statement",
+    accountId: fixtures.accountId,
+    consentAccepted: true,
+  });
+  assert.equal(xlsxBoundary.statusCode, 400);
+  assert.equal(readErrorCode(xlsxBoundary), "IMPORT_FILE_EMPTY");
+
+  const cardResponse = await apiRequest(token, "POST", "/api/credit-card-accounts", {
+    name: `Cartao importado ${fixtures.suffix}`,
+    currency: "BRL",
+    closingDay: 20,
+    dueDay: 10,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico titular",
+        maskedIdentifier: "**** 1234",
+      },
+    ],
+  });
+  assert.equal(cardResponse.statusCode, 201);
+  const card = readBody<{
+    creditCardAccount: {
+      id: string;
+      instruments: Array<{ id: string; maskedIdentifier?: string | null }>;
+    };
+  }>(cardResponse).creditCardAccount;
+  const instrument = card.instruments[0];
+  assert.ok(instrument);
+
+  const pdfContentBase64 = Buffer.from(
+    [
+      "%PDF-1.7",
+      "%SOLVERFIN:CARD-INVOICE:V1",
+      "%META|currency=BRL|invoicePeriod=2026-09|instrument=**** 1234",
+      `%PURCHASE|2026-09-01|10.00|BRL|Cafe ${fixtures.suffix}|**** 1234|1/3`,
+      "%TOTAL|10.00",
+      "%PAYMENT|10.00",
+      "%%EOF",
+    ].join("\n"),
+    "latin1",
+  ).toString("base64");
+
+  const previewResponse = await apiRequest(token, "POST", "/api/import-batches/pdf/preview", {
+    originalFileName: `invoice-${fixtures.suffix}.pdf`,
+    contentBase64: pdfContentBase64,
+    documentClass: "credit_card_invoice",
+    cardId: card.id,
+    consentAccepted: true,
+  });
+  assert.equal(previewResponse.statusCode, 200);
+  const preview = readBody<{
+    persisted: boolean;
+    sourceKind: string;
+    preview: {
+      state: string;
+      pdf?: { parserId: string; parserVersion: string; institution: string };
+      rows: unknown[];
+    };
+    suggestions: Array<{
+      payload: {
+        cardId?: string;
+        cardInstrumentId?: string;
+        invoicePeriod?: string;
+      };
+    }>;
+  }>(previewResponse);
+  assert.equal(preview.persisted, false);
+  assert.equal(preview.sourceKind, "pdf");
+  assert.equal(preview.preview.state, "ready");
+  assert.equal(preview.preview.pdf?.parserId, "solverfin-fixture-card-invoice");
+  assert.equal(preview.preview.pdf?.parserVersion, "1");
+  assert.equal(preview.suggestions.length, 1);
+  assert.equal(preview.suggestions[0]?.payload.cardId, card.id);
+  assert.equal(preview.suggestions[0]?.payload.cardInstrumentId, instrument.id);
+  assert.equal(preview.suggestions[0]?.payload.invoicePeriod, "2026-09");
+
+  const createResponse = await apiRequest(token, "POST", "/api/import-batches/pdf", {
+    originalFileName: `invoice-${fixtures.suffix}.pdf`,
+    contentBase64: pdfContentBase64,
+    documentClass: "credit_card_invoice",
+    cardId: card.id,
+    consentAccepted: true,
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const created = readBody<ImportDetail>(createResponse);
+  const suggestion = requireSuggestion(created, 0);
+
+  const updateResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/import-batches/${created.importBatch.id}/suggestions/${suggestion.id}`,
+    {
+      invoicePeriod: "2026-10",
+      cardInstrumentId: instrument.id,
+    },
+  );
+  assert.equal(updateResponse.statusCode, 200);
+  const updated = readBody<{ suggestion: ImportSuggestion }>(updateResponse).suggestion;
+  assert.equal(updated.payload.invoicePeriod, "2026-10");
+  assert.equal(updated.payload.cardInstrumentId, instrument.id);
+}
+
 async function assertTenantIsolationAndMixedListing(
   token: string,
   importBatchId: string,
@@ -594,6 +707,7 @@ async function apiRequest(
   };
   const response =
     (await handleImportBatchesApiRequest(request)) ??
+    (await handleCreditCardAccountsApiRequest(request)) ??
     (await handleDeduplicationReconciliationApiRequest(request)) ??
     (await handleApiRequest(request));
   assert.ok(response, `${method} ${path} should be handled`);
@@ -644,6 +758,9 @@ interface ImportSuggestion {
     categoryId?: string;
     targetTransactionId?: string;
     sourceSuggestionId?: string;
+    cardId?: string;
+    cardInstrumentId?: string;
+    invoicePeriod?: string;
   };
   candidates?: Array<{ id: string; status: string }>;
   transaction?: { id: string; status: string };
