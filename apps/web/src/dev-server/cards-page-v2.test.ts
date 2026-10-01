@@ -271,9 +271,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /type="month" name="month"/);
   assert.match(html, /cards-invoice-current/);
   assert.match(html, /cards-invoice-period-status">Aberta/);
-  assert.match(html, /cards-invoice-period-link-previous is-disabled/);
+  assert.match(html, /cards-invoice-period-link cards-invoice-period-link-previous" href=/);
   assert.match(html, /Escolher outro mês/);
-  assert.doesNotMatch(html, /invoiceId=invoice-jul/);
+  assert.match(html, /invoiceId=invoice-jul/);
   assert.match(html, /data-currency="USD"/);
   assert.doesNotMatch(
     html,

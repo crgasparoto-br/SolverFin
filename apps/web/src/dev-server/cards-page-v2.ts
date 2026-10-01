@@ -650,9 +650,27 @@ function renderInvoiceNavigation(
     0,
     orderedPeriods.findIndex(([month]) => month === selectedMonth),
   );
-  const previousPeriod = selectedIndex > 0 ? orderedPeriods[selectedIndex - 1] : undefined;
-  const nextPeriod =
-    selectedIndex < orderedPeriods.length - 1 ? orderedPeriods[selectedIndex + 1] : undefined;
+  const historicalSelection = selectedMonth < firstMonth;
+  const adjacentPeriod = (month: string, offset: number): [string, InvoiceRecord | undefined] => {
+    const [year, monthNumber] = month.split("-").map(Number) as [number, number];
+    const adjacentMonth = new Date(Date.UTC(year, monthNumber - 1 + offset, 1))
+      .toISOString()
+      .slice(0, 7);
+    return [
+      adjacentMonth,
+      invoices.find((invoice) => invoice.periodEndOn.slice(0, 7) === adjacentMonth),
+    ];
+  };
+  const previousPeriod = historicalSelection
+    ? adjacentPeriod(selectedMonth, -1)
+    : selectedIndex > 0
+      ? orderedPeriods[selectedIndex - 1]
+      : undefined;
+  const nextPeriod = historicalSelection
+    ? adjacentPeriod(selectedMonth, 1)
+    : selectedIndex < orderedPeriods.length - 1
+      ? orderedPeriods[selectedIndex + 1]
+      : undefined;
   const navigationHref = ([month, invoice]: [string, InvoiceRecord | undefined]): string =>
     invoice ? buildInvoiceHref(url, cardId, invoice) : buildMonthHref(url, cardId, month);
   const profileId = url.searchParams.get("profileId");

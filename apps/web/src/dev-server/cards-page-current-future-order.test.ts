@@ -13,6 +13,8 @@ try {
 async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<void> {
   const currentMonth = new Date().toISOString().slice(0, 7);
   const previousMonth = shiftMonth(currentMonth, -1);
+  const olderMonth = shiftMonth(currentMonth, -2);
+  const oldestMonth = shiftMonth(currentMonth, -3);
   const nextMonth = shiftMonth(currentMonth, 1);
   const laterMonth = shiftMonth(currentMonth, 2);
 
@@ -87,6 +89,31 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
     if (url.pathname === "/api/invoices/invoice-current/purchases") {
       return jsonResponse({ purchases: [] });
     }
+    if (url.pathname === "/api/invoices/invoice-previous/summary") {
+      return jsonResponse({
+        summary: {
+          amountDueMinor: 0,
+          cardId: "card-1",
+          cardName: "Cartão principal",
+          cardTotals: [],
+          closingOn: `${previousMonth}-20`,
+          dueOn: `${currentMonth}-10`,
+          financialProfileId: "profile-1",
+          invoiceId: "invoice-previous",
+          periodStartOn: `${previousMonth}-01`,
+          previousBalanceMinor: 0,
+          purchasesCount: 0,
+          reconciledExpensesMinor: 0,
+          status: "open",
+          totalExpensesMinor: 0,
+          totalPaidMinor: 0,
+          unreconciledExpensesMinor: 0,
+        },
+      });
+    }
+    if (url.pathname === "/api/invoices/invoice-previous/purchases") {
+      return jsonResponse({ purchases: [] });
+    }
     if (url.pathname === "/api/invoices/invoice-next/summary") {
       return jsonResponse({
         summary: {
@@ -135,6 +162,42 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
     initialNavigation.includes("invoice-later"),
     false,
     "fatura aberta distante no futuro não pode virar a seleção inicial",
+  );
+
+  const historicalInvoiceHtml = await renderCardsPageV2(
+    "session-token",
+    new URL(
+      `http://solverfin.local/cartoes?cardId=card-1&month=${previousMonth}&profileId=profile-1`,
+    ),
+  );
+  const historicalInvoiceNavigation = invoiceNavigation(historicalInvoiceHtml);
+  assert.match(
+    historicalInvoiceNavigation,
+    new RegExp(
+      `href="[^"]*month=${olderMonth}[^"]*profileId=profile-1[^"]*" rel="prev"|href="[^"]*profileId=profile-1[^"]*month=${olderMonth}[^"]*" rel="prev"`,
+    ),
+    "consulta histórica deve permitir voltar exatamente um mês e preservar profileId",
+  );
+  assert.match(
+    historicalInvoiceNavigation,
+    new RegExp(`href="[^"]*invoiceId=invoice-current[^"]*month=${currentMonth}[^"]*" rel="next"`),
+    "consulta histórica deve avançar exatamente um mês usando a fatura existente",
+  );
+
+  const historicalMissingHtml = await renderCardsPageV2(
+    "session-token",
+    new URL(`http://solverfin.local/cartoes?cardId=card-1&month=${olderMonth}`),
+  );
+  const historicalMissingNavigation = invoiceNavigation(historicalMissingHtml);
+  assert.match(
+    historicalMissingNavigation,
+    new RegExp(`href="[^"]*month=${oldestMonth}[^"]*" rel="prev"`),
+    "mês histórico sem fatura deve continuar permitindo voltar um mês",
+  );
+  assert.match(
+    historicalMissingNavigation,
+    new RegExp(`href="[^"]*invoiceId=invoice-previous[^"]*month=${previousMonth}[^"]*" rel="next"`),
+    "mês histórico sem fatura deve avançar para a fatura histórica adjacente sem saltos",
   );
 
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
