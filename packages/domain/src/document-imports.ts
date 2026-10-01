@@ -368,9 +368,17 @@ function parseFixturePdfRows(
     }
 
     const kind =
-      documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
+      documentClass === "credit_card_invoice"
+        ? "expense"
+        : signed < 0
+          ? "expense"
+          : "income";
     const direction =
-      documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
+      documentClass === "credit_card_invoice"
+        ? "outflow"
+        : signed < 0
+          ? "outflow"
+          : "inflow";
     const installment = parseInstallment(installmentRaw);
     const externalId =
       documentClass === "bank_statement" ? safeText(externalOrInstrument, 120) : undefined;
@@ -472,15 +480,22 @@ function normalizeMappedRow(
       rowNumber,
       severity: "warning",
       code: "IMPORT_INSTALLMENT_REVIEW_REQUIRED",
-      message:
-        "Parcelamento incompleto ou inconsistente foi mantido para revisao sem ser inventado.",
+      message: "Parcelamento incompleto ou inconsistente foi mantido para revisao sem ser inventado.",
     });
   }
 
   const kind =
-    documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
+    documentClass === "credit_card_invoice"
+      ? "expense"
+      : signed < 0
+        ? "expense"
+        : "income";
   const direction =
-    documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
+    documentClass === "credit_card_invoice"
+      ? "outflow"
+      : signed < 0
+        ? "outflow"
+        : "inflow";
   const row: StructuredImportRow = {
     rowNumber,
     occurredOn,

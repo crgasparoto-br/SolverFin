@@ -1533,7 +1533,11 @@ async function validateExtractionReferences(
         "Linhas de fatura de cartao precisam representar compras de saida.",
       );
     }
-    const cardRows = await executeQuery<{ id: string; status: string; currency: string | null }>(
+    const cardRows = await executeQuery<{
+      id: string;
+      status: string;
+      currency: string | null;
+    }>(
       `select "id", "status", "currency" from "Card"
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
       [payload.cardId, context.organizationId, context.financialProfileId],
