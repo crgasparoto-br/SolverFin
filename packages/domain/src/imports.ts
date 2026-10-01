@@ -493,6 +493,9 @@ export function parseTransactionExtractionPayload(
     ...(typeof value.cardInstrumentId === "string" && value.cardInstrumentId.length > 0
       ? { cardInstrumentId: value.cardInstrumentId }
       : {}),
+    ...(typeof value.cardInstrumentHint === "string" && value.cardInstrumentHint.trim().length > 0
+      ? { cardInstrumentHint: value.cardInstrumentHint.trim() }
+      : {}),
     ...(typeof value.invoicePeriod === "string" ? { invoicePeriod: value.invoicePeriod } : {}),
     ...(installmentSequence === undefined ? {} : { installmentSequence }),
     ...(installmentTotal === undefined ? {} : { installmentTotal }),
@@ -524,6 +527,7 @@ export function buildImportPayloadFingerprint(payload: TransactionExtractionPayl
       payload.targetKind ?? "account",
       payload.cardId ?? "",
       payload.cardInstrumentId ?? "",
+      payload.cardInstrumentHint ?? "",
       payload.invoicePeriod ?? "",
       payload.installmentSequence ?? "",
       payload.installmentTotal ?? "",
