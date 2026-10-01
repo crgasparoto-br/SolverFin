@@ -408,6 +408,7 @@ model Card {
   invoices         Invoice[]
   installments     Installment[]
   recurrences      Recurrence[]
+  importBatches     ImportBatch[]       @relation("ImportBatchDefaultCard")
 
   @@unique([id, organizationId, financialProfileId])
   @@index([organizationId, financialProfileId, status])
@@ -765,6 +766,7 @@ model ImportBatch {
 
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   defaultAccount   Account?         @relation("ImportBatchDefaultAccount", fields: [defaultAccountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
+  defaultCard      Card?            @relation("ImportBatchDefaultCard", fields: [defaultCardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   transactions     Transaction[]
 
   @@unique([id, organizationId, financialProfileId])
