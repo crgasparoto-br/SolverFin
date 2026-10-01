@@ -79,7 +79,10 @@ describe("Inbox category hierarchy first render", () => {
       assert.match(html, /data-inbox-categories-unavailable="true"/);
       assert.match(html, /Categorias temporariamente indisponíveis/);
       assert.match(html, /data-inbox-ofx-import-enhanced/);
-      assert.match(html, /accept="\.csv,\.ofx,text\/csv,text\/plain,application\/x-ofx"/);
+      assert.match(
+        html,
+        /accept="\.csv,\.ofx,\.xlsx,\.pdf,text\/csv,text\/plain,application\/x-ofx,application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet,application\/pdf"/,
+      );
       assert.match(html, /\/api\/import-batches\/" \+ fileData\.kind \+ "\/preview"/);
       assert.doesNotMatch(html, /data-inbox-category-hierarchy-enhanced/);
     } finally {
