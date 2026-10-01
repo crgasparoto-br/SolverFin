@@ -152,15 +152,15 @@ A primeira trilha da Fase 4 esta **concluida** na epica #592 e fornece a base de
 
 A Fase 4B1 esta **planejada e em backlog operacional** na epica #689. Open Finance foi separado para a Fase 4B2 e nao faz parte deste ciclo.
 
-| Capacidade                                              | Estado    | Contrato principal |
-| ------------------------------------------------------- | --------- | ------------------ |
-| Importacao PDF/XLSX pelo pipeline canonico              | Planejado | #690               |
-| Anexos nas jornadas financeiras                         | Planejado | #691               |
-| Exportacoes CSV/XLSX/PDF reproduziveis                  | Planejado | #692               |
-| Fundacao de notificacoes deterministicas                | Planejado | #693               |
-| WhatsApp para consulta/captura revisavel                | Planejado | #694               |
-| WhatsApp com propostas financeiras confirmaveis         | Planejado | #695               |
-| Open Finance read-only                                  | Planejado futuro | Fase 4B2; sem issue operacional |
+| Capacidade                                      | Estado           | Contrato principal              |
+| ----------------------------------------------- | ---------------- | ------------------------------- |
+| Importacao PDF/XLSX pelo pipeline canonico      | Planejado        | #690                            |
+| Anexos nas jornadas financeiras                 | Planejado        | #691                            |
+| Exportacoes CSV/XLSX/PDF reproduziveis          | Planejado        | #692                            |
+| Fundacao de notificacoes deterministicas        | Planejado        | #693                            |
+| WhatsApp para consulta/captura revisavel        | Planejado        | #694                            |
+| WhatsApp com propostas financeiras confirmaveis | Planejado        | #695                            |
+| Open Finance read-only                          | Planejado futuro | Fase 4B2; sem issue operacional |
 
 ### Regras da Fase 4B1
 
