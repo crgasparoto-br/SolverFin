@@ -208,7 +208,16 @@ export function enhanceInboxDocumentImport(html: string): string {
             if (current) sheetSelect.value = current;
           }
           const problems = preview.problems || [];
+          const pdf = preview.pdf || {};
+          const pdfLayoutSummary = pdf.parserId
+            ? '<div class="mapping-interpretation"><strong>Layout PDF reconhecido</strong><ul><li>' + escapeHtml(pdf.institution || "Instituição homologada") + ' · ' + escapeHtml(pdf.parserId) + ' · versão ' + escapeHtml(pdf.parserVersion || "não informada") + '</li></ul></div>'
+            : "";
           const sampleRows = (csv.sampleRows && csv.sampleRows.length ? csv.sampleRows : preview.suggestions) || [];`,
+    ],
+    [
+      `            renderInterpretation(csv) +`,
+      `            pdfLayoutSummary +
+            renderInterpretation(csv) +`,
     ],
     [
       `          createButton.disabled = preview.state !== "ready" || Number(preview.batch.validRows || 0) < 1 || !form.elements.accountId.value || !form.elements.consentAccepted.checked;`,
