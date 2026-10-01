@@ -107,6 +107,13 @@ function parseCurrentTransactionExtraction(
     "otherAccountId",
     "categoryId",
     "externalId",
+    "targetKind",
+    "cardId",
+    "cardInstrumentId",
+    "cardInstrumentHint",
+    "invoicePeriod",
+    "installmentSequence",
+    "installmentTotal",
   ]);
   return {
     ...common,
@@ -340,12 +347,49 @@ function parseTransactionOptionalFields(
   otherAccountId?: string;
   categoryId?: string;
   externalId?: string;
+  targetKind?: "account" | "card";
+  cardId?: string;
+  cardInstrumentId?: string;
+  cardInstrumentHint?: string;
+  invoicePeriod?: string;
+  installmentSequence?: number;
+  installmentTotal?: number;
 } {
+  const invoicePeriod =
+    version === 2 && record.invoicePeriod !== undefined ? expectString(record.invoicePeriod) : undefined;
+  if (invoicePeriod !== undefined && !/^\\d{4}-\\d{2}$/.test(invoicePeriod)) {
+    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_INVALID");
+  }
+  const installmentSequence =
+    version === 2 && record.installmentSequence !== undefined
+      ? expectPositiveInteger(record.installmentSequence)
+      : undefined;
+  const installmentTotal =
+    version === 2 && record.installmentTotal !== undefined
+      ? expectPositiveInteger(record.installmentTotal)
+      : undefined;
+  if (
+    (installmentSequence === undefined) !== (installmentTotal === undefined) ||
+    (installmentSequence !== undefined &&
+      installmentTotal !== undefined &&
+      installmentSequence > installmentTotal)
+  ) {
+    throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_INVALID");
+  }
   return {
     ...optionalString(record, "accountId"),
     ...(version === 2 ? optionalString(record, "otherAccountId") : {}),
     ...optionalString(record, "categoryId"),
     ...optionalString(record, "externalId"),
+    ...(version === 2 && record.targetKind !== undefined
+      ? { targetKind: expectOneOf(record.targetKind, ["account", "card"] as const) }
+      : {}),
+    ...(version === 2 ? optionalString(record, "cardId") : {}),
+    ...(version === 2 ? optionalString(record, "cardInstrumentId") : {}),
+    ...(version === 2 ? optionalString(record, "cardInstrumentHint") : {}),
+    ...(invoicePeriod === undefined ? {} : { invoicePeriod }),
+    ...(installmentSequence === undefined ? {} : { installmentSequence }),
+    ...(installmentTotal === undefined ? {} : { installmentTotal }),
   };
 }
 
@@ -366,6 +410,8 @@ function parseOrigin(value: unknown): AiSuggestionPayloadOrigin {
         sourceKind: expectOneOf(record.sourceKind, [
           "csv",
           "ofx",
+          "xlsx",
+          "pdf",
           "bank_message",
           "manual",
         ] as const),
