@@ -56,6 +56,10 @@ const LARGE_IMPORT_BODY_PATHS = new Set([
   "/api/import-batches/csv",
   "/api/import-batches/ofx/preview",
   "/api/import-batches/ofx",
+  "/api/import-batches/xlsx/preview",
+  "/api/import-batches/xlsx",
+  "/api/import-batches/pdf/preview",
+  "/api/import-batches/pdf",
 ]);
 
 if (!isDemoAuthAllowed(process.env)) {
