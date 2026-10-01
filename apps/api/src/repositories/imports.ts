@@ -1551,6 +1551,33 @@ async function validateExtractionReferences(
         );
       }
     }
+    if (payload.cardInstrumentId === undefined && payload.cardInstrumentHint !== undefined) {
+      const matches = await executeQuery<{ id: string }>(
+        `select "id" from "CardInstrument"
+         where "cardId" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+           and "status" = 'ACTIVE' and "maskedIdentifier" = $4`,
+        [payload.cardId, context.organizationId, context.financialProfileId, payload.cardInstrumentHint],
+      );
+      if (matches.length > 1) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTRUMENT_AMBIGUOUS",
+          "Mais de um instrumento corresponde ao identificador da fatura; selecione o instrumento antes de aprovar.",
+          409,
+        );
+      }
+      if (matches.length === 0) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTRUMENT_NOT_FOUND",
+          "O identificador da fatura nao corresponde a um instrumento ativo; selecione o instrumento antes de aprovar.",
+          409,
+        );
+      }
+      throw new ImportReviewError(
+        "IMPORT_CARD_INSTRUMENT_REVIEW_REQUIRED",
+        "Confirme explicitamente o instrumento sugerido antes de aprovar a compra.",
+        409,
+      );
+    }
   } else if (payload.accountId === undefined) {
     throw new ImportReviewError(
       "IMPORT_ACCOUNT_REQUIRED",
