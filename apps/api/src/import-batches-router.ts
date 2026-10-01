@@ -34,6 +34,7 @@ import { previewOfxImportForContext } from "./repositories/ofx-imports.js";
 import {
   createStructuredImportBatchForContext,
   previewStructuredImportForContext,
+  type StructuredImportPayload,
 } from "./repositories/document-imports.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
@@ -457,7 +458,7 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
 function readStructuredImportPayload(
   body: Record<string, unknown>,
   kind: "xlsx" | "pdf",
-) {
+): StructuredImportPayload {
   assertConsent(body);
   const documentClass = String(body.documentClass ?? "");
   if (documentClass !== "bank_statement" && documentClass !== "credit_card_invoice") {

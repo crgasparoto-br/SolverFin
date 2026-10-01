@@ -453,7 +453,10 @@ begin
         and not "isValidAiSuggestionPayloadString"(payload->'categoryId'))
       or (payload ? 'externalId'
         and not "isValidAiSuggestionPayloadString"(payload->'externalId'))
-      or (payload ? 'targetKind' and payload->>'targetKind' not in ('account', 'card'))
+      or (payload ? 'targetKind' and (
+        jsonb_typeof(payload->'targetKind') is distinct from 'string'
+        or payload->>'targetKind' not in ('account', 'card')
+      ))
       or (payload ? 'cardId'
         and not "isValidAiSuggestionPayloadString"(payload->'cardId'))
       or (payload ? 'cardInstrumentId'
@@ -462,82 +465,7 @@ begin
         and not "isValidAiSuggestionPayloadString"(payload->'cardInstrumentHint'))
       or (payload ? 'invoicePeriod' and (
         jsonb_typeof(payload->'invoicePeriod') is distinct from 'string'
-        or payload->>'invoicePeriod' !~ '^[0-9]{4}-[0-9]{2}
-    then
-      raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
-    end if;
-
-    if payload_version = '1' then
-      if jsonb_typeof(payload->'kind') is distinct from 'string'
-        or payload->>'kind' not in ('income', 'expense')
-        or payload ? 'direction'
-        or payload ? 'otherAccountId'
-      then
-        raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
-      end if;
-    elsif payload_version = '2' then
-      if jsonb_typeof(payload->'kind') is distinct from 'string'
-        or payload->>'kind' not in ('income', 'expense', 'transfer')
-        or jsonb_typeof(payload->'direction') is distinct from 'string'
-        or payload->>'direction' not in ('inflow', 'outflow')
-        or ((payload ? 'installmentSequence') <> (payload ? 'installmentTotal'))
-        or (
-          payload ? 'installmentSequence'
-          and (payload->>'installmentSequence')::numeric > (payload->>'installmentTotal')::numeric
-        )
-      then
-        raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
-      end if;
-    end if;
-  elsif payload_kind = 'categorization' then
-    if not "isValidAiSuggestionPayloadString"(payload->'targetEntityId')
-      or (payload ? 'targetTransactionId'
-        and not "isValidAiSuggestionPayloadString"(payload->'targetTransactionId'))
-      or (payload ? 'proposedCategoryId'
-        and not "isValidAiSuggestionPayloadString"(payload->'proposedCategoryId'))
-      or (payload ? 'proposedAccountId'
-        and not "isValidAiSuggestionPayloadString"(payload->'proposedAccountId'))
-      or (payload ? 'proposedCardId'
-        and not "isValidAiSuggestionPayloadString"(payload->'proposedCardId'))
-      or (payload ? 'previousCategoryId'
-        and not "isValidAiSuggestionPayloadString"(payload->'previousCategoryId'))
-      or (payload ? 'sourceSuggestionId'
-        and not "isValidAiSuggestionPayloadString"(payload->'sourceSuggestionId'))
-      or (payload ? 'proposedStatus' and (
-        jsonb_typeof(payload->'proposedStatus') is distinct from 'string'
-        or payload->>'proposedStatus' not in (
-          'pending_review', 'duplicate', 'planned', 'posted', 'reconciled',
-          'suggested', 'voided'
-        )
-      ))
-    then
-      raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
-    end if;
-  elsif payload_kind in ('deduplication', 'reconciliation') then
-    if not "isValidAiSuggestionPayloadString"(payload->'sourceSuggestionId')
-      or not "isValidAiSuggestionPayloadString"(payload->'sourcePayloadFingerprint')
-      or not "isValidAiSuggestionPayloadString"(payload->'targetTransactionId')
-    then
-      raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
-    end if;
-  elsif payload_kind = 'insight' then
-    if jsonb_typeof(payload->'insightType') is distinct from 'string'
-      or payload->>'insightType' not in ('anomaly', 'trend', 'summary', 'opportunity')
-      or not "isValidAiSuggestionPayloadString"(payload->'title')
-      or not "isValidAiSuggestionPayloadString"(payload->'summary')
-      or not "isValidAiSuggestionPayloadIsoDate"(payload->'periodStartOn')
-      or not "isValidAiSuggestionPayloadIsoDate"(payload->'periodEndOn')
-    then
-      raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
-    end if;
-  end if;
-
-  return new;
-exception
-  when invalid_text_representation or numeric_value_out_of_range then
-    raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
-end;
-$$;
+        or payload->>'invoicePeriod' !~ '^[0-9]{4}-[0-9]{2}$'
       ))
       or (payload ? 'installmentSequence'
         and not "isValidAiSuggestionPayloadPositiveSafeInteger"(payload->'installmentSequence'))
@@ -552,6 +480,13 @@ $$;
         or payload->>'kind' not in ('income', 'expense')
         or payload ? 'direction'
         or payload ? 'otherAccountId'
+        or payload ? 'targetKind'
+        or payload ? 'cardId'
+        or payload ? 'cardInstrumentId'
+        or payload ? 'cardInstrumentHint'
+        or payload ? 'invoicePeriod'
+        or payload ? 'installmentSequence'
+        or payload ? 'installmentTotal'
       then
         raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
       end if;
@@ -560,6 +495,11 @@ $$;
         or payload->>'kind' not in ('income', 'expense', 'transfer')
         or jsonb_typeof(payload->'direction') is distinct from 'string'
         or payload->>'direction' not in ('inflow', 'outflow')
+        or ((payload ? 'installmentSequence') <> (payload ? 'installmentTotal'))
+        or (
+          payload ? 'installmentSequence'
+          and (payload->>'installmentSequence')::numeric > (payload->>'installmentTotal')::numeric
+        )
       then
         raise exception using errcode = 'P0001', message = 'AI_SUGGESTION_PAYLOAD_INVALID';
       end if;
