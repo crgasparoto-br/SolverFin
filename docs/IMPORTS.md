@@ -314,3 +314,49 @@ A candidatura usa o fingerprint estruturado da sugestão de origem, tipo e lanç
 Uma edição da linha invalida candidaturas baseadas no fingerprint anterior. Alteração ou indisponibilidade do alvo também torna a decisão obsoleta. Aprovar duplicidade rejeita a linha sem alterar `Transaction`; aprovar conciliação revalida o alvo, concilia o lançamento, aprova/vincula a origem, expira irmãs e recalcula o lote na mesma transação.
 
 Para transferências, a varredura exige o par de contas compatível, moeda, valor e tolerância temporal; descrição semelhante não compensa divergência de conta de destino.
+
+
+## PDF e XLSX de extratos e faturas (#690)
+
+As origens `xlsx` e `pdf` entram no mesmo `ImportBatch -> AiSuggestion -> revisão -> Transaction` já usado por CSV/OFX. Não existe fila, tabela de revisão ou caminho de aprovação paralelo.
+
+Rotas:
+
+```http
+POST /api/import-batches/xlsx/preview
+POST /api/import-batches/xlsx
+POST /api/import-batches/pdf/preview
+POST /api/import-batches/pdf
+GET  /api/import-batches?sourceKind=xlsx&status=all
+GET  /api/import-batches?sourceKind=pdf&status=all
+```
+
+O request binário usa `contentBase64`, tem limite bruto de 5 MB e exige `documentClass: bank_statement|credit_card_invoice`. O preview continua sem efeito financeiro e não persiste o arquivo bruto. O lote persiste somente hashes, origem, classe do documento, parser/versão quando PDF, aba/mapeamento quando XLSX, diagnósticos e payloads estruturados.
+
+### XLSX
+
+O XLSX exige seleção explícita da aba quando houver mais de uma e mapeamento explícito de data, descrição e valor. Moeda, instrumento mascarado, período de fatura e parcelamento são opcionais e só são usados quando presentes. Fórmulas não são avaliadas nem o valor cacheado de uma célula com fórmula é confiado; macros não são executadas.
+
+Antes de descompactar, o leitor aplica limites de quantidade de entradas e tamanho declarado por entrada/total. Entradas ZIP criptografadas, XML com `DOCTYPE`/`ENTITY`, estrutura OOXML inválida, aba inexistente e mapeamento conflitante falham de forma controlada.
+
+### PDF
+
+PDF não usa OCR genérico nem heurística para “adivinhar” instituição/layout. O domínio mantém catálogo explícito de parsers determinísticos com `id`, `version`, instituição e classe de documento. O lote persiste o parser e sua versão. PDF protegido, estruturalmente inválido, layout não homologado ou reconhecimento ambíguo é bloqueado; alteração incompatível de versão não cai silenciosamente em parser anterior.
+
+Fixtures de teste usam layouts fictícios `solverfin-fixture-bank-statement@1` e `solverfin-fixture-card-invoice@1`. Um parser real novo deve ser registrado explicitamente, acompanhado de fixture sanitizada e testes de reconhecimento, rejeição de versão e ambiguidade.
+
+### Extrato bancário
+
+O usuário escolhe a conta canônica; o parser nunca infere conta. Cada proposta preserva data, descrição, valor positivo em centavos, direção, moeda e identificador externo quando houver. Moeda divergente da conta bloqueia a linha. A aprovação reaplica isolamento de tenant/perfil e reutiliza o detector determinístico compartilhado de duplicidade/conciliação.
+
+### Fatura de cartão
+
+O usuário escolhe o `Card` agrupador. Quando o documento possui identificador mascarado e existe exatamente um `CardInstrument` ativo correspondente, ele é proposto; ausência ou ambiguidade exige revisão explícita antes da aprovação.
+
+A proposta V2 preserva `targetKind=card`, `cardId`, `cardInstrumentId` quando confirmado, hint mascarado, `invoicePeriod` e parcelamento somente quando há evidência. Totais, pagamentos, saldo anterior e demais linhas não reconhecidas como compra não viram transações.
+
+A aprovação não insere uma transação de cartão manualmente: ela delega ao domínio canônico de compra de cartão, que resolve/cria a fatura e materializa compra/parcelas/projeções. Sugestão, compra, lote e auditoria participam da mesma transação de banco. O período informado pelo documento é revalidado contra a fatura canônica calculada; divergência bloqueia o commit. Não há conversão cambial implícita.
+
+### Idempotência e revisão
+
+O hash do lote inclui conteúdo, origem, classe do documento, recurso financeiro selecionado, parser/versão ou aba/mapeamento. Reenvio da mesma identidade converge para o lote existente. Antes de aprovar, referências, moeda, fingerprint e candidatos determinísticos são revalidados. A chave por sugestão e o lock da própria sugestão impedem uma segunda compra/transação em retry ou concorrência.
