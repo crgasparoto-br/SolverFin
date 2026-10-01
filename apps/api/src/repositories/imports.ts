@@ -1806,9 +1806,6 @@ async function ensureCurrentDeterministicCandidates(
 
   const payload = requireExtractionPayload(suggestion);
   await validateExtractionReferences(context, payload, executeQuery);
-  if (payload.payloadVersion === 2 && (payload.targetKind === "card" || payload.cardId !== undefined)) {
-    return [];
-  }
   const { createDeterministicImportReviewSuggestionsForContext } =
     await import("./review-suggestions.js");
   const direction = deriveImportLineDirection(payload);
@@ -1844,6 +1841,13 @@ async function ensureCurrentDeterministicCandidates(
           ? { otherAccountId: payload.otherAccountId }
           : {}),
         ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
+        ...(payload.payloadVersion !== 2 || payload.targetKind === undefined ? {} : { targetKind: payload.targetKind }),
+        ...(payload.payloadVersion !== 2 || payload.cardId === undefined ? {} : { cardId: payload.cardId }),
+        ...(payload.payloadVersion !== 2 || payload.cardInstrumentId === undefined ? {} : { cardInstrumentId: payload.cardInstrumentId }),
+        ...(payload.payloadVersion !== 2 || payload.cardInstrumentHint === undefined ? {} : { cardInstrumentHint: payload.cardInstrumentHint }),
+        ...(payload.payloadVersion !== 2 || payload.invoicePeriod === undefined ? {} : { invoicePeriod: payload.invoicePeriod }),
+        ...(payload.payloadVersion !== 2 || payload.installmentSequence === undefined ? {} : { installmentSequence: payload.installmentSequence }),
+        ...(payload.payloadVersion !== 2 || payload.installmentTotal === undefined ? {} : { installmentTotal: payload.installmentTotal }),
         ...(payload.externalId === undefined ? {} : { externalId: payload.externalId }),
       },
     ],
