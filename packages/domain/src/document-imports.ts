@@ -251,6 +251,14 @@ export const PDF_PARSER_CATALOG: readonly PdfParserDescriptor[] = [
     parse: (text) => parseFixturePdfRows(text, "bank_statement"),
   },
   {
+    id: "solverfin-fixture-bank-statement-alt",
+    version: "1",
+    institution: "solverfin-fixture-bank-alt",
+    documentClass: "bank_statement",
+    recognize: (text) => text.includes("%SOLVERFIN:STATEMENT-ALT:V1"),
+    parse: (text) => parseFixturePdfRows(text, "bank_statement"),
+  },
+  {
     id: "solverfin-fixture-card-invoice",
     version: "1",
     institution: "solverfin-fixture-card",
