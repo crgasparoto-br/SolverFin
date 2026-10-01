@@ -779,7 +779,7 @@ function normalizeCurrency(value: string | undefined): string | undefined {
 
 function safeText(value: string | undefined, max: number): string | undefined {
   const normalized = value
-    ?.replace(/[\u0000-\u001f\u007f]/g, " ")
+    ?.replace(/\p{Cc}/gu, " ")
     .trim()
     .replace(/\s+/g, " ");
   return normalized && normalized.length <= max ? normalized : undefined;
