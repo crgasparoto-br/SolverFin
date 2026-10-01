@@ -370,7 +370,7 @@ function parseFixturePdfRows(
       direction,
       amountMinor: Math.abs(signed),
       currency,
-      sourceHash: hashRow([dateRaw, amountRaw, currency, description, externalOrInstrument ?? "", installmentRaw ?? ""]),
+      sourceHash: hashRow([String(rowNumber), dateRaw ?? "", amountRaw ?? "", currency, description, externalOrInstrument ?? "", installmentRaw ?? ""]),
       ...(documentClass === "bank_statement" && externalOrInstrument
         ? { externalId: safeText(externalOrInstrument, 120) }
         : {}),
@@ -466,7 +466,7 @@ function normalizeMappedRow(
     direction,
     amountMinor: Math.abs(signed),
     currency,
-    sourceHash: hashRow([occurredOn, description, String(signed), currency]),
+    sourceHash: hashRow([String(rowNumber), occurredOn, description, String(signed), currency]),
   };
   const instrument = safeText(get(mapping.instrument), 32);
   const invoicePeriod = get(mapping.invoicePeriod);
