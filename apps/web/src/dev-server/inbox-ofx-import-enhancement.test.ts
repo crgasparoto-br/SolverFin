@@ -63,6 +63,16 @@ describe("Inbox OFX import enhancement", () => {
     assert.match(html, /Importe CSV, OFX, XLSX ou PDF/);
   });
 
+  it("shows the homologated PDF parser and layout version in the preview", () => {
+    const html = enhanceInboxOfxImport(canonicalFixture());
+
+    assert.match(html, /const pdf = preview\.pdf \|\| \{\}/);
+    assert.match(html, /Layout PDF reconhecido/);
+    assert.match(html, /pdf\.institution/);
+    assert.match(html, /pdf\.parserId/);
+    assert.match(html, /pdf\.parserVersion/);
+  });
+
   it("requires explicit card-instrument review for structured card rows", () => {
     const html = enhanceInboxOfxImport(canonicalFixture());
 
