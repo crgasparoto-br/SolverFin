@@ -174,28 +174,53 @@ A Fase 4A reutiliza a semantica financeira da #589, as primitives/view-models da
 
 Com a representação de #668, uma transferencia `planned` cross-currency mantém uma única identidade com dois efeitos nativos. #616 deve consumir essa identidade na agenda; #617 aplica cada efeito somente à série da respectiva moeda; #618 deriva o valor livre dessas séries. Orcamentos continuam tratando transferencia como movimento de caixa, nao consumo economico.
 
-A conclusao da #592 permanece a prioridade funcional atual. As fases competitivas posteriores nao devem interromper essa cadeia nem antecipar contratos que #616-#621 ainda precisam estabelecer.
+Com a #592 concluida, a Fase 4B1 passa a ser a prioridade funcional atual. A Fase 4B2 (Open Finance) fica adiada por decisao de produto e nao bloqueia 4C/4D quando seus proprios gates estiverem satisfeitos.
 
-## Fase 4B - Automacao de entrada e conectividade
+## Fase 4B1 - Automacao de entrada e conectividade sem Open Finance
 
-Objetivo: reduzir o trabalho manual para obter e transportar dados ao SolverFin sem criar caminhos financeiros alternativos.
+Objetivo: reduzir o trabalho manual para obter, transportar, consultar e exportar dados ao SolverFin sem criar caminhos financeiros alternativos e sem depender de Open Finance.
+
+Epica operacional: #689.
 
 ### Ordem recomendada
 
-1. **Open Finance read-only via parceiro/agregador**: escolher fornecedor por ADR e estudo comparativo de cobertura, custo, sandbox, consentimento, refresh/webhooks, qualidade e SLA. Tokens e payloads brutos permanecem fora do dominio financeiro puro.
-2. **PDF e XLSX**: adicionar parsers homologados para extratos/faturas e planilhas, convergindo para o mesmo preview, lote, deduplicacao, conciliacao, revisao e auditoria de CSV/OFX.
-3. **Anexos na jornada operacional**: expor a fundacao `Attachment` para comprovantes, recibos, faturas, extratos e contratos, com retencao e mascaramento apropriados.
-4. **Exportacoes**: CSV, XLSX e PDF reproduziveis a partir de filtros, periodo e moeda conhecidos.
-5. **Notificacoes**: fundacao de entrega in-app/push/e-mail para eventos deterministas, sem provider de IA decidir severidade financeira.
-6. **WhatsApp**: iniciar por consulta e captura; depois permitir intencoes que produzam propostas revisaveis. O assistente canonico continua read-only e nenhuma mutacao irreversivel ocorre sem confirmacao/contrato explicito.
+1. **PDF e XLSX (#690)**: adicionar parsers homologados para extratos/faturas e planilhas, convergindo para o mesmo preview, lote, deduplicacao, conciliacao, revisao e auditoria de CSV/OFX.
+2. **Anexos na jornada operacional (#691)**: expor a fundacao `Attachment` para comprovantes, recibos, faturas, extratos e contratos, com retencao e mascaramento apropriados.
+3. **Exportacoes (#692)**: CSV, XLSX e PDF reproduziveis a partir de filtros, periodo e moeda conhecidos.
+4. **Notificacoes (#693)**: fundacao de entrega in-app/push/e-mail para eventos deterministas, sem provider de IA decidir severidade financeira.
+5. **WhatsApp consulta/captura (#694)**: iniciar por consulta e captura revisavel, preservando correlacao, idempotencia e isolamento.
+6. **WhatsApp propostas confirmaveis (#695)**: permitir propostas revisaveis somente depois do primeiro corte; nenhuma mutacao irreversivel ocorre sem confirmacao e contrato explicito.
 
-### Invariantes
+### Invariantes da 4B1
 
 - Todo dado importado passa por identidade, normalizacao e deduplicacao antes de gerar efeito financeiro.
-- Open Finance nao dispensa isolamento por perfil nem consentimento especifico/revogavel.
-- Falha de parceiro preserva CSV/OFX/inbox como fallback.
+- PDF, XLSX e WhatsApp reutilizam motores canonicos existentes; nao criam dominio financeiro paralelo.
 - Um canal externo nunca recebe permissao maior do que o contexto autenticado e o escopo concedido.
-- A escolha do fornecedor nao pode vazar para contratos de dominio; adapters devem ser substituiveis.
+- Falha de parser ou canal preserva CSV/OFX/inbox e os demais caminhos manuais disponiveis.
+- Valores, autorizacao e fatos financeiros permanecem deterministas fora de providers de IA.
+- Open Finance fica fora da epica #689.
+
+## Fase 4B2 - Open Finance read-only (adiada)
+
+Objetivo futuro: reduzir entrada manual por conexao bancaria somente leitura quando houver decisao explicita de retomar esta trilha.
+
+A Fase 4B2 nao e backlog operacional no ciclo atual e nao bloqueia 4C, 4D ou Fase 5 quando essas fases satisfizerem seus proprios gates.
+
+Quando promovida:
+
+1. escolher fornecedor por ADR e estudo comparativo de cobertura, custo, sandbox, consentimento, refresh/webhooks, qualidade e SLA;
+2. implementar consentimento especifico, renovacao e revogacao;
+3. manter tokens e payloads brutos fora do dominio financeiro puro;
+4. adaptar dados do parceiro ao pipeline canonico de importacao, deduplicacao, conciliacao e revisao;
+5. preservar CSV/OFX/PDF/XLSX/inbox como fallback;
+6. manter o fornecedor atras de adapter substituivel.
+
+### Invariantes da 4B2
+
+- Open Finance nao dispensa isolamento por perfil nem consentimento especifico/revogavel.
+- Falha de parceiro nao bloqueia os canais da 4B1.
+- A escolha do fornecedor nao pode vazar para contratos de dominio.
+- Nenhuma conexao bancaria autoriza mutacao financeira irreversivel silenciosa.
 
 ## Fase 4C - Dimensoes analiticas e colaboracao
 
@@ -317,13 +342,15 @@ Fase 3C - Migracao de telas <-----------+
 Fase 4A - Previsibilidade e planejamento (#592)
                          |
                          v
-Fase 4B - Automacao de entrada e conectividade
+Fase 4B1 - Automacao sem Open Finance (#689)
                          |
              +-----------+-----------+
              |                       |
              v                       v
 Fase 4C - Dimensoes            Fase 4D - Metas/rotina
   e colaboracao                      |
+             |
+             +---- Fase 4B2 - Open Finance (adiada; nao bloqueante)
              |                       |
              v                       |
 Fase 5 - Gestao empresarial          |
@@ -339,7 +366,7 @@ Fase 7 - Plataforma e ecossistema
 
 A fundacao visual pode avancar em paralelo a correcoes de dominio, mas uma tela nao deve cristalizar um numero agregado cuja semantica financeira ou moeda ainda esteja indefinida.
 
-Depois da Fase 4A, trabalhos de baixo acoplamento da 4B, como exportacoes ou exposicao de anexos existentes, podem ser antecipados por issue propria se nao desviarem a cadeia financeira critica. Fases 4C e 4D podem avancar parcialmente em paralelo depois da 4B; a Fase 5 depende principalmente da fundacao analitica da 4C, e a Fase 6 se beneficia da conectividade da 4B e dos objetivos/patrimonio da 4D.
+Depois da Fase 4A, a 4B1 concentra as capacidades de baixo acoplamento e sem Open Finance. Fases 4C e 4D podem avancar parcialmente depois da 4B1 conforme seus proprios gates. A 4B2 pode ser retomada em paralelo no futuro sem se tornar gate global; a Fase 5 depende principalmente da fundacao analitica da 4C, e a Fase 6 se beneficia da conectividade disponivel e dos objetivos/patrimonio da 4D.
 
 ## Backlog operacional
 
@@ -354,7 +381,14 @@ O backlog aberto no GitHub e a fonte de verdade do trabalho em execucao. O recor
   - #608 a #615;
 - **#592 - Fase 4A: Previsibilidade financeira e planejamento**
   - pre-requisito: #668 antes de #616/#617;
-  - #616 a #621.
+  - #616 a #621;
+- **#689 - Fase 4B1: Automacao de entrada e conectividade sem Open Finance**
+  - #690 PDF/XLSX;
+  - #691 anexos;
+  - #692 exportacoes;
+  - #693 notificacoes;
+  - #694 WhatsApp consulta/captura;
+  - #695 WhatsApp propostas confirmaveis.
 
 Ordem estrutural da cadeia financeira da Fase 4A:
 
@@ -371,7 +405,7 @@ A #620 implementa a perna de recorrencias acionaveis sobre a fonte canonica da #
 
 As epicas mantem checklists e dependencias detalhadas. Este documento nao replica criterios completos das issues para evitar duas fontes de verdade operacionais.
 
-As Fases 4B, 4C, 4D, 5, 6 e 7 **ainda nao sao backlog operacional por simples presenca neste documento**. Antes de iniciar uma delas, criar epica e subissues proporcionais ao risco, fechar decisoes de produto bloqueantes e criar/atualizar ADRs quando houver provider, modelo persistente, autorizacao ou contrato publico novo.
+A Fase 4B1 e backlog operacional pela epica #689. A Fase 4B2, 4C, 4D, 5, 6 e 7 **nao se tornam backlog operacional por simples presenca neste documento**. Antes de iniciar cada uma, criar epica e subissues proporcionais ao risco, fechar decisoes de produto bloqueantes e criar/atualizar ADRs quando houver provider, modelo persistente, autorizacao ou contrato publico novo.
 
 ## Priorizacao das melhorias competitivas
 
@@ -383,7 +417,7 @@ A ordem acima aplica tres filtros antes de promover uma capacidade:
 
 Consequentemente:
 
-- Open Finance, PDF/XLSX, exportacoes e notificacoes possuem prioridade alta depois da #592;
+- PDF/XLSX, anexos, exportacoes, notificacoes e WhatsApp da 4B1 possuem prioridade depois da #592; Open Finance fica adiado para a 4B2;
 - rateio/dimensoes e colaboracao sao fundacao obrigatoria antes de DRE/DFC e analise empresarial profunda;
 - metas, reservas, assinaturas e fechamento mensal reutilizam previsibilidade em vez de criarem motor paralelo;
 - investimentos amplos, app nativo e gamificacao permanecem posteriores por custo/escopo e menor urgencia para o core.
@@ -434,11 +468,19 @@ A primeira trilha da Fase 4 pode ser considerada concluida quando:
 
 ## Gates para iniciar fases posteriores
 
-### Fase 4B
+### Fase 4B1
 
-- #592 concluida ou dependencias da capacidade antecipada explicitamente independentes;
+- #592 concluida;
+- epica #689 e subissues definem o backlog operacional;
+- pipeline de importacao/revisao permanece fonte unica de normalizacao financeira;
+- Open Finance permanece fora do escopo.
+
+### Fase 4B2
+
+- inicio somente mediante nova decisao explicita de produto;
 - ADR de Open Finance antes de selecionar provider/producao;
-- pipeline de importacao/revisao permanece fonte unica de normalizacao financeira.
+- consentimento, revogacao, minimizacao, observabilidade e fallback devem estar contratados;
+- o provider permanece substituivel e o pipeline canonico de importacao/revisao continua sendo a fronteira financeira.
 
 ### Fase 4C
 
@@ -476,7 +518,7 @@ A primeira trilha da Fase 4 pode ser considerada concluida quando:
 - `docs/ARCHITECTURE.md` continua dono da arquitetura observada e das regras tecnicas gerais.
 - `docs/DESIGN_SYSTEM.md` continua dono das regras visuais executaveis.
 - `docs/APP_SHELL.md` continua dono do shell e do contrato SSR atual durante a transicao.
-- `docs/integrations/open-finance.md` permanece como estudo tecnico de referencia; uma decisao de provider/producao exige ADR atualizada na Fase 4B.
+- `docs/integrations/open-finance.md` permanece como estudo tecnico de referencia; uma decisao de provider/producao exige ADR atualizada quando a Fase 4B2 for explicitamente retomada.
 - ADR 0013 registra a decisao multi-moedas.
 - ADR 0014 registra a estrategia de migracao da interface.
 - Issues e epicas no GitHub sao a fonte de verdade do trabalho aberto.
