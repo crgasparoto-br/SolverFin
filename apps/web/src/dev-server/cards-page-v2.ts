@@ -651,10 +651,7 @@ function renderInvoiceNavigation(
     orderedPeriods.findIndex(([month]) => month === selectedMonth),
   );
   const historicalSelection = selectedMonth < firstMonth;
-  const adjacentPeriod = (
-    month: string,
-    offset: number,
-  ): [string, InvoiceRecord | undefined] => {
+  const adjacentPeriod = (month: string, offset: number): [string, InvoiceRecord | undefined] => {
     const [year, monthNumber] = month.split("-").map(Number) as [number, number];
     const adjacentMonth = new Date(Date.UTC(year, monthNumber - 1 + offset, 1))
       .toISOString()
