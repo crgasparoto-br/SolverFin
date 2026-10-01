@@ -151,21 +151,35 @@ Concluir a trilha operacional ja organizada na epica #592, sem interrompe-la por
 - tornar orcamentos operacionais e recorrencias mais acionaveis;
 - priorizar insights e alertas com evidencia navegavel.
 
-A Fase 4A continua sendo a prioridade funcional imediata depois dos pre-requisitos da Fase 3 e da extensao cross-currency #668.
+Com a Fase 4A concluida, a Fase 4B1 passa a ser a prioridade funcional imediata. A Fase 4B2 fica explicitamente adiada e nao bloqueia o avanco das fases posteriores que nao dependam de Open Finance.
 
-### Fase 4B - Automacao de entrada e conectividade
+### Fase 4B1 - Automacao de entrada e conectividade sem Open Finance
 
-Reduzir radicalmente o esforco de alimentar o SolverFin, reaproveitando a Inbox e os motores de revisao existentes:
+Reduzir radicalmente o esforco de alimentar, transportar e consultar dados no SolverFin reaproveitando a Inbox e os motores de revisao existentes, sem depender de conexao bancaria automatica:
 
-- avaliar e implementar Open Finance **somente leitura** via parceiro/agregador, com ADR, consentimento, revogacao, observabilidade e fallback manual;
-- comparar provedores por cobertura, qualidade dos dados, custo, sandbox, webhooks, renovacao de consentimento e SLA, sem fixar fornecedor no roadmap;
 - adicionar importacao de PDF e XLSX, inclusive extratos e faturas quando houver parser homologado, usando o mesmo pipeline de preview, normalizacao, deduplicacao, conciliacao e revisao;
 - tornar anexos existentes acessiveis nas jornadas operacionais para comprovantes, faturas, extratos, recibos e contratos;
 - oferecer exportacoes CSV, XLSX e PDF com filtros e moeda reproduziveis;
 - criar fundacao de notificacoes in-app/push/e-mail para eventos financeiros deterministas;
 - introduzir WhatsApp em etapas: primeiro consulta/captura; depois propostas revisaveis; nenhuma mutacao financeira irreversivel ocorre sem confirmacao e contrato proprio.
 
+A epica operacional desta fase e #689, com as subissues #690 a #695. Open Finance esta explicitamente fora da Fase 4B1.
+
 O Assistente financeiro atual permanece somente leitura. Canais externos que capturem uma intencao de alteracao devem produzir proposta/revisao pelo contrato apropriado, nao transformar o assistente em executor silencioso.
+
+### Fase 4B2 - Open Finance read-only (adiada)
+
+Open Finance permanece como direcao estrategica futura e nao deve ser implementado no ciclo atual.
+
+Quando houver decisao explicita de retomar esta trilha:
+
+- avaliar e implementar Open Finance **somente leitura** via parceiro/agregador, com ADR, consentimento, revogacao, observabilidade e fallback manual;
+- comparar provedores por cobertura, qualidade dos dados, custo, sandbox, webhooks, renovacao de consentimento e SLA, sem fixar fornecedor no roadmap;
+- reutilizar o mesmo pipeline canonico de normalizacao, deduplicacao, conciliacao e revisao da Fase 4B1;
+- manter tokens e payloads brutos fora do dominio financeiro puro;
+- preservar CSV/OFX/PDF/XLSX/inbox como caminhos independentes e fallback.
+
+A Fase 4B2 nao bloqueia a conclusao da 4B1 nem o inicio das Fases 4C e 4D quando seus proprios gates estiverem satisfeitos.
 
 ### Fase 4C - Dimensoes analiticas e colaboracao
 
@@ -183,7 +197,7 @@ Qualquer modelo de rateio deve manter uma unica identidade financeira do lancame
 
 ### Fase 4D - Metas, reservas e rotina financeira
 
-Sobre a previsibilidade da Fase 4A e os canais da Fase 4B:
+Sobre a previsibilidade da Fase 4A e os canais da Fase 4B1:
 
 - criar dominio explicito de metas e reservas, sem desconto implicito de caixa antes da configuracao do usuario;
 - permitir metas pessoais, familiares e de negocio com valor alvo, prazo e progresso;
@@ -230,11 +244,11 @@ Abrir o produto apenas depois que os contratos publicos e controles de autorizac
 - avaliar aplicativo nativo e widgets somente quando a PWA demonstrar limitacao real de experiencia ou distribuicao;
 - tratar gamificacao, missoes e streaks como experimentos de retencao opcionais, nunca como requisito do core financeiro.
 
-As Fases 4B em diante sao direcao estrategica. Cada capacidade so entra no backlog operacional quando possuir epica/issue propria, dependencias, contrato e criterios de aceite. `docs/EVOLUTION_STRATEGY.md` define a ordem e os gates para essa promocao.
+A Fase 4B1 esta promovida a backlog operacional pela epica #689. A Fase 4B2 e as fases posteriores permanecem direcao estrategica ate possuirem epica/issue propria, dependencias, contrato e criterios de aceite. `docs/EVOLUTION_STRATEGY.md` define a ordem e os gates para essa promocao.
 
 ## Fora do MVP inicial
 
-- Integracao bancaria direta via Open Finance permanece fora do MVP inicial; sua evolucao esta direcionada para a Fase 4B e exige ADR, parceiro/agregador e contrato de consentimento antes de producao.
+- Integracao bancaria direta via Open Finance permanece fora do MVP inicial e da Fase 4B1; sua evolucao esta direcionada para a Fase 4B2, atualmente adiada, e exige ADR, parceiro/agregador e contrato de consentimento antes de producao.
 - Conversao cambial implicita ou sem fonte/taxa/data auditaveis.
 - Automacao irreversivel sem revisao humana.
 - App nativo completo antes da validacao da PWA; eventual avaliacao pertence a Fase 7.
@@ -249,7 +263,7 @@ As Fases 4B em diante sao direcao estrategica. Cada capacidade so entra no backl
 - Por quanto tempo mensagens bancarias brutas poderao ser mantidas apos normalizacao?
 - Quais relatorios MEI serao essenciais antes de integracoes com contador?
 - Qual politica de moeda de referencia e conversao sera adotada quando o produto passar a oferecer consolidados cambiais?
-- Qual parceiro/agregador atende melhor cobertura, custo, consentimento, SLA e qualidade de Open Finance quando a Fase 4B iniciar?
+- Qual parceiro/agregador atende melhor cobertura, custo, consentimento, SLA e qualidade de Open Finance quando houver decisao de iniciar a Fase 4B2?
 - Quais intencoes capturadas por WhatsApp podem apenas consultar, quais podem gerar proposta e quais exigem confirmacao reforcada?
 - Qual e o menor modelo de rateio/dimensoes que atende pessoa, familia, MEI e negocio sem criar taxonomias paralelas?
 - Qual granularidade de permissao e necessaria alem de owner/admin/editor/viewer para familia e pequeno negocio?

@@ -128,7 +128,7 @@ Os cenarios calculam deltas a partir de um baseline obtido imediatamente antes d
 
 ## Fase 4A - Previsibilidade financeira e planejamento
 
-A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contratos e superficies estruturados na Fase 3.
+A primeira trilha da Fase 4 esta **concluida** na epica #592 e fornece a base de previsibilidade usada pelas proximas fases.
 
 | Capacidade de previsibilidade                              | Estado | Contrato principal                           |
 | ---------------------------------------------------------- | ------ | -------------------------------------------- |
@@ -146,7 +146,29 @@ A primeira trilha da Fase 4 esta **planejada** na epica #592 e depende dos contr
 - A Fase 4A reutiliza components/view-models da #590 e superficies migradas da #591.
 - Open Finance, provider de cambio, carteira completa de ativos e recomendacoes reguladas permanecem fora da epica #592.
 - Itens planejados so mudam para `Parcial` ou `Feito` quando houver implementacao verificavel e issue correspondente.
-- Fases 4B em diante descritas em `docs/PRODUCT.md` e `docs/EVOLUTION_STRATEGY.md` sao estrategicas e nao contam como implementadas nem como backlog operacional sem epica/issue propria.
+- A Fase 4B1 esta promovida a backlog operacional pela epica #689. A Fase 4B2 e as fases posteriores permanecem estrategicas ate possuirem epica/issue propria.
+
+## Fase 4B1 - Automacao de entrada e conectividade sem Open Finance
+
+A Fase 4B1 esta **planejada e em backlog operacional** na epica #689. Open Finance foi separado para a Fase 4B2 e nao faz parte deste ciclo.
+
+| Capacidade                                      | Estado           | Contrato principal              |
+| ----------------------------------------------- | ---------------- | ------------------------------- |
+| Importacao PDF/XLSX pelo pipeline canonico      | Planejado        | #690                            |
+| Anexos nas jornadas financeiras                 | Planejado        | #691                            |
+| Exportacoes CSV/XLSX/PDF reproduziveis          | Planejado        | #692                            |
+| Fundacao de notificacoes deterministicas        | Planejado        | #693                            |
+| WhatsApp para consulta/captura revisavel        | Planejado        | #694                            |
+| WhatsApp com propostas financeiras confirmaveis | Planejado        | #695                            |
+| Open Finance read-only                          | Planejado futuro | Fase 4B2; sem issue operacional |
+
+### Regras da Fase 4B1
+
+- canais novos reutilizam normalizacao, deduplicacao, conciliacao e revisao existentes;
+- valores e fatos financeiros permanecem deterministas;
+- isolamento por perfil/usuario e moeda continua obrigatorio;
+- falhas de canal nao removem os caminhos manuais existentes;
+- Open Finance nao e gate para concluir a 4B1 nem para iniciar 4C/4D quando seus proprios requisitos estiverem satisfeitos.
 
 ## Decisoes de jornada preservadas
 
