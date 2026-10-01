@@ -321,7 +321,7 @@ export async function registerCardPurchaseForContext(
 
     await executeQuery(
       buildInsertCardTransactionSql(),
-      buildCardTransactionParams(result.transaction),
+      buildCardTransactionParams(materialResult.transaction),
     );
 
     for (const installment of materialResult.installments) {
