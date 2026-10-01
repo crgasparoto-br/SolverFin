@@ -370,6 +370,12 @@ function parseFixturePdfRows(
     const kind = documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
     const direction = documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
     const installment = parseInstallment(installmentRaw);
+    const externalId =
+      documentClass === "bank_statement" ? safeText(externalOrInstrument, 120) : undefined;
+    const maskedInstrument =
+      documentClass === "credit_card_invoice"
+        ? safeText(externalOrInstrument, 32) ?? invoiceInstrument
+        : undefined;
     rows.push({
       rowNumber,
       occurredOn,
@@ -379,14 +385,10 @@ function parseFixturePdfRows(
       amountMinor: Math.abs(signed),
       currency,
       sourceHash: hashRow([String(rowNumber), dateRaw ?? "", amountRaw ?? "", currency, description, externalOrInstrument ?? "", installmentRaw ?? ""]),
-      ...(documentClass === "bank_statement" && externalOrInstrument
-        ? { externalId: safeText(externalOrInstrument, 120) }
-        : {}),
+      ...(externalId === undefined ? {} : { externalId }),
       ...(documentClass === "credit_card_invoice"
         ? {
-            ...(safeText(externalOrInstrument, 32) ?? invoiceInstrument
-              ? { maskedInstrument: safeText(externalOrInstrument, 32) ?? invoiceInstrument! }
-              : {}),
+            ...(maskedInstrument === undefined ? {} : { maskedInstrument }),
             ...(invoicePeriod ? { invoicePeriod } : {}),
             ...(installment ? installment : {}),
           }
