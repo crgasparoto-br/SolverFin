@@ -26,6 +26,13 @@ export interface PublicTransactionExtractionProposal {
   accountId?: string;
   otherAccountId?: string;
   categoryId?: string;
+  targetKind?: "account" | "card";
+  cardId?: string;
+  cardInstrumentId?: string;
+  cardInstrumentHint?: string;
+  invoicePeriod?: string;
+  installmentSequence?: number;
+  installmentTotal?: number;
 }
 
 export interface PublicCategorizationProposal {
@@ -144,6 +151,27 @@ export function toPublicAiSuggestionPayload(
             : {}),
           ...(includeIds && payload.categoryId !== undefined
             ? { categoryId: payload.categoryId }
+            : {}),
+          ...(payload.payloadVersion === 2 && payload.targetKind !== undefined
+            ? { targetKind: payload.targetKind }
+            : {}),
+          ...(includeIds && payload.payloadVersion === 2 && payload.cardId !== undefined
+            ? { cardId: payload.cardId }
+            : {}),
+          ...(includeIds && payload.payloadVersion === 2 && payload.cardInstrumentId !== undefined
+            ? { cardInstrumentId: payload.cardInstrumentId }
+            : {}),
+          ...(payload.payloadVersion === 2 && payload.cardInstrumentHint !== undefined
+            ? { cardInstrumentHint: payload.cardInstrumentHint }
+            : {}),
+          ...(payload.payloadVersion === 2 && payload.invoicePeriod !== undefined
+            ? { invoicePeriod: payload.invoicePeriod }
+            : {}),
+          ...(payload.payloadVersion === 2 && payload.installmentSequence !== undefined
+            ? { installmentSequence: payload.installmentSequence }
+            : {}),
+          ...(payload.payloadVersion === 2 && payload.installmentTotal !== undefined
+            ? { installmentTotal: payload.installmentTotal }
             : {}),
         },
       };
