@@ -1,4 +1,12 @@
 const DOCUMENT_IMPORT_MARKER = "data-inbox-document-import-enhanced";
+const RENDERED_BLOCK_INDENT = "        ";
+
+function indentRenderedBlock(value: string): string {
+  return value
+    .split("\n")
+    .map((line) => (line.length > 0 ? RENDERED_BLOCK_INDENT + line : line))
+    .join("\n");
+}
 
 export function enhanceInboxDocumentImport(html: string): string {
   if (!html.includes("data-inbox-ofx-import-enhanced")) return html;
@@ -339,8 +347,14 @@ export function enhanceInboxDocumentImport(html: string): string {
 
   let enhanced = html;
   for (const [source, target] of replacements) {
-    if (!enhanced.includes(source)) return html;
-    enhanced = enhanced.replace(source, target);
+    if (enhanced.includes(source)) {
+      enhanced = enhanced.replace(source, target);
+      continue;
+    }
+
+    const renderedSource = indentRenderedBlock(source);
+    if (!enhanced.includes(renderedSource)) return html;
+    enhanced = enhanced.replace(renderedSource, indentRenderedBlock(target));
   }
 
   return enhanced.replace(
