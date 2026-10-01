@@ -1,1 +1,17 @@
-{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:690-699-handoff-not-produced-40449a7d","audit_report_sha256":"e3259c8378ca7454944009e3ec9b7d88d36782528cb6bd655107785fbd19a34d","finding_ids":["A-001"]},"generalized_learning":{"promotion_status":"not-required","reason":"Existing delivery target-binding and terminal-handoff controls already require a current-target package. This remediation executes those controls for #690 without changing product behavior."},"skill_changes":[]}
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:690-699-result-only-drift-e7e8381d",
+    "audit_report_sha256": "4c1ec96783c7699da1a9c837a680adf9f0ab8316a8fd8658db2a36af85bc8857",
+    "finding_ids": [
+      "A-001"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "Existing post-write-refreeze and terminal-handoff controls already prohibit material drift after freeze; this cycle executes those existing controls and does not introduce a new generic rule."
+  },
+  "skill_changes": []
+}

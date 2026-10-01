@@ -1,1 +1,29 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","status":"rejected","rejection_id":"audit-rejection:690-699-handoff-not-produced-40449a7d","head_sha":"40449a7d38aea99cf831def92c9a42ad9acf602c","identity":{"repository":"crgasparoto-br/SolverFin","issue_number":690,"pull_request_number":699,"head_sha":"40449a7d38aea99cf831def92c9a42ad9acf602c","base_sha":"abe765ef9d574a39024339692b88d1138d595974"},"findings":[{"id":"A-001","disposition":"blocking","status":"open","actionable":true,"severity":"blocking","remediation_mode":"targeted-remediation","category":"delivery-not-ready","summary":"The material head inherited handoff-ready.json from issue #687/PR #688 and had no current-target certificate for issue #690/PR #699."}],"recommendations":[]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:690-699-result-only-drift-e7e8381d",
+  "head_sha": "e7e8381d1602b526fc6b666e4419da88afac6e28",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 690,
+    "pull_request_number": 699,
+    "head_sha": "e7e8381d1602b526fc6b666e4419da88afac6e28",
+    "base_sha": "abe765ef9d574a39024339692b88d1138d595974"
+  },
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "severity": "blocking",
+      "remediation_mode": "targeted-remediation",
+      "category": "delivery-not-ready",
+      "summary": "The published handoff certified the prior material head while later product/test commits changed material paths.",
+      "recovery_scope": "post-write-refreeze",
+      "requires_refreeze": true
+    }
+  ],
+  "recommendations": []
+}

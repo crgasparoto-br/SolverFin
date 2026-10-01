@@ -1,1 +1,34 @@
-{"schema_version":1,"contract_version":"2026-08-20.3","resolution_policy":"all-actionable-items","status":"closed","candidate_head_sha":"40449a7d38aea99cf831def92c9a42ad9acf602c","remediation_mode":"targeted-remediation","source":{"rejection_id":"audit-rejection:690-699-handoff-not-produced-40449a7d","audited_head_sha":"40449a7d38aea99cf831def92c9a42ad9acf602c","audit_report_sha256":"e3259c8378ca7454944009e3ec9b7d88d36782528cb6bd655107785fbd19a34d"},"items":[{"source_kind":"finding","source_id":"A-001","remediation_mode":"targeted-remediation","status":"fixed","closure_kind":"post-write-refreeze-and-current-target-handoff","changed_files":[".audit/entregar-issue/handoff-ready.json",".audit/entregar-issue/issue-690/specification-snapshot.json",".audit/entregar-issue/issue-690/specification-sources/SRC-ISSUE-690.txt",".audit/entregar-issue/issue-690/requirement-closure.json",".audit/entregar-issue/issue-690/requirement-attack-matrix.json",".audit/entregar-issue/issue-690/risk-saturation.json",".audit/entregar-issue/issue-690/inherited-controls.json",".audit/entregar-issue/issue-690/audit-source-result.json",".audit/entregar-issue/issue-690/audit-remediation.json",".audit/entregar-issue/issue-690/audit-escape-closure.json",".audit/entregar-issue/issue-690/learning-closure.json",".audit/entregar-issue/issue-690/evidence/handoff-remediation.txt"],"evidence":["evidence/handoff-remediation.txt"],"validations":["Post-write refreeze preserved material head 40449a7d38aea99cf831def92c9a42ad9acf602c.","Delivery V2 CI run 36929773068 and visual run 36929773092 are terminal success on exact head 40449a7d38aea99cf831def92c9a42ad9acf602c.","Current package subject is issue #690 / PR #699 and does not reference the inherited #687 certificate."]}]}
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "e7e8381d1602b526fc6b666e4419da88afac6e28",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:690-699-result-only-drift-e7e8381d",
+    "audited_head_sha": "e7e8381d1602b526fc6b666e4419da88afac6e28",
+    "audit_report_sha256": "4c1ec96783c7699da1a9c837a680adf9f0ab8316a8fd8658db2a36af85bc8857"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "post-write-refreeze-and-current-target-handoff",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/issue-690/*"
+      ],
+      "evidence": [
+        "evidence/handoff-remediation.txt"
+      ],
+      "validations": [
+        "Recovery classifier returned post-write-refreeze for drift from 40449a7d38aea99cf831def92c9a42ad9acf602c to e7e8381d1602b526fc6b666e4419da88afac6e28.",
+        "Delivery V2 CI 36937343092 and Statement visual validation 36937343057 are completed/success on exact material head e7e8381d1602b526fc6b666e4419da88afac6e28.",
+        "The new result-only child is constrained to .audit/entregar-issue paths and binds SolverFin issue #690 / PR #699."
+      ]
+    }
+  ]
+}

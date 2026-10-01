@@ -1,1 +1,52 @@
-{"schema_version":1,"head_sha":"40449a7d38aea99cf831def92c9a42ad9acf602c","source_audits":[{"rejection_id":"audit-rejection:690-699-handoff-not-produced-40449a7d","head_sha":"40449a7d38aea99cf831def92c9a42ad9acf602c","finding_ids":["A-001"]}],"controls":[{"id":"HANDOFF-TARGET-BINDING-001","source_finding_id":"A-001","source_escape_id":"A-001","status":"passed","head_sha":"40449a7d38aea99cf831def92c9a42ad9acf602c","subject_sha":"40449a7d38aea99cf831def92c9a42ad9acf602c","control_type":"procedure","risk_family":"structural-contract","surface":"handoff-target-binding","dimension":"current-target-subject-binding","procedure":"Compare base/head handoff identity and bind the replacement package to repository/issue/PR/material head.","expected":"Inherited #687 package is not reused; #690/PR699 package is current-target.","observed":"Inherited blob 96ebbda14cb1e89c15032cec4592778be1ab95b9 was identical in base/head and identified #687/PR688; replacement package targets #690/PR699.","evidence":"evidence/handoff-remediation.txt","evidence_sha256":"2ff520ccdcf3c3f4e31c1456e47f0502bf72e673d60f098091d2273db43b4911"}],"retired_controls":[],"unresolved_controls":[]}
+{
+  "schema_version": 1,
+  "head_sha": "e7e8381d1602b526fc6b666e4419da88afac6e28",
+  "source_audits": [
+    {
+      "rejection_id": "audit-rejection:690-699-handoff-not-produced-40449a7d",
+      "head_sha": "40449a7d38aea99cf831def92c9a42ad9acf602c",
+      "finding_ids": [
+        "A-001"
+      ]
+    },
+    {
+      "rejection_id": "audit-rejection:690-699-result-only-drift-e7e8381d",
+      "head_sha": "e7e8381d1602b526fc6b666e4419da88afac6e28",
+      "finding_ids": [
+        "A-001"
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "id": "HANDOFF-TARGET-BINDING-001",
+      "requirement_id": "REQ-001",
+      "status": "passed",
+      "control_type": "procedure",
+      "risk_family": "structural-contract",
+      "surface": "handoff-target-binding",
+      "dimension": "current-target-subject-binding",
+      "procedure": "Bind certificate to SolverFin issue #690 / PR #699 and reject inherited/foreign targets.",
+      "expected": "Current-target certificate for issue #690/PR #699.",
+      "observed": "Rebuilt package targets #690/#699 on material head e7e8381d1602b526fc6b666e4419da88afac6e28.",
+      "evidence": "evidence/handoff-remediation.txt",
+      "evidence_sha256": "85c268851e7d841bc699e87b480ae072a246bff0de9fa1f78caef3d3fc78a718"
+    },
+    {
+      "id": "HANDOFF-POST-WRITE-REFREEZE-001",
+      "requirement_id": "REQ-001",
+      "status": "passed",
+      "control_type": "procedure",
+      "risk_family": "structural-contract",
+      "surface": "post-write refreeze",
+      "dimension": "material-drift-after-freeze",
+      "procedure": "Detect material paths after prior handoff, require post-write-refreeze, and certify the new material head before a result-only child.",
+      "expected": "No stale certificate survives a material write.",
+      "observed": "Drift from 40449a7d38aea99cf831def92c9a42ad9acf602c to e7e8381d1602b526fc6b666e4419da88afac6e28 was classified material; e7e8381d1602b526fc6b666e4419da88afac6e28 is now the refrozen material identity.",
+      "evidence": "evidence/handoff-remediation.txt",
+      "evidence_sha256": "85c268851e7d841bc699e87b480ae072a246bff0de9fa1f78caef3d3fc78a718"
+    }
+  ],
+  "retired_controls": [],
+  "unresolved_controls": []
+}

@@ -1,25 +1,23 @@
-Issue #690 / PR #699 handoff remediation
-Repository: crgasparoto-br/SolverFin
-Material head: 40449a7d38aea99cf831def92c9a42ad9acf602c
-Base: abe765ef9d574a39024339692b88d1138d595974
-Merge preview: c844157a83a867f6f9ca99ae01385036882c88eb
-Branch: feat/690-pdf-xlsx-imports
-Independent rejection: audit-rejection:690-699-handoff-not-produced-40449a7d
-Finding: A-001 delivery-not-ready / inherited-base-artifact
+Issue 690 / PR 699 post-write refreeze evidence
+material_head_sha=e7e8381d1602b526fc6b666e4419da88afac6e28
+previous_material_head_sha=40449a7d38aea99cf831def92c9a42ad9acf602c
+base_sha=abe765ef9d574a39024339692b88d1138d595974
+recovery_scope=post-write-refreeze
+requires_refreeze=true
 
-Inherited artifact proof:
-- .audit/entregar-issue/handoff-ready.json at base and material head had identical Git blob 96ebbda14cb1e89c15032cec4592778be1ab95b9.
-- That inherited certificate identified issue #687 / PR #688 / fix/687-cards-current-month and therefore did not bind issue #690.
+Remote exact-head CI evidence on e7e8381d1602b526fc6b666e4419da88afac6e28:
+- Delivery V2 CI run 36937343092: completed/success
+- Statement visual validation run 36937343057: completed/success
 
-Post-write refreeze evidence:
-- Material head remained 40449a7d38aea99cf831def92c9a42ad9acf602c; no functional/product write was required by the audit finding.
-- PR #699 mergeable_state was clean at terminal pre-publication observation.
-- Delivery V2 CI run 36929773068 completed success on exact head 40449a7d38aea99cf831def92c9a42ad9acf602c.
-- CRITICAL validation job 110596221375 completed success on exact head and reached/passed env:check, prisma:validate, db:seed:check, format:check, lint, typecheck, prisma:generate, db:deploy, db:seed, npm test, API integration tests, import-statement consistency diagnosis, and build.
-- Statement visual validation run 36929773092 completed success on exact head 40449a7d38aea99cf831def92c9a42ad9acf602c.
-- PR-wide material delta contains 30 product/test/schema/documentation paths.
+Material drift observed after previous freeze included product/test paths:
+- apps/api/src/import-batches-router.ts
+- apps/api/src/ofx-import-review.integration.test.ts
+- apps/web/src/dev-server/inbox-document-import-enhancement.ts
+- apps/web/src/dev-server/inbox-ofx-import-enhancement.test.ts
+- packages/domain/src/imports.ts
 
-Current-target recovery:
-- The result-only package is rebuilt specifically for repository crgasparoto-br/SolverFin, issue #690, PR #699, branch feat/690-pdf-xlsx-imports, material head 40449a7d38aea99cf831def92c9a42ad9acf602c.
-- The stale issue #687 package remains historical and is not referenced by the current certificate.
-- No product path is included in the result-only child.
+Recovery action:
+- Treat e7e8381d1602b526fc6b666e4419da88afac6e28 as the new material head.
+- Re-anchor requirement/risk/handoff evidence to e7e8381d1602b526fc6b666e4419da88afac6e28.
+- Preserve current-target binding to repository crgasparoto-br/SolverFin, issue #690, PR #699.
+- Publish only .audit/entregar-issue/* in the result-only child.

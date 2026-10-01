@@ -1,1 +1,16 @@
-{"schema_version":1,"artifact_format":"base64-shards-v1","artifact_kind":"requirement_attack_matrix","compression":"gzip","encoded_size":8700,"decoded_size":67140,"decoded_sha256":"42904046073cc962f5c40282f1d164a58f40a5516b02d2c7df3507a9393568a0","encoded_sha256":"718fba9dac53d21fd509427a4a94086c69ca155c24ba92cb9ffca1d94d6711c5","parts":[{"path":"requirement-attack-matrix.json.parts/part-0000.b64","size":8192,"sha256":"1a658b510d624d3c3c2bffb0dda660c5363da51cc2c10cf864379d7bddcabf16"},{"path":"requirement-attack-matrix.json.parts/part-0001.b64","size":508,"sha256":"a29d61bf8a49cdaceee1eb45f7d4171542df5d406d3e885588b8d360d7a38c6d"}]}
+{
+  "schema_version": 1,
+  "artifact_format": "base64-shards-v1",
+  "compression": "gzip",
+  "encoded_size": 3020,
+  "decoded_size": 19700,
+  "decoded_sha256": "85258f1a89ae33b4c1d56cb90a0e8df325c8c6b961d1a3b0ac719444ac027ffd",
+  "encoded_sha256": "eb421915de64205ea4e1edb75bd0c246a607fadcdcfa75b973d3d2f8d4f93bb3",
+  "parts": [
+    {
+      "path": "requirement-attack-matrix.json.parts/part-0000.b64",
+      "size": 3020,
+      "sha256": "eb421915de64205ea4e1edb75bd0c246a607fadcdcfa75b973d3d2f8d4f93bb3"
+    }
+  ]
+}

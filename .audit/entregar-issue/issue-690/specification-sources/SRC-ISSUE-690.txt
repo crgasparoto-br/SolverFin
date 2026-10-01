@@ -1,183 +1,42 @@
-Parent epic: #689
+GitHub Issue #690 — [Fase 4B1] Importar PDF/XLSX de extratos bancários e faturas de cartão
+Repository: crgasparoto-br/SolverFin
+Canonical locator: https://github.com/crgasparoto-br/SolverFin/issues/690
 
-## Objetivo
+Objective
+Add XLSX and PDF import for bank statements and credit-card invoices without parallel financial pipelines. Every supported format/layout converges to canonical preview, review, deduplication/reconciliation, approval, audit and isolation contracts.
 
-Adicionar importação de XLSX e PDF para **extratos bancários** e **faturas de cartão de crédito**, sem criar pipelines financeiros paralelos. Cada formato/layout suportado deve convergir para os contratos canônicos de preview, revisão, deduplicação/conciliação, aprovação, auditoria e isolamento do SolverFin, preservando a semântica própria de conta bancária ou cartão.
+Canonical sources
+- docs/IMPORTS.md
+- docs/AI_REVIEW_QUEUE.md
+- docs/AI_SUGGESTION_PAYLOADS.md
+- docs/CARDS.md
+- docs/PRODUCT.md
+- docs/EVOLUTION_STRATEGY.md
 
-A estratégia de PDF é incremental: cada banco/emissor e cada família de layout possui parser homologado próprio. Novos layouts devem poder ser adicionados posteriormente sem alterar o núcleo do pipeline de importação/revisão.
+Canonical invariants
+1. PDF/XLSX reuse the canonical batch, preview and review pipeline; no bank/card-specific review queue/table.
+2. A parser cannot create, reconcile, pay, approve or delete a transaction/purchase by itself.
+3. After normalization/review, the structured payload is the single source of financial effect; raw PDF/XLSX is not reparsed at approval.
+4. Main-path success cannot depend on an AI provider.
+5. Document class controls destination: bank statement -> account movement; card invoice -> canonical card purchase/invoice while preserving cardId, instrument and invoice period.
+6. Raw file and unnecessary cells/fragments must not appear in logs, audit or errors.
+7. XLSX active content is never executed; parsing and decompression have explicit tested limits.
+8. Invoice payment, totals/summaries and purchases cannot cause double accounting.
 
-## Fontes canônicas
+Acceptance obligations
+- Explicitly distinguish bank statement from credit-card invoice.
+- Maintain an extensible PDF parser catalog by institution/emitter + document class + layout/version.
+- Add layouts without creating another financial pipeline.
+- Bank statement uses canonical account-movement domain.
+- Card invoice uses canonical card purchase/invoice domain and preserves card/instrument/period.
+- Extend shared review payload if necessary; no parallel queue.
+- Unknown or ambiguous PDF fails closed without financial suggestion/effect.
+- Preview occurs before financial effect.
+- Raw file is not persisted or exposed in logs/audit.
+- Invoice payment/summary/total do not become purchases or double-account.
+- Deduplication, reconciliation, categorization and approval keep using canonical services.
+- Tests cover fictitious statement and invoice parsers; unknown/changed/ambiguous layouts; currency/profile; ambiguous instrument; idempotency; no double accounting.
+- Update docs/IMPORTS.md, docs/CARDS.md and affected suggestion/review contracts.
 
-- `docs/IMPORTS.md`
-- `docs/AI_REVIEW_QUEUE.md`
-- `docs/AI_SUGGESTION_PAYLOADS.md`
-- `docs/CARDS.md`
-- `docs/PRODUCT.md`
-- `docs/EVOLUTION_STRATEGY.md`
-
-## Escopo
-
-- Estender a origem canônica de importação para `xlsx` e `pdf`, mantendo lote, preview e revisão compartilhados com as importações existentes.
-- Suportar duas classes explícitas de documento:
-  - **extrato bancário**, associado a uma conta financeira;
-  - **fatura de cartão de crédito**, associada a um cartão agrupador/fatura.
-- XLSX tabular com seleção/mapeamento explícito de planilha e colunas antes de qualquer efeito financeiro.
-- PDF somente por parser homologado, versionado e capaz de reconhecer deterministicamente instituição/emissor, tipo de documento e família/versão de layout.
-- Manter um registro/catálogo extensível de parsers. Um mesmo banco ou emissor pode possuir múltiplos layouts/versões simultaneamente.
-- Preservar organização, perfil financeiro, moeda, origem, hash, diagnóstico seguro e referência ao recurso financeiro selecionado.
-- Manter categorização, deduplicação, conciliação, revisão e aprovação delegadas aos serviços canônicos existentes.
-- Para fatura de cartão, preservar o modelo canônico de cartão agrupador, instrumento, compra e fatura descrito em `docs/CARDS.md`.
-
-## Estratégia de homologação de layouts PDF
-
-Cada parser homologado deve declarar, no mínimo:
-
-- instituição/emissor ou família reconhecida;
-- classe do documento: extrato bancário ou fatura de cartão;
-- identificador e versão do layout/parser;
-- regras determinísticas de reconhecimento;
-- moeda/layouts suportados quando aplicável;
-- fixture fictícia de teste correspondente;
-- regras de extração e campos obrigatórios;
-- comportamento para documento parecido porém incompatível.
-
-Novos bancos, emissores ou versões de layout devem ser incorporados adicionando parser/fixture próprio, preferencialmente em issue específica, sem alterar o contrato financeiro central.
-
-Não existe fallback genérico que tente “adivinhar” um PDF desconhecido.
-
-## Fora de escopo
-
-- OCR genérico ou tentativa de interpretar qualquer PDF.
-- Execução de macros, fórmulas ou conteúdo ativo de planilhas.
-- Open Finance.
-- Parser de IA como autoridade para data, valor, conta, cartão, instrumento, moeda ou autorização.
-- Persistência financeira final diretamente pelo parser.
-- Novo fluxo/fila de revisão específico por banco, cartão, PDF ou XLSX.
-- Tratar resumo da fatura, limite, saldo anterior ou total da fatura como compra apenas porque aparecem no PDF.
-
-## Invariantes
-
-1. **must_reuse:** PDF/XLSX devem reutilizar o pipeline canônico de lote, preview e revisão; uma implementação que cria fila/tabela de revisão própria por banco/cartão está incorreta mesmo que o caminho feliz funcione.
-2. **must_not_behave:** parser nenhum pode criar, conciliar, pagar, aprovar ou excluir lançamento/compra por conta própria.
-3. **must_be_single_source:** depois da normalização/revisão, o payload estruturado é a fonte do efeito; o PDF/XLSX não volta a ser reinterpretado na aprovação.
-4. **must_not_depend_on:** sucesso do caminho principal não pode depender de provider de IA.
-5. **precedence:** o tipo do documento define o domínio de destino:
-   - extrato bancário -> contrato de movimentação da conta;
-   - fatura de cartão -> contrato canônico de compra/fatura de cartão.
-   Uma fatura não pode ser achatada como simples movimentação de conta se isso perder `cardId`, instrumento ou período de fatura.
-6. Arquivo bruto e células/trechos não necessários não devem aparecer em logs, auditoria ou erros, preservando o contrato de privacidade de `docs/IMPORTS.md`.
-7. Conteúdo executável de XLSX nunca é executado; parsing e descompactação possuem limites explícitos e testados.
-8. Pagamento da fatura, totais/resumos e compras não podem ser transformados em lançamentos equivalentes de forma que cause dupla contabilização.
-
-## Requisitos funcionais
-
-### XLSX
-
-- Detectar as planilhas disponíveis e exigir seleção explícita quando houver mais de uma candidata.
-- Permitir mapeamento explícito para os campos do tipo de documento escolhido.
-- Mostrar preview, problemas por linha e contadores antes da criação/aprovação.
-- Células inválidas geram diagnóstico seguro sem invalidar linhas independentes quando o contrato permitir processamento parcial.
-- O limite de arquivo e os limites de parsing devem ser constantes documentadas e validadas antes do processamento custoso.
-
-### PDF — reconhecimento
-
-- Usar registro explícito de parsers homologados e versionados.
-- Um parser só pode assumir o arquivo quando sua assinatura/layout for reconhecida sem ambiguidade.
-- Um mesmo banco/emissor pode possuir parser diferente para extrato, cartão e versões históricas de layout.
-- Layout desconhecido, ambíguo, criptografado/protegido ou estruturalmente inválido falha de forma controlada, sem sugestão financeira inventada.
-- Se mais de um parser declarar o mesmo documento como válido, o arquivo é bloqueado como ambíguo.
-- O parser retorna dados normalizados; não aplica efeito financeiro.
-
-### Extrato bancário
-
-- O usuário seleciona/resolve a conta canônica do SolverFin antes da aprovação.
-- Movimentações válidas seguem o contrato canônico de extração/revisão de conta.
-- Data, descrição, valor, direção e moeda precisam ser preservados conforme o parser homologado.
-- Conta interna nunca é inferida apenas pelo nome do banco no PDF.
-- Moeda incompatível com a conta bloqueia o efeito.
-- Deduplicação e conciliação usam os serviços determinísticos existentes.
-
-### Fatura de cartão de crédito
-
-- O usuário seleciona/resolve o **cartão agrupador** canônico antes da aprovação.
-- Se o PDF permitir identificar deterministicamente o instrumento por final/identificador mascarado, o parser pode sugeri-lo; correspondência ambígua exige revisão e nunca escolhe silenciosamente.
-- A revisão deve preservar informação suficiente para criar/vincular a compra ao `cardId`, `cardInstrumentId` aplicável e período/fatura correta.
-- Caso o payload de revisão atual não represente esses campos, **estender o contrato compartilhado de sugestão/revisão faz parte desta issue**; não criar uma fila paralela para cartão.
-- A aprovação final deve delegar ao mesmo domínio/serviço usado pela criação canônica de compra de cartão, incluindo resolução/criação da fatura pelo agrupador e período.
-- A moeda da compra precisa obedecer à moeda do cartão/fatura; não existe conversão implícita.
-- Compras parceladas devem preservar a estrutura detectada apenas quando o layout homologado fornecer evidência suficiente; caso contrário, devem permanecer para revisão sem inventar parcelamento.
-- Total da fatura, saldo anterior, limite disponível e pagamento da fatura são metadados/linhas distintas e não podem ser convertidos automaticamente em compras.
-- Se o próprio PDF contiver registro de pagamento da fatura, ele não pode gerar uma segunda compra nem duplicar o pagamento já registrado/conciliado em conta.
-
-### Revisão e efeito financeiro
-
-- Preview não gera efeito financeiro persistente.
-- Criação do lote gera itens pendentes de revisão.
-- Aprovação revalida versão/fingerprint, perfil, recurso financeiro, moeda e candidatos determinísticos no contrato já existente.
-- Retries e concorrência não podem gerar lote, sugestão, lançamento, compra ou fatura duplicados.
-- A UI deve identificar claramente a origem como extrato bancário ou fatura de cartão e o parser/layout reconhecido.
-
-## Cenários e casos extremos
-
-- XLSX com várias planilhas.
-- XLSX sem cabeçalhos reconhecíveis ou com mapeamento conflitante.
-- XLSX com fórmulas/macros: conteúdo ativo nunca é executado.
-- Extrato PDF suportado de banco homologado.
-- Fatura PDF suportada de cartão/emissor homologado.
-- Mesmo banco com versões diferentes de extrato.
-- Mesmo emissor com versões diferentes de fatura.
-- PDF de layout não suportado.
-- PDF que casa com mais de um parser.
-- Arquivo vazio, corrompido, acima do limite ou protegido por senha.
-- Conta/cartão de outro perfil.
-- Moeda do arquivo incompatível com conta/cartão.
-- Fatura com duas compras iguais legítimas.
-- Fatura contendo pagamento, saldo anterior, encargos, total e limite.
-- Instrumento de cartão identificável de forma única e instrumento ambíguo.
-- Reenvio do mesmo arquivo e aprovações concorrentes.
-- Arquivo com linhas válidas e inválidas no mesmo lote.
-- Mudança de layout de um banco/emissor sem parser homologado novo.
-
-## Critérios de aceite
-
-- [ ] A importação distingue explicitamente **extrato bancário** de **fatura de cartão de crédito**.
-- [ ] Existe catálogo extensível de parsers PDF por instituição/emissor + classe de documento + versão/layout.
-- [ ] É possível adicionar novo layout de banco/cartão sem criar outro pipeline financeiro.
-- [ ] Extrato bancário reutiliza o domínio canônico de movimentações de conta.
-- [ ] Fatura de cartão reutiliza o domínio canônico de compras/faturas e preserva cartão/instrumento/período.
-- [ ] Se necessário, o contrato compartilhado de revisão é estendido para representar compra de cartão sem criar fila paralela.
-- [ ] PDF não homologado ou ambíguo falha sem criar sugestão ou efeito financeiro.
-- [ ] Preview ocorre antes de qualquer efeito financeiro.
-- [ ] Arquivo bruto não é persistido nem exposto em logs/auditoria.
-- [ ] Pagamento/resumo/total da fatura não são convertidos em compra e não geram dupla contabilização.
-- [ ] Deduplicação, conciliação, categorização e aprovação continuam usando serviços canônicos.
-- [ ] Testes cobrem pelo menos um parser fictício de extrato e um de fatura, além de layout desconhecido, versão alterada, ambiguidade, moeda/perfil, instrumento ambíguo, idempotência e ausência de dupla contabilização.
-- [ ] `docs/IMPORTS.md`, `docs/CARDS.md` e contratos de sugestão/revisão afetados são atualizados após a implementação.
-
-## Considerações de testes
-
-Cobrir domínio, API e integração do pipeline compartilhado usando somente fixtures fictícias/sanitizadas.
-
-Cada parser homologado deve possuir testes positivos e negativos próprios. Deve existir controle negativo provando que:
-
-- um parser de um banco/emissor não aceita silenciosamente layout incompatível;
-- uma fatura não é tratada como extrato de conta;
-- uma compra de cartão não perde vínculo de cartão/fatura durante a revisão;
-- pagamento/total de fatura não vira compra;
-- o parser não consegue contornar a fila canônica.
-
-## Evolução dos layouts
-
-Não é necessário enumerar todos os bancos e cartões nesta issue. A fundação deve suportar crescimento incremental.
-
-A cada novo banco, emissor ou versão relevante de PDF, deve ser possível criar uma issue específica contendo:
-
-- instituição/emissor;
-- classe do documento;
-- exemplo/fixture sanitizada;
-- identificador/versão do layout;
-- campos esperados;
-- casos conhecidos;
-- critérios de homologação do parser.
-
-A ausência de suporte a um banco/cartão específico deve resultar em “layout ainda não suportado”, nunca em interpretação aproximada.
+Post-audit recovery context
+The independent audit found material writes after the previous handoff freeze. Recovery is post-write-refreeze on exact material head e7e8381d1602b526fc6b666e4419da88afac6e28; no product-code change is introduced by this recovery package.
