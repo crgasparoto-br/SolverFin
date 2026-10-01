@@ -513,7 +513,7 @@ async function assertTenantIsolationAndMixedListing(
     ),
   );
 
-  const invalid = await apiRequest(token, "GET", "/api/import-batches?sourceKind=pdf");
+  const invalid = await apiRequest(token, "GET", "/api/import-batches?sourceKind=unsupported");
   assert.equal(invalid.statusCode, 400);
   assert.equal(readErrorCode(invalid), "IMPORT_SOURCE_KIND_INVALID");
 }
