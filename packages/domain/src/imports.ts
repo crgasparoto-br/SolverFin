@@ -448,11 +448,19 @@ export function buildTransactionExtractionPayload(
     ...(suggestion.categoryId === undefined ? {} : { categoryId: suggestion.categoryId }),
     ...(suggestion.targetKind === undefined ? {} : { targetKind: suggestion.targetKind }),
     ...(suggestion.cardId === undefined ? {} : { cardId: suggestion.cardId }),
-    ...(suggestion.cardInstrumentId === undefined ? {} : { cardInstrumentId: suggestion.cardInstrumentId }),
-    ...(suggestion.cardInstrumentHint === undefined ? {} : { cardInstrumentHint: suggestion.cardInstrumentHint }),
+    ...(suggestion.cardInstrumentId === undefined
+      ? {}
+      : { cardInstrumentId: suggestion.cardInstrumentId }),
+    ...(suggestion.cardInstrumentHint === undefined
+      ? {}
+      : { cardInstrumentHint: suggestion.cardInstrumentHint }),
     ...(suggestion.invoicePeriod === undefined ? {} : { invoicePeriod: suggestion.invoicePeriod }),
-    ...(suggestion.installmentSequence === undefined ? {} : { installmentSequence: suggestion.installmentSequence }),
-    ...(suggestion.installmentTotal === undefined ? {} : { installmentTotal: suggestion.installmentTotal }),
+    ...(suggestion.installmentSequence === undefined
+      ? {}
+      : { installmentSequence: suggestion.installmentSequence }),
+    ...(suggestion.installmentTotal === undefined
+      ? {}
+      : { installmentTotal: suggestion.installmentTotal }),
     ...(suggestion.externalId === undefined ? {} : { externalId: suggestion.externalId }),
   };
 }
@@ -484,14 +492,19 @@ export function parseTransactionExtractionPayload(
         ? value.targetKind
         : null;
   if (targetKind === null) return undefined;
-  if (value.invoicePeriod !== undefined && (typeof value.invoicePeriod !== "string" || !/^\\d{4}-\\d{2}$/.test(value.invoicePeriod)))
+  if (
+    value.invoicePeriod !== undefined &&
+    (typeof value.invoicePeriod !== "string" || !/^\\d{4}-\\d{2}$/.test(value.invoicePeriod))
+  )
     return undefined;
   const installmentSequence = parseOptionalPositiveInteger(value.installmentSequence);
   const installmentTotal = parseOptionalPositiveInteger(value.installmentTotal);
   if (
     (value.installmentSequence !== undefined && installmentSequence === undefined) ||
     (value.installmentTotal !== undefined && installmentTotal === undefined) ||
-    (installmentSequence !== undefined && installmentTotal !== undefined && installmentSequence > installmentTotal)
+    (installmentSequence !== undefined &&
+      installmentTotal !== undefined &&
+      installmentSequence > installmentTotal)
   )
     return undefined;
   return {
@@ -503,7 +516,9 @@ export function parseTransactionExtractionPayload(
       ? { otherAccountId: value.otherAccountId }
       : {}),
     ...(targetKind === undefined ? {} : { targetKind }),
-    ...(typeof value.cardId === "string" && value.cardId.length > 0 ? { cardId: value.cardId } : {}),
+    ...(typeof value.cardId === "string" && value.cardId.length > 0
+      ? { cardId: value.cardId }
+      : {}),
     ...(typeof value.cardInstrumentId === "string" && value.cardInstrumentId.length > 0
       ? { cardInstrumentId: value.cardInstrumentId }
       : {}),

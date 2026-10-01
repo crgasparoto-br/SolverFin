@@ -111,7 +111,6 @@ Erros inesperados de persistência retornam erro público genérico com `correla
 
 O payload persiste apenas dados normalizados necessários à proposta. Não deve conter prompt bruto, arquivo bruto, mensagem bancária bruta, credencial, token, cabeçalho, stack trace ou resposta integral de provider. Auditoria registra campos alterados de forma redigida.
 
-
 ## Extensão V2 para documentos financeiros (#690)
 
 `transaction_extraction` V2 aceita, de forma opcional e compatível com os produtores anteriores:

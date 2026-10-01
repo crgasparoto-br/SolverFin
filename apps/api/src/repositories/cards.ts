@@ -297,14 +297,20 @@ export async function registerCardPurchaseForContext(
   });
 
   const materialResult =
-    options.source === "import" || options.importBatchId !== undefined || options.aiSuggestionId !== undefined
+    options.source === "import" ||
+    options.importBatchId !== undefined ||
+    options.aiSuggestionId !== undefined
       ? {
           ...result,
           transaction: {
             ...result.transaction,
             source: options.source ?? "import",
-            ...(options.importBatchId === undefined ? {} : { importBatchId: options.importBatchId }),
-            ...(options.aiSuggestionId === undefined ? {} : { aiSuggestionId: options.aiSuggestionId }),
+            ...(options.importBatchId === undefined
+              ? {}
+              : { importBatchId: options.importBatchId }),
+            ...(options.aiSuggestionId === undefined
+              ? {}
+              : { aiSuggestionId: options.aiSuggestionId }),
           },
         }
       : result;

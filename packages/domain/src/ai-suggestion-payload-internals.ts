@@ -356,7 +356,9 @@ function parseTransactionOptionalFields(
   installmentTotal?: number;
 } {
   const invoicePeriod =
-    version === 2 && record.invoicePeriod !== undefined ? expectString(record.invoicePeriod) : undefined;
+    version === 2 && record.invoicePeriod !== undefined
+      ? expectString(record.invoicePeriod)
+      : undefined;
   if (invoicePeriod !== undefined && !/^\\d{4}-\\d{2}$/.test(invoicePeriod)) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_INVALID");
   }

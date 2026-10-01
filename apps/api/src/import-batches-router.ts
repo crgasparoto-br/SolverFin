@@ -259,7 +259,14 @@ async function previewXlsxImportBatchHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  return json(200, await previewStructuredImportForContext(context, "xlsx", readStructuredImportPayload(body, "xlsx")));
+  return json(
+    200,
+    await previewStructuredImportForContext(
+      context,
+      "xlsx",
+      readStructuredImportPayload(body, "xlsx"),
+    ),
+  );
 }
 
 async function createXlsxImportBatchHandler(
@@ -267,7 +274,11 @@ async function createXlsxImportBatchHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const result = await createStructuredImportBatchForContext(context, "xlsx", readStructuredImportPayload(body, "xlsx"));
+  const result = await createStructuredImportBatchForContext(
+    context,
+    "xlsx",
+    readStructuredImportPayload(body, "xlsx"),
+  );
   return json(result.duplicateBatch ? 200 : 201, result);
 }
 
@@ -276,7 +287,14 @@ async function previewPdfImportBatchHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  return json(200, await previewStructuredImportForContext(context, "pdf", readStructuredImportPayload(body, "pdf")));
+  return json(
+    200,
+    await previewStructuredImportForContext(
+      context,
+      "pdf",
+      readStructuredImportPayload(body, "pdf"),
+    ),
+  );
 }
 
 async function createPdfImportBatchHandler(
@@ -284,7 +302,11 @@ async function createPdfImportBatchHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const result = await createStructuredImportBatchForContext(context, "pdf", readStructuredImportPayload(body, "pdf"));
+  const result = await createStructuredImportBatchForContext(
+    context,
+    "pdf",
+    readStructuredImportPayload(body, "pdf"),
+  );
   return json(result.duplicateBatch ? 200 : 201, result);
 }
 
@@ -442,7 +464,10 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
   if (body.invoicePeriod !== undefined) {
     const invoicePeriod = requireString(body, "invoicePeriod");
     if (!/^\\d{4}-\\d{2}$/.test(invoicePeriod)) {
-      throw new ImportReviewError("IMPORT_INVOICE_PERIOD_INVALID", "Periodo da fatura deve usar AAAA-MM.");
+      throw new ImportReviewError(
+        "IMPORT_INVOICE_PERIOD_INVALID",
+        "Periodo da fatura deve usar AAAA-MM.",
+      );
     }
     payload.invoicePeriod = invoicePeriod;
   }
@@ -473,9 +498,15 @@ function readStructuredImportPayload(
     contentBase64: requireRawString(body, "contentBase64"),
     documentClass,
     consentAccepted: true as const,
-    ...(typeof body.accountId === "string" && body.accountId.trim() ? { accountId: body.accountId.trim() } : {}),
-    ...(typeof body.cardId === "string" && body.cardId.trim() ? { cardId: body.cardId.trim() } : {}),
-    ...(typeof body.sheetName === "string" && body.sheetName.trim() ? { sheetName: body.sheetName.trim() } : {}),
+    ...(typeof body.accountId === "string" && body.accountId.trim()
+      ? { accountId: body.accountId.trim() }
+      : {}),
+    ...(typeof body.cardId === "string" && body.cardId.trim()
+      ? { cardId: body.cardId.trim() }
+      : {}),
+    ...(typeof body.sheetName === "string" && body.sheetName.trim()
+      ? { sheetName: body.sheetName.trim() }
+      : {}),
     ...(xlsxMapping === undefined ? {} : { xlsxMapping }),
   };
 }
@@ -483,7 +514,10 @@ function readStructuredImportPayload(
 function readXlsxMapping(value: unknown): XlsxImportMapping | undefined {
   if (value === undefined) return undefined;
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new ImportReviewError("IMPORT_XLSX_MAPPING_INVALID", "Mapeamento XLSX precisa ser um objeto.");
+    throw new ImportReviewError(
+      "IMPORT_XLSX_MAPPING_INVALID",
+      "Mapeamento XLSX precisa ser um objeto.",
+    );
   }
   const source = value as Record<string, unknown>;
   const result: XlsxImportMapping = { version: 1 };

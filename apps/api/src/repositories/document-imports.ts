@@ -101,7 +101,11 @@ export async function previewStructuredImportForContext(
     }
 
     let cardInstrumentId: string | undefined;
-    if (payload.documentClass === "credit_card_invoice" && payload.cardId && row.maskedInstrument) {
+    if (
+      payload.documentClass === "credit_card_invoice" &&
+      payload.cardId &&
+      row.maskedInstrument
+    ) {
       const matches = await findMatchingInstruments(context, payload.cardId, row.maskedInstrument);
       if (matches.length === 1) cardInstrumentId = matches[0]!.id;
       else {
@@ -137,12 +141,16 @@ export async function previewStructuredImportForContext(
             targetKind: "card" as const,
             cardId: requireCardId(payload),
             ...(cardInstrumentId === undefined ? {} : { cardInstrumentId }),
-            ...(row.maskedInstrument === undefined ? {} : { cardInstrumentHint: row.maskedInstrument }),
+            ...(row.maskedInstrument === undefined
+              ? {}
+              : { cardInstrumentHint: row.maskedInstrument }),
             ...(row.invoicePeriod === undefined ? {} : { invoicePeriod: row.invoicePeriod }),
             ...(row.installmentSequence === undefined
               ? {}
               : { installmentSequence: row.installmentSequence }),
-            ...(row.installmentTotal === undefined ? {} : { installmentTotal: row.installmentTotal }),
+            ...(row.installmentTotal === undefined
+              ? {}
+              : { installmentTotal: row.installmentTotal }),
           }),
     };
     suggestions.push({
@@ -256,7 +264,9 @@ export async function createStructuredImportBatchForContext(
     validRows: prepared.suggestions.length,
     duplicateRows: 0,
     problemRows: new Set(
-      prepared.preview.problems.filter((problem) => problem.severity === "error").map((problem) => problem.rowNumber),
+      prepared.preview.problems
+        .filter((problem) => problem.severity === "error")
+        .map((problem) => problem.rowNumber),
     ).size,
     problems: prepared.preview.problems,
     documentClass: payload.documentClass,
@@ -273,7 +283,12 @@ export async function createStructuredImportBatchForContext(
       : { xlsxSheetName: prepared.preview.xlsx.selectedSheet }),
     ...(payload.xlsxMapping === undefined
       ? {}
-      : { xlsxMapping: payload.xlsxMapping as unknown as Record<string, string | number | boolean | undefined> }),
+      : {
+          xlsxMapping: payload.xlsxMapping as unknown as Record<
+            string,
+            string | number | boolean | undefined
+          >,
+        }),
   };
   const suggestions = prepared.suggestions.map((suggestion) => ({
     ...suggestion,
@@ -421,8 +436,19 @@ async function resolveTarget(
       [accountId, context.organizationId, context.financialProfileId],
     );
     const target = rows[0];
-    if (!target) throw new ImportReviewError("TENANT_RESOURCE_NOT_FOUND", "Conta nao encontrada neste perfil.", 404);
-    if (target.status !== "ACTIVE") throw new ImportReviewError("IMPORT_ACCOUNT_INVALID", "Conta selecionada precisa estar ativa.");
+    if (!target) {
+      throw new ImportReviewError(
+        "TENANT_RESOURCE_NOT_FOUND",
+        "Conta nao encontrada neste perfil.",
+        404,
+      );
+    }
+    if (target.status !== "ACTIVE") {
+      throw new ImportReviewError(
+        "IMPORT_ACCOUNT_INVALID",
+        "Conta selecionada precisa estar ativa.",
+      );
+    }
     return target;
   }
 
@@ -433,9 +459,25 @@ async function resolveTarget(
     [cardId, context.organizationId, context.financialProfileId],
   );
   const target = rows[0];
-  if (!target) throw new ImportReviewError("TENANT_RESOURCE_NOT_FOUND", "Cartao nao encontrado neste perfil.", 404);
-  if (target.status !== "ACTIVE") throw new ImportReviewError("IMPORT_CARD_INVALID", "Cartao selecionado precisa estar ativo.");
-  if (!target.currency) throw new ImportReviewError("IMPORT_CARD_CURRENCY_REQUIRED", "Cartao precisa possuir moeda canonica antes da importacao.");
+  if (!target) {
+    throw new ImportReviewError(
+      "TENANT_RESOURCE_NOT_FOUND",
+      "Cartao nao encontrado neste perfil.",
+      404,
+    );
+  }
+  if (target.status !== "ACTIVE") {
+    throw new ImportReviewError(
+      "IMPORT_CARD_INVALID",
+      "Cartao selecionado precisa estar ativo.",
+    );
+  }
+  if (!target.currency) {
+    throw new ImportReviewError(
+      "IMPORT_CARD_CURRENCY_REQUIRED",
+      "Cartao precisa possuir moeda canonica antes da importacao.",
+    );
+  }
   return { id: target.id, currency: target.currency };
 }
 

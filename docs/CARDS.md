@@ -345,7 +345,6 @@ Consequencias do contrato:
 
 Relatorios que exponham despesa economica devem documentar explicitamente essa exclusao. O contrato atual de evolucao por categoria esta em `docs/API_REPORTS.md`.
 
-
 ## Importação de faturas PDF/XLSX (#690)
 
 Faturas importadas por `/api/import-batches/pdf` ou `/api/import-batches/xlsx` não criam um modelo financeiro paralelo. Cada linha revisável referencia o `Card` canônico e, quando confirmado, um `CardInstrument` canônico.

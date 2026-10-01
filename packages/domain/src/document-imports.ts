@@ -367,8 +367,10 @@ function parseFixturePdfRows(
       continue;
     }
 
-    const kind = documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
-    const direction = documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
+    const kind =
+      documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
+    const direction =
+      documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
     const installment = parseInstallment(installmentRaw);
     const externalId =
       documentClass === "bank_statement" ? safeText(externalOrInstrument, 120) : undefined;
@@ -384,7 +386,15 @@ function parseFixturePdfRows(
       direction,
       amountMinor: Math.abs(signed),
       currency,
-      sourceHash: hashRow([String(rowNumber), dateRaw ?? "", amountRaw ?? "", currency, description, externalOrInstrument ?? "", installmentRaw ?? ""]),
+      sourceHash: hashRow([
+        String(rowNumber),
+        dateRaw ?? "",
+        amountRaw ?? "",
+        currency,
+        description,
+        externalOrInstrument ?? "",
+        installmentRaw ?? "",
+      ]),
       ...(externalId === undefined ? {} : { externalId }),
       ...(documentClass === "credit_card_invoice"
         ? {
@@ -466,8 +476,10 @@ function normalizeMappedRow(
     });
   }
 
-  const kind = documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
-  const direction = documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
+  const kind =
+    documentClass === "credit_card_invoice" ? "expense" : signed < 0 ? "expense" : "income";
+  const direction =
+    documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
   const row: StructuredImportRow = {
     rowNumber,
     occurredOn,
@@ -500,7 +512,11 @@ function readZipEntries(bytes: Buffer): Map<string, Buffer> {
   const entryCount = bytes.readUInt16LE(eocd + 10);
   const centralOffset = bytes.readUInt32LE(eocd + 16);
   if (entryCount > XLSX_MAX_ZIP_ENTRIES) {
-    throw new StructuredImportError("IMPORT_XLSX_LIMIT_EXCEEDED", "XLSX possui arquivos internos demais.", 422);
+    throw new StructuredImportError(
+      "IMPORT_XLSX_LIMIT_EXCEEDED",
+      "XLSX possui arquivos internos demais.",
+      422,
+    );
   }
 
   const result = new Map<string, Buffer>();
@@ -520,14 +536,26 @@ function readZipEntries(bytes: Buffer): Map<string, Buffer> {
     const localOffset = bytes.readUInt32LE(offset + 42);
     const name = bytes.subarray(offset + 46, offset + 46 + nameLength).toString("utf8");
     if ((flags & 1) !== 0) {
-      throw new StructuredImportError("IMPORT_XLSX_PROTECTED", "XLSX protegido nao pode ser importado.", 422);
+      throw new StructuredImportError(
+        "IMPORT_XLSX_PROTECTED",
+        "XLSX protegido nao pode ser importado.",
+        422,
+      );
     }
     if (uncompressedSize > XLSX_MAX_ENTRY_BYTES) {
-      throw new StructuredImportError("IMPORT_XLSX_LIMIT_EXCEEDED", "Parte interna do XLSX excede o limite seguro.", 422);
+      throw new StructuredImportError(
+        "IMPORT_XLSX_LIMIT_EXCEEDED",
+        "Parte interna do XLSX excede o limite seguro.",
+        422,
+      );
     }
     totalUncompressed += uncompressedSize;
     if (totalUncompressed > XLSX_MAX_UNCOMPRESSED_BYTES) {
-      throw new StructuredImportError("IMPORT_XLSX_LIMIT_EXCEEDED", "XLSX descompactado excede o limite seguro.", 422);
+      throw new StructuredImportError(
+        "IMPORT_XLSX_LIMIT_EXCEEDED",
+        "XLSX descompactado excede o limite seguro.",
+        422,
+      );
     }
     if (bytes.readUInt32LE(localOffset) !== 0x04034b50) {
       throw new StructuredImportError("IMPORT_XLSX_INVALID", "Entrada ZIP do XLSX e invalida.");
@@ -540,10 +568,17 @@ function readZipEntries(bytes: Buffer): Map<string, Buffer> {
     if (method === 0) unpacked = Buffer.from(compressed);
     else if (method === 8) unpacked = inflateRawSync(compressed);
     else {
-      throw new StructuredImportError("IMPORT_XLSX_COMPRESSION_UNSUPPORTED", "XLSX usa compressao nao suportada.", 422);
+      throw new StructuredImportError(
+        "IMPORT_XLSX_COMPRESSION_UNSUPPORTED",
+        "XLSX usa compressao nao suportada.",
+        422,
+      );
     }
     if (unpacked.length !== uncompressedSize) {
-      throw new StructuredImportError("IMPORT_XLSX_INVALID", "Tamanho descompactado do XLSX e inconsistente.");
+      throw new StructuredImportError(
+        "IMPORT_XLSX_INVALID",
+        "Tamanho descompactado do XLSX e inconsistente.",
+      );
     }
     result.set(name.replace(/\\/g, "/"), unpacked);
     offset += 46 + nameLength + extraLength + commentLength;
@@ -556,18 +591,30 @@ function findEndOfCentralDirectory(bytes: Buffer): number {
   for (let offset = bytes.length - 22; offset >= minimum; offset -= 1) {
     if (bytes.readUInt32LE(offset) === 0x06054b50) return offset;
   }
-  throw new StructuredImportError("IMPORT_XLSX_INVALID", "Arquivo XLSX nao possui diretorio ZIP valido.");
+  throw new StructuredImportError(
+    "IMPORT_XLSX_INVALID",
+    "Arquivo XLSX nao possui diretorio ZIP valido.",
+  );
 }
 
 function requireZipText(entries: ReadonlyMap<string, Buffer>, path: string): string {
   const entry = entries.get(path);
-  if (!entry) throw new StructuredImportError("IMPORT_XLSX_INVALID", "Estrutura OOXML obrigatoria ausente.");
+  if (!entry) {
+    throw new StructuredImportError(
+      "IMPORT_XLSX_INVALID",
+      "Estrutura OOXML obrigatoria ausente.",
+    );
+  }
   return entry.toString("utf8");
 }
 
 function rejectUnsafeXml(xml: string): void {
   if (/<!DOCTYPE|<!ENTITY/i.test(xml)) {
-    throw new StructuredImportError("IMPORT_XLSX_XML_UNSAFE", "XML interno do XLSX contem construcao nao permitida.", 422);
+    throw new StructuredImportError(
+      "IMPORT_XLSX_XML_UNSAFE",
+      "XML interno do XLSX contem construcao nao permitida.",
+      422,
+    );
   }
 }
 
@@ -676,11 +723,22 @@ function hasRequiredMapping(mapping: XlsxImportMapping): boolean {
 }
 
 function assertMappingHeaders(headers: readonly string[], mapping: XlsxImportMapping): void {
-  const used = [mapping.date, mapping.description, mapping.amount, mapping.currency, mapping.instrument, mapping.invoicePeriod, mapping.installmentSequence, mapping.installmentTotal].filter(
-    (value): value is string => Boolean(value),
-  );
+  const used = [
+    mapping.date,
+    mapping.description,
+    mapping.amount,
+    mapping.currency,
+    mapping.instrument,
+    mapping.invoicePeriod,
+    mapping.installmentSequence,
+    mapping.installmentTotal,
+  ].filter((value): value is string => Boolean(value));
   if (new Set(used).size !== used.length || used.some((value) => !headers.includes(value))) {
-    throw new StructuredImportError("IMPORT_XLSX_MAPPING_INVALID", "Mapeamento XLSX e invalido ou conflitante.", 422);
+    throw new StructuredImportError(
+      "IMPORT_XLSX_MAPPING_INVALID",
+      "Mapeamento XLSX e invalido ou conflitante.",
+      422,
+    );
   }
 }
 
@@ -739,7 +797,12 @@ function parseInstallment(
   if (!match) return undefined;
   const installmentSequence = Number(match[1]);
   const installmentTotal = Number(match[2]);
-  if (installmentSequence < 1 || installmentTotal < 1 || installmentSequence > installmentTotal) return undefined;
+  if (
+    installmentSequence < 1 ||
+    installmentTotal < 1 ||
+    installmentSequence > installmentTotal
+  )
+    return undefined;
   return { installmentSequence, installmentTotal };
 }
 

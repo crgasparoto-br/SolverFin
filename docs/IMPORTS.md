@@ -315,7 +315,6 @@ Uma edição da linha invalida candidaturas baseadas no fingerprint anterior. Al
 
 Para transferências, a varredura exige o par de contas compatível, moeda, valor e tolerância temporal; descrição semelhante não compensa divergência de conta de destino.
 
-
 ## PDF e XLSX de extratos e faturas (#690)
 
 As origens `xlsx` e `pdf` entram no mesmo `ImportBatch -> AiSuggestion -> revisão -> Transaction` já usado por CSV/OFX. Não existe fila, tabela de revisão ou caminho de aprovação paralelo.
