@@ -170,6 +170,13 @@ export interface ImportTransactionSuggestion extends TenantScoped {
   accountId?: EntityId;
   otherAccountId?: EntityId;
   categoryId?: EntityId;
+  cardId?: EntityId;
+  cardInstrumentId?: EntityId;
+  cardInstrumentHint?: string;
+  invoicePeriod?: string;
+  installmentSequence?: number;
+  installmentTotal?: number;
+  targetKind?: "account" | "card";
   externalId?: string | undefined;
 }
 
@@ -439,6 +446,13 @@ export function buildTransactionExtractionPayload(
       ? {}
       : { otherAccountId: suggestion.otherAccountId }),
     ...(suggestion.categoryId === undefined ? {} : { categoryId: suggestion.categoryId }),
+    ...(suggestion.targetKind === undefined ? {} : { targetKind: suggestion.targetKind }),
+    ...(suggestion.cardId === undefined ? {} : { cardId: suggestion.cardId }),
+    ...(suggestion.cardInstrumentId === undefined ? {} : { cardInstrumentId: suggestion.cardInstrumentId }),
+    ...(suggestion.cardInstrumentHint === undefined ? {} : { cardInstrumentHint: suggestion.cardInstrumentHint }),
+    ...(suggestion.invoicePeriod === undefined ? {} : { invoicePeriod: suggestion.invoicePeriod }),
+    ...(suggestion.installmentSequence === undefined ? {} : { installmentSequence: suggestion.installmentSequence }),
+    ...(suggestion.installmentTotal === undefined ? {} : { installmentTotal: suggestion.installmentTotal }),
     ...(suggestion.externalId === undefined ? {} : { externalId: suggestion.externalId }),
   };
 }
