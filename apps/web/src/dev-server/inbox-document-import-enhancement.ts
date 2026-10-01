@@ -267,7 +267,7 @@ export function enhanceInboxDocumentImport(html: string): string {
       `        function readRowPayload(formElement) {
           const values = new FormData(formElement);
           const amountText = String(values.get("amount") || "").trim();
-          const normalized = amountText.includes(",") ? amountText.replace(/\\./g, "").replace(",", ".") : amountText;
+          const normalized = amountText.includes(",") ? amountText.replace(/\\\\./g, "").replace(",", ".") : amountText;
           const amount = Number(normalized);
           return {
             occurredOn: String(values.get("occurredOn") || ""),
@@ -282,7 +282,7 @@ export function enhanceInboxDocumentImport(html: string): string {
       `        function readRowPayload(formElement) {
           const values = new FormData(formElement);
           const amountText = String(values.get("amount") || "").trim();
-          const normalized = amountText.includes(",") ? amountText.replace(/\\./g, "").replace(",", ".") : amountText;
+          const normalized = amountText.includes(",") ? amountText.replace(/\\\\./g, "").replace(",", ".") : amountText;
           const amount = Number(normalized);
           const current = state.detail?.suggestions.find((item) => item.id === state.editingSuggestionId);
           const cardTarget = current?.payload?.targetKind === "card" || Boolean(current?.payload?.cardId);
