@@ -282,7 +282,8 @@ export async function approveDeterministicReviewSuggestionForContext(
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3 for update`,
       [payload.sourceSuggestionId, context.organizationId, context.financialProfileId],
     );
-    const source = sourceRows[0] ? mapAiSuggestionRow(sourceRows[0]) : undefined;
+    const sourceRow = sourceRows[0];
+    const source = sourceRow ? mapAiSuggestionRow(sourceRow) : undefined;
     const sourcePayload = source ? parseTransactionExtractionPayload(source.payload) : undefined;
     if (source === undefined || sourcePayload === undefined) {
       throw new DeterministicReviewSuggestionError(
@@ -291,7 +292,9 @@ export async function approveDeterministicReviewSuggestionForContext(
         404,
       );
     }
-    if (buildImportPayloadFingerprint(sourcePayload) !== payload.sourcePayloadFingerprint) {
+    const sourceFingerprint =
+      sourceRow?.payloadFingerprint ?? buildImportPayloadFingerprint(sourcePayload);
+    if (sourceFingerprint !== payload.sourcePayloadFingerprint) {
       throw new DeterministicReviewSuggestionError(
         "REVIEW_SUGGESTION_STALE",
         "A linha de importacao foi alterada. Execute a deteccao novamente antes de decidir.",
