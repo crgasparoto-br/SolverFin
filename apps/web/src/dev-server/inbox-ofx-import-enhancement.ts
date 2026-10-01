@@ -1,11 +1,12 @@
 import { enhanceInboxReviewQueue } from "./inbox-review-queue-enhancement.js";
 import { enhanceInboxReviewQueueTargets } from "./inbox-review-queue-target-enhancement.js";
+import { enhanceInboxDocumentImport } from "./inbox-document-import-enhancement.js";
 
 const ENHANCEMENT_MARKER = "data-inbox-ofx-import-enhanced";
 
 export function enhanceInboxOfxImport(html: string): string {
   const finalize = (value: string): string =>
-    enhanceInboxReviewQueueTargets(enhanceInboxReviewQueue(value));
+    enhanceInboxReviewQueueTargets(enhanceInboxReviewQueue(enhanceInboxDocumentImport(value)));
   if (!html.includes('id="csv-import-dialog"')) return finalize(html);
   if (html.includes(ENHANCEMENT_MARKER)) return finalize(html);
 
