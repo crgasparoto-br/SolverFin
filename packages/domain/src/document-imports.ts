@@ -472,7 +472,8 @@ function normalizeMappedRow(
       rowNumber,
       severity: "warning",
       code: "IMPORT_INSTALLMENT_REVIEW_REQUIRED",
-      message: "Parcelamento incompleto ou inconsistente foi mantido para revisao sem ser inventado.",
+      message:
+        "Parcelamento incompleto ou inconsistente foi mantido para revisao sem ser inventado.",
     });
   }
 

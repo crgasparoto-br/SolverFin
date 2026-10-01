@@ -4,6 +4,8 @@ export function enhanceInboxDocumentImport(html: string): string {
   if (!html.includes("data-inbox-ofx-import-enhanced")) return html;
   if (html.includes(DOCUMENT_IMPORT_MARKER)) return html;
 
+  // Exact source/target whitespace is part of this legacy post-processor contract.
+  // prettier-ignore
   const replacements: ReadonlyArray<readonly [string, string]> = [
     [
       'title="Importar extrato CSV ou OFX"',

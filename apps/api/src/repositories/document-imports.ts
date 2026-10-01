@@ -344,7 +344,8 @@ export async function createStructuredImportBatchForContext(
       action: "create",
       entityKind: "import_batch",
       entityId: batch.id,
-      reason: `Lote ${sourceKind.toUpperCase()} criado para revisao humana; arquivo bruto nao foi persistido.`,
+      reason:
+        `Lote ${sourceKind.toUpperCase()} criado para revisao humana; arquivo bruto nao foi persistido.`,
       redactedChanges: { status: "added", sourceKind: "added", documentClass: "added" },
     });
     await insertAuditLogEntry(executeQuery, {
