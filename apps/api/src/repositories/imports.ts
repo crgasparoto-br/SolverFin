@@ -1205,9 +1205,15 @@ async function approveImportSuggestionInTransaction(
   }
 
   const now = new Date().toISOString();
-  if (payload.payloadVersion === 2 && (payload.targetKind === "card" || payload.cardId !== undefined)) {
+  if (
+    payload.payloadVersion === 2 &&
+    (payload.targetKind === "card" || payload.cardId !== undefined)
+  ) {
     if (payload.cardId === undefined) {
-      throw new ImportReviewError("IMPORT_CARD_REQUIRED", "Selecione um cartao valido antes de confirmar a linha.");
+      throw new ImportReviewError(
+        "IMPORT_CARD_REQUIRED",
+        "Selecione um cartao valido antes de confirmar a linha.",
+      );
     }
     const purchase = await registerCardPurchaseForContext(
       context,
@@ -1218,7 +1224,9 @@ async function approveImportSuggestionInTransaction(
         description: payload.description,
         currency: payload.currency,
         ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
-        ...(payload.cardInstrumentId === undefined ? {} : { cardInstrumentId: payload.cardInstrumentId }),
+        ...(payload.cardInstrumentId === undefined
+          ? {}
+          : { cardInstrumentId: payload.cardInstrumentId }),
         ...(payload.installmentTotal === undefined || payload.installmentSequence === undefined
           ? {}
           : {
@@ -1509,9 +1517,15 @@ async function validateExtractionReferences(
   payload: TransactionExtractionPayload,
   executeQuery: QueryExecutor,
 ): Promise<void> {
-  if (payload.payloadVersion === 2 && (payload.targetKind === "card" || payload.cardId !== undefined)) {
+  if (
+    payload.payloadVersion === 2 &&
+    (payload.targetKind === "card" || payload.cardId !== undefined)
+  ) {
     if (payload.cardId === undefined) {
-      throw new ImportReviewError("IMPORT_CARD_REQUIRED", "Selecione um cartao valido antes de confirmar a linha.");
+      throw new ImportReviewError(
+        "IMPORT_CARD_REQUIRED",
+        "Selecione um cartao valido antes de confirmar a linha.",
+      );
     }
     if (payload.kind !== "expense" || payload.direction !== "outflow") {
       throw new ImportReviewError(
@@ -1526,10 +1540,17 @@ async function validateExtractionReferences(
     );
     const card = cardRows[0];
     if (card === undefined) {
-      throw new ImportReviewError("TENANT_RESOURCE_NOT_FOUND", "Recurso nao encontrado no perfil financeiro ativo.", 404);
+      throw new ImportReviewError(
+        "TENANT_RESOURCE_NOT_FOUND",
+        "Recurso nao encontrado no perfil financeiro ativo.",
+        404,
+      );
     }
     if (card.status !== "ACTIVE") {
-      throw new ImportReviewError("IMPORT_CARD_INVALID", "Cartao selecionado nao esta ativo neste perfil financeiro.");
+      throw new ImportReviewError(
+        "IMPORT_CARD_INVALID",
+        "Cartao selecionado nao esta ativo neste perfil financeiro.",
+      );
     }
     if (card.currency === null || card.currency.toUpperCase() !== payload.currency.toUpperCase()) {
       throw new ImportReviewError(
@@ -1542,7 +1563,12 @@ async function validateExtractionReferences(
         `select "id" from "CardInstrument"
          where "id" = $1 and "cardId" = $2 and "organizationId" = $3
            and "financialProfileId" = $4 and "status" = 'ACTIVE'`,
-        [payload.cardInstrumentId, payload.cardId, context.organizationId, context.financialProfileId],
+        [
+          payload.cardInstrumentId,
+          payload.cardId,
+          context.organizationId,
+          context.financialProfileId,
+        ],
       );
       if (instrumentRows[0] === undefined) {
         throw new ImportReviewError(
@@ -1556,7 +1582,12 @@ async function validateExtractionReferences(
         `select "id" from "CardInstrument"
          where "cardId" = $1 and "organizationId" = $2 and "financialProfileId" = $3
            and "status" = 'ACTIVE' and "maskedIdentifier" = $4`,
-        [payload.cardId, context.organizationId, context.financialProfileId, payload.cardInstrumentHint],
+        [
+          payload.cardId,
+          context.organizationId,
+          context.financialProfileId,
+          payload.cardInstrumentHint,
+        ],
       );
       if (matches.length > 1) {
         throw new ImportReviewError(
@@ -1584,7 +1615,12 @@ async function validateExtractionReferences(
       "Selecione uma conta valida antes de confirmar a linha.",
     );
   }
-  if (!(payload.payloadVersion === 2 && (payload.targetKind === "card" || payload.cardId !== undefined))) {
+  if (
+    !(
+      payload.payloadVersion === 2 &&
+      (payload.targetKind === "card" || payload.cardId !== undefined)
+    )
+  ) {
     const referenceAccount = await assertActiveAccount(
       context,
       payload.accountId as EntityId,
@@ -1599,40 +1635,40 @@ async function validateExtractionReferences(
     }
 
     if (payload.kind === "transfer") {
-    const direction = deriveImportLineDirection(payload);
-    if (direction === undefined) {
-      throw new ImportReviewError(
-        "IMPORT_TRANSFER_DIRECTION_INVALID",
-        "Nao foi possivel determinar se a transferencia entra ou sai da conta de referencia.",
+      const direction = deriveImportLineDirection(payload);
+      if (direction === undefined) {
+        throw new ImportReviewError(
+          "IMPORT_TRANSFER_DIRECTION_INVALID",
+          "Nao foi possivel determinar se a transferencia entra ou sai da conta de referencia.",
+        );
+      }
+      if (payload.payloadVersion !== 2 || payload.otherAccountId === undefined) {
+        throw new ImportReviewError(
+          "IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED",
+          "Selecione a outra conta da transferencia antes de confirmar.",
+        );
+      }
+      if (payload.otherAccountId === payload.accountId) {
+        throw new ImportReviewError(
+          "IMPORT_TRANSFER_SAME_ACCOUNT",
+          "A outra conta precisa ser diferente da conta de referencia.",
+        );
+      }
+      const otherAccount = await assertActiveAccount(
+        context,
+        payload.otherAccountId,
+        executeQuery,
+        "other",
       );
-    }
-    if (payload.payloadVersion !== 2 || payload.otherAccountId === undefined) {
-      throw new ImportReviewError(
-        "IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED",
-        "Selecione a outra conta da transferencia antes de confirmar.",
-      );
-    }
-    if (payload.otherAccountId === payload.accountId) {
-      throw new ImportReviewError(
-        "IMPORT_TRANSFER_SAME_ACCOUNT",
-        "A outra conta precisa ser diferente da conta de referencia.",
-      );
-    }
-    const otherAccount = await assertActiveAccount(
-      context,
-      payload.otherAccountId,
-      executeQuery,
-      "other",
-    );
-    if (
-      otherAccount.currency.toUpperCase() !== payload.currency.toUpperCase() ||
-      otherAccount.currency.toUpperCase() !== referenceAccount.currency.toUpperCase()
-    ) {
-      throw new ImportReviewError(
-        "IMPORT_TRANSFER_CURRENCY_MISMATCH",
-        "As duas contas da transferencia precisam usar a mesma moeda da linha importada.",
-      );
-    }
+      if (
+        otherAccount.currency.toUpperCase() !== payload.currency.toUpperCase() ||
+        otherAccount.currency.toUpperCase() !== referenceAccount.currency.toUpperCase()
+      ) {
+        throw new ImportReviewError(
+          "IMPORT_TRANSFER_CURRENCY_MISMATCH",
+          "As duas contas da transferencia precisam usar a mesma moeda da linha importada.",
+        );
+      }
     }
   }
 
@@ -1841,13 +1877,27 @@ async function ensureCurrentDeterministicCandidates(
           ? { otherAccountId: payload.otherAccountId }
           : {}),
         ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
-        ...(payload.payloadVersion !== 2 || payload.targetKind === undefined ? {} : { targetKind: payload.targetKind }),
-        ...(payload.payloadVersion !== 2 || payload.cardId === undefined ? {} : { cardId: payload.cardId }),
-        ...(payload.payloadVersion !== 2 || payload.cardInstrumentId === undefined ? {} : { cardInstrumentId: payload.cardInstrumentId }),
-        ...(payload.payloadVersion !== 2 || payload.cardInstrumentHint === undefined ? {} : { cardInstrumentHint: payload.cardInstrumentHint }),
-        ...(payload.payloadVersion !== 2 || payload.invoicePeriod === undefined ? {} : { invoicePeriod: payload.invoicePeriod }),
-        ...(payload.payloadVersion !== 2 || payload.installmentSequence === undefined ? {} : { installmentSequence: payload.installmentSequence }),
-        ...(payload.payloadVersion !== 2 || payload.installmentTotal === undefined ? {} : { installmentTotal: payload.installmentTotal }),
+        ...(payload.payloadVersion !== 2 || payload.targetKind === undefined
+          ? {}
+          : { targetKind: payload.targetKind }),
+        ...(payload.payloadVersion !== 2 || payload.cardId === undefined
+          ? {}
+          : { cardId: payload.cardId }),
+        ...(payload.payloadVersion !== 2 || payload.cardInstrumentId === undefined
+          ? {}
+          : { cardInstrumentId: payload.cardInstrumentId }),
+        ...(payload.payloadVersion !== 2 || payload.cardInstrumentHint === undefined
+          ? {}
+          : { cardInstrumentHint: payload.cardInstrumentHint }),
+        ...(payload.payloadVersion !== 2 || payload.invoicePeriod === undefined
+          ? {}
+          : { invoicePeriod: payload.invoicePeriod }),
+        ...(payload.payloadVersion !== 2 || payload.installmentSequence === undefined
+          ? {}
+          : { installmentSequence: payload.installmentSequence }),
+        ...(payload.payloadVersion !== 2 || payload.installmentTotal === undefined
+          ? {}
+          : { installmentTotal: payload.installmentTotal }),
         ...(payload.externalId === undefined ? {} : { externalId: payload.externalId }),
       },
     ],
@@ -2073,8 +2123,12 @@ function mergeExtractionPayload(
       ...common,
       direction,
       ...(otherAccountId === undefined ? {} : { otherAccountId }),
-      ...(current.payloadVersion !== 2 || current.targetKind === undefined ? {} : { targetKind: current.targetKind }),
-      ...(current.payloadVersion !== 2 || current.cardId === undefined ? {} : { cardId: current.cardId }),
+      ...(current.payloadVersion !== 2 || current.targetKind === undefined
+        ? {}
+        : { targetKind: current.targetKind }),
+      ...(current.payloadVersion !== 2 || current.cardId === undefined
+        ? {}
+        : { cardId: current.cardId }),
       ...(changes.cardInstrumentId === null
         ? {}
         : changes.cardInstrumentId !== undefined
@@ -2447,11 +2501,20 @@ function mapImportBatchRow(row: ImportBatchRow): ImportBatch {
     ...(row.csvDelimiter === null ? {} : { csvDelimiter: row.csvDelimiter as CsvDelimiter }),
     ...(isRecord(row.csvMapping) ? { csvMapping: row.csvMapping as Record<string, string> } : {}),
     ...(row.defaultCardId === null ? {} : { defaultCardId: row.defaultCardId }),
-    ...(row.documentClass === null ? {} : { documentClass: row.documentClass as "bank_statement" | "credit_card_invoice" }),
+    ...(row.documentClass === null
+      ? {}
+      : { documentClass: row.documentClass as "bank_statement" | "credit_card_invoice" }),
     ...(row.parserId === null ? {} : { parserId: row.parserId }),
     ...(row.parserVersion === null ? {} : { parserVersion: row.parserVersion }),
     ...(row.xlsxSheetName === null ? {} : { xlsxSheetName: row.xlsxSheetName }),
-    ...(isRecord(row.xlsxMapping) ? { xlsxMapping: row.xlsxMapping as Record<string, string | number | boolean | undefined> } : {}),
+    ...(isRecord(row.xlsxMapping)
+      ? {
+          xlsxMapping: row.xlsxMapping as Record<
+            string,
+            string | number | boolean | undefined
+          >,
+        }
+      : {}),
     ...(row.completedAt === null ? {} : { completedAt: row.completedAt.toISOString() }),
   };
 }
