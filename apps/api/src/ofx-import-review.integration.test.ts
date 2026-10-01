@@ -247,7 +247,7 @@ async function assertEditBulkConcurrencyAndDiscard(
       categoryId: fixtures.categoryId,
     },
   );
-  assert.equal(updateResponse.statusCode, 200);
+  assert.equal(updateResponse.statusCode, 200, JSON.stringify(updateResponse.body));
   const updated = readBody<{ suggestion: ImportSuggestion }>(updateResponse).suggestion;
   assert.equal(updated.status, "pending_review");
   assert.equal(updated.payload.description, `Descrição OFX corrigida ${fixtures.suffix}`);
@@ -545,7 +545,7 @@ async function assertStructuredDocumentApiBoundaries(
     cardId: card.id,
     consentAccepted: true,
   });
-  assert.equal(previewResponse.statusCode, 200);
+  assert.equal(previewResponse.statusCode, 200, JSON.stringify(previewResponse.body));
   const preview = readBody<{
     persisted: boolean;
     sourceKind: string;
