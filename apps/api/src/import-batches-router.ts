@@ -463,7 +463,7 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
     payload.cardInstrumentId = requireString(body, "cardInstrumentId");
   if (body.invoicePeriod !== undefined) {
     const invoicePeriod = requireString(body, "invoicePeriod");
-    if (!/^\\d{4}-\\d{2}$/.test(invoicePeriod)) {
+    if (!/^\d{4}-\d{2}$/.test(invoicePeriod)) {
       throw new ImportReviewError(
         "IMPORT_INVOICE_PERIOD_INVALID",
         "Periodo da fatura deve usar AAAA-MM.",
