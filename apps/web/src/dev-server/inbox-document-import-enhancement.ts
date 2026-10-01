@@ -353,9 +353,25 @@ export function enhanceInboxDocumentImport(html: string): string {
     }
 
     const renderedSource = indentRenderedBlock(source);
-    if (!enhanced.includes(renderedSource)) return html;
-    enhanced = enhanced.replace(renderedSource, indentRenderedBlock(target));
+    if (enhanced.includes(renderedSource)) {
+      enhanced = enhanced.replace(renderedSource, indentRenderedBlock(target));
+    }
   }
+
+  const requiredEnhancements = [
+    'accept=".csv,.ofx,.xlsx,.pdf,text/csv,text/plain,application/x-ofx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf"',
+    'name="documentClass"',
+    'name="cardId"',
+    'name="sheetName"',
+    'csv-line-card-instrument-field',
+    'name.endsWith(".xlsx")',
+    'name.endsWith(".pdf")',
+    'contentBase64: arrayBufferToBase64',
+    'function currentXlsxMapping()',
+    'function normalizeStructuredPreview(result)',
+  ];
+
+  if (!requiredEnhancements.every((fragment) => enhanced.includes(fragment))) return html;
 
   return enhanced.replace(
     "data-inbox-ofx-import-enhanced",
