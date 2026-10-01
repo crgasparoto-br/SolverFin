@@ -369,6 +369,7 @@ export interface TransactionExtractionPayloadV2 {
   targetKind?: "account" | "card";
   cardId?: EntityId;
   cardInstrumentId?: EntityId;
+  cardInstrumentHint?: string;
   invoicePeriod?: string;
   installmentSequence?: number;
   installmentTotal?: number;
