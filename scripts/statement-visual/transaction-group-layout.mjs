@@ -51,7 +51,9 @@ try {
   await openGroup(browser.cdp, groupId);
   const desktop = await measureLayout(browser.cdp);
   assert.equal(desktop.open, true, "Group modal did not open on desktop.");
-  assert.ok(desktop.dialogWidth >= 1100, `Group modal remained narrow: ${desktop.dialogWidth}px.`);
+  assert.ok(desktop.dialogWidth >= 640, `Group modal became too narrow: ${desktop.dialogWidth}px.`);
+  assert.ok(desktop.dialogWidth <= 780, `Group modal is too wide for the Golden Screen: ${desktop.dialogWidth}px.`);
+  assert.equal(desktop.formColumns, 2, "Desktop group form must use two columns.");
   assert.equal(desktop.insideViewport, true, "Group modal escapes the desktop viewport.");
   assert.equal(desktop.panelHorizontalOverflow, false, "Group panel has horizontal overflow.");
   assert.equal(desktop.formHorizontalOverflow, false, "Group form has horizontal overflow.");
@@ -68,6 +70,7 @@ try {
   await openGroup(browser.cdp, groupId);
   const mobile = await measureLayout(browser.cdp);
   assert.equal(mobile.open, true, "Group modal did not open on mobile.");
+  assert.equal(mobile.formColumns, 1, "Mobile group form must reflow to one column.");
   assert.equal(mobile.insideViewport, true, "Group modal escapes the mobile viewport.");
   assert.equal(
     mobile.panelHorizontalOverflow,
@@ -132,6 +135,7 @@ async function measureLayout(cdp) {
         open: dialog.open,
         dialogWidth: Math.round(rect.width),
         dialogHeight: Math.round(rect.height),
+        formColumns: getComputedStyle(form).gridTemplateColumns.split(/\s+/).filter(Boolean).length,
         insideViewport: rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1,
         panelHorizontalOverflow: panel.scrollWidth > panel.clientWidth + 1,
         formHorizontalOverflow: form.scrollWidth > form.clientWidth + 1,
