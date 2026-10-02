@@ -22,6 +22,7 @@ import { startOidcLoginAttemptScheduler } from "./oidc-attempt-scheduler.js";
 import { assertTrustedMutationOrigin } from "./request-origin.js";
 import { prepareRequestAuthenticationHeaders } from "./request-authentication.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
+import { handleAttachmentsApiRequest } from "./attachments-router.js";
 import { handleAdminInstitutionsApiRequest } from "./admin-institutions-router.js";
 import { handleAutomationRulesApiRequest } from "./automation-rules-router.js";
 import { handleBankMessageInboxApiRequest } from "./bank-message-inbox-router.js";
@@ -51,6 +52,7 @@ const MVP_PATHS = new Set([
 const AUTH_HANDLER_PATHS = new Set(MVP_PATHS);
 const DEFAULT_MAX_BODY_BYTES = 1_000_000;
 const IMPORT_MAX_BODY_BYTES = 32 * 1024 * 1024;
+const ATTACHMENT_REQUEST_MAX_BODY_BYTES = 8 * 1024 * 1024;
 const LARGE_IMPORT_BODY_PATHS = new Set([
   "/api/import-batches/csv/preview",
   "/api/import-batches/csv",
@@ -127,6 +129,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (accountsResult) {
       writeResponse(response, accountsResult);
+      return;
+    }
+
+    const attachmentsResult = await handleAttachmentsApiRequest(apiRequest);
+
+    if (attachmentsResult) {
+      writeResponse(response, attachmentsResult);
       return;
     }
 
@@ -319,6 +328,11 @@ function writeResponse(response: ServerResponse, apiResponse: ApiResponse): void
   }
   response.writeHead(apiResponse.statusCode, headers);
 
+  if (Buffer.isBuffer(apiResponse.body)) {
+    response.end(apiResponse.body);
+    return;
+  }
+
   if (apiResponse.body === undefined) {
     response.end();
     return;
@@ -370,6 +384,10 @@ async function readJsonBody(request: IncomingMessage, maxBodyBytes: number): Pro
 }
 
 function resolveMaxBodyBytes(pathname: string): number {
+  if (pathname === "/api/attachments") {
+    return ATTACHMENT_REQUEST_MAX_BODY_BYTES;
+  }
+
   return LARGE_IMPORT_BODY_PATHS.has(pathname) ? IMPORT_MAX_BODY_BYTES : DEFAULT_MAX_BODY_BYTES;
 }
 
