@@ -151,6 +151,7 @@ function parseTransactionProposal(
     "cardInstrumentId",
     "cardInstrumentHint",
     "invoicePeriod",
+    "installmentAmountMinor",
     "installmentSequence",
     "installmentTotal",
   ]);
@@ -183,6 +184,9 @@ function parseTransactionProposal(
     ...(payloadVersion === 2 ? optionalString(record, "cardInstrumentHint") : {}),
     ...(payloadVersion === 2 && record.invoicePeriod !== undefined
       ? { invoicePeriod: expectString(record.invoicePeriod) }
+      : {}),
+    ...(payloadVersion === 2 && record.installmentAmountMinor !== undefined
+      ? { installmentAmountMinor: expectPositiveInteger(record.installmentAmountMinor) }
       : {}),
     ...(payloadVersion === 2 && record.installmentSequence !== undefined
       ? { installmentSequence: expectPositiveInteger(record.installmentSequence) }
