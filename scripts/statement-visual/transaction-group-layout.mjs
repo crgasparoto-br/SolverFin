@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
+import { validateGoldenStatement } from "./golden-statement.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -24,6 +25,7 @@ try {
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await sleep(300);
+  await validateGoldenStatement(browser.cdp, { baseUrl, route, outputDir });
   groupId = await evaluate(
     browser.cdp,
     `(async () => {
