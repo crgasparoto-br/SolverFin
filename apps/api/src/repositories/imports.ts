@@ -1931,6 +1931,9 @@ async function ensureCurrentDeterministicCandidates(
         ...(payload.payloadVersion !== 2 || payload.invoicePeriod === undefined
           ? {}
           : { invoicePeriod: payload.invoicePeriod }),
+        ...(payload.payloadVersion !== 2 || payload.installmentAmountMinor === undefined
+          ? {}
+          : { installmentAmountMinor: payload.installmentAmountMinor }),
         ...(payload.payloadVersion !== 2 || payload.installmentSequence === undefined
           ? {}
           : { installmentSequence: payload.installmentSequence }),
