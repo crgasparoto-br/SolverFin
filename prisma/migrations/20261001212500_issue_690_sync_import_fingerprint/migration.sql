@@ -51,7 +51,15 @@ begin
       coalesce(payload->>'cardId', ''),
       coalesce(payload->>'cardInstrumentId', ''),
       coalesce(payload->>'cardInstrumentHint', ''),
-      coalesce(payload->>'invoicePeriod', ''),
+      coalesce(payload->>'invoicePeriod', '')
+    ];
+    if payload ? 'installmentAmountMinor' then
+      parts := parts || array[
+        'installment-amount',
+        coalesce(payload->>'installmentAmountMinor', '')
+      ];
+    end if;
+    parts := parts || array[
       coalesce(payload->>'installmentSequence', ''),
       coalesce(payload->>'installmentTotal', '')
     ];
