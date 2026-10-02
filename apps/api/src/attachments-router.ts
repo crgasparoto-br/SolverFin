@@ -1,7 +1,7 @@
 import {
+  type Attachment,
   TenantAuthorizationError,
   TenantError,
-  type Attachment,
   type TenantContext,
 } from "@solverfin/domain";
 
@@ -53,11 +53,7 @@ export async function handleAttachmentsApiRequest(
 
     const itemMatch = ATTACHMENT_ITEM_PATH.exec(request.pathname);
     if (request.method === "DELETE" && itemMatch?.[1]) {
-      return deleteAttachmentHandler(
-        context,
-        decodeURIComponent(itemMatch[1]),
-        correlationId,
-      );
+      return deleteAttachmentHandler(context, decodeURIComponent(itemMatch[1]), correlationId);
     }
 
     return undefined;
@@ -121,10 +117,7 @@ async function getAttachmentContentHandler(
   context: TenantContext,
   attachmentId: string,
 ): Promise<ApiResponse> {
-  const { attachment, content } = await getAttachmentContentForContext(
-    context,
-    attachmentId,
-  );
+  const { attachment, content } = await getAttachmentContentForContext(context, attachmentId);
   const safeName = attachment.fileName.replace(/["\r\n]/g, "_");
 
   return {
@@ -147,11 +140,7 @@ async function deleteAttachmentHandler(
   attachmentId: string,
   correlationId: string,
 ): Promise<ApiResponse> {
-  const attachment = await deleteAttachmentForContext(
-    context,
-    attachmentId,
-    correlationId,
-  );
+  const attachment = await deleteAttachmentForContext(context, attachmentId, correlationId);
 
   return json(200, { attachment: toPublicAttachment(attachment) });
 }
@@ -173,7 +162,11 @@ function toPublicAttachment(attachment: Attachment): Record<string, unknown> {
 }
 
 function readLinkedEntityKind(value: string | null): AttachmentLinkedEntityKind {
-  if (value === "transaction" || value === "invoice" || value === "import_batch") {
+  if (
+    value === "transaction" ||
+    value === "invoice" ||
+    value === "import_batch"
+  ) {
     return value;
   }
 
@@ -188,7 +181,9 @@ function buildAuthHeaders(headers: Readonly<Record<string, string | undefined>>)
   cookie?: string;
 } {
   return {
-    ...(headers.authorization === undefined ? {} : { authorization: headers.authorization }),
+    ...(headers.authorization === undefined
+      ? {}
+      : { authorization: headers.authorization }),
     ...(headers.cookie === undefined ? {} : { cookie: headers.cookie }),
   };
 }
