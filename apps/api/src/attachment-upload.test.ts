@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
-  ATTACHMENT_MAX_BYTES,
-  parseAttachmentUpload,
-} from "./attachment-upload.js";
+import { ATTACHMENT_MAX_BYTES, parseAttachmentUpload } from "./attachment-upload.js";
 
 function body(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -20,9 +17,7 @@ function body(overrides: Record<string, unknown> = {}): Record<string, unknown> 
 
 describe("parseAttachmentUpload", () => {
   it("accepts a valid attachment and sanitizes traversal from the display name", () => {
-    const parsed = parseAttachmentUpload(
-      body({ fileName: "../../segredo/comprovante.pdf" }),
-    );
+    const parsed = parseAttachmentUpload(body({ fileName: "../../segredo/comprovante.pdf" }));
 
     assert.equal(parsed.fileName, "comprovante.pdf");
     assert.equal(parsed.mimeType, "application/pdf");
@@ -56,9 +51,7 @@ describe("parseAttachmentUpload", () => {
   it("rejects a mismatched file signature", () => {
     assert.throws(
       () =>
-        parseAttachmentUpload(
-          body({ contentBase64: Buffer.from("not-a-pdf").toString("base64") }),
-        ),
+        parseAttachmentUpload(body({ contentBase64: Buffer.from("not-a-pdf").toString("base64") })),
       (error: unknown) =>
         typeof error === "object" &&
         error !== null &&
@@ -69,10 +62,7 @@ describe("parseAttachmentUpload", () => {
 
   it("rejects empty files", () => {
     assert.throws(
-      () =>
-        parseAttachmentUpload(
-          body({ contentBase64: Buffer.alloc(0).toString("base64") }),
-        ),
+      () => parseAttachmentUpload(body({ contentBase64: Buffer.alloc(0).toString("base64") })),
       (error: unknown) =>
         typeof error === "object" &&
         error !== null &&
