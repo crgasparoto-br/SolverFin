@@ -16,6 +16,23 @@ Este documento define o contrato operacional do gate visual do SolverFin durante
 
 Um novo cenario visual deve entrar no registro canonico. Nao adicione uma segunda lista de scripts diretamente no workflow. Se um modulo canonico declarar mais de um registro de cobertura, ele precisa de decomposicao explicita para execucoes focadas; o gate falha fechado quando nao existe esse mapeamento.
 
+## Gate de qualidade visual
+
+O gate visual nao serve apenas para provar que a tela renderiza, responde ao viewport e preserva comportamento. Para mudancas de interface, a evidencia final tambem deve sustentar o **contrato de qualidade visual** de `docs/DESIGN_SYSTEM.md`.
+
+Quando a mudanca alterar layout, hierarquia, densidade, iconografia, filtros, listas, formularios, master-detail ou composicao de informacao financeira, a revisao deve considerar explicitamente:
+
+- qual informacao e acao dominam a primeira leitura;
+- se valores e estados decisivos possuem maior peso que metadados;
+- se existe excesso de cards, bordas, badges, caixas aninhadas ou controles concorrentes;
+- se filtros secundarios ocupam espaco permanente sem necessidade;
+- se iconografia e acoes seguem a linguagem compartilhada;
+- se desktop e mobile mantem hierarquia e acabamento equivalentes;
+- se a tela se integra visualmente com telas da mesma familia;
+- quando houver Golden Screen indicada, se o candidato atinge nivel equivalente de acabamento, densidade, tipografia, espacamento e hierarquia.
+
+A revisao deve falhar quando a tela estiver funcional e responsiva, mas ainda apresentar aparencia de CRUD administrativo, formulario bruto ou composicao visual sem hierarquia clara. Screenshot isolado nao aprova qualidade; a evidencia precisa registrar rota, estado, viewport e observacao que sustente os criterios avaliados.
+
 ## Unidade de cobertura
 
 Cada evidencia representativa declara, no minimo:
