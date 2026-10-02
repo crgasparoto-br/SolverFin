@@ -455,6 +455,9 @@ export function buildTransactionExtractionPayload(
       ? {}
       : { cardInstrumentHint: suggestion.cardInstrumentHint }),
     ...(suggestion.invoicePeriod === undefined ? {} : { invoicePeriod: suggestion.invoicePeriod }),
+    ...(suggestion.installmentAmountMinor === undefined
+      ? {}
+      : { installmentAmountMinor: suggestion.installmentAmountMinor }),
     ...(suggestion.installmentSequence === undefined
       ? {}
       : { installmentSequence: suggestion.installmentSequence }),
@@ -497,11 +500,16 @@ export function parseTransactionExtractionPayload(
     (typeof value.invoicePeriod !== "string" || !/^\d{4}-\d{2}$/.test(value.invoicePeriod))
   )
     return undefined;
+  const installmentAmountMinor = parseOptionalPositiveInteger(value.installmentAmountMinor);
   const installmentSequence = parseOptionalPositiveInteger(value.installmentSequence);
   const installmentTotal = parseOptionalPositiveInteger(value.installmentTotal);
   if (
+    (value.installmentAmountMinor !== undefined && installmentAmountMinor === undefined) ||
     (value.installmentSequence !== undefined && installmentSequence === undefined) ||
     (value.installmentTotal !== undefined && installmentTotal === undefined) ||
+    (installmentSequence === undefined) !== (installmentTotal === undefined) ||
+    (installmentAmountMinor !== undefined &&
+      (installmentSequence === undefined || installmentTotal === undefined)) ||
     (installmentSequence !== undefined &&
       installmentTotal !== undefined &&
       installmentSequence > installmentTotal)
@@ -526,6 +534,7 @@ export function parseTransactionExtractionPayload(
       ? { cardInstrumentHint: value.cardInstrumentHint.trim() }
       : {}),
     ...(typeof value.invoicePeriod === "string" ? { invoicePeriod: value.invoicePeriod } : {}),
+    ...(installmentAmountMinor === undefined ? {} : { installmentAmountMinor }),
     ...(installmentSequence === undefined ? {} : { installmentSequence }),
     ...(installmentTotal === undefined ? {} : { installmentTotal }),
   };
@@ -558,6 +567,7 @@ export function buildImportPayloadFingerprint(payload: TransactionExtractionPayl
       payload.cardInstrumentId ?? "",
       payload.cardInstrumentHint ?? "",
       payload.invoicePeriod ?? "",
+      payload.installmentAmountMinor ?? "",
       payload.installmentSequence ?? "",
       payload.installmentTotal ?? "",
     );
