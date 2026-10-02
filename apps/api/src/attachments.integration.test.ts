@@ -36,7 +36,10 @@ void main()
   });
 
 async function main(): Promise<void> {
-  assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for attachment integration tests.");
+  assert.ok(
+    process.env.DATABASE_URL,
+    "DATABASE_URL is required for attachment integration tests.",
+  );
 
   const suffix = Date.now().toString(36);
   const account = await createAccountForContext(CONTEXT, {
@@ -81,9 +84,17 @@ async function main(): Promise<void> {
     linkedEntityKind: "transaction",
     linkedEntityId: transaction.id,
   });
-  assert.equal(retried.id, created.id, "identical retry must not duplicate the active attachment");
+  assert.equal(
+    retried.id,
+    created.id,
+    "identical retry must not duplicate the active attachment",
+  );
 
-  const listed = await listAttachmentsForContext(CONTEXT, "transaction", transaction.id);
+  const listed = await listAttachmentsForContext(
+    CONTEXT,
+    "transaction",
+    transaction.id,
+  );
   assert.equal(listed.filter((attachment) => attachment.id === created.id).length, 1);
 
   const downloaded = await getAttachmentContentForContext(CONTEXT, created.id);
@@ -117,7 +128,11 @@ async function main(): Promise<void> {
   const deletedAgain = await deleteAttachmentForContext(CONTEXT, created.id);
   assert.equal(deletedAgain.status, "deleted");
 
-  const afterDelete = await listAttachmentsForContext(CONTEXT, "transaction", transaction.id);
+  const afterDelete = await listAttachmentsForContext(
+    CONTEXT,
+    "transaction",
+    transaction.id,
+  );
   assert.equal(afterDelete.some((attachment) => attachment.id === created.id), false);
   await assert.rejects(
     () => getAttachmentContentForContext(CONTEXT, created.id),
