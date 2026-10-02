@@ -178,7 +178,7 @@ begin
           'sourceHash', 'occurredOn', 'kind', 'direction', 'amountMinor', 'currency',
           'description', 'accountId', 'otherAccountId', 'categoryId', 'externalId',
           'targetKind', 'cardId', 'cardInstrumentId', 'cardInstrumentHint',
-          'invoicePeriod', 'installmentSequence', 'installmentTotal'
+          'invoicePeriod', 'installmentAmountMinor', 'installmentSequence', 'installmentTotal'
         )
       )
     then
@@ -467,6 +467,8 @@ begin
         jsonb_typeof(payload->'invoicePeriod') is distinct from 'string'
         or payload->>'invoicePeriod' !~ '^[0-9]{4}-[0-9]{2}$'
       ))
+      or (payload ? 'installmentAmountMinor'
+        and not "isValidAiSuggestionPayloadPositiveSafeInteger"(payload->'installmentAmountMinor'))
       or (payload ? 'installmentSequence'
         and not "isValidAiSuggestionPayloadPositiveSafeInteger"(payload->'installmentSequence'))
       or (payload ? 'installmentTotal'
@@ -485,6 +487,7 @@ begin
         or payload ? 'cardInstrumentId'
         or payload ? 'cardInstrumentHint'
         or payload ? 'invoicePeriod'
+        or payload ? 'installmentAmountMinor'
         or payload ? 'installmentSequence'
         or payload ? 'installmentTotal'
       then
@@ -496,6 +499,10 @@ begin
         or jsonb_typeof(payload->'direction') is distinct from 'string'
         or payload->>'direction' not in ('inflow', 'outflow')
         or ((payload ? 'installmentSequence') <> (payload ? 'installmentTotal'))
+        or (
+          payload ? 'installmentAmountMinor'
+          and not (payload ? 'installmentSequence' and payload ? 'installmentTotal')
+        )
         or (
           payload ? 'installmentSequence'
           and (payload->>'installmentSequence')::numeric > (payload->>'installmentTotal')::numeric
