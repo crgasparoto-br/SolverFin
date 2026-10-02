@@ -97,7 +97,6 @@ A identidade visual de uma instituicao financeira e responsabilidade de um catal
 
 O banco pode manter metadados administrativos da instituicao ou do asset global quando necessario para gestao do catalogo, mas esses dados nao pertencem ao registro individual da conta nem podem transformar a conta em dona do logo.
 
-
 ## Estado atual e estado-alvo
 
 ### Estado atual
