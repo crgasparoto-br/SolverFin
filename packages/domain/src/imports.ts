@@ -174,6 +174,7 @@ export interface ImportTransactionSuggestion extends TenantScoped {
   cardInstrumentId?: EntityId;
   cardInstrumentHint?: string;
   invoicePeriod?: string;
+  installmentAmountMinor?: number;
   installmentSequence?: number;
   installmentTotal?: number;
   targetKind?: "account" | "card";
