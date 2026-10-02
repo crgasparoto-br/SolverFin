@@ -1242,6 +1242,21 @@ async function approveImportSuggestionInTransaction(
         requireInstrumentContext: payload.cardInstrumentId !== undefined,
       },
     );
+    if (payload.installmentSequence !== undefined) {
+      const materializedInstallment = purchase.installments.find(
+        (installment) => installment.sequenceNumber === payload.installmentSequence,
+      );
+      if (
+        materializedInstallment === undefined ||
+        materializedInstallment.amountMinor !== payload.installmentAmountMinor
+      ) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTALLMENT_AMOUNT_MISMATCH",
+          "O total revisado nao reproduz o valor da parcela observado na fatura.",
+          409,
+        );
+      }
+    }
     if (
       payload.invoicePeriod !== undefined &&
       purchase.invoice.periodEndOn.slice(0, 7) !== payload.invoicePeriod
@@ -1561,6 +1576,29 @@ async function validateExtractionReferences(
         "IMPORT_CARD_CURRENCY_MISMATCH",
         "A moeda da compra importada precisa ser a mesma moeda do cartao.",
       );
+    }
+    if (payload.installmentSequence !== undefined || payload.installmentTotal !== undefined) {
+      if (
+        payload.installmentSequence === undefined ||
+        payload.installmentTotal === undefined ||
+        payload.installmentAmountMinor === undefined
+      ) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTALLMENT_AMOUNT_REQUIRED",
+          "A compra parcelada precisa preservar o valor da parcela observado na fatura antes da aprovacao.",
+          409,
+        );
+      }
+      if (
+        payload.installmentTotal > 1 &&
+        payload.amountMinor <= payload.installmentAmountMinor
+      ) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTALLMENT_TOTAL_REQUIRED",
+          "Revise o valor total da compra parcelada antes de aprovar; o valor importado corresponde somente a parcela da fatura.",
+          409,
+        );
+      }
     }
     if (payload.cardInstrumentId !== undefined) {
       const instrumentRows = await executeQuery<{ id: string }>(
@@ -2145,6 +2183,9 @@ function mergeExtractionPayload(
         : current.payloadVersion === 2 && current.invoicePeriod !== undefined
           ? { invoicePeriod: current.invoicePeriod }
           : {}),
+      ...(current.payloadVersion === 2 && current.installmentAmountMinor !== undefined
+        ? { installmentAmountMinor: current.installmentAmountMinor }
+        : {}),
       ...(current.payloadVersion === 2 && current.installmentSequence !== undefined
         ? { installmentSequence: current.installmentSequence }
         : {}),
