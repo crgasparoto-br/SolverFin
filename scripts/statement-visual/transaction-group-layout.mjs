@@ -140,7 +140,16 @@ async function measureLayout(cdp) {
         dialogHeight: Math.round(rect.height),
         formColumns: (() => {
           const fields = Array.from(form.querySelectorAll(":scope > label")).slice(0, 4);
-          return new Set(fields.map((field) => Math.round(field.getBoundingClientRect().left))).size;
+          const positions = fields
+            .map((field) => field.getBoundingClientRect().left)
+            .sort((a, b) => a - b);
+          const columnStarts = [];
+          for (const position of positions) {
+            if (!columnStarts.some((start) => Math.abs(start - position) <= 4)) {
+              columnStarts.push(position);
+            }
+          }
+          return columnStarts.length;
         })(),
         insideViewport: rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1,
         panelHorizontalOverflow: panel.scrollWidth > panel.clientWidth + 1,
