@@ -9,7 +9,25 @@ import {
 } from "./document-imports.js";
 
 function pdf(lines: readonly string[]): string {
-  return Buffer.from(["%PDF-1.4", ...lines, "%%EOF"].join("\n"), "latin1").toString("base64");
+  const headerAndComments = ["%PDF-1.4", ...lines].join("\n") + "\n";
+  const objectOffset = Buffer.byteLength(headerAndComments, "latin1");
+  const body = headerAndComments + "1 0 obj\n<< /Type /Catalog >>\nendobj\n";
+  const xrefOffset = Buffer.byteLength(body, "latin1");
+  const objectOffsetText = String(objectOffset).padStart(10, "0");
+  const document =
+    body +
+    [
+      "xref",
+      "0 2",
+      "0000000000 65535 f ",
+      `${objectOffsetText} 00000 n `,
+      "trailer",
+      "<< /Size 2 /Root 1 0 R >>",
+      "startxref",
+      String(xrefOffset),
+      "%%EOF",
+    ].join("\n");
+  return Buffer.from(document, "latin1").toString("base64");
 }
 
 describe("document imports", () => {
@@ -51,11 +69,42 @@ describe("document imports", () => {
     assert.equal(result.rows.length, 2);
     assert.notEqual(result.rows[0]?.sourceHash, result.rows[1]?.sourceHash);
     assert.equal(result.rows[0]?.invoicePeriod, "2026-09");
+    assert.equal(result.rows[0]?.amountMinor, 1000);
+    assert.equal(result.rows[0]?.installmentAmountMinor, 1000);
     assert.equal(result.rows[0]?.installmentSequence, 1);
     assert.equal(result.rows[0]?.installmentTotal, 3);
+    assert.equal(
+      result.problems.some((problem) => problem.code === "IMPORT_INSTALLMENT_TOTAL_REVIEW_REQUIRED"),
+      true,
+    );
   });
 
-  it("fails closed for unknown, changed, ambiguous and protected PDF layouts", () => {
+  it("fails closed for truncated, structurally corrupt, unknown, changed, ambiguous and protected PDF layouts", () => {
+    const truncated = Buffer.from(
+      ["%PDF-1.4", "%SOLVERFIN:STATEMENT:V1", "%TX|2026-09-01|-1.00|BRL|Teste|x"].join("\n"),
+      "latin1",
+    ).toString("base64");
+    assert.throws(
+      () => parsePdfImport({ contentBase64: truncated, documentClass: "bank_statement" }),
+      (error: unknown) =>
+        error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
+    );
+
+    const corruptStartxref = Buffer.from(
+      Buffer.from(
+        pdf(["%SOLVERFIN:STATEMENT:V1", "%TX|2026-09-01|-1.00|BRL|Teste|x"]),
+        "base64",
+      )
+        .toString("latin1")
+        .replace(/startxref\n\d+/, "startxref\n999999"),
+      "latin1",
+    ).toString("base64");
+    assert.throws(
+      () => parsePdfImport({ contentBase64: corruptStartxref, documentClass: "bank_statement" }),
+      (error: unknown) =>
+        error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
+    );
+
     assert.throws(
       () =>
         parsePdfImport({
