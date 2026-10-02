@@ -112,6 +112,7 @@ function parseCurrentTransactionExtraction(
     "cardInstrumentId",
     "cardInstrumentHint",
     "invoicePeriod",
+    "installmentAmountMinor",
     "installmentSequence",
     "installmentTotal",
   ]);
@@ -352,6 +353,7 @@ function parseTransactionOptionalFields(
   cardInstrumentId?: string;
   cardInstrumentHint?: string;
   invoicePeriod?: string;
+  installmentAmountMinor?: number;
   installmentSequence?: number;
   installmentTotal?: number;
 } {
@@ -362,6 +364,10 @@ function parseTransactionOptionalFields(
   if (invoicePeriod !== undefined && !/^\\d{4}-\\d{2}$/.test(invoicePeriod)) {
     throw new AiSuggestionPayloadError("AI_SUGGESTION_PAYLOAD_INVALID");
   }
+  const installmentAmountMinor =
+    version === 2 && record.installmentAmountMinor !== undefined
+      ? expectPositiveInteger(record.installmentAmountMinor)
+      : undefined;
   const installmentSequence =
     version === 2 && record.installmentSequence !== undefined
       ? expectPositiveInteger(record.installmentSequence)
@@ -372,6 +378,8 @@ function parseTransactionOptionalFields(
       : undefined;
   if (
     (installmentSequence === undefined) !== (installmentTotal === undefined) ||
+    (installmentAmountMinor !== undefined &&
+      (installmentSequence === undefined || installmentTotal === undefined)) ||
     (installmentSequence !== undefined &&
       installmentTotal !== undefined &&
       installmentSequence > installmentTotal)
@@ -390,6 +398,7 @@ function parseTransactionOptionalFields(
     ...(version === 2 ? optionalString(record, "cardInstrumentId") : {}),
     ...(version === 2 ? optionalString(record, "cardInstrumentHint") : {}),
     ...(invoicePeriod === undefined ? {} : { invoicePeriod }),
+    ...(installmentAmountMinor === undefined ? {} : { installmentAmountMinor }),
     ...(installmentSequence === undefined ? {} : { installmentSequence }),
     ...(installmentTotal === undefined ? {} : { installmentTotal }),
   };
