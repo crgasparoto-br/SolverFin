@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import path from "node:path";
+import { extname } from "node:path";
 
 import type { AttachmentKind } from "@solverfin/domain";
 
@@ -157,7 +157,7 @@ function decodeBase64(value: unknown): Buffer {
 }
 
 function assertExtensionMatchesMime(fileName: string, mimeType: string): void {
-  const extension = path.extname(fileName).toLowerCase();
+  const extension = extname(fileName).toLowerCase();
   if (!extension) {
     return;
   }
