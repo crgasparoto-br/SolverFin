@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import {
   createAttachmentForContext,
@@ -110,6 +110,41 @@ async function main(): Promise<void> {
         linkedEntityId: "99999999-9999-4999-8999-999999999999",
       }),
     hasCode("ATTACHMENT_LINKED_ENTITY_NOT_FOUND"),
+  );
+
+  const redactedContent = Buffer.from("%PDF-1.7\nattachment-redacted");
+  const redacted = await createAttachmentForContext(CONTEXT, {
+    kind: "receipt",
+    fileName: "comprovante-redacted.pdf",
+    mimeType: "application/pdf",
+    byteSize: redactedContent.length,
+    contentSha256: createHash("sha256").update(redactedContent).digest("hex"),
+    content: redactedContent,
+    linkedEntityKind: "transaction",
+    linkedEntityId: transaction.id,
+  });
+
+  await query(
+    `update "Attachment"
+        set "status" = 'REDACTED',
+            "redactedAt" = $1,
+            "updatedAt" = $1
+      where "id" = $2
+        and "organizationId" = $3
+        and "financialProfileId" = $4`,
+    [new Date(), redacted.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+
+  const afterRedaction = await listAttachmentsForContext(CONTEXT, "transaction", transaction.id);
+  assert.equal(
+    afterRedaction.some((attachment) => attachment.id === redacted.id),
+    false,
+    "redacted attachments must not be enumerated in normal listings",
+  );
+  await assert.rejects(
+    () => getAttachmentContentForContext(CONTEXT, redacted.id),
+    hasCode("ATTACHMENT_NOT_FOUND"),
+    "redacted attachments must not expose content through normal access",
   );
 
   const deleted = await deleteAttachmentForContext(CONTEXT, created.id);
