@@ -568,10 +568,11 @@ export function buildImportPayloadFingerprint(payload: TransactionExtractionPayl
       payload.cardInstrumentId ?? "",
       payload.cardInstrumentHint ?? "",
       payload.invoicePeriod ?? "",
-      payload.installmentAmountMinor ?? "",
-      payload.installmentSequence ?? "",
-      payload.installmentTotal ?? "",
     );
+    if (payload.installmentAmountMinor !== undefined) {
+      parts.push("installment-amount", payload.installmentAmountMinor);
+    }
+    parts.push(payload.installmentSequence ?? "", payload.installmentTotal ?? "");
   }
   parts.push(payload.categoryId ?? "", payload.externalId ?? "");
   return buildStableImportHash(parts.join(":"));
