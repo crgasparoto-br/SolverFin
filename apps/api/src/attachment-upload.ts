@@ -41,7 +41,10 @@ export function parseAttachmentUpload(body: unknown): ParsedAttachmentUpload {
   const input = requireObject(body);
   const kind = readAttachmentKind(input.kind);
   const linkedEntityKind = readLinkedEntityKind(input.linkedEntityKind);
-  const linkedEntityId = readRequiredString(input.linkedEntityId, "ATTACHMENT_LINKED_ENTITY_REQUIRED");
+  const linkedEntityId = readRequiredString(
+    input.linkedEntityId,
+    "ATTACHMENT_LINKED_ENTITY_REQUIRED",
+  );
   const mimeType = readMimeType(input.mimeType);
   const fileName = sanitizeAttachmentFileName(
     readRequiredString(input.fileName, "ATTACHMENT_FILE_NAME_REQUIRED"),
@@ -96,8 +99,14 @@ export function sanitizeAttachmentFileName(value: string): string {
 }
 
 function readAttachmentKind(value: unknown): AttachmentKind {
-  if (typeof value !== "string" || !ALLOWED_ATTACHMENT_KINDS.has(value as AttachmentKind)) {
-    throw uploadError("ATTACHMENT_KIND_INVALID", "O tipo funcional do anexo não é suportado.");
+  if (
+    typeof value !== "string" ||
+    !ALLOWED_ATTACHMENT_KINDS.has(value as AttachmentKind)
+  ) {
+    throw uploadError(
+      "ATTACHMENT_KIND_INVALID",
+      "O tipo funcional do anexo não é suportado.",
+    );
   }
 
   return value as AttachmentKind;
@@ -117,9 +126,15 @@ function readLinkedEntityKind(
 }
 
 function readMimeType(value: unknown): string {
-  const mimeType = readRequiredString(value, "ATTACHMENT_MIME_REQUIRED").toLowerCase();
+  const mimeType = readRequiredString(
+    value,
+    "ATTACHMENT_MIME_REQUIRED",
+  ).toLowerCase();
   if (!(mimeType in MIME_EXTENSIONS)) {
-    throw uploadError("ATTACHMENT_MIME_NOT_ALLOWED", "O tipo de arquivo não é permitido.");
+    throw uploadError(
+      "ATTACHMENT_MIME_NOT_ALLOWED",
+      "O tipo de arquivo não é permitido.",
+    );
   }
 
   return mimeType;
@@ -139,10 +154,7 @@ function decodeBase64(value: unknown): Buffer {
   }
 
   const normalized = value.replace(/\s+/g, "");
-  if (
-    normalized.length % 4 !== 0 ||
-    !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized)
-  ) {
+  if (normalized.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized)) {
     throw uploadError("ATTACHMENT_CONTENT_INVALID", "O conteúdo do arquivo é inválido.");
   }
 
@@ -172,31 +184,34 @@ function assertExtensionMatchesMime(fileName: string, mimeType: string): void {
 }
 
 function assertContentSignature(content: Buffer, mimeType: string): void {
-  const matches =
-    mimeType === "application/pdf"
-      ? content.subarray(0, 5).toString("ascii") === "%PDF-"
-      : mimeType === "image/png"
-        ? content.subarray(0, 8).equals(
-            Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-          )
-        : mimeType === "image/jpeg"
-          ? content.length >= 3 &&
-            content[0] === 0xff &&
-            content[1] === 0xd8 &&
-            content[2] === 0xff
-          : mimeType === "image/webp"
-            ? content.subarray(0, 4).toString("ascii") === "RIFF" &&
-              content.subarray(8, 12).toString("ascii") === "WEBP"
-            : mimeType === "application/vnd.ms-excel"
-              ? content
-                  .subarray(0, 8)
-                  .equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]))
-              : mimeType ===
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-                  mimeType ===
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                ? content.subarray(0, 2).toString("ascii") === "PK"
-                : true;
+  let matches = true;
+
+  if (mimeType === "application/pdf") {
+    matches = content.subarray(0, 5).toString("ascii") === "%PDF-";
+  } else if (mimeType === "image/png") {
+    matches = content
+      .subarray(0, 8)
+      .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  } else if (mimeType === "image/jpeg") {
+    matches =
+      content.length >= 3 &&
+      content[0] === 0xff &&
+      content[1] === 0xd8 &&
+      content[2] === 0xff;
+  } else if (mimeType === "image/webp") {
+    matches =
+      content.subarray(0, 4).toString("ascii") === "RIFF" &&
+      content.subarray(8, 12).toString("ascii") === "WEBP";
+  } else if (mimeType === "application/vnd.ms-excel") {
+    matches = content
+      .subarray(0, 8)
+      .equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]));
+  } else if (
+    mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    matches = content.subarray(0, 2).toString("ascii") === "PK";
+  }
 
   if (!matches) {
     throw uploadError(
@@ -208,7 +223,10 @@ function assertContentSignature(content: Buffer, mimeType: string): void {
 
 function requireObject(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
-    throw uploadError("ATTACHMENT_BODY_INVALID", "Envie os dados do anexo em formato JSON.");
+    throw uploadError(
+      "ATTACHMENT_BODY_INVALID",
+      "Envie os dados do anexo em formato JSON.",
+    );
   }
 
   return body as Record<string, unknown>;
