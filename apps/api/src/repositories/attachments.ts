@@ -164,7 +164,12 @@ export async function listAttachmentsForContext(
   linkedEntityKind: AttachmentLinkedEntityKind,
   linkedEntityId: EntityId,
 ): Promise<Attachment[]> {
-  await assertLinkedEntityForContext(query, context, linkedEntityKind, linkedEntityId);
+  await assertLinkedEntityForContext(
+    query,
+    context,
+    linkedEntityKind,
+    linkedEntityId,
+  );
 
   const rows = await query<AttachmentRow>(
     `select ${ATTACHMENT_COLUMNS}
@@ -209,7 +214,9 @@ export async function getAttachmentContentForContext(
     throw attachmentError("ATTACHMENT_NOT_FOUND", "Anexo não encontrado.", 404);
   }
 
-  const linkedEntityKind = fromDatabaseLinkedEntityKind(row.linkedEntityKind);
+  const linkedEntityKind = fromDatabaseLinkedEntityKind(
+    row.linkedEntityKind,
+  );
   await assertLinkedEntityForContext(
     query,
     context,
@@ -261,7 +268,11 @@ export async function deleteAttachmentForContext(
     const current = rows[0];
 
     if (current === undefined) {
-      throw attachmentError("ATTACHMENT_NOT_FOUND", "Anexo não encontrado.", 404);
+      throw attachmentError(
+        "ATTACHMENT_NOT_FOUND",
+        "Anexo não encontrado.",
+        404,
+      );
     }
 
     await assertLinkedEntityForContext(
