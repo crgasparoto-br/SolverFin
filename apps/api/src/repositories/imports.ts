@@ -1589,10 +1589,7 @@ async function validateExtractionReferences(
           409,
         );
       }
-      if (
-        payload.installmentTotal > 1 &&
-        payload.amountMinor <= payload.installmentAmountMinor
-      ) {
+      if (payload.installmentTotal > 1 && payload.amountMinor <= payload.installmentAmountMinor) {
         throw new ImportReviewError(
           "IMPORT_CARD_INSTALLMENT_TOTAL_REQUIRED",
           "Revise o valor total da compra parcelada antes de aprovar; o valor importado corresponde somente a parcela da fatura.",
