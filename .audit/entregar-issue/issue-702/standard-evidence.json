@@ -1,35 +1,178 @@
 {
   "schema_version": 1,
-  "profile": "standard",
-  "material_head_sha": "0cea9287118ea5e03a2640725f3294969b32cec2",
-  "delivery_v2_ci": {
-    "run_id": 37039967337,
-    "status": "completed",
-    "conclusion": "success",
-    "validated": [
-      "exact head",
-      "format",
-      "lint",
-      "typecheck",
-      "unit tests",
-      "api integration",
-      "statement consistency",
-      "build"
-    ]
-  },
-  "visual_validation": {
-    "run_id": 37039967274,
-    "status": "completed",
-    "conclusion": "success",
-    "material_head_sha": "0cea9287118ea5e03a2640725f3294969b32cec2",
-    "coverage": "registered Chrome matrix including transfer-source-destination, desktop/mobile dialogs, keyboard/focus and statement scenarios"
-  },
-  "focused_regression": {
-    "scenario": "transfer-source-destination",
-    "reason": "first visual run exposed desktop pairing regression; material fix keeps kind full-row and account legs paired"
-  },
-  "scope_notes": [
-    "No financial-domain, API, schema or calculation behavior changed.",
-    "This is the first coherent slice of epic #702; cross-screen propagation remains open."
+  "contract_version": "2026-08-20.3",
+  "head_sha": "219e716011fd94337bbf6fd30e634b96e4259ee1",
+  "requirements": [
+    {
+      "requirement_id": "R-001",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-001",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    },
+    {
+      "requirement_id": "R-002",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-002",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    },
+    {
+      "requirement_id": "R-003",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-003",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    },
+    {
+      "requirement_id": "R-004",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-004",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    },
+    {
+      "requirement_id": "R-005",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-005",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    },
+    {
+      "requirement_id": "R-006",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-006",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    },
+    {
+      "requirement_id": "R-007",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-007",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    },
+    {
+      "requirement_id": "R-008",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-008",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    },
+    {
+      "requirement_id": "R-009",
+      "positive_evidence": [
+        "PR #703 material head 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 success",
+        "Statement visual validation run 37072906010 success"
+      ],
+      "primary_negative_control": {
+        "id": "NC-009",
+        "procedure": "Executar a matriz Chrome registrada e verificar que a composição não regride para o comportamento visual anterior no cenário discriminante aplicável.",
+        "expected": "O cenário discriminante permanece compatível com o contrato visual e responsivo da Golden Screen.",
+        "observed": "Gate visual completo passou no SHA material exato.",
+        "status": "passed"
+      },
+      "regression_evidence": [
+        "Statement visual validation run 37072906010 success",
+        "Delivery V2 CI run 37072905993 success"
+      ]
+    }
   ]
 }

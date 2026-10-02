@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "219e716011fd94337bbf6fd30e634b96e4259ee1",
+  "source": {
+    "rejection_id": "audit-rejection:9e5f9866-14e0-4043-88e8-fb48b8364788",
+    "audited_head_sha": "e63c0dee17db5a43d6e2110324053fe0fc2824c3",
+    "audit_report_sha256": "dd7b641fe43aae00fc68f8c2a5659ae254a790b7a59775264986233bac40a07e"
+  },
+  "remediation_mode": "targeted-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "evidence": [
+        "Material head refrozen on 219e716011fd94337bbf6fd30e634b96e4259ee1",
+        "Delivery V2 CI run 37072905993 completed/success",
+        "Statement visual validation run 37072906010 completed/success"
+      ],
+      "validations": [
+        "No material writes after exact-SHA green evidence before handoff construction",
+        "Result-only child restricted to certified .audit paths"
+      ]
+    }
+  ]
+}
