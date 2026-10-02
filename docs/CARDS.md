@@ -356,6 +356,6 @@ Regras específicas:
 - a moeda da linha deve coincidir com a moeda canônica do cartão; não há FX implícito;
 - identificador mascarado único pode pré-selecionar o instrumento, mas ambiguidade ou ausência bloqueia a aprovação até revisão explícita;
 - `invoicePeriod`, quando fornecido pela origem, precisa coincidir com o período da fatura calculado pelo domínio;
-- parcelamento só é materializado quando sequência e total foram extraídos de forma consistente;
+- parcelamento só é materializado quando sequência e total foram extraídos de forma consistente e o valor total revisado da compra reproduz exatamente o valor da parcela observado no documento; `Transaction.amountMinor` continua sendo o total da compra e `installmentAmountMinor` é apenas evidência imutável da ocorrência importada;
 - total da fatura, pagamento, saldo anterior e linhas de resumo não são tratados como compras;
 - deduplicação/conciliação usa o mesmo detector determinístico compartilhado, incluindo `cardId` como evidência.
