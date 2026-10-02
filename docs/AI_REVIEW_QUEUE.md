@@ -34,7 +34,7 @@ O scanner de insights administra exclusivamente os candidatos produzidos por `pr
 
 Quando o cálculo não possui base realizada suficiente, a lista continua sem criar `AiSuggestion` artificial e a resposta inclui o estado informativo `financialInsights.insufficientData[]`. A Inbox mostra esse estado de forma compacta como “Insights financeiros aguardando dados”.
 
-CSV, OFX, mensagens bancárias e extrações assistidas por IA passam pelo mesmo motor de comparação para deduplicação/conciliação; a origem não seleciona um algoritmo diferente. A geração de insight, por sua vez, lê o estado financeiro já persistido do perfil e não depende da origem das extrações.
+CSV, OFX, XLSX, PDF, mensagens bancárias e extrações assistidas por IA passam pelo mesmo motor de comparação para deduplicação/conciliação; a origem não seleciona um algoritmo diferente. A geração de insight, por sua vez, lê o estado financeiro já persistido do perfil e não depende da origem das extrações.
 
 A interface possui estados explícitos de carregamento, vazio, erro com nova tentativa, indisponibilidade temporária com nova tentativa, baixa confiança e conflito de versão. Falhas transitórias reconhecidas por HTTP `408`, `425`, `429`, `502`, `503` ou `504`, ou por códigos equivalentes de timeout/rate limit/unavailable, usam mensagem e estilo próprios para não se confundirem com erro permanente.
 
@@ -132,7 +132,7 @@ A rota de payload retorna a projeção tipada e redigida. Referências internas 
 
 ## Deduplicação e conciliação generalizadas
 
-A issue #566 estende a detecção determinística para qualquer `transaction_extraction` estruturada pendente. A comparação usa o mesmo domínio para CSV, OFX, mensagem bancária e extração produzida por IA que siga o contrato canônico.
+A issue #566 estende a detecção determinística para qualquer `transaction_extraction` estruturada pendente. A comparação usa o mesmo domínio para CSV, OFX, XLSX, PDF, mensagem bancária e extração produzida por IA que siga o contrato canônico.
 
 A candidatura persiste `sourceSuggestionId`, `sourcePayloadFingerprint`, `targetTransactionId`, motivos e conflitos. A identidade tenant-scoped impede duplicação sob varreduras concorrentes. Uma mudança na origem ou no alvo expira a candidatura antiga; se a combinação continuar válida, uma candidatura atual pode ser criada para a nova versão.
 
@@ -177,7 +177,7 @@ A fila não inventa categoria quando a evidência é inválida. Categoria arquiv
 
 ## Mensagens bancárias e importações
 
-Mensagens bancárias e importações CSV/OFX produzem extrações estruturadas que entram na mesma fila. O texto bruto da mensagem, o conteúdo bruto do arquivo, prompts e respostas brutas de provider não são persistidos na fila.
+Mensagens bancárias e importações CSV/OFX/XLSX/PDF produzem extrações estruturadas que entram na mesma fila. O texto bruto da mensagem, o conteúdo bruto do arquivo, prompts e respostas brutas de provider não são persistidos na fila.
 
 A aprovação de extrações importadas continua usando o fluxo de `docs/IMPORTS.md`; a fila unificada não contorna validação de lote, idempotência ou regras de transferência. Deduplicação e conciliação, porém, usam o mesmo detector estruturado independentemente da origem da extração.
 
