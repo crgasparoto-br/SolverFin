@@ -14,6 +14,7 @@ export interface XlsxImportMapping {
   currency?: string;
   instrument?: string;
   invoicePeriod?: string;
+  installmentAmount?: string;
   installmentSequence?: string;
   installmentTotal?: string;
 }
@@ -36,6 +37,7 @@ export interface StructuredImportRow {
   externalId?: string;
   maskedInstrument?: string;
   invoicePeriod?: string;
+  installmentAmountMinor?: number;
   installmentSequence?: number;
   installmentTotal?: number;
   sourceHash: string;
@@ -273,10 +275,7 @@ export function parsePdfImport(input: {
   documentClass: ImportDocumentClass;
 }): StructuredImportPreview {
   const bytes = decodeStructuredImportBase64(input.contentBase64);
-  const text = bytes.toString("latin1");
-  if (!text.startsWith("%PDF-")) {
-    throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-  }
+  const text = assertPdfStructure(bytes);
   if (/\/Encrypt\b/.test(text)) {
     throw new StructuredImportError(
       "IMPORT_PDF_PROTECTED",
@@ -315,6 +314,60 @@ export function parsePdfImport(input: {
   };
 }
 
+function assertPdfStructure(bytes: Buffer): string {
+  const text = bytes.toString("latin1");
+  if (!/^%PDF-\d\.\d(?:\r?\n|\s)/.test(text)) {
+    throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+  }
+
+  const trimmed = text.trimEnd();
+  const startxrefMatch = /startxref\s+(\d+)\s+%%EOF$/.exec(trimmed);
+  if (startxrefMatch === null) {
+    throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+  }
+
+  const xrefOffset = Number(startxrefMatch[1]);
+  if (!Number.isSafeInteger(xrefOffset) || xrefOffset < 0 || xrefOffset >= startxrefMatch.index) {
+    throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+  }
+
+  const xrefSection = trimmed.slice(xrefOffset, startxrefMatch.index);
+  if (xrefSection.startsWith("xref")) {
+    const trailerIndex = xrefSection.lastIndexOf("trailer");
+    if (trailerIndex < 0) {
+      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+    }
+    const trailer = xrefSection.slice(trailerIndex);
+    const rootMatch = /\/Root\s+(\d+)\s+(\d+)\s+R\b/.exec(trailer);
+    if (rootMatch === null) {
+      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+    }
+    const rootMarker = `${rootMatch[1]} ${rootMatch[2]} obj`;
+    const rootIndex = text.lastIndexOf(rootMarker, xrefOffset);
+    const rootEnd = rootIndex < 0 ? -1 : text.indexOf("endobj", rootIndex + rootMarker.length);
+    if (
+      rootIndex < 0 ||
+      rootEnd < 0 ||
+      rootEnd > xrefOffset ||
+      !/\/Type\s*\/Catalog\b/.test(text.slice(rootIndex, rootEnd))
+    ) {
+      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+    }
+  } else {
+    const xrefStreamObject = /^\d+\s+\d+\s+obj\b/.test(xrefSection);
+    if (
+      !xrefStreamObject ||
+      !/\/Type\s*\/XRef\b/.test(xrefSection) ||
+      !/\/Root\s+\d+\s+\d+\s+R\b/.test(xrefSection) ||
+      !/endobj\s*$/.test(xrefSection)
+    ) {
+      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+    }
+  }
+
+  return text;
+}
+
 function parseFixturePdfRows(
   text: string,
   documentClass: ImportDocumentClass,
@@ -341,8 +394,15 @@ function parseFixturePdfRows(
     if (!line.startsWith(prefix)) continue;
     const rowNumber = rows.length + problems.length + 1;
     const parts = line.slice(prefix.length).split("|");
-    const [dateRaw, amountRaw, currencyRaw, descriptionRaw, externalOrInstrument, installmentRaw] =
-      parts;
+    const [
+      dateRaw,
+      amountRaw,
+      currencyRaw,
+      descriptionRaw,
+      externalOrInstrument,
+      installmentRaw,
+      purchaseTotalRaw,
+    ] = parts;
     const occurredOn = normalizeDate(dateRaw);
     const signed = parseDecimalMinor(amountRaw);
     const currency = normalizeCurrency(currencyRaw ?? invoiceCurrency);
@@ -372,6 +432,32 @@ function parseFixturePdfRows(
     const direction =
       documentClass === "credit_card_invoice" ? "outflow" : signed < 0 ? "outflow" : "inflow";
     const installment = parseInstallment(installmentRaw);
+    let canonicalAmountMinor = Math.abs(signed);
+    let installmentAmountMinor: number | undefined;
+    if (documentClass === "credit_card_invoice" && installment !== undefined) {
+      installmentAmountMinor = Math.abs(signed);
+      if (purchaseTotalRaw !== undefined && purchaseTotalRaw.trim().length > 0) {
+        const purchaseTotal = parseDecimalMinor(purchaseTotalRaw);
+        if (purchaseTotal === undefined || purchaseTotal <= 0) {
+          problems.push({
+            rowNumber,
+            severity: "error",
+            code: "IMPORT_PDF_CARD_PURCHASE_TOTAL_INVALID",
+            message: "Valor total da compra parcelada no PDF e invalido.",
+          });
+          continue;
+        }
+        canonicalAmountMinor = purchaseTotal;
+      } else {
+        problems.push({
+          rowNumber,
+          severity: "warning",
+          code: "IMPORT_INSTALLMENT_TOTAL_REVIEW_REQUIRED",
+          message:
+            "A fatura informa o valor da parcela, mas nao prova o valor total da compra; revise o total antes de aprovar.",
+        });
+      }
+    }
     const externalId =
       documentClass === "bank_statement" ? safeText(externalOrInstrument, 120) : undefined;
     const maskedInstrument =
@@ -384,7 +470,7 @@ function parseFixturePdfRows(
       description,
       kind,
       direction,
-      amountMinor: Math.abs(signed),
+      amountMinor: canonicalAmountMinor,
       currency,
       sourceHash: hashRow([
         String(rowNumber),
@@ -394,12 +480,14 @@ function parseFixturePdfRows(
         description,
         externalOrInstrument ?? "",
         installmentRaw ?? "",
+        purchaseTotalRaw ?? "",
       ]),
       ...(externalId === undefined ? {} : { externalId }),
       ...(documentClass === "credit_card_invoice"
         ? {
             ...(maskedInstrument === undefined ? {} : { maskedInstrument }),
             ...(invoicePeriod ? { invoicePeriod } : {}),
+            ...(installmentAmountMinor === undefined ? {} : { installmentAmountMinor }),
             ...(installment ? installment : {}),
           }
         : {}),
@@ -462,6 +550,21 @@ function normalizeMappedRow(
   }
   const installmentSequence = parsePositiveInteger(get(mapping.installmentSequence));
   const installmentTotal = parsePositiveInteger(get(mapping.installmentTotal));
+  const installmentAmountRaw = get(mapping.installmentAmount);
+  const installmentAmount =
+    installmentAmountRaw === undefined ? undefined : parseDecimalMinor(installmentAmountRaw);
+  if (
+    installmentAmountRaw !== undefined &&
+    (installmentAmount === undefined || installmentAmount <= 0)
+  ) {
+    problems.push({
+      rowNumber,
+      severity: "error",
+      code: "IMPORT_INSTALLMENT_AMOUNT_INVALID",
+      message: "Valor da parcela informado no XLSX precisa ser positivo e valido.",
+    });
+    return { problems };
+  }
   if (
     (installmentSequence === undefined) !== (installmentTotal === undefined) ||
     (installmentSequence !== undefined &&
@@ -501,8 +604,18 @@ function normalizeMappedRow(
       installmentTotal !== undefined &&
       installmentSequence <= installmentTotal
     ) {
+      row.installmentAmountMinor = Math.abs(installmentAmount ?? signed);
       row.installmentSequence = installmentSequence;
       row.installmentTotal = installmentTotal;
+      if (installmentAmount === undefined) {
+        problems.push({
+          rowNumber,
+          severity: "warning",
+          code: "IMPORT_INSTALLMENT_TOTAL_REVIEW_REQUIRED",
+          message:
+            "O XLSX informa parcelamento sem separar valor total da compra e valor da parcela; revise o total antes de aprovar.",
+        });
+      }
     }
   }
   return { row, problems };
