@@ -73,13 +73,13 @@ describe("document imports", () => {
     assert.equal(result.rows[0]?.installmentAmountMinor, 1000);
     assert.equal(result.rows[0]?.installmentSequence, 1);
     assert.equal(result.rows[0]?.installmentTotal, 3);
-    assert.equal(
-      result.problems.some((problem) => problem.code === "IMPORT_INSTALLMENT_TOTAL_REVIEW_REQUIRED"),
-      true,
+    const requiresTotalReview = result.problems.some(
+      (problem) => problem.code === "IMPORT_INSTALLMENT_TOTAL_REVIEW_REQUIRED",
     );
+    assert.equal(requiresTotalReview, true);
   });
 
-  it("fails closed for truncated, structurally corrupt, unknown, changed, ambiguous and protected PDF layouts", () => {
+  it("fails closed for corrupt or unsupported PDFs", () => {
     const truncated = Buffer.from(
       ["%PDF-1.4", "%SOLVERFIN:STATEMENT:V1", "%TX|2026-09-01|-1.00|BRL|Teste|x"].join("\n"),
       "latin1",
