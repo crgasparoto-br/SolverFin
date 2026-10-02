@@ -57,6 +57,20 @@ Uma implementacao deve ser revisada quando introduzir, sem justificativa funcion
 
 Rotas ou estados explicitamente designados como referencia visual podem funcionar como **Golden Screens**. Uma Golden Screen nao autoriza copia cega de layout; ela fixa o nivel esperado de acabamento, hierarquia, densidade, tipografia, espacamento e iconografia para telas da mesma familia. Quando uma issue indicar uma Golden Screen, a validacao deve comparar o candidato contra esses atributos, nao apenas contra a presenca dos mesmos componentes.
 
+### Identidade visual de instituicoes financeiras
+
+A identidade visual de uma instituicao financeira e responsabilidade de um catalogo visual central do SolverFin, e nao do cadastro de cada conta ou cartao.
+
+- contas, cartoes e demais registros persistidos devem referenciar a instituicao por uma chave estavel, como `institutionKey`;
+- logotipo, asset, variante visual, iniciais de fallback e demais metadados exclusivamente visuais devem ser resolvidos por uma unica camada compartilhada;
+- alterar ou substituir o asset visual de uma instituicao nao deve exigir migracao das contas/cartoes que a referenciam;
+- nenhuma rota deve manter uma tabela local de logos ou permitir que cada conta defina sua propria identidade visual;
+- instituicoes sem identidade conhecida devem usar fallback padronizado, acessivel e consistente;
+- Extrato, Cartoes, Contas e Cartoes, Relatorios, seletores e formularios devem consumir o mesmo componente/contrato de identidade institucional.
+
+O banco pode manter metadados administrativos da instituicao ou do asset global quando necessario para gestao do catalogo, mas esses dados nao pertencem ao registro individual da conta nem podem transformar a conta em dona do logo.
+
+
 ## Estado atual e estado-alvo
 
 ### Estado atual
