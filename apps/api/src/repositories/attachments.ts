@@ -135,11 +135,7 @@ export async function createAttachmentForContext(
     );
     const row = rows[0];
     if (row === undefined) {
-      throw attachmentError(
-        "ATTACHMENT_CREATE_FAILED",
-        "Não foi possível registrar o anexo.",
-        500,
-      );
+      throw attachmentError("ATTACHMENT_CREATE_FAILED", "Não foi possível registrar o anexo.", 500);
     }
 
     await insertAuditLogEntry(executeQuery, {
@@ -164,12 +160,7 @@ export async function listAttachmentsForContext(
   linkedEntityKind: AttachmentLinkedEntityKind,
   linkedEntityId: EntityId,
 ): Promise<Attachment[]> {
-  await assertLinkedEntityForContext(
-    query,
-    context,
-    linkedEntityKind,
-    linkedEntityId,
-  );
+  await assertLinkedEntityForContext(query, context, linkedEntityKind, linkedEntityId);
 
   const rows = await query<AttachmentRow>(
     `select ${ATTACHMENT_COLUMNS}
@@ -214,15 +205,8 @@ export async function getAttachmentContentForContext(
     throw attachmentError("ATTACHMENT_NOT_FOUND", "Anexo não encontrado.", 404);
   }
 
-  const linkedEntityKind = fromDatabaseLinkedEntityKind(
-    row.linkedEntityKind,
-  );
-  await assertLinkedEntityForContext(
-    query,
-    context,
-    linkedEntityKind,
-    row.linkedEntityId,
-  );
+  const linkedEntityKind = fromDatabaseLinkedEntityKind(row.linkedEntityKind);
+  await assertLinkedEntityForContext(query, context, linkedEntityKind, row.linkedEntityId);
 
   if (!Buffer.isBuffer(row.content)) {
     throw attachmentError(
@@ -268,11 +252,7 @@ export async function deleteAttachmentForContext(
     const current = rows[0];
 
     if (current === undefined) {
-      throw attachmentError(
-        "ATTACHMENT_NOT_FOUND",
-        "Anexo não encontrado.",
-        404,
-      );
+      throw attachmentError("ATTACHMENT_NOT_FOUND", "Anexo não encontrado.", 404);
     }
 
     await assertLinkedEntityForContext(
