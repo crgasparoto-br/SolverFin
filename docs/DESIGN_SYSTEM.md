@@ -57,6 +57,33 @@ Uma implementacao deve ser revisada quando introduzir, sem justificativa funcion
 
 Rotas ou estados explicitamente designados como referencia visual podem funcionar como **Golden Screens**. Uma Golden Screen nao autoriza copia cega de layout; ela fixa o nivel esperado de acabamento, hierarquia, densidade, tipografia, espacamento e iconografia para telas da mesma familia. Quando uma issue indicar uma Golden Screen, a validacao deve comparar o candidato contra esses atributos, nao apenas contra a presenca dos mesmos componentes.
 
+#### Golden Screen oficial: Extrato Bancario
+
+A rota `/lancamentos` (Extrato Bancario) e a Golden Screen oficial inicial do SolverFin para interfaces operacionais financeiras.
+
+Ela deve servir como referencia de nivel de qualidade para, no minimo:
+
+- Cartoes de Credito;
+- Contas e Cartoes;
+- Categorias;
+- Relatorios e demais telas operacionais que exibam colecoes financeiras;
+- modais, drawers e detalhes contextuais associados a essas superficies.
+
+A referencia inclui, sem exigir copia estrutural:
+
+- aproveitamento amplo e equilibrado do viewport;
+- hierarquia imediata entre contexto, valor principal, periodo, resumo e colecao;
+- uso contido de cards e bordas;
+- espacamento e tipografia como mecanismos principais de organizacao;
+- iconografia compartilhada e acessivel;
+- filtros compactos e progressivos;
+- linhas financeiras escaneaveis, com descricao e valor dominantes e metadados secundarios;
+- acoes primarias e secundarias com pesos claramente diferentes;
+- dialogs e drawers com o mesmo nivel de refinamento da tela principal;
+- comportamento mobile equivalente em clareza e acabamento.
+
+A Golden Screen so pode ser considerada valida como referencia depois que a implementacao de `/lancamentos` atender ao contrato de qualidade visual e possuir evidencia visual aprovada. Ate esse ponto, o mockup e a especificacao funcionam como alvo de design, nao como prova de implementacao concluida.
+
 ### Identidade visual de instituicoes financeiras
 
 A identidade visual de uma instituicao financeira e responsabilidade de um catalogo visual central do SolverFin, e nao do cadastro de cada conta ou cartao.
