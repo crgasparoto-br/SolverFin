@@ -104,6 +104,7 @@ export interface TransactionExtractionSuggestionPayloadV2 extends AiSuggestionPa
   cardInstrumentId?: string;
   cardInstrumentHint?: string;
   invoicePeriod?: string;
+  installmentAmountMinor?: number;
   installmentSequence?: number;
   installmentTotal?: number;
 }
