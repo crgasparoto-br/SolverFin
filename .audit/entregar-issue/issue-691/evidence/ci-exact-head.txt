@@ -1,7 +1,7 @@
-material_head_sha=36b59064ff97f2b3d4ad4e7b23eb51d53adba739
-Delivery V2 risk: success
-Merge preview compatibility: success
-CRITICAL validation: success (job 111042353723)
-Delivery V2 gate: success (job 111043916531)
-Chrome visual validation: success (run 37068511330, job 111042135858)
-FAST/STANDARD: skipped by risk profile as expected
+material_head_sha=4fd6672fbad98d9d0d6c525a17f6e5f109d7f6d9
+Delivery V2 CI: success (run 37074582552)
+CRITICAL validation: success
+API integration: success (step 19)
+Build: success
+Statement visual validation: success (run 37074582435)
+A-002 redacted negative control covered by apps/api/src/attachments.integration.test.ts
