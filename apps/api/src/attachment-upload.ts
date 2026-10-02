@@ -77,8 +77,13 @@ export function parseAttachmentUpload(body: unknown): ParsedAttachmentUpload {
 export function sanitizeAttachmentFileName(value: string): string {
   const normalized = value.normalize("NFKC").replaceAll("\\", "/");
   const baseName = normalized.split("/").pop()?.trim() ?? "";
-  const cleaned = baseName
-    .replace(/[\u0000-\u001f\u007f]/g, "")
+  const withoutControlCharacters = Array.from(baseName)
+    .filter((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return codePoint > 0x1f && codePoint !== 0x7f;
+    })
+    .join("");
+  const cleaned = withoutControlCharacters
     .replace(/[<>:"/\\|?*]/g, "_")
     .replace(/\s+/g, " ")
     .trim()
