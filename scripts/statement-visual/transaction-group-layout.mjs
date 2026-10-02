@@ -134,14 +134,18 @@ async function measureLayout(cdp) {
       const membersRect = members.getBoundingClientRect();
       const actionsRect = actions.getBoundingClientRect();
       const rowHeights = rows.map((row) => row.getBoundingClientRect().height);
-      const computedGridColumns = getComputedStyle(form).gridTemplateColumns
-        .split(" ")
-        .filter(Boolean).length;
+      const formFields = Array.from(form.querySelectorAll(":scope > label")).slice(0, 4);
+      const rowStarts = [];
+      for (const field of formFields) {
+        const top = field.getBoundingClientRect().top;
+        if (!rowStarts.some((start) => Math.abs(start - top) <= 4)) rowStarts.push(top);
+      }
+      const renderedColumns = rowStarts.length > 0 ? formFields.length / rowStarts.length : 0;
       return {
         open: dialog.open,
         dialogWidth: Math.round(rect.width),
         dialogHeight: Math.round(rect.height),
-        formColumns: computedGridColumns,
+        formColumns: renderedColumns,
         insideViewport: rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1,
         panelHorizontalOverflow: panel.scrollWidth > panel.clientWidth + 1,
         formHorizontalOverflow: form.scrollWidth > form.clientWidth + 1,
