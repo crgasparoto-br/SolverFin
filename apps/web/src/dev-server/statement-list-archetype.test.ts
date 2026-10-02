@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { renderStatementListArchetype } from "./statement-list-archetype.js";
+import {
+  renderStatementListArchetype,
+  statementListArchetypeStyles,
+} from "./statement-list-archetype.js";
 
 test("statement A2 archetype composes Phase 3B primitives without rewriting fragments", () => {
   const html = renderStatementListArchetype({
-    actionsHtml: '<button type="button">Nova receita</button>',
+    actionsHtml:
+      '<div class="statement-heading-actions"><button data-quick-kind="expense">Nova despesa</button><button data-quick-kind="income">Nova receita</button></div>',
     filtersHtml: '<form data-test-filter><input name="q" /></form>',
     contextHtml:
       '<section class="statement-context"><strong>Conta internacional</strong><span>USD</span></section>',
@@ -15,6 +19,7 @@ test("statement A2 archetype composes Phase 3B primitives without rewriting frag
   });
 
   assert.match(html, /data-statement-archetype="A2"/);
+  assert.match(html, /data-golden-screen="statement"/);
   assert.match(html, /class="sf-page-header"/);
   assert.match(html, /class="sf-page-container statement-a2-workspace"/);
   assert.match(html, /class="sf-filter-bar"/);
@@ -24,4 +29,44 @@ test("statement A2 archetype composes Phase 3B primitives without rewriting frag
   assert.match(html, /Filtro do insight ativo/);
   assert.match(html, /data-test-summary/);
   assert.match(html, /data-test-list/);
+});
+
+test("statement golden screen styles preserve one dominant action and reduce card-heavy hierarchy", () => {
+  const css = statementListArchetypeStyles();
+
+  assert.match(
+    css,
+    /button\[data-quick-kind="expense"\][^{]*\{[^}]*box-shadow:/s,
+    "expense remains the visually dominant quick action",
+  );
+  assert.match(
+    css,
+    /button\[data-quick-kind="transfer"\][\s\S]*button\[data-quick-kind="income"\][^{]*\{[^}]*background:\s*var\(--surface\)/s,
+    "secondary quick actions use quieter surface treatment",
+  );
+  assert.match(
+    css,
+    /\.summary-total\s*\{[^}]*border:\s*0;[^}]*border-radius:\s*0;/s,
+    "summary totals no longer render as independent cards",
+  );
+  assert.match(
+    css,
+    /\.summary-balance\s*\{[^}]*background:\s*transparent;[^}]*border:\s*0;/s,
+    "main balance is driven by typography and spacing instead of a card surface",
+  );
+  assert.match(
+    css,
+    /\.statement-body \.col-category,[\s\S]*\.statement-body \.col-balance\s*\{[^}]*color:\s*var\(--muted\)/s,
+    "secondary transaction metadata is visually quieter than description and amount",
+  );
+  assert.match(
+    css,
+    /body dialog\[data-modal\] \.modal-panel form\[data-form\][^{]*\{[^}]*grid-template-columns:\s*repeat\(2,/s,
+    "desktop transaction dialogs use a calmer two-column form instead of the legacy dense grid",
+  );
+  assert.match(
+    css,
+    /@media \(max-width: 760px\)[\s\S]*body dialog\[data-modal\] \.modal-panel form\[data-form\][^{]*\{[^}]*grid-template-columns:\s*1fr;/s,
+    "transaction dialogs reflow to one column on mobile",
+  );
 });
