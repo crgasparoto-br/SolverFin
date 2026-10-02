@@ -92,10 +92,7 @@ describe("document imports", () => {
         error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
     );
 
-    const validPdf = pdf([
-      "%SOLVERFIN:STATEMENT:V1",
-      "%TX|2026-09-01|-1.00|BRL|Teste|x",
-    ]);
+    const validPdf = pdf(["%SOLVERFIN:STATEMENT:V1", "%TX|2026-09-01|-1.00|BRL|Teste|x"]);
     const corruptPdfText = Buffer.from(validPdf, "base64")
       .toString("latin1")
       .replace(/startxref\n\d+/, "startxref\n999999");
