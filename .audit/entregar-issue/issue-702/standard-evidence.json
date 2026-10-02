@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "profile": "standard",
+  "material_head_sha": "0cea9287118ea5e03a2640725f3294969b32cec2",
+  "delivery_v2_ci": {
+    "run_id": 37039967337,
+    "status": "completed",
+    "conclusion": "success",
+    "validated": [
+      "exact head",
+      "format",
+      "lint",
+      "typecheck",
+      "unit tests",
+      "api integration",
+      "statement consistency",
+      "build"
+    ]
+  },
+  "visual_validation": {
+    "run_id": 37039967274,
+    "status": "completed",
+    "conclusion": "success",
+    "material_head_sha": "0cea9287118ea5e03a2640725f3294969b32cec2",
+    "coverage": "registered Chrome matrix including transfer-source-destination, desktop/mobile dialogs, keyboard/focus and statement scenarios"
+  },
+  "focused_regression": {
+    "scenario": "transfer-source-destination",
+    "reason": "first visual run exposed desktop pairing regression; material fix keeps kind full-row and account legs paired"
+  },
+  "scope_notes": [
+    "No financial-domain, API, schema or calculation behavior changed.",
+    "This is the first coherent slice of epic #702; cross-screen propagation remains open."
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "head_sha": "0cea9287118ea5e03a2640725f3294969b32cec2",
+  "requirements": [
+    {
+      "id": "R-001",
+      "requirement": "Extrato identificado como Golden Screen e com hierarquia principal clara",
+      "status": "satisfied",
+      "evidence": [
+        "apps/web/src/dev-server/statement-list-archetype.ts:data-golden-screen=statement",
+        "apps/web/src/dev-server/statement-list-archetype.test.ts"
+      ]
+    },
+    {
+      "id": "R-002",
+      "requirement": "Nova despesa é a ação dominante; transferência e receita são secundárias",
+      "status": "satisfied",
+      "evidence": [
+        "statement-list-archetype.ts:statement-heading-actions",
+        "statement-list-archetype.test.ts"
+      ]
+    },
+    {
+      "id": "R-003",
+      "requirement": "Resumo financeiro reduz superfícies e hierarquiza saldo por tipografia",
+      "status": "satisfied",
+      "evidence": [
+        "statement-list-archetype.ts:account-summary/summary-balance/summary-total",
+        "statement-list-archetype.test.ts"
+      ]
+    },
+    {
+      "id": "R-004",
+      "requirement": "Descrição e valor dominam; categoria, tipo e saldo permanecem secundários",
+      "status": "satisfied",
+      "evidence": [
+        "statement-list-archetype.ts:statement-body column hierarchy",
+        "statement-list-archetype.test.ts"
+      ]
+    },
+    {
+      "id": "R-005",
+      "requirement": "Filtros e ações auxiliares não competem com o conteúdo principal",
+      "status": "satisfied",
+      "evidence": [
+        "statement-list-archetype.ts:sf-filter-bar/statement-filter-actions"
+      ]
+    },
+    {
+      "id": "R-006",
+      "requirement": "Dialog de lançamento usa composição mais calma no desktop e reflow em uma coluna no mobile",
+      "status": "satisfied",
+      "evidence": [
+        "statement-list-archetype.ts:dialog data-modal rules",
+        "statement-list-archetype.test.ts"
+      ]
+    },
+    {
+      "id": "R-007",
+      "requirement": "Transferência preserva Conta origem e Conta destino pareadas no desktop e empilhadas no mobile",
+      "status": "satisfied",
+      "evidence": [
+        "transactions-page-v2.ts:data-field=kind",
+        "statement-list-archetype.ts:data-field=kind full-row",
+        "scripts/statement-visual/issue-677-transfer-source-destination.mjs"
+      ]
+    },
+    {
+      "id": "R-008",
+      "requirement": "Regras financeiras, moeda explícita, identidade institucional centralizada e SSR permanecem preservados",
+      "status": "satisfied",
+      "evidence": [
+        "escopo sem alterações de domínio/API",
+        "Delivery V2 CI run 37039967337"
+      ]
+    },
+    {
+      "id": "R-009",
+      "requirement": "Desktop/mobile e controles contextuais são validados no SHA candidato",
+      "status": "satisfied",
+      "evidence": [
+        "Statement visual validation run 37039967274: success on exact material head"
+      ]
+    },
+    {
+      "id": "R-010",
+      "requirement": "Propagação da Golden Screen para outras superfícies permanece fora desta entrega coesa da épica",
+      "status": "deferred-by-epic-scope",
+      "evidence": [
+        "PR #703 body",
+        "Issue #702 permanece aberta"
+      ]
+    }
+  ]
+}
