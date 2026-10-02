@@ -1,9 +1,1 @@
-{
-  "schema_version": 1,
-  "repository": "crgasparoto-br/SolverFin",
-  "issue": 690,
-  "source": "specification-sources/SRC-ISSUE-690.txt",
-  "source_sha256": "634ede9df62a995dfdcfc81820f1f2b7e421a3c7dac26c05100c8392ace09290",
-  "canonical_locator": "https://github.com/crgasparoto-br/SolverFin/issues/690",
-  "material_head_sha": "e7e8381d1602b526fc6b666e4419da88afac6e28"
-}
+{"schema_version":1,"repository":"crgasparoto-br/SolverFin","issue":690,"canonical_locator":"https://github.com/crgasparoto-br/SolverFin/issues/690","source":".audit/entregar-issue/issue-690/specification-sources/SRC-ISSUE-690.txt","material_head_sha":"4c36b008778c70c3062801a7225ae4a3de8fd6a3","base_sha":"abe765ef9d574a39024339692b88d1138d595974"}

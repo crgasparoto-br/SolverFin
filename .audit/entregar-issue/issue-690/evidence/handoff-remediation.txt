@@ -1,23 +1,10 @@
-Issue 690 / PR 699 post-write refreeze evidence
-material_head_sha=e7e8381d1602b526fc6b666e4419da88afac6e28
-previous_material_head_sha=40449a7d38aea99cf831def92c9a42ad9acf602c
-base_sha=abe765ef9d574a39024339692b88d1138d595974
-recovery_scope=post-write-refreeze
-requires_refreeze=true
-
-Remote exact-head CI evidence on e7e8381d1602b526fc6b666e4419da88afac6e28:
-- Delivery V2 CI run 36937343092: completed/success
-- Statement visual validation run 36937343057: completed/success
-
-Material drift observed after previous freeze included product/test paths:
-- apps/api/src/import-batches-router.ts
-- apps/api/src/ofx-import-review.integration.test.ts
-- apps/web/src/dev-server/inbox-document-import-enhancement.ts
-- apps/web/src/dev-server/inbox-ofx-import-enhancement.test.ts
-- packages/domain/src/imports.ts
-
-Recovery action:
-- Treat e7e8381d1602b526fc6b666e4419da88afac6e28 as the new material head.
-- Re-anchor requirement/risk/handoff evidence to e7e8381d1602b526fc6b666e4419da88afac6e28.
-- Preserve current-target binding to repository crgasparoto-br/SolverFin, issue #690, PR #699.
-- Publish only .audit/entregar-issue/* in the result-only child.
+independent-audit remediation
+source_rejection=audit-rejection:7285e9e6-a345-485b-98f9-0c93e57146ba
+source_finding=A-002
+material_head=4c36b008778c70c3062801a7225ae4a3de8fd6a3
+recovery_scope=result-only-evidence-rebuild
+product_code_changed=false
+Delivery V2 CI 36957670075=completed/success
+CRITICAL validation 110684366306=completed/success
+Statement visual 36957670115=completed/success
+The critical evidence packet was rebuilt with structured positive, negative and regression controls, complete canonical risk-family coverage, exact-SHA inherited controls and terminal requirement-closure gates.

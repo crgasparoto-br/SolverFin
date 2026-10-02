@@ -1,16 +1,1 @@
-{
-  "schema_version": 1,
-  "artifact_format": "base64-shards-v1",
-  "compression": "gzip",
-  "encoded_size": 3020,
-  "decoded_size": 19700,
-  "decoded_sha256": "85258f1a89ae33b4c1d56cb90a0e8df325c8c6b961d1a3b0ac719444ac027ffd",
-  "encoded_sha256": "eb421915de64205ea4e1edb75bd0c246a607fadcdcfa75b973d3d2f8d4f93bb3",
-  "parts": [
-    {
-      "path": "requirement-attack-matrix.json.parts/part-0000.b64",
-      "size": 3020,
-      "sha256": "eb421915de64205ea4e1edb75bd0c246a607fadcdcfa75b973d3d2f8d4f93bb3"
-    }
-  ]
-}
+{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"requirement_attack_matrix","compression":"gzip","encoded_size":6408,"encoded_sha256":"cefff421149d6246c243ef6314029929dc594bb741e3b92539749e3b9ebd135d","decoded_size":30477,"decoded_sha256":"d8645e04b176c9895a9ef474e78465ffd0c26c9340db37d170d6ae307a5c6b43","parts":[{"path":"requirement-attack-matrix.parts/part-000.b64","size":6408,"sha256":"cefff421149d6246c243ef6314029929dc594bb741e3b92539749e3b9ebd135d"}]}
