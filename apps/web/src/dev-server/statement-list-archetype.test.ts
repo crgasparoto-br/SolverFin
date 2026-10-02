@@ -66,6 +66,11 @@ test("statement golden screen styles preserve one dominant action and reduce car
   );
   assert.match(
     css,
+    /form\[data-form\] > \[data-field="kind"\][^{]*\{[^}]*grid-column:\s*1 \/ -1;/s,
+    "transaction type spans the desktop grid so transfer source and destination stay paired",
+  );
+  assert.match(
+    css,
     /@media \(max-width: 760px\)[\s\S]*body dialog\[data-modal\] \.modal-panel form\[data-form\][^{]*\{[^}]*grid-template-columns:\s*1fr;/s,
     "transaction dialogs reflow to one column on mobile",
   );
