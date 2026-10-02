@@ -212,6 +212,34 @@ export function attachmentWorkspaceScript(): string {
           document.querySelectorAll("[data-attachment-workspace]").forEach(initialize);
         };
 
+        const mount = (container, entityKind, entityId, title = "Anexos") => {
+          if (!container || !entityId) return null;
+          const existing = container.querySelector('[data-attachment-workspace][data-entity-kind="' + entityKind + '"]');
+          if (existing) {
+            existing.dataset.entityId = entityId;
+            existing.hidden = false;
+            void refresh(existing);
+            return existing;
+          }
+          const section = document.createElement("section");
+          section.className = "attachment-workspace";
+          section.dataset.attachmentWorkspace = "";
+          section.dataset.entityKind = entityKind;
+          section.dataset.entityId = entityId;
+          section.innerHTML =
+            '<div class="section-heading"><div><h3>' + escapeHtml(title) + '</h3><p class="muted small-note">Adicione arquivos relacionados a este registro.</p></div></div>' +
+            '<div data-attachment-list class="attachment-list" aria-live="polite"></div>' +
+            '<form data-attachment-form class="edit-grid attachment-form">' +
+              '<label>Tipo<select name="kind" required><option value="receipt">Comprovante/recibo</option><option value="invoice">Fatura</option><option value="statement">Extrato</option><option value="contract">Contrato</option><option value="message">Mensagem</option><option value="other">Outro</option></select></label>' +
+              '<label class="full-span">Arquivo<input name="file" type="file" required accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.xls,.xlsx,.docx,application/pdf,image/jpeg,image/png,image/webp,text/plain,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document" /><small>Até 5 MiB. O arquivo fica privado e só pode ser aberto no perfil autorizado.</small></label>' +
+              '<div class="dialog-actions full-span"><button type="submit" class="secondary-button">Adicionar anexo</button></div>' +
+            '</form>' +
+            '<p data-attachment-status class="form-status muted" role="status" aria-live="polite"></p>';
+          container.append(section);
+          initialize(section);
+          return section;
+        };
+
         const observer = new MutationObserver((mutations) => {
           let shouldRefresh = false;
           for (const mutation of mutations) {
@@ -231,7 +259,7 @@ export function attachmentWorkspaceScript(): string {
           attributeFilter: ["data-entity-id"]
         });
 
-        window.SolverFinAttachments = { refresh, refreshAll };
+        window.SolverFinAttachments = { refresh, refreshAll, mount };
         refreshAll();
       })();
     </script>
