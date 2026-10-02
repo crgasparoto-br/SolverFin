@@ -141,6 +141,9 @@ export async function previewStructuredImportForContext(
               ? {}
               : { cardInstrumentHint: row.maskedInstrument }),
             ...(row.invoicePeriod === undefined ? {} : { invoicePeriod: row.invoicePeriod }),
+            ...(row.installmentAmountMinor === undefined
+              ? {}
+              : { installmentAmountMinor: row.installmentAmountMinor }),
             ...(row.installmentSequence === undefined
               ? {}
               : { installmentSequence: row.installmentSequence }),
