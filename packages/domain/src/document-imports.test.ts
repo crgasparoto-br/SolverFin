@@ -80,25 +80,26 @@ describe("document imports", () => {
   });
 
   it("fails closed for corrupt or unsupported PDFs", () => {
-    const truncated = Buffer.from(
-      ["%PDF-1.4", "%SOLVERFIN:STATEMENT:V1", "%TX|2026-09-01|-1.00|BRL|Teste|x"].join("\n"),
-      "latin1",
-    ).toString("base64");
+    const truncatedLines = [
+      "%PDF-1.4",
+      "%SOLVERFIN:STATEMENT:V1",
+      "%TX|2026-09-01|-1.00|BRL|Teste|x",
+    ];
+    const truncated = Buffer.from(truncatedLines.join("\n"), "latin1").toString("base64");
     assert.throws(
       () => parsePdfImport({ contentBase64: truncated, documentClass: "bank_statement" }),
       (error: unknown) =>
         error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
     );
 
-    const corruptStartxref = Buffer.from(
-      Buffer.from(
-        pdf(["%SOLVERFIN:STATEMENT:V1", "%TX|2026-09-01|-1.00|BRL|Teste|x"]),
-        "base64",
-      )
-        .toString("latin1")
-        .replace(/startxref\n\d+/, "startxref\n999999"),
-      "latin1",
-    ).toString("base64");
+    const validPdf = pdf([
+      "%SOLVERFIN:STATEMENT:V1",
+      "%TX|2026-09-01|-1.00|BRL|Teste|x",
+    ]);
+    const corruptPdfText = Buffer.from(validPdf, "base64")
+      .toString("latin1")
+      .replace(/startxref\n\d+/, "startxref\n999999");
+    const corruptStartxref = Buffer.from(corruptPdfText, "latin1").toString("base64");
     assert.throws(
       () => parsePdfImport({ contentBase64: corruptStartxref, documentClass: "bank_statement" }),
       (error: unknown) =>
