@@ -736,6 +736,9 @@ function buildEditedTransactionPayload(
     ...(current.payloadVersion !== 2 || current.invoicePeriod === undefined
       ? {}
       : { invoicePeriod: current.invoicePeriod }),
+    ...(current.payloadVersion !== 2 || current.installmentAmountMinor === undefined
+      ? {}
+      : { installmentAmountMinor: current.installmentAmountMinor }),
     ...(current.payloadVersion !== 2 || current.installmentSequence === undefined
       ? {}
       : { installmentSequence: current.installmentSequence }),
