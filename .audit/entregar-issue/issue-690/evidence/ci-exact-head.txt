@@ -1,8 +1,8 @@
 repository=crgasparoto-br/SolverFin
 issue=690
 pr=699
-material_head_sha=4c36b008778c70c3062801a7225ae4a3de8fd6a3
-Delivery V2 CI run_id=36957670075 status=completed conclusion=success
-CRITICAL validation job_id=110684366306 status=completed conclusion=success
-CRITICAL steps: npm test=success; test:integration @solverfin/api=success; build=success; lint=success; typecheck=success
-Statement visual validation run_id=36957670115 status=completed conclusion=success
+material_head_sha=95214c354cb34fb7fa7aced3cdf3c3e2b4478850
+Delivery V2 CI run_id=37025425244 status=completed conclusion=success
+CRITICAL validation job_id=110899058474 status=completed conclusion=success
+CRITICAL steps: npm test=success; test:integration @solverfin/api=success; diagnose:import-statement-consistency=success; build=success; lint=success; typecheck=success
+Statement visual validation run_id=37025425871 status=completed conclusion=success

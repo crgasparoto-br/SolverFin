@@ -1,8 +1,8 @@
 Exact-head evidence inventory for SolverFin issue #690 / PR #699
-material_head=4c36b008778c70c3062801a7225ae4a3de8fd6a3
-ci_run=36957670075
-critical_job=110684366306
-visual_run=36957670115
+material_head=95214c354cb34fb7fa7aced3cdf3c3e2b4478850
+ci_run=37025425244
+critical_job=110899058474
+visual_run=37025425871
 
 Observed tests in packages/domain/src/document-imports.test.ts:
 - homologated fictitious bank PDF parses without account inference
@@ -20,3 +20,8 @@ Observed integration controls in apps/api/src/ofx-import-review.integration.test
 - card approval reuses canonical transaction/invoice domain
 - cross-profile access is hidden with 404
 - raw import content is absent from batch/suggestion/audit persistence
+
+Documentation control:
+- DOC-SEMANTIC-DRIFT-001 scanned six canonical sources on exact material head
+- stale CSV/OFX-only normative claims were reconciled in IMPORTS and AI_REVIEW_QUEUE
+- unresolved_contradictions=[]
