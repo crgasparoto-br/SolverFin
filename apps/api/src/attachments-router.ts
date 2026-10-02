@@ -102,11 +102,7 @@ async function listAttachmentsHandler(
     );
   }
 
-  const attachments = await listAttachmentsForContext(
-    context,
-    linkedEntityKind,
-    linkedEntityId,
-  );
+  const attachments = await listAttachmentsForContext(context, linkedEntityKind, linkedEntityId);
 
   return json(200, {
     attachments: attachments.map(toPublicAttachment),
@@ -162,11 +158,7 @@ function toPublicAttachment(attachment: Attachment): Record<string, unknown> {
 }
 
 function readLinkedEntityKind(value: string | null): AttachmentLinkedEntityKind {
-  if (
-    value === "transaction" ||
-    value === "invoice" ||
-    value === "import_batch"
-  ) {
+  if (value === "transaction" || value === "invoice" || value === "import_batch") {
     return value;
   }
 
@@ -181,9 +173,7 @@ function buildAuthHeaders(headers: Readonly<Record<string, string | undefined>>)
   cookie?: string;
 } {
   return {
-    ...(headers.authorization === undefined
-      ? {}
-      : { authorization: headers.authorization }),
+    ...(headers.authorization === undefined ? {} : { authorization: headers.authorization }),
     ...(headers.cookie === undefined ? {} : { cookie: headers.cookie }),
   };
 }
