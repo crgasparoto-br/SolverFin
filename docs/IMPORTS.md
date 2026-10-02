@@ -334,13 +334,13 @@ O request binário usa `contentBase64`, tem limite bruto de 5 MB e exige `docume
 
 ### XLSX
 
-O XLSX exige seleção explícita da aba quando houver mais de uma e mapeamento explícito de data, descrição e valor. Moeda, instrumento mascarado, período de fatura e parcelamento são opcionais e só são usados quando presentes. Fórmulas não são avaliadas nem o valor cacheado de uma célula com fórmula é confiado; macros não são executadas.
+O XLSX exige seleção explícita da aba quando houver mais de uma e mapeamento explícito de data, descrição e valor. Moeda, instrumento mascarado, período de fatura e parcelamento são opcionais e só são usados quando presentes. Para fatura parcelada, `amount` representa o valor total canônico da compra quando o layout o fornece; `installmentAmount` pode mapear separadamente o valor da parcela observado na fatura. Se a planilha só trouxer um valor junto de sequência/total de parcelas, esse valor é preservado como evidência da parcela e a aprovação exige revisão explícita do total antes de materializar o parcelamento. Fórmulas não são avaliadas nem o valor cacheado de uma célula com fórmula é confiado; macros não são executadas.
 
 Antes de descompactar, o leitor aplica limites de quantidade de entradas e tamanho declarado por entrada/total. Entradas ZIP criptografadas, XML com `DOCTYPE`/`ENTITY`, estrutura OOXML inválida, aba inexistente e mapeamento conflitante falham de forma controlada.
 
 ### PDF
 
-PDF não usa OCR genérico nem heurística para “adivinhar” instituição/layout. O domínio mantém catálogo explícito de parsers determinísticos com `id`, `version`, instituição e classe de documento. O lote persiste o parser e sua versão. PDF protegido, estruturalmente inválido, layout não homologado ou reconhecimento ambíguo é bloqueado; alteração incompatível de versão não cai silenciosamente em parser anterior.
+PDF não usa OCR genérico nem heurística para “adivinhar” instituição/layout. Antes do catálogo, a fronteira valida cabeçalho PDF, término `%%EOF`, `startxref`, alvo de xref/xref-stream e raiz de catálogo; marcador de layout dentro de arquivo truncado ou com referência estrutural inválida não chega ao parser homologado. O domínio mantém catálogo explícito de parsers determinísticos com `id`, `version`, instituição e classe de documento. O lote persiste o parser e sua versão. PDF protegido, estruturalmente inválido, layout não homologado ou reconhecimento ambíguo é bloqueado; alteração incompatível de versão não cai silenciosamente em parser anterior.
 
 Fixtures de teste usam layouts fictícios `solverfin-fixture-bank-statement@1` e `solverfin-fixture-card-invoice@1`. Um parser real novo deve ser registrado explicitamente, acompanhado de fixture sanitizada e testes de reconhecimento, rejeição de versão e ambiguidade.
 
@@ -352,7 +352,7 @@ O usuário escolhe a conta canônica; o parser nunca infere conta. Cada proposta
 
 O usuário escolhe o `Card` agrupador. Quando o documento possui identificador mascarado e existe exatamente um `CardInstrument` ativo correspondente, ele é proposto; ausência ou ambiguidade exige revisão explícita antes da aprovação.
 
-A proposta V2 preserva `targetKind=card`, `cardId`, `cardInstrumentId` quando confirmado, hint mascarado, `invoicePeriod` e parcelamento somente quando há evidência. Totais, pagamentos, saldo anterior e demais linhas não reconhecidas como compra não viram transações.
+A proposta V2 preserva `targetKind=card`, `cardId`, `cardInstrumentId` quando confirmado, hint mascarado, `invoicePeriod` e parcelamento somente quando há evidência. Em compra parcelada, `amountMinor` é sempre o total canônico da compra e `installmentAmountMinor` preserva o valor da parcela observado no documento. Quando o layout prova apenas a parcela, o payload permanece em revisão com o valor observado nos dois campos e a aprovação falha até o revisor corrigir `amountMinor` para o total; o domínio de cartões então precisa reproduzir exatamente `installmentAmountMinor` na parcela correspondente. Totais, pagamentos, saldo anterior e demais linhas não reconhecidas como compra não viram transações.
 
 A aprovação não insere uma transação de cartão manualmente: ela delega ao domínio canônico de compra de cartão, que resolve/cria a fatura e materializa compra/parcelas/projeções. Sugestão, compra, lote e auditoria participam da mesma transação de banco. O período informado pelo documento é revalidado contra a fatura canônica calculada; divergência bloqueia o commit. Não há conversão cambial implícita.
 
