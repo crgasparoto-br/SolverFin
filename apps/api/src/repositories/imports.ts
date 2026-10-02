@@ -31,6 +31,7 @@ import { type QueryExecutor, query, withSharedTransaction } from "../db.js";
 import { buildInsertAiSuggestionSql, buildUpdateAiSuggestionSql } from "./ai-suggestion-sql.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { reconcileImportedTransactionForContext } from "../import-reconciliation-temporal.js";
+import { registerCardPurchaseForContext } from "./cards.js";
 
 export interface CreateCsvImportBatchPayload {
   originalFileName: string;
@@ -91,6 +92,8 @@ export interface ImportSuggestionUpdatePayload {
   accountId?: EntityId;
   otherAccountId?: EntityId | null;
   categoryId?: EntityId | null;
+  cardInstrumentId?: EntityId | null;
+  invoicePeriod?: string;
 }
 
 export type ImportReviewOutcome = "updated" | "created" | "reconciled" | "rejected" | "idempotent";
@@ -145,6 +148,12 @@ interface ImportBatchRow {
   problems: unknown;
   csvDelimiter: string | null;
   csvMapping: unknown;
+  defaultCardId: string | null;
+  documentClass: string | null;
+  parserId: string | null;
+  parserVersion: string | null;
+  xlsxSheetName: string | null;
+  xlsxMapping: unknown;
   receivedAt: Date;
   completedAt: Date | null;
   createdAt: Date;
@@ -230,7 +239,8 @@ interface CurrentDeterministicCandidate {
 
 const IMPORT_BATCH_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "defaultAccountId",
   "sourceKind", "status", "originalFileName", "sourceHash", "contentHash", "totalRows", "validRows", "duplicateRows",
-  "problemRows", "problems", "csvDelimiter", "csvMapping", "receivedAt", "completedAt", "createdAt", "updatedAt"`;
+  "problemRows", "problems", "csvDelimiter", "csvMapping", "defaultCardId", "documentClass", "parserId",
+  "parserVersion", "xlsxSheetName", "xlsxMapping", "receivedAt", "completedAt", "createdAt", "updatedAt"`;
 const AI_SUGGESTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
   "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload", "sourceSuggestionId",
   "payloadFingerprint", "provider", "model", "reviewedByUserId", "reviewedAt", "createdAt", "updatedAt"`;
@@ -1195,6 +1205,104 @@ async function approveImportSuggestionInTransaction(
   }
 
   const now = new Date().toISOString();
+  if (
+    payload.payloadVersion === 2 &&
+    (payload.targetKind === "card" || payload.cardId !== undefined)
+  ) {
+    if (payload.cardId === undefined) {
+      throw new ImportReviewError(
+        "IMPORT_CARD_REQUIRED",
+        "Selecione um cartao valido antes de confirmar a linha.",
+      );
+    }
+    const purchase = await registerCardPurchaseForContext(
+      context,
+      payload.cardId,
+      {
+        occurredOn: payload.occurredOn,
+        amountMinor: payload.amountMinor,
+        description: payload.description,
+        currency: payload.currency,
+        ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
+        ...(payload.cardInstrumentId === undefined
+          ? {}
+          : { cardInstrumentId: payload.cardInstrumentId }),
+        ...(payload.installmentTotal === undefined || payload.installmentSequence === undefined
+          ? {}
+          : {
+              totalInstallments: payload.installmentTotal,
+              installmentStart: payload.installmentSequence,
+            }),
+      },
+      {
+        executeQuery,
+        importBatchId: batch.id,
+        aiSuggestionId: suggestion.id,
+        source: "import",
+        requireInstrumentContext: payload.cardInstrumentId !== undefined,
+      },
+    );
+    if (payload.installmentSequence !== undefined) {
+      const materializedInstallment = purchase.installments.find(
+        (installment) => installment.sequenceNumber === payload.installmentSequence,
+      );
+      if (
+        materializedInstallment === undefined ||
+        materializedInstallment.amountMinor !== payload.installmentAmountMinor
+      ) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTALLMENT_AMOUNT_MISMATCH",
+          "O total revisado nao reproduz o valor da parcela observado na fatura.",
+          409,
+        );
+      }
+    }
+    if (
+      payload.invoicePeriod !== undefined &&
+      purchase.invoice.periodEndOn.slice(0, 7) !== payload.invoicePeriod
+    ) {
+      throw new ImportReviewError(
+        "IMPORT_CARD_INVOICE_PERIOD_MISMATCH",
+        "O periodo informado pela fatura nao corresponde ao periodo canonico calculado para a compra.",
+        409,
+      );
+    }
+    const approved: AiSuggestion = {
+      ...suggestion,
+      status: "approved",
+      targetEntityId: purchase.transaction.id,
+      reviewedByUserId: context.userId,
+      reviewedAt: now,
+      updatedAt: now,
+      updatedByUserId: context.userId,
+    };
+    await executeQuery(buildUpdateAiSuggestionSql(), buildAiSuggestionParams(approved));
+    await expireDeterministicCandidates(
+      context,
+      approved.id,
+      now,
+      executeQuery,
+      "Candidatura expirada porque a compra de cartao foi confirmada.",
+    );
+    await insertAuditLogEntry(
+      executeQuery,
+      buildSuggestionAuditEntry(
+        context,
+        approved,
+        "approve",
+        "Linha de fatura confirmada pelo dominio canonico de compra de cartao.",
+      ),
+    );
+    const recalculatedBatch = await recalculateImportBatch(context, batch.id, executeQuery);
+    return {
+      suggestion: toImportReviewSuggestion(approved, [], purchase.transaction),
+      transaction: purchase.transaction,
+      importBatch: recalculatedBatch,
+      idempotent: false,
+      outcome: "created",
+    };
+  }
+
   const transaction = buildImportedTransaction(context, batch.id, suggestion.id, payload, now);
   await executeQuery(buildInsertTransactionSql(), buildTransactionParams(transaction));
   await insertAuditLogEntry(executeQuery, buildImportedTransactionAuditEntry(context, transaction));
@@ -1424,59 +1532,182 @@ async function validateExtractionReferences(
   payload: TransactionExtractionPayload,
   executeQuery: QueryExecutor,
 ): Promise<void> {
-  if (payload.accountId === undefined) {
+  if (
+    payload.payloadVersion === 2 &&
+    (payload.targetKind === "card" || payload.cardId !== undefined)
+  ) {
+    if (payload.cardId === undefined) {
+      throw new ImportReviewError(
+        "IMPORT_CARD_REQUIRED",
+        "Selecione um cartao valido antes de confirmar a linha.",
+      );
+    }
+    if (payload.kind !== "expense" || payload.direction !== "outflow") {
+      throw new ImportReviewError(
+        "IMPORT_CARD_PURCHASE_KIND_INVALID",
+        "Linhas de fatura de cartao precisam representar compras de saida.",
+      );
+    }
+    const cardRows = await executeQuery<{
+      id: string;
+      status: string;
+      currency: string | null;
+    }>(
+      `select "id", "status", "currency" from "Card"
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [payload.cardId, context.organizationId, context.financialProfileId],
+    );
+    const card = cardRows[0];
+    if (card === undefined) {
+      throw new ImportReviewError(
+        "TENANT_RESOURCE_NOT_FOUND",
+        "Recurso nao encontrado no perfil financeiro ativo.",
+        404,
+      );
+    }
+    if (card.status !== "ACTIVE") {
+      throw new ImportReviewError(
+        "IMPORT_CARD_INVALID",
+        "Cartao selecionado nao esta ativo neste perfil financeiro.",
+      );
+    }
+    if (card.currency === null || card.currency.toUpperCase() !== payload.currency.toUpperCase()) {
+      throw new ImportReviewError(
+        "IMPORT_CARD_CURRENCY_MISMATCH",
+        "A moeda da compra importada precisa ser a mesma moeda do cartao.",
+      );
+    }
+    if (payload.installmentSequence !== undefined || payload.installmentTotal !== undefined) {
+      if (
+        payload.installmentSequence === undefined ||
+        payload.installmentTotal === undefined ||
+        payload.installmentAmountMinor === undefined
+      ) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTALLMENT_AMOUNT_REQUIRED",
+          "A compra parcelada precisa preservar o valor da parcela observado na fatura antes da aprovacao.",
+          409,
+        );
+      }
+      if (payload.installmentTotal > 1 && payload.amountMinor <= payload.installmentAmountMinor) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTALLMENT_TOTAL_REQUIRED",
+          "Revise o valor total da compra parcelada antes de aprovar; o valor importado corresponde somente a parcela da fatura.",
+          409,
+        );
+      }
+    }
+    if (payload.cardInstrumentId !== undefined) {
+      const instrumentRows = await executeQuery<{ id: string }>(
+        `select "id" from "CardInstrument"
+         where "id" = $1 and "cardId" = $2 and "organizationId" = $3
+           and "financialProfileId" = $4 and "status" = 'ACTIVE'`,
+        [
+          payload.cardInstrumentId,
+          payload.cardId,
+          context.organizationId,
+          context.financialProfileId,
+        ],
+      );
+      if (instrumentRows[0] === undefined) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTRUMENT_INVALID",
+          "Instrumento do cartao nao esta ativo ou nao pertence ao cartao selecionado.",
+        );
+      }
+    }
+    if (payload.cardInstrumentId === undefined && payload.cardInstrumentHint !== undefined) {
+      const matches = await executeQuery<{ id: string }>(
+        `select "id" from "CardInstrument"
+         where "cardId" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+           and "status" = 'ACTIVE' and "maskedIdentifier" = $4`,
+        [
+          payload.cardId,
+          context.organizationId,
+          context.financialProfileId,
+          payload.cardInstrumentHint,
+        ],
+      );
+      if (matches.length > 1) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTRUMENT_AMBIGUOUS",
+          "Mais de um instrumento corresponde ao identificador da fatura; selecione o instrumento antes de aprovar.",
+          409,
+        );
+      }
+      if (matches.length === 0) {
+        throw new ImportReviewError(
+          "IMPORT_CARD_INSTRUMENT_NOT_FOUND",
+          "O identificador da fatura nao corresponde a um instrumento ativo; selecione o instrumento antes de aprovar.",
+          409,
+        );
+      }
+      throw new ImportReviewError(
+        "IMPORT_CARD_INSTRUMENT_REVIEW_REQUIRED",
+        "Confirme explicitamente o instrumento sugerido antes de aprovar a compra.",
+        409,
+      );
+    }
+  } else if (payload.accountId === undefined) {
     throw new ImportReviewError(
       "IMPORT_ACCOUNT_REQUIRED",
       "Selecione uma conta valida antes de confirmar a linha.",
     );
   }
-  const referenceAccount = await assertActiveAccount(
-    context,
-    payload.accountId,
-    executeQuery,
-    "reference",
-  );
-  if (referenceAccount.currency.toUpperCase() !== payload.currency.toUpperCase()) {
-    throw new ImportReviewError(
-      "IMPORT_ACCOUNT_CURRENCY_MISMATCH",
-      "A moeda da linha importada precisa ser a mesma moeda da conta selecionada.",
-    );
-  }
-
-  if (payload.kind === "transfer") {
-    const direction = deriveImportLineDirection(payload);
-    if (direction === undefined) {
-      throw new ImportReviewError(
-        "IMPORT_TRANSFER_DIRECTION_INVALID",
-        "Nao foi possivel determinar se a transferencia entra ou sai da conta de referencia.",
-      );
-    }
-    if (payload.payloadVersion !== 2 || payload.otherAccountId === undefined) {
-      throw new ImportReviewError(
-        "IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED",
-        "Selecione a outra conta da transferencia antes de confirmar.",
-      );
-    }
-    if (payload.otherAccountId === payload.accountId) {
-      throw new ImportReviewError(
-        "IMPORT_TRANSFER_SAME_ACCOUNT",
-        "A outra conta precisa ser diferente da conta de referencia.",
-      );
-    }
-    const otherAccount = await assertActiveAccount(
+  if (
+    !(
+      payload.payloadVersion === 2 &&
+      (payload.targetKind === "card" || payload.cardId !== undefined)
+    )
+  ) {
+    const referenceAccount = await assertActiveAccount(
       context,
-      payload.otherAccountId,
+      payload.accountId as EntityId,
       executeQuery,
-      "other",
+      "reference",
     );
-    if (
-      otherAccount.currency.toUpperCase() !== payload.currency.toUpperCase() ||
-      otherAccount.currency.toUpperCase() !== referenceAccount.currency.toUpperCase()
-    ) {
+    if (referenceAccount.currency.toUpperCase() !== payload.currency.toUpperCase()) {
       throw new ImportReviewError(
-        "IMPORT_TRANSFER_CURRENCY_MISMATCH",
-        "As duas contas da transferencia precisam usar a mesma moeda da linha importada.",
+        "IMPORT_ACCOUNT_CURRENCY_MISMATCH",
+        "A moeda da linha importada precisa ser a mesma moeda da conta selecionada.",
       );
+    }
+
+    if (payload.kind === "transfer") {
+      const direction = deriveImportLineDirection(payload);
+      if (direction === undefined) {
+        throw new ImportReviewError(
+          "IMPORT_TRANSFER_DIRECTION_INVALID",
+          "Nao foi possivel determinar se a transferencia entra ou sai da conta de referencia.",
+        );
+      }
+      if (payload.payloadVersion !== 2 || payload.otherAccountId === undefined) {
+        throw new ImportReviewError(
+          "IMPORT_TRANSFER_OTHER_ACCOUNT_REQUIRED",
+          "Selecione a outra conta da transferencia antes de confirmar.",
+        );
+      }
+      if (payload.otherAccountId === payload.accountId) {
+        throw new ImportReviewError(
+          "IMPORT_TRANSFER_SAME_ACCOUNT",
+          "A outra conta precisa ser diferente da conta de referencia.",
+        );
+      }
+      const otherAccount = await assertActiveAccount(
+        context,
+        payload.otherAccountId,
+        executeQuery,
+        "other",
+      );
+      if (
+        otherAccount.currency.toUpperCase() !== payload.currency.toUpperCase() ||
+        otherAccount.currency.toUpperCase() !== referenceAccount.currency.toUpperCase()
+      ) {
+        throw new ImportReviewError(
+          "IMPORT_TRANSFER_CURRENCY_MISMATCH",
+          "As duas contas da transferencia precisam usar a mesma moeda da linha importada.",
+        );
+      }
     }
   }
 
@@ -1685,6 +1916,30 @@ async function ensureCurrentDeterministicCandidates(
           ? { otherAccountId: payload.otherAccountId }
           : {}),
         ...(payload.categoryId === undefined ? {} : { categoryId: payload.categoryId }),
+        ...(payload.payloadVersion !== 2 || payload.targetKind === undefined
+          ? {}
+          : { targetKind: payload.targetKind }),
+        ...(payload.payloadVersion !== 2 || payload.cardId === undefined
+          ? {}
+          : { cardId: payload.cardId }),
+        ...(payload.payloadVersion !== 2 || payload.cardInstrumentId === undefined
+          ? {}
+          : { cardInstrumentId: payload.cardInstrumentId }),
+        ...(payload.payloadVersion !== 2 || payload.cardInstrumentHint === undefined
+          ? {}
+          : { cardInstrumentHint: payload.cardInstrumentHint }),
+        ...(payload.payloadVersion !== 2 || payload.invoicePeriod === undefined
+          ? {}
+          : { invoicePeriod: payload.invoicePeriod }),
+        ...(payload.payloadVersion !== 2 || payload.installmentAmountMinor === undefined
+          ? {}
+          : { installmentAmountMinor: payload.installmentAmountMinor }),
+        ...(payload.payloadVersion !== 2 || payload.installmentSequence === undefined
+          ? {}
+          : { installmentSequence: payload.installmentSequence }),
+        ...(payload.payloadVersion !== 2 || payload.installmentTotal === undefined
+          ? {}
+          : { installmentTotal: payload.installmentTotal }),
         ...(payload.externalId === undefined ? {} : { externalId: payload.externalId }),
       },
     ],
@@ -1910,6 +2165,33 @@ function mergeExtractionPayload(
       ...common,
       direction,
       ...(otherAccountId === undefined ? {} : { otherAccountId }),
+      ...(current.payloadVersion !== 2 || current.targetKind === undefined
+        ? {}
+        : { targetKind: current.targetKind }),
+      ...(current.payloadVersion !== 2 || current.cardId === undefined
+        ? {}
+        : { cardId: current.cardId }),
+      ...(changes.cardInstrumentId === null
+        ? {}
+        : changes.cardInstrumentId !== undefined
+          ? { cardInstrumentId: changes.cardInstrumentId }
+          : current.payloadVersion === 2 && current.cardInstrumentId !== undefined
+            ? { cardInstrumentId: current.cardInstrumentId }
+            : {}),
+      ...(changes.invoicePeriod !== undefined
+        ? { invoicePeriod: changes.invoicePeriod }
+        : current.payloadVersion === 2 && current.invoicePeriod !== undefined
+          ? { invoicePeriod: current.invoicePeriod }
+          : {}),
+      ...(current.payloadVersion === 2 && current.installmentAmountMinor !== undefined
+        ? { installmentAmountMinor: current.installmentAmountMinor }
+        : {}),
+      ...(current.payloadVersion === 2 && current.installmentSequence !== undefined
+        ? { installmentSequence: current.installmentSequence }
+        : {}),
+      ...(current.payloadVersion === 2 && current.installmentTotal !== undefined
+        ? { installmentTotal: current.installmentTotal }
+        : {}),
     };
     merged = candidate;
   } else {
@@ -1967,9 +2249,10 @@ function buildInsertImportBatchSql(): string {
   return `insert into "ImportBatch"
     ("id", "organizationId", "financialProfileId", "defaultAccountId", "sourceKind", "status",
      "originalFileName", "sourceHash", "contentHash", "totalRows", "validRows", "duplicateRows", "problemRows", "problems",
-     "csvDelimiter", "csvMapping", "receivedAt", "completedAt", "createdAt", "updatedAt")
+     "csvDelimiter", "csvMapping", "defaultCardId", "documentClass", "parserId", "parserVersion", "xlsxSheetName",
+     "xlsxMapping", "receivedAt", "completedAt", "createdAt", "updatedAt")
     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14::jsonb, $15, $16::jsonb,
-      $17, $18, $19, $20)
+      $17, $18, $19, $20, $21, $22::jsonb, $23, $24, $25, $26)
     on conflict ("organizationId", "financialProfileId", "sourceHash") do nothing
     returning "id"`;
 }
@@ -1992,6 +2275,12 @@ function buildImportBatchParams(batch: ImportBatch): unknown[] {
     JSON.stringify(batch.problems ?? []),
     batch.csvDelimiter ?? null,
     batch.csvMapping === undefined ? null : JSON.stringify(batch.csvMapping),
+    batch.defaultCardId ?? null,
+    batch.documentClass ?? null,
+    batch.parserId ?? null,
+    batch.parserVersion ?? null,
+    batch.xlsxSheetName ?? null,
+    batch.xlsxMapping === undefined ? null : JSON.stringify(batch.xlsxMapping),
     batch.receivedAt,
     batch.completedAt ?? null,
     batch.createdAt,
@@ -2256,6 +2545,18 @@ function mapImportBatchRow(row: ImportBatchRow): ImportBatch {
     ...(row.originalFileName === null ? {} : { originalFileName: row.originalFileName }),
     ...(row.csvDelimiter === null ? {} : { csvDelimiter: row.csvDelimiter as CsvDelimiter }),
     ...(isRecord(row.csvMapping) ? { csvMapping: row.csvMapping as Record<string, string> } : {}),
+    ...(row.defaultCardId === null ? {} : { defaultCardId: row.defaultCardId }),
+    ...(row.documentClass === null
+      ? {}
+      : { documentClass: row.documentClass as "bank_statement" | "credit_card_invoice" }),
+    ...(row.parserId === null ? {} : { parserId: row.parserId }),
+    ...(row.parserVersion === null ? {} : { parserVersion: row.parserVersion }),
+    ...(row.xlsxSheetName === null ? {} : { xlsxSheetName: row.xlsxSheetName }),
+    ...(isRecord(row.xlsxMapping)
+      ? {
+          xlsxMapping: row.xlsxMapping as Record<string, string | number | boolean | undefined>,
+        }
+      : {}),
     ...(row.completedAt === null ? {} : { completedAt: row.completedAt.toISOString() }),
   };
 }

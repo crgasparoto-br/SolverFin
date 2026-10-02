@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 
 import { closePool, query } from "./db.js";
+import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { handleDeduplicationReconciliationApiRequest } from "./deduplication-reconciliation-router.js";
 import { handleImportBatchesApiRequest } from "./import-batches-router.js";
 import { handleMvpApiRequest } from "./mvp.js";
@@ -35,6 +36,7 @@ async function main(): Promise<void> {
     await assertConfigurationChangeUsesDistinctBatch(token, fixtures);
     await assertEditBulkConcurrencyAndDiscard(token, fixtures);
     await assertDeterministicDeduplicationAndReconciliation(token, fixtures);
+    await assertStructuredDocumentApiBoundaries(token, fixtures);
     await assertTenantIsolationAndMixedListing(token, created.importBatch.id);
     await assertRawContentWasNotPersisted(fixtures.suffix);
   });
@@ -245,7 +247,7 @@ async function assertEditBulkConcurrencyAndDiscard(
       categoryId: fixtures.categoryId,
     },
   );
-  assert.equal(updateResponse.statusCode, 200);
+  assert.equal(updateResponse.statusCode, 200, JSON.stringify(updateResponse.body));
   const updated = readBody<{ suggestion: ImportSuggestion }>(updateResponse).suggestion;
   assert.equal(updated.status, "pending_review");
   assert.equal(updated.payload.description, `Descrição OFX corrigida ${fixtures.suffix}`);
@@ -485,6 +487,197 @@ async function createTransaction(
   return readBody<{ transaction: { id: string } }>(response).transaction;
 }
 
+async function assertStructuredDocumentApiBoundaries(
+  token: string,
+  fixtures: Fixtures,
+): Promise<void> {
+  const xlsxBoundary = await apiRequest(token, "POST", "/api/import-batches/xlsx/preview", {
+    originalFileName: `empty-${fixtures.suffix}.xlsx`,
+    contentBase64: "",
+    documentClass: "bank_statement",
+    accountId: fixtures.accountId,
+    consentAccepted: true,
+  });
+  assert.equal(xlsxBoundary.statusCode, 400);
+  assert.equal(readErrorCode(xlsxBoundary), "IMPORT_FILE_EMPTY");
+
+  const cardResponse = await apiRequest(token, "POST", "/api/credit-card-accounts", {
+    name: `Cartao importado ${fixtures.suffix}`,
+    currency: "BRL",
+    closingDay: 20,
+    dueDay: 10,
+    instruments: [
+      {
+        type: "physical",
+        holder: "primary",
+        name: "Fisico titular",
+        maskedIdentifier: "**** 1234",
+      },
+    ],
+  });
+  assert.equal(cardResponse.statusCode, 201);
+  const card = readBody<{
+    creditCardAccount: {
+      id: string;
+      instruments: Array<{ id: string; maskedIdentifier?: string | null }>;
+    };
+  }>(cardResponse).creditCardAccount;
+  const instrument = card.instruments[0];
+  assert.ok(instrument);
+
+  const pdfBatchesBeforeInvalidPreview = await countPdfBatches();
+  const invalidPdf = Buffer.from(
+    [
+      "%PDF-1.7",
+      "%SOLVERFIN:CARD-INVOICE:V1",
+      "%META|currency=BRL|invoicePeriod=2026-09|instrument=**** 1234",
+      `%PURCHASE|2026-09-01|10.00|BRL|Corrompido ${fixtures.suffix}|**** 1234|1/3`,
+    ].join("\n"),
+    "latin1",
+  ).toString("base64");
+  const invalidPdfResponse = await apiRequest(token, "POST", "/api/import-batches/pdf/preview", {
+    originalFileName: `invalid-${fixtures.suffix}.pdf`,
+    contentBase64: invalidPdf,
+    documentClass: "credit_card_invoice",
+    cardId: card.id,
+    consentAccepted: true,
+  });
+  assert.equal(invalidPdfResponse.statusCode, 400);
+  assert.equal(readErrorCode(invalidPdfResponse), "IMPORT_PDF_INVALID");
+  assert.equal(await countPdfBatches(), pdfBatchesBeforeInvalidPreview);
+
+  const pdfContentBase64 = pdf([
+    "%SOLVERFIN:CARD-INVOICE:V1",
+    "%META|currency=BRL|invoicePeriod=2026-09|instrument=**** 1234",
+    `%PURCHASE|2026-09-01|10.00|BRL|Cafe ${fixtures.suffix}|**** 1234|1/3`,
+    "%TOTAL|10.00",
+    "%PAYMENT|10.00",
+  ]);
+
+  const previewResponse = await apiRequest(token, "POST", "/api/import-batches/pdf/preview", {
+    originalFileName: `invoice-${fixtures.suffix}.pdf`,
+    contentBase64: pdfContentBase64,
+    documentClass: "credit_card_invoice",
+    cardId: card.id,
+    consentAccepted: true,
+  });
+  assert.equal(previewResponse.statusCode, 200, JSON.stringify(previewResponse.body));
+  const preview = readBody<{
+    persisted: boolean;
+    sourceKind: string;
+    preview: {
+      state: string;
+      pdf?: { parserId: string; parserVersion: string; institution: string };
+      rows: unknown[];
+    };
+    suggestions: Array<{
+      payload: {
+        cardId?: string;
+        cardInstrumentId?: string;
+        invoicePeriod?: string;
+        amountMinor?: number;
+        installmentAmountMinor?: number;
+        installmentSequence?: number;
+        installmentTotal?: number;
+      };
+    }>;
+  }>(previewResponse);
+  assert.equal(preview.persisted, false);
+  assert.equal(preview.sourceKind, "pdf");
+  assert.equal(preview.preview.state, "ready");
+  assert.equal(preview.preview.pdf?.parserId, "solverfin-fixture-card-invoice");
+  assert.equal(preview.preview.pdf?.parserVersion, "1");
+  assert.equal(preview.suggestions.length, 1);
+  assert.equal(preview.suggestions[0]?.payload.cardId, card.id);
+  assert.equal(preview.suggestions[0]?.payload.cardInstrumentId, instrument.id);
+  assert.equal(preview.suggestions[0]?.payload.invoicePeriod, "2026-09");
+  assert.equal(preview.suggestions[0]?.payload.amountMinor, 1000);
+  assert.equal(preview.suggestions[0]?.payload.installmentAmountMinor, 1000);
+  assert.equal(preview.suggestions[0]?.payload.installmentSequence, 1);
+  assert.equal(preview.suggestions[0]?.payload.installmentTotal, 3);
+
+  const createResponse = await apiRequest(token, "POST", "/api/import-batches/pdf", {
+    originalFileName: `invoice-${fixtures.suffix}.pdf`,
+    contentBase64: pdfContentBase64,
+    documentClass: "credit_card_invoice",
+    cardId: card.id,
+    consentAccepted: true,
+  });
+  assert.equal(createResponse.statusCode, 201);
+  const created = readBody<ImportDetail>(createResponse);
+  const suggestion = requireSuggestion(created, 0);
+
+  const prematureApproval = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${created.importBatch.id}/suggestions/${suggestion.id}/approve`,
+  );
+  assert.equal(prematureApproval.statusCode, 409);
+  assert.equal(readErrorCode(prematureApproval), "IMPORT_CARD_INSTALLMENT_TOTAL_REQUIRED");
+
+  const updateResponse = await apiRequest(
+    token,
+    "PATCH",
+    `/api/import-batches/${created.importBatch.id}/suggestions/${suggestion.id}`,
+    {
+      amountMinor: 3000,
+      invoicePeriod: "2026-09",
+      cardInstrumentId: instrument.id,
+    },
+  );
+  assert.equal(updateResponse.statusCode, 200);
+  const updated = readBody<{ suggestion: ImportSuggestion }>(updateResponse).suggestion;
+  assert.equal(updated.payload.amountMinor, 3000);
+  assert.equal(updated.payload.installmentAmountMinor, 1000);
+  assert.equal(updated.payload.invoicePeriod, "2026-09");
+  assert.equal(updated.payload.cardInstrumentId, instrument.id);
+
+  const approval = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${created.importBatch.id}/suggestions/${suggestion.id}/approve`,
+  );
+  assert.equal(approval.statusCode, 200, JSON.stringify(approval.body));
+  const approved = readBody<{ transaction: { id: string; amountMinor: number } }>(approval);
+  assert.equal(approved.transaction.amountMinor, 3000);
+
+  const installmentRows = await query<{
+    sequenceNumber: number;
+    totalInstallments: number;
+    amountMinor: number;
+  }>(
+    `select "sequenceNumber", "totalInstallments", "amountMinor" from "Installment"
+     where "transactionId" = $1 order by "sequenceNumber" asc`,
+    [approved.transaction.id],
+  );
+  assert.deepEqual(
+    installmentRows.map((row) => [row.sequenceNumber, row.totalInstallments, row.amountMinor]),
+    [
+      [1, 3, 1000],
+      [2, 3, 1000],
+      [3, 3, 1000],
+    ],
+  );
+  const invoiceRows = await query<{ totalAmountMinor: number }>(
+    `select i."totalAmountMinor" from "Transaction" t
+       join "Invoice" i on i."id" = t."invoiceId"
+      where t."id" = $1`,
+    [approved.transaction.id],
+  );
+  assert.equal(invoiceRows[0]?.totalAmountMinor, 1000);
+
+  const retryApproval = await apiRequest(
+    token,
+    "POST",
+    `/api/import-batches/${created.importBatch.id}/suggestions/${suggestion.id}/approve`,
+  );
+  assert.equal(retryApproval.statusCode, 200);
+  assert.equal(
+    readBody<{ transaction: { id: string } }>(retryApproval).transaction.id,
+    approved.transaction.id,
+  );
+}
+
 async function assertTenantIsolationAndMixedListing(
   token: string,
   importBatchId: string,
@@ -513,7 +706,7 @@ async function assertTenantIsolationAndMixedListing(
     ),
   );
 
-  const invalid = await apiRequest(token, "GET", "/api/import-batches?sourceKind=pdf");
+  const invalid = await apiRequest(token, "GET", "/api/import-batches?sourceKind=unsupported");
   assert.equal(invalid.statusCode, 400);
   assert.equal(readErrorCode(invalid), "IMPORT_SOURCE_KIND_INVALID");
 }
@@ -557,8 +750,37 @@ function formatConsoleValue(value: unknown): string {
   }
 }
 
+function pdf(lines: readonly string[]): string {
+  const headerAndComments = ["%PDF-1.7", ...lines].join("\n") + "\n";
+  const objectOffset = Buffer.byteLength(headerAndComments, "latin1");
+  const body = headerAndComments + "1 0 obj\n<< /Type /Catalog >>\nendobj\n";
+  const xrefOffset = Buffer.byteLength(body, "latin1");
+  const objectOffsetText = String(objectOffset).padStart(10, "0");
+  const document =
+    body +
+    [
+      "xref",
+      "0 2",
+      "0000000000 65535 f ",
+      `${objectOffsetText} 00000 n `,
+      "trailer",
+      "<< /Size 2 /Root 1 0 R >>",
+      "startxref",
+      String(xrefOffset),
+      "%%EOF",
+    ].join("\n");
+  return Buffer.from(document, "latin1").toString("base64");
+}
+
 function ofx(transactions: string): string {
   return `OFXHEADER:100\nDATA:OFXSGML\n<OFX><STMTRS><CURDEF>BRL<BANKTRANLIST>${transactions}</BANKTRANLIST></STMTRS></OFX>`;
+}
+
+async function countPdfBatches(): Promise<number> {
+  const rows = await query<{ total: number }>(
+    `select count(*)::int as total from "ImportBatch" where "sourceKind" = 'PDF'`,
+  );
+  return rows[0]?.total ?? 0;
 }
 
 async function countOfxBatches(): Promise<number> {
@@ -594,6 +816,7 @@ async function apiRequest(
   };
   const response =
     (await handleImportBatchesApiRequest(request)) ??
+    (await handleCreditCardAccountsApiRequest(request)) ??
     (await handleDeduplicationReconciliationApiRequest(request)) ??
     (await handleApiRequest(request));
   assert.ok(response, `${method} ${path} should be handled`);
@@ -644,6 +867,12 @@ interface ImportSuggestion {
     categoryId?: string;
     targetTransactionId?: string;
     sourceSuggestionId?: string;
+    cardId?: string;
+    cardInstrumentId?: string;
+    invoicePeriod?: string;
+    installmentAmountMinor?: number;
+    installmentSequence?: number;
+    installmentTotal?: number;
   };
   candidates?: Array<{ id: string; status: string }>;
   transaction?: { id: string; status: string };

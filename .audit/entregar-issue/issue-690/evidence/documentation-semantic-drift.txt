@@ -1,0 +1,11 @@
+DOC-SEMANTIC-DRIFT-001
+material_head=95214c354cb34fb7fa7aced3cdf3c3e2b4478850
+old_contract_terms=CSV e OFX only; sourceKind accepts only csv/ofx; imports CSV/OFX only
+new_contract_terms=CSV/OFX/XLSX/PDF; sourceKind accepts csv/ofx/xlsx/pdf; shared canonical queue/pipeline
+searched_outside_diff=true
+canonical_sources=docs/IMPORTS.md,docs/AI_REVIEW_QUEUE.md,docs/AI_SUGGESTION_PAYLOADS.md,docs/CARDS.md,docs/PRODUCT.md,docs/EVOLUTION_STRATEGY.md
+reconciled_surface_1=docs/IMPORTS.md
+reconciled_surface_2=docs/AI_REVIEW_QUEUE.md
+old_normative_claim_matches=0
+unresolved_contradictions=[]
+status=passed

@@ -1,0 +1,27 @@
+Exact-head evidence inventory for SolverFin issue #690 / PR #699
+material_head=95214c354cb34fb7fa7aced3cdf3c3e2b4478850
+ci_run=37025425244
+critical_job=110899058474
+visual_run=37025425871
+
+Observed tests in packages/domain/src/document-imports.test.ts:
+- homologated fictitious bank PDF parses without account inference
+- card invoice keeps equal legitimate purchases distinct and ignores total/payment lines
+- corrupt, unsupported, ambiguous and protected PDFs fail closed
+- XLSX requires explicit sheet/mapping and formula output is never executed/trusted
+
+Observed integration controls in apps/api/src/ofx-import-review.integration.test.ts:
+- preview does not persist financial effects
+- concurrent creation converges to one batch
+- repeated/concurrent approval is idempotent
+- deterministic deduplication/reconciliation prevents duplicate transaction creation
+- PDF preview failure does not create a batch
+- card invoice preview preserves card/instrument/invoice period
+- card approval reuses canonical transaction/invoice domain
+- cross-profile access is hidden with 404
+- raw import content is absent from batch/suggestion/audit persistence
+
+Documentation control:
+- DOC-SEMANTIC-DRIFT-001 scanned six canonical sources on exact material head
+- stale CSV/OFX-only normative claims were reconciled in IMPORTS and AI_REVIEW_QUEUE
+- unresolved_contradictions=[]

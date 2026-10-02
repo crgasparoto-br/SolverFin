@@ -18,6 +18,7 @@ export * from "./budgets.js";
 export * from "./payables-receivables.js";
 export * from "./payables-receivables-transition.js";
 export * from "./imports.js";
+export * from "./document-imports.js";
 export * from "./bank-message-inbox.js";
 export * from "./deduplication.js";
 export * from "./reconciliation.js";
@@ -97,7 +98,7 @@ export type InstallmentStatus = "planned" | "posted" | "reconciled" | "cancelled
 export type InvoiceStatus = "open" | "closed" | "paid" | "overdue" | "cancelled";
 export type BudgetStatus = "active" | "archived";
 
-export type ImportSourceKind = "csv" | "ofx" | "bank_message" | "manual";
+export type ImportSourceKind = "csv" | "ofx" | "xlsx" | "pdf" | "bank_message" | "manual";
 export type ImportStatus =
   | "received"
   | "parsed"
@@ -320,6 +321,12 @@ export interface ImportBatch extends Traceable, TenantScoped {
   problems?: readonly ImportProblemSnapshot[];
   csvDelimiter?: "," | ";";
   csvMapping?: CsvImportMappingSnapshot;
+  defaultCardId?: EntityId;
+  documentClass?: "bank_statement" | "credit_card_invoice";
+  parserId?: string;
+  parserVersion?: string;
+  xlsxSheetName?: string;
+  xlsxMapping?: Record<string, string | number | boolean | undefined>;
 }
 
 export interface ImportProblemSnapshot {
@@ -359,6 +366,14 @@ export interface TransactionExtractionPayloadV2 {
   otherAccountId?: EntityId;
   categoryId?: EntityId;
   externalId?: string;
+  targetKind?: "account" | "card";
+  cardId?: EntityId;
+  cardInstrumentId?: EntityId;
+  cardInstrumentHint?: string;
+  invoicePeriod?: string;
+  installmentAmountMinor?: number;
+  installmentSequence?: number;
+  installmentTotal?: number;
 }
 
 export type TransactionExtractionPayload =

@@ -23,7 +23,7 @@ export type AiSuggestionPayloadOrigin =
     }
   | {
       kind: "import";
-      sourceKind: "csv" | "ofx" | "bank_message" | "manual";
+      sourceKind: "csv" | "ofx" | "xlsx" | "pdf" | "bank_message" | "manual";
       sourceEntityId?: string;
     }
   | {
@@ -99,6 +99,14 @@ export interface TransactionExtractionSuggestionPayloadV2 extends AiSuggestionPa
   otherAccountId?: string;
   categoryId?: string;
   externalId?: string;
+  targetKind?: "account" | "card";
+  cardId?: string;
+  cardInstrumentId?: string;
+  cardInstrumentHint?: string;
+  invoicePeriod?: string;
+  installmentAmountMinor?: number;
+  installmentSequence?: number;
+  installmentTotal?: number;
 }
 
 export type TransactionExtractionSuggestionPayload =

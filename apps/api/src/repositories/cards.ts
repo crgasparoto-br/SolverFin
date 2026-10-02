@@ -39,7 +39,7 @@ import {
   normalizeRequiredCardCurrency,
   resolveCanonicalCardPurchaseCurrency,
 } from "../card-currency-contract.js";
-import { query, withTransaction } from "../db.js";
+import { query, withTransaction, type QueryExecutor } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { listCardInstrumentsForContext } from "./card-instruments.js";
 import { toDateOnly } from "./repository-date-utils.js";
@@ -86,6 +86,11 @@ interface InvoiceRow {
 
 interface RegisterCardPurchaseForContextOptions {
   requireInstrumentContext?: boolean;
+  executeQuery?: QueryExecutor;
+  transactionId?: EntityId;
+  importBatchId?: EntityId;
+  aiSuggestionId?: EntityId;
+  source?: "manual" | "import";
 }
 
 const CARD_COLUMNS = `"id", "organizationId", "financialProfileId", "paymentAccountId", "name", "status",
@@ -277,7 +282,7 @@ export async function registerCardPurchaseForContext(
   const now = new Date().toISOString();
 
   const result = registerCardPurchaseDomain({
-    transactionId: randomUUID(),
+    transactionId: options.transactionId ?? randomUUID(),
     context,
     card,
     ...(instruments !== undefined ? { instruments } : {}),
@@ -291,8 +296,27 @@ export async function registerCardPurchaseForContext(
     makeForecastTransactionId: () => randomUUID(),
   });
 
-  await withTransaction(async (executeQuery) => {
-    for (const invoice of [result.invoice, ...result.futureInvoices]) {
+  const materialResult =
+    options.source === "import" ||
+    options.importBatchId !== undefined ||
+    options.aiSuggestionId !== undefined
+      ? {
+          ...result,
+          transaction: {
+            ...result.transaction,
+            source: options.source ?? "import",
+            ...(options.importBatchId === undefined
+              ? {}
+              : { importBatchId: options.importBatchId }),
+            ...(options.aiSuggestionId === undefined
+              ? {}
+              : { aiSuggestionId: options.aiSuggestionId }),
+          },
+        }
+      : result;
+
+  const persist = async (executeQuery: QueryExecutor): Promise<void> => {
+    for (const invoice of [materialResult.invoice, ...materialResult.futureInvoices]) {
       const invoiceExisted = existingInvoices.some((existing) => existing.id === invoice.id);
 
       await executeQuery(
@@ -303,10 +327,10 @@ export async function registerCardPurchaseForContext(
 
     await executeQuery(
       buildInsertCardTransactionSql(),
-      buildCardTransactionParams(result.transaction),
+      buildCardTransactionParams(materialResult.transaction),
     );
 
-    for (const installment of result.installments) {
+    for (const installment of materialResult.installments) {
       await executeQuery(
         `insert into "Installment"
           ("id", "organizationId", "financialProfileId", "recurrenceId", "transactionId", "invoiceId",
@@ -334,7 +358,7 @@ export async function registerCardPurchaseForContext(
       );
     }
 
-    for (const forecastTransaction of result.forecastTransactions) {
+    for (const forecastTransaction of materialResult.forecastTransactions) {
       const forecastExisted = existingForecastTransactions.some(
         (existing) => existing.id === forecastTransaction.id,
       );
@@ -345,12 +369,15 @@ export async function registerCardPurchaseForContext(
       );
     }
 
-    for (const auditEntry of result.auditEntries) {
+    for (const auditEntry of materialResult.auditEntries) {
       await insertAuditLogEntry(executeQuery, auditEntry);
     }
-  });
+  };
 
-  return result;
+  if (options.executeQuery !== undefined) await persist(options.executeQuery);
+  else await withTransaction(persist);
+
+  return materialResult;
 }
 
 export async function payInvoiceForContext(

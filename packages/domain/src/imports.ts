@@ -170,6 +170,14 @@ export interface ImportTransactionSuggestion extends TenantScoped {
   accountId?: EntityId;
   otherAccountId?: EntityId;
   categoryId?: EntityId;
+  cardId?: EntityId;
+  cardInstrumentId?: EntityId;
+  cardInstrumentHint?: string;
+  invoicePeriod?: string;
+  installmentAmountMinor?: number;
+  installmentSequence?: number;
+  installmentTotal?: number;
+  targetKind?: "account" | "card";
   externalId?: string | undefined;
 }
 
@@ -439,6 +447,24 @@ export function buildTransactionExtractionPayload(
       ? {}
       : { otherAccountId: suggestion.otherAccountId }),
     ...(suggestion.categoryId === undefined ? {} : { categoryId: suggestion.categoryId }),
+    ...(suggestion.targetKind === undefined ? {} : { targetKind: suggestion.targetKind }),
+    ...(suggestion.cardId === undefined ? {} : { cardId: suggestion.cardId }),
+    ...(suggestion.cardInstrumentId === undefined
+      ? {}
+      : { cardInstrumentId: suggestion.cardInstrumentId }),
+    ...(suggestion.cardInstrumentHint === undefined
+      ? {}
+      : { cardInstrumentHint: suggestion.cardInstrumentHint }),
+    ...(suggestion.invoicePeriod === undefined ? {} : { invoicePeriod: suggestion.invoicePeriod }),
+    ...(suggestion.installmentAmountMinor === undefined
+      ? {}
+      : { installmentAmountMinor: suggestion.installmentAmountMinor }),
+    ...(suggestion.installmentSequence === undefined
+      ? {}
+      : { installmentSequence: suggestion.installmentSequence }),
+    ...(suggestion.installmentTotal === undefined
+      ? {}
+      : { installmentTotal: suggestion.installmentTotal }),
     ...(suggestion.externalId === undefined ? {} : { externalId: suggestion.externalId }),
   };
 }
@@ -463,6 +489,33 @@ export function parseTransactionExtractionPayload(
   if (value.kind !== "income" && value.kind !== "expense" && value.kind !== "transfer")
     return undefined;
   if (value.direction !== "inflow" && value.direction !== "outflow") return undefined;
+  const targetKind =
+    value.targetKind === undefined
+      ? undefined
+      : value.targetKind === "account" || value.targetKind === "card"
+        ? value.targetKind
+        : null;
+  if (targetKind === null) return undefined;
+  if (
+    value.invoicePeriod !== undefined &&
+    (typeof value.invoicePeriod !== "string" || !/^\d{4}-\d{2}$/.test(value.invoicePeriod))
+  )
+    return undefined;
+  const installmentAmountMinor = parseOptionalPositiveInteger(value.installmentAmountMinor);
+  const installmentSequence = parseOptionalPositiveInteger(value.installmentSequence);
+  const installmentTotal = parseOptionalPositiveInteger(value.installmentTotal);
+  if (
+    (value.installmentAmountMinor !== undefined && installmentAmountMinor === undefined) ||
+    (value.installmentSequence !== undefined && installmentSequence === undefined) ||
+    (value.installmentTotal !== undefined && installmentTotal === undefined) ||
+    (installmentSequence === undefined) !== (installmentTotal === undefined) ||
+    (installmentAmountMinor !== undefined &&
+      (installmentSequence === undefined || installmentTotal === undefined)) ||
+    (installmentSequence !== undefined &&
+      installmentTotal !== undefined &&
+      installmentSequence > installmentTotal)
+  )
+    return undefined;
   return {
     payloadVersion: 2,
     ...common,
@@ -471,6 +524,20 @@ export function parseTransactionExtractionPayload(
     ...(typeof value.otherAccountId === "string" && value.otherAccountId.length > 0
       ? { otherAccountId: value.otherAccountId }
       : {}),
+    ...(targetKind === undefined ? {} : { targetKind }),
+    ...(typeof value.cardId === "string" && value.cardId.length > 0
+      ? { cardId: value.cardId }
+      : {}),
+    ...(typeof value.cardInstrumentId === "string" && value.cardInstrumentId.length > 0
+      ? { cardInstrumentId: value.cardInstrumentId }
+      : {}),
+    ...(typeof value.cardInstrumentHint === "string" && value.cardInstrumentHint.trim().length > 0
+      ? { cardInstrumentHint: value.cardInstrumentHint.trim() }
+      : {}),
+    ...(typeof value.invoicePeriod === "string" ? { invoicePeriod: value.invoicePeriod } : {}),
+    ...(installmentAmountMinor === undefined ? {} : { installmentAmountMinor }),
+    ...(installmentSequence === undefined ? {} : { installmentSequence }),
+    ...(installmentTotal === undefined ? {} : { installmentTotal }),
   };
 }
 
@@ -493,9 +560,28 @@ export function buildImportPayloadFingerprint(payload: TransactionExtractionPayl
   ];
   if (payload.payloadVersion === 2) parts.push(payload.direction);
   parts.push(payload.amountMinor, payload.currency, payload.description, payload.accountId ?? "");
-  if (payload.payloadVersion === 2) parts.push(payload.otherAccountId ?? "");
+  if (payload.payloadVersion === 2) {
+    parts.push(
+      payload.otherAccountId ?? "",
+      payload.targetKind ?? "account",
+      payload.cardId ?? "",
+      payload.cardInstrumentId ?? "",
+      payload.cardInstrumentHint ?? "",
+      payload.invoicePeriod ?? "",
+    );
+    if (payload.installmentAmountMinor !== undefined) {
+      parts.push("installment-amount", payload.installmentAmountMinor);
+    }
+    parts.push(payload.installmentSequence ?? "", payload.installmentTotal ?? "");
+  }
   parts.push(payload.categoryId ?? "", payload.externalId ?? "");
   return buildStableImportHash(parts.join(":"));
+}
+
+function parseOptionalPositiveInteger(value: unknown): number | undefined {
+  if (value === undefined) return undefined;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined;
 }
 
 function parseTransactionExtractionPayloadCommon(

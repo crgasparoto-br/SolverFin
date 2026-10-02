@@ -110,3 +110,24 @@ Erros inesperados de persistência retornam erro público genérico com `correla
 ## Privacidade
 
 O payload persiste apenas dados normalizados necessários à proposta. Não deve conter prompt bruto, arquivo bruto, mensagem bancária bruta, credencial, token, cabeçalho, stack trace ou resposta integral de provider. Auditoria registra campos alterados de forma redigida.
+
+## Extensão V2 para documentos financeiros (#690)
+
+`transaction_extraction` V2 aceita, de forma opcional e compatível com os produtores anteriores:
+
+- `targetKind: account|card`;
+- `cardId`;
+- `cardInstrumentId`;
+- `cardInstrumentHint` mascarado;
+- `invoicePeriod` em `AAAA-MM`;
+- `installmentSequence` e `installmentTotal`.
+
+As origens de importação reconhecidas no envelope passam a incluir `xlsx` e `pdf`. Esses campos entram no fingerprint para que troca de cartão, instrumento, período ou parcelamento torne candidaturas antigas obsoletas.
+
+Na projeção pública, IDs de cartão/instrumento só são incluídos quando `includeScopedEntityIds` foi habilitado depois do recorte tenant/profile. Hint mascarado, período e metadados de parcelamento podem ser exibidos por serem necessários à revisão; arquivo bruto, parser interno completo e dados não normalizados continuam fora do payload.
+
+## Evidência de parcela em importações de fatura (#690)
+
+No payload V2 de `transaction_extraction` para cartão, `amountMinor` mantém a semântica canônica de **valor total da compra**. Quando o documento identifica uma ocorrência parcelada, `installmentAmountMinor` preserva separadamente o valor daquela parcela observado na origem, junto de `installmentSequence` e `installmentTotal`.
+
+A evidência da parcela não é editada quando o revisor corrige o total. A aprovação de uma compra parcelada exige que o domínio canônico gere a parcela correspondente com exatamente `installmentAmountMinor`; ausência de total revisado ou divergência bloqueia o efeito financeiro de forma transacional.

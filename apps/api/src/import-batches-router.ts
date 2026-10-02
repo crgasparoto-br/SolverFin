@@ -1,5 +1,6 @@
 import {
   ImportFileError,
+  StructuredImportError,
   TenantAuthorizationError,
   TenantError,
   type CsvDelimiter,
@@ -7,6 +8,7 @@ import {
   type ImportSourceKind,
   type ImportStatus,
   type TenantContext,
+  type XlsxImportMapping,
 } from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
@@ -29,6 +31,11 @@ import {
   type ImportSuggestionUpdatePayload,
 } from "./repositories/imports.js";
 import { previewOfxImportForContext } from "./repositories/ofx-imports.js";
+import {
+  createStructuredImportBatchForContext,
+  previewStructuredImportForContext,
+  type StructuredImportPayload,
+} from "./repositories/document-imports.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
@@ -53,6 +60,10 @@ route("POST", `${BASE_PATH}/csv/preview`, previewCsvImportBatchHandler);
 route("POST", `${BASE_PATH}/csv`, createCsvImportBatchHandler);
 route("POST", `${BASE_PATH}/ofx/preview`, previewOfxImportBatchHandler);
 route("POST", `${BASE_PATH}/ofx`, createOfxImportBatchHandler);
+route("POST", `${BASE_PATH}/xlsx/preview`, previewXlsxImportBatchHandler);
+route("POST", `${BASE_PATH}/xlsx`, createXlsxImportBatchHandler);
+route("POST", `${BASE_PATH}/pdf/preview`, previewPdfImportBatchHandler);
+route("POST", `${BASE_PATH}/pdf`, createPdfImportBatchHandler);
 route("GET", `${BASE_PATH}/:importBatchId`, getImportBatchHandler);
 route(
   "PATCH",
@@ -156,7 +167,13 @@ async function listImportBatchesHandler(
   return json(200, {
     importBatches:
       sourceKind === undefined
-        ? importBatches.filter((batch) => batch.sourceKind === "csv" || batch.sourceKind === "ofx")
+        ? importBatches.filter(
+            (batch) =>
+              batch.sourceKind === "csv" ||
+              batch.sourceKind === "ofx" ||
+              batch.sourceKind === "xlsx" ||
+              batch.sourceKind === "pdf",
+          )
         : importBatches,
   });
 }
@@ -234,6 +251,62 @@ async function createOfxImportBatchHandler(
     accountId: requireString(body, "accountId"),
     consentAccepted: true,
   });
+  return json(result.duplicateBatch ? 200 : 201, result);
+}
+
+async function previewXlsxImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  return json(
+    200,
+    await previewStructuredImportForContext(
+      context,
+      "xlsx",
+      readStructuredImportPayload(body, "xlsx"),
+    ),
+  );
+}
+
+async function createXlsxImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const result = await createStructuredImportBatchForContext(
+    context,
+    "xlsx",
+    readStructuredImportPayload(body, "xlsx"),
+  );
+  return json(result.duplicateBatch ? 200 : 201, result);
+}
+
+async function previewPdfImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  return json(
+    200,
+    await previewStructuredImportForContext(
+      context,
+      "pdf",
+      readStructuredImportPayload(body, "pdf"),
+    ),
+  );
+}
+
+async function createPdfImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const result = await createStructuredImportBatchForContext(
+    context,
+    "pdf",
+    readStructuredImportPayload(body, "pdf"),
+  );
   return json(result.duplicateBatch ? 200 : 201, result);
 }
 
@@ -346,8 +419,11 @@ function assertConsent(body: Record<string, unknown>): void {
 
 function readImportSourceKind(value: string | null): ImportSourceKind | undefined {
   if (value === null || value.length === 0) return undefined;
-  if (value !== "csv" && value !== "ofx") {
-    throw new ImportReviewError("IMPORT_SOURCE_KIND_INVALID", "Origem deve ser csv ou ofx.");
+  if (value !== "csv" && value !== "ofx" && value !== "xlsx" && value !== "pdf") {
+    throw new ImportReviewError(
+      "IMPORT_SOURCE_KIND_INVALID",
+      "Origem deve ser csv, ofx, xlsx ou pdf.",
+    );
   }
   return value;
 }
@@ -382,6 +458,19 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
     payload.otherAccountId = requireString(body, "otherAccountId");
   if (body.categoryId === null) payload.categoryId = null;
   else if (body.categoryId !== undefined) payload.categoryId = requireString(body, "categoryId");
+  if (body.cardInstrumentId === null) payload.cardInstrumentId = null;
+  else if (body.cardInstrumentId !== undefined)
+    payload.cardInstrumentId = requireString(body, "cardInstrumentId");
+  if (body.invoicePeriod !== undefined) {
+    const invoicePeriod = requireString(body, "invoicePeriod");
+    if (!/^\d{4}-\d{2}$/.test(invoicePeriod)) {
+      throw new ImportReviewError(
+        "IMPORT_INVOICE_PERIOD_INVALID",
+        "Periodo da fatura deve usar AAAA-MM.",
+      );
+    }
+    payload.invoicePeriod = invoicePeriod;
+  }
   if (Object.keys(payload).length === 0) {
     throw new ImportReviewError(
       "IMPORT_UPDATE_REQUIRED",
@@ -389,6 +478,65 @@ function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUp
     );
   }
   return payload;
+}
+
+function readStructuredImportPayload(
+  body: Record<string, unknown>,
+  kind: "xlsx" | "pdf",
+): StructuredImportPayload {
+  assertConsent(body);
+  const documentClass = String(body.documentClass ?? "");
+  if (documentClass !== "bank_statement" && documentClass !== "credit_card_invoice") {
+    throw new ImportReviewError(
+      "IMPORT_DOCUMENT_CLASS_REQUIRED",
+      "Escolha se o documento e extrato bancario ou fatura de cartao.",
+    );
+  }
+  const xlsxMapping = kind === "xlsx" ? readXlsxMapping(body.xlsxMapping) : undefined;
+  return {
+    originalFileName: requireString(body, "originalFileName"),
+    contentBase64: requireRawString(body, "contentBase64"),
+    documentClass,
+    consentAccepted: true as const,
+    ...(typeof body.accountId === "string" && body.accountId.trim()
+      ? { accountId: body.accountId.trim() }
+      : {}),
+    ...(typeof body.cardId === "string" && body.cardId.trim()
+      ? { cardId: body.cardId.trim() }
+      : {}),
+    ...(typeof body.sheetName === "string" && body.sheetName.trim()
+      ? { sheetName: body.sheetName.trim() }
+      : {}),
+    ...(xlsxMapping === undefined ? {} : { xlsxMapping }),
+  };
+}
+
+function readXlsxMapping(value: unknown): XlsxImportMapping | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new ImportReviewError(
+      "IMPORT_XLSX_MAPPING_INVALID",
+      "Mapeamento XLSX precisa ser um objeto.",
+    );
+  }
+  const source = value as Record<string, unknown>;
+  const result: XlsxImportMapping = { version: 1 };
+  for (const key of [
+    "date",
+    "description",
+    "amount",
+    "currency",
+    "instrument",
+    "invoicePeriod",
+    "installmentAmount",
+    "installmentSequence",
+    "installmentTotal",
+  ] as const) {
+    const candidate = source[key];
+    if (candidate === undefined || candidate === null || String(candidate).trim() === "") continue;
+    result[key] = String(candidate).trim();
+  }
+  return result;
 }
 
 function readCsvMapping(value: unknown): CsvImportMapping | undefined {
@@ -531,7 +679,11 @@ function json(statusCode: number, body: unknown): ApiResponse {
 }
 
 function mapDomainError(error: unknown): unknown {
-  if (error instanceof ImportFileError || error instanceof ImportReviewError) {
+  if (
+    error instanceof ImportFileError ||
+    error instanceof StructuredImportError ||
+    error instanceof ImportReviewError
+  ) {
     return {
       code: error.code,
       statusCode: error.statusCode,

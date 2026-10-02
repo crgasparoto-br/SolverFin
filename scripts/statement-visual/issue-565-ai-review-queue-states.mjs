@@ -252,14 +252,8 @@ async function validateStates(cdp, suggestionId) {
   await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-loading.png"));
   await sleep(650);
 
-  await setQueueMode(cdp, "empty", 160);
-  const empty = await evaluate(
-    cdp,
-    `(() => ({
-      visible: Boolean(document.querySelector('.empty-state')) &&
-        document.body.innerText.includes('Nenhuma sugestão neste filtro.')
-    }))()`,
-  );
+  await setQueueMode(cdp, "empty", 40);
+  const empty = await waitForEmptyState(cdp);
   await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-empty.png"));
 
   await setQueueMode(cdp, "error", 160);
@@ -335,6 +329,28 @@ async function setQueueMode(cdp, mode, waitMs) {
     })()`,
   );
   await sleep(waitMs);
+}
+
+async function waitForEmptyState(cdp, timeout = 2_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    const empty = await evaluate(
+      cdp,
+      `(() => ({
+        visible: Boolean(document.querySelector('.empty-state')) &&
+          document.body.innerText.includes('Nenhuma sugestão neste filtro.')
+      }))()`,
+    ).catch(() => ({ visible: false }));
+    if (empty.visible) return empty;
+    await sleep(80);
+  }
+  return evaluate(
+    cdp,
+    `(() => ({
+      visible: Boolean(document.querySelector('.empty-state')) &&
+        document.body.innerText.includes('Nenhuma sugestão neste filtro.')
+    }))()`,
+  );
 }
 
 async function inspectQueueStatus(cdp, expectedText) {

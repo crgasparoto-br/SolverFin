@@ -15,25 +15,34 @@ function canonicalFixture(): string {
 }
 
 describe("Inbox OFX import enhancement", () => {
-  it("accepts CSV and OFX while keeping mapping controls exclusive to CSV", () => {
+  it("accepts CSV, OFX, XLSX and PDF with explicit structured-document controls", () => {
     const html = enhanceInboxOfxImport(canonicalFixture());
 
     assert.match(html, /data-inbox-ofx-import-enhanced/);
-    assert.match(html, /Importar CSV ou OFX/);
-    assert.match(html, /accept="\.csv,\.ofx,text\/csv,text\/plain,application\/x-ofx"/);
+    assert.match(html, /data-inbox-document-import-enhanced/);
+    assert.match(html, /Importar CSV, OFX, XLSX ou PDF/);
+    assert.match(html, /accept="\.csv,\.ofx,\.xlsx,\.pdf/);
     assert.match(html, /function selectedImportKind\(\)/);
     assert.match(html, /if \(name\.endsWith\("\.ofx"\)\) return "ofx"/);
-    assert.match(html, /const csvOnly = kind !== "ofx"/);
+    assert.match(html, /if \(name\.endsWith\("\.xlsx"\)\) return "xlsx"/);
+    assert.match(html, /if \(name\.endsWith\("\.pdf"\)\) return "pdf"/);
+    assert.match(html, /const csvOnly = kind === "csv"/);
+    assert.match(html, /name="documentClass"/);
+    assert.match(html, /name="cardId"/);
+    assert.match(html, /name="sheetName"/);
     assert.match(html, /delimiterField\.hidden = !csvOnly/);
     assert.match(html, /mappingFields\.hidden = true/);
   });
 
-  it("uses separate OFX routes and omits CSV mapping fields from OFX payloads", () => {
+  it("uses source-specific routes and binary base64 payloads only for XLSX/PDF", () => {
     const html = enhanceInboxOfxImport(canonicalFixture());
 
     assert.match(html, /"\/api\/import-batches\/" \+ fileData\.kind \+ "\/preview"/);
     assert.match(html, /"\/api\/import-batches\/" \+ fileData\.kind/);
     assert.match(html, /fileData\.kind === "csv" \? \{ csvDelimiter:/);
+    assert.match(html, /contentBase64: fileData\.contentBase64/);
+    assert.match(html, /file\.arrayBuffer\(\)/);
+    assert.match(html, /xlsxMapping: currentXlsxMapping\(\)/);
     assert.doesNotMatch(html, /sourceKind=csv&status=all/);
     assert.match(html, /\/api\/import-batches\?status=all/);
   });
@@ -43,7 +52,7 @@ describe("Inbox OFX import enhancement", () => {
 
     assert.match(
       html,
-      /const labels = \{ csv: "CSV", ofx: "OFX", bank_message: "Mensagem bancária", manual: "Manual" \}/,
+      /const labels = \{ csv: "CSV", ofx: "OFX", xlsx: "XLSX", pdf: "PDF", bank_message: "Mensagem bancária", manual: "Manual" \}/,
     );
     assert.match(html, /ready: "Pronto para revisão"/);
     assert.match(html, /blocked: "Importação bloqueada"/);
@@ -51,7 +60,26 @@ describe("Inbox OFX import enhancement", () => {
     assert.match(html, /formatSourceKind\(batch\.sourceKind\)/);
     assert.match(html, /preview\.suggestions/);
     assert.match(html, /Extratos importados/);
-    assert.match(html, /Importe CSV ou OFX/);
+    assert.match(html, /Importe CSV, OFX, XLSX ou PDF/);
+  });
+
+  it("shows the homologated PDF parser and layout version in the preview", () => {
+    const html = enhanceInboxOfxImport(canonicalFixture());
+
+    assert.match(html, /const pdf = preview\.pdf \|\| \{\}/);
+    assert.match(html, /Layout PDF reconhecido/);
+    assert.match(html, /pdf\.institution/);
+    assert.match(html, /pdf\.parserId/);
+    assert.match(html, /pdf\.parserVersion/);
+  });
+
+  it("requires explicit card-instrument review for structured card rows", () => {
+    const html = enhanceInboxOfxImport(canonicalFixture());
+
+    assert.match(html, /csv-line-card-instrument-field/);
+    assert.match(html, /payload\.cardInstrumentHint/);
+    assert.match(html, /cardInstrumentId/);
+    assert.match(html, /Selecione para confirmar/);
   });
 
   it("reloads the persisted source of truth before enabling retry after an ambiguous creation failure", () => {

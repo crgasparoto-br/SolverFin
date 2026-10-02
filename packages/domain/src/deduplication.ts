@@ -191,6 +191,10 @@ export function buildImportSuggestionDeduplicationCandidate(
     candidate.accountId = suggestion.accountId;
   }
 
+  if (suggestion.cardId !== undefined) {
+    candidate.cardId = suggestion.cardId;
+  }
+
   if (suggestion.externalId !== undefined) {
     candidate.externalId = suggestion.externalId;
   }
