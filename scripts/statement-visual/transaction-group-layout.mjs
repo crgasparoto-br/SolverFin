@@ -138,7 +138,10 @@ async function measureLayout(cdp) {
         open: dialog.open,
         dialogWidth: Math.round(rect.width),
         dialogHeight: Math.round(rect.height),
-        formColumns: getComputedStyle(form).gridTemplateColumns.split(/\s+/).filter(Boolean).length,
+        formColumns: (() => {
+          const fields = Array.from(form.querySelectorAll(":scope > label")).slice(0, 4);
+          return new Set(fields.map((field) => Math.round(field.getBoundingClientRect().left))).size;
+        })(),
         insideViewport: rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1,
         panelHorizontalOverflow: panel.scrollWidth > panel.clientWidth + 1,
         formHorizontalOverflow: form.scrollWidth > form.clientWidth + 1,
