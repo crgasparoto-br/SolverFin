@@ -131,4 +131,3 @@ Na projeção pública, IDs de cartão/instrumento só são incluídos quando `i
 No payload V2 de `transaction_extraction` para cartão, `amountMinor` mantém a semântica canônica de **valor total da compra**. Quando o documento identifica uma ocorrência parcelada, `installmentAmountMinor` preserva separadamente o valor daquela parcela observado na origem, junto de `installmentSequence` e `installmentTotal`.
 
 A evidência da parcela não é editada quando o revisor corrige o total. A aprovação de uma compra parcelada exige que o domínio canônico gere a parcela correspondente com exatamente `installmentAmountMinor`; ausência de total revisado ou divergência bloqueia o efeito financeiro de forma transacional.
-
