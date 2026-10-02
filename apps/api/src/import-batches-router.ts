@@ -528,6 +528,7 @@ function readXlsxMapping(value: unknown): XlsxImportMapping | undefined {
     "currency",
     "instrument",
     "invoicePeriod",
+    "installmentAmount",
     "installmentSequence",
     "installmentTotal",
   ] as const) {
