@@ -37,7 +37,7 @@ Se houver conflito entre issue, documentacao e codigo, explicite o conflito na P
 9. Use validacao de entrada, tipos explicitos e erros padronizados quando houver codigo.
 10. Atualize documentacao e ADRs quando mudar arquitetura, modelo de dados, contrato publico, fluxo relevante ou decisao duradoura.
 11. Em telas com criacao ou edicao de registros, priorize pop-up/modal sempre que possivel, mantendo a listagem ou contexto atual visivel.
-12. Mantenha telas clean: poucos textos explicativos, poucos cards informativos permanentes e uso de icones acessiveis para acoes recorrentes quando o contexto for claro.
+12. Mantenha telas clean e modernas conforme o contrato de qualidade visual de `docs/DESIGN_SYSTEM.md`: hierarquia principal reconhecivel rapidamente, poucos cards, superficies discretas, espacamento e tipografia antes de bordas, iconografia acessivel e consistente, metadados visualmente secundarios e no maximo uma acao primaria evidente por escopo visual. Uma tela funcional que ainda pareca CRUD administrativo ou formulario bruto nao esta pronta.
 13. Nunca some valores de moedas diferentes sem uma etapa explicita de conversao. Preserve moeda em dominio, API, view-model e UI; sem conversao, agregue por moeda.
 14. Nao introduza hardcode de BRL em contratos genericos. Um fluxo especificamente BRL deve declarar essa restricao no contrato e validacao.
 15. Regras de saldo, fatura, orcamento, cambio, projecao e demais calculos financeiros devem permanecer deterministicas fora da camada de apresentacao e fora do provider de IA.
@@ -71,7 +71,7 @@ Descubra os comandos no proprio repositorio. Quando existirem, execute as valida
 
 Para mudancas financeiras, valide invariantes de moeda e ausencia de dupla contabilizacao quando o fluxo tocar cartoes, faturas, transferencias ou liquidacoes.
 
-Para mudancas visuais, valide estados relevantes, teclado/foco, mobile/reflow e o contrato SSR ou sua cobertura equivalente durante a migracao.
+Para mudancas visuais, valide estados relevantes, teclado/foco, mobile/reflow, o contrato SSR ou sua cobertura equivalente e o contrato de qualidade visual. Inspecione evidencia final em desktop e mobile quando a composicao diferir; testes verdes nao substituem revisao de hierarquia, densidade, iconografia, excesso de superficies e peso relativo das acoes.
 
 Enquanto o projeto ainda nao tiver stack tecnica, valide documentacao por consistencia, links, ausencia de contradicoes e ausencia de dados sensiveis.
 
@@ -88,5 +88,6 @@ Antes de finalizar uma tarefa, confirme:
 - [ ] Valores multi-moedas nao foram agregados implicitamente.
 - [ ] Interfaces novas nao aprofundaram dependencia de pos-processamento textual de HTML sem justificativa explicita.
 - [ ] Acessibilidade, responsividade e estados visuais foram preservados quando aplicavel.
+- [ ] Mudancas de interface atendem ao contrato de qualidade visual e nao foram aprovadas apenas por corretude funcional.
 - [ ] Nenhum dado sensivel foi introduzido.
 - [ ] Riscos, limitacoes e pendencias foram descritas na PR.
