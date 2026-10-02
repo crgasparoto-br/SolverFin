@@ -221,6 +221,7 @@ export function statementListArchetypeStyles(): string {
     body dialog[data-modal] .close-form button { background: transparent; border-color: transparent; color: var(--muted); min-height: 36px; padding-inline: 8px; }
     body dialog[data-modal] .modal-panel > div:nth-child(2) { border-bottom: 1px solid var(--line); padding-bottom: 12px; padding-right: 48px; }
     body dialog[data-modal] .modal-panel form[data-form] { display: grid; gap: 12px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    body dialog[data-modal] .modal-panel form[data-form] > [data-field="kind"] { grid-column: 1 / -1; }
     body dialog[data-modal] .modal-panel form[data-form] label { color: var(--muted); font-size: .78rem; font-weight: 700; gap: 5px; }
     body dialog[data-modal] .modal-panel form[data-form] input,
     body dialog[data-modal] .modal-panel form[data-form] select,
