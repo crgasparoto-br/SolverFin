@@ -1,14 +1,14 @@
-# Importação CSV e OFX com revisão humana
+# Importação CSV, OFX, XLSX e PDF com revisão humana
 
 ## Objetivo
 
-O fluxo de importação reduz lançamentos manuais sem criar efeitos financeiros antes da confirmação do usuário. CSV e OFX são pré-visualizados, normalizados em linhas estruturadas e descartados da memória ao fim da requisição. Somente metadados mínimos, hashes, diagnósticos seguros e propostas revisáveis são persistidos.
+O fluxo de importação reduz lançamentos manuais sem criar efeitos financeiros antes da confirmação do usuário. CSV, OFX, XLSX e PDF são pré-visualizados, normalizados em linhas estruturadas e descartados da memória ao fim da requisição. Somente metadados mínimos, hashes, diagnósticos seguros e propostas revisáveis são persistidos.
 
 ## Fluxo na Inbox
 
 Em `/inbox`, a ação **Importar extrato** permite:
 
-1. selecionar um arquivo `.csv` ou `.ofx` e uma conta ativa;
+1. selecionar um arquivo suportado (`.csv`, `.ofx`, `.xlsx` ou `.pdf`) e resolver a conta ou o cartão canônico conforme a classe do documento;
 2. confirmar o consentimento de processamento;
 3. pré-visualizar contadores, propostas e problemas sem persistência do arquivo bruto;
 4. no CSV, detectar ou escolher o separador e mapear colunas quando necessário;
@@ -18,7 +18,7 @@ Em `/inbox`, a ação **Importar extrato** permite:
 8. buscar possíveis duplicidades e conciliações;
 9. descartar logicamente o lote quando ainda não houver efeito financeiro.
 
-O histórico combina CSV e OFX e identifica a origem de cada lote. O lote aberto permanece em `?importBatchId=...`, inclusive após recarregar a página. Os controles de separador e mapeamento são exclusivos do CSV.
+O histórico combina CSV, OFX, XLSX e PDF e identifica a origem de cada lote. O lote aberto permanece em `?importBatchId=...`, inclusive após recarregar a página. O separador é exclusivo do CSV; XLSX possui seleção de aba e mapeamento próprios.
 
 Após timeout ou falha ambígua na criação, a Inbox recarrega o histórico persistido antes de reabilitar a tentativa. Assim, um lote criado pelo servidor apesar da perda da resposta reaparece como fonte de verdade e pode ser aberto sem depender do conteúdo bruto mantido em memória. Origens conhecidas recebem rótulos explícitos; uma origem desconhecida nunca é apresentada silenciosamente como CSV.
 
@@ -95,7 +95,7 @@ A identidade CSV usa SHA-256 e considera origem, organização, perfil financeir
 
 No OFX, o mesmo conteúdo associado a outra conta também forma uma identidade diferente e recebe o diagnóstico de configuração alterada.
 
-O banco persiste:
+Para CSV/OFX, o banco persiste:
 
 - nome do arquivo;
 - origem `csv` ou `ofx`;
@@ -104,6 +104,8 @@ O banco persiste:
 - contadores e diagnósticos seguros;
 - payload estruturado e versionado de cada proposta;
 - no CSV, separador e mapeamento canônico.
+
+Para XLSX/PDF, os metadados adicionais e o recurso financeiro selecionado seguem a seção **PDF e XLSX de extratos e faturas (#690)** abaixo.
 
 O conteúdo bruto do arquivo não possui coluna de persistência e não aparece em logs, auditoria, respostas de erro ou documentação operacional.
 
@@ -175,6 +177,8 @@ Sugestões OFX são persistidas como `transaction_extraction`, `pending_review`,
 GET /api/import-batches?status=all
 GET /api/import-batches?sourceKind=csv&status=all
 GET /api/import-batches?sourceKind=ofx&status=all
+GET /api/import-batches?sourceKind=xlsx&status=all
+GET /api/import-batches?sourceKind=pdf&status=all
 GET /api/import-batches/:importBatchId
 PATCH /api/import-batches/:importBatchId/suggestions/:suggestionId
 POST /api/import-batches/:importBatchId/suggestions/:suggestionId/approve
@@ -184,7 +188,7 @@ POST /api/import-batches/:importBatchId/detect-duplicates
 POST /api/import-batches/:importBatchId/discard
 ```
 
-Sem `sourceKind`, a listagem retorna CSV e OFX. O filtro aceita somente `csv` ou `ofx`.
+Sem `sourceKind`, a listagem retorna CSV, OFX, XLSX e PDF. O filtro aceita `csv`, `ofx`, `xlsx` ou `pdf`.
 
 A edição mantém a linha em `pending_review` e invalida candidaturas determinísticas antigas. Data, descrição, valor, tipo, conta de referência, outra conta e categoria podem ser revisados; moeda, ID externo, hash e origem permanecem imutáveis. Novas linhas usam `TransactionExtractionPayloadV2`, que preserva `direction: inflow|outflow`. Sugestões V1 pendentes derivam a direção por `income → inflow` e `expense → outflow` e só migram para V2 quando a edição exige transferência; linhas históricas resolvidas não são reinterpretadas.
 
@@ -199,7 +203,7 @@ O lançamento aprovado recebe:
 
 ### Fila unificada da Inbox
 
-As linhas `transaction_extraction` de CSV/OFX e suas candidaturas `categorization`, `deduplication` e `reconciliation` também aparecem em `/api/ai-review-queue` e na área unificada de revisão da Inbox. Esse caminho não substitui os serviços de importação: edição e aprovação de extrações continuam delegando ao mesmo contrato canônico descrito acima, preservando lote, detecção determinística, transferência, idempotência e auditoria.
+As linhas `transaction_extraction` de CSV/OFX/XLSX/PDF e suas candidaturas `categorization`, `deduplication` e `reconciliation` também aparecem em `/api/ai-review-queue` e na área unificada de revisão da Inbox. Esse caminho não substitui os serviços de importação: edição e aprovação de extrações continuam delegando ao mesmo contrato canônico descrito acima, preservando lote, detecção determinística, transferência, idempotência e auditoria.
 
 A fila mantém `kind`, `status` e `confidence` na URL junto de `profileId`. Antes de aprovar, rejeitar ou editar, a interface lê o payload atual e envia `expectedFingerprint`. Versão obsoleta, lote descartado, item já resolvido ou alvo inelegível retorna conflito controlado e não deixa estado, efeito e auditoria divergentes.
 
@@ -207,7 +211,7 @@ Editar uma extração pela fila mantém a linha em `pending_review` e invalida c
 
 ### Categorização e aprendizado por correção
 
-As linhas CSV e OFX pendentes usam o mesmo pipeline de categorização das demais `transaction_extraction`: regra explícita, correção confirmada, histórico do perfil, IA autorizada e revisão manual. O resultado é uma sugestão `categorization` V1 vinculada à linha e ao fingerprint observado.
+As linhas CSV, OFX, XLSX e PDF pendentes usam o mesmo pipeline de categorização das demais `transaction_extraction`: regra explícita, correção confirmada, histórico do perfil, IA autorizada e revisão manual. O resultado é uma sugestão `categorization` V1 vinculada à linha e ao fingerprint observado.
 
 Quando o usuário corrige `categoryId` em `PATCH /api/import-batches/:importBatchId/suggestions/:suggestionId`, a correção e o sinal de aprendizado são persistidos na mesma transação. A categoria é revalidada no perfil e no tipo da linha; falha na correção não deixa aprendizado órfão. O sinal vale apenas para sugestões futuras e não altera linhas ou lançamentos históricos retroativamente.
 
@@ -253,7 +257,7 @@ Lotes descartados não aceitam novas edições, aprovações nem novas varredura
 
 Todas as operações filtram por `organizationId` e `financialProfileId`. Recursos inexistentes ou pertencentes a outro perfil retornam `TENANT_RESOURCE_NOT_FOUND`, sem revelar o tipo nem a existência do recurso protegido.
 
-A auditoria registra consentimento redigido, preview bem-sucedido, falhas controladas de preview ou criação, criação do lote e das sugestões, correções, decisões, criação ou conciliação de lançamento, descarte e expiração de candidaturas, sempre com mudanças redigidas. Conteúdo bruto CSV/OFX, campos bancários completos e segredos não são registrados. O evento de aprendizado registra apenas contexto, identificador e ação, sem descrição financeira. Quando a própria persistência de auditoria estiver indisponível, o erro funcional original é preservado para não substituir uma falha controlada por mensagem interna sem relação com a tentativa.
+A auditoria registra consentimento redigido, preview bem-sucedido, falhas controladas de preview ou criação, criação do lote e das sugestões, correções, decisões, criação ou conciliação de lançamento, descarte e expiração de candidaturas, sempre com mudanças redigidas. Conteúdo bruto CSV/OFX/XLSX/PDF, campos bancários completos e segredos não são registrados. O evento de aprendizado registra apenas contexto, identificador e ação, sem descrição financeira. Quando a própria persistência de auditoria estiver indisponível, o erro funcional original é preservado para não substituir uma falha controlada por mensagem interna sem relação com a tentativa.
 
 ## Erros controlados principais
 
@@ -307,7 +311,7 @@ OFX:
 
 ## Deduplicação e conciliação generalizadas na fila
 
-A issue #566 mantém o endpoint especializado do lote e acrescenta uma varredura comum na fila unificada. Qualquer linha CSV/OFX pendente já convertida em `transaction_extraction` é comparada pelo mesmo motor usado para mensagens bancárias e extrações de IA.
+A issue #566 mantém o endpoint especializado do lote e acrescenta uma varredura comum na fila unificada. Qualquer linha CSV/OFX/XLSX/PDF pendente já convertida em `transaction_extraction` é comparada pelo mesmo motor usado para mensagens bancárias e extrações de IA.
 
 A candidatura usa o fingerprint estruturado da sugestão de origem, tipo e lançamento alvo para convergir de forma idempotente. A versão observada do alvo também participa da identidade persistente para que uma candidatura antiga possa expirar e uma nova seja criada quando o lançamento comparado muda mas continua elegível.
 
