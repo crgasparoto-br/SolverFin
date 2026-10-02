@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
 import type {
   Attachment,
@@ -225,15 +225,19 @@ export async function getAttachmentContentForContext(
     );
   }
 
-  if (
-    row.byteSize !== null &&
-    (row.content.length !== row.byteSize || row.contentSha256 === null)
-  ) {
-    throw attachmentError(
-      "ATTACHMENT_CONTENT_INTEGRITY_FAILED",
-      "O conteúdo deste anexo não está íntegro.",
-      409,
-    );
+  if (row.byteSize !== null) {
+    const actualHash = createHash("sha256").update(row.content).digest("hex");
+    if (
+      row.content.length !== row.byteSize ||
+      row.contentSha256 === null ||
+      actualHash !== row.contentSha256
+    ) {
+      throw attachmentError(
+        "ATTACHMENT_CONTENT_INTEGRITY_FAILED",
+        "O conteúdo deste anexo não está íntegro.",
+        409,
+      );
+    }
   }
 
   return { attachment: mapAttachment(row), content: row.content };
