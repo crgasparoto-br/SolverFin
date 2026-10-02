@@ -371,6 +371,7 @@ export interface TransactionExtractionPayloadV2 {
   cardInstrumentId?: EntityId;
   cardInstrumentHint?: string;
   invoicePeriod?: string;
+  installmentAmountMinor?: number;
   installmentSequence?: number;
   installmentTotal?: number;
 }
