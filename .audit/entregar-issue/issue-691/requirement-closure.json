@@ -1,0 +1,337 @@
+{
+  "schema_version": 2,
+  "head_sha": "36b59064ff97f2b3d4ad4e7b23eb51d53adba739",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 16,
+      "source_text": "Jornadas do primeiro corte: lançamento (`transaction`), fatura (`invoice`) e lote de importação (`import_batch`).",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-002",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 17,
+      "source_text": "Preservar compatibilidade do vínculo técnico existente com `ai_suggestion`, sem torná-lo uma nova jornada pública obrigatória.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-003",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 18,
+      "source_text": "Tipos funcionais: comprovante, fatura/documento, extrato, mensagem, contrato e outros; se necessário, estender `AttachmentKind` para representar contrato explicitamente.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-004",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 19,
+      "source_text": "Upload, listagem, abertura/download autenticado e exclusão lógica.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-005",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 20,
+      "source_text": "Metadados mínimos: nome seguro, MIME validado, tipo funcional, tamanho, entidade vinculada, organização/perfil, estado e trilha temporal.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-006",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 21,
+      "source_text": "Autorização sempre derivada da entidade vinculada e do contexto autenticado.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-007",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 33,
+      "source_text": "**must_reuse:** o vínculo deve usar a fundação `Attachment` existente; não criar tabela/modelo paralelo por jornada.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": [
+        "structural"
+      ]
+    },
+    {
+      "id": "OBL-008",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 34,
+      "source_text": "**must_not_behave:** conhecer um `linkedEntityId` nunca é suficiente para baixar/listar o arquivo; organização, perfil e autorização da entidade devem ser revalidados.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": [
+        "structural"
+      ]
+    },
+    {
+      "id": "OBL-009",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 35,
+      "source_text": "**must_be_single_source:** `storageKey` é referência interna e não deve virar identificador público de autorização.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": [
+        "structural"
+      ]
+    },
+    {
+      "id": "OBL-010",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 36,
+      "source_text": "Anexo em estado `deleted` ou `redacted` não pode continuar acessível pelo caminho normal.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-011",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 37,
+      "source_text": "Conteúdo binário, nome original sensível e chaves de storage não devem aparecer em logs/auditoria além do necessário.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-012",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 38,
+      "source_text": "Mutações de anexo devem manter trilha auditável e sem PII desnecessária.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-013",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 42,
+      "source_text": "Rejeitar tipo MIME não permitido, arquivo vazio e arquivo acima de um limite único documentado.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-014",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 43,
+      "source_text": "O backend deve validar o conteúdo/assinatura quando tecnicamente aplicável, não apenas confiar na extensão.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-015",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 44,
+      "source_text": "O nome exibido deve ser sanitizado; o caminho/chave física de armazenamento não vem do nome enviado pelo cliente.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-016",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 45,
+      "source_text": "A listagem deve retornar apenas metadados necessários à UI.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-017",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 46,
+      "source_text": "Abertura/download deve passar por endpoint autenticado ou URL temporária emitida após autorização; nunca por bucket/rota pública.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-018",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 47,
+      "source_text": "Exclusão é lógica: altera o estado e torna o conteúdo indisponível para o fluxo normal, preservando rastreabilidade.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-019",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 48,
+      "source_text": "Falha de armazenamento não pode deixar metadado “ativo” apontando para conteúdo inexistente; upload/metadado precisam convergir ou falhar de forma recuperável.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-020",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 65,
+      "source_text": "[ ] Lançamentos, faturas e lotes de importação suportam anexar/listar/abrir/remover logicamente no contexto autorizado.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-021",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 66,
+      "source_text": "[ ] Nenhuma operação enumera ou expõe anexos de outro perfil.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-022",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 67,
+      "source_text": "[ ] MIME, tamanho e nome são validados/sanitizados com limites documentados.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-023",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 68,
+      "source_text": "[ ] O conteúdo não é servido por URL pública permanente.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-024",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 69,
+      "source_text": "[ ] Exclusão lógica impede novo acesso normal e é idempotente.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-025",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 70,
+      "source_text": "[ ] Falhas parciais de storage/metadado não deixam referência ativa quebrada.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-026",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 71,
+      "source_text": "[ ] Testes negativos cobrem tenant/perfil, entidade inexistente, MIME, tamanho e estados `deleted`/`redacted`.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    },
+    {
+      "id": "OBL-027",
+      "source_id": "SRC-ISSUE-691",
+      "source_line": 72,
+      "source_text": "[ ] Documentação de privacidade/operação registra tipos permitidos, limite, retenção lógica e forma de acesso.",
+      "disposition": "covered",
+      "status": "passed",
+      "flags": []
+    }
+  ],
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "disposition": "covered",
+      "status": "passed",
+      "requirement": "Reuse Attachment foundation for transaction, invoice and import_batch without parallel model"
+    },
+    {
+      "id": "REQ-002",
+      "disposition": "covered",
+      "status": "passed",
+      "requirement": "Authorization is derived from linked entity plus authenticated organization/profile; foreign profile cannot enumerate or access attachments"
+    },
+    {
+      "id": "REQ-003",
+      "disposition": "covered",
+      "status": "passed",
+      "requirement": "Validate MIME, size, filename and applicable content signatures; reject empty and mismatched files"
+    },
+    {
+      "id": "REQ-004",
+      "disposition": "covered",
+      "status": "passed",
+      "requirement": "Attachment content is exposed only through authenticated access; storageKey remains internal"
+    },
+    {
+      "id": "REQ-005",
+      "disposition": "covered",
+      "status": "passed",
+      "requirement": "Logical deletion is idempotent and deleted/redacted attachments are unavailable through normal access"
+    },
+    {
+      "id": "REQ-006",
+      "disposition": "covered",
+      "status": "passed",
+      "requirement": "Storage/metadata failures do not leave active broken references"
+    },
+    {
+      "id": "REQ-007",
+      "disposition": "covered",
+      "status": "passed",
+      "requirement": "Operational UI exposes attachment workspace for transaction, invoice and import batch journeys"
+    },
+    {
+      "id": "REQ-008",
+      "disposition": "covered",
+      "status": "passed",
+      "requirement": "Privacy and operation documentation records allowed types, size limit, logical retention and authenticated access"
+    }
+  ],
+  "source_coverage": {
+    "sources": [
+      "SRC-ISSUE-691"
+    ],
+    "unmapped_candidate_keys": [],
+    "status": "passed"
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "observed_reductions": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "reviewed_all_specification_sources": true,
+    "rederived_without_pr_description": true
+  },
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "The issue explicitly requires reuse of Attachment and forbids parallel models and public storage authorization."
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "The issue introduces attachment lifecycle operations but no historical read-model, pagination, or version-history contract."
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "Attachment remains the canonical domain and persistence foundation across all three operational journeys."
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Operational and privacy documentation describe the same private authenticated attachment contract and lifecycle."
+  }
+}
