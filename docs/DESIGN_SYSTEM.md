@@ -20,6 +20,83 @@ Principios:
 - cards apenas quando criarem agrupamento semantico real, evitando grade de cards como layout padrao para qualquer informacao;
 - consistencia compartilhada antes de customizacao local por rota.
 
+## Contrato de qualidade visual
+
+"Moderno", "clean" e "refinado" sao requisitos observaveis, nao preferencias esteticas abertas. Uma interface SolverFin so atende a direcao visual quando, alem de funcional, acessivel e responsiva, demonstra hierarquia, densidade e acabamento coerentes com uma aplicacao financeira moderna.
+
+### Criterios obrigatorios
+
+- a informacao ou decisao principal deve ser identificavel em poucos segundos sem leitura completa da pagina;
+- cada regiao visual deve ter no maximo uma acao primaria evidente; acoes secundarias nao podem competir em peso, cor ou tamanho;
+- valores monetarios, saldo, fatura, vencimento, limite, status operacional e demais informacoes decisivas recebem prioridade tipografica proporcional ao contexto;
+- categoria, origem, recorrencia, conciliacao, identificadores e demais metadados devem permanecer visualmente secundarios;
+- borda, sombra ou superficie nao devem ser o mecanismo principal de hierarquia; usar primeiro espacamento, alinhamento, tipografia e agrupamento semantico;
+- cards ficam reservados a agrupamentos semanticos reais ou poucos indicadores decisivos; listas financeiras e hierarquias nao devem virar colecoes de cards por padrao;
+- filtros avancados ou pouco usados devem ser progressivos quando puderem ser recolhidos sem esconder estado ativo ou contexto necessario;
+- acoes recorrentes devem priorizar iconografia compartilhada e reconhecivel, com nome acessivel; texto e icone nao devem duplicar ruido quando o contexto ja for inequivoco;
+- hierarquias, como categorias e recursos mestre-filho, devem ser percebidas por estrutura, recuo, tipografia, expansao e proximidade, evitando caixas aninhadas como unica forma de comunicacao;
+- desktop e mobile devem manter a mesma ordem de decisao e o mesmo nivel de refinamento, adaptando densidade sem ocultar contexto essencial;
+- telas da mesma familia devem parecer parte do mesmo produto: espacamento, tipografia, iconografia, densidade, estados e peso de acoes devem seguir a fundacao compartilhada;
+- uma tela tecnicamente correta que ainda pareca CRUD administrativo, formulario bruto ou painel de depuracao nao satisfaz este contrato.
+
+### Anti-padroes bloqueantes
+
+Uma implementacao deve ser revisada quando introduzir, sem justificativa funcional clara:
+
+- card para cada linha, campo, metadado ou pequena informacao;
+- borda em praticamente todos os agrupamentos;
+- muitos botoes com o mesmo peso visual;
+- filtros completos permanentemente expostos quando apenas poucos sao de uso frequente;
+- badges em excesso competindo com descricao e valor;
+- hierarquia representada apenas por caixas dentro de caixas;
+- textos explicativos longos onde rotulo curto, icone ou progressive disclosure resolveriam;
+- medidas, raios, sombras, espacamentos ou iconografia locais que criem linguagem visual paralela ao design system;
+- aprovacao baseada somente em "funciona", "esta responsivo" ou "os testes passaram" sem inspecao da composicao final.
+
+### Referencia visual e Golden Screens
+
+Rotas ou estados explicitamente designados como referencia visual podem funcionar como **Golden Screens**. Uma Golden Screen nao autoriza copia cega de layout; ela fixa o nivel esperado de acabamento, hierarquia, densidade, tipografia, espacamento e iconografia para telas da mesma familia. Quando uma issue indicar uma Golden Screen, a validacao deve comparar o candidato contra esses atributos, nao apenas contra a presenca dos mesmos componentes.
+
+#### Golden Screen oficial: Extrato Bancario
+
+A rota `/lancamentos` (Extrato Bancario) e a Golden Screen oficial inicial do SolverFin para interfaces operacionais financeiras.
+
+Ela deve servir como referencia de nivel de qualidade para, no minimo:
+
+- Cartoes de Credito;
+- Contas e Cartoes;
+- Categorias;
+- Relatorios e demais telas operacionais que exibam colecoes financeiras;
+- modais, drawers e detalhes contextuais associados a essas superficies.
+
+A referencia inclui, sem exigir copia estrutural:
+
+- aproveitamento amplo e equilibrado do viewport;
+- hierarquia imediata entre contexto, valor principal, periodo, resumo e colecao;
+- uso contido de cards e bordas;
+- espacamento e tipografia como mecanismos principais de organizacao;
+- iconografia compartilhada e acessivel;
+- filtros compactos e progressivos;
+- linhas financeiras escaneaveis, com descricao e valor dominantes e metadados secundarios;
+- acoes primarias e secundarias com pesos claramente diferentes;
+- dialogs e drawers com o mesmo nivel de refinamento da tela principal;
+- comportamento mobile equivalente em clareza e acabamento.
+
+A Golden Screen so pode ser considerada valida como referencia depois que a implementacao de `/lancamentos` atender ao contrato de qualidade visual e possuir evidencia visual aprovada. Ate esse ponto, o mockup e a especificacao funcionam como alvo de design, nao como prova de implementacao concluida.
+
+### Identidade visual de instituicoes financeiras
+
+A identidade visual de uma instituicao financeira e responsabilidade de um catalogo visual central do SolverFin, e nao do cadastro de cada conta ou cartao.
+
+- contas, cartoes e demais registros persistidos devem referenciar a instituicao por uma chave estavel, como `institutionKey`;
+- logotipo, asset, variante visual, iniciais de fallback e demais metadados exclusivamente visuais devem ser resolvidos por uma unica camada compartilhada;
+- alterar ou substituir o asset visual de uma instituicao nao deve exigir migracao das contas/cartoes que a referenciam;
+- nenhuma rota deve manter uma tabela local de logos ou permitir que cada conta defina sua propria identidade visual;
+- instituicoes sem identidade conhecida devem usar fallback padronizado, acessivel e consistente;
+- Extrato, Cartoes, Contas e Cartoes, Relatorios, seletores e formularios devem consumir o mesmo componente/contrato de identidade institucional.
+
+O banco pode manter metadados administrativos da instituicao ou do asset global quando necessario para gestao do catalogo, mas esses dados nao pertencem ao registro individual da conta nem podem transformar a conta em dona do logo.
+
 ## Estado atual e estado-alvo
 
 ### Estado atual

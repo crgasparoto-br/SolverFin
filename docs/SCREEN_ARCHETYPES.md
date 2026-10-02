@@ -25,6 +25,8 @@ A estrutura usa, quando aplicavel, `renderPageContainer`, `renderPageHeader`, `r
 Cards ficam reservados a agrupamentos semanticos ou poucos indicadores que alterem decisao.
 Listas, tabelas, secoes, definicoes e pares label/valor podem aparecer diretamente.
 
+A composicao deve satisfazer o contrato de qualidade visual de `docs/DESIGN_SYSTEM.md`. O arquetipo organiza a tarefa, mas nao autoriza aparencia de CRUD administrativo: informacao principal precisa dominar a leitura, metadados permanecem secundarios, espacamento e tipografia precedem bordas/sombras e a estrutura deve evitar proliferacao de cards, badges e caixas aninhadas. Quando existir Golden Screen da mesma familia, use-a como referencia de nivel de acabamento, sem copiar cegamente a estrutura.
+
 ### Acoes
 
 Cada escopo visual possui no maximo uma acao primaria evidente. Acoes secundarias ficam proximas
