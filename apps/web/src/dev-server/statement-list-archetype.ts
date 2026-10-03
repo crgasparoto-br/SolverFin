@@ -175,7 +175,7 @@ function statementListArchetypeRuntime(): string {
 export function statementListArchetypeStyles(): string {
   const root = '[data-statement-archetype="A2"][data-golden-screen="statement"]';
   return `
-    ${root} { display: grid; gap: 20px; min-width: 0; }
+    [data-statement-archetype="A2"] { display: grid; gap: 20px; min-width: 0; }
     ${root} .sf-page-header { align-items: center; padding: 0; }
     ${root} .sf-page-header-copy { max-width: 48rem; }
     ${root} .sf-page-header-title { letter-spacing: -.025em; }
