@@ -19,6 +19,7 @@ void main()
 let rollbackTriggerName = "";
 let rollbackFunctionName = "";
 
+// prettier-ignore
 async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for attachment boundary tests.");
   const port = await reservePort();
@@ -56,6 +57,7 @@ async function main(): Promise<void> {
   }
 }
 
+// prettier-ignore
 async function validatesAuthenticatedPublicBoundary(input: {
   baseUrl: string;
   token: string;
@@ -165,6 +167,7 @@ async function validatesAuthenticatedPublicBoundary(input: {
   assert.equal(readErrorCode(deletedContent), "ATTACHMENT_NOT_FOUND");
 }
 
+// prettier-ignore
 async function validatesStorageMetadataRollback(input: {
   baseUrl: string;
   token: string;
@@ -220,6 +223,7 @@ async function validatesStorageMetadataRollback(input: {
   }
 }
 
+// prettier-ignore
 function attachmentPayload(
   transactionId: string,
   fileName: string,
@@ -235,6 +239,7 @@ function attachmentPayload(
   };
 }
 
+// prettier-ignore
 async function createAccount(baseUrl: string, token: string): Promise<string> {
   const response = await requestJson(baseUrl, "/api/accounts", {
     method: "POST",
@@ -250,6 +255,7 @@ async function createAccount(baseUrl: string, token: string): Promise<string> {
   return readBody<{ account: { id: string } }>(response).account.id;
 }
 
+// prettier-ignore
 async function createTransaction(
   baseUrl: string,
   token: string,
@@ -273,6 +279,7 @@ async function createTransaction(
   return readBody<{ transaction: { id: string } }>(response).transaction.id;
 }
 
+// prettier-ignore
 async function readSiblingProfileId(accountId: string): Promise<string> {
   const scopeRows = await query<{ organizationId: string; financialProfileId: string }>(
     `select "organizationId", "financialProfileId" from "Account" where "id" = $1`,
@@ -298,6 +305,7 @@ async function readSiblingProfileId(accountId: string): Promise<string> {
   return siblingProfileId;
 }
 
+// prettier-ignore
 async function login(baseUrl: string): Promise<string> {
   const response = await requestJson(baseUrl, "/api/session", {
     method: "POST",
@@ -310,6 +318,7 @@ async function login(baseUrl: string): Promise<string> {
   return readBody<{ session: { token: string } }>(response).session.token;
 }
 
+// prettier-ignore
 async function requestJson(
   baseUrl: string,
   pathname: string,
@@ -328,22 +337,26 @@ async function requestJson(
   return { status: response.status, headers: response.headers, body };
 }
 
+// prettier-ignore
 async function requestRaw(baseUrl: string, pathname: string, token: string): Promise<Response> {
   return fetch(`${baseUrl}${pathname}`, {
     headers: { authorization: `Bearer ${token}` },
   });
 }
 
+// prettier-ignore
 function readBody<T>(response: { body: unknown }): T {
   assert.equal(typeof response.body, "object");
   assert.notEqual(response.body, null);
   return response.body as T;
 }
 
+// prettier-ignore
 function readErrorCode(response: { body: unknown }): string | undefined {
   return readBody<{ error?: { code?: string } }>(response).error?.code;
 }
 
+// prettier-ignore
 async function removeRollbackFailureTrigger(): Promise<void> {
   if (!process.env.DATABASE_URL || !rollbackFunctionName || !rollbackTriggerName) return;
   await query(`drop trigger if exists ${rollbackTriggerName} on "Attachment"`);
@@ -352,6 +365,7 @@ async function removeRollbackFailureTrigger(): Promise<void> {
   rollbackFunctionName = "";
 }
 
+// prettier-ignore
 async function reservePort(): Promise<number> {
   const server = createServer();
   await new Promise<void>((resolve, reject) => {
@@ -367,6 +381,7 @@ async function reservePort(): Promise<number> {
   return port;
 }
 
+// prettier-ignore
 async function waitForServer(
   child: ReturnType<typeof spawn>,
   logs: string[],

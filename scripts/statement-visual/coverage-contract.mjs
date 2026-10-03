@@ -288,6 +288,36 @@ const keyScenarios = [
       }),
     ],
   },
+  {
+    id: "operational-attachments",
+    module: "scripts/statement-visual/operational-attachments.mjs",
+    coverage: [
+      coverage({
+        route: "/lancamentos",
+        archetype: "A2",
+        state: "attachment-lifecycle",
+        layout: "responsive",
+        interaction: "upload-list-open-delete",
+        dataProfile: "transaction-attachment",
+      }),
+      coverage({
+        route: "/cartoes",
+        archetype: "A3",
+        state: "attachment-lifecycle",
+        layout: "responsive",
+        interaction: "upload-list-open-delete",
+        dataProfile: "invoice-attachment",
+      }),
+      coverage({
+        route: "/inbox",
+        archetype: "A6",
+        state: "attachment-lifecycle",
+        layout: "responsive",
+        interaction: "upload-list-open-delete",
+        dataProfile: "import-batch-attachment",
+      }),
+    ],
+  },
 ];
 
 // prettier-ignore
@@ -372,9 +402,6 @@ const simpleScenarios = [
     "financial-profile",
   ],
   ["cards-interface-adversarial", "scripts/statement-visual/cards-interface-adversarial.mjs", "/cartoes", "A3", "long-content", "desktop-1366x768", "keyboard-focus-overflow", "long-purchase-content"],
-  ["operational-attachments-transaction", "scripts/statement-visual/operational-attachments.mjs", "/lancamentos", "A2", "attachment-lifecycle", "responsive", "upload-list-open-delete", "transaction-attachment"],
-  ["operational-attachments-invoice", "scripts/statement-visual/operational-attachments.mjs", "/cartoes", "A3", "attachment-lifecycle", "responsive", "upload-list-open-delete", "invoice-attachment"],
-  ["operational-attachments-import-batch", "scripts/statement-visual/operational-attachments.mjs", "/inbox", "A6", "attachment-lifecycle", "responsive", "upload-list-open-delete", "import-batch-attachment"],
 ].map((args) => simpleScenario(...args));
 
 export const visualScenarioModules = [...keyScenarios, ...simpleScenarios];

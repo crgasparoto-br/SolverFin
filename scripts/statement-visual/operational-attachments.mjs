@@ -12,7 +12,7 @@ const route = process.env.STATEMENT_VISUAL_ROUTE;
 const scenarioId = process.env.STATEMENT_VISUAL_SCENARIO_ID ?? "operational-attachments";
 
 if (!chromePath) throw new Error("CHROME_BIN is required for operational attachment validation.");
-if (!route) throw new Error("STATEMENT_VISUAL_ROUTE is required for operational attachment validation.");
+if (!route) {\n  throw new Error("STATEMENT_VISUAL_ROUTE is required for operational attachment validation.");\n}
 
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
@@ -49,6 +49,7 @@ await writeFile(
 
 console.log(`Operational attachment lifecycle passed for ${route}.`);
 
+// prettier-ignore
 async function validateTransactionJourney() {
   const fixture = await evaluate(browser.cdp, transactionFixtureExpression());
   const journeyRoute = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-10`;
@@ -70,6 +71,7 @@ async function validateTransactionJourney() {
   });
 }
 
+// prettier-ignore
 async function validateInvoiceJourney() {
   const fixture = await evaluate(browser.cdp, invoiceFixtureExpression());
   const journeyRoute = `/cartoes?cardId=${encodeURIComponent(fixture.cardId)}&invoiceId=${encodeURIComponent(fixture.invoiceId)}`;
@@ -86,6 +88,7 @@ async function validateInvoiceJourney() {
   });
 }
 
+// prettier-ignore
 async function validateImportBatchJourney() {
   const fixture = await evaluate(browser.cdp, importBatchFixtureExpression());
   const journeyRoute = `/inbox?importBatchId=${encodeURIComponent(fixture.importBatchId)}`;
@@ -102,6 +105,7 @@ async function validateImportBatchJourney() {
   });
 }
 
+// prettier-ignore
 async function exerciseWorkspace({ entityKind, entityId, fileName, content, journeyRoute }) {
   const prepared = await evaluate(
     browser.cdp,
@@ -191,6 +195,7 @@ async function exerciseWorkspace({ entityKind, entityId, fileName, content, jour
   };
 }
 
+// prettier-ignore
 async function waitForAttachment(fileName, present) {
   const expression = `(() => {
     const workspace = document.querySelector('[data-attachment-workspace]');
@@ -201,10 +206,12 @@ async function waitForAttachment(fileName, present) {
   await waitForExpression(expression);
 }
 
+// prettier-ignore
 async function waitFor(selector) {
   await waitForExpression(`Boolean(document.querySelector(${JSON.stringify(selector)}))`);
 }
 
+// prettier-ignore
 async function waitForExpression(expression, timeout = 15_000) {
   const startedAt = Date.now();
   while (Date.now() - startedAt < timeout) {
@@ -218,6 +225,7 @@ async function waitForExpression(expression, timeout = 15_000) {
   throw new Error(`Timed out waiting for expression: ${expression}`);
 }
 
+// prettier-ignore
 function transactionFixtureExpression() {
   return `(async () => {
     async function request(path, method = "GET", body) {
@@ -251,6 +259,7 @@ function transactionFixtureExpression() {
   })()`;
 }
 
+// prettier-ignore
 function invoiceFixtureExpression() {
   return `(async () => {
     async function request(path, method = "GET", body) {
@@ -299,6 +308,7 @@ function invoiceFixtureExpression() {
   })()`;
 }
 
+// prettier-ignore
 function importBatchFixtureExpression() {
   return `(async () => {
     async function request(path, method = "GET", body) {
