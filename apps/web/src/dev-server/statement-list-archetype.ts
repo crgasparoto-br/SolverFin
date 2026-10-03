@@ -175,7 +175,7 @@ function statementListArchetypeRuntime(): string {
 export function statementListArchetypeStyles(): string {
   const root = '[data-statement-archetype="A2"][data-golden-screen="statement"]';
   return `
-    [data-statement-archetype="A2"] { display: grid; gap: 20px; min-width: 0; }
+    [data-statement-archetype="A2"] { display: grid; gap: 14px; min-width: 0; }
     ${root} .sf-page-header { align-items: center; padding: 0; }
     ${root} .sf-page-header-copy { max-width: 48rem; }
     ${root} .sf-page-header-title { letter-spacing: -.025em; }
@@ -188,9 +188,9 @@ export function statementListArchetypeStyles(): string {
     ${root} :is(button, a, input, select, summary):focus-visible,
     body:has([data-golden-screen="statement"]) dialog :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
-    .statement-a2-workspace { display: grid; gap: 18px; max-width: none; min-width: 0; padding: 0; }
-    ${root} .statement-overview { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); min-width: 0; padding: 20px 24px 14px; }
-    ${root} .statement-context { align-items: center; background: transparent; border: 0; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; min-width: 0; padding: 0 0 16px; }
+    .statement-a2-workspace { display: grid; gap: 14px; max-width: none; min-width: 0; padding: 0; }
+    ${root} .statement-overview { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); min-width: 0; padding: 14px 18px 10px; }
+    ${root} .statement-context { align-items: center; background: transparent; border: 0; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; min-width: 0; padding: 0 0 10px; }
     ${root} .statement-context-main { align-items: center; display: flex; flex: 1 1 16rem; gap: 12px; min-width: 0; }
     ${root} .statement-context-copy { display: grid; gap: 3px; min-width: 0; }
     ${root} .statement-context-copy strong { font-size: 1.125rem; overflow-wrap: anywhere; white-space: normal; }
@@ -202,34 +202,34 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-context-pill { align-items: center; background: transparent; border: 0; color: var(--muted); display: inline-flex; font-size: .75rem; font-weight: 600; min-height: 24px; padding: 0; white-space: normal; }
     ${root} .statement-context-pill[data-context="currency"] { color: var(--primary); letter-spacing: .04em; }
 
-    ${root} .account-summary { background: transparent; border: 0; box-shadow: none; display: grid; gap: 16px 24px; grid-template-columns: repeat(3, minmax(0, 1fr)); min-width: 0; padding: 18px 0 0; position: static; }
+    ${root} .account-summary { background: transparent; border: 0; box-shadow: none; display: grid; gap: 10px 20px; grid-template-columns: repeat(3, minmax(0, 1fr)); min-width: 0; padding: 12px 0 0; position: static; }
     ${root} .account-summary > div:first-child { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
-    ${root} .summary-balance { background: transparent; border: 0; border-radius: 0; display: grid; gap: 4px; min-width: 0; padding: 0; }
-    ${root} .summary-balance strong { font-size: 1.75rem; letter-spacing: -.03em; }
+    ${root} .summary-balance { background: transparent; border: 0; border-radius: 0; display: grid; gap: 2px; min-width: 0; padding: 0; }
+    ${root} .summary-balance strong { font-size: 1.55rem; letter-spacing: -.03em; line-height: 1.2; }
     ${root} .summary-balance p { color: var(--muted); font-size: .75rem; line-height: 1.4; margin: 0; }
     ${root} .summary-totals { display: contents; }
-    ${root} .summary-total { border: 0; border-radius: 0; align-content: start; display: grid; gap: 7px; min-width: 0; padding: 0 0 0 24px; }
-    ${root} .summary-total strong { font-size: 1.4rem; letter-spacing: -.02em; }
+    ${root} .summary-total { border: 0; border-radius: 0; align-content: start; display: grid; gap: 7px; min-width: 0; padding: 0 0 0 16px; }
+    ${root} .summary-total strong { font-size: 1.25rem; letter-spacing: -.02em; }
     ${root} :is(.summary-total, .summary-balance) > span { color: var(--muted); font-size: .75rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
-    ${root} .status-overview { align-items: baseline; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px 20px; grid-column: 1 / -1; padding: 12px 0 0; }
+    ${root} .status-overview { align-items: baseline; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 6px 16px; grid-column: 1 / -1; padding: 8px 0 0; }
     ${root} .status-overview h3 { color: var(--muted); font-size: .75rem; font-weight: 500; margin: 0; }
     ${root} .status-line { align-items: center; display: inline-grid; gap: 6px; grid-template-columns: auto auto auto; }
-    ${root} .status-line :is(p, strong) { font-size: .75rem; margin: 0; }
+    ${root} .status-line :is(p, strong) { font-size: .75rem; font-weight: 500; margin: 0; }
     ${root} .status-line p { color: var(--muted); }
     ${root} .status-line .chip { min-height: 22px; min-width: 22px; padding: 2px 5px; }
 
     ${root} .statement-query { min-width: 0; }
     ${root} #statement-query-fields { min-width: 0; }
-    ${root} .statement-query-heading { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; margin-bottom: 8px; }
+    ${root} .statement-query-heading { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; margin-bottom: 4px; }
     ${root} .statement-query-heading > span { color: var(--muted); font-size: .75rem; }
-    ${root} [data-statement-options-toggle] { background: transparent; border-color: var(--line); color: var(--primary); font-size: .8125rem; font-weight: 500; min-height: 36px; }
+    ${root} [data-statement-options-toggle] { background: transparent; border-color: var(--line); color: var(--primary); font-size: .75rem; font-weight: 500; min-height: 28px; }
     ${root} [data-statement-options-toggle][aria-expanded="true"] { background: var(--primary-soft); }
     ${root} .sf-filter-bar { background: transparent; border: 0; box-shadow: none; display: block; padding: 0; }
     ${root} .filter-form { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(12rem, 1fr) minmax(12rem, .9fr) minmax(14rem, 1.3fr) minmax(10rem, .8fr); min-width: 0; }
     ${root}[data-statement-options="collapsed"] .statement-sort-field { display: none; }
-    ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: minmax(12rem, 1fr) minmax(12rem, .9fr) minmax(14rem, 1.3fr); }
+    ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: minmax(11rem, 1fr) minmax(11rem, .85fr) minmax(12rem, 1.15fr) auto; }
     ${root} .filter-form label,
-    ${root} .filter-form :is(.account-field, .month-field) { color: var(--muted); font-size: .75rem; font-weight: 500; min-width: 0; }
+    ${root} .filter-form :is(.account-field, .month-field) { gap: 4px; color: var(--muted); font-size: .75rem; font-weight: 500; min-width: 0; }
     ${root} .filter-form :is(input, select, button) { max-width: 100%; min-height: 40px; min-width: 0; }
     ${root} .filter-form :is(label, .account-select) { min-width: 0; max-width: 100%; }
     ${root} .filter-form .account-select-trigger { width: 100%; }
@@ -237,6 +237,7 @@ export function statementListArchetypeStyles(): string {
     ${root} .month-nav { background: var(--surface); border-color: var(--line); }
     ${root} .month-nav input { font-weight: 700; }
     ${root} .statement-filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; justify-content: flex-end; }
+    ${root}[data-statement-options="collapsed"] .statement-filter-actions { flex-wrap: nowrap; grid-column: auto; }
     ${root} .statement-filter-actions > :is(button, a) { background: transparent; border: 1px solid transparent; color: var(--primary); font-size: .8125rem; font-weight: 500; min-height: 36px; padding-inline: 10px; }
     ${root} .statement-filter-actions > button[type="submit"] { border-color: var(--line); }
     ${root} .statement-filter-actions > :is(button, a):hover,
@@ -245,15 +246,15 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-insight-context { background: var(--primary-soft); border: 0; border-left: 3px solid var(--primary); border-radius: var(--radius); font-size: .8125rem; margin: 0; padding: 10px 12px; }
 
     ${root} .statement-layout { display: grid; gap: 0; grid-template-columns: minmax(0, 1fr); min-width: 0; }
-    ${root} .statement-panel.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: none; min-width: 0; }
-    ${root} .statement-toolbar { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; padding: 16px 20px; }
+    ${root} .statement-panel.panel { gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: none; min-width: 0; }
+    ${root} .statement-toolbar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; padding: 10px 16px; }
     ${root} .statement-toolbar .eyebrow { display: none; }
-    ${root} .statement-toolbar h2 { font-size: 1rem; }
+    ${root} .statement-toolbar h2 { font-size: .9375rem; }
     ${root} .statement-toolbar .chips { gap: 6px; }
     ${root} .chip { border-color: transparent; font-size: .7rem; font-weight: 500; }
     ${root} .statement-table { max-width: 100%; min-width: 0; overflow-x: auto; }
-    ${root} .statement-row { align-items: center; column-gap: 12px; display: grid; grid-template-columns: 24px 6rem minmax(0, 1fr) minmax(4rem, .45fr) 40px minmax(9rem, auto) 36px; min-width: 0; padding: 12px 20px; }
-    ${root} .statement-body { grid-template-areas: "select date description description status amount actions" "select date category kind status balance actions"; min-height: 76px; row-gap: 6px; }
+    ${root} .statement-row { align-items: center; column-gap: 12px; display: grid; grid-template-columns: 24px 6rem minmax(0, 1fr) minmax(4rem, .45fr) 40px minmax(9rem, auto) 36px; min-width: 0; padding: 10px 16px; }
+    ${root} .statement-body { grid-template-areas: "select date description description status amount actions" "select date category kind status balance actions"; min-height: 68px; row-gap: 4px; }
     ${root} .statement-row > * { min-width: 0; order: 0; }
     ${root} .statement-body .col-select { grid-area: select; left: auto; position: static; }
     ${root} .statement-body .col-date { padding-left: 0; color: var(--muted); font-size: .8125rem; grid-area: date; }
@@ -290,16 +291,16 @@ export function statementListArchetypeStyles(): string {
     body dialog[data-modal], body dialog[data-group-modal] { max-width: min(760px, calc(100% - 32px)); }
     body:has([data-golden-screen="statement"]) dialog[data-modal] { margin-right: 16px; max-width: min(640px, calc(100% - 32px)); }
     body dialog[data-modal] .modal-panel,
-    body dialog[data-group-modal] .modal-panel { gap: 18px; min-width: 0; padding: 24px; }
+    body dialog[data-group-modal] .modal-panel { gap: 12px; min-width: 0; padding: 20px; }
     body dialog[data-modal] .close-form { min-height: 0; position: absolute; right: 14px; top: 12px; z-index: 2; }
     body dialog[data-modal] .close-form button { background: transparent; border-color: transparent; color: var(--muted); min-height: 36px; padding-inline: 8px; }
-    body dialog[data-modal] .modal-panel > div:nth-child(2) { border-bottom: 1px solid var(--line); padding-bottom: 14px; padding-right: 48px; }
-    body dialog[data-modal] .modal-panel form[data-form] { display: grid; gap: 14px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    body dialog[data-modal] .modal-panel > div:nth-child(2) { border-bottom: 1px solid var(--line); padding-bottom: 10px; padding-right: 48px; }
+    body dialog[data-modal] .modal-panel form[data-form] { display: grid; gap: 10px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     body dialog[data-modal] .modal-panel form[data-form] > [data-field="kind"] { grid-column: 1 / -1; }
-    body dialog[data-modal] .modal-panel form[data-form] label { color: var(--text); font-size: .8125rem; font-weight: 500; gap: 6px; }
-    body dialog[data-modal] .modal-panel form[data-form] :is(input, select, textarea) { color: var(--text); font-size: .9rem; min-height: 40px; }
+    body dialog[data-modal] .modal-panel form[data-form] label { color: var(--text); font-size: .8125rem; font-weight: 500; gap: 4px; }
+    body dialog[data-modal] .modal-panel form[data-form] :is(input, select, textarea) { color: var(--text); font-size: .875rem; min-height: 36px; }
     body dialog[data-modal] .modal-panel .save-row,
-    body dialog[data-group-modal] .modal-panel .save-row { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 16px; }
+    body dialog[data-group-modal] .modal-panel .save-row { background: var(--surface); border-top: 1px solid var(--line); bottom: 0; margin-top: 4px; padding-top: 12px; position: sticky; z-index: 3; }
     body dialog[data-modal] .status-icons { flex-wrap: wrap; }
     body dialog[data-group-modal] .group-members { border-left: 0; border-right: 0; border-radius: 0; }
 
@@ -307,6 +308,7 @@ export function statementListArchetypeStyles(): string {
       ${root} .filter-form,
       ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       ${root} .statement-search-field { grid-column: 1 / -1; }
+      ${root}[data-statement-options="collapsed"] .statement-filter-actions { flex-wrap: wrap; grid-column: 1 / -1; }
       ${root} .statement-row { column-gap: 8px; grid-template-columns: 24px 5.5rem minmax(0, 1fr) minmax(3rem, .3fr) 32px minmax(8rem, auto) 28px; padding-inline: 14px; }
     }
     @media (max-width: 760px) {
@@ -314,15 +316,17 @@ export function statementListArchetypeStyles(): string {
       ${root} .sf-page-header { align-items: stretch; display: grid; }
       ${root} .statement-heading-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
       ${root} .statement-heading-actions button[data-quick-kind="expense"] { grid-column: 1 / -1; grid-row: 1; }
-      ${root} .statement-overview { padding: 16px; }
+      ${root} .statement-overview { padding: 12px; }
+      ${root} .sf-page-header-description { font-size: .8125rem; line-height: 1.35; }
       ${root} .statement-context { gap: 12px; }
       ${root} .statement-context-meta { justify-content: flex-start; }
-      ${root} .account-summary { gap: 12px; grid-template-columns: minmax(0, 1fr); }
+      ${root} .account-summary { gap: 8px; grid-template-columns: minmax(0, 1fr); }
       ${root} .summary-balance { grid-column: 1 / -1; }
       ${root} .summary-balance strong { font-size: clamp(1rem, 5vw, 1.5rem); }
       ${root} .summary-total { align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; padding: 0; }
       ${root} .summary-total strong { font-size: 1rem; }
-      ${root} .status-overview { align-items: start; display: grid; gap: 8px; }
+      ${root} .status-overview { align-items: start; display: flex; gap: 6px 12px; }
+      ${root} .status-overview h3 { flex-basis: 100%; }
       ${root} .status-line { align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 6px; }
       ${root} .filter-form,
       ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: minmax(0, 1fr); }
@@ -338,6 +342,7 @@ export function statementListArchetypeStyles(): string {
       body dialog[data-modal] .modal-panel,
       body dialog[data-group-modal] .modal-panel { padding: 20px 16px; }
       body dialog[data-modal] .modal-panel form[data-form] { grid-template-columns: 1fr; }
+      body dialog[data-modal] .modal-panel form[data-form] :is(input, select, textarea) { min-height: 44px; }
       body dialog[data-modal] .modal-panel .save-row,
       body dialog[data-group-modal] .modal-panel .save-row { align-items: stretch; }
     }

@@ -55,3 +55,12 @@ nos dois eixos, nao apenas que o texto termine a direita da categoria. O teste
 Chrome verifica o conteudo recolhido e expandido em quatro larguras de desktop,
 provoca uma colisao real por posicionamento temporario e exige deteccao e
 restauracao. Os controles de overflow e legibilidade permanecem obrigatorios.
+
+### Densidade na primeira tela
+
+No cenario desktop 1366 x 768, a primeira movimentacao deve aparecer inteira
+sem rolagem inicial. O resumo e os controles nao podem consumir todo o viewport.
+`GS-NC-DENSITY` injeta espaco excessivo no resumo e exige que o contrato reprove;
+a restauracao deve passar. A restricao de altura nao e aplicada ao reflow mobile.
+Campos e valores permanecem acessiveis; o formulario mobile preserva alvos de
+44 px e a acao de salvar usa um rodape aderente ao dialog.

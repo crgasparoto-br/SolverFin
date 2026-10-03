@@ -80,6 +80,10 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       "GS-NC-AMOUNT",
       "[data-golden-screen] .statement-body .col-amount{font-size:12px!important;font-weight:400!important}",
     );
+    await negativeControl(
+      "GS-NC-DENSITY",
+      "[data-golden-screen] .statement-overview{padding-bottom:400px!important}",
+    );
     await read(`document.querySelector('[data-statement-options-toggle]').focus()`);
     await press("Enter", 13);
     assert.equal(await expansion(), "true");

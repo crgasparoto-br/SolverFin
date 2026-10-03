@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 /** Layout invariants, not a substitute for reviewing the captured composition. */
 export function assertGoldenStatement(layout) {
   const required = [
+    "viewport",
     "root",
     "overview",
     "summary",
@@ -16,6 +17,10 @@ export function assertGoldenStatement(layout) {
   for (const name of required) {
     assert.ok(layout[name], `Golden statement is missing ${name}.`);
   }
+  assert.ok(
+    Number.isFinite(layout.viewport.width) && Number.isFinite(layout.viewport.height),
+    "Viewport dimensions must be recorded.",
+  );
   assert.equal(layout.row?.display, "grid", "Legacy row layout overrode the Golden composition.");
   assert.equal(layout.overflow, false, "Golden statement has document overflow.");
   assert.ok(
@@ -34,6 +39,12 @@ export function assertGoldenStatement(layout) {
   );
   assert.ok(layout.category.y > layout.description.y, "Category must be on the secondary line.");
   assert.ok(layout.balance.y > layout.amount.y, "Running balance must be below the amount.");
+  if (layout.viewport.width >= 1280 && layout.viewport.height >= 740) {
+    assert.ok(
+      layout.row.bottom <= layout.viewport.height,
+      "Excess vertical chrome pushes the first transaction out of the desktop viewport.",
+    );
+  }
 }
 
 export const goldenStatementMeasurements = `(() => {
@@ -47,6 +58,7 @@ export const goldenStatementMeasurements = `(() => {
       display: style.display };
   };
   return {
+    viewport: { width: innerWidth, height: innerHeight },
     row: rect('.statement-body'),
     root: rect('[data-golden-screen="statement"]'),
     overview: rect('.statement-overview'), summary: rect('.account-summary'),
