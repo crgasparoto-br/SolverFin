@@ -294,7 +294,7 @@ export function statementListArchetypeStyles(): string {
     body dialog[data-group-modal] .modal-panel { gap: 12px; min-width: 0; padding: 20px; }
     body dialog[data-modal] .close-form { min-height: 0; position: absolute; right: 14px; top: 12px; z-index: 2; }
     body dialog[data-modal] .close-form button { background: transparent; border-color: transparent; color: var(--muted); min-height: 36px; padding-inline: 8px; }
-    body dialog[data-modal] .modal-panel > div:nth-child(2) { border-bottom: 1px solid var(--line); padding-bottom: 10px; padding-right: 48px; }
+    body dialog[data-modal] .modal-panel > div:nth-child(2) { border-bottom: 1px solid var(--line); padding-bottom: 10px; padding-right: 104px; }
     body dialog[data-modal] .modal-panel form[data-form] { display: grid; gap: 10px 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     body dialog[data-modal] .modal-panel form[data-form] > [data-field="kind"] { grid-column: 1 / -1; }
     body dialog[data-modal] .modal-panel form[data-form] label { color: var(--text); font-size: .8125rem; font-weight: 500; gap: 4px; }

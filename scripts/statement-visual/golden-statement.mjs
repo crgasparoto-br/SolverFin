@@ -144,6 +144,31 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       })()`);
       assert.equal(bounds.inside, true);
       assert.equal(bounds.overflow, false);
+      const headerClearance = await read(`(() => {
+        const dialog = document.querySelector('dialog[data-modal]');
+        const close = dialog?.querySelector('.close-form button');
+        const title = dialog?.querySelector('[data-modal-title]');
+        const eyebrow = dialog?.querySelector('.modal-panel > div:nth-child(2) .eyebrow');
+        const overlaps = (left, right) => {
+          if (!left || !right) return true;
+          const a = left.getBoundingClientRect();
+          const b = right.getBoundingClientRect();
+          return Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
+            Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
+        };
+        return {
+          closeTitleOverlap: overlaps(close, title),
+          closeEyebrowOverlap: overlaps(close, eyebrow),
+        };
+      })()`);
+      assert.equal(headerClearance.closeTitleOverlap, false, 'Close action must not overlap the modal title.');
+      assert.equal(headerClearance.closeEyebrowOverlap, false, 'Close action must not overlap the modal eyebrow.');
+      report.checks.push({
+        id: "GS-DIALOG-HEADER-CLEARANCE",
+        status: "passed",
+        viewport: { width, height },
+        observed: headerClearance,
+      });
       const file = `golden-statement-transfer-${width}x${height}.png`;
       await screenshot(cdp, join(outputDir, file));
       report.screenshots.push(file);
