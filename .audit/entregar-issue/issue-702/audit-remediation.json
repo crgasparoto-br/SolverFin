@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "219e716011fd94337bbf6fd30e634b96e4259ee1",
+  "candidate_head_sha": "2b6e3f1de5cfbae9f5b3472138796d52ba2311eb",
   "source": {
     "rejection_id": "audit-rejection:9e5f9866-14e0-4043-88e8-fb48b8364788",
     "audited_head_sha": "e63c0dee17db5a43d6e2110324053fe0fc2824c3",
@@ -17,13 +17,15 @@
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "evidence": [
-        "Material head refrozen on 219e716011fd94337bbf6fd30e634b96e4259ee1",
-        "Delivery V2 CI run 37072905993 completed/success",
-        "Statement visual validation run 37072906010 completed/success"
+        "Material head refrozen on 2b6e3f1de5cfbae9f5b3472138796d52ba2311eb",
+        "Delivery V2 CI run 37119678600 completed/success",
+        "Statement visual validation run 37119678603 completed/success",
+        "Visual artifact 11272777707 bound to head_sha 2b6e3f1de5cfbae9f5b3472138796d52ba2311eb"
       ],
       "validations": [
-        "No material writes after exact-SHA green evidence before handoff construction",
-        "Result-only child restricted to certified .audit paths"
+        "No material writes observed after the exact-SHA green workflows before handoff construction",
+        "Fresh handoff package is rebuilt for issue 702 and PR 703 rather than reusing the stale 219e716 certificate",
+        "Terminal result-only parent and allowlist are validated after publication"
       ]
     }
   ]

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "219e716011fd94337bbf6fd30e634b96e4259ee1",
+  "head_sha": "2b6e3f1de5cfbae9f5b3472138796d52ba2311eb",
   "obligations": [
     {"id":"O-001","source_id":"SRC-ISSUE-702","source_line":1,"source_text":"Extrato identificado como Golden Screen e com hierarquia principal clara","disposition":"covered","requirement_ids":["R-001"],"flags":[]},
     {"id":"O-002","source_id":"SRC-ISSUE-702","source_line":2,"source_text":"Nova despesa é a ação dominante; transferência e receita são secundárias","disposition":"covered","requirement_ids":["R-002"],"flags":[]},
@@ -16,7 +16,7 @@
   "structural_invariant_closures":{"status":"not-applicable","applicability_reason":"A entrega não altera dependências estruturais, caminhos canônicos ou precedência arquitetural."},
   "read_model_closures":{"status":"not-applicable","applicability_reason":"A entrega não introduz histórico, versionamento, timeline ou novo contrato de leitura persistida."},
   "canonical_source_consistency":{"status":"not-applicable","applicability_reason":"A entrega visual não redefine fonte canônica de dados nem regras de agregação financeira."},
-  "documentation_consistency":{"status":"not-applicable","applicability_reason":"A entrega não altera rotas legadas, políticas de autorização, defaults ou contrato documental estável."},
+  "documentation_consistency":{"status":"not-applicable","applicability_reason":"GOLDEN_STATEMENT.md documenta o candidato sem alterar política normativa, autorização ou defaults do produto."},
   "scope_reduction_review":{"status":"passed","applicability_reason":"A PR mantém o primeiro recorte coeso da épica #702 e preserva explicitamente a propagação cross-screen como escopo futuro."},
-  "pass_c":{"status":"passed","applicability_reason":"CI Delivery V2 e validação visual terminaram verdes no material head exato 219e716011fd94337bbf6fd30e634b96e4259ee1."}
+  "pass_c":{"status":"passed","applicability_reason":"Delivery V2 CI run 37119678600 e Statement visual validation run 37119678603 terminaram completed/success no material head exato 2b6e3f1de5cfbae9f5b3472138796d52ba2311eb."}
 }
