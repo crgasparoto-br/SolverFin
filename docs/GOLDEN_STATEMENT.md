@@ -40,3 +40,18 @@ capturas do SHA candidato e comparar hierarquia, densidade, peso das acoes,
 legibilidade, iconografia e dialogs com a referencia. Registrar cada achado
 A-001 a A-006 individualmente; nao substituir esse fechamento por CI verde.
 Uma fixture isolada de componente nao prova a integracao com o aplicativo.
+
+### Contencao e sobreposicao
+
+O layout nao deve criar rolagem horizontal desnecessaria. O campo legado
+`hasLocalHorizontalScroll` agora registra uma prova de rolagem local com conteudo
+largo temporario, removido ao final. `hasHorizontalOverflow` preserva a observacao
+do conteudo real; `localScrollProbe` registra deslocamento e largura da pagina.
+Uma tabela sem `overflow-x: auto|scroll`, incapaz de rolar ou que alargue a pagina
+reprova. A posicao de rolagem e os filhos originais devem ser preservados.
+
+No CDI, a categoria pode estar em uma segunda linha. Colisao exige intersecao
+nos dois eixos, nao apenas que o texto termine a direita da categoria. O teste
+Chrome verifica o conteudo recolhido e expandido em quatro larguras de desktop,
+provoca uma colisao real por posicionamento temporario e exige deteccao e
+restauracao. Os controles de overflow e legibilidade permanecem obrigatorios.

@@ -230,7 +230,10 @@ export function statementListArchetypeStyles(): string {
     ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: minmax(12rem, 1fr) minmax(12rem, .9fr) minmax(14rem, 1.3fr); }
     ${root} .filter-form label,
     ${root} .filter-form :is(.account-field, .month-field) { color: var(--muted); font-size: .75rem; font-weight: 500; min-width: 0; }
-    ${root} .filter-form :is(input, select, button) { min-height: 40px; }
+    ${root} .filter-form :is(input, select, button) { max-width: 100%; min-height: 40px; min-width: 0; }
+    ${root} .filter-form :is(label, .account-select) { min-width: 0; max-width: 100%; }
+    ${root} .filter-form .account-select-trigger { width: 100%; }
+    ${root} .filter-form .account-select-text { min-width: 0; overflow-wrap: anywhere; white-space: normal; }
     ${root} .month-nav { background: var(--surface); border-color: var(--line); }
     ${root} .month-nav input { font-weight: 700; }
     ${root} .statement-filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; justify-content: flex-end; }
@@ -248,7 +251,7 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-toolbar h2 { font-size: 1rem; }
     ${root} .statement-toolbar .chips { gap: 6px; }
     ${root} .chip { border-color: transparent; font-size: .7rem; font-weight: 500; }
-    ${root} .statement-table { min-width: 0; }
+    ${root} .statement-table { max-width: 100%; min-width: 0; overflow-x: auto; }
     ${root} .statement-row { align-items: center; column-gap: 12px; display: grid; grid-template-columns: 24px 6rem minmax(0, 1fr) minmax(4rem, .45fr) 40px minmax(9rem, auto) 36px; min-width: 0; padding: 12px 20px; }
     ${root} .statement-body { grid-template-areas: "select date description description status amount actions" "select date category kind status balance actions"; min-height: 76px; row-gap: 6px; }
     ${root} .statement-row > * { min-width: 0; order: 0; }
@@ -322,7 +325,7 @@ export function statementListArchetypeStyles(): string {
       ${root} .status-overview { align-items: start; display: grid; gap: 8px; }
       ${root} .status-line { align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 6px; }
       ${root} .filter-form,
-      ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: 1fr; }
+      ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: minmax(0, 1fr); }
       ${root} .statement-filter-actions { justify-content: flex-start; }
       ${root} .statement-toolbar { padding: 14px; }
       ${root} .statement-head { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; width: 1px; }

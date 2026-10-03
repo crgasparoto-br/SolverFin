@@ -17,7 +17,7 @@ const fragments = {
     '<input name="profileId" value="profile-b"></form>',
   ].join(""),
   listHtml: '<section class="statement-panel">Transaction EUR 98.76</section>',
-  statusHtml: '<p data-insight-context>Active filter</p>',
+  statusHtml: "<p data-insight-context>Active filter</p>",
 };
 
 test("golden composition preserves financial fragments and currencies", () => {
@@ -52,4 +52,11 @@ test("summary and statement use a vertical composition and secondary row metadat
   assert.equal(rows?.[2], "select date category kind status balance actions");
   assert.doesNotMatch(css, /statement-kind-native/);
   assert.match(css, /@media \(max-width: 760px\)/);
+});
+
+test("narrow controls shrink while table overflow stays local", () => {
+  const css = statementListArchetypeStyles();
+  assert.match(css, /\.statement-table\s*\{[^}]*overflow-x:\s*auto/);
+  assert.match(css, /\.account-select-text\s*\{[^}]*overflow-wrap:\s*anywhere/);
+  assert.match(css, /\.account-select-trigger\s*\{[^}]*width:\s*100%/);
 });
