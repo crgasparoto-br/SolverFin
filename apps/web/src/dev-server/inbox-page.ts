@@ -1,6 +1,7 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { apiGet } from "./api.js";
+import { attachmentWorkspaceScript } from "./attachment-workspace.js";
 import {
   presentFinancialInsightQueue,
   type FinancialInsightQueueApiPage,
@@ -194,6 +195,7 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
     ${renderCsvImportDialog(accountOptions, activeProfileLabel)}
     ${renderCsvLineEditDialog()}
     ${renderNewMessageDialog(accountOptions, categoryOptions)}
+    ${attachmentWorkspaceScript()}
     ${csvImportScript(accountOptions, categoryOptions, activeProfileLabel)}
     ${apiFormScript()}
     ${dialogScript()}
@@ -674,6 +676,7 @@ function csvImportScript(
             (readOnly ? '<p class="readonly-notice">Este lote está finalizado e disponível somente para consulta.</p>' : '<div class="bulk-actions"><label><input type="checkbox" id="select-all-import-lines" /> Selecionar elegíveis</label><div><span id="selection-summary">' + selectedEligible.length + ' selecionada(s)</span> <button type="button" id="approve-selected-import-lines" ' + (selectedEligible.length ? "" : "disabled") + '>Confirmar selecionadas</button></div></div>') +
             '<p id="import-detail-status" class="form-status muted" role="status" aria-live="polite"></p>' +
             '<div class="import-rows">' + (lineFilter.value === "problems" ? (value.problems.length ? "" : '<div class="empty-state"><strong>Sem problemas no arquivo.</strong></div>') : (visible.map((item) => renderRow(item, batch)).join("") || '<div class="empty-state"><strong>Nenhuma linha neste filtro.</strong><p class="muted">Escolha outro filtro para consultar o lote.</p></div>')) + '</div>';
+          window.SolverFinAttachments?.mount(detail, "import_batch", batch.id, "Anexos da importação");
           wireDetailActions(batch.id);
           renderBatchList();
         }

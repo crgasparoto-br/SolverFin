@@ -288,6 +288,36 @@ const keyScenarios = [
       }),
     ],
   },
+  {
+    id: "operational-attachments",
+    module: "scripts/statement-visual/operational-attachments.mjs",
+    coverage: [
+      coverage({
+        route: "/lancamentos",
+        archetype: "A2",
+        state: "attachment-lifecycle",
+        layout: "responsive",
+        interaction: "upload-list-open-delete",
+        dataProfile: "transaction-attachment",
+      }),
+      coverage({
+        route: "/cartoes",
+        archetype: "A3",
+        state: "attachment-lifecycle",
+        layout: "responsive",
+        interaction: "upload-list-open-delete",
+        dataProfile: "invoice-attachment",
+      }),
+      coverage({
+        route: "/inbox",
+        archetype: "A6",
+        state: "attachment-lifecycle",
+        layout: "responsive",
+        interaction: "upload-list-open-delete",
+        dataProfile: "import-batch-attachment",
+      }),
+    ],
+  },
 ];
 
 // prettier-ignore

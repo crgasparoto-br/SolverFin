@@ -11,6 +11,7 @@ import {
   renderSummaryGrid,
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
+import { attachmentWorkspaceScript, renderAttachmentWorkspace } from "./attachment-workspace.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
 import {
   recurrencesSectionScript,
@@ -298,6 +299,7 @@ export async function renderCardsPageV2(
         cardCurrency ?? "moeda indisponível",
       )}
       ${clientScript()}
+      ${attachmentWorkspaceScript()}
       ${recurrencesSectionScript()}
     </div>
   `);
@@ -615,6 +617,7 @@ function renderInvoiceDetail(input: {
       input.invoice,
       input.currency,
     )}
+    ${renderAttachmentWorkspace({ entityKind: "invoice", entityId: input.invoice.id, title: "Anexos da fatura" })}
   </section>`;
 }
 

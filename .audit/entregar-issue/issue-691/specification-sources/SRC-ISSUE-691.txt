@@ -1,0 +1,76 @@
+Parent epic: #689
+
+## Objetivo
+
+Expor a fundação `Attachment` nas jornadas financeiras já existentes, permitindo anexar, listar, abrir e remover logicamente documentos sem quebrar isolamento, privacidade ou o modelo canônico das entidades financeiras.
+
+## Fontes canônicas
+
+- `packages/domain/src/index.ts` — `Attachment`, `AttachmentKind`, `AttachmentStatus`
+- `prisma/schema.prisma` — `Attachment` e `LinkedEntityKind`
+- `docs/PRODUCT.md`
+- `docs/EVOLUTION_STRATEGY.md`
+
+## Escopo
+
+- Jornadas do primeiro corte: lançamento (`transaction`), fatura (`invoice`) e lote de importação (`import_batch`).
+- Preservar compatibilidade do vínculo técnico existente com `ai_suggestion`, sem torná-lo uma nova jornada pública obrigatória.
+- Tipos funcionais: comprovante, fatura/documento, extrato, mensagem, contrato e outros; se necessário, estender `AttachmentKind` para representar contrato explicitamente.
+- Upload, listagem, abertura/download autenticado e exclusão lógica.
+- Metadados mínimos: nome seguro, MIME validado, tipo funcional, tamanho, entidade vinculada, organização/perfil, estado e trilha temporal.
+- Autorização sempre derivada da entidade vinculada e do contexto autenticado.
+
+## Fora de escopo
+
+- Criar uma nova entidade de domínio “Contrato” apenas para anexos.
+- Armazenamento público ou URL permanente sem autorização.
+- Compartilhamento entre perfis.
+- OCR, classificação automática ou extração obrigatória.
+- Purga física definitiva como parte desta issue; retenção/purga posterior deve possuir política própria.
+
+## Invariantes
+
+1. **must_reuse:** o vínculo deve usar a fundação `Attachment` existente; não criar tabela/modelo paralelo por jornada.
+2. **must_not_behave:** conhecer um `linkedEntityId` nunca é suficiente para baixar/listar o arquivo; organização, perfil e autorização da entidade devem ser revalidados.
+3. **must_be_single_source:** `storageKey` é referência interna e não deve virar identificador público de autorização.
+4. Anexo em estado `deleted` ou `redacted` não pode continuar acessível pelo caminho normal.
+5. Conteúdo binário, nome original sensível e chaves de storage não devem aparecer em logs/auditoria além do necessário.
+6. Mutações de anexo devem manter trilha auditável e sem PII desnecessária.
+
+## Requisitos funcionais
+
+- Rejeitar tipo MIME não permitido, arquivo vazio e arquivo acima de um limite único documentado.
+- O backend deve validar o conteúdo/assinatura quando tecnicamente aplicável, não apenas confiar na extensão.
+- O nome exibido deve ser sanitizado; o caminho/chave física de armazenamento não vem do nome enviado pelo cliente.
+- A listagem deve retornar apenas metadados necessários à UI.
+- Abertura/download deve passar por endpoint autenticado ou URL temporária emitida após autorização; nunca por bucket/rota pública.
+- Exclusão é lógica: altera o estado e torna o conteúdo indisponível para o fluxo normal, preservando rastreabilidade.
+- Falha de armazenamento não pode deixar metadado “ativo” apontando para conteúdo inexistente; upload/metadado precisam convergir ou falhar de forma recuperável.
+
+## Cenários e casos extremos
+
+- Anexo válido em lançamento, fatura e lote.
+- Tentativa de acessar anexo de outro perfil/organização.
+- ID de entidade inexistente ou de tipo diferente.
+- MIME/extensão incompatíveis.
+- Arquivo vazio e acima do limite.
+- Nome com path traversal/caracteres perigosos.
+- Upload repetido/retry.
+- Exclusão repetida.
+- Falha entre persistência do conteúdo e metadado.
+- Anexo `deleted`/`redacted` acessado por URL antiga.
+
+## Critérios de aceite
+
+- [ ] Lançamentos, faturas e lotes de importação suportam anexar/listar/abrir/remover logicamente no contexto autorizado.
+- [ ] Nenhuma operação enumera ou expõe anexos de outro perfil.
+- [ ] MIME, tamanho e nome são validados/sanitizados com limites documentados.
+- [ ] O conteúdo não é servido por URL pública permanente.
+- [ ] Exclusão lógica impede novo acesso normal e é idempotente.
+- [ ] Falhas parciais de storage/metadado não deixam referência ativa quebrada.
+- [ ] Testes negativos cobrem tenant/perfil, entidade inexistente, MIME, tamanho e estados `deleted`/`redacted`.
+- [ ] Documentação de privacidade/operação registra tipos permitidos, limite, retenção lógica e forma de acesso.
+
+## Considerações de testes
+
+Cobrir domínio/API, integração do storage adotado e UI das três jornadas. Não usar arquivos reais de usuário em fixtures.
