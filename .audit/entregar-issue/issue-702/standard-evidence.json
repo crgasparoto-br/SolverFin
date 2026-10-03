@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "head_sha": "2b6e3f1de5cfbae9f5b3472138796d52ba2311eb",
+  "evidence_context": {
+    "delivery_ci_run": 37119678600,
+    "visual_validation_run": 37119678603,
+    "visual_artifact_id": 11272777707,
+    "visual_artifact_digest": "sha256:57e89413eb4b79ecf5a60e8efbd8df5d5985b5576a723093e3c2c4f46654c386",
+    "visual_report": "golden-statement.json",
+    "visual_report_status": "passed",
+    "visual_report_subject_sha": "2b6e3f1de5cfbae9f5b3472138796d52ba2311eb"
+  },
+  "requirements": [
+    {
+      "requirement_id": "R-001",
+      "positive_evidence": ["golden-statement-desktop-1366x768.png", "golden-statement-mobile-390x844.png", "visual report scope=real-application"],
+      "primary_negative_control": {"id":"GS-NC-SIDEBAR","procedure":"Inject a two-column statement workspace with a 260px summary sidebar and re-run the Golden Statement contract.","expected":"The injected regression is rejected before restoration.","observed":"Rejected because the Golden statement produced document overflow; restored layout passed.","status":"passed"},
+      "regression_evidence": ["Statement visual validation run 37119678603 success", "Delivery V2 CI run 37119678600 success"]
+    },
+    {
+      "requirement_id": "R-002",
+      "positive_evidence": ["golden-statement-desktop-1366x768.png shows Nova despesa as the only filled primary action", "golden-statement-mobile-390x844.png preserves Nova despesa first and full-width with Transferir/Nova receita secondary"],
+      "primary_negative_control": {"id":"GS-ACTION-HIERARCHY-OBSERVED","procedure":"Inspect exact-SHA desktop and mobile captures and compare the three quick actions by order, fill, weight and occupied width.","expected":"Nova despesa is visually dominant; Transferir and Nova receita remain secondary.","observed":"Desktop: Nova despesa is the single filled action; mobile: Nova despesa is first/full-width while the other actions are outlined beneath it.","status":"passed"},
+      "regression_evidence": ["Statement visual validation run 37119678603 success"]
+    },
+    {
+      "requirement_id": "R-003",
+      "positive_evidence": ["desktop overview height 207.34375px and first transaction bottom 660.03125 within 768px viewport", "summary is horizontal on desktop and stacked on mobile"],
+      "primary_negative_control": {"id":"GS-NC-DENSITY","procedure":"Inject 400px extra bottom padding into statement overview and re-run the Golden Statement contract.","expected":"Excess chrome that pushes the first transaction out of the initial desktop viewport is rejected.","observed":"Rejected with 'Excess vertical chrome pushes the first transaction out of the desktop viewport'; restored layout passed.","status":"passed"},
+      "regression_evidence": ["golden-statement-desktop-1366x768.png", "golden-statement-mobile-320x740.png"]
+    },
+    {
+      "requirement_id": "R-004",
+      "positive_evidence": ["desktop descriptionText font=16 and amount font=16 versus category/balance font=12", "mobile description/amount remain above category/kind/balance in semantic order"],
+      "primary_negative_control": {"id":"GS-NC-AMOUNT","procedure":"Force transaction amount to 12px/400 weight and re-run the Golden Statement contract.","expected":"The contract rejects loss of amount priority over the balance metadata.","observed":"Rejected with 'Amount lost visual priority over balance'; restored layout passed.","status":"passed"},
+      "regression_evidence": ["Statement visual validation run 37119678603 success"]
+    },
+    {
+      "requirement_id": "R-005",
+      "positive_evidence": ["desktop capture keeps account/month/search compact above list", "non-default sort remains announced while advanced ordering is collapsible"],
+      "primary_negative_control": {"id":"GS-OPTIONS-KEYBOARD","procedure":"Focus the progressive options disclosure, toggle it twice with Enter, then navigate with non-default amount_desc sorting.","expected":"Disclosure remains keyboard operable and active ordering remains visible when collapsed.","observed":"Keyboard toggle passed and GS-ACTIVE-ORDER confirmed the non-default order stayed visible.","status":"passed"},
+      "regression_evidence": ["GS-ACTIVE-ORDER passed", "Statement visual validation run 37119678603 success"]
+    },
+    {
+      "requirement_id": "R-006",
+      "positive_evidence": ["golden-statement-transfer-1366x768.png", "golden-statement-transfer-390x844.png", "golden-statement-transfer-320x740.png"],
+      "primary_negative_control": {"id":"GS-DIALOG-HEADER-CLEARANCE","procedure":"Measure close control against dialog eyebrow/title at 320x740 after opening the real transaction dialog.","expected":"Close control does not overlap the eyebrow or title, and the dialog remains inside viewport with no horizontal overflow.","observed":"closeTitleOverlap=false, closeEyebrowOverlap=false; GS-TRANSFER-DIALOG bounds inside=true and overflow=false.","status":"passed"},
+      "regression_evidence": ["Statement visual validation run 37119678603 success"]
+    },
+    {
+      "requirement_id": "R-007",
+      "positive_evidence": ["desktop transfer dialog shows Conta origem and Conta destino side-by-side", "mobile transfer dialog stacks origin and destination while preserving labels"],
+      "primary_negative_control": {"id":"GS-TRANSFER-DIALOG","procedure":"Open the real dialog at desktop, 390px and 320px, focus the canonical kind select, switch to transfer and verify destination visibility and bounds.","expected":"Canonical select remains focusable, transfer handler reveals destination, and dialog stays in viewport without horizontal overflow.","observed":"kind=transfer, canonical select focused, destination visible, inside=true, overflow=false at all tested viewports.","status":"passed"},
+      "regression_evidence": ["golden-statement-transfer-1366x768.png", "golden-statement-transfer-390x844.png", "golden-statement-transfer-320x740.png"]
+    },
+    {
+      "requirement_id": "R-008",
+      "positive_evidence": ["statement-golden-layout test preserves supplied USD/EUR financial fragments without recalculation", "Delivery V2 CI run 37119678600 success", "visual flow uses explicit BRL account/currency labels"],
+      "primary_negative_control": {"id":"SSR-FRAGMENTS-PRESERVED","procedure":"Render the A2 archetype with Account USD and Transaction EUR 98.76 fragments and assert all supplied fragments/currencies survive in order without renderer recalculation.","expected":"Renderer preserves account context, summary, GET filters, list and explicit currencies as supplied.","observed":"Focused structural test passed in Delivery V2 CI; exact-SHA visual run also passed.","status":"passed"},
+      "regression_evidence": ["Delivery V2 CI run 37119678600 success", "Statement visual validation run 37119678603 success"]
+    },
+    {
+      "requirement_id": "R-009",
+      "positive_evidence": ["real-application screenshots at 1366x768, 390x844 and 320x740", "empty-state check GS-EMPTY passed", "keyboard progressive disclosure passed", "transfer dialog passed at all viewports"],
+      "primary_negative_control": {"id":"EXACT-SHA-VISUAL-BINDING","procedure":"Require golden-statement.json subjectSha to equal the PR material head and require the workflow artifact metadata head_sha to match it.","expected":"Evidence from another SHA is rejected as stale.","observed":"Report subjectSha and artifact workflow_run.head_sha both equal 2b6e3f1de5cfbae9f5b3472138796d52ba2311eb.","status":"passed"},
+      "regression_evidence": ["Visual artifact 11272777707 digest sha256:57e89413eb4b79ecf5a60e8efbd8df5d5985b5576a723093e3c2c4f46654c386"]
+    }
+  ],
+  "limitations": [
+    "At 320x740 the long fictitious account name causes the dialog title to wrap across multiple lines; no overlap or horizontal overflow was observed and controls remain operable.",
+    "This delivery certifies the coherent Golden Screen slice of epic #702. Propagation to Cartões, Contas e Cartões, Categorias, Relatórios and other surfaces remains deferred by epic scope."
+  ]
+}

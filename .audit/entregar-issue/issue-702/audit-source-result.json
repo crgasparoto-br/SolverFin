@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "rejection_id": "audit-rejection:9e5f9866-14e0-4043-88e8-fb48b8364788",
+  "head_sha": "e63c0dee17db5a43d6e2110324053fe0fc2824c3",
+  "result": "REPROVADA",
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "title": "Handoff não cobre o candidato atual",
+      "category": "execution-state-gap"
+    }
+  ],
+  "recommendations": []
+}

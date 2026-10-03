@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
+import { validateGoldenStatement } from "./golden-statement.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -24,6 +25,7 @@ try {
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await sleep(300);
+  await validateGoldenStatement(browser.cdp, { baseUrl, route, outputDir });
   groupId = await evaluate(
     browser.cdp,
     `(async () => {
@@ -51,7 +53,12 @@ try {
   await openGroup(browser.cdp, groupId);
   const desktop = await measureLayout(browser.cdp);
   assert.equal(desktop.open, true, "Group modal did not open on desktop.");
-  assert.ok(desktop.dialogWidth >= 1100, `Group modal remained narrow: ${desktop.dialogWidth}px.`);
+  assert.ok(desktop.dialogWidth >= 640, `Group modal became too narrow: ${desktop.dialogWidth}px.`);
+  assert.ok(
+    desktop.dialogWidth <= 780,
+    `Group modal is too wide for the Golden Screen: ${desktop.dialogWidth}px.`,
+  );
+  assert.equal(desktop.formColumns, 2, "Desktop group form must use two columns.");
   assert.equal(desktop.insideViewport, true, "Group modal escapes the desktop viewport.");
   assert.equal(desktop.panelHorizontalOverflow, false, "Group panel has horizontal overflow.");
   assert.equal(desktop.formHorizontalOverflow, false, "Group form has horizontal overflow.");
@@ -68,6 +75,7 @@ try {
   await openGroup(browser.cdp, groupId);
   const mobile = await measureLayout(browser.cdp);
   assert.equal(mobile.open, true, "Group modal did not open on mobile.");
+  assert.equal(mobile.formColumns, 1, "Mobile group form must reflow to one column.");
   assert.equal(mobile.insideViewport, true, "Group modal escapes the mobile viewport.");
   assert.equal(
     mobile.panelHorizontalOverflow,
@@ -128,10 +136,18 @@ async function measureLayout(cdp) {
       const membersRect = members.getBoundingClientRect();
       const actionsRect = actions.getBoundingClientRect();
       const rowHeights = rows.map((row) => row.getBoundingClientRect().height);
+      const formFields = Array.from(form.querySelectorAll(":scope > label")).slice(0, 4);
+      const rowStarts = [];
+      for (const field of formFields) {
+        const top = field.getBoundingClientRect().top;
+        if (!rowStarts.some((start) => Math.abs(start - top) <= 4)) rowStarts.push(top);
+      }
+      const renderedColumns = rowStarts.length > 0 ? formFields.length / rowStarts.length : 0;
       return {
         open: dialog.open,
         dialogWidth: Math.round(rect.width),
         dialogHeight: Math.round(rect.height),
+        formColumns: renderedColumns,
         insideViewport: rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1,
         panelHorizontalOverflow: panel.scrollWidth > panel.clientWidth + 1,
         formHorizontalOverflow: form.scrollWidth > form.clientWidth + 1,
