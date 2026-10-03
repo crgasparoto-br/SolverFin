@@ -12,7 +12,9 @@ const route = process.env.STATEMENT_VISUAL_ROUTE;
 const scenarioId = process.env.STATEMENT_VISUAL_SCENARIO_ID ?? "operational-attachments";
 
 if (!chromePath) throw new Error("CHROME_BIN is required for operational attachment validation.");
-if (!route) {\n  throw new Error("STATEMENT_VISUAL_ROUTE is required for operational attachment validation.");\n}
+if (!route) {
+  throw new Error("STATEMENT_VISUAL_ROUTE is required for operational attachment validation.");
+}
 
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
