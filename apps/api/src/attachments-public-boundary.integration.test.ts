@@ -322,7 +322,7 @@ async function requestJson(
       ...(input.body === undefined ? {} : { "content-type": "application/json" }),
       ...(input.token === undefined ? {} : { authorization: `Bearer ${input.token}` }),
     },
-    body: input.body === undefined ? undefined : JSON.stringify(input.body),
+    ...(input.body === undefined ? {} : { body: JSON.stringify(input.body) }),
   });
   const body = await response.json().catch(() => ({}));
   return { status: response.status, headers: response.headers, body };
