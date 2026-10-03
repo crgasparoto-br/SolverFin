@@ -161,8 +161,16 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
           closeEyebrowOverlap: overlaps(close, eyebrow),
         };
       })()`);
-      assert.equal(headerClearance.closeTitleOverlap, false, 'Close action must not overlap the modal title.');
-      assert.equal(headerClearance.closeEyebrowOverlap, false, 'Close action must not overlap the modal eyebrow.');
+      assert.equal(
+        headerClearance.closeTitleOverlap,
+        false,
+        "Close action must not overlap the modal title.",
+      );
+      assert.equal(
+        headerClearance.closeEyebrowOverlap,
+        false,
+        "Close action must not overlap the modal eyebrow.",
+      );
       report.checks.push({
         id: "GS-DIALOG-HEADER-CLEARANCE",
         status: "passed",
