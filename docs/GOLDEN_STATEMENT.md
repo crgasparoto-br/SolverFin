@@ -15,7 +15,7 @@ nao substitui seus contratos nem declara a referencia aprovada.
 - Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o formulario
   GET completo permanece disponivel. Filtros de contexto e busca nao sao apagados pela composicao.
 - Criacao/edicao usa o dialog existente com duas colunas no desktop e uma no mobile.
-  O seletor segmentado aciona o select canonico: payload, regras de transferencia,
+  O select nativo de tipo permanece visivel e acessivel: payload, regras de transferencia,
   recorrencia, bloqueios e handlers de persistencia continuam pertencendo ao formulario.
 - Logos continuam resolvidos pelo catalogo institucional compartilhado.
 

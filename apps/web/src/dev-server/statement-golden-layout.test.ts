@@ -16,7 +16,7 @@ const fragments = {
   statusHtml: '<p data-insight-context>Active filter</p>',
 };
 
-test("golden composition retains canonical financial fragments without changing values or currency", () => {
+test("golden composition preserves financial fragments and currencies", () => {
   const html = renderStatementListArchetype(fragments);
   for (const fragment of Object.values(fragments)) assert.ok(html.includes(fragment));
   assert.ok(html.indexOf(fragments.contextHtml) < html.indexOf(fragments.summaryHtml));
@@ -26,16 +26,12 @@ test("golden composition retains canonical financial fragments without changing 
   assert.doesNotMatch(html, /data-golden-screen-state="approved"/);
 });
 
-test("SSR leaves the complete GET form available and enhancement preserves canonical controls", () => {
+test("SSR retains the GET form and canonical controls", () => {
   const html = renderStatementListArchetype(fragments);
   assert.match(html, /aria-expanded="true" aria-controls="statement-query-fields" hidden/);
   assert.ok(html.includes(fragments.filtersHtml));
-  assert.match(html, /select\.dispatchEvent\(new Event\('change', \{ bubbles: true \}\)\)/);
-  assert.match(html, /button\.disabled = select\.disabled \|\| option\.disabled/);
-  assert.match(html, /if \(buttons\.length !== select\.options\.length\) return/);
-  const script = html.match(
-    /<script data-statement-a2-context-runtime="true">([\s\S]*?)<\/script>/,
-  )?.[1];
+  const runtime = /<script data-statement-a2-context-runtime="true">([\s\S]*?)<\/script>/;
+  const script = html.match(runtime)?.[1];
   assert.ok(script);
   assert.doesNotThrow(() => new Function(script));
 });
@@ -48,6 +44,6 @@ test("summary and statement use a vertical composition and secondary row metadat
     css,
     /grid-template-areas:\s*"select date description description status amount actions"\s*"select date category kind status balance actions"/,
   );
-  assert.match(css, /\.statement-kind-tabs/);
+  assert.doesNotMatch(css, /statement-kind-native/);
   assert.match(css, /@media \(max-width: 760px\)/);
 });
