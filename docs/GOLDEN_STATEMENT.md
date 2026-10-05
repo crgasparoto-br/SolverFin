@@ -64,3 +64,58 @@ sem rolagem inicial. O resumo e os controles nao podem consumir todo o viewport.
 a restauracao deve passar. A restricao de altura nao e aplicada ao reflow mobile.
 Campos e valores permanecem acessiveis; o formulario mobile preserva alvos de
 44 px e a acao de salvar usa um rodape aderente ao dialog.
+
+## Remediacao visual da revisao GS703
+
+A revisao `audit-rejection:solverfin-703-2b6e3f1-golden-screen` apontou defeitos
+na composicao final, incluindo estilos legados executados depois do renderer.
+O fechamento deve cobrir a aplicacao autenticada, e nao apenas a fonte do renderer.
+
+### GS703-001: agrupamento legivel
+
+O formulario final usa duas colunas para campos curtos no desktop e uma no mobile.
+Valor efetivo, descricao e conta ocupam largura ampla. A camada de enhancement
+reutiliza a moeda do SSR em vez de acrescentar uma segunda representacao.
+Valor efetivo e um output de leitura que pode reflowar; os handlers continuam
+atualizando o mesmo valor, sem mudar calculos, payloads ou regras financeiras.
+A lista de membros mantem area minima legivel e acoes acessiveis.
+
+### GS703-002: geometria observada, nao media
+
+`form-geometry.mjs` observa todos os campos visiveis, inclusive um campo tardio
+no DOM. Colunas sao contadas por linha real, sem a divisao quantidade/linhas.
+Rotulos sao medidos por retangulos de texto e valores financeiros por conteudo
+interno, independentemente do overflow do painel. Os controles Chrome injetam
+colunas excedentes, campo tardio, moeda duplicada, corte de valor e escape de rotulo;
+cada regressao deve reprovar e a restauracao precisa passar.
+
+### GS703-003 e GS703-R01: mobile e cabecalho
+
+`statement-golden-refinements.ts` agrupa categoria/tipo e data/saldo preservando
+os nodes e seus handlers. O resumo de situacao e progressivo no mobile e permanece
+acessivel por teclado. Conta, moeda, periodo, descricao e valores nao sao removidos.
+A acao primaria vem primeiro na ordem de teclado, com as demais acoes subordinadas.
+O titulo do dialog utiliza toda a largura do cabecalho; a reserva do botao Fechar
+fica apenas na linha superior, sem estreitar o titulo longo.
+
+`statement-refinements.mjs` roda no mesmo Chrome autenticado e publica
+`statement-refinements.json`, com SHA, medidas, controles e capturas do topo,
+das movimentacoes e do titulo em 320 px. A comparacao da densidade mobile usa
+as medidas e a inspecao da composicao; nao cria uma exigencia universal de
+primeira movimentacao visivel sem rolagem em todo celular.
+
+### GS703-R02: fechamento individual e referencia ainda candidata
+
+A-001 deve ligar a composicao geral as capturas desktop/mobile do mesmo SHA.
+A-002 deve ligar descricao/valor e metadados as capturas das movimentacoes e
+as medidas de prioridade tipografica. A-003 deve ligar contexto/resumo horizontal
+as medidas de largura e densidade. A-004 deve ligar os filtros e o resumo
+progressivo aos controles de teclado e preservacao de estado. A-005 deve ligar
+estados, agrupamento, dialogs e regressao injetada aos respectivos relatorios.
+A-006 deve registrar a observacao visual de cada um desses itens, separadamente
+do fechamento tecnico do handoff. GS703-001 a GS703-003 e GS703-R01/R02 tambem
+precisam de fechamento individual na remediacao.
+
+O indice de evidencias nao equivale a homologacao. Uma CI verde ou um handoff
+READY nao altera automaticamente `data-golden-screen-state="candidate"` nem
+autoriza usar esta tela como referencia aprovada sem nova auditoria independente.

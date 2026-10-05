@@ -4,6 +4,11 @@ import {
   renderPageHeader,
 } from "../design-system/primitives.js";
 
+import {
+  statementGoldenRefinementRuntime,
+  statementGoldenRefinementStyles,
+} from "./statement-golden-refinements.js";
+
 export interface StatementListArchetypeProps {
   actionsHtml: string;
   filtersHtml: string;
@@ -42,7 +47,7 @@ export function renderStatementListArchetype(props: StatementListArchetypeProps)
       <section class="statement-layout" data-statement-workspace="true">${props.listHtml}</section>`,
   });
 
-  return `<div data-statement-archetype="A2" data-golden-screen="statement" data-golden-screen-state="candidate">${headerHtml}${workspaceHtml}${statementListArchetypeRuntime()}</div>`;
+  return `<div data-statement-archetype="A2" data-golden-screen="statement" data-golden-screen-state="candidate">${headerHtml}${workspaceHtml}${statementListArchetypeRuntime()}${statementGoldenRefinementRuntime()}</div>`;
 }
 
 function statementListArchetypeRuntime(): string {
@@ -346,5 +351,6 @@ export function statementListArchetypeStyles(): string {
       body dialog[data-modal] .modal-panel .save-row,
       body dialog[data-group-modal] .modal-panel .save-row { align-items: stretch; }
     }
+    ${statementGoldenRefinementStyles()}
   `;
 }
