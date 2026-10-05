@@ -132,10 +132,15 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
         const select = document.querySelector('dialog[data-modal] select[name="kind"]');
         const destination = document.querySelector('[data-field="destinationAccountId"]');
         const radio = document.querySelector('dialog[data-modal] [data-statement-entry-kind="transfer"]');
-        return { kind: select.value, focused: document.activeElement === radio && radio?.getAttribute('aria-checked') === 'true',
+        return { kind: select.value, nativeKindVisible: select.closest("label").getBoundingClientRect().height > 0, focused: document.activeElement === radio && radio?.getAttribute('aria-checked') === 'true',
           visible: !!destination && !destination.hidden && destination.getBoundingClientRect().height > 0 };
       })()`);
       assert.equal(transfer.kind, "transfer");
+      assert.equal(
+        transfer.nativeKindVisible,
+        false,
+        "Only one entry-kind control may be visible.",
+      );
       assert.equal(
         transfer.focused,
         true,
@@ -192,6 +197,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
         status: "passed",
         viewport: { width, height },
         bounds,
+        transfer,
       });
     }
     const emptyRoute = new URL(route, baseUrl);

@@ -44,7 +44,14 @@ export function installStatementMockupControls(root: HTMLElement): void {
     group.append(button);
     return button;
   });
+  let nativeValidationFallback = false;
   const sync = (): void => {
+    const restricted = form.dataset.installmentMode === "true";
+    field.hidden = !nativeValidationFallback || restricted;
+    group.hidden = nativeValidationFallback || restricted;
+    const cancel = form.querySelector<HTMLButtonElement>("[data-statement-entry-cancel]");
+    // Closing a restricted editor does not mutate a financial field.
+    if (restricted && cancel) cancel.disabled = false;
     let focusable = false;
     for (const button of buttons) {
       const option = Array.from(select.options).find(
@@ -99,10 +106,13 @@ export function installStatementMockupControls(root: HTMLElement): void {
   select.addEventListener("change", sync);
   select.addEventListener("invalid", () => {
     // Native constraint validation must never be trapped in a hidden control.
-    field.hidden = false;
-    group.hidden = true;
+    nativeValidationFallback = true;
+    sync();
   });
-  form.addEventListener("reset", () => queueMicrotask(sync));
+  form.addEventListener("reset", () => {
+    nativeValidationFallback = false;
+    queueMicrotask(sync);
+  });
   new MutationObserver(sync).observe(select, {
     attributes: true,
     attributeFilter: ["disabled"],
@@ -171,14 +181,14 @@ export function statementMockupControlsStyles(): string {
     ${dialog} [data-statement-entry-kind="income"][aria-checked="true"]{background:var(--sf-color-success-surface);color:var(--sf-color-success)}
     ${dialog} [data-statement-entry-kind="transfer"][aria-checked="true"]{background:var(--sf-color-primary-soft);color:var(--sf-color-primary)}
     ${dialog} form[data-mockup-controls]>.statement-entry-category{grid-column:1/-1}
-    ${dialog} .save-row{flex-wrap:wrap;gap:${spacing[2]}}
+    ${dialog} .save-row{display:flex;flex-flow:row wrap;gap:${spacing[2]};grid-column:1/-1;min-width:0;max-width:100%}
     ${dialog} .save-row>:is(button,[data-statement-entry-cancel]){min-height:${density.interactiveTargetMin}}
     @media(max-width:${breakpoints.shellCompact}){
       ${root} .statement-query{padding:${spacing[2]}}
       ${root} .statement-query-heading{gap:${spacing[1]}}
       ${root} .statement-secondary-actions>summary{padding-inline:${spacing[2]}}
-      ${dialog} .save-row>.status-icons{flex-basis:100%}
-      ${dialog} .save-row>button{flex:1;min-width:0}
+      ${dialog} .save-row>.status-icons{flex-basis:100%;flex-wrap:wrap;min-width:0}
+      ${dialog} .save-row>button{flex:1 1 0;min-width:0;width:auto}
     }
   `;
 }

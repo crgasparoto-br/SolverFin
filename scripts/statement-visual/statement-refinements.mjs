@@ -191,7 +191,10 @@ function assertStatementRefinements(geometry, mobile) {
   assert.ok(geometry.rowCount > 0, "Statement rows must be observed.");
   assert.equal(geometry.summaryOpen, false, "Status details must start collapsed.");
   assert.equal(geometry.firstAction, "expense", "The primary action must lead the keyboard order.");
-  assert.ok(geometry.essentialText.every((text) => text.trim()), "Financial context is missing.");
+  assert.ok(
+    geometry.essentialText.every((text) => text.trim()),
+    "Financial context is missing.",
+  );
   for (const secondary of geometry.actions.filter((action) => action.kind !== "expense")) {
     const primary = geometry.actions.find((action) => action.kind === "expense");
     assert.notEqual(

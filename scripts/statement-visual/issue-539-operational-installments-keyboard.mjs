@@ -40,30 +40,63 @@ try {
   const focusOrder = [await activeControl()];
   await pressKey("Tab", { shift: true });
   focusOrder.push(await activeControl());
-  await pressKey("Tab");
-  focusOrder.push(await activeControl());
-  await pressKey("Tab");
-  focusOrder.push(await activeControl());
-  await pressKey("Tab");
-  focusOrder.push(await activeControl());
-  await pressKey("Tab");
-  focusOrder.push(await activeControl());
-
+  for (let step = 0; step < 6; step += 1) {
+    await pressKey("Tab");
+    focusOrder.push(await activeControl());
+  }
+  const expected = [
+    "description",
+    "Fechar",
+    "description",
+    "categoryId",
+    "note",
+    "Cancelar",
+    "Salvar parcela",
+    "Fechar",
+  ];
   check(
-    focusOrder.join(",") === "description,categoryId,description,note,Salvar parcela,Fechar",
-    "Restricted installment modal has an unexpected keyboard order",
-    { focusOrder },
+    focusOrder.join(",") === expected.join(","),
+    "Restricted installment modal must follow its visual order and keep focus inside",
+    { focusOrder, expected },
+  );
+  const restrictions = await evaluate(
+    browser.cdp,
+    `(() => {
+    const form = document.querySelector('[data-form]');
+    const kinds = Array.from(form.querySelectorAll('[data-statement-entry-kind]'));
+    return {
+      canonicalKindDisabled: form.elements.kind.disabled,
+      kindButtonsDisabled: kinds.length === 3 && kinds.every(button => button.disabled),
+      editableNames: Array.from(form.querySelectorAll('input,select,textarea'))
+        .filter(control => !control.disabled && control.type !== 'hidden')
+        .map(control => control.name).sort(),
+      cancelEnabled: !form.querySelector('[data-statement-entry-cancel]').disabled
+    };
+  })()`,
+  );
+  check(
+    restrictions.canonicalKindDisabled &&
+      restrictions.kindButtonsDisabled &&
+      restrictions.editableNames.join(",") === "categoryId,description,note" &&
+      restrictions.cancelEnabled,
+    "Mockup controls must not relax restricted installment editing",
+    restrictions,
   );
 
   const filename = "issue-539-installment-keyboard-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, filename));
-
   await pressKey("Escape");
   await sleep(100);
   const closed = await evaluate(browser.cdp, `!document.querySelector("[data-modal]").open`);
   check(closed, "Escape did not close the restricted installment modal", { closed });
-
-  scenarios.push({ route, viewport: "1366x768", focusOrder, screenshot: filename, requestScope });
+  scenarios.push({
+    route,
+    viewport: "1366x768",
+    focusOrder,
+    screenshot: filename,
+    requestScope,
+    restrictions,
+  });
 } finally {
   await browser.close(outputDir);
 }
