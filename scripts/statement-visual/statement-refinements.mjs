@@ -4,10 +4,9 @@ import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { evaluate, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
-import {
-  assertMockupComposition,
-  measureMockupComposition,
-} from "./mockup-composition-contract.mjs";
+import * as mockupComposition from "./mockup-composition-contract.mjs";
+
+const { assertMockupComposition, measureMockupComposition } = mockupComposition;
 
 /** Shares the authenticated browser and fixtures with the canonical group-layout scenario. */
 export async function validateStatementRefinements(cdp, { baseUrl, route, outputDir }) {
