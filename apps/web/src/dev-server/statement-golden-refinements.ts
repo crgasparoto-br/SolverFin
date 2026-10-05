@@ -7,7 +7,65 @@ export function statementGoldenRefinementRuntime(): string {
       const root = document.currentScript?.closest('[data-golden-screen="statement"]');
       if (!root) return;
       const primary = root.querySelector('[data-quick-kind="expense"]');
-      primary?.parentElement?.prepend(primary);
+      const actions = primary?.parentElement;
+      actions?.prepend(primary);
+      if (actions && !actions.querySelector('.statement-secondary-actions')) {
+        const secondary = Array.from(actions.querySelectorAll('button[data-quick-kind]'))
+          .filter((button) => button !== primary);
+        if (secondary.length) {
+          const menu = document.createElement('details');
+          menu.className = 'statement-secondary-actions';
+          const trigger = document.createElement('summary');
+          trigger.textContent = 'Mais ações';
+          trigger.setAttribute('aria-label', 'Mais ações do extrato');
+          const content = document.createElement('div');
+          content.className = 'statement-secondary-actions-content';
+          content.append(...secondary);
+          menu.append(trigger, content);
+          actions.append(menu);
+          menu.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            event.preventDefault();
+            event.stopPropagation();
+            menu.open = false;
+            trigger.focus();
+          });
+          let returnFocus = false;
+          content.addEventListener('click', (event) => {
+            if (!event.target.closest('button[data-quick-kind]')) return;
+            returnFocus = true;
+            menu.open = false;
+          });
+          document.addEventListener('close', (event) => {
+            if (!returnFocus || !event.target.matches('dialog[data-modal]')) return;
+            returnFocus = false;
+            trigger.focus();
+          }, true);
+          document.addEventListener('pointerdown', (event) => {
+            if (!menu.contains(event.target)) menu.open = false;
+          });
+        }
+      }
+
+      const overview = root.querySelector('.statement-overview');
+      const accountSummary = overview?.querySelector('.account-summary');
+      const context = overview?.querySelector('.statement-context');
+      const balance = accountSummary?.querySelector('.summary-balance');
+      if (accountSummary && context && balance && !accountSummary.querySelector('.statement-account-heading')) {
+        const duplicateHeading = accountSummary.querySelector(':scope > div:first-child');
+        if (duplicateHeading) {
+          duplicateHeading.hidden = true;
+          duplicateHeading.classList.add('statement-summary-duplicate');
+        }
+        const heading = document.createElement('header');
+        heading.className = 'statement-account-heading';
+        heading.append(context, balance);
+        accountSummary.prepend(heading);
+        accountSummary.dataset.mockupComposition = 'true';
+      }
+      const listTitle = root.querySelector('#statement-list-title');
+      if (listTitle) listTitle.textContent = 'Movimentações';
+
       for (const row of root.querySelectorAll('.statement-body')) {
         if (row.hasAttribute('data-statement-row-refined')) continue;
         const category = row.querySelector('.col-category');
@@ -42,9 +100,6 @@ export function statementGoldenRefinementRuntime(): string {
         while (status.firstChild) content.append(status.firstChild);
         details.append(summary, content);
         status.append(details);
-        const mobile = matchMedia('(max-width: ${solverFinDesignTokens.breakpoints.shellCompact})');
-        details.open = !mobile.matches;
-        mobile.addEventListener('change', (event) => { details.open = !event.matches; });
       }
     })();
   </script>`;
@@ -53,29 +108,58 @@ export function statementGoldenRefinementRuntime(): string {
 export function statementGoldenRefinementStyles(): string {
   const { spacing, breakpoints, density, typography } = solverFinDesignTokens;
   const root = '[data-statement-archetype="A2"][data-golden-screen="statement"]';
+  const dialog = 'body:has([data-golden-screen="statement"]) dialog[data-modal]';
   return `
     ${root} :is(.statement-row-metadata,.statement-row-footer){display:contents}
+    ${root} .statement-heading-actions{display:flex;align-items:center;gap:${spacing[2]}}
+    ${root} .statement-secondary-actions{position:relative}
+    ${root} .statement-secondary-actions>summary{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);cursor:pointer;display:flex;font-size:${typography.sizes.sm};gap:${spacing[2]};min-height:${density.interactiveTargetMin};padding-inline:${spacing[3]}}
+    ${root} .statement-secondary-actions>summary::after{content:'+';font-size:${typography.sizes.lg}}
+    ${root} .statement-secondary-actions[open]>summary::after{content:'-'}
+    ${root} .statement-secondary-actions>summary::-webkit-details-marker{display:none}
+    ${root} .statement-secondary-actions-content{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sf-shadow-sm);display:grid;gap:${spacing[1]};min-width:12rem;padding:${spacing[2]};position:absolute;right:0;top:calc(100% + ${spacing[1]});z-index:20}
+    ${root} .statement-secondary-actions-content button{justify-content:flex-start;width:100%}
+    ${root} .account-summary[data-mockup-composition]{display:grid;gap:${spacing[3]} ${spacing[4]};grid-template-columns:repeat(2,minmax(0,1fr));padding:0}
+    ${root} .statement-summary-duplicate[hidden]{display:none}
+    ${root} .statement-account-heading{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:${spacing[4]};grid-column:1/-1;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);padding-bottom:${spacing[3]}}
+    ${root} .statement-account-heading .statement-context{border:0;display:grid;gap:${spacing[2]};padding:0}
+    ${root} .statement-account-heading .statement-context-main{flex:none}
+    ${root} .statement-account-heading .statement-context-copy>.muted{display:none}
+    ${root} .statement-account-heading .statement-context-copy strong{font-size:${typography.sizes.lg}}
+    ${root} .statement-account-heading .statement-context-meta{gap:${spacing[1]} ${spacing[3]}}
+    ${root} .statement-account-heading .summary-balance{border-left:1px solid var(--line);padding-left:${spacing[4]}}
+    ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes["2xl"]};overflow-wrap:anywhere}
+    ${root} .account-summary[data-mockup-composition] .summary-total{padding:0;gap:${spacing[1]}}
+    ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.xl};overflow-wrap:anywhere}
+    ${root} .account-summary[data-mockup-composition] .status-overview{padding:0;grid-column:1/-1}
     ${root} .statement-status-details{width:100%}
-    ${root} .statement-status-details>summary{color:var(--muted);cursor:pointer;font-size:${typography.sizes.sm};padding-block:${spacing[1]}}
-    ${root} .statement-status-content{display:flex;flex-wrap:wrap;gap:${spacing[2]} ${spacing[4]};padding-top:${spacing[2]}}
-    body:has([data-golden-screen="statement"]) dialog[data-modal] .modal-panel>div:nth-child(2){padding-right:0}
-    body:has([data-golden-screen="statement"]) dialog[data-modal] .modal-panel>div:nth-child(2)>.eyebrow{align-items:center;display:flex;min-height:${density.interactiveTargetMin};padding-right:calc(${density.interactiveTargetMin} + ${spacing[6]});margin:0 0 ${spacing[2]}}
-    body:has([data-golden-screen="statement"]) dialog[data-modal] .close-form button{min-height:${density.interactiveTargetMin};min-width:${density.interactiveTargetMin}}
-    body:has([data-golden-screen="statement"]) dialog[data-modal] [data-modal-title]{overflow-wrap:anywhere}
+    ${root} .statement-status-details>summary{box-sizing:border-box;color:var(--muted);cursor:pointer;font-size:${typography.sizes.sm};min-height:${density.interactiveTargetMin};padding-block:${spacing[3]}}
+    ${root} .statement-status-content{display:flex;flex-wrap:wrap;gap:${spacing[2]} ${spacing[4]};padding-bottom:${spacing[3]}}
+    ${root} .statement-toolbar .chips{display:none}
+    ${root} .statement-toolbar{padding-block:${spacing[2]}}
+    ${root} .statement-query-heading{margin-bottom:${spacing[1]}}
+    ${root} .filter-form .account-select-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    ${root} .filter-form :is(input,select,button),${root} [data-statement-options-toggle]{min-height:${density.interactiveTargetMin}}
+    ${dialog} .modal-panel>div:nth-child(2){padding-right:0}
+    ${dialog} .modal-panel>div:nth-child(2)>.eyebrow{align-items:center;box-sizing:border-box;display:flex;max-width:calc(100% - ${density.interactiveTargetMin} - ${spacing[6]});min-height:${density.interactiveTargetMin};padding-right:0;margin:0 0 ${spacing[2]}}
+    ${dialog} .close-form button{min-height:${density.interactiveTargetMin};min-width:${density.interactiveTargetMin}}
+    ${dialog} [data-modal-title]{font-size:${typography.sizes.xl};line-height:${typography.lineHeights.compact};overflow-wrap:anywhere}
+    ${dialog} .modal-panel form[data-form] :is(input,select,textarea){min-height:${density.interactiveTargetMin}}
+    ${dialog} .modal-panel form[data-form]>label.full{grid-column:1/-1}
     @media(max-width:${breakpoints.shellCompact}){
       ${root},${root} .statement-a2-workspace{gap:${spacing[3]}}
       ${root} .sf-page-header-description{display:none}
-      ${root} .statement-heading-actions{display:grid;gap:${spacing[2]};grid-template-columns:repeat(3,minmax(0,1fr))}
+      ${root} .statement-heading-actions{display:flex;justify-content:space-between;width:100%}
+      ${root} .statement-heading-actions>button{flex:1;min-width:0}
       ${root} .statement-heading-actions button{font-size:${typography.sizes.sm};min-width:0;padding-inline:${spacing[2]}}
       ${root} .statement-heading-actions button[data-quick-kind="expense"]{grid-column:auto;grid-row:auto}
+      ${root} .statement-account-heading{gap:${spacing[3]};grid-template-columns:minmax(0,1fr)}
+      ${root} .statement-account-heading .summary-balance{border-left:0;border-top:1px solid var(--line);padding:${spacing[2]} 0 0}
+      ${root} .statement-account-heading .summary-balance p{font-size:${typography.sizes.xs}}
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:${spacing[1]}}
+      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.md}}
       ${root} .statement-context{gap:${spacing[2]};padding-bottom:${spacing[2]}}
-      ${root} .statement-context-copy>.muted{display:none}
       ${root} .statement-context-meta{gap:${spacing[1]} ${spacing[3]}}
-      ${root} .status-overview{padding-top:0}
-      ${root} .statement-status-details>summary{box-sizing:border-box;min-height:${density.interactiveTargetMin};padding-block:${spacing[3]}}
-      ${root} .statement-status-content{padding-top:0;padding-bottom:${spacing[2]}}
-      ${root} .filter-form .account-select-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      ${root} .filter-form :is(input,select,button),${root} [data-statement-options-toggle]{min-height:${density.interactiveTargetMin}}
       ${root} .statement-body[data-statement-row-refined]{grid-template-columns:24px minmax(0,1fr) ${density.interactiveTargetMin};grid-template-areas:"select description actions" "select amount amount" "select metadata status" "select footer footer";gap:${spacing[1]} ${spacing[2]}}
       ${root} .statement-body .statement-row-metadata{align-items:baseline;display:flex;flex-wrap:wrap;gap:${spacing[1]} ${spacing[2]};grid-area:metadata;min-width:0}
       ${root} .statement-body .statement-row-footer{align-items:baseline;display:flex;flex-wrap:wrap;gap:${spacing[1]} ${spacing[2]};grid-area:footer;justify-content:space-between;min-width:0}

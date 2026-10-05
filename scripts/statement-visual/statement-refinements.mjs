@@ -4,6 +4,7 @@ import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { evaluate, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import { assertMockupComposition, measureMockupComposition } from "./mockup-composition-contract.mjs";
 
 /** Shares the authenticated browser and fixtures with the canonical group-layout scenario. */
 export async function validateStatementRefinements(cdp, { baseUrl, route, outputDir }) {
@@ -16,6 +17,21 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
     controls: [],
   };
   const read = (expression) => evaluate(cdp, expression);
+  const press = async (key, code) => {
+    await cdp.send("Input.dispatchKeyEvent", {
+      type: "keyDown",
+      key,
+      code: key,
+      windowsVirtualKeyCode: code,
+      ...(key === "Enter" ? { text: "\r" } : {}),
+    });
+    await cdp.send("Input.dispatchKeyEvent", {
+      type: "keyUp",
+      key,
+      code: key,
+      windowsVirtualKeyCode: code,
+    });
+  };
   try {
     for (const [width, height] of [
       [1366, 768],
@@ -26,27 +42,54 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       await navigate(cdp, `${baseUrl}${route}`);
       await sleep(200);
       const geometry = await read(`(${measureStatementRefinements.toString()})()`);
-      report.observations.push({ width, height, geometry });
+      const composition = await read(`(${measureMockupComposition.toString()})()`);
+      report.observations.push({ width, height, geometry, composition });
       assertStatementRefinements(geometry, width <= 760);
+      assertMockupComposition(composition);
       await screenshot(cdp, join(outputDir, `statement-refinement-top-${width}x${height}.png`));
-      await read("document.querySelector('.statement-body').scrollIntoView({block:'center'})");
-      await screenshot(cdp, join(outputDir, `statement-refinement-rows-${width}x${height}.png`));
-      if (width > 760) continue;
+
+      await read("document.querySelector('.statement-secondary-actions>summary').focus()");
+      await press("Enter", 13);
+      assert.equal(await read("document.querySelector('.statement-secondary-actions').open"), true);
+      const secondary = await read(`(() => {
+        const menu = document.querySelector('.statement-secondary-actions');
+        return Array.from(menu.querySelectorAll('button[data-quick-kind]')).map(button => ({
+          kind: button.dataset.quickKind, visible: button.getBoundingClientRect().height > 0
+        }));
+      })()`);
+      assert.deepEqual(
+        secondary.map((action) => action.kind).sort(),
+        ["income", "transfer"],
+      );
+      assert.ok(secondary.every((action) => action.visible));
+      await press("Escape", 27);
+      assert.equal(await read("document.querySelector('.statement-secondary-actions').open"), false);
+      assert.equal(
+        await read("document.activeElement.matches('.statement-secondary-actions>summary')"),
+        true,
+      );
+      await press("Enter", 13);
+      await read(
+        "document.querySelector('.statement-secondary-actions [data-quick-kind=\"transfer\"]').focus()",
+      );
+      await press("Enter", 13);
+      assert.equal(await read("document.querySelector('dialog[data-modal]').open"), true);
+      assert.equal(
+        await read("document.querySelector('dialog[data-modal] select[name=kind]').value"),
+        "transfer",
+      );
+      await press("Escape", 27);
+      assert.equal(await read("document.querySelector('dialog[data-modal]').open"), false);
+      // Native dialog close is queued; focus restoration belongs to its close event.
+      await sleep(50);
+      assert.equal(
+        await read("document.activeElement.matches('.statement-secondary-actions>summary')"),
+        true,
+      );
+      report.controls.push({ id: "GS-MOCKUP-ACTIONS-KEYBOARD", width, status: "passed" });
 
       await read("document.querySelector('.statement-status-details>summary').focus()");
-      await cdp.send("Input.dispatchKeyEvent", {
-        type: "keyDown",
-        key: "Enter",
-        code: "Enter",
-        windowsVirtualKeyCode: 13,
-        text: "\r",
-      });
-      await cdp.send("Input.dispatchKeyEvent", {
-        type: "keyUp",
-        key: "Enter",
-        code: "Enter",
-        windowsVirtualKeyCode: 13,
-      });
+      await press("Enter", 13);
       const expanded = await read(`(${measureStatementRefinements.toString()})()`);
       assert.equal(expanded.summaryOpen, true, "Status summary must open from the keyboard.");
       assert.equal(expanded.statusVisible, true, "Expanded status values must be visible.");
@@ -58,6 +101,24 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       assert.equal(expanded.statusText, geometry.statusText, "Disclosure lost status information.");
       await read("document.querySelector('.statement-status-details>summary').click()");
       report.controls.push({ id: "GS-MOBILE-STATUS-KEYBOARD", width, status: "passed" });
+      await read("document.querySelector('.statement-body').scrollIntoView({block:'center'})");
+      await screenshot(cdp, join(outputDir, `statement-refinement-rows-${width}x${height}.png`));
+
+      if (width > 760) {
+        await read(`(() => {const heading=document.querySelector('.statement-account-heading');
+          heading.dataset.savedStyle=heading.getAttribute('style')||'';
+          heading.style.setProperty('grid-template-columns','1fr','important');})()`);
+        try {
+          const stacked = await read(`(${measureMockupComposition.toString()})()`);
+          assert.throws(() => assertMockupComposition(stacked), /side by side|horizontal/);
+        } finally {
+          await read(`(() => {const heading=document.querySelector('.statement-account-heading');
+            heading.setAttribute('style',heading.dataset.savedStyle);delete heading.dataset.savedStyle;})()`);
+        }
+        assertMockupComposition(await read(`(${measureMockupComposition.toString()})()`));
+        report.controls.push({ id: "GS-MOCKUP-NC-HEADER", status: "passed", restored: "passed" });
+        continue;
+      }
 
       await read(`(() => {const style=document.createElement('style');style.id='statement-refinement-negative';
         style.textContent='[data-golden-screen] .statement-body .statement-row-metadata,[data-golden-screen] .statement-body .statement-row-footer{display:contents!important}';document.head.append(style);})()`);
@@ -124,12 +185,16 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
 function assertStatementRefinements(geometry, mobile) {
   assert.equal(geometry.overflow, false, "Statement refinement must not overflow the page.");
   assert.ok(geometry.rowCount > 0, "Statement rows must be observed.");
-  assert.equal(geometry.summaryOpen, !mobile, "Status summary must be progressive on mobile.");
+  assert.equal(geometry.summaryOpen, false, "Status details must start collapsed.");
   assert.equal(geometry.firstAction, "expense", "The primary action must lead the keyboard order.");
   assert.ok(geometry.essentialText.every((text) => text.trim()), "Financial context is missing.");
   for (const secondary of geometry.actions.filter((action) => action.kind !== "expense")) {
     const primary = geometry.actions.find((action) => action.kind === "expense");
-    assert.notEqual(primary.background, secondary.background, "Secondary action competes with primary.");
+    assert.notEqual(
+      primary.background,
+      secondary.background,
+      "Secondary action competes with primary.",
+    );
   }
   if (mobile) {
     assert.equal(geometry.metadataLayout, "flex", "Mobile metadata must share a compact line.");

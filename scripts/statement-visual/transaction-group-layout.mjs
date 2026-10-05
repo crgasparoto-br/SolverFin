@@ -196,7 +196,10 @@ async function negativeControls(cdp, controls) {
     const late = await measureGeometry(cdp);
     assert.throws(() => assertGroupFormGeometry(late, 2), /columns/);
   } finally {
-    await evaluate(cdp, `(() => {document.getElementById('group-negative-late-field')?.remove();const form=document.querySelector('[data-group-form]');form.setAttribute('style',form.dataset.groupNegativeStyle);delete form.dataset.groupNegativeStyle;})()`);
+    await evaluate(
+      cdp,
+      `(() => {document.getElementById('group-negative-late-field')?.remove();const form=document.querySelector('[data-group-form]');form.setAttribute('style',form.dataset.groupNegativeStyle);delete form.dataset.groupNegativeStyle;})()`,
+    );
   }
   assertGroupFormGeometry(await measureGeometry(cdp), 2);
   controls.push({ id: "GS-GROUP-NC-LATE-DOM-FIELD", status: "passed", restored: "passed" });

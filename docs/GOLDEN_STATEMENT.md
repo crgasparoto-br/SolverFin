@@ -92,8 +92,9 @@ cada regressao deve reprovar e a restauracao precisa passar.
 ### GS703-003 e GS703-R01: mobile e cabecalho
 
 `statement-golden-refinements.ts` agrupa categoria/tipo e data/saldo preservando
-os nodes e seus handlers. O resumo de situacao e progressivo no mobile e permanece
-acessivel por teclado. Conta, moeda, periodo, descricao e valores nao sao removidos.
+os nodes e seus handlers. O resumo de situacao e progressivo no desktop e no mobile,
+permanece acessivel por teclado e preserva a escolha da pessoa durante o resize.
+Conta, moeda, periodo, descricao e valores nao sao removidos.
 A acao primaria vem primeiro na ordem de teclado, com as demais acoes subordinadas.
 O titulo do dialog utiliza toda a largura do cabecalho; a reserva do botao Fechar
 fica apenas na linha superior, sem estreitar o titulo longo.
@@ -119,3 +120,31 @@ precisam de fechamento individual na remediacao.
 O indice de evidencias nao equivale a homologacao. Uma CI verde ou um handoff
 READY nao altera automaticamente `data-golden-screen-state="candidate"` nem
 autoriza usar esta tela como referencia aprovada sem nova auditoria independente.
+
+## Aplicacao do mockup do Extrato
+
+A referencia anexada orienta a composicao, nao fornece dados nem novos contratos
+financeiros. A implementacao mantem os tokens e o catalogo institucional do produto.
+Conta e saldo atual compartilham o mesmo cabecalho no desktop; no mobile, a conta
+precede o saldo. Receitas e despesas permanecem compactas abaixo desse cabecalho.
+O titulo da colecao passa a ser Movimentacoes, sem repetir o nome completo da conta.
+
+Nova despesa permanece a acao primaria deste fluxo. Transferir e Nova receita
+ficam em Mais acoes, usando os mesmos botoes, listeners e formularios existentes.
+O menu abre por teclado, fecha com Escape ou clique externo e devolve foco ao
+acionador quando o dialog aberto por uma dessas acoes e fechado. Sem JavaScript,
+os controles originais permanecem disponiveis. A situacao do periodo inicia
+recolhida em ambos os layouts; expandir revela os contadores e valores originais.
+
+A imagem nao autoriza renomear receitas/despesas como entradas/saidas incluindo
+transferencias, inventar saldo inicial/final, fundir as datas financeiras ou tornar
+categoria obrigatoria. Atalhos de sete dias, conciliacao por associacao e mover
+para outra conta dependem de contratos funcionais proprios; nao sao adicionados
+como controles decorativos ou como reinterpretacao de operacoes existentes.
+
+`mockup-composition-contract.mjs` valida cabecalho horizontal, ordem mobile,
+largura util e acoes progressivas. Ele e chamado por `statement-refinements.mjs`,
+sem um segundo navegador ou novo workflow. O controle GS-MOCKUP-NC-HEADER rejeita
+empilhamento indevido no desktop; GS-MOCKUP-ACTIONS-KEYBOARD abre a transferencia
+pelo menu real e observa fechamento e retorno do foco. Os controles anteriores
+de agrupamento, moeda, titulo, overflow e metadados continuam obrigatorios.
