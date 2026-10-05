@@ -23,6 +23,6 @@ assert.ok(styles.includes(`@media(max-width:${solverFinDesignTokens.breakpoints.
 assert.ok(styles.includes(`min-height:${solverFinDesignTokens.density.interactiveTargetMin}`));
 assert.match(styles, /statement-row-metadata[^}]*display:flex/);
 assert.match(styles, /statement-row-footer[^}]*display:flex/);
-assert.match(styles, /div:nth-child\(2\)\{padding-right:0/);
-assert.match(styles, /eyebrow[^}]*max-width:calc\(100% -/);
-assert.match(styles, /eyebrow[^}]*width:fit-content/);
+assert.match(styles, /div:nth-child\(2\)[^}]*grid-template-columns:subgrid[^}]*padding-right:0/);
+assert.match(styles, /close-form[^}]*grid-column:2[^}]*position:static/);
+assert.match(styles, /eyebrow[^}]*grid-column:1[^}]*min-width:0/);

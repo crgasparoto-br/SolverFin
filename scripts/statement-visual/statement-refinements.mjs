@@ -4,7 +4,10 @@ import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { evaluate, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
-import { assertMockupComposition, measureMockupComposition } from "./mockup-composition-contract.mjs";
+import {
+  assertMockupComposition,
+  measureMockupComposition,
+} from "./mockup-composition-contract.mjs";
 
 /** Shares the authenticated browser and fixtures with the canonical group-layout scenario. */
 export async function validateStatementRefinements(cdp, { baseUrl, route, outputDir }) {
@@ -60,15 +63,15 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       assert.deepEqual(secondary.map((action) => action.kind).sort(), ["income", "transfer"]);
       assert.ok(secondary.every((action) => action.visible));
       await press("Escape", 27);
-      assert.equal(await read("document.querySelector('.statement-secondary-actions').open"), false);
+      const menuClosed = await read("document.querySelector('.statement-secondary-actions').open");
+      assert.equal(menuClosed, false);
       assert.equal(
         await read("document.activeElement.matches('.statement-secondary-actions>summary')"),
         true,
       );
       await press("Enter", 13);
-      await read(
-        "document.querySelector('.statement-secondary-actions [data-quick-kind=\"transfer\"]').focus()",
-      );
+      const transferSelector = ".statement-secondary-actions [data-quick-kind=transfer]";
+      await read(`document.querySelector("${transferSelector}").focus()`);
       await press("Enter", 13);
       assert.equal(await read("document.querySelector('dialog[data-modal]').open"), true);
       assert.equal(
@@ -117,7 +120,8 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
         continue;
       }
 
-      await read(`(() => {const style=document.createElement('style');style.id='statement-refinement-negative';
+      await read(`
+        (() => {const style=document.createElement('style');style.id='statement-refinement-negative';
         style.textContent='[data-golden-screen] .statement-body .statement-row-metadata,[data-golden-screen] .statement-body .statement-row-footer{display:contents!important}';document.head.append(style);})()`);
       try {
         const regressed = await read(`(${measureStatementRefinements.toString()})()`);
@@ -149,12 +153,16 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
     const title = await read(measureTitle);
     assertTitle(title);
     await screenshot(cdp, join(outputDir, "statement-refinement-dialog-title-320x740.png"));
-    await read(`(() => {const h=document.querySelector('dialog[data-modal] .modal-panel>div:nth-child(2)');h.dataset.savedStyle=h.getAttribute('style')||'';h.style.setProperty('padding-right','104px','important');})()`);
+    await read(`
+      (() => {const h=document.querySelector('dialog[data-modal] .modal-panel>div:nth-child(2)');h.dataset.savedStyle=h.getAttribute('style')||'';h.style.setProperty('padding-right','104px','important');})()
+    `);
     try {
       const narrow = await read(measureTitle);
       assert.throws(() => assertTitle(narrow), /header width/);
     } finally {
-      await read(`(() => {const h=document.querySelector('dialog[data-modal] .modal-panel>div:nth-child(2)');h.setAttribute('style',h.dataset.savedStyle);delete h.dataset.savedStyle;})()`);
+      await read(`
+        (() => {const h=document.querySelector('dialog[data-modal] .modal-panel>div:nth-child(2)');h.setAttribute('style',h.dataset.savedStyle);delete h.dataset.savedStyle;})()
+      `);
     }
     assertTitle(await read(measureTitle));
     report.controls.push({

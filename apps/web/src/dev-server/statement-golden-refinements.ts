@@ -119,7 +119,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-secondary-actions>summary::-webkit-details-marker{display:none}
     ${root} .statement-secondary-actions-content{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sf-shadow-sm);display:grid;gap:${spacing[1]};min-width:12rem;padding:${spacing[2]};position:absolute;right:0;top:calc(100% + ${spacing[1]});z-index:20}
     ${root} .statement-secondary-actions-content button{justify-content:flex-start;width:100%}
-    ${root} .account-summary[data-mockup-composition]{display:grid;gap:${spacing[3]} ${spacing[4]};grid-template-columns:repeat(2,minmax(0,1fr));padding:0}
+    ${root} .account-summary[data-mockup-composition]{display:grid;gap:${spacing[3]} ${spacing[4]};grid-template-columns:repeat(3,minmax(0,1fr));padding:0}
     ${root} .statement-summary-duplicate[hidden]{display:none}
     ${root} .statement-account-heading{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:${spacing[4]};grid-column:1/-1;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);padding-bottom:${spacing[3]}}
     ${root} .statement-account-heading .statement-context{border:0;display:grid;gap:${spacing[2]};padding:0}
@@ -131,7 +131,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes["2xl"]};overflow-wrap:anywhere}
     ${root} .account-summary[data-mockup-composition] .summary-total{padding:0;gap:${spacing[1]}}
     ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.xl};overflow-wrap:anywhere}
-    ${root} .account-summary[data-mockup-composition] .status-overview{padding:0;grid-column:1/-1}
+    ${root} .account-summary[data-mockup-composition] .status-overview{border:0;padding:0;grid-column:auto}
     ${root} .statement-status-details{width:100%}
     ${root} .statement-status-details>summary{box-sizing:border-box;color:var(--muted);cursor:pointer;font-size:${typography.sizes.sm};min-height:${density.interactiveTargetMin};padding-block:${spacing[3]}}
     ${root} .statement-status-content{display:flex;flex-wrap:wrap;gap:${spacing[2]} ${spacing[4]};padding-bottom:${spacing[3]}}
@@ -140,8 +140,12 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-query-heading{margin-bottom:${spacing[1]}}
     ${root} .filter-form .account-select-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     ${root} .filter-form :is(input,select,button),${root} [data-statement-options-toggle]{min-height:${density.interactiveTargetMin}}
-    ${dialog} .modal-panel>div:nth-child(2){padding-right:0}
-    ${dialog} .modal-panel>div:nth-child(2)>.eyebrow{align-items:center;box-sizing:border-box;display:flex;max-width:calc(100% - ${density.interactiveTargetMin} - ${spacing[6]});min-height:${density.interactiveTargetMin};padding-right:0;margin:0 0 ${spacing[2]};width:fit-content}
+    ${dialog} .modal-panel{display:grid;grid-template-columns:minmax(0,1fr) auto}
+    ${dialog} .close-form{align-self:start;grid-column:2;grid-row:1;justify-self:end;margin:0;position:static}
+    ${dialog} .modal-panel>div:nth-child(2){display:grid;gap:${spacing[2]};grid-column:1/-1;grid-row:1;grid-template-columns:subgrid;padding-right:0}
+    ${dialog} .modal-panel>div:nth-child(2)>.eyebrow{align-items:center;display:flex;grid-column:1;grid-row:1;margin:0;max-width:none;min-height:${density.interactiveTargetMin};min-width:0;padding-right:${spacing[2]};width:auto}
+    ${dialog} .modal-panel>div:nth-child(2)>:is(h2,p:not(.eyebrow)){grid-column:1/-1;margin:0}
+    ${dialog} .modal-panel>form[data-form]{grid-column:1/-1}
     ${dialog} .close-form button{min-height:${density.interactiveTargetMin};min-width:${density.interactiveTargetMin}}
     ${dialog} [data-modal-title]{font-size:${typography.sizes.xl};line-height:${typography.lineHeights.compact};overflow-wrap:anywhere}
     ${dialog} .modal-panel form[data-form] :is(input,select,textarea){min-height:${density.interactiveTargetMin}}
@@ -156,6 +160,8 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-account-heading{gap:${spacing[3]};grid-template-columns:minmax(0,1fr)}
       ${root} .statement-account-heading .summary-balance{border-left:0;border-top:1px solid var(--line);padding:${spacing[2]} 0 0}
       ${root} .statement-account-heading .summary-balance p{font-size:${typography.sizes.xs}}
+      ${root} .account-summary[data-mockup-composition]{grid-template-columns:repeat(2,minmax(0,1fr))}
+      ${root} .account-summary[data-mockup-composition] .status-overview{border-top:1px solid var(--line);grid-column:1/-1}
       ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:${spacing[1]}}
       ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.md}}
       ${root} .statement-context{gap:${spacing[2]};padding-bottom:${spacing[2]}}
