@@ -141,7 +141,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .filter-form .account-select-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     ${root} .filter-form :is(input,select,button),${root} [data-statement-options-toggle]{min-height:${density.interactiveTargetMin}}
     ${dialog} .modal-panel>div:nth-child(2){padding-right:0}
-    ${dialog} .modal-panel>div:nth-child(2)>.eyebrow{align-items:center;box-sizing:border-box;display:flex;max-width:calc(100% - ${density.interactiveTargetMin} - ${spacing[6]});min-height:${density.interactiveTargetMin};padding-right:0;margin:0 0 ${spacing[2]}}
+    ${dialog} .modal-panel>div:nth-child(2)>.eyebrow{align-items:center;box-sizing:border-box;display:flex;max-width:calc(100% - ${density.interactiveTargetMin} - ${spacing[6]});min-height:${density.interactiveTargetMin};padding-right:0;margin:0 0 ${spacing[2]};width:fit-content}
     ${dialog} .close-form button{min-height:${density.interactiveTargetMin};min-width:${density.interactiveTargetMin}}
     ${dialog} [data-modal-title]{font-size:${typography.sizes.xl};line-height:${typography.lineHeights.compact};overflow-wrap:anywhere}
     ${dialog} .modal-panel form[data-form] :is(input,select,textarea){min-height:${density.interactiveTargetMin}}

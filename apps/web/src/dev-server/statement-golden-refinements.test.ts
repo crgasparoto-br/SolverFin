@@ -25,3 +25,4 @@ assert.match(styles, /statement-row-metadata[^}]*display:flex/);
 assert.match(styles, /statement-row-footer[^}]*display:flex/);
 assert.match(styles, /div:nth-child\(2\)\{padding-right:0/);
 assert.match(styles, /eyebrow[^}]*max-width:calc\(100% -/);
+assert.match(styles, /eyebrow[^}]*width:fit-content/);
