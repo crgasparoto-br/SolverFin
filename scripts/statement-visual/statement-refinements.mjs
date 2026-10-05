@@ -60,10 +60,7 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
           kind: button.dataset.quickKind, visible: button.getBoundingClientRect().height > 0
         }));
       })()`);
-      assert.deepEqual(
-        secondary.map((action) => action.kind).sort(),
-        ["income", "transfer"],
-      );
+      assert.deepEqual(secondary.map((action) => action.kind).sort(), ["income", "transfer"]);
       assert.ok(secondary.every((action) => action.visible));
       await press("Escape", 27);
       const menuClosed = await read("document.querySelector('.statement-secondary-actions').open");
