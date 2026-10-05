@@ -175,7 +175,7 @@ export function statementMockupControlsStyles(): string {
     ${root} .statement-body{padding-block:${spacing[2]}}
     ${dialog} .statement-entry-kinds{display:grid;gap:${spacing[1]};grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr);padding:${spacing[1]};background:var(--sf-color-background);border:1px solid var(--sf-color-line);border-radius:var(--sf-radius-lg)}
     ${dialog} .statement-entry-kinds[hidden],${dialog} form[data-mockup-controls] label[hidden]{display:none!important}
-    ${dialog} .statement-entry-kinds button{background:transparent;border:1px solid transparent;border-radius:var(--sf-radius-md);color:var(--sf-color-muted-text);font-size:${typography.sizes.sm};font-weight:${typography.weights.medium};line-height:${typography.lineHeights.compact};min-height:${density.interactiveTargetMin};min-width:0;padding:${spacing[2]} ${spacing[1]};overflow-wrap:anywhere}
+    ${dialog} .statement-entry-kinds button{background:transparent;border:1px solid transparent;border-radius:var(--sf-radius-md);color:var(--sf-color-muted-text);font-size:${typography.sizes.sm};font-weight:${typography.weights.medium};line-height:${typography.lineHeights.compact};min-height:${density.interactiveTargetMin};min-width:0;padding:${spacing[2]} ${spacing[1]};white-space:normal;overflow-wrap:anywhere}
     ${dialog} .statement-entry-kinds button[aria-checked="true"]{border-color:currentColor;font-weight:${typography.weights.bold};box-shadow:inset 0 -2px currentColor}
     ${dialog} [data-statement-entry-kind="expense"][aria-checked="true"]{background:var(--sf-color-danger-surface);color:var(--sf-color-danger)}
     ${dialog} [data-statement-entry-kind="income"][aria-checked="true"]{background:var(--sf-color-success-surface);color:var(--sf-color-success)}
@@ -188,7 +188,8 @@ export function statementMockupControlsStyles(): string {
       ${root} .statement-query-heading{gap:${spacing[1]}}
       ${root} .statement-secondary-actions>summary{padding-inline:${spacing[2]}}
       ${dialog} .save-row>.status-icons{flex-basis:100%;flex-wrap:wrap;min-width:0}
-      ${dialog} .save-row>button{flex:1 1 0;min-width:0;width:auto}
+      ${dialog} .save-row>button{flex:1 1 0;min-width:0;width:auto;white-space:normal;overflow-wrap:anywhere;padding-inline:${spacing[2]};font-size:${typography.sizes.sm};line-height:${typography.lineHeights.compact}}
+      ${dialog} .save-row>button span{min-width:0;white-space:normal;overflow-wrap:anywhere}
     }
   `;
 }

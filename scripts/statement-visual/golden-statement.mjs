@@ -149,11 +149,24 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       assert.equal(transfer.visible, true, "Transfer must invoke the existing change handler.");
       const bounds = await read(`(() => {
         const d = document.querySelector('dialog[data-modal]'); const r = d.getBoundingClientRect();
+        const clippedLabels = Array.from(d.querySelectorAll('.save-row>button,.statement-entry-kinds>button')).filter(button => {
+          const box = button.getBoundingClientRect();
+          if (!box.width || !box.height) return false;
+          const range = document.createRange(); range.selectNodeContents(button);
+          return Array.from(range.getClientRects()).some(part => part.left < box.left - 1 || part.right > box.right + 1);
+        }).map(button => button.textContent.trim());
         return { inside: r.left >= -1 && r.top >= -1 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1,
-          overflow: d.scrollWidth > d.clientWidth + 1 };
+          overflow: d.scrollWidth > d.clientWidth + 1, clippedLabels };
       })()`);
+      report.checks.push({
+        id: "GS-DIALOG-BOUNDS",
+        status: "observed",
+        viewport: { width, height },
+        bounds,
+      });
       assert.equal(bounds.inside, true);
       assert.equal(bounds.overflow, false);
+      assert.deepEqual(bounds.clippedLabels, [], "Dialog action labels must remain fully visible.");
       const headerClearance = await read(`(() => {
         const dialog = document.querySelector('dialog[data-modal]');
         const close = dialog?.querySelector('.close-form button');
