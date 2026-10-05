@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 import { solverFinDesignTokens } from "../design-system/tokens.js";
 
 /** Enhance the existing form, without replacing financial fields or their listeners. */
