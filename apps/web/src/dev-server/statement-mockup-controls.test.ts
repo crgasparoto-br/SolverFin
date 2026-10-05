@@ -11,7 +11,10 @@ import {
 
 test("entry controls serialize to executable browser JavaScript", () => {
   const runtime = statementMockupControlsRuntime();
-  const bodies = Array.from(runtime.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g), (match) => match[1]);
+  const bodies = Array.from(
+    runtime.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g),
+    (match) => match[1],
+  );
   assert.equal(bodies.length, 1);
   const body = bodies[0];
   assert.ok(body);

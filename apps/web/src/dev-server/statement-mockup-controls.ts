@@ -26,13 +26,10 @@ export function installStatementMockupControls(root: HTMLElement): void {
     { value: "transfer", label: "Transfer\u00eancia" },
   ];
   // Unsupported contracts keep the native form. This is progressive enhancement.
-  if (
-    !choices.every(({ value }) =>
-      Array.from(select.options).some((option) => option.value === value),
-    )
-  ) {
-    return;
-  }
+  const supported = choices.every(({ value }) => {
+    return Array.from(select.options).some((option) => option.value === value);
+  });
+  if (!supported) return;
 
   const group = document.createElement("div");
   group.className = "statement-entry-kinds";
@@ -121,7 +118,8 @@ export function installStatementMockupControls(root: HTMLElement): void {
   // the canonical click handlers have run, rather than assigning our own default.
   root.addEventListener("click", () => queueMicrotask(sync));
 
-  const description = form.querySelector<HTMLInputElement>('[name="description"]')?.closest("label");
+  const descriptionInput = form.querySelector<HTMLInputElement>('[name="description"]');
+  const description = descriptionInput?.closest("label");
   const category = form.querySelector<HTMLSelectElement>('[name="categoryId"]')?.closest("label");
   if (description && category) category.before(description);
   if (category) category.classList.add("statement-entry-category");

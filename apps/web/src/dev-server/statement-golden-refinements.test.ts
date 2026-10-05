@@ -8,7 +8,10 @@ import {
 } from "./statement-golden-refinements.js";
 
 const runtime = statementGoldenRefinementRuntime();
-const bodies = Array.from(runtime.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g), (match) => match[1]);
+const bodies = Array.from(
+  runtime.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g),
+  (match) => match[1],
+);
 assert.equal(bodies.length, 2, "Both refinement and entry controls must be published.");
 for (const body of bodies) {
   assert.ok(body, "Every emitted script must have a body.");
