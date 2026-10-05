@@ -123,19 +123,24 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       await read(`document.querySelector('[data-quick-kind="expense"]').click()`);
       assert.equal(await read(`document.querySelector('dialog[data-modal]').open`), true);
       await read(`(() => {
-        const select = document.querySelector('dialog[data-modal] select[name="kind"]');
-        select.focus();
-        select.value = 'transfer';
-        select.dispatchEvent(new Event('change', { bubbles: true }));
+        const active = document.querySelector('dialog[data-modal] [data-statement-entry-kind][aria-checked="true"]');
+        if (!active) throw new Error('Accessible entry kind control was not initialized.');
+        active.focus();
       })()`);
+      await press("End", 35);
       const transfer = await read(`(() => {
         const select = document.querySelector('dialog[data-modal] select[name="kind"]');
         const destination = document.querySelector('[data-field="destinationAccountId"]');
-        return { kind: select.value, focused: document.activeElement === select,
+        const radio = document.querySelector('dialog[data-modal] [data-statement-entry-kind="transfer"]');
+        return { kind: select.value, focused: document.activeElement === radio && radio?.getAttribute('aria-checked') === 'true',
           visible: !!destination && !destination.hidden && destination.getBoundingClientRect().height > 0 };
       })()`);
       assert.equal(transfer.kind, "transfer");
-      assert.equal(transfer.focused, true, "Canonical type select must remain keyboard-focusable.");
+      assert.equal(
+        transfer.focused,
+        true,
+        "Entry kind must be keyboard-operable and synchronized with the canonical select.",
+      );
       assert.equal(transfer.visible, true, "Transfer must invoke the existing change handler.");
       const bounds = await read(`(() => {
         const d = document.querySelector('dialog[data-modal]'); const r = d.getBoundingClientRect();

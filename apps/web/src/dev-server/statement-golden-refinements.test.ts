@@ -8,9 +8,13 @@ import {
 } from "./statement-golden-refinements.js";
 
 const runtime = statementGoldenRefinementRuntime();
-const body = runtime.match(/<script[^>]*>([\s\S]*)<\/script>/)?.[1];
-assert.ok(body, "The refinement must publish its runtime.");
-assert.doesNotThrow(() => new Script(body));
+const bodies = Array.from(runtime.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g), (match) => match[1]);
+assert.equal(bodies.length, 2, "Both refinement and entry controls must be published.");
+for (const body of bodies) {
+  assert.ok(body, "Every emitted script must have a body.");
+  assert.doesNotThrow(() => new Script(body));
+}
+assert.match(runtime, /data-statement-mockup-controls/);
 assert.match(runtime, /metadata\.append\(category, kind\)/);
 assert.match(runtime, /footer\.append\(date, balance\)/);
 assert.match(runtime, /heading\.append\(context, balance\)/);

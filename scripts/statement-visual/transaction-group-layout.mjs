@@ -11,6 +11,7 @@ import {
   measureGroupFormGeometry,
 } from "./form-geometry.mjs";
 import { validateGoldenStatement } from "./golden-statement.mjs";
+import { installLateDomFieldProbe } from "./late-dom-field-probe.mjs";
 import { validateStatementRefinements } from "./statement-refinements.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
@@ -182,24 +183,14 @@ async function negativeControls(cdp, controls) {
   assertGroupFormGeometry(await measureGeometry(cdp), 2);
   controls.push({ id: "GS-GROUP-NC-DUPLICATE-CURRENCY", status: "passed", restored: "passed" });
 
-  await evaluate(
-    cdp,
-    `(() => {const form=document.querySelector('[data-group-form]');
-      form.dataset.groupNegativeStyle=form.getAttribute('style')||'';form.style.position='relative';
-      const target=form.querySelector('[name="displayOn"]').closest('label');
-      const rect=target.getBoundingClientRect();const bounds=form.getBoundingClientRect();
-      const late=document.createElement('label');late.id='group-negative-late-field';late.textContent='Late field';
-      late.style.cssText='position:absolute;top:'+(rect.top-bounds.top+form.scrollTop)+'px;left:'+(rect.left-bounds.left+form.scrollLeft)+'px;width:80px';
-      form.append(late);})()`,
-  );
+  await evaluate(cdp, `(${installLateDomFieldProbe.toString()})()`);
   try {
     const late = await measureGeometry(cdp);
+    assert.deepEqual(late.labelCollisions, [], "Late-field control must isolate column overflow.");
+    assert.equal(Math.max(...formRowCounts(late.fields).map((row) => row.count)), 3);
     assert.throws(() => assertGroupFormGeometry(late, 2), /columns/);
   } finally {
-    await evaluate(
-      cdp,
-      `(() => {document.getElementById('group-negative-late-field')?.remove();const form=document.querySelector('[data-group-form]');form.setAttribute('style',form.dataset.groupNegativeStyle);delete form.dataset.groupNegativeStyle;})()`,
-    );
+    await evaluate(cdp, `document.getElementById('group-negative-late-field')?.restoreProbe()`);
   }
   assertGroupFormGeometry(await measureGeometry(cdp), 2);
   controls.push({ id: "GS-GROUP-NC-LATE-DOM-FIELD", status: "passed", restored: "passed" });

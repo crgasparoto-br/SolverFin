@@ -1,5 +1,10 @@
 import { solverFinDesignTokens } from "../design-system/tokens.js";
 
+import {
+  statementMockupControlsRuntime,
+  statementMockupControlsStyles,
+} from "./statement-mockup-controls.js";
+
 /** Progressive DOM grouping preserves the original nodes, handlers and no-JS markup. */
 export function statementGoldenRefinementRuntime(): string {
   return `<script data-statement-golden-refinements>
@@ -102,7 +107,7 @@ export function statementGoldenRefinementRuntime(): string {
         status.append(details);
       }
     })();
-  </script>`;
+  </script>${statementMockupControlsRuntime()}`;
 }
 
 export function statementGoldenRefinementStyles(): string {
@@ -172,5 +177,6 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-body .statement-row-footer .col-balance{margin-left:auto}
       ${root} .statement-body .actions summary{height:${density.interactiveTargetMin};width:${density.interactiveTargetMin}}
     }
+    ${statementMockupControlsStyles()}
   `;
 }

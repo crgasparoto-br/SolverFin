@@ -15,8 +15,11 @@ nao substitui seus contratos nem declara a referencia aprovada.
 - Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o formulario
   GET completo permanece disponivel. Filtros de contexto e busca nao sao apagados pela composicao.
 - Criacao/edicao usa o dialog existente com duas colunas no desktop e uma no mobile.
-  O select nativo de tipo permanece visivel e acessivel: payload, regras de transferencia,
-  recorrencia, bloqueios e handlers de persistencia continuam pertencendo ao formulario.
+  Sem JavaScript, o select nativo de tipo permanece visivel e acessivel. Com a melhoria
+  progressiva ativa, Despesa/Receita/Transferencia usam um radiogroup com setas, Home/End,
+  estado selecionado e bloqueios sincronizados. O select original continua como campo
+  canonico do payload; transferencia, recorrencia e persistencia usam seus handlers.
+  Validacao nativa invalida torna o select visivel novamente, sem campo focavel oculto.
 - Logos continuam resolvidos pelo catalogo institucional compartilhado.
 
 O mockup orienta acabamento, densidade e hierarquia, nao altera regras financeiras.
@@ -129,8 +132,12 @@ Conta e saldo atual compartilham o mesmo cabecalho no desktop; no mobile, a cont
 precede o saldo. Receitas e despesas permanecem compactas abaixo desse cabecalho.
 O titulo da colecao passa a ser Movimentacoes, sem repetir o nome completo da conta.
 
-Nova despesa permanece a acao primaria deste fluxo. Transferir e Nova receita
-ficam em Mais acoes, usando os mesmos botoes, listeners e formularios existentes.
+Com JavaScript, Novo lancamento e a acao primaria, conforme o mockup. Ela abre o formulario
+canonico com despesa inicialmente selecionada; a pessoa pode escolher receita ou
+transferencia no radiogroup. Transferir e Nova receita permanecem como atalhos em
+Mais acoes, usando os mesmos botoes, listeners e formularios existentes.
+A melhoria altera o rotulo do botao original sem substitui-lo. O fallback SSR
+conserva o rotulo Nova despesa e o select de tipo, como compatibilidade temporaria.
 O menu abre por teclado, fecha com Escape ou clique externo e devolve foco ao
 acionador quando o dialog aberto por uma dessas acoes e fechado. Sem JavaScript,
 os controles originais permanecem disponiveis. A situacao do periodo inicia
@@ -148,3 +155,18 @@ sem um segundo navegador ou novo workflow. O controle GS-MOCKUP-NC-HEADER rejeit
 empilhamento indevido no desktop; GS-MOCKUP-ACTIONS-KEYBOARD abre a transferencia
 pelo menu real e observa fechamento e retorno do foco. Os controles anteriores
 de agrupamento, moeda, titulo, overflow e metadados continuam obrigatorios.
+
+### Controles do formulario e aceite do mockup
+
+`statement-mockup-controls.ts` melhora o mesmo formulario apos o DOM estar pronto.
+Nao clona inputs financeiros nem acrescenta campos ao payload. Descricao precede
+categoria; categoria e descricao usam largura completa. Cancelar e secundario e
+fecha o dialog nativo. A consulta e agrupada com superficie discreta e os tokens
+compartilhados; o shell global e as regras financeiras nao sao redesenhados.
+
+A validacao Chrome de transferencia opera o radiogroup pelo teclado e confirma
+valor do select canonico, foco e destino visivel. O controle de campo tardio usa
+uma linha realmente composta de dois campos, injeta um terceiro no fim do DOM e
+exige tres colunas sem colisao incidental. Depois restaura atributos e rolagem.
+A aprovacao exige nova evidencia da aplicacao autenticada no SHA publicado. Uma
+previa isolada ou patch local nao fecha GS703-001 a GS703-003 nem homologa a tela.
