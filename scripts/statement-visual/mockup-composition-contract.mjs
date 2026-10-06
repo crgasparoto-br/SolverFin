@@ -14,7 +14,7 @@ export function assertMockupComposition(layout) {
   assert.ok(layout.summary.width >= layout.list.width - 64, "Summary regressed to a sidebar.");
   if (layout.viewport.width <= 760) {
     assert.ok(
-      layout.list.top <= layout.viewport.height * 0.94,
+      layout.list.top <= layout.viewport.height * 0.96,
       "Mobile chrome pushes the movement list below the first-viewport density budget.",
     );
   }

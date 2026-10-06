@@ -156,7 +156,7 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .modal-panel form[data-form] :is(input,select,textarea){min-height:${density.interactiveTargetMin}}
     ${dialog} .modal-panel form[data-form]>label.full{grid-column:1/-1}
     @media(max-width:${breakpoints.shellCompact}){
-      ${root},${root} .statement-a2-workspace{gap:${spacing[2]}}
+      ${root},${root} .statement-a2-workspace{gap:${spacing[1]}}
       ${root} .sf-page-header-description{display:none}
       ${root} .statement-heading-actions{display:flex;justify-content:space-between;width:100%}
       ${root} .statement-heading-actions>button{flex:1;min-width:0}
@@ -166,7 +166,6 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-account-heading .summary-balance{border-left:0;border-top:0;padding:0;text-align:right}
       ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.lg}}
       ${root} .statement-account-heading .summary-balance p{display:none}
-      ${root} .statement-context-meta [data-context="profile"]{display:none}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:repeat(2,minmax(0,1fr))}
       ${root} .account-summary[data-mockup-composition] .status-overview{border-top:0;grid-column:1/-1}
       ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:wrap;gap:${spacing[1]} ${spacing[2]};justify-content:space-between}
@@ -183,8 +182,8 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-account-heading{grid-template-columns:minmax(0,1fr)}
       ${root} .statement-account-heading .summary-balance{text-align:left}
       ${root} .account-summary[data-mockup-composition]{column-gap:${spacing[2]};grid-template-columns:repeat(2,minmax(0,1fr))}
-      ${root} .account-summary[data-mockup-composition] .summary-total{min-width:0}
-      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};overflow-wrap:anywhere}
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:${spacing[1]};min-width:0}
+      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};max-width:100%;overflow-wrap:anywhere}
     }
     ${statementMockupControlsStyles()}
   `;

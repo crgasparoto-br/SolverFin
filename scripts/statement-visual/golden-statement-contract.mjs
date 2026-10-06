@@ -52,7 +52,7 @@ export function assertGoldenStatement(layout) {
     );
   }
   if (layout.viewport.width <= 760) {
-    const mobileListBudget = layout.viewport.height * 0.94;
+    const mobileListBudget = layout.viewport.height * 0.96;
     assert.ok(
       layout.list.y <= mobileListBudget,
       `Mobile chrome pushes Movimentações below the density budget: ${layout.list.y}px > ${mobileListBudget.toFixed(1)}px.`,

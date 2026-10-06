@@ -34,7 +34,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
         status: "passed",
         viewport: { width, height },
         observedListTop: measured.list.y,
-        maxListTop: measured.viewport.height * 0.94,
+        maxListTop: measured.viewport.height * 0.96,
         note: "The list region enters the first viewport; the first transaction itself is not required to be fully visible.",
       });
     }

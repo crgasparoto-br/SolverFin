@@ -317,7 +317,7 @@ export function statementListArchetypeStyles(): string {
       ${root} .statement-row { column-gap: 8px; grid-template-columns: 24px 5.5rem minmax(0, 1fr) minmax(3rem, .3fr) 32px minmax(8rem, auto) 28px; padding-inline: 14px; }
     }
     @media (max-width: 760px) {
-      ${root} { gap: 10px; }
+      ${root} { gap: 8px; }
       body:has(${root}) .topbar { display: none; }
       ${root} .sf-page-header { align-items: stretch; display: grid; }
       ${root} .statement-heading-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
@@ -338,7 +338,7 @@ export function statementListArchetypeStyles(): string {
       ${root}[data-statement-options="collapsed"] .filter-form { gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       ${root}[data-statement-options="collapsed"] .statement-query-heading { justify-content: flex-end; margin-bottom: 0; }
       ${root}[data-statement-options="collapsed"] .statement-query-heading > span { display: none; }
-      ${root}[data-statement-options="collapsed"] .statement-filter-actions > :is([data-month-current], a) { display: none; }
+      ${root}[data-statement-options="collapsed"] .statement-filter-actions > :is(button, a) { display: none; }
       ${root}[data-statement-options="collapsed"] .statement-filter-actions { justify-content: flex-end; }
       ${root} .statement-search-field { grid-column: 1 / -1; }
       ${root} .statement-sort-field { grid-column: 1 / -1; }
