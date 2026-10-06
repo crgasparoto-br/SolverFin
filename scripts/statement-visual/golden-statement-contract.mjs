@@ -28,11 +28,7 @@ export function assertGoldenStatement(layout) {
     [],
     "Golden statement has visible elements outside the viewport.",
   );
-  assert.deepEqual(
-    layout.summaryCollisions ?? [],
-    [],
-    "Golden statement summary values overlap.",
-  );
+  assert.deepEqual(layout.summaryCollisions ?? [], [], "Golden statement summary values overlap.");
   assert.ok(
     Math.abs(layout.list.width - layout.root.width) <= 2,
     "Statement list lost the available width.",
