@@ -58,7 +58,6 @@ test("accepts mobile stacking but rejects reversed financial context", () => {
   );
 });
 
-
 test("rejects the pre-fix mobile composition that delays the movement list", () => {
   const layout = {
     ...fixture(),
