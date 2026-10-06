@@ -183,7 +183,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-account-heading .summary-balance{text-align:left}
       ${root} .account-summary[data-mockup-composition]{column-gap:${spacing[2]};grid-template-columns:repeat(2,minmax(0,1fr))}
       ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:${spacing[1]};min-width:0}
-      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};max-width:100%;overflow-wrap:anywhere}
+      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.xs};letter-spacing:-.02em;max-width:100%;overflow-wrap:anywhere}
     }
     ${statementMockupControlsStyles()}
   `;
