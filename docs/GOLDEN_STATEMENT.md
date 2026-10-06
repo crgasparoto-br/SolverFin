@@ -64,7 +64,10 @@ restauracao. Os controles de overflow e legibilidade permanecem obrigatorios.
 No cenario desktop 1366 x 768, a primeira movimentacao deve aparecer inteira
 sem rolagem inicial. O resumo e os controles nao podem consumir todo o viewport.
 `GS-NC-DENSITY` injeta espaco excessivo no resumo e exige que o contrato reprove;
-a restauracao deve passar. A restricao de altura nao e aplicada ao reflow mobile.
+a restauracao deve passar. No mobile, a regra e deliberadamente mais estreita:
+a regiao **Movimentacoes** deve comecar ainda na primeira viewport em 390 x 844 e
+320 x 740, sem exigir que a primeira movimentacao inteira fique visivel sem rolagem.
+Isso rejeita o chrome vertical excessivo sem esconder conta, moeda, periodo ou busca.
 Campos e valores permanecem acessiveis; o formulario mobile preserva alvos de
 44 px e a acao de salvar usa um rodape aderente ao dialog.
 

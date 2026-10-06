@@ -124,10 +124,10 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-secondary-actions>summary::-webkit-details-marker{display:none}
     ${root} .statement-secondary-actions-content{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sf-shadow-sm);display:grid;gap:${spacing[1]};min-width:12rem;padding:${spacing[2]};position:absolute;right:0;top:calc(100% + ${spacing[1]});z-index:20}
     ${root} .statement-secondary-actions-content button{justify-content:flex-start;width:100%}
-    ${root} .account-summary[data-mockup-composition]{display:grid;gap:${spacing[3]} ${spacing[4]};grid-template-columns:repeat(3,minmax(0,1fr));padding:0}
+    ${root} .account-summary[data-mockup-composition]{display:grid;gap:${spacing[2]} ${spacing[3]};grid-template-columns:repeat(3,minmax(0,1fr));padding:0}
     ${root} .statement-summary-duplicate[hidden]{display:none}
-    ${root} .statement-account-heading{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:${spacing[4]};grid-column:1/-1;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);padding-bottom:${spacing[3]}}
-    ${root} .statement-account-heading .statement-context{border:0;display:grid;gap:${spacing[2]};padding:0}
+    ${root} .statement-account-heading{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:${spacing[3]};grid-column:1/-1;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);padding-bottom:${spacing[2]}}
+    ${root} .statement-account-heading .statement-context{border:0;display:grid;gap:${spacing[1]};padding:0}
     ${root} .statement-account-heading .statement-context-main{flex:none}
     ${root} .statement-account-heading .statement-context-copy>.muted{display:none}
     ${root} .statement-account-heading .statement-context-copy strong{font-size:${typography.sizes.lg}}
@@ -138,10 +138,10 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.xl};overflow-wrap:anywhere}
     ${root} .account-summary[data-mockup-composition] .status-overview{border:0;padding:0;grid-column:auto}
     ${root} .statement-status-details{width:100%}
-    ${root} .statement-status-details>summary{box-sizing:border-box;color:var(--muted);cursor:pointer;font-size:${typography.sizes.sm};min-height:${density.interactiveTargetMin};padding-block:${spacing[3]}}
+    ${root} .statement-status-details>summary{box-sizing:border-box;color:var(--muted);cursor:pointer;font-size:${typography.sizes.sm};min-height:${density.interactiveTargetMin};padding-block:${spacing[1]}}
     ${root} .statement-status-content{display:flex;flex-wrap:wrap;gap:${spacing[2]} ${spacing[4]};padding-bottom:${spacing[3]}}
     ${root} .statement-toolbar .chips{display:none}
-    ${root} .statement-toolbar{padding-block:${spacing[2]}}
+    ${root} .statement-toolbar{padding-block:${spacing[1]}}
     ${root} .statement-query-heading{margin-bottom:${spacing[1]}}
     ${root} .filter-form .account-select-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     ${root} .filter-form :is(input,select,button),${root} [data-statement-options-toggle]{min-height:${density.interactiveTargetMin}}
@@ -156,18 +156,20 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .modal-panel form[data-form] :is(input,select,textarea){min-height:${density.interactiveTargetMin}}
     ${dialog} .modal-panel form[data-form]>label.full{grid-column:1/-1}
     @media(max-width:${breakpoints.shellCompact}){
-      ${root},${root} .statement-a2-workspace{gap:${spacing[3]}}
+      ${root},${root} .statement-a2-workspace{gap:${spacing[2]}}
       ${root} .sf-page-header-description{display:none}
       ${root} .statement-heading-actions{display:flex;justify-content:space-between;width:100%}
       ${root} .statement-heading-actions>button{flex:1;min-width:0}
       ${root} .statement-heading-actions button{font-size:${typography.sizes.sm};min-width:0;padding-inline:${spacing[2]}}
       ${root} .statement-heading-actions button[data-quick-kind="expense"]{grid-column:auto;grid-row:auto}
-      ${root} .statement-account-heading{align-items:end;gap:${spacing[2]};grid-template-columns:minmax(0,1fr) auto}
+      ${root} .statement-account-heading{align-items:center;gap:${spacing[2]};grid-template-columns:minmax(0,1fr) auto}
       ${root} .statement-account-heading .summary-balance{border-left:0;border-top:0;padding:0;text-align:right}
-      ${root} .statement-account-heading .summary-balance p{font-size:${typography.sizes.xs}}
+      ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.lg}}
+      ${root} .statement-account-heading .summary-balance p{display:none}
+      ${root} .statement-context-meta [data-context="profile"]{display:none}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:repeat(2,minmax(0,1fr))}
       ${root} .account-summary[data-mockup-composition] .status-overview{border-top:0;grid-column:1/-1}
-      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:${spacing[1]}}
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:wrap;gap:${spacing[1]} ${spacing[2]};justify-content:space-between}
       ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.md}}
       ${root} .statement-context{gap:${spacing[1]};padding-bottom:${spacing[1]}}
       ${root} .statement-context-meta{gap:${spacing[1]} ${spacing[3]}}
@@ -178,8 +180,11 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-body .actions summary{height:${density.interactiveTargetMin};width:${density.interactiveTargetMin}}
     }
     @media(max-width:360px){
-      ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr)}
-      ${root} .account-summary[data-mockup-composition] .summary-total{border-top:1px solid var(--line);padding-top:${spacing[2]}}
+      ${root} .statement-account-heading{grid-template-columns:minmax(0,1fr)}
+      ${root} .statement-account-heading .summary-balance{text-align:left}
+      ${root} .account-summary[data-mockup-composition]{column-gap:${spacing[2]};grid-template-columns:repeat(2,minmax(0,1fr))}
+      ${root} .account-summary[data-mockup-composition] .summary-total{min-width:0}
+      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};overflow-wrap:anywhere}
     }
     ${statementMockupControlsStyles()}
   `;

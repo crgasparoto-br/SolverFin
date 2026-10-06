@@ -57,3 +57,15 @@ test("accepts mobile stacking but rejects reversed financial context", () => {
     /account before balance/,
   );
 });
+
+
+test("rejects the pre-fix mobile composition that delays the movement list", () => {
+  const layout = {
+    ...fixture(),
+    viewport: { width: 390, height: 844 },
+    context: box(24, 140, 342, 70),
+    balance: box(24, 220, 342, 60),
+    list: box(24, 824, 342, 240),
+  };
+  assert.throws(() => assertMockupComposition(layout), /density budget/);
+});

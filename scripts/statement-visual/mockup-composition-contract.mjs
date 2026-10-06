@@ -12,6 +12,12 @@ export function assertMockupComposition(layout) {
   assert.equal(layout.secondaryCount, 2, "Secondary quick actions must remain available.");
   assert.equal(layout.menuOpen, false, "Secondary actions should start collapsed.");
   assert.ok(layout.summary.width >= layout.list.width - 64, "Summary regressed to a sidebar.");
+  if (layout.viewport.width <= 760) {
+    assert.ok(
+      layout.list.top <= layout.viewport.height * 0.94,
+      "Mobile chrome pushes the movement list below the first-viewport density budget.",
+    );
+  }
   if (layout.viewport.width > 760) {
     assert.ok(
       layout.context.right <= layout.balance.left + 1,

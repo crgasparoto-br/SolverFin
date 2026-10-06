@@ -51,6 +51,13 @@ export function assertGoldenStatement(layout) {
       "Excess vertical chrome pushes the first transaction out of the desktop viewport.",
     );
   }
+  if (layout.viewport.width <= 760) {
+    const mobileListBudget = layout.viewport.height * 0.94;
+    assert.ok(
+      layout.list.y <= mobileListBudget,
+      `Mobile chrome pushes Movimentações below the density budget: ${layout.list.y}px > ${mobileListBudget.toFixed(1)}px.`,
+    );
+  }
 }
 
 export const goldenStatementMeasurements = `(() => {

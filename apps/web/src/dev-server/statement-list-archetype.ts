@@ -317,25 +317,29 @@ export function statementListArchetypeStyles(): string {
       ${root} .statement-row { column-gap: 8px; grid-template-columns: 24px 5.5rem minmax(0, 1fr) minmax(3rem, .3fr) 32px minmax(8rem, auto) 28px; padding-inline: 14px; }
     }
     @media (max-width: 760px) {
-      ${root} { gap: 16px; }
+      ${root} { gap: 10px; }
       body:has(${root}) .topbar { display: none; }
       ${root} .sf-page-header { align-items: stretch; display: grid; }
       ${root} .statement-heading-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
       ${root} .statement-heading-actions button[data-quick-kind="expense"] { grid-column: 1 / -1; grid-row: 1; }
-      ${root} .statement-overview { padding: 4px 0 8px; }
+      ${root} .statement-overview { padding: 0 0 4px; }
       ${root} .sf-page-header-description { font-size: .8125rem; line-height: 1.35; }
       ${root} .statement-context { gap: 12px; }
       ${root} .statement-context-meta { justify-content: flex-start; }
-      ${root} .account-summary { gap: 8px; grid-template-columns: minmax(0, 1fr); }
+      ${root} .account-summary { gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       ${root} .summary-balance { grid-column: 1 / -1; }
       ${root} .summary-balance strong { font-size: clamp(1rem, 5vw, 1.5rem); }
       ${root} .summary-total { align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; padding: 0; }
       ${root} .summary-total strong { font-size: 1rem; }
-      ${root} .status-overview { align-items: start; display: flex; gap: 6px 12px; }
+      ${root} .status-overview { align-items: start; display: flex; gap: 4px 8px; }
       ${root} .status-overview h3 { flex-basis: 100%; }
       ${root} .status-line { align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 6px; }
       ${root} .filter-form,
-      ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      ${root}[data-statement-options="collapsed"] .filter-form { gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      ${root}[data-statement-options="collapsed"] .statement-query-heading { justify-content: flex-end; margin-bottom: 0; }
+      ${root}[data-statement-options="collapsed"] .statement-query-heading > span { display: none; }
+      ${root}[data-statement-options="collapsed"] .statement-filter-actions > :is([data-month-current], a) { display: none; }
+      ${root}[data-statement-options="collapsed"] .statement-filter-actions { justify-content: flex-end; }
       ${root} .statement-search-field { grid-column: 1 / -1; }
       ${root} .statement-sort-field { grid-column: 1 / -1; }
       ${root} .statement-filter-actions { grid-column: 1 / -1; justify-content: flex-end; }
