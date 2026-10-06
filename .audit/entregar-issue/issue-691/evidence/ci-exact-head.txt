@@ -1,7 +1,7 @@
-material_head_sha=4fd6672fbad98d9d0d6c525a17f6e5f109d7f6d9
-Delivery V2 CI: success (run 37074582552)
+material_head_sha=6daac6dde0b66c16e5101acf07a28053d33024fc
+Delivery V2 CI: success (run 37120519062)
 CRITICAL validation: success
 API integration: success (step 19)
 Build: success
-Statement visual validation: success (run 37074582435)
-A-002 redacted negative control covered by apps/api/src/attachments.integration.test.ts
+Statement visual validation: success (run 37120519045)
+A-003 post-write-refreeze: current material candidate recertified after exact-head green CI
