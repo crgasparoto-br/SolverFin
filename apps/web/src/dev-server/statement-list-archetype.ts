@@ -319,6 +319,7 @@ export function statementListArchetypeStyles(): string {
     @media (max-width: 760px) {
       ${root} { gap: 16px; }
       ${root} .sf-page-header { align-items: stretch; display: grid; }
+      ${root} .sf-page-header-copy { display: none; }
       ${root} .statement-heading-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
       ${root} .statement-heading-actions button[data-quick-kind="expense"] { grid-column: 1 / -1; grid-row: 1; }
       ${root} .statement-overview { padding: 4px 0 8px; }
