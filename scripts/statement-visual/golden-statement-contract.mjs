@@ -81,7 +81,10 @@ export const goldenStatementMeasurements = `(() => {
           return false;
         }
         const currentBox = current.getBoundingClientRect();
-        if (style.clipPath !== 'none' && currentBox.width <= 1.5 && currentBox.height <= 1.5) {
+        if (
+          style.clipPath.includes('inset(50%') ||
+          (style.clipPath !== 'none' && currentBox.width <= 1.5 && currentBox.height <= 1.5)
+        ) {
           return false;
         }
       }
