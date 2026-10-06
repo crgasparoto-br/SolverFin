@@ -164,6 +164,7 @@ enum AttachmentKind {
   INVOICE
   STATEMENT
   MESSAGE
+  CONTRACT
   OTHER
 }
 
@@ -818,6 +819,8 @@ model Attachment {
   status             AttachmentStatus @default(ACTIVE)
   fileName           String           @db.VarChar(240)
   mimeType           String           @db.VarChar(120)
+  byteSize           Int?
+  contentSha256      String?          @db.VarChar(64)
   storageKey         String           @db.VarChar(500)
   linkedEntityId     String           @db.Uuid
   linkedEntityKind   LinkedEntityKind
@@ -830,6 +833,15 @@ model Attachment {
   @@unique([id, organizationId, financialProfileId])
   @@index([organizationId, financialProfileId, linkedEntityKind, linkedEntityId])
   @@index([organizationId, financialProfileId, status])
+}
+
+model AttachmentObject {
+  storageKey    String   @id @db.VarChar(500)
+  content       Bytes
+  byteSize      Int
+  contentSha256 String   @db.VarChar(64)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model AuditLogEntry {

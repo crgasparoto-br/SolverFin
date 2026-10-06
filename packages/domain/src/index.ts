@@ -121,7 +121,7 @@ export type AiSuggestionStatus =
   | "expired"
   | "resolved";
 
-export type AttachmentKind = "receipt" | "invoice" | "statement" | "message" | "other";
+export type AttachmentKind = "receipt" | "invoice" | "statement" | "message" | "contract" | "other";
 export type AttachmentStatus = "active" | "redacted" | "deleted";
 
 export interface TenantScoped {
@@ -412,6 +412,8 @@ export interface Attachment extends Traceable, TenantScoped {
   status: AttachmentStatus;
   fileName: string;
   mimeType: string;
+  byteSize?: number;
+  contentSha256?: string;
   storageKey: string;
   linkedEntityId: EntityId;
   linkedEntityKind: "transaction" | "invoice" | "import_batch" | "ai_suggestion";

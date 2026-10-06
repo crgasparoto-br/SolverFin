@@ -124,7 +124,7 @@ Dado bruto deve ser descartado assim que a normalizacao segura for concluida, sa
 
 - Conteudo bruto de CSV/OFX: nao persistir por padrao. Persistir apenas hash de lote, nome de arquivo minimizado e dados normalizados.
 - Texto bruto de mensagem bancaria: descartar apos normalizacao no mesmo fluxo. Se for indispensavel manter para revisao operacional, prazo maximo inicial de 24 horas.
-- Anexos financeiros brutos: manter apenas quando houver funcionalidade explicita de anexo; marcar status, origem e prazo de revisao. Sem contrato especifico, nao persistir.
+- Anexos financeiros brutos: a funcionalidade operacional definida em `docs/ATTACHMENTS.md` pode persistir arquivos de ate 5 MiB vinculados a lancamentos, faturas e lotes de importacao. O acesso permanece privado, escopado por organizacao/perfil e entidade; exclusao e inicialmente logica. A politica de purga fisica futura exige issue propria.
 - Resposta bruta de IA: nao persistir por padrao. Persistir apenas saida estruturada, explicacao e metadados seguros da sugestao ou a resposta segura composta pelo SolverFin.
 - Tokens, assertions e secrets: nunca persistir em formato bruto. Quando sessoes produtivas existirem, persistir apenas hash ou referencia opaca conforme ADR de autenticacao.
 - Auditoria redigida: pode ser mantida enquanto o historico financeiro precisar de rastreabilidade, sem conter dado bruto sensivel.

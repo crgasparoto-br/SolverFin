@@ -33,7 +33,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`RUNBOOK.md`](./RUNBOOK.md): reproducao e criterios do gate final de regressao/baseline da Fase 2.
 - [`CONVENTIONS.md`](./CONVENTIONS.md): convencoes de TypeScript, organizacao, lint e formatacao.
 - [`ENVIRONMENT.md`](./ENVIRONMENT.md): variaveis de ambiente, secrets e validacao segura.
-- [`PRIVACY.md`](./PRIVACY.md): politica operacional de privacidade, retencao, minimizacao e mascaramento.
+- [`PRIVACY.md`](./PRIVACY.md): politica operacional de privacidade, retencao, minimizacao e mascaramento.\n- [`ATTACHMENTS.md`](./ATTACHMENTS.md): contrato de upload, armazenamento privado, autorizacao, retencao e operacao de anexos.
 - [`AUTH.md`](./AUTH.md): autenticacao MVP e direcao produtiva.
 - [`TENANT.md`](./TENANT.md): organizacoes, perfis financeiros e isolamento de dados.
 
@@ -84,7 +84,7 @@ ADRs registram decisoes duradouras. Crie ou atualize ADRs quando a mudanca alter
 - [`adr/0011-read-only-financial-assistant.md`](./adr/0011-read-only-financial-assistant.md)
 - [`adr/0012-separate-account-agency-identifiers.md`](./adr/0012-separate-account-agency-identifiers.md)
 - [`adr/0013-multi-currency-financial-aggregation.md`](./adr/0013-multi-currency-financial-aggregation.md): multi-moedas e proibicao de agregacao implicita entre moedas.
-- [`adr/0014-incremental-component-ui-architecture.md`](./adr/0014-incremental-component-ui-architecture.md): migracao incremental da interface para componentes, view-models e arquetipos reutilizaveis.
+- [`adr/0014-incremental-component-ui-architecture.md`](./adr/0014-incremental-component-ui-architecture.md): migracao incremental da interface para componentes, view-models e arquetipos reutilizaveis.\n- [`adr/0017-private-operational-attachment-storage.md`](./adr/0017-private-operational-attachment-storage.md): armazenamento privado e transacional do primeiro recorte de anexos operacionais.
 
 ## Regras de manutencao documental
 
