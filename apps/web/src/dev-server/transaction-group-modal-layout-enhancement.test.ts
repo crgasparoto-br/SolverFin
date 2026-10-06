@@ -19,8 +19,10 @@ assert.match(enhanced, /form\[data-group-form\]\{[^}]*max-width:100%/);
 assert.match(enhanced, /form\[data-group-form\]\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /form\[data-group-form\]\{[^}]*width:100%/);
 assert.doesNotMatch(enhanced, /form\[data-group-form\]\{[^}]*scrollbar-gutter:stable/);
+assert.match(enhanced, /form\[data-group-form\]\>\*\{[^}]*max-width:100%;min-width:0/);
 assert.match(enhanced, /\.group-members\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /min-height:min\(286px,38vh\)/);
+assert.match(enhanced, /\.group-actions button\{flex:1 1 100%;max-width:100%;min-width:0;white-space:normal;width:100%\}/);
 assert.ok(enhanced.includes(`@media(max-width:${solverFinDesignTokens.breakpoints.shellCompact})`));
 assert.ok(enhanced.includes(`min-height:${solverFinDesignTokens.density.interactiveTargetMin}`));
 assert.equal(

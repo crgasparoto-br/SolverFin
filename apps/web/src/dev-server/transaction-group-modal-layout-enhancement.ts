@@ -14,6 +14,7 @@ export function enhanceTransactionGroupModalLayout(html: string): string {
       dialog[data-group-modal] .group-modal-panel>header>div{min-width:0}
       dialog[data-group-modal] .group-modal-panel>header h2{overflow-wrap:anywhere}
       dialog[data-group-modal] .group-modal-panel form[data-group-form]{box-sizing:border-box;flex:0 1 auto;grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));max-width:100%;min-width:0;overflow-x:hidden;overflow-y:auto;padding:${spacing[1]};scrollbar-gutter:auto;width:100%}
+      dialog[data-group-modal] .group-modal-panel form[data-group-form]>*{box-sizing:border-box;max-width:100%;min-width:0}
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label{box-sizing:border-box;grid-column:auto;min-width:0;overflow-wrap:anywhere}
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:has([name="description"]),
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:has([data-group-effective-input]),
@@ -47,7 +48,7 @@ export function enhanceTransactionGroupModalLayout(html: string): string {
         dialog[data-group-modal] .group-member-row{grid-template-columns:minmax(0,1fr)}
         dialog[data-group-modal] :is(.group-member-main,.group-member-date,.group-member-amount,.group-member-actions){grid-column:1;grid-row:auto}
         dialog[data-group-modal] .group-member-amount{justify-self:end;max-width:100%;overflow-wrap:anywhere;white-space:normal}
-        dialog[data-group-modal] .group-actions button{flex:1 1 100%}
+        dialog[data-group-modal] .group-actions button{flex:1 1 100%;max-width:100%;min-width:0;white-space:normal;width:100%}
         dialog[data-group-modal] .group-action-status{flex-basis:100%;margin-left:0}
         dialog[data-group-modal] .save-row{align-items:stretch;flex-direction:column-reverse}
         dialog[data-group-modal] .save-row button{min-height:${density.interactiveTargetMin};width:100%}
