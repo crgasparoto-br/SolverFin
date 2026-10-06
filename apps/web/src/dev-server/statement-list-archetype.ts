@@ -194,7 +194,7 @@ export function statementListArchetypeStyles(): string {
     body:has([data-golden-screen="statement"]) dialog :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
     .statement-a2-workspace { display: grid; gap: 14px; max-width: none; min-width: 0; padding: 0; }
-    ${root} .statement-overview { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); min-width: 0; padding: 14px 18px 10px; }
+    ${root} .statement-overview { background: transparent; border: 0; border-radius: 0; min-width: 0; padding: 6px 0 10px; }
     ${root} .statement-context { align-items: center; background: transparent; border: 0; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; min-width: 0; padding: 0 0 10px; }
     ${root} .statement-context-main { align-items: center; display: flex; flex: 1 1 16rem; gap: 12px; min-width: 0; }
     ${root} .statement-context-copy { display: grid; gap: 3px; min-width: 0; }
@@ -251,14 +251,14 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-insight-context { background: var(--primary-soft); border: 0; border-left: 3px solid var(--primary); border-radius: var(--radius); font-size: .8125rem; margin: 0; padding: 10px 12px; }
 
     ${root} .statement-layout { display: grid; gap: 0; grid-template-columns: minmax(0, 1fr); min-width: 0; }
-    ${root} .statement-panel.panel { gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: none; min-width: 0; }
-    ${root} .statement-toolbar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; padding: 10px 16px; }
+    ${root} .statement-panel.panel { gap: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; min-width: 0; }
+    ${root} .statement-toolbar { align-items: center; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; padding: 8px 0; }
     ${root} .statement-toolbar .eyebrow { display: none; }
     ${root} .statement-toolbar h2 { font-size: .9375rem; }
     ${root} .statement-toolbar .chips { gap: 6px; }
     ${root} .chip { border-color: transparent; font-size: .7rem; font-weight: 500; }
     ${root} .statement-table { max-width: 100%; min-width: 0; overflow-x: auto; }
-    ${root} .statement-row { align-items: center; column-gap: 12px; display: grid; grid-template-columns: 24px 6rem minmax(0, 1fr) minmax(4rem, .45fr) 40px minmax(9rem, auto) 36px; min-width: 0; padding: 10px 16px; }
+    ${root} .statement-row { align-items: center; column-gap: 12px; display: grid; grid-template-columns: 24px 6rem minmax(0, 1fr) minmax(4rem, .45fr) 40px minmax(9rem, auto) 36px; min-width: 0; padding: 10px 4px; }
     ${root} .statement-body { grid-template-areas: "select date description description status amount actions" "select date category kind status balance actions"; min-height: 68px; row-gap: 4px; }
     ${root} .statement-row > * { min-width: 0; order: 0; }
     ${root} .statement-body .col-select { grid-area: select; left: auto; position: static; }
@@ -276,7 +276,7 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-body .col-kind,
     ${root} .statement-body .col-balance { color: var(--muted); font-size: .75rem; }
     ${root} .statement-body .col-actions { margin-left: 0; grid-area: actions; justify-self: end; }
-    ${root} .statement-head { background: var(--bg); color: var(--muted); font-size: .75rem; font-weight: 500; padding-block: 10px; }
+    ${root} .statement-head { background: transparent; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .75rem; font-weight: 500; padding-block: 8px; }
     ${root} .statement-head .col-select { left: auto; position: static; }
     ${root} .statement-head .col-date { grid-column: 2; }
     ${root} .statement-head .col-description { grid-column: 3 / 5; }
@@ -284,7 +284,7 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-head .col-amount { grid-column: 6; text-align: right; }
     ${root} .statement-head .col-actions { grid-column: 7; }
     ${root} .statement-head :is(.col-category, .col-kind, .col-balance) { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; width: 1px; }
-    ${root} .statement-date-group { align-items: center; background: var(--bg); border-bottom: 1px solid var(--line); color: var(--muted); display: flex; font-size: .6875rem; gap: 8px; justify-content: space-between; padding: 6px 20px; }
+    ${root} .statement-date-group { align-items: center; background: transparent; border-bottom: 1px solid var(--line); color: var(--muted); display: flex; font-size: .6875rem; gap: 8px; justify-content: space-between; padding: 6px 4px; }
     ${root} .actions summary { background: transparent; border: 0; border-radius: var(--radius); height: 36px; width: 36px; }
     ${root} .actions summary:hover { background: var(--primary-soft); }
     ${root} .actions-menu { padding: 6px; }
@@ -321,7 +321,7 @@ export function statementListArchetypeStyles(): string {
       ${root} .sf-page-header { align-items: stretch; display: grid; }
       ${root} .statement-heading-actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
       ${root} .statement-heading-actions button[data-quick-kind="expense"] { grid-column: 1 / -1; grid-row: 1; }
-      ${root} .statement-overview { padding: 12px; }
+      ${root} .statement-overview { padding: 4px 0 8px; }
       ${root} .sf-page-header-description { font-size: .8125rem; line-height: 1.35; }
       ${root} .statement-context { gap: 12px; }
       ${root} .statement-context-meta { justify-content: flex-start; }
@@ -334,11 +334,13 @@ export function statementListArchetypeStyles(): string {
       ${root} .status-overview h3 { flex-basis: 100%; }
       ${root} .status-line { align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 6px; }
       ${root} .filter-form,
-      ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: minmax(0, 1fr); }
-      ${root} .statement-filter-actions { justify-content: flex-start; }
-      ${root} .statement-toolbar { padding: 14px; }
+      ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      ${root} .statement-search-field { grid-column: 1 / -1; }
+      ${root} .statement-sort-field { grid-column: 1 / -1; }
+      ${root} .statement-filter-actions { grid-column: 1 / -1; justify-content: flex-end; }
+      ${root} .statement-toolbar { padding: 8px 0; }
       ${root} .statement-head { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; width: 1px; }
-      ${root} .statement-body { display: grid; gap: 5px 8px; grid-template-columns: 24px minmax(0, 1fr) 28px; grid-template-areas: "select description actions" "select amount amount" "select category status" "select kind kind" "select date date" "select balance balance"; padding: 12px; }
+      ${root} .statement-body { display: grid; gap: 4px 8px; grid-template-columns: 24px minmax(0, 1fr) 44px; grid-template-areas: "select description actions" "select amount amount" "select category status" "select kind kind" "select date balance"; padding: 10px 0; }
       ${root} .statement-body .col-description > strong { font-size: .9375rem; }
       ${root} .statement-body .col-status { justify-self: end; }
       ${root} .statement-body .col-amount { font-size: .9375rem; }

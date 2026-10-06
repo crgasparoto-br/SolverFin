@@ -23,6 +23,11 @@ export function assertGoldenStatement(layout) {
   );
   assert.equal(layout.row?.display, "grid", "Legacy row layout overrode the Golden composition.");
   assert.equal(layout.overflow, false, "Golden statement has document overflow.");
+  assert.deepEqual(
+    layout.overflowElements ?? [],
+    [],
+    "Golden statement has visible elements outside the viewport.",
+  );
   assert.ok(
     Math.abs(layout.list.width - layout.root.width) <= 2,
     "Statement list lost the available width.",

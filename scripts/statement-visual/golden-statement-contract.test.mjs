@@ -17,6 +17,7 @@ function fixture() {
     amount: { y: 600, font: 16 },
     balance: { y: 630, font: 12 },
     overflow: false,
+    overflowElements: [],
   };
 }
 
@@ -50,4 +51,11 @@ test("missing viewport dimensions cannot bypass the density check", () => {
   const layout = fixture();
   layout.viewport = {};
   assert.throws(() => assertGoldenStatement(layout), /Viewport dimensions/);
+});
+
+test("visible elements outside the viewport fail the Golden Screen gate", () => {
+  const layout = fixture();
+  layout.viewport = { width: 320, height: 740 };
+  layout.overflowElements = [{ tag: "A", right: 419 }];
+  assert.throws(() => assertGoldenStatement(layout), /outside the viewport/);
 });
