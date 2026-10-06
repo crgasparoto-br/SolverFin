@@ -18,6 +18,7 @@ assert.match(enhanced, /form\[data-group-form\]\{[^}]*box-sizing:border-box/);
 assert.match(enhanced, /form\[data-group-form\]\{[^}]*max-width:100%/);
 assert.match(enhanced, /form\[data-group-form\]\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /form\[data-group-form\]\{[^}]*width:100%/);
+assert.doesNotMatch(enhanced, /form\[data-group-form\]\{[^}]*scrollbar-gutter:stable/);
 assert.match(enhanced, /\.group-members\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /min-height:min\(286px,38vh\)/);
 assert.ok(enhanced.includes(`@media(max-width:${solverFinDesignTokens.breakpoints.shellCompact})`));
