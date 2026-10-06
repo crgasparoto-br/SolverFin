@@ -18,6 +18,7 @@ function fixture() {
     balance: { y: 630, font: 12 },
     overflow: false,
     overflowElements: [],
+    summaryCollisions: [],
   };
 }
 
@@ -58,4 +59,11 @@ test("visible elements outside the viewport fail the Golden Screen gate", () => 
   layout.viewport = { width: 320, height: 740 };
   layout.overflowElements = [{ tag: "A", right: 419 }];
   assert.throws(() => assertGoldenStatement(layout), /outside the viewport/);
+});
+
+test("overlapping summary values fail the Golden Screen gate", () => {
+  const layout = fixture();
+  layout.viewport = { width: 320, height: 740 };
+  layout.summaryCollisions = [["R$ 1.063.266.987,01", "-R$ 53.949.672,92"]];
+  assert.throws(() => assertGoldenStatement(layout), /summary values overlap/);
 });

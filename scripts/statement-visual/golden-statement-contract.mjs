@@ -28,6 +28,11 @@ export function assertGoldenStatement(layout) {
     [],
     "Golden statement has visible elements outside the viewport.",
   );
+  assert.deepEqual(
+    layout.summaryCollisions ?? [],
+    [],
+    "Golden statement summary values overlap.",
+  );
   assert.ok(
     Math.abs(layout.list.width - layout.root.width) <= 2,
     "Statement list lost the available width.",
@@ -71,6 +76,27 @@ export const goldenStatementMeasurements = `(() => {
     descriptionText: rect('.statement-body .col-description > strong'),
     category: rect('.statement-body .col-category'), amount: rect('.statement-body .col-amount'),
     balance: rect('.statement-body .col-balance'),
+    summaryCollisions: (() => {
+      const nodes = Array.from(document.querySelectorAll('.account-summary .summary-total strong'))
+        .filter(element => {
+          const box = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return box.width > 0 && box.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+        });
+      const collisions = [];
+      for (let index = 0; index < nodes.length; index += 1) {
+        const left = nodes[index].getBoundingClientRect();
+        for (let other = index + 1; other < nodes.length; other += 1) {
+          const right = nodes[other].getBoundingClientRect();
+          const horizontal = Math.min(left.right, right.right) - Math.max(left.left, right.left);
+          const vertical = Math.min(left.bottom, right.bottom) - Math.max(left.top, right.top);
+          if (horizontal > 1 && vertical > 1) {
+            collisions.push([nodes[index].textContent.trim(), nodes[other].textContent.trim()]);
+          }
+        }
+      }
+      return collisions;
+    })(),
     overflow: document.documentElement.scrollWidth > innerWidth + 1,
     overflowElements: Array.from(document.querySelectorAll('body *')).filter(element => {
       const box = element.getBoundingClientRect();
