@@ -74,7 +74,18 @@ export const goldenStatementMeasurements = `(() => {
     overflow: document.documentElement.scrollWidth > innerWidth + 1,
     overflowElements: Array.from(document.querySelectorAll('body *')).filter(element => {
       const box = element.getBoundingClientRect();
-      return box.width > 0 && (box.right > innerWidth + 1 || box.left < -1);
+      if (box.width <= 0 || box.height <= 0) return false;
+      for (let current = element; current; current = current.parentElement) {
+        const style = getComputedStyle(current);
+        if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+          return false;
+        }
+        const currentBox = current.getBoundingClientRect();
+        if (style.clipPath !== 'none' && currentBox.width <= 1.5 && currentBox.height <= 1.5) {
+          return false;
+        }
+      }
+      return box.right > innerWidth + 1 || box.left < -1;
     }).slice(0, 30).map(element => ({
       tag: element.tagName, className: element.className,
       width: element.getBoundingClientRect().width, right: element.getBoundingClientRect().right,
