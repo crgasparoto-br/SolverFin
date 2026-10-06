@@ -2,6 +2,6 @@
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
   "issue": 702,
-  "source": "SRC-ISSUE-702.txt",
-  "source_sha256": "7aa443c477a43402d9cf7482f79c013fb6d44677000637291d232cf6c77b8d54"
+  "source": "specification-sources/SRC-ISSUE-702.txt",
+  "source_sha256": "06848809a206aa8b1604d831869521774dbfa2f3bf56da3a63a35a00e1d19d57"
 }

@@ -1,0 +1,20 @@
+Issue #702 / PR #703 - Golden Screen Extrato Bancario
+1. /lancamentos deve ser a Golden Screen oficial com uso eficiente da largura, contexto de conta/saldo/moeda/periodo e navegacao de periodo clara.
+2. A acao primaria deve ser + Novo lancamento, reutilizando o formulario canonico; transferencia e receita permanecem secundarias.
+3. O tipo de lancamento deve oferecer Despesa/Receita/Transferencia como selecao unica acessivel sincronizada ao select canonico, cobrindo teclado, edicao, reset, opcoes bloqueadas e validacao nativa.
+4. No dialogo, descricao precede categoria, ambas com largura suficiente; Cancelar fica secundario proximo de Salvar e o foco retorna corretamente.
+5. A composicao deve aproximar o mockup em contexto/conta/saldo, filtros compactos, lista escaneavel e metadados agrupados, validada em 1366x768, 390x844 e 320x740 sem cortes ou sobreposicao.
+6. Campos curtos do agrupamento usam duas colunas no desktop e uma no mobile; campos longos permanecem amplos e valores/moeda legiveis.
+7. A geometria deve medir todos os campos por linha, detectar terceira coluna/cortes/moeda duplicada e restaurar atributos/rolagem apos controles negativos.
+8. O mobile reduz repeticao e espaco permanente de metadados, mantendo contexto e resumo progressivo operavel por teclado.
+9. O cabecalho do dialogo deve impedir sobreposicao de Fechar com titulo/identificacao, inclusive a 320 px.
+10. Cada pendencia visual deve ter rastreabilidade para requisito, implementacao e evidencia no mesmo SHA.
+11. Descricao e valor dominam a leitura; categoria, status, recorrencia, conciliacao e demais metadados permanecem secundarios.
+12. Cards, bordas, badges e caixas aninhadas nao sao usados como layout universal; a hierarquia vem de tipografia, espacamento e alinhamento.
+13. Identidade de instituicoes deve ser resolvida por camada visual central reutilizavel, sem migracao de registros.
+14. Estados normal, vazio, erro/indisponivel e conteudo longo devem permanecer coerentes.
+15. Acessibilidade, teclado, foco, reflow, alvo interativo e moeda explicita devem ser preservados.
+16. Modais/drawers e controles contextuais do Extrato devem atingir o mesmo nivel de acabamento da tela principal.
+17. Regras financeiras, calculos, datas distintas, categoria opcional, recorrencia, conciliacao e payloads existentes devem ser preservados.
+18. A implementacao nao deve manter aparencia de CRUD administrativo ou formulario bruto.
+19. A propagacao para Cartoes, Contas e Cartoes, Categorias, Relatorios e outras superficies permanece posterior a aprovacao desta Golden Screen.

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rejection_id": "audit-rejection:9e5f9866-14e0-4043-88e8-fb48b8364788",
-  "head_sha": "e63c0dee17db5a43d6e2110324053fe0fc2824c3",
+  "rejection_id": "audit-rejection:solverfin-703-de211d0-handoff-provenance",
+  "head_sha": "de211d0ee44b36780ad8280499d2765763b45a87",
   "result": "REPROVADA",
   "findings": [
     {
@@ -10,7 +10,7 @@
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "title": "Handoff não cobre o candidato atual",
+      "title": "Proveniencia incompleta do handoff",
       "category": "execution-state-gap"
     }
   ],
