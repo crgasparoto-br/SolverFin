@@ -22,7 +22,10 @@ assert.doesNotMatch(
   enhanced,
   /form\[data-group-form\]\{[^}]*scrollbar-gutter:stable/,
 );
-assert.match(enhanced, /form\[data-group-form\]>\*\{[^}]*max-width:100%;min-width:0/);
+assert.match(
+  enhanced,
+  /form\[data-group-form\]>\*\{[^}]*max-width:100%;min-width:0/,
+);
 assert.match(enhanced, /\.group-members\{[^}]*overflow-x:hidden/);
 assert.match(enhanced, /min-height:min\(286px,38vh\)/);
 assert.match(
