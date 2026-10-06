@@ -1,17 +1,1 @@
-{
-  "schema_version": 1,
-  "classification": "implementation-only",
-  "source_event": {
-    "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
-    "finding_ids": [
-      "A-002"
-    ],
-    "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
-  },
-  "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "The defect is closed by a repository regression at the public API boundary; existing delivery controls already require discriminating negative controls, so no permanent Skill rule is added."
-  },
-  "skill_changes": []
-}
+{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:9157ba8a-e353-4ba9-ba49-2b82ee22d219","finding_ids":["A-001"],"audit_report_sha256":"763cf410dcef39cc715033c971393bb084b04f378e54ea535397eaf464123dbb"},"generalized_learning":{"promotion_status":"not-required","reason":"The current Skills already define the post-write-refreeze latch and exact-head certificate freshness gate; this delivery only needed to apply those existing controls to the current material head."},"skill_changes":[]}
