@@ -155,10 +155,6 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} [data-modal-title]{font-size:${typography.sizes.xl};line-height:${typography.lineHeights.compact};overflow-wrap:anywhere}
     ${dialog} .modal-panel form[data-form] :is(input,select,textarea){min-height:${density.interactiveTargetMin}}
     ${dialog} .modal-panel form[data-form]>label.full{grid-column:1/-1}
-    @media(max-width:360px){
-      ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr)}
-      ${root} .account-summary[data-mockup-composition] .summary-total{border-top:1px solid var(--line);padding-top:${spacing[2]}}
-    }
     @media(max-width:${breakpoints.shellCompact}){
       ${root},${root} .statement-a2-workspace{gap:${spacing[3]}}
       ${root} .sf-page-header-description{display:none}
@@ -180,6 +176,10 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-body .statement-row-footer{align-items:baseline;display:flex;flex-wrap:wrap;gap:${spacing[1]} ${spacing[2]};grid-area:footer;justify-content:space-between;min-width:0}
       ${root} .statement-body .statement-row-footer .col-balance{margin-left:auto}
       ${root} .statement-body .actions summary{height:${density.interactiveTargetMin};width:${density.interactiveTargetMin}}
+    }
+    @media(max-width:360px){
+      ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr)}
+      ${root} .account-summary[data-mockup-composition] .summary-total{border-top:1px solid var(--line);padding-top:${spacing[2]}}
     }
     ${statementMockupControlsStyles()}
   `;
