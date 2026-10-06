@@ -13,7 +13,7 @@ export function enhanceTransactionGroupModalLayout(html: string): string {
       dialog[data-group-modal] .group-modal-panel>header{align-items:start;display:flex;gap:${spacing[4]};justify-content:space-between;padding-bottom:${spacing[3]}}
       dialog[data-group-modal] .group-modal-panel>header>div{min-width:0}
       dialog[data-group-modal] .group-modal-panel>header h2{overflow-wrap:anywhere}
-      dialog[data-group-modal] .group-modal-panel form[data-group-form]{flex:0 1 auto;grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;overflow-x:hidden;overflow-y:auto;padding:${spacing[1]};scrollbar-gutter:stable}
+      dialog[data-group-modal] .group-modal-panel form[data-group-form]{box-sizing:border-box;flex:0 1 auto;grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));max-width:100%;min-width:0;overflow-x:hidden;overflow-y:auto;padding:${spacing[1]};scrollbar-gutter:stable;width:100%}
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label{box-sizing:border-box;grid-column:auto;min-width:0;overflow-wrap:anywhere}
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:has([name="description"]),
       dialog[data-group-modal] .group-modal-panel form[data-group-form]>label:has([data-group-effective-input]),
