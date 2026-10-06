@@ -420,38 +420,16 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
         gap: var(--sf-space-1);
         height: auto;
         min-width: 0;
-        overflow-x: hidden;
+        overflow-x: auto;
         padding: var(--sf-space-2) var(--sf-space-3);
         position: sticky;
         top: 0;
         z-index: 10;
       }
       .sidebar .logout { display: none; }
-      .brand {
-        flex: 0 0 var(--sf-density-compact-action-min-height);
-        font-size: 0;
-        justify-content: center;
-        margin-bottom: 0;
-        overflow: hidden;
-        padding-inline: 0;
-        width: var(--sf-density-compact-action-min-height);
-      }
-      nav {
-        display: grid;
-        flex: 1 1 auto;
-        gap: var(--sf-space-1);
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        min-width: 0;
-        overflow: visible;
-        padding-bottom: 0;
-      }
-      nav a {
-        justify-content: center;
-        min-width: 0;
-        padding-inline: 0;
-        white-space: nowrap;
-      }
-      nav a[data-nav-priority="primary"] { font-size: 0; }
+      .brand { margin-bottom: 0; }
+      nav { display: flex; flex-wrap: nowrap; gap: var(--sf-space-1); overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+      nav a { flex: 0 0 auto; white-space: nowrap; }
       nav a[data-nav-priority="secondary"] { display: none; }
       nav.nav-open a[data-nav-priority="secondary"] { display: inline-flex; }
       .nav-section-label { display: none; }
@@ -465,17 +443,50 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
         display: inline-flex;
         flex: 0 0 auto;
         font: inherit;
-        font-size: 0;
+        font-size: var(--sf-font-size-sm);
         font-weight: var(--sf-font-weight-semibold);
         justify-content: center;
         min-height: var(--sf-density-compact-action-min-height);
-        min-width: var(--sf-density-compact-action-min-height);
         order: 2;
-        padding: 0;
+        padding: 0 var(--sf-density-control-padding-inline);
         white-space: nowrap;
       }
-      .nav-more-toggle::after { content: "⋯"; font-size: var(--sf-font-size-lg); line-height: 1; }
       .nav-more-toggle:hover, .nav-more-toggle[aria-expanded="true"] { background: rgba(34,211,238,.18); color: white; }
+
+      body:has([data-golden-screen="statement"]) .sidebar { overflow-x: hidden; }
+      body:has([data-golden-screen="statement"]) .brand {
+        flex: 0 0 var(--sf-density-compact-action-min-height);
+        font-size: 0;
+        justify-content: center;
+        overflow: hidden;
+        padding-inline: 0;
+        width: var(--sf-density-compact-action-min-height);
+      }
+      body:has([data-golden-screen="statement"]) nav {
+        display: grid;
+        flex: 1 1 auto;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        min-width: 0;
+        overflow: visible;
+        padding-bottom: 0;
+      }
+      body:has([data-golden-screen="statement"]) nav a {
+        flex: 1 1 auto;
+        justify-content: center;
+        min-width: 0;
+        padding-inline: 0;
+      }
+      body:has([data-golden-screen="statement"]) nav a[data-nav-priority="primary"] { font-size: 0; }
+      body:has([data-golden-screen="statement"]) .nav-more-toggle {
+        font-size: 0;
+        min-width: var(--sf-density-compact-action-min-height);
+        padding: 0;
+      }
+      body:has([data-golden-screen="statement"]) .nav-more-toggle::after {
+        content: "⋯";
+        font-size: var(--sf-font-size-lg);
+        line-height: 1;
+      }
       .topbar { min-height: 48px; padding: 0 var(--sf-layout-gutter-mobile); position: static; }
       .topbar > button { display: none; }
       main { padding: var(--sf-layout-gutter-mobile) var(--sf-layout-gutter-mobile) var(--sf-space-6); }
