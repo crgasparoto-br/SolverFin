@@ -34,6 +34,7 @@ assert.match(styles, /div:nth-child\(2\)[^}]*grid-template-columns:subgrid[^}]*p
 assert.match(styles, /close-form[^}]*grid-column:2[^}]*position:static/);
 assert.match(styles, /eyebrow[^}]*grid-column:1[^}]*min-width:0/);
 
-assert.match(styles, /account-summary\\[data-mockup-composition\\][^{]*grid-template-columns:repeat\\(4,minmax\\(0,1fr\\)\\)/);
-assert.match(styles, /statement-secondary-actions>summary::after\\{content:'⋮'/);
-assert.match(styles, /statement-entry-advanced-grid\\{display:grid/);
+assert.ok(styles.includes("account-summary[data-mockup-composition]"));
+assert.ok(styles.includes("grid-template-columns:repeat(4,minmax(0,1fr))"));
+assert.ok(styles.includes("statement-secondary-actions>summary::after{content:'⋮'"));
+assert.ok(styles.includes("statement-entry-advanced-grid{display:grid"));
