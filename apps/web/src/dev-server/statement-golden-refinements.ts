@@ -269,7 +269,7 @@ export function statementGoldenRefinementStyles(): string {
       body:has(${root}) .sidebar{background:var(--primary);border-right:0;color:#fff}
       body:has(${root}) .sidebar nav a{color:rgba(255,255,255,.78)}
       body:has(${root}) .sidebar nav a[aria-current="page"]{background:rgba(34,211,238,.18);color:#fff}
-      body:has(${root}) .main-area>main{padding:${spacing[3]} ${spacing[3]} ${spacing[6]}}
+      body:has(${root}) .main-area>main{padding:${spacing[2]} ${spacing[3]} ${spacing[6]}}
       ${root} .statement-breadcrumb{display:none}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:repeat(2,minmax(0,1fr));padding:${spacing[2]};row-gap:${spacing[1]}}
       ${root} .account-summary[data-mockup-composition] .summary-total{min-height:0;padding:${spacing[2]}}
