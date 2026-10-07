@@ -184,10 +184,17 @@ export function statementGoldenRefinementStyles(): string {
     }
     @media(max-width:360px){
       ${root} .statement-account-heading{grid-template-columns:minmax(0,1fr)}
+      ${root} .statement-account-heading .statement-context{gap:${spacing[1]}}
+      ${root} .statement-account-heading .statement-context-main{gap:${spacing[1]}}
+      ${root} .statement-account-heading .statement-context-main .account-select-icon{height:32px;width:32px}
+      ${root} .statement-account-heading .statement-context-meta{gap:2px ${spacing[1]}}
+      ${root} .statement-account-heading .statement-context-pill{background:transparent;border:0;font-size:10px;min-height:20px;padding:0 2px}
       ${root} .statement-account-heading .summary-balance{text-align:left}
       ${root} .account-summary[data-mockup-composition]{column-gap:${spacing[2]};grid-template-columns:repeat(2,minmax(0,1fr))}
       ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:${spacing[1]};min-width:0}
-      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:10px;font-variant-numeric:tabular-nums;letter-spacing:-.035em;line-height:1.2;max-width:100%;min-width:0;overflow-wrap:normal;white-space:nowrap}
+      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:9px;font-variant-numeric:tabular-nums;letter-spacing:-.035em;line-height:1.15;max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;width:100%;word-break:break-word}
+      ${root}[data-statement-options="collapsed"] #statement-query-fields{display:none}
+      ${root}[data-statement-options="collapsed"] .statement-query-heading{margin-bottom:0}
     }
 
     /* Mockup parity layer: route-scoped so the Golden Screen can evolve without changing other surfaces. */
