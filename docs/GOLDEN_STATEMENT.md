@@ -174,9 +174,15 @@ exige tres colunas sem colisao incidental. Depois restaura atributos e rolagem.
 A aprovacao exige nova evidencia da aplicacao autenticada no SHA publicado. Uma
 previa isolada ou patch local nao fecha GS703-001 a GS703-003 nem homologa a tela.
 
-
 ## Paridade visual com o mockup do Extrato
 
-A Golden Screen do Extrato usa o mockup aprovado como referência estrutural, preservando as regras financeiras existentes. A composição deve manter: navegação e cabeçalho compactos, contexto de conta e saldo em bloco horizontal, quatro indicadores do período (saldo inicial, entradas, saídas e saldo final), filtros compactos, lista com descrição/valor dominantes e drawer lateral de lançamento com opções avançadas progressivas.
+A Golden Screen do Extrato usa o mockup aprovado como referência estrutural,
+preservando as regras financeiras existentes. A composição deve manter: navegação
+e cabeçalho compactos, contexto de conta e saldo em bloco horizontal, quatro
+indicadores do período (saldo inicial, entradas, saídas e saldo final), filtros
+compactos, lista com descrição/valor dominantes e drawer lateral de lançamento
+com opções avançadas progressivas.
 
-A paridade não autoriza tornar categoria obrigatória, fundir datas financeiras ou alterar payloads. Diferenças necessárias por contrato funcional devem ser explícitas e visualmente subordinadas.
+A paridade não autoriza tornar categoria obrigatória, fundir datas financeiras
+ou alterar payloads. Diferenças necessárias por contrato funcional devem ser
+explícitas e visualmente subordinadas.

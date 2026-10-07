@@ -524,8 +524,7 @@ function renderSummaryPanel(
   selectedAccount: AccountRecord | undefined,
   currency: string | undefined,
 ): string {
-  const money = (value: number) =>
-    currency ? formatMoney(value, currency) : "Moeda indisponível";
+  const money = (value: number) => (currency ? formatMoney(value, currency) : "Moeda indisponível");
   return `<aside class="panel account-summary" aria-label="Resumo da conta">
     <div><p class="eyebrow">Resumo da Conta</p><h2>${escapeHtml(selectedAccount?.name ?? "Selecione uma conta")}</h2>${currency ? `<span class="statement-context-pill" data-context="summary-currency">${escapeHtml(currency)}</span>` : ""}</div>
     <section class="summary-balance"><span>Saldo atual</span><strong class="${summary.effectiveBalanceMinor < 0 ? "debit" : "credit"}">${money(summary.effectiveBalanceMinor)}</strong><p>Saldo efetivo com lançamentos realizados.</p></section>
