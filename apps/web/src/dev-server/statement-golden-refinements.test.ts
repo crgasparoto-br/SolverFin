@@ -33,3 +33,7 @@ assert.match(styles, /statement-row-footer[^}]*display:flex/);
 assert.match(styles, /div:nth-child\(2\)[^}]*grid-template-columns:subgrid[^}]*padding-right:0/);
 assert.match(styles, /close-form[^}]*grid-column:2[^}]*position:static/);
 assert.match(styles, /eyebrow[^}]*grid-column:1[^}]*min-width:0/);
+
+assert.match(styles, /account-summary\\[data-mockup-composition\\][^{]*grid-template-columns:repeat\\(4,minmax\\(0,1fr\\)\\)/);
+assert.match(styles, /statement-secondary-actions>summary::after\\{content:'⋮'/);
+assert.match(styles, /statement-entry-advanced-grid\\{display:grid/);

@@ -20,6 +20,8 @@ test("statement A2 archetype composes Phase 3B primitives without rewriting frag
 
   assert.match(html, /data-statement-archetype="A2"/);
   assert.match(html, /data-golden-screen="statement"/);
+  assert.match(html, /class="statement-breadcrumb"/);
+  assert.match(html, /Lançamentos[\\s\\S]*Extrato bancário/);
   assert.match(html, /class="sf-page-header"/);
   assert.match(html, /class="sf-page-container statement-a2-workspace"/);
   assert.match(html, /class="sf-filter-bar"/);

@@ -47,7 +47,7 @@ export function renderStatementListArchetype(props: StatementListArchetypeProps)
       <section class="statement-layout" data-statement-workspace="true">${props.listHtml}</section>`,
   });
 
-  return `<div data-statement-archetype="A2" data-golden-screen="statement" data-golden-screen-state="candidate">${headerHtml}${workspaceHtml}${statementListArchetypeRuntime()}${statementGoldenRefinementRuntime()}</div>`;
+  return `<div data-statement-archetype="A2" data-golden-screen="statement" data-golden-screen-state="candidate"><nav class="statement-breadcrumb" aria-label="Breadcrumb"><span>Lançamentos</span><span aria-hidden="true">›</span><strong>Extrato bancário</strong></nav>${headerHtml}${workspaceHtml}${statementListArchetypeRuntime()}${statementGoldenRefinementRuntime()}</div>`;
 }
 
 function statementListArchetypeRuntime(): string {
