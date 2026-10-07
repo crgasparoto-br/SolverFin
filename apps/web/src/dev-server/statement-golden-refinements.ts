@@ -233,7 +233,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-filter-actions>button[type="submit"]{background:#fff;border:1px solid var(--line);border-radius:7px}
     ${root} .statement-panel.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
     ${root} .statement-toolbar{display:none}
-    ${root} .statement-table{overflow:visible}
+    ${root} .statement-table{max-width:100%;overflow-x:auto;overflow-y:visible}
     ${root} .statement-head{background:#f8fafc;padding-inline:${spacing[3]}}
     ${root} .statement-body{border-bottom:1px solid #eef2f7;padding-inline:${spacing[3]}}
     ${root} .statement-date-group{display:none}
@@ -244,7 +244,7 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog}::backdrop{background:rgba(15,23,42,.38)}
     ${dialog} .modal-panel{box-sizing:border-box;min-height:100%;padding:${spacing[4]}}
     ${dialog} .statement-entry-heading>.eyebrow{display:none!important}
-    ${dialog} .statement-entry-heading{border-bottom:1px solid #eef2f7;padding-bottom:${spacing[3]}}
+    ${dialog} .statement-entry-heading{border-bottom:1px solid #eef2f7;grid-column:1!important;grid-row:1;padding-bottom:${spacing[3]};padding-right:${spacing[2]}}
     ${dialog} .statement-entry-heading p{font-size:${typography.sizes.sm}}
     ${dialog} .close-form button{background:transparent;border:0;color:#475569;font-size:0}
     ${dialog} .close-form button::before{content:'×';font-size:${typography.sizes.xl}}
