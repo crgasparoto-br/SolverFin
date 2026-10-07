@@ -162,8 +162,8 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-heading-actions>button{flex:1;min-width:0}
       ${root} .statement-heading-actions button{font-size:${typography.sizes.sm};min-width:0;padding-inline:${spacing[2]}}
       ${root} .statement-heading-actions button[data-quick-kind="expense"]{grid-column:auto;grid-row:auto}
-      ${root} .statement-account-heading{align-items:center;gap:${spacing[2]};grid-template-columns:minmax(0,1fr) auto}
-      ${root} .statement-account-heading .summary-balance{border-left:0;border-top:0;padding:0;text-align:right}
+      ${root} .statement-account-heading{align-items:center;gap:${spacing[2]};grid-template-columns:minmax(0,1fr)}
+      ${root} .statement-account-heading .summary-balance{border-left:0;border-top:1px solid #eef2f7;padding:${spacing[2]} 0 0;text-align:right}
       ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.lg}}
       ${root} .statement-account-heading .summary-balance p{display:none}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -172,6 +172,10 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.md}}
       ${root} .statement-context{gap:${spacing[1]};padding-bottom:${spacing[1]}}
       ${root} .statement-context-meta{gap:${spacing[1]} ${spacing[3]}}
+      ${root} .statement-account-heading .statement-context-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+      ${root} .statement-account-heading .statement-context-meta{display:flex;gap:${spacing[1]} ${spacing[2]}}
+      ${root} .statement-account-heading .statement-context-pill{font-size:${typography.sizes.xs}}
+      ${dialog} form[data-installment-mode="true"] .statement-entry-advanced{display:none}
       ${root} .statement-body[data-statement-row-refined]{grid-template-columns:24px minmax(0,1fr) ${density.interactiveTargetMin};grid-template-areas:"select description actions" "select amount amount" "select metadata status" "select footer footer";gap:${spacing[1]} ${spacing[2]}}
       ${root} .statement-body .statement-row-metadata{align-items:baseline;display:flex;flex-wrap:wrap;gap:${spacing[1]} ${spacing[2]};grid-area:metadata;min-width:0}
       ${root} .statement-body .statement-row-footer{align-items:baseline;display:flex;flex-wrap:wrap;gap:${spacing[1]} ${spacing[2]};grid-area:footer;justify-content:space-between;min-width:0}
