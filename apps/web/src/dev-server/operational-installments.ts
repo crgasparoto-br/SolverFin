@@ -475,7 +475,7 @@ export function operationalInstallmentsController(): string {
             rememberAndSet(label, "hidden", !allowed);
           }
         });
-        form.querySelectorAll(".status-icons, [data-field]").forEach((node) => {
+        form.querySelectorAll(".status-icons, [data-field], .statement-entry-advanced").forEach((node) => {
           node.dataset.installmentManaged = "";
           rememberAndSet(node, "hidden", true);
         });

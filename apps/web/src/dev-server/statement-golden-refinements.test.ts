@@ -38,7 +38,6 @@ assert.ok(styles.includes("account-summary[data-mockup-composition]"));
 assert.ok(styles.includes("grid-template-columns:repeat(4,minmax(0,1fr))"));
 assert.ok(styles.includes("statement-secondary-actions>summary::after{content:'⋮'"));
 assert.ok(styles.includes("statement-entry-advanced-grid{display:grid"));
-
 assert.ok(styles.includes('form[data-installment-mode="true"] .statement-entry-advanced{display:none}'));
-assert.ok(styles.includes('statement-account-heading{align-items:center;gap:'));
-assert.ok(styles.includes('grid-template-columns:minmax(0,1fr)'));
+assert.ok(styles.includes("summary-total{min-height:0;padding:"));
+assert.ok(styles.includes("statement-status-details>summary{min-height:32px;padding:0}"));

@@ -271,8 +271,12 @@ export function statementGoldenRefinementStyles(): string {
       body:has(${root}) .sidebar nav a[aria-current="page"]{background:rgba(34,211,238,.18);color:#fff}
       body:has(${root}) .main-area>main{padding:${spacing[3]} ${spacing[3]} ${spacing[6]}}
       ${root} .statement-breadcrumb{display:none}
-      ${root} .account-summary[data-mockup-composition]{grid-template-columns:repeat(2,minmax(0,1fr));padding:${spacing[2]}}
-      ${root} .statement-account-heading{grid-column:1/-1;margin:-${spacing[2]} -${spacing[2]} 0;padding:${spacing[2]}}
+      ${root} .account-summary[data-mockup-composition]{grid-template-columns:repeat(2,minmax(0,1fr));padding:${spacing[2]};row-gap:${spacing[1]}}
+      ${root} .account-summary[data-mockup-composition] .summary-total{min-height:0;padding:${spacing[2]}}
+      ${root} .statement-status-details>summary{min-height:32px;padding:0}
+      ${root} .statement-query{padding:${spacing[1]}}
+      ${root} .filter-form{row-gap:${spacing[1]}}
+      ${root} .statement-account-heading{grid-column:1/-1;margin:-${spacing[2]} -${spacing[2]} 0;padding:${spacing[1]} ${spacing[2]}}
       ${root} .filter-form{grid-template-columns:1fr}
       ${root} .statement-filter-actions{grid-column:1/-1;justify-content:stretch}
       ${root} .statement-filter-actions>button{flex:1}
