@@ -62,13 +62,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        if: needs.classify.outputs.code_changed == 'true'
+        if: needs.classify.outputs.code_changed == 'true' || (needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true')
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
-        if: needs.classify.outputs.code_changed == 'true'
+        if: needs.classify.outputs.code_changed == 'true' || (needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true')
       - name: Verify local CI policy on merge preview
         run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
       - name: FAST web type compatibility
