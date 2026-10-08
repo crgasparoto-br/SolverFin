@@ -30,8 +30,9 @@ function normalizePolicyPath(value, field) {
 
 function normalizePathList(policy, field) {
   const value = policy[field] ?? [];
-  if (!Array.isArray(value))
+  if (!Array.isArray(value)) {
     throw new Error(`repository risk policy ${field} must be an array`);
+  }
   return [...new Set(value.map((item) => normalizePolicyPath(item, field)))];
 }
 
