@@ -28,3 +28,14 @@ node scripts/ci-classifier.mjs --paths-file /tmp/ci-changed-paths.json
 npm run format:check
 npm run test
 ```
+
+## Evidência de remediação da auditoria da issue #704
+
+- **A-704-01:** `scripts/ci-legacy-dependency.test.mjs` examina todos os arquivos YAML de workflows ativos e reprova comandos de execução do runtime legado. O diretório `.delivery-v2` ainda existe apenas por compatibilidade histórica; não removê-lo nesta PR sem revisar consumidores e comunicar previamente. A ausência de dependências em outros ambientes externos não é inferida deste teste.
+- **A-704-02:** o contexto `Delivery V2 gate` segue inalterado para evitar bloquear regras já existentes. A conferência real dos rulesets de repositório e organização é uma verificação operacional obrigatória antes do merge; documentação ou CI verde não a substituem. Registrar os checks requeridos e seu source app no registro operacional de mudança.
+- **A-704-03:** `scripts/ci-gate.test.mjs` executa cenários positivos e negativos dos três perfis, incluindo falha de classificação, falha no merge preview e trilha adicional indevida. São testes do contrato do gate, não substitutos de PRs reais classificadas FAST e STANDARD, cuja execução deve ser verificada em PRs próprias antes da conclusão da migração.
+- **A-704-04:** o fallback de formatação usa apenas `prettier --check`; a CI não modifica arquivos versionados durante os diagnósticos.
+
+### Critérios operacionais de liberação
+
+Antes do merge manual, confirmar o workflow no SHA exato, ausência de references executáveis legadas fora dos workflows GitHub, required checks nas regras aplicáveis e uma estratégia documentada para validação de FAST/STANDARD. Nunca tratar um check skipped como sucesso obrigatório isolado.
