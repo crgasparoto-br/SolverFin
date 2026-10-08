@@ -56,13 +56,14 @@ export function statementGoldenRefinementRuntime(): string {
       const accountSummary = overview?.querySelector('.account-summary');
       const context = overview?.querySelector('.statement-context');
       const balance = accountSummary?.querySelector('.summary-balance');
-      if (accountSummary && context && balance && !accountSummary.querySelector('.statement-account-heading')) {
+      let heading = accountSummary?.querySelector('.statement-account-heading');
+      if (accountSummary && context && balance && !heading) {
         const duplicateHeading = accountSummary.querySelector(':scope > div:first-child');
         if (duplicateHeading) {
           duplicateHeading.hidden = true;
           duplicateHeading.classList.add('statement-summary-duplicate');
         }
-        const heading = document.createElement('header');
+        heading = document.createElement('header');
         heading.className = 'statement-account-heading';
         heading.append(context, balance);
         accountSummary.prepend(heading);
