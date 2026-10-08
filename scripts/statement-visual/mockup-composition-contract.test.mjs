@@ -14,11 +14,15 @@ const box = (left, top, width, height) => ({
 const fixture = () => ({
   viewport: { width: 1366, height: 768 },
   heading: box(250, 130, 1000, 90),
-  context: box(250, 140, 490, 70),
-  balance: box(760, 145, 490, 60),
+  context: box(250, 140, 300, 70),
+  period: box(570, 145, 220, 60),
+  balance: box(810, 145, 440, 60),
+  queryHeading: box(920, 350, 200, 44),
+  queryFields: box(250, 350, 650, 44),
   summary: box(250, 130, 1000, 190),
   list: box(230, 450, 1040, 250),
   sameHeading: true,
+  periodInHeading: true,
   primaryCount: 1,
   secondaryCount: 2,
   menuOpen: false,
@@ -31,7 +35,10 @@ test("accepts the horizontal hierarchy with one exposed action", () => {
 test("rejects stacked desktop hierarchy even with the right nodes", () => {
   const layout = fixture();
   layout.balance = box(250, 225, 1000, 60);
-  assert.throws(() => assertMockupComposition(layout), /side by side/);
+  assert.throws(
+    () => assertMockupComposition(layout),
+    /period navigation|side by side|horizontal/,
+  );
 });
 test("rejects three exposed actions and lost secondary actions", () => {
   assert.throws(() => assertMockupComposition({ ...fixture(), primaryCount: 3 }), /one quick/);
