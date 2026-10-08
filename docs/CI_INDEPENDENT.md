@@ -39,3 +39,12 @@ npm run test
 ### Critérios operacionais de liberação
 
 Antes do merge manual, confirmar o workflow no SHA exato, ausência de references executáveis legadas fora dos workflows GitHub, required checks nas regras aplicáveis e uma estratégia documentada para validação de FAST/STANDARD. Nunca tratar um check skipped como sucesso obrigatório isolado.
+
+## Auditoria da PR #705
+
+- A-705-01: merge preview instala dependencias quando a trilha FAST altera arquivos web estaticos, inclusive SVG, antes de executar typecheck. Teste de regressao em `scripts/ci-classifier.test.mjs`.
+- A-705-02: verificar invocacoes indiretas por scripts de pacotes, scripts shell e acoes locais antes de declarar independencia completa do runtime legado.
+- A-705-03: obter evidencia das regras de protecao de `main` e required checks no GitHub, incluindo source app; a verificacao exige acesso administrativo.
+- A-705-04: executar PRs reais separadas para FAST e STANDARD. Os testes de unidade nao substituem os workflows de integracao.
+
+A PR #705 permanece sem merge ate a verificacao operacional.
