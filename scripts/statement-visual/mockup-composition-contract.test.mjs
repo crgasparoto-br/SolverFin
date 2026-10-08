@@ -35,10 +35,7 @@ test("accepts the horizontal hierarchy with one exposed action", () => {
 test("rejects stacked desktop hierarchy even with the right nodes", () => {
   const layout = fixture();
   layout.balance = box(250, 225, 1000, 60);
-  assert.throws(
-    () => assertMockupComposition(layout),
-    /period navigation|side by side|horizontal/,
-  );
+  assert.throws(() => assertMockupComposition(layout), /period navigation|side by side|horizontal/);
 });
 test("rejects three exposed actions and lost secondary actions", () => {
   assert.throws(() => assertMockupComposition({ ...fixture(), primaryCount: 3 }), /one quick/);
