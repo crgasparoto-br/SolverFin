@@ -11,6 +11,7 @@ export function assertMockupComposition(layout) {
   assert.equal(layout.primaryCount, 1, "Only one quick action should be exposed initially.");
   assert.equal(layout.secondaryCount, 2, "Secondary quick actions must remain available.");
   assert.equal(layout.menuOpen, false, "Secondary actions should start collapsed.");
+  assert.equal(layout.periodInHeading, true, "Period navigation must compose the account summary header.");
   assert.ok(layout.summary.width >= layout.list.width - 64, "Summary regressed to a sidebar.");
   if (layout.viewport.width <= 760) {
     assert.ok(
@@ -19,6 +20,16 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width > 760) {
+    assert.ok(
+      layout.queryHeading.top <= layout.queryFields.bottom + 1 &&
+        layout.queryHeading.bottom >= layout.queryFields.top - 1,
+      "Desktop filter options must stay inline with the compact query controls.",
+    );
+    assert.ok(
+      layout.context.right <= layout.period.left + 1 &&
+        layout.period.right <= layout.balance.left + 1,
+      "Desktop period navigation must sit between account context and balance.",
+    );
     assert.ok(
       layout.context.right <= layout.balance.left + 1,
       "Desktop account and balance must be side by side.",
@@ -42,6 +53,9 @@ export function measureMockupComposition() {
   const context = root?.querySelector(".statement-context");
   const balance = root?.querySelector(".summary-balance");
   const menu = root?.querySelector(".statement-secondary-actions");
+  const period = root?.querySelector(".statement-period-control");
+  const queryHeading = root?.querySelector(".statement-query-heading");
+  const queryFields = root?.querySelector("#statement-query-fields");
   const rect = (element) => {
     if (!element) return null;
     const box = element.getBoundingClientRect();
@@ -59,10 +73,14 @@ export function measureMockupComposition() {
     heading: rect(heading),
     context: rect(context),
     balance: rect(balance),
+    period: rect(period),
+    queryHeading: rect(queryHeading),
+    queryFields: rect(queryFields),
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
     sameHeading:
       !!heading && context?.parentElement === heading && balance?.parentElement === heading,
+    periodInHeading: !!heading && period?.parentElement === heading,
     primaryCount: root?.querySelectorAll(".statement-heading-actions > button").length,
     secondaryCount: menu?.querySelectorAll("button[data-quick-kind]").length,
     menuOpen: menu?.open,
