@@ -219,6 +219,9 @@ jobs:
       STANDARD_RESULT: ${{ needs.standard_validation.result }}
       CRITICAL_RESULT: ${{ needs.critical_validation.result }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Test risk gate contract
         run: node --test scripts/ci-gate.test.mjs
       - name: Enforce exactly one risk path
