@@ -832,7 +832,8 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     const monthInput = document.querySelector("#filter-month");
     document.querySelectorAll("[data-month-step]").forEach((button) => button.addEventListener("click", () => { monthInput.value = shiftMonth(monthInput.value, Number(button.dataset.monthStep)); monthInput.form?.requestSubmit(); }));
     document.querySelectorAll("[data-month-current]").forEach((button) => button.addEventListener("click", () => { monthInput.value = new Date().toISOString().slice(0, 7); monthInput.form?.requestSubmit(); }));
-    document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => { if (event.target.name === "accountId" || event.target.name === "month" || event.target.name === "sort") autoForm.requestSubmit(); }));
+    monthInput.addEventListener("change", () => monthInput.form?.requestSubmit());
+    document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => { if (event.target.name === "accountId" || event.target.name === "sort") autoForm.requestSubmit(); }));
 
     const accountPicker = document.querySelector("[data-account-picker]");
     if (accountPicker) {
