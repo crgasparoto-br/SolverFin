@@ -68,6 +68,21 @@ export function statementGoldenRefinementRuntime(): string {
         accountSummary.prepend(heading);
         accountSummary.dataset.mockupComposition = 'true';
       }
+
+      const filterForm = root.querySelector('.filter-form');
+      const monthField = filterForm?.querySelector('.month-field');
+      const currentMonth = filterForm?.querySelector('[data-month-current]');
+      if (filterForm && monthField && heading && !heading.querySelector('.statement-period-control')) {
+        if (!filterForm.id) filterForm.id = 'statement-filters';
+        const monthInput = monthField.querySelector('input[name="month"]');
+        if (monthInput) monthInput.setAttribute('form', filterForm.id);
+        const periodControl = document.createElement('div');
+        periodControl.className = 'statement-period-control';
+        periodControl.setAttribute('aria-label', 'Período do extrato');
+        periodControl.append(monthField);
+        if (currentMonth) periodControl.append(currentMonth);
+        heading.insertBefore(periodControl, balance);
+      }
       const listTitle = root.querySelector('#statement-list-title');
       if (listTitle) listTitle.textContent = 'Movimentações';
 
@@ -222,10 +237,16 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-secondary-actions[open]>summary::after{content:'⋮'}
     ${root} .statement-overview{padding:0}
     ${root} .account-summary[data-mockup-composition]{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px rgba(15,23,42,.03);gap:${spacing[3]};grid-template-columns:repeat(4,minmax(0,1fr));padding:${spacing[3]}}
-    ${root} .statement-account-heading{background:#fff;border:1px solid var(--line);border-radius:9px;grid-template-columns:minmax(0,1fr) minmax(220px,.58fr);margin:-${spacing[3]} -${spacing[3]} 0;padding:${spacing[3]}}
+    ${root} .statement-account-heading{background:#fff;border:1px solid var(--line);border-radius:9px;grid-template-columns:minmax(0,1fr) auto minmax(220px,.58fr);margin:-${spacing[3]} -${spacing[3]} 0;padding:${spacing[3]}}
     ${root} .statement-account-heading .statement-context-main .account-select-icon{height:44px;width:44px}
     ${root} .statement-account-heading .statement-context-copy strong{font-size:${typography.sizes.md}}
     ${root} .statement-account-heading .summary-balance strong{color:#07883f;font-size:${typography.sizes.xl}}
+    ${root} .statement-period-control{align-items:end;display:flex;gap:${spacing[2]};min-width:0}
+    ${root} .statement-period-control .month-field{min-width:190px}
+    ${root} .statement-period-control .month-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
+    ${root} .statement-period-control .month-nav{background:#f8fafc;border:1px solid var(--line);border-radius:8px}
+    ${root} .statement-period-control [data-month-current]{background:transparent;border:1px solid var(--line);border-radius:999px;color:var(--primary);min-height:40px;padding-inline:${spacing[3]}}
+    ${root} .statement-context-pill[data-context="period"]{display:none}
     ${root} .summary-totals{display:contents}
     ${root} .account-summary[data-mockup-composition] .summary-total{background:#fff;border:1px solid var(--line);border-radius:8px;gap:${spacing[1]};min-height:64px;padding:${spacing[3]}}
     ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.md}}
@@ -233,14 +254,16 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .summary-total .debit{color:#dc2626}
     ${root} .summary-total .neutral{color:#0f172a}
     ${root} .account-summary[data-mockup-composition] .status-overview{grid-column:1/-1}
-    ${root} .statement-query{background:#fff;border-radius:10px;padding:${spacing[2]}}
+    ${root} .statement-query{align-items:end;background:#fff;border-radius:10px;display:flex;gap:${spacing[2]};padding:${spacing[2]}}
+    ${root} #statement-query-fields{flex:1 1 auto;min-width:0}
+    ${root} .statement-query-heading{flex:0 0 auto;margin:0;order:2}
     ${root} .statement-query-heading>span{display:none}
-    ${root} .filter-form{align-items:end;grid-template-columns:minmax(170px,.95fr) minmax(180px,.9fr) minmax(260px,1.6fr) auto}
-    ${root} .filter-form :is(.account-field,.month-field)>label,${root} .statement-search-field{font-size:0}
+    ${root} [data-statement-options-toggle]{border-radius:7px;min-height:40px;white-space:nowrap}
+    ${root} .filter-form{align-items:end;grid-template-columns:minmax(190px,.9fr) minmax(280px,1.7fr) minmax(170px,.8fr) auto}
+    ${root} .filter-form .account-field>label,${root} .statement-search-field{font-size:0}
     ${root} .statement-search-field input{font-size:${typography.sizes.sm}}
     ${root} .statement-filter-actions{align-self:end;grid-column:auto}
     ${root} .statement-filter-actions>a{display:none}
-    ${root} .statement-filter-actions>[data-month-current]{border:1px solid var(--line);border-radius:999px}
     ${root} .statement-filter-actions>button[type="submit"]{background:#fff;border:1px solid var(--line);border-radius:7px}
     ${root} .statement-panel.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
     ${root} .statement-toolbar{display:none}
@@ -257,8 +280,8 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .statement-entry-heading>.eyebrow{display:none!important}
     ${dialog} .statement-entry-heading{border-bottom:1px solid #eef2f7;grid-column:1!important;grid-row:1;padding-bottom:${spacing[3]};padding-right:${spacing[2]}}
     ${dialog} .statement-entry-heading p{font-size:${typography.sizes.sm}}
-    ${dialog} .close-form button{background:transparent;border:0;color:#475569;font-size:0}
-    ${dialog} .close-form button::before{content:'×';font-size:${typography.sizes.xl}}
+    ${dialog} .close-form button{background:transparent;border:0;color:#475569;font-size:${typography.sizes.xl};line-height:1}
+    ${dialog} .close-form button::before,${dialog} .close-form button::after{content:none}
     ${dialog} .modal-panel form[data-form]{display:grid;gap:${spacing[3]};grid-template-columns:repeat(2,minmax(0,1fr));margin-top:${spacing[3]}}
     ${dialog} .modal-panel form[data-form]>label.full,
     ${dialog} .modal-panel form[data-form]>.statement-entry-advanced,
@@ -290,7 +313,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-status-details>summary{min-height:32px;padding:0}
       ${root} .statement-query{padding:${spacing[1]}}
       ${root} .filter-form{row-gap:${spacing[1]}}
-      ${root} .statement-account-heading{grid-column:1/-1;margin:-${spacing[2]} -${spacing[2]} 0;padding:${spacing[1]} ${spacing[2]}}
+      ${root} .statement-account-heading{grid-column:1/-1;grid-template-columns:minmax(0,1fr);margin:-${spacing[2]} -${spacing[2]} 0;padding:${spacing[1]} ${spacing[2]}}
+      ${root} .statement-period-control{align-items:center;justify-content:space-between;width:100%}
+      ${root} .statement-period-control .month-field{flex:1 1 auto;min-width:0}
+      ${root} .statement-period-control [data-month-current]{flex:0 0 auto}
+      ${root} .statement-query{align-items:stretch;display:grid;grid-template-columns:minmax(0,1fr) auto}
+      ${root} #statement-query-fields{grid-column:1/-1}
+      ${root} .statement-query-heading{grid-column:2;grid-row:1}
       ${root} .filter-form{grid-template-columns:1fr}
       ${root} .statement-filter-actions{grid-column:1/-1;justify-content:stretch}
       ${root} .statement-filter-actions>button{flex:1}
