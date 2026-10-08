@@ -4,7 +4,9 @@ import { join } from "node:path";
 import test from "node:test";
 
 test("active CI workflows do not invoke the legacy orchestrator runtime", () => {
-  const workflows = readdirSync(".github/workflows").filter((name) => /\.ya?ml$/.test(name));
+  const workflows = readdirSync(".github/workflows").filter((name) =>
+    /\.ya?ml$/.test(name),
+  );
   for (const name of workflows) {
     const body = readFileSync(join(".github/workflows", name), "utf8");
     assert.doesNotMatch(
