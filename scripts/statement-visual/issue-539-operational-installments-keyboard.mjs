@@ -150,7 +150,7 @@ async function activeControl() {
     browser.cdp,
     `(() => {
       const active = document.activeElement;
-      return active?.name || active?.textContent?.trim() || active?.getAttribute("aria-label") || "";
+      return active?.name || active?.getAttribute("aria-label") || active?.textContent?.trim() || "";
     })()`,
   );
 }
