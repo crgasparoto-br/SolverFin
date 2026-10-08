@@ -453,40 +453,6 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
       }
       .nav-more-toggle:hover, .nav-more-toggle[aria-expanded="true"] { background: rgba(34,211,238,.18); color: white; }
 
-      body:has([data-golden-screen="statement"]) .sidebar { overflow-x: hidden; }
-      body:has([data-golden-screen="statement"]) .brand {
-        flex: 0 0 var(--sf-density-compact-action-min-height);
-        font-size: 0;
-        justify-content: center;
-        overflow: hidden;
-        padding-inline: 0;
-        width: var(--sf-density-compact-action-min-height);
-      }
-      body:has([data-golden-screen="statement"]) nav {
-        display: grid;
-        flex: 1 1 auto;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        min-width: 0;
-        overflow: visible;
-        padding-bottom: 0;
-      }
-      body:has([data-golden-screen="statement"]) nav a {
-        flex: 1 1 auto;
-        justify-content: center;
-        min-width: 0;
-        padding-inline: 0;
-      }
-      body:has([data-golden-screen="statement"]) nav a[data-nav-priority="primary"] { font-size: 0; }
-      body:has([data-golden-screen="statement"]) .nav-more-toggle {
-        font-size: 0;
-        min-width: var(--sf-density-compact-action-min-height);
-        padding: 0;
-      }
-      body:has([data-golden-screen="statement"]) .nav-more-toggle::after {
-        content: "⋯";
-        font-size: var(--sf-font-size-lg);
-        line-height: 1;
-      }
       .topbar { min-height: 48px; padding: 0 var(--sf-layout-gutter-mobile); position: static; }
       .topbar > button { display: none; }
       main { padding: var(--sf-layout-gutter-mobile) var(--sf-layout-gutter-mobile) var(--sf-space-6); }

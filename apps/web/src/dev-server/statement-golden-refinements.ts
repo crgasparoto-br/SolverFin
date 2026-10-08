@@ -278,6 +278,13 @@ export function statementGoldenRefinementStyles(): string {
       body:has(${root}) .sidebar nav a[aria-current="page"]{background:rgba(34,211,238,.18);color:#fff}
       body:has(${root}) .main-area>main{padding:${spacing[2]} ${spacing[3]} ${spacing[6]}}
       ${root} .statement-breadcrumb{display:none}
+      body:has(${root}) .sidebar{overflow-x:hidden}
+      body:has(${root}) .brand{flex:0 0 var(--sf-density-compact-action-min-height);font-size:0;justify-content:center;overflow:hidden;padding-inline:0;width:var(--sf-density-compact-action-min-height)}
+      body:has(${root}) nav{display:grid;flex:1 1 auto;grid-template-columns:repeat(5,minmax(0,1fr));min-width:0;overflow:visible;padding-bottom:0}
+      body:has(${root}) nav a{flex:1 1 auto;justify-content:center;min-width:0;padding-inline:0}
+      body:has(${root}) nav a[data-nav-priority="primary"]{font-size:0}
+      body:has(${root}) .nav-more-toggle{font-size:0;min-width:var(--sf-density-compact-action-min-height);padding:0}
+      body:has(${root}) .nav-more-toggle::after{content:"⋯";font-size:var(--sf-font-size-lg);line-height:1}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:repeat(2,minmax(0,1fr));padding:${spacing[2]};row-gap:${spacing[1]}}
       ${root} .account-summary[data-mockup-composition] .summary-total{min-height:0;padding:${spacing[1]} ${spacing[2]}}
       ${root} .statement-status-details>summary{min-height:32px;padding:0}
