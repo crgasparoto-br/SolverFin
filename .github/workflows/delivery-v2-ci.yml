@@ -190,7 +190,13 @@ jobs:
       - run: npm run env:check
       - run: npm run prisma:validate
       - run: npm run db:seed:check
-      - run: npm run format:check
+      - name: Format check with precise diagnostics
+        run: |
+          npm run format:check || {
+            npx prettier scripts/ci-risk-profile.mjs scripts/ci-repository-risk-policy.mjs --write
+            git diff -- scripts/ci-risk-profile.mjs scripts/ci-repository-risk-policy.mjs
+            exit 1
+          }
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run prisma:generate
