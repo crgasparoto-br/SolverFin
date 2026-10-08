@@ -22,3 +22,23 @@ test("root npm scripts do not invoke the legacy runtime", () => {
     assert.doesNotMatch(command, /\.delivery-v2\/|delivery-orchestrator\/(?:src|scripts|bin)\//i, name);
   }
 });
+
+test("workspace scripts do not invoke the legacy runtime", () => {
+  for (const folder of ["apps", "packages"]) {
+    for (const entry of readdirSync(folder, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const filename = join(folder, entry.name, "package.json");
+      let body;
+      try {
+        body = readFileSync(filename, "utf8");
+      } catch (error) {
+        if (error.code === "ENOENT") continue;
+        throw error;
+      }
+      const manifest = JSON.parse(body);
+      for (const [name, command] of Object.entries(manifest.scripts ?? {})) {
+        assert.doesNotMatch(command, /[.]delivery-v2[/]|delivery-orchestrator[/](src|scripts|bin)[/]/i, filename + ":" + name);
+      }
+    }
+  }
+});
