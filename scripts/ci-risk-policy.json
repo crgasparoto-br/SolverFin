@@ -42,21 +42,9 @@
       "scripts/ci-repository-risk-policy.mjs",
       "scripts/ci-risk-policy.json"
     ],
-    "criticalRoots": [
-      "apps/api/src",
-      "prisma",
-      "packages",
-      "apps/web/src/dev-server"
-    ],
-    "fastSafeRoots": [
-      "apps/web/src/design-system",
-      "apps/web/public",
-      "imagens"
-    ],
-    "standardRoots": [
-      "apps/web/src",
-      "docs"
-    ]
+    "criticalRoots": ["apps/api/src", "prisma", "packages", "apps/web/src/dev-server"],
+    "fastSafeRoots": ["apps/web/src/design-system", "apps/web/public", "imagens"],
+    "standardRoots": ["apps/web/src", "docs"]
   },
   "schemaVersion": 1
 }
