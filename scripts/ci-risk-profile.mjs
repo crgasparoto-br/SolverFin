@@ -76,11 +76,11 @@ function classifyPath(path, repositoryPolicy) {
 }
 
 export function resolveRequestedRiskProfile(value) {
-  const resolved = String(value || "auto").trim().toLowerCase();
+  const resolved = String(value || "auto")
+    .trim()
+    .toLowerCase();
   if (!REQUESTED_SET.has(resolved)) {
-    throw new Error(
-      `CI_RISK_PROFILE must be one of: ${REQUESTED_RISK_PROFILES.join(", ")}`,
-    );
+    throw new Error(`CI_RISK_PROFILE must be one of: ${REQUESTED_RISK_PROFILES.join(", ")}`);
   }
   return resolved;
 }
@@ -105,9 +105,7 @@ export function classifyChangedPaths(changedPaths = [], { repositoryPolicy = {} 
   return {
     profile: highest,
     provisional: false,
-    reasons: classified
-      .filter((item) => item.profile === highest)
-      .map((item) => item.reason),
+    reasons: classified.filter((item) => item.profile === highest).map((item) => item.reason),
     paths,
   };
 }
