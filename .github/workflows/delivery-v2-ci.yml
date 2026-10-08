@@ -70,7 +70,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
         if: needs.classify.outputs.code_changed == 'true'
       - name: Verify local CI policy on merge preview
-        run: node --test scripts/ci-classifier.test.mjs
+        run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
       - name: FAST web type compatibility
         if: needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true'
         run: npm run typecheck --workspace @solverfin/web
@@ -93,7 +93,7 @@ jobs:
           ref: ${{ env.VERIFICATION_HEAD_SHA }}
       - name: Verify exact head
         run: test "$(git rev-parse HEAD)" = "$VERIFICATION_HEAD_SHA"
-      - run: node --test scripts/ci-classifier.test.mjs
+      - run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
       - uses: actions/setup-node@v4
         if: needs.classify.outputs.web_changed == 'true'
         with:
@@ -136,7 +136,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
-      - run: node --test scripts/ci-classifier.test.mjs
+      - run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
       - name: Format check with precise diagnostics
         run: |
           npm run format:check || {
@@ -185,7 +185,7 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
-      - run: node --test scripts/ci-classifier.test.mjs
+      - run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
       - run: npm run env:check
       - run: npm run prisma:validate
       - run: npm run db:seed:check
