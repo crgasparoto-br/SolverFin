@@ -15,3 +15,10 @@ test("active CI workflows do not invoke the legacy orchestrator runtime", () => 
     assert.doesNotMatch(body, /delivery-orchestrator\/(?:src|scripts|bin)\//i, name);
   }
 });
+
+test("root npm scripts do not invoke the legacy runtime", () => {
+  const manifest = JSON.parse(readFileSync("package.json", "utf8"));
+  for (const [name, command] of Object.entries(manifest.scripts ?? {})) {
+    assert.doesNotMatch(command, /\.delivery-v2\/|delivery-orchestrator\/(?:src|scripts|bin)\//i, name);
+  }
+});
