@@ -1,7 +1,14 @@
 import { fileURLToPath } from "node:url";
 
 export function verifyGate(results) {
-  const { RISK_PROFILE, CLASSIFY_RESULT, MERGE_PREVIEW_RESULT, FAST_RESULT, STANDARD_RESULT, CRITICAL_RESULT } = results;
+  const {
+    RISK_PROFILE,
+    CLASSIFY_RESULT,
+    MERGE_PREVIEW_RESULT,
+    FAST_RESULT,
+    STANDARD_RESULT,
+    CRITICAL_RESULT,
+  } = results;
   if (CLASSIFY_RESULT !== "success") throw new Error("risk classification did not succeed");
   if (MERGE_PREVIEW_RESULT !== "success") throw new Error("merge preview did not succeed");
   const allowed = ["fast", "standard", "critical"];
@@ -9,7 +16,8 @@ export function verifyGate(results) {
   for (const profile of allowed) {
     const actual = results[`${profile.toUpperCase()}_RESULT`];
     const expected = profile === RISK_PROFILE ? "success" : "skipped";
-    if (actual !== expected) throw new Error(`${profile} validation must be ${expected}, got ${actual}`);
+    if (actual !== expected)
+      throw new Error(`${profile} validation must be ${expected}, got ${actual}`);
   }
   return true;
 }
