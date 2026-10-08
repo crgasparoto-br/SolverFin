@@ -11,7 +11,11 @@ export function assertMockupComposition(layout) {
   assert.equal(layout.primaryCount, 1, "Only one quick action should be exposed initially.");
   assert.equal(layout.secondaryCount, 2, "Secondary quick actions must remain available.");
   assert.equal(layout.menuOpen, false, "Secondary actions should start collapsed.");
-  assert.equal(layout.periodInHeading, true, "Period navigation must compose the account summary header.");
+  assert.equal(
+    layout.periodInHeading,
+    true,
+    "Period navigation must compose the account summary header.",
+  );
   assert.ok(layout.summary.width >= layout.list.width - 64, "Summary regressed to a sidebar.");
   if (layout.viewport.width <= 760) {
     assert.ok(
