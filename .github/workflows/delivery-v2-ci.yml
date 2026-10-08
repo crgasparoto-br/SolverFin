@@ -137,7 +137,13 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: node --test scripts/ci-classifier.test.mjs
-      - run: npm run format:check
+      - name: Format check with precise diagnostics
+        run: |
+          npm run format:check || {
+            npx prettier scripts/ci-risk-profile.mjs scripts/ci-repository-risk-policy.mjs --write
+            git diff -- scripts/ci-risk-profile.mjs scripts/ci-repository-risk-policy.mjs
+            exit 1
+          }
       - run: npm run lint --workspace @solverfin/web
       - run: npm run typecheck --workspace @solverfin/web
       - run: npm run test --workspace @solverfin/web
