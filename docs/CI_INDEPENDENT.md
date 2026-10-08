@@ -43,7 +43,7 @@ Antes do merge manual, confirmar o workflow no SHA exato, ausência de reference
 ## Auditoria da PR #705
 
 - A-705-01: merge preview instala dependencias quando a trilha FAST altera arquivos web estaticos, inclusive SVG, antes de executar typecheck. Teste de regressao em `scripts/ci-classifier.test.mjs`.
-- A-705-02: verificar invocacoes indiretas por scripts de pacotes, scripts shell e acoes locais antes de declarar independencia completa do runtime legado.
+- A-705-02: a verificacao automatizada foi ampliada para scripts npm do pacote raiz e workspaces. Scripts shell e acoes locais ainda precisam ser conferidos no grafo de execucao antes de declarar independencia completa do runtime legado.
 - A-705-03: obter evidencia das regras de protecao de `main` e required checks no GitHub, incluindo source app; a verificacao exige acesso administrativo.
 - A-705-04: executar PRs reais separadas para FAST e STANDARD. Os testes de unidade nao substituem os workflows de integracao.
 
