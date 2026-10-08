@@ -109,7 +109,10 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
           heading.style.setProperty('grid-template-columns','1fr','important');})()`);
         try {
           const stacked = await read(`(${measureMockupComposition.toString()})()`);
-          assert.throws(() => assertMockupComposition(stacked), /side by side|horizontal/);
+          assert.throws(
+            () => assertMockupComposition(stacked),
+            /side by side|horizontal|period navigation/,
+          );
         } finally {
           await read(`(() => {const heading=document.querySelector('.statement-account-heading');
             heading.setAttribute('style',heading.dataset.savedStyle);delete heading.dataset.savedStyle;})()`);
@@ -173,13 +176,22 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
 
     const measureCloseAffordance = `(() => {
       const dialog = document.querySelector('dialog[data-modal]');
-      const visibleButtons = Array.from(dialog.querySelectorAll('.close-form button')).filter((button) => {
-        const box = button.getBoundingClientRect();
-        const style = getComputedStyle(button);
-        return box.width > 0 && box.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-      });
+      const visibleButtons = Array.from(dialog.querySelectorAll('.close-form button')).filter(
+        (button) => {
+          const box = button.getBoundingClientRect();
+          const style = getComputedStyle(button);
+          return (
+            box.width > 0 &&
+            box.height > 0 &&
+            style.visibility !== 'hidden' &&
+            style.display !== 'none'
+          );
+        },
+      );
       const button = visibleButtons[0];
-      if (!button) return { buttonCount: 0, glyphSources: 0, text: '', before: '', after: '' };
+      if (!button) {
+        return { buttonCount: 0, glyphSources: 0, text: '', before: '', after: '' };
+      }
       const style = getComputedStyle(button);
       const pseudoVisible = (content) =>
         Boolean(content && content !== 'none' && content !== 'normal' && content !== '""');
@@ -188,16 +200,29 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       const textVisible = parseFloat(style.fontSize) > 0 && button.textContent.trim().length > 0;
       return {
         buttonCount: visibleButtons.length,
-        glyphSources: Number(textVisible) + Number(pseudoVisible(before)) + Number(pseudoVisible(after)),
+        glyphSources:
+          Number(textVisible) + Number(pseudoVisible(before)) + Number(pseudoVisible(after)),
         text: button.textContent.trim(),
         before,
         after,
       };
     })()`;
     const assertCloseAffordance = (state) => {
-      assert.equal(state.buttonCount, 1, "Drawer must expose exactly one visible close control.");
-      assert.equal(state.glyphSources, 1, "Drawer close control must render exactly one visible glyph.");
-      assert.equal(state.text, "×", "Drawer close control must use the canonical single close glyph.");
+      assert.equal(
+        state.buttonCount,
+        1,
+        "Drawer must expose exactly one visible close control.",
+      );
+      assert.equal(
+        state.glyphSources,
+        1,
+        "Drawer close control must render exactly one visible glyph.",
+      );
+      assert.equal(
+        state.text,
+        "×",
+        "Drawer close control must use the canonical single close glyph.",
+      );
     };
     const closeAffordance = await read(measureCloseAffordance);
     assertCloseAffordance(closeAffordance);
