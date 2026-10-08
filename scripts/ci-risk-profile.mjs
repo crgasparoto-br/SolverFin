@@ -20,7 +20,11 @@ const CORE_SENSITIVE_ENTRYPOINT_PATTERNS = [
 ];
 
 function normalizePath(value) {
-  return String(value || "").trim().replaceAll("\\", "/").replace(/^\.\//, "").toLowerCase();
+  return String(value || "")
+    .trim()
+    .replaceAll("\\", "/")
+    .replace(/^\.\//, "")
+    .toLowerCase();
 }
 
 function firstMatchingRoot(path, roots) {
@@ -49,7 +53,10 @@ function classifyPath(path, repositoryPolicy) {
 
   const criticalRoot = firstMatchingRoot(path, repositoryPolicy.criticalRoots);
   if (criticalRoot) {
-    return { profile: "critical", reason: `repository-critical-root:${criticalRoot}:${path}` };
+    return {
+      profile: "critical",
+      reason: `repository-critical-root:${criticalRoot}:${path}`,
+    };
   }
 
   const fastRoot = firstMatchingRoot(path, repositoryPolicy.fastSafeRoots);
@@ -59,7 +66,10 @@ function classifyPath(path, repositoryPolicy) {
 
   const standardRoot = firstMatchingRoot(path, repositoryPolicy.standardRoots);
   if (standardRoot) {
-    return { profile: "standard", reason: `repository-standard-root:${standardRoot}:${path}` };
+    return {
+      profile: "standard",
+      reason: `repository-standard-root:${standardRoot}:${path}`,
+    };
   }
 
   return { profile: "critical", reason: `unknown-path:${path}` };
@@ -83,7 +93,7 @@ export function classifyChangedPaths(changedPaths = [], { repositoryPolicy = {} 
       profile: "critical",
       provisional: true,
       reasons: ["no-changed-paths-fail-closed"],
-      paths: []
+      paths: [],
     };
   }
 
