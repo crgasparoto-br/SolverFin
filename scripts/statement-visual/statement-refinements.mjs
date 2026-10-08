@@ -170,6 +170,58 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       title,
       restored: "passed",
     });
+
+    const measureCloseAffordance = `(() => {
+      const dialog = document.querySelector('dialog[data-modal]');
+      const visibleButtons = Array.from(dialog.querySelectorAll('.close-form button')).filter((button) => {
+        const box = button.getBoundingClientRect();
+        const style = getComputedStyle(button);
+        return box.width > 0 && box.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+      });
+      const button = visibleButtons[0];
+      if (!button) return { buttonCount: 0, glyphSources: 0, text: '', before: '', after: '' };
+      const style = getComputedStyle(button);
+      const pseudoVisible = (content) =>
+        Boolean(content && content !== 'none' && content !== 'normal' && content !== '""');
+      const before = getComputedStyle(button, '::before').content;
+      const after = getComputedStyle(button, '::after').content;
+      const textVisible = parseFloat(style.fontSize) > 0 && button.textContent.trim().length > 0;
+      return {
+        buttonCount: visibleButtons.length,
+        glyphSources: Number(textVisible) + Number(pseudoVisible(before)) + Number(pseudoVisible(after)),
+        text: button.textContent.trim(),
+        before,
+        after,
+      };
+    })()`;
+    const assertCloseAffordance = (state) => {
+      assert.equal(state.buttonCount, 1, "Drawer must expose exactly one visible close control.");
+      assert.equal(state.glyphSources, 1, "Drawer close control must render exactly one visible glyph.");
+      assert.equal(state.text, "×", "Drawer close control must use the canonical single close glyph.");
+    };
+    const closeAffordance = await read(measureCloseAffordance);
+    assertCloseAffordance(closeAffordance);
+    await read(`
+      (() => {
+        const style = document.createElement('style');
+        style.id = 'statement-close-negative';
+        style.textContent = 'dialog[data-modal] .close-form button::after{content:"×"!important}';
+        document.head.append(style);
+      })()
+    `);
+    try {
+      const duplicatedClose = await read(measureCloseAffordance);
+      assert.throws(() => assertCloseAffordance(duplicatedClose), /exactly one visible glyph/);
+    } finally {
+      await read("document.getElementById('statement-close-negative')?.remove()");
+    }
+    assertCloseAffordance(await read(measureCloseAffordance));
+    report.controls.push({
+      id: "GS-DIALOG-SINGLE-CLOSE-AFFORDANCE",
+      status: "passed",
+      closeAffordance,
+      restored: "passed",
+    });
     report.status = "passed";
   } catch (error) {
     report.status = "failed";
