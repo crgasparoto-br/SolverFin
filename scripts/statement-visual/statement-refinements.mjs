@@ -208,11 +208,7 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       };
     })()`;
     const assertCloseAffordance = (state) => {
-      assert.equal(
-        state.buttonCount,
-        1,
-        "Drawer must expose exactly one visible close control.",
-      );
+      assert.equal(state.buttonCount, 1, "Drawer must expose exactly one visible close control.");
       assert.equal(
         state.glyphSources,
         1,
