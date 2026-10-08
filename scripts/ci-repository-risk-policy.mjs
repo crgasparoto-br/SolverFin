@@ -21,9 +21,7 @@ function normalizePolicyPath(value, field) {
     throw new Error(`${field} entries must stay inside the repository`);
   }
   if (/[*?{}[\]]/.test(normalized)) {
-    throw new Error(
-      `${field} entries use exact/prefix matching; glob syntax is not supported`,
-    );
+    throw new Error(`${field} entries use exact/prefix matching; glob syntax is not supported`);
   }
   return normalized;
 }
@@ -52,9 +50,7 @@ export function normalizeRepositoryRiskPolicy(policy = {}) {
     standardRoots: Object.freeze(normalizePathList(policy, "standardRoots")),
     criticalRoots: Object.freeze(normalizePathList(policy, "criticalRoots")),
     criticalPaths: Object.freeze(normalizePathList(policy, "criticalPaths")),
-    criticalPathFragments: Object.freeze(
-      normalizePathList(policy, "criticalPathFragments"),
-    ),
+    criticalPathFragments: Object.freeze(normalizePathList(policy, "criticalPathFragments")),
   });
 }
 
