@@ -348,7 +348,7 @@ function renderStatementContext(
   return `<section class="statement-context" aria-label="Contexto financeiro atual">
     <div class="statement-context-main">
       <span class="account-select-icon">${renderInstitutionIcon(institution.key)}</span>
-      <div class="statement-context-copy"><span class="muted">Conta atual</span><strong>${escapeHtml(selectedAccount.name)}</strong></div>
+      <div class="statement-context-copy"><span class="muted">Conta atual</span><strong>${escapeHtml(selectedAccount.name)}</strong><span class="statement-institution-name">${escapeHtml(institution.label)}</span></div>
     </div>
     <div class="statement-context-meta">
       <span class="statement-context-pill" data-context="currency">${escapeHtml(currency ?? "Moeda indisponível")}</span>
