@@ -71,6 +71,36 @@ export function statementGoldenRefinementRuntime(): string {
       }
 
       const filterForm = root.querySelector('.filter-form');
+      if (filterForm && !filterForm.querySelector('.statement-mobile-advanced-filters')) {
+        const selectors = ['.statement-kind-field', '.statement-status-field',
+          '.statement-reconciliation-field', '.statement-category-field', '.statement-sort-field'];
+        const fields = selectors.map((selector) => filterForm.querySelector(selector)).filter(Boolean);
+        if (fields.length === selectors.length) {
+          const details = document.createElement('details');
+          details.className = 'statement-mobile-advanced-filters';
+          const trigger = document.createElement('summary');
+          const selectedCount = fields.filter((field) => {
+            const select = field.querySelector('select');
+            return select && select.value !== '' && !(select.name === 'sort' && select.value === 'date_asc');
+          }).length;
+          trigger.textContent = selectedCount ? 'Filtros ativos (' + selectedCount + ')' : 'Filtros e ordenação';
+          const content = document.createElement('div');
+          content.className = 'statement-mobile-advanced-fields';
+          fields[0].before(details);
+          content.append(...fields);
+          details.append(trigger, content);
+          const compact = window.matchMedia('(max-width: 760px)');
+          const sync = () => {
+            if (!compact.matches) details.open = true;
+            else if (!details.hasAttribute('data-mobile-initialized')) {
+              details.open = selectedCount > 0;
+              details.setAttribute('data-mobile-initialized', 'true');
+            }
+          };
+          compact.addEventListener('change', sync);
+          sync();
+        }
+      }
       const monthField = filterForm?.querySelector('.month-field');
       const currentMonth = filterForm?.querySelector('[data-month-current]');
       if (filterForm && monthField && heading && !heading.querySelector('.statement-period-control')) {
@@ -291,6 +321,9 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-panel.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
     /* Keep existing canonical GET sorting reachable; do not synthesize unsupported filters. */
     ${root} .statement-query-heading>span{display:block;color:var(--muted);font-size:${typography.sizes.xs}}
+    ${root} .statement-mobile-advanced-filters,
+    ${root} .statement-mobile-advanced-fields{display:contents}
+    ${root} .statement-mobile-advanced-filters>summary{display:none}
     ${root} .filter-form .statement-sort-field{min-width:0}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.md};font-variant-numeric:tabular-nums;font-weight:700}
     ${root} .statement-body .col-description>strong{font-size:${typography.sizes.md};font-weight:700}
@@ -355,6 +388,11 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-query-heading{grid-column:2;grid-row:1}
       ${root} .filter-form{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:${spacing[2]}}
       ${root} .filter-form .statement-search-field{grid-column:1/-1}
+      ${root} .statement-mobile-advanced-filters{display:block;grid-column:1/-1;min-width:0}
+      ${root} .statement-mobile-advanced-filters>summary{align-items:center;cursor:pointer;display:flex;min-height:36px;padding:${spacing[1]} ${spacing[2]};border:1px solid var(--line);border-radius:7px;font-size:${typography.sizes.sm}}
+      ${root} .statement-mobile-advanced-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:${spacing[2]};padding-top:${spacing[2]}}
+      ${root} .statement-mobile-advanced-filters:not([open]) .statement-mobile-advanced-fields{display:none}
+
       ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field,.statement-sort-field){min-width:0}
       ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field,.statement-sort-field) select{min-width:0;width:100%}
       ${root} .statement-filter-actions{grid-column:1/-1;justify-content:stretch}
