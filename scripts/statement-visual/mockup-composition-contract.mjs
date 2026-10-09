@@ -58,6 +58,9 @@ export function measureMockupComposition() {
   const balance = root?.querySelector(".summary-balance");
   const menu = root?.querySelector(".statement-secondary-actions");
   const period = root?.querySelector(".statement-period-control");
+  const accountPicker = root?.querySelector(".statement-account-control");
+  const accountInput = accountPicker?.querySelector('input[name="accountId"]');
+  const filters = root?.querySelector(".filter-form");
   const queryHeading = root?.querySelector(".statement-query-heading");
   const queryFields = root?.querySelector("#statement-query-fields");
   const rect = (element) => {
@@ -85,6 +88,8 @@ export function measureMockupComposition() {
     sameHeading:
       !!heading && context?.parentElement === heading && balance?.parentElement === heading,
     periodInHeading: !!heading && period?.parentElement === heading,
+    accountPickerInContext: !!context && accountPicker?.parentElement === context,
+    accountPickerBoundToForm: !!filters && !!accountInput && accountInput.form === filters,
     primaryCount: root?.querySelectorAll(".statement-heading-actions > button").length,
     secondaryCount: menu?.querySelectorAll("button[data-quick-kind]").length,
     menuOpen: menu?.open,
