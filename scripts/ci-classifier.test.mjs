@@ -94,7 +94,9 @@ test("explicit FAST never downgrades observed CRITICAL risk", () => {
 test("unknown path fails closed to CRITICAL", () => {
   const result = classifyDeliveryV2Ci({ changedPaths: ["infra/custom-policy.txt"] });
   assert.equal(result.riskProfile, "critical");
-  assert.ok(result.reasons.some((reason) => reason === "unknown-path:infra/custom-policy.txt"));
+  assert.ok(
+    result.reasons.some((reason) => reason === "unknown-path:infra/custom-policy.txt"),
+  );
 });
 
 test("empty changed-path evidence fails closed to CRITICAL", () => {
