@@ -8,12 +8,20 @@ nao substitui seus contratos nem declara a referencia aprovada.
 
 - Contexto da conta e resumo financeiro precedem a consulta e a lista.
 - O resumo e horizontal no desktop; nao existe coluna lateral competindo com a lista.
-- Saldo atual, receitas e despesas preservam exatamente os valores e a semantica do
-  view-model existente. Transferencias nao se tornam receitas/despesas por conveniencia visual.
+- Saldo atual e os quatro indicadores preservam os valores do view-model existente:
+  Saldo inicial usa `openingMinor`, Entradas usa `incomeMinor`, Saidas usa
+  `-expenseMinor` e Saldo final usa `effectiveBalanceMinor`. Entradas/Saidas representam
+  receitas/despesas do periodo, incluindo previsoes ja presentes nesses totais;
+  nao representam todos os fluxos de caixa. Transferencias afetam o saldo pelo
+  contrato canonico, sem se tornarem receitas/despesas por conveniencia visual.
 - A lista utiliza a largura disponivel. Descricao e valor dominam a primeira linha;
   categoria, tipo e saldo por movimento permanecem secundarios, sem remover informacao.
-- Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o formulario
-  GET completo permanece disponivel. Filtros de contexto e busca nao sao apagados pela composicao.
+- Categoria, Tipo, Status e Conciliacao ficam diretamente disponiveis na barra
+  compacta desktop. No mobile, os filtros sao progressivos e filtros ativos abrem
+  o painel inicialmente; Aplicar/Limpar permanecem disponiveis quando ele esta fechado.
+  Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o
+  formulario GET completo permanece disponivel. Conta e periodo pertencem ao
+  contexto financeiro, preservando o vinculo nativo com o formulario de consulta.
 - Criacao/edicao usa o dialog existente com duas colunas no desktop e uma no mobile.
   Sem JavaScript, o select nativo de tipo permanece visivel e acessivel. Com a melhoria
   progressiva ativa, Despesa/Receita/Transferencia usam um radiogroup com setas, Home/End,
@@ -23,8 +31,8 @@ nao substitui seus contratos nem declara a referencia aprovada.
 - Logos continuam resolvidos pelo catalogo institucional compartilhado.
 
 O mockup orienta acabamento, densidade e hierarquia, nao altera regras financeiras.
-Os tres indicadores existentes nao sao rebatizados como entradas/saidas incluindo
-transferencias. A propagacao para outras rotas permanece na epica #702.
+A propagacao para outras rotas permanece na epica #702, posterior a aprovacao
+independente da referencia.
 
 ## Evidencia e reprovacao
 
@@ -37,6 +45,27 @@ ordenacao ativa, teclado e abertura do formulario de transferencia. Injecoes
 reversiveis simulam a volta da coluna lateral e a perda de destaque do valor:
 o contrato precisa rejeitar ambas e aprovar novamente depois da restauracao.
 As verificacoes anteriores do agrupamento permanecem obrigatorias.
+
+`statement-contextual-surfaces.mjs`, chamado pelo mesmo cenario de agrupamento,
+registra `statement-contextual-surfaces.json` com SHA, rota, viewport, geometria,
+foco, controles negativos e capturas de novo lancamento, edicao, detalhes do grupo,
+mais acoes e conciliacao em 1366x768, 390x844 e 320x740. Cada superficie rejeita
+uma ancoragem fora da viewport e passa novamente apos restauracao. A conciliacao
+percorre `posted -> reconciled -> posted` pelos controles reais, com releitura do
+estado renderizado apos persistencia. Os detalhes sao do grupo canonico; o produto
+nao possui drawer separado de detalhes de um lancamento individual nem dialogo de
+conciliacao por associacao. O registro dessas diferencas nao autoriza criar fluxos
+decorativos. As capturas devem ser comparadas com as cinco superficies do mockup
+antes de afirmar paridade visual; medidas verdes nao fazem essa comparacao.
+
+`statement-alternative-states.mjs` registra `statement-alternative-states.json`
+e capturas nos mesmos tres viewports para vazio por busca sem correspondencia e
+erro de sessao rejeitada pela API real. O vazio preserva a conta e o resumo;
+o erro nao expoe linhas financeiras e mantem a acao de recuperacao. Controles
+negativos ocultam cada mensagem e exigem deteccao e restauracao. O cookie da
+sessao demo e restaurado em memoria e nunca entra nas evidencias. As arvores de
+acessibilidade das cinco superficies contextuais tambem ficam nos artefatos
+`statement-contextual-<estado>-<viewport>-ax.json`, ligados ao mesmo SHA.
 
 Essas medidas nao aprovam sozinhas o acabamento. A revisao deve inspecionar as
 capturas do SHA candidato e comparar hierarquia, densidade, peso das acoes,
@@ -132,7 +161,7 @@ autoriza usar esta tela como referencia aprovada sem nova auditoria independente
 A referencia anexada orienta a composicao, nao fornece dados nem novos contratos
 financeiros. A implementacao mantem os tokens e o catalogo institucional do produto.
 Conta e saldo atual compartilham o mesmo cabecalho no desktop; no mobile, a conta
-precede o saldo. Receitas e despesas permanecem compactas abaixo desse cabecalho.
+precede o saldo. Os quatro indicadores permanecem compactos abaixo desse cabecalho.
 O titulo da colecao passa a ser Movimentacoes, sem repetir o nome completo da conta.
 
 Com JavaScript, Novo lancamento e a acao primaria, conforme o mockup. Ela abre o formulario
@@ -146,8 +175,8 @@ acionador quando o dialog aberto por uma dessas acoes e fechado. Sem JavaScript,
 os controles originais permanecem disponiveis. A situacao do periodo inicia
 recolhida em ambos os layouts; expandir revela os contadores e valores originais.
 
-A imagem nao autoriza renomear receitas/despesas como entradas/saidas incluindo
-transferencias, inventar saldo inicial/final, fundir as datas financeiras ou tornar
+A imagem nao autoriza incluir transferencias nos totais de receitas/despesas,
+inventar saldo inicial/final, fundir as datas financeiras ou tornar
 categoria obrigatoria. Atalhos de sete dias, conciliacao por associacao e mover
 para outra conta dependem de contratos funcionais proprios; nao sao adicionados
 como controles decorativos ou como reinterpretacao de operacoes existentes.
@@ -176,7 +205,7 @@ previa isolada ou patch local nao fecha GS703-001 a GS703-003 nem homologa a tel
 
 ## Paridade visual com o mockup do Extrato
 
-A Golden Screen do Extrato usa o mockup aprovado como referência estrutural,
+O candidato a Golden Screen do Extrato usa o mockup como referência estrutural,
 preservando as regras financeiras existentes. A composição deve manter: navegação
 e cabeçalho compactos, contexto de conta e saldo em bloco horizontal, quatro
 indicadores do período (saldo inicial, entradas, saídas e saldo final), filtros

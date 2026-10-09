@@ -83,7 +83,4 @@ assert.match(
 );
 assert.ok(styles.includes("statement-mobile-advanced-filters>summary{display:none}"));
 assert.ok(styles.includes("statement-mobile-advanced-fields{display:contents}"));
-assert.match(
-  styles,
-  /statement-row\.account-remuneration-row \.col-description\{min-width:0/,
-);
+assert.match(styles, /statement-row\.account-remuneration-row \.col-description\{min-width:0/);

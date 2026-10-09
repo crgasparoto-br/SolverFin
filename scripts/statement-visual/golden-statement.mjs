@@ -94,6 +94,10 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       "GS-NC-DENSITY",
       "[data-golden-screen] .statement-overview{padding-bottom:400px!important}",
     );
+    await negativeControl(
+      "GS-NC-STATUS-COLLISION",
+      "[data-golden-screen] .statement-body .statement-status{width:26px!important;height:26px!important}",
+    );
     await read(`document.querySelector('[data-statement-options-toggle]').focus()`);
     await press("Enter", 13);
     assert.equal(await expansion(), "true");
@@ -192,6 +196,11 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
         return {
           closeTitleOverlap: overlaps(close, title),
           closeEyebrowOverlap: overlaps(close, eyebrow),
+          closeText: close?.textContent.trim(),
+          visibleCloseIcons: Array.from(close?.querySelectorAll('svg') || []).filter(icon => {
+            const box = icon.getBoundingClientRect();
+            return box.width > 0 && box.height > 0;
+          }).length,
         };
       })()`);
       assert.equal(
@@ -204,6 +213,39 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
         false,
         "Close action must not overlap the modal eyebrow.",
       );
+      assert.equal(
+        headerClearance.closeText,
+        "×",
+        "The close action must retain its visible glyph.",
+      );
+      assert.equal(
+        headerClearance.visibleCloseIcons,
+        0,
+        "A decorative icon must not duplicate the close glyph.",
+      );
+      await read(`(() => {
+        const close = document.querySelector('dialog[data-modal] .close-form button');
+        const duplicate = close.querySelector('svg').cloneNode(true);
+        duplicate.dataset.goldenDuplicateClose = '';
+        duplicate.style.setProperty('display', 'inline-block', 'important');
+        close.prepend(duplicate);
+      })()`);
+      const countCloseIcons = `Array.from(document.querySelectorAll('dialog[data-modal] .close-form button svg')).filter(icon => {
+        const box = icon.getBoundingClientRect(); return box.width > 0 && box.height > 0;
+      }).length`;
+      try {
+        const duplicated = await read(countCloseIcons);
+        assert.throws(() => assert.equal(duplicated, 0), { code: "ERR_ASSERTION" });
+      } finally {
+        await read(`document.querySelector('[data-golden-duplicate-close]')?.remove()`);
+      }
+      assert.equal(await read(countCloseIcons), 0);
+      report.checks.push({
+        id: "GS-NC-DUPLICATE-CLOSE-SVG",
+        status: "passed",
+        viewport: { width, height },
+        restored: "passed",
+      });
       report.checks.push({
         id: "GS-DIALOG-HEADER-CLEARANCE",
         status: "passed",

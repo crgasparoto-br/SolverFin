@@ -29,6 +29,11 @@ export function assertGoldenStatement(layout) {
     "Golden statement has visible elements outside the viewport.",
   );
   assert.deepEqual(layout.summaryCollisions ?? [], [], "Golden statement summary values overlap.");
+  assert.deepEqual(
+    layout.statusCollisions ?? [],
+    [],
+    "Statement status text overlaps its icon or escapes its badge.",
+  );
   assert.ok(
     Math.abs(layout.list.width - layout.root.width) <= 2,
     "Statement list lost the available width.",
@@ -100,6 +105,20 @@ export const goldenStatementMeasurements = `(() => {
       }
       return collisions;
     })(),
+    statusCollisions: Array.from(document.querySelectorAll('.statement-body .statement-status')).flatMap(badge => {
+      const label = badge.querySelector('.statement-status-label');
+      const icon = badge.querySelector('svg');
+      if (!label || !icon || !badge.getBoundingClientRect().width) return [];
+      const bounds = badge.getBoundingClientRect();
+      const glyph = icon.getBoundingClientRect();
+      const range = document.createRange(); range.selectNodeContents(label);
+      const fails = Array.from(range.getClientRects()).some(text =>
+        text.left < bounds.left - 1 || text.right > bounds.right + 1 ||
+        text.top < bounds.top - 1 || text.bottom > bounds.bottom + 1 ||
+        (Math.min(text.right, glyph.right) - Math.max(text.left, glyph.left) > 1 &&
+         Math.min(text.bottom, glyph.bottom) - Math.max(text.top, glyph.top) > 1));
+      return fails ? [label.textContent.trim()] : [];
+    }),
     overflow: document.documentElement.scrollWidth > innerWidth + 1,
     overflowElements: Array.from(document.querySelectorAll('body *')).filter(element => {
       const box = element.getBoundingClientRect();

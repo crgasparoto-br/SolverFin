@@ -198,6 +198,8 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-account-control{min-width:0}
     ${root} .statement-account-control .account-field{display:grid;gap:${spacing[1]};max-width:24rem;min-width:0}
     ${root} .statement-account-control .account-select-trigger{width:100%}
+    ${root} .statement-account-control :is(label,.account-select,.account-select-trigger){box-sizing:border-box;max-width:100%;min-width:0;width:100%}
+    ${root} .statement-account-control .account-select-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         ${root} .statement-account-heading .summary-balance{border-left:1px solid var(--line);padding-left:${spacing[4]}}
     ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes["2xl"]};overflow-wrap:anywhere}
     ${root} .account-summary[data-mockup-composition] .summary-total{padding:0;gap:${spacing[1]}}
@@ -329,7 +331,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .filter-form>.statement-filter-actions{grid-column:span 2}
     ${root} .statement-query{padding:${spacing[1]} ${spacing[2]}}
     ${root} .statement-query :is(label,select,input){font-size:${typography.sizes.xs}}
-    ${root} .statement-query-heading{display:none}
+    ${root} .statement-query-heading{display:block}
 
     ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){min-width:0}
     ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field) select{background:#fff;border:1px solid var(--line);border-radius:7px;width:100%}
@@ -350,10 +352,11 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-category{background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]}}
     ${root} .statement-body .col-category:empty{display:none}
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
-    ${root} .statement-body .statement-status{align-items:center;display:inline-flex;gap:${spacing[1]};max-width:100%;min-width:0;padding:${spacing[1]} ${spacing[2]};border-radius:999px;font-size:${typography.sizes.xs};white-space:normal}
-    ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:600;line-height:1.25}
+    ${root} .statement-body .statement-status{align-items:center;border:0;display:inline-flex;gap:${spacing[1]};height:auto;width:auto;max-width:100%;min-width:0;padding:${spacing[1]} ${spacing[2]};border-radius:999px;font-size:${typography.sizes.xs};white-space:normal}
+    ${root} .statement-body .statement-status svg{flex:0 0 auto}
+    ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:500;line-height:1.25}
     ${root} .statement-body .statement-status-ok{background:#dcfce7;color:#166534}
-    ${root} .statement-body .statement-status-posted{background:#e0f2fe;color:#075985}
+    ${root} .statement-body .statement-status-posted{background:#f1f5f9;color:#475569}
     ${root} .statement-body .statement-status-pending{background:#fef3c7;color:#92400e}
     ${root} .statement-body .statement-status-planned{background:#f1f5f9;color:#475569}
     ${root} .statement-panel.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -386,6 +389,8 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .statement-entry-heading p{font-size:${typography.sizes.sm}}
     ${dialog} .close-form button{background:transparent;border:0;color:#475569;font-size:${typography.sizes.xl};line-height:1}
     ${dialog} .close-form button::before,${dialog} .close-form button::after{content:none}
+    ${dialog} .close-form button>[data-popup-action-icon]{display:none!important}
+    body:has(${root}) dialog[data-group-modal] button[data-group-close][aria-label="Fechar"]>[data-popup-action-icon]{display:none!important}
     ${dialog} .modal-panel form[data-form]{display:grid;gap:${spacing[3]};grid-template-columns:repeat(2,minmax(0,1fr));margin-top:${spacing[3]}}
     ${dialog} .modal-panel form[data-form]>label.full,
     ${dialog} .modal-panel form[data-form]>.statement-entry-advanced,
@@ -407,7 +412,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-breadcrumb{display:none}
       body:has(${root}) .sidebar{overflow-x:hidden}
       body:has(${root}) .brand{flex:0 0 var(--sf-density-compact-action-min-height);font-size:0;justify-content:center;overflow:hidden;padding-inline:0;width:var(--sf-density-compact-action-min-height)}
-      body:has(${root}) nav{display:grid;flex:1 1 auto;grid-template-columns:repeat(5,minmax(0,1fr));min-width:0;overflow:visible;padding-bottom:0}
+      body:has(${root}) nav{display:grid;flex:1 1 auto;grid-template-columns:repeat(6,minmax(0,1fr));min-width:0;overflow:visible;padding-bottom:0}
       body:has(${root}) nav a{flex:1 1 auto;justify-content:center;min-width:0;padding-inline:0}
       body:has(${root}) nav a[data-nav-priority="primary"]{font-size:0}
       body:has(${root}) .nav-more-toggle{font-size:0;min-width:var(--sf-density-compact-action-min-height);padding:0}
@@ -445,6 +450,21 @@ export function statementGoldenRefinementStyles(): string {
       ${dialog}{height:calc(100dvh - 16px);margin:8px;max-height:calc(100dvh - 16px);max-width:calc(100% - 16px);width:calc(100% - 16px)}
       ${dialog} .modal-panel form[data-form],${dialog} .statement-entry-advanced-grid{grid-template-columns:1fr}
       ${dialog} .statement-entry-advanced-grid>.full{grid-column:auto}
+    }
+
+    /* State selectors in the A2 compatibility layer otherwise win over the Golden grid. */
+    @media(min-width:1101px){
+      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(16,minmax(0,1fr))}
+      ${root} .filter-form>.statement-search-field{grid-column:span 4}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:span 4}
+    }
+    @media(min-width:761px){
+      ${root} .statement-mobile-advanced-filters::details-content{display:contents}
+      ${root} .statement-row{grid-template-columns:24px 6rem minmax(0,1fr) minmax(4rem,.45fr) minmax(144px,.25fr) minmax(9rem,auto) 36px}
+    }
+    @media(max-width:${breakpoints.shellCompact}){
+      ${root} .statement-body[data-statement-row-refined]{grid-template-areas:"select description actions" "select amount amount" "select metadata metadata" "select status status" "select footer footer"}
+      ${root} .statement-body .col-status{justify-self:start}
     }
 
     ${statementMockupControlsStyles()}

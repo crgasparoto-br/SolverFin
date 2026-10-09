@@ -13,6 +13,8 @@ import {
 import { validateGoldenStatement } from "./golden-statement.mjs";
 import { installLateDomFieldProbe } from "./late-dom-field-probe.mjs";
 import { validateStatementRefinements } from "./statement-refinements.mjs";
+import { validateStatementContextualSurfaces } from "./statement-contextual-surfaces.mjs";
+import { validateStatementAlternativeStates } from "./statement-alternative-states.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -61,6 +63,8 @@ try {
     })()`,
   );
   report.groupId = groupId;
+  await validateStatementContextualSurfaces(browser.cdp, { baseUrl, route, outputDir, groupId });
+  await validateStatementAlternativeStates(browser.cdp, { baseUrl, route, outputDir });
 
   for (const [width, height, name] of [
     [1366, 768, "desktop"],
