@@ -50,3 +50,16 @@ test("workspace scripts do not invoke the legacy runtime", () => {
     }
   }
 });
+
+test("STANDARD and CRITICAL formatting gates fail closed", () => {
+  const workflow = readFileSync(".github/workflows/delivery-v2-ci.yml", "utf8");
+  for (const [job, next] of [
+    ["standard_validation", "critical_validation"],
+    ["critical_validation", "gate"],
+  ]) {
+    const section = workflow.split(`  ${job}:\n`)[1]?.split(`  ${next}:\n`)[0];
+    assert.ok(section, `${job} exists`);
+    assert.match(section, /run: npm run format:check(?:\n|$)/);
+    assert.doesNotMatch(section, /npm run format:check\\s*\\|\\|/);
+  }
+});
