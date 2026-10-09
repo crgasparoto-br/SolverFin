@@ -85,3 +85,9 @@ test("rejects selector left in query or orphaned from original GET form", () => 
     /native GET/,
   );
 });
+
+test("rejects admin-style stacked filters at desktop widths", () => {
+  const layout = fixture();
+  layout.queryFields = box(250, 350, 650, 260);
+  assert.throws(() => assertMockupComposition(layout), /stacked controls/);
+});
