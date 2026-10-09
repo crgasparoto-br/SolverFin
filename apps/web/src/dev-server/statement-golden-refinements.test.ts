@@ -64,3 +64,7 @@ assert.match(styles, /statement-reconciliation-field/);
 assert.match(runtime, /accountInput\.setAttribute\('form', filterForm\.id\)/);
 assert.match(runtime, /context\?\.append\(accountControl\)/);
 assert.match(styles, /statement-account-control\{min-width:0\}/);
+
+// CDI mobile regression: long labels must not expand the transaction row.
+assert.match(styles, /account-remuneration-row \.description>strong\{[^}]*white-space:normal/);
+assert.match(styles, /account-remuneration-audit summary\{[^}]*white-space:normal/);
