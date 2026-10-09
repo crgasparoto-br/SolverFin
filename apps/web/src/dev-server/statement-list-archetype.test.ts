@@ -78,3 +78,10 @@ test("statement golden screen styles preserve one dominant action and reduce car
     "transaction dialogs reflow to one column on mobile",
   );
 });
+
+test("statement mockup filters remain independently visible and reflow on mobile", () => {
+  const css = statementListArchetypeStyles();
+  assert.match(css, /\.filter-form :is\(\.statement-kind-field, \.statement-status-field, \.statement-reconciliation-field, \.statement-category-field\) \{ grid-column: span 3; \}/);
+  assert.match(css, /@media \(max-width: 1100px\)[\s\S]*\.filter-form :is\(\.account-field, \.month-field, \.statement-kind-field, \.statement-status-field, \.statement-reconciliation-field, \.statement-category-field, \.statement-sort-field\) \{ grid-column: auto; \}/);
+  assert.doesNotMatch(css, /\[data-statement-options="collapsed"\] \.statement-(?:kind|status|reconciliation|category)-field \{ display: none; \}/);
+});
