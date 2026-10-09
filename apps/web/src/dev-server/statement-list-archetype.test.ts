@@ -84,4 +84,5 @@ test("statement mockup filters remain independently visible and reflow on mobile
   assert.match(css, /\.filter-form :is\(\.statement-kind-field, \.statement-status-field, \.statement-reconciliation-field, \.statement-category-field\) \{ grid-column: span 3; \}/);
   assert.match(css, /@media \(max-width: 1100px\)[\s\S]*\.filter-form :is\(\.account-field, \.month-field, \.statement-kind-field, \.statement-status-field, \.statement-reconciliation-field, \.statement-category-field, \.statement-sort-field\) \{ grid-column: auto; \}/);
   assert.doesNotMatch(css, /\[data-statement-options="collapsed"\] \.statement-(?:kind|status|reconciliation|category)-field \{ display: none; \}/);
+  assert.match(css, /\[data-statement-options="collapsed"\] \.statement-filter-actions > :is\(button, a\) \{ display: inline-flex; \}/);
 });
