@@ -230,9 +230,14 @@ export function statementListArchetypeStyles(): string {
     ${root} [data-statement-options-toggle] { background: transparent; border-color: var(--line); color: var(--primary); font-size: .75rem; font-weight: 500; min-height: 28px; }
     ${root} [data-statement-options-toggle][aria-expanded="true"] { background: var(--primary-soft); }
     ${root} .sf-filter-bar { background: transparent; border: 0; box-shadow: none; display: block; padding: 0; }
-    ${root} .filter-form { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(12rem, 1fr) minmax(12rem, .9fr) minmax(14rem, 1.3fr) minmax(10rem, .8fr); min-width: 0; }
+    ${root} .filter-form { align-items: end; display: grid; gap: 8px 10px; grid-template-columns: repeat(12, minmax(0, 1fr)); min-width: 0; }
+    ${root} .filter-form .account-field { grid-column: span 4; }
+    ${root} .filter-form .month-field { grid-column: span 3; }
+    ${root} .filter-form .statement-search-field { grid-column: span 5; }
+    ${root} .filter-form :is(.statement-kind-field, .statement-status-field, .statement-reconciliation-field, .statement-category-field) { grid-column: span 3; }
+    ${root} .filter-form .statement-sort-field { grid-column: span 3; }
     ${root}[data-statement-options="collapsed"] .statement-sort-field { display: none; }
-    ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: minmax(11rem, 1fr) minmax(11rem, .85fr) minmax(12rem, 1.15fr) auto; }
+    ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: repeat(12, minmax(0, 1fr)); }
     ${root} .filter-form label,
     ${root} .filter-form :is(.account-field, .month-field) { gap: 4px; color: var(--muted); font-size: .75rem; font-weight: 500; min-width: 0; }
     ${root} .filter-form :is(input, select, button) { max-width: 100%; min-height: 40px; min-width: 0; }
@@ -242,7 +247,7 @@ export function statementListArchetypeStyles(): string {
     ${root} .month-nav { background: var(--surface); border-color: var(--line); }
     ${root} .month-nav input { font-weight: 700; }
     ${root} .statement-filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; justify-content: flex-end; }
-    ${root}[data-statement-options="collapsed"] .statement-filter-actions { flex-wrap: nowrap; grid-column: auto; }
+    ${root}[data-statement-options="collapsed"] .statement-filter-actions { flex-wrap: wrap; grid-column: 1 / -1; }
     ${root} .statement-filter-actions > :is(button, a) { background: transparent; border: 1px solid transparent; color: var(--primary); font-size: .8125rem; font-weight: 500; min-height: 36px; padding-inline: 10px; }
     ${root} .statement-filter-actions > button[type="submit"] { border-color: var(--line); }
     ${root} .statement-filter-actions > :is(button, a):hover,
@@ -312,7 +317,8 @@ export function statementListArchetypeStyles(): string {
     @media (max-width: 1100px) {
       ${root} .filter-form,
       ${root}[data-statement-options="collapsed"] .filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      ${root} .statement-search-field { grid-column: 1 / -1; }
+      ${root} .filter-form :is(.account-field, .month-field, .statement-kind-field, .statement-status-field, .statement-reconciliation-field, .statement-category-field, .statement-sort-field) { grid-column: auto; }
+      ${root} .filter-form .statement-search-field { grid-column: 1 / -1; }
       ${root}[data-statement-options="collapsed"] .statement-filter-actions { flex-wrap: wrap; grid-column: 1 / -1; }
       ${root} .statement-row { column-gap: 8px; grid-template-columns: 24px 5.5rem minmax(0, 1fr) minmax(3rem, .3fr) 32px minmax(8rem, auto) 28px; padding-inline: 14px; }
     }
