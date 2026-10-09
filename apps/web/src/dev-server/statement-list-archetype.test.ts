@@ -101,25 +101,38 @@ test("statement mockup filters remain independently visible and reflow on mobile
 
 test("bank identity context and transaction metadata follow visual hierarchy", () => {
   const css = statementListArchetypeStyles();
-  assert.match(css, /\.statement-context \{[^}]*background: var\(--surface\);[^}]*border: 1px solid var\(--line\);/s);
+  assert.match(
+    css,
+    /\.statement-context \{[^}]*background: var\(--surface\);[^}]*border: 1px solid var\(--line\);/s,
+  );
   assert.match(css, /\.statement-body \.col-description > strong \{[^}]*font-weight: 700;/s);
-  assert.match(css, /\.statement-body \.col-category \{[^}]*color: var\(--muted\);[^}]*font-size: \.75rem;/s);
+  assert.match(
+    css,
+    /\.statement-body \.col-category \{[^}]*color: var\(--muted\);[^}]*font-size: \.75rem;/s,
+  );
 });
 
 test("period summary keeps four financial indicators on desktop", () => {
   const css = statementListArchetypeStyles();
-  assert.match(css, /\.account-summary \{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s);
+  assert.match(
+    css,
+    /\.account-summary \{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s,
+  );
   assert.match(css, /\.account-summary > \.summary-balance \{[^}]*grid-column: 1 \/ -1;/s);
 });
 
 test("sorting remains an accessible but visually secondary action", () => {
   const html = renderStatementListArchetype({
     actionsHtml: "",
-    filtersHtml: '<form><select id="statement-sort"><option value="date_asc">Data</option></select></form>',
+    filtersHtml:
+      '<form><select id="statement-sort"><option value="date_asc">Data</option></select></form>',
     contextHtml: "",
     summaryHtml: "",
     listHtml: "",
   });
   assert.match(html, /data-statement-options-toggle[^>]*hidden>Ordenar<\/button>/);
-  assert.match(statementListArchetypeStyles(), /\[data-statement-options-toggle\] \{[^}]*border-color: transparent;/s);
+  assert.match(
+    statementListArchetypeStyles(),
+    /\[data-statement-options-toggle\] \{[^}]*border-color: transparent;/s,
+  );
 });
