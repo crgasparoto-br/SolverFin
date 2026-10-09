@@ -99,3 +99,15 @@ test("period summary keeps four financial indicators on desktop", () => {
   assert.match(css, /\.account-summary \{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s);
   assert.match(css, /\.account-summary > \.summary-balance \{[^}]*grid-column: 1 \/ -1;/s);
 });
+
+test("sorting remains an accessible but visually secondary action", () => {
+  const html = renderStatementListArchetype({
+    actionsHtml: "",
+    filtersHtml: '<form><select id="statement-sort"><option value="date_asc">Data</option></select></form>',
+    contextHtml: "",
+    summaryHtml: "",
+    listHtml: "",
+  });
+  assert.match(html, /data-statement-options-toggle[^>]*hidden>Ordenar<\/button>/);
+  assert.match(statementListArchetypeStyles(), /\[data-statement-options-toggle\] \{[^}]*border-color: transparent;/s);
+});
