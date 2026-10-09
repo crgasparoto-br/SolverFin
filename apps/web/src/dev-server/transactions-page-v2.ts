@@ -126,6 +126,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     filters.month,
     presentation,
     url,
+    categories,
   );
   const contextHtml = renderStatementContext(
     selectedAccount,
@@ -248,6 +249,7 @@ function renderFilters(
   month: string,
   presentation: StatementPresentation,
   url: URL | undefined,
+  categories: readonly CategoryRecord[],
 ): string {
   const preserved = [
     "profileId",
@@ -255,7 +257,6 @@ function renderFilters(
     "kind",
     "evidence",
     "day",
-    "categoryId",
     "merchantKey",
   ]
     .map((name) => {
@@ -277,6 +278,12 @@ function renderFilters(
     </div>
     <label class="statement-search-field" for="statement-search">Buscar
       <input id="statement-search" name="q" type="search" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" autocomplete="off" />
+    </label>
+    <label class="statement-category-field" for="statement-category">Categoria
+      <select id="statement-category" name="categoryId" aria-label="Filtrar por categoria">
+        <option value="">Todas as categorias</option>
+        ${categories.map((category) => `<option value="${escapeHtml(category.id)}"${presentation.insightCategoryId === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`).join("")}
+      </select>
     </label>
     <label class="statement-sort-field" for="statement-sort">Ordenar
       <select id="statement-sort" name="sort">${renderSortOptions(presentation.sort)}</select>
