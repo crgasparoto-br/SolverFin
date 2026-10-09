@@ -81,7 +81,9 @@ assert.match(
   runtime,
   /accountInput\.addEventListener\('change', \(\) => filterForm\.requestSubmit\(\)\)/,
 );
-assert.ok(styles.includes("statement-mobile-advanced-filters>summary{display:none}"));
+assert.ok(
+  styles.includes("statement-mobile-advanced-filters>summary{display:none}"),
+);
 assert.ok(styles.includes("statement-mobile-advanced-fields{display:contents}"));
 assert.match(
   styles,
