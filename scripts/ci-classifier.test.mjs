@@ -122,8 +122,7 @@ test("FAST public SVG installs dependencies before merge-preview typecheck", () 
     2,
     "setup-node and npm ci must cover public assets",
   );
-  assert.ok(
-    preview.indexOf("npm ci --no-audit --no-fund") <
-      preview.indexOf("FAST web type compatibility"),
-  );
+  const installIndex = preview.indexOf("npm ci --no-audit --no-fund");
+  const typecheckIndex = preview.indexOf("FAST web type compatibility");
+  assert.ok(installIndex < typecheckIndex);
 });
