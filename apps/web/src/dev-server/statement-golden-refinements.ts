@@ -261,7 +261,11 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-query-heading>span{display:none}
     ${root} [data-statement-options-toggle]{border-radius:7px;min-height:40px;white-space:nowrap}
     ${root} .filter-form{align-items:end;grid-template-columns:minmax(190px,.9fr) minmax(280px,1.7fr) minmax(170px,.8fr) auto}
-    ${root} .filter-form .account-field>label,${root} .statement-search-field{font-size:0}
+    ${root} .filter-form{grid-template-columns:repeat(4,minmax(0,1fr))}
+    ${root} .filter-form .statement-search-field{grid-column:span 2}
+    ${root} .filter-form .statement-category-field{min-width:0}
+    ${root} .filter-form .statement-category-field select{background:#fff;border:1px solid var(--line);border-radius:7px;width:100%}
+        ${root} .filter-form .account-field>label,${root} .statement-search-field{font-size:0}
     ${root} .statement-search-field input{font-size:${typography.sizes.sm}}
     ${root} .statement-filter-actions{align-self:end;grid-column:auto}
     ${root} .statement-filter-actions>a{display:none}
@@ -341,6 +345,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} #statement-query-fields{grid-column:1/-1}
       ${root} .statement-query-heading{grid-column:2;grid-row:1}
       ${root} .filter-form{grid-template-columns:1fr}
+      ${root} .filter-form .statement-search-field{grid-column:auto}
       ${root} .statement-filter-actions{grid-column:1/-1;justify-content:stretch}
       ${root} .statement-filter-actions>button{flex:1}
       ${dialog}{height:calc(100dvh - 16px);margin:8px;max-height:calc(100dvh - 16px);max-width:calc(100% - 16px);width:calc(100% - 16px)}
