@@ -266,6 +266,15 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-filter-actions{align-self:end;grid-column:auto}
     ${root} .statement-filter-actions>a{display:none}
     ${root} .statement-filter-actions>button[type="submit"]{background:#fff;border:1px solid var(--line);border-radius:7px}
+
+    /* Mockup density: use dividers within one financial surface, not a card per summary. */
+    ${root} .account-summary[data-mockup-composition] .summary-total{border:0;border-radius:0;border-right:1px solid var(--line);min-width:0;padding-block:${spacing[2]}}
+    ${root} .account-summary[data-mockup-composition] .summary-total:last-of-type{border-right:0}
+    ${root} .statement-body .col-description>strong{font-weight:700;line-height:1.4}
+    ${root} .statement-body .col-amount{font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.015em}
+    ${root} .statement-body .col-category{background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]}}
+    ${root} .statement-body .col-category:empty{display:none}
+    ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
     ${root} .statement-panel.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
     ${root} .statement-toolbar{display:none}
     ${root} .statement-table{max-width:100%;overflow-x:auto;overflow-y:visible}
