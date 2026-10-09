@@ -86,3 +86,10 @@ test("statement mockup filters remain independently visible and reflow on mobile
   assert.doesNotMatch(css, /\[data-statement-options="collapsed"\] \.statement-(?:kind|status|reconciliation|category)-field \{ display: none; \}/);
   assert.match(css, /\[data-statement-options="collapsed"\] \.statement-filter-actions > :is\(button, a\) \{ display: inline-flex; \}/);
 });
+
+test("bank identity context and transaction metadata follow visual hierarchy", () => {
+  const css = statementListArchetypeStyles();
+  assert.match(css, /\.statement-context \{[^}]*background: var\(--surface\);[^}]*border: 1px solid var\(--line\);/s);
+  assert.match(css, /\.statement-body \.col-description > strong \{[^}]*font-weight: 700;/s);
+  assert.match(css, /\.statement-body \.col-category \{[^}]*color: var\(--muted\);[^}]*font-size: \.75rem;/s);
+});
