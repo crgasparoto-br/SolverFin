@@ -56,6 +56,8 @@ interface StatementPresentation {
   sort: StatementSort;
   insightCategoryId?: string;
   insightMerchantKey?: string;
+  filterKind?: "income" | "expense" | "transfer";
+  filterReconciliation?: "reconciled" | "posted";
 }
 
 export async function renderTransactionsPageV2(token: string, url?: URL): Promise<string> {
@@ -172,11 +174,15 @@ function resolvePresentation(url: URL | undefined): StatementPresentation {
   const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
   const insightCategoryId = readNonEmpty(url?.searchParams.get("categoryId"));
   const insightMerchantKey = normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "");
+  const kind = url?.searchParams.get("kind");
+  const reconciliation = url?.searchParams.get("reconciliation");
   return {
     search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
     sort,
     ...(insightCategoryId ? { insightCategoryId } : {}),
     ...(insightMerchantKey ? { insightMerchantKey } : {}),
+    ...(kind === "expense" || kind === "income" || kind === "transfer" ? { filterKind: kind } : {}),
+    ...(reconciliation === "posted" || reconciliation === "reconciled" ? { filterReconciliation: reconciliation } : {}),
   };
 }
 
@@ -188,6 +194,8 @@ function filterRowsForPresentation(
   const search = normalizeSearch(presentation.search);
   return rows.filter((row) => {
     const transaction = row.transaction;
+    if (presentation.filterKind && transaction.kind !== presentation.filterKind) return false;
+    if (presentation.filterReconciliation && transaction.status !== presentation.filterReconciliation) return false;
     if (
       presentation.insightCategoryId &&
       transaction.categoryId !== presentation.insightCategoryId
@@ -254,7 +262,6 @@ function renderFilters(
   const preserved = [
     "profileId",
     "currency",
-    "kind",
     "evidence",
     "day",
     "merchantKey",
@@ -278,6 +285,21 @@ function renderFilters(
     </div>
     <label class="statement-search-field" for="statement-search">Buscar
       <input id="statement-search" name="q" type="search" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" autocomplete="off" />
+    </label>
+    <label class="statement-kind-field" for="statement-kind">Tipo
+      <select id="statement-kind" name="kind">
+        <option value="">Todos os tipos</option>
+        <option value="expense"${presentation.filterKind === "expense" ? " selected" : ""}>Despesa</option>
+        <option value="income"${presentation.filterKind === "income" ? " selected" : ""}>Receita</option>
+        <option value="transfer"${presentation.filterKind === "transfer" ? " selected" : ""}>Transferência</option>
+      </select>
+    </label>
+    <label class="statement-reconciliation-field" for="statement-reconciliation">Conciliação
+      <select id="statement-reconciliation" name="reconciliation">
+        <option value="">Todas as situações</option>
+        <option value="posted"${presentation.filterReconciliation === "posted" ? " selected" : ""}>Não conciliado</option>
+        <option value="reconciled"${presentation.filterReconciliation === "reconciled" ? " selected" : ""}>Conciliado</option>
+      </select>
     </label>
     <label class="statement-category-field" for="statement-category">Categoria
       <select id="statement-category" name="categoryId" aria-label="Filtrar por categoria">
