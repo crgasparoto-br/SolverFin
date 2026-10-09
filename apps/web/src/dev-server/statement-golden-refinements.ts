@@ -104,14 +104,14 @@ export function statementGoldenRefinementRuntime(): string {
       // Keep the account selector with the financial context, not in the search/filter strip.
       // Its canonical GET field still belongs to the original form after the move.
       const accountField = filterForm?.querySelector('.account-field');
-      if (filterForm && heading && accountField && !heading.querySelector('.statement-account-control')) {
+      if (filterForm && context && accountField && !context.querySelector('.statement-account-control')) {
         if (!filterForm.id) filterForm.id = 'statement-filters';
         const accountInput = accountField.querySelector('input[name="accountId"]');
         if (accountInput) accountInput.setAttribute('form', filterForm.id);
         const accountControl = document.createElement('div');
         accountControl.className = 'statement-account-control';
         accountControl.append(accountField);
-        heading.insertBefore(accountControl, balance);
+        context?.append(accountControl);
       }
       const monthField = filterForm?.querySelector('.month-field');
       const currentMonth = filterForm?.querySelector('[data-month-current]');
@@ -190,7 +190,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-account-heading .statement-context-copy>.muted{display:none}
     ${root} .statement-account-heading .statement-context-copy strong{font-size:${typography.sizes.lg}}
     ${root} .statement-account-heading .statement-context-meta{gap:${spacing[1]} ${spacing[3]}}
-    ${root} .statement-account-control{grid-column:1/-1;min-width:0}
+    ${root} .statement-account-control{min-width:0}
     ${root} .statement-account-control .account-field{display:grid;gap:${spacing[1]};max-width:24rem;min-width:0}
     ${root} .statement-account-control .account-select-trigger{width:100%}
         ${root} .statement-account-heading .summary-balance{border-left:1px solid var(--line);padding-left:${spacing[4]}}
