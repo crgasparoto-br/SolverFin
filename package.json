@@ -37,7 +37,7 @@
     "db:seed:check": "node --check scripts/seed-demo.mjs && node --check scripts/seed-default-categories.mjs && node --check scripts/seed-default-categories-for-user.mjs",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
+    "format:check": "prettier . --check || (prettier . --write && git diff -- apps/web/src/dev-server/statement-list-archetype.test.ts apps/web/src/dev-server/transactions-page-v2.ts apps/web/src/dev-server/transactions-page-v2.test.ts apps/web/src/dev-server/statement-golden-refinements.ts apps/web/src/dev-server/statement-golden-refinements.test.ts scripts/statement-visual/mockup-composition-contract.mjs scripts/statement-visual/mockup-composition-contract.test.mjs && exit 1)",
     "lint": "npm run build:packages && npm run lint --workspaces --if-present",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run build:packages && npm run typecheck --workspaces --if-present",
