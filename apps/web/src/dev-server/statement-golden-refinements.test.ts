@@ -43,3 +43,9 @@ assert.ok(
 );
 assert.ok(styles.includes("summary-total{min-height:0;padding:"));
 assert.ok(styles.includes("statement-status-details>summary{min-height:32px;padding:0}"));
+
+// Mockup hierarchy regression: the canonical controls remain accessible.
+assert.match(styles, /statement-query-heading>span\{display:block/);
+assert.match(styles, /statement-sort-field\{min-width:0/);
+assert.match(styles, /statement-body \.col-amount\{font-size:/);
+assert.match(styles, /summary-total\{border-right:0;border-bottom:/);
