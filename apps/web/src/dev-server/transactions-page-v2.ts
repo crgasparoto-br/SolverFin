@@ -57,7 +57,8 @@ interface StatementPresentation {
   insightCategoryId?: string;
   insightMerchantKey?: string;
   filterKind?: "income" | "expense" | "transfer";
-  filterReconciliation?: "reconciled" | "posted";
+  filterReconciliation?: "reconciled" | "unreconciled";
+  filterStatus?: "effective" | "suggested" | "planned";
 }
 
 export async function renderTransactionsPageV2(token: string, url?: URL): Promise<string> {
@@ -176,13 +177,15 @@ function resolvePresentation(url: URL | undefined): StatementPresentation {
   const insightMerchantKey = normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "");
   const kind = url?.searchParams.get("kind");
   const reconciliation = url?.searchParams.get("reconciliation");
+  const status = url?.searchParams.get("status");
   return {
     search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
     sort,
     ...(insightCategoryId ? { insightCategoryId } : {}),
     ...(insightMerchantKey ? { insightMerchantKey } : {}),
     ...(kind === "expense" || kind === "income" || kind === "transfer" ? { filterKind: kind } : {}),
-    ...(reconciliation === "posted" || reconciliation === "reconciled" ? { filterReconciliation: reconciliation } : {}),
+    ...(reconciliation === "unreconciled" || reconciliation === "reconciled" ? { filterReconciliation: reconciliation } : {}),
+    ...(status === "effective" || status === "suggested" || status === "planned" ? { filterStatus: status } : {}),
   };
 }
 
@@ -195,7 +198,11 @@ function filterRowsForPresentation(
   return rows.filter((row) => {
     const transaction = row.transaction;
     if (presentation.filterKind && transaction.kind !== presentation.filterKind) return false;
-    if (presentation.filterReconciliation && transaction.status !== presentation.filterReconciliation) return false;
+    if (presentation.filterReconciliation === "reconciled" && transaction.status !== "reconciled") return false;
+    if (presentation.filterReconciliation === "unreconciled" && transaction.status === "reconciled") return false;
+    if (presentation.filterStatus === "effective" && transaction.effectiveOn === undefined) return false;
+    if (presentation.filterStatus === "suggested" && (transaction.effectiveOn !== undefined || transaction.status !== "suggested")) return false;
+    if (presentation.filterStatus === "planned" && (transaction.effectiveOn !== undefined || transaction.status === "suggested")) return false;
     if (
       presentation.insightCategoryId &&
       transaction.categoryId !== presentation.insightCategoryId
@@ -294,10 +301,18 @@ function renderFilters(
         <option value="transfer"${presentation.filterKind === "transfer" ? " selected" : ""}>Transferência</option>
       </select>
     </label>
+    <label class="statement-status-field" for="statement-status">Status
+      <select id="statement-status" name="status">
+        <option value="">Todos os status</option>
+        <option value="effective"${presentation.filterStatus === "effective" ? " selected" : ""}>Efetivado</option>
+        <option value="suggested"${presentation.filterStatus === "suggested" ? " selected" : ""}>Pendente</option>
+        <option value="planned"${presentation.filterStatus === "planned" ? " selected" : ""}>Previsto</option>
+      </select>
+    </label>
     <label class="statement-reconciliation-field" for="statement-reconciliation">Conciliação
       <select id="statement-reconciliation" name="reconciliation">
         <option value="">Todas as situações</option>
-        <option value="posted"${presentation.filterReconciliation === "posted" ? " selected" : ""}>Não conciliado</option>
+        <option value="unreconciled"${presentation.filterReconciliation === "unreconciled" ? " selected" : ""}>Não conciliado</option>
         <option value="reconciled"${presentation.filterReconciliation === "reconciled" ? " selected" : ""}>Conciliado</option>
       </select>
     </label>
