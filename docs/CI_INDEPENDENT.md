@@ -34,7 +34,7 @@ npm run test
 - **A-704-01:** `scripts/ci-legacy-dependency.test.mjs` examina todos os arquivos YAML de workflows ativos e reprova comandos de execução do runtime legado. O diretório `.delivery-v2` ainda existe apenas por compatibilidade histórica; não removê-lo nesta PR sem revisar consumidores e comunicar previamente. A ausência de dependências em outros ambientes externos não é inferida deste teste.
 - **A-704-02:** o contexto `Delivery V2 gate` segue inalterado para evitar bloquear regras já existentes. A conferência real dos rulesets de repositório e organização é uma verificação operacional obrigatória antes do merge; documentação ou CI verde não a substituem. Registrar os checks requeridos e seu source app no registro operacional de mudança.
 - **A-704-03:** `scripts/ci-gate.test.mjs` executa cenários positivos e negativos dos três perfis, incluindo falha de classificação, falha no merge preview e trilha adicional indevida. São testes do contrato do gate, não substitutos de PRs reais classificadas FAST e STANDARD, cuja execução deve ser verificada em PRs próprias antes da conclusão da migração.
-- **A-704-04:** o fallback de formatação usa apenas `prettier --check`; a CI não modifica arquivos versionados durante os diagnósticos.
+- **A-704-04:** a CI não modifica arquivos versionados. O fallback diagnóstico foi removido na remediação A-705-05; o gate exige sucesso de `npm run format:check` em todo o repositório.
 
 ### Critérios operacionais de liberação
 
@@ -47,4 +47,6 @@ Antes do merge manual, confirmar o workflow no SHA exato, ausência de reference
 - A-705-03: obter evidencia das regras de protecao de `main` e required checks no GitHub, incluindo source app; a verificacao exige acesso administrativo.
 - A-705-04: executar PRs reais separadas para FAST e STANDARD. Os testes de unidade nao substituem os workflows de integracao.
 
-A PR #705 permanece sem merge ate a verificacao operacional.
+- A-705-05: a validação STANDARD/CRITICAL executa `npm run format:check` diretamente, sem fallback que possa mascarar falhas globais. Teste de regressão em `scripts/ci-legacy-dependency.test.mjs` verifica os dois jobs.
+
+A PR #705 permanece sem merge até a verificação operacional. Cenários reais FAST/STANDARD e rulesets exigem evidência separada; testes unitários não substituem essas provas.
