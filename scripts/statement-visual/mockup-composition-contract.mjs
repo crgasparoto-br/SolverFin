@@ -33,6 +33,12 @@ export function assertMockupComposition(layout) {
       "Mobile chrome pushes the movement list below the first-viewport density budget.",
     );
   }
+  if (layout.viewport.width >= 1101) {
+    assert.ok(
+      layout.queryFields.height <= 150,
+      "Desktop filters regressed to stacked controls instead of a compact row.",
+    );
+  }
   if (layout.viewport.width > 760) {
     assert.ok(
       layout.queryHeading.top <= layout.queryFields.bottom + 1 &&
