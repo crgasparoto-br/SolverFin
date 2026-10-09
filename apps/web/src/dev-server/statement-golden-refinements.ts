@@ -263,8 +263,8 @@ export function statementGoldenRefinementStyles(): string {
     ${root} [data-statement-options-toggle]{border-radius:7px;min-height:40px;white-space:nowrap}
     ${root} .filter-form{align-items:end;grid-template-columns:minmax(190px,.9fr) minmax(280px,1.7fr) minmax(170px,.8fr) auto}
     ${root} .filter-form{grid-template-columns:repeat(4,minmax(0,1fr))}
-    ${root} .filter-form :is(.statement-kind-field,.statement-reconciliation-field,.statement-category-field){min-width:0}
-    ${root} .filter-form :is(.statement-kind-field,.statement-reconciliation-field) select{background:#fff;border:1px solid var(--line);border-radius:7px;width:100%}
+    ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){min-width:0}
+    ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field) select{background:#fff;border:1px solid var(--line);border-radius:7px;width:100%}
     ${root} .filter-form .statement-search-field{grid-column:span 2}
     ${root} .filter-form .statement-category-field{min-width:0}
     ${root} .filter-form .statement-category-field select{background:#fff;border:1px solid var(--line);border-radius:7px;width:100%}
