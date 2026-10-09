@@ -107,7 +107,12 @@ export function statementGoldenRefinementRuntime(): string {
       if (filterForm && context && accountField && !context.querySelector('.statement-account-control')) {
         if (!filterForm.id) filterForm.id = 'statement-filters';
         const accountInput = accountField.querySelector('input[name="accountId"]');
-        if (accountInput) accountInput.setAttribute('form', filterForm.id);
+        if (accountInput) {
+          accountInput.setAttribute('form', filterForm.id);
+          // Moving the field outside its form also moves its bubbling change event.
+          // Preserve the original automatic account navigation without cloning listeners.
+          accountInput.addEventListener('change', () => filterForm.requestSubmit());
+        }
         const accountControl = document.createElement('div');
         accountControl.className = 'statement-account-control';
         accountControl.append(accountField);
@@ -202,6 +207,10 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-status-details>summary{box-sizing:border-box;color:var(--muted);cursor:pointer;font-size:${typography.sizes.sm};min-height:${density.interactiveTargetMin};padding-block:${spacing[1]}}
     ${root} .statement-status-content{display:flex;flex-wrap:wrap;gap:${spacing[2]} ${spacing[4]};padding-bottom:${spacing[3]}}
     ${root} .statement-context:has(.statement-account-control) .statement-context-main{display:none}
+    @media(min-width:761px){
+      ${root} .statement-mobile-advanced-filters,${root} .statement-mobile-advanced-fields{display:contents}
+      ${root} .statement-mobile-advanced-filters>summary{display:none}
+    }
     @media(min-width:1101px){
       ${root} .filter-form{grid-template-columns:repeat(16,minmax(0,1fr));gap:${spacing[2]}}
       ${root} .filter-form .statement-search-field{grid-column:span 4}
