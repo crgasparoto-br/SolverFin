@@ -137,12 +137,8 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
-      - name: Format check with precise diagnostics
-        run: |
-          npm run format:check || {
-            npx prettier scripts/ci-risk-profile.mjs scripts/ci-repository-risk-policy.mjs --check
-            exit 1
-          }
+      - name: Enforce complete repository formatting
+        run: npm run format:check
       - run: npm run lint --workspace @solverfin/web
       - run: npm run typecheck --workspace @solverfin/web
       - run: npm run test --workspace @solverfin/web
@@ -189,12 +185,8 @@ jobs:
       - run: npm run env:check
       - run: npm run prisma:validate
       - run: npm run db:seed:check
-      - name: Format check with precise diagnostics
-        run: |
-          npm run format:check || {
-            npx prettier scripts/ci-risk-profile.mjs scripts/ci-repository-risk-policy.mjs --check
-            exit 1
-          }
+      - name: Enforce complete repository formatting
+        run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run prisma:generate
