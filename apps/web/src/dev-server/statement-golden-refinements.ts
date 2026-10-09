@@ -412,6 +412,8 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-body{box-sizing:border-box;max-width:100%;min-width:0}
       ${root} .statement-body :is(.col-description,.description,.account-remuneration-summary){max-width:100%;min-width:0;overflow-wrap:anywhere}
       ${root} .statement-body .description details.account-remuneration-audit{max-width:100%;min-width:0}
+      ${root} .statement-body.account-remuneration-row .description>strong{max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal}
+      ${root} .statement-body.account-remuneration-row .account-remuneration-audit summary{max-width:100%;overflow-wrap:anywhere;white-space:normal}
       ${root} .statement-mobile-advanced-filters{display:block;grid-column:1/-1;min-width:0}
       ${root} .statement-mobile-advanced-filters>summary{align-items:center;cursor:pointer;display:flex;min-height:36px;padding:${spacing[1]} ${spacing[2]};border:1px solid var(--line);border-radius:7px;font-size:${typography.sizes.sm}}
       ${root} .statement-mobile-advanced-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:${spacing[2]};padding-top:${spacing[2]}}
