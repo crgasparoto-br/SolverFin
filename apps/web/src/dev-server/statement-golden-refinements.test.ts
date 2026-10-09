@@ -62,5 +62,5 @@ assert.match(styles, /statement-status-field/);
 assert.match(styles, /statement-reconciliation-field/);
 
 assert.match(runtime, /accountInput\.setAttribute\('form', filterForm\.id\)/);
-assert.match(runtime, /heading\.insertBefore\(accountControl, balance\)/);
-assert.match(styles, /statement-account-control\{grid-column:1\/-1;min-width:0\}/);
+assert.match(runtime, /context\?\.append\(accountControl\)/);
+assert.match(styles, /statement-account-control\{min-width:0\}/);
