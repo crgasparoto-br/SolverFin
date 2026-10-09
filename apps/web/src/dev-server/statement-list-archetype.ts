@@ -194,8 +194,8 @@ export function statementListArchetypeStyles(): string {
     body:has([data-golden-screen="statement"]) dialog :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
     .statement-a2-workspace { display: grid; gap: 14px; max-width: none; min-width: 0; padding: 0; }
-    ${root} .statement-overview { background: transparent; border: 0; border-radius: 0; min-width: 0; padding: 6px 0 10px; }
-    ${root} .statement-context { align-items: center; background: transparent; border: 0; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; min-width: 0; padding: 0 0 10px; }
+    ${root} .statement-overview { background: transparent; border: 0; border-radius: 0; min-width: 0; padding: 4px 0 8px; }
+    ${root} .statement-context { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; min-width: 0; padding: 10px 14px; }
     ${root} .statement-context-main { align-items: center; display: flex; flex: 1 1 16rem; gap: 12px; min-width: 0; }
     ${root} .statement-context-copy { display: grid; gap: 3px; min-width: 0; }
     ${root} .statement-context-copy strong { font-size: 1.125rem; overflow-wrap: anywhere; white-space: normal; }
@@ -269,9 +269,9 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-body .col-select { grid-area: select; left: auto; position: static; }
     ${root} .statement-body .col-date { padding-left: 0; color: var(--muted); font-size: .8125rem; grid-area: date; }
     ${root} .statement-body .col-description { display: block; grid-area: description; overflow-wrap: anywhere; white-space: normal; }
-    ${root} .statement-body .col-description > strong { color: var(--text); font-size: 1rem; font-weight: 700; }
+    ${root} .statement-body .col-description > strong { color: var(--text); font-size: 1rem; font-weight: 700; line-height: 1.3; }
     ${root} .statement-body .col-description > span { color: var(--muted); display: block; font-size: .75rem; margin-top: 3px; }
-    ${root} .statement-body .col-category { display: block; grid-area: category; overflow-wrap: anywhere; }
+    ${root} .statement-body .col-category { display: block; grid-area: category; overflow-wrap: anywhere; color: var(--muted); font-size: .75rem; }
     ${root} .statement-body .col-kind { display: block; grid-area: kind; }
     ${root} .statement-body .col-status { grid-area: status; justify-self: center; }
     ${root} .statement-body .col-amount { margin-left: 0; font-size: 1rem; font-weight: 750; grid-area: amount; justify-self: end; text-align: right; }
