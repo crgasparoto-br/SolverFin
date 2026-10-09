@@ -93,3 +93,9 @@ test("bank identity context and transaction metadata follow visual hierarchy", (
   assert.match(css, /\.statement-body \.col-description > strong \{[^}]*font-weight: 700;/s);
   assert.match(css, /\.statement-body \.col-category \{[^}]*color: var\(--muted\);[^}]*font-size: \.75rem;/s);
 });
+
+test("period summary keeps four financial indicators on desktop", () => {
+  const css = statementListArchetypeStyles();
+  assert.match(css, /\.account-summary \{[^}]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/s);
+  assert.match(css, /\.account-summary > \.summary-balance \{[^}]*grid-column: 1 \/ -1;/s);
+});
