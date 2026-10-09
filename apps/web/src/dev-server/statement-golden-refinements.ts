@@ -276,6 +276,16 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-category:empty{display:none}
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
     ${root} .statement-panel.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    /* Keep existing canonical GET sorting reachable; do not synthesize unsupported filters. */
+    ${root} .statement-query-heading>span{display:block;color:var(--muted);font-size:${typography.sizes.xs}}
+    ${root} .filter-form .statement-sort-field{min-width:0}
+    ${root} .statement-body .col-amount{font-size:${typography.sizes.md};font-variant-numeric:tabular-nums;font-weight:700}
+    ${root} .statement-body .col-description>strong{font-size:${typography.sizes.md};font-weight:700}
+    @media(max-width:${breakpoints.shellCompact}){
+      ${root} .account-summary[data-mockup-composition] .summary-total{border-right:0;border-bottom:1px solid var(--line)}
+      ${root} .account-summary[data-mockup-composition] .summary-total:nth-of-type(2n){border-bottom:1px solid var(--line)}
+      ${root} .statement-body .col-amount{font-size:${typography.sizes.sm}}
+    }
     ${root} .statement-toolbar{display:none}
     ${root} .statement-table{max-width:100%;overflow-x:auto;overflow-y:visible}
     ${root} .statement-head{background:#f8fafc;padding-inline:${spacing[3]}}
