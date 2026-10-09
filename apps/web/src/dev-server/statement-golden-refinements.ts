@@ -241,6 +241,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-account-heading{background:#fff;border:1px solid var(--line);border-radius:9px;grid-template-columns:minmax(0,1fr) auto minmax(220px,.58fr);margin:-${spacing[3]} -${spacing[3]} 0;padding:${spacing[3]}}
     ${root} .statement-account-heading .statement-context-main .account-select-icon{height:44px;width:44px}
     ${root} .statement-account-heading .statement-context-copy strong{font-size:${typography.sizes.md}}
+    ${root} .statement-account-heading .statement-institution-name{color:var(--muted);display:block;font-size:${typography.sizes.xs};line-height:1.3}
     ${root} .statement-account-heading .summary-balance strong{color:#07883f;font-size:${typography.sizes.xl}}
     ${root} .statement-period-control{align-items:end;display:flex;gap:${spacing[2]};min-width:0}
     ${root} .statement-period-control .month-field{min-width:190px}
