@@ -111,7 +111,7 @@ test("local CI policy is independent of external or orchestrator locks", () => {
 test("FAST public SVG installs dependencies before merge-preview typecheck", () => {
   const result = classifyDeliveryV2Ci({ changedPaths: ["apps/web/public/icon.svg"] });
   assert.equal(result.riskProfile, "fast");
-  assert.equal(result.codeChanged, false);
+  assert.equal(result.codeChanged, true);
   assert.equal(result.webChanged, true);
   const workflow = readFileSync(".github/workflows/delivery-v2-ci.yml", "utf8");
   const preview = workflow.split("  merge_preview:")[1]?.split("  fast_validation:")[0];
