@@ -201,12 +201,12 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-status-details{width:100%}
     ${root} .statement-status-details>summary{box-sizing:border-box;color:var(--muted);cursor:pointer;font-size:${typography.sizes.sm};min-height:${density.interactiveTargetMin};padding-block:${spacing[1]}}
     ${root} .statement-status-content{display:flex;flex-wrap:wrap;gap:${spacing[2]} ${spacing[4]};padding-bottom:${spacing[3]}}
+    ${root} .statement-context:has(.statement-account-control) .statement-context-main{display:none}
     @media(min-width:1101px){
       ${root} .filter-form{grid-template-columns:repeat(16,minmax(0,1fr));gap:${spacing[2]}}
       ${root} .filter-form .statement-search-field{grid-column:span 4}
       ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:span 2}
       ${root} .filter-form .statement-filter-actions{grid-column:span 4;flex-wrap:nowrap;justify-content:end}
-      ${root} .statement-context:has(.statement-account-control) .statement-context-main{display:none}
       ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
     }
     ${root} .statement-toolbar .chips{display:none}
