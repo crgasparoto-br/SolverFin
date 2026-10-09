@@ -187,8 +187,32 @@ test("A2 statement applies insight and text filters before rendering rows", asyn
     assert.match(html, /Filtro do insight ativo/);
     assert.match(html, /Mercado Central 123/);
     assert.doesNotMatch(html, /Farmácia/);
-    assert.match(html, /name="categoryId" value="category-food"/);
+    assert.match(html, /<option value="category-food" selected>Alimentação<\/option>/);
     assert.match(html, /name="merchantKey" value="mercado central"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 statement filters type, effective status and reconciliation without changing totals", async () => {
+  const income = transaction("income", "Receita exemplo", 9000, "2026-08-04", "income");
+  const reconciled = { ...transaction("reconciled", "Despesa conciliada", 1200, "2026-08-05"), status: "reconciled" };
+  const pending = { ...transaction("pending", "Despesa pendente", 1700, "2026-08-06"), status: "suggested", effectiveOn: undefined };
+  globalThis.fetch = mockFetch([income, reconciled, pending]);
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&kind=expense&status=suggested&reconciliation=unreconciled"),
+    );
+    assert.match(html, /Despesa pendente/);
+    assert.doesNotMatch(html, /Receita exemplo/);
+    assert.doesNotMatch(html, /Despesa conciliada/);
+    assert.match(html, /<option value="expense" selected>Despesa<\\/option>/);
+    assert.match(html, /<option value="suggested" selected>Pendente<\\/option>/);
+    assert.match(html, /<option value="unreconciled" selected>Não conciliado<\\/option>/);
+    assert.match(html, /name="status"/);
+    assert.match(html, /name="reconciliation"/);
   } finally {
     globalThis.fetch = originalFetch;
   }
