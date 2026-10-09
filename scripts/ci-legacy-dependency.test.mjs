@@ -19,7 +19,11 @@ test("active CI workflows do not invoke the legacy orchestrator runtime", () => 
 test("root npm scripts do not invoke the legacy runtime", () => {
   const manifest = JSON.parse(readFileSync("package.json", "utf8"));
   for (const [name, command] of Object.entries(manifest.scripts ?? {})) {
-    assert.doesNotMatch(command, /\.delivery-v2\/|delivery-orchestrator\/(?:src|scripts|bin)\//i, name);
+    assert.doesNotMatch(
+      command,
+      /\.delivery-v2\/|delivery-orchestrator\/(?:src|scripts|bin)\//i,
+      name,
+    );
   }
 });
 
@@ -37,7 +41,11 @@ test("workspace scripts do not invoke the legacy runtime", () => {
       }
       const manifest = JSON.parse(body);
       for (const [name, command] of Object.entries(manifest.scripts ?? {})) {
-        assert.doesNotMatch(command, /[.]delivery-v2[/]|delivery-orchestrator[/](src|scripts|bin)[/]/i, filename + ":" + name);
+        assert.doesNotMatch(
+          command,
+          /[.]delivery-v2[/]|delivery-orchestrator[/](src|scripts|bin)[/]/i,
+          filename + ":" + name,
+        );
       }
     }
   }
