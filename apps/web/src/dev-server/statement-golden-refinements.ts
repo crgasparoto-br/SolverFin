@@ -353,8 +353,10 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-query{align-items:stretch;display:grid;grid-template-columns:minmax(0,1fr) auto}
       ${root} #statement-query-fields{grid-column:1/-1}
       ${root} .statement-query-heading{grid-column:2;grid-row:1}
-      ${root} .filter-form{grid-template-columns:1fr}
-      ${root} .filter-form .statement-search-field{grid-column:auto}
+      ${root} .filter-form{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:${spacing[2]}}
+      ${root} .filter-form .statement-search-field{grid-column:1/-1}
+      ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field,.statement-sort-field){min-width:0}
+      ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field,.statement-sort-field) select{min-width:0;width:100%}
       ${root} .statement-filter-actions{grid-column:1/-1;justify-content:stretch}
       ${root} .statement-filter-actions>button{flex:1}
       ${dialog}{height:calc(100dvh - 16px);margin:8px;max-height:calc(100dvh - 16px);max-width:calc(100% - 16px);width:calc(100% - 16px)}
