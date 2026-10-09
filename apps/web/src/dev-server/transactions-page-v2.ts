@@ -183,9 +183,15 @@ function resolvePresentation(url: URL | undefined): StatementPresentation {
     sort,
     ...(insightCategoryId ? { insightCategoryId } : {}),
     ...(insightMerchantKey ? { insightMerchantKey } : {}),
-    ...(kind === "expense" || kind === "income" || kind === "transfer" ? { filterKind: kind } : {}),
-    ...(reconciliation === "unreconciled" || reconciliation === "reconciled" ? { filterReconciliation: reconciliation } : {}),
-    ...(status === "effective" || status === "suggested" || status === "planned" ? { filterStatus: status } : {}),
+    ...(kind === "expense" || kind === "income" || kind === "transfer"
+      ? { filterKind: kind }
+      : {}),
+    ...(reconciliation === "unreconciled" || reconciliation === "reconciled"
+      ? { filterReconciliation: reconciliation }
+      : {}),
+    ...(status === "effective" || status === "suggested" || status === "planned"
+      ? { filterStatus: status }
+      : {}),
   };
 }
 
@@ -198,11 +204,22 @@ function filterRowsForPresentation(
   return rows.filter((row) => {
     const transaction = row.transaction;
     if (presentation.filterKind && transaction.kind !== presentation.filterKind) return false;
-    if (presentation.filterReconciliation === "reconciled" && transaction.status !== "reconciled") return false;
-    if (presentation.filterReconciliation === "unreconciled" && transaction.status === "reconciled") return false;
-    if (presentation.filterStatus === "effective" && transaction.effectiveOn === undefined) return false;
-    if (presentation.filterStatus === "suggested" && (transaction.effectiveOn !== undefined || transaction.status !== "suggested")) return false;
-    if (presentation.filterStatus === "planned" && (transaction.effectiveOn !== undefined || transaction.status === "suggested")) return false;
+    if (presentation.filterReconciliation === "reconciled" && transaction.status !== "reconciled")
+      return false;
+    if (presentation.filterReconciliation === "unreconciled" && transaction.status === "reconciled")
+      return false;
+    if (presentation.filterStatus === "effective" && transaction.effectiveOn === undefined)
+      return false;
+    if (
+      presentation.filterStatus === "suggested" &&
+      (transaction.effectiveOn !== undefined || transaction.status !== "suggested")
+    )
+      return false;
+    if (
+      presentation.filterStatus === "planned" &&
+      (transaction.effectiveOn !== undefined || transaction.status === "suggested")
+    )
+      return false;
     if (
       presentation.insightCategoryId &&
       transaction.categoryId !== presentation.insightCategoryId
@@ -266,13 +283,7 @@ function renderFilters(
   url: URL | undefined,
   categories: readonly CategoryRecord[],
 ): string {
-  const preserved = [
-    "profileId",
-    "currency",
-    "evidence",
-    "day",
-    "merchantKey",
-  ]
+  const preserved = ["profileId", "currency", "evidence", "day", "merchantKey"]
     .map((name) => {
       const value = url?.searchParams.get(name);
       return value ? `<input type="hidden" name="${name}" value="${escapeHtml(value)}">` : "";
