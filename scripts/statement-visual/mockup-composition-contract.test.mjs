@@ -76,6 +76,12 @@ test("rejects the pre-fix mobile composition that delays the movement list", () 
 });
 
 test("rejects selector left in query or orphaned from original GET form", () => {
-  assert.throws(() => assertMockupComposition({ ...fixture(), accountPickerInContext: false }), /financial context/);
-  assert.throws(() => assertMockupComposition({ ...fixture(), accountPickerBoundToForm: false }), /native GET/);
+  assert.throws(
+    () => assertMockupComposition({ ...fixture(), accountPickerInContext: false }),
+    /financial context/,
+  );
+  assert.throws(
+    () => assertMockupComposition({ ...fixture(), accountPickerBoundToForm: false }),
+    /native GET/,
+  );
 });
