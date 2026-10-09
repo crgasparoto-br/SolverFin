@@ -107,7 +107,6 @@ test("local CI policy is independent of external or orchestrator locks", () => {
   assert.equal(plan.codeChanged, true);
 });
 
-
 test("FAST public SVG installs dependencies before merge-preview typecheck", () => {
   const result = classifyDeliveryV2Ci({ changedPaths: ["apps/web/public/icon.svg"] });
   assert.equal(result.riskProfile, "fast");
@@ -116,7 +115,15 @@ test("FAST public SVG installs dependencies before merge-preview typecheck", () 
   const workflow = readFileSync(".github/workflows/delivery-v2-ci.yml", "utf8");
   const preview = workflow.split("  merge_preview:")[1]?.split("  fast_validation:")[0];
   assert.ok(preview, "merge preview job exists");
-  const dependencyCondition = "if: needs.classify.outputs.code_changed == 'true' || (needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true')";
-  assert.equal(preview.split(dependencyCondition).length - 1, 2, "setup-node and npm ci must cover public assets");
-  assert.ok(preview.indexOf("npm ci --no-audit --no-fund") < preview.indexOf("FAST web type compatibility"));
+  const dependencyCondition =
+    "if: needs.classify.outputs.code_changed == 'true' || (needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true')";
+  assert.equal(
+    preview.split(dependencyCondition).length - 1,
+    2,
+    "setup-node and npm ci must cover public assets",
+  );
+  assert.ok(
+    preview.indexOf("npm ci --no-audit --no-fund") <
+      preview.indexOf("FAST web type compatibility"),
+  );
 });
