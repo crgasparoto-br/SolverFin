@@ -185,6 +185,19 @@ jobs:
       - run: npm run env:check
       - run: npm run prisma:validate
       - run: npm run db:seed:check
+      - name: Diagnostic - emit exact Prettier source chunks
+        run: |
+          npx prettier apps/web/src/dev-server/transactions-page-v2.ts apps/web/src/dev-server/transactions-page-v2.test.ts --write
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          paths = ["apps/web/src/dev-server/transactions-page-v2.ts", "apps/web/src/dev-server/transactions-page-v2.test.ts"]
+          for idx, filename in enumerate(paths):
+              data = Path(filename).read_text(encoding="utf-8")
+              for i in range(0, len(data), 3000):
+                  print(f"PRETTIER_CHUNK_{idx}_{i // 3000}=" + json.dumps(data[i:i+3000], ensure_ascii=False))
+          PY
+          git restore -- apps/web/src/dev-server/transactions-page-v2.ts apps/web/src/dev-server/transactions-page-v2.test.ts
       - name: Enforce complete repository formatting
         run: npm run format:check
       - run: npm run lint
