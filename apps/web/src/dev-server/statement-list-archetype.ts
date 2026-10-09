@@ -207,9 +207,12 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-context-pill { align-items: center; background: transparent; border: 0; color: var(--muted); display: inline-flex; font-size: .75rem; font-weight: 600; min-height: 24px; padding: 0; white-space: normal; }
     ${root} .statement-context-pill[data-context="currency"] { color: var(--primary); letter-spacing: .04em; }
 
-    ${root} .account-summary { background: transparent; border: 0; box-shadow: none; display: grid; gap: 10px 20px; grid-template-columns: repeat(3, minmax(0, 1fr)); min-width: 0; padding: 12px 0 0; position: static; }
+    ${root} .account-summary { background: transparent; border: 0; box-shadow: none; display: grid; gap: 8px 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); min-width: 0; padding: 10px 0 0; position: static; }
     ${root} .account-summary > div:first-child { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
     ${root} .summary-balance { background: transparent; border: 0; border-radius: 0; display: grid; gap: 2px; min-width: 0; padding: 0; }
+    ${root} .account-summary > .summary-balance { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; }
+    ${root} .account-summary > .summary-balance strong { margin-inline-start: auto; }
+    ${root} .account-summary > .summary-balance p { flex-basis: 100%; }
     ${root} .summary-balance strong { font-size: 1.55rem; letter-spacing: -.03em; line-height: 1.2; }
     ${root} .summary-balance p { color: var(--muted); font-size: .75rem; line-height: 1.4; margin: 0; }
     ${root} .summary-totals { display: contents; }
