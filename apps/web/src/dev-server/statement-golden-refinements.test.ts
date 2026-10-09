@@ -54,3 +54,6 @@ assert.match(styles, /summary-total\{border-right:0;border-bottom:/);
 assert.match(styles, /statement-category-field\{min-width:0/);
 assert.match(styles, /statement-category-field select\{background:/);
 assert.match(styles, /statement-search-field\{grid-column:auto/);
+
+assert.match(styles, /statement-status-field/);
+assert.match(styles, /statement-reconciliation-field/);
