@@ -282,6 +282,12 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-category{background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]}}
     ${root} .statement-body .col-category:empty{display:none}
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
+    ${root} .statement-body .statement-status{align-items:center;display:inline-flex;gap:${spacing[1]};max-width:100%;min-width:0;padding:${spacing[1]} ${spacing[2]};border-radius:999px;font-size:${typography.sizes.xs};white-space:normal}
+    ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:600;line-height:1.25}
+    ${root} .statement-body .statement-status-ok{background:#dcfce7;color:#166534}
+    ${root} .statement-body .statement-status-posted{background:#e0f2fe;color:#075985}
+    ${root} .statement-body .statement-status-pending{background:#fef3c7;color:#92400e}
+    ${root} .statement-body .statement-status-planned{background:#f1f5f9;color:#475569}
     ${root} .statement-panel.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
     /* Keep existing canonical GET sorting reachable; do not synthesize unsupported filters. */
     ${root} .statement-query-heading>span{display:block;color:var(--muted);font-size:${typography.sizes.xs}}
@@ -291,12 +297,6 @@ export function statementGoldenRefinementStyles(): string {
     @media(max-width:${breakpoints.shellCompact}){
       ${root} .account-summary[data-mockup-composition] .summary-total{border-right:0;border-bottom:1px solid var(--line)}
       ${root} .account-summary[data-mockup-composition] .summary-total:nth-of-type(2n){border-bottom:1px solid var(--line)}
-      ${root} .statement-body .statement-status{align-items:center;display:inline-flex;gap:${spacing[1]};max-width:100%;min-width:0;padding:${spacing[1]} ${spacing[2]};border-radius:999px;font-size:${typography.sizes.xs};white-space:normal}
-    ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:600;line-height:1.25}
-    ${root} .statement-body .statement-status-ok{background:#dcfce7;color:#166534}
-    ${root} .statement-body .statement-status-posted{background:#e0f2fe;color:#075985}
-    ${root} .statement-body .statement-status-pending{background:#fef3c7;color:#92400e}
-    ${root} .statement-body .statement-status-planned{background:#f1f5f9;color:#475569}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.sm}}
     }
     ${root} .statement-toolbar{display:none}
