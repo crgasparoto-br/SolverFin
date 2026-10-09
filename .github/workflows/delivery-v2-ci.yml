@@ -1,4 +1,4 @@
-name: Delivery V2 CI
+name: Repository CI
 
 on:
   pull_request:
@@ -9,12 +9,12 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: delivery-v2-ci-${{ github.event.pull_request.number }}
+  group: repository-ci-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   classify:
-    name: Delivery V2 risk
+    name: CI risk
     runs-on: ubuntu-latest
     timeout-minutes: 3
     outputs:
@@ -40,17 +40,17 @@ jobs:
               per_page: 100,
             });
             require('node:fs').writeFileSync(
-              '/tmp/delivery-v2-changed-paths.json',
+              '/tmp/ci-changed-paths.json',
               JSON.stringify(files.map((file) => file.filename))
             );
       - name: Classify PR deterministically
         id: risk
         env:
-          DELIVERY_V2_REQUESTED_RISK: ${{ vars.DELIVERY_V2_RISK_PROFILE || 'auto' }}
-        run: node scripts/delivery-v2-ci-classifier.mjs --paths-file /tmp/delivery-v2-changed-paths.json
+          CI_REQUESTED_RISK: ${{ vars.CI_RISK_PROFILE || 'auto' }}
+        run: node scripts/ci-classifier.mjs --paths-file /tmp/ci-changed-paths.json
       - name: Publish classification summary
         run: |
-          echo "## Delivery V2 risk" >> "$GITHUB_STEP_SUMMARY"
+          echo "## CI risk" >> "$GITHUB_STEP_SUMMARY"
           echo "- Effective: \`${{ steps.risk.outputs.risk_profile }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Reasons: \`${{ steps.risk.outputs.reasons_json }}\`" >> "$GITHUB_STEP_SUMMARY"
 
@@ -62,15 +62,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        if: needs.classify.outputs.code_changed == 'true'
+        if: needs.classify.outputs.code_changed == 'true' || (needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true')
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
-        if: needs.classify.outputs.code_changed == 'true'
-      - name: Verify classifier package in merge preview
-        run: node .delivery-v2/verify.mjs
+        if: needs.classify.outputs.code_changed == 'true' || (needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true')
+      - name: Verify local CI policy on merge preview
+        run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
       - name: FAST web type compatibility
         if: needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true'
         run: npm run typecheck --workspace @solverfin/web
@@ -93,8 +93,7 @@ jobs:
           ref: ${{ env.VERIFICATION_HEAD_SHA }}
       - name: Verify exact head
         run: test "$(git rev-parse HEAD)" = "$VERIFICATION_HEAD_SHA"
-      - run: node .delivery-v2/verify.mjs
-      - run: node --test scripts/delivery-v2-ci-classifier.test.mjs
+      - run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
       - uses: actions/setup-node@v4
         if: needs.classify.outputs.web_changed == 'true'
         with:
@@ -137,9 +136,9 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
-      - run: node .delivery-v2/verify.mjs
-      - run: node --test scripts/delivery-v2-ci-classifier.test.mjs
-      - run: npm run format:check
+      - run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
+      - name: Enforce complete repository formatting
+        run: npm run format:check
       - run: npm run lint --workspace @solverfin/web
       - run: npm run typecheck --workspace @solverfin/web
       - run: npm run test --workspace @solverfin/web
@@ -182,12 +181,12 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
-      - run: node .delivery-v2/verify.mjs
-      - run: node --test scripts/delivery-v2-ci-classifier.test.mjs
+      - run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
       - run: npm run env:check
       - run: npm run prisma:validate
       - run: npm run db:seed:check
-      - run: npm run format:check
+      - name: Enforce complete repository formatting
+        run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run prisma:generate
@@ -212,30 +211,10 @@ jobs:
       STANDARD_RESULT: ${{ needs.standard_validation.result }}
       CRITICAL_RESULT: ${{ needs.critical_validation.result }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Test risk gate contract
+        run: node --test scripts/ci-gate.test.mjs
       - name: Enforce exactly one risk path
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$CLASSIFY_RESULT" = success
-          test "$MERGE_PREVIEW_RESULT" = success
-          case "$RISK_PROFILE" in
-            fast)
-              test "$FAST_RESULT" = success
-              test "$STANDARD_RESULT" = skipped
-              test "$CRITICAL_RESULT" = skipped
-              ;;
-            standard)
-              test "$FAST_RESULT" = skipped
-              test "$STANDARD_RESULT" = success
-              test "$CRITICAL_RESULT" = skipped
-              ;;
-            critical)
-              test "$FAST_RESULT" = skipped
-              test "$STANDARD_RESULT" = skipped
-              test "$CRITICAL_RESULT" = success
-              ;;
-            *)
-              echo "Invalid risk profile: $RISK_PROFILE" >&2
-              exit 2
-              ;;
-          esac
+        run: node scripts/ci-gate.mjs
