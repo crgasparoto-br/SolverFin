@@ -9,6 +9,23 @@ import {
   goldenStatementMeasurements,
 } from "./golden-statement-contract.mjs";
 
+const actionWordMeasurements = `(() => {
+  const brokenWords = [];
+  for (const button of document.querySelectorAll('dialog[data-modal] .save-row>button,dialog[data-modal] .statement-entry-kinds>button')) {
+    if (!button.getBoundingClientRect().width) continue;
+    const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      for (const match of node.textContent.matchAll(/\\p{L}+/gu)) {
+        const range = document.createRange();
+        range.setStart(node, match.index); range.setEnd(node, match.index + match[0].length);
+        if (Array.from(range.getClientRects()).filter(box => box.width > 0).length > 1) brokenWords.push(match[0]);
+      }
+    }
+  }
+  return brokenWords;
+})()`;
+
 /** Runs in the existing authenticated Chrome workflow, with its existing fixtures. */
 export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }) {
   const subjectSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
@@ -181,6 +198,31 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       assert.equal(bounds.inside, true);
       assert.equal(bounds.overflow, false);
       assert.deepEqual(bounds.clippedLabels, [], "Dialog action labels must remain fully visible.");
+      assert.deepEqual(
+        await read(actionWordMeasurements),
+        [],
+        "Dialog action words must remain intact.",
+      );
+      if (width <= 360) {
+        await read(`(() => {
+          const style = document.createElement('style'); style.dataset.goldenWordNegative = '';
+          style.textContent = 'dialog[data-modal] .statement-entry-kinds button{width:40px!important;justify-self:start!important;white-space:normal!important;overflow-wrap:anywhere!important}';
+          document.head.append(style);
+        })()`);
+        try {
+          const broken = await read(actionWordMeasurements);
+          assert.throws(() => assert.deepEqual(broken, []), { code: "ERR_ASSERTION" });
+        } finally {
+          await read(`document.querySelector('[data-golden-word-negative]')?.remove()`);
+        }
+        assert.deepEqual(await read(actionWordMeasurements), []);
+        report.checks.push({
+          id: "GS-NC-ACTION-WORD-BREAK",
+          status: "passed",
+          viewport: { width, height },
+          restored: "passed",
+        });
+      }
       const headerClearance = await read(`(() => {
         const dialog = document.querySelector('dialog[data-modal]');
         const close = dialog?.querySelector('.close-form button');

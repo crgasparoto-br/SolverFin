@@ -191,5 +191,12 @@ export function statementMockupControlsStyles(): string {
       ${dialog} .save-row>button{flex:1 1 0;min-width:0;width:auto;white-space:normal;overflow-wrap:anywhere;padding-inline:${spacing[2]};font-size:${typography.sizes.sm};line-height:${typography.lineHeights.compact}}
       ${dialog} .save-row>button span{min-width:0;white-space:normal;overflow-wrap:anywhere}
     }
+    @media(max-width:360px){
+      ${dialog} .statement-entry-kinds{grid-template-columns:repeat(2,minmax(0,1fr))}
+      ${dialog} .statement-entry-kinds button:last-child{grid-column:1/-1}
+      ${dialog} .statement-entry-kinds button{white-space:nowrap;overflow-wrap:normal}
+      ${dialog} .save-row>button{flex-basis:100%;width:100%;white-space:nowrap;overflow-wrap:normal}
+      ${dialog} .save-row>button span{white-space:nowrap;overflow-wrap:normal}
+    }
   `;
 }

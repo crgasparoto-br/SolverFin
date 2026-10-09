@@ -273,7 +273,6 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .account-summary[data-mockup-composition]{column-gap:${spacing[2]};grid-template-columns:repeat(2,minmax(0,1fr))}
       ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:${spacing[1]};min-width:0}
       ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:9px;font-variant-numeric:tabular-nums;letter-spacing:-.035em;line-height:1.15;max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;width:100%;word-break:break-word}
-      ${root}[data-statement-options="collapsed"] #statement-query-fields{display:none}
       ${root}[data-statement-options="collapsed"] .statement-query-heading{margin-bottom:0}
     }
 
@@ -465,6 +464,20 @@ export function statementGoldenRefinementStyles(): string {
     @media(max-width:${breakpoints.shellCompact}){
       ${root} .statement-body[data-statement-row-refined]{grid-template-areas:"select description actions" "select amount amount" "select metadata metadata" "select status status" "select footer footer"}
       ${root} .statement-body .col-status{justify-self:start}
+      ${root} .statement-query-heading{display:none}
+      ${root} .filter-form .statement-sort-field{display:grid}
+      ${root} .statement-query .statement-search-field{font-size:0;line-height:0;gap:0}
+      ${root} .statement-query .statement-search-field input{font-size:${typography.sizes.sm};line-height:normal}
+    }
+    @media(max-width:360px){
+      ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
+      ${root} .statement-period-control{display:grid;grid-template-columns:minmax(0,1fr)}
+      ${root} .statement-period-control [data-month-current]{justify-self:end}
+      ${root} .statement-account-heading .summary-balance{align-items:baseline;display:flex;gap:${spacing[1]};justify-content:space-between}
+      ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.md};white-space:nowrap}
+      ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr);row-gap:0}
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:nowrap;gap:${spacing[1]};justify-content:space-between;padding:${spacing[1]} 0}
+      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};line-height:${typography.lineHeights.compact};white-space:nowrap;word-break:normal;width:auto}
     }
 
     ${statementMockupControlsStyles()}

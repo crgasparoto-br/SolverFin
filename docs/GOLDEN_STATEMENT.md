@@ -100,6 +100,14 @@ Isso rejeita o chrome vertical excessivo sem esconder conta, moeda, periodo ou b
 Campos e valores permanecem acessiveis; o formulario mobile preserva alvos de
 44 px e a acao de salvar usa um rodape aderente ao dialog.
 
+Em larguras de ate 360 px, os indicadores usam linhas com rotulo e valor
+completos, e o periodo separa a navegacao mensal da acao Mes atual. A busca e
+as acoes Aplicar/Limpar continuam visiveis; a ordenacao nativa permanece no
+grupo expansivel Filtros e ordenacao. No dialog, Despesa e Receita dividem a
+primeira linha, Transferencia ocupa a segunda, e Cancelar/Salvar usam a largura
+disponivel. O teste verifica cada palavra dos botoes por `Range` e injeta uma
+largura insuficiente para provar a deteccao de palavras partidas.
+
 ## Remediacao visual da revisao GS703
 
 A revisao `audit-rejection:solverfin-703-2b6e3f1-golden-screen` apontou defeitos
