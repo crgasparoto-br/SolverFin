@@ -344,7 +344,7 @@ export function statementListArchetypeStyles(): string {
       ${root}[data-statement-options="collapsed"] .filter-form { gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       ${root}[data-statement-options="collapsed"] .statement-query-heading { justify-content: flex-end; margin-bottom: 0; }
       ${root}[data-statement-options="collapsed"] .statement-query-heading > span { display: none; }
-      ${root}[data-statement-options="collapsed"] .statement-filter-actions > :is(button, a) { display: none; }
+      ${root}[data-statement-options="collapsed"] .statement-filter-actions > :is(button, a) { display: inline-flex; }
       ${root}[data-statement-options="collapsed"] .statement-filter-actions { justify-content: flex-end; }
       ${root} .statement-search-field { grid-column: 1 / -1; }
       ${root} .statement-sort-field { grid-column: 1 / -1; }
