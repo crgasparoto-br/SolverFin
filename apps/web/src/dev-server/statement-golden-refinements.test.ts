@@ -60,3 +60,7 @@ assert.match(styles, /statement-mobile-advanced-filters:not\(\[open\]\)/);
 
 assert.match(styles, /statement-status-field/);
 assert.match(styles, /statement-reconciliation-field/);
+
+assert.match(runtime, /accountInput\.setAttribute\('form', filterForm\.id\)/);
+assert.match(runtime, /heading\.insertBefore\(accountControl, balance\)/);
+assert.match(styles, /statement-account-control\{grid-column:1\/-1;min-width:0\}/);
