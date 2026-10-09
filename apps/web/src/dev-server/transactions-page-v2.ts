@@ -183,9 +183,7 @@ function resolvePresentation(url: URL | undefined): StatementPresentation {
     sort,
     ...(insightCategoryId ? { insightCategoryId } : {}),
     ...(insightMerchantKey ? { insightMerchantKey } : {}),
-    ...(kind === "expense" || kind === "income" || kind === "transfer"
-      ? { filterKind: kind }
-      : {}),
+    ...(kind === "expense" || kind === "income" || kind === "transfer" ? { filterKind: kind } : {}),
     ...(reconciliation === "unreconciled" || reconciliation === "reconciled"
       ? { filterReconciliation: reconciliation }
       : {}),
