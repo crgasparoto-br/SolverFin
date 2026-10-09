@@ -185,6 +185,11 @@ jobs:
       - run: npm run env:check
       - run: npm run prisma:validate
       - run: npm run db:seed:check
+      - name: Diagnose Prettier diff (temporary, read-only)
+        run: |
+          npx prettier apps/web/src/dev-server/transactions-page-v2.ts apps/web/src/dev-server/transactions-page-v2.test.ts --write
+          git --no-pager diff -- apps/web/src/dev-server/transactions-page-v2.ts apps/web/src/dev-server/transactions-page-v2.test.ts
+          git restore -- apps/web/src/dev-server/transactions-page-v2.ts apps/web/src/dev-server/transactions-page-v2.test.ts
       - name: Enforce complete repository formatting
         run: npm run format:check
       - run: npm run lint
