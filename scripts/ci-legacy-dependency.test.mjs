@@ -60,6 +60,6 @@ test("STANDARD and CRITICAL formatting gates fail closed", () => {
     const section = workflow.split(`  ${job}:\n`)[1]?.split(`  ${next}:\n`)[0];
     assert.ok(section, `${job} exists`);
     assert.match(section, /run: npm run format:check(?:\n|$)/);
-    assert.doesNotMatch(section, /npm run format:check\\s*\\|\\|/);
+    assert.doesNotMatch(section, /npm run format:check\s*\|\|/);
   }
 });
