@@ -39,7 +39,7 @@ export function renderStatementListArchetype(props: StatementListArchetypeProps)
         <div class="statement-query-heading">
           <span data-statement-order-summary aria-live="polite">Buscar e filtrar movimentações</span>
           <button type="button" class="ghost-btn" data-statement-options-toggle
-            aria-expanded="true" aria-controls="statement-query-fields" hidden>Ordenação e opções</button>
+            aria-expanded="true" aria-controls="statement-query-fields" hidden>Ordenar</button>
         </div>
         <div id="statement-query-fields">${filterHtml}</div>
       </section>
@@ -230,7 +230,7 @@ export function statementListArchetypeStyles(): string {
     ${root} #statement-query-fields { min-width: 0; }
     ${root} .statement-query-heading { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; margin-bottom: 4px; }
     ${root} .statement-query-heading > span { color: var(--muted); font-size: .75rem; }
-    ${root} [data-statement-options-toggle] { background: transparent; border-color: var(--line); color: var(--primary); font-size: .75rem; font-weight: 500; min-height: 28px; }
+    ${root} [data-statement-options-toggle] { background: transparent; border-color: transparent; color: var(--muted); font-size: .75rem; font-weight: 500; min-height: 28px; }
     ${root} [data-statement-options-toggle][aria-expanded="true"] { background: var(--primary-soft); }
     ${root} .sf-filter-bar { background: transparent; border: 0; box-shadow: none; display: block; padding: 0; }
     ${root} .filter-form { align-items: end; display: grid; gap: 8px 10px; grid-template-columns: repeat(12, minmax(0, 1fr)); min-width: 0; }
