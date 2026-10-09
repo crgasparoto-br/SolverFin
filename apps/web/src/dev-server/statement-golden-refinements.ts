@@ -429,6 +429,8 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-body{box-sizing:border-box;max-width:100%;min-width:0}
       ${root} .statement-body :is(.col-description,.description,.account-remuneration-summary){max-width:100%;min-width:0;overflow-wrap:anywhere}
       ${root} .statement-body .description details.account-remuneration-audit{max-width:100%;min-width:0}
+      ${root} .statement-row.account-remuneration-row .col-description{min-width:0;max-width:100%;overflow-wrap:anywhere}
+      ${root} .statement-row.account-remuneration-row .description{display:block;min-width:0;max-width:100%}
       ${root} .statement-body.account-remuneration-row .description>strong{max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal}
       ${root} .statement-body.account-remuneration-row .account-remuneration-audit summary{max-width:100%;overflow-wrap:anywhere;white-space:normal}
       ${root} .statement-mobile-advanced-filters{display:block;grid-column:1/-1;min-width:0}
