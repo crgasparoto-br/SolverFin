@@ -12,6 +12,16 @@ export function assertMockupComposition(layout) {
   assert.equal(layout.secondaryCount, 2, "Secondary quick actions must remain available.");
   assert.equal(layout.menuOpen, false, "Secondary actions should start collapsed.");
   assert.equal(
+    layout.accountPickerInContext,
+    true,
+    "Account selector must stay in financial context, not query filters.",
+  );
+  assert.equal(
+    layout.accountPickerBoundToForm,
+    true,
+    "Moving the account selector must preserve native GET submission.",
+  );
+  assert.equal(
     layout.periodInHeading,
     true,
     "Period navigation must compose the account summary header.",
