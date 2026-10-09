@@ -23,6 +23,8 @@ const fixture = () => ({
   list: box(230, 450, 1040, 250),
   sameHeading: true,
   periodInHeading: true,
+  accountPickerInContext: true,
+  accountPickerBoundToForm: true,
   primaryCount: 1,
   secondaryCount: 2,
   menuOpen: false,
@@ -71,4 +73,9 @@ test("rejects the pre-fix mobile composition that delays the movement list", () 
     list: box(24, 824, 342, 240),
   };
   assert.throws(() => assertMockupComposition(layout), /density budget/);
+});
+
+test("rejects selector left in query or orphaned from original GET form", () => {
+  assert.throws(() => assertMockupComposition({ ...fixture(), accountPickerInContext: false }), /financial context/);
+  assert.throws(() => assertMockupComposition({ ...fixture(), accountPickerBoundToForm: false }), /native GET/);
 });
