@@ -72,4 +72,7 @@ assert.match(styles, /account-remuneration-audit summary\{[^}]*white-space:norma
 // Density contract: desktop query keeps search and four essential selectors in one row.
 assert.match(styles, /@media\(min-width:1101px\)\{/);
 assert.match(styles, /\.filter-form\{grid-template-columns:repeat\(16,minmax\(0,1fr\)\)/);
-assert.match(styles, /\.statement-context:has\(\.statement-account-control\) \.statement-context-main\{display:none\}/);
+assert.match(
+  styles,
+  /\.statement-context:has\(\.statement-account-control\) \.statement-context-main\{display:none\}/,
+);
