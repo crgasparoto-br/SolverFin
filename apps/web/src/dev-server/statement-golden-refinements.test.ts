@@ -24,7 +24,9 @@ assert.match(runtime, /heading\.append\(context, balance\)/);
 assert.match(runtime, /content\.append\(\.\.\.secondary\)/);
 assert.match(runtime, /actions\?\.prepend\(primary\)/);
 assert.match(runtime, /trigger\.focus\(\)/);
-assert.doesNotMatch(runtime, /details\.open = true|fetch\(|innerHTML|outerHTML/);
+assert.doesNotMatch(runtime, /fetch\(|innerHTML|outerHTML/);
+assert.match(runtime, /details\.open = selectedCount > 0/);
+assert.match(runtime, /Filtros ativos/);
 const styles = statementGoldenRefinementStyles();
 assert.ok(styles.includes(`@media(max-width:${solverFinDesignTokens.breakpoints.shellCompact})`));
 assert.ok(styles.includes(`min-height:${solverFinDesignTokens.density.interactiveTargetMin}`));
@@ -53,7 +55,8 @@ assert.match(styles, /summary-total\{border-right:0;border-bottom:/);
 // M01: show canonical category control, preserving its native query contract.
 assert.match(styles, /statement-category-field\{min-width:0/);
 assert.match(styles, /statement-category-field select\{background:/);
-assert.match(styles, /statement-search-field\{grid-column:auto/);
+assert.match(styles, /statement-search-field\{grid-column:1\/-1/);
+assert.match(styles, /statement-mobile-advanced-filters:not\(\[open\]\)/);
 
 assert.match(styles, /statement-status-field/);
 assert.match(styles, /statement-reconciliation-field/);
