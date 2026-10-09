@@ -49,3 +49,8 @@ assert.match(styles, /statement-query-heading>span\{display:block/);
 assert.match(styles, /statement-sort-field\{min-width:0/);
 assert.match(styles, /statement-body \.col-amount\{font-size:/);
 assert.match(styles, /summary-total\{border-right:0;border-bottom:/);
+
+// M01: show canonical category control, preserving its native query contract.
+assert.match(styles, /statement-category-field\{min-width:0/);
+assert.match(styles, /statement-category-field select\{background:/);
+assert.match(styles, /statement-search-field\{grid-column:auto/);
