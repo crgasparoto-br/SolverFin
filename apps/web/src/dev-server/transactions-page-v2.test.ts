@@ -208,9 +208,9 @@ test("A2 statement filters type, effective status and reconciliation without cha
     assert.match(html, /Despesa pendente/);
     assert.doesNotMatch(html, /Receita exemplo/);
     assert.doesNotMatch(html, /Despesa conciliada/);
-    assert.match(html, /<option value="expense" selected>Despesa<\\/option>/);
-    assert.match(html, /<option value="suggested" selected>Pendente<\\/option>/);
-    assert.match(html, /<option value="unreconciled" selected>Não conciliado<\\/option>/);
+    assert.match(html, /<option value="expense" selected>Despesa<\/option>/);
+    assert.match(html, /<option value="suggested" selected>Pendente<\/option>/);
+    assert.match(html, /<option value="unreconciled" selected>Não conciliado<\/option>/);
     assert.match(html, /name="status"/);
     assert.match(html, /name="reconciliation"/);
   } finally {
