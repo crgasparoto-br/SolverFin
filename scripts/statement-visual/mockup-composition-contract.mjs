@@ -36,6 +36,10 @@ export function assertMockupComposition(layout) {
   if (layout.viewport.width >= 1101) {
     if (layout.firstMovement) {
       assert.ok(
+        layout.firstMovement.width > 0 && layout.firstMovement.height > 0,
+        "Desktop first movement must be visibly rendered.",
+      );
+      assert.ok(
         layout.firstMovement.bottom <= layout.viewport.height,
         "Desktop summary and filters must keep the complete first movement in the viewport.",
       );
