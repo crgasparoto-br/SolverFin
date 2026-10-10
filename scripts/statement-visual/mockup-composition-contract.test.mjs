@@ -95,12 +95,20 @@ test("rejects admin-style stacked filters at desktop widths", () => {
 });
 
 test("rejects missing essential filters and desktop concealment", () => {
-  assert.throws(() => assertMockupComposition({
-    ...fixture(),
-    filterControls: ["category", "kind", "status"],
-  }), /Category, type, status/);
-  assert.throws(() => assertMockupComposition({
-    ...fixture(),
-    desktopFiltersVisible: false,
-  }), /visibly accessible/);
+  assert.throws(
+    () =>
+      assertMockupComposition({
+        ...fixture(),
+        filterControls: ["category", "kind", "status"],
+      }),
+    /Category, type, status/,
+  );
+  assert.throws(
+    () =>
+      assertMockupComposition({
+        ...fixture(),
+        desktopFiltersVisible: false,
+      }),
+    /visibly accessible/,
+  );
 });
