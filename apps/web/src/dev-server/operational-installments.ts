@@ -158,6 +158,8 @@ const OPERATIONAL_INSTALLMENTS_CSS = `
     overflow: hidden;
     padding: 0;
     position: absolute;
+    left: 0;
+    top: 0;
     white-space: nowrap;
     width: 1px;
   }
