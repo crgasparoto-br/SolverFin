@@ -34,6 +34,7 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
+    assert.equal(layout.visiblePrimaryFilters, 4, "Desktop must expose four primary filters.");
     assert.ok(
       layout.queryFields.height <= 150,
       "Desktop filters regressed to stacked controls instead of a compact row.",
@@ -99,6 +100,15 @@ export function measureMockupComposition() {
     period: rect(period),
     queryHeading: rect(queryHeading),
     queryFields: rect(queryFields),
+    visiblePrimaryFilters: [
+      ".statement-kind-field",
+      ".statement-status-field",
+      ".statement-reconciliation-field",
+      ".statement-category-field",
+    ].filter((selector) => {
+      const select = filters?.querySelector(`${selector} select`);
+      return select && select.getClientRects().length > 0;
+    }).length,
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
     sameHeading:
