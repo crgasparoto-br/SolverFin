@@ -114,3 +114,10 @@ test("rejects a partially clipped first desktop movement", () => {
     /complete first movement in the viewport/,
   );
 });
+
+test("rejects first desktop transaction rendered with zero height", () => {
+  assert.throws(
+    () => assertMockupComposition({ ...fixture(), firstMovement: box(250, 495, 990, 0) }),
+    /visibly rendered/,
+  );
+});
