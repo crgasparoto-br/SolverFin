@@ -129,3 +129,15 @@ test("rejects truncated default financial filter choices on desktop", () => {
     /complete default values/,
   );
 });
+
+test("rejects overlapping desktop sort and Apply controls", () => {
+  assert.throws(
+    () =>
+      assertMockupComposition({
+        ...fixture(),
+        sortControl: box(900, 350, 140, 44),
+        applyControl: box(1010, 350, 90, 44),
+      }),
+    /must not overlap/,
+  );
+});
