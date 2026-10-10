@@ -44,6 +44,15 @@ export function assertMockupComposition(layout) {
         "Desktop summary and filters must keep the complete first movement in the viewport.",
       );
     }
+    if (layout.sortControl && layout.applyControl) {
+      assert.ok(
+        layout.sortControl.right <= layout.applyControl.left ||
+          layout.applyControl.right <= layout.sortControl.left ||
+          layout.sortControl.bottom <= layout.applyControl.top ||
+          layout.applyControl.bottom <= layout.sortControl.top,
+        "Desktop sort and Apply controls must not overlap.",
+      );
+    }
     assert.equal(layout.visiblePrimaryFilters, 4, "Desktop must expose four primary filters.");
     assert.deepEqual(
       layout.truncatedDefaultFilters,
@@ -143,6 +152,8 @@ export function measureMockupComposition() {
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
     firstMovement: rect(root?.querySelector(".statement-body")),
+    sortControl: rect(filters?.querySelector(".statement-sort-field")),
+    applyControl: rect(filters?.querySelector(".statement-filter-actions button[type=\"submit\"]")),
     sameHeading:
       !!heading && context?.parentElement === heading && balance?.parentElement === heading,
     periodInHeading: !!heading && period?.parentElement === heading,
