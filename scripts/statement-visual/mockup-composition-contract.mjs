@@ -36,8 +36,8 @@ export function assertMockupComposition(layout) {
   if (layout.viewport.width >= 1101) {
     if (layout.firstMovement) {
       assert.ok(
-        layout.firstMovement.top < layout.viewport.height,
-        "Desktop summary and filters push the first movement below the viewport.",
+        layout.firstMovement.bottom <= layout.viewport.height,
+        "Desktop summary and filters must keep the complete first movement in the viewport.",
       );
     }
     assert.equal(layout.visiblePrimaryFilters, 4, "Desktop must expose four primary filters.");
