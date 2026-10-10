@@ -27,7 +27,10 @@ assert.match(runtime, /trigger\.focus\(\)/);
 assert.doesNotMatch(runtime, /fetch\(|innerHTML|outerHTML/);
 assert.match(runtime, /details\.open = activeCount\(\) > 0/);
 assert.match(runtime, /field\.addEventListener\('change', updateTrigger\)/);
-assert.match(runtime, /filterForm\.addEventListener\('reset', \(\) => queueMicrotask\(updateTrigger\)\)/);
+assert.match(
+  runtime,
+  /filterForm\.addEventListener\('reset', \(\) => queueMicrotask\(updateTrigger\)\)/,
+);
 assert.match(runtime, /Filtros ativos/);
 const styles = statementGoldenRefinementStyles();
 assert.ok(styles.includes(`@media(max-width:${solverFinDesignTokens.breakpoints.shellCompact})`));
