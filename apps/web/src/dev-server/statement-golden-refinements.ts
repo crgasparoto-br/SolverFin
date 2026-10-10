@@ -220,9 +220,9 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-mobile-advanced-filters>summary{display:none}
     }
     @media(min-width:1101px){
-      ${root} .filter-form{grid-template-columns:repeat(16,minmax(0,1fr));gap:${spacing[2]}}
+      ${root} .filter-form{grid-template-columns:repeat(20,minmax(0,1fr));gap:${spacing[2]}}
       ${root} .filter-form .statement-search-field{grid-column:span 4}
-      ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:span 2}
+      ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:span 3}
       ${root} .filter-form .statement-filter-actions{grid-column:span 4;flex-wrap:nowrap;justify-content:end}
       ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
     }
