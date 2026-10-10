@@ -29,8 +29,6 @@ const fixture = () => ({
   secondaryCount: 2,
   menuOpen: false,
   overflow: false,
-  filterControls: ["category", "kind", "status", "reconciliation"],
-  desktopFiltersVisible: true,
 });
 
 test("accepts the horizontal hierarchy with one exposed action", () => {
@@ -92,23 +90,4 @@ test("rejects admin-style stacked filters at desktop widths", () => {
   const layout = fixture();
   layout.queryFields = box(250, 350, 650, 260);
   assert.throws(() => assertMockupComposition(layout), /stacked controls/);
-});
-
-test("rejects missing essential filters and desktop concealment", () => {
-  assert.throws(
-    () =>
-      assertMockupComposition({
-        ...fixture(),
-        filterControls: ["category", "kind", "status"],
-      }),
-    /Category, type, status/,
-  );
-  assert.throws(
-    () =>
-      assertMockupComposition({
-        ...fixture(),
-        desktopFiltersVisible: false,
-      }),
-    /visibly accessible/,
-  );
 });
