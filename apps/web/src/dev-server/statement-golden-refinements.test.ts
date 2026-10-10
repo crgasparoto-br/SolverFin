@@ -26,6 +26,7 @@ assert.match(runtime, /actions\?\.prepend\(primary\)/);
 assert.match(runtime, /trigger\.focus\(\)/);
 assert.doesNotMatch(runtime, /fetch\(|innerHTML|outerHTML/);
 assert.match(runtime, /details\.open = activeCount\(\) > 0/);
+assert.match(runtime, /details\.removeAttribute\('data-mobile-initialized'\)/);
 assert.match(runtime, /field\.addEventListener\('change', updateTrigger\)/);
 assert.match(
   runtime,
