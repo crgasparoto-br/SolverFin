@@ -104,6 +104,13 @@ test("rejects desktop filters hidden from the visual composition", () => {
 test("rejects desktop composition hiding the first movement below the fold", () => {
   assert.throws(
     () => assertMockupComposition({ ...fixture(), firstMovement: box(250, 780, 990, 45) }),
-    /first movement below the viewport/,
+    /complete first movement in the viewport/,
+  );
+});
+
+test("rejects a partially clipped first desktop movement", () => {
+  assert.throws(
+    () => assertMockupComposition({ ...fixture(), firstMovement: box(250, 750, 990, 45) }),
+    /complete first movement in the viewport/,
   );
 });
