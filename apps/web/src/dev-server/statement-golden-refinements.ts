@@ -354,7 +354,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .account-summary[data-mockup-composition] .summary-total:last-of-type{border-right:0}
     ${root} .statement-body .col-description>strong{font-weight:700;line-height:1.4}
     ${root} .statement-body .col-amount{font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.015em}
-    ${root} .statement-body .col-category{background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]}}
+    ${root} .statement-body .col-category{align-self:start;background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]};width:max-content}
     ${root} .statement-body .col-category:empty{display:none}
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
     ${root} .statement-body .statement-status{align-items:center;border:0;display:inline-flex;gap:${spacing[1]};height:auto;width:auto;max-width:100%;min-width:0;padding:${spacing[1]} ${spacing[2]};border-radius:999px;font-size:${typography.sizes.xs};white-space:normal}
