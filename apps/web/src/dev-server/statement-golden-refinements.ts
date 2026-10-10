@@ -348,7 +348,7 @@ export function statementGoldenRefinementStyles(): string {
         ${root} .filter-form .account-field>label,${root} .statement-search-field{font-size:0}
     ${root} .statement-search-field input{font-size:${typography.sizes.sm}}
     ${root} .statement-filter-actions{align-self:end;grid-column:auto}
-    ${root} .statement-filter-actions>a{display:none}
+    ${root} .statement-filter-actions>a{display:inline-flex}
     ${root} .statement-filter-actions>button[type="submit"]{background:#fff;border:1px solid var(--line);border-radius:7px}
 
     /* Mockup density: use dividers within one financial surface, not a card per summary. */
@@ -461,7 +461,7 @@ export function statementGoldenRefinementStyles(): string {
 
     /* State selectors in the A2 compatibility layer otherwise win over the Golden grid. */
     @media(min-width:1101px){
-      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(16,minmax(0,1fr))}
+      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(20,minmax(0,1fr))}
       ${root} .filter-form>.statement-search-field{grid-column:span 4}
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:span 4}
     }
