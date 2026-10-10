@@ -22,6 +22,7 @@ const fixture = () => ({
   visiblePrimaryFilters: 4,
   summary: box(250, 130, 1000, 190),
   list: box(230, 450, 1040, 250),
+  firstMovement: box(250, 495, 990, 45),
   sameHeading: true,
   periodInHeading: true,
   accountPickerInContext: true,
@@ -97,5 +98,12 @@ test("rejects desktop filters hidden from the visual composition", () => {
   assert.throws(
     () => assertMockupComposition({ ...fixture(), visiblePrimaryFilters: 3 }),
     /four primary filters/,
+  );
+});
+
+test("rejects desktop composition hiding the first movement below the fold", () => {
+  assert.throws(
+    () => assertMockupComposition({ ...fixture(), firstMovement: box(250, 780, 990, 45) }),
+    /first movement below the viewport/,
   );
 });
