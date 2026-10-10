@@ -121,8 +121,10 @@ export function measureMockupComposition() {
       return select && select.getClientRects().length > 0;
     }).length,
     truncatedDefaultFilters: [
-      ".statement-kind-field", ".statement-status-field",
-      ".statement-reconciliation-field", ".statement-category-field",
+      ".statement-kind-field",
+      ".statement-status-field",
+      ".statement-reconciliation-field",
+      ".statement-category-field",
     ].flatMap((selector) => {
       const select = filters?.querySelector(`${selector} select`);
       if (!select || select.value !== "" || !select.getClientRects().length) return [];
@@ -132,7 +134,9 @@ export function measureMockupComposition() {
       if (!context) return [select.name];
       context.font = font.font;
       const text = select.selectedOptions[0]?.textContent?.trim() ?? "";
-      return context.measureText(text).width + 20 > select.clientWidth + 1 ? [select.name] : [];
+      return context.measureText(text).width + 20 > select.clientWidth + 1
+        ? [select.name]
+        : [];
     }),
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
