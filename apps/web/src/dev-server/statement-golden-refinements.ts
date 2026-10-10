@@ -350,7 +350,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-filter-actions>button[type="submit"]{background:#fff;border:1px solid var(--line);border-radius:7px}
 
     /* Mockup density: use dividers within one financial surface, not a card per summary. */
-    ${root} .account-summary[data-mockup-composition] .summary-total{border:0;border-radius:0;border-right:1px solid var(--line);min-width:0;padding-block:${spacing[2]}}
+    ${root} .account-summary[data-mockup-composition] .summary-total{border:0;border-radius:0;border-right:1px solid var(--line);min-height:0;min-width:0;padding-block:${spacing[2]}}
     ${root} .account-summary[data-mockup-composition] .summary-total:last-of-type{border-right:0}
     ${root} .statement-body .col-description>strong{font-weight:700;line-height:1.4}
     ${root} .statement-body .col-amount{font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.015em}
