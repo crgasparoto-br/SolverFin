@@ -56,6 +56,9 @@ interface StatementPresentation {
   sort: StatementSort;
   insightCategoryId?: string;
   insightMerchantKey?: string;
+  filterKind?: "income" | "expense" | "transfer";
+  filterReconciliation?: "reconciled" | "unreconciled";
+  filterStatus?: "effective" | "suggested" | "planned";
 }
 
 export async function renderTransactionsPageV2(token: string, url?: URL): Promise<string> {
@@ -126,6 +129,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     filters.month,
     presentation,
     url,
+    categories,
   );
   const contextHtml = renderStatementContext(
     selectedAccount,
@@ -171,11 +175,21 @@ function resolvePresentation(url: URL | undefined): StatementPresentation {
   const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
   const insightCategoryId = readNonEmpty(url?.searchParams.get("categoryId"));
   const insightMerchantKey = normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "");
+  const kind = url?.searchParams.get("kind");
+  const reconciliation = url?.searchParams.get("reconciliation");
+  const status = url?.searchParams.get("status");
   return {
     search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
     sort,
     ...(insightCategoryId ? { insightCategoryId } : {}),
     ...(insightMerchantKey ? { insightMerchantKey } : {}),
+    ...(kind === "expense" || kind === "income" || kind === "transfer" ? { filterKind: kind } : {}),
+    ...(reconciliation === "unreconciled" || reconciliation === "reconciled"
+      ? { filterReconciliation: reconciliation }
+      : {}),
+    ...(status === "effective" || status === "suggested" || status === "planned"
+      ? { filterStatus: status }
+      : {}),
   };
 }
 
@@ -187,6 +201,23 @@ function filterRowsForPresentation(
   const search = normalizeSearch(presentation.search);
   return rows.filter((row) => {
     const transaction = row.transaction;
+    if (presentation.filterKind && transaction.kind !== presentation.filterKind) return false;
+    if (presentation.filterReconciliation === "reconciled" && transaction.status !== "reconciled")
+      return false;
+    if (presentation.filterReconciliation === "unreconciled" && transaction.status === "reconciled")
+      return false;
+    if (presentation.filterStatus === "effective" && transaction.effectiveOn === undefined)
+      return false;
+    if (
+      presentation.filterStatus === "suggested" &&
+      (transaction.effectiveOn !== undefined || transaction.status !== "suggested")
+    )
+      return false;
+    if (
+      presentation.filterStatus === "planned" &&
+      (transaction.effectiveOn !== undefined || transaction.status === "suggested")
+    )
+      return false;
     if (
       presentation.insightCategoryId &&
       transaction.categoryId !== presentation.insightCategoryId
@@ -248,16 +279,9 @@ function renderFilters(
   month: string,
   presentation: StatementPresentation,
   url: URL | undefined,
+  categories: readonly CategoryRecord[],
 ): string {
-  const preserved = [
-    "profileId",
-    "currency",
-    "kind",
-    "evidence",
-    "day",
-    "categoryId",
-    "merchantKey",
-  ]
+  const preserved = ["profileId", "currency", "evidence", "day", "merchantKey"]
     .map((name) => {
       const value = url?.searchParams.get(name);
       return value ? `<input type="hidden" name="${name}" value="${escapeHtml(value)}">` : "";
@@ -277,6 +301,35 @@ function renderFilters(
     </div>
     <label class="statement-search-field" for="statement-search">Buscar
       <input id="statement-search" name="q" type="search" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" autocomplete="off" />
+    </label>
+    <label class="statement-kind-field" for="statement-kind">Tipo
+      <select id="statement-kind" name="kind">
+        <option value="">Todos os tipos</option>
+        <option value="expense"${presentation.filterKind === "expense" ? " selected" : ""}>Despesa</option>
+        <option value="income"${presentation.filterKind === "income" ? " selected" : ""}>Receita</option>
+        <option value="transfer"${presentation.filterKind === "transfer" ? " selected" : ""}>Transferência</option>
+      </select>
+    </label>
+    <label class="statement-status-field" for="statement-status">Status
+      <select id="statement-status" name="status">
+        <option value="">Todos os status</option>
+        <option value="effective"${presentation.filterStatus === "effective" ? " selected" : ""}>Efetivado</option>
+        <option value="suggested"${presentation.filterStatus === "suggested" ? " selected" : ""}>Pendente</option>
+        <option value="planned"${presentation.filterStatus === "planned" ? " selected" : ""}>Previsto</option>
+      </select>
+    </label>
+    <label class="statement-reconciliation-field" for="statement-reconciliation">Conciliação
+      <select id="statement-reconciliation" name="reconciliation">
+        <option value="">Todas as situações</option>
+        <option value="unreconciled"${presentation.filterReconciliation === "unreconciled" ? " selected" : ""}>Não conciliado</option>
+        <option value="reconciled"${presentation.filterReconciliation === "reconciled" ? " selected" : ""}>Conciliado</option>
+      </select>
+    </label>
+    <label class="statement-category-field" for="statement-category">Categoria
+      <select id="statement-category" name="categoryId" aria-label="Filtrar por categoria">
+        <option value="">Todas as categorias</option>
+        ${categories.map((category) => `<option value="${escapeHtml(category.id)}"${presentation.insightCategoryId === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`).join("")}
+      </select>
     </label>
     <label class="statement-sort-field" for="statement-sort">Ordenar
       <select id="statement-sort" name="sort">${renderSortOptions(presentation.sort)}</select>
@@ -319,7 +372,7 @@ function renderStatementContext(
   return `<section class="statement-context" aria-label="Contexto financeiro atual">
     <div class="statement-context-main">
       <span class="account-select-icon">${renderInstitutionIcon(institution.key)}</span>
-      <div class="statement-context-copy"><span class="muted">Conta atual</span><strong>${escapeHtml(selectedAccount.name)}</strong></div>
+      <div class="statement-context-copy"><span class="muted">Conta atual</span><strong>${escapeHtml(selectedAccount.name)}</strong><span class="statement-institution-name">${escapeHtml(institution.label)}</span></div>
     </div>
     <div class="statement-context-meta">
       <span class="statement-context-pill" data-context="currency">${escapeHtml(currency ?? "Moeda indisponível")}</span>
@@ -525,7 +578,7 @@ function renderSummaryPanel(
   currency: string | undefined,
 ): string {
   const money = (value: number) => (currency ? formatMoney(value, currency) : "Moeda indisponível");
-  return `<aside class="panel account-summary" aria-label="Resumo da conta"><div><p class="eyebrow">Resumo da Conta</p><h2>${escapeHtml(selectedAccount?.name ?? "Selecione uma conta")}</h2>${currency ? `<span class="statement-context-pill" data-context="summary-currency">${escapeHtml(currency)}</span>` : ""}</div><section class="summary-balance"><span>Saldo atual</span><strong class="${summary.effectiveBalanceMinor < 0 ? "debit" : "credit"}">${money(summary.effectiveBalanceMinor)}</strong><p>Saldo efetivo com lançamentos realizados.</p></section><div class="summary-totals">${summaryTotal("Receitas", summary.incomeMinor, "credit", currency)}${summaryTotal("Despesas", -summary.expenseMinor, "debit", currency)}</div><section class="status-overview" aria-label="Status dos lançamentos"><h3>Status</h3>${statusLine("Conciliados", summary.reconciledCount, summary.reconciledMinor, "ok", currency)}${statusLine("Não conciliados", summary.unreconciledCount, summary.unreconciledMinor, "posted", currency)}${statusLine("Pendentes", summary.pendingCount, summary.pendingMinor, "pending", currency)}</section></aside>`;
+  return `<aside class="panel account-summary" aria-label="Resumo da conta"><div><p class="eyebrow">Resumo da Conta</p><h2>${escapeHtml(selectedAccount?.name ?? "Selecione uma conta")}</h2>${currency ? `<span class="statement-context-pill" data-context="summary-currency">${escapeHtml(currency)}</span>` : ""}</div><section class="summary-balance"><span>Saldo atual</span><strong class="${summary.effectiveBalanceMinor < 0 ? "debit" : "credit"}">${money(summary.effectiveBalanceMinor)}</strong><p>Saldo efetivo com lançamentos realizados.</p></section><div class="summary-totals">${summaryTotal("Saldo inicial", summary.openingMinor, "neutral", currency)}${summaryTotal("Entradas", summary.incomeMinor, "credit", currency)}${summaryTotal("Saídas", -summary.expenseMinor, "debit", currency)}${summaryTotal("Saldo final", summary.effectiveBalanceMinor, summary.effectiveBalanceMinor < 0 ? "debit" : "neutral", currency)}</div><section class="status-overview" aria-label="Status dos lançamentos"><h3>Status</h3>${statusLine("Conciliados", summary.reconciledCount, summary.reconciledMinor, "ok", currency)}${statusLine("Não conciliados", summary.unreconciledCount, summary.unreconciledMinor, "posted", currency)}${statusLine("Pendentes", summary.pendingCount, summary.pendingMinor, "pending", currency)}</section></aside>`;
 }
 
 function summaryTotal(
@@ -574,14 +627,14 @@ function renderModal(
   categories: readonly CategoryRecord[],
   currency: string | undefined,
 ): string {
-  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit">Fechar</button></form><div><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>${selectedAccount ? `Novo lançamento em ${escapeHtml(selectedAccount.name)}` : "Selecione uma conta"}</h2><p class="muted">Conta e moeda vêm do contexto principal.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label>Tipo<select name="kind" required>${renderKindOptions()}</select></label><label data-field="sourceAccount" hidden><span class="field-label">Conta origem</span><input data-source-account-display value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="destinationAccountId" hidden><span class="field-label">Conta destino</span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino</option>${renderAccountOptions(accounts)}</select></label><label><span class="field-label">Valor origem <span class="nowrap">(<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)</span></span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="destinationAmountMinor" hidden><span class="field-label">Valor destino <span class="nowrap">(<span data-destination-currency>moeda destino</span>)</span></span><input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden><span class="field-label">Taxa efetiva</span><span class="rate-value"><output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></span></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label><label class="full">Descrição<input name="description" maxlength="240" required /></label><label class="full">Observação<textarea name="note" rows="3"></textarea></label><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form>${renderAttachmentWorkspace({ entityKind: "transaction", title: "Anexos do lançamento", className: "full" })}</section></dialog>`;
+  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit" aria-label="Fechar">&times;</button></form><div class="statement-entry-heading"><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>Novo lançamento</h2><p class="muted">Adicione um lançamento manual na sua conta.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label data-field="kind">Tipo<select name="kind" required>${renderKindOptions()}</select></label><label data-field="sourceAccount" hidden><span class="field-label">Conta origem</span><input data-source-account-display value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="destinationAccountId" hidden><span class="field-label">Conta destino</span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino</option>${renderAccountOptions(accounts)}</select></label><label class="full statement-entry-account"><span class="field-label">Conta</span><input value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label><span class="field-label">Valor origem <span class="nowrap">(<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)</span></span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="destinationAmountMinor" hidden><span class="field-label">Valor destino <span class="nowrap">(<span data-destination-currency>moeda destino</span>)</span></span><input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden><span class="field-label">Taxa efetiva</span><span class="rate-value"><output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></span></label><label class="full">Descrição<input name="description" maxlength="240" required placeholder="Ex.: Supermercado São Vicente" /></label><label class="full">Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label class="full">Observação<textarea name="note" rows="3" maxlength="200" placeholder="Informações adicionais (opcional)"></textarea></label><details class="statement-entry-advanced full"><summary>Mais opções</summary><div class="statement-entry-advanced-grid"><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label></div></details><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form>${renderAttachmentWorkspace({ entityKind: "transaction", title: "Anexos do lançamento", className: "full" })}</section></dialog>`;
 }
 
 function renderGroupModal(
   selectedAccount: AccountRecord | undefined,
   currency: string | undefined,
 ): string {
-  return `<dialog class="modal" data-group-modal><section class="modal-panel group-modal-panel"><header><div><p class="eyebrow">Agrupamento</p><h2 data-group-title>Unificar lançamentos</h2></div><button type="button" class="icon-btn" data-group-close aria-label="Fechar">&times;</button></header><form data-group-form><label>Descrição do grupo<input name="description" maxlength="240" required></label><label>Data de exibição<input name="displayOn" type="date" required></label><label>Conta<input value="${escapeHtml(selectedAccount?.name ?? "")}" readonly></label><label>Moeda<input value="${escapeHtml(currency ?? "Moeda indisponível")}" readonly></label><div class="group-readonly" data-group-summary></div><div class="group-members" data-group-members></div><p class="form-error" data-group-error hidden></p><div class="save-row"><button type="button" class="ghost-btn" data-group-close>Cancelar</button><button type="submit">Unificar</button><button type="button" class="danger" data-group-ungroup hidden>Desagrupar lançamentos</button></div></form></section></dialog>`;
+  return `<dialog data-group-modal style="width:min(760px,calc(100% - 32px));max-width:min(760px,calc(100% - 32px))"><section class="modal-panel group-modal-panel"><header><div><p class="eyebrow">Agrupamento</p><h2 data-group-title>Unificar lançamentos</h2></div><button type="button" class="icon-btn" data-group-close aria-label="Fechar">&times;</button></header><form data-group-form><label>Descrição do grupo<input name="description" maxlength="240" required></label><label>Data de exibição<input name="displayOn" type="date" required></label><label>Conta<input value="${escapeHtml(selectedAccount?.name ?? "")}" readonly></label><label>Moeda<input value="${escapeHtml(currency ?? "Moeda indisponível")}" readonly></label><div class="group-readonly" data-group-summary></div><div class="group-members" data-group-members></div><p class="form-error" data-group-error hidden></p><div class="save-row"><button type="button" class="ghost-btn" data-group-close>Cancelar</button><button type="submit">Unificar</button><button type="button" class="danger" data-group-ungroup hidden>Desagrupar lançamentos</button></div></form></section></dialog>`;
 }
 
 function renderCategoryOptions(categories: readonly CategoryRecord[], selected?: string): string {
@@ -830,9 +883,10 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     const addMonths = (dateValue, months) => { const date = new Date(dateValue + "T00:00:00Z"); date.setUTCMonth(date.getUTCMonth() + months); return date.toISOString().slice(0, 10); };
     const shiftMonth = (monthValue, steps) => { const [year, month] = monthValue.split("-").map(Number); return new Date(Date.UTC(year, month - 1 + steps, 1)).toISOString().slice(0, 7); };
     const monthInput = document.querySelector("#filter-month");
-    document.querySelectorAll("[data-month-step]").forEach((button) => button.addEventListener("click", () => { monthInput.value = shiftMonth(monthInput.value, Number(button.dataset.monthStep)); monthInput.closest("form").requestSubmit(); }));
-    document.querySelectorAll("[data-month-current]").forEach((button) => button.addEventListener("click", () => { monthInput.value = new Date().toISOString().slice(0, 7); monthInput.closest("form").requestSubmit(); }));
-    document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => { if (event.target.name === "accountId" || event.target.name === "month" || event.target.name === "sort") autoForm.requestSubmit(); }));
+    document.querySelectorAll("[data-month-step]").forEach((button) => button.addEventListener("click", () => { monthInput.value = shiftMonth(monthInput.value, Number(button.dataset.monthStep)); monthInput.form?.requestSubmit(); }));
+    document.querySelectorAll("[data-month-current]").forEach((button) => button.addEventListener("click", () => { monthInput.value = new Date().toISOString().slice(0, 7); monthInput.form?.requestSubmit(); }));
+    monthInput.addEventListener("change", () => monthInput.form?.requestSubmit());
+    document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => { if (event.target.name === "accountId" || event.target.name === "sort") autoForm.requestSubmit(); }));
 
     const accountPicker = document.querySelector("[data-account-picker]");
     if (accountPicker) {
@@ -1066,7 +1120,7 @@ function css(): string {
     .statement-layout{align-items:start;display:grid;gap:12px;grid-template-columns:minmax(260px,320px) minmax(0,1fr)}.account-summary{display:grid;gap:12px;position:sticky;top:68px}.account-summary h2{font-size:.9375rem}.summary-balance{background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:var(--radius);display:grid;gap:4px;padding:12px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.6875rem;font-weight:700;text-transform:uppercase}.summary-balance strong,.summary-total strong,.status-line strong,.col-amount,.col-balance{font-variant-numeric:tabular-nums;overflow-wrap:normal;white-space:nowrap;word-break:normal}.summary-balance strong{font-size:1.125rem}.summary-balance p{color:var(--muted);font-size:.8125rem}.summary-totals{display:grid;gap:8px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:3px;min-width:0;padding:10px}.status-overview{border-top:1px solid var(--line);display:grid;gap:8px;padding-top:12px}.status-overview h3{font-size:.8125rem}.status-line{align-items:center;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-size:.8125rem;font-weight:600}.status-line strong{font-size:.8125rem}
     .statement-panel{overflow:hidden;padding:0}.statement-toolbar{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:12px 14px}.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{align-items:center;background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:5px;font-size:.75rem;font-weight:700;padding:3px 9px;white-space:nowrap}.chip-pending{background:var(--warning-bg);border-color:#fde68a;color:var(--warning)}.chip-ok{background:var(--success-bg);border-color:#bbf7d0;color:var(--success)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}
     .statement-table{display:grid;max-width:100%;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:8px;grid-template-columns:6rem minmax(8rem,1.3fr) minmax(7rem,.9fr) 7rem 4.5rem 8rem 8rem 3rem;min-width:70rem;padding:8px 12px;position:relative}.col-select{display:grid;left:3px;place-items:center;position:absolute}.statement-body .col-date{padding-left:14px}.col-select input{height:1.1rem;width:1.1rem}.grouped-row{background:color-mix(in srgb,var(--primary) 5%,transparent)}.group-indicator{color:var(--primary)}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.6875rem;font-weight:700;text-transform:uppercase}.statement-head .col-amount,.statement-head .col-balance,.col-amount,.col-balance{text-align:right}.description{display:grid;gap:2px;min-width:0}.description>strong{overflow-wrap:anywhere}.description span{color:var(--muted);font-size:.8125rem}.credit{color:var(--success)!important}.debit{color:var(--danger)!important}
-    .selection-bar{align-items:center;background:var(--surface);border:1px solid var(--primary);border-radius:var(--radius);bottom:16px;box-shadow:var(--shadow);display:flex;gap:12px;justify-content:flex-end;padding:10px 14px;position:sticky;z-index:8}.selection-bar[hidden]{display:none}.group-modal-panel{max-width:760px}.group-modal-panel form{display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr))}.group-readonly,.group-members,.group-modal-panel .save-row,.group-modal-panel .form-error{grid-column:1/-1}.group-members{border:1px solid var(--line);border-radius:var(--radius);max-height:280px;overflow:auto}.group-members>div{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:9px}
+    .selection-bar{align-items:center;background:var(--surface);border:1px solid var(--primary);border-radius:var(--radius);bottom:16px;box-shadow:var(--shadow);display:flex;gap:12px;justify-content:flex-end;padding:10px 14px;position:sticky;z-index:8}.selection-bar[hidden]{display:none}dialog[data-group-modal]{max-width:min(760px,calc(100% - 32px));overflow:hidden}.group-modal-panel{gap:18px;max-width:760px;padding:22px}.group-modal-panel>header{align-items:start;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;padding-bottom:12px}.group-modal-panel form{display:grid;gap:12px 14px;grid-template-columns:repeat(2,minmax(0,1fr))}.group-readonly,.group-members,.group-modal-panel .save-row,.group-modal-panel .form-error{grid-column:1/-1}.group-readonly{color:var(--muted);font-size:.8125rem}.group-members{border:1px solid var(--line);border-left:0;border-radius:0;border-right:0;max-height:240px;overflow:auto}.group-members>div{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:9px}.group-modal-panel .save-row{border-top:1px solid var(--line);margin-top:2px;padding-top:14px}
     .statement-status{align-items:center;border:1px solid currentColor;border-radius:999px;cursor:default;display:inline-flex;height:26px;justify-content:center;justify-self:start;padding:0;position:relative;width:26px}.statement-status-ok{background:var(--success-bg);color:var(--success)}.statement-status-posted{background:#e0f2fe;color:#0369a1}.statement-status-pending{background:var(--warning-bg);color:var(--warning)}.statement-status-planned{background:var(--primary-soft);color:var(--primary)}
     .actions{position:relative}.actions summary{align-items:center;background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:28px;justify-content:center;list-style:none;width:28px}.actions summary::-webkit-details-marker{display:none}.actions-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);display:grid;gap:2px;max-width:220px;padding:4px;position:absolute;right:0;top:34px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:var(--radius);color:var(--text);display:flex;font-size:.8125rem;font-weight:600;gap:8px;justify-content:flex-start;min-height:32px;padding:0 8px;text-align:left;white-space:nowrap}.actions-item.danger{color:var(--danger)}.actions-divider{border:0;border-top:1px solid var(--line);margin:3px 2px}
     .statement-row.account-remuneration-row{border-left:3px solid var(--primary)}.statement-row.account-remuneration-row .col-description{min-width:15rem}.statement-row.account-remuneration-row .description{align-items:baseline;column-gap:4px;display:grid;grid-template-columns:max-content minmax(0,1fr);min-width:0}.statement-row.account-remuneration-row .description>strong{grid-column:1;grid-row:1;overflow-wrap:normal;white-space:nowrap}.account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;grid-column:1/-1;grid-row:2;line-height:1.35}.account-remuneration-audit{background:transparent;border:0;display:block;grid-column:2;grid-row:1;justify-self:start;margin:0;max-width:100%;min-width:0}.account-remuneration-audit[open]{grid-column:1/-1;grid-row:3;margin:4px 0 0}.account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;line-height:1.2;list-style:none;padding:0;white-space:nowrap}.account-remuneration-audit summary::-webkit-details-marker{display:none}.account-remuneration-audit-content{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:4px;padding:8px}.account-remuneration-adjustment{border-radius:999px;font-size:.6875rem;font-weight:800;padding:2px 7px}.account-remuneration-audit-content .account-remuneration-adjustment{background:var(--warning-bg);color:var(--warning);justify-self:start}.account-remuneration-audit-content dl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));margin:0}.account-remuneration-audit-content dl div{min-width:0}.account-remuneration-audit-content dt{color:var(--muted);font-size:.625rem;font-weight:700;text-transform:uppercase}.account-remuneration-audit-content dd{font-size:.75rem;font-weight:700;margin:0;overflow-wrap:anywhere}@media(max-width:760px){.account-remuneration-audit-content dl{grid-template-columns:repeat(2,minmax(0,1fr))}}

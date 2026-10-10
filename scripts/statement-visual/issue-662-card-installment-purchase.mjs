@@ -26,6 +26,7 @@ try {
   await validateInstallmentEdit(fixture, "desktop", 1366, 768);
   await validateCreateDefault(fixture, "mobile", 390, 844);
   await validateInstallmentEdit(fixture, "mobile", 390, 844);
+  await validateAssistivePositionGuard(fixture);
 } finally {
   await browser.close(outputDir);
 }
@@ -241,6 +242,44 @@ async function validateInstallmentEdit(fixture, label, width, height) {
 async function openInvoice(fixture) {
   await navigate(browser.cdp, `${baseUrl}${invoiceRoute(fixture)}`);
   await waitFor(`[data-edit-purchase="${fixture.transactionId}"]`);
+}
+
+async function validateAssistivePositionGuard(fixture) {
+  await openInvoice(fixture);
+  await evaluate(browser.cdp, `document.querySelector('[data-open-modal="purchase"]')?.click()`);
+  await waitFor('dialog[data-modal="purchase"][open]');
+  const state = await evaluate(
+    browser.cdp,
+    `(() => {
+      const reason = document.querySelector('.installment-assistive-text');
+      if (!reason) throw new Error('Installment accessible reason did not render');
+      const originalStyle = reason.getAttribute('style');
+      const title = reason.parentElement.firstChild;
+      const originalTitle = title.textContent;
+      try {
+        title.textContent = 'Compra parcelada com uma descrição longa para verificar o limite da página';
+        reason.style.left = 'auto';
+        reason.style.top = 'auto';
+        return { rejected: document.documentElement.scrollWidth > innerWidth + 1 };
+      } finally {
+        title.textContent = originalTitle;
+        if (originalStyle === null) reason.removeAttribute('style');
+        else reason.setAttribute('style', originalStyle);
+      }
+    })()`,
+  );
+  check(state.rejected, "mobile: accessible reason overflow negative control did not fail", state);
+  const restored = await evaluate(
+    browser.cdp,
+    `document.documentElement.scrollWidth <= innerWidth + 1`,
+  );
+  check(restored, "mobile: accessible reason overflow negative control did not restore");
+  scenarios.push({
+    route: invoiceRoute(fixture),
+    viewport: "390x844",
+    state: "accessible-reason-position-negative-control",
+    observed: { rejected: state.rejected, restored },
+  });
 }
 
 function invoiceRoute(fixture) {

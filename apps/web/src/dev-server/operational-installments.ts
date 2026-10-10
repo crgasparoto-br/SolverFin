@@ -158,6 +158,8 @@ const OPERATIONAL_INSTALLMENTS_CSS = `
     overflow: hidden;
     padding: 0;
     position: absolute;
+    left: 0;
+    top: 0;
     white-space: nowrap;
     width: 1px;
   }
@@ -475,7 +477,7 @@ export function operationalInstallmentsController(): string {
             rememberAndSet(label, "hidden", !allowed);
           }
         });
-        form.querySelectorAll(".status-icons, [data-field]").forEach((node) => {
+        form.querySelectorAll(".status-icons, [data-field], .statement-entry-advanced").forEach((node) => {
           node.dataset.installmentManaged = "";
           rememberAndSet(node, "hidden", true);
         });

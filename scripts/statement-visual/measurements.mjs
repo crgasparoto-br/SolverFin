@@ -1,3 +1,5 @@
+import { probeLocalHorizontalScroll } from "./local-scroll-probe.mjs";
+
 export function pageMeasurementExpression() {
   return `(() => {
     const root = document.documentElement;
@@ -7,6 +9,7 @@ export function pageMeasurementExpression() {
     const summary = document.querySelector(".account-summary");
     const panel = document.querySelector(".statement-panel");
     const table = document.querySelector(".statement-table");
+    const localScrollProbe = (${probeLocalHorizontalScroll.toString()})(table);
     const rect = (element) => {
       if (!element) return null;
       const value = element.getBoundingClientRect();
@@ -79,7 +82,9 @@ export function pageMeasurementExpression() {
         clientWidth: table.clientWidth,
         scrollWidth: table.scrollWidth,
         overflowX: getComputedStyle(table).overflowX,
-        hasLocalHorizontalScroll: table.scrollWidth > table.clientWidth + 1 && ["auto", "scroll"].includes(getComputedStyle(table).overflowX)
+        hasHorizontalOverflow: table.scrollWidth > table.clientWidth + 1,
+        localScrollProbe,
+        hasLocalHorizontalScroll: localScrollProbe.passed
       } : { clientWidth: 0, scrollWidth: 0, overflowX: "", hasLocalHorizontalScroll: false },
       moneyProblems,
       overlaps,
@@ -138,7 +143,7 @@ export function renderReport(report) {
 
 ## Matriz de paginas
 
-| Cenario | Viewport | Main (px) | root scroll/client/body | Layout | Scroll local | Screenshot |
+| Cenario | Viewport | Main (px) | root scroll/client/body | Layout | Contencao local comprovada | Screenshot |
 |---|---:|---:|---|---|---|---|
 ${pages}
 
