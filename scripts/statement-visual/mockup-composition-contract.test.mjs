@@ -19,6 +19,7 @@ const fixture = () => ({
   balance: box(810, 145, 440, 60),
   queryHeading: box(920, 350, 200, 44),
   queryFields: box(250, 350, 650, 44),
+  visiblePrimaryFilters: 4,
   summary: box(250, 130, 1000, 190),
   list: box(230, 450, 1040, 250),
   sameHeading: true,
@@ -90,4 +91,11 @@ test("rejects admin-style stacked filters at desktop widths", () => {
   const layout = fixture();
   layout.queryFields = box(250, 350, 650, 260);
   assert.throws(() => assertMockupComposition(layout), /stacked controls/);
+});
+
+test("rejects desktop filters hidden from the visual composition", () => {
+  assert.throws(
+    () => assertMockupComposition({ ...fixture(), visiblePrimaryFilters: 3 }),
+    /four primary filters/,
+  );
 });
