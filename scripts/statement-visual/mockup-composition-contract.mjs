@@ -39,7 +39,11 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
-    assert.equal(layout.desktopFiltersVisible, true, "Desktop primary filters must be visibly accessible.");
+    assert.equal(
+      layout.desktopFiltersVisible,
+      true,
+      "Desktop primary filters must be visibly accessible.",
+    );
     assert.ok(
       layout.queryFields.height <= 150,
       "Desktop filters regressed to stacked controls instead of a compact row.",
