@@ -55,6 +55,8 @@ assert.ok(styles.includes("statement-status-details>summary{min-height:32px;padd
 assert.match(styles, /statement-query-heading>span\{display:block/);
 assert.match(styles, /statement-sort-field\{min-width:0/);
 assert.match(styles, /statement-body \.col-amount\{font-size:/);
+assert.ok(styles.includes(".col-category{align-self:start;"));
+assert.ok(styles.includes("width:max-content}"));
 assert.match(styles, /summary-total\{border-right:0;border-bottom:/);
 
 // M01: show canonical category control, preserving its native query contract.
