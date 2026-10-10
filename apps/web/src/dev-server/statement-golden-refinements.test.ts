@@ -84,6 +84,9 @@ assert.match(styles, /account-remuneration-audit summary\{[^}]*white-space:norma
 
 // Density contract: desktop query keeps search and four essential selectors in one row.
 assert.match(styles, /@media\(min-width:1101px\)\{/);
+assert.ok(styles.includes("filter-form{grid-template-columns:repeat(24,minmax(0,1fr))}"));
+assert.ok(styles.includes("statement-sort-field{grid-column:span 3;min-width:0}"));
+assert.ok(styles.includes("statement-filter-actions{grid-column:span 5;min-width:0}"));
 assert.match(styles, /\.filter-form\{grid-template-columns:repeat\(20,minmax\(0,1fr\)\)/);
 assert.match(
   styles,
