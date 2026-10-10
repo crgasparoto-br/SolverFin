@@ -110,7 +110,9 @@ export function measureMockupComposition() {
       [".statement-kind-field", "kind"],
       [".statement-status-field", "status"],
       [".statement-reconciliation-field", "reconciliation"],
-    ].filter(([selector]) => !!filters?.querySelector(selector + " select")).map(([, name]) => name),
+    ]
+      .filter(([selector]) => !!filters?.querySelector(selector + " select"))
+      .map(([, name]) => name),
     desktopFiltersVisible: [
       ".statement-category-field",
       ".statement-kind-field",
@@ -121,7 +123,12 @@ export function measureMockupComposition() {
       if (!element) return false;
       const box = element.getBoundingClientRect();
       const style = getComputedStyle(element);
-      return box.width > 0 && box.height > 0 && style.display !== "none" && style.visibility !== "hidden";
+      return (
+        box.width > 0 &&
+        box.height > 0 &&
+        style.display !== "none" &&
+        style.visibility !== "hidden"
+      );
     }),
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
