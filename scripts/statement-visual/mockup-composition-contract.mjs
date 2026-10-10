@@ -34,6 +34,12 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
+    if (layout.firstMovement) {
+      assert.ok(
+        layout.firstMovement.top < layout.viewport.height,
+        "Desktop summary and filters push the first movement below the viewport.",
+      );
+    }
     assert.equal(layout.visiblePrimaryFilters, 4, "Desktop must expose four primary filters.");
     assert.ok(
       layout.queryFields.height <= 150,
@@ -111,6 +117,7 @@ export function measureMockupComposition() {
     }).length,
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
+    firstMovement: rect(root?.querySelector(".statement-body")),
     sameHeading:
       !!heading && context?.parentElement === heading && balance?.parentElement === heading,
     periodInHeading: !!heading && period?.parentElement === heading,
