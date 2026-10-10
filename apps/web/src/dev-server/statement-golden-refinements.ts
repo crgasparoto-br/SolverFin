@@ -103,6 +103,7 @@ export function statementGoldenRefinementRuntime(): string {
           };
           compact.addEventListener('change', sync);
           for (const field of fields) field.addEventListener('change', updateTrigger);
+          filterForm.addEventListener('reset', () => queueMicrotask(updateTrigger));
           sync();
         }
       }
