@@ -327,7 +327,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .summary-total .debit{color:#dc2626}
     ${root} .summary-total .neutral{color:#0f172a}
     ${root} .account-summary[data-mockup-composition] .status-overview{grid-column:1/-1}
-    ${root} .statement-query{align-items:end;background:#fff;border-radius:10px;display:flex;gap:${spacing[2]};padding:${spacing[2]}}
+    ${root} .statement-query{align-items:end;background:#fff;border-radius:10px;display:block;position:relative;gap:${spacing[2]};padding:${spacing[2]}}
     ${root} #statement-query-fields{flex:1 1 auto;min-width:0}
     ${root} .statement-query-heading{flex:0 0 auto;margin:0;order:2}
     ${root} .statement-query-heading>span{display:none}
