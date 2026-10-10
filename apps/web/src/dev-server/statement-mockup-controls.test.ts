@@ -44,3 +44,11 @@ test("component without the canonical dialog leaves its root untouched", () => {
   assert.doesNotThrow(() => installStatementMockupControls(root));
   assert.equal(calls, 1);
 });
+
+test("statement hierarchy keeps compact filters and quiet metadata", () => {
+  const styles = statementMockupControlsStyles();
+  assert.ok(styles.includes("position:absolute;right:12px;top:8px"));
+  assert.ok(styles.includes("col-category{background:transparent"));
+  assert.ok(styles.includes("statement-status-posted{background:transparent"));
+  assert.ok(styles.includes("account-summary[data-mockup-composition]{row-gap:"));
+});
