@@ -168,7 +168,7 @@ export function statementMockupControlsStyles(): string {
     ${root} [data-statement-new-entry]>svg{display:none}
     ${root} [data-statement-new-entry]>[aria-hidden]{font-size:${typography.sizes.xl};line-height:1}
     ${root} .statement-query{background:var(--sf-color-surface);border:1px solid var(--sf-color-line);border-radius:var(--sf-radius-lg);padding:${spacing[3]}}
-    ${root} .statement-query-heading{align-items:center;margin-bottom:${spacing[2]}}
+    ${root} .statement-query-heading{align-items:center;margin:0;position:absolute;right:12px;top:8px}
     ${root} .filter-form{column-gap:${spacing[3]};row-gap:${spacing[2]}}
     ${root} .statement-account-heading .summary-balance p{margin:0}
     ${root} .statement-head{padding-block:${spacing[2]}}
