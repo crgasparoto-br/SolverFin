@@ -79,11 +79,15 @@ export function statementGoldenRefinementRuntime(): string {
           const details = document.createElement('details');
           details.className = 'statement-mobile-advanced-filters';
           const trigger = document.createElement('summary');
-          const selectedCount = fields.filter((field) => {
+          const activeCount = () => fields.filter((field) => {
             const select = field.querySelector('select');
             return select && select.value !== '' && !(select.name === 'sort' && select.value === 'date_asc');
           }).length;
-          trigger.textContent = selectedCount ? 'Filtros ativos (' + selectedCount + ')' : 'Filtros e ordenação';
+          const updateTrigger = () => {
+            const count = activeCount();
+            trigger.textContent = count ? 'Filtros ativos (' + count + ')' : 'Filtros e ordenação';
+          };
+          updateTrigger();
           const content = document.createElement('div');
           content.className = 'statement-mobile-advanced-fields';
           fields[0].before(details);
@@ -93,11 +97,12 @@ export function statementGoldenRefinementRuntime(): string {
           const sync = () => {
             if (!compact.matches) details.open = true;
             else if (!details.hasAttribute('data-mobile-initialized')) {
-              details.open = selectedCount > 0;
+              details.open = activeCount() > 0;
               details.setAttribute('data-mobile-initialized', 'true');
             }
           };
           compact.addEventListener('change', sync);
+          for (const field of fields) field.addEventListener('change', updateTrigger);
           sync();
         }
       }
