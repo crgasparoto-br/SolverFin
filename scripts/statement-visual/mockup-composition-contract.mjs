@@ -8,6 +8,11 @@ export function assertMockupComposition(layout) {
   }
   assert.equal(layout.sameHeading, true, "Account and balance must share one header.");
   assert.equal(layout.overflow, false, "Mockup composition overflows the document.");
+  assert.deepEqual(
+    layout.filterControls,
+    ["category", "kind", "status", "reconciliation"],
+    "Category, type, status and reconciliation filters must remain available.",
+  );
   assert.equal(layout.primaryCount, 1, "Only one quick action should be exposed initially.");
   assert.equal(layout.secondaryCount, 2, "Secondary quick actions must remain available.");
   assert.equal(layout.menuOpen, false, "Secondary actions should start collapsed.");
@@ -34,6 +39,7 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
+    assert.equal(layout.desktopFiltersVisible, true, "Desktop primary filters must be visibly accessible.");
     assert.ok(
       layout.queryFields.height <= 150,
       "Desktop filters regressed to stacked controls instead of a compact row.",
@@ -99,6 +105,24 @@ export function measureMockupComposition() {
     period: rect(period),
     queryHeading: rect(queryHeading),
     queryFields: rect(queryFields),
+    filterControls: [
+      [".statement-category-field", "category"],
+      [".statement-kind-field", "kind"],
+      [".statement-status-field", "status"],
+      [".statement-reconciliation-field", "reconciliation"],
+    ].filter(([selector]) => !!filters?.querySelector(selector + " select")).map(([, name]) => name),
+    desktopFiltersVisible: [
+      ".statement-category-field",
+      ".statement-kind-field",
+      ".statement-status-field",
+      ".statement-reconciliation-field",
+    ].every((selector) => {
+      const element = filters?.querySelector(selector);
+      if (!element) return false;
+      const box = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return box.width > 0 && box.height > 0 && style.display !== "none" && style.visibility !== "hidden";
+    }),
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
     sameHeading:
