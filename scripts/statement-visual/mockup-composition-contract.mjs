@@ -45,7 +45,11 @@ export function assertMockupComposition(layout) {
       );
     }
     assert.equal(layout.visiblePrimaryFilters, 4, "Desktop must expose four primary filters.");
-    assert.deepEqual(layout.truncatedDefaultFilters, [], "Desktop filters must display their complete default values.");
+    assert.deepEqual(
+      layout.truncatedDefaultFilters,
+      [],
+      "Desktop filters must display their complete default values.",
+    );
     assert.ok(
       layout.queryFields.height <= 150,
       "Desktop filters regressed to stacked controls instead of a compact row.",
@@ -127,7 +131,8 @@ export function measureMockupComposition() {
       ".statement-category-field",
     ].flatMap((selector) => {
       const select = filters?.querySelector(`${selector} select`);
-      if (!select || select.value !== "" || !select.getClientRects().length) return [];
+      if (!select || select.value !== "" || !select.getClientRects().length)
+        return [];
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d");
       const font = getComputedStyle(select);
