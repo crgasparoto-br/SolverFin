@@ -45,6 +45,7 @@ export function assertMockupComposition(layout) {
       );
     }
     assert.equal(layout.visiblePrimaryFilters, 4, "Desktop must expose four primary filters.");
+    assert.deepEqual(layout.truncatedDefaultFilters, [], "Desktop filters must display their complete default values.");
     assert.ok(
       layout.queryFields.height <= 150,
       "Desktop filters regressed to stacked controls instead of a compact row.",
@@ -119,6 +120,20 @@ export function measureMockupComposition() {
       const select = filters?.querySelector(`${selector} select`);
       return select && select.getClientRects().length > 0;
     }).length,
+    truncatedDefaultFilters: [
+      ".statement-kind-field", ".statement-status-field",
+      ".statement-reconciliation-field", ".statement-category-field",
+    ].flatMap((selector) => {
+      const select = filters?.querySelector(`${selector} select`);
+      if (!select || select.value !== "" || !select.getClientRects().length) return [];
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      const font = getComputedStyle(select);
+      if (!context) return [select.name];
+      context.font = font.font;
+      const text = select.selectedOptions[0]?.textContent?.trim() ?? "";
+      return context.measureText(text).width + 20 > select.clientWidth + 1 ? [select.name] : [];
+    }),
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
     firstMovement: rect(root?.querySelector(".statement-body")),
