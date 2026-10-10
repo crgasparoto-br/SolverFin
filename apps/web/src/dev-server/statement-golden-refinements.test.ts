@@ -49,6 +49,7 @@ assert.ok(
   styles.includes('form[data-installment-mode="true"] .statement-entry-advanced{display:none}'),
 );
 assert.ok(styles.includes("summary-total{min-height:0;padding:"));
+assert.ok(styles.includes("border-right:1px solid var(--line);min-height:0;"));
 assert.ok(styles.includes("statement-status-details>summary{min-height:32px;padding:0}"));
 
 // Mockup hierarchy regression: the canonical controls remain accessible.
