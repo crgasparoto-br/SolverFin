@@ -461,9 +461,10 @@ export function statementGoldenRefinementStyles(): string {
 
     /* State selectors in the A2 compatibility layer otherwise win over the Golden grid. */
     @media(min-width:1101px){
-      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(20,minmax(0,1fr))}
+      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(24,minmax(0,1fr))}
       ${root} .filter-form>.statement-search-field{grid-column:span 4}
-      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:span 4}
+      ${root} .filter-form>.statement-sort-field{grid-column:span 3;min-width:0}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:span 5;min-width:0}
     }
     @media(min-width:761px){
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
