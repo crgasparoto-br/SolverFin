@@ -173,6 +173,13 @@ export function statementMockupControlsStyles(): string {
     ${root} .statement-account-heading .summary-balance p{margin:0}
     ${root} .statement-head{padding-block:${spacing[2]}}
     ${root} .statement-body{padding-block:${spacing[2]}}
+    ${root} .statement-body .col-category{background:transparent;border-radius:0;color:var(--muted);padding:0}
+    ${root} .statement-body .statement-status-posted{background:transparent;color:var(--muted);padding:0}
+    @media(min-width:761px){
+      ${root} .account-summary[data-mockup-composition]{row-gap:${spacing[2]};padding:${spacing[2]}}
+      ${root} .statement-account-heading{margin:-${spacing[2]} -${spacing[2]} 0;padding:${spacing[2]}}
+      ${root} .account-summary[data-mockup-composition] .summary-total{padding-block:${spacing[2]}}
+    }
     ${dialog} .statement-entry-kinds{display:grid;gap:${spacing[1]};grid-column:1/-1;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr);padding:${spacing[1]};background:var(--sf-color-background);border:1px solid var(--sf-color-line);border-radius:var(--sf-radius-lg)}
     ${dialog} .statement-entry-kinds[hidden],${dialog} form[data-mockup-controls] label[hidden]{display:none!important}
     ${dialog} .statement-entry-kinds button{background:transparent;border:1px solid transparent;border-radius:var(--sf-radius-md);color:var(--sf-color-muted-text);font-size:${typography.sizes.sm};font-weight:${typography.weights.medium};line-height:${typography.lineHeights.compact};min-height:${density.interactiveTargetMin};min-width:0;padding:${spacing[2]} ${spacing[1]};white-space:normal;overflow-wrap:anywhere}
