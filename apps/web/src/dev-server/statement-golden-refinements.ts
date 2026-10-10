@@ -95,8 +95,10 @@ export function statementGoldenRefinementRuntime(): string {
           details.append(trigger, content);
           const compact = window.matchMedia('(max-width: 760px)');
           const sync = () => {
-            if (!compact.matches) details.open = true;
-            else if (!details.hasAttribute('data-mobile-initialized')) {
+            if (!compact.matches) {
+              details.open = true;
+              details.removeAttribute('data-mobile-initialized');
+            } else if (!details.hasAttribute('data-mobile-initialized')) {
               details.open = activeCount() > 0;
               details.setAttribute('data-mobile-initialized', 'true');
             }
