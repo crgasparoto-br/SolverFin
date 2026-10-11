@@ -295,7 +295,7 @@ function renderFilters(
       <label for="filter-month">Mês</label>
       <div class="month-nav">
         <button type="button" class="icon-btn" data-month-step="-1" aria-label="Mês anterior">&#8249;</button>
-        <input id="filter-month" name="month" type="month" value="${escapeHtml(month)}" required />
+        <input id="filter-month" name="month" type="month" lang="pt-BR" value="${escapeHtml(month)}" required />
         <button type="button" class="icon-btn" data-month-step="1" aria-label="Próximo mês">&#8250;</button>
       </div>
     </div>
