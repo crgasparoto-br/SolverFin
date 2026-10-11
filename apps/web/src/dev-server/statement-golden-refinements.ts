@@ -177,6 +177,23 @@ export function statementGoldenRefinementRuntime(): string {
         details.append(summary, content);
         status.append(details);
       }
+
+      // Balance visibility: the amount keeps its slot so the layout never shifts.
+      for (const toggle of root.querySelectorAll('[data-balance-toggle]')) {
+        const target = toggle.closest('.summary-balance')?.querySelector('strong');
+        if (!target) continue;
+        toggle.addEventListener('click', () => {
+          const hidden = toggle.getAttribute('aria-pressed') === 'true';
+          if (hidden) {
+            target.textContent = target.dataset.balanceValue ?? target.textContent;
+          } else {
+            target.dataset.balanceValue = target.textContent;
+            target.textContent = '••••••';
+          }
+          toggle.setAttribute('aria-pressed', String(!hidden));
+          toggle.setAttribute('aria-label', hidden ? 'Ocultar saldo atual' : 'Mostrar saldo atual');
+        });
+      }
     })();
   </script>${statementMockupControlsRuntime()}`;
 }
@@ -208,6 +225,17 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-account-control .account-select-trigger{width:100%}
     ${root} .statement-account-control :is(label,.account-select,.account-select-trigger){box-sizing:border-box;max-width:100%;min-width:0;width:100%}
     ${root} .statement-account-control .account-select-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    /* G3: the account control reads as the financial identity, not as a form field. */
+    ${root} .statement-account-control .account-select-copy{align-content:center;display:grid;gap:2px;min-width:0}
+    ${root} .statement-account-control .account-select-text{font-size:${typography.sizes.md};font-weight:${typography.weights.semibold};text-align:left}
+    ${root} .statement-account-control .account-select-sub{color:var(--muted);font-size:${typography.sizes.xs};line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    ${root} .statement-account-control .account-select-trigger{background:transparent;border:0;column-gap:${spacing[2]};padding:0}
+    ${root} .statement-account-control .account-select-icon{border-radius:11px;flex:0 0 auto;height:44px;overflow:hidden;width:44px}
+    ${root} .statement-account-control .account-select-icon :is(img,svg){height:100%;width:100%}
+    ${root} .summary-balance-line{align-items:center;display:flex;gap:${spacing[2]};min-width:0}
+    ${root} .summary-balance-toggle{align-items:center;background:transparent;border:0;color:var(--muted);cursor:pointer;display:inline-flex;flex:0 0 auto;justify-content:center;min-height:24px;min-width:24px;padding:0}
+    ${root} .summary-balance-toggle:hover{color:var(--text)}
+    ${root} .summary-balance-toggle[aria-pressed="true"]{color:var(--primary)}
         ${root} .statement-account-heading .summary-balance{border-left:1px solid var(--line);padding-left:${spacing[4]}}
     ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes["2xl"]};overflow-wrap:anywhere}
     ${root} .account-summary[data-mockup-composition] .summary-total{padding:0;gap:${spacing[1]}}
@@ -319,6 +347,17 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-period-control .month-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
     ${root} .statement-period-control .month-nav{background:#f8fafc;border:1px solid var(--line);border-radius:8px}
     ${root} .statement-period-control [data-month-current]{background:transparent;border:1px solid var(--line);border-radius:999px;color:var(--primary);min-height:40px;padding-inline:${spacing[3]}}
+    /* G2: period shortcuts reuse the canonical month/day/range query, never new state. */
+    ${root} .statement-period-shortcuts{align-items:center;display:flex;flex-wrap:wrap;gap:${spacing[1]};grid-column:1/-1;min-width:0}
+    ${root} .statement-period-chip{align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:999px;color:#334155;display:inline-flex;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};min-height:32px;padding:0 ${spacing[3]};text-decoration:none;white-space:nowrap}
+    ${root} .statement-period-chip:hover{background:#eef2f7;color:#0f172a}
+    ${root} .statement-period-chip[aria-current="true"]{background:#eef4ff;border-color:#c7d7fe;color:#1d4ed8}
+    ${root} .statement-period-range{align-items:center;color:var(--muted);display:inline-flex;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};padding-inline:${spacing[1]};white-space:nowrap}
+    /* G4: each filter carries its own glyph and the bar reports the active filter count. */
+    ${root} .filter-field-heading{align-items:center;display:inline-flex;gap:6px;min-width:0}
+    ${root} .filter-field-icon{color:var(--muted);flex:0 0 auto}
+    ${root} .statement-filter-count{align-items:center;background:#eef4ff;border-radius:999px;color:#1d4ed8;display:inline-flex;font-size:${typography.sizes.xs};font-weight:${typography.weights.semibold};min-height:26px;padding:0 ${spacing[2]};white-space:nowrap}
+    ${root} .statement-search-field input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2364748b' stroke-width='1.7' stroke-linecap='round'%3E%3Ccircle cx='9' cy='9' r='5.5'/%3E%3Cpath d='M13.2 13.2 17 17'/%3E%3C/svg%3E");background-position:10px 50%;background-repeat:no-repeat;background-size:14px 14px;padding-left:30px}
     ${root} .statement-context-pill[data-context="period"]{display:none}
     ${root} .summary-totals{display:contents}
     ${root} .account-summary[data-mockup-composition] .summary-total{background:#fff;border:1px solid var(--line);border-radius:8px;gap:${spacing[1]};min-height:64px;padding:${spacing[3]}}
@@ -346,14 +385,26 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .filter-form .statement-category-field{min-width:0}
     ${root} .filter-form .statement-category-field select{background:#fff;border:1px solid var(--line);border-radius:7px;width:100%}
         ${root} .filter-form .account-field>label,${root} .statement-search-field{font-size:0}
-    ${root} .statement-search-field input{font-size:${typography.sizes.sm}}
+    ${root} .statement-search-field input{font-size:${typography.sizes.xs}}
     ${root} .statement-filter-actions{align-self:end;grid-column:auto}
     ${root} .statement-filter-actions>a{display:inline-flex}
     ${root} .statement-filter-actions>button[type="submit"]{background:#fff;border:1px solid var(--line);border-radius:7px}
 
-    /* Mockup density: use dividers within one financial surface, not a card per summary. */
-    ${root} .account-summary[data-mockup-composition] .summary-total{border:0;border-radius:0;border-right:1px solid var(--line);min-height:0;min-width:0;padding-block:${spacing[2]}}
-    ${root} .account-summary[data-mockup-composition] .summary-total:last-of-type{border-right:0}
+    /* G1: four glanceable indicators, each with its own glyph tile, instead of one ruled strip. */
+    ${root} .account-summary[data-mockup-composition] .summary-total{align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;column-gap:${spacing[2]};display:flex;min-height:0;min-width:0;padding:${spacing[3]}}
+    ${root} .account-summary[data-mockup-composition] .summary-total:last-of-type{border-right:1px solid var(--line)}
+    ${root} .summary-total-icon{align-items:center;border-radius:9px;display:inline-flex;flex:0 0 auto;height:34px;justify-content:center;width:34px}
+    ${root} .summary-total-copy{display:grid;gap:2px;min-width:0}
+    ${root} .summary-total-copy>span{color:var(--muted);font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};line-height:1.3}
+    ${root} .summary-total-copy>strong{font-size:${typography.sizes.md};line-height:1.25;overflow-wrap:anywhere}
+    ${root} .summary-total[data-summary-total="opening"]{background:#f8fafc}
+    ${root} .summary-total[data-summary-total="opening"] .summary-total-icon{background:#e2e8f0;color:#475569}
+    ${root} .summary-total[data-summary-total="income"]{background:#f0fdf4}
+    ${root} .summary-total[data-summary-total="income"] .summary-total-icon{background:#dcfce7;color:#15803d}
+    ${root} .summary-total[data-summary-total="expense"]{background:#fef2f2}
+    ${root} .summary-total[data-summary-total="expense"] .summary-total-icon{background:#fee2e2;color:#b91c1c}
+    ${root} .summary-total[data-summary-total="closing"]{background:#f8fafc}
+    ${root} .summary-total[data-summary-total="closing"] .summary-total-icon{background:#e2e8f0;color:#334155}
     ${root} .statement-body .col-description>strong{font-weight:700;line-height:1.4}
     ${root} .statement-body .col-amount{font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.015em}
     ${root} .statement-body .col-category{align-self:start;background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]};width:max-content}
@@ -378,8 +429,11 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-amount{font-size:${typography.sizes.md};font-variant-numeric:tabular-nums;font-weight:700}
     ${root} .statement-body .col-description>strong{font-size:${typography.sizes.md};font-weight:700}
     @media(max-width:${breakpoints.shellCompact}){
-      ${root} .account-summary[data-mockup-composition] .summary-total{border-right:0;border-bottom:1px solid var(--line)}
-      ${root} .account-summary[data-mockup-composition] .summary-total:nth-of-type(2n){border-bottom:1px solid var(--line)}
+      /* Progressive reduction: compact widths drop the decorative glyph so the long values
+         keep their full width, and label and value stay on one line. */
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:wrap;justify-content:space-between;padding:${spacing[1]} ${spacing[2]}}
+      ${root} .summary-total-copy{align-items:baseline;display:flex;flex-wrap:wrap;gap:2px ${spacing[1]};justify-content:space-between;width:100%}
+      ${root} .summary-total-icon{display:none}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.sm}}
     }
     ${root} .statement-toolbar{display:none}
@@ -440,6 +494,10 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-query-heading{grid-column:2;grid-row:1}
       ${root} .filter-form{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:${spacing[2]}}
       ${root} .filter-form .statement-search-field{grid-column:1/-1}
+      /* Progressive reduction: compact widths keep the month stepper and "Mês atual"
+         instead of a second row of period shortcuts, which the density budget rejects. */
+      ${root} .statement-period-shortcuts{display:none}
+      ${root} .statement-filter-count{display:none}
       ${root} .statement-body{box-sizing:border-box;max-width:100%;min-width:0}
       ${root} .statement-body :is(.col-description,.description,.account-remuneration-summary){max-width:100%;min-width:0;overflow-wrap:anywhere}
       ${root} .statement-body .description details.account-remuneration-audit{max-width:100%;min-width:0}
@@ -468,7 +526,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root}[data-statement-options] .filter-form{
         column-gap:${spacing[2]};
         row-gap:${spacing[2]};
-        grid-template-columns:minmax(11rem,1.3fr) repeat(4,minmax(9.375rem,1fr)) minmax(0,max-content);
+        grid-template-columns:minmax(14rem,1.5fr) repeat(4,minmax(9.375rem,1fr)) minmax(0,max-content);
       }
       ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:auto}
       ${root}[data-statement-options] .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:auto}

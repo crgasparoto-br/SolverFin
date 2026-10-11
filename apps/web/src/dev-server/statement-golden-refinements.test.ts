@@ -50,7 +50,16 @@ assert.ok(
   styles.includes('form[data-installment-mode="true"] .statement-entry-advanced{display:none}'),
 );
 assert.ok(styles.includes("summary-total{min-height:0;padding:"));
-assert.ok(styles.includes("border-right:1px solid var(--line);min-height:0;"));
+// G1: four glanceable indicators, each a soft card with its own glyph tile.
+assert.ok(
+  styles.includes(
+    ".summary-total{align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:10px;",
+  ),
+);
+assert.match(styles, /\.summary-total-icon\{[^}]*height:34px/);
+assert.match(styles, /\.summary-total-copy>strong\{font-size:/);
+assert.match(styles, /\[data-summary-total="income"\] \.summary-total-icon\{background:#dcfce7/);
+assert.match(styles, /\[data-summary-total="expense"\] \.summary-total-icon\{background:#fee2e2/);
 assert.ok(styles.includes("statement-status-details>summary{min-height:32px;padding:0}"));
 
 // Mockup hierarchy regression: the canonical controls remain accessible.
@@ -63,7 +72,8 @@ assert.ok(
 assert.ok(styles.includes(`.col-amount{font-size:${solverFinDesignTokens.typography.sizes.md}`));
 assert.ok(styles.includes(".col-category{align-self:start;"));
 assert.ok(styles.includes("width:max-content}"));
-assert.match(styles, /summary-total\{border-right:0;border-bottom:/);
+// Progressive reduction drops the decorative glyph so long values keep their width.
+assert.match(styles, /\.summary-total-icon\{display:none\}/);
 
 // M01: show canonical category control, preserving its native query contract.
 assert.match(styles, /statement-category-field\{min-width:0/);
@@ -88,7 +98,7 @@ assert.match(styles, /@media\(min-width:1101px\)\{/);
 // default filter value or the search placeholder while the composition still measures green.
 assert.match(
   styles,
-  /grid-template-columns:minmax\(11rem,1\.3fr\) repeat\(4,minmax\(9\.375rem,1fr\)\) minmax\(0,max-content\)/,
+  /grid-template-columns:minmax\(14rem,1\.5fr\) repeat\(4,minmax\(9\.375rem,1fr\)\) minmax\(0,max-content\)/,
 );
 assert.ok(styles.includes("statement-sort-field{grid-column:auto;min-width:0}"));
 assert.ok(
@@ -109,3 +119,22 @@ assert.match(
 assert.ok(styles.includes("statement-mobile-advanced-filters>summary{display:none}"));
 assert.ok(styles.includes("statement-mobile-advanced-fields{display:contents}"));
 assert.match(styles, /statement-row\.account-remuneration-row \.col-description\{min-width:0/);
+
+// G2: the period shortcuts occupy their own grid row and reuse the canonical month/day/range
+// query, so they can never steal the search track or hide an essential filter.
+assert.match(styles, /statement-period-shortcuts\{[^}]*grid-column:1\/-1/);
+assert.match(styles, /statement-period-chip\{[^}]*border-radius:999px/);
+assert.match(styles, /statement-period-chip\[aria-current="true"\]\{/);
+assert.match(styles, /statement-period-shortcuts\{display:none\}/);
+
+// G3: the account control reads as the financial identity and the balance is maskable.
+assert.match(styles, /statement-account-control \.account-select-icon\{[^}]*height:44px/);
+assert.match(styles, /statement-account-control \.account-select-sub\{color:var\(--muted\)/);
+assert.match(styles, /summary-balance-toggle\{[^}]*cursor:pointer/);
+assert.match(runtime, /toggle\.setAttribute\('aria-pressed', String\(!hidden\)\)/);
+assert.match(runtime, /target\.dataset\.balanceValue = target\.textContent/);
+
+// G4: every filter carries its own glyph and the bar reports the active filter count.
+assert.match(styles, /filter-field-heading\{align-items:center;display:inline-flex/);
+assert.match(styles, /statement-filter-count\{[^}]*border-radius:999px/);
+assert.match(styles, /statement-search-field input\{background-image:url\("data:image\/svg\+xml/);

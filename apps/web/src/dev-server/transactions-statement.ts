@@ -125,7 +125,8 @@ export function resolveFilters(
 ): StatementFilters {
   const month = resolveSelectedMonth(url, currentMonth);
   const day = resolveSelectedDay(url, month);
-  const period = day ? dayToPeriod(day) : monthToPeriod(month);
+  const range = resolveSelectedRange(url);
+  const period = range ?? (day ? dayToPeriod(day) : monthToPeriod(month));
   const currency = normalizeCurrency(url?.searchParams.get("currency"));
   const kind = normalizeKindFilter(url?.searchParams.get("kind"));
   const evidence = normalizeEvidenceFilter(url?.searchParams.get("evidence"));
@@ -349,6 +350,18 @@ function resolveSelectedDay(url: URL | undefined, month: string): string | undef
   if (!queryDay.startsWith(`${month}-`)) return undefined;
 
   return queryDay;
+}
+
+/** An explicit closed range wins over the month and single-day selectors. */
+function resolveSelectedRange(
+  url: URL | undefined,
+): Pick<StatementFilters, "startsOn" | "endsOn"> | undefined {
+  const from = url?.searchParams.get("from");
+  const to = url?.searchParams.get("to");
+  if (!isValidDateOnly(from) || !isValidDateOnly(to)) return undefined;
+  if (from > to) return undefined;
+
+  return { startsOn: from, endsOn: to };
 }
 
 function accountCurrency(account: AccountRecord): string {
