@@ -153,7 +153,7 @@ export function measureMockupComposition() {
     list: rect(root?.querySelector(".statement-panel")),
     firstMovement: rect(root?.querySelector(".statement-body")),
     sortControl: rect(filters?.querySelector(".statement-sort-field")),
-    applyControl: rect(filters?.querySelector(".statement-filter-actions button[type=\"submit\"]")),
+    applyControl: rect(filters?.querySelector(".statement-filter-actions button[type=submit]")),
     sameHeading:
       !!heading && context?.parentElement === heading && balance?.parentElement === heading,
     periodInHeading: !!heading && period?.parentElement === heading,
