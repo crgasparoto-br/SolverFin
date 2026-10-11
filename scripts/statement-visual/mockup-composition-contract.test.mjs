@@ -21,6 +21,7 @@ const fixture = () => ({
   queryFields: box(250, 350, 650, 44),
   visiblePrimaryFilters: 4,
   truncatedDefaultFilters: [],
+  truncatedSearchPlaceholder: [],
   summary: box(250, 130, 1000, 190),
   list: box(230, 450, 1040, 250),
   firstMovement: box(250, 495, 990, 45),
@@ -127,6 +128,17 @@ test("rejects truncated default financial filter choices on desktop", () => {
   assert.throws(
     () => assertMockupComposition({ ...fixture(), truncatedDefaultFilters: ["reconciliation"] }),
     /complete default values/,
+  );
+});
+
+test("rejects a truncated desktop search placeholder", () => {
+  assert.throws(
+    () =>
+      assertMockupComposition({
+        ...fixture(),
+        truncatedSearchPlaceholder: ["Descrição ou categoria"],
+      }),
+    /complete placeholder/,
   );
 });
 

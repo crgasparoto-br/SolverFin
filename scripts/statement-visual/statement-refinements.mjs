@@ -119,6 +119,28 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
         }
         assertMockupComposition(await read(`(${measureMockupComposition.toString()})()`));
         report.controls.push({ id: "GS-MOCKUP-NC-HEADER", status: "passed", restored: "passed" });
+
+        // A control that only fails when a filter or the search loses legibility, so the
+        // default values cannot be clipped again while the composition stays green.
+        await read(`(() => {const style=document.createElement('style');
+          style.id='statement-mockup-filter-negative';
+          style.textContent='[data-golden-screen] .filter-form>:is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){max-width:5rem!important}[data-golden-screen] .filter-form .statement-search-field input{max-width:5rem!important}';
+          document.head.append(style);})()`);
+        try {
+          const clipped = await read(`(${measureMockupComposition.toString()})()`);
+          assert.throws(
+            () => assertMockupComposition(clipped),
+            /complete default values|complete placeholder/,
+          );
+        } finally {
+          await read("document.getElementById('statement-mockup-filter-negative')?.remove()");
+        }
+        assertMockupComposition(await read(`(${measureMockupComposition.toString()})()`));
+        report.controls.push({
+          id: "GS-MOCKUP-NC-FILTER-LEGIBILITY",
+          status: "passed",
+          restored: "passed",
+        });
         continue;
       }
 

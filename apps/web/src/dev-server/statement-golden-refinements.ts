@@ -461,10 +461,24 @@ export function statementGoldenRefinementStyles(): string {
 
     /* State selectors in the A2 compatibility layer otherwise win over the Golden grid. */
     @media(min-width:1101px){
-      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(24,minmax(0,1fr))}
-      ${root} .filter-form>.statement-search-field{grid-column:span 4}
-      ${root} .filter-form>.statement-sort-field{grid-column:span 3;min-width:0}
-      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:span 5;min-width:0}
+      /* Content-aware compact bar: each control keeps its complete default value instead of
+         inheriting a fractional track that clips the native select and the search placeholder. */
+      ${root}[data-statement-options] .filter-form{
+        column-gap:${spacing[2]};
+        row-gap:${spacing[2]};
+        grid-template-columns:minmax(11rem,1.3fr) repeat(4,minmax(9.375rem,1fr)) minmax(0,max-content);
+      }
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:auto}
+      ${root}[data-statement-options] .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:auto}
+      ${root}[data-statement-options] .filter-form>.statement-sort-field{grid-column:auto;min-width:0}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto;flex-wrap:nowrap;min-width:0}
+    }
+    /* Below this width the action group keeps its own row so no filter loses legibility. */
+    @media(min-width:1101px) and (max-width:1339px){
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
+    }
+    @media(min-width:1101px){
+      ${root}[data-statement-options="expanded"] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
     }
     @media(min-width:761px){
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}

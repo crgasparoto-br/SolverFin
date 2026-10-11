@@ -59,6 +59,11 @@ export function assertMockupComposition(layout) {
       [],
       "Desktop filters must display their complete default values.",
     );
+    assert.deepEqual(
+      layout.truncatedSearchPlaceholder,
+      [],
+      "Desktop search must display its complete placeholder.",
+    );
     assert.ok(
       layout.queryFields.height <= 150,
       "Desktop filters regressed to stacked controls instead of a compact row.",
@@ -116,6 +121,22 @@ export function measureMockupComposition() {
       height: box.height,
     };
   };
+  // Rendered text width, so a value that no longer fits is detected instead of estimated.
+  const textWidthIn = (element, text) => {
+    const style = getComputedStyle(element);
+    const probe = document.createElement("span");
+    probe.textContent = text;
+    probe.style.cssText = "position:absolute;visibility:hidden;white-space:pre";
+    probe.style.font = style.font;
+    probe.style.letterSpacing = style.letterSpacing;
+    document.body.append(probe);
+    const width = probe.getBoundingClientRect().width;
+    probe.remove();
+    return width;
+  };
+  // A native select draws its indicator inside the content box; a value that fits the text
+  // box but not the indicator area is still clipped, so the allowance is measured as well.
+  const NATIVE_SELECT_INDICATOR = 20;
   return {
     viewport: { width: innerWidth, height: innerHeight },
     heading: rect(heading),
@@ -141,14 +162,23 @@ export function measureMockupComposition() {
     ].flatMap((selector) => {
       const select = filters?.querySelector(`${selector} select`);
       if (!select || select.value !== "" || !select.getClientRects().length) return [];
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      const font = getComputedStyle(select);
-      if (!context) return [select.name];
-      context.font = font.font;
+      const style = getComputedStyle(select);
       const text = select.selectedOptions[0]?.textContent?.trim() ?? "";
-      return context.measureText(text).width + 20 > select.clientWidth + 1 ? [select.name] : [];
+      const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+      const needed = textWidthIn(select, text) + padding + NATIVE_SELECT_INDICATOR;
+      return needed > select.clientWidth + 0.5 ? [select.name] : [];
     }),
+    truncatedSearchPlaceholder: (() => {
+      const input = filters?.querySelector(".statement-search-field input");
+      if (!input || input.value || !input.getClientRects().length) return [];
+      const placeholder = input.placeholder ?? "";
+      if (!placeholder) return [];
+      // A placeholder is not part of the value, so it is rendered to be measured.
+      input.value = placeholder;
+      const clipped = input.scrollWidth > input.clientWidth + 1;
+      input.value = "";
+      return clipped ? [placeholder] : [];
+    })(),
     summary: rect(root?.querySelector(".account-summary")),
     list: rect(root?.querySelector(".statement-panel")),
     firstMovement: rect(root?.querySelector(".statement-body")),

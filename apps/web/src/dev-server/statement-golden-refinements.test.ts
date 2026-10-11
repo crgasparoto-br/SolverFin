@@ -84,9 +84,18 @@ assert.match(styles, /account-remuneration-audit summary\{[^}]*white-space:norma
 
 // Density contract: desktop query keeps search and four essential selectors in one row.
 assert.match(styles, /@media\(min-width:1101px\)\{/);
-assert.ok(styles.includes("filter-form{grid-template-columns:repeat(24,minmax(0,1fr))}"));
-assert.ok(styles.includes("statement-sort-field{grid-column:span 3;min-width:0}"));
-assert.ok(styles.includes("statement-filter-actions{grid-column:span 5;min-width:0}"));
+// M01 legibility: the compact bar is content-aware, so a fractional track cannot clip a
+// default filter value or the search placeholder while the composition still measures green.
+assert.match(
+  styles,
+  /grid-template-columns:minmax\(11rem,1\.3fr\) repeat\(4,minmax\(9\.375rem,1fr\)\) minmax\(0,max-content\)/,
+);
+assert.ok(styles.includes("statement-sort-field{grid-column:auto;min-width:0}"));
+assert.ok(
+  styles.includes("statement-filter-actions{grid-column:auto;flex-wrap:nowrap;min-width:0}"),
+);
+// Narrow desktops give the action group its own row instead of shrinking the filters.
+assert.ok(styles.includes("@media(min-width:1101px) and (max-width:1339px){"));
 assert.match(styles, /\.filter-form\{grid-template-columns:repeat\(20,minmax\(0,1fr\)\)/);
 assert.match(
   styles,
