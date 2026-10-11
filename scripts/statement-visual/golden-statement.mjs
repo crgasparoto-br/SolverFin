@@ -115,6 +115,12 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       "GS-NC-STATUS-COLLISION",
       "[data-golden-screen] .statement-body .statement-status{width:26px!important;height:26px!important}",
     );
+    // The chip keeps its state on one line; a column that no longer fits the full label
+    // must be rejected instead of silently hiding part of the status.
+    await negativeControl(
+      "GS-NC-STATUS-CLIPPED",
+      "[data-golden-screen] .statement-body .statement-status{max-width:120px!important}",
+    );
     await read(`document.querySelector('[data-statement-options-toggle]').focus()`);
     await press("Enter", 13);
     assert.equal(await expansion(), "true");

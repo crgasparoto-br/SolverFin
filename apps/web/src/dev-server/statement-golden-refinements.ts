@@ -359,7 +359,9 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-category{align-self:start;background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]};width:max-content}
     ${root} .statement-body .col-category:empty{display:none}
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
-    ${root} .statement-body .statement-status{align-items:center;border:0;display:inline-flex;gap:${spacing[1]};height:auto;width:auto;max-width:100%;min-width:0;padding:${spacing[1]} ${spacing[2]};border-radius:999px;font-size:${typography.sizes.xs};white-space:normal}
+    /* M02/M04: metadata stays secondary and on one line so it neither competes with the
+       description/amount nor inflates the row height of the movement list. */
+    ${root} .statement-body .statement-status{align-items:center;border:0;display:inline-flex;gap:${spacing[1]};height:auto;width:auto;max-width:100%;min-width:0;padding:${spacing[1]} ${spacing[2]};border-radius:999px;font-size:${typography.sizes.xs};white-space:nowrap}
     ${root} .statement-body .statement-status svg{flex:0 0 auto}
     ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:500;line-height:1.25}
     ${root} .statement-body .statement-status-ok{background:#dcfce7;color:#166534}
@@ -482,7 +484,8 @@ export function statementGoldenRefinementStyles(): string {
     }
     @media(min-width:761px){
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
-      ${root} .statement-row{grid-template-columns:24px 6rem minmax(0,1fr) minmax(4rem,.45fr) minmax(144px,.25fr) minmax(9rem,auto) 36px}
+      /* The compact status chip stays on one line, so its column must fit the full label. */
+      ${root} .statement-row{grid-template-columns:24px 6rem minmax(0,1fr) minmax(4rem,.45fr) minmax(176px,.25fr) minmax(9rem,auto) 36px}
     }
     @media(max-width:${breakpoints.shellCompact}){
       ${root} .statement-body[data-statement-row-refined]{grid-template-areas:"select description actions" "select amount amount" "select metadata metadata" "select status status" "select footer footer"}

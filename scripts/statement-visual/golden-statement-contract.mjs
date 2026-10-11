@@ -109,6 +109,9 @@ export const goldenStatementMeasurements = `(() => {
       const label = badge.querySelector('.statement-status-label');
       const icon = badge.querySelector('svg');
       if (!label || !icon || !badge.getBoundingClientRect().width) return [];
+      // Real clipping: the chip keeps its metadata on one line, so a content box narrower
+      // than the rendered content hides part of the state instead of wrapping it.
+      if (badge.scrollWidth > badge.clientWidth + 1) return [label.textContent.trim()];
       const bounds = badge.getBoundingClientRect();
       const glyph = icon.getBoundingClientRect();
       const range = document.createRange(); range.selectNodeContents(label);
