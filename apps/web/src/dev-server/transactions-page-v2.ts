@@ -327,7 +327,7 @@ function renderFilters(
     </label>
     <label class="statement-category-field" for="statement-category">Categoria
       <select id="statement-category" name="categoryId" aria-label="Filtrar por categoria">
-        <option value="">Todas as categorias</option>
+        <option value="">Todas</option>
         ${categories.map((category) => `<option value="${escapeHtml(category.id)}"${presentation.insightCategoryId === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`).join("")}
       </select>
     </label>
