@@ -338,7 +338,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .filter-form>.statement-filter-actions{grid-column:span 2}
     ${root} .statement-query{padding:${spacing[1]} ${spacing[2]}}
     ${root} .statement-query :is(label,select,input){font-size:${typography.sizes.xs}}
-    ${root} .statement-query-heading{display:block}
+    ${root} .statement-query-heading{display:flex;align-items:center;justify-content:flex-end;gap:${spacing[2]};position:static;min-width:0;margin:0 0 ${spacing[1]}}
 
     ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){min-width:0}
     ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field) select{background:#fff;border:1px solid var(--line);border-radius:7px;width:100%}
