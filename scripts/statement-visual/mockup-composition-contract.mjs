@@ -67,6 +67,15 @@ export function assertMockupComposition(layout) {
         "Desktop category chip must keep a tint instead of collapsing to bare text.",
       );
     }
+    // The chip tint must distinguish the directions instead of flattening them together.
+    const directionColors = layout.categoryDirectionColors ?? {};
+    if (directionColors.in && directionColors.out) {
+      assert.notEqual(
+        directionColors.in,
+        directionColors.out,
+        "Desktop entry and exit chips must not share one colour.",
+      );
+    }
     if (layout.statusChip) {
       assert.equal(
         layout.statusChip.hasGlyph,
@@ -240,7 +249,7 @@ export function measureMockupComposition() {
     // Reference row detail: the chips carry their own glyph and read as chips, and the
     // selection control is a rounded square instead of the native circle.
     categoryChip: (() => {
-      const chip = root?.querySelector(".statement-body .col-category[data-category-glyph]");
+      const chip = root?.querySelector(".statement-body .col-category[data-category-direction]");
       if (!chip) return undefined;
       const style = getComputedStyle(chip);
       return {
@@ -268,6 +277,17 @@ export function measureMockupComposition() {
       if (!input) return undefined;
       const style = getComputedStyle(input);
       return { appearance: style.appearance, radius: parseFloat(style.borderTopLeftRadius) || 0 };
+    })(),
+    // The chip colour must carry the movement direction: entry and exit cannot share a colour.
+    categoryDirectionColors: (() => {
+      const colors = {};
+      root
+        ?.querySelectorAll(".statement-body .col-category[data-category-direction]")
+        .forEach((chip) => {
+          const direction = chip.getAttribute("data-category-direction");
+          if (!colors[direction]) colors[direction] = getComputedStyle(chip).color;
+        });
+      return colors;
     })(),
     movementGlyph: (() => {
       const tile = root?.querySelector(".statement-body .col-row-icon");

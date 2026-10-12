@@ -429,18 +429,11 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-category svg{display:block;flex:0 0 auto}
     ${root} .statement-body .col-category-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     /* The chip wears the tint of its own category, matching the glyph tile. */
-    ${root} .statement-body .col-category[data-category-glyph="food"]{background:#fff7ed;color:#c2410c}
-    ${root} .statement-body .col-category[data-category-glyph="health"]{background:#fdf2f8;color:#be185d}
-    ${root} .statement-body .col-category[data-category-glyph="transport"]{background:#eff6ff;color:#1d4ed8}
-    ${root} .statement-body .col-category[data-category-glyph="home"]{background:#f5f3ff;color:#6d28d9}
-    ${root} .statement-body .col-category[data-category-glyph="utility"]{background:#fefce8;color:#a16207}
-    ${root} .statement-body .col-category[data-category-glyph="education"]{background:#ecfeff;color:#0e7490}
-    ${root} .statement-body .col-category[data-category-glyph="leisure"]{background:#f0fdfa;color:#0f766e}
-    ${root} .statement-body .col-category[data-category-glyph="incomeCategory"]{background:#ecfdf5;color:#047857}
-    ${root} .statement-body .col-category[data-category-glyph="investment"]{background:#f0fdf4;color:#15803d}
-    ${root} .statement-body .col-category[data-category-glyph="tax"]{background:#f1f5f9;color:#475569}
-    ${root} .statement-body .col-category[data-category-glyph="receipt"]{background:#f1f5f9;color:#475569}
-    ${root} .statement-body .col-category[data-category-glyph="layers"]{background:#eef2ff;color:#4338ca}
+    /* The chip wears the colour of the movement direction it leads with: entry green,
+       exit red, transfer grey. */
+    ${root} .statement-body .col-category[data-category-direction="in"]{background:#ecfdf5;color:#047857}
+    ${root} .statement-body .col-category[data-category-direction="out"]{background:#fef2f2;color:#b91c1c}
+    ${root} .statement-body .col-category[data-category-direction="transfer"]{background:#f1f5f9;color:#475569}
     /* Reference description: a strong title over a muted second line. */
     ${root} .statement-body .description-note{color:var(--muted);display:block;font-size:${typography.sizes.xs};line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     /* Reference selection control: a rounded square, not a native circle. */

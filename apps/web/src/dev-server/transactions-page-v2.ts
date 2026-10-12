@@ -567,7 +567,7 @@ function renderRow(
     ${renderRowGlyph(categoryName, transaction.kind)}
     <time class="col-date" datetime="${escapeHtml(date)}" title="${escapeHtml(formatDate(date))}">${formatMovementDate(date)}</time>
     <div class="description col-description">${renderTransactionDescription(transaction, selectedAccount, accounts)}</div>
-    ${renderCategoryChip(categoryName)}<span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
+    ${renderCategoryChip(categoryName, transaction.kind)}<span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
     ${renderStatementStatus(transaction)}
     <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
@@ -609,7 +609,7 @@ function renderGroupRow(
     ${renderRowGlyph("", group.kind)}
     <time class="col-date" datetime="${escapeHtml(group.displayOn)}" title="${escapeHtml(formatDate(group.displayOn))}">${formatMovementDate(group.displayOn)}</time>
     <div class="description col-description"><strong>${escapeHtml(group.description)}</strong><span>${group.members.length} lançamentos agrupados</span></div>
-    ${renderCategoryChip("Várias categorias")}<span class="col-kind">${escapeHtml(formatKind(group.kind))}</span>${renderStatementStatus(row.transaction)}
+    ${renderCategoryChip("Várias categorias", group.kind)}<span class="col-kind">${escapeHtml(formatKind(group.kind))}</span>${renderStatementStatus(row.transaction)}
     <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     <button type="button" class="icon-btn col-actions" data-group-details="${escapeHtml(group.id)}" aria-label="Ver lançamentos do grupo">${renderDotsIcon()}</button>
@@ -1244,31 +1244,31 @@ function renderRowGlyph(categoryName: string, kind: string): string {
 }
 
 /**
- * The category chip carries its own glyph, like the reference. Only a category that really matched a
- * known group is decorated, so the empty placeholder never wears a glyph it did not earn.
+ * The category chip leads with the movement direction, so the direction is readable before the word:
+ * an up arrow for entries, a down arrow for exits and two stacked horizontal arrows for transfers.
+ * The direction is decorative here (`aria-hidden`); the word and the row's own direction column
+ * remain the accessible carriers of the information.
  */
-function resolveCategoryGlyph(categoryName: string): { key: string; html: string } | undefined {
-  if (categoryName === "Várias categorias") {
-    return { key: "layers", html: GROUP_CATEGORY_GLYPH };
-  }
-  if (!categoryName || categoryName === "Sem categoria") {
-    return undefined;
-  }
-  const match = ROW_GLYPH_KEYWORDS.find(([pattern]) => pattern.test(categoryName));
-  if (!match) return undefined;
-  const key = match[1];
-  return { key, html: ROW_GLYPHS[key] ?? ROW_GLYPH_FALLBACK };
+type CategoryDirection = "in" | "out" | "transfer";
+
+const CATEGORY_DIRECTION_GLYPHS: Record<CategoryDirection, string> = {
+  in: '<path d="M10 16.5V4.5"/><path d="m5.5 9 4.5-4.5L14.5 9"/>',
+  out: '<path d="M10 3.5v12"/><path d="m5.5 11 4.5 4.5L14.5 11"/>',
+  transfer:
+    '<path d="M3.5 7h11"/><path d="m11.5 4 3 3-3 3"/><path d="M16.5 13h-11"/><path d="m8.5 10-3 3 3 3"/>',
+};
+
+export function resolveCategoryDirection(kind: string): CategoryDirection {
+  const normalized = (kind ?? "").toLowerCase();
+  if (normalized === "income") return "in";
+  if (normalized === "transfer") return "transfer";
+  return "out";
 }
 
-const GROUP_CATEGORY_GLYPH = '<path d="M10 3.5 4 6.5l6 3 6-3Z"/><path d="M4 10.5l6 3 6-3"/>';
-
-function renderCategoryChip(categoryName: string): string {
-  const glyph = resolveCategoryGlyph(categoryName);
-  const icon = glyph
-    ? `<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${glyph.html}</svg>`
-    : "";
-  const attribute = glyph ? ` data-category-glyph="${escapeHtml(glyph.key)}"` : "";
-  return `<span class="col-category"${attribute}>${icon}<span class="col-category-label">${escapeHtml(categoryName)}</span></span>`;
+function renderCategoryChip(categoryName: string, kind: string): string {
+  const direction = resolveCategoryDirection(kind);
+  const icon = `<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CATEGORY_DIRECTION_GLYPHS[direction]}</svg>`;
+  return `<span class="col-category" data-category-direction="${direction}">${icon}<span class="col-category-label">${escapeHtml(categoryName)}</span></span>`;
 }
 
 /**

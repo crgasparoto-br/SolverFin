@@ -6,6 +6,7 @@ import {
   statementGoldenRefinementRuntime,
   statementGoldenRefinementStyles,
 } from "./statement-golden-refinements.js";
+import { resolveCategoryDirection } from "./transactions-page-v2.js";
 
 const runtime = statementGoldenRefinementRuntime();
 const bodies = Array.from(
@@ -73,8 +74,19 @@ assert.ok(styles.includes(`.col-amount{font-size:${solverFinDesignTokens.typogra
 // Reference chip: the category is a pill that carries its own glyph and its own tint.
 assert.ok(styles.includes(".col-category{align-items:center;align-self:start;"));
 assert.ok(styles.includes("width:max-content}"));
-assert.match(styles, /\.col-category\[data-category-glyph="food"\]\{background:#fff7ed/);
-assert.match(styles, /\.col-category\[data-category-glyph="transport"\]\{background:#eff6ff/);
+// The chip leads with the movement direction, so its tint follows the direction.
+assert.match(
+  styles,
+  /\.col-category\[data-category-direction="in"\]\{background:#ecfdf5;color:#047857/,
+);
+assert.match(
+  styles,
+  /\.col-category\[data-category-direction="out"\]\{background:#fef2f2;color:#b91c1c/,
+);
+assert.match(
+  styles,
+  /\.col-category\[data-category-direction="transfer"\]\{background:#f1f5f9;color:#475569/,
+);
 assert.match(styles, /\.col-category-label\{overflow:hidden/);
 // Reference description: a strong title over a muted second line.
 assert.match(styles, /\.description-note\{color:var\(--muted\);display:block/);
@@ -157,3 +169,12 @@ assert.match(runtime, /target\.dataset\.balanceValue = target\.textContent/);
 assert.match(styles, /filter-field-heading\{align-items:center;display:inline-flex/);
 assert.match(styles, /statement-filter-count\{[^}]*border-radius:999px/);
 assert.match(styles, /statement-search-field input\{background-image:url\("data:image\/svg\+xml/);
+
+// The category chip leads with the movement direction, so the mapping must be total and
+// case-insensitive: the API has returned both spellings across environments.
+assert.equal(resolveCategoryDirection("income"), "in");
+assert.equal(resolveCategoryDirection("INCOME"), "in");
+assert.equal(resolveCategoryDirection("transfer"), "transfer");
+assert.equal(resolveCategoryDirection("TRANSFER"), "transfer");
+assert.equal(resolveCategoryDirection("expense"), "out");
+assert.equal(resolveCategoryDirection(""), "out");

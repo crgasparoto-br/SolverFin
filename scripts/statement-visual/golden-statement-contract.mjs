@@ -84,6 +84,15 @@ export function assertGoldenStatement(layout) {
       "Category chip must keep its tint instead of collapsing to bare text.",
     );
   }
+  // The chip tint must distinguish the directions instead of flattening them together.
+  const directionColors = layout.categoryDirectionColors ?? {};
+  if (directionColors.in && directionColors.out) {
+    assert.notEqual(
+      directionColors.in,
+      directionColors.out,
+      "Entry and exit chips must not share one colour.",
+    );
+  }
   if (layout.statusChip) {
     assert.equal(
       layout.statusChip.hasGlyph,
@@ -150,6 +159,15 @@ export const goldenStatementMeasurements = `(() => {
       return { hasGlyph: !!glyph && glyph.getBoundingClientRect().width > 0,
         background: style.backgroundColor,
         radius: parseFloat(style.borderTopLeftRadius) || 0 };
+    })(),
+    // The chip colour must carry the movement direction: entry and exit cannot share a colour.
+    categoryDirectionColors: (() => {
+      const colors = {};
+      document.querySelectorAll('.statement-body .col-category[data-category-direction]').forEach((chip) => {
+        const direction = chip.getAttribute('data-category-direction');
+        if (!colors[direction]) colors[direction] = getComputedStyle(chip).color;
+      });
+      return colors;
     })(),
     statusChip: (() => {
       const chip = document.querySelector('.statement-body .statement-status');

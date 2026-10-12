@@ -142,6 +142,11 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       "[data-golden-screen] .statement-body .col-category svg{display:none!important}",
     );
     // The selection control is a styled rounded square in the reference, not the native circle.
+    // The direction must stay readable from the chip colour alone.
+    await negativeControl(
+      "GS-MOCKUP-NC-DIRECTION-COLOUR",
+      "[data-golden-screen] .statement-body .col-category[data-category-direction]{color:#475569!important}",
+    );
     await negativeControl(
       "GS-MOCKUP-NC-SELECTION-CONTROL",
       "[data-golden-screen] .statement-body .col-select input[type=checkbox]{appearance:auto!important}",
