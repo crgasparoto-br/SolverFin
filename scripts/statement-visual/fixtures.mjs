@@ -15,9 +15,11 @@ export function loginExpression() {
 export function fixtureExpression() {
   return `(async () => {
     async function request(path, method = "GET", body) {
+      const headers = { origin: location.origin };
+      if (body !== undefined) headers["content-type"] = "application/json";
       const response = await fetch(path, {
         method,
-        headers: body === undefined ? undefined : { "content-type": "application/json" },
+        headers,
         body: body === undefined ? undefined : JSON.stringify(body)
       });
       const payload = await response.json().catch(() => ({}));
@@ -62,8 +64,9 @@ export function fixtureExpression() {
       ]);
     }
 
+    const created = [];
     for (const [description, kind, amountMinor, date] of transactions) {
-      await request("/api/transactions", "POST", {
+      const response = await request("/api/transactions", "POST", {
         accountId: longAccount.id,
         kind,
         amountMinor,
@@ -74,6 +77,35 @@ export function fixtureExpression() {
         description,
         currency: "BRL"
       });
+      created.push(response.transaction ?? response);
+    }
+
+    // The reference shows categorised movements, so the head rows carry real catalogue
+    // categories. Missing catalogue entries are skipped instead of invented.
+    const catalog = (await request("/api/categories?limit=200")).categories ?? [];
+    const used = new Set();
+    const pickCategory = (kind, preferredName) => {
+      const candidates = catalog.filter((item) => item.kind === kind && !used.has(item.id));
+      return (
+        candidates.find((item) => item.name === preferredName) ??
+        candidates.find((item) => item.name.startsWith(preferredName)) ??
+        candidates[0]
+      );
+    };
+    const assignments = [
+      ["QA 01 limite positivo", "Salário"],
+      ["QA 02 saldo zero", "Alimentação"],
+      ["QA 03 saldo negativo", "Transporte"],
+      ["QA 04 retorno ao zero", "Investimento"],
+      ["QA 05 valor medio", "Lazer"]
+    ];
+    for (const [description, categoryName] of assignments) {
+      const target = created.find((row) => row?.description === description);
+      if (!target?.id) continue;
+      const category = pickCategory(target.kind, categoryName);
+      if (!category?.id) continue;
+      used.add(category.id);
+      await request("/api/transactions/" + target.id, "PATCH", { categoryId: category.id });
     }
 
     await request("/api/transactions", "POST", {

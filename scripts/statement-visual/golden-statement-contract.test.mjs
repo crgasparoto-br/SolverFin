@@ -11,11 +11,13 @@ function fixture() {
     overview: { bottom: 340 },
     summary: { width: 1040 },
     list: { width: 1090, y: 430 },
-    description: { y: 600 },
+    description: { y: 600, x: 340, right: 700, width: 360 },
     descriptionText: { font: 16 },
-    category: { y: 630, font: 12 },
-    amount: { y: 600, font: 16 },
+    category: { y: 620, x: 712, right: 860, width: 148, font: 12 },
+    amount: { y: 600, x: 900, right: 1040, width: 140, font: 16 },
     balance: { y: 630, font: 12 },
+    rowIcon: { x: 272, y: 600, width: 36, height: 36 },
+    date: { x: 320, y: 600, width: 88 },
     overflow: false,
     overflowElements: [],
     summaryCollisions: [],
@@ -52,6 +54,30 @@ test("missing viewport dimensions cannot bypass the density check", () => {
   const layout = fixture();
   layout.viewport = {};
   assert.throws(() => assertGoldenStatement(layout), /Viewport dimensions/);
+});
+
+test("a category folded back under the description is rejected on desktop", () => {
+  const layout = fixture();
+  layout.category = { y: 630, x: 340, right: 520, width: 180, font: 12 };
+  assert.throws(() => assertGoldenStatement(layout), /own column after the description/);
+});
+
+test("a category running into the amount column is rejected", () => {
+  const layout = fixture();
+  layout.category = { y: 620, x: 712, right: 960, width: 248, font: 12 };
+  assert.throws(() => assertGoldenStatement(layout), /run into the amount column/);
+});
+
+test("a movement row without its glyph tile is rejected on desktop", () => {
+  const layout = fixture();
+  layout.rowIcon = { x: 272, y: 600, width: 0, height: 0 };
+  assert.throws(() => assertGoldenStatement(layout), /glyph tile/);
+});
+
+test("a glyph placed after the date is rejected on desktop", () => {
+  const layout = fixture();
+  layout.rowIcon = { x: 420, y: 600, width: 36, height: 36 };
+  assert.throws(() => assertGoldenStatement(layout), /precede the date column/);
 });
 
 test("visible elements outside the viewport fail the Golden Screen gate", () => {
