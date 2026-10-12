@@ -110,6 +110,12 @@ test("bank identity context and transaction metadata follow visual hierarchy", (
     css,
     /\.statement-body \.col-category \{[^}]*color: var\(--muted\);[^}]*font-size: \.75rem;/s,
   );
+  // The chip already leads with the direction icon, so the direction word is visually collapsed
+  // but kept in the document for assistive technology.
+  assert.match(
+    css,
+    /\.statement-body \.col-kind \{[^}]*clip-path: inset\(50%\);[^}]*height: 1px;[^}]*overflow: hidden;[^}]*width: 1px;/s,
+  );
 });
 
 test("period summary keeps four financial indicators on desktop", () => {

@@ -275,7 +275,9 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-body .col-description > strong { color: var(--text); font-size: 1rem; font-weight: 700; line-height: 1.3; }
     ${root} .statement-body .col-description > span { color: var(--muted); display: block; font-size: .75rem; margin-top: 3px; }
     ${root} .statement-body .col-category { display: block; grid-area: category; overflow-wrap: anywhere; color: var(--muted); font-size: .75rem; }
-    ${root} .statement-body .col-kind { display: block; grid-area: kind; }
+    /* The category chip already opens with the movement direction icon, so the word would only
+       repeat it. It stays in the document for assistive technology instead of being deleted. */
+    ${root} .statement-body .col-kind { clip-path: inset(50%); display: block; grid-area: kind; height: 1px; margin: -1px; overflow: hidden; padding: 0; white-space: nowrap; width: 1px; }
     ${root} .statement-body .col-status { grid-area: status; justify-self: center; }
     ${root} .statement-body .col-amount { margin-left: 0; font-size: 1rem; font-weight: 750; grid-area: amount; justify-self: end; text-align: right; }
     ${root} .statement-body .col-balance { display: block; font-weight: 500; grid-area: balance; justify-self: end; text-align: right; }
