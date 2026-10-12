@@ -1059,6 +1059,53 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       const hydrate = (selector, clone) => { const button = document.querySelector(selector + transaction.id + '"]'); if (!button) return; button.addEventListener("click", () => { form.reset(); form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id; form.dataset.method = clone ? "POST" : "PATCH"; form.kind.value = transaction.kind; form.accountId.value = transaction.accountId || form.accountId.value; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) attachmentWorkspace.dataset.entityId = clone ? "" : transaction.id; document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
       hydrate('[data-edit="', false); hydrate('[data-clone="', true);
     });
+    const positionActions = (details) => {
+      const menu = details.querySelector(":scope > div");
+      const summary = details.querySelector("summary");
+      if (!menu || !summary) return;
+      const rect = summary.getBoundingClientRect();
+      menu.style.position = "fixed";
+      menu.style.top = "0px";
+      menu.style.left = "0px";
+      const menuWidth = menu.offsetWidth;
+      const menuHeight = menu.offsetHeight;
+      const left = Math.min(Math.max(8, rect.right - menuWidth), window.innerWidth - menuWidth - 8);
+      const fitsBelow = rect.bottom + 6 + menuHeight <= window.innerHeight - 8;
+      const top = fitsBelow ? rect.bottom + 6 : Math.max(8, rect.top - menuHeight - 6);
+      menu.style.left = left + "px";
+      menu.style.top = top + "px";
+    };
+    const closeActions = () => document.querySelectorAll(".actions[open]").forEach((details) => details.removeAttribute("open"));
+    document.querySelectorAll(".actions").forEach((details) => {
+      const menu = details.querySelector(":scope > div");
+      if (!menu) return;
+      details.addEventListener("toggle", () => {
+        if (!details.open) return;
+        document.querySelectorAll(".actions[open]").forEach((other) => { if (other !== details) other.removeAttribute("open"); });
+        positionActions(details);
+      });
+    });
+    document.querySelectorAll(".actions-item").forEach((item) => item.addEventListener("click", closeActions));
+    let actionsFrame = 0;
+    const repositionActions = () => {
+      if (actionsFrame) return;
+      actionsFrame = window.requestAnimationFrame(() => { actionsFrame = 0; document.querySelectorAll(".actions[open]").forEach(positionActions); });
+    };
+    window.addEventListener("scroll", repositionActions, true);
+    window.addEventListener("resize", repositionActions);
+    document.addEventListener("click", (event) => {
+      document.querySelectorAll(".actions[open]").forEach((details) => {
+        if (!details.contains(event.target)) details.removeAttribute("open");
+      });
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      document.querySelectorAll(".actions[open]").forEach((details) => {
+        const summary = details.querySelector("summary");
+        details.removeAttribute("open");
+        if (summary) summary.focus();
+      });
+    });
     document.addEventListener("click", (event) => {
       const target = event.target?.closest?.("[data-edit], [data-clone], [data-open-modal]");
       if (!target) return;

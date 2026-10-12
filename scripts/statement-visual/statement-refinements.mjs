@@ -104,6 +104,59 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       await screenshot(cdp, join(outputDir, `statement-refinement-rows-${width}x${height}.png`));
 
       if (width > 760) {
+        // The row actions menu lives inside a horizontally scrolling table, so it must escape the
+        // table overflow clipping instead of being cut off at the bottom edge.
+        await read(`(() => {
+          const rows = Array.from(document.querySelectorAll('.statement-body'));
+          const row = rows[rows.length - 1];
+          if (!row) throw new Error('No statement row was found');
+          row.scrollIntoView({ block: 'end' });
+          const summary = row.querySelector('.actions>summary');
+          if (!summary) throw new Error('Row actions control was not found');
+          summary.click();
+        })()`);
+        await sleep(200);
+        const rowActions = await read(`(() => {
+          const details = document.querySelector('.actions[open]');
+          if (!details) throw new Error('Row actions menu did not open');
+          const menu = details.querySelector('.actions-menu');
+          const rect = menu.getBoundingClientRect();
+          const items = Array.from(menu.querySelectorAll('.actions-item'));
+          return {
+            position: getComputedStyle(menu).position,
+            insideViewport:
+              rect.top >= 0 && rect.bottom <= innerHeight && rect.left >= 0 && rect.right <= innerWidth,
+            labels: items.map((item) => item.textContent.trim()),
+            visibleItems: items.filter((item) => {
+              const itemRect = item.getBoundingClientRect();
+              return itemRect.height > 0 && itemRect.top >= 0 && itemRect.bottom <= innerHeight;
+            }).length,
+          };
+        })()`);
+        assert.equal(
+          rowActions.position,
+          "fixed",
+          "The row actions menu must escape the table overflow clipping.",
+        );
+        assert.ok(
+          rowActions.insideViewport,
+          `Row actions menu is clipped by the viewport: ${JSON.stringify(rowActions)}`,
+        );
+        assert.ok(rowActions.labels.length >= 2, "Row actions menu lost its options.");
+        assert.equal(
+          rowActions.visibleItems,
+          rowActions.labels.length,
+          `Row actions menu is cutting options off: ${JSON.stringify(rowActions)}`,
+        );
+        await screenshot(
+          cdp,
+          join(outputDir, `statement-refinement-row-actions-${width}x${height}.png`),
+        );
+        await press("Escape", 27);
+        report.controls.push({ id: "GS-MOCKUP-ROW-ACTIONS-VISIBLE", width, status: "passed" });
+      }
+
+      if (width > 760) {
         await read(`(() => {const heading=document.querySelector('.statement-account-heading');
           heading.dataset.savedStyle=heading.getAttribute('style')||'';
           heading.style.setProperty('grid-template-columns','1fr','important');})()`);
