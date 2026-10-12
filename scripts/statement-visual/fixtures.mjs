@@ -42,6 +42,15 @@ export function fixtureExpression() {
       currency: "BRL"
     })).account;
 
+    // A short, real note per head row, so the reference two-line description is exercised.
+    const FIXTURE_NOTES = {
+      "QA 01 limite positivo": "Salário creditado na conta",
+      "QA 02 saldo zero": "Compra no cartão físico",
+      "QA 03 saldo negativo": "Mensalidade do plano",
+      "QA 04 retorno ao zero": "Resgate de investimento",
+      "QA 05 valor medio": "Ingresso e transporte"
+    };
+
     const maximum = 2147483647;
     const transactions = [
       ["QA 01 limite positivo", "income", maximum, "2026-07-01"],
@@ -75,6 +84,7 @@ export function fixtureExpression() {
         effectiveOn: date,
         status: "posted",
         description,
+        note: FIXTURE_NOTES[description],
         currency: "BRL"
       });
       created.push(response.transaction ?? response);

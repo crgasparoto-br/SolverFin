@@ -53,6 +53,50 @@ export function assertMockupComposition(layout) {
         "Desktop sort and Apply controls must not overlap.",
       );
     }
+    // Reference row detail. The chips must read as chips and carry their own glyph.
+    if (layout.categoryChip) {
+      assert.equal(
+        layout.categoryChip.hasGlyph,
+        true,
+        "Desktop category chip must carry its own glyph, like the reference.",
+      );
+      assert.ok(layout.categoryChip.radius >= 999, "Desktop category chip must render as a pill.");
+      assert.notEqual(
+        layout.categoryChip.background,
+        "rgba(0, 0, 0, 0)",
+        "Desktop category chip must keep a tint instead of collapsing to bare text.",
+      );
+    }
+    if (layout.statusChip) {
+      assert.equal(
+        layout.statusChip.hasGlyph,
+        true,
+        "Desktop status chip must carry its own glyph, like the reference.",
+      );
+      assert.ok(layout.statusChip.radius >= 999, "Desktop status chip must render as a pill.");
+    }
+    if (layout.selectionControl) {
+      assert.equal(
+        layout.selectionControl.appearance,
+        "none",
+        "Desktop selection control must be a styled rounded square, not the native circle.",
+      );
+      assert.ok(
+        layout.selectionControl.radius > 0 && layout.selectionControl.radius <= 8,
+        "Desktop selection control must stay a rounded square.",
+      );
+    }
+    if (layout.movementGlyph) {
+      assert.equal(
+        layout.movementGlyph.hasGlyph,
+        true,
+        "Desktop movement glyph tile must publish its own icon.",
+      );
+      assert.ok(
+        layout.movementGlyph.width >= 40 && layout.movementGlyph.height >= 40,
+        "Desktop movement glyph tile must keep the reference size.",
+      );
+    }
     assert.equal(layout.visiblePrimaryFilters, 4, "Desktop must expose four primary filters.");
     assert.deepEqual(
       layout.truncatedDefaultFilters,
@@ -193,5 +237,43 @@ export function measureMockupComposition() {
     secondaryCount: menu?.querySelectorAll("button[data-quick-kind]").length,
     menuOpen: menu?.open,
     overflow: document.documentElement.scrollWidth > innerWidth + 1,
+    // Reference row detail: the chips carry their own glyph and read as chips, and the
+    // selection control is a rounded square instead of the native circle.
+    categoryChip: (() => {
+      const chip = root?.querySelector(".statement-body .col-category[data-category-glyph]");
+      if (!chip) return undefined;
+      const style = getComputedStyle(chip);
+      return {
+        hasGlyph:
+          !!chip.querySelector("svg") &&
+          chip.querySelector("svg").getBoundingClientRect().width > 0,
+        background: style.backgroundColor,
+        radius: parseFloat(style.borderTopLeftRadius) || 0,
+      };
+    })(),
+    statusChip: (() => {
+      const chip = root?.querySelector(".statement-body .statement-status");
+      if (!chip) return undefined;
+      const style = getComputedStyle(chip);
+      return {
+        hasGlyph:
+          !!chip.querySelector("svg") &&
+          chip.querySelector("svg").getBoundingClientRect().width > 0,
+        background: style.backgroundColor,
+        radius: parseFloat(style.borderTopLeftRadius) || 0,
+      };
+    })(),
+    selectionControl: (() => {
+      const input = root?.querySelector(".statement-body .col-select input[type=checkbox]");
+      if (!input) return undefined;
+      const style = getComputedStyle(input);
+      return { appearance: style.appearance, radius: parseFloat(style.borderTopLeftRadius) || 0 };
+    })(),
+    movementGlyph: (() => {
+      const tile = root?.querySelector(".statement-body .col-row-icon");
+      if (!tile) return undefined;
+      const box = tile.getBoundingClientRect();
+      return { width: box.width, height: box.height, hasGlyph: !!tile.querySelector("svg") };
+    })(),
   };
 }

@@ -70,8 +70,27 @@ assert.ok(
   styles.includes(`.col-description>strong{font-size:${solverFinDesignTokens.typography.sizes.md}`),
 );
 assert.ok(styles.includes(`.col-amount{font-size:${solverFinDesignTokens.typography.sizes.md}`));
-assert.ok(styles.includes(".col-category{align-self:start;"));
+// Reference chip: the category is a pill that carries its own glyph and its own tint.
+assert.ok(styles.includes(".col-category{align-items:center;align-self:start;"));
 assert.ok(styles.includes("width:max-content}"));
+assert.match(styles, /\.col-category\[data-category-glyph="food"\]\{background:#fff7ed/);
+assert.match(styles, /\.col-category\[data-category-glyph="transport"\]\{background:#eff6ff/);
+assert.match(styles, /\.col-category-label\{overflow:hidden/);
+// Reference description: a strong title over a muted second line.
+assert.match(styles, /\.description-note\{color:var\(--muted\);display:block/);
+// Reference selection control: a rounded square instead of the native circle.
+assert.match(styles, /\.col-select input\[type="checkbox"\]\{appearance:none/);
+assert.match(styles, /checkbox"\]\{appearance:none;background:#fff;border:1\.5px solid #cbd5e1/);
+// Reference glyph tile keeps the larger reference geometry.
+assert.match(styles, /\.col-row-icon\{[^}]*height:44px/);
+// Reference status chip is a defined pill, not bare text.
+assert.match(styles, /\.statement-status\{align-items:center;border:1px solid transparent/);
+assert.match(styles, /\.statement-status-ok\{background:#dcfce7;border-color:#bbf7d0/);
+// Reference header is a quiet label row, not a heavy uppercase band.
+assert.match(
+  styles,
+  /\.statement-head\{background:transparent;border-bottom:1px solid var\(--line\)/,
+);
 // Progressive reduction drops the decorative glyph so long values keep their width.
 assert.match(styles, /\.summary-total-icon\{display:none\}/);
 

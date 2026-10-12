@@ -23,6 +23,7 @@ export interface TransactionRecord {
   effectiveOn?: string;
   accountId?: string;
   destinationAccountId?: string;
+  note?: string | null;
   categoryId?: string;
   cardId?: string;
   invoiceId?: string;

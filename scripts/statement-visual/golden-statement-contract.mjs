@@ -70,6 +70,39 @@ export function assertGoldenStatement(layout) {
   } else {
     assert.ok(layout.category.y > layout.description.y, "Category must be on the secondary line.");
   }
+  // Reference row detail: the chips must read as chips and keep their own glyph.
+  if (layout.categoryChip) {
+    assert.equal(
+      layout.categoryChip.hasGlyph,
+      true,
+      "Category chip must carry its own glyph, like the reference.",
+    );
+    assert.ok(layout.categoryChip.radius >= 999, "Category chip must render as a pill.");
+    assert.notEqual(
+      layout.categoryChip.background,
+      "rgba(0, 0, 0, 0)",
+      "Category chip must keep its tint instead of collapsing to bare text.",
+    );
+  }
+  if (layout.statusChip) {
+    assert.equal(
+      layout.statusChip.hasGlyph,
+      true,
+      "Status chip must carry its own glyph, like the reference.",
+    );
+    assert.ok(layout.statusChip.radius >= 999, "Status chip must render as a pill.");
+  }
+  if (layout.selectionControl) {
+    assert.equal(
+      layout.selectionControl.appearance,
+      "none",
+      "Selection control must be a styled rounded square, not the native circle.",
+    );
+    assert.ok(
+      layout.selectionControl.radius > 0 && layout.selectionControl.radius <= 8,
+      "Selection control must stay a rounded square.",
+    );
+  }
   assert.ok(layout.balance.y > layout.amount.y, "Running balance must be below the amount.");
   if (layout.viewport.width >= 1280 && layout.viewport.height >= 740) {
     assert.ok(
@@ -107,6 +140,32 @@ export const goldenStatementMeasurements = `(() => {
     balance: rect('.statement-body .col-balance'),
     rowIcon: rect('.statement-body .col-row-icon'),
     date: rect('.statement-body .col-date'),
+    // Reference row detail: chips read as chips and carry their own glyph, and the
+    // selection control is a styled rounded square instead of the native circle.
+    categoryChip: (() => {
+      const chip = document.querySelector('.statement-body .col-category');
+      if (!chip) return null;
+      const style = getComputedStyle(chip);
+      const glyph = chip.querySelector('svg');
+      return { hasGlyph: !!glyph && glyph.getBoundingClientRect().width > 0,
+        background: style.backgroundColor,
+        radius: parseFloat(style.borderTopLeftRadius) || 0 };
+    })(),
+    statusChip: (() => {
+      const chip = document.querySelector('.statement-body .statement-status');
+      if (!chip) return null;
+      const style = getComputedStyle(chip);
+      const glyph = chip.querySelector('svg');
+      return { hasGlyph: !!glyph && glyph.getBoundingClientRect().width > 0,
+        background: style.backgroundColor,
+        radius: parseFloat(style.borderTopLeftRadius) || 0 };
+    })(),
+    selectionControl: (() => {
+      const input = document.querySelector('.statement-body .col-select input[type=checkbox]');
+      if (!input) return null;
+      const style = getComputedStyle(input);
+      return { appearance: style.appearance, radius: parseFloat(style.borderTopLeftRadius) || 0 };
+    })(),
     summaryCollisions: (() => {
       const nodes = Array.from(document.querySelectorAll('.account-summary .summary-total strong'))
         .filter(element => {

@@ -567,9 +567,9 @@ function renderRow(
     ${renderRowGlyph(categoryName, transaction.kind)}
     <time class="col-date" datetime="${escapeHtml(date)}" title="${escapeHtml(formatDate(date))}">${formatMovementDate(date)}</time>
     <div class="description col-description">${renderTransactionDescription(transaction, selectedAccount, accounts)}</div>
-    <span class="col-category">${escapeHtml(categoryName)}</span><span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
+    ${renderCategoryChip(categoryName)}<span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
     ${renderStatementStatus(transaction)}
-    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatMoney(row.amountMinor, currency) : "Moeda indisponível"}</strong>
+    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     <details class="actions col-actions"><summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary><div class="actions-menu" role="menu">
       <button type="button" class="actions-item" data-edit="${escapeHtml(transaction.id)}">${renderEditIcon()}<span>Editar</span></button>
@@ -590,7 +590,8 @@ function renderTransactionDescription(
   if (transaction.accountRemuneration) {
     return `<strong>Remuneração CDI${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}${renderAccountRemunerationAudit(transaction)}`;
   }
-  return `<strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}`;
+  const note = readNonEmpty(transaction.note);
+  return `<strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${note ? `<span class="description-note">${escapeHtml(note)}</span>` : ""}${renderTransferNote(transaction, selectedAccount, accounts)}`;
 }
 
 function renderTransactionCloneAction(transaction: TransactionRecord): string {
@@ -608,8 +609,8 @@ function renderGroupRow(
     ${renderRowGlyph("", group.kind)}
     <time class="col-date" datetime="${escapeHtml(group.displayOn)}" title="${escapeHtml(formatDate(group.displayOn))}">${formatMovementDate(group.displayOn)}</time>
     <div class="description col-description"><strong>${escapeHtml(group.description)}</strong><span>${group.members.length} lançamentos agrupados</span></div>
-    <span class="col-category">Várias categorias</span><span class="col-kind">${escapeHtml(formatKind(group.kind))}</span>${renderStatementStatus(row.transaction)}
-    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatMoney(row.amountMinor, currency) : "Moeda indisponível"}</strong>
+    ${renderCategoryChip("Várias categorias")}<span class="col-kind">${escapeHtml(formatKind(group.kind))}</span>${renderStatementStatus(row.transaction)}
+    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     <button type="button" class="icon-btn col-actions" data-group-details="${escapeHtml(group.id)}" aria-label="Ver lançamentos do grupo">${renderDotsIcon()}</button>
     <script type="application/json" data-group="${escapeHtml(group.id)}">${serializeScriptJson(group)}</script>
@@ -1240,6 +1241,42 @@ function resolveRowGlyph(categoryName: string, kind: string): { key: string; htm
 function renderRowGlyph(categoryName: string, kind: string): string {
   const glyph = resolveRowGlyph(categoryName, kind);
   return `<span class="col-row-icon" data-row-glyph="${escapeHtml(glyph.key)}" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${glyph.html}</svg></span>`;
+}
+
+/**
+ * The category chip carries its own glyph, like the reference. Only a category that really matched a
+ * known group is decorated, so the empty placeholder never wears a glyph it did not earn.
+ */
+function resolveCategoryGlyph(categoryName: string): { key: string; html: string } | undefined {
+  if (categoryName === "Várias categorias") {
+    return { key: "layers", html: GROUP_CATEGORY_GLYPH };
+  }
+  if (!categoryName || categoryName === "Sem categoria") {
+    return undefined;
+  }
+  const match = ROW_GLYPH_KEYWORDS.find(([pattern]) => pattern.test(categoryName));
+  if (!match) return undefined;
+  const key = match[1];
+  return { key, html: ROW_GLYPHS[key] ?? ROW_GLYPH_FALLBACK };
+}
+
+const GROUP_CATEGORY_GLYPH = '<path d="M10 3.5 4 6.5l6 3 6-3Z"/><path d="M4 10.5l6 3 6-3"/>';
+
+function renderCategoryChip(categoryName: string): string {
+  const glyph = resolveCategoryGlyph(categoryName);
+  const icon = glyph
+    ? `<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${glyph.html}</svg>`
+    : "";
+  const attribute = glyph ? ` data-category-glyph="${escapeHtml(glyph.key)}"` : "";
+  return `<span class="col-category"${attribute}>${icon}<span class="col-category-label">${escapeHtml(categoryName)}</span></span>`;
+}
+
+/**
+ * The reference prints the movement direction as an explicit sign, so an entry reads `+ R$ …` and an
+ * exit reads `- R$ …` instead of relying on colour alone.
+ */
+function formatSignedAmount(amountMinor: number, currency: string): string {
+  return `${amountMinor < 0 ? "-" : "+"} ${formatMoney(Math.abs(amountMinor), currency)}`;
 }
 
 function formatKind(kind: string): string {

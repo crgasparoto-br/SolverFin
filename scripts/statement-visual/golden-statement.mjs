@@ -131,6 +131,21 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       "GS-MOCKUP-NC-CATEGORY-COLUMN",
       "[data-golden-screen] .statement-body .statement-row-metadata{grid-area:description!important;position:absolute!important;left:0!important}",
     );
+    // The refined chips must keep their own glyph and their pill shape; flattening the
+    // category chip back to bare text, or stripping the chip glyph, must be rejected.
+    await negativeControl(
+      "GS-MOCKUP-NC-CHIP-TREATMENT",
+      "[data-golden-screen] .statement-body .col-category{background:transparent!important;border-radius:0!important}",
+    );
+    await negativeControl(
+      "GS-MOCKUP-NC-CHIP-GLYPH",
+      "[data-golden-screen] .statement-body .col-category svg{display:none!important}",
+    );
+    // The selection control is a styled rounded square in the reference, not the native circle.
+    await negativeControl(
+      "GS-MOCKUP-NC-SELECTION-CONTROL",
+      "[data-golden-screen] .statement-body .col-select input[type=checkbox]{appearance:auto!important}",
+    );
     await read(`document.querySelector('[data-statement-options-toggle]').focus()`);
     await press("Enter", 13);
     assert.equal(await expansion(), "true");

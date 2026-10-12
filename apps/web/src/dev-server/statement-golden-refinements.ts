@@ -408,8 +408,8 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-description>strong{font-weight:700;line-height:1.4}
     ${root} .statement-body .col-amount{font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.015em}
     /* Reference glyph: a soft tile per movement, tinted by its own direction or category. */
-    ${root} .statement-body .col-row-icon{align-items:center;background:#f1f5f9;border-radius:10px;color:#64748b;display:inline-flex;flex:0 0 auto;height:36px;justify-content:center;width:36px}
-    ${root} .statement-body .col-row-icon svg{display:block}
+    ${root} .statement-body .col-row-icon{align-items:center;background:#f1f5f9;border-radius:12px;color:#64748b;display:inline-flex;flex:0 0 auto;height:44px;justify-content:center;width:44px}
+    ${root} .statement-body .col-row-icon svg{display:block;height:21px;width:21px}
     ${root} .statement-row[data-row-glyph="expense"] .col-row-icon{background:#fef2f2;color:#b91c1c}
     ${root} .statement-row[data-row-glyph="income"] .col-row-icon{background:#ecfdf5;color:#047857}
     ${root} .statement-row[data-row-glyph="incomeCategory"] .col-row-icon{background:#ecfdf5;color:#047857}
@@ -424,18 +424,43 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-row[data-row-glyph="investment"] .col-row-icon{background:#f0fdf4;color:#15803d}
     ${root} .statement-row[data-row-glyph="tax"] .col-row-icon{background:#f8fafc;color:#475569}
     ${root} .statement-row[data-row-glyph="receipt"] .col-row-icon{background:#f8fafc;color:#475569}
-    ${root} .statement-body .col-category{align-self:start;background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]};width:max-content}
+    ${root} .statement-body .col-category{align-items:center;align-self:start;background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;gap:5px;max-width:100%;padding:3px 9px;width:max-content}
     ${root} .statement-body .col-category:empty{display:none}
+    ${root} .statement-body .col-category svg{display:block;flex:0 0 auto}
+    ${root} .statement-body .col-category-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    /* The chip wears the tint of its own category, matching the glyph tile. */
+    ${root} .statement-body .col-category[data-category-glyph="food"]{background:#fff7ed;color:#c2410c}
+    ${root} .statement-body .col-category[data-category-glyph="health"]{background:#fdf2f8;color:#be185d}
+    ${root} .statement-body .col-category[data-category-glyph="transport"]{background:#eff6ff;color:#1d4ed8}
+    ${root} .statement-body .col-category[data-category-glyph="home"]{background:#f5f3ff;color:#6d28d9}
+    ${root} .statement-body .col-category[data-category-glyph="utility"]{background:#fefce8;color:#a16207}
+    ${root} .statement-body .col-category[data-category-glyph="education"]{background:#ecfeff;color:#0e7490}
+    ${root} .statement-body .col-category[data-category-glyph="leisure"]{background:#f0fdfa;color:#0f766e}
+    ${root} .statement-body .col-category[data-category-glyph="incomeCategory"]{background:#ecfdf5;color:#047857}
+    ${root} .statement-body .col-category[data-category-glyph="investment"]{background:#f0fdf4;color:#15803d}
+    ${root} .statement-body .col-category[data-category-glyph="tax"]{background:#f1f5f9;color:#475569}
+    ${root} .statement-body .col-category[data-category-glyph="receipt"]{background:#f1f5f9;color:#475569}
+    ${root} .statement-body .col-category[data-category-glyph="layers"]{background:#eef2ff;color:#4338ca}
+    /* Reference description: a strong title over a muted second line. */
+    ${root} .statement-body .description-note{color:var(--muted);display:block;font-size:${typography.sizes.xs};line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    /* Reference selection control: a rounded square, not a native circle. */
+    ${root} .statement-body .col-select input[type="checkbox"]{appearance:none;background:#fff;border:1.5px solid #cbd5e1;border-radius:5px;cursor:pointer;height:18px;margin:0;position:relative;width:18px}
+    ${root} .statement-body .col-select input[type="checkbox"]:hover{border-color:#94a3b8}
+    ${root} .statement-body .col-select input[type="checkbox"]:checked{background:var(--primary);border-color:var(--primary)}
+    ${root} .statement-body .col-select input[type="checkbox"]:checked::after{border:solid #fff;border-width:0 0 2px 2px;content:"";height:4px;left:5px;position:absolute;top:2px;transform:rotate(-45deg);width:8px}
+    ${root} .statement-body .col-select input[type="checkbox"]:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    ${root} .statement-body .col-select input[type="checkbox"]:disabled{cursor:not-allowed;opacity:.45}
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
     /* M02/M04: metadata stays secondary and on one line so it neither competes with the
        description/amount nor inflates the row height of the movement list. */
-    ${root} .statement-body .statement-status{align-items:center;border:0;display:inline-flex;gap:${spacing[1]};height:auto;width:auto;max-width:100%;min-width:0;padding:${spacing[1]} ${spacing[2]};border-radius:999px;font-size:${typography.sizes.xs};white-space:nowrap}
-    ${root} .statement-body .statement-status svg{flex:0 0 auto}
-    ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:500;line-height:1.25}
-    ${root} .statement-body .statement-status-ok{background:#dcfce7;color:#166534}
-    ${root} .statement-body .statement-status-posted{background:#f1f5f9;color:#475569}
-    ${root} .statement-body .statement-status-pending{background:#fef3c7;color:#92400e}
-    ${root} .statement-body .statement-status-planned{background:#f1f5f9;color:#475569}
+    /* Reference status chip: a defined pill with its own glyph, not bare text. */
+    ${root} .statement-body .statement-status{align-items:center;border:1px solid transparent;display:inline-flex;gap:5px;height:auto;width:auto;max-width:100%;min-width:0;padding:3px 9px;border-radius:999px;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};white-space:nowrap}
+    ${root} .statement-body .statement-status svg{flex:0 0 auto;height:14px;width:14px}
+    ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:inherit;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
+    ${root} .statement-body .statement-status-ok{background:#dcfce7;border-color:#bbf7d0;color:#166534}
+    ${root} .statement-body .statement-status-posted{background:#f1f5f9;border-color:#e2e8f0;color:#475569}
+    ${root} .statement-body .statement-status-pending{background:#fef3c7;border-color:#fde68a;color:#92400e}
+    ${root} .statement-body .statement-status-planned{background:#eff6ff;border-color:#dbeafe;color:#1d4ed8}
     ${root} .statement-panel.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
     /* Keep existing canonical GET sorting reachable; do not synthesize unsupported filters. */
     ${root} .statement-query-heading>span{display:block;color:var(--muted);font-size:${typography.sizes.xs}}
@@ -455,8 +480,8 @@ export function statementGoldenRefinementStyles(): string {
     }
     ${root} .statement-toolbar{display:none}
     ${root} .statement-table{max-width:100%;overflow-x:auto;overflow-y:visible}
-    ${root} .statement-head{background:#f8fafc;padding-inline:${spacing[3]}}
-    ${root} .statement-body{border-bottom:1px solid #eef2f7;padding-inline:${spacing[3]}}
+    ${root} .statement-head{background:transparent;border-bottom:1px solid var(--line);color:#94a3b8;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};letter-spacing:0;padding-inline:${spacing[3]};text-transform:none}
+    ${root} .statement-body{border-bottom:1px solid #eef2f7;padding-block:${spacing[2]};padding-inline:${spacing[3]}}
     ${root} .statement-date-group{display:none}
     ${root} .statement-body .col-description>strong{font-size:${typography.sizes.md}}
     ${root} .statement-body .col-description>span,${root} .statement-body :is(.col-category,.col-kind,.col-balance){font-size:${typography.sizes.xs}}
@@ -561,7 +586,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
       /* Reference anatomy: check | glyph | date | description | category | value | status | actions.
          Rows and header share one track list, so the columns always line up. */
-      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 40px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) minmax(9.5rem,auto) 36px}
+      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 48px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) minmax(9.5rem,auto) 36px}
       ${root} .statement-body{grid-template-areas:"select icon date description category amount status actions" "select icon date . . balance . actions"}
       ${root} .statement-body .col-row-icon{grid-area:icon}
       ${root} .statement-body .statement-row-footer{display:contents}
