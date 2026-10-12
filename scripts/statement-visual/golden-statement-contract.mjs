@@ -48,7 +48,28 @@ export function assertGoldenStatement(layout) {
     layout.amount.font > layout.balance.font * 1.15,
     "Amount lost visual priority over balance.",
   );
-  assert.ok(layout.category.y > layout.description.y, "Category must be on the secondary line.");
+  if (layout.viewport.width > 760) {
+    // Reference anatomy: the category owns the column right after the description, and the
+    // movement carries a glyph tile in front of the date.
+    assert.ok(
+      layout.category.x >= layout.description.right - 1,
+      "Category must occupy its own column after the description.",
+    );
+    assert.ok(
+      layout.category.right <= layout.amount.x + 1,
+      "Category must not run into the amount column.",
+    );
+    assert.ok(
+      (layout.rowIcon?.width ?? 0) >= 24 && (layout.rowIcon?.width ?? 0) <= 48,
+      "Movement row must publish its glyph tile at the reference size.",
+    );
+    assert.ok(
+      (layout.rowIcon?.x ?? 0) < layout.date.x,
+      "Movement glyph must precede the date column.",
+    );
+  } else {
+    assert.ok(layout.category.y > layout.description.y, "Category must be on the secondary line.");
+  }
   assert.ok(layout.balance.y > layout.amount.y, "Running balance must be below the amount.");
   if (layout.viewport.width >= 1280 && layout.viewport.height >= 740) {
     assert.ok(
@@ -84,6 +105,8 @@ export const goldenStatementMeasurements = `(() => {
     descriptionText: rect('.statement-body .col-description > strong'),
     category: rect('.statement-body .col-category'), amount: rect('.statement-body .col-amount'),
     balance: rect('.statement-body .col-balance'),
+    rowIcon: rect('.statement-body .col-row-icon'),
+    date: rect('.statement-body .col-date'),
     summaryCollisions: (() => {
       const nodes = Array.from(document.querySelectorAll('.account-summary .summary-total strong'))
         .filter(element => {

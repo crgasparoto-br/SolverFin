@@ -407,6 +407,23 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .summary-total[data-summary-total="closing"] .summary-total-icon{background:#e2e8f0;color:#334155}
     ${root} .statement-body .col-description>strong{font-weight:700;line-height:1.4}
     ${root} .statement-body .col-amount{font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:-.015em}
+    /* Reference glyph: a soft tile per movement, tinted by its own direction or category. */
+    ${root} .statement-body .col-row-icon{align-items:center;background:#f1f5f9;border-radius:10px;color:#64748b;display:inline-flex;flex:0 0 auto;height:36px;justify-content:center;width:36px}
+    ${root} .statement-body .col-row-icon svg{display:block}
+    ${root} .statement-row[data-row-glyph="expense"] .col-row-icon{background:#fef2f2;color:#b91c1c}
+    ${root} .statement-row[data-row-glyph="income"] .col-row-icon{background:#ecfdf5;color:#047857}
+    ${root} .statement-row[data-row-glyph="incomeCategory"] .col-row-icon{background:#ecfdf5;color:#047857}
+    ${root} .statement-row[data-row-glyph="transfer"] .col-row-icon{background:#eef2ff;color:#4338ca}
+    ${root} .statement-row[data-row-glyph="food"] .col-row-icon{background:#fff7ed;color:#c2410c}
+    ${root} .statement-row[data-row-glyph="health"] .col-row-icon{background:#fdf2f8;color:#be185d}
+    ${root} .statement-row[data-row-glyph="transport"] .col-row-icon{background:#eff6ff;color:#1d4ed8}
+    ${root} .statement-row[data-row-glyph="home"] .col-row-icon{background:#f5f3ff;color:#6d28d9}
+    ${root} .statement-row[data-row-glyph="utility"] .col-row-icon{background:#fefce8;color:#a16207}
+    ${root} .statement-row[data-row-glyph="education"] .col-row-icon{background:#ecfeff;color:#0e7490}
+    ${root} .statement-row[data-row-glyph="leisure"] .col-row-icon{background:#f0fdfa;color:#0f766e}
+    ${root} .statement-row[data-row-glyph="investment"] .col-row-icon{background:#f0fdf4;color:#15803d}
+    ${root} .statement-row[data-row-glyph="tax"] .col-row-icon{background:#f8fafc;color:#475569}
+    ${root} .statement-row[data-row-glyph="receipt"] .col-row-icon{background:#f8fafc;color:#475569}
     ${root} .statement-body .col-category{align-self:start;background:#f1f5f9;border-radius:999px;color:#475569;display:inline-flex;max-width:100%;padding:2px ${spacing[2]};width:max-content}
     ${root} .statement-body .col-category:empty{display:none}
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
@@ -542,11 +559,31 @@ export function statementGoldenRefinementStyles(): string {
     }
     @media(min-width:761px){
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
-      /* The compact status chip stays on one line, so its column must fit the full label. */
-      ${root} .statement-row{grid-template-columns:24px 6rem minmax(0,1fr) minmax(4rem,.45fr) minmax(176px,.25fr) minmax(9rem,auto) 36px}
+      /* Reference anatomy: check | glyph | date | description | category | value | status | actions.
+         Rows and header share one track list, so the columns always line up. */
+      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 40px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) minmax(9.5rem,auto) 36px}
+      ${root} .statement-body{grid-template-areas:"select icon date description category amount status actions" "select icon date . . balance . actions"}
+      ${root} .statement-body .col-row-icon{grid-area:icon}
+      ${root} .statement-body .statement-row-footer{display:contents}
+      ${root} .statement-body .col-date{grid-area:date}
+      ${root} .statement-body .col-description{grid-area:description}
+      ${root} .statement-body .statement-row-metadata{align-items:flex-start;display:flex;flex-direction:column;gap:2px;grid-area:category}
+      ${root} .statement-body .col-status{grid-area:status;justify-self:start}
+      ${root} .statement-body .col-amount{grid-area:amount}
+      ${root} .statement-body .col-balance{grid-area:balance}
+      ${root} .statement-body .col-actions{grid-area:actions}
+      ${root} .statement-head{grid-template-areas:"select icon date description category amount status actions";row-gap:0}
+      ${root} .statement-head .col-row-icon{grid-area:icon}
+      ${root} .statement-head .col-date{grid-area:date}
+      ${root} .statement-head .col-description{grid-area:description}
+      ${root} .statement-head .col-category{clip-path:none;grid-area:category;height:auto;overflow:visible;position:static;width:auto}
+      ${root} .statement-head .col-amount{grid-area:amount}
+      ${root} .statement-head .col-status{grid-area:status}
+      ${root} .statement-head .col-actions{grid-area:actions}
     }
     @media(max-width:${breakpoints.shellCompact}){
       ${root} .statement-body[data-statement-row-refined]{grid-template-areas:"select description actions" "select amount amount" "select metadata metadata" "select status status" "select footer footer"}
+      ${root} .statement-body .col-row-icon{display:none}
       ${root} .statement-body .col-status{justify-self:start}
       ${root} .statement-query-heading{display:none}
       ${root} .filter-form .statement-sort-field{display:grid}

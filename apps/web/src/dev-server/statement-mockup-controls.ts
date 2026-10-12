@@ -173,7 +173,7 @@ export function statementMockupControlsStyles(): string {
     ${root} .statement-account-heading .summary-balance p{margin:0}
     ${root} .statement-head{padding-block:${spacing[2]}}
     ${root} .statement-body{padding-block:${spacing[2]}}
-    ${root} .statement-body .col-category{background:transparent;border-radius:0;color:var(--muted);padding:0}
+    ${root} .statement-body .col-category{background:#f1f5f9;border:1px solid var(--line);border-radius:999px;color:#475569;font-weight:${typography.weights.medium};padding:3px ${spacing[2]}}
     ${root} .statement-body .statement-status-posted{background:transparent;color:var(--muted);padding:0}
     @media(min-width:761px){
       ${root} .account-summary[data-mockup-composition]{row-gap:${spacing[2]};padding:${spacing[2]}}

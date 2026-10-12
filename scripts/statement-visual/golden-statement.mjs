@@ -121,6 +121,16 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       "GS-NC-STATUS-CLIPPED",
       "[data-golden-screen] .statement-body .statement-status{max-width:120px!important}",
     );
+    // Reference anatomy: dropping the row glyph or folding the category back under the
+    // description must both be rejected.
+    await negativeControl(
+      "GS-MOCKUP-NC-ROW-GLYPH",
+      "[data-golden-screen] .statement-body .col-row-icon{display:none!important}",
+    );
+    await negativeControl(
+      "GS-MOCKUP-NC-CATEGORY-COLUMN",
+      "[data-golden-screen] .statement-body .statement-row-metadata{grid-area:description!important;position:absolute!important;left:0!important}",
+    );
     await read(`document.querySelector('[data-statement-options-toggle]').focus()`);
     await press("Enter", 13);
     assert.equal(await expansion(), "true");

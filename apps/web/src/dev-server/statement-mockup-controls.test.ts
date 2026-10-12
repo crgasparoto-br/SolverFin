@@ -48,7 +48,9 @@ test("component without the canonical dialog leaves its root untouched", () => {
 test("statement hierarchy keeps compact filters and quiet metadata", () => {
   const styles = statementMockupControlsStyles();
   assert.ok(styles.includes("position:absolute;right:12px;top:8px"));
-  assert.ok(styles.includes("col-category{background:transparent"));
+  // Reference anatomy: the category owns a chip column, so it must not be flattened to plain text.
+  assert.ok(styles.includes("col-category{background:#f1f5f9"));
+  assert.ok(styles.includes("border-radius:999px"));
   assert.ok(styles.includes("statement-status-posted{background:transparent"));
   assert.ok(styles.includes("account-summary[data-mockup-composition]{row-gap:"));
 });
