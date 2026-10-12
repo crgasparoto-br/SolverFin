@@ -480,6 +480,10 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-description>span,${root} .statement-body :is(.col-category,.col-kind,.col-balance){font-size:${typography.sizes.xs}}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.md}}
     ${dialog}{border:1px solid var(--line);border-radius:10px;height:calc(100dvh - 32px);margin:16px 16px 16px auto;max-height:calc(100dvh - 32px);max-width:min(440px,calc(100% - 32px));padding:0;width:min(440px,calc(100% - 32px))}
+    /* The reference draws the edit form as a card centred over the screen, while the create form
+       stays a right-hand sheet. PATCH is the existing marker of "editing an existing transaction",
+       so the two modes stay distinguishable without new state. */
+    ${dialog}:has(form[data-method="PATCH"]){height:fit-content;margin:auto;max-height:calc(100dvh - 32px)}
     ${dialog}::backdrop{background:rgba(15,23,42,.38)}
     ${dialog} .modal-panel{box-sizing:border-box;min-height:100%;padding:${spacing[4]}}
     ${dialog} .statement-entry-heading>.eyebrow{display:none!important}

@@ -178,3 +178,11 @@ assert.equal(resolveCategoryDirection("transfer"), "transfer");
 assert.equal(resolveCategoryDirection("TRANSFER"), "transfer");
 assert.equal(resolveCategoryDirection("expense"), "out");
 assert.equal(resolveCategoryDirection(""), "out");
+
+// The reference centres the edit form over the screen while the create form stays a right-hand
+// sheet, so the two modes must keep distinct geometry.
+assert.match(styles, /dialog\[data-modal\]\{[^}]*margin:16px 16px 16px auto/);
+assert.match(
+  styles,
+  /dialog\[data-modal\]:has\(form\[data-method="PATCH"\]\)\{height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\)\}/,
+);
