@@ -65,7 +65,12 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
   assert.match(html, /<h1[^>]*>Extrato Bancário<\/h1>/);
   assert.match(html, /Movimentações/);
   assert.match(html, /<label for="filter-month">Mês<\/label>/);
-  assert.match(html, /id="filter-month" name="month" type="month" value="2026-06"/);
+  // The Golden Screen progressively moves the month control into its period header.
+  // Assert the native GET contract without depending on HTML attribute order.
+  const monthInput = html.match(
+    /<input\b(?=[^>]*\bid="filter-month")(?=[^>]*\bname="month")(?=[^>]*\btype="month")(?=[^>]*\bvalue="2026-06")[^>]*>/,
+  );
+  assert.ok(monthInput, "Period control must preserve its id, GET name, type and selected value");
   assert.match(html, /01\/06\/2026 até 30\/06\/2026/);
   assert.match(html, /statement-layout/);
   assert.match(html, /grid-template-columns:\s*minmax\(260px,\s*320px\)\s+minmax\(0,1fr\)/);

@@ -42,5 +42,5 @@ export function renderStatementStatus(
 ): string {
   const presentation = resolveStatementStatusPresentation(transaction);
 
-  return `<span class="statement-status statement-status-${presentation.tone} col-status" role="img" tabindex="0" aria-label="${presentation.label}" title="${presentation.label}" data-tooltip="${presentation.label}">${presentation.iconHtml}</span>`;
+  return `<span class="statement-status statement-status-${presentation.tone} col-status" role="img" tabindex="0" aria-label="${presentation.label}" title="${presentation.label}" data-tooltip="${presentation.label}">${presentation.iconHtml}<span class="statement-status-label" aria-hidden="true">${presentation.label}</span></span>`;
 }

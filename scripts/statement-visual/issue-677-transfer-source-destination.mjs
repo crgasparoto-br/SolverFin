@@ -72,6 +72,7 @@ try {
   });
 
   const keyboard = await readKeyboardOrder();
+  scenarios[0].keyboard = keyboard;
   check(
     keyboard.order.join(">") === "kind>source>destination",
     "Keyboard order does not go Tipo > Conta origem > Conta destino",
@@ -285,10 +286,20 @@ async function pressTab() {
 }
 
 async function readKeyboardOrder() {
-  await evaluate(browser.cdp, `document.querySelector("[data-form]").kind.focus()`);
+  await evaluate(
+    browser.cdp,
+    `(() => {
+      const form = document.querySelector("[data-form]");
+      const choice = form.querySelector('[data-statement-entry-kind="transfer"][aria-checked="true"]');
+      if (!choice || choice.disabled || form.kind.value !== "transfer") {
+        throw new Error("The visible kind control is not synchronized with the canonical transfer field");
+      }
+      choice.focus();
+    })()`,
+  );
   const describe = `(() => {
     const active = document.activeElement;
-    if (active?.name === "kind") return "kind";
+    if (active?.matches?.('[data-statement-entry-kind][aria-checked="true"]')) return "kind";
     if (active?.matches?.("[data-source-account-display]")) return "source";
     if (active?.name === "destinationAccountId") return "destination";
     return active?.name || active?.tagName || "";
