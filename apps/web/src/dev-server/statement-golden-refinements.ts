@@ -479,10 +479,9 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-description>strong{font-size:${typography.sizes.md}}
     ${root} .statement-body .col-description>span,${root} .statement-body :is(.col-category,.col-kind,.col-balance){font-size:${typography.sizes.xs}}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.md}}
-    ${dialog}{border:1px solid var(--line);border-radius:10px;height:calc(100dvh - 32px);margin:16px 16px 16px auto;max-height:calc(100dvh - 32px);max-width:min(440px,calc(100% - 32px));padding:0;width:min(440px,calc(100% - 32px))}
-    /* The reference draws the edit form as a card centred over the screen, while the create form
-       stays a right-hand sheet. PATCH is the existing marker of "editing an existing transaction",
-       so the two modes stay distinguishable without new state. */
+    ${dialog}{border:1px solid var(--line);border-radius:10px;height:fit-content;margin:auto;max-height:calc(100dvh - 32px);max-width:min(440px,calc(100% - 32px));padding:0;width:min(440px,calc(100% - 32px))}
+    /* Both create and edit dialogs use the same centered viewport contract. Keep the PATCH
+       selector for compatibility with the existing edit flow without moving either dialog. */
     ${dialog}:has(form[data-method="PATCH"]){height:fit-content;margin:auto;max-height:calc(100dvh - 32px)}
     ${dialog}::backdrop{background:rgba(15,23,42,.38)}
     ${dialog} .modal-panel{box-sizing:border-box;min-height:100%;padding:${spacing[4]}}
@@ -553,7 +552,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field,.statement-sort-field) select{min-width:0;width:100%}
       ${root} .statement-filter-actions{grid-column:1/-1;justify-content:stretch}
       ${root} .statement-filter-actions>button{flex:1}
-      ${dialog}{height:calc(100dvh - 16px);margin:8px;max-height:calc(100dvh - 16px);max-width:calc(100% - 16px);width:calc(100% - 16px)}
+      ${dialog}{height:calc(100dvh - 32px);margin:16px auto;max-height:calc(100dvh - 32px);max-width:calc(100% - 32px);width:calc(100% - 32px)}
       ${dialog} .modal-panel form[data-form],${dialog} .statement-entry-advanced-grid{grid-template-columns:1fr}
       ${dialog} .statement-entry-advanced-grid>.full{grid-column:auto}
     }

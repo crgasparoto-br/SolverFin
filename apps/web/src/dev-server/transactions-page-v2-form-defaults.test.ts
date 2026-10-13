@@ -99,6 +99,16 @@ test("novo lançamento centraliza o dialog e limita a rolagem ao próprio modal"
       /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \{ margin-inline: auto; max-width: calc\(100% - 32px\); \}/,
       "o CSS da Golden Screen deve preservar ao menos 16px de margem lateral no mobile",
     );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{border:1px[^}]*height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\)/,
+      "o refinamento da Golden Screen deve centralizar novos lançamentos no desktop",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{height:calc\(100dvh - 32px\);margin:16px auto;max-height:calc\(100dvh - 32px\);max-width:calc\(100% - 32px\);width:calc\(100% - 32px\)\}/,
+      "o refinamento responsivo deve preservar margens de 16px nos celulares",
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }
