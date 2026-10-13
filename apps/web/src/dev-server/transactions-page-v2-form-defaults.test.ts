@@ -69,6 +69,31 @@ test("novo lançamento sugere datas locais e aplica fallbacks temporais seguros"
   }
 });
 
+test("novo lançamento centraliza o dialog e limita a rolagem ao próprio modal", async () => {
+  globalThis.fetch = mockFetch();
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
+    );
+    const normalized = html.replace(/\s+/g, " ");
+
+    assert.match(
+      normalized,
+      /dialog\[data-modal\]\{[^}]*box-sizing:border-box;[^}]*inset:0 auto 0 50vw;[^}]*margin:auto 0;[^}]*max-height:calc\(100dvh - 2rem\);[^}]*overflow:hidden;[^}]*position:fixed;[^}]*transform:translateX\(-50%\)\}/,
+      "o dialog de novo lançamento precisa de centralização geométrica no viewport e limite seguro",
+    );
+    assert.match(
+      normalized,
+      /dialog\[data-modal\]>\.modal-panel\{[^}]*max-height:inherit;[^}]*overflow-y:auto;[^}]*overscroll-behavior:contain\}/,
+      "formulários longos devem rolar dentro do modal, sem deslocar a página",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("mensagens do formulário de lançamentos permanecem em pt-BR", async () => {
   globalThis.fetch = mockFetch();
 
