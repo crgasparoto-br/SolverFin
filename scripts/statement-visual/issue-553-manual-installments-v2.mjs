@@ -26,6 +26,17 @@ try {
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await installReloadGuard();
   await openExpenseModalByKeyboard();
+  const desktopFocus = await readModalFocusContract();
+  check(desktopFocus.focusInsideDialog, "Desktop modal did not receive focus", desktopFocus);
+  await pressEscape();
+  const desktopEscape = await readModalEscapeContract();
+  check(desktopEscape.closed, "Escape did not close the desktop modal", desktopEscape);
+  check(
+    desktopEscape.focusReturnedToOpener,
+    "Focus did not return to the desktop opener",
+    desktopEscape,
+  );
+  await openExpenseModalByKeyboard();
   const desktopForm = await fillInstallmentForm({
     amount: "120,00",
     plannedOn: "2026-08-31",
@@ -541,6 +552,35 @@ async function readFormState() {
   );
 }
 
+async function readModalFocusContract() {
+  return evaluate(
+    browser.cdp,
+    `(() => {
+      const dialog = document.querySelector("[data-modal]");
+      const active = document.activeElement;
+      return {
+        open: dialog?.open === true,
+        focusInsideDialog: Boolean(dialog && active && dialog.contains(active)),
+        activeTag: active?.tagName || "",
+      };
+    })()`,
+  );
+}
+
+async function readModalEscapeContract() {
+  return evaluate(
+    browser.cdp,
+    `(() => {
+      const dialog = document.querySelector("[data-modal]");
+      const opener = document.querySelector('[data-open-modal][data-quick-kind="expense"]');
+      return {
+        closed: dialog?.open === false,
+        focusReturnedToOpener: document.activeElement === opener,
+      };
+    })()`,
+  );
+}
+
 async function readInstallments(accountId, from, to) {
   return evaluate(
     browser.cdp,
@@ -574,6 +614,24 @@ async function pressEnter() {
     code: "Enter",
     windowsVirtualKeyCode: 13,
     nativeVirtualKeyCode: 13,
+  });
+  await sleep(100);
+}
+
+async function pressEscape() {
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  });
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
   });
   await sleep(100);
 }
