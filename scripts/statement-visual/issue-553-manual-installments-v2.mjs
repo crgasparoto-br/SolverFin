@@ -436,7 +436,7 @@ async function openExpenseModalByKeyboard() {
     browser.cdp,
     `(() => {
       const button = document.querySelector('[data-open-modal][data-quick-kind="expense"]');
-      button?.focus();
+      button?.focus({ preventScroll: true });
       return document.activeElement === button && button?.disabled !== true;
     })()`,
   );
