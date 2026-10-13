@@ -113,8 +113,7 @@ try {
   assert.equal(cloneState.method, "POST");
   assert.match(cloneState.title, /Clonar lançamento/);
 
-  // The reference centres the edit form over the screen while the create form stays a right-hand
-  // sheet, so the gate measures both instead of trusting the stylesheet.
+  // Both editing and creating transactions use the centered dialog required by the Golden Screen.
   const modalGeometry = await evaluate(
     browser.cdp,
     `(() => {
@@ -148,8 +147,8 @@ try {
     `edit modal is not centred over the screen: ${JSON.stringify(modalGeometry.edit)}`,
   );
   assert.ok(
-    modalGeometry.create.right < 80 && modalGeometry.create.left > 400,
-    `create modal is no longer a right-hand sheet: ${JSON.stringify(modalGeometry.create)}`,
+    Math.abs(modalGeometry.create.left - modalGeometry.create.right) <= 40,
+    `create modal is not centred over the screen: ${JSON.stringify(modalGeometry.create)}`,
   );
 
   const modalState = await evaluate(
