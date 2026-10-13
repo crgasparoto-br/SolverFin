@@ -361,6 +361,18 @@ async function validateStatement(cdp) {
   assert.equal(focus.exists, true, "Statement exposes no focusable status indicator.");
   assert.equal(focus.focused, true, "Statement status indicator did not accept focus.");
 
+  const actionMenu = await inspectStatementActionMenu(cdp);
+  assert.equal(actionMenu.triggerFound, true, "Statement action menu has no trigger.");
+  assert.equal(actionMenu.opened, true, "Statement action menu did not open.");
+  assert.equal(actionMenu.fixedLayer, true, "Statement action menu stayed inside the row layer.");
+  assert.equal(actionMenu.withinViewport, true, "Statement action menu exceeds the viewport.");
+  assert.equal(
+    actionMenu.pageScrollUnchanged,
+    true,
+    "Opening statement action menu changed page scroll.",
+  );
+  assert.equal(actionMenu.closedByEscape, true, "Statement action menu did not close with Escape.");
+
   const dateAsc = await inspectStatementSort(cdp, baseRoute, "date_asc");
   const dateDesc = await inspectStatementSort(cdp, baseRoute, "date_desc");
   assert.ok(dateAsc.rowCount >= 2, "Statement sorting has fewer than two comparable rows.");
@@ -420,7 +432,7 @@ async function validateStatement(cdp) {
   assert.ok(mobileStructure.rowCount > 0, "Statement mobile has no data rows.");
 
   return {
-    desktop: { measurements, structure, focus },
+    desktop: { measurements, structure, focus, actionMenu },
     mobile: { measurements: mobileMeasurements, structure: mobileStructure },
     sorting: { dateAsc, dateDesc },
     insight,
@@ -452,6 +464,59 @@ async function inspectStatementStructure(cdp) {
       };
     })()`,
   );
+}
+
+async function inspectStatementActionMenu(cdp) {
+  await setViewport(cdp, 1024, 640);
+  await evaluate(cdp, "window.scrollTo(0, document.body.scrollHeight)");
+  await sleep(80);
+
+  const before = await evaluate(
+    cdp,
+    `(() => {
+      const details = Array.from(document.querySelectorAll('.statement-row.statement-body details.actions')).at(-1);
+      const trigger = details?.querySelector('summary');
+      if (!details || !trigger) return { triggerFound: false };
+      const pageScrollY = window.scrollY;
+      trigger.click();
+      return { triggerFound: true, pageScrollY };
+    })()`,
+  );
+  await sleep(100);
+  const initialScrollY = before.pageScrollY;
+
+  const opened = await evaluate(
+    cdp,
+    `(() => {
+      const details = Array.from(document.querySelectorAll('.statement-row.statement-body details.actions')).at(-1);
+      const trigger = details?.querySelector('summary');
+      const menuId = trigger?.getAttribute('aria-controls');
+      const menu = menuId ? document.getElementById(menuId) : null;
+      const rect = menu?.getBoundingClientRect();
+      return {
+        opened: Boolean(details?.open),
+        fixedLayer: Boolean(menu && menu.parentElement === document.body && menu.dataset.statementActionMenuFixed === 'true'),
+        withinViewport: Boolean(rect && rect.top >= 0 && rect.left >= 0 && rect.bottom <= innerHeight && rect.right <= innerWidth),
+        pageScrollUnchanged: ${JSON.stringify(initialScrollY)} === window.scrollY,
+      };
+    })()`,
+  );
+
+  await evaluate(
+    cdp,
+    `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }))`,
+  );
+  await sleep(80);
+  const closedByEscape = await evaluate(
+    cdp,
+    `(() => {
+      const details = Array.from(document.querySelectorAll('.statement-row.statement-body details.actions')).at(-1);
+      const trigger = details?.querySelector('summary');
+      return Boolean(details && !details.open && trigger?.getAttribute('aria-expanded') === 'false');
+    })()`,
+  );
+
+  return { ...before, ...opened, closedByEscape };
 }
 
 async function inspectStatementSort(cdp, baseRoute, sort) {
