@@ -81,7 +81,7 @@ test("novo lançamento centraliza o dialog e limita a rolagem ao próprio modal"
 
     assert.match(
       normalized,
-      /dialog\[data-modal\]\{[^}]*box-sizing:border-box;[^}]*inset:16px;[^}]*margin:auto;[^}]*max-height:calc\(100dvh - 32px\);[^}]*overflow:hidden;[^}]*position:fixed;[^}]*transform:none\}/,
+      /dialog\[data-modal\]\{[^}]*box-sizing:border-box;[^}]*inset:0;[^}]*margin:auto;[^}]*height:fit-content;[^}]*max-height:calc\(100dvh - 32px\);[^}]*max-width:min\(860px,calc\(100vw - 32px\)\);[^}]*overflow:hidden;[^}]*position:fixed;[^}]*transform:none\}/,
       "o dialog de novo lançamento precisa de centralização geométrica no viewport e limite seguro",
     );
     assert.match(
