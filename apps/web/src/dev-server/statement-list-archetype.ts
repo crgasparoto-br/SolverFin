@@ -585,7 +585,8 @@ export function statementListArchetypeStyles(): string {
       body dialog[data-modal] .modal-panel .save-row,
       body dialog[data-group-modal] .modal-panel .save-row { align-items: stretch; }
     }
-    [data-statement-action-menu-fixed].actions-menu { left: 0; max-height: calc(100vh - 16px); max-width: min(220px, calc(100vw - 16px)); overflow-y: auto; position: fixed !important; right: auto !important; top: 0; z-index: 1200; }
+    [data-statement-action-menu-fixed].actions-menu { box-sizing: border-box; left: 0; max-height: calc(100vh - 16px); max-width: min(220px, calc(100vw - 16px)); overflow-x: hidden; overflow-y: auto; position: fixed !important; right: auto !important; top: 0; z-index: 1200; }
+    [data-statement-action-menu-fixed].actions-menu .actions-item { box-sizing: border-box; max-width: 100%; min-width: 0; overflow-wrap: anywhere; white-space: normal; }
     ${statementGoldenRefinementStyles()}
   `;
 }
