@@ -119,7 +119,9 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
         const rowActions = await read(`(() => {
           const details = document.querySelector('.actions[open]');
           if (!details) throw new Error('Row actions menu did not open');
-          const menu = details.querySelector('.actions-menu');
+          const menuId = details.querySelector('summary')?.getAttribute('aria-controls');
+          const menu = menuId ? document.getElementById(menuId) : details.querySelector('.actions-menu');
+          if (!menu) throw new Error('Row actions menu element was not found');
           const rect = menu.getBoundingClientRect();
           const items = Array.from(menu.querySelectorAll('.actions-item'));
           return {
