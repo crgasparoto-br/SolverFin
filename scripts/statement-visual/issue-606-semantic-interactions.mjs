@@ -349,9 +349,7 @@ async function validateStatement(cdp) {
   assert.equal(structure.mainPresent, true, "Statement has no main region.");
   assert.equal(structure.visibleH1Count, 1, "Statement must expose one visible h1.");
   assert.ok(structure.rowCount > 0, "Statement has no data rows.");
-  assert.ok(
-    structure.accountPickerWidth >= 288 && structure.accountPickerFitsViewport,
-  );
+  assert.ok(structure.accountPickerWidth >= 288 && structure.accountPickerFitsViewport);
 
   const focus = await evaluate(
     cdp,
