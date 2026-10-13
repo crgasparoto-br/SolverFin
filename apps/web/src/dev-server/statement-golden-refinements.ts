@@ -199,7 +199,7 @@ export function statementGoldenRefinementRuntime(): string {
 }
 
 export function statementGoldenRefinementStyles(): string {
-  const { spacing, breakpoints, density, typography } = solverFinDesignTokens;
+  const { spacing, density, typography } = solverFinDesignTokens;
   const root = '[data-statement-archetype="A2"][data-golden-screen="statement"]';
   const dialog = 'body:has([data-golden-screen="statement"]) dialog[data-modal]';
   return `
