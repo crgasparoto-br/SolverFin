@@ -35,6 +35,28 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
   }
 });
 
+test("A2 account picker allocates a wider responsive filter column (#708)", async () => {
+  globalThis.fetch = mockFetch([]);
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+
+    assert.match(html, /grid-template-columns:minmax\(18rem,1\.35fr\) minmax\(12rem,\.75fr\)/);
+    assert.match(
+      html,
+      /@media\(max-width:1100px\)\{\.filter-form\{grid-template-columns:minmax\(18rem,1\.25fr\) minmax\(12rem,\.75fr\)\}/,
+    );
+    assert.match(html, /class="account-select-trigger"[^>]+aria-haspopup="listbox"/);
+    assert.match(html, /class="account-select-menu" role="listbox"/);
+    assert.match(html, /name="accountId"[^>]+data-account-input/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("A2 transfer form exposes native destination value and derived rate controls", async () => {
   globalThis.fetch = mockFetch([]);
 

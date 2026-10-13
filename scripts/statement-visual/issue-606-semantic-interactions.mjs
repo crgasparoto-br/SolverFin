@@ -348,6 +348,12 @@ async function validateStatement(cdp) {
   assert.equal(structure.mainPresent, true, "Statement has no main region.");
   assert.equal(structure.visibleH1Count, 1, "Statement must expose one visible h1.");
   assert.ok(structure.rowCount > 0, "Statement has no data rows.");
+  assert.ok(structure.accountPickerWidth >= 288, "Statement account picker remains too narrow.");
+  assert.equal(
+    structure.accountPickerFitsViewport,
+    true,
+    "Statement account picker overflows viewport.",
+  );
 
   const focus = await evaluate(
     cdp,
@@ -418,6 +424,12 @@ async function validateStatement(cdp) {
   assert.equal(mobileStructure.mainPresent, true, "Statement mobile has no main region.");
   assert.equal(mobileStructure.visibleH1Count, 1, "Statement mobile must expose one visible h1.");
   assert.ok(mobileStructure.rowCount > 0, "Statement mobile has no data rows.");
+  assert.ok(mobileStructure.accountPickerWidth > 0, "Statement mobile has no account picker.");
+  assert.equal(
+    mobileStructure.accountPickerFitsViewport,
+    true,
+    "Statement mobile account picker overflows.",
+  );
 
   return {
     desktop: { measurements, structure, focus },
@@ -432,6 +444,8 @@ async function inspectStatementStructure(cdp) {
     cdp,
     `(() => {
       const main = document.querySelector('main');
+      const accountTrigger = document.querySelector('.account-select-trigger');
+      const accountRect = accountTrigger?.getBoundingClientRect();
       const headings = Array.from(document.querySelectorAll('main h1')).filter((heading) => {
         const rect = heading.getBoundingClientRect();
         const style = getComputedStyle(heading);
@@ -449,6 +463,8 @@ async function inspectStatementStructure(cdp) {
         rowCount: document.querySelectorAll('.statement-row.statement-body').length,
         tablePresent: Boolean(document.querySelector('.statement-table[role="table"]')),
         pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        accountPickerWidth: accountRect?.width ?? 0,
+        accountPickerFitsViewport: Boolean(accountRect && accountRect.left >= 0 && accountRect.right <= innerWidth),
       };
     })()`,
   );
