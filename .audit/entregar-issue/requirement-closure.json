@@ -1,263 +1,455 @@
 {
-  "schema_version": 1,
+  "schema_version": 3,
   "specification_snapshot": {
-    "sha256": "6ce29f303b138b1ff2cbc75cdc53c9160d8ef3d2d213265d91248cb197ab54d4"
+    "path": "/tmp/solverfin-handoff-708/specification-snapshot.json",
+    "sha256": "1d0ef250edc0e0f24dc4f0df9309c2702cb9ea3725e9c8b857877532b6d64367"
   },
-  "source_coverage": [
-    {
-      "source_id": "SRC-ISSUE-618",
-      "candidate_count": 15,
-      "unmapped_candidate_keys": []
-    }
-  ],
+  "primary_issue_source_id": "SRC-ISSUE-708",
   "obligations": [
     {
       "id": "OBL-001",
-      "candidate_key": "b4d55468b5537ab0cbc4b7ea0e47b15c571e2cd6b1c28d8e2a8e6ed7db853b65",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 143,
-      "source_text": "Horizonte padrão é 30 dias e reutiliza exatamente `referenceDate`, `openingBalance` e série de #617.",
+      "candidate_key": "c324f85878a1c685cc6f6f0f8f1b7ed17bc610d50917797487452d3b1e0135b4",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 4,
+      "source_text": "Na tela **Extrato Bancário** (`/lancamentos`), o combobox de contas ocupa uma coluna estreita no bloco de filtros. Nomes de contas e a moeda ficam truncados mesmo quando existe espaço horizontal disponível na tela. A referência visual é a tela enviada na solicitação, com contas fictícias como “Bradesco · BRL” e “C6 - Dólar · USD”.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-001"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-002",
-      "candidate_key": "cfdfc166187d9d9929e03253328e66cd107fb1447799e8087e45541b23f841c0",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 144,
-      "source_text": "`minimumProjectedBalance` considera a posição inicial e todos os 30 fechamentos.",
-      "flags": [],
+      "candidate_key": "368d76d684196e276f250df7e031c155ee4bb6bdf6c6bd00e259786d9a3cbc74",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 6,
+      "source_text": "A alteração deve seguir `docs/DESIGN_SYSTEM.md`, preservar o comportamento atual do seletor e manter a experiência mobile-first.",
+      "flags": [
+        "freshness"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-002"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-003",
-      "candidate_key": "b4257acc1b65537f414763c12f779b77f6d56dc7d411bd37285eecae19510baf",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 145,
-      "source_text": "`minimumBalanceOn` usa a primeira ocorrência temporal, incluindo `referenceDate` em caso de empate.",
-      "flags": [],
+      "candidate_key": "908905169d9535055e56019d3c508926844390c513c6d612071c75d65f057865",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 9,
+      "source_text": "Aumentar o comprimento visual do combobox de contas para facilitar a identificação da conta e da moeda selecionadas, sem criar overflow horizontal nem reduzir a usabilidade dos demais filtros.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "review-surface"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-003"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-004",
-      "candidate_key": "de9c1f039eda4830f122310e11147d16badf8573a8e5db357e188961e0fb7d8b",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 146,
-      "source_text": "`freeToSpend` corresponde ao menor colchão financeiro não negativo da trajetória.",
+      "candidate_key": "58f61c3942d8aa4a0618a802fae37ad9bc6299985bdd3c79c323893fd5eb0838",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 12,
+      "source_text": "Aumentar a largura mínima e a participação do campo de conta no grid de filtros do Extrato.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-004"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-005",
-      "candidate_key": "059c4cb0ce496104375ffa158132b5d027325030a18c0cff3111d0429e8010b5",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 147,
-      "source_text": "Déficit intermediário não é mascarado por receita posterior.",
+      "candidate_key": "c181617803635a6912e7a7f8742c88e8061b8c64fd86a961a42a208c18dfa59c",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 13,
+      "source_text": "Manter o botão, menu, seleção, submissão do `accountId`, acessibilidade e navegação por teclado existentes.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-005"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-006",
-      "candidate_key": "798b18b77c27a0eeeebea9de0f70cd472c8749384cba7b8abd42bcb6b9002749",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 148,
-      "source_text": "Orçamento sem compromisso materializado não reduz `freeToSpend`.",
-      "flags": [],
+      "candidate_key": "0e06ef61238bccd9b11e5353bcd4a076dc02aa954f50682b02c045bf80b8e87f",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 14,
+      "source_text": "Preservar reflow responsivo: em viewport reduzida o campo deve ocupar a largura disponível sem overflow horizontal.",
+      "flags": [
+        "observable",
+        "negative"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-006"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-007",
-      "candidate_key": "a0eae1175f087e62cb417a8a9b5cca041726c2438800f6fd2c86233c2ee40cc6",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 149,
-      "source_text": "Limite de cartão/crédito não aumenta `freeToSpend`.",
+      "candidate_key": "990401072657ec31ff10bea0941a1a40c10d38229da4d7b4a0e1d0602425c13f",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 15,
+      "source_text": "Cobrir a largura e o reflow com teste focado e/ou contrato visual proporcional ao risco.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-007"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-008",
-      "candidate_key": "e5d6e0fcf60d8081a45229c05a505a36b2381cb19d6e713244e3adba40334314",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 150,
-      "source_text": "Não existe reserva mínima implícita.",
-      "flags": [],
+      "candidate_key": "21dd139ade7d90d05d035594ba52b0467d2f4c900d53633ca9e64352b79110b4",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 24,
+      "source_text": "[ ] Em viewport desktop, o combobox de contas é visivelmente mais largo que o estado atual e oferece espaço suficiente para nomes usuais acompanhados da moeda.",
+      "flags": [
+        "freshness"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-008"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-009",
-      "candidate_key": "b8dbb620efde76ce1bddbe4ec33439da33227374a8a6313c3bf1e92dddea328f",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 151,
-      "source_text": "Déficit produz `freeToSpend = 0` e `projectedDeficit > 0`.",
-      "flags": [],
+      "candidate_key": "521dc0c241b519cdc7c922d2d3f7d27583105c893424ab34211e8d93cb670535",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 25,
+      "source_text": "[ ] O campo continua alinhado aos demais filtros e não provoca overflow horizontal na página.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-009"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-010",
-      "candidate_key": "876d20515f98b5fe3f5afd0b4b1f16f2f81f2dfc5a2cb8819148d813707ded62",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 152,
-      "source_text": "BRL e USD permanecem independentes.",
-      "flags": [],
+      "candidate_key": "5f6f527946721191a6ff27c734a41c8bac40f6ba5d203317a7453edfc105024a",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 26,
+      "source_text": "[ ] Em viewport mobile/reduzida, o combobox ocupa a largura segura disponível e os demais filtros continuam utilizáveis.",
+      "flags": [
+        "exhaustive"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-010"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-011",
-      "candidate_key": "9b4f2a9e7ef7ff4d598907ad9669da73109f1dd64118af2fa7981b44cc857f82",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 153,
-      "source_text": "Transferência futura BRL -> USD afeta os dois indicadores apenas pelos respectivos pontos das séries de #617, sem compensação/conversão em #618.",
+      "candidate_key": "615f89f64e66ab20bc2d984c062b733c3addf8f443bbfd0a1a3b979f4bfe7e39",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 27,
+      "source_text": "[ ] A abertura, seleção, fechamento, `aria-expanded`, `role=listbox`, `role=option` e submissão do `accountId` permanecem inalterados.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-011"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-011"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-012",
-      "candidate_key": "09ba74a7691dd66fde8f58b6f39e3c524d66a04fe712a7e5a3fd4555318a1811",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 154,
-      "source_text": "Dado obrigatório insuficiente produz `unavailable` e omite campos numéricos sintéticos.",
+      "candidate_key": "b6375319e93748a4fffed13e418f56535fa90b1a6572bc67ccd769101fdd7472",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 28,
+      "source_text": "[ ] Testes focados, typecheck, lint e validação SSR/visual aplicável passam.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-012"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-012"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-013",
-      "candidate_key": "c0c5892deac19c5a94c25f9c2ad266831735bdb14502a125464fa9898fdfca03",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 155,
-      "source_text": "Saldo bruto, livre para gastar e déficit projetado são semanticamente distintos na UI/API.",
+      "candidate_key": "88263e42a5101b6b559794ea3805e0980add8201ee37521995cc4e08246195fb",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 31,
+      "source_text": "[ ] Testes adicionados/atualizados quando aplicável",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-013"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-013"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-014",
-      "candidate_key": "844bcdacc4758cb768ddc7b782d38269b0f9f8a913c951a1d139f7c5adeec078",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 156,
-      "source_text": "Drilldown do ponto limitante reutiliza a evidência retornada pela projeção, sem recálculo frontend.",
+      "candidate_key": "26359a8af7c8232cb2079fb80fa83422c024a3398488dd18c1107a23ff863623",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 32,
+      "source_text": "[ ] Lint/typecheck/build executados quando disponíveis",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-014"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-014"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     },
     {
       "id": "OBL-015",
-      "candidate_key": "ee4473d52dcf9c7bb48bf706f0046b9a53df3e4d8370d62a14861da382146c03",
-      "source_id": "SRC-ISSUE-618",
-      "source_sha256": "144489457bcf1cb5d447d153a9cc135d089cd33c165db2871e7d63185cc15349",
-      "source_line": 157,
-      "source_text": "Cálculo não depende de IA.",
+      "candidate_key": "be29e6ec33eac95b36bc1f8324905af58cbc409644b0797a3a66d56fb1296c2b",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 33,
+      "source_text": "[ ] Documentação atualizada quando necessário",
       "flags": [],
+      "disposition": "not-applicable",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "No documentation change is required for this CSS-only presentation adjustment; the existing design-system documentation remains accurate."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "12a810e8b8f6d286caddd2724acebd37603fb7a8789caaf3b066e21c5d01ceea",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 34,
+      "source_text": "[ ] ADR criada/atualizada quando houver decisão arquitetural",
+      "flags": [
+        "structural"
+      ],
+      "disposition": "not-applicable",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "No architectural decision or new primitive is introduced; the existing statement renderer and grid remain canonical."
+    },
+    {
+      "id": "OBL-017",
+      "candidate_key": "23248b457bdf7e6499f53ed426deec2a781238a22028ecaed8fe7bb339323558",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 35,
+      "source_text": "[ ] Sem dados sensíveis em logs, fixtures, seeds, prints ou documentação",
+      "flags": [
+        "negative"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-618"
-      ]
+        "REQ-017"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-017"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
+    },
+    {
+      "id": "OBL-018",
+      "candidate_key": "a56afd39ab7b12eefb5c539a85eef50d31d19c590ceb0a79e048e5108a0d4542",
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "source_line": 38,
+      "source_text": "A largura não deve ser fixa de forma que prejudique telas menores; usar o grid existente e uma largura mínima responsiva.",
+      "flags": [
+        "observable",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-018"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-018"
+      ],
+      "scope_decision": null,
+      "rationale": "Closed by the material head 6edafbf48bf30e2718d11674dcf72ed125fe202b: SSR/source coverage, focused tests, exact-head CI and independent Chromium evidence cover the issue obligation."
     }
   ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-708",
+      "source_sha256": "79b9b1cb80e7015aa8d7345dc4ec19da3fc7ba0ee18a25b39026b5a2caf1ded2",
+      "candidate_count": 18,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
   "structural_invariant_closures": {
-    "status": "passed",
-    "applicability_reason": "A issue exige explicitamente reutilizacao da serie canonica #617 como fonte unica.",
-    "entries": [
-      {
-        "id": "STRUCT-618",
-        "obligation_ids": [
-          "OBL-001",
-          "OBL-002",
-          "OBL-003",
-          "OBL-004",
-          "OBL-005",
-          "OBL-006",
-          "OBL-007",
-          "OBL-008",
-          "OBL-009",
-          "OBL-010",
-          "OBL-011",
-          "OBL-012",
-          "OBL-013",
-          "OBL-014",
-          "OBL-015"
-        ],
-        "plausible_wrong_implementation": "Recalcular compromissos em paralelo ou usar apenas o saldo do ultimo dia.",
-        "negative_control_evidence": [
-          "packages/domain/src/free-to-spend.test.ts",
-          "apps/api/src/cash-flow-projection.integration.test.ts"
-        ]
-      }
-    ],
+    "status": "not-applicable",
+    "applicability_reason": "No covered obligation introduces a new structural or canonical implementation path.",
+    "entries": [],
     "unresolved_invariants": []
   },
   "read_model_closures": {
     "status": "not-applicable",
-    "applicability_reason": "A entrega nao introduz historico, versionamento ou read model separado; deriva um indicador da projecao existente."
+    "applicability_reason": "The issue changes presentation layout only and does not introduce a read model, history, pagination or versioning contract.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
   },
   "canonical_source_consistency": {
-    "status": "passed",
-    "applicability_reason": "A serie diaria da #617 permanece a unica trajetoria futura consumida pelo calculo."
+    "status": "not-applicable",
+    "applicability_reason": "The existing account picker remains the single renderer and no competing semantic source is introduced.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "Formula, disponibilidade e distincao semantica foram atualizadas nos documentos canonicos alterados pela PR."
+    "applicability_reason": "No normative documentation claim changes; the responsive CSS adjustment remains within the documented design system.",
+    "old_contract_terms": [],
+    "new_contract_terms": [],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "docs/DESIGN_SYSTEM.md reviewed against the issue-local presentation change."
+    ]
   },
   "scope_reduction_review": {
     "status": "passed",
-    "findings": []
+    "matches": []
   },
   "pass_c": {
     "status": "passed",
-    "reviewed_all_specification_sources": true,
+    "requirement_ids": [
+      "REQ-001",
+      "REQ-002",
+      "REQ-003",
+      "REQ-004",
+      "REQ-005",
+      "REQ-006",
+      "REQ-007",
+      "REQ-008",
+      "REQ-009",
+      "REQ-010",
+      "REQ-011",
+      "REQ-012",
+      "REQ-013",
+      "REQ-014",
+      "REQ-017",
+      "REQ-018"
+    ],
     "obligation_ids": [
       "OBL-001",
       "OBL-002",
@@ -273,7 +465,16 @@
       "OBL-012",
       "OBL-013",
       "OBL-014",
-      "OBL-015"
-    ]
+      "OBL-017",
+      "OBL-018"
+    ],
+    "evidence": [
+      "Issue body re-derived independently from the PR description.",
+      "Changed paths and user-visible semantics reviewed at material head 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
   }
 }

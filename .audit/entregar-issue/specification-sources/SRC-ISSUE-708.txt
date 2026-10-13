@@ -1,0 +1,44 @@
+# Issue #708 — fix: aumentar largura do combobox de contas no Extrato
+
+## Contexto
+Na tela **Extrato Bancário** (`/lancamentos`), o combobox de contas ocupa uma coluna estreita no bloco de filtros. Nomes de contas e a moeda ficam truncados mesmo quando existe espaço horizontal disponível na tela. A referência visual é a tela enviada na solicitação, com contas fictícias como “Bradesco · BRL” e “C6 - Dólar · USD”.
+
+A alteração deve seguir `docs/DESIGN_SYSTEM.md`, preservar o comportamento atual do seletor e manter a experiência mobile-first.
+
+## Objetivo
+Aumentar o comprimento visual do combobox de contas para facilitar a identificação da conta e da moeda selecionadas, sem criar overflow horizontal nem reduzir a usabilidade dos demais filtros.
+
+## Escopo
+- Aumentar a largura mínima e a participação do campo de conta no grid de filtros do Extrato.
+- Manter o botão, menu, seleção, submissão do `accountId`, acessibilidade e navegação por teclado existentes.
+- Preservar reflow responsivo: em viewport reduzida o campo deve ocupar a largura disponível sem overflow horizontal.
+- Cobrir a largura e o reflow com teste focado e/ou contrato visual proporcional ao risco.
+
+## Fora de escopo
+- Alterar o modelo de contas, moedas ou instituições.
+- Alterar a lista de opções, ordenação ou comportamento do menu.
+- Alterar os demais filtros, layout do resumo ou a tela de Contas e Cartões.
+- Criar uma nova primitiva ou migrar o renderer do Extrato.
+
+## Critérios de aceite
+- [ ] Em viewport desktop, o combobox de contas é visivelmente mais largo que o estado atual e oferece espaço suficiente para nomes usuais acompanhados da moeda.
+- [ ] O campo continua alinhado aos demais filtros e não provoca overflow horizontal na página.
+- [ ] Em viewport mobile/reduzida, o combobox ocupa a largura segura disponível e os demais filtros continuam utilizáveis.
+- [ ] A abertura, seleção, fechamento, `aria-expanded`, `role=listbox`, `role=option` e submissão do `accountId` permanecem inalterados.
+- [ ] Testes focados, typecheck, lint e validação SSR/visual aplicável passam.
+
+## Validação obrigatória
+- [ ] Testes adicionados/atualizados quando aplicável
+- [ ] Lint/typecheck/build executados quando disponíveis
+- [ ] Documentação atualizada quando necessário
+- [ ] ADR criada/atualizada quando houver decisão arquitetural
+- [ ] Sem dados sensíveis em logs, fixtures, seeds, prints ou documentação
+
+## Riscos e perguntas abertas
+- A largura não deve ser fixa de forma que prejudique telas menores; usar o grid existente e uma largura mínima responsiva.
+
+## Referências
+- `apps/web/src/dev-server/transactions-page-v2.ts`
+- `apps/web/src/dev-server/statement-list-archetype.ts`
+- `docs/DESIGN_SYSTEM.md`
+- Solicitação visual do usuário em 2026-10-13

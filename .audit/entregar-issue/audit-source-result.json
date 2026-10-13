@@ -1,26 +1,29 @@
 {
   "schema_version": 1,
-  "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
-  "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
-  "identity": {
-    "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
-    "material_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
-    "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 618,
-    "pull_request_number": 675
-  },
+  "rejection_id": "audit-rejection:pr-709-handoff-not-produced-20261013",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue_number": 708,
+  "pull_request_number": 709,
+  "head_sha": "6edafbf48bf30e2718d11674dcf72ed125fe202b",
+  "base_sha": "1a972b4f3b0e1408aefb56eab9aa81494bba9a0e",
+  "audit_transport": "certified-handoff",
   "findings": [
     {
-      "id": "A-002",
+      "id": "A-001",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "availability-provenance-gap",
-      "reason": "missing-opening-balance-synthesized-as-zero",
-      "summary": "A requested currency without an opening-balance source could be represented as a complete zero-valued projection and published as available."
+      "summary": "Current target handoff was not produced; handoff-ready.json was inherited from issue 691/PR 701."
+    },
+    {
+      "id": "F-001",
+      "disposition": "blocking",
+      "status": "closed",
+      "actionable": false,
+      "remediation_mode": "targeted-remediation",
+      "summary": "Responsive combobox overflow was closed by the material CSS remediation."
     }
   ],
   "recommendations": []

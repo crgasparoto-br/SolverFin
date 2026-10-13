@@ -1,27 +1,262 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
+  "head_sha": "6edafbf48bf30e2718d11674dcf72ed125fe202b",
   "requirements": [
     {
-      "requirement_id": "REQ-618",
+      "requirement_id": "REQ-001",
       "positive_evidence": [
-        "packages/domain/src/free-to-spend.test.ts",
-        "apps/api/src/cash-flow-projection.integration.test.ts",
-        "apps/web/src/dev-server/dashboard-presenter.test.ts",
-        "apps/web/src/dev-server/dashboard-page.test.ts",
-        "GitHub Actions Delivery V2 CI run 36030045019 completed success on exact material head"
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: Na tela **Extrato Bancário** (`/lancamentos`), o combobox de contas ocupa uma coluna estreita no bloco de filtros. Nomes de contas e a moeda ficam truncados mesmo quando existe esp"
       ],
       "primary_negative_control": {
-        "id": "NEG-618-CANONICAL-TRAJECTORY",
-        "procedure": "Exercise intermediate deficit followed by later income, reference-date tie, BRL/USD independence, known-zero opening balance, missing opening-balance provenance, and unavailable projection through domain/API boundaries.",
-        "expected": "The minimum is derived only from the canonical projection, known numeric zero remains available, missing mandatory opening-balance provenance is unavailable without synthetic numeric fields, and currencies remain independent.",
-        "observed": "Exact-head domain/API/UI regression coverage passed; JPY with a real zero account remained available while requested EUR with no opening-balance source returned unavailable and omitted numeric free-to-spend fields.",
-        "status": "passed"
+        "id": "NEG-REQ-001",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
       },
       "regression_evidence": [
-        "Delivery V2 CI run 36030045019 success on exact material head",
-        "Statement visual validation run 36030044744 success on exact material head"
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-002",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: A alteração deve seguir `docs/DESIGN_SYSTEM.md`, preservar o comportamento atual do seletor e manter a experiência mobile-first."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-002",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-003",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: Aumentar o comprimento visual do combobox de contas para facilitar a identificação da conta e da moeda selecionadas, sem criar overflow horizontal nem reduzir a usabilidade dos dem"
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-003",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-004",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: Aumentar a largura mínima e a participação do campo de conta no grid de filtros do Extrato."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-004",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-005",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: Manter o botão, menu, seleção, submissão do `accountId`, acessibilidade e navegação por teclado existentes."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-005",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-006",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: Preservar reflow responsivo: em viewport reduzida o campo deve ocupar a largura disponível sem overflow horizontal."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-006",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-007",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: Cobrir a largura e o reflow com teste focado e/ou contrato visual proporcional ao risco."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-007",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-008",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: [ ] Em viewport desktop, o combobox de contas é visivelmente mais largo que o estado atual e oferece espaço suficiente para nomes usuais acompanhados da moeda."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-008",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-009",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: [ ] O campo continua alinhado aos demais filtros e não provoca overflow horizontal na página."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-009",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-010",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: [ ] Em viewport mobile/reduzida, o combobox ocupa a largura segura disponível e os demais filtros continuam utilizáveis."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-010",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-011",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: [ ] A abertura, seleção, fechamento, `aria-expanded`, `role=listbox`, `role=option` e submissão do `accountId` permanecem inalterados."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-011",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-012",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: [ ] Testes focados, typecheck, lint e validação SSR/visual aplicável passam."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-012",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-013",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: [ ] Testes adicionados/atualizados quando aplicável"
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-013",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-014",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: [ ] Lint/typecheck/build executados quando disponíveis"
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-014",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-017",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: [ ] Sem dados sensíveis em logs, fixtures, seeds, prints ou documentação"
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-017",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
+      ]
+    },
+    {
+      "requirement_id": "REQ-018",
+      "positive_evidence": [
+        "Exact-head evidence 6edafbf48bf30e2718d11674dcf72ed125fe202b: A largura não deve ser fixa de forma que prejudique telas menores; usar o grid existente e uma largura mínima responsiva."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-REQ-018",
+        "status": "passed",
+        "procedure": "Exercise a long account label and responsive boundary/contract-preservation case.",
+        "expected": "The wrong fixed-width or inherited-layout implementation is rejected by the observed control.",
+        "observed": "Chromium, focused tests and CI exact-head controls passed for 6edafbf48bf30e2718d11674dcf72ed125fe202b."
+      },
+      "regression_evidence": [
+        "Web test suite, typecheck, lint, SSR style contract and Chrome visual validation passed."
       ]
     }
   ]

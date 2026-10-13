@@ -62,7 +62,7 @@
       "required_risk_families": [
         "structural-contract"
       ],
-      "revalidated_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+      "revalidated_head_sha": "6edafbf48bf30e2718d11674dcf72ed125fe202b",
       "status": "passed"
     },
     {
@@ -135,8 +135,45 @@
         "structural-contract",
         "public-boundary"
       ],
-      "revalidated_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+      "revalidated_head_sha": "6edafbf48bf30e2718d11674dcf72ed125fe202b",
       "status": "passed"
+    },
+    {
+      "escape_id": "ESC-A001-HANDOFF-709",
+      "status": "passed",
+      "escape_class": "foreign-result-artifact-reuse",
+      "plausible_wrong_implementation": "Treat an inherited handoff-ready.json from another issue as if it certified the current PR.",
+      "sibling_cases": [
+        {
+          "case": "base-identical certificate with foreign issue and PR subject",
+          "status": "passed"
+        },
+        {
+          "case": "current certificate with correct issue, PR, base and material head binding",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": [
+          "Fresh certificate subject binds issue 708, PR 709, branch and material head."
+        ]
+      },
+      "detection_change": {
+        "evidence": [
+          "Delivery preflight compares candidate certificate bytes with immutable base and validates target identity."
+        ]
+      },
+      "source_audit": {
+        "rejection_id": "audit-rejection:pr-709-handoff-not-produced-20261013",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "4df1977930dc3a72f8088d175e48b1c2c19583fb2c14da7cdad37976f8d107d6"
+      },
+      "revalidated_head_sha": "6edafbf48bf30e2718d11674dcf72ed125fe202b",
+      "literal_case": {
+        "observed": "The current certificate is target-bound; no foreign SHA is claimed as current."
+      }
     }
   ]
 }
