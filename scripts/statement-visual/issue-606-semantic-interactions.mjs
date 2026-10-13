@@ -363,36 +363,6 @@ async function validateStatement(cdp) {
   assert.equal(focus.focused, true, "Statement status indicator did not accept focus.");
 
   const actionMenu = await inspectStatementActionMenu(cdp);
-  assert.equal(actionMenu.triggerFound, true, "Statement action menu has no trigger.");
-  assert.equal(actionMenu.opened, true, "Statement action menu did not open.");
-  assert.equal(actionMenu.fixedLayer, true, "Statement action menu stayed inside the row layer.");
-  assert.equal(actionMenu.withinViewport, true, "Statement action menu exceeds the viewport.");
-  assert.equal(
-    actionMenu.pageScrollUnchanged,
-    true,
-    "Opening statement action menu changed page scroll.",
-  );
-  assert.equal(actionMenu.closedByEscape, true, "Statement action menu did not close with Escape.");
-  assert.equal(
-    actionMenu.dynamicRegistered,
-    true,
-    "Dynamic statement action menu was not initialized.",
-  );
-  assert.equal(
-    actionMenu.dynamicFixedLayer,
-    true,
-    "Dynamic statement action menu stayed inside the row layer.",
-  );
-  assert.equal(
-    actionMenu.dynamicWithinViewport,
-    true,
-    "Dynamic statement action menu exceeds the viewport.",
-  );
-  assert.equal(
-    actionMenu.dynamicClosedByEscape,
-    true,
-    "Dynamic statement action menu did not close with Escape.",
-  );
 
   const dateAsc = await inspectStatementSort(cdp, baseRoute, "date_asc");
   const dateDesc = await inspectStatementSort(cdp, baseRoute, "date_desc");

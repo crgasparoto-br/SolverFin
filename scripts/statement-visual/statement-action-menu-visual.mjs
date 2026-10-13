@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 import { evaluate, setViewport, sleep } from "./cdp.mjs";
 
 export async function inspectStatementActionMenu(cdp) {
@@ -108,6 +110,34 @@ export async function inspectStatementActionMenu(cdp) {
       const trigger = details?.querySelector('summary');
       return Boolean(details && !details.open && trigger?.getAttribute('aria-expanded') === 'false');
     })()`,
+  );
+
+  assert.deepEqual(
+    {
+      triggerFound: before.triggerFound,
+      opened: opened.opened,
+      fixedLayer: opened.fixedLayer,
+      withinViewport: opened.withinViewport,
+      pageScrollUnchanged: opened.pageScrollUnchanged,
+      closedByEscape,
+      dynamicRegistered,
+      dynamicFixedLayer: dynamicOpened.fixedLayer,
+      dynamicWithinViewport: dynamicOpened.withinViewport,
+      dynamicClosedByEscape,
+    },
+    {
+      triggerFound: true,
+      opened: true,
+      fixedLayer: true,
+      withinViewport: true,
+      pageScrollUnchanged: true,
+      closedByEscape: true,
+      dynamicRegistered: true,
+      dynamicFixedLayer: true,
+      dynamicWithinViewport: true,
+      dynamicClosedByEscape: true,
+    },
+    "Statement action menu visibility contract failed.",
   );
 
   return {
