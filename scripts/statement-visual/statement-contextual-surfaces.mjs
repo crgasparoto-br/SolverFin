@@ -177,7 +177,7 @@ export async function validateStatementContextualSurfaces(
         "more-actions",
         width,
         height,
-        ".statement-body details.actions[open] .actions-menu",
+        ".actions-menu[data-statement-action-menu-fixed]",
       );
       const reconciliation = `[data-edit="${transactionId}"] + [data-action][data-method="PATCH"]`;
       assert.equal(
@@ -201,7 +201,7 @@ export async function validateStatementContextualSurfaces(
         "reconciliation",
         width,
         height,
-        ".statement-body details.actions[open] .actions-menu",
+        ".actions-menu[data-statement-action-menu-fixed]",
         {
           persistedStatus: status,
           canonicalScope:
