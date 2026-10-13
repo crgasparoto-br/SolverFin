@@ -24,6 +24,7 @@ import {
   calculateOpeningBalance,
   filterStatementPeriodTransactions,
   isAccountStatementTransaction,
+  monthToPeriod,
   projectTransactionGroups,
   resolveFilters,
   statementDate,
@@ -56,6 +57,9 @@ interface StatementPresentation {
   sort: StatementSort;
   insightCategoryId?: string;
   insightMerchantKey?: string;
+  filterKind?: "income" | "expense" | "transfer";
+  filterReconciliation?: "reconciled" | "unreconciled";
+  filterStatus?: "effective" | "suggested" | "planned";
 }
 
 export async function renderTransactionsPageV2(token: string, url?: URL): Promise<string> {
@@ -126,6 +130,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     filters.month,
     presentation,
     url,
+    categories,
   );
   const contextHtml = renderStatementContext(
     selectedAccount,
@@ -171,11 +176,21 @@ function resolvePresentation(url: URL | undefined): StatementPresentation {
   const sort: StatementSort = isStatementSort(rawSort) ? rawSort : "date_asc";
   const insightCategoryId = readNonEmpty(url?.searchParams.get("categoryId"));
   const insightMerchantKey = normalizeMerchantKey(url?.searchParams.get("merchantKey") ?? "");
+  const kind = url?.searchParams.get("kind");
+  const reconciliation = url?.searchParams.get("reconciliation");
+  const status = url?.searchParams.get("status");
   return {
     search: (url?.searchParams.get("q") ?? "").trim().slice(0, 120),
     sort,
     ...(insightCategoryId ? { insightCategoryId } : {}),
     ...(insightMerchantKey ? { insightMerchantKey } : {}),
+    ...(kind === "expense" || kind === "income" || kind === "transfer" ? { filterKind: kind } : {}),
+    ...(reconciliation === "unreconciled" || reconciliation === "reconciled"
+      ? { filterReconciliation: reconciliation }
+      : {}),
+    ...(status === "effective" || status === "suggested" || status === "planned"
+      ? { filterStatus: status }
+      : {}),
   };
 }
 
@@ -187,6 +202,23 @@ function filterRowsForPresentation(
   const search = normalizeSearch(presentation.search);
   return rows.filter((row) => {
     const transaction = row.transaction;
+    if (presentation.filterKind && transaction.kind !== presentation.filterKind) return false;
+    if (presentation.filterReconciliation === "reconciled" && transaction.status !== "reconciled")
+      return false;
+    if (presentation.filterReconciliation === "unreconciled" && transaction.status === "reconciled")
+      return false;
+    if (presentation.filterStatus === "effective" && transaction.effectiveOn === undefined)
+      return false;
+    if (
+      presentation.filterStatus === "suggested" &&
+      (transaction.effectiveOn !== undefined || transaction.status !== "suggested")
+    )
+      return false;
+    if (
+      presentation.filterStatus === "planned" &&
+      (transaction.effectiveOn !== undefined || transaction.status === "suggested")
+    )
+      return false;
     if (
       presentation.insightCategoryId &&
       transaction.categoryId !== presentation.insightCategoryId
@@ -248,21 +280,79 @@ function renderFilters(
   month: string,
   presentation: StatementPresentation,
   url: URL | undefined,
+  categories: readonly CategoryRecord[],
 ): string {
-  const preserved = [
-    "profileId",
-    "currency",
-    "kind",
-    "evidence",
-    "day",
-    "categoryId",
-    "merchantKey",
-  ]
+  const preserved = ["profileId", "currency", "evidence", "day", "from", "to", "merchantKey"]
     .map((name) => {
       const value = url?.searchParams.get(name);
       return value ? `<input type="hidden" name="${name}" value="${escapeHtml(value)}">` : "";
     })
     .join("");
+
+  const day = url?.searchParams.get("day");
+  const activePeriod =
+    day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? { startsOn: day, endsOn: day } : monthToPeriod(month);
+  const shortcutBase = new URLSearchParams();
+  if (selectedId) shortcutBase.set("accountId", selectedId);
+  if (presentation.search) shortcutBase.set("q", presentation.search);
+  if (presentation.filterKind) shortcutBase.set("kind", presentation.filterKind);
+  if (presentation.filterStatus) shortcutBase.set("status", presentation.filterStatus);
+  if (presentation.filterReconciliation)
+    shortcutBase.set("reconciliation", presentation.filterReconciliation);
+  if (presentation.insightCategoryId)
+    shortcutBase.set("categoryId", presentation.insightCategoryId);
+  if (presentation.sort !== "date_asc") shortcutBase.set("sort", presentation.sort);
+  const shortcut = (
+    key: string,
+    label: string,
+    params: Readonly<Record<string, string>>,
+    active: boolean,
+  ): string => {
+    const query = new URLSearchParams(shortcutBase);
+    query.set("month", params.month ?? month);
+    for (const [key, value] of Object.entries(params)) {
+      if (key !== "month") query.set(key, value);
+    }
+    return `<a class="statement-period-chip" data-period-shortcut="${key}" href="/lancamentos?${query.toString()}"${active ? ' aria-current="true"' : ""}>${label}</a>`;
+  };
+  const dayOffset = (count: number): string => {
+    const date = new Date();
+    date.setUTCDate(date.getUTCDate() - count);
+    return date.toISOString().slice(0, 10);
+  };
+  const todayIso = dayOffset(0);
+  const previousMonth = (() => {
+    const date = new Date();
+    date.setUTCDate(1);
+    date.setUTCMonth(date.getUTCMonth() - 1);
+    return date.toISOString().slice(0, 7);
+  })();
+  const periodShortcuts = [
+    shortcut("today", "Hoje", { day: todayIso }, day === todayIso),
+    shortcut("last7", "7 dias", { from: dayOffset(6), to: todayIso }, false),
+    shortcut("last30", "30 dias", { from: dayOffset(29), to: todayIso }, false),
+    shortcut(
+      "thisMonth",
+      "Este mês",
+      { month: todayIso.slice(0, 7) },
+      month === todayIso.slice(0, 7) && !day,
+    ),
+    shortcut(
+      "previousMonth",
+      "Mês anterior",
+      { month: previousMonth },
+      month === previousMonth && !day,
+    ),
+  ].join("");
+  const activeFilterCount = [
+    presentation.search,
+    presentation.filterKind,
+    presentation.filterStatus,
+    presentation.filterReconciliation,
+    presentation.insightCategoryId,
+    day,
+    presentation.sort !== "date_asc" ? presentation.sort : undefined,
+  ].filter(Boolean).length;
 
   return `<form class="filter-form" method="get" action="/lancamentos" data-auto-submit>
     ${preserved}
@@ -271,14 +361,44 @@ function renderFilters(
       <label for="filter-month">Mês</label>
       <div class="month-nav">
         <button type="button" class="icon-btn" data-month-step="-1" aria-label="Mês anterior">&#8249;</button>
-        <input id="filter-month" name="month" type="month" value="${escapeHtml(month)}" required />
+        <input id="filter-month" name="month" type="month" lang="pt-BR" value="${escapeHtml(month)}" required />
         <button type="button" class="icon-btn" data-month-step="1" aria-label="Próximo mês">&#8250;</button>
       </div>
     </div>
+    <div class="statement-period-shortcuts" role="group" aria-label="Atalhos de período"><span class="statement-period-range" data-period-range>Período ${formatDate(activePeriod.startsOn)} – ${formatDate(activePeriod.endsOn)}</span>${periodShortcuts}<span class="statement-filter-count" data-filter-count>Filtros (${activeFilterCount})</span></div>
     <label class="statement-search-field" for="statement-search">Buscar
       <input id="statement-search" name="q" type="search" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" autocomplete="off" />
     </label>
-    <label class="statement-sort-field" for="statement-sort">Ordenar
+    <label class="statement-kind-field" for="statement-kind"><span class="filter-field-heading">${filterIcon("kind")}Tipo</span>
+      <select id="statement-kind" name="kind">
+        <option value="">Todos os tipos</option>
+        <option value="expense"${presentation.filterKind === "expense" ? " selected" : ""}>Despesa</option>
+        <option value="income"${presentation.filterKind === "income" ? " selected" : ""}>Receita</option>
+        <option value="transfer"${presentation.filterKind === "transfer" ? " selected" : ""}>Transferência</option>
+      </select>
+    </label>
+    <label class="statement-status-field" for="statement-status"><span class="filter-field-heading">${filterIcon("status")}Status</span>
+      <select id="statement-status" name="status">
+        <option value="">Todos os status</option>
+        <option value="effective"${presentation.filterStatus === "effective" ? " selected" : ""}>Efetivado</option>
+        <option value="suggested"${presentation.filterStatus === "suggested" ? " selected" : ""}>Pendente</option>
+        <option value="planned"${presentation.filterStatus === "planned" ? " selected" : ""}>Previsto</option>
+      </select>
+    </label>
+    <label class="statement-reconciliation-field" for="statement-reconciliation"><span class="filter-field-heading">${filterIcon("reconciliation")}Conciliação</span>
+      <select id="statement-reconciliation" name="reconciliation">
+        <option value="">Todas as situações</option>
+        <option value="unreconciled"${presentation.filterReconciliation === "unreconciled" ? " selected" : ""}>Não conciliado</option>
+        <option value="reconciled"${presentation.filterReconciliation === "reconciled" ? " selected" : ""}>Conciliado</option>
+      </select>
+    </label>
+    <label class="statement-category-field" for="statement-category"><span class="filter-field-heading">${filterIcon("category")}Categoria</span>
+      <select id="statement-category" name="categoryId" aria-label="Filtrar por categoria">
+        <option value="">Todas</option>
+        ${categories.map((category) => `<option value="${escapeHtml(category.id)}"${presentation.insightCategoryId === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`).join("")}
+      </select>
+    </label>
+    <label class="statement-sort-field" for="statement-sort"><span class="filter-field-heading">${filterIcon("sort")}Ordenar</span>
       <select id="statement-sort" name="sort">${renderSortOptions(presentation.sort)}</select>
     </label>
     <div class="statement-filter-actions">
@@ -319,7 +439,7 @@ function renderStatementContext(
   return `<section class="statement-context" aria-label="Contexto financeiro atual">
     <div class="statement-context-main">
       <span class="account-select-icon">${renderInstitutionIcon(institution.key)}</span>
-      <div class="statement-context-copy"><span class="muted">Conta atual</span><strong>${escapeHtml(selectedAccount.name)}</strong></div>
+      <div class="statement-context-copy"><span class="muted">Conta atual</span><strong>${escapeHtml(selectedAccount.name)}</strong><span class="statement-institution-name">${escapeHtml(institution.label)}</span></div>
     </div>
     <div class="statement-context-meta">
       <span class="statement-context-pill" data-context="currency">${escapeHtml(currency ?? "Moeda indisponível")}</span>
@@ -409,7 +529,7 @@ function renderRowsWithTemporalGroups(
 }
 
 function renderTableHeader(): string {
-  return `<div class="statement-row statement-head" role="row"><span class="col-select" aria-hidden="true"></span><span class="col-date">Data</span><span class="col-description">Histórico</span><span class="col-category">Categoria</span><span class="col-kind">Tipo</span><span class="col-status">Situação</span><span class="col-amount">Valor</span><span class="col-balance">Saldo</span><span class="col-actions">Ações</span></div>`;
+  return `<div class="statement-row statement-head" role="row"><span class="col-select" aria-hidden="true"></span><span class="col-row-icon" aria-hidden="true"></span><span class="col-date">Data</span><span class="col-description">Descrição</span><span class="col-category">Categoria</span><span class="col-kind">Tipo</span><span class="col-status">Status</span><span class="col-amount">Valor</span><span class="col-balance">Saldo</span><span class="col-actions">Ações</span></div>`;
 }
 
 function renderRow(
@@ -441,13 +561,15 @@ function renderRow(
     !transaction.invoiceId &&
     !transaction.transactionGroupId;
 
-  return `<article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row">
+  const rowGlyph = resolveRowGlyph(categoryName, transaction.kind);
+  return `<article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row" data-row-glyph="${escapeHtml(rowGlyph.key)}">
     <label class="col-select"><input type="checkbox" data-select-transaction value="${escapeHtml(transaction.id)}" data-kind="${escapeHtml(transaction.kind)}" data-status="${escapeHtml(transaction.status)}" data-currency="${escapeHtml(currency ?? "")}" data-amount="${row.amountMinor}" data-date="${escapeHtml(date)}" data-description="${escapeHtml(transaction.description)}" data-category="${escapeHtml(categoryName)}" aria-label="Selecionar lançamento ${escapeHtml(transaction.description || "sem descrição")}"${eligible ? "" : " disabled"}></label>
-    <time class="col-date" datetime="${escapeHtml(date)}">${formatDate(date)}</time>
+    ${renderRowGlyph(categoryName, transaction.kind)}
+    <time class="col-date" datetime="${escapeHtml(date)}" title="${escapeHtml(formatDate(date))}">${formatMovementDate(date)}</time>
     <div class="description col-description">${renderTransactionDescription(transaction, selectedAccount, accounts)}</div>
-    <span class="col-category">${escapeHtml(categoryName)}</span><span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
+    ${renderCategoryChip(categoryName, transaction.kind)}<span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
     ${renderStatementStatus(transaction)}
-    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatMoney(row.amountMinor, currency) : "Moeda indisponível"}</strong>
+    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     <details class="actions col-actions"><summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary><div class="actions-menu" role="menu">
       <button type="button" class="actions-item" data-edit="${escapeHtml(transaction.id)}">${renderEditIcon()}<span>Editar</span></button>
@@ -468,7 +590,8 @@ function renderTransactionDescription(
   if (transaction.accountRemuneration) {
     return `<strong>Remuneração CDI${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}${renderAccountRemunerationAudit(transaction)}`;
   }
-  return `<strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${renderTransferNote(transaction, selectedAccount, accounts)}`;
+  const note = readNonEmpty(transaction.note);
+  return `<strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${note ? `<span class="description-note">${escapeHtml(note)}</span>` : ""}${renderTransferNote(transaction, selectedAccount, accounts)}`;
 }
 
 function renderTransactionCloneAction(transaction: TransactionRecord): string {
@@ -481,12 +604,13 @@ function renderGroupRow(
   group: TransactionGroupRecord,
   currency: string | undefined,
 ): string {
-  return `<article class="statement-row statement-body grouped-row" role="row" data-group-row="${escapeHtml(group.id)}">
+  return `<article class="statement-row statement-body grouped-row" role="row" data-row-glyph="${escapeHtml(resolveRowGlyph("", group.kind).key)}" data-group-row="${escapeHtml(group.id)}">
     <span class="col-select group-indicator" aria-label="Grupo de lançamentos">&#128279;</span>
-    <time class="col-date" datetime="${escapeHtml(group.displayOn)}">${formatDate(group.displayOn)}</time>
+    ${renderRowGlyph("", group.kind)}
+    <time class="col-date" datetime="${escapeHtml(group.displayOn)}" title="${escapeHtml(formatDate(group.displayOn))}">${formatMovementDate(group.displayOn)}</time>
     <div class="description col-description"><strong>${escapeHtml(group.description)}</strong><span>${group.members.length} lançamentos agrupados</span></div>
-    <span class="col-category">Várias categorias</span><span class="col-kind">${escapeHtml(formatKind(group.kind))}</span>${renderStatementStatus(row.transaction)}
-    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatMoney(row.amountMinor, currency) : "Moeda indisponível"}</strong>
+    ${renderCategoryChip("Várias categorias", group.kind)}<span class="col-kind">${escapeHtml(formatKind(group.kind))}</span>${renderStatementStatus(row.transaction)}
+    <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     <button type="button" class="icon-btn col-actions" data-group-details="${escapeHtml(group.id)}" aria-label="Ver lançamentos do grupo">${renderDotsIcon()}</button>
     <script type="application/json" data-group="${escapeHtml(group.id)}">${serializeScriptJson(group)}</script>
@@ -525,16 +649,27 @@ function renderSummaryPanel(
   currency: string | undefined,
 ): string {
   const money = (value: number) => (currency ? formatMoney(value, currency) : "Moeda indisponível");
-  return `<aside class="panel account-summary" aria-label="Resumo da conta"><div><p class="eyebrow">Resumo da Conta</p><h2>${escapeHtml(selectedAccount?.name ?? "Selecione uma conta")}</h2>${currency ? `<span class="statement-context-pill" data-context="summary-currency">${escapeHtml(currency)}</span>` : ""}</div><section class="summary-balance"><span>Saldo atual</span><strong class="${summary.effectiveBalanceMinor < 0 ? "debit" : "credit"}">${money(summary.effectiveBalanceMinor)}</strong><p>Saldo efetivo com lançamentos realizados.</p></section><div class="summary-totals">${summaryTotal("Receitas", summary.incomeMinor, "credit", currency)}${summaryTotal("Despesas", -summary.expenseMinor, "debit", currency)}</div><section class="status-overview" aria-label="Status dos lançamentos"><h3>Status</h3>${statusLine("Conciliados", summary.reconciledCount, summary.reconciledMinor, "ok", currency)}${statusLine("Não conciliados", summary.unreconciledCount, summary.unreconciledMinor, "posted", currency)}${statusLine("Pendentes", summary.pendingCount, summary.pendingMinor, "pending", currency)}</section></aside>`;
+  return `<aside class="panel account-summary" aria-label="Resumo da conta"><div><p class="eyebrow">Resumo da Conta</p><h2>${escapeHtml(selectedAccount?.name ?? "Selecione uma conta")}</h2>${currency ? `<span class="statement-context-pill" data-context="summary-currency">${escapeHtml(currency)}</span>` : ""}</div><section class="summary-balance"><span>Saldo atual</span><span class="summary-balance-line"><strong class="${summary.effectiveBalanceMinor < 0 ? "debit" : "credit"}">${money(summary.effectiveBalanceMinor)}</strong><button type="button" class="summary-balance-toggle" data-balance-toggle aria-pressed="false" aria-label="Ocultar saldo atual"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 10S5.5 4.5 10 4.5 17.5 10 17.5 10 14.5 15.5 10 15.5 2.5 10 2.5 10Z"/><circle cx="10" cy="10" r="2.4"/></svg></button></span><p>Saldo efetivo com lançamentos realizados.</p></section><div class="summary-totals">${summaryTotal("opening", "Saldo inicial", summary.openingMinor, "neutral", currency)}${summaryTotal("income", "Entradas", summary.incomeMinor, "credit", currency)}${summaryTotal("expense", "Saídas", -summary.expenseMinor, "debit", currency)}${summaryTotal("closing", "Saldo final", summary.effectiveBalanceMinor, summary.effectiveBalanceMinor < 0 ? "debit" : "neutral", currency)}</div><section class="status-overview" aria-label="Status dos lançamentos"><h3>Status</h3>${statusLine("Conciliados", summary.reconciledCount, summary.reconciledMinor, "ok", currency)}${statusLine("Não conciliados", summary.unreconciledCount, summary.unreconciledMinor, "posted", currency)}${statusLine("Pendentes", summary.pendingCount, summary.pendingMinor, "pending", currency)}</section></aside>`;
 }
 
+const SUMMARY_ICONS: Record<string, string> = {
+  opening:
+    '<path d="M4 15V7a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M12 7v6m0 0-2.5-2.5M12 13l2.5-2.5"/>',
+  income: '<path d="M6 14 14 6m0 0H7.5M14 6v6.5"/>',
+  expense: '<path d="M6 6l8 8m0 0V7.5M14 14H7.5"/>',
+  closing: '<path d="M4 7h12M4 12h12M4 17h7"/>',
+};
+
+/** Each summary keeps its own tone and glyph so the four indicators read at a glance. */
 function summaryTotal(
+  variant: string,
   label: string,
   amountMinor: number,
   tone: string,
   currency: string | undefined,
 ): string {
-  return `<div class="summary-total"><span>${escapeHtml(label)}</span><strong class="${tone}">${currency ? formatMoney(amountMinor, currency) : "Moeda indisponível"}</strong></div>`;
+  const value = currency ? formatMoney(amountMinor, currency) : "Moeda indisponível";
+  return `<div class="summary-total" data-summary-total="${variant}"><span class="summary-total-icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${SUMMARY_ICONS[variant] ?? SUMMARY_ICONS.opening}</svg></span><span class="summary-total-copy"><span>${escapeHtml(label)}</span><strong class="${tone}">${value}</strong></span></div>`;
 }
 
 function statusLine(
@@ -556,11 +691,37 @@ function renderAccountPicker(
   selectedAccount: AccountRecord | undefined,
   selectedId: string | undefined,
 ): string {
-  const triggerIcon = selectedAccount
-    ? renderInstitutionIcon(findInstitution(selectedAccount.institutionKey).key)
-    : renderInstitutionIcon("");
-  return `<div class="account-field" data-account-picker><label id="account-picker-label">Conta</label><div class="account-select"><button type="button" class="account-select-trigger" data-account-trigger aria-haspopup="listbox" aria-expanded="false" aria-labelledby="account-picker-label"><span class="account-select-icon">${triggerIcon}</span><span class="account-select-text">${selectedAccount ? `${escapeHtml(selectedAccount.name)} · ${escapeHtml(resolveAccountCurrency(selectedAccount) ?? "Moeda indisponível")}` : "Selecione uma conta"}</span><svg class="account-select-chevron" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><input type="hidden" name="accountId" value="${escapeHtml(selectedId ?? "")}" required data-account-input /><ul class="account-select-menu" role="listbox" hidden data-account-menu aria-labelledby="account-picker-label">${accounts.map((account) => renderAccountOption(account, selectedId)).join("")}</ul></div></div>`;
+  const institution = findInstitution(selectedAccount?.institutionKey);
+  const triggerIcon = renderInstitutionIcon(institution.key);
+  // Identity hierarchy of the mockup: institution glyph, account name, then its type.
+  const identitySub = selectedAccount
+    ? [institution.label, ACCOUNT_KIND_LABELS[selectedAccount.kind]].filter(Boolean).join(" · ")
+    : "";
+  return `<div class="account-field" data-account-picker><label id="account-picker-label">Conta</label><div class="account-select"><button type="button" class="account-select-trigger" data-account-trigger aria-haspopup="listbox" aria-expanded="false" aria-labelledby="account-picker-label"><span class="account-select-icon">${triggerIcon}</span><span class="account-select-copy"><span class="account-select-text">${selectedAccount ? escapeHtml(selectedAccount.name) : "Selecione uma conta"}</span>${identitySub ? `<span class="account-select-sub">${escapeHtml(identitySub)}</span>` : ""}</span><svg class="account-select-chevron" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><input type="hidden" name="accountId" value="${escapeHtml(selectedId ?? "")}" required data-account-input /><ul class="account-select-menu" role="listbox" hidden data-account-menu aria-labelledby="account-picker-label">${accounts.map((account) => renderAccountOption(account, selectedId)).join("")}</ul></div></div>`;
 }
+
+const FILTER_ICONS: Readonly<Record<string, string>> = {
+  category:
+    '<path d="M3 10.5V5a2 2 0 0 1 2-2h5.5L17 9.5a1.5 1.5 0 0 1 0 2.1l-5.4 5.4a1.5 1.5 0 0 1-2.1 0Z"/><circle cx="7.2" cy="7.2" r="1.1"/>',
+  kind: '<path d="M4 15.5 13 6.5m0 0 2 2M13 6.5 11 4.5"/><path d="M4 15.5V17h1.5l8.4-8.4"/>',
+  status: '<path d="M3 11h3l1.6-4.4a.6.6 0 0 1 1.1 0l3.4 8.6a.6.6 0 0 0 1.1 0L15 11h2"/>',
+  reconciliation:
+    '<path d="M5 3.5h7L15.5 7v9.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M11.8 3.6V7h3.4"/><path d="M7 11.5h6M7 14h4"/>',
+  sort: '<path d="M6 5v10m0 0-2.2-2.2M6 15l2.2-2.2"/><path d="M13 15V5m0 0-2.2 2.2M13 5l2.2 2.2"/>',
+};
+
+/** Decorative glyphs that give each filter the same glanceability as the reference. */
+function filterIcon(name: string): string {
+  return `<svg class="filter-field-icon" viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FILTER_ICONS[name] ?? ""}</svg>`;
+}
+
+const ACCOUNT_KIND_LABELS: Readonly<Record<string, string>> = {
+  checking: "Conta corrente",
+  savings: "Poupança",
+  cash: "Carteira",
+  investment: "Investimento",
+  other: "Outro",
+};
 
 function renderAccountOption(account: AccountRecord, selected?: string): string {
   const institution = findInstitution(account.institutionKey);
@@ -574,14 +735,14 @@ function renderModal(
   categories: readonly CategoryRecord[],
   currency: string | undefined,
 ): string {
-  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit">Fechar</button></form><div><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>${selectedAccount ? `Novo lançamento em ${escapeHtml(selectedAccount.name)}` : "Selecione uma conta"}</h2><p class="muted">Conta e moeda vêm do contexto principal.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label>Tipo<select name="kind" required>${renderKindOptions()}</select></label><label data-field="sourceAccount" hidden><span class="field-label">Conta origem</span><input data-source-account-display value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="destinationAccountId" hidden><span class="field-label">Conta destino</span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino</option>${renderAccountOptions(accounts)}</select></label><label><span class="field-label">Valor origem <span class="nowrap">(<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)</span></span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="destinationAmountMinor" hidden><span class="field-label">Valor destino <span class="nowrap">(<span data-destination-currency>moeda destino</span>)</span></span><input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden><span class="field-label">Taxa efetiva</span><span class="rate-value"><output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></span></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label><label class="full">Descrição<input name="description" maxlength="240" required /></label><label class="full">Observação<textarea name="note" rows="3"></textarea></label><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form>${renderAttachmentWorkspace({ entityKind: "transaction", title: "Anexos do lançamento", className: "full" })}</section></dialog>`;
+  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit" aria-label="Fechar">&times;</button></form><div class="statement-entry-heading"><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>Novo lançamento</h2><p class="muted">Adicione um lançamento manual na sua conta.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label data-field="kind">Tipo<select name="kind" required>${renderKindOptions()}</select></label><label data-field="sourceAccount" hidden><span class="field-label">Conta origem</span><input data-source-account-display value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="destinationAccountId" hidden><span class="field-label">Conta destino</span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino</option>${renderAccountOptions(accounts)}</select></label><label class="full statement-entry-account"><span class="field-label">Conta</span><input value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label><span class="field-label">Valor origem <span class="nowrap">(<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)</span></span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="destinationAmountMinor" hidden><span class="field-label">Valor destino <span class="nowrap">(<span data-destination-currency>moeda destino</span>)</span></span><input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden><span class="field-label">Taxa efetiva</span><span class="rate-value"><output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></span></label><label class="full">Descrição<input name="description" maxlength="240" required placeholder="Ex.: Supermercado São Vicente" /></label><label class="full">Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label class="full">Observação<textarea name="note" rows="3" maxlength="200" placeholder="Informações adicionais (opcional)"></textarea></label><details class="statement-entry-advanced full"><summary>Mais opções</summary><div class="statement-entry-advanced-grid"><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label></div></details><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label>Efetivado não conciliado</span></div><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></form>${renderAttachmentWorkspace({ entityKind: "transaction", title: "Anexos do lançamento", className: "full" })}</section></dialog>`;
 }
 
 function renderGroupModal(
   selectedAccount: AccountRecord | undefined,
   currency: string | undefined,
 ): string {
-  return `<dialog class="modal" data-group-modal><section class="modal-panel group-modal-panel"><header><div><p class="eyebrow">Agrupamento</p><h2 data-group-title>Unificar lançamentos</h2></div><button type="button" class="icon-btn" data-group-close aria-label="Fechar">&times;</button></header><form data-group-form><label>Descrição do grupo<input name="description" maxlength="240" required></label><label>Data de exibição<input name="displayOn" type="date" required></label><label>Conta<input value="${escapeHtml(selectedAccount?.name ?? "")}" readonly></label><label>Moeda<input value="${escapeHtml(currency ?? "Moeda indisponível")}" readonly></label><div class="group-readonly" data-group-summary></div><div class="group-members" data-group-members></div><p class="form-error" data-group-error hidden></p><div class="save-row"><button type="button" class="ghost-btn" data-group-close>Cancelar</button><button type="submit">Unificar</button><button type="button" class="danger" data-group-ungroup hidden>Desagrupar lançamentos</button></div></form></section></dialog>`;
+  return `<dialog data-group-modal style="width:min(760px,calc(100% - 32px));max-width:min(760px,calc(100% - 32px))"><section class="modal-panel group-modal-panel"><header><div><p class="eyebrow">Agrupamento</p><h2 data-group-title>Unificar lançamentos</h2></div><button type="button" class="icon-btn" data-group-close aria-label="Fechar">&times;</button></header><form data-group-form><label>Descrição do grupo<input name="description" maxlength="240" required></label><label>Data de exibição<input name="displayOn" type="date" required></label><label>Conta<input value="${escapeHtml(selectedAccount?.name ?? "")}" readonly></label><label>Moeda<input value="${escapeHtml(currency ?? "Moeda indisponível")}" readonly></label><div class="group-readonly" data-group-summary></div><div class="group-members" data-group-members></div><p class="form-error" data-group-error hidden></p><div class="save-row"><button type="button" class="ghost-btn" data-group-close>Cancelar</button><button type="submit">Unificar</button><button type="button" class="danger" data-group-ungroup hidden>Desagrupar lançamentos</button></div></form></section></dialog>`;
 }
 
 function renderCategoryOptions(categories: readonly CategoryRecord[], selected?: string): string {
@@ -830,9 +991,10 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     const addMonths = (dateValue, months) => { const date = new Date(dateValue + "T00:00:00Z"); date.setUTCMonth(date.getUTCMonth() + months); return date.toISOString().slice(0, 10); };
     const shiftMonth = (monthValue, steps) => { const [year, month] = monthValue.split("-").map(Number); return new Date(Date.UTC(year, month - 1 + steps, 1)).toISOString().slice(0, 7); };
     const monthInput = document.querySelector("#filter-month");
-    document.querySelectorAll("[data-month-step]").forEach((button) => button.addEventListener("click", () => { monthInput.value = shiftMonth(monthInput.value, Number(button.dataset.monthStep)); monthInput.closest("form").requestSubmit(); }));
-    document.querySelectorAll("[data-month-current]").forEach((button) => button.addEventListener("click", () => { monthInput.value = new Date().toISOString().slice(0, 7); monthInput.closest("form").requestSubmit(); }));
-    document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => { if (event.target.name === "accountId" || event.target.name === "month" || event.target.name === "sort") autoForm.requestSubmit(); }));
+    document.querySelectorAll("[data-month-step]").forEach((button) => button.addEventListener("click", () => { monthInput.value = shiftMonth(monthInput.value, Number(button.dataset.monthStep)); monthInput.form?.requestSubmit(); }));
+    document.querySelectorAll("[data-month-current]").forEach((button) => button.addEventListener("click", () => { monthInput.value = new Date().toISOString().slice(0, 7); monthInput.form?.requestSubmit(); }));
+    monthInput.addEventListener("change", () => { monthInput.form?.querySelectorAll('input[name="from"],input[name="to"]').forEach((node) => node.remove()); monthInput.form?.requestSubmit(); });
+    document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => { if (event.target.name === "accountId" || event.target.name === "sort") autoForm.requestSubmit(); }));
 
     const accountPicker = document.querySelector("[data-account-picker]");
     if (accountPicker) {
@@ -896,6 +1058,53 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       if (transaction.accountRemuneration) remunerationIds.add(transaction.id);
       const hydrate = (selector, clone) => { const button = document.querySelector(selector + transaction.id + '"]'); if (!button) return; button.addEventListener("click", () => { form.reset(); form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id; form.dataset.method = clone ? "POST" : "PATCH"; form.kind.value = transaction.kind; form.accountId.value = transaction.accountId || form.accountId.value; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) attachmentWorkspace.dataset.entityId = clone ? "" : transaction.id; document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
       hydrate('[data-edit="', false); hydrate('[data-clone="', true);
+    });
+    const positionActions = (details) => {
+      const menu = details.querySelector(":scope > div");
+      const summary = details.querySelector("summary");
+      if (!menu || !summary) return;
+      const rect = summary.getBoundingClientRect();
+      menu.style.position = "fixed";
+      menu.style.top = "0px";
+      menu.style.left = "0px";
+      const menuWidth = menu.offsetWidth;
+      const menuHeight = menu.offsetHeight;
+      const left = Math.min(Math.max(8, rect.right - menuWidth), window.innerWidth - menuWidth - 8);
+      const fitsBelow = rect.bottom + 6 + menuHeight <= window.innerHeight - 8;
+      const top = fitsBelow ? rect.bottom + 6 : Math.max(8, rect.top - menuHeight - 6);
+      menu.style.left = left + "px";
+      menu.style.top = top + "px";
+    };
+    const closeActions = () => document.querySelectorAll(".actions[open]").forEach((details) => details.removeAttribute("open"));
+    document.querySelectorAll(".actions").forEach((details) => {
+      const menu = details.querySelector(":scope > div");
+      if (!menu) return;
+      details.addEventListener("toggle", () => {
+        if (!details.open) return;
+        document.querySelectorAll(".actions[open]").forEach((other) => { if (other !== details) other.removeAttribute("open"); });
+        positionActions(details);
+      });
+    });
+    document.querySelectorAll(".actions-item").forEach((item) => item.addEventListener("click", closeActions));
+    let actionsFrame = 0;
+    const repositionActions = () => {
+      if (actionsFrame) return;
+      actionsFrame = window.requestAnimationFrame(() => { actionsFrame = 0; document.querySelectorAll(".actions[open]").forEach(positionActions); });
+    };
+    window.addEventListener("scroll", repositionActions, true);
+    window.addEventListener("resize", repositionActions);
+    document.addEventListener("click", (event) => {
+      document.querySelectorAll(".actions[open]").forEach((details) => {
+        if (!details.contains(event.target)) details.removeAttribute("open");
+      });
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      document.querySelectorAll(".actions[open]").forEach((details) => {
+        const summary = details.querySelector("summary");
+        details.removeAttribute("open");
+        if (summary) summary.focus();
+      });
     });
     document.addEventListener("click", (event) => {
       const target = event.target?.closest?.("[data-edit], [data-clone], [data-open-modal]");
@@ -992,9 +1201,131 @@ function formatMoney(amountMinor: number, currency: string): string {
 function formatDate(value: string): string {
   return formatDateOnly(value);
 }
+
+const MONTH_ABBREVIATIONS = [
+  "JAN",
+  "FEV",
+  "MAR",
+  "ABR",
+  "MAI",
+  "JUN",
+  "JUL",
+  "AGO",
+  "SET",
+  "OUT",
+  "NOV",
+  "DEZ",
+];
+
+/**
+ * Compact movement date of the reference: day plus month. The machine-readable value stays in
+ * the `datetime` attribute and the full date stays in `title`, so nothing is lost.
+ */
+function formatMovementDate(value: string): string {
+  const month = Number(value.slice(5, 7));
+  const day = value.slice(8, 10);
+  const abbreviation = MONTH_ABBREVIATIONS[month - 1];
+  return abbreviation ? `${day} ${abbreviation}` : formatDate(value);
+}
+
 function formatPercentage(value: number, maximumFractionDigits: number): string {
   return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits }).format(value)}%`;
 }
+const ROW_GLYPHS: Readonly<Record<string, string>> = {
+  expense: '<path d="M6 6l8 8m0 0V7.5M14 14H7.5"/>',
+  income: '<path d="M6 14 14 6m0 0H7.5M14 6v6.5"/>',
+  transfer: '<path d="M4 8h9l-2.5-2.5M16 12H7l2.5 2.5"/>',
+  food: '<path d="M4 6h12l-1 9a1.5 1.5 0 0 1-1.5 1.3H6.5A1.5 1.5 0 0 1 5 15Z"/><path d="M7.5 6V4.5M12.5 6V4.5"/>',
+  health: '<path d="M10 16s-5.5-3.4-5.5-7A3 3 0 0 1 10 7a3 3 0 0 1 5.5 2c0 3.6-5.5 7-5.5 7Z"/>',
+  transport:
+    '<path d="M4.5 13V8l1.6-2.8A1 1 0 0 1 7 4.7h6a1 1 0 0 1 .9.5L15.5 8v5"/><path d="M4.5 13h11M6.5 13v1.4M13.5 13v1.4"/>',
+  home: '<path d="M4 9.5 10 4.5l6 5V16H4Z"/><path d="M8.5 16v-3.5h3V16"/>',
+  utility: '<path d="M11.5 3 5.5 11h3l-1 6 6-8h-3Z"/>',
+  education:
+    '<path d="M3.5 8 10 5l6.5 3-6.5 3Z"/><path d="M6 9.6V13c0 .9 1.8 1.6 4 1.6s4-.7 4-1.6V9.6"/>',
+  leisure: '<path d="M4 7.5h12v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/><path d="M7.5 7.5v-2h5v2"/>',
+  incomeCategory: '<path d="M4 15V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8Z"/><path d="M8 11h4"/>',
+  investment: '<path d="M4 15 8 10l3 2.5L16 6"/><path d="M16 6h-3.4M16 6v3.4"/>',
+  tax: '<path d="M5 3.5h7L15.5 7v9.5h-11Z"/><path d="M11.8 3.6V7h3.4"/><path d="M7 11h6M7 14h4"/>',
+  receipt:
+    '<path d="M5 3.5h7L15.5 7v9.5h-11Z"/><path d="M11.8 3.6V7h3.4"/><path d="M7 11h6M7 14h4"/>',
+};
+
+const ROW_GLYPH_FALLBACK = '<path d="M6 6l8 8m0 0V7.5M14 14H7.5"/>';
+
+const ROW_GLYPH_KEYWORDS: ReadonlyArray<readonly [RegExp, string]> = [
+  [/aliment|mercado|supermerc|restaurant|comida|padaria|cafe/i, "food"],
+  [/saude|saúde|farmac|medic|médic|academia|esport|esporte|dentist/i, "health"],
+  [/transporte|combust|posto|uber|carro|veic|passagem|pedagio|pedágio/i, "transport"],
+  [/moradia|aluguel|condomin|casa|imovel|imóvel/i, "home"],
+  [/luz|energia|agua|água|internet|telefone|celular|conta|gas|gás|utilidade/i, "utility"],
+  [/educa|curso|escola|faculdade|livro|material/i, "education"],
+  [/lazer|viagem|cinema|streaming|jogo|divers/i, "leisure"],
+  [/salario|salário|renda|provento|pagamento|recebimento|holerite/i, "incomeCategory"],
+  [/invest|poupanc|poupanç|rendimento|aplicac|aplicaç/i, "investment"],
+  [/imposto|taxa|tarifa|tribut/i, "tax"],
+];
+
+/**
+ * A decorative glyph for the movement row. It is derived from the category when one is present and
+ * falls back to the movement direction, so no financial meaning is invented.
+ */
+function resolveRowGlyph(categoryName: string, kind: string): { key: string; html: string } {
+  const match =
+    categoryName && categoryName !== "Sem categoria"
+      ? ROW_GLYPH_KEYWORDS.find(([pattern]) => pattern.test(categoryName))
+      : undefined;
+  const key = match
+    ? match[1]
+    : kind === "income"
+      ? "income"
+      : kind === "transfer"
+        ? "transfer"
+        : "expense";
+  return { key, html: ROW_GLYPHS[key] ?? ROW_GLYPH_FALLBACK };
+}
+
+function renderRowGlyph(categoryName: string, kind: string): string {
+  const glyph = resolveRowGlyph(categoryName, kind);
+  return `<span class="col-row-icon" data-row-glyph="${escapeHtml(glyph.key)}" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${glyph.html}</svg></span>`;
+}
+
+/**
+ * The category chip leads with the movement direction, so the direction is readable before the word:
+ * an up arrow for entries, a down arrow for exits and two stacked horizontal arrows for transfers.
+ * The direction is decorative here (`aria-hidden`); the word and the row's own direction column
+ * remain the accessible carriers of the information.
+ */
+type CategoryDirection = "in" | "out" | "transfer";
+
+const CATEGORY_DIRECTION_GLYPHS: Record<CategoryDirection, string> = {
+  in: '<path d="M10 16.5V4.5"/><path d="m5.5 9 4.5-4.5L14.5 9"/>',
+  out: '<path d="M10 3.5v12"/><path d="m5.5 11 4.5 4.5L14.5 11"/>',
+  transfer:
+    '<path d="M3.5 7h11"/><path d="m11.5 4 3 3-3 3"/><path d="M16.5 13h-11"/><path d="m8.5 10-3 3 3 3"/>',
+};
+
+export function resolveCategoryDirection(kind: string): CategoryDirection {
+  const normalized = (kind ?? "").toLowerCase();
+  if (normalized === "income") return "in";
+  if (normalized === "transfer") return "transfer";
+  return "out";
+}
+
+function renderCategoryChip(categoryName: string, kind: string): string {
+  const direction = resolveCategoryDirection(kind);
+  const icon = `<svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CATEGORY_DIRECTION_GLYPHS[direction]}</svg>`;
+  return `<span class="col-category" data-category-direction="${direction}">${icon}<span class="col-category-label">${escapeHtml(categoryName)}</span></span>`;
+}
+
+/**
+ * The reference prints the movement direction as an explicit sign, so an entry reads `+ R$ …` and an
+ * exit reads `- R$ …` instead of relying on colour alone.
+ */
+function formatSignedAmount(amountMinor: number, currency: string): string {
+  return `${amountMinor < 0 ? "-" : "+"} ${formatMoney(Math.abs(amountMinor), currency)}`;
+}
+
 function formatKind(kind: string): string {
   return kind === "income"
     ? "Entrada"
@@ -1066,7 +1397,7 @@ function css(): string {
     .statement-layout{align-items:start;display:grid;gap:12px;grid-template-columns:minmax(260px,320px) minmax(0,1fr)}.account-summary{display:grid;gap:12px;position:sticky;top:68px}.account-summary h2{font-size:.9375rem}.summary-balance{background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:var(--radius);display:grid;gap:4px;padding:12px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.6875rem;font-weight:700;text-transform:uppercase}.summary-balance strong,.summary-total strong,.status-line strong,.col-amount,.col-balance{font-variant-numeric:tabular-nums;overflow-wrap:normal;white-space:nowrap;word-break:normal}.summary-balance strong{font-size:1.125rem}.summary-balance p{color:var(--muted);font-size:.8125rem}.summary-totals{display:grid;gap:8px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:3px;min-width:0;padding:10px}.status-overview{border-top:1px solid var(--line);display:grid;gap:8px;padding-top:12px}.status-overview h3{font-size:.8125rem}.status-line{align-items:center;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-size:.8125rem;font-weight:600}.status-line strong{font-size:.8125rem}
     .statement-panel{overflow:hidden;padding:0}.statement-toolbar{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:12px 14px}.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{align-items:center;background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:5px;font-size:.75rem;font-weight:700;padding:3px 9px;white-space:nowrap}.chip-pending{background:var(--warning-bg);border-color:#fde68a;color:var(--warning)}.chip-ok{background:var(--success-bg);border-color:#bbf7d0;color:var(--success)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}
     .statement-table{display:grid;max-width:100%;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:8px;grid-template-columns:6rem minmax(8rem,1.3fr) minmax(7rem,.9fr) 7rem 4.5rem 8rem 8rem 3rem;min-width:70rem;padding:8px 12px;position:relative}.col-select{display:grid;left:3px;place-items:center;position:absolute}.statement-body .col-date{padding-left:14px}.col-select input{height:1.1rem;width:1.1rem}.grouped-row{background:color-mix(in srgb,var(--primary) 5%,transparent)}.group-indicator{color:var(--primary)}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.6875rem;font-weight:700;text-transform:uppercase}.statement-head .col-amount,.statement-head .col-balance,.col-amount,.col-balance{text-align:right}.description{display:grid;gap:2px;min-width:0}.description>strong{overflow-wrap:anywhere}.description span{color:var(--muted);font-size:.8125rem}.credit{color:var(--success)!important}.debit{color:var(--danger)!important}
-    .selection-bar{align-items:center;background:var(--surface);border:1px solid var(--primary);border-radius:var(--radius);bottom:16px;box-shadow:var(--shadow);display:flex;gap:12px;justify-content:flex-end;padding:10px 14px;position:sticky;z-index:8}.selection-bar[hidden]{display:none}.group-modal-panel{max-width:760px}.group-modal-panel form{display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr))}.group-readonly,.group-members,.group-modal-panel .save-row,.group-modal-panel .form-error{grid-column:1/-1}.group-members{border:1px solid var(--line);border-radius:var(--radius);max-height:280px;overflow:auto}.group-members>div{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:9px}
+    .selection-bar{align-items:center;background:var(--surface);border:1px solid var(--primary);border-radius:var(--radius);bottom:16px;box-shadow:var(--shadow);display:flex;gap:12px;justify-content:flex-end;padding:10px 14px;position:sticky;z-index:8}.selection-bar[hidden]{display:none}dialog[data-group-modal]{max-width:min(760px,calc(100% - 32px));overflow:hidden}.group-modal-panel{gap:18px;max-width:760px;padding:22px}.group-modal-panel>header{align-items:start;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;padding-bottom:12px}.group-modal-panel form{display:grid;gap:12px 14px;grid-template-columns:repeat(2,minmax(0,1fr))}.group-readonly,.group-members,.group-modal-panel .save-row,.group-modal-panel .form-error{grid-column:1/-1}.group-readonly{color:var(--muted);font-size:.8125rem}.group-members{border:1px solid var(--line);border-left:0;border-radius:0;border-right:0;max-height:240px;overflow:auto}.group-members>div{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:9px}.group-modal-panel .save-row{border-top:1px solid var(--line);margin-top:2px;padding-top:14px}
     .statement-status{align-items:center;border:1px solid currentColor;border-radius:999px;cursor:default;display:inline-flex;height:26px;justify-content:center;justify-self:start;padding:0;position:relative;width:26px}.statement-status-ok{background:var(--success-bg);color:var(--success)}.statement-status-posted{background:#e0f2fe;color:#0369a1}.statement-status-pending{background:var(--warning-bg);color:var(--warning)}.statement-status-planned{background:var(--primary-soft);color:var(--primary)}
     .actions{position:relative}.actions summary{align-items:center;background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:28px;justify-content:center;list-style:none;width:28px}.actions summary::-webkit-details-marker{display:none}.actions-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);display:grid;gap:2px;max-width:220px;padding:4px;position:absolute;right:0;top:34px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:var(--radius);color:var(--text);display:flex;font-size:.8125rem;font-weight:600;gap:8px;justify-content:flex-start;min-height:32px;padding:0 8px;text-align:left;white-space:nowrap}.actions-item.danger{color:var(--danger)}.actions-divider{border:0;border-top:1px solid var(--line);margin:3px 2px}
     .statement-row.account-remuneration-row{border-left:3px solid var(--primary)}.statement-row.account-remuneration-row .col-description{min-width:15rem}.statement-row.account-remuneration-row .description{align-items:baseline;column-gap:4px;display:grid;grid-template-columns:max-content minmax(0,1fr);min-width:0}.statement-row.account-remuneration-row .description>strong{grid-column:1;grid-row:1;overflow-wrap:normal;white-space:nowrap}.account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;grid-column:1/-1;grid-row:2;line-height:1.35}.account-remuneration-audit{background:transparent;border:0;display:block;grid-column:2;grid-row:1;justify-self:start;margin:0;max-width:100%;min-width:0}.account-remuneration-audit[open]{grid-column:1/-1;grid-row:3;margin:4px 0 0}.account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;line-height:1.2;list-style:none;padding:0;white-space:nowrap}.account-remuneration-audit summary::-webkit-details-marker{display:none}.account-remuneration-audit-content{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:4px;padding:8px}.account-remuneration-adjustment{border-radius:999px;font-size:.6875rem;font-weight:800;padding:2px 7px}.account-remuneration-audit-content .account-remuneration-adjustment{background:var(--warning-bg);color:var(--warning);justify-self:start}.account-remuneration-audit-content dl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));margin:0}.account-remuneration-audit-content dl div{min-width:0}.account-remuneration-audit-content dt{color:var(--muted);font-size:.625rem;font-weight:700;text-transform:uppercase}.account-remuneration-audit-content dd{font-size:.75rem;font-weight:700;margin:0;overflow-wrap:anywhere}@media(max-width:760px){.account-remuneration-audit-content dl{grid-template-columns:repeat(2,minmax(0,1fr))}}

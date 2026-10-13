@@ -113,6 +113,45 @@ try {
   assert.equal(cloneState.method, "POST");
   assert.match(cloneState.title, /Clonar lançamento/);
 
+  // The reference centres the edit form over the screen while the create form stays a right-hand
+  // sheet, so the gate measures both instead of trusting the stylesheet.
+  const modalGeometry = await evaluate(
+    browser.cdp,
+    `(() => {
+      const measure = () => {
+        const dialog = document.querySelector("dialog[open]");
+        if (!dialog) throw new Error("No dialog was open");
+        const rect = dialog.getBoundingClientRect();
+        return {
+          method: document.querySelector("[data-form]")?.dataset.method || "",
+          left: Math.round(rect.x),
+          right: Math.round(innerWidth - (rect.x + rect.width))
+        };
+      };
+      const editButton = document.querySelector('[data-edit="${fixtureIds.transactionId}"]');
+      if (!editButton) throw new Error("Edit button was not found");
+      editButton.click();
+      const edit = measure();
+      document.querySelector("dialog[open]")?.close();
+      const createButton = document.querySelector('[data-open-modal][data-quick-kind="expense"]');
+      if (!createButton) throw new Error("New expense button was not found");
+      createButton.click();
+      const create = measure();
+      document.querySelector("dialog[open]")?.close();
+      return { edit, create };
+    })()`,
+  );
+  assert.equal(modalGeometry.edit.method, "PATCH");
+  assert.equal(modalGeometry.create.method, "POST");
+  assert.ok(
+    Math.abs(modalGeometry.edit.left - modalGeometry.edit.right) <= 40,
+    `edit modal is not centred over the screen: ${JSON.stringify(modalGeometry.edit)}`,
+  );
+  assert.ok(
+    modalGeometry.create.right < 80 && modalGeometry.create.left > 400,
+    `create modal is no longer a right-hand sheet: ${JSON.stringify(modalGeometry.create)}`,
+  );
+
   const modalState = await evaluate(
     browser.cdp,
     `(() => {

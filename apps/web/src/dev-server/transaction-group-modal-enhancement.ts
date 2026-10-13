@@ -8,7 +8,7 @@ export function enhanceTransactionGroupModal(html: string): string {
     <style ${STYLE_MARKER}>
       .group-modal-panel{display:flex;flex-direction:column;max-height:min(92vh,920px);max-width:none;overflow:hidden;width:min(1060px,calc(100vw - 28px))}
       .group-modal-panel>header{background:var(--surface);border-bottom:1px solid var(--line);flex:0 0 auto;margin:0;padding-bottom:12px;position:sticky;top:0;z-index:4}
-      .group-modal-panel form[data-group-form]{display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr));min-height:0;overflow:auto;padding:2px 2px 0}
+      .group-modal-panel form[data-group-form]{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr));min-height:0;overflow:auto;padding:2px 2px 0}
       .group-modal-panel form[data-group-form]>label{min-width:0}
       .group-modal-panel form[data-group-form]>label input{font-variant-numeric:tabular-nums;width:100%}
       .group-modal-panel [data-group-effective-input]{font-size:1rem;font-weight:800}
@@ -82,7 +82,8 @@ export function enhanceTransactionGroupModal(html: string): string {
         const currencyField = readonlyField("Moeda", "group-currency-input");
         form.insertBefore(effectiveField.label, form.firstElementChild);
         form.insertBefore(kindField.label, summaryNode);
-        form.insertBefore(statusField.label, summaryNode);
+        const dateField = form.querySelector('[name="displayOn"]')?.closest("label");
+        form.insertBefore(statusField.label, dateField?.nextSibling ?? summaryNode);
         form.insertBefore(currencyField.label, summaryNode);
 
         const heading = document.createElement("div");
@@ -105,9 +106,17 @@ export function enhanceTransactionGroupModal(html: string): string {
         let skipNextToggleRefresh = false;
 
         function readonlyField(labelText, dataName) {
-          const label = document.createElement("label");
-          label.textContent = labelText;
-          const input = document.createElement("input");
+          // Reuse the SSR currency field rather than creating a second source of visual context.
+          const existingLabel = Array.from(form.querySelectorAll(":scope > label")).find(function (candidate) {
+            const caption = Array.from(candidate.childNodes)
+              .filter(function (node) { return node.nodeType === Node.TEXT_NODE; })
+              .map(function (node) { return node.textContent.trim(); }).join(" ").trim();
+            return caption === labelText && candidate.querySelector("input[readonly]");
+          });
+          const label = existingLabel || document.createElement("label");
+          const input = existingLabel?.querySelector("input[readonly]") ||
+            document.createElement(dataName === "group-effective-input" ? "output" : "input");
+          if (!existingLabel) label.textContent = labelText;
           input.readOnly = true;
           input.dataset[dataName.replace(/-([a-z])/g, function (_, letter) { return letter.toUpperCase(); })] = "";
           label.appendChild(input);

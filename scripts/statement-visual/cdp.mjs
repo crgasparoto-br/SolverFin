@@ -109,11 +109,17 @@ export async function launchChrome({ baseUrl, chromePath, debugPort = 0 }) {
       "--remote-debugging-address=127.0.0.1",
       `--remote-debugging-port=${debugPort}`,
       `--user-data-dir=${profile}`,
+      "--lang=pt-BR",
+      "--accept-lang=pt-BR,pt",
       "--force-device-scale-factor=1",
       "--window-size=1920,1200",
       "about:blank",
     ],
-    { stdio: ["ignore", "pipe", "pipe"] },
+    {
+      // The product is pt-BR; the native month control must render in the target locale.
+      env: { ...process.env, LANG: "pt_BR.UTF-8", LANGUAGE: "pt_BR", LC_ALL: "pt_BR.UTF-8" },
+      stdio: ["ignore", "pipe", "pipe"],
+    },
   );
   let stdout = "";
   let stderr = "";
