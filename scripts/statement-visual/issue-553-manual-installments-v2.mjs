@@ -503,6 +503,7 @@ async function readFormState() {
       const dialog = document.querySelector("[data-modal]");
       const panel = dialog?.querySelector(".modal-panel");
       const rect = dialog?.getBoundingClientRect();
+      const visibleViewportWidth = document.documentElement.clientWidth;
       const scrollable = [dialog, panel].find((node) => node && node.scrollHeight > node.clientHeight + 1);
       const scrollTopBefore = scrollable?.scrollTop || 0;
       const pageScrollBefore = window.scrollY;
@@ -516,15 +517,16 @@ async function readFormState() {
         modalOpen: dialog?.open === true,
         dialogLabel: dialog?.querySelector("[data-modal-title]")?.textContent?.trim() || "",
         liveRegion: form.querySelector("[aria-live='polite']")?.getAttribute("aria-live") || "",
+        visibleViewportWidth,
         dialogCentered: Boolean(
           rect &&
-            Math.abs(rect.left + rect.width / 2 - window.innerWidth / 2) <= 1 &&
+            Math.abs(rect.left + rect.width / 2 - visibleViewportWidth / 2) <= 1 &&
             Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2) <= 1,
         ),
         dialogWithinViewport: Boolean(
           rect &&
             rect.left >= -1 &&
-            rect.right <= window.innerWidth + 1 &&
+            rect.right <= visibleViewportWidth + 1 &&
             rect.top >= -1 &&
             rect.bottom <= window.innerHeight + 1,
         ),
@@ -533,7 +535,7 @@ async function readFormState() {
         description: form.elements.namedItem("description").value,
         note: form.elements.namedItem("note").value,
         submitDisabled: form.querySelector('button[type="submit"]')?.disabled === true,
-        globalOverflow: document.documentElement.scrollWidth > window.innerWidth
+        globalOverflow: document.documentElement.scrollWidth > visibleViewportWidth
       };
     })()`,
   );
