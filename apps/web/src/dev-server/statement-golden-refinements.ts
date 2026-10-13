@@ -572,6 +572,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root}[data-statement-options] .filter-form>.statement-sort-field{grid-column:auto;min-width:0}
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto;flex-wrap:nowrap;min-width:0}
     }
+    /* Intermediate desktops cannot fit six content-sized tracks beside the sidebar.
+       Reflow instead of extending the document beyond the viewport. */
+    @media(min-width:1101px) and (max-width:1339px){
+      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(3,minmax(0,1fr))}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:1/-1}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
+    }
     /* Below this width the action group keeps its own row so no filter loses legibility. */
     @media(min-width:1101px) and (max-width:1339px){
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
