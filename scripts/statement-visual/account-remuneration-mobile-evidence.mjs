@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { rectanglesOverlap } from "./rectangles-overlap.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -76,6 +77,45 @@ try {
       false,
       `Expanded CDI details overflow their box at ${width}px: ${JSON.stringify(expanded)}`,
     );
+
+    if (width === 1280) {
+      const previousStyle = await evaluate(
+        browser.cdp,
+        `(() => {
+          const row = document.querySelector('script[data-transaction="${transactionId}"]')?.closest(".statement-row.statement-body");
+          const category = row.querySelector(".col-category");
+          const rect = row.querySelector(".description > strong").getBoundingClientRect();
+          const previous = category.getAttribute("style");
+          category.style.cssText = "position:fixed!important;z-index:9999!important;left:" + rect.left + "px!important;top:" + rect.top + "px!important;width:100px!important;height:20px!important";
+          return previous;
+        })()`,
+      );
+      try {
+        const collision = await evaluate(
+          browser.cdp,
+          desktopColumnIsolationExpression(transactionId),
+        );
+        assert.equal(
+          collision.overlapsCategory,
+          true,
+          "Overlap probe must reject a real collision.",
+        );
+        evidence.categoryOverlapNegativeControl = { status: "passed", collision };
+      } finally {
+        await evaluate(
+          browser.cdp,
+          `(() => {
+            const row = document.querySelector('script[data-transaction="${transactionId}"]')?.closest(".statement-row.statement-body");
+            const category = row.querySelector(".col-category");
+            const previous = ${JSON.stringify(previousStyle)};
+            if (previous === null) category.removeAttribute("style");
+            else category.setAttribute("style", previous);
+          })()`,
+        );
+      }
+      const restored = await evaluate(browser.cdp, desktopColumnIsolationExpression(transactionId));
+      assert.equal(restored.overlapsCategory, false, "Category geometry must be restored.");
+    }
 
     if (width === 1366) {
       await evaluate(
@@ -188,23 +228,27 @@ function desktopColumnIsolationExpression(id) {
     if (!description || !category || !title || !details || !disclosure || !compactSummary) {
       throw new Error("Required CDI cells were not found for desktop column validation");
     }
-    function textRight(node) {
+    const intersects = ${rectanglesOverlap.toString()};
+    function textRects(node) {
       const range = document.createRange();
       range.selectNodeContents(node);
-      return range.getBoundingClientRect().right;
+      return Array.from(range.getClientRects()).filter((rect) => rect.width > 0 && rect.height > 0);
     }
     const categoryRect = category.getBoundingClientRect();
-    const textRightEdge = Math.max(textRight(title), textRight(disclosure), textRight(compactSummary));
-    const detailRightEdge = details.open && detailContent
-      ? detailContent.getBoundingClientRect().right
-      : Number.NEGATIVE_INFINITY;
-    const contentRight = Math.max(textRightEdge, detailRightEdge);
+    const contentRects = [title, disclosure, compactSummary].flatMap(textRects);
+    if (details.open && detailContent) contentRects.push(detailContent.getBoundingClientRect());
+    if (!contentRects.length || categoryRect.width <= 0 || categoryRect.height <= 0) {
+      throw new Error("Required CDI content must be visible for overlap validation");
+    }
+    const contentRight = Math.max(...contentRects.map((rect) => rect.right));
+    const contentBottom = Math.max(...contentRects.map((rect) => rect.bottom));
     return {
       detailsOpen: details.open,
       categoryLeft: categoryRect.left,
       contentRight,
       separationPx: categoryRect.left - contentRight,
-      overlapsCategory: contentRight > categoryRect.left + 0.5,
+      verticalSeparationPx: categoryRect.top - contentBottom,
+      overlapsCategory: contentRects.some((rect) => intersects(rect, categoryRect)),
       summaryOverflow: compactSummary.scrollWidth > compactSummary.clientWidth + 1,
       disclosureOverflow: disclosure.scrollWidth > disclosure.clientWidth + 1,
       detailOverflow: Boolean(detailContent && detailContent.scrollWidth > detailContent.clientWidth + 1)

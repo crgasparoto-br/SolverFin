@@ -452,6 +452,7 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
         white-space: nowrap;
       }
       .nav-more-toggle:hover, .nav-more-toggle[aria-expanded="true"] { background: rgba(34,211,238,.18); color: white; }
+
       .topbar { min-height: 48px; padding: 0 var(--sf-layout-gutter-mobile); position: static; }
       .topbar > button { display: none; }
       main { padding: var(--sf-layout-gutter-mobile) var(--sf-layout-gutter-mobile) var(--sf-space-6); }

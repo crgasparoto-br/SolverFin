@@ -6,6 +6,7 @@ import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs"
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 import { pageMeasurementExpression } from "./measurements.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
+import { inspectStatementActionMenu } from "./statement-action-menu-visual.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -348,6 +349,7 @@ async function validateStatement(cdp) {
   assert.equal(structure.mainPresent, true, "Statement has no main region.");
   assert.equal(structure.visibleH1Count, 1, "Statement must expose one visible h1.");
   assert.ok(structure.rowCount > 0, "Statement has no data rows.");
+  assert.ok(structure.accountPickerWidth >= 288 && structure.accountPickerFitsViewport);
 
   const focus = await evaluate(
     cdp,
@@ -360,6 +362,20 @@ async function validateStatement(cdp) {
   );
   assert.equal(focus.exists, true, "Statement exposes no focusable status indicator.");
   assert.equal(focus.focused, true, "Statement status indicator did not accept focus.");
+  for (const viewportWidth of [1101, 1100, 761, 760]) {
+    await setViewport(cdp, viewportWidth, 900);
+    await navigate(cdp, `${baseUrl}${baseRoute}`);
+    await sleep(100);
+    const layout = await inspectStatementStructure(cdp);
+    assert.equal(
+      layout.pageFits,
+      true,
+      `Statement overflows at ${viewportWidth}px: ${JSON.stringify(layout)}`,
+    );
+    assert.equal(layout.accountPickerFitsViewport, true);
+  }
+
+  const actionMenu = await inspectStatementActionMenu(cdp);
 
   const dateAsc = await inspectStatementSort(cdp, baseRoute, "date_asc");
   const dateDesc = await inspectStatementSort(cdp, baseRoute, "date_desc");
@@ -418,9 +434,10 @@ async function validateStatement(cdp) {
   assert.equal(mobileStructure.mainPresent, true, "Statement mobile has no main region.");
   assert.equal(mobileStructure.visibleH1Count, 1, "Statement mobile must expose one visible h1.");
   assert.ok(mobileStructure.rowCount > 0, "Statement mobile has no data rows.");
+  assert.ok(mobileStructure.accountPickerWidth > 0 && mobileStructure.accountPickerFitsViewport);
 
   return {
-    desktop: { measurements, structure, focus },
+    desktop: { measurements, structure, focus, actionMenu },
     mobile: { measurements: mobileMeasurements, structure: mobileStructure },
     sorting: { dateAsc, dateDesc },
     insight,
@@ -432,6 +449,11 @@ async function inspectStatementStructure(cdp) {
     cdp,
     `(() => {
       const main = document.querySelector('main');
+      const accountField = document.querySelector('.account-field');
+      const accountTrigger = document.querySelector('.account-select-trigger');
+      document.querySelector('.account-select-text')?.replaceChildren('Conta internacional muito longa para validar largura · USD');
+      const accountRect = accountTrigger?.getBoundingClientRect();
+      const accountFieldRect = accountField?.getBoundingClientRect();
       const headings = Array.from(document.querySelectorAll('main h1')).filter((heading) => {
         const rect = heading.getBoundingClientRect();
         const style = getComputedStyle(heading);
@@ -449,6 +471,8 @@ async function inspectStatementStructure(cdp) {
         rowCount: document.querySelectorAll('.statement-row.statement-body').length,
         tablePresent: Boolean(document.querySelector('.statement-table[role="table"]')),
         pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        accountPickerWidth: accountRect?.width ?? 0,
+        accountPickerFitsViewport: Boolean(accountRect && accountFieldRect && accountRect.right <= accountFieldRect.right && accountRect.right <= innerWidth),
       };
     })()`,
   );
