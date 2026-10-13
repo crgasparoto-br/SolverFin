@@ -46,6 +46,8 @@ test("statement A2 keeps action menus in a viewport-aware layer", () => {
   assert.match(html, /const below = triggerRect\.bottom/);
   assert.match(html, /const above = triggerRect\.top/);
   assert.match(html, /document\.body\.appendChild\(state\.menu\)/);
+  assert.match(html, /const actionMenuObserver = new MutationObserver/);
+  assert.match(html, /actionMenuObserver\.observe\(root, \{ childList: true, subtree: true \}\)/);
   assert.match(html, /event\.key === 'Escape'/);
   assert.match(html, /focus\(\{ preventScroll: true \}\)/);
   assert.match(html, /window\.addEventListener\('scroll', schedulePosition, true\)/);

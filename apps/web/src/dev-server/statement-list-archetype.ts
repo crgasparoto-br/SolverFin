@@ -150,19 +150,14 @@ function statementActionMenusRuntime(): string {
       const root = document.querySelector('[data-statement-archetype="A2"]');
       if (!root) return;
 
-      const detailsMenus = Array.from(
-        root.querySelectorAll('.statement-row.statement-body details.actions'),
-      );
-      if (detailsMenus.length === 0) return;
+      const actionMenuSelector = '.statement-row.statement-body details.actions';
 
       let menuSequence = 0;
       let openState = null;
       let positionFrame = 0;
 
       const enabledItems = (menu) =>
-        Array.from(menu.querySelectorAll('button[role="menuitem"]')).filter(
-          (item) => !item.disabled,
-        );
+        Array.from(menu.querySelectorAll('button')).filter((item) => !item.disabled);
 
       const positionMenu = (state) => {
         if (state.menu.parentElement !== document.body) return;
@@ -229,10 +224,27 @@ function statementActionMenusRuntime(): string {
         }
       };
 
-      const states = detailsMenus.map((details) => {
+      const states = new WeakMap();
+      const normalizeMenuItems = (menu) => {
+        menu
+          .querySelectorAll('button')
+          .forEach((button) => button.setAttribute('role', 'menuitem'));
+      };
+
+      const registerMenu = (details) => {
+        if (!details) return null;
         const trigger = details.querySelector('summary');
         const menu = details.querySelector('.actions-menu');
         if (!trigger || !menu) return null;
+        const existing = states.get(details);
+        if (existing?.trigger === trigger && existing.menu === menu) {
+          normalizeMenuItems(menu);
+          return existing;
+        }
+        if (existing) {
+          existing.active = false;
+          closeMenu(existing, false);
+        }
 
         menuSequence += 1;
         const menuId = menu.id || 'statement-action-menu-' + menuSequence;
@@ -241,22 +253,26 @@ function statementActionMenusRuntime(): string {
         trigger.setAttribute('aria-controls', menuId);
         trigger.setAttribute('aria-expanded', 'false');
         menu.setAttribute('role', 'menu');
-        menu.querySelectorAll('button').forEach((button) => button.setAttribute('role', 'menuitem'));
+        normalizeMenuItems(menu);
 
         const placeholder = document.createElement('span');
         placeholder.hidden = true;
         placeholder.setAttribute('aria-hidden', 'true');
         menu.before(placeholder);
 
-        const state = { details, trigger, menu, placeholder, pendingFocus: null };
+        const state = { details, trigger, menu, placeholder, pendingFocus: null, active: true };
+        states.set(details, state);
         details.addEventListener('toggle', () => {
+          if (!state.active) return;
           if (details.open) openMenu(state);
           else restoreMenu(state);
         });
         trigger.addEventListener('click', (event) => {
+          if (!state.active) return;
           if (!details.open && event.detail === 0) state.pendingFocus = 'first';
         });
         trigger.addEventListener('keydown', (event) => {
+          if (!state.active) return;
           if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
           event.preventDefault();
           state.pendingFocus = event.key === 'ArrowUp' ? 'last' : 'first';
@@ -264,10 +280,12 @@ function statementActionMenusRuntime(): string {
           else details.open = true;
         });
         menu.addEventListener('click', (event) => {
+          if (!state.active) return;
           if (!event.target.closest('button')) return;
           window.setTimeout(() => closeMenu(state, false), 0);
         });
         menu.addEventListener('keydown', (event) => {
+          if (!state.active) return;
           const items = enabledItems(menu);
           const currentIndex = items.indexOf(document.activeElement);
           if (event.key === 'Escape') {
@@ -292,7 +310,31 @@ function statementActionMenusRuntime(): string {
           items[nextIndex].focus({ preventScroll: true });
         });
         return state;
-      }).filter(Boolean);
+      };
+
+      const registerMenusIn = (node) => {
+        if (!node || node.nodeType !== 1) return;
+        if (node.matches(actionMenuSelector)) registerMenu(node);
+        node.querySelectorAll(actionMenuSelector).forEach(registerMenu);
+        const parentDetails = node.closest(actionMenuSelector);
+        if (parentDetails) registerMenu(parentDetails);
+        const parentMenu = node.closest('.actions-menu');
+        if (parentMenu) normalizeMenuItems(parentMenu);
+      };
+
+      registerMenusIn(root);
+      const actionMenuObserver = new MutationObserver((mutations) => {
+        mutations.forEach(({ addedNodes, removedNodes }) => {
+          Array.from(removedNodes).forEach((node) => {
+            if (!openState || node.nodeType !== 1) return;
+            if (node === openState.details || node.contains(openState.details)) {
+              closeMenu(openState, false);
+            }
+          });
+          Array.from(addedNodes).forEach(registerMenusIn);
+        });
+      });
+      actionMenuObserver.observe(root, { childList: true, subtree: true });
 
       const schedulePosition = () => {
         if (!openState || positionFrame) return;
