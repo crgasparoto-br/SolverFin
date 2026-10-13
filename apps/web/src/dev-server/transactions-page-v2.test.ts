@@ -47,7 +47,7 @@ test("A2 account picker allocates a wider responsive filter column (#708)", asyn
     assert.match(html, /grid-template-columns:minmax\(18rem,1\.35fr\) minmax\(12rem,\.75fr\)/);
     assert.match(
       html,
-      /@media\(max-width:1100px\)\{\.filter-form\{grid-template-columns:minmax\(18rem,1\.25fr\) minmax\(12rem,\.75fr\)\}/,
+      /@media\(max-width:1279px\)\{\.statement-layout\{[^}]+\}\.account-summary\{[^}]+\}\.summary-totals\{[^}]+\}\.filter-form\{grid-template-columns:minmax\(18rem,1\.25fr\) minmax\(12rem,\.75fr\)\}/,
     );
     assert.match(html, /class="account-select-trigger"[^>]+aria-haspopup="listbox"/);
     assert.match(html, /class="account-select-menu" role="listbox"/);
