@@ -199,7 +199,7 @@ export function statementGoldenRefinementRuntime(): string {
 }
 
 export function statementGoldenRefinementStyles(): string {
-  const { spacing, breakpoints, density, typography } = solverFinDesignTokens;
+  const { spacing, density, typography } = solverFinDesignTokens;
   const root = '[data-statement-archetype="A2"][data-golden-screen="statement"]';
   const dialog = 'body:has([data-golden-screen="statement"]) dialog[data-modal]';
   return `
@@ -245,7 +245,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-status-details>summary{box-sizing:border-box;color:var(--muted);cursor:pointer;font-size:${typography.sizes.sm};min-height:${density.interactiveTargetMin};padding-block:${spacing[1]}}
     ${root} .statement-status-content{display:flex;flex-wrap:wrap;gap:${spacing[2]} ${spacing[4]};padding-bottom:${spacing[3]}}
     ${root} .statement-context:has(.statement-account-control) .statement-context-main{display:none}
-    @media(min-width:761px){
+    @media(min-width:1101px){
       ${root} .statement-mobile-advanced-filters,${root} .statement-mobile-advanced-fields{display:contents}
       ${root} .statement-mobile-advanced-filters>summary{display:none}
     }
@@ -271,7 +271,7 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} [data-modal-title]{font-size:${typography.sizes.xl};line-height:${typography.lineHeights.compact};overflow-wrap:anywhere}
     ${dialog} .modal-panel form[data-form] :is(input,select,textarea){min-height:${density.interactiveTargetMin}}
     ${dialog} .modal-panel form[data-form]>label.full{grid-column:1/-1}
-    @media(max-width:${breakpoints.shellCompact}){
+    @media(max-width:1100px){
       ${root},${root} .statement-a2-workspace{gap:${spacing[1]}}
       ${root} .sf-page-header-description{display:none}
       ${root} .statement-heading-actions{display:flex;justify-content:space-between;width:100%}
@@ -463,7 +463,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .filter-form .statement-sort-field{min-width:0}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.md};font-variant-numeric:tabular-nums;font-weight:700}
     ${root} .statement-body .col-description>strong{font-size:${typography.sizes.md};font-weight:700}
-    @media(max-width:${breakpoints.shellCompact}){
+    @media(max-width:1100px){
       /* Progressive reduction: compact widths drop the decorative glyph so the long values
          keep their full width, and label and value stay on one line. */
       ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:wrap;justify-content:space-between;padding:${spacing[1]} ${spacing[2]}}
@@ -505,7 +505,7 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .statement-entry-advanced-grid>.full{grid-column:1/-1}
     ${dialog} .save-row{align-items:center;border-top:1px solid #eef2f7;justify-content:flex-end;padding-top:${spacing[3]}}
     ${dialog} .save-row .status-icons{margin-right:auto}
-    @media(max-width:${breakpoints.shellCompact}){
+    @media(max-width:1100px){
       body:has(${root}) .app-shell{grid-template-columns:1fr}
       body:has(${root}) .sidebar{background:var(--primary);border-right:0;color:#fff}
       body:has(${root}) .sidebar nav a{color:rgba(255,255,255,.78)}
@@ -572,6 +572,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root}[data-statement-options] .filter-form>.statement-sort-field{grid-column:auto;min-width:0}
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto;flex-wrap:nowrap;min-width:0}
     }
+    /* Intermediate desktops cannot fit six content-sized tracks beside the sidebar.
+       Reflow instead of extending the document beyond the viewport. */
+    @media(min-width:1101px) and (max-width:1339px){
+      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(3,minmax(0,1fr))}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:1/-1}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
+    }
     /* Below this width the action group keeps its own row so no filter loses legibility. */
     @media(min-width:1101px) and (max-width:1339px){
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
@@ -579,7 +586,7 @@ export function statementGoldenRefinementStyles(): string {
     @media(min-width:1101px){
       ${root}[data-statement-options="expanded"] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
     }
-    @media(min-width:761px){
+    @media(min-width:1101px){
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
       /* Reference anatomy: check | glyph | date | description | category | value | status | actions.
          Rows and header share one track list, so the columns always line up. */
@@ -603,7 +610,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-head .col-status{grid-area:status}
       ${root} .statement-head .col-actions{grid-area:actions}
     }
-    @media(max-width:${breakpoints.shellCompact}){
+    @media(max-width:1100px){
       ${root} .statement-body[data-statement-row-refined]{grid-template-areas:"select description actions" "select amount amount" "select metadata metadata" "select status status" "select footer footer"}
       ${root} .statement-body .col-row-icon{display:none}
       ${root} .statement-body .col-status{justify-self:start}
