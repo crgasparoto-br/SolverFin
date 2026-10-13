@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "2929b44cd6569925e1180e295eada72be4c54ba5",
+  "base_sha": "1a972b4f3b0e1408aefb56eab9aa81494bba9a0e",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/web/src/dev-server/statement-list-archetype.ts",
+      "lines_before": 179,
+      "lines_after": 396
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-semantic-interactions.mjs",
+      "lines_before": 670,
+      "lines_after": 673
+    },
+    {
+      "path": "scripts/statement-visual/statement-action-menu-visual.mjs",
+      "lines_before": null,
+      "lines_after": 152
+    }
+  ],
+  "blocking_files": []
+}

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "subject_sha": "2929b44cd6569925e1180e295eada72be4c54ba5",
+  "base_sha": "1a972b4f3b0e1408aefb56eab9aa81494bba9a0e",
+  "creations": [
+    {
+      "path": "scripts/statement-visual/statement-action-menu-visual.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "inspectStatementActionMenu",
+          "statement action menu visual",
+          "MutationObserver statement actions"
+        ],
+        "scope": "scripts/statement-visual and apps/web/src/dev-server",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-semantic-interactions.mjs",
+            "reason_not_reused": "O cenário legado já excedia o crescimento permitido; a extração mantém o arquivo abaixo do limite e isola a cobertura específica do menu."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extrair o cenário visual do menu para manter o runner legado coeso e dentro do CODE-GROWTH-001."
+    }
+  ],
+  "references": [
+    {
+      "symbol": "statementActionMenusRuntime",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/statement-list-archetype.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/statement-list-archetype.ts",
+        "line": 147
+      },
+      "verified_by": {
+        "command": "npm run test --workspace @solverfin/web",
+        "exit_code": 0
+      }
+    }
+  ],
+  "replacements": []
+}
