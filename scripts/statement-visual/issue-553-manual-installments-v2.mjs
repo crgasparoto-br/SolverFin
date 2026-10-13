@@ -25,6 +25,7 @@ try {
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await installReloadGuard();
+  const desktopPageScrollBaseline = await evaluate(browser.cdp, "window.scrollY");
   await openExpenseModalByKeyboard();
   const desktopFocus = await readModalFocusContract();
   check(desktopFocus.focusInsideDialog, "Desktop modal did not receive focus", desktopFocus);
@@ -46,9 +47,14 @@ try {
     description: "QA parcelamento manual canonico",
     note: "Observacao preservada no retry",
   });
-  const desktopModal = await readFormState();
+  const desktopModal = await readFormState(desktopPageScrollBaseline);
   check(desktopModal.dialogCentered, "Desktop modal is not centered in the viewport", desktopModal);
   check(desktopModal.dialogWithinViewport, "Desktop modal escapes the viewport", desktopModal);
+  check(
+    desktopModal.dialogSafeMargins,
+    "Desktop modal does not preserve the safe viewport margins",
+    desktopModal,
+  );
   check(
     desktopModal.pageScrollYStable,
     "Opening or inspecting the desktop modal moved the page",
@@ -141,6 +147,7 @@ try {
   await setViewport(browser.cdp, 1366, 500);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await installReloadGuard();
+  const compactDesktopPageScrollBaseline = await evaluate(browser.cdp, "window.scrollY");
   await openExpenseModal();
   await fillInstallmentForm({
     amount: "120,00",
@@ -151,7 +158,7 @@ try {
     description: "QA rolagem interna desktop compacto",
     note: "Conteúdo longo",
   });
-  const compactDesktopModal = await readFormState();
+  const compactDesktopModal = await readFormState(compactDesktopPageScrollBaseline);
   check(
     compactDesktopModal.modalScrollsInternally,
     "Compact desktop modal does not expose internal scrolling for the long form",
@@ -162,11 +169,33 @@ try {
     "Compact desktop modal escapes the viewport",
     compactDesktopModal,
   );
+  check(
+    compactDesktopModal.dialogSafeMargins,
+    "Compact desktop modal does not preserve the safe viewport margins",
+    compactDesktopModal,
+  );
+  check(
+    !compactDesktopModal.globalOverflow,
+    "Compact desktop modal introduces horizontal overflow",
+    compactDesktopModal,
+  );
 
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await installReloadGuard();
-  await openExpenseModal();
+  const mobilePageScrollBaseline = await evaluate(browser.cdp, "window.scrollY");
+  await openExpenseModalByKeyboard();
+  const mobileFocus = await readModalFocusContract();
+  check(mobileFocus.focusInsideDialog, "Mobile modal did not receive focus", mobileFocus);
+  await pressEscape();
+  const mobileEscape = await readModalEscapeContract();
+  check(mobileEscape.closed, "Escape did not close the mobile modal", mobileEscape);
+  check(
+    mobileEscape.focusReturnedToOpener,
+    "Focus did not return to the mobile opener",
+    mobileEscape,
+  );
+  await openExpenseModalByKeyboard();
   const mobileForm = await fillInstallmentForm({
     amount: "0,01",
     plannedOn: "2026-11-30",
@@ -181,6 +210,20 @@ try {
     "Mobile form did not retain installment mode",
     mobileForm,
   );
+  const mobileModal = await readFormState(mobilePageScrollBaseline);
+  check(mobileModal.dialogCentered, "Mobile modal is not centered in the viewport", mobileModal);
+  check(mobileModal.dialogWithinViewport, "Mobile modal escapes the viewport", mobileModal);
+  check(
+    mobileModal.dialogSafeMargins,
+    "Mobile modal does not preserve the safe viewport margins",
+    mobileModal,
+  );
+  check(
+    mobileModal.modalScrollsInternally,
+    "Mobile modal does not expose internal scrolling",
+    mobileModal,
+  );
+  check(!mobileModal.globalOverflow, "Mobile modal introduces horizontal overflow", mobileModal);
 
   const validation = await interceptFormPost({
     action: async () => {
@@ -506,7 +549,9 @@ async function waitForFormStatus(expectedText) {
   );
 }
 
-async function readFormState() {
+async function readFormState(pageScrollBaseline) {
+  const pageScrollBaselineExpression =
+    pageScrollBaseline === undefined ? "window.scrollY" : JSON.stringify(pageScrollBaseline);
   return evaluate(
     browser.cdp,
     `(() => {
@@ -517,7 +562,7 @@ async function readFormState() {
       const visibleViewportWidth = document.documentElement.clientWidth;
       const scrollable = [dialog, panel].find((node) => node && node.scrollHeight > node.clientHeight + 1);
       const scrollTopBefore = scrollable?.scrollTop || 0;
-      const pageScrollBefore = window.scrollY;
+      const pageScrollBefore = ${pageScrollBaselineExpression};
       const maxScrollTop = scrollable ? scrollable.scrollHeight - scrollable.clientHeight : 0;
       if (scrollable && maxScrollTop > 0) scrollable.scrollTop = Math.min(80, maxScrollTop);
       const modalScrollsInternally = Boolean(
@@ -529,6 +574,21 @@ async function readFormState() {
         dialogLabel: dialog?.querySelector("[data-modal-title]")?.textContent?.trim() || "",
         liveRegion: form.querySelector("[aria-live='polite']")?.getAttribute("aria-live") || "",
         visibleViewportWidth,
+        margins: rect
+          ? {
+              left: rect.left,
+              right: visibleViewportWidth - rect.right,
+              top: rect.top,
+              bottom: window.innerHeight - rect.bottom,
+            }
+          : null,
+        dialogSafeMargins: Boolean(
+          rect &&
+            rect.left >= 16 &&
+            visibleViewportWidth - rect.right >= 16 &&
+            rect.top >= 16 &&
+            window.innerHeight - rect.bottom >= 16,
+        ),
         dialogCentered: Boolean(
           rect &&
             Math.abs(rect.left + rect.width / 2 - visibleViewportWidth / 2) <= 1 &&
