@@ -373,7 +373,6 @@ async function validateStatement(cdp) {
     assert.equal(layout.accountPickerFitsViewport, true);
   }
 
-
   const actionMenu = await inspectStatementActionMenu(cdp);
 
   const dateAsc = await inspectStatementSort(cdp, baseRoute, "date_asc");
