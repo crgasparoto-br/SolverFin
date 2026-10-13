@@ -349,7 +349,9 @@ async function validateStatement(cdp) {
   assert.equal(structure.mainPresent, true, "Statement has no main region.");
   assert.equal(structure.visibleH1Count, 1, "Statement must expose one visible h1.");
   assert.ok(structure.rowCount > 0, "Statement has no data rows.");
-  assert.ok(structure.accountPickerWidth >= 288 && structure.accountPickerFitsViewport);
+  assert.ok(
+    structure.accountPickerWidth >= 288 && structure.accountPickerFitsViewport,
+  );
 
   const focus = await evaluate(
     cdp,
@@ -367,7 +369,7 @@ async function validateStatement(cdp) {
     await navigate(cdp, `${baseUrl}${baseRoute}`);
     await sleep(100);
     const layout = await inspectStatementStructure(cdp);
-    assert.equal(layout.pageFits, true);
+    assert.equal(layout.pageFits, true, `Statement overflows at ${viewportWidth}px: ${JSON.stringify(layout)}`);
     assert.equal(layout.accountPickerFitsViewport, true);
   }
 
