@@ -89,6 +89,16 @@ test("novo lançamento centraliza o dialog e limita a rolagem ao próprio modal"
       /dialog\[data-modal\]>\.modal-panel\{[^}]*max-height:inherit;[^}]*overflow-y:auto;[^}]*overscroll-behavior:contain\}/,
       "formulários longos devem rolar dentro do modal, sem deslocar a página",
     );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \{ margin-inline: auto; max-width: min\(640px, calc\(100% - 32px\)\); \}/,
+      "o CSS da Golden Screen não pode reposicionar o modal no canto direito no desktop",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \{ margin-inline: auto; max-width: calc\(100% - 32px\); \}/,
+      "o CSS da Golden Screen deve preservar ao menos 16px de margem lateral no mobile",
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }

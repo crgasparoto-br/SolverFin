@@ -520,7 +520,7 @@ export function statementListArchetypeStyles(): string {
 
     body:has([data-golden-screen="statement"]) dialog { border: 1px solid var(--line); border-radius: var(--radius-lg); max-height: calc(100dvh - 32px); overflow-y: auto; }
     body dialog[data-modal], body dialog[data-group-modal] { max-width: min(760px, calc(100% - 32px)); }
-    body:has([data-golden-screen="statement"]) dialog[data-modal] { margin-right: 16px; max-width: min(640px, calc(100% - 32px)); }
+    body:has([data-golden-screen="statement"]) dialog[data-modal] { margin-inline: auto; max-width: min(640px, calc(100% - 32px)); }
     body dialog[data-modal] .modal-panel,
     body dialog[data-group-modal] .modal-panel { gap: 12px; min-width: 0; padding: 20px; }
     body dialog[data-modal] .close-form { min-height: 0; position: absolute; right: 14px; top: 12px; z-index: 2; }
@@ -577,7 +577,7 @@ export function statementListArchetypeStyles(): string {
       ${root} .statement-body .col-status { justify-self: end; }
       ${root} .statement-body .col-amount { font-size: .9375rem; }
       ${root} .statement-body .col-balance { font-size: .7rem; }
-      body:has([data-golden-screen="statement"]) dialog[data-modal] { margin-inline: auto; max-width: calc(100% - 16px); }
+      body:has([data-golden-screen="statement"]) dialog[data-modal] { margin-inline: auto; max-width: calc(100% - 32px); }
       body dialog[data-modal] .modal-panel,
       body dialog[data-group-modal] .modal-panel { padding: 20px 16px; }
       body dialog[data-modal] .modal-panel form[data-form] { grid-template-columns: 1fr; }
