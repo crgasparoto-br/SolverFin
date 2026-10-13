@@ -565,8 +565,12 @@ async function readFormState(pageScrollBaseline) {
       const pageScrollBefore = ${pageScrollBaselineExpression};
       const maxScrollTop = scrollable ? scrollable.scrollHeight - scrollable.clientHeight : 0;
       if (scrollable && maxScrollTop > 0) scrollable.scrollTop = Math.min(80, maxScrollTop);
+      const panelScrollStyle = panel ? getComputedStyle(panel).overflowY : "";
       const modalScrollsInternally = Boolean(
-        scrollable && maxScrollTop > 0 && scrollable.scrollTop > scrollTopBefore,
+        panel &&
+        ["auto", "scroll"].includes(panelScrollStyle) &&
+        (panel.scrollHeight <= panel.clientHeight + 1 ||
+          (scrollable && maxScrollTop > 0 && scrollable.scrollTop > scrollTopBefore)),
       );
       if (scrollable) scrollable.scrollTop = scrollTopBefore;
       return {
