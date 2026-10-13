@@ -29,3 +29,31 @@ test("statement A2 exposes active-profile runtime and keyboard listbox controls"
   assert.match(html, /current\.click\(\)/);
   assert.match(statementListArchetypeStyles(), /account-select-menu li:focus-visible/);
 });
+
+test("statement A2 keeps action menus in a viewport-aware layer", () => {
+  const html = renderStatementListArchetype({
+    actionsHtml: '<button type="button">Nova receita</button>',
+    filtersHtml: "<div>Filtros</div>",
+    contextHtml: '<section class="statement-context">Conta</section>',
+    summaryHtml: "<aside>Resumo</aside>",
+    listHtml: `<section class="statement-row statement-body">
+      <details class="actions col-actions"><summary aria-label="Ações do lançamento">•••</summary><div class="actions-menu" role="menu"><button type="button" class="actions-item">Editar</button></div></details>
+    </section>`,
+  });
+
+  assert.match(html, /data-statement-action-menus-runtime="true"/);
+  assert.match(html, /getBoundingClientRect\(\)/);
+  assert.match(html, /const below = triggerRect\.bottom/);
+  assert.match(html, /const above = triggerRect\.top/);
+  assert.match(html, /document\.body\.appendChild\(state\.menu\)/);
+  assert.match(html, /const actionMenuObserver = new MutationObserver/);
+  assert.match(html, /actionMenuObserver\.observe\(root, \{ childList: true, subtree: true \}\)/);
+  assert.match(html, /event\.key === 'Escape'/);
+  assert.match(html, /focus\(\{ preventScroll: true \}\)/);
+  assert.match(html, /window\.addEventListener\('scroll', schedulePosition, true\)/);
+  assert.match(
+    statementListArchetypeStyles(),
+    /\[data-statement-action-menu-fixed\]\.actions-menu[^\n]*position: fixed !important/,
+  );
+  assert.match(statementListArchetypeStyles(), /max-height: calc\(100vh - 16px\)/);
+});

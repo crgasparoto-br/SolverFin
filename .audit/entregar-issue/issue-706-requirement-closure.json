@@ -1,0 +1,564 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/tmp/solverfin-handoff-706/specification-snapshot.json",
+    "sha256": "3cf40cfba1c596cb01bf0dddec1994fe1a3f224dfeb757348468b3cc0b60cf4c"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-706",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "309be808fd06e3aa4c44ab3169e4197790de285e6e76328a48c594e67ef72b64",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 4,
+      "source_text": "O comportamento afeta a jornada diária de revisão/manutenção de lançamentos e contraria a orientação do Extrato de manter ações contextuais acessíveis sem perder o contexto da lista. A implementação deve seguir `AGENTS.md`, `docs/DESIGN_SYSTEM.md`, `docs/UI_PRIMITIVES.md`, `docs/VISUAL_VALIDATION.md` e a composição A2 existente em `apps/web/src/dev-server/transactions-page-v2.ts`.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-001"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "a1c586059bb3a52d342cdc88ab32331625ded39cee9a4fa110c58ef48afd9348",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 7,
+      "source_text": "Garantir que o menu de ações de um lançamento permaneça totalmente visível no viewport, sem exigir rolagem adicional da página ou da lista, abrindo para cima quando não houver espaço abaixo e evitando clipping por ancestrais com overflow.",
+      "flags": [
+        "observable",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-002"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "e981f918e191714a7f7549d3c4d309fd2909c8b2e531f65493cea10b059197d1",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 10,
+      "source_text": "Ajustar o menu de ações dos lançamentos do Extrato A2 para ser posicionado em uma camada fora da área rolável da lista.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-003"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "44054724bcbe2665cdcc63f0fe844f63d90a6d5c54f13d436f51543aa305d046",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 11,
+      "source_text": "Ancorar o menu ao botão de três pontos e calcular sua posição considerando os limites do viewport, com abertura para baixo ou para cima conforme o espaço disponível.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-004"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "7daab17875c22cafae93154141340aadaad3567404bcdd824a2e884019bae865",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 12,
+      "source_text": "Preservar as ações existentes, seus payloads, autorizações e a ordem visual das opções.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-005"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "844c96e477187454cae41cbc17f1da9ad9ae34333beba99803caf2b148e597c7",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 13,
+      "source_text": "Preservar acessibilidade: nome acessível, `aria-expanded`, navegação por teclado, Escape e devolução de foco ao botão de origem.",
+      "flags": [
+        "observable",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-006"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "78c9880dcb364457a2fb9640b3c772b6928f35ca539cf2a76367d8547b57e672",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 14,
+      "source_text": "Cobrir o comportamento em desktop, viewport reduzida e mobile com testes focados e evidência visual proporcional.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-007"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "4e4d2dcd0a5b906589b600fa2ea092d2072831eadb73796d8004fb37dc5bda52",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 23,
+      "source_text": "[ ] Ao abrir o menu de um lançamento próximo ao fim do viewport, todas as opções ficam visíveis sem rolar a página.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-008"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "9515d368f61eb32461e40026cfaccd251b43fc4829cf7ed980731871718798c4",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 24,
+      "source_text": "[ ] Quando não houver espaço suficiente abaixo do botão, o menu abre acima; quando houver espaço, abre abaixo.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-009"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "26d0524742194d6a5f786e64384a86cf1dcfa2a3928f4ceffc8ba7e556ad3b00",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 25,
+      "source_text": "[ ] O menu não fica cortado por `overflow` da lista/tabela e não cria overflow horizontal global.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-010"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "b8286a7744d245751c00897d4a56936c97bc6ab5b4bad60c65674167e0938a0a",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 26,
+      "source_text": "[ ] Apenas um menu fica aberto por vez; clicar fora ou pressionar Escape fecha o menu.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-011"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-011"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "6bdd6d52609163c5f8ed074c76b27b9fe28b1e74773714d780587dbfe4ab1f15",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 27,
+      "source_text": "[ ] A abertura por teclado permite alcançar as opções e o foco retorna ao botão de três pontos ao fechar.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-012"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-012"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "3dda918d6af53791a3b1c684969ed29ec82f7bca767a48c39169bc93c2b1afc9",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 28,
+      "source_text": "[ ] Desktop e mobile mantêm a hierarquia, contraste, alvo interativo e leitura do Extrato sem sobreposição indevida.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-013"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-013"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "d8f4da92e0cb266bb894531e2ce4435bcd9fe65daea376ca4fe967c8bc52fedb",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 29,
+      "source_text": "[ ] Os testes focados, typecheck, lint e validação SSR/visual aplicáveis passam.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-014"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-014"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-015",
+      "candidate_key": "7d510fa92af61f4029db9958803b365ae0c7c782e86fe1641ada82fa2b2e89ef",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 32,
+      "source_text": "[ ] Testes adicionados/atualizados quando aplicável",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-015"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-015"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "230cb33a8825bac3e05964eab46f772b242ed0511655a5d7db2355ddea1c86b7",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 33,
+      "source_text": "[ ] Lint/typecheck/build executados quando disponíveis",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-016"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-016"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-017",
+      "candidate_key": "805f821691c2b3900002e9bb4f8a5f8623c515c8c17b75f121d1aec1ba0e3dc9",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 34,
+      "source_text": "[ ] Documentação atualizada quando necessário",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-017"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-017"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-018",
+      "candidate_key": "287427bbb8bd75663f832f93b20fea68d108b4bd3b74142677316e053e8d77b3",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 35,
+      "source_text": "[ ] ADR criada/atualizada quando houver decisão arquitetural",
+      "flags": [
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-018"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-018"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-019",
+      "candidate_key": "52b7d399f1afaf5b6513b54968265aae060e00ff793e3eddf12d13bff379deaf",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 36,
+      "source_text": "[ ] Sem dados sensíveis em logs, fixtures, seeds, prints ou documentação",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-019"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-019"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    },
+    {
+      "id": "OBL-020",
+      "candidate_key": "8aa9351d4acf4a4e88a803f0c926e36138b98ac06c5a246388a46aa4095f3efb",
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "source_line": 39,
+      "source_text": "O posicionamento deve usar o mesmo padrão de popover fixo e viewport-aware já existente em `accounts-cards-action-menu-enhancement.ts`, sem duplicar regras de domínio.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-020"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "ASSERT-020"
+      ],
+      "scope_decision": null,
+      "rationale": "Fechado pelo recorte da issue 706 e validado pelo diff, testes focados e evidência Chromium aplicável."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-706",
+      "source_sha256": "bbeefd55d536f88d8d099ff39aec6f18e28c950e5db12f692b223a4871d32b3a",
+      "candidate_count": 20,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "A issue exige preservar o caminho canônico do archetype A2 e não alterar ações financeiras.",
+    "entries": [
+      {
+        "id": "SIC-706001",
+        "kind": "canonical-path-parity",
+        "requirement_ids": [
+          "REQ-018"
+        ],
+        "obligation_ids": [
+          "OBL-018"
+        ],
+        "plausible_wrong_implementation": "Manter o menu absoluto dentro da linha e apenas aumentar o z-index.",
+        "canonical_path": "apps/web/src/dev-server/statement-list-archetype.ts",
+        "competing_paths": [
+          "apps/web/src/dev-server/accounts-cards-action-menu-enhancement.ts"
+        ],
+        "evidence_ids": [
+          "EVID-706-CHROME"
+        ],
+        "scenario_ids": [
+          "SCN-706-STATIC",
+          "SCN-706-DYNAMIC"
+        ],
+        "negative_control_evidence": [
+          "O harness Chromium reprova quando o menu não é movido para document.body e não recebe camada fixed."
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "passed",
+    "applicability_reason": "A issue preserva os campos de leitura existentes, mas o contrato enumera acessibilidade e foco; esses são verificados no runtime visual.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "A issue não cria catálogo ou fonte de domínio; preserva o markup e as ações existentes.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "A issue preserva autorizações e padrões existentes; a busca documental confirma ausência de mudança normativa fora do componente.",
+    "old_contract_terms": [],
+    "new_contract_terms": [],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "Issue 706, AGENTS.md e docs de interface revisados."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-001",
+      "REQ-002",
+      "REQ-003",
+      "REQ-004",
+      "REQ-005",
+      "REQ-006",
+      "REQ-007",
+      "REQ-008",
+      "REQ-009",
+      "REQ-010",
+      "REQ-011",
+      "REQ-012",
+      "REQ-013",
+      "REQ-014",
+      "REQ-015",
+      "REQ-016",
+      "REQ-017",
+      "REQ-018",
+      "REQ-019",
+      "REQ-020"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013",
+      "OBL-014",
+      "OBL-015",
+      "OBL-016",
+      "OBL-017",
+      "OBL-018",
+      "OBL-019",
+      "OBL-020"
+    ],
+    "evidence": [
+      "Diff issue-local, testes web, typecheck/lint/SSR e Chromium isolado."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

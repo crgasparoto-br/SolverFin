@@ -6,6 +6,7 @@ import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs"
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 import { pageMeasurementExpression } from "./measurements.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
+import { inspectStatementActionMenu } from "./statement-action-menu-visual.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -361,6 +362,8 @@ async function validateStatement(cdp) {
   assert.equal(focus.exists, true, "Statement exposes no focusable status indicator.");
   assert.equal(focus.focused, true, "Statement status indicator did not accept focus.");
 
+  const actionMenu = await inspectStatementActionMenu(cdp);
+
   const dateAsc = await inspectStatementSort(cdp, baseRoute, "date_asc");
   const dateDesc = await inspectStatementSort(cdp, baseRoute, "date_desc");
   assert.ok(dateAsc.rowCount >= 2, "Statement sorting has fewer than two comparable rows.");
@@ -420,7 +423,7 @@ async function validateStatement(cdp) {
   assert.ok(mobileStructure.rowCount > 0, "Statement mobile has no data rows.");
 
   return {
-    desktop: { measurements, structure, focus },
+    desktop: { measurements, structure, focus, actionMenu },
     mobile: { measurements: mobileMeasurements, structure: mobileStructure },
     sorting: { dateAsc, dateDesc },
     insight,
