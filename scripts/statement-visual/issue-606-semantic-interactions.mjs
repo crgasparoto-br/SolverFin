@@ -369,7 +369,11 @@ async function validateStatement(cdp) {
     await navigate(cdp, `${baseUrl}${baseRoute}`);
     await sleep(100);
     const layout = await inspectStatementStructure(cdp);
-    assert.equal(layout.pageFits, true, `Statement overflows at ${viewportWidth}px: ${JSON.stringify(layout)}`);
+    assert.equal(
+      layout.pageFits,
+      true,
+      `Statement overflows at ${viewportWidth}px: ${JSON.stringify(layout)}`,
+    );
     assert.equal(layout.accountPickerFitsViewport, true);
   }
 
