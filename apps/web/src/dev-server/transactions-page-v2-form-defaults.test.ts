@@ -69,6 +69,51 @@ test("novo lançamento sugere datas locais e aplica fallbacks temporais seguros"
   }
 });
 
+test("novo lançamento centraliza o dialog e limita a rolagem ao próprio modal", async () => {
+  globalThis.fetch = mockFetch();
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
+    );
+    const normalized = html.replace(/\s+/g, " ");
+
+    assert.match(
+      normalized,
+      /dialog\[data-modal\]\{[^}]*box-sizing:border-box;[^}]*inset:0;[^}]*margin:auto;[^}]*height:fit-content;[^}]*max-height:calc\(100dvh - 32px\);[^}]*max-width:min\(860px,calc\(100vw - 32px\)\);[^}]*overflow:hidden;[^}]*position:fixed;[^}]*transform:none\}/,
+      "o dialog de novo lançamento precisa de centralização geométrica no viewport e limite seguro",
+    );
+    assert.match(
+      normalized,
+      /dialog\[data-modal\]>\.modal-panel\{[^}]*max-height:inherit;[^}]*overflow-y:auto;[^}]*overscroll-behavior:contain\}/,
+      "formulários longos devem rolar dentro do modal, sem deslocar a página",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \{ margin-inline: auto; max-width: min\(640px, calc\(100% - 32px\)\); \}/,
+      "o CSS da Golden Screen não pode reposicionar o modal no canto direito no desktop",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \{ margin-inline: auto; max-width: calc\(100% - 32px\); \}/,
+      "o CSS da Golden Screen deve preservar ao menos 16px de margem lateral no mobile",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{border:1px[^}]*height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\)/,
+      "o refinamento da Golden Screen deve centralizar novos lançamentos no desktop",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{height:calc\(100dvh - 32px\);margin:16px auto;max-height:calc\(100dvh - 32px\);max-width:calc\(100% - 32px\);width:calc\(100% - 32px\)\}/,
+      "o refinamento responsivo deve preservar margens de 16px nos celulares",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("mensagens do formulário de lançamentos permanecem em pt-BR", async () => {
   globalThis.fetch = mockFetch();
 

@@ -38,7 +38,10 @@ export class CdpClient {
   send(method, params = {}) {
     const id = this.id++;
     return new Promise((resolve, reject) => {
-      const timeout = method === "Runtime.evaluate" ? 45_000 : 20_000;
+      // Screenshots can stall during Chrome compositor startup on shared CI runners.
+      const timeout = ["Runtime.evaluate", "Page.captureScreenshot"].includes(method)
+        ? 45_000
+        : 20_000;
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(new Error(`CDP command timeout: ${method}`));
@@ -204,12 +207,23 @@ export async function evaluate(cdp, expression) {
 }
 
 export async function screenshot(cdp, path) {
-  const result = await cdp.send("Page.captureScreenshot", {
-    format: "png",
-    fromSurface: true,
-    captureBeyondViewport: false,
-  });
-  await writeFile(path, Buffer.from(result.data, "base64"));
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const result = await cdp.send("Page.captureScreenshot", {
+        format: "png",
+        fromSurface: true,
+        captureBeyondViewport: false,
+      });
+      await writeFile(path, Buffer.from(result.data, "base64"));
+      return;
+    } catch (error) {
+      // Retry only transient compositor timeouts, never protocol errors or artifact writes.
+      if (attempt === 1 || error?.message !== "CDP command timeout: Page.captureScreenshot") {
+        throw error;
+      }
+      await sleep(300);
+    }
+  }
 }
 
 export function sleep(milliseconds) {

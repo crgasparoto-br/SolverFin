@@ -25,6 +25,18 @@ try {
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await installReloadGuard();
+  const desktopPageScrollBaseline = await evaluate(browser.cdp, "window.scrollY");
+  await openExpenseModalByKeyboard();
+  const desktopFocus = await readModalFocusContract();
+  check(desktopFocus.focusInsideDialog, "Desktop modal did not receive focus", desktopFocus);
+  await pressEscape();
+  const desktopEscape = await readModalEscapeContract();
+  check(desktopEscape.closed, "Escape did not close the desktop modal", desktopEscape);
+  check(
+    desktopEscape.focusReturnedToOpener,
+    "Focus did not return to the desktop opener",
+    desktopEscape,
+  );
   await openExpenseModalByKeyboard();
   const desktopForm = await fillInstallmentForm({
     amount: "120,00",
@@ -35,6 +47,19 @@ try {
     description: "QA parcelamento manual canonico",
     note: "Observacao preservada no retry",
   });
+  const desktopModal = await readFormState(desktopPageScrollBaseline);
+  check(desktopModal.dialogCentered, "Desktop modal is not centered in the viewport", desktopModal);
+  check(desktopModal.dialogWithinViewport, "Desktop modal escapes the viewport", desktopModal);
+  check(
+    desktopModal.dialogSafeMargins,
+    "Desktop modal does not preserve the safe viewport margins",
+    desktopModal,
+  );
+  check(
+    desktopModal.pageScrollYStable,
+    "Opening or inspecting the desktop modal moved the page",
+    desktopModal,
+  );
   check(
     desktopForm.repeatMode === "installment",
     "Desktop form did not retain installment mode",
@@ -119,10 +144,58 @@ try {
     desktopRows,
   });
 
+  await setViewport(browser.cdp, 1366, 500);
+  await navigate(browser.cdp, `${baseUrl}${route}`);
+  await installReloadGuard();
+  const compactDesktopPageScrollBaseline = await evaluate(browser.cdp, "window.scrollY");
+  await openExpenseModal();
+  await fillInstallmentForm({
+    amount: "120,00",
+    plannedOn: "2026-08-31",
+    installments: 3,
+    installmentStart: 1,
+    amountMode: "total",
+    description: "QA rolagem interna desktop compacto",
+    note: "Conteúdo longo",
+  });
+  const compactDesktopModal = await readFormState(compactDesktopPageScrollBaseline);
+  check(
+    compactDesktopModal.modalScrollsInternally,
+    "Compact desktop modal does not expose internal scrolling for the long form",
+    compactDesktopModal,
+  );
+  check(
+    compactDesktopModal.dialogWithinViewport,
+    "Compact desktop modal escapes the viewport",
+    compactDesktopModal,
+  );
+  check(
+    compactDesktopModal.dialogSafeMargins,
+    "Compact desktop modal does not preserve the safe viewport margins",
+    compactDesktopModal,
+  );
+  check(
+    !compactDesktopModal.globalOverflow,
+    "Compact desktop modal introduces horizontal overflow",
+    compactDesktopModal,
+  );
+
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await installReloadGuard();
-  await openExpenseModal();
+  const mobilePageScrollBaseline = await evaluate(browser.cdp, "window.scrollY");
+  await openExpenseModalByKeyboard();
+  const mobileFocus = await readModalFocusContract();
+  check(mobileFocus.focusInsideDialog, "Mobile modal did not receive focus", mobileFocus);
+  await pressEscape();
+  const mobileEscape = await readModalEscapeContract();
+  check(mobileEscape.closed, "Escape did not close the mobile modal", mobileEscape);
+  check(
+    mobileEscape.focusReturnedToOpener,
+    "Focus did not return to the mobile opener",
+    mobileEscape,
+  );
+  await openExpenseModalByKeyboard();
   const mobileForm = await fillInstallmentForm({
     amount: "0,01",
     plannedOn: "2026-11-30",
@@ -137,6 +210,20 @@ try {
     "Mobile form did not retain installment mode",
     mobileForm,
   );
+  const mobileModal = await readFormState(mobilePageScrollBaseline);
+  check(mobileModal.dialogCentered, "Mobile modal is not centered in the viewport", mobileModal);
+  check(mobileModal.dialogWithinViewport, "Mobile modal escapes the viewport", mobileModal);
+  check(
+    mobileModal.dialogSafeMargins,
+    "Mobile modal does not preserve the safe viewport margins",
+    mobileModal,
+  );
+  check(
+    mobileModal.modalScrollsInternally,
+    "Mobile modal does not expose internal scrolling",
+    mobileModal,
+  );
+  check(!mobileModal.globalOverflow, "Mobile modal introduces horizontal overflow", mobileModal);
 
   const validation = await interceptFormPost({
     action: async () => {
@@ -173,6 +260,22 @@ try {
     "Installment modal overflowed horizontally on mobile",
     correctedState,
   );
+  check(
+    correctedState.dialogCentered,
+    "Mobile modal is not centered in the viewport",
+    correctedState,
+  );
+  check(correctedState.dialogWithinViewport, "Mobile modal escapes the viewport", correctedState);
+  check(
+    correctedState.modalScrollsInternally,
+    "Mobile modal does not expose internal scrolling for the long form",
+    correctedState,
+  );
+  check(
+    correctedState.pageScrollYStable,
+    "Opening or inspecting the mobile modal moved the page",
+    correctedState,
+  );
   const mobileRows = await readInstallments(fixture.accountId, "2026-11-01", "2026-12-31");
   check(
     mobileRows.length === 2,
@@ -194,15 +297,7 @@ try {
   await setViewport(browser.cdp, 768, 1024);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await openExpenseModal();
-  const tablet = await evaluate(
-    browser.cdp,
-    `(() => ({
-      modalOpen: document.querySelector("[data-modal]")?.open === true,
-      dialogLabel: document.querySelector("[data-modal-title]")?.textContent?.trim() || "",
-      liveRegion: document.querySelector("[data-form] [aria-live='polite']")?.getAttribute("aria-live") || "",
-      globalOverflow: document.documentElement.scrollWidth > window.innerWidth
-    }))()`,
-  );
+  const tablet = await readFormState();
   check(tablet.modalOpen, "Tablet modal did not open", tablet);
   check(
     tablet.dialogLabel.includes("Novo lançamento"),
@@ -210,6 +305,14 @@ try {
     tablet,
   );
   check(tablet.liveRegion === "polite", "Form feedback is not announced", tablet);
+  check(tablet.dialogCentered, "Tablet modal is not centered in the viewport", tablet);
+  check(tablet.dialogWithinViewport, "Tablet modal escapes the viewport", tablet);
+  check(
+    tablet.modalScrollsInternally,
+    "Tablet modal does not expose internal scrolling for the long form",
+    tablet,
+  );
+  check(tablet.pageScrollYStable, "Opening the tablet modal moved the page", tablet);
   check(!tablet.globalOverflow, "Installment modal overflowed horizontally on tablet", tablet);
   const tabletScreenshot = "issue-553-manual-installments-tablet-768x1024.png";
   await screenshot(browser.cdp, join(outputDir, tabletScreenshot));
@@ -333,7 +436,7 @@ async function openExpenseModalByKeyboard() {
     browser.cdp,
     `(() => {
       const button = document.querySelector('[data-open-modal][data-quick-kind="expense"]');
-      button?.focus();
+      button?.focus({ preventScroll: true });
       return document.activeElement === button && button?.disabled !== true;
     })()`,
   );
@@ -446,17 +549,97 @@ async function waitForFormStatus(expectedText) {
   );
 }
 
-async function readFormState() {
+async function readFormState(pageScrollBaseline) {
+  const pageScrollBaselineExpression =
+    pageScrollBaseline === undefined ? "window.scrollY" : JSON.stringify(pageScrollBaseline);
   return evaluate(
     browser.cdp,
     `(() => {
       const form = document.querySelector("[data-form]");
+      const dialog = document.querySelector("[data-modal]");
+      const panel = dialog?.querySelector(".modal-panel");
+      const rect = dialog?.getBoundingClientRect();
+      const visibleViewportWidth = document.documentElement.clientWidth;
+      const scrollable = [dialog, panel].find((node) => node && node.scrollHeight > node.clientHeight + 1);
+      const scrollTopBefore = scrollable?.scrollTop || 0;
+      const pageScrollBefore = ${pageScrollBaselineExpression};
+      const maxScrollTop = scrollable ? scrollable.scrollHeight - scrollable.clientHeight : 0;
+      if (scrollable && maxScrollTop > 0) scrollable.scrollTop = Math.min(80, maxScrollTop);
+      const panelScrollStyle = panel ? getComputedStyle(panel).overflowY : "";
+      const modalScrollsInternally = Boolean(
+        panel &&
+        ["auto", "scroll"].includes(panelScrollStyle) &&
+        (panel.scrollHeight <= panel.clientHeight + 1 ||
+          (scrollable && maxScrollTop > 0 && scrollable.scrollTop > scrollTopBefore)),
+      );
+      if (scrollable) scrollable.scrollTop = scrollTopBefore;
       return {
-        modalOpen: document.querySelector("[data-modal]")?.open === true,
+        modalOpen: dialog?.open === true,
+        dialogLabel: dialog?.querySelector("[data-modal-title]")?.textContent?.trim() || "",
+        liveRegion: form.querySelector("[aria-live='polite']")?.getAttribute("aria-live") || "",
+        visibleViewportWidth,
+        margins: rect
+          ? {
+              left: rect.left,
+              right: visibleViewportWidth - rect.right,
+              top: rect.top,
+              bottom: window.innerHeight - rect.bottom,
+            }
+          : null,
+        dialogSafeMargins: Boolean(
+          rect &&
+            rect.left >= 16 &&
+            visibleViewportWidth - rect.right >= 16 &&
+            rect.top >= 16 &&
+            window.innerHeight - rect.bottom >= 16,
+        ),
+        dialogCentered: Boolean(
+          rect &&
+            Math.abs(rect.left + rect.width / 2 - visibleViewportWidth / 2) <= 1 &&
+            Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2) <= 1,
+        ),
+        dialogWithinViewport: Boolean(
+          rect &&
+            rect.left >= -1 &&
+            rect.right <= visibleViewportWidth + 1 &&
+            rect.top >= -1 &&
+            rect.bottom <= window.innerHeight + 1,
+        ),
+        modalScrollsInternally,
+        pageScrollYStable: window.scrollY === pageScrollBefore,
         description: form.elements.namedItem("description").value,
         note: form.elements.namedItem("note").value,
         submitDisabled: form.querySelector('button[type="submit"]')?.disabled === true,
-        globalOverflow: document.documentElement.scrollWidth > window.innerWidth
+        globalOverflow: document.documentElement.scrollWidth > visibleViewportWidth
+      };
+    })()`,
+  );
+}
+
+async function readModalFocusContract() {
+  return evaluate(
+    browser.cdp,
+    `(() => {
+      const dialog = document.querySelector("[data-modal]");
+      const active = document.activeElement;
+      return {
+        open: dialog?.open === true,
+        focusInsideDialog: Boolean(dialog && active && dialog.contains(active)),
+        activeTag: active?.tagName || "",
+      };
+    })()`,
+  );
+}
+
+async function readModalEscapeContract() {
+  return evaluate(
+    browser.cdp,
+    `(() => {
+      const dialog = document.querySelector("[data-modal]");
+      const opener = document.querySelector('[data-open-modal][data-quick-kind="expense"]');
+      return {
+        closed: dialog?.open === false,
+        focusReturnedToOpener: document.activeElement === opener,
       };
     })()`,
   );
@@ -495,6 +678,24 @@ async function pressEnter() {
     code: "Enter",
     windowsVirtualKeyCode: 13,
     nativeVirtualKeyCode: 13,
+  });
+  await sleep(100);
+}
+
+async function pressEscape() {
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  });
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
   });
   await sleep(100);
 }

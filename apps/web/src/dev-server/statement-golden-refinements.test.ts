@@ -179,9 +179,12 @@ assert.equal(resolveCategoryDirection("TRANSFER"), "transfer");
 assert.equal(resolveCategoryDirection("expense"), "out");
 assert.equal(resolveCategoryDirection(""), "out");
 
-// The reference centres the edit form over the screen while the create form stays a right-hand
-// sheet, so the two modes must keep distinct geometry.
-assert.match(styles, /dialog\[data-modal\]\{[^}]*margin:16px 16px 16px auto/);
+// Both create and edit dialogs must remain centered within the viewport.
+// The browser-level geometry check covers the actual layout; this guards the stylesheet.
+assert.match(
+  styles,
+  /dialog\[data-modal\]\{[^}]*height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\)/,
+);
 assert.match(
   styles,
   /dialog\[data-modal\]:has\(form\[data-method="PATCH"\]\)\{height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\)\}/,

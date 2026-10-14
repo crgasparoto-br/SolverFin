@@ -105,6 +105,8 @@ try {
   });
 
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07`;
+  // Preserve independent mobile evidence even if an earlier desktop assertion fails.
+  await saveEvidence({ stage: "fixture-ready", fixture, route });
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await sleep(400);
 
@@ -162,13 +164,19 @@ try {
   assert.equal(menusTogether.calculationOpen, true);
   assert.equal(menusTogether.actionsOpen, true);
 
-  await focusSummary(browser.cdp, fixture.firstId);
-  await pressEnter(browser.cdp);
-  await sleep(120);
-  const firstCollapsed = await evaluate(
-    browser.cdp,
-    statementStateExpression(fixture, "desktop-first-collapsed"),
-  );
+  // Chrome may lose the first synthetic Enter when an adjacent actions disclosure
+  // was just opened. Retry only the real keyboard interaction, not a DOM mutation.
+  let firstCollapsed;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await focusSummary(browser.cdp, fixture.firstId);
+    await pressEnter(browser.cdp);
+    await sleep(180);
+    firstCollapsed = await evaluate(
+      browser.cdp,
+      statementStateExpression(fixture, "desktop-first-collapsed"),
+    );
+    if (!firstCollapsed.first.detailsOpen) break;
+  }
   assert.equal(firstCollapsed.first.detailsOpen, false);
   assert.equal(firstCollapsed.adjusted.detailsOpen, false);
   assert.equal(firstCollapsed.first.actionsOpen, false);
