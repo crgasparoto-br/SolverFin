@@ -499,6 +499,7 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .modal-panel form[data-form]>.save-row,
     ${dialog} .modal-panel form[data-form]>.statement-entry-kinds{grid-column:1/-1}
     ${dialog} .statement-entry-account input{background:#f8fafc}
+    ${dialog} [data-account-readonly-full-name]{align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:var(--radius);display:flex;font-size:${typography.sizes.sm};line-height:1.4;min-height:${density.interactiveTargetMin};overflow-wrap:anywhere;padding:${spacing[2]} ${spacing[3]};white-space:normal}
     ${dialog} .statement-entry-account-selector{grid-column:1/-1;min-width:0}
     ${dialog} .statement-entry-account-selector select{min-width:0;max-width:100%;width:100%}
     ${dialog} [data-edit-account-full-name]{display:block;font-size:${typography.sizes.xs};line-height:1.4;overflow-wrap:anywhere;white-space:normal}

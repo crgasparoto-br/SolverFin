@@ -62,6 +62,9 @@ export async function validateStatementContextualSurfaces(
         visibleAccountFields: accountFields.length,
         selectedAccountName: editAccountSelect?.selectedOptions?.[0]?.textContent?.trim() || null,
         fullAccountName: surface?.querySelector('[data-edit-account-full-name]')?.textContent?.trim() || null,
+        readOnlyOriginalName: surface?.querySelector('.statement-entry-account input')?.value?.trim() || null,
+        readOnlyVisibleName: surface?.querySelector('[data-account-readonly-full-name]')?.textContent?.trim() || null,
+        readOnlyInputHidden: !!surface?.querySelector('.statement-entry-account input')?.hidden,
         documentScrollLocked: getComputedStyle(document.documentElement).overflowY === 'hidden',
         dialogOverflowHidden: !!surface && getComputedStyle(surface).overflowY === 'hidden',
         panelScrollControlled: !!panel && getComputedStyle(panel).overflowY === 'auto',
@@ -320,6 +323,15 @@ export function assertContextualSurface(measured, state, dialog) {
       assert.equal(measured.documentScrollLocked, true, `${state}: background remains scrollable`);
       assert.equal(measured.dialogOverflowHidden, true, `${state}: dialog has a second scrollbar`);
       assert.equal(measured.panelScrollControlled, true, `${state}: form must own scrolling`);
+      if (state === "new" || state === "clone") {
+        assert.ok(measured.readOnlyOriginalName, `${state}: original account name is missing`);
+        assert.equal(measured.readOnlyInputHidden, true, `${state}: truncated account input remains visible`);
+        assert.equal(
+          measured.readOnlyVisibleName,
+          measured.readOnlyOriginalName,
+          `${state}: the full read-only account name must be visible`,
+        );
+      }
       if (state === "edit") {
         assert.ok(measured.selectedAccountName, "edit: missing selected account");
         assert.equal(

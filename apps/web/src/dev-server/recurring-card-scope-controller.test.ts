@@ -59,6 +59,8 @@ function assertAccountEditContract(): void {
   assert.match(script, /accountField\.hidden = !editing/);
   assert.match(script, /readOnlyAccountField\.hidden = editing/);
   assert.match(script, /data-edit-account-full-name/);
+  assert.match(script, /data-account-readonly-full-name/);
+  assert.match(script, /staticAccountInput\.hidden = true/);
   assert.match(script, /updateAccountFullName\(\)/);
   assert.match(script, /form\.kind\.dispatchEvent/);
   assert.match(script, /accountSelect\.disabled = !editing/);

@@ -47,7 +47,8 @@ cobertura automatizada de geometria nao substitui revisao visual independente.
 ### Refinamento do diálogo e identificação da conta
 
 No diálogo do Extrato, o cadastro e a clonagem mostram somente a conta de origem em
-leitura; a edição mostra somente o seletor de conta editável, com o nome completo
+leitura, com nome completo quebrável mesmo em 320 px e sem input de leitura
+truncado. A edição mostra somente o seletor de conta editável, com o nome completo
 disponível em texto quebrável. Uma transferência não pode apresentar campos de
 origem duplicados durante a alternância entre POST e PATCH. O Chrome deve rejeitar
 duas identificações de conta simultaneamente e nomes selecionados ilegíveis.

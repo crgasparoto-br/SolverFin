@@ -155,6 +155,18 @@ export function recurringCardScopeControllerScript(): string {
           accountFullName.setAttribute("data-edit-account-full-name", "");
           accountField.appendChild(accountFullName);
           const readOnlyAccountField = form.querySelector(".statement-entry-account");
+          const staticAccountInput = readOnlyAccountField?.querySelector("input");
+          if (staticAccountInput) {
+            // Preserve the original SSR/no-JS input but expose a wrapping name in
+            // the enhanced dialog, so account identities never truncate on mobile.
+            const readableName = document.createElement("span");
+            readableName.setAttribute("data-account-readonly-full-name", "");
+            readableName.textContent = staticAccountInput.value;
+            staticAccountInput.hidden = true;
+            staticAccountInput.setAttribute("aria-hidden", "true");
+            staticAccountInput.tabIndex = -1;
+            readOnlyAccountField.appendChild(readableName);
+          }
           const updateAccountFullName = () => {
             const selectedName = accountSelect.selectedOptions?.[0]?.textContent?.trim() || "";
             accountFullName.textContent = selectedName;
