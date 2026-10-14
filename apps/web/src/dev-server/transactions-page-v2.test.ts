@@ -514,35 +514,69 @@ test("A2 consolidated USD mode preserves USD and does not merge BRL totals", asy
   }
 });
 
-test("A2 consolidated USD Entradas card counts the received USD leg of a BRL-to-USD transfer", async () => {
+test("A2 individual account includes both transfer directions while All accounts excludes them from cards", async () => {
   globalThis.fetch = mockFetch([
     {
-      ...transaction("fx-september", "Transferência C6 BRL → C6 USD", 56000, "2026-09-15"),
+      ...transaction("brl-out", "Transferência Bradesco → Mercado Livre", 500000, "2026-09-01"),
       kind: "transfer",
       currency: "BRL",
       accountId: "account-brl",
       destinationAccountId: "account-usd",
       destinationCurrency: "USD",
-      destinationAmountMinor: 10000,
+      destinationAmountMinor: 95000,
+    },
+    {
+      ...transaction("deposit", "Depósito em Dinheiro", 35000, "2026-09-08", "income"),
+      currency: "BRL",
+      accountId: "account-brl",
+    },
+    {
+      ...transaction("brl-in", "Transferência Mercado Livre → Bradesco", 100000, "2026-09-10"),
+      kind: "transfer",
+      currency: "USD",
+      accountId: "account-usd",
+      destinationAccountId: "account-brl",
+      destinationCurrency: "BRL",
+      destinationAmountMinor: 100000,
     },
   ]);
+  const card = (html: string, name: string) => {
+    const start = html.indexOf(`data-summary-total="${name}"`);
+    assert.ok(start >= 0, `Missing ${name} card`);
+    return html.slice(start, html.indexOf("</div>", start));
+  };
   try {
-    const html = await renderTransactionsPageV2(
+    const individual = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
+    );
+    assert.match(card(individual, "income"), /R\$ 1\.350,00/);
+    assert.match(card(individual, "expense"), /R\$ 5\.000,00/);
+    assert.match(individual, /Transferência Bradesco → Mercado Livre/);
+    assert.match(individual, /Transferência Mercado Livre → Bradesco/);
+
+    const consolidated = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-09"),
+    );
+    assert.match(card(consolidated, "income"), /R\$ 350,00/);
+    assert.match(card(consolidated, "expense"), /R\$ 0,00/);
+    assert.match(consolidated, /Transferência Bradesco → Mercado Livre/);
+    assert.match(consolidated, /Transferência Mercado Livre → Bradesco/);
+
+    const usdConsolidated = await renderTransactionsPageV2(
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-09"),
     );
-    const incomeStart = html.indexOf('<div class="summary-total" data-summary-total="income">');
-    const expenseStart = html.indexOf('<div class="summary-total" data-summary-total="expense">');
-    assert.ok(incomeStart >= 0 && expenseStart > incomeStart, "Both total cards must render");
-    const incomeCard = html.slice(incomeStart, expenseStart);
-    assert.ok(
-      incomeCard.includes("US$") && incomeCard.includes("100,00"),
-      "USD transfer must appear as an inflow",
+    assert.match(card(usdConsolidated, "income"), /US\$ 0,00/);
+    assert.match(card(usdConsolidated, "expense"), /US\$ 0,00/);
+
+    const usdIndividual = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09"),
     );
-    assert.match(html, /data-summary-total="closing"/);
-    assert.match(html, /Transferência C6 BRL → C6 USD/);
-    assert.match(html, /Recebida de Conta principal/);
-    assert.match(html, /Ver lançamento na conta/);
+    assert.match(card(usdIndividual, "income"), /US\$ 950,00/);
+    assert.match(card(usdIndividual, "expense"), /US\$ 1\.000,00/);
   } finally {
     globalThis.fetch = originalFetch;
   }
