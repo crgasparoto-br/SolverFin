@@ -75,10 +75,12 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
   const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
   const consolidated = url?.searchParams.get("accountId") === "all";
   const availableCurrencies = [
-    ...new Set(accounts.map((account) => (account.currency ?? "BRL").toUpperCase())),
-  ]
-    .filter((code) => /^[A-Z]{3}$/.test(code))
-    .sort();
+    ...new Set(
+      accounts
+        .map((account) => normalizeCurrency(account.currency))
+        .filter((code): code is string => Boolean(code)),
+    ),
+  ].sort();
   const requestedCurrency = normalizeCurrency(url?.searchParams.get("currency") ?? undefined);
   const consolidatedCurrency =
     requestedCurrency && availableCurrencies.includes(requestedCurrency)
@@ -100,7 +102,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
   // Recurrences are fetched first because the API materializes due occurrences as transactions.
   const recurrenceAccounts =
     consolidated && currency
-      ? accounts.filter((account) => (account.currency ?? "BRL").toUpperCase() === currency)
+      ? accounts.filter((account) => normalizeCurrency(account.currency) === currency)
       : selectedAccount
         ? [selectedAccount]
         : [];
