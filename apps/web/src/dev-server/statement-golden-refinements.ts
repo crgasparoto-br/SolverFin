@@ -524,7 +524,17 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .statement-entry-advanced-grid{display:grid;gap:${spacing[3]};grid-template-columns:repeat(2,minmax(0,1fr));padding-top:${spacing[2]}}
     ${dialog} .statement-entry-advanced-grid>.full{grid-column:1/-1}
     ${dialog} .save-row{align-items:center;border-top:1px solid #eef2f7;justify-content:flex-end;padding-top:${spacing[3]}}
-    ${dialog} .save-row .status-icons{margin-right:auto}
+    ${dialog} .save-row .status-icons{flex:0 0 auto;flex-wrap:nowrap;margin-right:auto}
+    ${dialog} .save-row .status-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+    ${dialog} .save-row{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;min-width:0}
+    ${dialog} .statement-save-actions{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap;gap:8px;margin-left:auto;min-width:0}
+    ${dialog} .statement-save-actions>button{flex:0 0 auto;grid-column:auto;min-width:0;white-space:nowrap}
+    ${dialog} .statement-save-actions>[data-transaction-cancel]{background:transparent;border:1px solid var(--line);color:var(--text)}
+    @media(max-width:390px){
+      ${dialog} .save-row .status-icons{width:100%}
+      ${dialog} .statement-save-actions{justify-content:flex-end;width:100%}
+      ${dialog} .statement-save-actions>button{font-size:.8125rem;padding-inline:8px}
+    }
     @media(max-width:1100px){
       body:has(${root}) .app-shell{grid-template-columns:1fr}
       body:has(${root}) .sidebar{background:var(--primary);border-right:0;color:#fff}

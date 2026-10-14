@@ -178,6 +178,7 @@ export function recurringCardScopeControllerScript(): string {
           form.insertBefore(accountField, sourceField || firstField);
 
           const createAccountId = accountInput.value;
+          const consolidatedContext = new URLSearchParams(window.location.search).get("accountId") === "all";
           const formDialog = typeof form.closest === "function" ? form.closest("dialog") : null;
           const guidance = formDialog && typeof formDialog.querySelector === "function"
             ? formDialog.querySelector(".modal-panel > div .muted")
@@ -215,7 +216,7 @@ export function recurringCardScopeControllerScript(): string {
             const editButton = document.querySelector('[data-edit="' + transaction.id + '"]');
             const cloneButton = document.querySelector('[data-clone="' + transaction.id + '"]');
             editButton?.addEventListener("click", () => setAccountMode(transaction));
-            cloneButton?.addEventListener("click", () => setAccountMode(null));
+            cloneButton?.addEventListener("click", () => setAccountMode(consolidatedContext ? transaction : null));
           });
 
           setAccountMode(null);

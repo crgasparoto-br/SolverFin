@@ -47,3 +47,13 @@ Testar BRL versus USD, conta identificada, primeiro mês sem movimento, saldo in
 - Outra tela: aumenta navegação, manutenção e divergência do design system.
 - Consolidar sem moeda: agrega unidades monetárias incompatíveis.
 - Permitir criação sem conta selecionada: cria ambiguidade sobre origem/destino da operação. A edição/clonagem é permitida a partir de um lançamento existente, com conta de origem resolvida e visível.
+
+### Rodapé do formulário de lançamento (14/10/2026)
+
+Nos modais de criar, editar e clonar lançamento, os estados são representados por
+três ícones com rótulos acessíveis e tooltips no mouse e no foco do teclado.
+O rótulo atualizado do status permanece disponível para leitores de tela, mas
+não ocupa largura visual. **Cancelar e Salvar lançamento** formam um grupo
+horizontal indivisível; os ícones de status podem passar para a linha anterior
+em telas muito estreitas, sem empilhar os botões de ação. Cancelar fecha
+o modal sem enviar o formulário.

@@ -35,6 +35,47 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
   }
 });
 
+test("A2 transaction modal exposes status through tooltips and keeps Cancel and Save together", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.match(html, /class="status-icons" role="radiogroup"/);
+    assert.match(
+      html,
+      /data-status-option="planned"[^>]*aria-label="Previsto\/pendente" title="Previsto\/pendente"/,
+    );
+    assert.match(
+      html,
+      /data-status-option="posted"[^>]*aria-label="Efetivado não conciliado" title="Efetivado não conciliado"/,
+    );
+    assert.match(
+      html,
+      /data-status-option="reconciled"[^>]*aria-label="Conciliado" title="Conciliado"/,
+    );
+    assert.match(html, /data-status-label aria-live="polite"/);
+    assert.match(
+      html,
+      /\.save-row \.status-label\{position:absolute;width:1px;height:1px;overflow:hidden/,
+    );
+    assert.match(
+      html,
+      /class="statement-save-actions"><button type="button" class="ghost-btn" data-transaction-cancel>Cancelar<\/button><button type="submit"/,
+    );
+    assert.match(
+      html,
+      /\.statement-save-actions\{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap/,
+    );
+    assert.match(html, /\.save-row\{display:flex;flex-direction:row;flex-wrap:wrap/);
+    assert.match(html, /\[data-transaction-cancel\].*addEventListener\("click"/s);
+    assert.match(html, /button\.setAttribute\("aria-checked", String\(active\)\)/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("A2 account picker allocates a wider responsive filter column (#708)", async () => {
   globalThis.fetch = mockFetch([]);
 

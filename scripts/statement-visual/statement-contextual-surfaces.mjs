@@ -54,6 +54,10 @@ export async function validateStatementContextualSurfaces(
         .filter(node => node.getClientRects().length > 0);
       const editAccountSelect = surface?.querySelector('[data-edit-account-select]');
       const panel = surface?.querySelector('.modal-panel');
+      const footerCancel = surface?.querySelector('[data-transaction-cancel]');
+      const footerSave = surface?.querySelector('.statement-save-actions > button[type="submit"]');
+      const statusOptions = [...(surface?.querySelectorAll('.status-icon-btn[data-status-option]') || [])];
+      const statusText = surface?.querySelector('.status-icons [data-status-label]');
       return { visible: !!box?.width && !!box?.height,
         inside: !!box && box.left >= -1 && box.right <= innerWidth + 1 && box.top >= -1 && box.bottom <= innerHeight + 1,
         horizontalOverflow: !!surface && surface.scrollWidth > surface.clientWidth + 1,
@@ -68,6 +72,11 @@ export async function validateStatementContextualSurfaces(
         documentScrollLocked: getComputedStyle(document.documentElement).overflowY === 'hidden',
         dialogOverflowHidden: !!surface && getComputedStyle(surface).overflowY === 'hidden',
         panelScrollControlled: !!panel && getComputedStyle(panel).overflowY === 'auto',
+        footerActionRowDelta: footerCancel && footerSave
+          ? Math.abs(footerCancel.getBoundingClientRect().top - footerSave.getBoundingClientRect().top)
+          : null,
+        tooltipStatusCount: statusOptions.filter(node => node.title && node.title === node.getAttribute('aria-label')).length,
+        statusLabelVisuallyHidden: !!statusText && statusText.getBoundingClientRect().width <= 1,
         horizontalCenterDelta: box ? Math.abs(box.left - (innerWidth - box.right)) : null,
         verticalCenterDelta: box ? Math.abs(box.top - (innerHeight - box.bottom)) : null,
         unnamedButtons: controls.filter(node => node.matches('button') && !node.getAttribute('aria-label') && !node.textContent.trim()).length,
@@ -241,11 +250,15 @@ export async function validateStatementContextualSurfaces(
         const modalState = await read(`(() => {
           const modal = document.querySelector("dialog[data-modal]");
           const form = modal?.querySelector("[data-form]");
+          const effectiveAccount = [...(form?.querySelectorAll('[name="accountId"]') || [])].find(
+            (field) => !field.disabled,
+          );
           return {
             open: Boolean(modal?.open),
             method: form?.dataset.method,
-            accountId: form?.querySelector('[name="accountId"]')?.value,
-            accountDisplay: form?.querySelector(".statement-entry-account input")?.value,
+            accountId: effectiveAccount?.value,
+            accountDisplay: form?.querySelector("[data-edit-account-full-name]")?.textContent?.trim()
+              || form?.querySelector(".statement-entry-account input")?.value,
             sourceCurrency: form?.querySelector("[data-source-currency]")?.textContent?.trim(),
             saveDisabled: form?.querySelector('.save-row [type="submit"]')?.disabled,
           };
@@ -271,6 +284,49 @@ export async function validateStatementContextualSurfaces(
         await screenshot(
           cdp,
           join(outputDir, "statement-contextual-consolidated-edit-1366x768.png"),
+        );
+        await press("Escape", 27);
+
+        await navigate(cdp, `${baseUrl}${allAccountsRoute}`);
+        const allClone = `[data-clone="${transactionId}"]`;
+        assert.equal(await read(`!!document.querySelector(${JSON.stringify(allClone)})`), true);
+        await read(
+          `document.querySelector(${JSON.stringify(allClone)}).closest("details").open = true`,
+        );
+        await activate(allClone);
+        const cloneState = await read(`(() => {
+          const modal = document.querySelector("dialog[data-modal]");
+          const form = modal?.querySelector("[data-form]");
+          const effectiveAccount = [...(form?.querySelectorAll('[name="accountId"]') || [])].find(
+            (field) => !field.disabled,
+          );
+          return {
+            open: Boolean(modal?.open),
+            title: document.querySelector("[data-modal-title]")?.textContent,
+            method: form?.dataset.method,
+            accountId: effectiveAccount?.value,
+            saveDisabled: form?.querySelector('.save-row [type="submit"]')?.disabled,
+          };
+        })()`);
+        assert.equal(cloneState.open, true, "Consolidated Clone must open the modal");
+        assert.equal(cloneState.title, "Clonar lançamento");
+        assert.equal(cloneState.method, "POST");
+        assert.equal(
+          cloneState.accountId,
+          sourceAccountId,
+          "Clone must retain the real source account",
+        );
+        assert.equal(cloneState.saveDisabled, false, "Clone must enable Save in consolidated mode");
+        report.observations.push({
+          state: "consolidated-clone",
+          viewport: { width, height },
+          route: allAccountsRoute,
+          accountId: sourceAccountId,
+          cloneState,
+        });
+        await screenshot(
+          cdp,
+          join(outputDir, "statement-contextual-consolidated-clone-1366x768.png"),
         );
         await press("Escape", 27);
       }
@@ -413,6 +469,20 @@ export function assertContextualSurface(measured, state, dialog) {
       assert.equal(measured.documentScrollLocked, true, `${state}: background remains scrollable`);
       assert.equal(measured.dialogOverflowHidden, true, `${state}: dialog has a second scrollbar`);
       assert.equal(measured.panelScrollControlled, true, `${state}: form must own scrolling`);
+      assert.ok(
+        measured.footerActionRowDelta !== null && measured.footerActionRowDelta <= 2,
+        `${state}: Cancel and Save must share a row`,
+      );
+      assert.equal(
+        measured.tooltipStatusCount,
+        3,
+        `${state}: status icons require accessible tooltips`,
+      );
+      assert.equal(
+        measured.statusLabelVisuallyHidden,
+        true,
+        `${state}: status label should not consume footer width`,
+      );
       if (state === "new" || state === "clone") {
         assert.ok(measured.readOnlyOriginalName, `${state}: original account name is missing`);
         assert.equal(
