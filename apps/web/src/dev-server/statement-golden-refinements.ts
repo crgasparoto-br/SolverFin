@@ -623,10 +623,12 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-query .statement-search-field{font-size:0;line-height:0;gap:0}
       ${root} .statement-query .statement-search-field input{font-size:${typography.sizes.sm};line-height:normal}
     }
-    @media(max-width:360px){
-      ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
+    @media(max-width:430px){
       ${root} .statement-period-control{display:grid;grid-template-columns:minmax(0,1fr)}
       ${root} .statement-period-control [data-month-current]{justify-self:end}
+    }
+    @media(max-width:360px){
+      ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
       ${root} .statement-account-heading .summary-balance{align-items:baseline;display:flex;gap:${spacing[1]};justify-content:space-between}
       ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.md};white-space:nowrap}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr);row-gap:0}
