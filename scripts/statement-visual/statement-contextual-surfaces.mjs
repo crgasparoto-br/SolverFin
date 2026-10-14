@@ -297,6 +297,20 @@ export async function validateStatementContextualSurfaces(
         observed: "posted -> reconciled -> posted through canonical UI actions",
       });
     }
+    // Fail closed if one of the mobile or desktop alignment probes is silently skipped.
+    const expectedRightAlignmentControls = ["new", "edit", "clone"]
+      .flatMap((state) => [[1366, 768], [390, 844], [320, 740]]
+        .map(([width, height]) => `GS-CONTEXTUAL-NC-RIGHT-ALIGNED-${state}@${width}x${height}`))
+      .sort();
+    const observedRightAlignmentControls = report.controls
+      .filter(({ id }) => id.startsWith("GS-CONTEXTUAL-NC-RIGHT-ALIGNED-"))
+      .map(({ id, viewport }) => `${id}@${viewport.width}x${viewport.height}`)
+      .sort();
+    assert.deepEqual(
+      observedRightAlignmentControls,
+      expectedRightAlignmentControls,
+      "Each new/edit/clone alignment regression must be exercised at all three viewports",
+    );
     report.status = "passed";
   } catch (error) {
     report.status = "failed";
