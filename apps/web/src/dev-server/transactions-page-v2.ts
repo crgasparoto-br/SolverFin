@@ -651,11 +651,11 @@ function renderRow(
     !transaction.transactionGroupId;
 
   const rowGlyph = resolveRowGlyph(categoryName, transaction.kind);
+  const consolidatedAccountId = consolidated
+    ? resolveConsolidatedNavigationAccountId(transaction, accounts, accountCurrency)
+    : undefined;
   const contextAccount = consolidated
-    ? accounts.find(
-        (account) =>
-          account.id === resolveConsolidatedNavigationAccountId(transaction, accounts, accountCurrency),
-      )
+    ? accounts.find((account) => account.id === consolidatedAccountId)
     : selectedAccount;
   return `<article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row" data-row-glyph="${escapeHtml(rowGlyph.key)}">
     <label class="col-select"><input type="checkbox" data-select-transaction value="${escapeHtml(transaction.id)}" data-kind="${escapeHtml(transaction.kind)}" data-status="${escapeHtml(transaction.status)}" data-currency="${escapeHtml(currency ?? "")}" data-amount="${row.amountMinor}" data-date="${escapeHtml(date)}" data-description="${escapeHtml(transaction.description)}" data-category="${escapeHtml(categoryName)}" aria-label="Selecionar lançamento ${escapeHtml(transaction.description || "sem descrição")}"${eligible ? "" : " disabled"}></label>
@@ -668,7 +668,7 @@ function renderRow(
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     ${
       consolidated
-        ? `<a class="col-actions" href="/lancamentos?accountId=${encodeURIComponent(resolveConsolidatedNavigationAccountId(transaction, accounts, accountCurrency))}&month=${encodeURIComponent(month)}" aria-label="Ver lançamento na conta">Ver</a>`
+        ? `<a class="col-actions" href="/lancamentos?accountId=${encodeURIComponent(consolidatedAccountId ?? "")}&month=${encodeURIComponent(month)}" aria-label="Ver lançamento na conta">Ver</a>`
         : `<details class="actions col-actions"><summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary><div class="actions-menu" role="menu">
       <button type="button" class="actions-item" data-edit="${escapeHtml(transaction.id)}">${renderEditIcon()}<span>Editar</span></button>
       <button type="button" class="actions-item" data-action data-method="PATCH" data-path="/api/transactions/${escapeHtml(transaction.id)}" data-payload='${escapeHtml(JSON.stringify({ status: nextStatus }))}'>${renderReconcileIcon(transaction.status === "reconciled")}<span>${transaction.status === "reconciled" ? "Desconciliar" : "Marcar como conciliado"}</span></button>
