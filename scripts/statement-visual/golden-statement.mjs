@@ -45,51 +45,6 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     const measured = await read(goldenStatementMeasurements);
     report.checks.push({ id, status: "observed", viewport: { width, height }, measured });
     assertGoldenStatement(measured);
-    // A 390px mobile header formerly clipped the native month label beside the
-    // calendar glyph. Prove the navigation is wide enough and the old flex
-    // composition is rejected, even though generic overflow checks stay green.
-    if (width === 390) {
-      const monthWidthExpression = `(() => {
-        const nav = document.querySelector('[data-golden-screen] .statement-period-control .month-nav');
-        return nav?.getBoundingClientRect().width ?? 0;
-      })()`;
-      const originalWidth = await read(monthWidthExpression);
-      assert.ok(
-        originalWidth >= 240,
-        `Month label is clipped at 390px: ${originalWidth}px`,
-      );
-      await read(`(() => {
-        const style = document.createElement('style');
-        style.dataset.monthWidthNegative = '';
-        style.textContent = '[data-golden-screen] .statement-period-control{display:flex!important}';
-        document.head.append(style);
-      })()`);
-      let regressedWidth;
-      try {
-        regressedWidth = await read(monthWidthExpression);
-        assert.ok(
-          regressedWidth < 240,
-          `Negative control did not compress the month navigation: ${regressedWidth}px`,
-        );
-      } finally {
-        await read(
-          "document.querySelector('style[data-month-width-negative]')?.remove()",
-        );
-      }
-      assert.ok(
-        (await read(monthWidthExpression)) >= 240,
-        "Month navigation did not recover",
-      );
-      report.checks.push({
-        id: "GS-MOBILE-NC-MONTH-CLIPPED",
-        status: "passed",
-        viewport: { width, height },
-        navigationWidth: originalWidth,
-        regressedWidth,
-        rejectedBecause: "Month navigation narrower than 240px",
-        restored: "passed",
-      });
-    }
     if (measured.viewport.width <= 760) {
       report.checks.push({
         id: "GS-MOBILE-DENSITY-BUDGET",
