@@ -262,7 +262,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .filter-form .statement-search-field{grid-column:span 4}
       ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:span 3}
       ${root} .filter-form .statement-filter-actions{grid-column:span 4;flex-wrap:nowrap;justify-content:end}
-      ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
+      ${root} .statement-account-control .account-field>label#account-picker-label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
     }
     ${root} .statement-toolbar .chips{display:none}
     ${root} .statement-toolbar{padding-block:${spacing[1]}}
@@ -646,7 +646,7 @@ export function statementGoldenRefinementStyles(): string {
     @media(max-width:360px){
       /* Keep the 320px first-viewport budget without truncating the selected account. */
       ${root} .statement-account-heading{gap:${spacing[1]}}
-      ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
+      ${root} .statement-account-control .account-field>label#account-picker-label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
       ${root} .statement-account-heading .summary-balance{align-items:baseline;display:flex;gap:${spacing[1]};justify-content:space-between}
       ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.md};white-space:nowrap}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr);row-gap:0}

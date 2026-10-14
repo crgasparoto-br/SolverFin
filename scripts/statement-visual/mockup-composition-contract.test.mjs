@@ -143,6 +143,42 @@ test("desktop period and Current month share both account-selector edges", () =>
   );
 });
 
+test("rejects a hidden currency selector or a currency selector editable on one account", () => {
+  const individual = {
+    ...fixture(),
+    currencyControlExpected: true,
+    consolidated: false,
+    currencyControl: { visible: true, disabled: true },
+  };
+  assert.doesNotThrow(() => assertMockupComposition(individual));
+  assert.throws(
+    () =>
+      assertMockupComposition({
+        ...individual,
+        currencyControl: { visible: false, disabled: true },
+      }),
+    /visibly rendered/,
+  );
+  assert.throws(
+    () =>
+      assertMockupComposition({
+        ...individual,
+        currencyControl: { visible: true, disabled: false },
+      }),
+    /editable only/,
+  );
+  const all = {
+    ...individual,
+    consolidated: true,
+    currencyControl: { visible: true, disabled: false },
+  };
+  assert.doesNotThrow(() => assertMockupComposition(all));
+  assert.throws(
+    () => assertMockupComposition({ ...all, currencyControl: { visible: false, disabled: false } }),
+    /visibly rendered/,
+  );
+});
+
 test("rejects selector left in query or orphaned from original GET form", () => {
   assert.throws(
     () => assertMockupComposition({ ...fixture(), accountPickerInContext: false }),

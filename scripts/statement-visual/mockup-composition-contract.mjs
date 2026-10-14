@@ -16,6 +16,17 @@ export function assertMockupComposition(layout) {
     true,
     "Account selector must stay in financial context, not query filters.",
   );
+  if (layout.currencyControlExpected === true) {
+    assert.ok(
+      layout.currencyControl?.visible,
+      "Currency filter must remain visibly rendered on desktop and mobile.",
+    );
+    assert.equal(
+      layout.currencyControl.disabled,
+      !layout.consolidated,
+      "Currency filter is editable only when All accounts is selected.",
+    );
+  }
   if (layout.statusChip) {
     assert.equal(
       layout.statusChip.labelHidden,
@@ -264,6 +275,35 @@ export function measureMockupComposition() {
     periodMonthNav: rect(period?.querySelector(".month-nav")),
     currentMonthButton: rect(period?.querySelector("[data-month-current]")),
     consolidated: Boolean(root?.querySelector("[data-all-accounts]")),
+    currencyControlExpected: true,
+    currencyControl: (() => {
+      const field = accountPicker?.querySelector(".statement-currency-field");
+      const select = field?.querySelector("select");
+      if (!field || !select) {
+        const subtitle = accountPicker?.querySelector(".account-select-sub");
+        return {
+          disabled: true,
+          visible: Boolean(
+            subtitle &&
+            subtitle.getClientRects().length > 0 &&
+            subtitle.textContent?.trim().startsWith("Moeda:"),
+          ),
+        };
+      }
+      const fieldStyle = getComputedStyle(field);
+      const selectStyle = getComputedStyle(select);
+      const bounds = field.getBoundingClientRect();
+      return {
+        disabled: select.disabled,
+        visible:
+          bounds.width >= 64 &&
+          bounds.height >= 32 &&
+          select.getClientRects().length > 0 &&
+          fieldStyle.clipPath === "none" &&
+          fieldStyle.visibility !== "hidden" &&
+          selectStyle.visibility !== "hidden",
+      };
+    })(),
     accountPicker: rect(accountPicker?.querySelector(".account-select-trigger")),
     accountChevron: rect(accountPicker?.querySelector(".account-select-chevron")),
     queryHeading: rect(queryHeading),

@@ -496,3 +496,33 @@ test("A2 consolidated FX transfer opens the account of the displayed currency", 
     globalThis.fetch = originalFetch;
   }
 });
+
+test("A2 currency selector is visible but locked for an individual account and editable for all accounts", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const individual = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.match(individual, /data-currency-picker/);
+    assert.match(individual, /Moeda: USD/);
+    assert.doesNotMatch(individual, /<select id="statement-currency"/);
+    assert.doesNotMatch(
+      individual,
+      /<div class="account-field" data-currency-picker data-all-accounts/,
+    );
+
+    const consolidated = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-08"),
+    );
+    assert.match(consolidated, /data-all-accounts/);
+    assert.match(
+      consolidated,
+      /<label class="statement-currency-field" for="statement-currency"><span>Moeda<\/span><select id="statement-currency" name="currency" required data-auto-currency>/,
+    );
+    assert.match(consolidated, /<option value="BRL" selected>BRL<\/option>/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

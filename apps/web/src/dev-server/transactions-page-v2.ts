@@ -838,12 +838,25 @@ function renderAccountPicker(
   const identitySub = consolidated
     ? "Lançamentos de todas as contas na moeda escolhida"
     : selectedAccount
-      ? [institution.label, ACCOUNT_KIND_LABELS[selectedAccount.kind]].filter(Boolean).join(" · ")
+      ? [
+          resolveAccountCurrency(selectedAccount)
+            ? `Moeda: ${resolveAccountCurrency(selectedAccount)}`
+            : "",
+          institution.label,
+          ACCOUNT_KIND_LABELS[selectedAccount.kind],
+        ]
+          .filter(Boolean)
+          .join(" · ")
       : "";
+  const displayedCurrency = consolidated
+    ? consolidatedCurrency
+    : resolveAccountCurrency(selectedAccount);
+  // Only All accounts can change the currency; an individual account displays
+  // its currency first in the selector subtitle without shrinking the account field.
   const currencySelect = consolidated
-    ? `<label class="statement-currency-field" for="statement-currency"><span>Moeda</span><select id="statement-currency" name="currency" required data-auto-currency>${availableCurrencies.map((code) => `<option value="${escapeHtml(code)}"${code === consolidatedCurrency ? " selected" : ""}>${escapeHtml(code)}</option>`).join("")}</select></label>`
+    ? `<label class="statement-currency-field" for="statement-currency"><span>Moeda</span><select id="statement-currency" name="currency" required data-auto-currency>${availableCurrencies.map((code) => `<option value="${escapeHtml(code)}"${code === displayedCurrency ? " selected" : ""}>${escapeHtml(code)}</option>`).join("")}</select></label>`
     : "";
-  return `<div class="account-field"${consolidated ? " data-all-accounts" : ""} data-account-picker><label id="account-picker-label">Conta</label><div class="account-select"><button type="button" class="account-select-trigger" data-account-trigger aria-haspopup="listbox" aria-expanded="false" aria-labelledby="account-picker-label"><span class="account-select-icon">${triggerIcon}</span><span class="account-select-copy"><span class="account-select-text">${consolidated ? "Todas as contas" : selectedAccount ? escapeHtml(selectedAccount.name) : "Selecione uma conta"}</span>${identitySub ? `<span class="account-select-sub">${escapeHtml(identitySub)}</span>` : ""}</span><svg class="account-select-chevron" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><input type="hidden" name="accountId" value="${escapeHtml(selectedId ?? "")}" required data-account-input /><ul class="account-select-menu" role="listbox" hidden data-account-menu aria-labelledby="account-picker-label"><li role="option" tabindex="-1" data-account-option="all" data-account-name="Todas as contas" data-account-currency="" aria-selected="${consolidated}"><span class="account-select-icon" aria-hidden="true">▦</span><span>Todas as contas</span></li>${accounts.map((account) => renderAccountOption(account, selectedId)).join("")}</ul></div>${currencySelect}</div>`;
+  return `<div class="account-field" data-currency-picker${consolidated ? " data-all-accounts" : ""} data-account-picker><label id="account-picker-label">Conta</label><div class="account-select"><button type="button" class="account-select-trigger" data-account-trigger aria-haspopup="listbox" aria-expanded="false" aria-labelledby="account-picker-label"><span class="account-select-icon">${triggerIcon}</span><span class="account-select-copy"><span class="account-select-text">${consolidated ? "Todas as contas" : selectedAccount ? escapeHtml(selectedAccount.name) : "Selecione uma conta"}</span>${identitySub ? `<span class="account-select-sub">${escapeHtml(identitySub)}</span>` : ""}</span><svg class="account-select-chevron" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><input type="hidden" name="accountId" value="${escapeHtml(selectedId ?? "")}" required data-account-input /><ul class="account-select-menu" role="listbox" hidden data-account-menu aria-labelledby="account-picker-label"><li role="option" tabindex="-1" data-account-option="all" data-account-name="Todas as contas" data-account-currency="" aria-selected="${consolidated}"><span class="account-select-icon" aria-hidden="true">▦</span><span>Todas as contas</span></li>${accounts.map((account) => renderAccountOption(account, selectedId)).join("")}</ul></div>${currencySelect}</div>`;
 }
 
 const FILTER_ICONS: Readonly<Record<string, string>> = {
