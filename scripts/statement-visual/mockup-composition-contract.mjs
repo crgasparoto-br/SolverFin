@@ -39,6 +39,21 @@ export function assertMockupComposition(layout) {
     true,
     "Moving the account selector must preserve native GET submission.",
   );
+  if (layout.accountPicker) {
+    assert.ok(layout.accountChevron, "Account selector must render its dropdown arrow.");
+    const trailingInset = layout.accountPicker.right - layout.accountChevron.right;
+    assert.ok(
+      trailingInset >= 8 && trailingInset <= 24,
+      "Account dropdown arrow must stay at the right edge of the selector.",
+    );
+    assert.ok(
+      Math.abs(
+        layout.accountChevron.top + layout.accountChevron.height / 2 -
+          (layout.accountPicker.top + layout.accountPicker.height / 2),
+      ) <= 4,
+      "Account dropdown arrow must stay vertically centered.",
+    );
+  }
   assert.equal(
     layout.periodInHeading,
     true,
@@ -225,6 +240,7 @@ export function measureMockupComposition() {
     balance: rect(balance),
     period: rect(period),
     accountPicker: rect(accountPicker?.querySelector(".account-select-trigger")),
+    accountChevron: rect(accountPicker?.querySelector(".account-select-chevron")),
     queryHeading: rect(queryHeading),
     queryFields: rect(queryFields),
     visiblePrimaryFilters: [

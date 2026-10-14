@@ -79,6 +79,28 @@ test("rejects the pre-fix mobile composition that delays the movement list", () 
   assert.throws(() => assertMockupComposition(layout), /density budget/);
 });
 
+test("keeps the account chevron at the right edge on desktop and mobile", () => {
+  for (const width of [1366, 390, 320]) {
+    const layout = fixture();
+    layout.viewport = { width, height: width === 1366 ? 768 : 844 };
+    if (width <= 760) {
+      layout.context = box(16, 140, width - 32, 70);
+      layout.balance = box(16, 220, width - 32, 60);
+    }
+    layout.accountPicker = box(20, 155, width === 1366 ? 360 : width - 40, 44);
+    layout.accountChevron = box(layout.accountPicker.right - 30, 170, 14, 14);
+    assert.doesNotThrow(() => assertMockupComposition(layout));
+    assert.throws(
+      () => assertMockupComposition({ ...layout, accountChevron: box(layout.accountPicker.left + 110, 170, 14, 14) }),
+      /right edge/,
+    );
+    assert.throws(
+      () => assertMockupComposition({ ...layout, accountChevron: box(layout.accountPicker.right - 30, 157, 14, 14) }),
+      /vertically centered/,
+    );
+  }
+});
+
 test("rejects selector left in query or orphaned from original GET form", () => {
   assert.throws(
     () => assertMockupComposition({ ...fixture(), accountPickerInContext: false }),
