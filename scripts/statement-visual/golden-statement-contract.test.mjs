@@ -100,9 +100,9 @@ test("mobile month clipping must have a negative control", () => {
     new URL("./golden-statement.mjs", import.meta.url),
     "utf8",
   );
-  assert.match(source, /if \\(width === 390\\)/);
+  assert.match(source, /if \(width === 390\)/);
   assert.match(source, /GS-MOBILE-NC-MONTH-CLIPPED/);
   assert.match(source, /month-width-negative/);
   assert.match(source, /narrowed < 240/);
-  assert.match(source, /assert\\.ok\\(\\(await read\\(probe\\)\\) >= 240\\)/);
+  assert.match(source, /assert\.ok\(\(await read\(probe\)\) >= 240\)/);
 });
