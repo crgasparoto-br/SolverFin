@@ -487,6 +487,14 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .summary-total-icon{display:none}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.sm}}
     }
+    /* F-702-04: in the two-column phone layout, a long amount needs its own
+       full-width line. Document-level overflow checks do not detect a value
+       painting into the neighbouring financial card. Preserve the full amount. */
+    @media(min-width:361px) and (max-width:760px){
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-content:start;display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
+      ${root} .summary-total-copy{display:grid;gap:2px;grid-template-columns:minmax(0,1fr);min-width:0;width:100%}
+      ${root} .summary-total-copy>strong{display:block;font-size:clamp(12px,3.2vw,14px);max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;width:100%;word-break:normal}
+    }
     ${root} .statement-toolbar{display:none}
     ${root} .statement-table{max-width:100%;overflow-x:auto;overflow-y:visible}
     ${root} .statement-head{background:transparent;border-bottom:1px solid var(--line);color:#94a3b8;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};letter-spacing:0;padding-inline:${spacing[3]};text-transform:none}
