@@ -112,6 +112,8 @@ test("Chrome must inject and reject a long summary value escaping its card", () 
   );
   assert.match(source, /GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW/);
   assert.match(source, /white-space:nowrap!important/);
+  assert.match(source, /transform:translateX\(-85px\)!important/);
+  assert.match(source, /within their own summary cards/);
   assert.match(contract, /summaryCardOverflow:/);
   assert.match(contract, /range\.selectNodeContents\(value\)/);
 });
