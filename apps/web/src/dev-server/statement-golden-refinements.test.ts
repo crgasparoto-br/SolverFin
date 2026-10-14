@@ -124,7 +124,10 @@ assert.match(
   styles,
   /statement-account-control \.account-select-trigger\{background:transparent;border:1px solid var\(--line\);border-radius:10px;column-gap:/,
 );
-assert.match(styles, /statement-account-control \.account-select-chevron\{flex:0 0 auto;margin-inline-start:auto/);
+assert.match(
+  styles,
+  /statement-account-control \.account-select-chevron\{flex:0 0 auto;margin-inline-start:auto/,
+);
 assert.match(styles, /statement-body \.statement-status-label\{display:none\}/);
 
 // CDI mobile regression: long labels must not expand the transaction row.
