@@ -96,10 +96,7 @@ test("overlapping summary values fail the Golden Screen gate", () => {
 });
 
 test("mobile month clipping must have a negative control", () => {
-  const source = readFileSync(
-    new URL("./golden-statement.mjs", import.meta.url),
-    "utf8",
-  );
+  const source = readFileSync(new URL("./golden-statement.mjs", import.meta.url), "utf8");
   assert.match(source, /if \(width === 390\)/);
   assert.match(source, /GS-MOBILE-NC-MONTH-CLIPPED/);
   assert.match(source, /month-width-negative/);
