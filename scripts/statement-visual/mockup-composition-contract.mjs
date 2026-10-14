@@ -68,6 +68,15 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
+    if (layout.accountPicker && layout.periodMonthNav && layout.currentMonthButton) {
+      for (const control of [layout.periodMonthNav, layout.currentMonthButton]) {
+        assert.ok(
+          Math.abs(control.top - layout.accountPicker.top) <= 4 &&
+            Math.abs(control.bottom - layout.accountPicker.bottom) <= 4,
+          "Desktop period and Current month must align to both account-selector edges.",
+        );
+      }
+    }
     if (layout.viewport.width >= 1280 && layout.accountPicker && layout.period) {
       assert.ok(
         layout.accountPicker.width >= Math.min(360, layout.context.width - 32),
@@ -240,6 +249,8 @@ export function measureMockupComposition() {
     context: rect(context),
     balance: rect(balance),
     period: rect(period),
+    periodMonthNav: rect(period?.querySelector(".month-nav")),
+    currentMonthButton: rect(period?.querySelector("[data-month-current]")),
     accountPicker: rect(accountPicker?.querySelector(".account-select-trigger")),
     accountChevron: rect(accountPicker?.querySelector(".account-select-chevron")),
     queryHeading: rect(queryHeading),

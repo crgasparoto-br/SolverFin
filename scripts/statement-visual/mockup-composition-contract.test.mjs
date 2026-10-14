@@ -114,6 +114,26 @@ test("keeps the account chevron at the right edge on desktop and mobile", () => 
   }
 });
 
+test("desktop period and Current month share both account-selector edges", () => {
+  const layout = {
+    ...fixture(),
+    accountPicker: box(250, 170, 365, 46),
+    periodMonthNav: box(635, 170, 192, 46),
+    currentMonthButton: box(835, 170, 108, 46),
+  };
+  assert.doesNotThrow(() => assertMockupComposition(layout));
+  assert.throws(
+    () => assertMockupComposition({ ...layout, periodMonthNav: box(635, 161, 192, 46) }),
+    /both account-selector edges/,
+  );
+  assert.throws(
+    () => assertMockupComposition({ ...layout, currentMonthButton: box(835, 170, 108, 39) }),
+    /both account-selector edges/,
+  );
+  const mobile = { ...layout, viewport: { width: 390, height: 844 }, context: box(24, 140, 342, 70), balance: box(24, 220, 342, 60) };
+  assert.doesNotThrow(() => assertMockupComposition(mobile), "Mobile keeps the existing stacked layout.");
+});
+
 test("rejects selector left in query or orphaned from original GET form", () => {
   assert.throws(
     () => assertMockupComposition({ ...fixture(), accountPickerInContext: false }),

@@ -350,6 +350,12 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-period-control .month-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
     ${root} .statement-period-control .month-nav{background:#f8fafc;border:1px solid var(--line);border-radius:8px}
     ${root} .statement-period-control [data-month-current]{background:transparent;border:1px solid var(--line);border-radius:999px;color:var(--primary);min-height:40px;padding-inline:${spacing[3]}}
+    /* On desktop, align both period controls to the account selector (top and bottom). */
+    @media(min-width:1101px){
+      ${root} .statement-period-control{align-items:stretch;align-self:end}
+      ${root} .statement-period-control .month-nav{box-sizing:border-box;height:46px}
+      ${root} .statement-period-control [data-month-current]{box-sizing:border-box;height:46px}
+    }
     /* G2: period shortcuts reuse the canonical month/day/range query, never new state. */
     ${root} .statement-period-shortcuts{align-items:center;display:flex;flex-wrap:wrap;gap:${spacing[1]};grid-column:1/-1;min-width:0}
     ${root} .statement-period-chip{align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:999px;color:#334155;display:inline-flex;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};min-height:32px;padding:0 ${spacing[3]};text-decoration:none;white-space:nowrap}
