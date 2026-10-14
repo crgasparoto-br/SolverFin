@@ -324,10 +324,7 @@ export function assertContextualSurface(measured, state, dialog) {
       assert.equal(measured.dialogOverflowHidden, true, `${state}: dialog has a second scrollbar`);
       assert.equal(measured.panelScrollControlled, true, `${state}: form must own scrolling`);
       if (state === "new" || state === "clone") {
-        assert.ok(
-          measured.readOnlyOriginalName,
-          `${state}: original account name is missing`,
-        );
+        assert.ok(measured.readOnlyOriginalName, `${state}: original account name is missing`);
         assert.equal(
           measured.readOnlyInputHidden,
           true,
