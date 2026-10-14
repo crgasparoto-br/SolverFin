@@ -278,8 +278,11 @@ export function summarize(rows: StatementRow[], openingMinor: number): Statement
     (summary, row) => {
       const absolute = Math.abs(row.amountMinor);
 
-      if (row.transaction.kind === "income") summary.incomeMinor += row.transaction.amountMinor;
-      if (row.transaction.kind === "expense") summary.expenseMinor += row.transaction.amountMinor;
+      // Individual-account cards show real inflows/outflows, including each
+      // transfer leg in that account's own currency. The signed row amount
+      // already resolves source versus destination and cross-currency values.
+      if (row.amountMinor > 0) summary.incomeMinor += row.amountMinor;
+      if (row.amountMinor < 0) summary.expenseMinor -= row.amountMinor;
       summary.plannedBalanceMinor += row.amountMinor;
 
       if (row.transaction.effectiveOn === undefined) {
