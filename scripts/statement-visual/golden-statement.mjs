@@ -223,7 +223,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       if (width === 390) {
         await negativeControl(
           "GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW",
-          '[data-golden-screen] .summary-total[data-summary-total="income"] .summary-total-copy>strong{display:block!important;font-size:24px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important;transform:translateX(-85px)!important}',
+          '[data-golden-screen] .summary-total[data-summary-total="income"] .summary-total-copy>strong{display:block!important;font-size:14px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important;transform:translateX(-30px)!important}',
           /within their own summary cards/,
         );
       }
