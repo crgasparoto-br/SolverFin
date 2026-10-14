@@ -106,7 +106,10 @@ test("a long currency value must remain within its own summary card", () => {
 
 test("Chrome must inject and reject a long summary value escaping its card", () => {
   const source = readFileSync(new URL("./golden-statement.mjs", import.meta.url), "utf8");
-  const contract = readFileSync(new URL("./golden-statement-contract.mjs", import.meta.url), "utf8");
+  const contract = readFileSync(
+    new URL("./golden-statement-contract.mjs", import.meta.url),
+    "utf8",
+  );
   assert.match(source, /GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW/);
   assert.match(source, /white-space:nowrap!important/);
   assert.match(contract, /summaryCardOverflow:/);
