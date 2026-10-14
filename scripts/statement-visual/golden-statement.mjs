@@ -144,14 +144,12 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       "[data-golden-screen] .statement-overview{padding-bottom:400px!important}",
     );
     await negativeControl(
-      "GS-NC-STATUS-COLLISION",
-      "[data-golden-screen] .statement-body .statement-status{width:26px!important;height:26px!important}",
+      "GS-NC-STATUS-LABEL-EXPOSED",
+      "[data-golden-screen] .statement-body .statement-status-label{display:inline!important}",
     );
-    // The chip keeps its state on one line; a column that no longer fits the full label
-    // must be rejected instead of silently hiding part of the status.
     await negativeControl(
-      "GS-NC-STATUS-CLIPPED",
-      "[data-golden-screen] .statement-body .statement-status{max-width:120px!important}",
+      "GS-NC-STATUS-GLYPH-HIDDEN",
+      "[data-golden-screen] .statement-body .statement-status svg{display:none!important}",
     );
     // Reference anatomy: dropping the row glyph or folding the category back under the
     // description must both be rejected.

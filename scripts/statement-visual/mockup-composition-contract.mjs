@@ -18,8 +18,16 @@ export function assertMockupComposition(layout) {
   );
   if (layout.statusChip) {
     assert.equal(layout.statusChip.labelHidden, true, "Movement status must display only the icon.");
-    assert.equal(layout.statusChip.hasTooltip, true, "Movement status must expose its full label on hover.");
-    assert.equal(layout.statusChip.accessible, true, "Movement status must retain a keyboard-accessible name.");
+    assert.equal(
+      layout.statusChip.hasTooltip,
+      true,
+      "Movement status must expose its full label on hover.",
+    );
+    assert.equal(
+      layout.statusChip.accessible,
+      true,
+      "Movement status must retain a keyboard-accessible name.",
+    );
     assert.ok(layout.statusChip.width <= 40, "Movement status must remain icon-sized.");
   }
   assert.equal(
