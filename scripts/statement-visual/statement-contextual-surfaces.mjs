@@ -55,6 +55,8 @@ export async function validateStatementContextualSurfaces(
         horizontalOverflow: !!surface && surface.scrollWidth > surface.clientWidth + 1,
         documentOverflow: document.documentElement.scrollWidth > innerWidth + 1,
         focusInside: !!surface?.contains(document.activeElement),
+        horizontalCenterDelta: box ? Math.abs(box.left - (innerWidth - box.right)) : null,
+        verticalCenterDelta: box ? Math.abs(box.top - (innerHeight - box.bottom)) : null,
         unnamedButtons: controls.filter(node => node.matches('button') && !node.getAttribute('aria-label') && !node.textContent.trim()).length,
         closeButtons: controls.filter(node => node.matches('.close-form button,button[aria-label=Fechar]')).length,
         closeGlyphDuplications: controls.filter(node => node.matches('.close-form button,button[aria-label=Fechar]') && node.textContent.includes('×') &&
@@ -110,6 +112,42 @@ export async function validateStatementContextualSurfaces(
       })()`);
     }
     assertContextualSurface(await measure(selector), state, selector.startsWith("dialog"));
+    if ((state === "new" || state === "edit") && width >= 1100) {
+      const originalStyle = await read(`(() => {
+        const node = document.querySelector(${JSON.stringify(selector)});
+        const original = node.getAttribute("style");
+        node.style.setProperty("inset", "auto", "important");
+        node.style.setProperty("top", "50%", "important");
+        node.style.setProperty("right", "16px", "important");
+        node.style.setProperty("margin", "0", "important");
+        node.style.setProperty("transform", "translateY(-50%)", "important");
+        return original;
+      })()`);
+      let centerError;
+      try {
+        const rightAnchored = await measure(selector);
+        assert.equal(rightAnchored.inside, true, `${state}: negative control must remain inside viewport`);
+        assert.throws(() => assertContextualSurface(rightAnchored, state, true), (error) => {
+          centerError = error.message;
+          return error.code === "ERR_ASSERTION" && /horizontal center/.test(error.message);
+        });
+      } finally {
+        await read(`(() => {
+          const node = document.querySelector(${JSON.stringify(selector)});
+          const original = ${JSON.stringify(originalStyle)};
+          if (original === null) node.removeAttribute("style");
+          else node.setAttribute("style", original);
+        })()`);
+      }
+      assertContextualSurface(await measure(selector), state, true);
+      report.controls.push({
+        id: "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-" + state,
+        viewport: { width, height },
+        mutation: "Dialog right-aligned but entirely inside the viewport",
+        rejectedBecause: centerError,
+        restored: "passed",
+      });
+    }
     report.controls.push({
       id: "GS-CONTEXTUAL-ANCHOR-" + state,
       viewport: { width, height },
@@ -247,6 +285,16 @@ export function assertContextualSurface(measured, state, dialog) {
   assert.equal(measured.documentOverflow, false, `${state}: document overflows`);
   assert.equal(measured.unnamedButtons, 0, `${state}: unnamed button`);
   if (dialog) {
+    if (state === "new" || state === "edit") {
+      assert.ok(
+        measured.horizontalCenterDelta <= 40,
+        `${state}: dialog is off horizontal center (${measured.horizontalCenterDelta}px)`,
+      );
+      assert.ok(
+        measured.verticalCenterDelta <= 40,
+        `${state}: dialog is off vertical center (${measured.verticalCenterDelta}px)`,
+      );
+    }
     assert.equal(measured.focusInside, true, `${state}: dialog does not contain focus`);
     assert.equal(measured.closeButtons, 1, `${state}: duplicate or missing close action`);
     assert.equal(
