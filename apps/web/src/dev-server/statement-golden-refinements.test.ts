@@ -103,6 +103,11 @@ assert.match(
   styles,
   /\.statement-head\{background:transparent;border-bottom:1px solid var\(--line\)/,
 );
+// F-702-04: long amounts at 390px must wrap within their own summary card.
+assert.match(styles, /@media\(min-width:361px\) and \(max-width:760px\)\{/);
+assert.match(styles, /summary-total-copy>strong\{display:block;font-size:clamp\(12px,3\.2vw,14px\)/);
+assert.match(styles, /summary-total-copy>strong\{[^}]*overflow-wrap:anywhere/);
+
 // Progressive reduction drops the decorative glyph so long values keep their width.
 assert.match(styles, /\.summary-total-icon\{display:none\}/);
 
