@@ -291,7 +291,8 @@ decisao nao fica disponivel sem evidencia obrigatoria; fluxo segue operavel por 
 ## Mapeamento das telas-piloto
 
 - `/dashboard` (#608): A1 Cockpit/dashboard. Listas e drilldowns ficam subordinados.
-- `/lancamentos` (#609): A2 Listagem/extrato. Drawer e formularios curtos sao locais.
+- `/lancamentos` (#609): A2 Listagem/extrato. Detalhes contextuais podem usar
+  drawer; novo lancamento, clonagem e edicao sempre usam dialog centralizado.
 - `/cartoes` (#610): A3 Master-detail. Compras ficam no contexto cartao/fatura.
 - `/relatorios` (#611): A5 Analise/relatorio. Tabela e drilldown sao subordinados.
 - `/contas-cartoes` (#612): A3 Master-detail. Cadastro e edicao podem ser contextuais.
