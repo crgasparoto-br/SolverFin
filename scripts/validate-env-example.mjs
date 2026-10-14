@@ -226,3 +226,32 @@ const entries = parseEnvFile(envExample);
 validateEnvExample(entries);
 
 console.log(".env.example contains required safe development placeholders.");
+
+/* TEMPORARY CI DIAGNOSTIC: print exact Prettier patches for issue 702. */
+const { writeFileSync, mkdtempSync } = await import("node:fs");
+const { tmpdir } = await import("node:os");
+const { join } = await import("node:path");
+const { execFileSync } = await import("node:child_process");
+const prettier = await import("prettier");
+for (const path of [
+  "apps/web/src/dev-server/transactions-consolidated.test.ts",
+  "apps/web/src/dev-server/transactions-consolidated.ts",
+  "apps/web/src/dev-server/transactions-page-v2.ts",
+]) {
+  const pretty = await prettier.format(readFileSync(path, "utf8"), {
+    filepath: path,
+    printWidth: 100,
+    semi: true,
+    singleQuote: false,
+    trailingComma: "all",
+  });
+  const temporary = join(mkdtempSync(join(tmpdir(), "sf-prettier-")), "formatted");
+  writeFileSync(temporary, pretty);
+  try {
+    execFileSync("diff", ["-u", path, temporary], { encoding: "utf8" });
+  } catch (error) {
+    console.log("PRETTIER_DIFF_BEGIN", path);
+    console.log(String(error.stdout ?? ""));
+    console.log("PRETTIER_DIFF_END", path);
+  }
+}
