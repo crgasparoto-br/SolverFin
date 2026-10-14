@@ -455,6 +455,40 @@ test("A2 consolidated USD mode preserves USD and does not merge BRL totals", asy
   }
 });
 
+test("A2 consolidated USD Entradas card counts the received USD leg of a BRL-to-USD transfer", async () => {
+  globalThis.fetch = mockFetch([
+    {
+      ...transaction("fx-september", "Transferência C6 BRL → C6 USD", 56000, "2026-09-15"),
+      kind: "transfer",
+      currency: "BRL",
+      accountId: "account-brl",
+      destinationAccountId: "account-usd",
+      destinationCurrency: "USD",
+      destinationAmountMinor: 10000,
+    },
+  ]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-09"),
+    );
+    const incomeStart = html.indexOf('<div class="summary-total" data-summary-total="income">');
+    const expenseStart = html.indexOf('<div class="summary-total" data-summary-total="expense">');
+    assert.ok(incomeStart >= 0 && expenseStart > incomeStart, "Both total cards must render");
+    const incomeCard = html.slice(incomeStart, expenseStart);
+    assert.ok(
+      incomeCard.includes("US$") && incomeCard.includes("100,00"),
+      "USD transfer must appear as an inflow",
+    );
+    assert.match(html, /data-summary-total="closing"/);
+    assert.match(html, /Transferência C6 BRL → C6 USD/);
+    assert.match(html, /Recebida de Conta principal/);
+    assert.match(html, /Ver lançamento na conta/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("A2 consolidated FX transfer opens the account of the displayed currency", async () => {
   globalThis.fetch = mockFetch([
     {
