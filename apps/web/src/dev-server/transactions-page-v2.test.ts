@@ -471,6 +471,7 @@ test("A2 consolidated FX transfer opens the account of the displayed currency", 
       new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-08"),
     );
     assert.match(brl, /Conta: Conta internacional → Conta principal/);
+    assert.match(brl, /Recebida de Conta internacional/);
     assert.match(
       brl,
       /href="\/lancamentos\?accountId=account-brl&month=2026-08" aria-label="Ver lançamento na conta"/,
@@ -490,6 +491,7 @@ test("A2 consolidated FX transfer opens the account of the displayed currency", 
       /href="\/lancamentos\?accountId=account-usd&month=2026-08" aria-label="Ver lançamento na conta"/,
       "USD movement opens the source",
     );
+    assert.match(usd, /Enviada para Conta principal/);
   } finally {
     globalThis.fetch = originalFetch;
   }
