@@ -234,7 +234,9 @@ export async function validateStatementContextualSurfaces(
         await navigate(cdp, `${baseUrl}${allAccountsRoute}`);
         const allEdit = `[data-edit="${transactionId}"]`;
         assert.equal(await read(`!!document.querySelector(${JSON.stringify(allEdit)})`), true);
-        await read(`document.querySelector(${JSON.stringify(allEdit)}).closest("details").open = true`);
+        await read(
+          `document.querySelector(${JSON.stringify(allEdit)}).closest("details").open = true`,
+        );
         await activate(allEdit);
         const modalState = await read(`(() => {
           const modal = document.querySelector("dialog[data-modal]");
@@ -250,7 +252,11 @@ export async function validateStatementContextualSurfaces(
         })()`);
         assert.equal(modalState.open, true, "Consolidated Edit must open the modal");
         assert.equal(modalState.method, "PATCH");
-        assert.equal(modalState.accountId, sourceAccountId, "Edit must use the real source account");
+        assert.equal(
+          modalState.accountId,
+          sourceAccountId,
+          "Edit must use the real source account",
+        );
         assert.ok(modalState.accountDisplay && !modalState.accountDisplay.includes("indisponível"));
         assert.equal(modalState.sourceCurrency, sourceCurrency);
         assert.equal(modalState.saveDisabled, false, "Edit must enable Save in consolidated mode");
@@ -262,7 +268,10 @@ export async function validateStatementContextualSurfaces(
           sourceCurrency,
           modalState,
         });
-        await screenshot(cdp, join(outputDir, "statement-contextual-consolidated-edit-1366x768.png"));
+        await screenshot(
+          cdp,
+          join(outputDir, "statement-contextual-consolidated-edit-1366x768.png"),
+        );
         await press("Escape", 27);
       }
 
