@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { assertGoldenStatement } from "./golden-statement-contract.mjs";
@@ -92,4 +93,16 @@ test("overlapping summary values fail the Golden Screen gate", () => {
   layout.viewport = { width: 320, height: 740 };
   layout.summaryCollisions = [["R$ 1.063.266.987,01", "-R$ 53.949.672,92"]];
   assert.throws(() => assertGoldenStatement(layout), /summary values overlap/);
+});
+
+test("mobile month clipping must have a negative control", () => {
+  const source = readFileSync(
+    new URL("./golden-statement.mjs", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /if \\(width === 390\\)/);
+  assert.match(source, /GS-MOBILE-NC-MONTH-CLIPPED/);
+  assert.match(source, /month-width-negative/);
+  assert.match(source, /narrowed < 240/);
+  assert.match(source, /assert\\.ok\\(\\(await read\\(probe\\)\\) >= 240\\)/);
 });
