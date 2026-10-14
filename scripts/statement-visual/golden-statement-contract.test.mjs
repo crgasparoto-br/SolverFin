@@ -95,6 +95,24 @@ test("overlapping summary values fail the Golden Screen gate", () => {
   assert.throws(() => assertGoldenStatement(layout), /summary values overlap/);
 });
 
+test("a long currency value must remain within its own summary card", () => {
+  const layout = fixture();
+  layout.viewport = { width: 390, height: 844 };
+  layout.summaryCardOverflow = [];
+  assert.doesNotThrow(() => assertGoldenStatement(layout));
+  layout.summaryCardOverflow = ["income", "closing"];
+  assert.throws(() => assertGoldenStatement(layout), /within their own summary cards/);
+});
+
+test("Chrome must inject and reject a long summary value escaping its card", () => {
+  const source = readFileSync(new URL("./golden-statement.mjs", import.meta.url), "utf8");
+  const contract = readFileSync(new URL("./golden-statement-contract.mjs", import.meta.url), "utf8");
+  assert.match(source, /GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW/);
+  assert.match(source, /white-space:nowrap!important/);
+  assert.match(contract, /summaryCardOverflow:/);
+  assert.match(contract, /range\.selectNodeContents\(value\)/);
+});
+
 test("mobile month clipping must have a negative control", () => {
   const source = readFileSync(new URL("./golden-statement.mjs", import.meta.url), "utf8");
   assert.match(source, /if \(width === 390\)/);
