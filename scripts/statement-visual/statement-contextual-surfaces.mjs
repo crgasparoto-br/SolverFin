@@ -298,10 +298,17 @@ export async function validateStatementContextualSurfaces(
       });
     }
     // Fail closed if one of the mobile or desktop alignment probes is silently skipped.
-    const expectedRightAlignmentControls = ["new", "edit", "clone"]
-      .flatMap((state) => [[1366, 768], [390, 844], [320, 740]]
-        .map(([width, height]) => `GS-CONTEXTUAL-NC-RIGHT-ALIGNED-${state}@${width}x${height}`))
-      .sort();
+    const expectedRightAlignmentControls = [
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new@1366x768",
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new@390x844",
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new@320x740",
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-edit@1366x768",
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-edit@390x844",
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-edit@320x740",
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-clone@1366x768",
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-clone@390x844",
+      "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-clone@320x740",
+    ].sort();
     const observedRightAlignmentControls = report.controls
       .filter(({ id }) => id.startsWith("GS-CONTEXTUAL-NC-RIGHT-ALIGNED-"))
       .map(({ id, viewport }) => `${id}@${viewport.width}x${viewport.height}`)
