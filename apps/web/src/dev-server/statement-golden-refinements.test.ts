@@ -107,7 +107,7 @@ assert.match(
 assert.match(styles, /@media\(min-width:361px\) and \(max-width:760px\)\{/);
 assert.match(
   styles,
-  /summary-total-copy>strong\{display:block;font-size:clamp\(12px,3\.2vw,14px\)/,
+  /summary-total-copy>strong\{display:block;font-size:clamp\(11px,2\.9vw,13px\)/,
 );
 assert.match(styles, /summary-total-copy>strong\{[^}]*overflow-wrap:anywhere/);
 
