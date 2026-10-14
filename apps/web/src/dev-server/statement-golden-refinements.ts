@@ -632,11 +632,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-period-control [data-month-current]{justify-self:end}
     }
     @media(max-width:360px){
+      /* Keep the 320px first-viewport budget without truncating the selected account. */
+      ${root} .statement-account-heading{gap:${spacing[1]}}
       ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
       ${root} .statement-account-heading .summary-balance{align-items:baseline;display:flex;gap:${spacing[1]};justify-content:space-between}
       ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.md};white-space:nowrap}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr);row-gap:0}
-      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:nowrap;gap:${spacing[1]};justify-content:space-between;padding:${spacing[1]} 0}
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:nowrap;gap:${spacing[1]};justify-content:space-between;padding:2px 0}
       ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};line-height:${typography.lineHeights.compact};white-space:nowrap;word-break:normal;width:auto}
     }
 

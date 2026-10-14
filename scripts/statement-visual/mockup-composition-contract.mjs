@@ -17,7 +17,11 @@ export function assertMockupComposition(layout) {
     "Account selector must stay in financial context, not query filters.",
   );
   if (layout.statusChip) {
-    assert.equal(layout.statusChip.labelHidden, true, "Movement status must display only the icon.");
+    assert.equal(
+      layout.statusChip.labelHidden,
+      true,
+      "Movement status must display only the icon.",
+    );
     assert.equal(
       layout.statusChip.hasTooltip,
       true,
@@ -296,9 +300,12 @@ export function measureMockupComposition() {
         background: style.backgroundColor,
         radius: parseFloat(style.borderTopLeftRadius) || 0,
         width: chip.getBoundingClientRect().width,
-        labelHidden: getComputedStyle(chip.querySelector(".statement-status-label")).display === "none",
+        labelHidden:
+          getComputedStyle(chip.querySelector(".statement-status-label")).display === "none",
         hasTooltip:
-          !!chip.title && chip.title === chip.getAttribute("aria-label") && chip.dataset.tooltip === chip.title,
+          !!chip.title &&
+          chip.title === chip.getAttribute("aria-label") &&
+          chip.dataset.tooltip === chip.title,
         accessible: chip.getAttribute("role") === "img" && chip.tabIndex === 0,
       };
     })(),
