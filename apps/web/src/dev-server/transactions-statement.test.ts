@@ -41,7 +41,9 @@ dayFilterKeepsOpeningBalanceAndDailyRows();
 statementTransactionFilterKeepsAccountOrAccountOnlyRecords();
 statementCalculationsIgnoreVoidedAndPendingOpeningEntries();
 projectedBalancesIncludePlannedEntriesAndTransfers();
-transferSummariesExcludeTransfersFromIncomeAndExpense();
+transferSummariesIncludeTransfersOnTheSelectedAccount();
+crossCurrencyTransferSummaryUsesTheDestinationCurrency();
+transferSummaryPreservesPendingAndVoidedRules();
 transferSignedAmountDependsOnSelectedAccount();
 crossCurrencyTransferUsesDestinationNativeAmount();
 
@@ -273,7 +275,7 @@ function statementCalculationsIgnoreVoidedAndPendingOpeningEntries(): void {
 
   assert.deepEqual(summarize(rows, openingMinor), {
     openingMinor: 150000,
-    incomeMinor: 10000,
+    incomeMinor: 50000,
     expenseMinor: 25000,
     plannedBalanceMinor: 175000,
     effectiveBalanceMinor: 165000,
@@ -322,7 +324,7 @@ function projectedBalancesIncludePlannedEntriesAndTransfers(): void {
   );
 }
 
-function transferSummariesExcludeTransfersFromIncomeAndExpense(): void {
+function transferSummariesIncludeTransfersOnTheSelectedAccount(): void {
   const outboundTransfer = transaction("transfer-out", "transfer", "posted", 25000, "2026-06-03", {
     destinationAccountId: "account-2",
   });
@@ -338,8 +340,8 @@ function transferSummariesExcludeTransfersFromIncomeAndExpense(): void {
   );
   assert.deepEqual(summarize(rows, 10000), {
     openingMinor: 10000,
-    incomeMinor: 0,
-    expenseMinor: 0,
+    incomeMinor: 30000,
+    expenseMinor: 25000,
     plannedBalanceMinor: 15000,
     effectiveBalanceMinor: 15000,
     reconciledMinor: 0,
@@ -349,6 +351,39 @@ function transferSummariesExcludeTransfersFromIncomeAndExpense(): void {
     reconciledCount: 0,
     unreconciledCount: 2,
   });
+}
+
+function crossCurrencyTransferSummaryUsesTheDestinationCurrency(): void {
+  const transfer = transaction("fx", "transfer", "posted", 53_832, "2026-06-02", {
+    destinationAccountId: "account-2",
+    destinationAmountMinor: 10_000,
+    currency: "BRL",
+    destinationCurrency: "USD",
+  });
+  const source = summarize(buildRows([transfer], account, 20_000), 20_000);
+  const destination = summarize(buildRows([transfer], destinationAccount, 0), 0);
+  assert.equal(source.incomeMinor, 0);
+  assert.equal(source.expenseMinor, 53_832);
+  assert.equal(source.effectiveBalanceMinor, 20_000 - 53_832);
+  assert.equal(destination.incomeMinor, 10_000);
+  assert.equal(destination.expenseMinor, 0);
+  assert.equal(destination.effectiveBalanceMinor, 10_000);
+}
+
+function transferSummaryPreservesPendingAndVoidedRules(): void {
+  const pending = pendingTransaction("future-fx", "transfer", 3000, "2026-06-03", {
+    destinationAccountId: "account-2",
+  });
+  const voided = transaction("void-fx", "transfer", "voided", 9900, "2026-06-04", {
+    destinationAccountId: "account-2",
+  });
+  const summary = summarize(buildRows([pending, voided], account, 10_000), 10_000);
+  assert.equal(summary.expenseMinor, 3000);
+  assert.equal(summary.incomeMinor, 0);
+  assert.equal(summary.plannedBalanceMinor, 7000);
+  assert.equal(summary.effectiveBalanceMinor, 10_000);
+  assert.equal(summary.pendingMinor, 3000);
+  assert.equal(summary.pendingCount, 1);
 }
 
 function transferSignedAmountDependsOnSelectedAccount(): void {
