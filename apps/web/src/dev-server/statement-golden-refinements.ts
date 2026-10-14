@@ -215,7 +215,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .account-summary[data-mockup-composition]{display:grid;gap:${spacing[2]} ${spacing[3]};grid-template-columns:repeat(3,minmax(0,1fr));padding:0}
     ${root} .statement-summary-duplicate[hidden]{display:none}
     ${root} .statement-account-heading{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:${spacing[3]};grid-column:1/-1;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);padding-bottom:${spacing[2]}}
-    ${root} .statement-account-heading .statement-context{border:0;display:grid;gap:${spacing[1]};padding:0}
+    ${root} .statement-account-heading .statement-context{border:0;display:grid;gap:${spacing[1]};grid-template-columns:minmax(0,1fr);justify-content:stretch;padding:0}
     ${root} .statement-account-heading .statement-context-main{flex:none}
     ${root} .statement-account-heading .statement-context-copy>.muted{display:none}
     ${root} .statement-account-heading .statement-context-copy strong{font-size:${typography.sizes.lg}}
