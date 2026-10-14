@@ -228,6 +228,8 @@ export function statementGoldenRefinementStyles(): string {
     /* G3: the account control reads as the financial identity, not as a form field. */
     ${root} .statement-account-control .account-select-copy{align-content:center;display:grid;gap:2px;min-width:0}
     ${root} .statement-account-control .account-select-text{font-size:${typography.sizes.md};font-weight:${typography.weights.semibold};text-align:left}
+    ${root} .statement-account-control .account-select-text{overflow:visible;overflow-wrap:anywhere;text-overflow:clip;white-space:normal}
+    ${root} .statement-account-control .account-select-copy{min-width:0;overflow-wrap:anywhere}
     ${root} .statement-account-control .account-select-sub{color:var(--muted);font-size:${typography.sizes.xs};line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     ${root} .statement-account-control .account-select-trigger{background:transparent;border:0;column-gap:${spacing[2]};padding:0}
     ${root} .statement-account-control .account-select-icon{border-radius:11px;flex:0 0 auto;height:44px;overflow:hidden;width:44px}
