@@ -454,3 +454,43 @@ test("A2 consolidated USD mode preserves USD and does not merge BRL totals", asy
     globalThis.fetch = originalFetch;
   }
 });
+
+test("A2 consolidated FX transfer opens the account of the displayed currency", async () => {
+  globalThis.fetch = mockFetch([
+    {
+      ...transaction("fx-in", "Câmbio recebido", 10000, "2026-08-07"),
+      kind: "transfer",
+      destinationAccountId: "account-brl",
+      destinationCurrency: "BRL",
+      destinationAmountMinor: 48000,
+    },
+  ]);
+  try {
+    const brl = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-08"),
+    );
+    assert.match(brl, /Conta: Conta internacional → Conta principal/);
+    assert.match(
+      brl,
+      /href="\/lancamentos\?accountId=account-brl&month=2026-08" aria-label="Ver lançamento na conta"/,
+      "BRL movement opens the destination, not the USD source",
+    );
+    assert.doesNotMatch(
+      brl,
+      /href="\/lancamentos\?accountId=account-usd&month=2026-08" aria-label="Ver lançamento na conta"/,
+    );
+
+    const usd = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-08"),
+    );
+    assert.match(
+      usd,
+      /href="\/lancamentos\?accountId=account-usd&month=2026-08" aria-label="Ver lançamento na conta"/,
+      "USD movement opens the source",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
