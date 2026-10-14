@@ -15,7 +15,7 @@ A mesma tela terá dois modos de leitura:
 - **Conta individual:** comportamento legado, incluindo saldos, filtros, lançamentos, criação e edição.
 - **Todas as contas:** opção explícita `accountId=all`, agrupando apenas contas ativas de uma moeda selecionada. A moeda é obrigatória no controle; BRL é a escolha inicial quando disponível, caso contrário é selecionada a primeira moeda cadastrada. O mês e a moeda são preservados durante a navegação de períodos.
 
-Cada linha da lista identifica a conta abaixo da descrição; transferências mostram origem → destino. No modo consolidado, ações de mutação são desabilitadas, e **Ver** abre o lançamento no extrato da conta que pertence à moeda selecionada: origem para a perna enviada, destino para a perna recebida. O texto auxiliar indica **Enviada para** ou **Recebida de** a partir dessa mesma perspectiva, evitando contexto contraditório em transferências cambiais. A edição permanece restrita à visão individual.
+Cada linha da lista identifica a conta abaixo da descrição; transferências mostram origem → destino. **Decisão posterior (2026-10-14):** o menu **Ações** do consolidado oferece as mesmas operações da conta individual (**Editar, Conciliar/Desconciliar, Clonar, Excluir** e ações de recorrência quando aplicáveis), além do atalho **Ver na conta**. As operações por ID continuam usando os endpoints já existentes, com confirmação para exclusão. O formulário de edição/clonagem carrega a **conta de origem real do lançamento** e a moeda correspondente, mesmo quando o lançamento aparece pela perna de destino na visão consolidada de outra moeda; somente libera o botão Salvar quando essa conta é conhecida e possui moeda válida. Abrir novo lançamento no consolidado sem conta individual selecionada continua impedido de salvar. O atalho Ver na conta navega para o extrato da conta que pertence à moeda selecionada: origem para perna enviada, destino para perna recebida. O texto auxiliar indica **Enviada para** ou **Recebida de** a partir dessa mesma perspectiva, evitando contexto contraditório em transferências cambiais.
 
 ## Regras financeiras
 
@@ -40,4 +40,4 @@ Testar BRL versus USD, conta identificada, primeiro mês sem movimento, saldo in
 
 - Outra tela: aumenta navegação, manutenção e divergência do design system.
 - Consolidar sem moeda: agrega unidades monetárias incompatíveis.
-- Permitir edição sem conta selecionada: cria ambiguidade sobre origem/destino da operação.
+- Permitir criação sem conta selecionada: cria ambiguidade sobre origem/destino da operação. A edição/clonagem é permitida a partir de um lançamento existente, com conta de origem resolvida e visível.

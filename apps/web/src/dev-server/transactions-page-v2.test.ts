@@ -419,8 +419,26 @@ test("A2 consolidated BRL mode identifies each account and excludes USD without 
     assert.match(html, /Mercado BRL/);
     assert.match(html, /Conta: Conta principal/);
     assert.doesNotMatch(html, /Receita USD/);
-    assert.doesNotMatch(html, /data-edit="brl-expense"/);
+    assert.match(html, /data-edit="brl-expense"/);
     assert.match(html, /Ver lançamento na conta/);
+    assert.match(html, /data-clone="brl-expense"/);
+    assert.match(
+      html,
+      /data-action data-method="PATCH" data-path="\/api\/transactions\/brl-expense"/,
+    );
+    assert.match(
+      html,
+      /data-action data-method="POST" data-path="\/api\/transactions\/brl-expense\/void"/,
+    );
+    assert.match(
+      html,
+      /<details class="actions col-actions"><summary aria-label="Ações do lançamento Mercado BRL"/,
+    );
+    assert.match(html, /<span>Ver na conta<\/span>/);
+    assert.match(html, /rowSourceId = String\(transaction.accountId \|\| ""\)/);
+    assert.match(html, /accountLabels.get\(rowSourceId\)/);
+    assert.match(html, /submitButton.disabled = false/);
+    assert.match(html, /submitButton.disabled = !accountCurrencies.get\(sourceAccountId\(\)\)/);
     assert.match(
       html,
       /accountId=account-brl&amp;month=2026-08|accountId=account-brl&month=2026-08/,
@@ -449,7 +467,7 @@ test("A2 consolidated USD mode preserves USD and does not merge BRL totals", asy
     assert.match(html, /Despesa USD/);
     assert.match(html, /Conta: Conta internacional/);
     assert.doesNotMatch(html, /Receita BRL/);
-    assert.doesNotMatch(html, /data-edit="usd-expense"/);
+    assert.match(html, /data-edit="usd-expense"/);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -506,6 +524,12 @@ test("A2 consolidated FX transfer opens the account of the displayed currency", 
     );
     assert.match(brl, /Conta: Conta internacional → Conta principal/);
     assert.match(brl, /Recebida de Conta internacional/);
+    assert.match(brl, /data-edit="fx-in"/);
+    assert.match(brl, /data-clone="fx-in"/);
+    assert.match(brl, /data-method="PATCH" data-path="\/api\/transactions\/fx-in"/);
+    assert.match(brl, /data-method="POST" data-path="\/api\/transactions\/fx-in\/void"/);
+    assert.match(brl, /<span>Ver na conta<\/span>/);
+    assert.match(brl, /"accountId":"account-usd"/);
     assert.match(
       brl,
       /href="\/lancamentos\?accountId=account-brl&month=2026-08" aria-label="Ver lançamento na conta"/,
@@ -526,6 +550,10 @@ test("A2 consolidated FX transfer opens the account of the displayed currency", 
       "USD movement opens the source",
     );
     assert.match(usd, /Enviada para Conta principal/);
+    assert.match(usd, /data-edit="fx-in"/);
+    assert.match(usd, /data-clone="fx-in"/);
+    assert.match(usd, /data-transaction="fx-in"/);
+    assert.match(usd, /"accountId":"account-usd"/);
   } finally {
     globalThis.fetch = originalFetch;
   }
