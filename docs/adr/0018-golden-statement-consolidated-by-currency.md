@@ -40,7 +40,7 @@ A implementação inicial reaproveita a consulta do perfil. Para históricos mui
 
 ## Critérios de validação
 
-Testar BRL versus USD, conta identificada, primeiro mês sem movimento, saldo inicial, previsto, transferências internas e intermoedas, seleção de moeda, retorno à conta individual, ausência de edição consolidada, responsividade e isolamento por tenant/profile. Resultado de CI não equivale a auditoria visual independente.
+Testar BRL versus USD, conta identificada, primeiro mês sem movimento, saldo inicial, previsto, transferências internas e intermoedas, seleção de moeda, retorno à conta individual, paridade das ações de edição/clonagem/conciliação/exclusão no consolidado com resolução da conta de origem e proteção contra criação sem conta, responsividade e isolamento por tenant/profile. Resultado de CI não equivale a auditoria visual independente.
 
 ## Alternativas rejeitadas
 
