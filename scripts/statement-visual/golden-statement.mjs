@@ -217,6 +217,12 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     ];
     for (const [width, height] of viewports) {
       await observe(width === 1366 ? "long-content" : "mobile", width, height);
+      if (width === 390) {
+        await negativeControl(
+          "GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW",
+          '[data-golden-screen] .summary-total-copy>strong{display:block!important;font-size:24px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important}',
+        );
+      }
       await read(`document.querySelector('[data-quick-kind="expense"]').click()`);
       assert.equal(await read(`document.querySelector('dialog[data-modal]').open`), true);
       await read(`(() => {
