@@ -91,8 +91,8 @@ test("BRL consolidation keeps internal transfers zero-net and balance by effecti
     34000,
     "planned does not change effective running balance",
   );
-  assert.equal(result.summary.incomeMinor, 9200, "includes cross-currency transfer received");
-  assert.equal(result.summary.expenseMinor, 7100, "includes cross-currency transfer sent");
+  assert.equal(result.summary.incomeMinor, 8000, "only operational income");
+  assert.equal(result.summary.expenseMinor, 1200, "only operational expenses");
   assert.equal(result.summary.pendingMinor, 900);
   assert.equal(result.summary.plannedBalanceMinor, 33100);
 });
@@ -111,7 +111,7 @@ test("USD consolidation uses the destination amount of a cross-currency transfer
   );
   assert.equal(rows.summary.openingMinor, 50000);
   assert.equal(rows.summary.effectiveBalanceMinor, 50900);
-  assert.equal(rows.summary.incomeMinor, 900, "USD received counts in Entradas");
+  assert.equal(rows.summary.incomeMinor, 0, "FX transfer excluded from consolidated Entradas");
   assert.equal(rows.summary.expenseMinor, 0);
   assert.equal(rows.rows[0]?.amountMinor, 900);
 });
@@ -154,7 +154,7 @@ test("consolidation never invents BRL for an account without currency", () => {
   );
 });
 
-test("September USD view shows an incoming US$ 100 FX transfer in Entradas and balance", () => {
+test("September USD consolidated view excludes incoming US$ 100 FX from Entradas but preserves balance", () => {
   const result = buildConsolidatedStatement(
     [
       {
@@ -185,7 +185,7 @@ test("September USD view shows an incoming US$ 100 FX transfer in Entradas and b
   );
   assert.equal(result.accountCount, 1);
   assert.equal(result.summary.openingMinor, 62973);
-  assert.equal(result.summary.incomeMinor, 10000);
+  assert.equal(result.summary.incomeMinor, 0);
   assert.equal(result.summary.expenseMinor, 0);
   assert.equal(result.summary.effectiveBalanceMinor, 72973);
   assert.equal(result.rows[0]?.amountMinor, 10000);
@@ -208,7 +208,7 @@ test("same-currency transfers never inflate Entradas or Saídas", () => {
   assert.equal(result.rows[0]?.amountMinor, 0);
 });
 
-test("cross-currency transfer sent appears in Saídas only in the source currency", () => {
+test("cross-currency transfers change consolidated balances without inflating either card", () => {
   const transaction = tx("sent-brl", "transfer", 54000, "a", "2026-10-11", {
     destinationAccountId: "c",
     destinationAmountMinor: 10000,
@@ -216,9 +216,9 @@ test("cross-currency transfer sent appears in Saídas only in the source currenc
   const brl = buildConsolidatedStatement(accounts, [transaction], "BRL", period);
   const usd = buildConsolidatedStatement(accounts, [transaction], "USD", period);
   assert.equal(brl.summary.incomeMinor, 0);
-  assert.equal(brl.summary.expenseMinor, 54000);
+  assert.equal(brl.summary.expenseMinor, 0);
   assert.equal(brl.summary.effectiveBalanceMinor, 30000 - 54000);
-  assert.equal(usd.summary.incomeMinor, 10000);
+  assert.equal(usd.summary.incomeMinor, 0);
   assert.equal(usd.summary.expenseMinor, 0);
   assert.equal(usd.summary.effectiveBalanceMinor, 50000 + 10000);
 });
