@@ -22,7 +22,10 @@ nao substitui seus contratos nem declara a referencia aprovada.
   Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o
   formulario GET completo permanece disponivel. Conta e periodo pertencem ao
   contexto financeiro, preservando o vinculo nativo com o formulario de consulta.
-- Criacao/edicao usa o dialog existente com duas colunas no desktop e uma no mobile.
+- Cadastro (novo lancamento), clonagem e edicao usam o mesmo dialog nativo, sempre
+  centralizado horizontal e verticalmente na viewport, sem ancoragem na borda direita
+  como drawer ou painel lateral. O formulario mantem duas colunas no desktop e uma
+  no mobile; o dialog respeita margens seguras e rola internamente quando necessario.
   Sem JavaScript, o select nativo de tipo permanece visivel e acessivel. Com a melhoria
   progressiva ativa, Despesa/Receita/Transferencia usam um radiogroup com setas, Home/End,
   estado selecionado e bloqueios sincronizados. O select original continua como campo
@@ -217,8 +220,14 @@ O candidato a Golden Screen do Extrato usa o mockup como referência estrutural,
 preservando as regras financeiras existentes. A composição deve manter: navegação
 e cabeçalho compactos, contexto de conta e saldo em bloco horizontal, quatro
 indicadores do período (saldo inicial, entradas, saídas e saldo final), filtros
-compactos, lista com descrição/valor dominantes e drawer lateral de lançamento
-com opções avançadas progressivas.
+compactos, lista com descrição/valor dominantes e dialog centralizado para
+cadastro, clonagem e edição de lançamentos, com opções avançadas progressivas.
+
+Por decisão posterior ao mockup, a geometria de painel lateral ilustrada para
+novo lançamento não é normativa: `POST` (novo e clonar) e `PATCH` (editar) devem
+abrir centralizados. Não transformar o diálogo de criação em drawer à direita.
+Preservar foco, Escape, tecla de retorno ao acionador, alvos de toque e rolagem
+interna do formulário, inclusive em 1366x768, 390x844 e 320x740.
 
 A paridade não autoriza tornar categoria obrigatória, fundir datas financeiras
 ou alterar payloads. Diferenças necessárias por contrato funcional devem ser
