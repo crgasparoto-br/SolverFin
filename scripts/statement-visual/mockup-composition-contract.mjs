@@ -16,6 +16,12 @@ export function assertMockupComposition(layout) {
     true,
     "Account selector must stay in financial context, not query filters.",
   );
+  if (layout.statusChip) {
+    assert.equal(layout.statusChip.labelHidden, true, "Movement status must display only the icon.");
+    assert.equal(layout.statusChip.hasTooltip, true, "Movement status must expose its full label on hover.");
+    assert.equal(layout.statusChip.accessible, true, "Movement status must retain a keyboard-accessible name.");
+    assert.ok(layout.statusChip.width <= 40, "Movement status must remain icon-sized.");
+  }
   assert.equal(
     layout.accountPickerBoundToForm,
     true,
@@ -34,6 +40,16 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
+    if (layout.viewport.width >= 1280 && layout.accountPicker && layout.period) {
+      assert.ok(
+        layout.accountPicker.width >= Math.min(360, layout.context.width - 32),
+        "Desktop account selector must use the available room before the period control.",
+      );
+      assert.ok(
+        layout.period.left - layout.accountPicker.right <= 86,
+        "Desktop account selector leaves excessive unused space before the period.",
+      );
+    }
     if (layout.firstMovement) {
       assert.ok(
         layout.firstMovement.width > 0 && layout.firstMovement.height > 0,
@@ -196,6 +212,7 @@ export function measureMockupComposition() {
     context: rect(context),
     balance: rect(balance),
     period: rect(period),
+    accountPicker: rect(accountPicker?.querySelector(".account-select-trigger")),
     queryHeading: rect(queryHeading),
     queryFields: rect(queryFields),
     visiblePrimaryFilters: [
@@ -270,6 +287,11 @@ export function measureMockupComposition() {
           chip.querySelector("svg").getBoundingClientRect().width > 0,
         background: style.backgroundColor,
         radius: parseFloat(style.borderTopLeftRadius) || 0,
+        width: chip.getBoundingClientRect().width,
+        labelHidden: getComputedStyle(chip.querySelector(".statement-status-label")).display === "none",
+        hasTooltip:
+          !!chip.title && chip.title === chip.getAttribute("aria-label") && chip.dataset.tooltip === chip.title,
+        accessible: chip.getAttribute("role") === "img" && chip.tabIndex === 0,
       };
     })(),
     selectionControl: (() => {

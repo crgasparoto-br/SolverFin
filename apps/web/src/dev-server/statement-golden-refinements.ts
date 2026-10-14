@@ -220,8 +220,8 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-account-heading .statement-context-copy>.muted{display:none}
     ${root} .statement-account-heading .statement-context-copy strong{font-size:${typography.sizes.lg}}
     ${root} .statement-account-heading .statement-context-meta{gap:${spacing[1]} ${spacing[3]}}
-    ${root} .statement-account-control{min-width:0}
-    ${root} .statement-account-control .account-field{display:grid;gap:${spacing[1]};max-width:24rem;min-width:0}
+    ${root} .statement-account-control{min-width:0;width:100%}
+    ${root} .statement-account-control .account-field{display:grid;gap:${spacing[1]};max-width:none;min-width:0;width:100%}
     ${root} .statement-account-control .account-select-trigger{width:100%}
     ${root} .statement-account-control :is(label,.account-select,.account-select-trigger){box-sizing:border-box;max-width:100%;min-width:0;width:100%}
     ${root} .statement-account-control .account-select-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -448,8 +448,10 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
     /* M02/M04: metadata stays secondary and on one line so it neither competes with the
        description/amount nor inflates the row height of the movement list. */
-    /* Reference status chip: a defined pill with its own glyph, not bare text. */
-    ${root} .statement-body .statement-status{align-items:center;border:1px solid transparent;display:inline-flex;gap:5px;height:auto;width:auto;max-width:100%;min-width:0;padding:3px 9px;border-radius:999px;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};white-space:nowrap}
+    /* Status keeps the semantic label in aria-label/title, while only its glyph is visible. */
+    ${root} .statement-body .statement-status{align-items:center;border:1px solid transparent;border-radius:999px;display:inline-flex;flex:0 0 auto;height:32px;justify-content:center;max-width:100%;min-width:32px;padding:0;width:32px}
+    ${root} .statement-body .col-status{justify-self:center}
+    ${root} .statement-body .statement-status-label{display:none}
     ${root} .statement-body .statement-status svg{flex:0 0 auto;height:14px;width:14px}
     ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:inherit;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
     ${root} .statement-body .statement-status-ok{background:#dcfce7;border-color:#bbf7d0;color:#166534}
@@ -596,7 +598,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
       /* Reference anatomy: check | glyph | date | description | category | value | status | actions.
          Rows and header share one track list, so the columns always line up. */
-      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 48px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) minmax(9.5rem,auto) 36px}
+      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 48px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) 3.5rem 36px}
       ${root} .statement-body{grid-template-areas:"select icon date description category amount status actions" "select icon date . . balance . actions"}
       ${root} .statement-body .col-row-icon{grid-area:icon}
       ${root} .statement-body .statement-row-footer{display:contents}
@@ -613,7 +615,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-head .col-description{grid-area:description}
       ${root} .statement-head .col-category{clip-path:none;grid-area:category;height:auto;overflow:visible;position:static;width:auto}
       ${root} .statement-head .col-amount{grid-area:amount}
-      ${root} .statement-head .col-status{grid-area:status}
+      ${root} .statement-head .col-status{grid-area:status;justify-self:center;text-align:center}
       ${root} .statement-head .col-actions{grid-area:actions}
     }
     @media(max-width:1100px){
