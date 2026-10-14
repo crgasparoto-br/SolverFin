@@ -118,6 +118,7 @@ test("desktop period and Current month share both account-selector edges", () =>
   const layout = {
     ...fixture(),
     accountPicker: box(250, 170, 365, 46),
+    accountChevron: box(585, 186, 14, 14),
     periodMonthNav: box(635, 170, 192, 46),
     currentMonthButton: box(835, 170, 108, 46),
   };
@@ -130,8 +131,16 @@ test("desktop period and Current month share both account-selector edges", () =>
     () => assertMockupComposition({ ...layout, currentMonthButton: box(835, 170, 108, 39) }),
     /both account-selector edges/,
   );
-  const mobile = { ...layout, viewport: { width: 390, height: 844 }, context: box(24, 140, 342, 70), balance: box(24, 220, 342, 60) };
-  assert.doesNotThrow(() => assertMockupComposition(mobile), "Mobile keeps the existing stacked layout.");
+  const mobile = {
+    ...layout,
+    viewport: { width: 390, height: 844 },
+    context: box(24, 140, 342, 70),
+    balance: box(24, 220, 342, 60),
+  };
+  assert.doesNotThrow(
+    () => assertMockupComposition(mobile),
+    "Mobile keeps the existing stacked layout.",
+  );
 });
 
 test("rejects selector left in query or orphaned from original GET form", () => {
