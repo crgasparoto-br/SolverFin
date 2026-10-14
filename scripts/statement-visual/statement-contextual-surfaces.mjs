@@ -50,11 +50,21 @@ export async function validateStatementContextualSurfaces(
       const box = surface?.getBoundingClientRect();
       const controls = Array.from(surface?.querySelectorAll('button,summary,input:not([type=hidden]),select,textarea') || [])
         .filter(node => node.getBoundingClientRect().width && node.getBoundingClientRect().height);
+      const accountFields = Array.from(surface?.querySelectorAll('.statement-entry-account,[data-edit-account-field]') || [])
+        .filter(node => node.getClientRects().length > 0);
+      const editAccountSelect = surface?.querySelector('[data-edit-account-select]');
+      const panel = surface?.querySelector('.modal-panel');
       return { visible: !!box?.width && !!box?.height,
         inside: !!box && box.left >= -1 && box.right <= innerWidth + 1 && box.top >= -1 && box.bottom <= innerHeight + 1,
         horizontalOverflow: !!surface && surface.scrollWidth > surface.clientWidth + 1,
         documentOverflow: document.documentElement.scrollWidth > innerWidth + 1,
         focusInside: !!surface?.contains(document.activeElement),
+        visibleAccountFields: accountFields.length,
+        selectedAccountName: editAccountSelect?.selectedOptions?.[0]?.textContent?.trim() || null,
+        fullAccountName: surface?.querySelector('[data-edit-account-full-name]')?.textContent?.trim() || null,
+        documentScrollLocked: getComputedStyle(document.documentElement).overflowY === 'hidden',
+        dialogOverflowHidden: !!surface && getComputedStyle(surface).overflowY === 'hidden',
+        panelScrollControlled: !!panel && getComputedStyle(panel).overflowY === 'auto',
         horizontalCenterDelta: box ? Math.abs(box.left - (innerWidth - box.right)) : null,
         verticalCenterDelta: box ? Math.abs(box.top - (innerHeight - box.bottom)) : null,
         unnamedButtons: controls.filter(node => node.matches('button') && !node.getAttribute('aria-label') && !node.textContent.trim()).length,
@@ -112,7 +122,7 @@ export async function validateStatementContextualSurfaces(
       })()`);
     }
     assertContextualSurface(await measure(selector), state, selector.startsWith("dialog"));
-    if ((state === "new" || state === "edit") && width >= 1100) {
+    if ((state === "new" || state === "edit" || state === "clone") && width >= 1100) {
       const originalStyle = await read(`(() => {
         const node = document.querySelector(${JSON.stringify(selector)});
         const original = node.getAttribute("style");
@@ -198,6 +208,17 @@ export async function validateStatementContextualSurfaces(
         true,
       );
       await capture("edit", width, height, "dialog[data-modal][open]");
+      await press("Escape", 27);
+
+      await navigate(cdp, `${baseUrl}${route}`);
+      const cloneSelector = `[data-clone="${transactionId}"]`;
+      await read(`document.querySelector(${JSON.stringify(cloneSelector)}).closest('details').open = true`);
+      await activate(cloneSelector);
+      assert.equal(
+        await read("document.querySelector('[data-modal-title]').textContent"),
+        "Clonar lançamento",
+      );
+      await capture("clone", width, height, "dialog[data-modal][open]");
       await press("Escape", 27);
 
       await navigate(cdp, `${baseUrl}${route}`);
@@ -292,7 +313,15 @@ export function assertContextualSurface(measured, state, dialog) {
   assert.equal(measured.documentOverflow, false, `${state}: document overflows`);
   assert.equal(measured.unnamedButtons, 0, `${state}: unnamed button`);
   if (dialog) {
-    if (state === "new" || state === "edit") {
+    if (state === "new" || state === "edit" || state === "clone") {
+      assert.equal(measured.visibleAccountFields, 1, `${state}: duplicate account fields`);
+      assert.equal(measured.documentScrollLocked, true, `${state}: background remains scrollable`);
+      assert.equal(measured.dialogOverflowHidden, true, `${state}: dialog has a second scrollbar`);
+      assert.equal(measured.panelScrollControlled, true, `${state}: form must own scrolling`);
+      if (state === "edit") {
+        assert.ok(measured.selectedAccountName, "edit: missing selected account");
+        assert.equal(measured.fullAccountName, measured.selectedAccountName, "edit: full account name is not readable");
+      }
       assert.ok(
         measured.horizontalCenterDelta <= 40,
         `${state}: dialog is off horizontal center (${measured.horizontalCenterDelta}px)`,

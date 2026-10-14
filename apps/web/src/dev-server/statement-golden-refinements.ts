@@ -479,12 +479,13 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-description>strong{font-size:${typography.sizes.md}}
     ${root} .statement-body .col-description>span,${root} .statement-body :is(.col-category,.col-kind,.col-balance){font-size:${typography.sizes.xs}}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.md}}
-    ${dialog}{border:1px solid var(--line);border-radius:10px;height:fit-content;margin:auto;max-height:calc(100dvh - 32px);max-width:min(440px,calc(100% - 32px));padding:0;width:min(440px,calc(100% - 32px))}
+    html:has(body [data-golden-screen="statement"]):has(dialog[data-modal][open]){overflow-y:hidden}
+    ${dialog}{border:1px solid var(--line);border-radius:10px;height:fit-content;margin:auto;max-height:calc(100dvh - 32px);max-width:min(440px,calc(100% - 32px));overflow:hidden;padding:0;width:min(440px,calc(100% - 32px))}
     /* Both create and edit dialogs use the same centered viewport contract. Keep the PATCH
        selector for compatibility with the existing edit flow without moving either dialog. */
     ${dialog}:has(form[data-method="PATCH"]){height:fit-content;margin:auto;max-height:calc(100dvh - 32px)}
     ${dialog}::backdrop{background:rgba(15,23,42,.38)}
-    ${dialog} .modal-panel{box-sizing:border-box;min-height:100%;padding:${spacing[4]}}
+    ${dialog} .modal-panel{box-sizing:border-box;max-height:calc(100dvh - 34px);min-height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:${spacing[4]}}
     ${dialog} .statement-entry-heading>.eyebrow{display:none!important}
     ${dialog} .statement-entry-heading{border-bottom:1px solid #eef2f7;grid-column:1!important;grid-row:1;padding-bottom:${spacing[3]};padding-right:${spacing[2]}}
     ${dialog} .statement-entry-heading p{font-size:${typography.sizes.sm}}
@@ -498,6 +499,9 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .modal-panel form[data-form]>.save-row,
     ${dialog} .modal-panel form[data-form]>.statement-entry-kinds{grid-column:1/-1}
     ${dialog} .statement-entry-account input{background:#f8fafc}
+    ${dialog} .statement-entry-account-selector{grid-column:1/-1;min-width:0}
+    ${dialog} .statement-entry-account-selector select{min-width:0;max-width:100%;width:100%}
+    ${dialog} [data-edit-account-full-name]{display:block;font-size:${typography.sizes.xs};line-height:1.4;overflow-wrap:anywhere;white-space:normal}
     ${dialog} .statement-entry-advanced{border-top:1px solid #eef2f7;padding-top:${spacing[2]}}
     ${dialog} .statement-entry-advanced>summary{color:var(--primary);cursor:pointer;font-size:${typography.sizes.sm};font-weight:${typography.weights.medium};min-height:${density.interactiveTargetMin}}
     ${dialog} .statement-entry-advanced-grid{display:grid;gap:${spacing[3]};grid-template-columns:repeat(2,minmax(0,1fr));padding-top:${spacing[2]}}
@@ -552,7 +556,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field,.statement-sort-field) select{min-width:0;width:100%}
       ${root} .statement-filter-actions{grid-column:1/-1;justify-content:stretch}
       ${root} .statement-filter-actions>button{flex:1}
-      ${dialog}{height:calc(100dvh - 32px);margin:16px auto;max-height:calc(100dvh - 32px);max-width:calc(100% - 32px);width:calc(100% - 32px)}
+      ${dialog}{height:fit-content;margin:auto;max-height:calc(100dvh - 32px);max-width:calc(100% - 32px);width:calc(100% - 32px)}
       ${dialog} .modal-panel form[data-form],${dialog} .statement-entry-advanced-grid{grid-template-columns:1fr}
       ${dialog} .statement-entry-advanced-grid>.full{grid-column:auto}
     }

@@ -133,6 +133,7 @@ export function recurringCardScopeControllerScript(): string {
           accountField.hidden = true;
           accountField.setAttribute("data-edit-account-field", "");
           accountField.textContent = "Conta";
+          accountField.classList.add("full", "statement-entry-account-selector");
 
           const accountSelect = document.createElement("select");
           accountSelect.name = "accountId";
@@ -149,6 +150,17 @@ export function recurringCardScopeControllerScript(): string {
           });
 
           accountField.appendChild(accountSelect);
+          const accountFullName = document.createElement("span");
+          accountFullName.className = "muted";
+          accountFullName.setAttribute("data-edit-account-full-name", "");
+          accountField.appendChild(accountFullName);
+          const readOnlyAccountField = form.querySelector(".statement-entry-account");
+          const updateAccountFullName = () => {
+            const selectedName = accountSelect.selectedOptions?.[0]?.textContent?.trim() || "";
+            accountFullName.textContent = selectedName;
+            accountSelect.title = selectedName;
+          };
+          accountSelect.addEventListener("change", updateAccountFullName);
           // Transfers show the persisted source next to the destination (#677).
           const sourceField = form.querySelector('[data-field="sourceAccount"]');
           form.insertBefore(accountField, sourceField || firstField);
@@ -162,18 +174,24 @@ export function recurringCardScopeControllerScript(): string {
           function setAccountMode(transaction) {
             const editing = Boolean(transaction);
             accountField.hidden = !editing;
+            if (readOnlyAccountField) readOnlyAccountField.hidden = editing;
             accountSelect.disabled = !editing;
             accountInput.disabled = editing;
 
             if (editing) {
               accountSelect.value = transaction.accountId || createAccountId;
               if (guidance) guidance.textContent = "Revise a conta usada neste lançamento.";
-              return;
+            } else {
+              accountInput.value = createAccountId;
+              accountSelect.value = createAccountId;
+              if (guidance) guidance.textContent = "A conta vem do filtro principal.";
             }
-
-            accountInput.value = createAccountId;
-            accountSelect.value = createAccountId;
-            if (guidance) guidance.textContent = "A conta vem do filtro principal.";
+            updateAccountFullName();
+            // Recompute transfer source visibility after toggling the editable account.
+            // Otherwise switching from POST to PATCH can leave a second source field visible.
+            if (form.kind && typeof form.kind.dispatchEvent === "function") {
+              form.kind.dispatchEvent(new Event("change", { bubbles: true }));
+            }
           }
 
           document.querySelectorAll("[data-open-modal]").forEach((button) => {
