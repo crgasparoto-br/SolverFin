@@ -117,7 +117,9 @@ assert.match(styles, /statement-reconciliation-field/);
 
 assert.match(runtime, /accountInput\.setAttribute\('form', filterForm\.id\)/);
 assert.match(runtime, /context\?\.append\(accountControl\)/);
-assert.match(styles, /statement-account-control\{min-width:0\}/);
+assert.match(styles, /statement-account-control\{min-width:0;width:100%\}/);
+assert.match(styles, /statement-account-control \.account-field\{[^}]*max-width:none/);
+assert.match(styles, /statement-body \.statement-status-label\{display:none\}/);
 
 // CDI mobile regression: long labels must not expand the transaction row.
 assert.match(styles, /account-remuneration-row \.description>strong\{[^}]*white-space:normal/);
