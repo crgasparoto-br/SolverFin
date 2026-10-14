@@ -220,7 +220,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       if (width === 390) {
         await negativeControl(
           "GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW",
-          '[data-golden-screen] .summary-total-copy>strong{display:block!important;font-size:24px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important}',
+          "[data-golden-screen] .summary-total-copy>strong{display:block!important;font-size:24px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important}",
         );
       }
       await read(`document.querySelector('[data-quick-kind="expense"]').click()`);
