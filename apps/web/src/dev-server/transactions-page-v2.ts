@@ -702,13 +702,13 @@ function resolveConsolidatedNavigationAccountId(
   const belongsToSelectedCurrency = (id: string | undefined): boolean =>
     Boolean(
       id &&
-        currency &&
-        accounts.some(
-          (account) =>
-            account.id === id &&
-            account.status === "active" &&
-            resolveAccountCurrency(account) === currency,
-        ),
+      currency &&
+      accounts.some(
+        (account) =>
+          account.id === id &&
+          account.status === "active" &&
+          resolveAccountCurrency(account) === currency,
+      ),
     );
   if (belongsToSelectedCurrency(transaction.accountId)) return transaction.accountId ?? "";
   if (belongsToSelectedCurrency(transaction.destinationAccountId))
