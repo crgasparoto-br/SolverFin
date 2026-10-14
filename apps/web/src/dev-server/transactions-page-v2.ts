@@ -649,11 +649,17 @@ function renderRow(
     !transaction.transactionGroupId;
 
   const rowGlyph = resolveRowGlyph(categoryName, transaction.kind);
+  const contextAccount = consolidated
+    ? accounts.find(
+        (account) =>
+          account.id === resolveConsolidatedNavigationAccountId(transaction, accounts, accountCurrency),
+      )
+    : selectedAccount;
   return `<article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row" data-row-glyph="${escapeHtml(rowGlyph.key)}">
     <label class="col-select"><input type="checkbox" data-select-transaction value="${escapeHtml(transaction.id)}" data-kind="${escapeHtml(transaction.kind)}" data-status="${escapeHtml(transaction.status)}" data-currency="${escapeHtml(currency ?? "")}" data-amount="${row.amountMinor}" data-date="${escapeHtml(date)}" data-description="${escapeHtml(transaction.description)}" data-category="${escapeHtml(categoryName)}" aria-label="Selecionar lançamento ${escapeHtml(transaction.description || "sem descrição")}"${eligible ? "" : " disabled"}></label>
     ${renderRowGlyph(categoryName, transaction.kind)}
     <time class="col-date" datetime="${escapeHtml(date)}" title="${escapeHtml(formatDate(date))}">${formatMovementDate(date)}</time>
-    <div class="description col-description">${renderTransactionDescription(transaction, consolidated ? accounts.find((account) => account.id === resolveConsolidatedNavigationAccountId(transaction, accounts, accountCurrency)) : selectedAccount, accounts)}${consolidated ? renderConsolidatedAccountLabel(transaction, accounts) : ""}</div>
+    <div class="description col-description">${renderTransactionDescription(transaction, contextAccount, accounts)}${consolidated ? renderConsolidatedAccountLabel(transaction, accounts) : ""}</div>
     ${renderCategoryChip(categoryName, transaction.kind)}<span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
     ${renderStatementStatus(transaction)}
     <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
