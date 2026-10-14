@@ -15,7 +15,7 @@ A mesma tela terá dois modos de leitura:
 - **Conta individual:** comportamento legado, incluindo saldos, filtros, lançamentos, criação e edição.
 - **Todas as contas:** opção explícita `accountId=all`, agrupando apenas contas ativas de uma moeda selecionada. A moeda é obrigatória no controle; BRL é a escolha inicial quando disponível, caso contrário é selecionada a primeira moeda cadastrada. O mês e a moeda são preservados durante a navegação de períodos.
 
-Cada linha da lista identifica a conta abaixo da descrição; transferências mostram origem → destino. No modo consolidado, ações de mutação são desabilitadas, e **Ver** abre o lançamento no extrato de uma conta individual, onde a edição mantém uma conta de referência inequívoca.
+Cada linha da lista identifica a conta abaixo da descrição; transferências mostram origem → destino. No modo consolidado, ações de mutação são desabilitadas, e **Ver** abre o lançamento no extrato da conta que pertence à moeda selecionada: origem para a perna enviada, destino para a perna recebida. O texto auxiliar indica **Enviada para** ou **Recebida de** a partir dessa mesma perspectiva, evitando contexto contraditório em transferências cambiais. A edição permanece restrita à visão individual.
 
 ## Regras financeiras
 
@@ -23,7 +23,7 @@ Cada linha da lista identifica a conta abaixo da descrição; transferências mo
 2. Saldo efetivo consolidado = saldo inicial + efeito líquido dos movimentos efetivos no período. Lançamentos previstos não alteram esse saldo.
 3. Uma transferência entre contas BRL selecionadas é projetada uma única vez, com efeito líquido zero. Transferências não se tornam receita ou despesa.
 4. Na transferência entre moedas, apenas a perna correspondente à moeda selecionada altera o saldo; a entrada utiliza `destinationAmountMinor` quando aplicável.
-5. Jamais converter moedas automaticamente ou apresentar saldo sintético misturando BRL e USD. Uma moeda inexistente não origina total fictício.
+5. Jamais converter moedas automaticamente ou apresentar saldo sintético misturando BRL e USD. Uma moeda inexistente não origina total fictício. Contas sem moeda definida não são tratadas implicitamente como BRL, nem incluídas na soma de uma moeda conhecida.
 6. Grupos de lançamentos são mostrados pelos seus movimentos componentes na visão consolidada, sem duplicar projeções agregadas.
 
 ## Limites técnicos e autorização
