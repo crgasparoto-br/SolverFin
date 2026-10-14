@@ -231,7 +231,7 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-account-control .account-select-text{overflow:visible;overflow-wrap:anywhere;text-overflow:clip;white-space:normal}
     ${root} .statement-account-control .account-select-copy{min-width:0;overflow-wrap:anywhere}
     ${root} .statement-account-control .account-select-sub{color:var(--muted);font-size:${typography.sizes.xs};line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    ${root} .statement-account-control .account-select-trigger{background:transparent;border:0;column-gap:${spacing[2]};padding:0 ${spacing[4]} 0 0}
+    ${root} .statement-account-control .account-select-trigger{background:transparent;border:1px solid var(--line);border-radius:10px;column-gap:${spacing[2]};padding:0 ${spacing[4]} 0 ${spacing[1]}}
     ${root} .statement-account-control .account-select-chevron{flex:0 0 auto;margin-inline-start:auto}
     ${root} .statement-account-control .account-select-icon{border-radius:11px;flex:0 0 auto;height:44px;overflow:hidden;width:44px}
     ${root} .statement-account-control .account-select-icon :is(img,svg){height:100%;width:100%}
