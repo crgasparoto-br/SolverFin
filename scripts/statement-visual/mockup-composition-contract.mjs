@@ -48,7 +48,8 @@ export function assertMockupComposition(layout) {
     );
     assert.ok(
       Math.abs(
-        layout.accountChevron.top + layout.accountChevron.height / 2 -
+        layout.accountChevron.top +
+          layout.accountChevron.height / 2 -
           (layout.accountPicker.top + layout.accountPicker.height / 2),
       ) <= 4,
       "Account dropdown arrow must stay vertically centered.",

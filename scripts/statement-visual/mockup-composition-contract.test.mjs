@@ -87,15 +87,28 @@ test("keeps the account chevron at the right edge on desktop and mobile", () => 
       layout.context = box(16, 140, width - 32, 70);
       layout.balance = box(16, 220, width - 32, 60);
     }
-    layout.accountPicker = box(20, 155, width === 1366 ? 360 : width - 40, 44);
+    layout.accountPicker = box(
+      width === 1366 ? 250 : 16,
+      155,
+      width === 1366 ? 290 : width - 32,
+      44,
+    );
     layout.accountChevron = box(layout.accountPicker.right - 30, 170, 14, 14);
     assert.doesNotThrow(() => assertMockupComposition(layout));
     assert.throws(
-      () => assertMockupComposition({ ...layout, accountChevron: box(layout.accountPicker.left + 110, 170, 14, 14) }),
+      () =>
+        assertMockupComposition({
+          ...layout,
+          accountChevron: box(layout.accountPicker.left + 110, 170, 14, 14),
+        }),
       /right edge/,
     );
     assert.throws(
-      () => assertMockupComposition({ ...layout, accountChevron: box(layout.accountPicker.right - 30, 157, 14, 14) }),
+      () =>
+        assertMockupComposition({
+          ...layout,
+          accountChevron: box(layout.accountPicker.right - 30, 157, 14, 14),
+        }),
       /vertically centered/,
     );
   }
