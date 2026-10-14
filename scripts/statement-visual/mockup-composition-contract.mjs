@@ -68,15 +68,6 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
-    if (layout.accountPicker && layout.periodMonthNav && layout.currentMonthButton) {
-      for (const control of [layout.periodMonthNav, layout.currentMonthButton]) {
-        assert.ok(
-          Math.abs(control.top - layout.accountPicker.top) <= 4 &&
-            Math.abs(control.bottom - layout.accountPicker.bottom) <= 4,
-          "Desktop period and Current month must align to both account-selector edges.",
-        );
-      }
-    }
     if (layout.viewport.width >= 1280 && layout.accountPicker && layout.period) {
       assert.ok(
         layout.accountPicker.width >= Math.min(360, layout.context.width - 32),
@@ -200,6 +191,22 @@ export function assertMockupComposition(layout) {
       layout.balance.top >= layout.context.bottom - 1,
       "Mobile must keep account before balance without overlap.",
     );
+  }
+  // Inspect the overall header hierarchy before asserting exact control alignment.
+  // This keeps each Chrome negative control discriminating its intended regression.
+  if (
+    layout.viewport.width >= 1101 &&
+    layout.accountPicker &&
+    layout.periodMonthNav &&
+    layout.currentMonthButton
+  ) {
+    for (const control of [layout.periodMonthNav, layout.currentMonthButton]) {
+      assert.ok(
+        Math.abs(control.top - layout.accountPicker.top) <= 4 &&
+          Math.abs(control.bottom - layout.accountPicker.bottom) <= 4,
+        "Desktop period and Current month must align to both account-selector edges.",
+      );
+    }
   }
 }
 
