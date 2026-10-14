@@ -20,7 +20,7 @@ export function buildConsolidatedStatement(
 ): { rows: StatementRow[]; summary: StatementSummary; accountCount: number } {
   const selected = accounts.filter(
     (account) =>
-      account.status === "active" && (account.currency ?? "BRL").toUpperCase() === currency,
+      account.status === "active" && account.currency?.toUpperCase() === currency,
   );
   const ids = new Set(selected.map((account) => account.id));
   const movement = (transaction: TransactionRecord): number | undefined => {
