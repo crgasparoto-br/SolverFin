@@ -106,8 +106,23 @@ test("novo lançamento centraliza o dialog e limita a rolagem ao próprio modal"
     );
     assert.match(
       normalized,
-      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{height:calc\(100dvh - 32px\);margin:16px auto;max-height:calc\(100dvh - 32px\);max-width:calc\(100% - 32px\);width:calc\(100% - 32px\)\}/,
-      "o refinamento responsivo deve preservar margens de 16px nos celulares",
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\);max-width:calc\(100% - 32px\);width:calc\(100% - 32px\)\}/,
+      "o refinamento responsivo deve preservar margens de 16px nos celulares sem forcar altura fixa",
+    );
+    assert.match(
+      normalized,
+      /html:has\(body \[data-golden-screen="statement"\]\):has\(dialog\[data-modal\]\[open\]\)\{overflow-y:hidden\}/,
+      "a pagina deve ficar sem rolagem enquanto o dialog estiver aberto",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{border:1px[^}]*overflow:hidden;padding:0;/,
+      "o dialog externo nao pode criar uma segunda barra de rolagem",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \.modal-panel\{box-sizing:border-box;max-height:calc\(100dvh - 34px\);min-height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;/,
+      "somente o painel interno deve controlar a rolagem de formularios longos",
     );
   } finally {
     globalThis.fetch = originalFetch;
