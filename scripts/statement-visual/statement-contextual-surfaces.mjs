@@ -217,6 +217,55 @@ export async function validateStatementContextualSurfaces(
       await capture("edit", width, height, "dialog[data-modal][open]");
       await press("Escape", 27);
 
+      // The consolidated row action must open an editable form, not merely
+      // render the menu item. Check the correct source account and save state.
+      if (width === 1366) {
+        const sourceAccountId = new URL(route, baseUrl).searchParams.get("accountId");
+        const sourceCurrency = await read(`(() => {
+          const accountId = new URL(location.href).searchParams.get("accountId");
+          return [...document.querySelectorAll("[data-account-option]")].find(
+            (option) => option.dataset.accountOption === accountId,
+          )?.dataset.accountCurrency || "";
+        })()`);
+        assert.ok(sourceAccountId, "Individual route must select a source account");
+        assert.match(sourceCurrency, /^[A-Z]{3}$/, "Source account must have a currency");
+        const statementMonth = new URL(route, baseUrl).searchParams.get("month") || "2026-10";
+        const allAccountsRoute = `/lancamentos?accountId=all&currency=${encodeURIComponent(sourceCurrency)}&month=${encodeURIComponent(statementMonth)}`;
+        await navigate(cdp, `${baseUrl}${allAccountsRoute}`);
+        const allEdit = `[data-edit="${transactionId}"]`;
+        assert.equal(await read(`!!document.querySelector(${JSON.stringify(allEdit)})`), true);
+        await read(`document.querySelector(${JSON.stringify(allEdit)}).closest("details").open = true`);
+        await activate(allEdit);
+        const modalState = await read(`(() => {
+          const modal = document.querySelector("dialog[data-modal]");
+          const form = modal?.querySelector("[data-form]");
+          return {
+            open: Boolean(modal?.open),
+            method: form?.dataset.method,
+            accountId: form?.querySelector('[name="accountId"]')?.value,
+            accountDisplay: form?.querySelector(".statement-entry-account input")?.value,
+            sourceCurrency: form?.querySelector("[data-source-currency]")?.textContent?.trim(),
+            saveDisabled: form?.querySelector('.save-row [type="submit"]')?.disabled,
+          };
+        })()`);
+        assert.equal(modalState.open, true, "Consolidated Edit must open the modal");
+        assert.equal(modalState.method, "PATCH");
+        assert.equal(modalState.accountId, sourceAccountId, "Edit must use the real source account");
+        assert.ok(modalState.accountDisplay && !modalState.accountDisplay.includes("indisponível"));
+        assert.equal(modalState.sourceCurrency, sourceCurrency);
+        assert.equal(modalState.saveDisabled, false, "Edit must enable Save in consolidated mode");
+        report.observations.push({
+          state: "consolidated-edit",
+          viewport: { width, height },
+          route: allAccountsRoute,
+          accountId: sourceAccountId,
+          sourceCurrency,
+          modalState,
+        });
+        await screenshot(cdp, join(outputDir, "statement-contextual-consolidated-edit-1366x768.png"));
+        await press("Escape", 27);
+      }
+
       await navigate(cdp, `${baseUrl}${route}`);
       const cloneSelector = `[data-clone="${transactionId}"]`;
       await read(
