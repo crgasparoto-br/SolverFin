@@ -146,8 +146,5 @@ test("consolidation never invents BRL for an account without currency", () => {
   assert.equal(result.accountCount, 2);
   assert.equal(result.summary.openingMinor, 30000);
   assert.equal(result.summary.effectiveBalanceMinor, 30300);
-  assert.deepEqual(
-    result.rows.map((row) => row.transaction.id),
-    ["known-brl"],
-  );
+  assert.deepEqual(result.rows.map((row) => row.transaction.id), ["known-brl"]);
 });
