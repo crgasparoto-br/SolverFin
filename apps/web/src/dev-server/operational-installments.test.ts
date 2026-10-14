@@ -18,6 +18,20 @@ test("builds one scoped account installments query for the selected month", () =
   );
 });
 
+test("consolidated All accounts never passes the all sentinel as a UUID to installments API", () => {
+  assert.equal(
+    buildAccountInstallmentsPath("all", "2026-09", "profile-demo"),
+    "/api/installments?operationalFrom=2026-09-01&operationalTo=2026-09-30&status=all&profileId=profile-demo",
+  );
+  assert.equal(
+    buildAccountInstallmentsPath("all", "2026-09", undefined, "2026-09-15"),
+    "/api/installments?operationalFrom=2026-09-15&operationalTo=2026-09-15&status=all",
+  );
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes('accountId === "all" ? "" : "accountId="'));
+  assert.doesNotMatch(buildAccountInstallmentsPath("all", "2026-09"), /accountId=all/);
+});
+
 test("uses the exact displayed day when the statement has a valid daily filter", () => {
   assert.equal(
     buildAccountInstallmentsPath("account-demo", "2026-02", "profile-demo", "2026-02-15"),

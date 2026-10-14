@@ -30,6 +30,12 @@ Cada linha da lista identifica a conta abaixo da descrição; transferências mo
 
 Nenhuma migração de banco é necessária: `accountId`, `destinationAccountId` e `currency` já estão modelados. A leitura usa `GET /api/transactions` sem filtro `accountId`, com escopo de organização e perfil financeiro já aplicado pela API. Registros vinculados a cartão ou fatura não entram no extrato bancário.
 
+A busca auxiliar de parcelas respeita o mesmo contexto: com uma conta individual, consulta
+`GET /api/installments` filtrando `accountId`; em **Todas as contas**, omite esse
+parâmetro em vez de enviar o marcador `all` a uma coluna UUID. A busca segue limitada
+ao período e ao perfil financeiro autorizado. Caso essa consulta falhe, o bloqueio
+conservador da edição por parcelas deve ser mantido, com mensagem explícita de falha.
+
 A implementação inicial reaproveita a consulta do perfil. Para históricos muito grandes, a busca deve evoluir para filtragem/paginação no banco, sem alterar a semântica dos saldos.
 
 ## Critérios de validação

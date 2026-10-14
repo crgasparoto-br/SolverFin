@@ -50,7 +50,7 @@ export function buildAccountInstallmentsPath(
   const selectedDay =
     /^\d{4}-\d{2}-\d{2}$/.test(day ?? "") && day?.startsWith(`${month}-`) ? day : undefined;
   const query = new URLSearchParams({
-    accountId,
+    ...(accountId === "all" ? {} : { accountId }),
     operationalFrom: selectedDay ?? `${month}-01`,
     operationalTo: selectedDay ?? `${month}-${String(lastDay).padStart(2, "0")}`,
     status: "all",
@@ -321,8 +321,8 @@ export function operationalInstallmentsController(): string {
         const lastDay = new Date(Date.UTC(parts[0], parts[1], 0)).getUTCDate();
         const operationalFrom = selectedDay || month + "-01";
         const operationalTo = selectedDay || month + "-" + String(lastDay).padStart(2, "0");
-        return "/api/installments?accountId=" + encodeURIComponent(accountId)
-          + "&operationalFrom=" + operationalFrom + "&operationalTo=" + operationalTo
+        return "/api/installments?" + (accountId === "all" ? "" : "accountId=" + encodeURIComponent(accountId) + "&")
+          + "operationalFrom=" + operationalFrom + "&operationalTo=" + operationalTo
           + "&status=all";
       }
 
