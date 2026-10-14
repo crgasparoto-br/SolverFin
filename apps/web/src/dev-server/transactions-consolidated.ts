@@ -89,12 +89,13 @@ export function buildConsolidatedStatement(
       continue;
     if (filters.evidence === "planned" && transaction.status !== "planned") continue;
 
-    // These cards summarize cash movement in the selected currency,
-    // not transaction kinds. Cross-currency transfers count as inflows
-    // or outflows only in the corresponding currency. Internal transfers
-    // have zero net movement and therefore affect neither card.
-    if (amount > 0) summary.incomeMinor += amount;
-    if (amount < 0) summary.expenseMinor += -amount;
+    // All-accounts cards show operational income/expense only. Every transfer
+    // is excluded from these two cards, including cross-currency legs; its
+    // actual movement still affects the currency-specific running balances.
+    if (transaction.kind !== "transfer") {
+      if (amount > 0) summary.incomeMinor += amount;
+      if (amount < 0) summary.expenseMinor -= amount;
+    }
     summary.plannedBalanceMinor += amount;
     if (transaction.effectiveOn === undefined) {
       summary.pendingMinor += Math.abs(amount);
