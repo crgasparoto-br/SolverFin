@@ -68,7 +68,12 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
-    if (layout.viewport.width >= 1280 && !layout.consolidated && layout.accountPicker && layout.period) {
+    if (
+      layout.viewport.width >= 1280 &&
+      !layout.consolidated &&
+      layout.accountPicker &&
+      layout.period
+    ) {
       assert.ok(
         layout.accountPicker.width >= Math.min(360, layout.context.width - 32),
         "Desktop account selector must use the available room before the period control.",
