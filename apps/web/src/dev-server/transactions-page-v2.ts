@@ -395,7 +395,7 @@ function renderFilters(
     <label class="statement-category-field" for="statement-category"><span class="filter-field-heading">${filterIcon("category")}Categoria</span>
       <select id="statement-category" name="categoryId" aria-label="Filtrar por categoria">
         <option value="">Todas</option>
-        ${categories.map((category) => `<option value="${escapeHtml(category.id)}"${presentation.insightCategoryId === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`).join("")}
+        ${renderCategoryOptions(categories, presentation.insightCategoryId)}
       </select>
     </label>
     <label class="statement-sort-field" for="statement-sort"><span class="filter-field-heading">${filterIcon("sort")}Ordenar</span>
@@ -757,20 +757,34 @@ function renderCategoryOptions(categories: readonly CategoryRecord[], selected?:
 function buildCategoryHierarchy(
   categories: readonly CategoryRecord[],
 ): { category: CategoryRecord; depth: number }[] {
+  const ids = new Set(categories.map((category) => category.id));
   const childrenByParent = new Map<string | undefined, CategoryRecord[]>();
-  for (const category of categories)
-    childrenByParent.set(category.parentCategoryId, [
-      ...(childrenByParent.get(category.parentCategoryId) ?? []),
-      category,
-    ]);
+  for (const category of categories) {
+    // The API may return null for a root. Keep orphaned entries selectable too.
+    const parent = category.parentCategoryId;
+    const parentId = parent && parent !== category.id && ids.has(parent) ? parent : undefined;
+    const siblings = childrenByParent.get(parentId) ?? [];
+    siblings.push(category);
+    childrenByParent.set(parentId, siblings);
+  }
   const rows: { category: CategoryRecord; depth: number }[] = [];
+  const visited = new Set<string>();
   const walk = (parentId: string | undefined, depth: number): void => {
     for (const category of childrenByParent.get(parentId) ?? []) {
+      if (visited.has(category.id)) continue;
+      visited.add(category.id);
       rows.push({ category, depth });
       walk(category.id, depth + 1);
     }
   };
   walk(undefined, 0);
+  // Malformed circular parent references must never recurse indefinitely or hide options.
+  for (const category of categories) {
+    if (visited.has(category.id)) continue;
+    visited.add(category.id);
+    rows.push({ category, depth: 0 });
+    walk(category.id, 1);
+  }
   return rows;
 }
 

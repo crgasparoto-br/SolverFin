@@ -209,8 +209,42 @@ test("A2 statement applies insight and text filters before rendering rows", asyn
     assert.match(html, /Filtro do insight ativo/);
     assert.match(html, /Mercado Central 123/);
     assert.doesNotMatch(html, /Farmácia/);
-    assert.match(html, /<option value="category-food" selected>Alimentação<\/option>/);
+    assert.match(html, /<option value="category-food" data-kind="expense" selected>Alimentação<\/option>/);
     assert.match(html, /name="merchantKey" value="mercado central"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 category filter displays the same selectable parent-child hierarchy as the entry form", async () => {
+  const categories = [
+    { id: "restaurant", name: "Restaurantes", kind: "expense", status: "active", parentCategoryId: "food" },
+    { id: "food", name: "Alimentação", kind: "expense", status: "active", parentCategoryId: null },
+    { id: "delivery", name: "Delivery", kind: "expense", status: "active", parentCategoryId: "restaurant" },
+    { id: "health", name: "Saúde", kind: "expense", status: "active" },
+    { id: "orphan", name: "Sem pai cadastrado", kind: "expense", status: "active", parentCategoryId: "removed" },
+  ];
+  globalThis.fetch = mockFetch([transaction("lunch", "Almoço", 2400, "2026-08-05", "expense", "delivery")], categories);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&categoryId=delivery"),
+    );
+    const select = /<select id="statement-category"[^>]*>([\s\S]*?)<\/select>/.exec(html)?.[1];
+    assert.ok(select, "The category filter must render a native selectable combobox.");
+    const root = select.indexOf('value="food"');
+    const child = select.indexOf('value="restaurant"');
+    const grandchild = select.indexOf('value="delivery"');
+    assert.ok(root >= 0 && root < child && child < grandchild, "Parents must precede nested children.");
+    assert.match(select, /<option value="food" data-kind="expense">Alimentação<\/option>/);
+    assert.match(select, /<option value="restaurant" data-kind="expense">\u00a0\u00a0↳ Restaurantes<\/option>/);
+    assert.match(select, /<option value="delivery" data-kind="expense" selected>\u00a0\u00a0\u00a0\u00a0↳ Delivery<\/option>/);
+    assert.match(select, /<option value="orphan" data-kind="expense">Sem pai cadastrado<\/option>/);
+    assert.match(html, /Almoço/, "Choosing a nested category must keep its existing exact-ID filter.");
+    assert.ok(
+      html.indexOf('value="food"') < html.indexOf('value="restaurant"'),
+      "The dialog must share the same category hierarchy.",
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -249,7 +283,13 @@ test("A2 statement filters type, effective status and reconciliation without cha
   }
 });
 
-function mockFetch(transactions: Record<string, unknown>[]) {
+function mockFetch(
+  transactions: Record<string, unknown>[],
+  categories: Record<string, unknown>[] = [
+    { id: "category-food", name: "Alimentação", kind: "expense", status: "active" },
+    { id: "category-health", name: "Saúde", kind: "expense", status: "active" },
+  ],
+) {
   return async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input), "http://solverfin.test");
     if (url.pathname === "/api/accounts") {
@@ -275,12 +315,7 @@ function mockFetch(transactions: Record<string, unknown>[]) {
       });
     }
     if (url.pathname === "/api/categories") {
-      return jsonResponse({
-        categories: [
-          { id: "category-food", name: "Alimentação", kind: "expense", status: "active" },
-          { id: "category-health", name: "Saúde", kind: "expense", status: "active" },
-        ],
-      });
+      return jsonResponse({ categories });
     }
     if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
     if (url.pathname === "/api/transaction-groups") return jsonResponse({ groups: [] });
