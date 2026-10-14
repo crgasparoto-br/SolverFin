@@ -137,11 +137,17 @@ try {
       createButton.click();
       const create = measure();
       document.querySelector("dialog[open]")?.close();
-      return { edit, create };
+      const cloneButton = document.querySelector('[data-clone="${fixtureIds.transactionId}"]');
+      if (!cloneButton) throw new Error("Clone button was not found");
+      cloneButton.click();
+      const clone = measure();
+      document.querySelector("dialog[open]")?.close();
+      return { edit, create, clone };
     })()`,
   );
   assert.equal(modalGeometry.edit.method, "PATCH");
   assert.equal(modalGeometry.create.method, "POST");
+  assert.equal(modalGeometry.clone.method, "POST");
   assert.ok(
     Math.abs(modalGeometry.edit.left - modalGeometry.edit.right) <= 40,
     `edit modal is not centred over the screen: ${JSON.stringify(modalGeometry.edit)}`,
@@ -149,6 +155,10 @@ try {
   assert.ok(
     Math.abs(modalGeometry.create.left - modalGeometry.create.right) <= 40,
     `create modal is not centered over the screen: ${JSON.stringify(modalGeometry.create)}`,
+  );
+  assert.ok(
+    Math.abs(modalGeometry.clone.left - modalGeometry.clone.right) <= 40,
+    `clone modal is not centered over the screen: ${JSON.stringify(modalGeometry.clone)}`,
   );
 
   const modalState = await evaluate(
