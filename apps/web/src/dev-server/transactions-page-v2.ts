@@ -660,7 +660,7 @@ function renderRow(
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     ${
       consolidated
-        ? `<a class="col-actions" href="/lancamentos?accountId=${encodeURIComponent(transaction.accountId ?? transaction.destinationAccountId ?? "")}&month=${encodeURIComponent(month)}" aria-label="Ver lançamento na conta">Ver</a>`
+        ? `<a class="col-actions" href="/lancamentos?accountId=${encodeURIComponent(resolveConsolidatedNavigationAccountId(transaction, accounts, accountCurrency))}&month=${encodeURIComponent(month)}" aria-label="Ver lançamento na conta">Ver</a>`
         : `<details class="actions col-actions"><summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary><div class="actions-menu" role="menu">
       <button type="button" class="actions-item" data-edit="${escapeHtml(transaction.id)}">${renderEditIcon()}<span>Editar</span></button>
       <button type="button" class="actions-item" data-action data-method="PATCH" data-path="/api/transactions/${escapeHtml(transaction.id)}" data-payload='${escapeHtml(JSON.stringify({ status: nextStatus }))}'>${renderReconcileIcon(transaction.status === "reconciled")}<span>${transaction.status === "reconciled" ? "Desconciliar" : "Marcar como conciliado"}</span></button>
@@ -683,6 +683,29 @@ function renderTransactionDescription(
   }
   const note = readNonEmpty(transaction.note);
   return `<strong>${escapeHtml(transaction.description || "(sem descrição)")}${transaction.recurrenceId ? renderRecurrenceIndicator() : ""}</strong>${note ? `<span class="description-note">${escapeHtml(note)}</span>` : ""}${renderTransferNote(transaction, selectedAccount, accounts)}`;
+}
+
+/** In a cross-currency transfer, open the account that belongs to the visible currency. */
+function resolveConsolidatedNavigationAccountId(
+  transaction: TransactionRecord,
+  accounts: readonly AccountRecord[],
+  currency: string | undefined,
+): string {
+  const belongsToSelectedCurrency = (id: string | undefined): boolean =>
+    Boolean(
+      id &&
+        currency &&
+        accounts.some(
+          (account) =>
+            account.id === id &&
+            account.status === "active" &&
+            resolveAccountCurrency(account) === currency,
+        ),
+    );
+  if (belongsToSelectedCurrency(transaction.accountId)) return transaction.accountId ?? "";
+  if (belongsToSelectedCurrency(transaction.destinationAccountId))
+    return transaction.destinationAccountId ?? "";
+  return "";
 }
 
 function renderConsolidatedAccountLabel(
