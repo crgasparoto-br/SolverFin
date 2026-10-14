@@ -126,11 +126,18 @@ export async function validateStatementContextualSurfaces(
       let centerError;
       try {
         const rightAnchored = await measure(selector);
-        assert.equal(rightAnchored.inside, true, `${state}: negative control must remain inside viewport`);
-        assert.throws(() => assertContextualSurface(rightAnchored, state, true), (error) => {
-          centerError = error.message;
-          return error.code === "ERR_ASSERTION" && /horizontal center/.test(error.message);
-        });
+        assert.equal(
+          rightAnchored.inside,
+          true,
+          `${state}: negative control must remain inside viewport`,
+        );
+        assert.throws(
+          () => assertContextualSurface(rightAnchored, state, true),
+          (error) => {
+            centerError = error.message;
+            return error.code === "ERR_ASSERTION" && /horizontal center/.test(error.message);
+          },
+        );
       } finally {
         await read(`(() => {
           const node = document.querySelector(${JSON.stringify(selector)});
