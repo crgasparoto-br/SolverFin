@@ -670,7 +670,7 @@ export function statementGoldenRefinementStyles(): string {
     @media(min-width:361px) and (max-width:760px){
       ${root} .account-summary[data-mockup-composition] .summary-total{align-content:start;display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
       ${root} .summary-total-copy{display:grid;gap:2px;grid-template-columns:minmax(0,1fr);min-width:0;width:100%}
-      ${root} .summary-total-copy>strong{display:block;font-size:clamp(12px,3.2vw,14px);max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;width:100%;word-break:normal}
+      ${root} .summary-total-copy>strong{display:block;font-size:clamp(11px,2.9vw,13px);max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;width:100%;word-break:normal}
     }
 
     ${statementMockupControlsStyles()}
