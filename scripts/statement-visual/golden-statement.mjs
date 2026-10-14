@@ -92,7 +92,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     report.screenshots.push(file);
     report.checks.push({ id, status: "passed", viewport: { width, height }, measured });
   };
-  const negativeControl = async (id, css) => {
+  const negativeControl = async (id, css, expectedReason) => {
     await read(`(() => { const style = document.createElement('style');
       style.dataset.goldenNegative = ''; style.textContent = ${JSON.stringify(css)};
       document.head.append(style); })()`);
@@ -108,6 +108,9 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       await read(`document.querySelector('style[data-golden-negative]')?.remove()`);
     }
     assert.equal(rejected, true, `${id} failed to detect the injected regression.`);
+    if (expectedReason) {
+      assert.match(reason, expectedReason, `${id} must reject the intended failure mode.`);
+    }
     assertGoldenStatement(await read(goldenStatementMeasurements));
     report.checks.push({
       id,
@@ -220,7 +223,8 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       if (width === 390) {
         await negativeControl(
           "GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW",
-          "[data-golden-screen] .summary-total-copy>strong{display:block!important;font-size:24px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important}",
+          '[data-golden-screen] .summary-total[data-summary-total="income"] .summary-total-copy>strong{display:block!important;font-size:24px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important;transform:translateX(-85px)!important}',
+          /within their own summary cards/,
         );
       }
       await read(`document.querySelector('[data-quick-kind="expense"]').click()`);
