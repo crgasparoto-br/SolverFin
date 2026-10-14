@@ -125,13 +125,17 @@ export async function validateStatementContextualSurfaces(
       })()`);
     }
     assertContextualSurface(await measure(selector), state, selector.startsWith("dialog"));
-    if ((state === "new" || state === "edit" || state === "clone") && width >= 1100) {
+    if (state === "new" || state === "edit" || state === "clone") {
       const originalStyle = await read(`(() => {
         const node = document.querySelector(${JSON.stringify(selector)});
         const original = node.getAttribute("style");
         node.style.setProperty("inset", "auto", "important");
         node.style.setProperty("top", "50%", "important");
         node.style.setProperty("right", "16px", "important");
+        // Keep the mobile negative case inside the viewport while making its offset measurable.
+        if (innerWidth < 1100) {
+          node.style.setProperty("width", "65vw", "important");
+        }
         node.style.setProperty("margin", "0", "important");
         node.style.setProperty("transform", "translateY(-50%)", "important");
         return original;
@@ -314,6 +318,13 @@ export async function validateStatementContextualSurfaces(
 export function assertContextualSurface(measured, state, dialog) {
   assert.equal(measured.visible, true, `${state}: missing contextual surface`);
   assert.equal(measured.inside, true, `${state}: surface escapes viewport`);
+  // Detect off-center dialogs before narrower mobile mutations expose form overflow.
+  if (dialog && (state === "new" || state === "edit" || state === "clone")) {
+    assert.ok(
+      measured.horizontalCenterDelta <= 40,
+      `${state}: dialog is off horizontal center (${measured.horizontalCenterDelta}px)`,
+    );
+  }
   assert.equal(measured.horizontalOverflow, false, `${state}: surface overflows`);
   assert.equal(measured.documentOverflow, false, `${state}: document overflows`);
   assert.equal(measured.unnamedButtons, 0, `${state}: unnamed button`);
@@ -344,10 +355,6 @@ export function assertContextualSurface(measured, state, dialog) {
           "edit: full account name is not readable",
         );
       }
-      assert.ok(
-        measured.horizontalCenterDelta <= 40,
-        `${state}: dialog is off horizontal center (${measured.horizontalCenterDelta}px)`,
-      );
       assert.ok(
         measured.verticalCenterDelta <= 40,
         `${state}: dialog is off vertical center (${measured.verticalCenterDelta}px)`,
