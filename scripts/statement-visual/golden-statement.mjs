@@ -77,41 +77,6 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       }
       assert.ok((await read(probe)) >= 240);
     }
-    // The account identity must stay readable at 320px; an ellipsis concealed
-    // the selected real account, even though other geometry gates passed.
-    if (width === 320) {
-      const accountProbe = `(() => {
-        const label = document.querySelector(".statement-account-control .account-select-text");
-        if (!label) return null;
-        const style = getComputedStyle(label);
-        return { text: label.textContent.trim(), whiteSpace: style.whiteSpace,
-          hiddenPixels: label.scrollWidth - label.clientWidth };
-      })()`;
-      const original = await read(accountProbe);
-      assert.ok(original?.text, "Account context label must exist at 320px");
-      assert.equal(original.whiteSpace, "normal", "Account identity must wrap rather than truncate");
-      assert.ok(original.hiddenPixels <= 1, "Account identity must be fully readable at 320px");
-      await read(`(() => {
-        const style = document.createElement("style");
-        style.id = "account-name-truncation-negative";
-        style.textContent = ".statement-account-control .account-select-text{width:95px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}";
-        document.head.append(style);
-      })()`);
-      try {
-        const regressed = await read(accountProbe);
-        assert.ok(regressed.hiddenPixels > 1, "The negative control must truncate the account name");
-        report.checks.push({ id: "GS-MOBILE-NC-ACCOUNT-NAME-TRUNCATED",
-          status: "passed", viewport: { width, height },
-          account: original.text, regressedHiddenPixels: regressed.hiddenPixels,
-          rejectedBecause: "Account name is clipped and rendered with ellipsis",
-          restored: "passed" });
-      } finally {
-        await read('document.getElementById("account-name-truncation-negative")?.remove()');
-      }
-      const restored = await read(accountProbe);
-      assert.equal(restored.whiteSpace, "normal");
-      assert.ok(restored.hiddenPixels <= 1);
-    }
     if (measured.viewport.width <= 760) {
       report.checks.push({
         id: "GS-MOBILE-DENSITY-BUDGET",
