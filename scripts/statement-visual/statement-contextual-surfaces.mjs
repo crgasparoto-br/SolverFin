@@ -212,7 +212,9 @@ export async function validateStatementContextualSurfaces(
 
       await navigate(cdp, `${baseUrl}${route}`);
       const cloneSelector = `[data-clone="${transactionId}"]`;
-      await read(`document.querySelector(${JSON.stringify(cloneSelector)}).closest('details').open = true`);
+      await read(
+        `document.querySelector(${JSON.stringify(cloneSelector)}).closest('details').open = true`,
+      );
       await activate(cloneSelector);
       assert.equal(
         await read("document.querySelector('[data-modal-title]').textContent"),
@@ -320,7 +322,11 @@ export function assertContextualSurface(measured, state, dialog) {
       assert.equal(measured.panelScrollControlled, true, `${state}: form must own scrolling`);
       if (state === "edit") {
         assert.ok(measured.selectedAccountName, "edit: missing selected account");
-        assert.equal(measured.fullAccountName, measured.selectedAccountName, "edit: full account name is not readable");
+        assert.equal(
+          measured.fullAccountName,
+          measured.selectedAccountName,
+          "edit: full account name is not readable",
+        );
       }
       assert.ok(
         measured.horizontalCenterDelta <= 40,
