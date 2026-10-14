@@ -49,8 +49,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     // calendar glyph. Prove the navigation is wide enough and the old flex
     // composition is rejected, even though generic overflow checks stay green.
     if (width === 390) {
-      const monthNavigationWidth = () =>
-        read(`(() => {
+      const monthNavigationWidth = () => read(`(() => {
         const nav = document.querySelector('[data-golden-screen] .statement-period-control .month-nav');
         return nav?.getBoundingClientRect().width ?? 0;
       })()`);
