@@ -125,8 +125,12 @@ resultado"; erro preserva filtros e oferece retry; sucesso fica evidente antes d
 **Desktop/mobile:** desktop prioriza leitura compacta. Mobile usa lista responsiva ou overflow
 controlado quando colunas forem essenciais. Data, status, valor/moeda e acao nao desaparecem.
 
-**Detalhe:** inspecao ou edicao curta usa drawer quando manter a lista ajuda; dialog confirma acao
-curta; tarefa extensa ou com URL propria usa pagina.
+**Detalhe:** inspecao contextual curta pode usar drawer quando manter a lista ajuda;
+acao curta pode usar dialog; tarefa extensa ou com URL propria usa pagina. Para
+lancamentos em `/lancamentos`, **cadastro, clonagem e edicao usam dialog centralizado**,
+sem ancoragem a direita, tanto em desktop como mobile. Preservar contexto da lista,
+foco, Escape, limites da viewport e rolagem interna; o layout lateral ilustrado no
+mockup nao prevalece sobre esta decisao posterior.
 
 **Moeda:** contexto da conta e moeda de cada valor ficam inequivocos. Subtotal de moedas
 diferentes nao e combinado sem conversao explicita.
