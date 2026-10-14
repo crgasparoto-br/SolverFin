@@ -125,3 +125,29 @@ test("missing currency returns no invented total; accounts outside the currency 
   assert.equal(rows.rows.length, 0);
   assert.equal(rows.summary.effectiveBalanceMinor, 0);
 });
+
+test("consolidation never invents BRL for an account without currency", () => {
+  const unknownCurrencyAccount: AccountRecord = {
+    id: "unknown",
+    name: "Conta sem moeda",
+    kind: "checking",
+    status: "active",
+    openingBalanceMinor: 900000,
+  };
+  const result = buildConsolidatedStatement(
+    [...accounts, unknownCurrencyAccount],
+    [
+      tx("known-brl", "income", 300, "a", "2026-10-08"),
+      tx("unknown", "income", 8000, "unknown", "2026-10-08"),
+    ],
+    "BRL",
+    period,
+  );
+  assert.equal(result.accountCount, 2);
+  assert.equal(result.summary.openingMinor, 30000);
+  assert.equal(result.summary.effectiveBalanceMinor, 30300);
+  assert.deepEqual(
+    result.rows.map((row) => row.transaction.id),
+    ["known-brl"],
+  );
+});
