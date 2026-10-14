@@ -45,6 +45,38 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     const measured = await read(goldenStatementMeasurements);
     report.checks.push({ id, status: "observed", viewport: { width, height }, measured });
     assertGoldenStatement(measured);
+    // A narrow 390px period header previously hid the year. Reintroduce the
+    // old flex layout to prove the width assertion rejects that regression.
+    if (width === 390) {
+      const probe = `(() => {
+        const nav = document.querySelector(".statement-period-control .month-nav");
+        return nav?.getBoundingClientRect().width ?? 0;
+      })()`;
+      const before = await read(probe);
+      assert.ok(before >= 240);
+      await read(`(() => {
+        const style = document.createElement("style");
+        style.id = "month-width-negative";
+        style.textContent = ".statement-period-control{display:flex!important}";
+        document.head.append(style);
+      })()`);
+      try {
+        const narrowed = await read(probe);
+        assert.ok(narrowed < 240);
+        report.checks.push({
+          id: "GS-MOBILE-NC-MONTH-CLIPPED",
+          status: "passed",
+          viewport: { width, height },
+          navigationWidth: before,
+          regressedWidth: narrowed,
+          rejectedBecause: "Width is below 240px after forcing the old flex layout",
+          restored: "passed",
+        });
+      } finally {
+        await read('document.getElementById("month-width-negative")?.remove()');
+      }
+      assert.ok((await read(probe)) >= 240);
+    }
     if (measured.viewport.width <= 760) {
       report.checks.push({
         id: "GS-MOBILE-DENSITY-BUDGET",
