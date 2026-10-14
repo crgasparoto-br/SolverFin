@@ -27,6 +27,10 @@ test("entry styles consume shared target size and breakpoint", () => {
   const styles = statementMockupControlsStyles();
   assert.ok(styles.includes(`min-height:${solverFinDesignTokens.density.interactiveTargetMin}`));
   assert.ok(styles.includes(`@media(max-width:${solverFinDesignTokens.breakpoints.shellCompact})`));
+  assert.match(
+    styles,
+    /@media\(max-width:440px\)\{[\s\S]*?statement-entry-kinds\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\)\}/,
+  );
   assert.match(styles, /aria-checked="true"/);
   assert.match(styles, /statement-entry-kinds\[hidden\]/);
 });
