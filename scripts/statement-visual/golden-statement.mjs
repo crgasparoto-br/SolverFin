@@ -49,11 +49,11 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     // calendar glyph. Prove the navigation is wide enough and the old flex
     // composition is rejected, even though generic overflow checks stay green.
     if (width === 390) {
-      const monthNavigationWidth = () => read(`(() => {
+      const monthWidthExpression = `(() => {
         const nav = document.querySelector('[data-golden-screen] .statement-period-control .month-nav');
         return nav?.getBoundingClientRect().width ?? 0;
-      })()`);
-      const originalWidth = await monthNavigationWidth();
+      })()`;
+      const originalWidth = await read(monthWidthExpression);
       assert.ok(
         originalWidth >= 240,
         `Month label is clipped at 390px: ${originalWidth}px`,
@@ -66,7 +66,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       })()`);
       let regressedWidth;
       try {
-        regressedWidth = await monthNavigationWidth();
+        regressedWidth = await read(monthWidthExpression);
         assert.ok(
           regressedWidth < 240,
           `Negative control did not compress the month navigation: ${regressedWidth}px`,
@@ -77,7 +77,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
         );
       }
       assert.ok(
-        (await monthNavigationWidth()) >= 240,
+        (await read(monthWidthExpression)) >= 240,
         "Month navigation did not recover",
       );
       report.checks.push({
