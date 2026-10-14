@@ -54,7 +54,10 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
         return nav?.getBoundingClientRect().width ?? 0;
       })()`);
       const originalWidth = await monthNavigationWidth();
-      assert.ok(originalWidth >= 240, `Month label is clipped at 390px: ${originalWidth}px`);
+      assert.ok(
+        originalWidth >= 240,
+        `Month label is clipped at 390px: ${originalWidth}px`,
+      );
       await read(`(() => {
         const style = document.createElement('style');
         style.dataset.monthWidthNegative = '';
@@ -71,7 +74,10 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       } finally {
         await read("document.querySelector('style[data-month-width-negative]')?.remove()");
       }
-      assert.ok((await monthNavigationWidth()) >= 240, "Month navigation did not recover");
+      assert.ok(
+        (await monthNavigationWidth()) >= 240,
+        "Month navigation did not recover",
+      );
       report.checks.push({
         id: "GS-MOBILE-NC-MONTH-CLIPPED",
         status: "passed",
