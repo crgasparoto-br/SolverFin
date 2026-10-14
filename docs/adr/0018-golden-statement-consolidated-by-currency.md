@@ -1,20 +1,43 @@
-# Decisão: extrato consolidado por moeda na Golden Screen
+# ADR 0018 — Extrato consolidado por moeda na Golden Screen
 
-**Data:** 2026-10-14  
-**Escopo:** Issue #702, PR #713, rota autenticada /lancamentos  
-**Estado:** decisão de produto aprovada; implementação sujeita à CI e auditoria independente.
+**Data:** 2026-10-14
+**Escopo:** Issue #702, PR #713, rota `/lancamentos`
+**Estado:** decisão de produto aprovada; implementação sujeita à CI e auditoria independente
 
-## Contexto e decisão
+## Contexto
 
-Manter a mesma Golden Screen para duas perspectivas, em vez de criar outra página:
+O usuário precisa alternar entre a movimentação de uma conta e a de todas as contas do mesmo perfil financeiro, preservando a Golden Screen e identificando a origem de cada lançamento. Criar outra tela duplicaria a interface. Somar valores de moedas distintas contrariaria a política existente de agregação multi-moeda (ADR 0013).
 
-- **Conta individual:** permanece o padrão anterior. Saldo, lançamentos, criação, edição, agrupamento e transferência continuam no contexto da conta escolhida.
-- **Todas as contas:** primeira opção do seletor, ativada explicitamente por accountId=all. Exige uma moeda, com BRL como padrão quando existente; caso contrário usa a primeira moeda disponível. A seleção de moeda só agrega contas ativas dessa moeda e é preservada na navegação mensal.
+## Decisão
 
-A lista mostra conta de origem abaixo da descrição; para transferências, origem → destino. Para editar, o usuário abre **Ver** e navega até a conta individual. No consolidado, ações rápidas de mutação e edição direta estão desabilitadas para não haver destino ambíguo.
+A mesma tela terá dois modos de leitura:
 
-## Semântica financeira
+- **Conta individual:** comportamento legado, incluindo saldos, filtros, lançamentos, criação e edição.
+- **Todas as contas:** opção explícita `accountId=all`, agrupando apenas contas ativas de uma moeda selecionada. A moeda é obrigatória no controle; BRL é a escolha inicial quando disponível, caso contrário é selecionada a primeira moeda cadastrada. O mês e a moeda são preservados durante a navegação de períodos.
 
-1. O saldo inicial consolidado soma o saldo de abertura das contas ativas da moeda e movimentos efetivos anteriores ao início do recorte.
-2. O saldo efetivo consolidado inclui somente movimentos efetivos da moeda; lançamentos previstos não alteram esse saldo.
-3. Cada transação é projetada **uma vez**. Transferências internas entre duas contas incluídas tê���q�^
+Cada linha da lista identifica a conta abaixo da descrição; transferências mostram origem → destino. No modo consolidado, ações de mutação são desabilitadas, e **Ver** abre o lançamento no extrato de uma conta individual, onde a edição mantém uma conta de referência inequívoca.
+
+## Regras financeiras
+
+1. Saldo inicial consolidado = soma dos saldos de abertura das contas ativas selecionadas + movimentos efetivos anteriores ao período.
+2. Saldo efetivo consolidado = saldo inicial + efeito líquido dos movimentos efetivos no período. Lançamentos previstos não alteram esse saldo.
+3. Uma transferência entre contas BRL selecionadas é projetada uma única vez, com efeito líquido zero. Transferências não se tornam receita ou despesa.
+4. Na transferência entre moedas, apenas a perna correspondente à moeda selecionada altera o saldo; a entrada utiliza `destinationAmountMinor` quando aplicável.
+5. Jamais converter moedas automaticamente ou apresentar saldo sintético misturando BRL e USD. Uma moeda inexistente não origina total fictício.
+6. Grupos de lançamentos são mostrados pelos seus movimentos componentes na visão consolidada, sem duplicar projeções agregadas.
+
+## Limites técnicos e autorização
+
+Nenhuma migração de banco é necessária: `accountId`, `destinationAccountId` e `currency` já estão modelados. A leitura usa `GET /api/transactions` sem filtro `accountId`, com escopo de organização e perfil financeiro já aplicado pela API. Registros vinculados a cartão ou fatura não entram no extrato bancário.
+
+A implementação inicial reaproveita a consulta do perfil. Para históricos muito grandes, a busca deve evoluir para filtragem/paginação no banco, sem alterar a semântica dos saldos.
+
+## Critérios de validação
+
+Testar BRL versus USD, conta identificada, primeiro mês sem movimento, saldo inicial, previsto, transferências internas e intermoedas, seleção de moeda, retorno à conta individual, ausência de edição consolidada, responsividade e isolamento por tenant/profile. Resultado de CI não equivale a auditoria visual independente.
+
+## Alternativas rejeitadas
+
+- Outra tela: aumenta navegação, manutenção e divergência do design system.
+- Consolidar sem moeda: agrega unidades monetárias incompatíveis.
+- Permitir edição sem conta selecionada: cria ambiguidade sobre origem/destino da operação.

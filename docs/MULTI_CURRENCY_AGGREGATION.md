@@ -15,4 +15,54 @@ Este documento registra o recorte executado pela issue #595 para aplicar a ADR 0
 ## Inventario
 
 | Area                          | Contrato observado                                                                   | Estado apos #595                                                                                                                                                                                                            |
-| ----------------------------- | ------------------------------------------------------------------------------------ | --------------------------------���q�^
+| ----------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Resumo financeiro / Dashboard | `GET /api/financial-summary`                                                         | Migrado para `currencyBlocks`; itens recentes carregam `currency`; escalares legados so existem em resposta mono-moeda.                                                                                                     |
+| Relatorios                    | `GET /api/reports/category-evolution`                                                | Ja estava aderente: `currencyBlocks` ordenados e totais por moeda.                                                                                                                                                          |
+| Orcamentos                    | `summarizeBudgetUsageForContext`, `summarizeBudgetUsage`, `summarizeBudgetDashboard` | Uso filtra a moeda do orcamento; dashboard de dominio separa a mesma categoria por moeda; itens sem orcamento preservam moeda nativa.                                                                                       |
+| Insights                      | `generateFinancialInsights` e scanner da API                                         | Scanner continua executando uma moeda por vez. O calculo generico nao possui fallback BRL: usa moeda explicita, infere somente quando os dados escopados possuem uma unica moeda ou falha quando a moeda e ambigua/ausente. |
+| Assistente financeiro         | `financial-assistant-data`                                                           | Ja estava aderente: lista moedas nativas, exige clarificacao quando ha mais de uma e filtra todas as consultas agregadas pela moeda resolvida.                                                                              |
+| Lancamentos                   | `/api/transactions` e `Transaction`                                                  | Nao expoe total agregado transversal; cada lancamento possui `currency`. Consumidores nao devem somar moedas no cliente.                                                                                                    |
+
+## Resumo financeiro
+
+A forma canonica e:
+
+```json
+{
+  "currencyBlocks": [
+    {
+      "currency": "BRL",
+      "availableBalanceMinor": 10000,
+      "incomeMinor": 3000,
+      "expensesMinor": 1000,
+      "plannedCommitmentsMinor": 500
+    },
+    {
+      "currency": "USD",
+      "availableBalanceMinor": 20000,
+      "incomeMinor": 4000,
+      "expensesMinor": 2000,
+      "plannedCommitmentsMinor": 700
+    }
+  ]
+}
+```
+
+O Dashboard apresenta uma secao por bloco e passa `currency` explicitamente ao formatter. Ele nao recalcula nem consolida valores.
+
+## Controles negativos obrigatorios
+
+A cobertura automatizada da issue #595 prova que:
+
+- BRL e USD no mesmo perfil produzem valores numericos independentes no resumo;
+- o total de um orcamento BRL ignora despesa USD da mesma categoria e periodo;
+- categorias sem orcamento em BRL e USD viram itens independentes;
+- insights com dados de uma unica moeda podem obter essa moeda dos dados sem assumir BRL;
+- insights com dados mistos exigem moeda explicita;
+- o Dashboard preserva secoes de moeda distintas e identifica a moeda dos itens recentes.
+
+Consulte tambem [`API_FINANCIAL_SUMMARY.md`](./API_FINANCIAL_SUMMARY.md), [`API_REPORTS.md`](./API_REPORTS.md), [`API_BUDGETS_GOALS_ALERTS.md`](./API_BUDGETS_GOALS_ALERTS.md), [`FINANCIAL_INSIGHTS.md`](./FINANCIAL_INSIGHTS.md), [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md) e [`adr/0013-multi-currency-financial-aggregation.md`](./adr/0013-multi-currency-financial-aggregation.md).
+
+## Extrato consolidado da Golden Screen (2026-10-14)
+
+A seleção explícita `accountId=all` permite consolidar contas **de uma única moeda** no extrato, mantendo moedas distintas segregadas. Não há conversão implícita nem soma de BRL com USD. Transferências entre contas da moeda escolhida são compensadas no saldo líquido; transferências cambiais usam somente o montante da perna daquela moeda. O modo individual permanece igual. Consulte [ADR 0018](./adr/0018-golden-statement-consolidated-by-currency.md).
