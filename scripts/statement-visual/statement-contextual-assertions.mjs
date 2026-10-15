@@ -19,6 +19,13 @@ export function assertContextualSurface(measured, state, dialog) {
       assert.equal(measured.documentScrollLocked, true, `${state}: background remains scrollable`);
       assert.equal(measured.dialogOverflowHidden, true, `${state}: dialog has a second scrollbar`);
       assert.equal(measured.panelScrollControlled, true, `${state}: form must own scrolling`);
+      for (const action of ["cancel", "save"]) {
+        const height = measured.footerActionHeights?.[action];
+        assert.ok(
+          Number.isFinite(height) && height >= 44,
+          `${state}: ${action} footer touch target must be at least 44px high (got ${height ?? "missing"}px)`,
+        );
+      }
       assert.ok(
         measured.footerActionRowDelta !== null && measured.footerActionRowDelta <= 2,
         `${state}: Cancel and Save must share a row`,
@@ -28,13 +35,6 @@ export function assertContextualSurface(measured, state, dialog) {
         true,
         `${state}: footer actions must fit fully inside the dialog content area`,
       );
-      for (const action of ["cancel", "save"]) {
-        const height = measured.footerActionHeights?.[action];
-        assert.ok(
-          Number.isFinite(height) && height >= 44,
-          `${state}: ${action} footer touch target must be at least 44px high (got ${height ?? "missing"}px)`,
-        );
-      }
       assert.equal(
         measured.tooltipStatusCount,
         3,
