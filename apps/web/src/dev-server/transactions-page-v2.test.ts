@@ -555,7 +555,7 @@ test("A2 account and consolidated cards both include FX legs while same-currency
     return baseFetch(input);
   };
   const card = (html: string, name: string) => {
-    const start = html.indexOf(`data-summary-total="${name}"`);
+    const start = html.indexOf(`<div class="summary-total" data-summary-total="${name}">`);
     assert.ok(start >= 0, `Missing ${name} card`);
     return html.slice(start, html.indexOf("</div>", start));
   };
