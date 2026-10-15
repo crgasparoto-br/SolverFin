@@ -539,6 +539,11 @@ export function statementGoldenRefinementStyles(): string {
       ${dialog} .statement-save-actions>[data-transaction-cancel]{flex:0 0 auto}
       ${dialog} .statement-save-actions>button[type=submit]{flex:1 1 0}
     }
+    @media(max-width:360px){
+      /* Prioritize complete action labels over ornamental icons in the 320px dialog. */
+      ${dialog} .statement-save-actions [data-popup-action-icon]{display:none!important}
+      ${dialog} .statement-save-actions>button{padding-inline:4px}
+    }
     @media(max-width:1100px){
       body:has(${root}) .app-shell{grid-template-columns:1fr}
       body:has(${root}) .sidebar{background:var(--primary);border-right:0;color:#fff}
