@@ -13,6 +13,7 @@ import {
 import { apiGet } from "./api.js";
 import { attachmentWorkspaceScript, renderAttachmentWorkspace } from "./attachment-workspace.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
+import { icon } from "./icons.js";
 import {
   recurrencesSectionScript,
   recurrencesSectionStyles,
@@ -911,9 +912,9 @@ function renderPurchaseRow(
   return `<article class="cards-purchase-row" role="row" data-purchase-item data-reconciliation="${purchase.status === "reconciled" ? "reconciled" : "unreconciled"}">
     <time role="cell" data-label="Data" datetime="${escapeHtml(purchase.occurredOn)}">${formatDate(purchase.occurredOn)}</time>
     <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${recurrence ? renderRecurrenceIndicator() : ""}</strong>${installmentLabel ? `<span class="cards-installment-label">${escapeHtml(installmentLabel)}</span>` : ""}<span>${escapeHtml(category)}</span>${purchase.purchaseTotalAmountMinor !== undefined ? `<small>Total da compra: ${money(purchase.purchaseTotalAmountMinor, normalizeCurrency(purchase.currency))}</small>` : ""}</div>
-    <span role="cell" data-label="Situação">${renderBadge({ label: formatPurchaseStatus(purchase.status), tone: purchase.status === "reconciled" ? "positive" : "information" })}</span>
+    <span role="cell" data-label="Situação" class="cards-purchase-status-cell">${renderPurchaseStatusIcon(purchase.status)}</span>
     <strong role="cell" data-label="Valor" class="cards-purchase-amount">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
-    <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}">•••</summary><div class="cards-purchase-menu actions-menu" role="menu">
+    <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}" title="Ações da compra">${icon("more-horizontal", 18)}</summary><div class="cards-purchase-menu actions-menu" role="menu">
       <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked ? " disabled" : ""}>Editar compra</button>
       ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
       ${!locked && otherPeriods.length > 0 ? `<span class="cards-move-hint">Mover para outra fatura disponível no menu</span>` : ""}
@@ -1211,6 +1212,18 @@ function formatInvoiceStatus(status: string): string {
   if (status === "cancelled") return "Cancelada";
   return status;
 }
+function renderPurchaseStatusIcon(status: string): string {
+  const label = escapeHtml(formatPurchaseStatus(status));
+  const kind = status === "reconciled" ? "reconciled" : status === "planned" ? "planned" : "posted";
+  const pictogram =
+    kind === "reconciled"
+      ? icon("check", 15)
+      : kind === "planned"
+        ? icon("clock", 15)
+        : '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>';
+  return `<span class="cards-purchase-status cards-purchase-status-${kind}" role="img" tabindex="0" aria-label="${label}" title="${label}" data-tooltip="${label}">${pictogram}</span>`;
+}
+
 function formatPurchaseStatus(status: string): string {
   if (status === "reconciled") return "Conciliada";
   if (status === "posted") return "Não conciliada";
@@ -1592,6 +1605,16 @@ function css(): string {
     .cards-instrument-nav>summary span{margin-left:6px}
     .cards-master-heading{gap:8px}
     @media(max-width:760px){.cards-invoice-period-link>span:not([aria-hidden]){display:none}.cards-invoice-period-link{justify-content:center}.cards-month-jump{left:auto;right:0;width:min(250px,calc(100vw - 44px))}}
+    /* #715: Golden Screen row status is icon-only, with hover/focus labels. */
+    .cards-purchase-status-cell{align-items:center;display:flex;justify-content:center;min-width:0}
+    .cards-purchase-status{align-items:center;background:var(--surface-soft);border-radius:999px;color:var(--muted);display:inline-flex;height:30px;justify-content:center;outline-offset:3px;width:30px}
+    .cards-purchase-status svg,.cards-purchase-actions summary svg{display:block;flex:0 0 auto}
+    .cards-purchase-status-reconciled{background:var(--success-bg);color:var(--success)}
+    .cards-purchase-status-posted{background:var(--primary-soft);color:var(--primary)}
+    .cards-purchase-status-planned{background:var(--surface-soft);color:var(--muted)}
+    .cards-purchase-status:focus-visible{outline:2px solid var(--primary)}
+    .cards-purchase-actions summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    @media(max-width:760px){.cards-purchase-row>.cards-purchase-status-cell[data-label="Situação"]::before{content:none}.cards-purchase-status-cell{grid-column:1;justify-content:flex-start}}
   `;
 }
 
