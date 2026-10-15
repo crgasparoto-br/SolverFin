@@ -33,9 +33,7 @@ export function buildConsolidatedStatement(
     const destinationCurrency =
       currencyByAccount.get(transaction.destinationAccountId ?? "") ??
       transaction.destinationCurrency?.toUpperCase();
-    return Boolean(
-      sourceCurrency && destinationCurrency && sourceCurrency !== destinationCurrency,
-    );
+    return Boolean(sourceCurrency && destinationCurrency && sourceCurrency !== destinationCurrency);
   };
   const movement = (transaction: TransactionRecord): number | undefined => {
     const source = Boolean(transaction.accountId && ids.has(transaction.accountId));
