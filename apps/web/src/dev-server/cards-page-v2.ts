@@ -684,7 +684,7 @@ function renderInvoiceNavigation(
       ${
         previousPeriod
           ? `<a class="cards-invoice-period-link cards-invoice-period-link-previous" href="${escapeHtml(navigationHref(previousPeriod))}" rel="prev" aria-label="Fatura anterior: ${escapeHtml(formatMonth(previousPeriod[0]))}"><span aria-hidden="true">‹</span><span><strong>Anterior</strong><small>${escapeHtml(formatMonth(previousPeriod[0]))}</small></span></a>`
-          : `<span class="cards-invoice-period-link cards-invoice-period-link-previous is-disabled" aria-disabled="true"><span aria-hidden="true">‹</span><span><strong>Anterior</strong></span></span>`
+          : `<span class="cards-invoice-period-link cards-invoice-period-link-previous is-disabled" aria-disabled="true" aria-label="Sem fatura anterior"><span aria-hidden="true">‹</span><span><strong>Anterior</strong></span></span>`
       }
       <div class="cards-invoice-current" aria-current="page">
         <span class="cards-kicker">Fatura</span>
@@ -694,7 +694,7 @@ function renderInvoiceNavigation(
       ${
         nextPeriod
           ? `<a class="cards-invoice-period-link cards-invoice-period-link-next" href="${escapeHtml(navigationHref(nextPeriod))}" rel="next" aria-label="Próxima fatura: ${escapeHtml(formatMonth(nextPeriod[0]))}"><span><strong>Próxima</strong><small>${escapeHtml(formatMonth(nextPeriod[0]))}</small></span><span aria-hidden="true">›</span></a>`
-          : `<span class="cards-invoice-period-link cards-invoice-period-link-next is-disabled" aria-disabled="true"><span><strong>Próxima</strong></span><span aria-hidden="true">›</span></span>`
+          : `<span class="cards-invoice-period-link cards-invoice-period-link-next is-disabled" aria-disabled="true" aria-label="Sem próxima fatura"><span><strong>Próxima</strong></span><span aria-hidden="true">›</span></span>`
       }
     </div>
     <details class="cards-month-picker">
