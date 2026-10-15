@@ -314,7 +314,7 @@ async function validateLongDescription(cdp, captureName) {
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
         whiteSpace: style.whiteSpace,
         ellipsis: style.textOverflow === 'ellipsis',
-        lineWrap: descriptionRect.height > parseFloat(style.lineHeight) * 1.4,
+        lineWrap: descriptionRect.height > (parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.35) * 1.4,
         rowInViewport: rowRect.left >= -1 && rowRect.right <= window.innerWidth + 1,
         amountVisible: amountRect.width > 0 && amountRect.right <= window.innerWidth + 1,
         currencyVisible: Boolean(amount.querySelector('.sf-money[data-currency]')),
