@@ -126,6 +126,23 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       const primaryAmount = document.querySelector('.cards-invoice-primary > strong');
       const status = document.querySelector('.cards-invoice-title-row .sf-badge');
       const search = document.querySelector('[data-purchase-search]');
+      const invoiceNavigation = document.querySelector('.cards-invoice-period-row');
+      const previousPeriod = invoiceNavigation?.querySelector('.cards-invoice-period-link-previous');
+      const currentPeriod = invoiceNavigation?.querySelector('.cards-invoice-current');
+      const nextPeriod = invoiceNavigation?.querySelector('.cards-invoice-period-link-next');
+      const periodTitleContained = [previousPeriod, nextPeriod].every((link) => {
+        const title = link?.querySelector('strong');
+        if (!title || !visible(title)) return true;
+        const titleRect = rect(title);
+        const linkRect = rect(link);
+        return titleRect.left >= linkRect.left - 1 && titleRect.right <= linkRect.right + 1;
+      });
+      const periodsDoNotOverlap = Boolean(
+        previousPeriod && currentPeriod && nextPeriod &&
+        rect(previousPeriod).right <= rect(currentPeriod).left + 1 &&
+        rect(currentPeriod).right <= rect(nextPeriod).left + 1 &&
+        periodTitleContained
+      );
       const tableHead = document.querySelector('.cards-purchase-table-head');
       const firstDate = document.querySelector('[data-purchase-item] [data-label="Data"]');
       const firstStatus = document.querySelector('[data-purchase-item] [data-label="Situação"]');
@@ -143,6 +160,8 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
         statusVisible: visible(status),
         searchVisible: visible(search),
         searchHeight: rect(search).height,
+        periodsDoNotOverlap,
+        periodNavigationRects: [previousPeriod, currentPeriod, nextPeriod].map(rect),
         heroAction: rect(document.querySelector('[data-open-modal="purchase"]')),
         purchaseActionSecondary: Boolean(document.querySelector('[data-open-modal="purchase"].sf-button-secondary')),
         closeActionSecondary: !document.querySelector('[data-api-path$="/close"]') || Boolean(document.querySelector('[data-api-path$="/close"].sf-button-secondary')),
@@ -177,6 +196,7 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
     measurements,
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
+  check(measurements.periodsDoNotOverlap, "Invoice period navigation overlaps at this viewport", measurements);
   check(measurements.primaryAmountVisible, "Invoice amount due is not visible", measurements);
   check(
     measurements.purchaseActionSecondary,
