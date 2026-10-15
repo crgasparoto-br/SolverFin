@@ -330,7 +330,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.doesNotMatch(html, /\.cards-purchase-description strong\{[^}]*text-overflow:ellipsis/);
   assert.match(html, /@media\(max-width:350px\)/);
-  assert.match(html, /\.cards-dialog-panel\{max-height:min\(90dvh/);
+  assert.match(html, /\.cards-dialog\{max-height:min\(90dvh/);
+  assert.doesNotMatch(html, /\.cards-dialog\{overflow:hidden/);
+  assert.doesNotMatch(html, /\.cards-dialog-panel\{[^}]*overflow-y:auto/);
   assert.match(html, /Total da compra:[\s\S]*?data-currency="USD"/);
   assert.match(html, /Físico - Titular principal · final 4242/);
   assert.match(html, /Virtual - Titular principal · final 9001/);
