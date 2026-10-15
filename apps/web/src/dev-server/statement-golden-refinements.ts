@@ -244,7 +244,8 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .summary-balance-toggle{align-items:center;background:transparent;border:0;color:var(--muted);cursor:pointer;display:inline-flex;flex:0 0 auto;justify-content:center;min-height:24px;min-width:24px;padding:0}
     ${root} .summary-balance-toggle:hover{color:var(--text)}
     ${root} .summary-balance-toggle[aria-pressed="true"]{color:var(--primary)}
-        ${root} .statement-account-heading .summary-balance{border-left:1px solid var(--line);padding-left:${spacing[4]}}
+        ${root} .statement-account-heading .summary-balance{border-left:1px solid var(--line);padding-left:${spacing[4]};text-align:right}
+    ${root} .statement-account-heading .summary-balance-line{justify-content:flex-end}
     ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes["2xl"]};overflow-wrap:anywhere}
     ${root} .account-summary[data-mockup-composition] .summary-total{padding:0;gap:${spacing[1]}}
     ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.xl};overflow-wrap:anywhere}
