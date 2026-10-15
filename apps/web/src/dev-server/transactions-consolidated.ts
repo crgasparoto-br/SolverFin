@@ -22,6 +22,21 @@ export function buildConsolidatedStatement(
     (account) => account.status === "active" && account.currency?.toUpperCase() === currency,
   );
   const ids = new Set(selected.map((account) => account.id));
+  // Account currency is authoritative; transaction currencies cover transfers
+  // whose counterparty account is not part of the returned account catalog.
+  const currencyByAccount = new Map(
+    accounts.map((account) => [account.id, account.currency?.trim().toUpperCase()]),
+  );
+  const isCurrencyExchange = (transaction: TransactionRecord): boolean => {
+    const sourceCurrency =
+      currencyByAccount.get(transaction.accountId ?? "") ?? transaction.currency?.toUpperCase();
+    const destinationCurrency =
+      currencyByAccount.get(transaction.destinationAccountId ?? "") ??
+      transaction.destinationCurrency?.toUpperCase();
+    return Boolean(
+      sourceCurrency && destinationCurrency && sourceCurrency !== destinationCurrency,
+    );
+  };
   const movement = (transaction: TransactionRecord): number | undefined => {
     const source = Boolean(transaction.accountId && ids.has(transaction.accountId));
     const destination = Boolean(
@@ -89,10 +104,11 @@ export function buildConsolidatedStatement(
       continue;
     if (filters.evidence === "planned" && transaction.status !== "planned") continue;
 
-    // All-accounts cards show operational income/expense only. Every transfer
-    // is excluded from these two cards, including cross-currency legs; its
-    // actual movement still affects the currency-specific running balances.
-    if (transaction.kind !== "transfer") {
+    // In All accounts, same-currency transfers do not inflate inflows/outflows.
+    // A cross-currency transfer represents an actual inflow/outflow in the
+    // selected currency, using the projected destination amount when received.
+    // Financial balances always retain the net movement of both kinds.
+    if (transaction.kind !== "transfer" || isCurrencyExchange(transaction)) {
       if (amount > 0) summary.incomeMinor += amount;
       if (amount < 0) summary.expenseMinor -= amount;
     }
