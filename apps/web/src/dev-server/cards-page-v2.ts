@@ -251,7 +251,7 @@ export async function renderCardsPageV2(
     className: "cards-a3-page",
     childrenHtml: `${renderPageHeader({
       title: "Faturas e compras",
-      actionsHtml: renderPageActions(selectedCard, activeInstruments),
+      actionsHtml: selectedInvoice ? "" : renderPageActions(selectedCard, activeInstruments),
     })}${renderDetailLayout({
       masterHtml: renderCardMaster(
         cards,
@@ -274,6 +274,7 @@ export async function renderCardsPageV2(
         presentation,
         currency: invoiceCurrency,
         paymentAccounts: matchingPaymentAccounts,
+        purchaseActionHtml: selectedInvoice ? renderPageActions(selectedCard, activeInstruments) : "",
         url,
       }),
     })}`,
@@ -568,6 +569,7 @@ function renderInvoiceDetail(input: {
   presentation: CardPresentation;
   currency: string | undefined;
   paymentAccounts: readonly AccountRecord[];
+  purchaseActionHtml: string;
   url: URL;
 }): string {
   if (!input.card) {
@@ -605,6 +607,7 @@ function renderInvoiceDetail(input: {
       input.purchases,
       input.visiblePurchases,
       input.url,
+      input.purchaseActionHtml,
     )}
     ${renderPurchaseGroups(
       input.groups,
@@ -781,6 +784,7 @@ function renderPurchaseFilters(
   allPurchases: readonly CardPurchaseRecord[],
   visiblePurchases: readonly CardPurchaseRecord[],
   url: URL,
+  purchaseActionHtml: string,
 ): string {
   const reconciledCount = allPurchases.filter(
     (purchase) => purchase.status === "reconciled",
@@ -822,6 +826,7 @@ function renderPurchaseFilters(
       ${filterLink(withQuery(base, { reconciliation: "unreconciled" }), "Não conciliadas", unreconciledCount, presentation.reconciliation === "unreconciled", "unreconciled")}
       ${filterLink(withQuery(base, { reconciliation: "reconciled" }), "Conciliadas", reconciledCount, presentation.reconciliation === "reconciled", "reconciled")}
       <span class="cards-results-status" data-purchase-results-status role="status" aria-live="polite">${formatPurchaseCount(visiblePurchases.length)}</span>
+      ${purchaseActionHtml}
     </div>`;
   return renderFilterBar({ label: "Filtros das compras da fatura", childrenHtml: controls });
 }
@@ -1570,7 +1575,7 @@ function css(): string {
     .cards-master-details>summary,.cards-instrument-nav>summary{border-radius:var(--radius);color:var(--primary);cursor:pointer;font-size:.76rem;font-weight:750;list-style:none;padding:7px 5px;white-space:nowrap}.cards-master-details>summary::-webkit-details-marker{display:none}.cards-master-details[open]>.cards-master-meta,.cards-instrument-nav[open]>ul{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.13);display:grid;gap:8px;max-height:50vh;min-width:225px;overflow:auto;padding:12px;position:absolute;right:0;top:calc(100% + 6px);z-index:25}.cards-master-details:not([open])>.cards-master-meta{display:none}
     .cards-invoice-navigation{align-items:center;display:flex;gap:12px;justify-content:space-between;padding:5px 12px}.cards-invoice-period-row{flex:1 1 auto;gap:6px;grid-template-columns:minmax(0,1fr) minmax(145px,auto) minmax(0,1fr);max-width:650px}.cards-invoice-period-link{min-height:40px;padding:3px 6px}.cards-invoice-current .cards-kicker,.cards-invoice-period-status{display:none}.cards-month-picker{flex:0 0 auto;justify-self:auto}
     .cards-invoice-header{gap:6px;padding:10px 14px}.cards-invoice-title-block h2{font-size:1.12rem}.cards-invoice-primary>strong{font-size:1.6rem}.cards-invoice-actions{margin-top:2px}.cards-settlement-note{font-size:.74rem;grid-column:1/-1}.cards-settlement-note summary{color:var(--primary);cursor:pointer;font-size:.72rem;font-weight:700;list-style:none}.cards-settlement-note summary::-webkit-details-marker{display:none}.cards-settlement-note p{margin:5px 0 0}.cards-invoice-summary{gap:3px;padding:7px 14px}.cards-invoice-summary .sf-summary-grid{gap:2px}.cards-summary-metric{gap:3px;padding:3px 10px}
-    .cards-limit-detail{display:block;position:relative}.cards-limit-detail>summary{color:var(--primary);cursor:pointer;font-size:.72rem;font-weight:700;list-style:none}.cards-limit-detail>summary::-webkit-details-marker{display:none}.cards-limit-detail>dl{display:flex;flex-wrap:wrap;gap:14px;margin-top:5px}.cards-detail-panel .sf-filter-bar{gap:6px;padding:8px 14px}.cards-purchase-groups{gap:6px;padding:8px 14px 14px}.cards-instrument-group{border-left:0;border-radius:0;border-right:0}.cards-instrument-group>summary{background:transparent;border-bottom:1px solid var(--line)}@media(max-width:1050px) and (min-width:761px){.cards-master-panel{grid-template-columns:auto minmax(165px,1fr) minmax(170px,1fr) auto auto;gap:8px}.cards-master-details>summary,.cards-instrument-nav>summary{font-size:.7rem}}
+    .cards-limit-detail{display:block;position:relative}.cards-limit-detail>summary{color:var(--primary);cursor:pointer;font-size:.72rem;font-weight:700;list-style:none}.cards-limit-detail>summary::-webkit-details-marker{display:none}.cards-limit-detail>dl{display:flex;flex-wrap:wrap;gap:14px;margin-top:5px}.cards-detail-panel .sf-filter-bar{gap:6px;padding:8px 14px}.cards-purchase-groups{gap:6px;padding:8px 14px 14px}.cards-reconciliation-filters [data-open-modal="purchase"]{margin-left:auto}.cards-instrument-group{border-left:0;border-radius:0;border-right:0}.cards-instrument-group>summary{background:transparent;border-bottom:1px solid var(--line)}@media(max-width:1050px) and (min-width:761px){.cards-master-panel{grid-template-columns:auto minmax(165px,1fr) minmax(170px,1fr) auto auto;gap:8px}.cards-master-details>summary,.cards-instrument-nav>summary{font-size:.7rem}}
     @media(max-width:760px){.cards-a3-page{gap:6px;padding:8px 10px}.cards-a3-page .sf-detail-layout{gap:6px;grid-template-columns:1fr}.cards-master-panel{gap:5px 8px;grid-template-columns:minmax(0,1fr) auto;padding:8px 10px}.cards-master-heading{grid-column:2;grid-row:1}.cards-master-heading>div{display:none}
     .cards-card-picker{grid-column:1;grid-row:1;min-width:0}.cards-card-picker select{min-width:0}.cards-card-identity{grid-column:1/-1;grid-row:2;min-width:0}.cards-card-identity>div strong{font-size:.78rem}.cards-card-identity>div span{font-size:.7rem}.cards-master-details{grid-column:1;grid-row:3}.cards-instrument-nav{display:block;grid-column:2;grid-row:3}.cards-master-details>summary,.cards-instrument-nav>summary{padding:3px 0}
     .cards-master-details[open]>.cards-master-meta{left:0;right:auto}.cards-invoice-navigation{display:grid;gap:0;grid-template-columns:minmax(0,1fr) auto;padding:4px 8px}.cards-invoice-period-row{gap:3px;grid-template-columns:minmax(0,.7fr) minmax(115px,1.4fr) minmax(0,.7fr)}.cards-month-picker>summary{font-size:.68rem;padding:4px}
