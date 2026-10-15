@@ -216,7 +216,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             description: "Café",
             amountMinor: 1550,
             currency: "USD",
-            status: "posted",
+            status: "planned",
           },
         ],
       });
@@ -367,6 +367,23 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Total da compra:[\s\S]*?data-currency="USD"/);
   assert.match(html, /Físico - Titular principal · final 4242/);
   assert.match(html, /Virtual - Titular principal · final 9001/);
+  // Golden Screen: status cells are pictograms, not repeated text badges.
+  assert.match(
+    html,
+    /class="cards-purchase-status cards-purchase-status-reconciled" role="img" tabindex="0" aria-label="Conciliada" title="Conciliada" data-tooltip="Conciliada"><svg/,
+  );
+  assert.match(
+    html,
+    /class="cards-purchase-status cards-purchase-status-posted" role="img" tabindex="0" aria-label="Não conciliada" title="Não conciliada" data-tooltip="Não conciliada"><svg/,
+  );
+  assert.match(
+    html,
+    /class="cards-purchase-status cards-purchase-status-planned" role="img" tabindex="0" aria-label="Planejada" title="Planejada" data-tooltip="Planejada"><svg/,
+  );
+  assert.doesNotMatch(html, /data-label="Situação">\\s*<span class="sf-badge/);
+  assert.match(html, /class="cards-purchase-status-cell"/);
+  assert.match(html, /title="Ações da compra"><svg[^>]*aria-hidden="true"/);
+  assert.doesNotMatch(html, /Ações da compra[^>]*>•••<\\/summary>/);
   assert.match(html, /Hotel/);
   assert.match(html, /Táxi aeroporto/);
   assert.match(html, /Parcela 2 de 3/);
