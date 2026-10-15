@@ -266,6 +266,22 @@ const keyScenarios = [
       }),
     ],
   },
+  // #715: exercise the actual acceptance scenario, not only the legacy
+  // behavioral claim adapters used by cards-interface's split execution.
+  {
+    id: "cards-golden-715",
+    module: "scripts/statement-visual/cards-interface.mjs",
+    coverage: [
+      coverage({
+        route: "/cartoes",
+        archetype: "A3",
+        state: "golden-acceptance",
+        layout: "desktop-1366-mobile-390-320",
+        interaction: "invoice-hierarchy-empty-long-description-modal-close",
+        dataProfile: "invoice-purchases-715",
+      }),
+    ],
+  },
   {
     id: "cards-interface",
     module: "scripts/statement-visual/cards-interface.mjs",
