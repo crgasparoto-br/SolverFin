@@ -879,7 +879,7 @@ function renderInstrumentGroup(
   return `<details class="cards-instrument-group" data-instrument-purchase-group${group.id === "__unassigned__" ? "" : ` data-instrument-id="${escapeHtml(group.id)}"`} open>
     <summary><div><strong data-instrument-label>${escapeHtml(group.label)}</strong><span>${formatPurchaseCount(group.purchases.length)}</span></div><div class="cards-instrument-totals">${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</div></summary>
     <div class="cards-purchase-table" role="table" aria-label="Compras de ${escapeHtml(group.label)}">
-      <div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>
+      <div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>
       ${group.purchases
         .map((purchase) =>
           renderPurchaseRow(purchase, categories, recurrences, invoices, selectedInvoice),
@@ -911,7 +911,8 @@ function renderPurchaseRow(
       : undefined;
   return `<article class="cards-purchase-row" role="row" data-purchase-item data-reconciliation="${purchase.status === "reconciled" ? "reconciled" : "unreconciled"}">
     <time role="cell" data-label="Data" datetime="${escapeHtml(purchase.occurredOn)}">${formatDate(purchase.occurredOn)}</time>
-    <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${recurrence ? renderRecurrenceIndicator() : ""}</strong>${installmentLabel ? `<span class="cards-installment-label">${escapeHtml(installmentLabel)}</span>` : ""}<span>${escapeHtml(category)}</span>${purchase.purchaseTotalAmountMinor !== undefined ? `<small>Total da compra: ${money(purchase.purchaseTotalAmountMinor, normalizeCurrency(purchase.currency))}</small>` : ""}</div>
+    <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${recurrence ? renderRecurrenceIndicator() : ""}</strong>${installmentLabel ? `<span class="cards-installment-label">${escapeHtml(installmentLabel)}</span>` : ""}${purchase.purchaseTotalAmountMinor !== undefined ? `<small>Total da compra: ${money(purchase.purchaseTotalAmountMinor, normalizeCurrency(purchase.currency))}</small>` : ""}</div>
+    <span role="cell" data-label="Categoria" class="cards-purchase-category">${escapeHtml(category)}</span>
     <span role="cell" data-label="Situação" class="cards-purchase-status-cell">${renderPurchaseStatusIcon(purchase.status)}</span>
     <strong role="cell" data-label="Valor" class="cards-purchase-amount">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
     <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}" title="Ações da compra">${icon("more-horizontal", 18)}</summary><div class="cards-purchase-menu actions-menu" role="menu">
@@ -1615,6 +1616,11 @@ function css(): string {
     .cards-purchase-status:focus-visible{outline:2px solid var(--primary)}
     .cards-purchase-actions summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
     @media(max-width:760px){.cards-purchase-row>.cards-purchase-status-cell[data-label="Situação"]::before{content:none}.cards-purchase-status-cell{grid-column:1;justify-content:flex-start}}
+    /* Golden Screen #715: category is a proper purchase-table column, not a description subtitle. */
+    .cards-purchase-table-head,.cards-purchase-row{grid-template-columns:6.5rem minmax(0,1.6fr) minmax(7rem,.8fr) 5.4rem 9rem 3.5rem}
+    .cards-purchase-category{color:var(--muted);font-size:.78rem;min-width:0;overflow-wrap:anywhere}
+    @media(min-width:761px) and (max-width:1050px){.cards-purchase-table-head,.cards-purchase-row{gap:7px;grid-template-columns:5.5rem minmax(0,1.5fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
+    @media(max-width:760px){.cards-purchase-row{grid-template-columns:minmax(0,1fr) auto}.cards-purchase-category{grid-column:1;min-width:0}.cards-purchase-actions{grid-column:2;grid-row:2 / span 3}.cards-purchase-status-cell{grid-column:1}}
   `;
 }
 
