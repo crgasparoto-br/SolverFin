@@ -62,14 +62,12 @@ ancoragem à direita ainda inteiramente contida na viewport.
 
 A propagacao visual da Golden Screen na rota `/cartoes` tem escopo proprio, diferente da aprovacao do Extrato. Capturas geradas antes do commit material desta entrega nao certificam a mudanca.
 
-| Requisito | Cenario SSR/Chrome | Afirmacao discriminante |
-| --- | --- | --- |
-| Hierarquia da fatura | Fatura aberta com conta de pagamento na moeda correta | Valor e codigo de moeda visiveis; **Liquidar fatura** e a unica acao primaria da fatura; fechamento e compra nao competem |
-| Filtros progressivos | Ordenacao padrao e ordenacao explicitamente alterada | Controles secundarios recolhidos por padrao, estado ativo exposto e selecao preservada |
-| Leitura das compras | Itens com descricao longa, parcela e moedas diferentes em seus contextos | Descricao e valor nao cortados; moeda explicita; totais agrupados pela moeda do instrumento |
-| Estado sem resultado | Busca sem correspondencias em fatura com compras | Estado vazio orienta a limpar/ajustar filtros sem suprimir informacoes da fatura |
-| Formulario e interacao | Abrir, percorrer e fechar modal de compra pelo teclado em desktop/mobile | Dialog identificado, foco visivel, rolagem interna quando necessario, Escape e retorno do foco |
-| Controle negativo | Mutar estilo para truncamento ou promover simultaneamente compra e fechamento | Teste estrutural ou revisao visual documentada rejeita a regressao |
+- **Hierarquia da fatura:** fatura aberta com conta de pagamento na moeda correta; valor e moeda visiveis, liquidacao como unica acao primaria; fechamento e compra sem competir.
+- **Filtros progressivos:** ordenacao padrao e alterada; controles secundarios recolhidos por padrao, estado ativo exposto e selecao preservada.
+- **Compras longas:** descricoes extensas e parcelas em moedas explicitas; texto e valores nao cortados e totais separados por moeda.
+- **Busca sem resultado:** estado vazio orienta a ajustar os filtros sem omitir o contexto da fatura.
+- **Formulario:** abrir, percorrer e fechar modal de compra no teclado; dialog identificado, foco visivel, scroll interno, Escape e retorno do foco.
+- **Controle negativo:** mutar para truncamento ou destacar simultaneamente compra e fechamento deve gerar falha estrutural ou rejeicao visual documentada.
 
 Inspecionar os estados em 1366x768, 390x844 e, nas divergencias de reflow, 320x740. Registrar em cada linha viewport, artefato, assertion, SHA exato e parecer de avaliador independente. A ausencia de capturas ou parecer deixa o gate de aceite aberto, mesmo se Repository CI e o workflow Chrome terminarem com sucesso.
 
