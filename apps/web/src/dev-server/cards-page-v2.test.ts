@@ -307,7 +307,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Fechar fatura/);
   // #715: one invoice-level primary action; recording a purchase is contextual.
   assert.match(html, /class="sf-button sf-button-primary" data-open-modal="payment"/);
-  assert.match(html, /class="sf-button sf-button-secondary" data-api-path="\/api\/invoices\/invoice-aug\/close"/);
+  assert.match(
+    html,
+    /class="sf-button sf-button-secondary" data-api-path="\/api\/invoices\/invoice-aug\/close"/,
+  );
   assert.match(html, /class="sf-button sf-button-secondary" data-open-modal="purchase"/);
   assert.doesNotMatch(html, /class="sf-button sf-button-primary" data-open-modal="purchase"/);
   assert.match(html, /<span>Valor a pagar<\/span><strong>[\s\S]*?data-currency="USD"/);
@@ -318,7 +321,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /name="sort"/);
   assert.match(html, /name="day"/);
   // Fail-closed CSS guards for long descriptions, explicit currencies and compact mobile.
-  assert.match(html, /\.cards-purchase-description strong\{[^}]*overflow-wrap:anywhere;white-space:normal/);
+  assert.match(
+    html,
+    /\.cards-purchase-description strong\{[^}]*overflow-wrap:anywhere;white-space:normal/,
+  );
   assert.doesNotMatch(html, /\.cards-purchase-description strong\{[^}]*text-overflow:ellipsis/);
   assert.match(html, /@media\(max-width:350px\)/);
   assert.match(html, /\.cards-dialog-panel\{max-height:min\(90dvh/);
