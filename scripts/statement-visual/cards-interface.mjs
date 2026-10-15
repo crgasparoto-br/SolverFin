@@ -175,11 +175,27 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
   check(measurements.primaryAmountVisible, "Invoice amount due is not visible", measurements);
-  check(measurements.purchaseActionSecondary, "Purchase action competes with invoice decision", measurements);
+  check(
+    measurements.purchaseActionSecondary,
+    "Purchase action competes with invoice decision",
+    measurements,
+  );
   check(measurements.closeActionSecondary, "Close action competes with settlement", measurements);
-  check(measurements.payActionPrimary, "Settlement is not the invoice primary action", measurements);
-  check(measurements.primaryInvoiceActionCount <= 1, "Invoice has competing primary actions", measurements);
-  check(measurements.advancedFiltersCollapsed, "Unused advanced filters occupy the viewport", measurements);
+  check(
+    measurements.payActionPrimary,
+    "Settlement is not the invoice primary action",
+    measurements,
+  );
+  check(
+    measurements.primaryInvoiceActionCount <= 1,
+    "Invoice has competing primary actions",
+    measurements,
+  );
+  check(
+    measurements.advancedFiltersCollapsed,
+    "Unused advanced filters occupy the viewport",
+    measurements,
+  );
   check(measurements.statusVisible, "Invoice status is not visible", measurements);
   check(
     measurements.invoiceCopy.includes("Fechamento") &&
@@ -325,8 +341,16 @@ async function validateLongDescription(cdp, captureName) {
     })()`,
   );
   check(result.noHorizontalOverflow, "Long description causes horizontal overflow", result);
-  check(result.whiteSpace !== "nowrap" && !result.ellipsis && result.lineWrap, "Long description is truncated", result);
-  check(result.rowInViewport && result.amountVisible && result.currencyVisible, "Long description hides actions, values or currency", result);
+  check(
+    result.whiteSpace !== "nowrap" && !result.ellipsis && result.lineWrap,
+    "Long description is truncated",
+    result,
+  );
+  check(
+    result.rowInViewport && result.amountVisible && result.currencyVisible,
+    "Long description hides actions, values or currency",
+    result,
+  );
   await screenshot(cdp, join(outputDir, `cards-long-${captureName}.png`));
   await evaluate(
     cdp,
