@@ -1,0 +1,5 @@
+BLOCK: certificate material_head_sha differs from terminal material head
+BLOCK: published handoff head is not a direct child of the material head
+BLOCK: terminal re-audit handoff requires previous audit-escape-closure snapshot
+
+negative_guard_exit_code=2

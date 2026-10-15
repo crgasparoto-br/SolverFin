@@ -79,6 +79,106 @@ test("rejects the pre-fix mobile composition that delays the movement list", () 
   assert.throws(() => assertMockupComposition(layout), /density budget/);
 });
 
+test("keeps the account chevron at the right edge on desktop and mobile", () => {
+  for (const width of [1366, 390, 320]) {
+    const layout = fixture();
+    layout.viewport = { width, height: width === 1366 ? 768 : 844 };
+    if (width <= 760) {
+      layout.context = box(16, 140, width - 32, 70);
+      layout.balance = box(16, 220, width - 32, 60);
+    }
+    layout.accountPicker = box(
+      width === 1366 ? 250 : 16,
+      155,
+      width === 1366 ? 290 : width - 32,
+      44,
+    );
+    layout.accountChevron = box(layout.accountPicker.right - 30, 170, 14, 14);
+    assert.doesNotThrow(() => assertMockupComposition(layout));
+    assert.throws(
+      () =>
+        assertMockupComposition({
+          ...layout,
+          accountChevron: box(layout.accountPicker.left + 110, 170, 14, 14),
+        }),
+      /right edge/,
+    );
+    assert.throws(
+      () =>
+        assertMockupComposition({
+          ...layout,
+          accountChevron: box(layout.accountPicker.right - 30, 157, 14, 14),
+        }),
+      /vertically centered/,
+    );
+  }
+});
+
+test("desktop period and Current month share both account-selector edges", () => {
+  const layout = {
+    ...fixture(),
+    accountPicker: box(250, 170, 365, 46),
+    accountChevron: box(585, 186, 14, 14),
+    periodMonthNav: box(635, 170, 192, 46),
+    currentMonthButton: box(835, 170, 108, 46),
+  };
+  assert.doesNotThrow(() => assertMockupComposition(layout));
+  assert.throws(
+    () => assertMockupComposition({ ...layout, periodMonthNav: box(635, 161, 192, 46) }),
+    /both account-selector edges/,
+  );
+  assert.throws(
+    () => assertMockupComposition({ ...layout, currentMonthButton: box(835, 170, 108, 39) }),
+    /both account-selector edges/,
+  );
+  const mobile = {
+    ...layout,
+    viewport: { width: 390, height: 844 },
+    context: box(24, 140, 342, 70),
+    balance: box(24, 220, 342, 60),
+  };
+  assert.doesNotThrow(
+    () => assertMockupComposition(mobile),
+    "Mobile keeps the existing stacked layout.",
+  );
+});
+
+test("rejects a hidden currency selector or a currency selector editable on one account", () => {
+  const individual = {
+    ...fixture(),
+    currencyControlExpected: true,
+    consolidated: false,
+    currencyControl: { visible: true, disabled: true },
+  };
+  assert.doesNotThrow(() => assertMockupComposition(individual));
+  assert.throws(
+    () =>
+      assertMockupComposition({
+        ...individual,
+        currencyControl: { visible: false, disabled: true },
+      }),
+    /visibly rendered/,
+  );
+  assert.throws(
+    () =>
+      assertMockupComposition({
+        ...individual,
+        currencyControl: { visible: true, disabled: false },
+      }),
+    /editable only/,
+  );
+  const all = {
+    ...individual,
+    consolidated: true,
+    currencyControl: { visible: true, disabled: false },
+  };
+  assert.doesNotThrow(() => assertMockupComposition(all));
+  assert.throws(
+    () => assertMockupComposition({ ...all, currencyControl: { visible: false, disabled: false } }),
+    /visibly rendered/,
+  );
+});
+
 test("rejects selector left in query or orphaned from original GET form", () => {
   assert.throws(
     () => assertMockupComposition({ ...fixture(), accountPickerInContext: false }),

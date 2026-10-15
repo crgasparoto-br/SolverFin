@@ -2,25 +2,25 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
-  "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+  "rejection_id": "audit-rejection:issuecomment-6189467904",
+  "head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
   "identity": {
-    "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
-    "material_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+    "head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
+    "material_head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 618,
-    "pull_request_number": 675
+    "issue_number": 702,
+    "pull_request_number": 713
   },
   "findings": [
     {
-      "id": "A-002",
+      "id": "F-714-03",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "availability-provenance-gap",
-      "reason": "missing-opening-balance-synthesized-as-zero",
-      "summary": "A requested currency without an opening-balance source could be represented as a complete zero-valued projection and published as available."
+      "category": "visual-gate-false-positive",
+      "reason": "footer-actions-clipped-at-320",
+      "summary": "Cancel clipped at 320x740 in new/edit/clone despite visual gate passing; require explicit bounds and negative mutations."
     }
   ],
   "recommendations": []

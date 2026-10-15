@@ -3,32 +3,35 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "candidate_head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
-    "audited_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
-    "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
+    "rejection_id": "audit-rejection:issuecomment-6189467904",
+    "audited_head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
+    "audit_report_sha256": "388cce3ba05ecffee5b12388549eecc6bfd0dfc0617f0507f2546f6e302fae7b"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-002",
+      "source_id": "F-714-03",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "targeted-regression",
+      "closure_kind": "behavioral-fix",
       "changed_files": [
-        "apps/api/src/repositories/cash-flow-projection.ts",
-        "apps/api/src/cash-flow-projection.integration.test.ts"
+        "apps/web/src/dev-server/statement-golden-refinements.ts",
+        "scripts/statement-visual/statement-contextual-surfaces.mjs",
+        "scripts/statement-visual/statement-contextual-assertions.mjs",
+        "apps/web/src/dev-server/transactions-page-v2.test.ts"
       ],
       "evidence": [
-        "evidence/handoff-remediation-675.txt",
-        "apps/api/src/cash-flow-projection.integration.test.ts"
+        "evidence-714-controls.txt",
+        "audit-71403-original.txt"
       ],
       "validations": [
-        "Delivery V2 CI run 36035406314 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
-        "Statement visual validation run 36035406276 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
-        "Regression covers known-zero JPY, filtered missing EUR, and unfiltered commitment-only EUR without active-account provenance."
+        "Cancel and Save buttons contained in modal content at 320px, 390px and desktop for new/edit/clone.",
+        "Nine visual negative controls inject clipped Cancel, reject the regression and pass after restoration.",
+        "Exact-material Repository CI #38731099576 and visual validation #38731099631 (require both terminal green).",
+        "CODE-GROWTH-001 passes on 07fb199 after extracting assertions without modifying API."
       ]
     }
   ]

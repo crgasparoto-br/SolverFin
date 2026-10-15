@@ -1,16 +1,26 @@
 {
   "schema_version": 1,
-  "material_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "material_head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
   "evidence": [
     {
-      "evidence_id": "EVID-618-EXACT-HEAD",
-      "kind": "quantitative",
+      "evidence_id": "EVID-714-DOC",
+      "kind": "behavioral",
       "status": "passed",
-      "path": "evidence/handoff-remediation-675.txt",
-      "sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d",
+      "path": "evidence-714-controls.txt",
+      "sha256": "823cfc0c0174f9cd7d0cf2e431b9180bd2e3a87bc3702c4b153010a5035158d2",
       "freshness_policy": "exact-material-head",
-      "subject_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
-      "producer": "GitHub Actions Delivery V2 CI run 36035406314"
+      "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+      "producer": "GitHub Actions exact-SHA CI and Chrome plus local source checks"
+    },
+    {
+      "evidence_id": "EVID-714-HANDOFF-NEG",
+      "kind": "structural",
+      "status": "passed",
+      "path": "old-handoff-rejection.log",
+      "sha256": "1ff320bd70f0314599e5fb780216a25861d40bb4193579fee5040210e1984b4c",
+      "freshness_policy": "exact-material-head",
+      "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+      "producer": "official validate_terminal_handoff.py rejects legacy handoff for material"
     }
   ]
 }

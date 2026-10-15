@@ -1,8 +1,18 @@
-# Extrato: candidato a Golden Screen
+# Extrato: Golden Screen aprovada visualmente
 
-Este documento especifica o recorte de `/lancamentos` da issue #702 e da PR #703.
-Ele complementa `DESIGN_SYSTEM.md`, `SCREEN_ARCHETYPES.md` e `VISUAL_VALIDATION.md`;
-nao substitui seus contratos nem declara a referencia aprovada.
+Este documento especifica a Golden Screen do Extrato (`/lancamentos`) da epica #702,
+com fechamento tecnico pela issue #714 e pela PR #713, baseada em `develop`. A PR #703
+e o marco historico inicial, ja incorporado a `develop`, nao a referencia material atual.
+Ele complementa `DESIGN_SYSTEM.md`, `SCREEN_ARCHETYPES.md` e `VISUAL_VALIDATION.md`.
+
+**Estado:** aceite visual de produto concedido em 14/10/2026 e registrado na #702.
+**Referencia visual de produto:** SHA material
+`366e02072ee39116cfc50a7bc602273902e516fc` na PR #713, com modais de novo,
+editar e clonar centralizados. O aceite visual nao equivale a certificado de handoff,
+auditoria tecnica independente, integracao na `develop` ou liberacao de release.
+Antes de propagar alteracoes em codigo nas issues #715–#719, consultar o marco tecnico
+publicado apos a integracao regular da #713; a #714, isoladamente, nao implementa
+qualquer tela de propagacao.
 
 ## Composicao
 
@@ -10,10 +20,17 @@ nao substitui seus contratos nem declara a referencia aprovada.
 - O resumo e horizontal no desktop; nao existe coluna lateral competindo com a lista.
 - Saldo atual e os quatro indicadores preservam os valores do view-model existente:
   Saldo inicial usa `openingMinor`, Entradas usa `incomeMinor`, Saidas usa
-  `-expenseMinor` e Saldo final usa `effectiveBalanceMinor`. Entradas/Saidas representam
-  receitas/despesas do periodo, incluindo previsoes ja presentes nesses totais;
-  nao representam todos os fluxos de caixa. Transferencias afetam o saldo pelo
-  contrato canonico, sem se tornarem receitas/despesas por conveniencia visual.
+  `expenseMinor` em magnitude positiva e Saldo final usa `effectiveBalanceMinor`.
+  **Conta individual:** Entradas inclui receitas e transferencias recebidas; Saidas
+  inclui despesas e transferencias enviadas, sempre na moeda nativa da conta
+  (`destinationAmountMinor` para a perna recebida quando houver cambio).
+  **Todas as contas (`accountId=all`):** agregar somente contas da moeda filtrada;
+  transferencias internas entre contas dessa mesma moeda permanecem na listagem,
+  mas nao inflam Entradas/Saidas, enquanto transferencias cambiais entram nos cards
+  pela perna da moeda selecionada, sem conversao implicita. Isso nao reclassifica
+  transferencia como receita/despesa no cadastro ou na API. Lancamentos previstos
+  preservam a distincao entre saldo projetado e efetivo; anulados ficam excluidos.
+  A ADR 0018 governa essas diferencas por modo.
 - A lista utiliza a largura disponivel. Descricao e valor dominam a primeira linha;
   categoria, tipo e saldo por movimento permanecem secundarios, sem remover informacao.
 - Categoria, Tipo, Status e Conciliacao ficam diretamente disponiveis na barra
@@ -22,7 +39,10 @@ nao substitui seus contratos nem declara a referencia aprovada.
   Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o
   formulario GET completo permanece disponivel. Conta e periodo pertencem ao
   contexto financeiro, preservando o vinculo nativo com o formulario de consulta.
-- Criacao/edicao usa o dialog existente com duas colunas no desktop e uma no mobile.
+- Cadastro (novo lancamento), clonagem e edicao usam o mesmo dialog nativo, sempre
+  centralizado horizontal e verticalmente na viewport, sem ancoragem na borda direita
+  como drawer ou painel lateral. O formulario mantem duas colunas no desktop e uma
+  no mobile; o dialog respeita margens seguras e rola internamente quando necessario.
   Sem JavaScript, o select nativo de tipo permanece visivel e acessivel. Com a melhoria
   progressiva ativa, Despesa/Receita/Transferencia usam um radiogroup com setas, Home/End,
   estado selecionado e bloqueios sincronizados. O select original continua como campo
@@ -148,7 +168,7 @@ das movimentacoes e do titulo em 320 px. A comparacao da densidade mobile usa
 as medidas e a inspecao da composicao; nao cria uma exigencia universal de
 primeira movimentacao visivel sem rolagem em todo celular.
 
-### GS703-R02: fechamento individual e referencia ainda candidata
+### GS703-R02: fechamento individual do candidato historico (antes do aceite de 14/10)
 
 A-001 deve ligar a composicao geral as capturas desktop/mobile do mesmo SHA.
 A-002 deve ligar descricao/valor e metadados as capturas das movimentacoes e
@@ -160,9 +180,11 @@ A-006 deve registrar a observacao visual de cada um desses itens, separadamente
 do fechamento tecnico do handoff. GS703-001 a GS703-003 e GS703-R01/R02 tambem
 precisam de fechamento individual na remediacao.
 
-O indice de evidencias nao equivale a homologacao. Uma CI verde ou um handoff
-READY nao altera automaticamente `data-golden-screen-state="candidate"` nem
-autoriza usar esta tela como referencia aprovada sem nova auditoria independente.
+**Historico da validacao anterior ao aceite de 14/10/2026:** o indice de evidencias
+nao equivalia a homologacao e CI/handoff READY nao alteravam automaticamente o
+estado interno `data-golden-screen-state="candidate"`. Essa cautela nao revoga o
+aceite visual expresso registrado na #702, mas o estado visual aprovado tambem nao
+comprova o gate tecnico independente, o handoff valido ou o merge da PR #713.
 
 ## Aplicacao do mockup do Extrato
 
@@ -183,7 +205,10 @@ acionador quando o dialog aberto por uma dessas acoes e fechado. Sem JavaScript,
 os controles originais permanecem disponiveis. A situacao do periodo inicia
 recolhida em ambos os layouts; expandir revela os contadores e valores originais.
 
-A imagem nao autoriza incluir transferencias nos totais de receitas/despesas,
+O mockup nao altera a regra financeira por modo: transferencias entram nos cards
+individuais e transferencias cambiais entram nos cards de `Todas` na moeda escolhida;
+apenas transferencias internas da mesma moeda nao inflam o consolidado (ADR 0018).
+A imagem nao autoriza reclassificar transferencias como receita/despesa,
 inventar saldo inicial/final, fundir as datas financeiras ou tornar
 categoria obrigatoria. Atalhos de sete dias, conciliacao por associacao e mover
 para outra conta dependem de contratos funcionais proprios; nao sao adicionados
@@ -213,13 +238,23 @@ previa isolada ou patch local nao fecha GS703-001 a GS703-003 nem homologa a tel
 
 ## Paridade visual com o mockup do Extrato
 
-O candidato a Golden Screen do Extrato usa o mockup como referência estrutural,
+A Golden Screen visualmente aprovada do Extrato usa o mockup como referência estrutural,
 preservando as regras financeiras existentes. A composição deve manter: navegação
 e cabeçalho compactos, contexto de conta e saldo em bloco horizontal, quatro
 indicadores do período (saldo inicial, entradas, saídas e saldo final), filtros
-compactos, lista com descrição/valor dominantes e drawer lateral de lançamento
-com opções avançadas progressivas.
+compactos, lista com descrição/valor dominantes e dialog centralizado para
+cadastro, clonagem e edição de lançamentos, com opções avançadas progressivas.
+
+Por decisão posterior ao mockup, a geometria de painel lateral ilustrada para
+novo lançamento não é normativa: `POST` (novo e clonar) e `PATCH` (editar) devem
+abrir centralizados. Não transformar o diálogo de criação em drawer à direita.
+Preservar foco, Escape, tecla de retorno ao acionador, alvos de toque e rolagem
+interna do formulário, inclusive em 1366x768, 390x844 e 320x740.
 
 A paridade não autoriza tornar categoria obrigatória, fundir datas financeiras
 ou alterar payloads. Diferenças necessárias por contrato funcional devem ser
 explícitas e visualmente subordinadas.
+
+## Visão consolidada na mesma Golden Screen (decisão de 2026-10-14)
+
+A opção **Todas as contas** em `/lancamentos?accountId=all&currency=BRL&month=AAAA-MM` preserva o mesmo layout da conta individual, identifica a conta sob a descrição e soma saldos **somente de contas da moeda selecionada**. Na conta individual, transferências recebidas compõem Entradas e enviadas compõem Saídas (na moeda da conta). No modo consolidado, as transferências internas da mesma moeda não compõem os cards, mas as **transferências cambiais permanecem** como entradas/saídas na moeda filtrada, sem alterar a projeção do saldo. As previstas não entram no saldo efetivo, e o menu Ações permite editar, clonar, conciliar/desconciliar e excluir lançamentos existentes com a conta de origem real identificada (além de Ver na conta). Novo lançamento sem conta selecionada não pode ser salvo. O filtro de moeda é obrigatório nesse modo. Para regras, controles negativos e razão da decisão, consulte [ADR 0018](./adr/0018-golden-statement-consolidated-by-currency.md).

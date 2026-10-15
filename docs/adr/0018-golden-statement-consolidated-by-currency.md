@@ -1,0 +1,65 @@
+# ADR 0018 — Extrato consolidado por moeda na Golden Screen
+
+**Data:** 2026-10-14
+**Escopo:** Issue #702, PR #713, rota `/lancamentos`
+**Estado:** decisão de produto aprovada; implementação sujeita à CI e auditoria independente
+
+## Contexto
+
+O usuário precisa alternar entre a movimentação de uma conta e a de todas as contas do mesmo perfil financeiro, preservando a Golden Screen e identificando a origem de cada lançamento. Criar outra tela duplicaria a interface. Somar valores de moedas distintas contrariaria a política existente de agregação multi-moeda (ADR 0013).
+
+## Decisão
+
+A mesma tela terá dois modos de leitura:
+
+- **Conta individual:** comportamento legado, incluindo saldos, filtros, lançamentos, criação e edição.
+- **Todas as contas:** opção explícita `accountId=all`, agrupando apenas contas ativas de uma moeda selecionada. A moeda é obrigatória no controle; BRL é a escolha inicial quando disponível, caso contrário é selecionada a primeira moeda cadastrada. O mês e a moeda são preservados durante a navegação de períodos.
+
+Cada linha da lista identifica a conta abaixo da descrição; transferências mostram origem → destino. **Decisão posterior (2026-10-14):** o menu **Ações** do consolidado oferece as mesmas operações da conta individual (**Editar, Conciliar/Desconciliar, Clonar, Excluir** e ações de recorrência quando aplicáveis), além do atalho **Ver na conta**. As operações por ID continuam usando os endpoints já existentes, com confirmação para exclusão. O formulário de edição/clonagem carrega a **conta de origem real do lançamento** e a moeda correspondente, mesmo quando o lançamento aparece pela perna de destino na visão consolidada de outra moeda; somente libera o botão Salvar quando essa conta é conhecida e possui moeda válida. Abrir novo lançamento no consolidado sem conta individual selecionada continua impedido de salvar. O atalho Ver na conta navega para o extrato da conta que pertence à moeda selecionada: origem para perna enviada, destino para perna recebida. O texto auxiliar indica **Enviada para** ou **Recebida de** a partir dessa mesma perspectiva, evitando contexto contraditório em transferências cambiais.
+
+## Indicadores financeiros por modo (decisão complementar de 14/10/2026)
+
+- **Conta individual:** Entradas soma receitas e transferências recebidas; Saídas soma despesas e transferências enviadas, com sinal por conta selecionada. Transferências cambiais usam o valor nativo da perna da conta (`destinationAmountMinor` ao receber).
+- **Todas as contas:** Entradas e Saídas **desconsideram apenas transferências internas entre contas da mesma moeda**. **Transferências cambiais permanecem nos cards** como entrada ou saída na moeda filtrada, sem conversão implícita. Transferências internas continuam visíveis na listagem, mas sem dupla contabilização. A alteração dos cards não altera saldos ou o tipo da transação.
+- Lançamentos previstos seguem os contratos de saldo projetado/efetivo; transações anuladas continuam excluídas.
+
+## Regras financeiras
+
+1. Saldo inicial consolidado = soma dos saldos de abertura das contas ativas selecionadas + movimentos efetivos anteriores ao período.
+2. Saldo efetivo consolidado = saldo inicial + efeito líquido dos movimentos efetivos no período. Lançamentos previstos não alteram esse saldo.
+3. Uma transferência entre contas BRL selecionadas é projetada uma única vez, com efeito líquido zero. Não gera fluxo consolidado de entrada ou saída e não vira receita ou despesa operacional.
+4. Na transferência entre moedas, apenas a perna correspondente à moeda selecionada altera o saldo; a entrada utiliza `destinationAmountMinor` quando aplicável. **Os cards Entradas e Saídas representam fluxos líquidos na moeda, não apenas lançamentos com os tipos receita e despesa**: uma transferência cambial recebida aparece em Entradas e uma enviada em Saídas. Isso não reclassifica a transação de transferência como receita/despesa no cadastro ou na API.
+5. Jamais converter moedas automaticamente ou apresentar saldo sintético misturando BRL e USD. Uma moeda inexistente não origina total fictício. Contas sem moeda definida não são tratadas implicitamente como BRL, nem incluídas na soma de uma moeda conhecida.
+6. Grupos de lançamentos são mostrados pelos seus movimentos componentes na visão consolidada, sem duplicar projeções agregadas.
+
+## Limites técnicos e autorização
+
+Nenhuma migração de banco é necessária: `accountId`, `destinationAccountId` e `currency` já estão modelados. A leitura usa `GET /api/transactions` sem filtro `accountId`, com escopo de organização e perfil financeiro já aplicado pela API. Registros vinculados a cartão ou fatura não entram no extrato bancário.
+
+A busca auxiliar de parcelas respeita o mesmo contexto: com uma conta individual, consulta
+`GET /api/installments` filtrando `accountId`; em **Todas as contas**, omite esse
+parâmetro em vez de enviar o marcador `all` a uma coluna UUID. A busca segue limitada
+ao período e ao perfil financeiro autorizado. Caso essa consulta falhe, o bloqueio
+conservador da edição por parcelas deve ser mantido, com mensagem explícita de falha.
+
+A implementação inicial reaproveita a consulta do perfil. Para históricos muito grandes, a busca deve evoluir para filtragem/paginação no banco, sem alterar a semântica dos saldos.
+
+## Critérios de validação
+
+Testar BRL versus USD, conta identificada, primeiro mês sem movimento, saldo inicial, previsto, transferências internas e intermoedas, seleção de moeda, retorno à conta individual, paridade das ações de edição/clonagem/conciliação/exclusão no consolidado com resolução da conta de origem e proteção contra criação sem conta, responsividade e isolamento por tenant/profile. Resultado de CI não equivale a auditoria visual independente.
+
+## Alternativas rejeitadas
+
+- Outra tela: aumenta navegação, manutenção e divergência do design system.
+- Consolidar sem moeda: agrega unidades monetárias incompatíveis.
+- Permitir criação sem conta selecionada: cria ambiguidade sobre origem/destino da operação. A edição/clonagem é permitida a partir de um lançamento existente, com conta de origem resolvida e visível.
+
+### Rodapé do formulário de lançamento (14/10/2026)
+
+Nos modais de criar, editar e clonar lançamento, os estados são representados por
+três ícones com rótulos acessíveis e tooltips no mouse e no foco do teclado.
+O rótulo atualizado do status permanece disponível para leitores de tela, mas
+não ocupa largura visual. **Cancelar e Salvar lançamento** formam um grupo
+horizontal indivisível; os ícones de status podem passar para a linha anterior
+em telas muito estreitas, sem empilhar os botões de ação. Cancelar fecha
+o modal sem enviar o formulário.

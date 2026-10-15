@@ -33,6 +33,31 @@ Quando a mudanca alterar layout, hierarquia, densidade, iconografia, filtros, li
 
 A revisao deve falhar quando a tela estiver funcional e responsiva, mas ainda apresentar aparencia de CRUD administrativo, formulario bruto ou composicao visual sem hierarquia clara. Screenshot isolado nao aprova qualidade; a evidencia precisa registrar rota, estado, viewport e observacao que sustente os criterios avaliados.
 
+### Centralizacao dos formularios de lancamentos
+
+No `/lancamentos`, validar no Chrome autenticado o mesmo dialog em `POST` (novo e
+clonar) e `PATCH` (editar): as margens horizontais devem ser equivalentes (considerando
+scrollbar), o dialog deve ficar centralizado verticalmente, inteiramente contido
+na viewport, sem ancoragem a direita, com rolagem apenas em seu conteudo quando
+necessario. Exercitar desktop 1366x768 e mobile 390x844/320x740, verificando
+foco, Escape, navegacao por teclado e retorno ao acionador. Um painel lateral a
+direita e regressao, mesmo que a geometria do mockup antigo o represente. A
+cobertura automatizada de geometria nao substitui revisao visual independente.
+
+### Refinamento do diálogo e identificação da conta
+
+No diálogo do Extrato, o cadastro e a clonagem mostram somente a conta de origem em
+leitura, com nome completo quebrável mesmo em 320 px e sem input de leitura
+truncado. A edição mostra somente o seletor de conta editável, com o nome completo
+disponível em texto quebrável. Uma transferência não pode apresentar campos de
+origem duplicados durante a alternância entre POST e PATCH. O Chrome deve rejeitar
+duas identificações de conta simultaneamente e nomes selecionados ilegíveis.
+
+Enquanto o diálogo estiver aberto, a rolagem do documento deve ficar bloqueada;
+somente o conteúdo do diálogo pode rolar. Capturar criação, clonagem e edição nos
+três viewports e aplicar controles negativos de centralização, incluindo uma
+ancoragem à direita ainda inteiramente contida na viewport.
+
 ## Unidade de cobertura
 
 Cada evidencia representativa declara, no minimo:

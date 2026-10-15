@@ -36,7 +36,7 @@ Se houver conflito entre issue, documentacao e codigo, explicite o conflito na P
 8. Nao remova dados financeiros de forma destrutiva sem requisito explicito; prefira exclusao logica e trilha de auditoria.
 9. Use validacao de entrada, tipos explicitos e erros padronizados quando houver codigo.
 10. Atualize documentacao e ADRs quando mudar arquitetura, modelo de dados, contrato publico, fluxo relevante ou decisao duradoura.
-11. Em telas com criacao ou edicao de registros, priorize pop-up/modal sempre que possivel, mantendo a listagem ou contexto atual visivel.
+11. Em telas com criacao ou edicao de registros, priorize pop-up/modal sempre que possivel, mantendo a listagem ou contexto atual visivel. Em `/lancamentos`, cadastro, clonagem e edicao usam dialog centralizado (desktop/mobile), nunca painel lateral alinhado a direita; preserve foco, Escape, rolagem interna e contratos existentes.
 12. Mantenha telas clean e modernas conforme o contrato de qualidade visual de `docs/DESIGN_SYSTEM.md`: hierarquia principal reconhecivel rapidamente, poucos cards, superficies discretas, espacamento e tipografia antes de bordas, iconografia acessivel e consistente, metadados visualmente secundarios e no maximo uma acao primaria evidente por escopo visual. Uma tela funcional que ainda pareca CRUD administrativo ou formulario bruto nao esta pronta.
 13. Nunca some valores de moedas diferentes sem uma etapa explicita de conversao. Preserve moeda em dominio, API, view-model e UI; sem conversao, agregue por moeda.
 14. Nao introduza hardcode de BRL em contratos genericos. Um fluxo especificamente BRL deve declarar essa restricao no contrato e validacao.

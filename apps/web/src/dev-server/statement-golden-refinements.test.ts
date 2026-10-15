@@ -103,6 +103,14 @@ assert.match(
   styles,
   /\.statement-head\{background:transparent;border-bottom:1px solid var\(--line\)/,
 );
+// F-702-04: long amounts at 390px must wrap within their own summary card.
+assert.match(styles, /@media\(min-width:361px\) and \(max-width:760px\)\{/);
+assert.match(
+  styles,
+  /summary-total-copy>strong\{display:block;font-size:clamp\(11px,2\.9vw,13px\)/,
+);
+assert.match(styles, /summary-total-copy>strong\{[^}]*overflow-wrap:anywhere/);
+
 // Progressive reduction drops the decorative glyph so long values keep their width.
 assert.match(styles, /\.summary-total-icon\{display:none\}/);
 
@@ -117,7 +125,18 @@ assert.match(styles, /statement-reconciliation-field/);
 
 assert.match(runtime, /accountInput\.setAttribute\('form', filterForm\.id\)/);
 assert.match(runtime, /context\?\.append\(accountControl\)/);
-assert.match(styles, /statement-account-control\{min-width:0\}/);
+assert.match(styles, /statement-account-control\{min-width:0;width:100%\}/);
+assert.match(styles, /statement-account-control \.account-field\{[^}]*max-width:none/);
+// A subtle 1px contour must keep the full-width selector and right-aligned chevron.
+assert.match(
+  styles,
+  /statement-account-control \.account-select-trigger\{background:transparent;border:1px solid var\(--line\);border-radius:10px;column-gap:/,
+);
+assert.match(
+  styles,
+  /statement-account-control \.account-select-chevron\{flex:0 0 auto;margin-inline-start:auto/,
+);
+assert.match(styles, /statement-body \.statement-status-label\{display:none\}/);
 
 // CDI mobile regression: long labels must not expand the transaction row.
 assert.match(styles, /account-remuneration-row \.description>strong\{[^}]*white-space:normal/);

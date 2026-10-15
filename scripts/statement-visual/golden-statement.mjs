@@ -45,6 +45,38 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     const measured = await read(goldenStatementMeasurements);
     report.checks.push({ id, status: "observed", viewport: { width, height }, measured });
     assertGoldenStatement(measured);
+    // A narrow 390px period header previously hid the year. Reintroduce the
+    // old flex layout to prove the width assertion rejects that regression.
+    if (width === 390) {
+      const probe = `(() => {
+        const nav = document.querySelector(".statement-period-control .month-nav");
+        return nav?.getBoundingClientRect().width ?? 0;
+      })()`;
+      const before = await read(probe);
+      assert.ok(before >= 240);
+      await read(`(() => {
+        const style = document.createElement("style");
+        style.id = "month-width-negative";
+        style.textContent = ".statement-period-control{display:flex!important}";
+        document.head.append(style);
+      })()`);
+      try {
+        const narrowed = await read(probe);
+        assert.ok(narrowed < 240);
+        report.checks.push({
+          id: "GS-MOBILE-NC-MONTH-CLIPPED",
+          status: "passed",
+          viewport: { width, height },
+          navigationWidth: before,
+          regressedWidth: narrowed,
+          rejectedBecause: "Width is below 240px after forcing the old flex layout",
+          restored: "passed",
+        });
+      } finally {
+        await read('document.getElementById("month-width-negative")?.remove()');
+      }
+      assert.ok((await read(probe)) >= 240);
+    }
     if (measured.viewport.width <= 760) {
       report.checks.push({
         id: "GS-MOBILE-DENSITY-BUDGET",
@@ -60,7 +92,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     report.screenshots.push(file);
     report.checks.push({ id, status: "passed", viewport: { width, height }, measured });
   };
-  const negativeControl = async (id, css) => {
+  const negativeControl = async (id, css, expectedReason) => {
     await read(`(() => { const style = document.createElement('style');
       style.dataset.goldenNegative = ''; style.textContent = ${JSON.stringify(css)};
       document.head.append(style); })()`);
@@ -76,6 +108,9 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       await read(`document.querySelector('style[data-golden-negative]')?.remove()`);
     }
     assert.equal(rejected, true, `${id} failed to detect the injected regression.`);
+    if (expectedReason) {
+      assert.match(reason, expectedReason, `${id} must reject the intended failure mode.`);
+    }
     assertGoldenStatement(await read(goldenStatementMeasurements));
     report.checks.push({
       id,
@@ -112,14 +147,12 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
       "[data-golden-screen] .statement-overview{padding-bottom:400px!important}",
     );
     await negativeControl(
-      "GS-NC-STATUS-COLLISION",
-      "[data-golden-screen] .statement-body .statement-status{width:26px!important;height:26px!important}",
+      "GS-NC-STATUS-LABEL-EXPOSED",
+      "[data-golden-screen] .statement-body .statement-status-label{display:inline!important}",
     );
-    // The chip keeps its state on one line; a column that no longer fits the full label
-    // must be rejected instead of silently hiding part of the status.
     await negativeControl(
-      "GS-NC-STATUS-CLIPPED",
-      "[data-golden-screen] .statement-body .statement-status{max-width:120px!important}",
+      "GS-NC-STATUS-GLYPH-HIDDEN",
+      "[data-golden-screen] .statement-body .statement-status svg{display:none!important}",
     );
     // Reference anatomy: dropping the row glyph or folding the category back under the
     // description must both be rejected.
@@ -187,6 +220,13 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     ];
     for (const [width, height] of viewports) {
       await observe(width === 1366 ? "long-content" : "mobile", width, height);
+      if (width === 390) {
+        await negativeControl(
+          "GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW",
+          '[data-golden-screen] .summary-total[data-summary-total="income"] .summary-total-copy>strong{display:block!important;font-size:14px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important;transform:translateX(-30px)!important}',
+          /within their own summary cards/,
+        );
+      }
       await read(`document.querySelector('[data-quick-kind="expense"]').click()`);
       assert.equal(await read(`document.querySelector('dialog[data-modal]').open`), true);
       await read(`(() => {

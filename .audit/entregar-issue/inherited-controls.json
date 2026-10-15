@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
@@ -13,6 +13,12 @@
       "finding_ids": [
         "A-002"
       ]
+    },
+    {
+      "rejection_id": "audit-rejection:issuecomment-6189467904",
+      "finding_ids": [
+        "F-714-03"
+      ]
     }
   ],
   "controls": [
@@ -20,8 +26,8 @@
       "id": "FREE-TO-SPEND-AVAIL-001",
       "source_finding_id": "A-002",
       "status": "passed",
-      "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
-      "subject_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+      "head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+      "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
       "control_type": "test",
       "attack_control_id": "FREE-TO-SPEND-PUBLIC-001",
       "risk_family": "public-boundary",
@@ -30,8 +36,25 @@
       "procedure": "Inspect the public API payload for commitment-only EUR and real-zero JPY.",
       "expected": "Missing-source EUR must expose unavailable with no numeric fields; JPY remains available at zero.",
       "observed": "Exact-head integration distinguishes the two public states.",
-      "evidence": "evidence/handoff-remediation-675.txt",
-      "evidence_sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d"
+      "evidence": "evidence-714-controls.txt",
+      "evidence_sha256": "498ce6fd784cfad527af0f9be830adb316b49841c13e7d63f31ae1b9bf06493e"
+    },
+    {
+      "id": "AUD-714-03-FOOTER-CLIP",
+      "source_finding_id": "F-714-03",
+      "status": "passed",
+      "head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+      "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+      "control_type": "test",
+      "attack_control_id": "NEG-714-05-FOOTER",
+      "risk_family": "visual-validation",
+      "surface": "statement-mobile",
+      "dimension": "footer-horizontal-clipping",
+      "procedure": "At 320x740, 390x844 and desktop, shift Cancel -120px; require assertion failure, restore and assert both buttons within content and on one row.",
+      "expected": "All nine browser Chrome mutations rejected; both button bounds and text fully contained after restoration.",
+      "observed": "Evidence in Statement visual validation GitHub Actions run #38731099631, material 07fb199284a7f0bab38148f33d85331aa18403d0; re-run the same negative controls after extracted assertions.",
+      "evidence": "evidence-714-controls.txt",
+      "evidence_sha256": "823cfc0c0174f9cd7d0cf2e431b9180bd2e3a87bc3702c4b153010a5035158d2"
     }
   ],
   "retired_controls": [],

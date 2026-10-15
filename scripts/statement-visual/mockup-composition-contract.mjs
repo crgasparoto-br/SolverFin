@@ -16,11 +16,56 @@ export function assertMockupComposition(layout) {
     true,
     "Account selector must stay in financial context, not query filters.",
   );
+  if (layout.currencyControlExpected === true) {
+    assert.ok(
+      layout.currencyControl?.visible,
+      "Currency filter must remain visibly rendered on desktop and mobile.",
+    );
+    assert.equal(
+      layout.currencyControl.disabled,
+      !layout.consolidated,
+      "Currency filter is editable only when All accounts is selected.",
+    );
+  }
+  if (layout.statusChip) {
+    assert.equal(
+      layout.statusChip.labelHidden,
+      true,
+      "Movement status must display only the icon.",
+    );
+    assert.equal(
+      layout.statusChip.hasTooltip,
+      true,
+      "Movement status must expose its full label on hover.",
+    );
+    assert.equal(
+      layout.statusChip.accessible,
+      true,
+      "Movement status must retain a keyboard-accessible name.",
+    );
+    assert.ok(layout.statusChip.width <= 40, "Movement status must remain icon-sized.");
+  }
   assert.equal(
     layout.accountPickerBoundToForm,
     true,
     "Moving the account selector must preserve native GET submission.",
   );
+  if (layout.accountPicker) {
+    assert.ok(layout.accountChevron, "Account selector must render its dropdown arrow.");
+    const trailingInset = layout.accountPicker.right - layout.accountChevron.right;
+    assert.ok(
+      trailingInset >= 8 && trailingInset <= 24,
+      "Account dropdown arrow must stay at the right edge of the selector.",
+    );
+    assert.ok(
+      Math.abs(
+        layout.accountChevron.top +
+          layout.accountChevron.height / 2 -
+          (layout.accountPicker.top + layout.accountPicker.height / 2),
+      ) <= 4,
+      "Account dropdown arrow must stay vertically centered.",
+    );
+  }
   assert.equal(
     layout.periodInHeading,
     true,
@@ -34,6 +79,21 @@ export function assertMockupComposition(layout) {
     );
   }
   if (layout.viewport.width >= 1101) {
+    if (
+      layout.viewport.width >= 1280 &&
+      !layout.consolidated &&
+      layout.accountPicker &&
+      layout.period
+    ) {
+      assert.ok(
+        layout.accountPicker.width >= Math.min(360, layout.context.width - 32),
+        "Desktop account selector must use the available room before the period control.",
+      );
+      assert.ok(
+        layout.period.left - layout.accountPicker.right <= 86,
+        "Desktop account selector leaves excessive unused space before the period.",
+      );
+    }
     if (layout.firstMovement) {
       assert.ok(
         layout.firstMovement.width > 0 && layout.firstMovement.height > 0,
@@ -148,6 +208,22 @@ export function assertMockupComposition(layout) {
       "Mobile must keep account before balance without overlap.",
     );
   }
+  // Inspect the overall header hierarchy before asserting exact control alignment.
+  // This keeps each Chrome negative control discriminating its intended regression.
+  if (
+    layout.viewport.width >= 1101 &&
+    layout.accountPicker &&
+    layout.periodMonthNav &&
+    layout.currentMonthButton
+  ) {
+    for (const control of [layout.periodMonthNav, layout.currentMonthButton]) {
+      assert.ok(
+        Math.abs(control.top - layout.accountPicker.top) <= 4 &&
+          Math.abs(control.bottom - layout.accountPicker.bottom) <= 4,
+        "Desktop period and Current month must align to both account-selector edges.",
+      );
+    }
+  }
 }
 
 export function measureMockupComposition() {
@@ -196,6 +272,40 @@ export function measureMockupComposition() {
     context: rect(context),
     balance: rect(balance),
     period: rect(period),
+    periodMonthNav: rect(period?.querySelector(".month-nav")),
+    currentMonthButton: rect(period?.querySelector("[data-month-current]")),
+    consolidated: Boolean(root?.querySelector("[data-all-accounts]")),
+    currencyControlExpected: true,
+    currencyControl: (() => {
+      const field = accountPicker?.querySelector(".statement-currency-field");
+      const select = field?.querySelector("select");
+      if (!field || !select) {
+        const subtitle = accountPicker?.querySelector(".account-select-sub");
+        return {
+          disabled: true,
+          visible: Boolean(
+            subtitle &&
+            subtitle.getClientRects().length > 0 &&
+            subtitle.textContent?.trim().startsWith("Moeda:"),
+          ),
+        };
+      }
+      const fieldStyle = getComputedStyle(field);
+      const selectStyle = getComputedStyle(select);
+      const bounds = field.getBoundingClientRect();
+      return {
+        disabled: select.disabled,
+        visible:
+          bounds.width >= 64 &&
+          bounds.height >= 32 &&
+          select.getClientRects().length > 0 &&
+          fieldStyle.clipPath === "none" &&
+          fieldStyle.visibility !== "hidden" &&
+          selectStyle.visibility !== "hidden",
+      };
+    })(),
+    accountPicker: rect(accountPicker?.querySelector(".account-select-trigger")),
+    accountChevron: rect(accountPicker?.querySelector(".account-select-chevron")),
     queryHeading: rect(queryHeading),
     queryFields: rect(queryFields),
     visiblePrimaryFilters: [
@@ -270,6 +380,14 @@ export function measureMockupComposition() {
           chip.querySelector("svg").getBoundingClientRect().width > 0,
         background: style.backgroundColor,
         radius: parseFloat(style.borderTopLeftRadius) || 0,
+        width: chip.getBoundingClientRect().width,
+        labelHidden:
+          getComputedStyle(chip.querySelector(".statement-status-label")).display === "none",
+        hasTooltip:
+          !!chip.title &&
+          chip.title === chip.getAttribute("aria-label") &&
+          chip.dataset.tooltip === chip.title,
+        accessible: chip.getAttribute("role") === "img" && chip.tabIndex === 0,
       };
     })(),
     selectionControl: (() => {

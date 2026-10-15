@@ -297,6 +297,10 @@ Textos visiveis devem explicar o que a pessoa pode fazer, revisar ou corrigir. E
 - Icon-only buttons precisam de label acessivel.
 - Tabelas/listas devem ter estado vazio com orientacao de proxima acao.
 - Dialogs devem prender foco quando abertos e permitir fechamento por Escape quando nao forem bloqueantes.
+- No Extrato (`/lancamentos`), os formularios de novo lancamento, clonagem e edicao
+  abrem como dialogs centralizados na viewport em desktop e mobile, nunca como
+  painel lateral ancorado a direita. Respeitar margens seguras, altura disponivel,
+  rolagem interna e retorno do foco, sem alterar campos ou contratos financeiros.
 - Toasts confirmam resultado; erros de formulario devem aparecer perto do campo quando possivel.
 - Consuma escalas compartilhadas de espacamento, tipografia, raio, elevacao, layout e densidade antes de criar uma medida local.
 - Nao duplique valores de tokens ou shell completo em um renderer quando um provedor compartilhado ja existir.

@@ -30,6 +30,11 @@ export function assertGoldenStatement(layout) {
   );
   assert.deepEqual(layout.summaryCollisions ?? [], [], "Golden statement summary values overlap.");
   assert.deepEqual(
+    layout.summaryCardOverflow ?? [],
+    [],
+    "Golden statement amounts must stay within their own summary cards.",
+  );
+  assert.deepEqual(
     layout.statusCollisions ?? [],
     [],
     "Statement status text overlaps its icon or escapes its badge.",
@@ -184,6 +189,25 @@ export const goldenStatementMeasurements = `(() => {
       const style = getComputedStyle(input);
       return { appearance: style.appearance, radius: parseFloat(style.borderTopLeftRadius) || 0 };
     })(),
+    // F-702-04: viewport overflow and sibling collisions cannot detect text that
+    // paints outside its OWN card but remains inside the page or its sibling.
+    summaryCardOverflow: Array.from(document.querySelectorAll('.account-summary .summary-total[data-summary-total]')).flatMap(card => {
+      const value = card.querySelector('.summary-total-copy > strong');
+      if (!value) return [];
+      const cardBox = card.getBoundingClientRect();
+      if (cardBox.width <= 0 || cardBox.height <= 0) return [];
+      const valueBox = value.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(value);
+      const textRects = Array.from(range.getClientRects()).filter(part => part.width > 0 && part.height > 0);
+      const outside = textRects.some(part =>
+        part.left < cardBox.left - 1 || part.right > cardBox.right + 1 ||
+        part.top < cardBox.top - 1 || part.bottom > cardBox.bottom + 1);
+      const clipped = value.scrollWidth > value.clientWidth + 1 ||
+        value.scrollHeight > value.clientHeight + 1;
+      const misplaced = valueBox.left < cardBox.left - 1 || valueBox.right > cardBox.right + 1;
+      return outside || clipped || misplaced ? [card.dataset.summaryTotal || value.textContent.trim()] : [];
+    }),
     summaryCollisions: (() => {
       const nodes = Array.from(document.querySelectorAll('.account-summary .summary-total strong'))
         .filter(element => {

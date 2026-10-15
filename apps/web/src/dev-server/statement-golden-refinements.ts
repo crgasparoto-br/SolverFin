@@ -121,6 +121,11 @@ export function statementGoldenRefinementRuntime(): string {
           // Preserve the original automatic account navigation without cloning listeners.
           accountInput.addEventListener('change', () => filterForm.requestSubmit());
         }
+        const currencyInput = accountField.querySelector('[data-auto-currency]');
+        if (currencyInput) {
+          currencyInput.setAttribute('form', filterForm.id);
+          currencyInput.addEventListener('change', () => filterForm.requestSubmit());
+        }
         const accountControl = document.createElement('div');
         accountControl.className = 'statement-account-control';
         accountControl.append(accountField);
@@ -215,21 +220,24 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .account-summary[data-mockup-composition]{display:grid;gap:${spacing[2]} ${spacing[3]};grid-template-columns:repeat(3,minmax(0,1fr));padding:0}
     ${root} .statement-summary-duplicate[hidden]{display:none}
     ${root} .statement-account-heading{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:${spacing[3]};grid-column:1/-1;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);padding-bottom:${spacing[2]}}
-    ${root} .statement-account-heading .statement-context{border:0;display:grid;gap:${spacing[1]};padding:0}
+    ${root} .statement-account-heading .statement-context{border:0;display:grid;gap:${spacing[1]};grid-template-columns:minmax(0,1fr);justify-content:stretch;padding:0}
     ${root} .statement-account-heading .statement-context-main{flex:none}
     ${root} .statement-account-heading .statement-context-copy>.muted{display:none}
     ${root} .statement-account-heading .statement-context-copy strong{font-size:${typography.sizes.lg}}
     ${root} .statement-account-heading .statement-context-meta{gap:${spacing[1]} ${spacing[3]}}
-    ${root} .statement-account-control{min-width:0}
-    ${root} .statement-account-control .account-field{display:grid;gap:${spacing[1]};max-width:24rem;min-width:0}
+    ${root} .statement-account-control{min-width:0;width:100%}
+    ${root} .statement-account-control .account-field{display:grid;gap:${spacing[1]};max-width:none;min-width:0;width:100%}
     ${root} .statement-account-control .account-select-trigger{width:100%}
     ${root} .statement-account-control :is(label,.account-select,.account-select-trigger){box-sizing:border-box;max-width:100%;min-width:0;width:100%}
     ${root} .statement-account-control .account-select-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     /* G3: the account control reads as the financial identity, not as a form field. */
-    ${root} .statement-account-control .account-select-copy{align-content:center;display:grid;gap:2px;min-width:0}
+    ${root} .statement-account-control .account-select-copy{align-content:center;display:grid;flex:1 1 auto;gap:2px;min-width:0}
     ${root} .statement-account-control .account-select-text{font-size:${typography.sizes.md};font-weight:${typography.weights.semibold};text-align:left}
+    ${root} .statement-account-control .account-select-text{overflow:visible;overflow-wrap:anywhere;text-overflow:clip;white-space:normal}
+    ${root} .statement-account-control .account-select-copy{min-width:0;overflow-wrap:anywhere}
     ${root} .statement-account-control .account-select-sub{color:var(--muted);font-size:${typography.sizes.xs};line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    ${root} .statement-account-control .account-select-trigger{background:transparent;border:0;column-gap:${spacing[2]};padding:0}
+    ${root} .statement-account-control .account-select-trigger{background:transparent;border:1px solid var(--line);border-radius:10px;column-gap:${spacing[2]};padding:0 ${spacing[4]} 0 ${spacing[1]}}
+    ${root} .statement-account-control .account-select-chevron{flex:0 0 auto;margin-inline-start:auto}
     ${root} .statement-account-control .account-select-icon{border-radius:11px;flex:0 0 auto;height:44px;overflow:hidden;width:44px}
     ${root} .statement-account-control .account-select-icon :is(img,svg){height:100%;width:100%}
     ${root} .summary-balance-line{align-items:center;display:flex;gap:${spacing[2]};min-width:0}
@@ -254,7 +262,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .filter-form .statement-search-field{grid-column:span 4}
       ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:span 3}
       ${root} .filter-form .statement-filter-actions{grid-column:span 4;flex-wrap:nowrap;justify-content:end}
-      ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
+      ${root} .statement-account-control .account-field>label#account-picker-label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
     }
     ${root} .statement-toolbar .chips{display:none}
     ${root} .statement-toolbar{padding-block:${spacing[1]}}
@@ -347,6 +355,12 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-period-control .month-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
     ${root} .statement-period-control .month-nav{background:#f8fafc;border:1px solid var(--line);border-radius:8px}
     ${root} .statement-period-control [data-month-current]{background:transparent;border:1px solid var(--line);border-radius:999px;color:var(--primary);min-height:40px;padding-inline:${spacing[3]}}
+    /* On desktop, align both period controls to the account selector (top and bottom). */
+    @media(min-width:1101px){
+      ${root} .statement-period-control{align-items:stretch;align-self:end}
+      ${root} .statement-period-control .month-nav{box-sizing:border-box;height:46px}
+      ${root} .statement-period-control [data-month-current]{box-sizing:border-box;height:46px}
+    }
     /* G2: period shortcuts reuse the canonical month/day/range query, never new state. */
     ${root} .statement-period-shortcuts{align-items:center;display:flex;flex-wrap:wrap;gap:${spacing[1]};grid-column:1/-1;min-width:0}
     ${root} .statement-period-chip{align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:999px;color:#334155;display:inline-flex;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};min-height:32px;padding:0 ${spacing[3]};text-decoration:none;white-space:nowrap}
@@ -446,8 +460,10 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body :is(.col-kind,.col-balance){color:var(--muted)}
     /* M02/M04: metadata stays secondary and on one line so it neither competes with the
        description/amount nor inflates the row height of the movement list. */
-    /* Reference status chip: a defined pill with its own glyph, not bare text. */
-    ${root} .statement-body .statement-status{align-items:center;border:1px solid transparent;display:inline-flex;gap:5px;height:auto;width:auto;max-width:100%;min-width:0;padding:3px 9px;border-radius:999px;font-size:${typography.sizes.xs};font-weight:${typography.weights.medium};white-space:nowrap}
+    /* Status keeps the semantic label in aria-label/title, while only its glyph is visible. */
+    ${root} .statement-body .statement-status{align-items:center;border:1px solid transparent;border-radius:999px;display:inline-flex;flex:0 0 auto;height:32px;justify-content:center;max-width:100%;min-width:32px;padding:0;width:32px}
+    ${root} .statement-body .col-status{justify-self:center}
+    ${root} .statement-body .statement-status-label{display:none}
     ${root} .statement-body .statement-status svg{flex:0 0 auto;height:14px;width:14px}
     ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:inherit;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
     ${root} .statement-body .statement-status-ok{background:#dcfce7;border-color:#bbf7d0;color:#166534}
@@ -479,12 +495,13 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-description>strong{font-size:${typography.sizes.md}}
     ${root} .statement-body .col-description>span,${root} .statement-body :is(.col-category,.col-kind,.col-balance){font-size:${typography.sizes.xs}}
     ${root} .statement-body .col-amount{font-size:${typography.sizes.md}}
-    ${dialog}{border:1px solid var(--line);border-radius:10px;height:fit-content;margin:auto;max-height:calc(100dvh - 32px);max-width:min(440px,calc(100% - 32px));padding:0;width:min(440px,calc(100% - 32px))}
+    html:has(body [data-golden-screen="statement"]):has(dialog[data-modal][open]){overflow-y:hidden}
+    ${dialog}{border:1px solid var(--line);border-radius:10px;height:fit-content;margin:auto;max-height:calc(100dvh - 32px);max-width:min(440px,calc(100% - 32px));overflow:hidden;padding:0;width:min(440px,calc(100% - 32px))}
     /* Both create and edit dialogs use the same centered viewport contract. Keep the PATCH
        selector for compatibility with the existing edit flow without moving either dialog. */
     ${dialog}:has(form[data-method="PATCH"]){height:fit-content;margin:auto;max-height:calc(100dvh - 32px)}
     ${dialog}::backdrop{background:rgba(15,23,42,.38)}
-    ${dialog} .modal-panel{box-sizing:border-box;min-height:100%;padding:${spacing[4]}}
+    ${dialog} .modal-panel{box-sizing:border-box;max-height:calc(100dvh - 34px);min-height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:${spacing[4]}}
     ${dialog} .statement-entry-heading>.eyebrow{display:none!important}
     ${dialog} .statement-entry-heading{border-bottom:1px solid #eef2f7;grid-column:1!important;grid-row:1;padding-bottom:${spacing[3]};padding-right:${spacing[2]}}
     ${dialog} .statement-entry-heading p{font-size:${typography.sizes.sm}}
@@ -498,12 +515,35 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .modal-panel form[data-form]>.save-row,
     ${dialog} .modal-panel form[data-form]>.statement-entry-kinds{grid-column:1/-1}
     ${dialog} .statement-entry-account input{background:#f8fafc}
+    ${dialog} [data-account-readonly-full-name]{align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:var(--radius);display:flex;font-size:${typography.sizes.sm};line-height:1.4;min-height:${density.interactiveTargetMin};overflow-wrap:anywhere;padding:${spacing[2]} ${spacing[3]};white-space:normal}
+    ${dialog} .statement-entry-account-selector{grid-column:1/-1;min-width:0}
+    ${dialog} .statement-entry-account-selector select{min-width:0;max-width:100%;width:100%}
+    ${dialog} [data-edit-account-full-name]{display:block;font-size:${typography.sizes.xs};line-height:1.4;overflow-wrap:anywhere;white-space:normal}
     ${dialog} .statement-entry-advanced{border-top:1px solid #eef2f7;padding-top:${spacing[2]}}
     ${dialog} .statement-entry-advanced>summary{color:var(--primary);cursor:pointer;font-size:${typography.sizes.sm};font-weight:${typography.weights.medium};min-height:${density.interactiveTargetMin}}
     ${dialog} .statement-entry-advanced-grid{display:grid;gap:${spacing[3]};grid-template-columns:repeat(2,minmax(0,1fr));padding-top:${spacing[2]}}
     ${dialog} .statement-entry-advanced-grid>.full{grid-column:1/-1}
     ${dialog} .save-row{align-items:center;border-top:1px solid #eef2f7;justify-content:flex-end;padding-top:${spacing[3]}}
-    ${dialog} .save-row .status-icons{margin-right:auto}
+    ${dialog} .save-row .status-icons{flex:0 0 auto;flex-wrap:nowrap;margin-right:auto}
+    ${dialog} .save-row .status-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+    ${dialog} .save-row{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;min-width:0}
+    ${dialog} .statement-save-actions{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap;gap:8px;margin-left:auto;min-width:0}
+    ${dialog} .statement-save-actions>button{flex:0 0 auto;grid-column:auto;min-width:0;white-space:nowrap}
+    ${dialog} .statement-save-actions>[data-transaction-cancel]{background:transparent;border:1px solid var(--line);color:var(--text)}
+    @media(max-width:390px){
+      ${dialog} .save-row .status-icons{width:100%}
+      /* A 320px viewport leaves less space than the natural width of both action buttons.
+         Constrain the whole row to its content box instead of clipping Cancelar offscreen. */
+      ${dialog} .statement-save-actions{box-sizing:border-box;flex:1 1 100%;justify-content:stretch;margin-left:0;max-width:100%;width:100%}
+      ${dialog} .statement-save-actions>button{box-sizing:border-box;font-size:.8125rem;min-width:0;padding-inline:6px}
+      ${dialog} .statement-save-actions>[data-transaction-cancel]{flex:0 0 auto}
+      ${dialog} .statement-save-actions>button[type=submit]{flex:1 1 0}
+    }
+    @media(max-width:360px){
+      /* Prioritize complete action labels over ornamental icons in the 320px dialog. */
+      ${dialog} .statement-save-actions [data-popup-action-icon]{display:none!important}
+      ${dialog} .statement-save-actions>button{padding-inline:4px}
+    }
     @media(max-width:1100px){
       body:has(${root}) .app-shell{grid-template-columns:1fr}
       body:has(${root}) .sidebar{background:var(--primary);border-right:0;color:#fff}
@@ -552,7 +592,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field,.statement-sort-field) select{min-width:0;width:100%}
       ${root} .statement-filter-actions{grid-column:1/-1;justify-content:stretch}
       ${root} .statement-filter-actions>button{flex:1}
-      ${dialog}{height:calc(100dvh - 32px);margin:16px auto;max-height:calc(100dvh - 32px);max-width:calc(100% - 32px);width:calc(100% - 32px)}
+      ${dialog}{height:fit-content;margin:auto;max-height:calc(100dvh - 32px);max-width:calc(100% - 32px);width:calc(100% - 32px)}
       ${dialog} .modal-panel form[data-form],${dialog} .statement-entry-advanced-grid{grid-template-columns:1fr}
       ${dialog} .statement-entry-advanced-grid>.full{grid-column:auto}
     }
@@ -589,7 +629,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
       /* Reference anatomy: check | glyph | date | description | category | value | status | actions.
          Rows and header share one track list, so the columns always line up. */
-      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 48px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) minmax(9.5rem,auto) 36px}
+      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 48px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) 3.5rem 36px}
       ${root} .statement-body{grid-template-areas:"select icon date description category amount status actions" "select icon date . . balance . actions"}
       ${root} .statement-body .col-row-icon{grid-area:icon}
       ${root} .statement-body .statement-row-footer{display:contents}
@@ -606,7 +646,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-head .col-description{grid-area:description}
       ${root} .statement-head .col-category{clip-path:none;grid-area:category;height:auto;overflow:visible;position:static;width:auto}
       ${root} .statement-head .col-amount{grid-area:amount}
-      ${root} .statement-head .col-status{grid-area:status}
+      ${root} .statement-head .col-status{grid-area:status;justify-self:center;text-align:center}
       ${root} .statement-head .col-actions{grid-area:actions}
     }
     @media(max-width:1100px){
@@ -618,15 +658,28 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-query .statement-search-field{font-size:0;line-height:0;gap:0}
       ${root} .statement-query .statement-search-field input{font-size:${typography.sizes.sm};line-height:normal}
     }
-    @media(max-width:360px){
-      ${root} .statement-account-control .account-field>label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
+    @media(max-width:430px){
       ${root} .statement-period-control{display:grid;grid-template-columns:minmax(0,1fr)}
       ${root} .statement-period-control [data-month-current]{justify-self:end}
+    }
+    @media(max-width:360px){
+      /* Keep the 320px first-viewport budget without truncating the selected account. */
+      ${root} .statement-account-heading{gap:${spacing[1]}}
+      ${root} .statement-account-control .account-field>label#account-picker-label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
       ${root} .statement-account-heading .summary-balance{align-items:baseline;display:flex;gap:${spacing[1]};justify-content:space-between}
       ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.md};white-space:nowrap}
       ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr);row-gap:0}
-      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:nowrap;gap:${spacing[1]};justify-content:space-between;padding:${spacing[1]} 0}
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:nowrap;gap:${spacing[1]};justify-content:space-between;padding:2px 0}
       ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};line-height:${typography.lineHeights.compact};white-space:nowrap;word-break:normal;width:auto}
+    }
+
+    /* F-702-04: in the two-column phone layout, a long amount needs its own
+       full-width line. Document-level overflow checks do not detect a value
+       painting into the neighbouring financial card. Preserve the full amount. */
+    @media(min-width:361px) and (max-width:760px){
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-content:start;display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
+      ${root} .summary-total-copy{display:grid;gap:2px;grid-template-columns:minmax(0,1fr);min-width:0;width:100%}
+      ${root} .summary-total-copy>strong{display:block;font-size:clamp(11px,2.9vw,13px);max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;width:100%;word-break:normal}
     }
 
     ${statementMockupControlsStyles()}
