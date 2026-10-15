@@ -1591,7 +1591,7 @@ function css(): string {
     .cards-month-jump{left:auto;right:0;transform:none}
     .cards-instrument-nav>summary span{margin-left:6px}
     .cards-master-heading{gap:8px}
-    @media(max-width:760px){.cards-invoice-period-link>span:not([aria-hidden]){display:none}.cards-invoice-period-link{justify-content:center}.cards-month-jump{left:auto;right:0;width:min(300px,calc(100vw - 44px))}}
+    @media(max-width:760px){.cards-invoice-period-link>span:not([aria-hidden]){display:none}.cards-invoice-period-link{justify-content:center}.cards-month-jump{left:auto;right:0;width:min(250px,calc(100vw - 44px))}}
   `;
 }
 
