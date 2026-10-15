@@ -265,8 +265,6 @@ A Golden Screen do Extrato (`/lancamentos`) define o **nível de acabamento**, n
 - No Chrome autenticado 1366×768, a **primeira linha de compra** deve começar antes da dobra inicial; em 390×844 e 320×740, o **valor a pagar** deve ser visível na primeira região de decisão (posição vertical inferior a 75% da viewport). O controle negativo deve deslocar temporariamente esses elementos para fora do limite, observar rejeição e restaurar sem efeitos persistentes.
 - Em fluxo normal, busca sem resultados, descrição longa e diálogos, a apresentação deve preservar leitura integral, valor/moeda, foco, alvos de toque, estado e hierarquia. Uma execução do CI ou do Chrome sem inspeção comparativa com a Golden Screen não é aceite visual independente.
 
-
-
 Ordem esperada de leitura:
 
 1. selecao do cartao e do periodo da fatura;
