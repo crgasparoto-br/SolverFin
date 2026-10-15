@@ -389,10 +389,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     html,
     /role="columnheader">Compra<\/span><span role="columnheader">Categoria<\/span><span role="columnheader">Situação/,
   );
-  assert.match(
-    html,
-    /role="cell" data-label="Categoria" class="cards-purchase-category">/,
-  );
+  assert.match(html, /role="cell" data-label="Categoria" class="cards-purchase-category">/);
   assert.match(
     html,
     /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category">/,
