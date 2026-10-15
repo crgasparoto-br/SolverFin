@@ -515,7 +515,7 @@ test("A2 consolidated USD mode preserves USD and does not merge BRL totals", asy
 });
 
 test("A2 account and consolidated cards both include FX legs while same-currency transfers net out in All accounts", async () => {
-  globalThis.fetch = mockFetch([
+  const movements: Record<string, unknown>[] = [
     {
       ...transaction("brl-out", "Transferência Bradesco → Mercado Livre", 500000, "2026-09-01"),
       kind: "transfer",
@@ -539,7 +539,21 @@ test("A2 account and consolidated cards both include FX legs while same-currency
       destinationCurrency: "BRL",
       destinationAmountMinor: 100000,
     },
-  ]);
+  ];
+  const baseFetch = mockFetch(movements);
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input), "http://solverfin.test");
+    const accountId = url.searchParams.get("accountId");
+    if (url.pathname === "/api/transactions" && accountId) {
+      return jsonResponse({
+        transactions: movements.filter(
+          (transaction) =>
+            transaction.accountId === accountId || transaction.destinationAccountId === accountId,
+        ),
+      });
+    }
+    return baseFetch(input);
+  };
   const card = (html: string, name: string) => {
     const start = html.indexOf(`data-summary-total="${name}"`);
     assert.ok(start >= 0, `Missing ${name} card`);
