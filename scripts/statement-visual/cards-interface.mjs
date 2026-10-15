@@ -120,6 +120,30 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       };
       const rows = Array.from(document.querySelectorAll('[data-purchase-item]'));
       const actions = Array.from(document.querySelectorAll('.cards-purchase-actions > summary'));
+      const statuses = Array.from(document.querySelectorAll('[data-purchase-item] .cards-purchase-status'));
+      const statusIconContract = statuses.length === rows.length && statuses.every((node) => {
+        const svg = node.querySelector('svg[aria-hidden="true"]');
+        const label = node.getAttribute('aria-label') || '';
+        const row = node.closest('[data-purchase-item]');
+        const reconciled = row?.dataset.reconciliation === 'reconciled';
+        return Boolean(
+          svg && visible(svg) && label && label === node.getAttribute('title') &&
+          label === node.dataset.tooltip && node.textContent.trim() === '' &&
+          node.getAttribute('role') === 'img' && node.tabIndex === 0 &&
+          (reconciled ? node.classList.contains('cards-purchase-status-reconciled')
+            : !node.classList.contains('cards-purchase-status-reconciled'))
+        );
+      });
+      const firstStatusSvg = statuses[0]?.querySelector('svg');
+      const originalStatusVisibility = firstStatusSvg?.style.visibility || '';
+      if (firstStatusSvg) firstStatusSvg.style.visibility = 'hidden';
+      const statusIconNegativeRejected = firstStatusSvg
+        ? getComputedStyle(firstStatusSvg).visibility === 'hidden'
+        : false;
+      if (firstStatusSvg) firstStatusSvg.style.visibility = originalStatusVisibility;
+      const statusIconRestored = firstStatusSvg
+        ? getComputedStyle(firstStatusSvg).visibility !== 'hidden'
+        : false;
       const header = document.querySelector('.cards-invoice-header');
       const master = document.querySelector('.cards-master-panel');
       const detail = document.querySelector('.cards-detail-panel');
@@ -194,6 +218,9 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
         rowCount: rows.length,
         minimumRowHeight: rows.length ? Math.min(...rows.map((row) => rect(row).height)) : 0,
         minimumActionTarget: actions.length ? Math.min(...actions.map((action) => rect(action).height)) : 0,
+        iconOnlyPurchaseStatuses: statusIconContract,
+        statusIconNegativeRejected: statusIconNegativeRejected && statusIconRestored,
+        purchaseActionIcons: actions.length > 0 && actions.every((action) => Boolean(action.querySelector('svg[aria-hidden="true"]')) && action.textContent.trim() === ''),
         filterCount: document.querySelectorAll('[data-reconciliation-toggle]').length,
         resultAnnouncement: document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '',
         invoiceCopy,
@@ -280,6 +307,12 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
   check(measurements.filterCount >= 3, "Reconciliation filters are incomplete", measurements);
   check(measurements.rowCount > 0, "Cards page rendered no purchase rows", measurements);
   check(
+    measurements.iconOnlyPurchaseStatuses && measurements.statusIconNegativeRejected,
+    "Golden Screen: purchase situations must be accessible SVG pictograms, not text badges",
+    measurements,
+  );
+  check(measurements.purchaseActionIcons, "Purchase actions must use shared SVG iconography", measurements);
+  check(
     measurements.resultAnnouncement.includes("compra"),
     "Purchase result count is not announced",
     measurements,
@@ -329,8 +362,8 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       measurements,
     );
     check(
-      measurements.mobileStatusLabel.includes("Situação"),
-      "Mobile purchase status lost its contextual label",
+      !measurements.mobileStatusLabel.includes("Situação"),
+      "Mobile purchase status duplicates the icon label instead of using tooltip/aria",
       measurements,
     );
     check(
