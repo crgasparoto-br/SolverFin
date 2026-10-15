@@ -124,6 +124,7 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       const master = document.querySelector('.cards-master-panel');
       const detail = document.querySelector('.cards-detail-panel');
       const primaryAmount = document.querySelector('.cards-invoice-primary > strong');
+      const firstPurchaseRow = rows[0];
       const status = document.querySelector('.cards-invoice-title-row .sf-badge');
       const search = document.querySelector('[data-purchase-search]');
       const invoiceNavigation = document.querySelector('.cards-invoice-period-row');
@@ -157,6 +158,11 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
         detailVisible: visible(detail),
         invoiceHeaderVisible: visible(header),
         primaryAmountVisible: visible(primaryAmount),
+        primaryAmountTop: rect(primaryAmount).top,
+        firstPurchaseRowTop: rect(firstPurchaseRow).top,
+        firstPurchaseRowBottom: rect(firstPurchaseRow).bottom,
+        masterBottom: rect(master).bottom,
+        invoiceHeaderTop: rect(header).top,
         statusVisible: visible(status),
         searchVisible: visible(search),
         searchHeight: rect(search).height,
@@ -260,6 +266,16 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
 
   if (viewportKind === "desktop") {
     check(
+      measurements.firstPurchaseRowTop < measurements.viewport.height - 15,
+      "Golden Screen: first purchase row is below the desktop fold",
+      measurements,
+    );
+    check(
+      measurements.masterBottom < measurements.viewport.height * 0.38,
+      "Golden Screen: expanded master context consumes the desktop fold",
+      measurements,
+    );
+    check(
       measurements.tableHeaderVisible,
       "Purchase table header is not visible on desktop",
       measurements,
@@ -270,6 +286,11 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       measurements,
     );
   } else {
+    check(
+      measurements.primaryAmountTop < measurements.viewport.height * 0.75,
+      "Golden Screen: invoice amount is below the mobile decision area",
+      measurements,
+    );
     check(
       measurements.heroAction.height >= 44,
       "Primary purchase action is smaller than 44px",
@@ -298,8 +319,35 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
     );
   }
 
+  const negative = await validateFirstFoldNegativeControl(cdp, viewportKind);
+  check(
+    negative.acceptedBefore && !negative.acceptedDuring && negative.acceptedAfter,
+    "Golden Screen negative control failed to reject content pushed below the fold",
+    negative,
+  );
+  measurements.firstFoldNegative = negative;
   await screenshot(cdp, join(outputDir, `cards-${captureName}.png`));
   return measurements;
+}
+
+async function validateFirstFoldNegativeControl(cdp, viewportKind) {
+  return evaluate(
+    cdp,
+    `(() => {
+      const target = document.querySelector(
+        ${JSON.stringify(viewportKind === "desktop" ? "[data-purchase-item]" : ".cards-invoice-primary > strong")}
+      );
+      if (!target) return { acceptedBefore: false, acceptedDuring: false, acceptedAfter: false };
+      const threshold = window.innerHeight * ${viewportKind === "desktop" ? "1" : "0.75"} - ${viewportKind === "desktop" ? "15" : "0"};
+      const original = target.style.transform;
+      const accepted = () => target.getBoundingClientRect().top < threshold;
+      const acceptedBefore = accepted();
+      target.style.transform = 'translateY(' + window.innerHeight + 'px)';
+      const acceptedDuring = accepted();
+      target.style.transform = original;
+      return { acceptedBefore, acceptedDuring, acceptedAfter: accepted(), threshold };
+    })()`,
+  );
 }
 
 async function validateFilteredEmpty(cdp, captureName) {
