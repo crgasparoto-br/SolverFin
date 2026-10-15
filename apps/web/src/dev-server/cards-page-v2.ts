@@ -250,10 +250,7 @@ export async function renderCardsPageV2(
   const content = renderPageContainer({
     className: "cards-a3-page",
     childrenHtml: `${renderPageHeader({
-      eyebrow: "Cartões e faturas",
-      title: "Cartões de Crédito",
-      description:
-        "Acompanhe cada cartão pela fatura selecionada e revise as compras que a compõem.",
+      title: "Faturas e compras",
       actionsHtml: renderPageActions(selectedCard, activeInstruments),
     })}${renderDetailLayout({
       masterHtml: renderCardMaster(
@@ -505,7 +502,7 @@ function renderCardMaster(
     : "/contas-cartoes";
   return `<section class="cards-master-panel" aria-labelledby="cards-master-title">
     <div class="cards-master-heading">
-      <div><span class="cards-kicker">Cartão</span><h2 id="cards-master-title">Selecionado</h2></div>
+      <div><h2 id="cards-master-title">Cartão selecionado</h2></div>
       <a class="cards-edit-link" href="${escapeHtml(manageHref)}">Gerenciar</a>
     </div>
     <form method="get" action="/cartoes" class="cards-card-picker" data-card-picker-form>
@@ -525,18 +522,18 @@ function renderCardMaster(
     </div>`
         : ""
     }
-    <dl class="cards-master-meta">
+    <details class="cards-master-details"><summary>Dados do cartão</summary><dl class="cards-master-meta">
       <div><dt>Moeda padrão</dt><dd>${escapeHtml(cardCurrency ?? "Não informada")}</dd></div>
       <div><dt>Moeda da fatura</dt><dd>${escapeHtml(invoiceCurrency ?? "Indisponível")}</dd></div>
       <div><dt>Fechamento contratual</dt><dd>Dia ${escapeHtml(String(selectedCard?.closingDay ?? "-"))}</dd></div>
       <div><dt>Vencimento contratual</dt><dd>Dia ${escapeHtml(String(selectedCard?.dueDay ?? "-"))}</dd></div>
-    </dl>
+    </dl></details>
     ${
       selectedCard && !cardCurrency
         ? `<p class="cards-card-warning" role="status">Defina a moeda padrão deste cartão antes de registrar novas compras. <a href="${escapeHtml(manageHref)}">Editar cartão</a></p>`
         : ""
     }
-    <details class="cards-instrument-nav" open>
+    <details class="cards-instrument-nav">
       <summary>Instrumentos <span>${active.length} ativos</span></summary>
       <ul>
         ${
@@ -737,7 +734,7 @@ function renderInvoiceHeader(
         }
       </div>
     </div>
-    <p class="cards-settlement-note"><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p>
+    <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
   </header>`;
 }
 
@@ -767,7 +764,7 @@ function renderInvoiceSummary(
     })}
     ${
       totals.length > 0
-        ? `<dl class="cards-limit-detail"><div><dt>Limite total</dt><dd>${money(limitTotal, currency)}</dd></div><div><dt>Limite utilizado</dt><dd>${money(limitUsed, currency)}</dd></div></dl>`
+        ? `<details class="cards-limit-detail"><summary>Detalhes do limite</summary><dl><div><dt>Limite total</dt><dd>${money(limitTotal, currency)}</dd></div><div><dt>Limite utilizado</dt><dd>${money(limitUsed, currency)}</dd></div></dl></details>`
         : ""
     }
   </section>`;
@@ -1567,6 +1564,50 @@ function css(): string {
     @media(max-width:760px){.cards-a3-page{padding:12px}.cards-a3-page .sf-page-header{align-items:stretch;display:grid}.cards-a3-page .sf-page-header-actions{justify-content:stretch}.cards-a3-page .sf-page-header-actions .sf-button{width:100%}.cards-a3-page .sf-detail-layout{display:grid;grid-template-columns:1fr}.cards-master-panel{position:static}.cards-master-meta,.cards-instrument-nav{display:none}.cards-card-identity{grid-template-columns:auto minmax(0,1fr)}.cards-card-identity .sf-badge{grid-column:2}.cards-invoice-period-row{gap:5px;grid-template-columns:minmax(0,.75fr) minmax(130px,1.5fr) minmax(0,.75fr)}.cards-invoice-period-link{gap:4px;min-height:44px;padding:5px}.cards-invoice-period-link small{display:none}.cards-invoice-period-link strong{font-size:.72rem}.cards-invoice-current>strong{font-size:.9rem}.cards-month-picker{justify-self:stretch}.cards-month-picker>summary{text-align:center}.cards-month-jump{display:grid;grid-template-columns:minmax(0,1fr) auto;left:0;right:0;transform:none}.cards-month-jump label{min-width:0}.cards-month-jump input{min-width:0;width:100%}.cards-invoice-header{grid-template-columns:1fr;padding:14px}.cards-invoice-primary{justify-items:start;min-width:0}.cards-invoice-actions{justify-content:flex-start}.cards-invoice-summary{padding:12px 14px}.cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr 1fr}.cards-detail-panel .sf-filter-bar{padding:12px 14px}.cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) auto}.cards-search-field{grid-column:1/-1}.cards-advanced-fields{left:auto;right:0;max-width:calc(100vw - 44px)}.cards-reconciliation-filters{align-items:stretch}.cards-results-status{flex-basis:100%;margin-left:0}.cards-purchase-groups{padding:12px 14px}.cards-purchase-table-head{display:none}.cards-purchase-row{align-items:start;grid-template-columns:minmax(0,1fr) auto;padding:10px}.cards-purchase-row>[data-label]::before{color:var(--muted);content:attr(data-label);display:block;font-size:.66rem;font-weight:750;margin-bottom:2px;text-transform:uppercase}.cards-purchase-row time{grid-column:1}.cards-purchase-description{grid-column:1}.cards-purchase-row>[data-label="Situação"]{grid-column:1}.cards-purchase-amount{grid-column:2;grid-row:1;text-align:right}.cards-purchase-actions{grid-column:2;grid-row:2 / span 2}.cards-dialog form{grid-template-columns:1fr}.cards-dialog .full{grid-column:auto}}
     @media(max-width:430px){.cards-invoice-summary .sf-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cards-invoice-actions{display:grid;width:100%}.cards-invoice-actions .sf-button{width:100%}.cards-filter-chip{flex:1 1 auto;justify-content:center}}
     @media(max-width:350px){.cards-invoice-period-row{gap:4px;grid-template-columns:44px minmax(0,1fr) 44px}.cards-invoice-period-link{justify-content:center;padding:0}.cards-invoice-period-link>span:not([aria-hidden]){display:none}.cards-invoice-current>strong{font-size:.86rem}.cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr}.cards-purchase-filter-form{grid-template-columns:1fr}.cards-search-field{grid-column:auto}.cards-advanced-fields{left:0;right:auto}.cards-purchase-row{gap:6px}}
+
+    /* Golden Screen #715: master context stays compact; the invoice and purchases use the full viewport. */
+    .cards-a3-page{gap:8px;padding:10px 18px}
+    .cards-a3-page .sf-detail-layout{gap:8px;grid-template-columns:minmax(0,1fr)}
+    .cards-master-panel{align-items:center;display:grid;gap:8px 14px;grid-template-columns:auto minmax(180px,.75fr) minmax(210px,1fr) auto auto;padding:9px 12px;position:static}
+    .cards-master-heading h2{font-size:.85rem;margin:0;white-space:nowrap}
+    .cards-card-picker{gap:2px}.cards-card-picker label{color:var(--muted);font-size:.7rem}
+    .cards-card-identity{background:transparent;gap:6px;padding:0}.cards-card-identity>div strong{font-size:.85rem}.cards-card-identity>div span{font-size:.72rem}
+    .cards-master-details,.cards-instrument-nav{border:0;min-width:0;padding:0;position:relative}
+    .cards-master-details>summary,.cards-instrument-nav>summary{border-radius:var(--radius);color:var(--primary);cursor:pointer;font-size:.76rem;font-weight:750;list-style:none;padding:7px 5px;white-space:nowrap}
+    .cards-master-details>summary::-webkit-details-marker{display:none}
+    .cards-master-details[open]>.cards-master-meta,.cards-instrument-nav[open]>ul{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.13);display:grid;gap:8px;max-height:50vh;min-width:225px;overflow:auto;padding:12px;position:absolute;right:0;top:calc(100% + 6px);z-index:25}
+    .cards-master-details:not([open])>.cards-master-meta{display:none}
+    .cards-invoice-navigation{align-items:center;display:flex;gap:12px;justify-content:space-between;padding:5px 12px}
+    .cards-invoice-period-row{flex:1 1 auto;gap:6px;grid-template-columns:minmax(0,1fr) minmax(145px,auto) minmax(0,1fr);max-width:650px}
+    .cards-invoice-period-link{min-height:40px;padding:3px 6px}.cards-invoice-current .cards-kicker,.cards-invoice-period-status{display:none}
+    .cards-month-picker{flex:0 0 auto;justify-self:auto}
+    .cards-invoice-header{gap:6px;padding:10px 14px}.cards-invoice-title-block h2{font-size:1.12rem}
+    .cards-invoice-primary>strong{font-size:1.6rem}.cards-invoice-actions{margin-top:2px}
+    .cards-settlement-note{font-size:.74rem;grid-column:1/-1}.cards-settlement-note summary{color:var(--primary);cursor:pointer;font-size:.72rem;font-weight:700;list-style:none}.cards-settlement-note summary::-webkit-details-marker{display:none}.cards-settlement-note p{margin:5px 0 0}
+    .cards-invoice-summary{gap:3px;padding:7px 14px}.cards-invoice-summary .sf-summary-grid{gap:2px}.cards-summary-metric{gap:3px;padding:3px 10px}
+    .cards-limit-detail{display:block;position:relative}.cards-limit-detail>summary{color:var(--primary);cursor:pointer;font-size:.72rem;font-weight:700;list-style:none}.cards-limit-detail>summary::-webkit-details-marker{display:none}.cards-limit-detail>dl{display:flex;flex-wrap:wrap;gap:14px;margin-top:5px}
+    .cards-detail-panel .sf-filter-bar{gap:6px;padding:8px 14px}.cards-purchase-groups{gap:6px;padding:8px 14px 14px}
+    .cards-instrument-group{border-left:0;border-radius:0;border-right:0}.cards-instrument-group>summary{background:transparent;border-bottom:1px solid var(--line)}
+    @media(max-width:1050px) and (min-width:761px){.cards-master-panel{grid-template-columns:auto minmax(165px,1fr) minmax(170px,1fr) auto auto;gap:8px}.cards-master-details>summary,.cards-instrument-nav>summary{font-size:.7rem}}
+    @media(max-width:760px){
+      .cards-a3-page{gap:6px;padding:8px 10px}.cards-a3-page .sf-detail-layout{gap:6px;grid-template-columns:1fr}
+      .cards-master-panel{gap:5px 8px;grid-template-columns:minmax(0,1fr) auto;padding:8px 10px}
+      .cards-master-heading{grid-column:2;grid-row:1}.cards-master-heading>div{display:none}
+      .cards-card-picker{grid-column:1;grid-row:1;min-width:0}.cards-card-picker select{min-width:0}
+      .cards-card-identity{grid-column:1/-1;grid-row:2;min-width:0}.cards-card-identity>div strong{font-size:.78rem}.cards-card-identity>div span{font-size:.7rem}
+      .cards-master-details{grid-column:1;grid-row:3}.cards-instrument-nav{grid-column:2;grid-row:3}
+      .cards-master-details>summary,.cards-instrument-nav>summary{padding:3px 0}
+      .cards-master-details[open]>.cards-master-meta{left:0;right:auto}
+      .cards-invoice-navigation{display:grid;gap:0;grid-template-columns:minmax(0,1fr) auto;padding:4px 8px}
+      .cards-invoice-period-row{gap:3px;grid-template-columns:minmax(0,.7fr) minmax(115px,1.4fr) minmax(0,.7fr)}
+      .cards-month-picker>summary{font-size:.68rem;padding:4px}
+      .cards-invoice-header{gap:6px;padding:9px 11px}
+      .cards-invoice-title-block h2{font-size:1.05rem}.cards-invoice-primary{gap:2px}
+      .cards-invoice-primary>strong{font-size:1.55rem}
+      .cards-invoice-summary{padding:6px 10px}.cards-summary-metric{padding:4px 6px}
+      .cards-detail-panel .sf-filter-bar{padding:8px 10px}.cards-purchase-groups{padding:8px 10px 10px}
+    }
+    @media(max-width:350px){.cards-invoice-period-row{grid-template-columns:38px minmax(0,1fr) 38px}.cards-master-details>summary,.cards-instrument-nav>summary{font-size:.71rem}.cards-month-picker>summary{font-size:.66rem}}
   `;
 }
 
