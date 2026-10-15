@@ -270,7 +270,7 @@ const keyScenarios = [
   // behavioral claim adapters used by cards-interface's split execution.
   {
     id: "cards-golden-715",
-    module: "scripts/statement-visual/cards-interface.mjs",
+    module: "scripts/statement-visual/cards-golden-715.mjs",
     coverage: [
       coverage({
         route: "/cartoes",
