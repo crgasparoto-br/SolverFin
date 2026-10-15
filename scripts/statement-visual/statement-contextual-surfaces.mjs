@@ -490,10 +490,17 @@ export async function validateStatementContextualSurfaces(
       expectedRightAlignmentControls,
       "Each new/edit/clone alignment regression must be exercised at all three viewports",
     );
-    const expectedFooterControls = ["new", "edit", "clone"]
-      .flatMap((state) => ["1366x768", "390x844", "320x740"]
-        .map((viewport) => `GS-CONTEXTUAL-NC-FOOTER-CLIPPED-${state}@${viewport}`))
-      .sort();
+    const expectedFooterControls = [
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new@1366x768",
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new@390x844",
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new@320x740",
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-edit@1366x768",
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-edit@390x844",
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-edit@320x740",
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-clone@1366x768",
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-clone@390x844",
+      "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-clone@320x740",
+    ].sort();
     const observedFooterControls = report.controls
       .filter(({ id }) => id.startsWith("GS-CONTEXTUAL-NC-FOOTER-CLIPPED-"))
       .map(({ id, viewport }) => `${id}@${viewport.width}x${viewport.height}`)
