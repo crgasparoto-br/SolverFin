@@ -384,6 +384,20 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /class="cards-purchase-status-cell"/);
   assert.match(html, /title="Ações da compra"><svg[^>]*aria-hidden="true"/);
   assert.doesNotMatch(html, /Ações da compra[^>]*>•••<\/summary>/);
+  // #715: category is a real sixth column, not subordinate text inside the description.
+  assert.match(
+    html,
+    /role="columnheader">Compra<\/span><span role="columnheader">Categoria<\/span><span role="columnheader">Situação/,
+  );
+  assert.match(html, /role="cell" data-label="Categoria" class="cards-purchase-category">/);
+  assert.match(
+    html,
+    /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category">/,
+  );
+  assert.match(html, /\.cards-purchase-category\{[^}]*overflow-wrap:anywhere/);
+  assert.match(html, /@media\(max-width:760px\)\{\.cards-purchase-row\{grid-template-columns:minmax\(0,1fr\) auto\}/);
+  assert.doesNotMatch(html, /<span>Sem categoria<\/span><\/div>\s*<span role="cell" data-label="Situação"/);
+
   assert.match(html, /Hotel/);
   assert.match(html, /Táxi aeroporto/);
   assert.match(html, /Parcela 2 de 3/);
