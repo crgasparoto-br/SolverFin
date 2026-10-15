@@ -285,11 +285,17 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
   // #715 Golden Screen: full-width invoice, progressive card details and buying action at the list.
-  assert.match(html, /\.cards-a3-page \.sf-detail-layout\{gap:8px;grid-template-columns:minmax\(0,1fr\)/);
+  assert.match(
+    html,
+    /\.cards-a3-page \.sf-detail-layout\{gap:8px;grid-template-columns:minmax\(0,1fr\)/,
+  );
   assert.match(html, /<details class="cards-master-details"><summary>Dados do cartão<\/summary>/);
   assert.match(html, /<details class="cards-instrument-nav">/);
   assert.doesNotMatch(html, /<details class="cards-instrument-nav" open>/);
-  assert.match(html, /<details class="cards-settlement-note"><summary>Sobre a liquidação<\/summary>/);
+  assert.match(
+    html,
+    /<details class="cards-settlement-note"><summary>Sobre a liquidação<\/summary>/,
+  );
   assert.match(html, /<details class="cards-limit-detail"><summary>Detalhes do limite<\/summary>/);
   assert.ok(
     html.indexOf('class="cards-reconciliation-filters"') <
