@@ -192,6 +192,19 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       const tableHead = document.querySelector('.cards-purchase-table-head');
       const firstDate = document.querySelector('[data-purchase-item] [data-label="Data"]');
       const firstStatus = document.querySelector('[data-purchase-item] [data-label="Situação"]');
+      const firstCategory = document.querySelector('[data-purchase-item] [data-label="Categoria"]');
+      const purchaseCategoryContract = rows.length > 0 && rows.every((row) => {
+        const cells = Array.from(row.querySelectorAll(':scope > [role="cell"]'));
+        const category = row.querySelector(':scope > .cards-purchase-category[role="cell"]');
+        const description = row.querySelector(':scope > .cards-purchase-description[role="cell"]');
+        return Boolean(
+          cells.length === 6 &&
+          category && description &&
+          category.textContent.trim() &&
+          !description.contains(category) &&
+          visible(category)
+        );
+      });
       const invoiceCopy = document.querySelector('.cards-invoice-title-block p')?.textContent || '';
       const settlementCopy = document.querySelector('.cards-settlement-note')?.textContent || '';
       const currencies = Array.from(document.querySelectorAll('.sf-money[data-currency]')).map((node) => node.getAttribute('data-currency'));
@@ -224,6 +237,15 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
         advancedFiltersCollapsed: !document.querySelector('.cards-advanced-filters')?.open,
         tableHeaderVisible: visible(tableHead),
         rowCount: rows.length,
+        categoryColumnHeader: Boolean(
+          tableHead && Array.from(tableHead.querySelectorAll('[role="columnheader"]')).some(
+            (cell) => cell.textContent.trim() === 'Categoria',
+          )
+        ),
+        categoryCellsSeparate: purchaseCategoryContract,
+        mobileCategoryLabel: firstCategory
+          ? getComputedStyle(firstCategory, '::before').content.replaceAll('"', '')
+          : '',
         minimumRowHeight: rows.length ? Math.min(...rows.map((row) => rect(row).height)) : 0,
         minimumActionTarget: actions.length ? Math.min(...actions.map((action) => rect(action).height)) : 0,
         iconOnlyPurchaseStatuses: statusIconContract,
@@ -321,6 +343,11 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
   check(measurements.filterCount >= 3, "Reconciliation filters are incomplete", measurements);
   check(measurements.rowCount > 0, "Cards page rendered no purchase rows", measurements);
   check(
+    measurements.categoryColumnHeader && measurements.categoryCellsSeparate,
+    "Golden Screen: purchase category must have its own visible table column",
+    measurements,
+  );
+  check(
     measurements.iconOnlyPurchaseStatuses && measurements.statusIconNegativeRejected,
     "Golden Screen: purchase situations must be accessible SVG pictograms, not text badges",
     measurements,
@@ -382,6 +409,11 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
     check(
       !measurements.mobileStatusLabel.includes("Situação"),
       "Mobile purchase status duplicates the icon label instead of using tooltip/aria",
+      measurements,
+    );
+    check(
+      measurements.mobileCategoryLabel.includes("Categoria"),
+      "Mobile purchase category lost its contextual label",
       measurements,
     );
     check(
