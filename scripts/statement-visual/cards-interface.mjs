@@ -396,21 +396,29 @@ async function validateModal(cdp, viewportKind, captureName = viewportKind) {
   check(measurements.insideViewport, "Purchase modal exceeds the viewport", measurements);
   check(measurements.closeTarget >= 40, "Purchase modal close action is too small", measurements);
   check(
-    measurements.closeIconText === "×" && measurements.closeIconOpacity > 0 &&
+    measurements.closeIconText === "×" &&
+      measurements.closeIconOpacity > 0 &&
       measurements.closeIconColor !== measurements.dialogBackground,
     "Purchase modal close icon is missing or visually indistinguishable",
     measurements,
   );
   // A bad close icon with zero opacity must fail: restore the original DOM style.
-  const negative = await evaluate(cdp, `(() => {
+  const negative = await evaluate(
+    cdp,
+    `(() => {
     const close = document.querySelector('dialog[data-modal="purchase"] [data-close-modal]');
     const original = close.style.opacity;
     close.style.opacity = '0';
     const rejected = getComputedStyle(close).opacity === '0';
     close.style.opacity = original;
     return { rejected, restored: Number(getComputedStyle(close).opacity) > 0 };
-  })()`);
-  check(negative.rejected && negative.restored, "Close icon negative control did not reject and restore", negative);
+  })()`,
+  );
+  check(
+    negative.rejected && negative.restored,
+    "Close icon negative control did not reject and restore",
+    negative,
+  );
   if (viewportKind === "mobile") {
     check(measurements.singleColumn, "Purchase modal is not single-column on mobile", measurements);
     check(
