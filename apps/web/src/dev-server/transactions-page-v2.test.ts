@@ -514,7 +514,7 @@ test("A2 consolidated USD mode preserves USD and does not merge BRL totals", asy
   }
 });
 
-test("A2 individual account includes both transfer directions while All accounts excludes them from cards", async () => {
+test("A2 account and consolidated cards both include FX legs while same-currency transfers net out in All accounts", async () => {
   globalThis.fetch = mockFetch([
     {
       ...transaction("brl-out", "Transferência Bradesco → Mercado Livre", 500000, "2026-09-01"),
@@ -559,8 +559,8 @@ test("A2 individual account includes both transfer directions while All accounts
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-09"),
     );
-    assert.match(card(consolidated, "income"), /R\$ 350,00/);
-    assert.match(card(consolidated, "expense"), /R\$ 0,00/);
+    assert.match(card(consolidated, "income"), /R\$ 1\.350,00/);
+    assert.match(card(consolidated, "expense"), /R\$ 5\.000,00/);
     assert.match(consolidated, /Transferência Bradesco → Mercado Livre/);
     assert.match(consolidated, /Transferência Mercado Livre → Bradesco/);
 
@@ -568,8 +568,8 @@ test("A2 individual account includes both transfer directions while All accounts
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-09"),
     );
-    assert.match(card(usdConsolidated, "income"), /US\$ 0,00/);
-    assert.match(card(usdConsolidated, "expense"), /US\$ 0,00/);
+    assert.match(card(usdConsolidated, "income"), /US\$ 950,00/);
+    assert.match(card(usdConsolidated, "expense"), /US\$ 1\.000,00/);
 
     const usdIndividual = await renderTransactionsPageV2(
       "session-token",
