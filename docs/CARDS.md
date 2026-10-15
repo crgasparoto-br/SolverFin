@@ -289,6 +289,19 @@ Os modais de compra e pagamento devem ter titulo e descricao acessiveis, fechame
 
 A validacao visual permanente usa `scripts/statement-visual/cards-interface.mjs` para os estados principal e modal em desktop e mobile, e `scripts/statement-visual/cards-interface-adversarial.mjs` para `1366x768`, arvore de acessibilidade, anuncio unico da regiao viva, agrupamentos recolhidos e fluxo completo por teclado. O workflow `Statement visual validation` deve preservar as evidencias `cards-desktop.png`, `cards-modal-desktop.png`, `cards-mobile.png`, `cards-modal-mobile.png`, `cards-compact-desktop.png`, `cards-collapsed-groups.png`, `cards-modal-compact-desktop.png`, `cards-interface.json` e `cards-interface-adversarial.json`.
 
+## Propagacao da Golden Screen — Issue #715
+
+A implementacao de `/cartoes` adota o **nivel de acabamento** do Extrato aprovado em 14/10/2026, sem copiar a geometria do Extrato. A ordem de leitura continua `cartao -> fatura -> compras` e o material de referencia integrado na `develop` e o merge da PR #713 (`b50ee44238dd9e63129ebc87a3ee31c0965b19f8`). A certificacao tecnica independente da Issue #714 e um marco distinto do aceite de produto.
+
+- **Acao principal:** quando a fatura permite liquidacao, **Liquidar fatura** tem a unica aparencia primaria no escopo da fatura; **Fechar fatura** e **Registrar compra** sao acoes secundarias, sem alterar autorizacao ou endpoints. Quando a liquidacao nao e permitida, o fechamento permanece visivel como acao secundaria.
+- **Composicao:** valor a pagar, situacao, fechamento e vencimento ficam no cabecalho da fatura; limite, conciliacao e total da fatura ficam em faixa compacta de metricas, sem uma grade de cards coloridos.
+- **Filtros:** busca e conciliacao sao visiveis; ordenacao e dia ficam em **Mais filtros**, reaberto no SSR quando filtros nao padrao estao ativos. Os inputs continuam associados ao mesmo formulario GET e preservam IDs, query params e controles existentes.
+- **Compras:** linha financeira com descricao, valor e codigo de moeda legiveis; descricao e identificacao de cartao longas podem quebrar linha, em vez de serem truncadas. Os totais por instrumento continuam usando agrupamento por moeda, nunca conversao implicita.
+- **Mobile e modais:** composicao compacta em 390x844, fallback em 320x740, rolagem interna de formulario, foco perceptivel e botoes com rotulos acessiveis.
+- **Invariantes:** ocorrencias parceladas, recorrencias, conciliacao, moeda da compra e pagamento da fatura continuam usando os contratos atuais; pagamento e liquidacao da obrigacao e nao segunda compra.
+
+A validacao visual de aceite exige cenarios reais SSR/Chrome com fatura normal, busca sem resultado, descricao longa e modal de compra em 1366x768 e 390x844, alem de 320x740 quando a composicao mudar. A matriz `requisito -> cenario -> screenshot/assertion -> SHA -> parecer independente` deve ser vinculada a Issue #715 e revisada no HEAD final. CI verde nao atesta por si so equivalencia estetica.
+
 ## Cobertura esperada
 
 A cobertura automatizada deve proteger pelo menos:
