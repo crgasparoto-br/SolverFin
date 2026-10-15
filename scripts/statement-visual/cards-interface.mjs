@@ -196,7 +196,11 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
     measurements,
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
-  check(measurements.periodsDoNotOverlap, "Invoice period navigation overlaps at this viewport", measurements);
+  check(
+    measurements.periodsDoNotOverlap,
+    "Invoice period navigation overlaps at this viewport",
+    measurements,
+  );
   check(measurements.primaryAmountVisible, "Invoice amount due is not visible", measurements);
   check(
     measurements.purchaseActionSecondary,
