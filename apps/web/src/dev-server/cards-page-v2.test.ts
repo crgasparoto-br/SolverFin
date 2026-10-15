@@ -346,6 +346,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED|editingInstallment/);
   assert.match(html, /Café/);
   assert.match(html, /data-reconciliation-toggle="reconciled"/);
+  assert.match(html, /q=a&amp;sort=amount_desc&amp;reconciliation=reconciled/);
   assert.match(html, /data-reconciliation-toggle="unreconciled"/);
   assert.match(html, /data-purchase-search/);
   assert.match(html, /value="amount_desc" selected/);
