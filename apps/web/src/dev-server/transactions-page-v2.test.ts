@@ -69,6 +69,11 @@ test("A2 transaction modal exposes status through tooltips and keeps Cancel and 
       /\.statement-save-actions\{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap/,
     );
     assert.match(html, /\.save-row\{display:flex;flex-direction:row;flex-wrap:wrap/);
+    assert.match(
+      html,
+      /\.statement-save-actions\{box-sizing:border-box;flex:1 1 100%;justify-content:stretch;margin-left:0;max-width:100%;width:100%\}/,
+    );
+    assert.match(html, /\.statement-save-actions>button\[type=submit\]\{flex:1 1 0\}/);
     assert.match(html, /\[data-transaction-cancel\].*addEventListener\("click"/s);
     assert.match(html, /button\.setAttribute\("aria-checked", String\(active\)\)/);
   } finally {
