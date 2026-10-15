@@ -727,6 +727,7 @@ function renderInvoiceHeader(
       <div class="cards-invoice-title-row"><span class="cards-kicker">Fatura selecionada</span>${renderBadge({ label: formatInvoiceStatus(status), tone: invoiceTone(status) })}</div>
       <h2 id="cards-invoice-title">${escapeHtml(formatInvoicePeriod(invoice))}</h2>
       <p>${escapeHtml(currency ?? "Moeda indisponível")} · Fechamento ${formatDate(invoice.periodEndOn)} · Vencimento ${formatDate(invoice.dueOn)}</p>
+      <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
     </div>
     <div class="cards-invoice-primary">
       <span>Valor a pagar</span><strong>${money(amountDueMinor, currency)}</strong>
@@ -739,7 +740,6 @@ function renderInvoiceHeader(
         }
       </div>
     </div>
-    <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
   </header>`;
 }
 
@@ -858,7 +858,7 @@ function renderPurchaseGroups(
     })}</div>`;
   }
   return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title">
-    <div class="cards-section-heading"><div><span class="cards-kicker">Compras</span><h3 id="cards-purchases-title">Itens da fatura</h3></div><span>${escapeHtml(invoiceCurrency ?? "Moeda indisponível")}</span></div>
+    <div class="cards-section-heading"><h3 id="cards-purchases-title">Itens da fatura</h3><span>${escapeHtml(invoiceCurrency ?? "Moeda indisponível")}</span></div>
     ${groups
       .map((group) =>
         renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
@@ -1583,6 +1583,10 @@ function css(): string {
     .cards-master-details[open]>.cards-master-meta{left:0;right:auto}.cards-invoice-navigation{display:grid;gap:0;grid-template-columns:minmax(0,1fr) auto;padding:4px 8px}.cards-invoice-period-row{gap:3px;grid-template-columns:minmax(0,.7fr) minmax(115px,1.4fr) minmax(0,.7fr)}.cards-month-picker>summary{font-size:.68rem;padding:4px}
     .cards-invoice-header{gap:6px;padding:9px 11px}.cards-invoice-title-block h2{font-size:1.05rem}.cards-invoice-primary{gap:2px}.cards-invoice-primary>strong{font-size:1.55rem}.cards-invoice-summary{padding:6px 10px}.cards-summary-metric{padding:4px 6px}
     .cards-detail-panel .sf-filter-bar{padding:8px 10px}.cards-purchase-groups{padding:8px 10px 10px}}@media(max-width:350px){.cards-invoice-period-row{grid-template-columns:38px minmax(0,1fr) 38px}.cards-master-details>summary,.cards-instrument-nav>summary{font-size:.71rem}.cards-month-picker>summary{font-size:.66rem}}
+    /* Density and responsive improvements measured against 715 Chrome evidence. */
+    .cards-search-field{font-size:0!important;gap:0!important;line-height:0!important}.cards-search-field input{font-size:.83rem;line-height:normal}
+    .cards-settlement-note{grid-column:auto}.cards-section-heading h3{font-size:.94rem;margin:0}
+    @media(max-width:760px){.cards-card-identity{grid-template-columns:26px minmax(0,1fr) auto}.cards-card-identity .sf-badge{grid-column:3}.cards-instrument-nav summary span{display:none}.cards-month-picker>summary{font-size:0!important;min-width:32px;padding:6px 3px}.cards-month-picker>summary::before{content:"Mês";font-size:.73rem}}
   `;
 }
 
