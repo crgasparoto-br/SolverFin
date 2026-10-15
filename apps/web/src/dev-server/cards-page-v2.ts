@@ -1587,6 +1587,11 @@ function css(): string {
     .cards-search-field{font-size:0!important;gap:0!important;line-height:0!important}.cards-search-field input{font-size:.83rem;line-height:normal}
     .cards-settlement-note{grid-column:auto}.cards-section-heading h3{font-size:.94rem;margin:0}
     @media(max-width:760px){.cards-card-identity{grid-template-columns:26px minmax(0,1fr) auto}.cards-card-identity .sf-badge{grid-column:3}.cards-instrument-nav summary span{display:none}.cards-month-picker>summary{font-size:0!important;min-width:32px;padding:6px 3px}.cards-month-picker>summary::before{content:"Mês";font-size:.73rem}}
+    /* #715: keep the month picker within the viewport and navigation text accessible. */
+    .cards-month-jump{left:auto;right:0;transform:none}
+    .cards-instrument-nav>summary span{margin-left:6px}
+    .cards-master-heading{gap:8px}
+    @media(max-width:760px){.cards-invoice-period-link>span:not([aria-hidden]){display:none}.cards-invoice-period-link{justify-content:center}.cards-month-jump{left:auto;right:0;width:min(300px,calc(100vw - 44px))}}
   `;
 }
 
