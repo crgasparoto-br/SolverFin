@@ -1,12 +1,5 @@
-BLOCK: certificate subject work_item_kind differs from terminal target
-BLOCK: certificate subject work_item_number differs from terminal target
-BLOCK: certificate subject pull_request differs from terminal target
-BLOCK: certificate subject issue_number differs from terminal target
-BLOCK: certificate subject pull_request_number differs from terminal target
-BLOCK: certificate subject base_ref differs from terminal target
-BLOCK: certificate subject head_ref differs from terminal target
-BLOCK: specification snapshot issue differs from terminal target
 BLOCK: certificate material_head_sha differs from terminal material head
-BLOCK: handoff child was not published; remote head is still the material head
 BLOCK: published handoff head is not a direct child of the material head
-BLOCK: published handoff commit does not contain handoff-ready.json
+BLOCK: terminal re-audit handoff requires previous audit-escape-closure snapshot
+
+negative_guard_exit_code=2

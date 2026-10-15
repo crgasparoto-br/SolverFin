@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
+  "head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
   "families": [
     {
       "family": "authorization",
@@ -72,6 +72,34 @@
       "status": "passed"
     },
     {
+      "family": "execution-state",
+      "applicable": true,
+      "reason": "Required by the existing exact-material-head requirement attack matrix, executed negative controls, and inherited controls where applicable.",
+      "control_ids": [
+        "NEG-714-ESCAPE-002",
+        "NEG-714-ESCAPE-003"
+      ],
+      "dimensions": [
+        {
+          "surface": "ci-observation",
+          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
+          "control_ids": [
+            "NEG-714-ESCAPE-002"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "post-write-barrier",
+          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
+          "control_ids": [
+            "NEG-714-ESCAPE-003"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
       "family": "historical-immutability",
       "applicable": false,
       "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
@@ -133,6 +161,25 @@
             "NEG-714-05-007",
             "NEG-714-05-008",
             "NEG-714-05-009"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "responsive-layout",
+      "applicable": true,
+      "reason": "Required by the existing exact-material-head requirement attack matrix, executed negative controls, and inherited controls where applicable.",
+      "control_ids": [
+        "NEG-714-ESCAPE-004"
+      ],
+      "dimensions": [
+        {
+          "surface": "transaction-group-layout",
+          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
+          "control_ids": [
+            "NEG-714-ESCAPE-004"
           ],
           "status": "passed"
         }
@@ -246,6 +293,38 @@
           "reason": "Documented exact-head negative control with two independent adversarial cases",
           "control_ids": [
             "NEG-714-EXTRA-03-tenant-isolation"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "visual-validation",
+      "applicable": true,
+      "reason": "Required by the existing exact-material-head requirement attack matrix, executed negative controls, and inherited controls where applicable.",
+      "control_ids": [
+        "NEG-714-ESCAPE-009",
+        "NEG-714-05-FOOTER",
+        "NEG-714-ESCAPE-010",
+        "NEG-714-05-FOOTER-GATE"
+      ],
+      "dimensions": [
+        {
+          "surface": "statement-mobile",
+          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
+          "control_ids": [
+            "NEG-714-ESCAPE-009",
+            "NEG-714-05-FOOTER"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "visual-artifact",
+          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
+          "control_ids": [
+            "NEG-714-ESCAPE-010",
+            "NEG-714-05-FOOTER-GATE"
           ],
           "status": "passed"
         }

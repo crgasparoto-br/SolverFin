@@ -3,16 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:2b189d14-9686-48d4-b156-d488a4fff13c",
+    "rejection_id": "audit-rejection:issuecomment-6189467904",
     "finding_ids": [
-      "F-714-01",
-      "F-714-02"
+      "F-714-03"
     ],
-    "audit_report_sha256": "a19c1a845cce32d1455f762a86b22f9b5e41eccbb21a754cf526a1aa8049aa9f"
+    "audit_report_sha256": "c33705c178269726c35ba37fdf030599537f5dbbcb56e0c921fa456fdbf3486f"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "Existing producer skill already requires foreign inherited handoff rejection, issue binding, documentation consistency and exact-head certificate publication; this correction applies those existing controls to issue #702/PR713 without weakening any gate."
+    "reason": "The repository already contains a Chrome negative-controls framework; F-714-03 extends it to containment of action button text and boxes in all viewport/state combinations. No global skill relaxation."
   },
   "skill_changes": []
 }

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+  "base_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/web/src/dev-server/statement-golden-refinements.ts",
+      "lines_before": 678,
+      "lines_after": 687
+    },
+    {
+      "path": "scripts/statement-visual/statement-contextual-assertions.mjs",
+      "lines_before": null,
+      "lines_after": 75
+    },
+    {
+      "path": "scripts/statement-visual/statement-contextual-surfaces.mjs",
+      "lines_before": 520,
+      "lines_after": 532
+    }
+  ],
+  "blocking_files": []
+}

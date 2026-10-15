@@ -3,50 +3,35 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
+  "candidate_head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:2b189d14-9686-48d4-b156-d488a4fff13c",
-    "audited_head_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
-    "audit_report_sha256": "e7fc962feea2dbdfcb97b185319f9a845b6c8db56ba956400e5904af47eeaefe"
+    "rejection_id": "audit-rejection:issuecomment-6189467904",
+    "audited_head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
+    "audit_report_sha256": "388cce3ba05ecffee5b12388549eecc6bfd0dfc0617f0507f2546f6e302fae7b"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "F-714-01",
+      "source_id": "F-714-03",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/specification-snapshot.json",
-        ".audit/entregar-issue/requirement-closure.json"
-      ],
-      "evidence": [
-        "old-handoff-rejection.log",
-        "evidence-714-controls.txt"
-      ],
-      "validations": [
-        "Official validate_terminal_handoff.py negatively rejects inherited #706/PR707 certificate, exit 2.",
-        "The regenerated certificate must pass builder, prepublication terminal simulator, and remote terminal guard before any branch ref update."
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "F-714-02",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "behavioral-fix",
-      "changed_files": [
-        "docs/GOLDEN_STATEMENT.md"
+        "apps/web/src/dev-server/statement-golden-refinements.ts",
+        "scripts/statement-visual/statement-contextual-surfaces.mjs",
+        "scripts/statement-visual/statement-contextual-assertions.mjs",
+        "apps/web/src/dev-server/transactions-page-v2.test.ts"
       ],
       "evidence": [
         "evidence-714-controls.txt",
-        "docs/GOLDEN_STATEMENT.md"
+        "audit-71403-original.txt"
       ],
       "validations": [
-        "Material SHA 38a498b documentation probes pass with negative mutation checks for transfer claims and Golden Screen status.",
-        "Exact-SHA Repository CI #38672933686 completed/success and Statement visual validation #38672933697 completed/success."
+        "Cancel and Save buttons contained in modal content at 320px, 390px and desktop for new/edit/clone.",
+        "Nine visual negative controls inject clipped Cancel, reject the regression and pass after restoration.",
+        "Exact-material Repository CI #38731099576 and visual validation #38731099631 (require both terminal green).",
+        "CODE-GROWTH-001 passes on 07fb199 after extracting assertions without modifying API."
       ]
     }
   ]

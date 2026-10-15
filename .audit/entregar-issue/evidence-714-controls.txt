@@ -1,18 +1,16 @@
-material_head=38a498beae70e407920bf692c03f9b0b1edd7fcd
-exact-HEAD Repository CI run 38672933686: completed/success (GitHub connector)
-exact-HEAD Statement visual validation run 38672933697: completed/success (GitHub connector)
-User visual acceptance: issue #702 comment 6181511794; not technical approval
-PASS all_same_currency_excluded
-PASS central_dialog
-PASS fx_included
-PASS golden_approved
-PASS historical_pr703
-PASS individual_transfer_included
-PASS no_code_changes_for_issue714
-PASS no_propagation_claim
-PASS transfer_tests
-NEG doc stale individual transfer phrase: rejected by real contract check
-NEG doc reverted Golden state to candidate: rejected
-NEG foreign #706/PR707 certificate: detected before rebuilding
-Financial unit test sources: transactions-statement.test.ts, transactions-consolidated.test.ts
-All downstream #715–#719 excluded from current delivery without claim of implementation
+SolverFin Golden Screen Issue #714 revalidation (material freeze evidence)
+Repository: crgasparoto-br/SolverFin
+PR: 713; base: develop; issue: 702, child issue: 714
+material_head_sha=07fb199284a7f0bab38148f33d85331aa18403d0
+Repository CI: completed/success https://github.com/crgasparoto-br/SolverFin/actions/runs/38731099576
+Statement visual validation: completed/success https://github.com/crgasparoto-br/SolverFin/actions/runs/38731099631
+Chrome artifact: 11971456285, statement-visual-evidence-07fb199284a7f0bab38148f33d85331aa18403d0
+Chrome artifact digest: sha256:e0e7ab8aabaa8e66f5cee18e4e3ef6e64cedd577195088edabb0f0a30ce4e093
+Chrome negative control source: scripts/statement-visual/statement-contextual-surfaces.mjs, GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new/edit/clone and assertContextualSurface.
+Chrome matrix: new, edit, clone each at 1366x768, 390x844, 320x740 = nine injected Cancel-left-clipping counterexamples with restored successes.
+Guard module: scripts/statement-visual/statement-contextual-assertions.mjs (unchanged assertion body from original, re-exported from original module).
+Footer implementation: apps/web/src/dev-server/statement-golden-refinements.ts; compact icons hidden on <=360px.
+Negative stale certificate source: old-handoff-rejection.log (official validate_terminal_handoff.py rejected existing 38a498b certificate against new material).
+CODE-GROWTH-001: code-growth.json official check passed at exact SHA with 532-line main and 75-line extracted module.
+Codebase grounding: codebase-grounding.json official validate_codebase_grounding.py passed at exact SHA.
+The product visual acceptance of #702 and financial rules remain unchanged. Revalidation is internal; independent auditor approval is separate.

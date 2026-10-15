@@ -2,35 +2,25 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:2b189d14-9686-48d4-b156-d488a4fff13c",
-  "head_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
+  "rejection_id": "audit-rejection:issuecomment-6189467904",
+  "head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
   "identity": {
-    "head_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
-    "material_head_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
+    "head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
+    "material_head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 702,
     "pull_request_number": 713
   },
   "findings": [
     {
-      "id": "F-714-01",
+      "id": "F-714-03",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "certificate-provenance",
-      "reason": "inherited-base-artifact",
-      "summary": "Inherited handoff proves #706/PR707 rather than #702/PR713, and no correct result-only child is published."
-    },
-    {
-      "id": "F-714-02",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "category": "canonical-doc-drift",
-      "reason": "approved-visual-and-transfer-rule-stale",
-      "summary": "Canonical statement document still labels the screen a candidate and contradicts the approved individual and consolidated transfer card treatment."
+      "category": "visual-gate-false-positive",
+      "reason": "footer-actions-clipped-at-320",
+      "summary": "Cancel clipped at 320x740 in new/edit/clone despite visual gate passing; require explicit bounds and negative mutations."
     }
   ],
   "recommendations": []

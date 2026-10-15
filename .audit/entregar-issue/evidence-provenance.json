@@ -1,26 +1,26 @@
 {
   "schema_version": 1,
-  "material_head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
+  "material_head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
   "evidence": [
     {
       "evidence_id": "EVID-714-DOC",
       "kind": "behavioral",
       "status": "passed",
       "path": "evidence-714-controls.txt",
-      "sha256": "498ce6fd784cfad527af0f9be830adb316b49841c13e7d63f31ae1b9bf06493e",
+      "sha256": "823cfc0c0174f9cd7d0cf2e431b9180bd2e3a87bc3702c4b153010a5035158d2",
       "freshness_policy": "exact-material-head",
-      "subject_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
-      "producer": "local exact-HEAD canonical contract assertions and negative mutations"
+      "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+      "producer": "GitHub Actions exact-SHA CI and Chrome plus local source checks"
     },
     {
       "evidence_id": "EVID-714-HANDOFF-NEG",
       "kind": "structural",
       "status": "passed",
       "path": "old-handoff-rejection.log",
-      "sha256": "9c15b45e98228a38aed127c947faca207c6f4700f08054a8190590283a28f4d4",
+      "sha256": "1ff320bd70f0314599e5fb780216a25861d40bb4193579fee5040210e1984b4c",
       "freshness_policy": "exact-material-head",
-      "subject_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
-      "producer": "official validate_terminal_handoff.py foreign-subject rejection on same material"
+      "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+      "producer": "official validate_terminal_handoff.py rejects legacy handoff for material"
     }
   ]
 }
