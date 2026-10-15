@@ -23,13 +23,21 @@ const report = {
   desktopModal: undefined,
   mobile: undefined,
   mobileModal: undefined,
+  compactMobile: undefined,
+  compactMobileModal: undefined,
+  longContentDesktop: undefined,
+  longContentMobile: undefined,
+  filteredEmptyMobile: undefined,
   screenshots: [],
 };
 
 await runViewportSession("desktop", 1440, 900, async (cdp) => {
   report.desktop = await validatePage(cdp, "desktop");
   report.screenshots.push("cards-desktop.png");
-  report.filteredEmpty = await validateFilteredEmpty(cdp);
+  report.filteredEmpty = await validateFilteredEmpty(cdp, "desktop");
+  report.screenshots.push("cards-empty-desktop.png");
+  report.longContentDesktop = await validateLongDescription(cdp, "desktop");
+  report.screenshots.push("cards-long-desktop.png");
   report.desktopModal = await validateModal(cdp, "desktop");
   report.screenshots.push("cards-modal-desktop.png");
 });
@@ -37,8 +45,19 @@ await runViewportSession("desktop", 1440, 900, async (cdp) => {
 await runViewportSession("mobile", 390, 844, async (cdp) => {
   report.mobile = await validatePage(cdp, "mobile");
   report.screenshots.push("cards-mobile.png");
+  report.longContentMobile = await validateLongDescription(cdp, "mobile");
+  report.screenshots.push("cards-long-mobile.png");
+  report.filteredEmptyMobile = await validateFilteredEmpty(cdp, "mobile");
+  report.screenshots.push("cards-empty-mobile.png");
   report.mobileModal = await validateModal(cdp, "mobile");
   report.screenshots.push("cards-modal-mobile.png");
+});
+
+await runViewportSession("compact-mobile", 320, 740, async (cdp) => {
+  report.compactMobile = await validatePage(cdp, "mobile", "compact-mobile");
+  report.screenshots.push("cards-compact-mobile.png");
+  report.compactMobileModal = await validateModal(cdp, "mobile", "compact-mobile");
+  report.screenshots.push("cards-modal-compact-mobile.png");
 });
 
 await writeFile(join(outputDir, "cards-interface.json"), `${JSON.stringify(report, null, 2)}\n`);
@@ -78,7 +97,7 @@ async function openCards(cdp) {
   await waitFor(cdp, "[data-purchase-item]");
 }
 
-async function validatePage(cdp, viewportKind) {
+async function validatePage(cdp, viewportKind, captureName = viewportKind) {
   const measurements = await evaluate(
     cdp,
     `(() => {
@@ -119,6 +138,11 @@ async function validatePage(cdp, viewportKind) {
         searchVisible: visible(search),
         searchHeight: rect(search).height,
         heroAction: rect(document.querySelector('[data-open-modal="purchase"]')),
+        purchaseActionSecondary: Boolean(document.querySelector('[data-open-modal="purchase"].sf-button-secondary')),
+        closeActionSecondary: !document.querySelector('[data-api-path$="/close"]') || Boolean(document.querySelector('[data-api-path$="/close"].sf-button-secondary')),
+        payActionPrimary: !document.querySelector('[data-open-modal="payment"]') || Boolean(document.querySelector('[data-open-modal="payment"].sf-button-primary')),
+        primaryInvoiceActionCount: document.querySelectorAll('.cards-invoice-header .sf-button-primary').length,
+        advancedFiltersCollapsed: !document.querySelector('.cards-advanced-filters')?.open,
         tableHeaderVisible: visible(tableHead),
         rowCount: rows.length,
         minimumRowHeight: rows.length ? Math.min(...rows.map((row) => rect(row).height)) : 0,
@@ -148,6 +172,11 @@ async function validatePage(cdp, viewportKind) {
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
   check(measurements.primaryAmountVisible, "Invoice amount due is not visible", measurements);
+  check(measurements.purchaseActionSecondary, "Purchase action competes with invoice decision", measurements);
+  check(measurements.closeActionSecondary, "Close action competes with settlement", measurements);
+  check(measurements.payActionPrimary, "Settlement is not the invoice primary action", measurements);
+  check(measurements.primaryInvoiceActionCount <= 1, "Invoice has competing primary actions", measurements);
+  check(measurements.advancedFiltersCollapsed, "Unused advanced filters occupy the viewport", measurements);
   check(measurements.statusVisible, "Invoice status is not visible", measurements);
   check(
     measurements.invoiceCopy.includes("Fechamento") &&
@@ -223,11 +252,11 @@ async function validatePage(cdp, viewportKind) {
     );
   }
 
-  await screenshot(cdp, join(outputDir, `cards-${viewportKind}.png`));
+  await screenshot(cdp, join(outputDir, `cards-${captureName}.png`));
   return measurements;
 }
 
-async function validateFilteredEmpty(cdp) {
+async function validateFilteredEmpty(cdp, captureName) {
   const current = await evaluate(cdp, "window.location.href");
   const filteredUrl = new URL(current);
   filteredUrl.searchParams.set("q", "__solverfin_no_purchase_matches__");
@@ -252,11 +281,61 @@ async function validateFilteredEmpty(cdp) {
     result,
   );
 
+  await screenshot(cdp, join(outputDir, `cards-empty-${captureName}.png`));
   await openCards(cdp);
   return result;
 }
 
-async function validateModal(cdp, viewportKind) {
+async function validateLongDescription(cdp, captureName) {
+  const original = await evaluate(
+    cdp,
+    `(() => {
+      const description = document.querySelector('[data-purchase-item] .cards-purchase-description strong');
+      if (!description) return null;
+      const html = description.innerHTML;
+      description.textContent = 'Assinatura internacional recorrente com uma descricao operacional extensa para validar leitura integral, valor e moeda sem truncamento no extrato do cartao';
+      return html;
+    })()`,
+  );
+  assert.notEqual(original, null, "No purchase description for long-content validation");
+  await sleep(80);
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const text = document.querySelector('[data-purchase-item] .cards-purchase-description strong');
+      const amount = document.querySelector('[data-purchase-item] .cards-purchase-amount');
+      const row = document.querySelector('[data-purchase-item]');
+      const style = getComputedStyle(text);
+      const descriptionRect = text.getBoundingClientRect();
+      const amountRect = amount.getBoundingClientRect();
+      const rowRect = row.getBoundingClientRect();
+      return {
+        viewport: window.innerWidth,
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+        whiteSpace: style.whiteSpace,
+        ellipsis: style.textOverflow === 'ellipsis',
+        lineWrap: descriptionRect.height > parseFloat(style.lineHeight) * 1.4,
+        rowInViewport: rowRect.left >= -1 && rowRect.right <= window.innerWidth + 1,
+        amountVisible: amountRect.width > 0 && amountRect.right <= window.innerWidth + 1,
+        currencyVisible: Boolean(amount.querySelector('.sf-money[data-currency]')),
+      };
+    })()`,
+  );
+  check(result.noHorizontalOverflow, "Long description causes horizontal overflow", result);
+  check(result.whiteSpace !== "nowrap" && !result.ellipsis && result.lineWrap, "Long description is truncated", result);
+  check(result.rowInViewport && result.amountVisible && result.currencyVisible, "Long description hides actions, values or currency", result);
+  await screenshot(cdp, join(outputDir, `cards-long-${captureName}.png`));
+  await evaluate(
+    cdp,
+    `(() => {
+      const description = document.querySelector('[data-purchase-item] .cards-purchase-description strong');
+      if (description) description.innerHTML = ${JSON.stringify(original)};
+    })()`,
+  );
+  return result;
+}
+
+async function validateModal(cdp, viewportKind, captureName = viewportKind) {
   await evaluate(cdp, `document.querySelector('[data-open-modal="purchase"]')?.click()`);
   await waitFor(cdp, 'dialog[data-modal="purchase"][open]');
   const measurements = await evaluate(
@@ -290,7 +369,7 @@ async function validateModal(cdp, viewportKind) {
       measurements,
     );
   }
-  await screenshot(cdp, join(outputDir, `cards-modal-${viewportKind}.png`));
+  await screenshot(cdp, join(outputDir, `cards-modal-${captureName}.png`));
   await evaluate(
     cdp,
     `document.querySelector('dialog[data-modal="purchase"] [data-close-modal]')?.click()`,
