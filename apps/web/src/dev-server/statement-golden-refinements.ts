@@ -532,8 +532,12 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .statement-save-actions>[data-transaction-cancel]{background:transparent;border:1px solid var(--line);color:var(--text)}
     @media(max-width:390px){
       ${dialog} .save-row .status-icons{width:100%}
-      ${dialog} .statement-save-actions{justify-content:flex-end;width:100%}
-      ${dialog} .statement-save-actions>button{font-size:.8125rem;padding-inline:8px}
+      /* A 320px viewport leaves less space than the natural width of both action buttons.
+         Constrain the whole row to its content box instead of clipping Cancelar offscreen. */
+      ${dialog} .statement-save-actions{box-sizing:border-box;flex:1 1 100%;justify-content:stretch;margin-left:0;max-width:100%;width:100%}
+      ${dialog} .statement-save-actions>button{box-sizing:border-box;font-size:.8125rem;min-width:0;padding-inline:6px}
+      ${dialog} .statement-save-actions>[data-transaction-cancel]{flex:0 0 auto}
+      ${dialog} .statement-save-actions>button[type=submit]{flex:1 1 0}
     }
     @media(max-width:1100px){
       body:has(${root}) .app-shell{grid-template-columns:1fr}
