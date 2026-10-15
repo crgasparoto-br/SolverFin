@@ -56,6 +56,31 @@ export async function validateStatementContextualSurfaces(
       const panel = surface?.querySelector('.modal-panel');
       const footerCancel = surface?.querySelector('[data-transaction-cancel]');
       const footerSave = surface?.querySelector('.statement-save-actions > button[type="submit"]');
+      const panelBox = panel?.getBoundingClientRect();
+      const panelStyle = panel ? getComputedStyle(panel) : null;
+      const panelContentLeft = panelBox && panelStyle
+        ? panelBox.left + parseFloat(panelStyle.paddingLeft) : null;
+      const panelContentRight = panelBox && panelStyle
+        ? panelBox.right - parseFloat(panelStyle.paddingRight) : null;
+      const footerButtonFits = (button) => {
+        if (!button || panelContentLeft === null || panelContentRight === null) return false;
+        const bounds = button.getBoundingClientRect();
+        const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+        let textNode = walker.nextNode();
+        while (textNode) {
+          if (textNode.textContent.trim()) {
+            const textRange = document.createRange();
+            textRange.selectNodeContents(textNode);
+            for (const rect of textRange.getClientRects()) {
+              if (rect.left < bounds.left - 1 || rect.right > bounds.right + 1) return false;
+            }
+          }
+          textNode = walker.nextNode();
+        }
+        return bounds.width > 0 && bounds.height > 0 &&
+          bounds.left >= panelContentLeft - 1 && bounds.right <= panelContentRight + 1 &&
+          button.scrollWidth <= button.clientWidth + 1;
+      };
       const statusOptions = [...(surface?.querySelectorAll('.status-icon-btn[data-status-option]') || [])];
       const statusText = surface?.querySelector('.status-icons [data-status-label]');
       return { visible: !!box?.width && !!box?.height,
@@ -75,6 +100,7 @@ export async function validateStatementContextualSurfaces(
         footerActionRowDelta: footerCancel && footerSave
           ? Math.abs(footerCancel.getBoundingClientRect().top - footerSave.getBoundingClientRect().top)
           : null,
+        footerActionsContained: footerButtonFits(footerCancel) && footerButtonFits(footerSave),
         tooltipStatusCount: statusOptions.filter(node => node.title && node.title === node.getAttribute('aria-label')).length,
         statusLabelVisuallyHidden: !!statusText && statusText.getBoundingClientRect().width <= 1,
         horizontalCenterDelta: box ? Math.abs(box.left - (innerWidth - box.right)) : null,
@@ -178,6 +204,38 @@ export async function validateStatementContextualSurfaces(
         viewport: { width, height },
         mutation: "Dialog right-aligned but entirely inside the viewport",
         rejectedBecause: centerError,
+        restored: "passed",
+      });
+      const originalCancelStyle = await read(`(() => {
+        const button = document.querySelector(${JSON.stringify(selector)}).querySelector('[data-transaction-cancel]');
+        const original = button.getAttribute('style');
+        button.style.setProperty('transform', 'translateX(-120px)', 'important');
+        return original;
+      })()`);
+      let footerError;
+      try {
+        const clipped = await measure(selector);
+        assert.throws(
+          () => assertContextualSurface(clipped, state, true),
+          (error) => {
+            footerError = error.message;
+            return error.code === "ERR_ASSERTION" && /footer actions/.test(error.message);
+          },
+        );
+      } finally {
+        await read(`(() => {
+          const button = document.querySelector(${JSON.stringify(selector)}).querySelector('[data-transaction-cancel]');
+          const original = ${JSON.stringify(originalCancelStyle)};
+          if (original === null) button.removeAttribute('style');
+          else button.setAttribute('style', original);
+        })()`);
+      }
+      assertContextualSurface(await measure(selector), state, true);
+      report.controls.push({
+        id: "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-" + state,
+        viewport: { width, height },
+        mutation: "Cancel button shifted outside the dialog content box without changing the row",
+        rejectedBecause: footerError,
         restored: "passed",
       });
     }
@@ -432,6 +490,19 @@ export async function validateStatementContextualSurfaces(
       expectedRightAlignmentControls,
       "Each new/edit/clone alignment regression must be exercised at all three viewports",
     );
+    const expectedFooterControls = ["new", "edit", "clone"]
+      .flatMap((state) => ["1366x768", "390x844", "320x740"]
+        .map((viewport) => `GS-CONTEXTUAL-NC-FOOTER-CLIPPED-${state}@${viewport}`))
+      .sort();
+    const observedFooterControls = report.controls
+      .filter(({ id }) => id.startsWith("GS-CONTEXTUAL-NC-FOOTER-CLIPPED-"))
+      .map(({ id, viewport }) => `${id}@${viewport.width}x${viewport.height}`)
+      .sort();
+    assert.deepEqual(
+      observedFooterControls,
+      expectedFooterControls,
+      "Each new/edit/clone footer clipping regression must run at all three viewports",
+    );
     report.status = "passed";
   } catch (error) {
     report.status = "failed";
@@ -472,6 +543,11 @@ export function assertContextualSurface(measured, state, dialog) {
       assert.ok(
         measured.footerActionRowDelta !== null && measured.footerActionRowDelta <= 2,
         `${state}: Cancel and Save must share a row`,
+      );
+      assert.equal(
+        measured.footerActionsContained,
+        true,
+        `${state}: footer actions must fit fully inside the dialog content area`,
       );
       assert.equal(
         measured.tooltipStatusCount,
