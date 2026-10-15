@@ -28,6 +28,13 @@ export function assertContextualSurface(measured, state, dialog) {
         true,
         `${state}: footer actions must fit fully inside the dialog content area`,
       );
+      for (const action of ["cancel", "save"]) {
+        const height = measured.footerActionHeights?.[action];
+        assert.ok(
+          Number.isFinite(height) && height >= 44,
+          `${state}: ${action} footer touch target must be at least 44px high (got ${height ?? "missing"}px)`,
+        );
+      }
       assert.equal(
         measured.tooltipStatusCount,
         3,
