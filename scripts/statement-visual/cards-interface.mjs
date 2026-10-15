@@ -25,6 +25,7 @@ const report = {
   mobileModal: undefined,
   compactMobile: undefined,
   compactMobileModal: undefined,
+  longContentCompactMobile: undefined,
   longContentDesktop: undefined,
   longContentMobile: undefined,
   filteredEmptyMobile: undefined,
@@ -56,6 +57,8 @@ await runViewportSession("mobile", 390, 844, async (cdp) => {
 await runViewportSession("compact-mobile", 320, 740, async (cdp) => {
   report.compactMobile = await validatePage(cdp, "mobile", "compact-mobile");
   report.screenshots.push("cards-compact-mobile.png");
+  report.longContentCompactMobile = await validateLongDescription(cdp, "compact-mobile");
+  report.screenshots.push("cards-long-compact-mobile.png");
   report.compactMobileModal = await validateModal(cdp, "mobile", "compact-mobile");
   report.screenshots.push("cards-modal-compact-mobile.png");
 });
