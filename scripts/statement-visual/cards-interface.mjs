@@ -29,10 +29,11 @@ const report = {
   longContentDesktop: undefined,
   longContentMobile: undefined,
   filteredEmptyMobile: undefined,
+  filteredEmptyCompactMobile: undefined,
   screenshots: [],
 };
 
-await runViewportSession("desktop", 1440, 900, async (cdp) => {
+await runViewportSession("desktop", 1366, 768, async (cdp) => {
   report.desktop = await validatePage(cdp, "desktop");
   report.screenshots.push("cards-desktop.png");
   report.filteredEmpty = await validateFilteredEmpty(cdp, "desktop");
@@ -59,6 +60,8 @@ await runViewportSession("compact-mobile", 320, 740, async (cdp) => {
   report.screenshots.push("cards-compact-mobile.png");
   report.longContentCompactMobile = await validateLongDescription(cdp, "compact-mobile");
   report.screenshots.push("cards-long-compact-mobile.png");
+  report.filteredEmptyCompactMobile = await validateFilteredEmpty(cdp, "compact-mobile");
+  report.screenshots.push("cards-empty-compact-mobile.png");
   report.compactMobileModal = await validateModal(cdp, "mobile", "compact-mobile");
   report.screenshots.push("cards-modal-compact-mobile.png");
 });
@@ -379,6 +382,10 @@ async function validateModal(cdp, viewportKind, captureName = viewportKind) {
         labelled: Boolean(dialog?.getAttribute('aria-labelledby')),
         insideViewport: Boolean(rect && rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1),
         closeTarget: close?.getBoundingClientRect().height || 0,
+        closeIconText: close?.textContent?.trim() || "",
+        closeIconColor: close ? getComputedStyle(close).color : "",
+        dialogBackground: dialog ? getComputedStyle(dialog).backgroundColor : "",
+        closeIconOpacity: close ? Number(getComputedStyle(close).opacity) : 0,
         singleColumn: style?.gridTemplateColumns ? style.gridTemplateColumns.split(' ').length === 1 : false,
         minimumActionHeight: buttons.length ? Math.min(...buttons.map((button) => button.getBoundingClientRect().height)) : 0,
       };
@@ -388,6 +395,22 @@ async function validateModal(cdp, viewportKind, captureName = viewportKind) {
   check(measurements.labelled, "Purchase modal is not labelled", measurements);
   check(measurements.insideViewport, "Purchase modal exceeds the viewport", measurements);
   check(measurements.closeTarget >= 40, "Purchase modal close action is too small", measurements);
+  check(
+    measurements.closeIconText === "×" && measurements.closeIconOpacity > 0 &&
+      measurements.closeIconColor !== measurements.dialogBackground,
+    "Purchase modal close icon is missing or visually indistinguishable",
+    measurements,
+  );
+  // A bad close icon with zero opacity must fail: restore the original DOM style.
+  const negative = await evaluate(cdp, `(() => {
+    const close = document.querySelector('dialog[data-modal="purchase"] [data-close-modal]');
+    const original = close.style.opacity;
+    close.style.opacity = '0';
+    const rejected = getComputedStyle(close).opacity === '0';
+    close.style.opacity = original;
+    return { rejected, restored: Number(getComputedStyle(close).opacity) > 0 };
+  })()`);
+  check(negative.rejected && negative.restored, "Close icon negative control did not reject and restore", negative);
   if (viewportKind === "mobile") {
     check(measurements.singleColumn, "Purchase modal is not single-column on mobile", measurements);
     check(
