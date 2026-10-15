@@ -272,10 +272,7 @@ export async function validateStatementContextualSurfaces(
             () => assertContextualSurface(tooSmall, state, true),
             (error) => {
               touchError = error.message;
-              return (
-                error.code === "ERR_ASSERTION" &&
-                /footer touch target/.test(error.message)
-              );
+              return error.code === "ERR_ASSERTION" && /footer touch target/.test(error.message);
             },
           );
         } finally {
