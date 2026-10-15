@@ -76,7 +76,7 @@ test("A2 transaction modal exposes status through tooltips and keeps Cancel and 
     assert.match(html, /\.statement-save-actions>button\[type=submit\]\{flex:1 1 0\}/);
     assert.match(
       html,
-      /\\.statement-save-actions>button\\{flex:0 0 auto;grid-column:auto;min-width:0;min-height:44px;white-space:nowrap\\}/,
+      /\.statement-save-actions>button\{flex:0 0 auto;grid-column:auto;min-width:0;min-height:44px;white-space:nowrap\}/,
     );
     assert.match(
       html,
