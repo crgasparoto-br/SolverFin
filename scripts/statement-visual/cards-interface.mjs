@@ -128,6 +128,19 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       const status = document.querySelector('.cards-invoice-title-row .sf-badge');
       const search = document.querySelector('[data-purchase-search]');
       const invoiceNavigation = document.querySelector('.cards-invoice-period-row');
+      const monthPicker = document.querySelector('.cards-month-picker');
+      const monthPopup = monthPicker?.querySelector('.cards-month-jump');
+      const originallyOpen = Boolean(monthPicker?.open);
+      if (monthPicker) monthPicker.open = true;
+      const popupRect = rect(monthPopup);
+      const popupInsideViewport = popupRect.width > 0 && popupRect.left >= -1 &&
+        popupRect.right <= window.innerWidth + 1;
+      const originalTransform = monthPopup?.style.transform || '';
+      if (monthPopup) monthPopup.style.transform = 'translateX(100vw)';
+      const popupNegativeRejected = rect(monthPopup).right > window.innerWidth;
+      if (monthPopup) monthPopup.style.transform = originalTransform;
+      const popupRestored = rect(monthPopup).right <= window.innerWidth + 1;
+      if (monthPicker) monthPicker.open = originallyOpen;
       const previousPeriod = invoiceNavigation?.querySelector('.cards-invoice-period-link-previous');
       const currentPeriod = invoiceNavigation?.querySelector('.cards-invoice-current');
       const nextPeriod = invoiceNavigation?.querySelector('.cards-invoice-period-link-next');
@@ -167,6 +180,9 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
         searchVisible: visible(search),
         searchHeight: rect(search).height,
         periodsDoNotOverlap,
+        monthPopupInsideViewport: popupInsideViewport,
+        monthPopupNegativeRejected: popupNegativeRejected && popupRestored,
+        monthPopupRect: popupRect,
         periodNavigationRects: [previousPeriod, currentPeriod, nextPeriod].map(rect),
         heroAction: rect(document.querySelector('[data-open-modal="purchase"]')),
         purchaseActionSecondary: Boolean(document.querySelector('[data-open-modal="purchase"].sf-button-secondary')),
@@ -205,6 +221,11 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
   check(
     measurements.periodsDoNotOverlap,
     "Invoice period navigation overlaps at this viewport",
+    measurements,
+  );
+  check(
+    measurements.monthPopupInsideViewport && measurements.monthPopupNegativeRejected,
+    "Invoice month picker escapes the viewport or its negative control fails",
     measurements,
   );
   check(measurements.primaryAmountVisible, "Invoice amount due is not visible", measurements);
