@@ -17,6 +17,12 @@ A mesma tela terá dois modos de leitura:
 
 Cada linha da lista identifica a conta abaixo da descrição; transferências mostram origem → destino. **Decisão posterior (2026-10-14):** o menu **Ações** do consolidado oferece as mesmas operações da conta individual (**Editar, Conciliar/Desconciliar, Clonar, Excluir** e ações de recorrência quando aplicáveis), além do atalho **Ver na conta**. As operações por ID continuam usando os endpoints já existentes, com confirmação para exclusão. O formulário de edição/clonagem carrega a **conta de origem real do lançamento** e a moeda correspondente, mesmo quando o lançamento aparece pela perna de destino na visão consolidada de outra moeda; somente libera o botão Salvar quando essa conta é conhecida e possui moeda válida. Abrir novo lançamento no consolidado sem conta individual selecionada continua impedido de salvar. O atalho Ver na conta navega para o extrato da conta que pertence à moeda selecionada: origem para perna enviada, destino para perna recebida. O texto auxiliar indica **Enviada para** ou **Recebida de** a partir dessa mesma perspectiva, evitando contexto contraditório em transferências cambiais.
 
+## Indicadores financeiros por modo (decisão complementar de 15/10/2026)
+
+- **Conta individual:** Entradas soma receitas e transferências recebidas; Saídas soma despesas e transferências enviadas, com sinal por conta selecionada. Transferências cambiais usam o valor nativo da perna da conta (\`destinationAmountMinor\` ao receber).
+- **Todas as contas:** Entradas e Saídas **desconsideram apenas transferências internas entre contas da mesma moeda**. **Transferências cambiais permanecem nos cards** como entrada ou saída na moeda filtrada, sem conversão implícita. Transferências internas continuam visíveis na listagem, mas sem dupla contabilização. A alteração dos cards não altera saldos ou o tipo da transação.
+- Lançamentos previstos seguem os contratos de saldo projetado/efetivo; transações anuladas continuam excluídas.
+
 ## Regras financeiras
 
 1. Saldo inicial consolidado = soma dos saldos de abertura das contas ativas selecionadas + movimentos efetivos anteriores ao período.
