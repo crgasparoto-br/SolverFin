@@ -380,10 +380,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     html,
     /class="cards-purchase-status cards-purchase-status-planned" role="img" tabindex="0" aria-label="Planejada" title="Planejada" data-tooltip="Planejada"><svg/,
   );
-  assert.doesNotMatch(html, /data-label="Situação">\\s*<span class="sf-badge/);
+  assert.doesNotMatch(html, /data-label="Situação">\s*<span class="sf-badge/);
   assert.match(html, /class="cards-purchase-status-cell"/);
   assert.match(html, /title="Ações da compra"><svg[^>]*aria-hidden="true"/);
-  assert.doesNotMatch(html, /Ações da compra[^>]*>•••<\\/summary>/);
+  assert.doesNotMatch(html, /Ações da compra[^>]*>•••<\/summary>/);
   assert.match(html, /Hotel/);
   assert.match(html, /Táxi aeroporto/);
   assert.match(html, /Parcela 2 de 3/);
