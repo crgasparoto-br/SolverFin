@@ -1,1 +1,18 @@
-{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:2b17854d-b11b-4434-9dd1-5915b35ef461","finding_ids":["A-001","A-002"],"audit_report_sha256":"0d6a533da446bbbd3dae4dce822b871dfe93386a27c8eb9647120f522125bc19"},"generalized_learning":{"promotion_status":"not-required","reason":"Existing controls already require post-write-refreeze, authoritative exact-head workflow evidence, and the mobile density negative control; this rejection required targeted implementation remediation rather than a new global rule."},"skill_changes":[]}
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:2b189d14-9686-48d4-b156-d488a4fff13c",
+    "finding_ids": [
+      "F-714-01",
+      "F-714-02"
+    ],
+    "audit_report_sha256": "a19c1a845cce32d1455f762a86b22f9b5e41eccbb21a754cf526a1aa8049aa9f"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "Existing producer skill already requires foreign inherited handoff rejection, issue binding, documentation consistency and exact-head certificate publication; this correction applies those existing controls to issue #702/PR713 without weakening any gate."
+  },
+  "skill_changes": []
+}

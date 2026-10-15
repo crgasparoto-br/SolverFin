@@ -3,32 +3,50 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "candidate_head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
-    "audited_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
-    "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
+    "rejection_id": "audit-rejection:2b189d14-9686-48d4-b156-d488a4fff13c",
+    "audited_head_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
+    "audit_report_sha256": "e7fc962feea2dbdfcb97b185319f9a845b6c8db56ba956400e5904af47eeaefe"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-002",
+      "source_id": "F-714-01",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "targeted-regression",
+      "closure_kind": "behavioral-fix",
       "changed_files": [
-        "apps/api/src/repositories/cash-flow-projection.ts",
-        "apps/api/src/cash-flow-projection.integration.test.ts"
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/specification-snapshot.json",
+        ".audit/entregar-issue/requirement-closure.json"
       ],
       "evidence": [
-        "evidence/handoff-remediation-675.txt",
-        "apps/api/src/cash-flow-projection.integration.test.ts"
+        "old-handoff-rejection.log",
+        "evidence-714-controls.txt"
       ],
       "validations": [
-        "Delivery V2 CI run 36035406314 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
-        "Statement visual validation run 36035406276 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
-        "Regression covers known-zero JPY, filtered missing EUR, and unfiltered commitment-only EUR without active-account provenance."
+        "Official validate_terminal_handoff.py negatively rejects inherited #706/PR707 certificate, exit 2.",
+        "The regenerated certificate must pass builder, prepublication terminal simulator, and remote terminal guard before any branch ref update."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "F-714-02",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "docs/GOLDEN_STATEMENT.md"
+      ],
+      "evidence": [
+        "evidence-714-controls.txt",
+        "docs/GOLDEN_STATEMENT.md"
+      ],
+      "validations": [
+        "Material SHA 38a498b documentation probes pass with negative mutation checks for transfer claims and Golden Screen status.",
+        "Exact-SHA Repository CI #38672933686 completed/success and Statement visual validation #38672933697 completed/success."
       ]
     }
   ]

@@ -1,19 +1,88 @@
 {
   "schema_version": 1,
-  "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
   "families": [
     {
       "family": "authorization",
       "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
     },
     {
-      "family": "tenant-isolation",
+      "family": "concurrency-atomicity",
       "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Required by current obligations or retained historical independent audit escape proof.",
+      "control_ids": [
+        "NEG-714-01-001",
+        "NEG-714-01-002",
+        "NEG-714-01-003",
+        "NEG-714-01-004",
+        "NEG-714-01-005",
+        "NEG-714-01-006",
+        "NEG-714-02-003",
+        "NEG-714-02-004",
+        "NEG-714-02-005",
+        "NEG-714-04-001",
+        "NEG-714-05-001",
+        "NEG-714-05-004",
+        "NEG-714-05-005",
+        "NEG-714-05-006",
+        "NEG-714-05-010",
+        "NEG-714-05-011",
+        "NEG-714-05-012",
+        "NEG-714-ESCAPE-001"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "Documented exact-head negative control with two independent adversarial cases",
+          "control_ids": [
+            "NEG-714-01-001",
+            "NEG-714-01-002",
+            "NEG-714-01-003",
+            "NEG-714-01-004",
+            "NEG-714-01-005",
+            "NEG-714-01-006",
+            "NEG-714-02-003",
+            "NEG-714-02-004",
+            "NEG-714-02-005",
+            "NEG-714-04-001",
+            "NEG-714-05-001",
+            "NEG-714-05-004",
+            "NEG-714-05-005",
+            "NEG-714-05-006",
+            "NEG-714-05-010",
+            "NEG-714-05-011",
+            "NEG-714-05-012",
+            "NEG-714-ESCAPE-001"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -21,15 +90,17 @@
     {
       "family": "public-boundary",
       "applicable": true,
-      "reason": "Unavailable is a public API and UI state.",
+      "reason": "Current #714 issue obligations or inherited exact-head risk surface require this family.",
       "control_ids": [
+        "NEG-714-INHERITED-PUBLIC-BOUNDARY",
         "FREE-TO-SPEND-PUBLIC-001"
       ],
       "dimensions": [
         {
           "surface": "free-to-spend-contract",
-          "reason": "Synthetic numerics are forbidden when the mandatory source is absent.",
+          "reason": "Documented exact-head negative control with two independent adversarial cases",
           "control_ids": [
+            "NEG-714-INHERITED-PUBLIC-BOUNDARY",
             "FREE-TO-SPEND-PUBLIC-001"
           ],
           "status": "passed"
@@ -39,56 +110,39 @@
     },
     {
       "family": "reference-liveness",
-      "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "temporal-consistency",
-      "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "temporal-destination",
-      "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "concurrency-atomicity",
-      "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "idempotency",
-      "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Current #714 issue obligations or inherited exact-head risk surface require this family.",
+      "control_ids": [
+        "NEG-714-02-001",
+        "NEG-714-03-002",
+        "NEG-714-05-002",
+        "NEG-714-05-003",
+        "NEG-714-05-007",
+        "NEG-714-05-008",
+        "NEG-714-05-009"
+      ],
+      "dimensions": [
+        {
+          "surface": "issue714-referenceliveness",
+          "reason": "Documented exact-head negative control with two independent adversarial cases",
+          "control_ids": [
+            "NEG-714-02-001",
+            "NEG-714-03-002",
+            "NEG-714-05-002",
+            "NEG-714-05-003",
+            "NEG-714-05-007",
+            "NEG-714-05-008",
+            "NEG-714-05-009"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "rollback",
       "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "historical-immutability",
-      "applicable": false,
-      "reason": "No canonical requirement or changed surface activates this family in the targeted remediation.",
+      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -96,16 +150,54 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "Canonical projection reuse requires real opening-balance provenance.",
+      "reason": "Required by current obligations or retained historical independent audit escape proof.",
       "control_ids": [
-        "FREE-TO-SPEND-PROVENANCE-001"
+        "NEG-714-02-002",
+        "NEG-714-03-001",
+        "NEG-714-ESCAPE-005",
+        "NEG-714-ESCAPE-006",
+        "NEG-714-ESCAPE-007",
+        "NEG-714-ESCAPE-008"
       ],
       "dimensions": [
         {
-          "surface": "canonical-source-consistency",
-          "reason": "Commitment-only currency otherwise synthesizes opening zero.",
+          "surface": "issue714-structuralcontract",
+          "reason": "Documented exact-head negative control with two independent adversarial cases",
           "control_ids": [
-            "FREE-TO-SPEND-PROVENANCE-001"
+            "NEG-714-02-002",
+            "NEG-714-03-001"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "Inherited audit escape revalidated on exact material head",
+          "control_ids": [
+            "NEG-714-ESCAPE-005"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-identity",
+          "reason": "Inherited audit escape revalidated on exact material head",
+          "control_ids": [
+            "NEG-714-ESCAPE-006"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-presence",
+          "reason": "Inherited audit escape revalidated on exact material head",
+          "control_ids": [
+            "NEG-714-ESCAPE-007"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-subject",
+          "reason": "Inherited audit escape revalidated on exact material head",
+          "control_ids": [
+            "NEG-714-ESCAPE-008"
           ],
           "status": "passed"
         }
@@ -113,23 +205,53 @@
       "status": "passed"
     },
     {
-      "family": "documentation",
+      "family": "temporal-consistency",
       "applicable": true,
-      "reason": "Canonical documentation changes are part of the issue contract.",
+      "reason": "Current #714 issue obligations or inherited exact-head risk surface require this family.",
       "control_ids": [
-        "FREE-TO-SPEND-DOCS-001"
+        "NEG-714-EXTRA-03-temporal-consistency",
+        "NEG-714-EXTRA-05-temporal-consistency"
       ],
       "dimensions": [
         {
-          "surface": "canonical-claims",
-          "reason": "Documentation must match exact-head runtime semantics.",
+          "surface": "issue714-temporalconsistency",
+          "reason": "Documented exact-head negative control with two independent adversarial cases",
           "control_ids": [
-            "FREE-TO-SPEND-DOCS-001"
+            "NEG-714-EXTRA-03-temporal-consistency",
+            "NEG-714-EXTRA-05-temporal-consistency"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "Current #714 issue obligations or inherited exact-head risk surface require this family.",
+      "control_ids": [
+        "NEG-714-EXTRA-03-tenant-isolation"
+      ],
+      "dimensions": [
+        {
+          "surface": "issue714-tenantisolation",
+          "reason": "Documented exact-head negative control with two independent adversarial cases",
+          "control_ids": [
+            "NEG-714-EXTRA-03-tenant-isolation"
           ],
           "status": "passed"
         }
       ],
       "status": "passed"
     }
-  ]
+  ],
+  "material_families_missing_controls": []
 }

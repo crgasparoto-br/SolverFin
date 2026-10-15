@@ -1,0 +1,18 @@
+material_head=38a498beae70e407920bf692c03f9b0b1edd7fcd
+exact-HEAD Repository CI run 38672933686: completed/success (GitHub connector)
+exact-HEAD Statement visual validation run 38672933697: completed/success (GitHub connector)
+User visual acceptance: issue #702 comment 6181511794; not technical approval
+PASS all_same_currency_excluded
+PASS central_dialog
+PASS fx_included
+PASS golden_approved
+PASS historical_pr703
+PASS individual_transfer_included
+PASS no_code_changes_for_issue714
+PASS no_propagation_claim
+PASS transfer_tests
+NEG doc stale individual transfer phrase: rejected by real contract check
+NEG doc reverted Golden state to candidate: rejected
+NEG foreign #706/PR707 certificate: detected before rebuilding
+Financial unit test sources: transactions-statement.test.ts, transactions-consolidated.test.ts
+All downstream #715–#719 excluded from current delivery without claim of implementation

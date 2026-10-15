@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+  "head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
@@ -20,8 +20,8 @@
       "id": "FREE-TO-SPEND-AVAIL-001",
       "source_finding_id": "A-002",
       "status": "passed",
-      "head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
-      "subject_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
+      "head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
+      "subject_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
       "control_type": "test",
       "attack_control_id": "FREE-TO-SPEND-PUBLIC-001",
       "risk_family": "public-boundary",
@@ -30,8 +30,8 @@
       "procedure": "Inspect the public API payload for commitment-only EUR and real-zero JPY.",
       "expected": "Missing-source EUR must expose unavailable with no numeric fields; JPY remains available at zero.",
       "observed": "Exact-head integration distinguishes the two public states.",
-      "evidence": "evidence/handoff-remediation-675.txt",
-      "evidence_sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d"
+      "evidence": "evidence-714-controls.txt",
+      "evidence_sha256": "498ce6fd784cfad527af0f9be830adb316b49841c13e7d63f31ae1b9bf06493e"
     }
   ],
   "retired_controls": [],
