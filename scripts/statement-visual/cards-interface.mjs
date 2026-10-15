@@ -402,16 +402,16 @@ async function validateModal(cdp, viewportKind, captureName = viewportKind) {
     "Purchase modal close icon is missing or visually indistinguishable",
     measurements,
   );
-  // A bad close icon with zero opacity must fail: restore the original DOM style.
+  // An invisible close icon must fail: restore the original DOM style.
   const negative = await evaluate(
     cdp,
     `(() => {
     const close = document.querySelector('dialog[data-modal="purchase"] [data-close-modal]');
-    const original = close.style.opacity;
-    close.style.opacity = '0';
-    const rejected = getComputedStyle(close).opacity === '0';
-    close.style.opacity = original;
-    return { rejected, restored: Number(getComputedStyle(close).opacity) > 0 };
+    const original = close.style.visibility;
+    close.style.visibility = 'hidden';
+    const rejected = getComputedStyle(close).visibility === 'hidden';
+    close.style.visibility = original;
+    return { rejected, restored: getComputedStyle(close).visibility === 'visible' };
   })()`,
   );
   check(
