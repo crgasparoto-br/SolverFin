@@ -58,6 +58,21 @@ somente o conteúdo do diálogo pode rolar. Capturar criação, clonagem e ediç
 três viewports e aplicar controles negativos de centralização, incluindo uma
 ancoragem à direita ainda inteiramente contida na viewport.
 
+## Portao discriminante da Issue #715 — Cartoes
+
+A propagacao visual da Golden Screen na rota `/cartoes` tem escopo proprio, diferente da aprovacao do Extrato. Capturas geradas antes do commit material desta entrega nao certificam a mudanca.
+
+| Requisito | Cenario SSR/Chrome | Afirmacao discriminante |
+| --- | --- | --- |
+| Hierarquia da fatura | Fatura aberta com conta de pagamento na moeda correta | Valor e codigo de moeda visiveis; **Liquidar fatura** e a unica acao primaria da fatura; fechamento e compra nao competem |
+| Filtros progressivos | Ordenacao padrao e ordenacao explicitamente alterada | Controles secundarios recolhidos por padrao, estado ativo exposto e selecao preservada |
+| Leitura das compras | Itens com descricao longa, parcela e moedas diferentes em seus contextos | Descricao e valor nao cortados; moeda explicita; totais agrupados pela moeda do instrumento |
+| Estado sem resultado | Busca sem correspondencias em fatura com compras | Estado vazio orienta a limpar/ajustar filtros sem suprimir informacoes da fatura |
+| Formulario e interacao | Abrir, percorrer e fechar modal de compra pelo teclado em desktop/mobile | Dialog identificado, foco visivel, rolagem interna quando necessario, Escape e retorno do foco |
+| Controle negativo | Mutar estilo para truncamento ou promover simultaneamente compra e fechamento | Teste estrutural ou revisao visual documentada rejeita a regressao |
+
+Inspecionar os estados em 1366x768, 390x844 e, nas divergencias de reflow, 320x740. Registrar em cada linha viewport, artefato, assertion, SHA exato e parecer de avaliador independente. A ausencia de capturas ou parecer deixa o gate de aceite aberto, mesmo se Repository CI e o workflow Chrome terminarem com sucesso.
+
 ## Unidade de cobertura
 
 Cada evidencia representativa declara, no minimo:
