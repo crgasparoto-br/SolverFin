@@ -294,6 +294,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     /\.cards-purchase-filter-form input,\.cards-purchase-filter-form select\{min-height:44px/,
   );
   assert.match(html, /aria-describedby="cards-payment-dialog-description"/);
+  assert.match(
+    html,
+    /@media\(max-width:350px\)\{\.cards-invoice-period-row\{[^}]*grid-template-columns:44px minmax\(0,1fr\) 44px/,
+  );
   assert.match(html, /\.cards-instrument-group\{[^}]*overflow:visible/);
   assert.match(html, /name="occurredOn" type="date" required data-default-local-today/);
   assert.match(html, /occurredOnField\.value = localToday\(\)/);
