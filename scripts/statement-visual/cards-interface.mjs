@@ -120,20 +120,28 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       };
       const rows = Array.from(document.querySelectorAll('[data-purchase-item]'));
       const actions = Array.from(document.querySelectorAll('.cards-purchase-actions > summary'));
-      const statuses = Array.from(document.querySelectorAll('[data-purchase-item] .cards-purchase-status'));
-      const statusIconContract = statuses.length === rows.length && statuses.every((node) => {
-        const svg = node.querySelector('svg[aria-hidden="true"]');
-        const label = node.getAttribute('aria-label') || '';
-        const row = node.closest('[data-purchase-item]');
-        const reconciled = row?.dataset.reconciliation === 'reconciled';
-        return Boolean(
-          svg && visible(svg) && label && label === node.getAttribute('title') &&
-          label === node.dataset.tooltip && node.textContent.trim() === '' &&
-          node.getAttribute('role') === 'img' && node.tabIndex === 0 &&
-          (reconciled ? node.classList.contains('cards-purchase-status-reconciled')
-            : !node.classList.contains('cards-purchase-status-reconciled'))
-        );
-      });
+      const statuses = Array.from(
+        document.querySelectorAll('[data-purchase-item] .cards-purchase-status'),
+      );
+      const statusIconContract =
+        statuses.length === rows.length &&
+        statuses.every((node) => {
+          const svg = node.querySelector('svg[aria-hidden="true"]');
+          const row = node.closest('[data-purchase-item]');
+          const reconciled = row?.dataset.reconciliation === 'reconciled';
+          const isReconciled = node.classList.contains('cards-purchase-status-reconciled');
+          return (
+            Boolean(svg) &&
+            visible(svg) &&
+            Boolean(node.getAttribute('aria-label')) &&
+            node.getAttribute('aria-label') === node.getAttribute('title') &&
+            node.getAttribute('aria-label') === node.dataset.tooltip &&
+            node.textContent.trim() === '' &&
+            node.getAttribute('role') === 'img' &&
+            node.tabIndex === 0 &&
+            reconciled === isReconciled
+          );
+        });
       const firstStatusSvg = statuses[0]?.querySelector('svg');
       const originalStatusVisibility = firstStatusSvg?.style.visibility || '';
       if (firstStatusSvg) firstStatusSvg.style.visibility = 'hidden';
@@ -220,7 +228,13 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
         minimumActionTarget: actions.length ? Math.min(...actions.map((action) => rect(action).height)) : 0,
         iconOnlyPurchaseStatuses: statusIconContract,
         statusIconNegativeRejected: statusIconNegativeRejected && statusIconRestored,
-        purchaseActionIcons: actions.length > 0 && actions.every((action) => Boolean(action.querySelector('svg[aria-hidden="true"]')) && action.textContent.trim() === ''),
+        purchaseActionIcons:
+          actions.length > 0 &&
+          actions.every(
+            (action) =>
+              Boolean(action.querySelector('svg[aria-hidden="true"]')) &&
+              action.textContent.trim() === '',
+          ),
         filterCount: document.querySelectorAll('[data-reconciliation-toggle]').length,
         resultAnnouncement: document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '',
         invoiceCopy,
@@ -311,7 +325,11 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
     "Golden Screen: purchase situations must be accessible SVG pictograms, not text badges",
     measurements,
   );
-  check(measurements.purchaseActionIcons, "Purchase actions must use shared SVG iconography", measurements);
+  check(
+    measurements.purchaseActionIcons,
+    "Purchase actions must use shared SVG iconography",
+    measurements,
+  );
   check(
     measurements.resultAnnouncement.includes("compra"),
     "Purchase result count is not announced",
