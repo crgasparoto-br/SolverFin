@@ -255,6 +255,18 @@ A validacao visual permanente da rota usa `scripts/statement-visual/accounts-car
 
 A rota `/cartoes` deve priorizar a decisao operacional sobre a fatura selecionada, sem alterar os contratos financeiros descritos neste documento.
 
+### Propagação visual da Golden Screen — Issue #715
+
+A Golden Screen do Extrato (`/lancamentos`) define o **nível de acabamento**, não a geometria literal de Cartões. A composição A3 da rota `/cartoes` deve usar a largura útil da aplicação para a hierarquia cartão selecionado → valor e decisão da fatura → compras; uma coluna fixa de metadados do cartão não deve atrasar a leitura da coleção financeira.
+
+- O cabeçalho evita repetir título/descrição já presentes no shell e mantém **Registrar compra** no contexto das compras quando existe fatura. Liquidar fatura é a única ação visual primária no escopo da fatura; fechamento é secundário.
+- O seletor e a identidade mascarada do cartão ficam num contexto compacto. Dados contratuais e instrumentos permanecem acessíveis sob expansão, **inclusive no mobile**, sem apagar moeda, identidade, seleção nem navegação.
+- A navegação corrente/futura e a escolha explícita de mês histórico seguem as regras cronológicas documentadas abaixo. O resumo prioriza valor a pagar, vencimento, fechamento e estado; limites e conciliação aparecem como indicadores contidos, enquanto explicações operacionais e detalhes complementares usam divulgação progressiva.
+- No Chrome autenticado 1366×768, a **primeira linha de compra** deve começar antes da dobra inicial; em 390×844 e 320×740, o **valor a pagar** deve ser visível na primeira região de decisão (posição vertical inferior a 75% da viewport). O controle negativo deve deslocar temporariamente esses elementos para fora do limite, observar rejeição e restaurar sem efeitos persistentes.
+- Em fluxo normal, busca sem resultados, descrição longa e diálogos, a apresentação deve preservar leitura integral, valor/moeda, foco, alvos de toque, estado e hierarquia. Uma execução do CI ou do Chrome sem inspeção comparativa com a Golden Screen não é aceite visual independente.
+
+
+
 Ordem esperada de leitura:
 
 1. selecao do cartao e do periodo da fatura;
