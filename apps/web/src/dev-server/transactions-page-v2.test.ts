@@ -564,8 +564,8 @@ test("A2 account and consolidated cards both include FX legs while same-currency
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
     );
-    assert.match(card(individual, "income"), /R\$ 1\.350,00/);
-    assert.match(card(individual, "expense"), /R\$ 5\.000,00/);
+    assert.match(card(individual, "income"), /R\$\s1\.350,00/);
+    assert.match(card(individual, "expense"), /R\$\s5\.000,00/);
     assert.match(individual, /Transferência Bradesco → Mercado Livre/);
     assert.match(individual, /Transferência Mercado Livre → Bradesco/);
 
@@ -573,8 +573,8 @@ test("A2 account and consolidated cards both include FX legs while same-currency
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-09"),
     );
-    assert.match(card(consolidated, "income"), /R\$ 1\.350,00/);
-    assert.match(card(consolidated, "expense"), /R\$ 5\.000,00/);
+    assert.match(card(consolidated, "income"), /R\$\s1\.350,00/);
+    assert.match(card(consolidated, "expense"), /R\$\s5\.000,00/);
     assert.match(consolidated, /Transferência Bradesco → Mercado Livre/);
     assert.match(consolidated, /Transferência Mercado Livre → Bradesco/);
 
@@ -582,15 +582,15 @@ test("A2 account and consolidated cards both include FX legs while same-currency
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-09"),
     );
-    assert.match(card(usdConsolidated, "income"), /US\$ 950,00/);
-    assert.match(card(usdConsolidated, "expense"), /US\$ 1\.000,00/);
+    assert.match(card(usdConsolidated, "income"), /US\$\s950,00/);
+    assert.match(card(usdConsolidated, "expense"), /US\$\s1\.000,00/);
 
     const usdIndividual = await renderTransactionsPageV2(
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09"),
     );
-    assert.match(card(usdIndividual, "income"), /US\$ 950,00/);
-    assert.match(card(usdIndividual, "expense"), /US\$ 1\.000,00/);
+    assert.match(card(usdIndividual, "income"), /US\$\s950,00/);
+    assert.match(card(usdIndividual, "expense"), /US\$\s1\.000,00/);
   } finally {
     globalThis.fetch = originalFetch;
   }
