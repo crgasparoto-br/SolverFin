@@ -272,7 +272,10 @@ export async function validateStatementContextualSurfaces(
             () => assertContextualSurface(tooSmall, state, true),
             (error) => {
               touchError = error.message;
-              return error.code === "ERR_ASSERTION" && /footer touch target/.test(error.message);
+              return (
+                error.code === "ERR_ASSERTION" &&
+                /footer touch target/.test(error.message)
+              );
             },
           );
         } finally {
@@ -285,9 +288,9 @@ export async function validateStatementContextualSurfaces(
         }
         assertContextualSurface(await measure(selector), state, true);
         report.controls.push({
-          id: "GS-CONTEXTUAL-NC-FOOTER-TOUCH-" + action.toUpperCase() + "-" + state,
+          id: `GS-CONTEXTUAL-NC-FOOTER-TOUCH-${action.toUpperCase()}-${state}`,
           viewport: { width, height },
-          mutation: "Footer " + action + " touch target reduced to 32px without clipping or changing the action row",
+          mutation: `Footer ${action} touch target reduced to 32px without clipping or changing the action row`,
           rejectedBecause: touchError,
           restored: "passed",
         });
@@ -564,11 +567,17 @@ export async function validateStatementContextualSurfaces(
       expectedFooterControls,
       "Each new/edit/clone footer clipping regression must run at all three viewports",
     );
-    const expectedFooterTouchControls = ["new", "edit", "clone"]
-      .flatMap(state => ["1366x768", "390x844", "320x740"]
-        .flatMap(viewport => ["CANCEL", "SAVE"]
-          .map(action => `GS-CONTEXTUAL-NC-FOOTER-TOUCH-${action}-${state}@${viewport}`)))
-      .sort();
+    const expectedFooterTouchControls = [];
+    for (const state of ["new", "edit", "clone"]) {
+      for (const viewport of ["1366x768", "390x844", "320x740"]) {
+        for (const action of ["CANCEL", "SAVE"]) {
+          expectedFooterTouchControls.push(
+            `GS-CONTEXTUAL-NC-FOOTER-TOUCH-${action}-${state}@${viewport}`,
+          );
+        }
+      }
+    }
+    expectedFooterTouchControls.sort();
     const observedFooterTouchControls = report.controls
       .filter(({ id }) => id.startsWith("GS-CONTEXTUAL-NC-FOOTER-TOUCH-"))
       .map(({ id, viewport }) => `${id}@${viewport.width}x${viewport.height}`)
