@@ -283,6 +283,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Moeda padrão<\/dt><dd>USD/);
   assert.match(html, /Moeda da fatura<\/dt><dd>USD/);
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
+  assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
+  assert.match(html, /aria-describedby="cards-payment-dialog-description"/);
+  assert.match(html, /\.cards-instrument-group\{[^}]*overflow:visible/);
   assert.match(html, /name="occurredOn" type="date" required data-default-local-today/);
   assert.match(html, /occurredOnField\.value = localToday\(\)/);
   assert.match(html, /Alimentação › Bares e restaurantes/);
