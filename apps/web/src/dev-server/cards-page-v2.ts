@@ -796,6 +796,9 @@ function renderPurchaseFilters(
   base.searchParams.set("cardId", cardId);
   base.searchParams.set("invoiceId", invoice.id);
   if (profileId) base.searchParams.set("profileId", profileId);
+  if (presentation.search) base.searchParams.set("q", presentation.search);
+  if (presentation.sort !== "date_desc") base.searchParams.set("sort", presentation.sort);
+  if (presentation.day) base.searchParams.set("day", presentation.day);
   const controls = `<form method="get" action="/cartoes" class="cards-purchase-filter-form">
       <input type="hidden" name="cardId" value="${escapeHtml(cardId)}">
       <input type="hidden" name="invoiceId" value="${escapeHtml(invoice.id)}">
