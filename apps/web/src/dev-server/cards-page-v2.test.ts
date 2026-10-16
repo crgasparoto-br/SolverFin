@@ -302,24 +302,25 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
       ".cards-purchase-actions>summary{height:44px;min-height:44px;min-width:44px;width:44px}",
     ),
   );
-  // #715 Golden Screen: full-width invoice, progressive card details and buying action at the list.
-  assert.match(
-    html,
-    /\.cards-a3-page \.sf-detail-layout\{gap:8px;grid-template-columns:minmax\(0,1fr\)/,
-  );
-  assert.match(html, /<details class="cards-master-details"><summary>Dados do cartão<\/summary>/);
-  assert.match(html, /<details class="cards-instrument-nav">/);
-  assert.doesNotMatch(html, /<details class="cards-instrument-nav" open>/);
+  // #715: restore a true information sidebar, while keeping invoice actions subordinate to the task.
+  assert.match(html, /<details class="cards-master-details" open><summary>Dados do cartão<\/summary>/);
+  assert.match(html, /<details class="cards-instrument-nav" open>/);
+  assert.match(html, /Moeda padrão<\/dt><dd>USD/);
+  assert.match(html, /Fechamento contratual/);
+  assert.match(html, /Instrumentos <span>2 ativos<\/span>/);
+  assert.match(html, /\.cards-a3-page \.sf-detail-layout\{align-items:start;display:grid;gap:16px;grid-template-columns:minmax\(238px,258px\) minmax\(0,1fr\)/);
+  assert.match(html, /matchMedia\("\(max-width: 760px\)"\)/);
+  assert.match(html, /Acompanhe as faturas, limites e compras dos seus cartões/);
   assert.match(
     html,
     /<details class="cards-settlement-note"><summary>Sobre a liquidação<\/summary>/,
   );
   assert.match(html, /<details class="cards-limit-detail"><summary>Detalhes do limite<\/summary>/);
   assert.ok(
-    html.indexOf('class="cards-reconciliation-filters"') <
-      html.indexOf('class="sf-button sf-button-secondary" data-open-modal="purchase"'),
-    "new purchase must be contextual to purchases, not compete with settlement above invoice",
+    html.indexOf('data-open-modal="purchase"') < html.indexOf('class="cards-invoice-header"'),
+    "purchase action belongs to the page header; invoice settlement remains the primary invoice decision",
   );
+  assert.doesNotMatch(html, /class="cards-reconciliation-filters"[\s\S]*data-open-modal="purchase"[\s\S]*<\/div><\/div>/);
   // #715: the close icon must contrast with the light modal surface.
   assert.match(
     html,
