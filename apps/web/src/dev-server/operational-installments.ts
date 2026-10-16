@@ -605,6 +605,12 @@ export function operationalInstallmentsController(): string {
           const details = target.closest("details");
           if (details) details.removeAttribute("open");
           restrictForm(form, installment);
+          const attachments = modal.querySelector('[data-attachment-workspace][data-entity-kind="transaction"]');
+          if (attachments) {
+            window.SolverFinAttachments?.resetPending(attachments);
+            attachments.dataset.entityId = installment.transaction?.id || "";
+            window.SolverFinAttachments?.refresh(attachments);
+          }
           modal.showModal();
           window.setTimeout(() => {
             const focusTarget = installment.editable ? form.description : modal.querySelector(".close-form button");
