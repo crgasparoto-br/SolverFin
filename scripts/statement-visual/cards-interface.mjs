@@ -124,9 +124,21 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       const actionTargetBefore = rect(action).height >= 44 && rect(action).width >= 44;
       const originalActionHeight = action?.style.height || '';
       const originalActionWidth = action?.style.width || '';
-      if (action) { action.style.height = '30px'; action.style.width = '30px'; }
+      const originalActionMinHeight = action?.style.minHeight || '';
+      const originalActionMinWidth = action?.style.minWidth || '';
+      if (action) {
+        action.style.height = '30px';
+        action.style.width = '30px';
+        action.style.minHeight = '30px';
+        action.style.minWidth = '30px';
+      }
       const actionTargetNegativeRejected = Boolean(action && (rect(action).height < 44 || rect(action).width < 44));
-      if (action) { action.style.height = originalActionHeight; action.style.width = originalActionWidth; }
+      if (action) {
+        action.style.height = originalActionHeight;
+        action.style.width = originalActionWidth;
+        action.style.minHeight = originalActionMinHeight;
+        action.style.minWidth = originalActionMinWidth;
+      }
       const actionTargetRestored = Boolean(action && rect(action).height >= 44 && rect(action).width >= 44);
       const sidebar = document.querySelector('.sidebar');
       const pageTitle = document.querySelector('.cards-a3-page .sf-page-header');
