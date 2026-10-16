@@ -250,8 +250,9 @@ export async function renderCardsPageV2(
   const content = renderPageContainer({
     className: selectedInvoice ? "cards-a3-page cards-has-invoice" : "cards-a3-page",
     childrenHtml: `${renderPageHeader({
-      title: "Faturas e compras",
-      actionsHtml: selectedInvoice ? "" : renderPageActions(selectedCard, activeInstruments),
+      title: "Cartões de Crédito",
+      description: "Acompanhe as faturas, limites e compras dos seus cartões.",
+      actionsHtml: renderPageActions(selectedCard, activeInstruments),
     })}${renderDetailLayout({
       masterHtml: renderCardMaster(
         cards,
@@ -274,9 +275,7 @@ export async function renderCardsPageV2(
         presentation,
         currency: invoiceCurrency,
         paymentAccounts: matchingPaymentAccounts,
-        purchaseActionHtml: selectedInvoice
-          ? renderPageActions(selectedCard, activeInstruments)
-          : "",
+        purchaseActionHtml: "",
         url,
       }),
     })}`,
@@ -526,7 +525,7 @@ function renderCardMaster(
     </div>`
         : ""
     }
-    <details class="cards-master-details"><summary>Dados do cartão</summary><dl class="cards-master-meta">
+    <details class="cards-master-details" open><summary>Dados do cartão</summary><dl class="cards-master-meta">
       <div><dt>Moeda padrão</dt><dd>${escapeHtml(cardCurrency ?? "Não informada")}</dd></div>
       <div><dt>Moeda da fatura</dt><dd>${escapeHtml(invoiceCurrency ?? "Indisponível")}</dd></div>
       <div><dt>Fechamento contratual</dt><dd>Dia ${escapeHtml(String(selectedCard?.closingDay ?? "-"))}</dd></div>
@@ -537,7 +536,7 @@ function renderCardMaster(
         ? `<p class="cards-card-warning" role="status">Defina a moeda padrão deste cartão antes de registrar novas compras. <a href="${escapeHtml(manageHref)}">Editar cartão</a></p>`
         : ""
     }
-    <details class="cards-instrument-nav">
+    <details class="cards-instrument-nav" open>
       <summary>Instrumentos <span>${active.length} ativos</span></summary>
       <ul>
         ${
@@ -1297,6 +1296,9 @@ function clientScript(): string {
         input.value = minorToMoney(digits ? Number.parseInt(digits, 10) : 0);
       }));
       document.querySelector("[data-card-select]")?.addEventListener("change", (event) => event.target.form?.requestSubmit());
+      if (window.matchMedia("(max-width: 760px)").matches) {
+        document.querySelectorAll(".cards-master-details,.cards-instrument-nav").forEach((details) => { details.open = false; });
+      }
 
       let lastDialogTrigger = null;
       const closeDialog = (dialog) => {
