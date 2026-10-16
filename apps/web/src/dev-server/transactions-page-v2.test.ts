@@ -20,8 +20,14 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
     );
 
     assert.match(html, /data-statement-archetype="A2"/);
-    assert.match(html, /data-attachment-workspace data-entity-kind="transaction" data-entity-id="" data-pending-create/);
-    assert.match(html, /window\.SolverFinAttachments\.uploadPending\(attachmentWorkspace, linkedId\)/);
+    assert.match(
+      html,
+      /data-attachment-workspace data-entity-kind="transaction" data-entity-id="" data-pending-create/,
+    );
+    assert.match(
+      html,
+      /window\.SolverFinAttachments\.uploadPending\(attachmentWorkspace, linkedId\)/,
+    );
     assert.match(html, /response\.clone\(\)\.json\(\)/);
     assert.match(html, /form\.dataset\.method = "PATCH"/);
     assert.match(html, /Em parcelas ou recorrências, anexe na edição de uma ocorrência/);
