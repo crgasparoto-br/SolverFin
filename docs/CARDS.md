@@ -270,7 +270,6 @@ A Golden Screen do Extrato (`/lancamentos`) define o **nível de acabamento**, n
 - **Alvo de toque REC-715-01:** o menu SVG de cada compra usa alvo mínimo de 44×44 px, com foco explícito e menu ancorado abaixo do acionador; Chrome/SSR verificam o alvo e controle negativo reversível de 30 px.
 - **Comparativo visual:** as capturas de `cards-desktop.png`, `cards-mobile.png` e `cards-compact-mobile.png` devem ser confrontadas com as capturas da Golden Screen do mesmo workflow/HEAD material. O CI valida geometria e regressões; o parecer de acabamento independente permanece uma etapa distinta.
 
-
 Ordem esperada de leitura:
 
 1. selecao do cartao e do periodo da fatura;
