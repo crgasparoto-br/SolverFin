@@ -131,6 +131,9 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /Recarregar estado atual/);
   assert.match(script, /rememberAndSet\(saveButton, "hidden", !editable\)/);
   assert.match(script, /data-installment-reload/);
+  assert.match(script, /attachments\\.dataset\\.entityId = installment\\.transaction\\?\\.id \\|\\| ""/);
+  assert.match(script, /SolverFinAttachments\\?\\.resetPending\\(attachments\\)/);
+  assert.match(script, /SolverFinAttachments\\?\\.refresh\\(attachments\\)/);
   assert.match(script, /data-installment-historical-category/);
   assert.match(script, /ensureHistoricalCategoryOption\(form\.categoryId, installment\)/);
   assert.match(script, /setAccountEditLookupState\("loading"\)/);
