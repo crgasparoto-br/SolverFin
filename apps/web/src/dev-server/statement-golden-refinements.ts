@@ -529,7 +529,7 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .save-row .status-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
     ${dialog} .save-row{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;min-width:0}
     ${dialog} .statement-save-actions{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap;gap:8px;margin-left:auto;min-width:0}
-    ${dialog} .statement-save-actions>button{flex:0 0 auto;grid-column:auto;min-width:0;white-space:nowrap}
+    ${dialog} .statement-save-actions>button{flex:0 0 auto;grid-column:auto;min-width:0;min-height:44px;white-space:nowrap}
     ${dialog} .statement-save-actions>[data-transaction-cancel]{background:transparent;border:1px solid var(--line);color:var(--text)}
     @media(max-width:390px){
       ${dialog} .save-row .status-icons{width:100%}

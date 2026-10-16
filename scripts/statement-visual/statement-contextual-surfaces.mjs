@@ -102,6 +102,10 @@ export async function validateStatementContextualSurfaces(
           ? Math.abs(footerCancel.getBoundingClientRect().top - footerSave.getBoundingClientRect().top)
           : null,
         footerActionsContained: footerButtonFits(footerCancel) && footerButtonFits(footerSave),
+        footerActionHeights: {
+          cancel: footerCancel?.getBoundingClientRect().height ?? null,
+          save: footerSave?.getBoundingClientRect().height ?? null,
+        },
         tooltipStatusCount: statusOptions.filter(node => node.title && node.title === node.getAttribute('aria-label')).length,
         statusLabelVisuallyHidden: !!statusText && statusText.getBoundingClientRect().width <= 1,
         horizontalCenterDelta: box ? Math.abs(box.left - (innerWidth - box.right)) : null,
@@ -239,6 +243,55 @@ export async function validateStatementContextualSurfaces(
         rejectedBecause: footerError,
         restored: "passed",
       });
+      for (const action of ["cancel", "save"]) {
+        const buttonSelector =
+          action === "cancel"
+            ? "[data-transaction-cancel]"
+            : '.statement-save-actions > button[type="submit"]';
+        const originalTouchStyle = await read(`(() => {
+          const button = document.querySelector(${JSON.stringify(selector)}).querySelector(${JSON.stringify(buttonSelector)});
+          const original = button.getAttribute("style");
+          button.style.setProperty("min-height", "0px", "important");
+          button.style.setProperty("height", "32px", "important");
+          button.style.setProperty("max-height", "32px", "important");
+          return original;
+        })()`);
+        let touchError;
+        try {
+          const tooSmall = await measure(selector);
+          assert.equal(
+            tooSmall.footerActionsContained,
+            true,
+            "Touch-height negative case must remain contained",
+          );
+          assert.ok(
+            tooSmall.footerActionHeights[action] < 44,
+            "Touch-height mutation must reduce the target",
+          );
+          assert.throws(
+            () => assertContextualSurface(tooSmall, state, true),
+            (error) => {
+              touchError = error.message;
+              return error.code === "ERR_ASSERTION" && /footer touch target/.test(error.message);
+            },
+          );
+        } finally {
+          await read(`(() => {
+            const button = document.querySelector(${JSON.stringify(selector)}).querySelector(${JSON.stringify(buttonSelector)});
+            const original = ${JSON.stringify(originalTouchStyle)};
+            if (original === null) button.removeAttribute("style");
+            else button.setAttribute("style", original);
+          })()`);
+        }
+        assertContextualSurface(await measure(selector), state, true);
+        report.controls.push({
+          id: `GS-CONTEXTUAL-NC-FOOTER-TOUCH-${action.toUpperCase()}-${state}`,
+          viewport: { width, height },
+          mutation: `Footer ${action} touch target reduced to 32px without clipping or changing the action row`,
+          rejectedBecause: touchError,
+          restored: "passed",
+        });
+      }
     }
     report.controls.push({
       id: "GS-CONTEXTUAL-ANCHOR-" + state,
@@ -510,6 +563,26 @@ export async function validateStatementContextualSurfaces(
       observedFooterControls,
       expectedFooterControls,
       "Each new/edit/clone footer clipping regression must run at all three viewports",
+    );
+    const expectedFooterTouchControls = [];
+    for (const state of ["new", "edit", "clone"]) {
+      for (const viewport of ["1366x768", "390x844", "320x740"]) {
+        for (const action of ["CANCEL", "SAVE"]) {
+          expectedFooterTouchControls.push(
+            `GS-CONTEXTUAL-NC-FOOTER-TOUCH-${action}-${state}@${viewport}`,
+          );
+        }
+      }
+    }
+    expectedFooterTouchControls.sort();
+    const observedFooterTouchControls = report.controls
+      .filter(({ id }) => id.startsWith("GS-CONTEXTUAL-NC-FOOTER-TOUCH-"))
+      .map(({ id, viewport }) => `${id}@${viewport.width}x${viewport.height}`)
+      .sort();
+    assert.deepEqual(
+      observedFooterTouchControls,
+      expectedFooterTouchControls,
+      "Each footer touch target must reject the too-small mutation in new/edit/clone at all viewports",
     );
     report.status = "passed";
   } catch (error) {
