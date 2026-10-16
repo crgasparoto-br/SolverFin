@@ -137,7 +137,7 @@ export function attachmentWorkspaceScript(): string {
           const canStage = workspace.hasAttribute("data-pending-create");
           workspace.hidden = !entityId && !canStage;
           const submit = workspace.querySelector('[data-attachment-form] [type="submit"]');
-          if (submit) submit.disabled = !entityId;
+          if (submit) submit.disabled = !entityId || workspace.dataset.uploading === "true";
           if (!entityId) {
             const list = workspace.querySelector("[data-attachment-list]");
             if (list) list.innerHTML = '<p class="muted small-note">Selecione o arquivo. Ele será enviado após salvar o lançamento.</p>';
@@ -173,7 +173,7 @@ export function attachmentWorkspaceScript(): string {
           const form = workspace.querySelector("[data-attachment-form]");
           const file = form?.elements.file?.files?.[0];
           const entityId = workspace.dataset.entityId || "";
-          if (!file || !entityId) return false;
+          if (!file || !entityId || workspace.dataset.uploading === "true") return false;
           if (file.size <= 0 || file.size > MAX_BYTES) {
             const message = file.size <= 0
               ? "Selecione um arquivo com conteúdo."
@@ -182,6 +182,7 @@ export function attachmentWorkspaceScript(): string {
             throw new Error(message);
           }
           const submit = form.querySelector('[type="submit"]');
+          workspace.dataset.uploading = "true";
           if (submit) submit.disabled = true;
           setStatus(workspace, "Enviando anexo...");
           try {
@@ -207,6 +208,7 @@ export function attachmentWorkspaceScript(): string {
             setStatus(workspace, error.message || "Não foi possível adicionar o anexo.", "error");
             throw error;
           } finally {
+            delete workspace.dataset.uploading;
             if (submit) submit.disabled = false;
           }
         };
