@@ -92,6 +92,19 @@ export async function validateCardsPage(
       const header = document.querySelector('.cards-invoice-header');
       const master = document.querySelector('.cards-master-panel');
       const detail = document.querySelector('.cards-detail-panel');
+      const detailLayout = document.querySelector('.cards-a3-page .sf-detail-layout');
+      const sidebarGeometryValid = () => Boolean(master && detail &&
+        rect(master).width >= 220 && rect(master).width <= 290 &&
+        rect(master).right + 10 <= rect(detail).left &&
+        Math.abs(rect(master).top - rect(detail).top) <= 2);
+      const sidebarBefore = sidebarGeometryValid();
+      const originalGridColumns = detailLayout?.style.gridTemplateColumns || '';
+      if (detailLayout && viewportKind === 'desktop') detailLayout.style.gridTemplateColumns = 'minmax(0,1fr)';
+      const sidebarNegativeRejected = viewportKind !== 'desktop' || !sidebarGeometryValid();
+      if (detailLayout) detailLayout.style.gridTemplateColumns = originalGridColumns;
+      const sidebarRestored = viewportKind !== 'desktop' || sidebarGeometryValid();
+      const masterFactsVisible = visible(master?.querySelector('.cards-master-meta dt')) &&
+        visible(master?.querySelector('.cards-instrument-nav li'));
       const primaryAmount = document.querySelector('.cards-invoice-primary > strong');
       const firstPurchaseRow = rows[0];
       const status = document.querySelector('.cards-invoice-title-row .sf-badge');
@@ -157,6 +170,11 @@ export async function validateCardsPage(
         firstPurchaseRowTop: rect(firstPurchaseRow).top,
         firstPurchaseRowBottom: rect(firstPurchaseRow).bottom,
         masterBottom: rect(master).bottom,
+        masterWidth: rect(master).width,
+        detailWidth: rect(detail).width,
+        sidebarBefore,
+        sidebarNegativeRejected: sidebarNegativeRejected && sidebarRestored,
+        masterFactsVisible,
         invoiceHeaderTop: rect(header).top,
         statusVisible: visible(status),
         searchVisible: visible(search),
@@ -326,8 +344,13 @@ export async function validateCardsPage(
       measurements,
     );
     check(
-      measurements.masterBottom < measurements.viewport.height * 0.38,
-      "Golden Screen: expanded master context consumes the desktop fold",
+      measurements.sidebarBefore && measurements.sidebarNegativeRejected && measurements.masterFactsVisible,
+      "Golden Screen: card information must be visible in a separate left panel; stacking is a regression",
+      measurements,
+    );
+    check(
+      measurements.detailWidth >= 600,
+      "Golden Screen: restoring the left panel must not crush the invoice or purchase table",
       measurements,
     );
     check(
