@@ -99,10 +99,10 @@ export async function validateCardsPage(
         Math.abs(rect(master).top - rect(detail).top) <= 2);
       const sidebarBefore = sidebarGeometryValid();
       const originalGridColumns = detailLayout?.style.gridTemplateColumns || '';
-      if (detailLayout && viewportKind === 'desktop') detailLayout.style.gridTemplateColumns = 'minmax(0,1fr)';
-      const sidebarNegativeRejected = viewportKind !== 'desktop' || !sidebarGeometryValid();
+      if (detailLayout && window.innerWidth >= 1000) detailLayout.style.gridTemplateColumns = 'minmax(0,1fr)';
+      const sidebarNegativeRejected = window.innerWidth < 1000 || !sidebarGeometryValid();
       if (detailLayout) detailLayout.style.gridTemplateColumns = originalGridColumns;
-      const sidebarRestored = viewportKind !== 'desktop' || sidebarGeometryValid();
+      const sidebarRestored = window.innerWidth < 1000 || sidebarGeometryValid();
       const masterFactsVisible = visible(master?.querySelector('.cards-master-meta dt')) &&
         visible(master?.querySelector('.cards-instrument-nav li'));
       const primaryAmount = document.querySelector('.cards-invoice-primary > strong');
