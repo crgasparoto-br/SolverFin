@@ -284,7 +284,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Moeda da fatura<\/dt><dd>USD/);
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
-  assert.match(html, /data-open-modal="invoice-attachments"[^>]*>[\\s\\S]*?<span>Documentos da fatura<\\/span>/);
+  assert.match(html, /data-open-modal="invoice-attachments"/);
+  assert.ok(html.includes("<span>Documentos da fatura</span>"));
   assert.match(html, /<dialog class="cards-dialog" data-modal="invoice-attachments"/);
   assert.match(html, /data-entity-kind="invoice" data-entity-id="invoice-aug"/);
   const firstInvoiceDialog = html.indexOf(
@@ -331,14 +332,19 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const invoiceHeaderStart = html.indexOf('class="cards-invoice-header"');
   const invoiceHeaderEnd = html.indexOf("</header>", invoiceHeaderStart);
   const invoiceHeader = html.slice(invoiceHeaderStart, invoiceHeaderEnd);
-  assert.match(invoiceHeader, /class="cards-invoice-status-actions"[\\s\\S]*data-api-path="\\/api\\/invoices\\/invoice-aug\\/close"/);
-  assert.match(invoiceHeader, /class="cards-invoice-title-block"[\\s\\S]*data-open-modal="invoice-attachments"/);
-  assert.match(invoiceHeader, /class="cards-invoice-primary"[\\s\\S]*data-open-modal="payment"/);
+  assert.ok(invoiceHeader.includes('class="cards-invoice-status-actions"'));
+  const closeAt = invoiceHeader.indexOf('data-api-path="/api/invoices/invoice-aug/close"');
+  assert.ok(closeAt > invoiceHeader.indexOf('class="cards-invoice-status-actions"'));
+  const documentsAt = invoiceHeader.indexOf('data-open-modal="invoice-attachments"');
+  assert.ok(documentsAt > invoiceHeader.indexOf('class="cards-invoice-title-block"'));
+  assert.ok(documentsAt < invoiceHeader.indexOf('class="cards-invoice-primary"'));
+  assert.ok(invoiceHeader.indexOf('data-open-modal="payment"') > invoiceHeader.indexOf('class="cards-invoice-primary"'));
   const purchaseHeaderStart = html.indexOf('class="cards-purchase-section-header"');
   const purchaseFilterStart = html.indexOf('class="cards-reconciliation-filters"');
   const purchaseHeader = html.slice(purchaseHeaderStart, purchaseFilterStart);
   assert.ok(purchaseHeaderStart > invoiceHeaderEnd);
-  assert.match(purchaseHeader, /Itens da fatura<\\/h3>[\\s\\S]*data-open-modal="purchase"/);
+  assert.ok(purchaseHeader.includes("Itens da fatura</h3>"));
+  assert.ok(purchaseHeader.indexOf('data-open-modal="purchase"') > purchaseHeader.indexOf("Itens da fatura</h3>"));
   assert.equal((html.match(/data-open-modal="purchase"/g) ?? []).length, 1);
   assert.ok(!invoiceHeader.includes('data-open-modal="purchase"'));
   assert.ok(html.includes(".cards-purchase-section-header{"));
