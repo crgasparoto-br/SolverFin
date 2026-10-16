@@ -746,7 +746,7 @@ function renderInvoiceHeader(
       </div>
       <h2 id="cards-invoice-title">${escapeHtml(formatInvoicePeriod(invoice))}</h2>
       <p>${escapeHtml(currency ?? "Moeda indisponível")} · Fechamento ${formatDate(invoice.periodEndOn)} · Vencimento ${formatDate(invoice.dueOn)}</p>
-      <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura">${icon("paperclip", 16)} <span>Documentos da fatura</span></button>
+      <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura">${icon("file-text", 16)} <span>Documentos da fatura</span></button>
       <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
     </div>
     <div class="cards-invoice-primary">
