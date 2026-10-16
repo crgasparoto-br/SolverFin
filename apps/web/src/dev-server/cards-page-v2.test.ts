@@ -290,10 +290,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const firstInvoiceDialog = html.indexOf(
     '<dialog class="cards-dialog" data-modal="invoice-attachments"',
   );
-  const invoicePanel = html.slice(
-    html.indexOf('class="cards-detail-panel"'),
-    firstInvoiceDialog,
-  );
+  const invoicePanel = html.slice(html.indexOf('class="cards-detail-panel"'), firstInvoiceDialog);
   assert.doesNotMatch(invoicePanel, /data-attachment-workspace/);
   // #715: enforce the approved shell hierarchy and accessible purchase actions.
   assert.match(html, /class="[^"]*cards-a3-page cards-has-invoice[^"]*"/);
