@@ -351,7 +351,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     purchaseHeader.indexOf('data-open-modal="purchase"') >
       purchaseHeader.indexOf("Itens da fatura</h3>"),
   );
-  assert.equal((html.match(/data-open-modal="purchase"/g) ?? []).length, 1);
+  assert.equal((html.match(/<button[^>]*data-open-modal="purchase"[^>]*>/g) ?? []).length, 1);
   assert.ok(!invoiceHeader.includes('data-open-modal="purchase"'));
   assert.ok(html.includes(".cards-purchase-section-header{"));
   // #715: the close icon must contrast with the light modal surface.
