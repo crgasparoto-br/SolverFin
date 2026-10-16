@@ -184,7 +184,7 @@ export async function validateCardsPage(
         monthPopupNegativeRejected: popupNegativeRejected && popupRestored,
         monthPopupRect: popupRect,
         periodNavigationRects: [previousPeriod, currentPeriod, nextPeriod].map(rect),
-        heroAction: rect(document.querySelector('[data-open-modal="purchase"]')),
+        heroAction: rect(Array.from(document.querySelectorAll('[data-open-modal="purchase"]')).find(visible)),
         purchaseActionSecondary: Boolean(document.querySelector('[data-open-modal="purchase"].sf-button-secondary')),
         closeActionSecondary: !document.querySelector('[data-api-path$="/close"]') || Boolean(document.querySelector('[data-api-path$="/close"].sf-button-secondary')),
         payActionPrimary: !document.querySelector('[data-open-modal="payment"]') || Boolean(document.querySelector('[data-open-modal="payment"].sf-button-primary')),
