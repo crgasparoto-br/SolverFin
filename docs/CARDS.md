@@ -266,6 +266,10 @@ A Golden Screen do Extrato (`/lancamentos`) define o **nível de acabamento**, n
 - A navegação corrente/futura e a escolha explícita de mês histórico seguem as regras cronológicas documentadas abaixo. O resumo prioriza valor a pagar, vencimento, fechamento e estado; limites e conciliação aparecem como indicadores contidos, enquanto explicações operacionais e detalhes complementares usam divulgação progressiva.
 - No Chrome autenticado 1366×768, a **primeira linha de compra** deve começar antes da dobra inicial; em 390×844 e 320×740, o **valor a pagar** deve ser visível na primeira região de decisão (posição vertical inferior a 75% da viewport). O controle negativo deve deslocar temporariamente esses elementos para fora do limite, observar rejeição e restaurar sem efeitos persistentes.
 - Em fluxo normal, busca sem resultados, descrição longa e diálogos, a apresentação deve preservar leitura integral, valor/moeda, foco, alvos de toque, estado e hierarquia. Uma execução do CI ou do Chrome sem inspeção comparativa com a Golden Screen não é aceite visual independente.
+- **Acabamento GS715-V03:** o shell compartilhado recebe tema claro apenas na rota A3 `/cartoes`, mantendo o menu e a ação de sair. O cabeçalho interno da fatura não duplica o título do shell no mobile; no desktop o cabeçalho interno substitui a barra superior redundante. Em telas sem fatura o cabeçalho com ação de registro permanece disponível.
+- **Alvo de toque REC-715-01:** o menu SVG de cada compra usa alvo mínimo de 44×44 px, com foco explícito e menu ancorado abaixo do acionador; Chrome/SSR verificam o alvo e controle negativo reversível de 30 px.
+- **Comparativo visual:** as capturas de `cards-desktop.png`, `cards-mobile.png` e `cards-compact-mobile.png` devem ser confrontadas com as capturas da Golden Screen do mesmo workflow/HEAD material. O CI valida geometria e regressões; o parecer de acabamento independente permanece uma etapa distinta.
+
 
 Ordem esperada de leitura:
 
@@ -280,7 +284,7 @@ A navegacao de periodo da fatura usa um controle compacto com **Anterior**, peri
 A lista de compras deve:
 
 - preservar o agrupamento e os subtotais por instrumento;
-- exibir cabecalho comparavel no desktop com data, compra, situacao, valor e acoes;
+- exibir cabecalho comparavel no desktop com data, compra, categoria, situacao, valor e acoes;
 - manter rotulos de contexto por campo no mobile, sem depender da posicao de uma coluna;
 - representar conciliacao com icone e texto acessivel, sem depender apenas de cor;
 - mostrar contadores nos filtros e anunciar a quantidade de compras visiveis;
