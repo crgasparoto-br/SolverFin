@@ -43,6 +43,8 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-invoice-title-row{align-items:center;flex-wrap:wrap;gap:8px}
     .cards-invoice-status-actions{align-items:center;display:flex;flex-wrap:wrap;gap:9px}
     .cards-close-invoice{align-items:center;display:inline-flex;gap:6px;min-height:40px;padding:7px 10px}
+    .cards-invoice-metadata{align-items:center;display:flex;flex-wrap:wrap;gap:5px 12px}
+    .cards-invoice-metadata p{margin:0}
     .cards-invoice-documents{align-items:center;align-self:start;background:transparent;border:0;border-radius:8px;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.77rem;font-weight:700;gap:7px;justify-self:start;min-height:40px;padding:7px 9px;text-align:left}
     .cards-invoice-documents:hover{background:var(--primary-soft)}
     .cards-invoice-documents:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
