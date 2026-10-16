@@ -344,7 +344,9 @@ export async function validateCardsPage(
       measurements,
     );
     check(
-      measurements.sidebarBefore && measurements.sidebarNegativeRejected && measurements.masterFactsVisible,
+      measurements.sidebarBefore &&
+        measurements.sidebarNegativeRejected &&
+        measurements.masterFactsVisible,
       "Golden Screen: card information must be visible in a separate left panel; stacking is a regression",
       measurements,
     );
