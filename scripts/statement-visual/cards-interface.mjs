@@ -120,6 +120,28 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       };
       const rows = Array.from(document.querySelectorAll('[data-purchase-item]'));
       const actions = Array.from(document.querySelectorAll('.cards-purchase-actions > summary'));
+      const action = actions[0];
+      const actionTargetBefore = rect(action).height >= 44 && rect(action).width >= 44;
+      const originalActionHeight = action?.style.height || '';
+      const originalActionWidth = action?.style.width || '';
+      if (action) { action.style.height = '30px'; action.style.width = '30px'; }
+      const actionTargetNegativeRejected = Boolean(action && (rect(action).height < 44 || rect(action).width < 44));
+      if (action) { action.style.height = originalActionHeight; action.style.width = originalActionWidth; }
+      const actionTargetRestored = Boolean(action && rect(action).height >= 44 && rect(action).width >= 44);
+      const sidebar = document.querySelector('.sidebar');
+      const pageTitle = document.querySelector('.cards-a3-page .sf-page-header');
+      const shellTitle = document.querySelector('.topbar');
+      const lightShell = () => {
+        const color = sidebar ? getComputedStyle(sidebar).backgroundColor.match(/[0-9]+/g)?.slice(0,3).map(Number) : [];
+        return color?.length === 3 && color.every((channel) => channel >= 220);
+      };
+      const shellIsLight = lightShell();
+      const originalSidebarBackground = sidebar?.style.background || '';
+      if (sidebar) sidebar.style.background = 'rgb(12, 48, 60)';
+      const shellNegativeRejected = !lightShell();
+      if (sidebar) sidebar.style.background = originalSidebarBackground;
+      const shellRestored = lightShell();
+      const noRepeatedHeader = !visible(shellTitle) || !visible(pageTitle);
       const statuses = Array.from(
         document.querySelectorAll('[data-purchase-item] .cards-purchase-status'),
       );
@@ -247,7 +269,12 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
           ? getComputedStyle(firstCategory, '::before').content.replaceAll('"', '')
           : '',
         minimumRowHeight: rows.length ? Math.min(...rows.map((row) => rect(row).height)) : 0,
-        minimumActionTarget: actions.length ? Math.min(...actions.map((action) => rect(action).height)) : 0,
+        minimumActionTarget: actions.length ? Math.min(...actions.map((action) => Math.min(rect(action).height, rect(action).width))) : 0,
+        actionTargetBefore,
+        actionTargetNegativeRejected: actionTargetNegativeRejected && actionTargetRestored,
+        shellIsLight,
+        shellNegativeRejected: shellNegativeRejected && shellRestored,
+        noRepeatedHeader,
         iconOnlyPurchaseStatuses: statusIconContract,
         statusIconNegativeRejected: statusIconNegativeRejected && statusIconRestored,
         purchaseActionIcons:
@@ -353,6 +380,16 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
     measurements,
   );
   check(
+    measurements.minimumActionTarget >= 44 && measurements.actionTargetBefore && measurements.actionTargetNegativeRejected,
+    "Golden Screen: purchase menu actions need 44px touch targets and a rejecting negative control",
+    measurements,
+  );
+  check(
+    measurements.shellIsLight && measurements.shellNegativeRejected && measurements.noRepeatedHeader,
+    "Golden Screen: card shell must be light and have no repeated visible route title",
+    measurements,
+  );
+  check(
     measurements.purchaseActionIcons,
     "Purchase actions must use shared SVG iconography",
     measurements,
@@ -417,8 +454,8 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
       measurements,
     );
     check(
-      measurements.minimumActionTarget >= 30,
-      "Purchase action target is too small on mobile",
+      measurements.minimumActionTarget >= 44,
+      "Purchase action target is smaller than 44px on mobile",
       measurements,
     );
   }
