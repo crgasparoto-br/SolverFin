@@ -605,7 +605,7 @@ function renderInvoiceDetail(input: {
     ${renderInvoiceHeader(input.invoice, input.summary, input.currency, input.paymentAccounts)}
     ${renderInvoiceSummary(input.invoice, input.summary, input.currency)}
     <div class="cards-purchase-section-header">
-      <h3>Itens da fatura</h3>
+      <div class="cards-purchase-title"><h3 id="cards-purchases-title">Itens da fatura</h3><span>${escapeHtml(input.currency ?? "Moeda indisponível")}</span></div>
       ${input.purchaseActionHtml}
     </div>
     ${renderPurchaseFilters(
@@ -749,11 +749,11 @@ function renderInvoiceHeader(
         <p>${escapeHtml(currency ?? "Moeda indisponível")} · Fechamento ${formatDate(invoice.periodEndOn)} · Vencimento ${formatDate(invoice.dueOn)}</p>
         <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura">${icon("file-text", 16)} <span>Documentos da fatura</span></button>
       </div>
-      <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
     </div>
     <div class="cards-invoice-primary">
       <span>Valor a pagar</span><strong>${money(amountDueMinor, currency)}</strong>
       ${canPay ? `<div class="cards-invoice-actions"><button type="button" class="sf-button sf-button-primary" data-open-modal="payment"${paymentAccounts.length > 0 ? "" : " disabled"} title="${paymentAccounts.length > 0 ? "Liquidar esta fatura" : "Cadastre uma conta ativa na mesma moeda da fatura"}">Liquidar fatura</button></div>` : ""}
+      <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
     </div>
   </header>`;
 }
@@ -879,7 +879,6 @@ function renderPurchaseGroups(
     })}</div>`;
   }
   return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title">
-    <div class="cards-section-heading"><h3 id="cards-purchases-title">Itens da fatura</h3><span>${escapeHtml(invoiceCurrency ?? "Moeda indisponível")}</span></div>
     ${groups
       .map((group) =>
         renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
