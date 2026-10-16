@@ -388,3 +388,24 @@ Regras específicas:
 - parcelamento só é materializado quando sequência e total foram extraídos de forma consistente e o valor total revisado da compra reproduz exatamente o valor da parcela observado no documento; `Transaction.amountMinor` continua sendo o total da compra e `installmentAmountMinor` é apenas evidência imutável da ocorrência importada;
 - total da fatura, pagamento, saldo anterior e linhas de resumo não são tratados como compras;
 - deduplicação/conciliação usa o mesmo detector determinístico compartilhado, incluindo `cardId` como evidência.
+
+## Golden Screen — composição e painel contextual (Issue #715)
+
+A rota `/cartoes` reutiliza a linguagem visual aprovada do Extrato: hierarquia textual,
+contraste, botões do sistema, filtros acessíveis, resumo financeiro compacto e
+lista de compras escaneável. **A composição é master-detail própria de cartões**:
+no desktop largo, o painel contextual ocupa a coluna esquerda, com identificação,
+seletor do cartão, status, moeda, fechamento, vencimento e instrumentos ativos
+visíveis, sem menus sobrepostos nem competir com a área de consulta. A fatura,
+valor a pagar, ações de liquidação, indicadores e compras ficam na coluna direita.
+Abaixo de 940 px, a composição passa a ser vertical. No mobile, dados contratuais
+e instrumentos continuam disponíveis em disclosures acessíveis sem dominar a
+primeira viewport.
+
+O registro de compras permanece como ação secundária da página, enquanto a
+liquidação mantém precedência **somente no contexto da fatura**; fechamento é
+secundário. A lista preserva categoria em coluna, situação por ícone com tooltip,
+moeda explícita, ações de 44 px, filtros por conciliação, grupo de instrumentos e
+documentos da fatura em diálogo dedicado. Os testes Chrome verificam a coluna
+lateral separada e suas informações visíveis e rejeitam uma mutação que volte a
+empilhar o painel no desktop. Preservar os contratos financeiros existentes.
