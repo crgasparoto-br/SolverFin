@@ -307,6 +307,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /<details class="cards-instrument-nav" open>/);
   assert.match(html, /Moeda padrão<\/dt><dd>USD/);
   assert.match(html, /Fechamento contratual/);
+  assert.match(html, /cards-summary-icon/);
+  assert.match(html, /cards-summary-copy/);
   assert.match(html, /Instrumentos <span>2 ativos<\/span>/);
   assert.match(html, /\.cards-a3-page \.sf-detail-layout\{align-items:start;display:grid;gap:16px;grid-template-columns:minmax\(238px,258px\) minmax\(0,1fr\)/);
   assert.match(html, /matchMedia\("\(max-width: 760px\)"\)/);
