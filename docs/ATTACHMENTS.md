@@ -12,6 +12,12 @@ O primeiro recorte cobre:
 
 O vínculo técnico `ai_suggestion` permanece compatível no repositório, mas não é exposto como jornada pública de upload nesta fase.
 
+## Localização dos anexos na interface
+
+- **Lançamentos (`/lancamentos`):** os anexos ficam no modal de **Novo lançamento** e **Editar lançamento**. Na criação de lançamento único, o arquivo é selecionado previamente e enviado apenas depois que a API devolve o identificador. Se o upload falhar, o lançamento permanece salvo e o usuário pode tentar novamente sem recriá-lo. Para parcelas e recorrências, anexar na edição de uma ocorrência persistida, não na definição de recorrência.
+- **Faturas (`/cartoes`):** a lista não exibe o formulário completo. A ação secundária **Documentos da fatura** abre um modal preservando o vínculo técnico `invoice`, autorização e exclusão lógica.
+- **Segurança:** não utilizar `linkedEntityId` inexistente, não alterar armazenamento, tipos MIME e limite de 5 MiB. Documentos previamente associados não são excluídos.
+
 ## Tipos funcionais
 
 Os tipos aceitos são:
