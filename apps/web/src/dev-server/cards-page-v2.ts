@@ -286,6 +286,7 @@ export async function renderCardsPageV2(
     <div class="cards-layout" data-cards-archetype="A3">
       ${content}
       ${renderPurchaseModal(selectedCard, categories, activeInstruments, cardCurrency)}
+      ${selectedInvoice ? renderInvoiceAttachmentsDialog(selectedInvoice) : ""}
       ${renderPaymentModal(
         selectedInvoice,
         matchingPaymentAccounts,
@@ -619,8 +620,17 @@ function renderInvoiceDetail(input: {
       input.invoice,
       input.currency,
     )}
-    ${renderAttachmentWorkspace({ entityKind: "invoice", entityId: input.invoice.id, title: "Anexos da fatura" })}
+    <div class="cards-invoice-document-link"><button type="button" class="sf-button sf-button-secondary" data-open-modal="invoice-attachments">Documentos da fatura</button></div>
   </section>`;
+}
+
+function renderInvoiceAttachmentsDialog(invoice: InvoiceRecord): string {
+  return `<dialog class="cards-dialog" data-modal="invoice-attachments" aria-labelledby="cards-attachment-dialog-title">
+    <section class="cards-dialog-panel">
+      <header><div><span class="cards-kicker">Fatura selecionada</span><h2 id="cards-attachment-dialog-title">Documentos da fatura</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+      ${renderAttachmentWorkspace({ entityKind: "invoice", entityId: invoice.id, title: "Anexos da fatura" })}
+    </section>
+  </dialog>`;
 }
 
 function renderInvoiceNavigation(
