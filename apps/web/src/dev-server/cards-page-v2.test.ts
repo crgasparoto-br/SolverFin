@@ -284,7 +284,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Moeda da fatura<\/dt><dd>USD/);
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
-  assert.match(html, /data-open-modal="invoice-attachments">Documentos da fatura/);
+  assert.match(html, /data-open-modal="invoice-attachments"[^>]*>[\\s\\S]*?<span>Documentos da fatura<\\/span>/);
   assert.match(html, /<dialog class="cards-dialog" data-modal="invoice-attachments"/);
   assert.match(html, /data-entity-kind="invoice" data-entity-id="invoice-aug"/);
   const firstInvoiceDialog = html.indexOf(
@@ -328,19 +328,20 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     /<details class="cards-settlement-note"><summary>Sobre a liquidação<\/summary>/,
   );
   assert.match(html, /<details class="cards-limit-detail"><summary>Detalhes do limite<\/summary>/);
-  assert.ok(
-    html.indexOf('data-open-modal="purchase"') < html.indexOf('class="cards-invoice-header"'),
-    "purchase action belongs to the page header; invoice settlement remains the primary invoice decision",
-  );
-  assert.match(html, /class="cards-reconciliation-filters"[\s\S]*data-open-modal="purchase"/);
-  assert.match(
-    html,
-    /\.cards-reconciliation-filters \[data-open-modal="purchase"\]\{display:none\}/,
-  );
-  assert.match(
-    html,
-    /\.cards-reconciliation-filters \[data-open-modal="purchase"\]\{display:inline-flex/,
-  );
+  const invoiceHeaderStart = html.indexOf('class="cards-invoice-header"');
+  const invoiceHeaderEnd = html.indexOf("</header>", invoiceHeaderStart);
+  const invoiceHeader = html.slice(invoiceHeaderStart, invoiceHeaderEnd);
+  assert.match(invoiceHeader, /class="cards-invoice-status-actions"[\\s\\S]*data-api-path="\\/api\\/invoices\\/invoice-aug\\/close"/);
+  assert.match(invoiceHeader, /class="cards-invoice-title-block"[\\s\\S]*data-open-modal="invoice-attachments"/);
+  assert.match(invoiceHeader, /class="cards-invoice-primary"[\\s\\S]*data-open-modal="payment"/);
+  const purchaseHeaderStart = html.indexOf('class="cards-purchase-section-header"');
+  const purchaseFilterStart = html.indexOf('class="cards-reconciliation-filters"');
+  const purchaseHeader = html.slice(purchaseHeaderStart, purchaseFilterStart);
+  assert.ok(purchaseHeaderStart > invoiceHeaderEnd);
+  assert.match(purchaseHeader, /Itens da fatura<\\/h3>[\\s\\S]*data-open-modal="purchase"/);
+  assert.equal((html.match(/data-open-modal="purchase"/g) ?? []).length, 1);
+  assert.ok(!invoiceHeader.includes('data-open-modal="purchase"'));
+  assert.ok(html.includes(".cards-purchase-section-header{"));
   // #715: the close icon must contrast with the light modal surface.
   assert.match(
     html,
