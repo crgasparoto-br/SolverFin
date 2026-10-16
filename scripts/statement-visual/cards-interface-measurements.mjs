@@ -95,7 +95,12 @@ export async function validateCardsPage(
       const detailLayout = document.querySelector('.cards-a3-page .sf-detail-layout');
       const page = document.querySelector('.cards-a3-page');
       const main = document.querySelector('.main-area > main');
-      const widthMatchesShell = () => Boolean(page && main && Math.abs(rect(page).width - rect(main).width) <= 2);
+      const mainContentWidth = () => {
+        if (!main) return 0;
+        const style = getComputedStyle(main);
+        return rect(main).width - parseFloat(style.paddingLeft || '0') - parseFloat(style.paddingRight || '0');
+      };
+      const widthMatchesShell = () => Boolean(page && main && Math.abs(rect(page).width - mainContentWidth()) <= 2);
       const widthBefore = widthMatchesShell();
       const previousWidthCap = page?.style.maxWidth || '';
       if (page && window.innerWidth >= 1600) page.style.maxWidth = '1300px';
@@ -183,6 +188,7 @@ export async function validateCardsPage(
         detailWidth: rect(detail).width,
         pageWidth: rect(page).width,
         mainWidth: rect(main).width,
+        mainContentWidth: mainContentWidth(),
         fullWidthUsesCanonicalShell: widthBefore && widthRestored && narrowerPageRejected,
         sidebarBefore,
         sidebarNegativeRejected: sidebarNegativeRejected && sidebarRestored,
