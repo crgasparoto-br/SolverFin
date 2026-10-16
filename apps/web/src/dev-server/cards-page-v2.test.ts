@@ -395,7 +395,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /class="sf-button sf-button-primary" data-open-modal="payment"/);
   assert.match(
     html,
-    /class="sf-button sf-button-secondary" data-api-path="\/api\/invoices\/invoice-aug\/close"/,
+    /class="sf-button sf-button-secondary cards-close-invoice" data-api-path="\/api\/invoices\/invoice-aug\/close"/,
   );
   assert.match(html, /class="sf-button sf-button-secondary" data-open-modal="purchase"/);
   assert.doesNotMatch(html, /class="sf-button sf-button-primary" data-open-modal="purchase"/);
