@@ -328,10 +328,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     html.indexOf('data-open-modal="purchase"') < html.indexOf('class="cards-invoice-header"'),
     "purchase action belongs to the page header; invoice settlement remains the primary invoice decision",
   );
-  assert.match(
-    html,
-    /class="cards-reconciliation-filters"[\s\S]*data-open-modal="purchase"/,
-  );
+  assert.match(html, /class="cards-reconciliation-filters"[\s\S]*data-open-modal="purchase"/);
   assert.match(
     html,
     /\.cards-reconciliation-filters \[data-open-modal="purchase"\]\{display:none\}/,
