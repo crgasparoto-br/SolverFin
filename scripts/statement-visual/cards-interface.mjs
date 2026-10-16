@@ -20,6 +20,7 @@ const report = {
   browser: "unknown",
   failures,
   desktop: undefined,
+  wideDesktop: undefined,
   filteredEmpty: undefined,
   desktopModal: undefined,
   mobile: undefined,
@@ -50,6 +51,11 @@ await runViewportSession("desktop", 1366, 768, async (cdp) => {
   report.screenshots.push("cards-long-desktop.png");
   report.desktopModal = await validateModal(cdp, "desktop");
   report.screenshots.push("cards-modal-desktop.png");
+});
+
+await runViewportSession("wide-desktop", 1920, 1080, async (cdp) => {
+  report.wideDesktop = await validatePage(cdp, "desktop", "wide-desktop");
+  report.screenshots.push("cards-wide-desktop.png");
 });
 
 await runViewportSession("mobile", 390, 844, async (cdp) => {
