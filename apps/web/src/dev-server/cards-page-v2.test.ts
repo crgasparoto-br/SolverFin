@@ -286,8 +286,14 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
   // #715: enforce the approved shell hierarchy and accessible purchase actions.
   assert.match(html, /class="cards-a3-page cards-has-invoice"/);
-  assert.ok(html.includes('.app-shell:has([data-cards-archetype="A3"]) .sidebar{background:var(--surface)'));
-  assert.ok(html.includes('.cards-purchase-actions>summary{height:44px;min-height:44px;min-width:44px;width:44px}'));
+  assert.ok(
+    html.includes('.app-shell:has([data-cards-archetype="A3"]) .sidebar{background:var(--surface)'),
+  );
+  assert.ok(
+    html.includes(
+      ".cards-purchase-actions>summary{height:44px;min-height:44px;min-width:44px;width:44px}",
+    ),
+  );
   // #715 Golden Screen: full-width invoice, progressive card details and buying action at the list.
   assert.match(
     html,
