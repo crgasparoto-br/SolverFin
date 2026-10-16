@@ -249,7 +249,7 @@ export async function renderCardsPageV2(
     : [];
 
   const content = renderPageContainer({
-    className: "cards-a3-page",
+    className: selectedInvoice ? "cards-a3-page cards-has-invoice" : "cards-a3-page",
     childrenHtml: `${renderPageHeader({
       title: "Faturas e compras",
       actionsHtml: selectedInvoice ? "" : renderPageActions(selectedCard, activeInstruments),
@@ -1621,6 +1621,24 @@ function css(): string {
     .cards-purchase-category{color:var(--muted);font-size:.78rem;min-width:0;overflow-wrap:anywhere}
     @media(min-width:761px) and (max-width:1050px){.cards-purchase-table-head,.cards-purchase-row{gap:7px;grid-template-columns:5.5rem minmax(0,1.5fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
     @media(max-width:760px){.cards-purchase-row{grid-template-columns:minmax(0,1fr) auto}.cards-purchase-category{grid-column:1;min-width:0}.cards-purchase-actions{grid-column:2;grid-row:2 / span 3}.cards-purchase-status-cell{grid-column:1}}
+
+    /* #715 GS715-V03: match the approved light shell without modifying other routes. */
+    .app-shell:has([data-cards-archetype="A3"]) .sidebar{background:var(--surface);border-right:1px solid var(--line);color:var(--text)}
+    .app-shell:has([data-cards-archetype="A3"]) .sidebar .brand{color:var(--text)}
+    .app-shell:has([data-cards-archetype="A3"]) .sidebar nav a{color:var(--muted)}
+    .app-shell:has([data-cards-archetype="A3"]) .sidebar nav a:hover{background:var(--bg);color:var(--text)}
+    .app-shell:has([data-cards-archetype="A3"]) .sidebar nav a[aria-current="page"]{background:var(--primary-soft);color:var(--primary)}
+    .app-shell:has([data-cards-archetype="A3"]) .nav-section-label{color:var(--muted)}
+    .app-shell:has([data-cards-archetype="A3"]) .sidebar .logout{background:var(--bg);border-color:var(--line);color:var(--text)}
+    .app-shell:has([data-cards-archetype="A3"]) .nav-more-toggle{background:var(--bg);color:var(--primary)}
+    .app-shell:has([data-cards-archetype="A3"]) .nav-more-toggle:hover,.app-shell:has([data-cards-archetype="A3"]) .nav-more-toggle[aria-expanded="true"]{background:var(--primary-soft);color:var(--primary)}
+    @media(min-width:761px){.app-shell:has([data-cards-archetype="A3"]) .topbar{display:none}}
+    @media(max-width:760px){.cards-a3-page.cards-has-invoice .sf-page-header{display:none}.app-shell:has([data-cards-archetype="A3"]) .topbar{min-height:42px}}
+    /* #715 REC-715-01: touch-accessible purchase menu instead of legacy 30px dots. */
+    .cards-purchase-actions>summary{height:44px;min-height:44px;min-width:44px;width:44px}
+    .cards-purchase-actions .cards-purchase-menu{top:calc(100% + 4px)}
+    .cards-advanced-filters>summary,.cards-month-picker>summary{min-height:44px;align-items:center;display:flex;justify-content:center}
+    .cards-purchase-actions>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
   `;
 }
 
