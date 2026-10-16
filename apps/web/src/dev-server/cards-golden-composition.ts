@@ -38,7 +38,7 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-invoice-period-link{min-height:42px;padding:5px 8px}
     .cards-invoice-period-link strong{font-size:.76rem}
     .cards-invoice-current>strong{font-size:1rem;line-height:1.4}
-    .cards-invoice-header{align-items:center;gap:16px;grid-template-columns:minmax(0,1fr) minmax(235px,auto);padding:14px 16px}
+    .cards-invoice-header{align-items:center;gap:12px;grid-template-columns:minmax(0,1fr) minmax(235px,auto);padding:10px 16px}
     .cards-invoice-title-block{gap:5px;min-width:0}
     .cards-invoice-title-row{align-items:center;flex-wrap:wrap;gap:8px}
     .cards-invoice-status-actions{align-items:center;display:flex;flex-wrap:wrap;gap:9px}
@@ -54,11 +54,13 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-invoice-primary>strong{font-size:1.55rem;line-height:1.15;overflow-wrap:anywhere;text-align:right}
     .cards-invoice-actions{align-items:center;display:flex;gap:7px;justify-content:flex-end;margin-top:5px}
     .cards-invoice-actions .sf-button{min-height:44px;white-space:nowrap}
-    .cards-purchase-section-header{align-items:center;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;padding:9px 14px}
+    .cards-purchase-section-header{align-items:center;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;padding:6px 14px}
     .cards-purchase-section-header h3{font-size:.96rem;font-weight:800;line-height:1.4;margin:0}
+    .cards-purchase-title{align-items:baseline;display:flex;flex-wrap:wrap;gap:6px 10px}
+    .cards-purchase-title>span{color:var(--muted);font-size:.72rem;font-weight:700}
     .cards-purchase-section-header .sf-button{align-items:center;display:inline-flex;justify-content:center;min-height:44px}
     .cards-settlement-note{font-size:.73rem}
-    .cards-invoice-summary{gap:8px;padding:10px 14px}
+    .cards-invoice-summary{gap:8px;padding:8px 14px}
     .cards-invoice-summary .sf-summary-grid{gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}
     .cards-summary-metric{background:var(--surface);border:1px solid var(--line);border-radius:9px;gap:5px;min-height:64px;padding:9px 11px}
     .cards-summary-metric>span{font-size:.71rem;line-height:1.35}
@@ -70,7 +72,7 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-summary-copy>span{color:var(--muted);font-size:.71rem;line-height:1.3}
     .cards-summary-copy>strong{font-size:.86rem;font-variant-numeric:tabular-nums;line-height:1.35;overflow-wrap:anywhere}
     .cards-limit-detail>summary{min-height:22px}
-    .cards-detail-panel .sf-filter-bar{gap:8px;padding:12px 14px}
+    .cards-detail-panel .sf-filter-bar{gap:7px;padding:8px 14px}
     .cards-purchase-filter-form{align-items:end;gap:8px;grid-template-columns:minmax(0,1fr) auto auto}
     .cards-search-field{font-size:.77rem!important;gap:5px!important;line-height:1.35!important}
     .cards-search-field input{min-height:44px}
@@ -78,11 +80,11 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-reconciliation-filters{gap:6px}
     .cards-filter-chip{min-height:34px;padding:6px 10px}
     .cards-results-status{font-size:.73rem;margin-left:auto}
-    .cards-purchase-groups{gap:8px;padding:10px 14px 14px}
+    .cards-purchase-groups{gap:8px;padding:8px 14px 14px}
     .cards-section-heading{align-items:baseline}
     .cards-section-heading h3{font-size:1rem}
     .cards-instrument-group{border:1px solid var(--line);border-radius:10px;overflow:visible}
-    .cards-instrument-group>summary{background:var(--bg);border-radius:10px 10px 0 0;gap:12px;min-height:48px;padding:10px 12px}
+    .cards-instrument-group>summary{background:var(--bg);border-radius:10px 10px 0 0;gap:12px;min-height:44px;padding:8px 12px}
     .cards-instrument-group>summary strong{font-size:.8rem;overflow-wrap:anywhere}
     .cards-instrument-totals{font-size:.79rem;white-space:nowrap}
     .cards-purchase-table-head,.cards-purchase-row{gap:8px;grid-template-columns:5.7rem minmax(0,1.4fr) minmax(5.7rem,.65fr) 4.2rem minmax(7.5rem,.68fr) 3rem}
