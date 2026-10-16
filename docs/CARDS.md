@@ -409,3 +409,10 @@ moeda explícita, ações de 44 px, filtros por conciliação, grupo de instrume
 documentos da fatura em diálogo dedicado. Os testes Chrome verificam a coluna
 lateral separada e suas informações visíveis e rejeitam uma mutação que volte a
 empilhar o painel no desktop. Preservar os contratos financeiros existentes.
+
+A largura externa usa exclusivamente `--sf-layout-content-max-width` e os gutters
+`--sf-layout-gutter-desktop` / `--sf-layout-gutter-mobile` do design system, sem
+segundo limite local de 1500/1560 px. No desktop de 1920 px o layout A3 deve preencher
+a largura efetiva de `.main-area > main`, sem faixas laterais extras, conforme a
+mesma área útil do Extrato. O Chrome captura `cards-wide-desktop.png` e reprova
+uma redução artificial da largura antes de restaurar a composição.
