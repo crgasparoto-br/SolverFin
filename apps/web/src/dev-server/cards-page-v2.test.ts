@@ -312,6 +312,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Fechamento contratual/);
   assert.match(html, /cards-summary-icon/);
   assert.match(html, /cards-summary-copy/);
+  assert.ok(html.includes(".cards-a3-page{max-width:var(--sf-layout-content-max-width);"));
+  assert.ok(html.includes("padding:18px var(--sf-layout-gutter-desktop) 24px"));
+  assert.ok(html.includes("padding:10px var(--sf-layout-gutter-mobile) 20px"));
+  assert.doesNotMatch(html, /\.cards-a3-page\{[^}]*max-width:(?:1500|1560)px/);
   assert.match(html, /Instrumentos <span>2 ativos<\/span>/);
   assert.match(
     html,
