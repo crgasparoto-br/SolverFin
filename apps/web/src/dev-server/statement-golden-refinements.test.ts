@@ -43,6 +43,9 @@ assert.match(styles, /div:nth-child\(2\)[^}]*grid-template-columns:subgrid[^}]*p
 assert.match(styles, /close-form[^}]*grid-column:2[^}]*position:static/);
 assert.match(styles, /eyebrow[^}]*grid-column:1[^}]*min-width:0/);
 
+// The balance summary aligns its label, amount + visibility action, and helper copy on the right.
+assert.match(styles, /statement-account-heading \.summary-balance\{[^}]*text-align:right/);
+assert.match(styles, /statement-account-heading \.summary-balance-line\{justify-content:flex-end/);
 assert.ok(styles.includes("account-summary[data-mockup-composition]"));
 assert.ok(styles.includes("grid-template-columns:repeat(4,minmax(0,1fr))"));
 assert.ok(styles.includes("statement-secondary-actions>summary::after{content:'⋮'"));
