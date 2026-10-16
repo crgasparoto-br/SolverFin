@@ -33,8 +33,8 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-master-panel :is(summary,select,a):focus-visible{outline:2px solid var(--primary);outline-offset:3px}
     /* The detail column uses clean, horizontally aligned decisions rather than stacked boxes. */
     .cards-detail-panel{border-radius:12px;min-width:0;overflow:visible}
-    .cards-invoice-navigation{align-items:center;display:grid;gap:8px;padding:8px 14px}
-    .cards-invoice-period-row{align-items:center;gap:8px;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);max-width:none}
+    .cards-invoice-navigation{align-items:center;display:flex;gap:8px;justify-content:space-between;padding:8px 14px}
+    .cards-invoice-period-row{align-items:center;flex:1 1 auto;gap:8px;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);max-width:none}
     .cards-invoice-period-link{min-height:42px;padding:5px 8px}
     .cards-invoice-period-link strong{font-size:.76rem}
     .cards-invoice-current>strong{font-size:1rem;line-height:1.4}
@@ -111,7 +111,7 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-master-details,.cards-instrument-nav{border-top:0;padding:4px 0 0}
       .cards-master-details>summary,.cards-instrument-nav>summary{color:var(--primary);font-size:.75rem;min-height:36px}
       .cards-master-details[open]>.cards-master-meta,.cards-instrument-nav[open]>ul{border-top:1px solid var(--line);padding-top:9px}
-      .cards-invoice-navigation{gap:4px;padding:8px 10px}
+      .cards-invoice-navigation{display:grid;gap:4px;grid-template-columns:minmax(0,1fr) auto;padding:8px 10px}
       .cards-invoice-period-row{grid-template-columns:40px minmax(0,1fr) 40px;gap:2px}
       .cards-invoice-period-link{justify-content:center;min-height:44px;padding:5px}
       .cards-invoice-current>strong{font-size:.91rem}
