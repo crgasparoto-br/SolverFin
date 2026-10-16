@@ -785,7 +785,14 @@ function renderInvoiceSummary(
 }
 
 function summaryMetric(label: string, valueHtml: string): string {
-  const glyph = label === "Conciliado" ? "check-circle" : label === "Não conciliado" ? "clock" : label === "Limite disponível" ? "wallet" : "receipt";
+  const glyph =
+    label === "Conciliado"
+      ? "check-circle"
+      : label === "Não conciliado"
+        ? "clock"
+        : label === "Limite disponível"
+          ? "wallet"
+          : "receipt";
   return `<section class="cards-summary-metric"><span class="cards-summary-icon" aria-hidden="true">${icon(glyph, 17)}</span><div class="cards-summary-copy"><span>${escapeHtml(label)}</span><strong>${valueHtml}</strong></div></section>`;
 }
 
