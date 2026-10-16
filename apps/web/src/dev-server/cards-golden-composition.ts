@@ -82,6 +82,8 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-purchase-category{font-size:.75rem;line-height:1.4}
     .cards-purchase-amount{font-size:.82rem;font-variant-numeric:tabular-nums;white-space:normal}
     .cards-invoice-document-link{padding:4px 14px 14px}
+    .cards-summary-copy>strong{overflow-wrap:normal;word-break:normal}
+    .cards-reconciliation-filters [data-open-modal="purchase"]{display:none}
     @media(max-width:1190px){
       .cards-a3-page .sf-detail-layout{gap:12px;grid-template-columns:minmax(205px,225px) minmax(0,1fr)}
       .cards-master-panel{padding:12px}
@@ -133,7 +135,7 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-detail-panel .sf-filter-bar{padding:10px}
       .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) auto}
       .cards-search-field{grid-column:1/-1}
-      .cards-reconciliation-filters [data-open-modal="purchase"]{margin-left:0}
+      .cards-reconciliation-filters [data-open-modal="purchase"]{display:inline-flex;justify-content:center;margin-left:auto;min-height:44px}
       .cards-results-status{margin-left:0}
       .cards-purchase-groups{padding:10px}
       .cards-purchase-row{grid-template-columns:minmax(0,1fr) auto;gap:7px}
@@ -146,8 +148,26 @@ export function cardsGoldenCompositionStyles(): string {
     }
     @media(max-width:350px){
       .cards-a3-page{padding:8px}
-      .cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr 1fr}
-      .cards-invoice-actions{display:grid;grid-template-columns:1fr 1fr}
+      .cards-master-panel{gap:3px;padding:8px}
+      .cards-card-picker{gap:2px}
+      .cards-card-picker select{min-height:40px}
+      .cards-card-picker label{font-size:.7rem}
+      .cards-card-identity{gap:4px;grid-template-columns:23px minmax(0,1fr) auto;padding:7px}
+      .cards-card-icon,.cards-card-icon .brand-icon,.cards-card-icon .brand-icon-wrap,.cards-card-icon img{height:23px;width:23px}
+      .cards-card-identity>div strong{font-size:.76rem}
+      .cards-card-identity>div span{font-size:.64rem;line-height:1.2}
+      .cards-card-identity>.sf-badge{font-size:.65rem;padding:2px 5px}
+      .cards-master-details,.cards-instrument-nav{padding:0}
+      .cards-master-details>summary,.cards-instrument-nav>summary{font-size:.72rem;min-height:28px}
+      .cards-invoice-navigation{padding:4px 8px}
+      .cards-invoice-header{gap:5px;padding:9px 10px}
+      .cards-invoice-title-block{gap:3px}
+      .cards-invoice-title-block h2{font-size:1.06rem}
+      .cards-invoice-title-block p{font-size:.7rem;line-height:1.3}
+      .cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr}
+      .cards-summary-metric{min-height:56px}
+      .cards-invoice-actions{display:grid;grid-template-columns:minmax(0,1fr)}
+      .cards-invoice-actions .sf-button{white-space:normal;width:100%}
       .cards-invoice-period-row{grid-template-columns:40px minmax(0,1fr) 40px}
     }
   `;
