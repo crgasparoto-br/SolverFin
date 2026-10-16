@@ -1301,13 +1301,8 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       event.preventDefault(); if (form.dataset.submitting === "true") return;
       if (!form.checkValidity()) { form.reportValidity(); return; }
       const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]');
-      const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]");
-      const queuedFile = attachmentWorkspace?.querySelector('[data-attachment-form] [name="file"]')?.files?.[0];
-      if (queuedFile && method === "POST" && mode !== "single") {
-        statusNode.className = "form-status error full";
-        statusNode.textContent = "Para anexar arquivos, salve um lançamento único. Em parcelas ou recorrências, anexe na edição de uma ocorrência.";
-        return;
-      }
+      const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); const queuedFile = attachmentWorkspace?.querySelector('[data-attachment-form] [name="file"]')?.files?.[0];
+      if (queuedFile && method === "POST" && mode !== "single") { statusNode.className = "form-status error full"; statusNode.textContent = "Para anexar arquivos, salve um lançamento único. Em parcelas ou recorrências, anexe na edição de uma ocorrência."; return; }
       form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
       let shouldReload = false;
       try {
@@ -1317,22 +1312,13 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
         } else if (mode === "installment" && method === "POST") {
           const data = new FormData(form); const item = payload(); response = await send("/api/installments", "POST", { accountId: String(data.get("accountId")), destinationAccountId: String(data.get("destinationAccountId") || "") || null, categoryId: String(data.get("categoryId") || "") || null, kind: String(data.get("kind")), status: String(data.get("status")), description: String(data.get("description") || "").trim(), note: String(data.get("note") || "").trim() || null, plannedOn: item.plannedOn, effectiveOn: item.effectiveOn, amountMinor: moneyToMinor(data.get("amountMinor")), amountMode: String(data.get("installmentValueMode") || "per_installment"), totalInstallments: Math.max(2, Number(data.get("installments") || 2)), initialSequenceNumber: Math.max(1, Number(data.get("installmentStart") || 1)), idempotencyKey: newIdempotencyKey() });
         } else response = await send(form.dataset.path || "/api/transactions", method, payload());
-        const created = response.ok && queuedFile && method === "POST"
-          ? await response.clone().json().catch(() => ({}))
-          : null;
-        statusNode.className = response.ok ? "form-status success full" : "form-status error full";
-        statusNode.textContent = await message(response);
+        const created = response.ok && queuedFile && method === "POST" ? await response.clone().json().catch(() => ({})) : null;
+        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response);
         if (response.ok && queuedFile) {
           const linkedId = method === "POST" ? created?.transaction?.id : attachmentWorkspace?.dataset.entityId;
-          if (!linkedId) {
-            statusNode.className = "form-status error full";
-            statusNode.textContent = "Lançamento salvo, mas o identificador não foi retornado. Abra a edição para anexar o arquivo.";
-            return;
-          }
+          if (!linkedId) { statusNode.className = "form-status error full"; statusNode.textContent = "Lançamento salvo, mas o identificador não foi retornado. Abra a edição para anexar o arquivo."; return; }
           if (method === "POST") {
-            form.dataset.method = "PATCH";
-            form.dataset.path = "/api/transactions/" + encodeURIComponent(linkedId);
-            document.querySelector("[data-modal-title]").textContent = "Editar lançamento";
+            form.dataset.method = "PATCH"; form.dataset.path = "/api/transactions/" + encodeURIComponent(linkedId); document.querySelector("[data-modal-title]").textContent = "Editar lançamento";
           }
           try {
             await window.SolverFinAttachments.uploadPending(attachmentWorkspace, linkedId);
