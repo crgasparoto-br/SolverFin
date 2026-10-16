@@ -622,7 +622,6 @@ function renderInvoiceDetail(input: {
       input.recurrences,
       input.invoices,
       input.invoice,
-      input.currency,
     )}
   </section>`;
 }
@@ -870,7 +869,6 @@ function renderPurchaseGroups(
   recurrences: readonly RecurrenceRecord[],
   invoices: readonly InvoiceRecord[],
   selectedInvoice: InvoiceRecord,
-  invoiceCurrency: string | undefined,
 ): string {
   if (groups.length === 0) {
     return `<div class="cards-purchase-empty" data-purchase-filter-empty>${renderEmptyState({
