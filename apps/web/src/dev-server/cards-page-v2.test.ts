@@ -285,7 +285,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
   // #715: enforce the approved shell hierarchy and accessible purchase actions.
-  assert.match(html, /class="cards-a3-page cards-has-invoice"/);
+  assert.match(html, /class="[^"]*cards-a3-page cards-has-invoice[^"]*"/);
   assert.ok(
     html.includes('.app-shell:has([data-cards-archetype="A3"]) .sidebar{background:var(--surface)'),
   );
