@@ -40,7 +40,7 @@ try {
   const focusOrder = [await activeControl()];
   await pressKey("Tab", { shift: true });
   focusOrder.push(await activeControl());
-  for (let step = 0; step < 6; step += 1) {
+  for (let step = 0; step < 9; step += 1) {
     await pressKey("Tab");
     focusOrder.push(await activeControl());
   }
@@ -52,6 +52,9 @@ try {
     "note",
     "Cancelar",
     "Salvar parcela",
+    "kind",
+    "file",
+    "Adicionar anexo",
     "Fechar",
   ];
   check(
@@ -81,6 +84,19 @@ try {
       restrictions.cancelEnabled,
     "Mockup controls must not relax restricted installment editing",
     restrictions,
+  );
+
+  const attachmentBinding = await evaluate(
+    browser.cdp,
+    `(() => {
+      const workspace = document.querySelector('[data-modal] [data-attachment-workspace][data-entity-kind="transaction"]');
+      return { entityId: workspace?.dataset.entityId || "", visible: workspace && !workspace.hidden };
+    })()`,
+  );
+  check(
+    attachmentBinding.visible && attachmentBinding.entityId === fixture.transactionId,
+    "Restricted installment attachments must remain linked and keyboard-accessible",
+    attachmentBinding,
   );
 
   const filename = "issue-539-installment-keyboard-1366x768.png";
