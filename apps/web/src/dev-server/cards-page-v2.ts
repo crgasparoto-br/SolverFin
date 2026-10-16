@@ -275,7 +275,7 @@ export async function renderCardsPageV2(
         presentation,
         currency: invoiceCurrency,
         paymentAccounts: matchingPaymentAccounts,
-        purchaseActionHtml: "",
+        purchaseActionHtml: selectedInvoice ? renderPageActions(selectedCard, activeInstruments) : "",
         url,
       }),
     })}`,
