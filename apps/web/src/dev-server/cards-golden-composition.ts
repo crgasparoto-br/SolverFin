@@ -2,7 +2,7 @@
 export function cardsGoldenCompositionStyles(): string {
   return `
     /* Restore the card's contextual left panel: invoice and purchases remain the primary task. */
-    .cards-a3-page{max-width:1560px;gap:12px;padding:18px 20px 24px}
+    .cards-a3-page{max-width:var(--sf-layout-content-max-width);gap:12px;padding:18px var(--sf-layout-gutter-desktop) 24px}
     .cards-a3-page .sf-page-header{align-items:center;margin:0 0 2px}
     .cards-a3-page .sf-page-header h1{letter-spacing:-.025em}
     .cards-a3-page .sf-detail-layout{align-items:start;display:grid;gap:16px;grid-template-columns:minmax(238px,258px) minmax(0,1fr)}
@@ -106,7 +106,7 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-invoice-primary>strong{text-align:right}
     }
     @media(max-width:760px){
-      .cards-a3-page{gap:10px;padding:10px 12px 20px}
+      .cards-a3-page{gap:10px;padding:10px var(--sf-layout-gutter-mobile) 20px}
       .cards-a3-page .sf-detail-layout{gap:10px;grid-template-columns:1fr}
       .cards-master-panel{display:grid;gap:8px;grid-template-columns:minmax(0,1fr) auto;padding:11px 12px;position:static}
       .cards-master-heading{grid-column:2;grid-row:1}
@@ -147,7 +147,7 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-instrument-totals{margin-left:auto}
     }
     @media(max-width:350px){
-      .cards-a3-page{padding:8px}
+      .cards-a3-page{padding:8px var(--sf-layout-gutter-mobile)}
       .cards-master-panel{gap:3px;padding:8px}
       .cards-card-picker{gap:2px}
       .cards-card-picker select{min-height:40px}
