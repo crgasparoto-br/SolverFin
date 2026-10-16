@@ -96,4 +96,3 @@ export function cardsPageStyles(): string {
     .cards-purchase-actions>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
   `;
 }
-
