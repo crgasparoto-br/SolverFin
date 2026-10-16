@@ -90,6 +90,21 @@ export async function validateCardsPage(
         ? getComputedStyle(firstStatusSvg).visibility !== 'hidden'
         : false;
       const header = document.querySelector('.cards-invoice-header');
+      const purchaseHeader = document.querySelector('.cards-purchase-section-header');
+      const purchaseTrigger = purchaseHeader?.querySelector('[data-open-modal="purchase"]');
+      const closeTrigger = header?.querySelector('[data-api-path$="/close"]');
+      const payTrigger = header?.querySelector('[data-open-modal="payment"]');
+      const documentsTrigger = header?.querySelector('[data-open-modal="invoice-attachments"]');
+      const actionsBelongToContext = Boolean(
+        visible(purchaseTrigger) &&
+        purchaseHeader?.querySelector('h3')?.textContent.trim() === 'Itens da fatura' &&
+        (!closeTrigger || closeTrigger.closest('.cards-invoice-status-actions')) &&
+        (!payTrigger || payTrigger.closest('.cards-invoice-primary')) &&
+        documentsTrigger?.closest('.cards-invoice-title-block') &&
+        !document.querySelector('.cards-reconciliation-filters [data-open-modal="purchase"]') &&
+        !document.querySelector('.sf-page-header [data-open-modal="purchase"]') &&
+        !document.querySelector('.cards-invoice-document-link')
+      );
       const master = document.querySelector('.cards-master-panel');
       const detail = document.querySelector('.cards-detail-panel');
       const detailLayout = document.querySelector('.cards-a3-page .sf-detail-layout');
@@ -179,6 +194,7 @@ export async function validateCardsPage(
         masterVisible: visible(master),
         detailVisible: visible(detail),
         invoiceHeaderVisible: visible(header),
+        actionsBelongToContext,
         primaryAmountVisible: visible(primaryAmount),
         primaryAmountTop: rect(primaryAmount).top,
         firstPurchaseRowTop: rect(firstPurchaseRow).top,
@@ -264,6 +280,11 @@ export async function validateCardsPage(
     measurements,
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
+  check(
+    measurements.actionsBelongToContext,
+    "Golden Screen: register, document, close and settle actions must stay with their respective context",
+    measurements,
+  );
   check(
     measurements.periodsDoNotOverlap,
     "Invoice period navigation overlaps at this viewport",
