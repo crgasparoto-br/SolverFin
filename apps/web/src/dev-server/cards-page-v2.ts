@@ -252,7 +252,7 @@ export async function renderCardsPageV2(
     childrenHtml: `${renderPageHeader({
       title: "Cartões de Crédito",
       description: "Acompanhe as faturas, limites e compras dos seus cartões.",
-      actionsHtml: renderPageActions(selectedCard, activeInstruments),
+      actionsHtml: selectedInvoice ? "" : renderPageActions(selectedCard, activeInstruments),
     })}${renderDetailLayout({
       masterHtml: renderCardMaster(
         cards,
@@ -604,6 +604,10 @@ function renderInvoiceDetail(input: {
     ${invoiceNavigation}
     ${renderInvoiceHeader(input.invoice, input.summary, input.currency, input.paymentAccounts)}
     ${renderInvoiceSummary(input.invoice, input.summary, input.currency)}
+    <div class="cards-purchase-section-header">
+      <h3>Itens da fatura</h3>
+      ${input.purchaseActionHtml}
+    </div>
     ${renderPurchaseFilters(
       input.card.id,
       input.invoice,
@@ -611,7 +615,6 @@ function renderInvoiceDetail(input: {
       input.purchases,
       input.visiblePurchases,
       input.url,
-      input.purchaseActionHtml,
     )}
     ${renderPurchaseGroups(
       input.groups,
@@ -621,7 +624,6 @@ function renderInvoiceDetail(input: {
       input.invoice,
       input.currency,
     )}
-    <div class="cards-invoice-document-link"><button type="button" class="sf-button sf-button-secondary" data-open-modal="invoice-attachments">Documentos da fatura</button></div>
   </section>`;
 }
 
@@ -735,21 +737,21 @@ function renderInvoiceHeader(
   const amountDueMinor = summary?.amountDueMinor ?? invoice.totalAmountMinor;
   return `<header class="cards-invoice-header">
     <div class="cards-invoice-title-block">
-      <div class="cards-invoice-title-row"><span class="cards-kicker">Fatura selecionada</span>${renderBadge({ label: formatInvoiceStatus(status), tone: invoiceTone(status) })}</div>
+      <div class="cards-invoice-title-row">
+        <span class="cards-kicker">Fatura selecionada</span>
+        <div class="cards-invoice-status-actions">
+          ${renderBadge({ label: formatInvoiceStatus(status), tone: invoiceTone(status) })}
+          ${canClose ? `<button type="button" class="sf-button sf-button-secondary cards-close-invoice" data-api-path="/api/invoices/${escapeHtml(invoice.id)}/close" data-confirm="Fechar esta fatura?">${icon("lock", 15)} Fechar fatura</button>` : ""}
+        </div>
+      </div>
       <h2 id="cards-invoice-title">${escapeHtml(formatInvoicePeriod(invoice))}</h2>
       <p>${escapeHtml(currency ?? "Moeda indisponível")} · Fechamento ${formatDate(invoice.periodEndOn)} · Vencimento ${formatDate(invoice.dueOn)}</p>
+      <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura">${icon("paperclip", 16)} <span>Documentos da fatura</span></button>
       <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
     </div>
     <div class="cards-invoice-primary">
       <span>Valor a pagar</span><strong>${money(amountDueMinor, currency)}</strong>
-      <div class="cards-invoice-actions">
-        ${canClose ? `<button type="button" class="sf-button sf-button-secondary" data-api-path="/api/invoices/${escapeHtml(invoice.id)}/close" data-confirm="Fechar esta fatura?">Fechar fatura</button>` : ""}
-        ${
-          canPay
-            ? `<button type="button" class="sf-button sf-button-primary" data-open-modal="payment"${paymentAccounts.length > 0 ? "" : " disabled"} title="${paymentAccounts.length > 0 ? "Liquidar esta fatura" : "Cadastre uma conta ativa na mesma moeda da fatura"}">Liquidar fatura</button>`
-            : ""
-        }
-      </div>
+      ${canPay ? `<div class="cards-invoice-actions"><button type="button" class="sf-button sf-button-primary" data-open-modal="payment"${paymentAccounts.length > 0 ? "" : " disabled"} title="${paymentAccounts.length > 0 ? "Liquidar esta fatura" : "Cadastre uma conta ativa na mesma moeda da fatura"}">Liquidar fatura</button></div>` : ""}
     </div>
   </header>`;
 }
@@ -805,7 +807,6 @@ function renderPurchaseFilters(
   allPurchases: readonly CardPurchaseRecord[],
   visiblePurchases: readonly CardPurchaseRecord[],
   url: URL,
-  purchaseActionHtml: string,
 ): string {
   const reconciledCount = allPurchases.filter(
     (purchase) => purchase.status === "reconciled",
@@ -847,7 +848,6 @@ function renderPurchaseFilters(
       ${filterLink(withQuery(base, { reconciliation: "unreconciled" }), "Não conciliadas", unreconciledCount, presentation.reconciliation === "unreconciled", "unreconciled")}
       ${filterLink(withQuery(base, { reconciliation: "reconciled" }), "Conciliadas", reconciledCount, presentation.reconciliation === "reconciled", "reconciled")}
       <span class="cards-results-status" data-purchase-results-status role="status" aria-live="polite">${formatPurchaseCount(visiblePurchases.length)}</span>
-      ${purchaseActionHtml}
     </div>`;
   return renderFilterBar({ label: "Filtros das compras da fatura", childrenHtml: controls });
 }
