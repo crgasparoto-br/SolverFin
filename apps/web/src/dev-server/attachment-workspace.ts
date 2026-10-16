@@ -3,13 +3,14 @@ export type OperationalAttachmentEntityKind = "transaction" | "invoice" | "impor
 export function renderAttachmentWorkspace(input: {
   entityKind: OperationalAttachmentEntityKind;
   entityId?: string;
+  pendingCreate?: boolean;
   title?: string;
   className?: string;
 }): string {
   const title = input.title ?? "Anexos";
   const entityId = input.entityId ?? "";
   return `
-    <section class="attachment-workspace ${escapeHtml(input.className ?? "")}" data-attachment-workspace data-entity-kind="${escapeHtml(input.entityKind)}" data-entity-id="${escapeHtml(entityId)}" ${entityId ? "" : "hidden"}>
+    <section class="attachment-workspace ${escapeHtml(input.className ?? "")}" data-attachment-workspace data-entity-kind="${escapeHtml(input.entityKind)}" data-entity-id="${escapeHtml(entityId)}"${input.pendingCreate ? " data-pending-create" : ""} ${entityId || input.pendingCreate ? "" : "hidden"}>
       <div class="section-heading">
         <div>
           <h3>${escapeHtml(title)}</h3>
@@ -133,8 +134,16 @@ export function attachmentWorkspaceScript(): string {
         const refresh = async (workspace) => {
           const entityKind = workspace.dataset.entityKind || "";
           const entityId = workspace.dataset.entityId || "";
-          workspace.hidden = !entityId;
-          if (!entityId) return;
+          const canStage = workspace.hasAttribute("data-pending-create");
+          workspace.hidden = !entityId && !canStage;
+          const submit = workspace.querySelector('[data-attachment-form] [type="submit"]');
+          if (submit) submit.disabled = !entityId;
+          if (!entityId) {
+            const list = workspace.querySelector("[data-attachment-list]");
+            if (list) list.innerHTML = '<p class="muted small-note">Selecione o arquivo. Ele será enviado após salvar o lançamento.</p>';
+            setStatus(workspace, "");
+            return;
+          }
 
           setStatus(workspace, "Carregando anexos...");
           try {
@@ -160,52 +169,72 @@ export function attachmentWorkspaceScript(): string {
           reader.readAsDataURL(file);
         });
 
+        const uploadSelected = async (workspace) => {
+          const form = workspace.querySelector("[data-attachment-form]");
+          const file = form?.elements.file?.files?.[0];
+          const entityId = workspace.dataset.entityId || "";
+          if (!file || !entityId) return false;
+          if (file.size <= 0 || file.size > MAX_BYTES) {
+            const message = file.size <= 0
+              ? "Selecione um arquivo com conteúdo."
+              : "O arquivo excede o limite de 5 MiB.";
+            setStatus(workspace, message, "error");
+            throw new Error(message);
+          }
+          const submit = form.querySelector('[type="submit"]');
+          if (submit) submit.disabled = true;
+          setStatus(workspace, "Enviando anexo...");
+          try {
+            const contentBase64 = await fileAsBase64(file);
+            const response = await fetch(withProfile("/api/attachments"), {
+              method: "POST",
+              headers: { "content-type": "application/json", accept: "application/json" },
+              body: JSON.stringify({
+                kind: String(form.elements.kind?.value || "other"),
+                fileName: file.name,
+                mimeType: file.type || "application/octet-stream",
+                linkedEntityKind: workspace.dataset.entityKind,
+                linkedEntityId: entityId,
+                contentBase64
+              })
+            });
+            await messageFrom(response, "Não foi possível adicionar o anexo.");
+            form.reset();
+            await refresh(workspace);
+            setStatus(workspace, "Anexo adicionado.", "success");
+            return true;
+          } catch (error) {
+            setStatus(workspace, error.message || "Não foi possível adicionar o anexo.", "error");
+            throw error;
+          } finally {
+            if (submit) submit.disabled = false;
+          }
+        };
+
         const initialize = (workspace) => {
           if (initialized.has(workspace)) return;
           initialized.add(workspace);
           const form = workspace.querySelector("[data-attachment-form]");
           form?.addEventListener("submit", async (event) => {
             event.preventDefault();
-            const file = form.elements.file?.files?.[0];
-            const entityId = workspace.dataset.entityId || "";
-            if (!file || !entityId) return;
-            if (file.size <= 0) {
-              setStatus(workspace, "Selecione um arquivo com conteúdo.", "error");
-              return;
-            }
-            if (file.size > MAX_BYTES) {
-              setStatus(workspace, "O arquivo excede o limite de 5 MiB.", "error");
-              return;
-            }
-
-            const submit = form.querySelector('[type="submit"]');
-            if (submit) submit.disabled = true;
-            setStatus(workspace, "Enviando anexo...");
-            try {
-              const contentBase64 = await fileAsBase64(file);
-              const response = await fetch(withProfile("/api/attachments"), {
-                method: "POST",
-                headers: { "content-type": "application/json", accept: "application/json" },
-                body: JSON.stringify({
-                  kind: String(form.elements.kind?.value || "other"),
-                  fileName: file.name,
-                  mimeType: file.type || "application/octet-stream",
-                  linkedEntityKind: workspace.dataset.entityKind,
-                  linkedEntityId: entityId,
-                  contentBase64
-                })
-              });
-              await messageFrom(response, "Não foi possível adicionar o anexo.");
-              form.reset();
-              setStatus(workspace, "Anexo adicionado.", "success");
-              await refresh(workspace);
-            } catch (error) {
-              setStatus(workspace, error.message || "Não foi possível adicionar o anexo.", "error");
-            } finally {
-              if (submit) submit.disabled = false;
-            }
+            try { await uploadSelected(workspace); } catch { /* Error is announced inside the workspace. */ }
           });
           void refresh(workspace);
+        };
+
+        const resetPending = (workspace) => {
+          if (!workspace) return;
+          workspace.querySelector("[data-attachment-form]")?.reset();
+          workspace.dataset.entityId = "";
+          void refresh(workspace);
+        };
+
+        const uploadPending = async (workspace, entityId) => {
+          if (!workspace || !entityId) throw new Error("Lançamento não identificado para anexar arquivo.");
+          workspace.dataset.entityId = entityId;
+          const selected = workspace.querySelector('[data-attachment-form] [name="file"]')?.files?.[0];
+          if (!selected) { await refresh(workspace); return false; }
+          return uploadSelected(workspace);
         };
 
         const refreshAll = () => {
@@ -259,7 +288,7 @@ export function attachmentWorkspaceScript(): string {
           attributeFilter: ["data-entity-id"]
         });
 
-        window.SolverFinAttachments = { refresh, refreshAll, mount };
+        window.SolverFinAttachments = { refresh, refreshAll, mount, resetPending, uploadPending };
         refreshAll();
       })();
     </script>
