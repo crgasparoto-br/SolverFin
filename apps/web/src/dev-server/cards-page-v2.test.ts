@@ -332,7 +332,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     html,
     /class="cards-reconciliation-filters"[\s\S]*data-open-modal="purchase"/,
   );
-  assert.match(html, /\.cards-reconciliation-filters \[data-open-modal="purchase"\]\{display:none\}/);
+  assert.match(
+    html,
+    /\.cards-reconciliation-filters \[data-open-modal="purchase"\]\{display:none\}/,
+  );
   assert.match(
     html,
     /\.cards-reconciliation-filters \[data-open-modal="purchase"\]\{display:inline-flex/,
