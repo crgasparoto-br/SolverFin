@@ -51,7 +51,13 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-invoice-summary .sf-summary-grid{gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}
     .cards-summary-metric{background:var(--surface);border:1px solid var(--line);border-radius:9px;gap:5px;min-height:64px;padding:9px 11px}
     .cards-summary-metric>span{font-size:.71rem;line-height:1.35}
-    .cards-summary-metric>strong{font-size:.86rem;font-variant-numeric:tabular-nums;line-height:1.35;overflow-wrap:anywhere}
+    .cards-summary-metric{align-items:center;grid-template-columns:32px minmax(0,1fr);gap:9px}
+    .cards-summary-icon{align-items:center;background:var(--primary-soft);border-radius:9px;color:var(--primary);display:inline-flex;height:32px;justify-content:center;width:32px}
+    .cards-summary-metric:nth-child(2) .cards-summary-icon{background:var(--success-bg);color:var(--success)}
+    .cards-summary-metric:nth-child(3) .cards-summary-icon{background:var(--surface-soft);color:var(--muted)}
+    .cards-summary-copy{display:grid;gap:4px;min-width:0}
+    .cards-summary-copy>span{color:var(--muted);font-size:.71rem;line-height:1.3}
+    .cards-summary-copy>strong{font-size:.86rem;font-variant-numeric:tabular-nums;line-height:1.35;overflow-wrap:anywhere}
     .cards-limit-detail>summary{min-height:22px}
     .cards-detail-panel .sf-filter-bar{gap:8px;padding:12px 14px}
     .cards-purchase-filter-form{align-items:end;gap:8px;grid-template-columns:minmax(0,1fr) auto auto}
@@ -107,7 +113,7 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-card-identity{grid-column:1/-1;grid-row:2;grid-template-columns:30px minmax(0,1fr) auto;padding:9px}
       .cards-card-identity>.sf-badge{grid-column:3;justify-self:end}
       .cards-master-details{grid-column:1;grid-row:3}
-      .cards-instrument-nav{grid-column:2;grid-row:3}
+      .cards-instrument-nav{display:block;grid-column:2;grid-row:3}
       .cards-master-details,.cards-instrument-nav{border-top:0;padding:4px 0 0}
       .cards-master-details>summary,.cards-instrument-nav>summary{color:var(--primary);font-size:.75rem;min-height:36px}
       .cards-master-details[open]>.cards-master-meta,.cards-instrument-nav[open]>ul{border-top:1px solid var(--line);padding-top:9px}
