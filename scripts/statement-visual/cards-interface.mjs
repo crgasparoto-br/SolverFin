@@ -392,12 +392,16 @@ async function validatePage(cdp, viewportKind, captureName = viewportKind) {
     measurements,
   );
   check(
-    measurements.minimumActionTarget >= 44 && measurements.actionTargetBefore && measurements.actionTargetNegativeRejected,
+    measurements.minimumActionTarget >= 44 &&
+      measurements.actionTargetBefore &&
+      measurements.actionTargetNegativeRejected,
     "Golden Screen: purchase menu actions need 44px touch targets and a rejecting negative control",
     measurements,
   );
   check(
-    measurements.shellIsLight && measurements.shellNegativeRejected && measurements.noRepeatedHeader,
+    measurements.shellIsLight &&
+      measurements.shellNegativeRejected &&
+      measurements.noRepeatedHeader,
     "Golden Screen: card shell must be light and have no repeated visible route title",
     measurements,
   );
