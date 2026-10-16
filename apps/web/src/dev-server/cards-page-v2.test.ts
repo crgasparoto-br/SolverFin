@@ -284,6 +284,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Moeda da fatura<\/dt><dd>USD/);
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
+  assert.match(html, /data-open-modal="invoice-attachments">Documentos da fatura/);
+  assert.match(html, /<dialog class="cards-dialog" data-modal="invoice-attachments"/);
+  assert.match(html, /data-entity-kind="invoice" data-entity-id="invoice-aug"/);
+  assert.doesNotMatch(html, /<section class="cards-detail-panel"[^>]*>[\s\S]*data-attachment-workspace[\s\S]*<\/section><\/div><dialog/);
   // #715: enforce the approved shell hierarchy and accessible purchase actions.
   assert.match(html, /class="[^"]*cards-a3-page cards-has-invoice[^"]*"/);
   assert.ok(
