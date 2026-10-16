@@ -303,14 +303,20 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     ),
   );
   // #715: restore a true information sidebar, while keeping invoice actions subordinate to the task.
-  assert.match(html, /<details class="cards-master-details" open><summary>Dados do cartão<\/summary>/);
+  assert.match(
+    html,
+    /<details class="cards-master-details" open><summary>Dados do cartão<\/summary>/,
+  );
   assert.match(html, /<details class="cards-instrument-nav" open>/);
   assert.match(html, /Moeda padrão<\/dt><dd>USD/);
   assert.match(html, /Fechamento contratual/);
   assert.match(html, /cards-summary-icon/);
   assert.match(html, /cards-summary-copy/);
   assert.match(html, /Instrumentos <span>2 ativos<\/span>/);
-  assert.match(html, /\.cards-a3-page \.sf-detail-layout\{align-items:start;display:grid;gap:16px;grid-template-columns:minmax\(238px,258px\) minmax\(0,1fr\)/);
+  assert.match(
+    html,
+    /\.cards-a3-page \.sf-detail-layout\{align-items:start;display:grid;gap:16px;grid-template-columns:minmax\(238px,258px\) minmax\(0,1fr\)/,
+  );
   assert.match(html, /matchMedia\("\(max-width: 760px\)"\)/);
   assert.match(html, /Acompanhe as faturas, limites e compras dos seus cartões/);
   assert.match(
@@ -322,7 +328,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     html.indexOf('data-open-modal="purchase"') < html.indexOf('class="cards-invoice-header"'),
     "purchase action belongs to the page header; invoice settlement remains the primary invoice decision",
   );
-  assert.doesNotMatch(html, /class="cards-reconciliation-filters"[\s\S]*data-open-modal="purchase"[\s\S]*<\/div><\/div>/);
+  assert.doesNotMatch(
+    html,
+    /class="cards-reconciliation-filters"[\s\S]*data-open-modal="purchase"[\s\S]*<\/div><\/div>/,
+  );
   // #715: the close icon must contrast with the light modal surface.
   assert.match(
     html,
