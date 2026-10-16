@@ -1,3 +1,4 @@
+import { cardsGoldenCompositionStyles } from "./cards-golden-composition.js";
 import { recurrencesSectionStyles } from "./recurrences-section.js";
 import { sharedShellStyles } from "./shared-styles.js";
 
@@ -95,5 +96,6 @@ export function cardsPageStyles(): string {
     .cards-purchase-actions .cards-purchase-menu{top:calc(100% + 4px)}
     .cards-advanced-filters>summary,.cards-month-picker>summary{min-height:44px;align-items:center;display:flex;justify-content:center}
     .cards-purchase-actions>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    ${cardsGoldenCompositionStyles()}
   `;
 }
