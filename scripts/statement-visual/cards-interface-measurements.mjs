@@ -93,6 +93,15 @@ export async function validateCardsPage(
       const master = document.querySelector('.cards-master-panel');
       const detail = document.querySelector('.cards-detail-panel');
       const detailLayout = document.querySelector('.cards-a3-page .sf-detail-layout');
+      const page = document.querySelector('.cards-a3-page');
+      const main = document.querySelector('.main-area > main');
+      const widthMatchesShell = () => Boolean(page && main && Math.abs(rect(page).width - rect(main).width) <= 2);
+      const widthBefore = widthMatchesShell();
+      const previousWidthCap = page?.style.maxWidth || '';
+      if (page && window.innerWidth >= 1600) page.style.maxWidth = '1300px';
+      const narrowerPageRejected = window.innerWidth < 1600 || !widthMatchesShell();
+      if (page) page.style.maxWidth = previousWidthCap;
+      const widthRestored = widthMatchesShell();
       const sidebarGeometryValid = () => Boolean(master && detail &&
         rect(master).width >= 220 && rect(master).width <= 290 &&
         rect(master).right + 10 <= rect(detail).left &&
@@ -172,6 +181,9 @@ export async function validateCardsPage(
         masterBottom: rect(master).bottom,
         masterWidth: rect(master).width,
         detailWidth: rect(detail).width,
+        pageWidth: rect(page).width,
+        mainWidth: rect(main).width,
+        fullWidthUsesCanonicalShell: widthBefore && widthRestored && narrowerPageRejected,
         sidebarBefore,
         sidebarNegativeRejected: sidebarNegativeRejected && sidebarRestored,
         masterFactsVisible,
@@ -235,6 +247,11 @@ export async function validateCardsPage(
 
   check(measurements.archetype === "A3", "Cards route is not rendered as A3", measurements);
   check(measurements.noHorizontalOverflow, "Cards page has horizontal overflow", measurements);
+  check(
+    measurements.fullWidthUsesCanonicalShell,
+    "Golden Screen: cards must fill the canonical main area without a narrower page cap",
+    measurements,
+  );
   check(
     measurements.masterVisible && measurements.detailVisible,
     "Master-detail hierarchy is incomplete",
