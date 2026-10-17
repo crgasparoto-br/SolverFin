@@ -528,6 +528,15 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     /\.cards-purchase-status-control>summary\{[^}]*min-height:44px;min-width:44px/,
   );
   assert.match(html, /\.cards-purchase-status-option\{[^}]*min-height:44px/);
+  // The Golden Screen neutral-action token must beat global button:hover primary-dark styling.
+  assert.match(
+    html,
+    /\.cards-purchase-status-menu>button\.cards-purchase-status-option:hover:not\(:disabled\),\.cards-purchase-status-menu>button\.cards-purchase-status-option:focus-visible\{background:var\(--neutral-control-hover\);color:var\(--neutral-control-text-hover\)/,
+  );
+  assert.doesNotMatch(
+    html,
+    /\.cards-purchase-status-option:hover,\.cards-purchase-status-option:focus-visible\{background:var\(--primary-soft\)/,
+  );
   assert.match(
     html,
     /\.cards-purchase-status-control>summary:focus-visible\{outline:2px solid var\(--primary\)/,
