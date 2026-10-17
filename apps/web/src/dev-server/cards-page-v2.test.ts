@@ -320,6 +320,26 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes("padding:8px var(--sf-layout-gutter-mobile) 20px"));
   assert.doesNotMatch(html, /\.cards-a3-page\{[^}]*max-width:(?:1500|1560)px/);
   assert.match(html, /Instrumentos <span>2 ativos<\/span>/);
+  // #715: instrument identity and its capitalized Limite must be distinct visual lines.
+  const instrumentsHtml = html.split('<details class="cards-instrument-nav" open>')[1]?.split("</details>")[0] ?? "";
+  assert.ok(
+    instrumentsHtml.includes(
+      '<span class="cards-instrument-copy"><span class="cards-instrument-name">Físico - Titular principal · final 4242</span><small class="cards-instrument-limit">Limite USD 1.000,00</small></span><strong>Padrão</strong>',
+    ),
+  );
+  assert.ok(
+    instrumentsHtml.includes(
+      '<span class="cards-instrument-copy"><span class="cards-instrument-name">Virtual - Titular principal · final 9001</span><small class="cards-instrument-limit">Limite USD 500,00</small></span>',
+    ),
+  );
+  assert.doesNotMatch(instrumentsHtml, / · limite /);
+  assert.ok(html.includes(".cards-instrument-copy{display:grid;gap:2px;min-width:0}"));
+  assert.ok(
+    html.includes(
+      ".cards-instrument-nav li .cards-instrument-limit{color:var(--muted);display:block;",
+    ),
+  );
+  assert.ok(html.includes("overflow-wrap:anywhere;white-space:normal}"));
   assert.match(
     html,
     /\.cards-a3-page \.sf-detail-layout\{align-items:start;display:grid;gap:16px;grid-template-columns:minmax\(238px,258px\) minmax\(0,1fr\)/,
@@ -582,6 +602,7 @@ async function cardsA3BlocksNewPurchasesUntilCardCurrencyIsConfigured(): Promise
             holder: "primary",
             status: "active",
             isDefault: true,
+            effectiveCreditLimitMinor: 100000,
           },
         ],
       });
@@ -596,6 +617,7 @@ async function cardsA3BlocksNewPurchasesUntilCardCurrencyIsConfigured(): Promise
   );
 
   assert.match(html, /Moeda padrão<\/dt><dd>Não informada/);
+  assert.match(html, /class="cards-instrument-limit">Limite com moeda indisponível<\/small>/);
   assert.match(html, /Defina a moeda padrão deste cartão antes de registrar novas compras/);
   assert.match(html, /resource=card%3Acard-without-currency/);
   assert.match(
