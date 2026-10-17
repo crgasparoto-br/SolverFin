@@ -232,7 +232,7 @@ transaction_status_locked
 invoice_linked
 ```
 
-Parcelas ligadas a fatura, transacao postada/conciliada/cancelada, parcela nao planejada ou sem transacao vinculada nao devem exibir acao de edicao direta. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
+A edicao de descricao, observacao e categoria permanece restrita a parcelas planejadas. O ajuste especifico de valor e permitido tambem para parcelas efetivadas nao conciliadas, desde que a transacao vinculada esteja efetivada. Parcelas conciliadas, canceladas, ligadas a fatura/cartao ou sem transacao vinculada nao admitem ajuste direto. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
 
 ## PATCH /api/installments/:installmentId
 
