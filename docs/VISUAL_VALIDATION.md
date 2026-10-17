@@ -228,3 +228,8 @@ Validar em Chrome 1366×768, 390×844 e 320×740, com teclado e toque, alternân
 Na tela `/lancamentos`, conferir no modal **Editar parcela** e **Ajustar valor da parcela** que `amountEditable` só aparece com estados planejado/planejado ou efetivado/efetivado não conciliados. Alterar um valor em centavos deve atualizar `Transaction` e `Installment` atomicamente, sem redistribuição para outras parcelas e sem alteração de status. Para conciliadas, canceladas e parcelas de fatura, a edição permanece bloqueada. Verificar formato BRL, validação de 0, caracteres inválidos, conflito 409 e navegação por teclado.
 
 O bloco de anexos inicia recolhido, com `<details><summary>Anexos do lançamento</summary>`; ao expandir, mantém todos os controles de anexos e não perde arquivo selecionado. Verificar viewport desktop 1366×768, celular 390×844 e 320×740, rolagem do diálogo, foco, contraste e equivalência ao `Mais opções`. Asserções de SSR e testes sem navegador não equivalem à homologação visual.
+
+
+### PR #720 — Recorrências fixas e escolha de escopo de valor (17/10/2026)
+
+No Extrato, recorrências fixas mostram somente o indicador próprio, sem `Parcela 2 de ?` (como Sabesp, CPFL e Telefônica do print). Parcelamentos finitos continuam com `Parcela N de M` (como Teste de parcelamento). Ao alterar valor de uma parcela, validar confirmação modal antes de persistir com opções **Somente esta parcela**, **Esta e as próximas** e **Voltar sem salvar**. A segunda só aparece quando existem parcelas posteriores; Escape e Voltar não salvam. Confirmar preservação das parcelas anteriores, conciliadas e canceladas, resposta `updatedCount/skippedCount`, erro 409 para série sem origem confiável e 404 fora do perfil. Validar desktop 1366×768, mobile 390×844 e teclado/foco.
