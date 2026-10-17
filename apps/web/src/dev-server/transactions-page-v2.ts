@@ -25,6 +25,7 @@ import {
   calculateOpeningBalance,
   filterStatementPeriodTransactions,
   isAccountStatementTransaction,
+  monthToPeriod,
   projectTransactionGroups,
   resolveFilters,
   statementDate,
@@ -370,6 +371,7 @@ function renderFilters(
     .join("");
 
   const day = resolvedPeriod.day;
+  const dayBounds = monthToPeriod(month);
   const activePeriod = resolvedPeriod;
   const rangeSelected = Boolean(url?.searchParams.get("from") && url?.searchParams.get("to"));
   // Keep user/profile/currency and search filters; replace only the period.
@@ -449,7 +451,7 @@ function renderFilters(
   ].filter(Boolean).length;
 
   return `<form class="filter-form" method="get" action="/lancamentos" data-auto-submit>
-    ${preserved}${day ? `<noscript><input type="hidden" name="day" value="${escapeHtml(day)}"></noscript>` : ""}
+    ${preserved}
     ${renderAccountPicker(accounts, selectedAccount, selectedId, consolidatedCurrency, availableCurrencies)}
     <div class="month-field">
       <label for="filter-month">Mês</label>
@@ -460,6 +462,13 @@ function renderFilters(
       </div>
     </div>
     <div class="statement-period-shortcuts" role="group" aria-label="Atalhos de período"><span class="statement-period-range" data-period-range>Período ${formatDate(activePeriod.startsOn)} – ${formatDate(activePeriod.endsOn)}</span>${periodShortcuts}<span class="statement-filter-count" data-filter-count>Filtros (${activeFilterCount})</span></div>
+    <div class="statement-day-field" data-statement-day-field>
+      <label for="filter-day">Dia do mês</label>
+      <div class="statement-day-controls">
+        <input id="filter-day" name="day" type="date" lang="pt-BR" aria-label="Filtrar lançamentos por dia do mês" min="${escapeHtml(dayBounds.startsOn)}" max="${escapeHtml(dayBounds.endsOn)}" value="${escapeHtml(day ?? "")}" />
+        <button type="button" class="ghost-btn statement-day-clear" data-clear-statement-day aria-label="Exibir o mês completo"${day ? "" : " hidden"}>Mês completo</button>
+      </div>
+    </div>
     <label class="statement-search-field" for="statement-search">Buscar
       <input id="statement-search" name="q" type="search" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" autocomplete="off" />
     </label>
@@ -622,19 +631,40 @@ function renderRowsWithTemporalGroups(
   consolidated = false,
   month = "",
 ): string {
-  const groupByDate = sort === "date_asc" || sort === "date_desc";
-  let previousDate = "";
-  return rows
-    .map((row) => {
-      const date = statementDate(row.transaction);
-      const separator =
-        groupByDate && date !== previousDate
-          ? `<div class="statement-date-group" data-statement-date-group="${escapeHtml(date)}"><span>${formatDate(date)}</span><span>${escapeHtml(resolveEvidenceLabel(row.transaction))}</span></div>`
-          : "";
-      previousDate = date;
-      return `${separator}${renderRow(row, selectedAccount, accounts, categories, recurrences, currency, consolidated, month)}`;
-    })
-    .join("");
+  // A non-date sort must retain its global ordering; date sorts provide
+  // semantic, collapsible daily groups without changing the running balance.
+  if (sort !== "date_asc" && sort !== "date_desc") {
+    return rows
+      .map((row) =>
+        renderRow(row, selectedAccount, accounts, categories, recurrences, currency, consolidated, month),
+      )
+      .join("");
+  }
+  const groups = new Map<string, StatementRow[]>();
+  for (const row of rows) {
+    const date = statementDate(row.transaction);
+    const entries = groups.get(date);
+    if (entries) entries.push(row);
+    else groups.set(date, [row]);
+  }
+
+  return Array.from(groups, ([date, dayRows]) => {
+    const income = dayRows.reduce((sum, row) => sum + Math.max(row.amountMinor, 0), 0);
+    const expense = dayRows.reduce((sum, row) => sum + Math.max(-row.amountMinor, 0), 0);
+    const label = dayRows.length === 1 ? "1 lançamento" : `${dayRows.length} lançamentos`;
+    const totals = currency
+      ? `<span class="statement-day-in">Entradas ${formatMoney(income, currency)}</span><span class="statement-day-out">Saídas ${formatMoney(expense, currency)}</span>`
+      : "";
+    const content = dayRows
+      .map((row) => renderRow(row, selectedAccount, accounts, categories, recurrences, currency, consolidated, month))
+      .join("");
+    return `<details class="statement-day-group" data-statement-date-group="${escapeHtml(date)}" open>
+      <summary class="statement-date-group" aria-label="${escapeHtml(formatDate(date))}, ${label}. Expandir ou recolher lançamentos deste dia">
+        <strong>${formatDate(date)}</strong><span class="statement-day-count">${label}</span>${totals}
+        <span class="statement-day-chevron" aria-hidden="true"></span>
+      </summary>${content}
+    </details>`;
+  }).join("");
 }
 
 function renderTableHeader(): string {
