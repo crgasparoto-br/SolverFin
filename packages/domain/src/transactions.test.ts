@@ -34,6 +34,7 @@ testPlannedTransactionsClearEffectiveDate();
 testDistinctTemporalSemanticsOnPosting();
 testValidations();
 testListAndUpdateTransactions();
+testStatementDateCutoffMatchesDisplayedDate();
 testCategoryRemoval();
 testArchivedCategoryPreservedOnUnrelatedUpdate();
 testTenantIsolation();
@@ -382,6 +383,57 @@ function testListAndUpdateTransactions(): void {
   assertEqual(updated.transaction.status, "reconciled", "updated status");
   assertEqual(updated.transaction.reconciledAt, "2026-06-15T11:00:00.000Z", "reconciled at");
   assertEqual(updated.auditEntry.action, "update", "updated audit action");
+}
+
+function testStatementDateCutoffMatchesDisplayedDate(): void {
+  const base = createTransactionFixture(
+    tenantA, "statement-date-base", "expense", "account-list",
+  );
+  const postedTodayDespiteLaterOccurrence: Transaction = {
+    ...base,
+    id: "today-effective",
+    occurredOn: "2026-10-19",
+    plannedOn: "2026-10-20",
+    effectiveOn: "2026-10-17",
+    status: "posted",
+  };
+  const plannedTodayDespiteLaterOccurrence: Transaction = {
+    ...base,
+    id: "today-planned",
+    occurredOn: "2026-10-21",
+    plannedOn: "2026-10-17",
+    effectiveOn: undefined,
+    status: "planned",
+  };
+  const futurePosting: Transaction = {
+    ...base,
+    id: "tomorrow-effective",
+    occurredOn: "2026-10-17",
+    plannedOn: "2026-10-17",
+    effectiveOn: "2026-10-18",
+    status: "posted",
+  };
+  const result = listTransactions(
+    tenantA,
+    [postedTodayDespiteLaterOccurrence, plannedTodayDespiteLaterOccurrence, futurePosting],
+    { statementTo: "2026-10-17" },
+  );
+  assertEqual(result.length, 2, "statement cutoff includes today's canonical movements");
+  assertEqual(
+    result.some((item) => item.id === "today-effective"),
+    true,
+    "effective date wins over occurrence date",
+  );
+  assertEqual(
+    result.some((item) => item.id === "today-planned"),
+    true,
+    "planned date used when effective date is absent",
+  );
+  assertEqual(
+    result.some((item) => item.id === "tomorrow-effective"),
+    false,
+    "future effective date must not leak into today's statement",
+  );
 }
 
 function testCategoryRemoval(): void {
