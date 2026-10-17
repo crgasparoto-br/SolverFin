@@ -440,6 +440,23 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     html,
     /\.cards-purchase-filter-form input,\.cards-purchase-filter-form select\{min-height:44px/,
   );
+  // #720: creation and editing share the Golden Screen purchase-form composition.
+  const purchaseDialog = html.slice(
+    html.indexOf('<dialog class="cards-dialog" data-modal="purchase"'),
+    html.indexOf('<dialog class="cards-dialog" data-modal="payment"'),
+  );
+  for (const heading of ["Valores", "Dados da compra", "Classificação", "Repetição e parcelas"]) {
+    assert.ok(purchaseDialog.includes("<legend>" + heading + "</legend>"));
+  }
+  assert.match(purchaseDialog, /class="cards-purchase-form-body"/);
+  assert.match(purchaseDialog, /class="cards-purchase-dialog-actions"/);
+  assert.match(purchaseDialog, /type="button" data-close-modal>Cancelar<\\/button>/);
+  assert.match(purchaseDialog, /data-purchase-field="installmentAmountMinor" hidden/);
+  assert.match(purchaseDialog, /name="currency"[^>]*readonly/);
+  assert.match(html, /data-purchase-section="schedule"\\]\\'\\);/);
+  assert.match(html, /\\.cards-purchase-dialog-panel\\{display:flex/);
+  assert.match(html, /\\.cards-purchase-form-body\\{[^}]*overflow-y:auto/);
+  assert.match(html, /@media\\(max-width:600px\\)\\{\\.cards-dialog\\[data-modal="purchase"\\]/);
   assert.match(html, /aria-describedby="cards-payment-dialog-description"/);
   assert.match(
     html,
