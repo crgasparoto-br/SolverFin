@@ -191,8 +191,8 @@ jobs:
       - name: Diagnose Prettier drift without weakening formatting gate
         if: ${{ failure() && steps.formatting.outcome == 'failure' }}
         run: |
-          npx prettier --write apps/api/src/card-purchase-edit-contract.integration.test.ts apps/api/src/repositories/card-invoice-contracts-core.ts apps/api/src/router.ts apps/web/src/dev-server/cards-page-v2.test.ts
-          git --no-pager diff -- apps/api/src/card-purchase-edit-contract.integration.test.ts apps/api/src/repositories/card-invoice-contracts-core.ts apps/api/src/router.ts apps/web/src/dev-server/cards-page-v2.test.ts
+          npx prettier apps/web/src/dev-server/transactions-page-v2.test.ts --write
+          git --no-pager diff -- apps/web/src/dev-server/transactions-page-v2.test.ts
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run prisma:generate
