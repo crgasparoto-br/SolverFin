@@ -72,6 +72,24 @@ export function cardsPageStyles(): string {
     .cards-purchase-status:focus-visible{outline:2px solid var(--primary)}
     .cards-purchase-actions summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
     @media(max-width:760px){.cards-purchase-row>.cards-purchase-status-cell[data-label="Situação"]::before{content:none}.cards-purchase-status-cell{grid-column:1;justify-content:flex-start}}
+    /* Status remains icon-only until activated; the 44px summary opens a contextual action menu. */
+    .cards-purchase-status-control{display:inline-block;position:relative}
+    .cards-purchase-status-control>summary{align-items:center;border-radius:999px;cursor:pointer;display:inline-flex;height:44px;justify-content:center;list-style:none;min-height:44px;min-width:44px;width:44px}
+    .cards-purchase-status-control>summary::-webkit-details-marker{display:none}
+    .cards-purchase-status-control>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .cards-purchase-status-control>summary:hover .cards-purchase-status,.cards-purchase-status-control[open]>summary .cards-purchase-status{box-shadow:0 0 0 2px var(--line)}
+    .cards-purchase-status-control[open]{z-index:40}
+    .cards-purchase-row:has(.cards-purchase-status-control[open]){position:relative;z-index:40}
+    .cards-purchase-status-menu{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:grid;gap:3px;min-width:218px;padding:8px;position:absolute;right:0;text-align:left;top:calc(100% + 4px);width:max-content;max-width:min(260px,calc(100vw - 26px));z-index:45}
+    .cards-purchase-status-current{color:var(--muted);font-size:.7rem;font-weight:700;padding:4px 8px}
+    .cards-purchase-status-option{background:transparent;border:0;border-radius:8px;color:var(--text);cursor:pointer;display:block;font-size:.78rem;font-weight:700;min-height:44px;padding:9px 10px;text-align:left;white-space:normal}
+    .cards-purchase-status-option:hover,.cards-purchase-status-option:focus-visible{background:var(--primary-soft);color:var(--primary)}
+    .cards-purchase-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:0}
+    .cards-purchase-status-option:disabled{cursor:wait;opacity:.55}
+    .cards-purchase-status-readonly,.cards-purchase-status-feedback{color:var(--muted);font-size:.73rem;line-height:1.4;margin:0;padding:7px 8px;white-space:normal}
+    .cards-purchase-status-feedback.error{color:var(--danger)}
+    .cards-purchase-status-feedback.success{color:var(--success)}
+    @media(max-width:760px){.cards-purchase-status-menu{left:0;right:auto}}
     /* Golden Screen #715: category is a proper purchase-table column, not a description subtitle. */
     .cards-purchase-table-head,.cards-purchase-row{grid-template-columns:6.5rem minmax(0,1.6fr) minmax(7rem,.8fr) 5.4rem 9rem 3.5rem}
     .cards-purchase-category{color:var(--muted);font-size:.78rem;min-width:0;overflow-wrap:anywhere}
