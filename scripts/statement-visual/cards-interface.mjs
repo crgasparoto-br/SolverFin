@@ -100,6 +100,7 @@ async function runViewportSession(label, width, height, validate) {
     const login = await evaluate(browser.cdp, loginExpression());
     assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
     await openCards(browser.cdp);
+    await validateCardDayAndStatus(browser.cdp);
     await validate(browser.cdp);
   } catch (error) {
     const details = serializeError(error);
@@ -115,6 +116,57 @@ async function openCards(cdp) {
   await navigateWithRetry(cdp, `${baseUrl}/cartoes?month=2026-06`, "cards A3");
   await waitFor(cdp, '[data-cards-archetype="A3"]');
   await waitFor(cdp, "[data-purchase-item]");
+}
+
+async function validateCardDayAndStatus(cdp) {
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const day = document.querySelector('.cards-purchase-day-filter input[name="day"]');
+      const groups = [...document.querySelectorAll('[data-cards-day-group]')];
+      const documents = document.querySelector('.cards-invoice-documents');
+      const close = document.querySelector('.cards-close-invoice');
+      const status = [...document.querySelectorAll('[data-purchase-status-control]')].find(
+        (item) => item.querySelector('[data-set-purchase-status]'),
+      );
+      if (status) status.open = true;
+      const action = status?.querySelector('.cards-purchase-status-option');
+      const current = status?.querySelector('.cards-purchase-status-current .cards-purchase-status');
+      const next = action?.querySelector('.cards-purchase-status');
+      const result = {
+        dayVisible: Boolean(day && day.getClientRects().length > 0),
+        dayWidth: day?.getBoundingClientRect().width ?? 0,
+        groupCount: groups.length,
+        groupsOpen: groups.every((group) => group.open),
+        documentsBorder: documents ? parseFloat(getComputedStyle(documents).borderTopWidth) : 0,
+        closeBorder: close ? parseFloat(getComputedStyle(close).borderTopWidth) : null,
+        actionLabel: action?.getAttribute('aria-label'),
+        actionTextless: Boolean(action && !action.textContent.trim()),
+        actionTarget: action?.getBoundingClientRect().width ?? 0,
+        currentCircle: current?.getBoundingClientRect().width ?? 0,
+        actionCircle: next?.getBoundingClientRect().width ?? 0,
+        currentGlyph: current?.querySelector('svg')?.getBoundingClientRect().width ?? 0,
+        actionGlyph: next?.querySelector('svg')?.getBoundingClientRect().width ?? 0,
+      };
+      if (status) status.open = false;
+      return result;
+    })()`,
+  );
+  assert.equal(result.dayVisible, true, "Day filter must remain visible");
+  assert.ok(result.dayWidth <= 200, "Day filter must remain proportional");
+  assert.ok(result.groupCount > 0, "Invoice purchases must be grouped by day");
+  assert.equal(result.groupsOpen, true, "Day groups must be expanded initially");
+  assert.ok(result.documentsBorder >= 1, "Documents must look like a button");
+  if (result.closeBorder !== null) {
+    assert.ok(result.closeBorder >= 1, "Close invoice must look like a button");
+  }
+  assert.ok(result.actionLabel, "Status action requires a tooltip and accessible label");
+  assert.equal(result.actionTextless, true, "Status action should display only an icon");
+  assert.ok(result.actionTarget >= 44, "Status action must preserve its target");
+  assert.equal(result.currentCircle, 26, "Current status circle must be 26px");
+  assert.equal(result.actionCircle, 26, "Action status circle must be 26px");
+  assert.equal(result.currentGlyph, 15, "Current glyph must be 15px");
+  assert.equal(result.actionGlyph, 15, "Action glyph must be 15px");
 }
 
 async function validateFirstFoldNegativeControl(cdp, viewportKind) {
