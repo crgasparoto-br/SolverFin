@@ -615,6 +615,25 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     recurrencesIndex >= 0 && purchasesIndex >= 0 && recurrencesIndex < purchasesIndex,
     "recurrences must be fetched before purchases so materialized purchases can appear in the same render",
   );
+  const byDay = await renderCardsPageV2(
+    "session-token",
+    new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&day=2026-08-19"),
+  );
+  assert.match(byDay, /value="2026-08-19"/);
+  assert.match(byDay, /class="cards-clear-day" href="\/cartoes\?[^"]*cardId=card-usd/);
+  assert.match(byDay, /data-day="2026-08-19" open/);
+  assert.doesNotMatch(byDay, /data-day="2026-08-18" open/);
+  assert.doesNotMatch(byDay, /data-day="2026-08-20" open/);
+  assert.match(byDay, /Parcela 2 de 3/);
+  assert.match(byDay, /data-status-installment-id="installment-taxi-2"/);
+  assert.equal((byDay.match(/data-cards-day-group data-day=/g) ?? []).length, 1);
+
+  const sortedByAmount = await renderCardsPageV2(
+    "session-token",
+    new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc"),
+  );
+  assert.doesNotMatch(sortedByAmount, /data-cards-day-groups/);
+  assert.match(sortedByAmount, /data-instrument-purchase-group/);
 }
 
 async function cardsA3BlocksNewPurchasesUntilCardCurrencyIsConfigured(): Promise<void> {
