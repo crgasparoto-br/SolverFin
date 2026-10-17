@@ -29,7 +29,7 @@ type InstallmentsHandler = (
 ) => Promise<ApiResponse>;
 
 const BASE_PATH = "/api/installments";
-const ALLOWED_PATCH_FIELDS = new Set(["description", "note", "categoryId", "amountMinor"]);
+const ALLOWED_PATCH_FIELDS = new Set(["description", "note", "categoryId", "amountMinor", "scope"]);
 const ALLOWED_CREATE_FIELDS = new Set([
   "accountId",
   "destinationAccountId",
@@ -149,13 +149,13 @@ async function updateInstallmentHandler(
 ): Promise<ApiResponse> {
   const context = await resolveContext(request);
   const payload = readInstallmentPatchPayload(request.body);
-  const installment = await updateInstallmentForContext(
+  const result = await updateInstallmentForContext(
     context,
     requireParam(params, "installmentId"),
     payload,
   );
 
-  return json(200, { installment });
+  return json(200, result);
 }
 
 async function resolveContext(request: ApiRequest) {
@@ -369,11 +369,22 @@ export function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPay
     throwInstallmentPayloadInvalid("Campo nao permitido para manutencao de parcela.");
   }
 
-  if (allowedEntries.length === 0) {
+  if (allowedEntries.length === 0 || (allowedEntries.length === 1 && payload.scope !== undefined)) {
     throwInstallmentPayloadInvalid("Informe ao menos um campo para atualizar.");
   }
 
   const update: UpdateInstallmentPayload = {};
+  if (payload.scope !== undefined) {
+    if (payload.scope !== "current" && payload.scope !== "current_and_future") {
+      throwInstallmentPayloadInvalid("Escopo de atualização da parcela inválido.");
+    }
+    if (payload.scope === "current_and_future" &&
+        (payload.amountMinor === undefined || payload.description !== undefined ||
+         payload.categoryId !== undefined || payload.note !== undefined)) {
+      throwInstallmentPayloadInvalid("A alteração futura permite somente o valor da parcela.");
+    }
+    update.scope = payload.scope;
+  }
 
   if (payload.description !== undefined) {
     if (typeof payload.description !== "string" || !payload.description.trim()) {
