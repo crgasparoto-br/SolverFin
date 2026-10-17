@@ -259,6 +259,8 @@ async function findManualInstallmentFamily(
     [context.organizationId, context.financialProfileId, JSON.stringify([{ id: installmentId }])],
   );
   if (matches.length !== 1) {
+    // Preserve the ordinary tenant-scoped 404 for IDs outside the active profile.
+    await getInstallmentForMutation(context, installmentId);
     throw Object.assign(new Error("Não foi possível identificar com segurança o parcelamento original."), {
       code: "INSTALLMENT_SCOPE_UNAVAILABLE", statusCode: 409,
     });
