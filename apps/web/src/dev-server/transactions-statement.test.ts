@@ -35,6 +35,7 @@ periodHelpersResolveMonthBoundaries();
 filtersKeepCurrentAndLegacyFallbacks();
 dayFilterUsesSelectedDateWithinMonth();
 dayFilterSupportsMonthBoundaries();
+daySelectionOverridesOlderRange();
 invalidOrDifferentMonthDayFallsBackToFullMonth();
 transactionQueryKeepsPreviousBalanceWindow();
 dayFilterKeepsOpeningBalanceAndDailyRows();
@@ -106,6 +107,18 @@ function dayFilterUsesSelectedDateWithinMonth(): void {
       endsOn: "2026-06-15",
     },
   );
+}
+
+function daySelectionOverridesOlderRange(): void {
+  const filters = resolveFilters(
+    new URL(
+      "http://solverfin.test/lancamentos?month=2026-06&from=2026-06-01&to=2026-06-07&day=2026-06-15",
+    ),
+    [account],
+  );
+  assert.equal(filters.startsOn, "2026-06-15");
+  assert.equal(filters.endsOn, "2026-06-15");
+  assert.equal(filters.day, "2026-06-15");
 }
 
 function dayFilterSupportsMonthBoundaries(): void {
