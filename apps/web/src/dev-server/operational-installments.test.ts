@@ -171,3 +171,27 @@ test("installment value correction sends only changed cents and keeps metadata p
   assert.ok(script.includes("installment.editable === true && !form.description.value.trim()"));
   assert.ok(script.includes('method: "PATCH"'));
 });
+
+test("fixed recurring occurrences do not display finite installment badges", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes('if (installment.recurrenceId || Number(installment.totalInstallments) <= 0) return;'));
+  assert.ok(script.includes('return "Ocorrência " + installment.sequenceNumber;'));
+  assert.ok(script.includes('return "Parcela " + installment.sequenceNumber + " de " + installment.totalInstallments;'));
+  assert.ok(script.includes('addBadge(row, installment)'));
+});
+
+test("amount edit requires an explicit current or future scope before the PATCH", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes('function chooseInstallmentScope(installment)'));
+  assert.ok(script.includes("Onde aplicar o novo valor?"));
+  assert.ok(script.includes("Somente esta parcela"));
+  assert.ok(script.includes("Esta e as próximas"));
+  assert.ok(script.includes('data-scope-cancel>Voltar sem salvar'));
+  assert.ok(script.includes('const scope = await chooseInstallmentScope(installment)'));
+  assert.ok(script.includes('patch.scope = scope'));
+  assert.ok(script.includes('const hasFuture = !installment.recurrenceId'));
+  assert.ok(script.includes('if (!scope) {'));
+  assert.ok(script.includes('Object.keys(patch).some((field) => field !== "amountMinor")'));
+  assert.ok(script.includes('body: JSON.stringify(patch)'));
+  assert.ok(script.includes('.installment-scope-dialog::backdrop'));
+});
