@@ -272,33 +272,24 @@ async function inspectCardSort(cdp, sort) {
     cdp,
     `(() => {
       const direction = ${JSON.stringify(sort)};
-      const groups = Array.from(
-        document.querySelectorAll('[data-instrument-purchase-group]'),
-      ).map((group) => {
-        const dates = Array.from(group.querySelectorAll('[data-purchase-item]'))
-          .map((row) => {
-            const script = row.querySelector('script[data-purchase]');
-            if (!script?.textContent) return '';
-            try {
-              const record = JSON.parse(script.textContent);
-              return String(record.effectiveOn || record.plannedOn || record.occurredOn || '');
-            } catch {
-              return '';
-            }
-          })
-          .filter(Boolean);
-        const expected = [...dates].sort((left, right) => left.localeCompare(right));
-        if (direction === 'date_desc') expected.reverse();
-        return {
-          dates,
-          sorted: dates.length < 2 || dates.every((date, index) => date === expected[index]),
-        };
-      });
+      const dayGroups = Array.from(document.querySelectorAll('[data-cards-day-group]'));
+      const purchaseDates = Array.from(document.querySelectorAll('[data-purchase-item] time[data-label="Data"]'))
+        .map((cell) => cell.getAttribute('datetime'))
+        .filter(Boolean);
+      const expected = [...purchaseDates].sort((left, right) => left.localeCompare(right));
+      if (direction === 'date_desc') expected.reverse();
+      const daysValid = dayGroups.length > 0 && dayGroups.every((group) =>
+        Array.from(group.querySelectorAll('[data-purchase-item] time[data-label="Data"]'))
+          .every((cell) => cell.getAttribute('datetime') === group.dataset.day)
+      );
       return {
         direction,
-        comparableGroups: groups.filter((group) => group.dates.length >= 2).length,
-        sorted: groups.every((group) => group.sorted),
-        groups,
+        comparableGroups: purchaseDates.length >= 2 ? 1 : 0,
+        sorted: daysValid && purchaseDates.every((date, index) => date === expected[index]),
+        groups: dayGroups.map((group) => ({
+          day: group.dataset.day,
+          count: group.querySelectorAll('[data-purchase-item]').length,
+        })),
       };
     })()`,
   );
