@@ -344,3 +344,14 @@ O controle nativo de calendário e a ação de limpar dia devem permanecer utili
 A aceitação exige observação real de proporções, alturas, foco, contraste e ausência
 de overflow em 1366x768, 1665x900 e nos breakpoints mobile. Toda alteração de
 padrão deve atualizar os testes e evidências da Golden Screen, não apenas o CSS.
+
+
+## Situacao da ocorrencia recorrente no Extrato — PR #720
+
+O menu acessivel do icone de situacao deve habilitar `Marcar como conciliado`
+para ocorrencia recorrente materializada em estado **Previsto** ou **Efetivado**,
+independentemente do indicador visual de recorrencia; um item conciliado oferece
+`Desconciliar`. A operacao afeta somente a ocorrencia selecionada e usa o mesmo
+menu neutro ja aprovado pela Golden Screen. Os bloqueios de compras no cartao,
+grupos financeiros e remuneracoes continuam validos. Nenhum botao novo ou modal
+concorrente deve ser criado apenas para reconciliar itens recorrentes.
