@@ -231,7 +231,6 @@ O bloco de anexos inicia recolhido, com `<details><summary>Anexos do lançamento
 
 No Extrato, recorrências fixas mostram somente o indicador próprio, sem `Parcela 2 de ?` (como Sabesp, CPFL e Telefônica do print). Parcelamentos finitos continuam com `Parcela N de M` (como Teste de parcelamento). Ao alterar valor de uma parcela, validar confirmação modal antes de persistir com opções **Somente esta parcela**, **Esta e as próximas** e **Voltar sem salvar**. A segunda só aparece quando existem parcelas posteriores; Escape e Voltar não salvam. Confirmar preservação das parcelas anteriores, conciliadas e canceladas, resposta `updatedCount/skippedCount`, erro 409 para série sem origem confiável e 404 fora do perfil. Validar desktop 1366×768, mobile 390×844 e teclado/foco.
 
-
 ### PR #720 — Restaurar a ultima conta apos novo login (17/10/2026)
 
 Validar no navegador real, em desktop e mobile: selecionar a conta B, sair, entrar

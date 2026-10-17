@@ -276,7 +276,6 @@ explícitas e visualmente subordinadas.
 
 A opção **Todas as contas** em `/lancamentos?accountId=all&currency=BRL&month=AAAA-MM` preserva o mesmo layout da conta individual, identifica a conta sob a descrição e soma saldos **somente de contas da moeda selecionada**. Na conta individual, transferências recebidas compõem Entradas e enviadas compõem Saídas (na moeda da conta). No modo consolidado, as transferências internas da mesma moeda não compõem os cards, mas as **transferências cambiais permanecem** como entradas/saídas na moeda filtrada, sem alterar a projeção do saldo. As previstas não entram no saldo efetivo, e o menu Ações permite editar, clonar, conciliar/desconciliar e excluir lançamentos existentes com a conta de origem real identificada (além de Ver na conta). Novo lançamento sem conta selecionada não pode ser salvo. O filtro de moeda é obrigatório nesse modo. Para regras, controles negativos e razão da decisão, consulte [ADR 0018](./adr/0018-golden-statement-consolidated-by-currency.md).
 
-
 ## Ultima conta selecionada entre sessoes
 
 No Extrato (`/lancamentos`), ao escolher uma conta individual ou `Todas as contas`,
@@ -297,4 +296,4 @@ nao impedem usar os filtros e formulario GET do Extrato.
 
 A preferencia e **local ao navegador/dispositivo**; sincronizacao entre dispositivos
 nao esta neste requisito. Logout invalida somente credenciais/sessao, sem apagar
-essa escolha. 
+essa escolha.

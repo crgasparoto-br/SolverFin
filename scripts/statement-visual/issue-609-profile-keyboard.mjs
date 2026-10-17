@@ -161,7 +161,6 @@ async function validateViewport(width, height, fixture) {
     "Account context disappeared after keyboard selection.",
   );
 
-
   // Session logout must not erase the per-user/per-profile last account preference.
   const savedSelection = await evaluate(
     browser.cdp,
