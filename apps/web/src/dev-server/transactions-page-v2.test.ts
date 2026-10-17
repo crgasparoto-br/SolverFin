@@ -206,17 +206,23 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
     assert.ok(
       html.includes('data-status-transaction-id="posted-row" aria-label="Marcar como conciliado"'),
     );
-    assert.ok(html.includes('data-status-transaction-id="reconciled-row" aria-label="Desconciliar"'));
+    assert.ok(
+      html.includes('data-status-transaction-id="reconciled-row" aria-label="Desconciliar"'),
+    );
     assert.ok(html.includes("Situação: Efetivado não conciliado. Alterar situação"));
     assert.ok(html.includes("Situação: Conciliado. Alterar situação"));
     assert.ok(
       html.includes('data-status-transaction-id="planned-row" aria-label="Marcar como conciliado"'),
     );
     assert.ok(
-      html.includes('data-status-transaction-id="finite-planned" aria-label="Marcar como conciliado"'),
+      html.includes(
+        'data-status-transaction-id="finite-planned" aria-label="Marcar como conciliado"',
+      ),
     );
     assert.ok(
-      html.includes('data-status-transaction-id="finite-posted" aria-label="Marcar como conciliado"'),
+      html.includes(
+        'data-status-transaction-id="finite-posted" aria-label="Marcar como conciliado"',
+      ),
     );
     assert.ok(
       html.includes('data-status-transaction-id="finite-reconciled" aria-label="Desconciliar"'),
