@@ -237,9 +237,12 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
       /class="statement-status-current" role="img" aria-label="Situação atual: Efetivado não conciliado" title="Efetivado não conciliado"/,
     );
     assert.ok(!html.includes("Atual: Efetivado não conciliado"));
-    assert.match(html, /data-tooltip="Marcar como conciliado"><span class="statement-status statement-status-ok"/);
-    assert.match(html, /aria-label="Desconciliar"[^>]*><span class="statement-status statement-status-posted"/);
-    assert.match(html, /class="statement-status-readonly"[^>]*><span class="statement-status statement-status-pending"/);
+    assert.match(html, /data-tooltip="Marcar como conciliado"><span/);
+    assert.match(html, /statement-status-ok" aria-hidden="true"/);
+    assert.match(html, /aria-label="Desconciliar"[^>]*><span/);
+    assert.match(html, /statement-status-posted" aria-hidden="true"/);
+    assert.match(html, /statement-status-readonly"[^>]*><span/);
+    assert.match(html, /statement-status-pending" aria-hidden="true"/);
     assert.ok(html.includes("flex:0 0 26px;height:26px;width:26px"));
     assert.ok(html.includes("height:15px;width:15px"));
     assert.ok(html.includes("flex:0 0 44px;height:44px"));
