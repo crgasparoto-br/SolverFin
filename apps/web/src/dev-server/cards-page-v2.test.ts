@@ -330,7 +330,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.match(html, /<details class="cards-limit-detail"><summary>Detalhes do limite<\/summary>/);
   // #715: keep the card master discoverable, but show the amount first on narrow screens.
-  assert.match(html, /\.cards-invoice-primary\{order:-1\}/);
+  assert.ok(html.includes('grid-template-areas:"amount" "context" "secondary"'));
   assert.match(html, /\.cards-card-picker label\{clip-path:inset\(50%\)/);
   assert.match(html, /\.cards-invoice-heading-row\{align-items:center;display:flex/);
   const summaryStart = html.indexOf('class="cards-invoice-summary"');
@@ -343,18 +343,25 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const invoiceHeaderStart = html.indexOf('class="cards-invoice-header"');
   const invoiceHeaderEnd = html.indexOf("</header>", invoiceHeaderStart);
   const invoiceHeader = html.slice(invoiceHeaderStart, invoiceHeaderEnd);
-  assert.ok(invoiceHeader.includes('class="cards-invoice-status-actions"'));
+  // The monetary decision is independent of the status/metadata and secondary action group.
+  const contextAt = invoiceHeader.indexOf('class="cards-invoice-title-block"');
+  const primaryAt = invoiceHeader.indexOf('class="cards-invoice-primary"');
+  const secondaryAt = invoiceHeader.indexOf('class="cards-invoice-secondary-actions"');
   const closeAt = invoiceHeader.indexOf('data-api-path="/api/invoices/invoice-aug/close"');
-  assert.ok(closeAt > invoiceHeader.indexOf('class="cards-invoice-status-actions"'));
   const documentsAt = invoiceHeader.indexOf('data-open-modal="invoice-attachments"');
-  assert.ok(documentsAt > invoiceHeader.indexOf('class="cards-invoice-title-block"'));
-  assert.ok(documentsAt < invoiceHeader.indexOf('class="cards-invoice-primary"'));
-  assert.ok(documentsAt > invoiceHeader.indexOf('class="cards-invoice-heading-row"'));
-  assert.ok(documentsAt < invoiceHeader.indexOf('class="cards-invoice-metadata"'));
-  assert.ok(
-    invoiceHeader.indexOf('data-open-modal="payment"') >
-      invoiceHeader.indexOf('class="cards-invoice-primary"'),
-  );
+  const paymentAt = invoiceHeader.indexOf('data-open-modal="payment"');
+  assert.ok(contextAt >= 0 && primaryAt > contextAt && secondaryAt > primaryAt);
+  assert.ok(paymentAt > primaryAt && paymentAt < secondaryAt);
+  assert.ok(documentsAt > secondaryAt && closeAt > secondaryAt);
+  assert.match(invoiceHeader, /role="group" aria-label="Outras ações da fatura"/);
+  assert.match(invoiceHeader, /<dl class="cards-invoice-metadata"/);
+  assert.match(invoiceHeader, /<dt>Fechamento<\/dt><dd><time datetime="2026-08-20">/);
+  assert.match(invoiceHeader, /<dt>Vencimento<\/dt><dd><time datetime="2026-09-10">/);
+  assert.match(invoiceHeader, /<dt>Moeda<\/dt><dd>USD<\/dd>/);
+  assert.equal((invoiceHeader.match(/class="sf-button sf-button-primary"/g) ?? []).length, 1);
+  assert.ok(!invoiceHeader.slice(secondaryAt).includes("sf-button-primary"));
+  assert.ok(html.includes('grid-template-areas:"context amount" "secondary amount"'));
+  assert.ok(html.includes(".cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){min-height:44px}"));
   const purchaseHeaderStart = html.indexOf('class="cards-purchase-section-header"');
   const purchaseFilterStart = html.indexOf('class="cards-reconciliation-filters"');
   const purchaseHeader = html.slice(purchaseHeaderStart, purchaseFilterStart);
@@ -412,8 +419,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.match(html, /class="sf-button sf-button-secondary" data-open-modal="purchase"/);
   assert.doesNotMatch(html, /class="sf-button sf-button-primary" data-open-modal="purchase"/);
-  assert.match(html, /<span>Valor a pagar<\/span><strong>[\s\S]*?data-currency="USD"/);
-  assert.match(html, /Fechamento [\s\S]*? Vencimento /);
+  assert.match(html, /<span>Valor a pagar<\/span>\s*<strong>[\s\S]*?data-currency="USD"/);
+  assert.match(html, /<dt>Fechamento<\/dt>[\s\S]*?<dt>Vencimento<\/dt>/);
   // Secondary filters are progressively disclosed, but selected non-default filters stay evident.
   assert.match(html, /<details class="cards-advanced-filters" open>/);
   assert.match(html, /Mais filtros · ativos/);
