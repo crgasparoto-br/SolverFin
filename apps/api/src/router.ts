@@ -168,7 +168,11 @@ route("GET", "/api/invoices", listInvoicesHandler);
 route("GET", "/api/invoices/:invoiceId", getInvoiceHandler);
 route("GET", "/api/invoices/:invoiceId/summary", getInvoiceSummaryHandler);
 route("GET", "/api/invoices/:invoiceId/purchases", listInvoicePurchasesHandler);
-route("PATCH", "/api/invoices/:invoiceId/installments/:installmentId/reconciliation", reconcileInvoiceInstallmentHandler);
+route(
+  "PATCH",
+  "/api/invoices/:invoiceId/installments/:installmentId/reconciliation",
+  reconcileInvoiceInstallmentHandler,
+);
 route("POST", "/api/invoices/:invoiceId/close", closeInvoiceHandler);
 route("POST", "/api/invoices/:invoiceId/pay", payInvoiceHandler);
 
@@ -972,7 +976,10 @@ async function reconcileInvoiceInstallmentHandler(
   const body = requireObjectBody(request.body);
   if (Object.keys(body).length !== 1 || !["posted", "reconciled"].includes(String(body.status))) {
     return json(400, {
-      error: { code: "CARD_INSTALLMENT_STATUS_INVALID", message: "Informe apenas a situação de conciliação." },
+      error: {
+        code: "CARD_INSTALLMENT_STATUS_INVALID",
+        message: "Informe apenas a situação de conciliação.",
+      },
     });
   }
   const result = await reconcileInvoiceInstallmentForContext(
