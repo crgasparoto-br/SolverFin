@@ -255,6 +255,14 @@ A validacao visual permanente da rota usa `scripts/statement-visual/accounts-car
 
 A rota `/cartoes` deve priorizar a decisao operacional sobre a fatura selecionada, sem alterar os contratos financeiros descritos neste documento.
 
+### Refatoração de interface — `design-interface` (Issue #715 / PR #720)
+
+A Skill `crgasparoto-br/skill/design-interface` foi aplicada em modo `implementation`, seguindo o contrato `2026-08-20.3` sobre o arquétipo **A3** e a referência aprovada do Extrato. A tarefa principal permanece `cartão → fatura → compras`, sem reproduzir literalmente a geometria do Extrato.
+
+- **Contexto do cartão:** painel esquerdo desktop preserva seleção, instituição/identificação mascarada, estado, moedas, dados contratuais e instrumentos. A identidade do cartão perde o card aninhado; no mobile, a seleção continua visível e o nome repetido fica apenas no seletor, preservando status e acesso aos detalhes expansíveis.
+- **Faixa financeira:** `Total da fatura`, `Conciliado`, `Não conciliado` e `Limite disponível` continuam valores independentes na moeda da fatura, mas formam uma faixa comparável sem quatro cartões decorados ou ícones supérfluos. O detalhamento do limite permanece contextual. Em 390 px, os quatro fatos compõem uma grade compacta 2×2; em 320 px, viram linhas rótulo/valor para evitar corte ou quebra da moeda.
+- **Consulta e compras:** busca, filtros e contadores permanecem funcionais no mesmo GET; chips ativos usam contraste sem bordas de destaque repetidas. Instrumentos usam subtotais agrupados por moeda e divisores discretos, e compras mantêm as seis colunas semânticas (categoria independente, situação em pictograma, descrição e valor priorizados). `Registrar compra` continua junto à coleção, enquanto fechar/documentar/liquidar pertencem à fatura.
+- **Verificação visual:** usar cenário autenticado `/cartoes` com fixture fictícia em 1366×768, 1920×1080, 390×844 e 320×740, além de estados de filtro vazio, conteúdo longo, modal e teclado. O Chrome exige faixa com quatro métricas sem caixas completas, controle negativo que reaplica uma moldura e falha, contexto mobile compacto e ausência de overflow. O parecer visual independente permanece obrigatório, mesmo com CI verde.
 ### Propagação visual da Golden Screen — Issue #715
 
 A Golden Screen do Extrato (`/lancamentos`) define o **nível de acabamento**, não a geometria literal de Cartões. A composição A3 da rota `/cartoes` deve usar a largura útil da aplicação para a hierarquia cartão selecionado → valor e decisão da fatura → compras; uma coluna fixa de metadados do cartão não deve atrasar a leitura da coleção financeira.
