@@ -362,8 +362,16 @@ export async function validateCardsPage(
     "Invoice secondary operations must stay in the footer below the decision",
     measurements,
   );
-  check(measurements.mobileInvoiceActionsCompact, "Mobile invoice actions are not aligned", measurements);
-  check(measurements.monthTitleSingleLine, "Selected month wraps or overflows on mobile", measurements);
+  check(
+    measurements.mobileInvoiceActionsCompact,
+    "Mobile invoice actions are not aligned",
+    measurements,
+  );
+  check(
+    measurements.monthTitleSingleLine,
+    "Selected month wraps or overflows on mobile",
+    measurements,
+  );
   check(
     measurements.actionsBelongToContext,
     "Golden Screen: register, document, close and settle actions must stay with their respective context",
