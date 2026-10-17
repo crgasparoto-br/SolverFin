@@ -50,6 +50,23 @@ qualquer tela de propagacao.
   Validacao nativa invalida torna o select visivel novamente, sem campo focavel oculto.
 - Logos continuam resolvidos pelo catalogo institucional compartilhado.
 
+## Componentes de escolha e confirmacao
+
+A Golden Screen inclui os estados interativos dos botoes e nao somente
+suas posicoes. Opcoes alternativas de escopo, categoria, situacao e outras
+escolhas em dialog devem usar controles neutros compartilhados, sem botao
+primario preselecionado. As opcoes possuem fundo branco, borda sutil e
+texto azul-petroleo legivel; hover e foco adotam os tokens neutros
+compartilhados, sem transformar um botao em superficie azul-escura.
+Apenas a confirmacao final de uma acao usa a variante primaria.
+
+Ao criar novos dialogos e menus, auditar a precedencia de
+`button:hover:not(:disabled)` do shell frente aos seletores locais.
+Conferir fundo, texto, borda, foco visivel e contraste para mouse e teclado
+em desktop e mobile. Evitar classes locais de botao que reimplementem
+cores e estados com menor especificidade do que a regra global. Consulte
+`docs/DESIGN_SYSTEM.md` para o contrato obrigatorio.
+
 O mockup orienta acabamento, densidade e hierarquia, nao altera regras financeiras.
 A propagacao para outras rotas permanece na epica #702, posterior a aprovacao
 independente da referencia.
