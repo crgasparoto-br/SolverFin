@@ -302,7 +302,7 @@ essa escolha.
 
 Na Golden Screen do Extrato, **Hoje** consulta o dia civil de São Paulo (`America/Sao_Paulo`), independentemente do relógio UTC da VPS, e atualiza conjuntamente `month` e `day`. Os atalhos de 7/30 dias definem limites reais `from`/`to` e exibem o período efetivo; atalhos não podem manter um dia ou intervalo antigo nem perder `profileId`, `accountId`, moeda, pesquisa ou demais filtros.
 
-A consulta de transações do Extrato deve filtrar pelo **dia efetivamente exibido** (`effectiveOn ?? plannedOn ?? occurredOn`, cutoff `statementTo`) e não somente por `occurredOn`; o servidor mantém os filtros de ocorrência existentes para outros consumidores. O saldo inicial depende das transações anteriores ao começo do intervalo e os saldos da tabela devem respeitar a mesma data canônica. O formulário GET não deve duplicar o campo `day`: com JavaScript, o controle de data é inserido antes do contêiner de ações, e sem JavaScript o valor é preservado via `noscript`.
+A consulta de transações do Extrato deve filtrar pelo **dia efetivamente exibido** (`effectiveOn ?? plannedOn ?? occurredOn`, cutoff `statementTo`) e não somente por `occurredOn`; o servidor mantém os filtros de ocorrência existentes para outros consumidores. O saldo inicial depende das transações anteriores ao começo do intervalo e os saldos da tabela devem respeitar a mesma data canônica. O formulário GET não deve duplicar o campo `day`: o campo é renderizado pelo servidor dentro do formulário original, com ou sem JavaScript; o script apenas atualiza limites, limpa o dia e aplica o filtro.
 
 ## Extrato por dia e densidade da tabela — PR #720 (17/10/2026)
 
@@ -325,3 +325,23 @@ o tipo com sua cor e ícone; o texto duplicado de Tipo não deve ocupar uma nova
 A grade respeita a Golden Screen, mantendo ícone de situação interativo, ações,
 checkbox e acessibilidade; em telas estreitas, há reflow sem truncar valores.
 O agrupamento visual não modifica a natureza dos grupos financeiros persistidos.
+
+
+### Contrato visual obrigatório para novos filtros (PR #720)
+
+Toda alteração em telas deve passar pela Skill `design-interface` do repositório
+`crgasparoto-br/skill` (branch `develop`), consultando também os tokens e a Golden
+Screen vigente **antes** de editar CSS/HTML. Não é suficiente renderizar o componente:
+as dimensões e o alinhamento precisam ser conferidos no Chrome no mesmo SHA.
+
+Campos curtos, como **Dia do mês**, não podem herdar spans de buscas ou tabelas.
+No desktop (largura a partir de 1340px), o filtro fica na mesma linha de Busca,
+Tipo, Status, Conciliação, Categoria e Aplicar, com largura máxima de `11.5rem`
+(~184px), enquanto Busca mantém espaço flexível; os atalhos ocupam linha anterior.
+De 1101px a 1339px, a grade faz reflow sem aumentar o seletor de dia; em tablet
+o dia permanece compacto e em celulares pode ocupar a largura disponível.
+O controle nativo de calendário e a ação de limpar dia devem permanecer utilizáveis.
+
+A aceitação exige observação real de proporções, alturas, foco, contraste e ausência
+de overflow em 1366x768, 1665x900 e nos breakpoints mobile. Toda alteração de
+padrão deve atualizar os testes e evidências da Golden Screen, não apenas o CSS.
