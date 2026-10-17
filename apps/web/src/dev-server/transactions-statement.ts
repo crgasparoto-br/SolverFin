@@ -127,7 +127,8 @@ export function resolveFilters(
   const month = resolveSelectedMonth(url, currentMonth);
   const day = resolveSelectedDay(url, month);
   const range = resolveSelectedRange(url);
-  const period = range ?? (day ? dayToPeriod(day) : monthToPeriod(month));
+  // An explicit day is more specific than a stale relative range in a GET filter.
+  const period = day ? dayToPeriod(day) : (range ?? monthToPeriod(month));
   const currency = normalizeCurrency(url?.searchParams.get("currency"));
   const kind = normalizeKindFilter(url?.searchParams.get("kind"));
   const evidence = normalizeEvidenceFilter(url?.searchParams.get("evidence"));
