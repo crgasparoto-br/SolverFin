@@ -250,15 +250,11 @@ export function operationalInstallmentsController(): string {
       }
 
       function installmentLabel(installment) {
-        if (installment.recurrenceId || Number(installment.totalInstallments) <= 0) {
-          return "Ocorrência " + installment.sequenceNumber;
-        }
-        return "Parcela " + installment.sequenceNumber + " de " + installment.totalInstallments;
+        const total = Number(installment.totalInstallments) > 0 ? installment.totalInstallments : "?";
+        return "Parcela " + installment.sequenceNumber + " de " + total;
       }
 
       function addBadge(row, installment) {
-        // Fixed recurrences already carry the recurrence icon; they are not finite installment plans.
-        if (installment.recurrenceId || Number(installment.totalInstallments) <= 0) return;
         const description = row && row.querySelector(".description strong");
         if (!description || description.querySelector('[data-installment-badge="' + installment.id + '"]')) return;
         const label = installmentLabel(installment);
@@ -362,7 +358,10 @@ export function operationalInstallmentsController(): string {
           const node = findNodeByData("script[data-transaction]", transactionId);
           const row = node && node.closest("article");
           if (!row) return;
-          addBadge(row, installment);
+          // Recurrences use their own icon; show a parcel badge only for finite account plans.
+          if (!installment.recurrenceId && Number(installment.totalInstallments) > 0) {
+            addBadge(row, installment);
+          }
           const editButton = row.querySelector('[data-edit="' + transactionId + '"]');
           if (!editButton) return;
           editButton.dataset.installmentEdit = installment.id;
