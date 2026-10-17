@@ -320,7 +320,8 @@ da conta exibida. Em ordenações globais por valor ou descrição, as linhas pe
 sem agrupamento para não alterar o resultado da ordenação escolhida.
 
 No desktop, o Extrato usa uma única linha para cada movimento, com **Valor** e
-**Saldo** em colunas distintas, alinhadas à direita. A categoria já comunica
+**Saldo** em colunas distintas, alinhadas à direita. O título **Saldo** aparece apenas
+no cabeçalho dessa coluna, nunca repetido antes do valor de cada linha. A categoria já comunica
 o tipo com sua cor e ícone; o texto duplicado de Tipo não deve ocupar uma nova linha.
 A grade respeita a Golden Screen, mantendo ícone de situação interativo, ações,
 checkbox e acessibilidade; em telas estreitas, há reflow sem truncar valores.
