@@ -15,6 +15,16 @@ async function main(): Promise<void> {
   await assertApiFailureRestoresTheForm();
   await assertTransferPayloadAndValidationError();
   await assertCreationAndRecurringEditsAreNotIntercepted();
+  assertDayFilterUsesARealDirectChildOfTheForm();
+}
+
+function assertDayFilterUsesARealDirectChildOfTheForm(): void {
+  const script = statementPresentationScript();
+  assert.ok(script.includes('currentMonthButton?.closest(".statement-filter-actions")'));
+  assert.ok(script.includes("if (!actions || actions.parentElement !== form) return"));
+  assert.ok(script.includes("form.insertBefore(dayField, actions)"));
+  assert.ok(script.includes("form.insertBefore(clearButton, actions)"));
+  assert.equal(script.includes("form.insertBefore(dayField, currentMonthButton)"), false);
 }
 
 async function assertChangedAccountAndDuplicateSubmission(): Promise<void> {
