@@ -212,7 +212,8 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-invoice-header{align-items:start;column-gap:20px;display:grid;grid-template-areas:"context amount" "secondary amount";grid-template-columns:minmax(0,1fr) minmax(220px,auto);padding:13px 16px;row-gap:8px}
     .cards-invoice-title-block{gap:5px;grid-area:context;min-width:0}
     .cards-invoice-title-row{gap:9px}
-    .cards-invoice-title-block h2{font-size:1.18rem;letter-spacing:-.02em}
+    /* The selected period is visible in navigation; keep the duplicated heading for assistive tech only. */
+    .cards-invoice-heading-row{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;white-space:nowrap;width:1px}
     .cards-invoice-metadata{align-items:baseline;display:flex;flex-wrap:wrap;gap:6px 18px;margin:0;min-width:0}
     .cards-invoice-metadata>div{align-items:baseline;display:flex;flex-wrap:wrap;gap:4px;min-width:0}
     .cards-invoice-metadata dt{color:var(--muted);font-size:.73rem}
