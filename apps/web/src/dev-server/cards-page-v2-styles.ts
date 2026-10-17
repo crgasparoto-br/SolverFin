@@ -141,5 +141,56 @@ export function cardsPageStyles(): string {
     .cards-purchase-dialog-actions .sf-button{min-height:44px;min-width:120px}
     @media(max-width:600px){.cards-dialog[data-modal="purchase"]{max-width:calc(100vw - 16px)}.cards-purchase-dialog-header{padding:16px 16px 4px}.cards-purchase-dialog-panel>.cards-dialog-description{padding:2px 16px 12px}.cards-purchase-form-body{gap:16px;padding:8px 16px 16px}.cards-purchase-field-grid{grid-template-columns:minmax(0,1fr)}.cards-purchase-amounts .cards-purchase-field-grid:has([data-purchase-field="installmentAmountMinor"][hidden])>label:first-child{max-width:none}.cards-purchase-dialog-actions{padding:12px 16px 16px}.cards-purchase-dialog-actions .sf-button{flex:1;min-width:0}}
     ${cardsGoldenCompositionStyles()}
+
+    /* #720: show a day filter without stretching the compact date field. */
+    .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) minmax(9rem,11.5rem) auto auto}
+    .cards-purchase-day-filter{align-items:end;display:flex;gap:6px;min-width:0}
+    .cards-purchase-day-filter>label{min-width:0;width:100%}
+    .cards-purchase-day-filter input{font:inherit;min-width:0;width:100%}
+    .cards-clear-day{align-items:center;border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);display:inline-flex;font-size:.73rem;font-weight:700;min-height:44px;padding:4px 8px;text-decoration:none;white-space:nowrap}
+    .cards-clear-day:hover,.cards-clear-day:focus-visible{background:var(--primary-soft);border-color:var(--primary)}
+    .cards-purchase-day-filter:has(.cards-clear-day){grid-column:span 2}
+    .cards-day-group{border:1px solid var(--line);border-radius:var(--radius);min-width:0;overflow:visible}
+    .cards-day-group>summary{align-items:center;background:var(--bg);border-radius:var(--radius);cursor:pointer;display:flex;gap:10px;justify-content:space-between;list-style:none;min-height:44px;padding:8px 12px}
+    .cards-day-group>summary::-webkit-details-marker{display:none}
+    .cards-day-group>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .cards-day-title{align-items:center;display:flex;flex-wrap:wrap;gap:8px}
+    .cards-day-title time{color:var(--text);font-size:.84rem;font-weight:800}
+    .cards-day-title small{color:var(--muted);font-size:.72rem}
+    .cards-day-group>summary>strong{font-size:.83rem;font-variant-numeric:tabular-nums;text-align:right}
+    .cards-day-content{display:grid;gap:0;min-width:0}
+    .cards-day-content>.cards-instrument-group{border:0;border-top:1px solid var(--line)}
+    .cards-day-content>.cards-instrument-group>summary{background:var(--surface);padding:7px 12px}
+    .cards-day-content .cards-purchase-row{min-height:42px;padding:7px 10px}
+
+    /* One icon system for card purchases and the Golden Statement: 26px circles inside 44px targets. */
+    .cards-purchase-status{height:26px;width:26px}
+    .cards-purchase-status svg{height:15px;width:15px}
+    .cards-purchase-status-menu{align-items:center;display:flex;gap:6px;max-width:calc(100vw - 16px);min-width:0;padding:8px;right:0;text-align:left;width:max-content}
+    .cards-purchase-status-current{align-items:center;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;padding:0;width:44px}
+    .cards-purchase-status-menu>button.cards-purchase-status-option{align-items:center;background:transparent;border:0;border-radius:999px;color:var(--text);display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;min-height:44px;padding:0;width:44px}
+    .cards-purchase-status-menu>button.cards-purchase-status-option:hover:not(:disabled),.cards-purchase-status-menu>button.cards-purchase-status-option:focus-visible{background:transparent;color:var(--text)}
+    .cards-purchase-status-menu>button.cards-purchase-status-option:hover:not(:disabled) .cards-purchase-status,.cards-purchase-status-menu>button.cards-purchase-status-option:focus-visible .cards-purchase-status{box-shadow:0 0 0 2px var(--neutral-control-border-hover)}
+    .cards-purchase-status-readonly{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:999px;display:inline-flex;flex:0 0 26px;height:26px;justify-content:center;margin:9px;padding:0;width:26px}
+    .cards-purchase-status-feedback{align-items:center;display:inline-flex;flex:0 0 32px;height:32px;justify-content:center;margin:0;padding:0;width:32px}
+    .cards-purchase-status-feedback[hidden]{display:none}
+    .cards-purchase-status-feedback svg{height:15px;width:15px}
+    .cards-purchase-status-feedback.error{color:var(--danger)}
+    .cards-purchase-status-feedback.success{color:var(--success)}
+
+    /* Secondary invoice actions need a visibly clickable, low-contrast border. */
+    .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);min-height:38px;padding:7px 10px}
+    .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice):hover:not(:disabled),.cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice):focus-visible{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+    .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice):focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    @media(max-width:760px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) auto auto}
+      .cards-search-field{grid-column:1/-1}
+      .cards-purchase-day-filter{grid-column:1!important;max-width:11.5rem}
+      .cards-day-group>summary{gap:6px;padding:8px 10px}
+    }
+    @media(max-width:350px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) auto}
+      .cards-purchase-day-filter{grid-column:1/-1!important;max-width:11.5rem}
+    }
   `;
 }
