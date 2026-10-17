@@ -1705,9 +1705,6 @@ function formatKind(kind: string): string {
         ? "Transferência"
         : kind;
 }
-function resolveEvidenceLabel(transaction: TransactionRecord): string {
-  return transaction.effectiveOn ? "Efetivo" : transaction.plannedOn ? "Previsto" : "Evento";
-}
 function emptyState(title: string, description: string): string {
   return `<div class="empty"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(description)}</p></div>`;
 }
