@@ -393,7 +393,7 @@ export function operationalInstallmentsController(): string {
           + '<div><dt>Vencimento</dt><dd data-installment-due></dd></div>'
           + '<div><dt>Situação</dt><dd data-installment-status></dd></div>'
           + '<div data-installment-amount-readonly><dt>Valor</dt><dd data-installment-amount></dd></div>'
-          + '</dl><label class="installment-amount-editor" data-installment-amount-editor hidden>Valor desta parcela'
+          + '</dl><label class="installment-amount-editor" data-installment-amount-editor hidden>Valor desta parcela <span data-installment-amount-currency></span>'
           + '<input type="text" name="adjustedInstallmentAmount" data-installment-amount-input inputmode="decimal" autocomplete="off" aria-label="Novo valor desta parcela">'
           + '<span class="installment-amount-hint">Altera somente esta parcela, sem redistribuir as demais.</span></label>'
           + '<p data-installment-reason hidden></p>';
@@ -505,6 +505,7 @@ export function operationalInstallmentsController(): string {
         details.querySelector("[data-installment-amount-readonly]").hidden = amountEditable;
         const amountEditor = details.querySelector("[data-installment-amount-editor]");
         amountEditor.hidden = !amountEditable;
+        details.querySelector("[data-installment-amount-currency]").textContent = "(" + String(installment.currency || "moeda indisponível") + ")";
         const amountInput = details.querySelector("[data-installment-amount-input]");
         amountInput.value = (Number(installment.amountMinor || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         amountInput.required = amountEditable;
