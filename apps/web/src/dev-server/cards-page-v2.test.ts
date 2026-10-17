@@ -336,10 +336,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const summaryStart = html.indexOf('class="cards-invoice-summary"');
   const purchaseHeadingStart = html.indexOf('class="cards-purchase-section-header"');
   const summaryHtml = html.slice(summaryStart, purchaseHeadingStart);
-  const limitMetricStart = summaryHtml.indexOf('Limite disponível');
+  const limitMetricStart = summaryHtml.indexOf("Limite disponível");
   const limitDetailsStart = summaryHtml.indexOf('class="cards-limit-detail"');
   assert.ok(limitMetricStart >= 0 && limitDetailsStart > limitMetricStart);
-  assert.ok(limitDetailsStart < summaryHtml.indexOf('</section>', limitMetricStart));
+  assert.ok(limitDetailsStart < summaryHtml.indexOf("</section>", limitMetricStart));
   const invoiceHeaderStart = html.indexOf('class="cards-invoice-header"');
   const invoiceHeaderEnd = html.indexOf("</header>", invoiceHeaderStart);
   const invoiceHeader = html.slice(invoiceHeaderStart, invoiceHeaderEnd);
