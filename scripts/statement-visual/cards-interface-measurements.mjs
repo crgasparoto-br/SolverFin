@@ -100,6 +100,26 @@ export async function validateCardsPage(
       const invoiceFactsReadable = invoiceFacts.length === 3 && invoiceFacts.every(
         (fact) => visible(fact.querySelector('dt')) && visible(fact.querySelector('dd')),
       );
+      const primaryDecision = header?.querySelector('.cards-invoice-primary');
+      const invoiceContext = header?.querySelector('.cards-invoice-title-block');
+      const primaryAmount = header?.querySelector('.cards-invoice-primary > strong');
+      const invoiceAmountLeads = Boolean(
+        primaryDecision && invoiceContext &&
+        (window.innerWidth <= 760
+          ? rect(primaryDecision).bottom <= rect(invoiceContext).top + 1
+          : rect(primaryDecision).left < rect(invoiceContext).left)
+      );
+      const invoiceSecondaryFooter = Boolean(
+        secondaryActions && primaryDecision && invoiceContext &&
+        rect(secondaryActions).top >=
+          Math.max(rect(primaryDecision).bottom, rect(invoiceContext).bottom) - 1
+      );
+      const payNextToAmount = Boolean(
+        primaryAmount &&
+        (!payTrigger || (window.innerWidth <= 430
+          ? rect(payTrigger).top >= rect(primaryAmount).bottom - 1
+          : Math.abs(rect(payTrigger).bottom - rect(primaryAmount).bottom) < 25))
+      );
       const invoiceActionsSeparated = Boolean(
         secondaryActions &&
         (!payTrigger ||
@@ -146,7 +166,7 @@ export async function validateCardsPage(
       const sidebarRestored = window.innerWidth < 1000 || sidebarGeometryValid();
       const masterFactsVisible = visible(master?.querySelector('.cards-master-meta dt')) &&
         visible(master?.querySelector('.cards-instrument-nav li'));
-      const primaryAmount = document.querySelector('.cards-invoice-primary > strong');
+
       const firstPurchaseRow = rows[0];
       const firstPurchaseDescription = firstPurchaseRow?.querySelector('.cards-purchase-description strong');
       const firstPurchaseAmount = firstPurchaseRow?.querySelector('.cards-purchase-amount');
@@ -216,6 +236,9 @@ export async function validateCardsPage(
         invoiceHeaderVisible: visible(header),
         actionsBelongToContext,
         invoiceActionsSeparated,
+        invoiceAmountLeads,
+        invoiceSecondaryFooter,
+        payNextToAmount,
         invoiceFactsReadable,
         primaryAmountVisible: visible(primaryAmount),
         primaryAmountTop: rect(primaryAmount).top,
@@ -313,6 +336,16 @@ export async function validateCardsPage(
   check(
     measurements.invoiceActionsSeparated,
     "Invoice primary and secondary actions overlap",
+    measurements,
+  );
+  check(
+    measurements.invoiceAmountLeads && measurements.payNextToAmount,
+    "Invoice value must lead and settlement must remain attached to it",
+    measurements,
+  );
+  check(
+    measurements.invoiceSecondaryFooter,
+    "Invoice secondary operations must stay in the footer below the decision",
     measurements,
   );
   check(
