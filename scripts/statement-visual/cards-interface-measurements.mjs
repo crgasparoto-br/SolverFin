@@ -718,7 +718,11 @@ export async function validateCardsPage(
       };
     })()`,
   );
-  check(Boolean(hoverTarget?.visible), "Status menu action is outside the visible viewport", hoverTarget);
+  check(
+    Boolean(hoverTarget?.visible),
+    "Status menu action is outside the visible viewport",
+    hoverTarget,
+  );
   if (hoverTarget?.visible) {
     await cdp.send("Input.dispatchMouseEvent", {
       type: "mouseMoved",
