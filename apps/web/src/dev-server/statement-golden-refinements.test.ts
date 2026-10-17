@@ -230,4 +230,3 @@ assert.match(styles, /\.filter-form>\.statement-day-field\{max-width:11\.5rem;wi
 assert.match(styles, /\.filter-form>\.statement-period-shortcuts\{grid-column:1\/-1\}/);
 assert.match(styles, /max-width:1339px\)\{/);
 assert.doesNotMatch(styles, /\.filter-form>\.statement-day-field\{grid-column:span 4\}/);
-

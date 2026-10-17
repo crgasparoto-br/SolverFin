@@ -69,8 +69,8 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
         };
       })()`);
       report.observations.at(-1).filterGeometry = filterGeometry;
-      assert.equal(filterGeometry.ready, true, 'Golden Screen day filter must exist.');
-      assert.equal(filterGeometry.dayVisible, true, 'Golden Screen day filter must be visible.');
+      assert.equal(filterGeometry.ready, true, "Golden Screen day filter must exist.");
+      assert.equal(filterGeometry.dayVisible, true, "Golden Screen day filter must be visible.");
       if (width >= 1340) {
         assert.ok(
           filterGeometry.dateWidth >= 145 && filterGeometry.dateWidth <= 196,
@@ -85,7 +85,7 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
           `Day and search controls are vertically misaligned: ${JSON.stringify(filterGeometry)}`,
         );
       }
-      report.controls.push({ id: 'GS-DAY-FILTER-PROPORTIONS', width, status: 'passed' });
+      report.controls.push({ id: "GS-DAY-FILTER-PROPORTIONS", width, status: "passed" });
       await screenshot(cdp, join(outputDir, `statement-refinement-top-${width}x${height}.png`));
 
       await read("document.querySelector('.statement-secondary-actions>summary').focus()");

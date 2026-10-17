@@ -269,7 +269,6 @@ distintos e por valor/descrição sem grupos para respeitar o sort global;
 A execução unitária/SSR não substitui a homologação de geometria visual e
 do comportamento no Chrome no HEAD exato da PR.
 
-
 ### PR #720 — Gate de proporção para novos controles (17/10/2026)
 
 O processo de tela deve executar a Skill `design-interface` do projeto `skill` antes

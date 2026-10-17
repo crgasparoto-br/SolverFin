@@ -326,7 +326,6 @@ A grade respeita a Golden Screen, mantendo ícone de situação interativo, aç�
 checkbox e acessibilidade; em telas estreitas, há reflow sem truncar valores.
 O agrupamento visual não modifica a natureza dos grupos financeiros persistidos.
 
-
 ### Contrato visual obrigatório para novos filtros (PR #720)
 
 Toda alteração em telas deve passar pela Skill `design-interface` do repositório
