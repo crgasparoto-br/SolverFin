@@ -1257,9 +1257,12 @@ function buildMonthHref(url: URL, cardId: string, month: string): string {
   if (profileId) next.searchParams.set("profileId", profileId);
   return `${next.pathname}${next.search}`;
 }
-function withQuery(base: URL, changes: Record<string, string>): string {
+function withQuery(base: URL, changes: Record<string, string | null>): string {
   const next = new URL(base);
-  for (const [name, value] of Object.entries(changes)) next.searchParams.set(name, value);
+  for (const [name, value] of Object.entries(changes)) {
+    if (value === null) next.searchParams.delete(name);
+    else next.searchParams.set(name, value);
+  }
   return `${next.pathname}${next.search}`;
 }
 function normalizeMonth(value: string | null | undefined): string | undefined {
