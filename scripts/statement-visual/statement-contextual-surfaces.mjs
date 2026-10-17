@@ -430,14 +430,15 @@ export async function validateStatementContextualSurfaces(
       // The Golden Screen reconciles from the icon in the Situação column,
       // not from a duplicated text command in More actions.
       const reconciliationRecord = `[data-transaction="${transactionId}"]`;
-      const markReconciliationControl = async () => read(`(() => {
-        const record = document.querySelector(${JSON.stringify(reconciliationRecord)});
-        const control = record?.closest(".statement-body")?.querySelector("[data-statement-status-control]");
-        if (!control) return false;
-        control.dataset.contextualReconciliation = "";
-        control.querySelector("summary")?.scrollIntoView({block:"center"});
-        return true;
-      })()`);
+      const markReconciliationControl = async () =>
+        read(`(() => {
+          const record = document.querySelector(${JSON.stringify(reconciliationRecord)});
+          const control = record?.closest(".statement-body")?.querySelector("[data-statement-status-control]");
+          if (!control) return false;
+          control.dataset.contextualReconciliation = "";
+          control.querySelector("summary")?.scrollIntoView({block:"center"});
+          return true;
+        })()`);
       assert.equal(await markReconciliationControl(), true, "Reconciliation icon must exist");
       const reconciliationControl = "[data-contextual-reconciliation]";
       const inspectIconOnlyMenu = async (nextStatus, currentLabel) => {
@@ -463,20 +464,40 @@ export async function validateStatementContextualSurfaces(
         const actionLabel = nextStatus === "reconciled" ? "Marcar como conciliado" : "Desconciliar";
         assert.equal(state.open, true);
         assert.equal(state.currentLabel, "Situação atual: " + currentLabel);
-        assert.equal(state.currentIconOnly, true, "Current status must display an icon without text");
+        assert.equal(
+          state.currentIconOnly,
+          true,
+          "Current status must display an icon without text",
+        );
         assert.equal(state.actionLabel, actionLabel);
         assert.equal(state.actionTitle, actionLabel, "Icon action requires a tooltip");
-        assert.equal(state.actionIconOnly, true, "Reconciliation action must display an icon without text");
-        assert.equal(state.menuTextless, true, "The status popover must not have visible text labels");
+        assert.equal(
+          state.actionIconOnly,
+          true,
+          "Reconciliation action must display an icon without text",
+        );
+        assert.equal(
+          state.menuTextless,
+          true,
+          "The status popover must not have visible text labels",
+        );
         assert.ok(state.width <= 160, "Status menu must remain compact");
         assert.ok(state.actionTarget >= 44, "Status action touch target must be at least 44px");
         assert.equal(state.inside, true, "Status popover must stay inside the viewport");
-        report.controls.push({ id: "GS-STATUS-ICON-ONLY", viewport: { width, height }, nextStatus, state });
+        report.controls.push({
+          id: "GS-STATUS-ICON-ONLY",
+          viewport: { width, height },
+          nextStatus,
+          state,
+        });
         return state;
       };
+      const initialLabel = await read(
+        `document.querySelector(${JSON.stringify(reconciliationControl)}).querySelector("summary .statement-status").getAttribute("aria-label")`,
+      );
       await activate(`${reconciliationControl} > summary`);
-      await inspectIconOnlyMenu("reconciled", "Efetivado não conciliado");
-      await capture("reconciliation", width, height, ".statement-status-menu", {
+      await inspectIconOnlyMenu("reconciled", initialLabel);
+      await capture("reconciliation", width, height, "[data-contextual-reconciliation] .statement-status-menu", {
         canonicalScope: "Single-transaction status-only PATCH from icon menu",
       });
       await activate(`${reconciliationControl} [data-set-statement-status="reconciled"]`);
