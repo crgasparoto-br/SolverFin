@@ -35,6 +35,16 @@ function statementDayFilterRunsBehaviorally(): void {
   assert.equal(harness.clearButton.hidden, true);
 }
 
+function statementDayFilterClearsPreviousRange(): void {
+  const harness = createHarness("?month=2026-06&from=2026-06-01&to=2026-06-07");
+  harness.dayInput.value = "2026-06-05";
+  harness.dayInput.dispatch("change");
+  const submitted = harness.form.lastSubmission();
+  assert.equal(submitted.get("day"), "2026-06-05");
+  assert.equal(submitted.get("from"), null);
+  assert.equal(submitted.get("to"), null);
+}
+
 function statementDayFilterSupportsMonthBoundaries(): void {
   const firstDay = createHarness("?month=2026-06&day=2026-06-01");
   assert.equal(firstDay.dayInput.value, "2026-06-01");
@@ -139,6 +149,9 @@ class FakeElement {
     }
     if (selector === "[name='day']") {
       return this.find((element) => element.name === "day");
+    }
+    if (selector === 'input[name="from"]' || selector === 'input[name="to"]') {
+      return this.find((element) => element.name === selector.slice(12, -2));
     }
 
     return null;
@@ -265,6 +278,11 @@ function createHarness(search: string): {
   clearButton.dataset.clearStatementDay = "";
   dayField.append(dayInput, clearButton);
   form.append(accountInput, monthInput, sortInput, dayField, currentMonthButton);
+  const searchParams = new URLSearchParams(search);
+  for (const name of ["from", "to"]) {
+    const value = searchParams.get(name);
+    if (value) form.append(input(name, value));
+  }
 
   const document = new FakeDocument(monthInput, form);
   const script = statementPresentationScript()
@@ -297,5 +315,6 @@ function input(name: string, value: string): FakeElement {
 
 statementDayFilterRunsBehaviorally();
 statementDayFilterSupportsMonthBoundaries();
+statementDayFilterClearsPreviousRange();
 statementDayFilterClearsWhenMonthChanges();
 statementDayFilterIncludesResponsiveStyles();
