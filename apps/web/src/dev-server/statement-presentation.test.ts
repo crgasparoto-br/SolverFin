@@ -20,11 +20,11 @@ async function main(): Promise<void> {
 
 function assertDayFilterUsesARealDirectChildOfTheForm(): void {
   const script = statementPresentationScript();
-  assert.ok(script.includes('currentMonthButton?.closest(".statement-filter-actions")'));
-  assert.ok(script.includes("if (!actions || actions.parentElement !== form) return"));
-  assert.ok(script.includes("form.insertBefore(dayField, actions)"));
-  assert.ok(script.includes("form.insertBefore(clearButton, actions)"));
-  assert.equal(script.includes("form.insertBefore(dayField, currentMonthButton)"), false);
+  assert.ok(script.includes('const form = document.querySelector(\'.filter-form\')'));
+  assert.ok(script.includes('form?.querySelector("[data-statement-day-field]")'));
+  assert.ok(script.includes('dayField?.querySelector("[name=\'day\']")'));
+  assert.ok(script.includes("form.requestSubmit()"));
+  assert.equal(script.includes("form.insertBefore(dayField"), false);
 }
 
 async function assertChangedAccountAndDuplicateSubmission(): Promise<void> {
