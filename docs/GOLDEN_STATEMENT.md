@@ -388,5 +388,13 @@ restrições financeiras continuam explicadas em tooltip acessível.
 Feedback de erro conserva a mensagem para leitor de tela e em tooltip,
 sem voltar a criar um botão textual. Textos dos atributos acessíveis e
 tooltips **não** são rótulos visíveis permanentes.
+
+**Padronização dos diâmetros (PR #720):** no popover, o indicador atual,
+o botão de conciliar/desconciliar e o estado bloqueado utilizam o mesmo
+círculo visual de **26 px** com SVG de **15 px**. O alvo da ação continua
+com **44 × 44 px**, mas sem uma segunda borda circular de 44 px.
+O foco permanece visível e os estados hover/focus usam tokens neutros.
+A verificação visual compara o diâmetro e o glyph dos dois ícones em
+desktop e mobile.
 A submissão continua sendo somente `PATCH /api/transactions/:id`
 com `{ status }`, afetando uma única ocorrência.
