@@ -545,14 +545,14 @@ function renderCardMaster(
           active
             .map(
               (instrument) =>
-                `<li><span>${escapeHtml(formatInstrumentLabel(instrument, cardCurrency))}</span>${instrument.isDefault ? "<strong>Padrão</strong>" : ""}</li>`,
+                `<li>${renderInstrumentListLabel(instrument, cardCurrency)}${instrument.isDefault ? "<strong>Padrão</strong>" : ""}</li>`,
             )
             .join("") || "<li><span>Nenhum instrumento ativo.</span></li>"
         }
         ${archived
           .map(
             (instrument) =>
-              `<li class="muted"><span>${escapeHtml(formatInstrumentLabel(instrument, cardCurrency))}</span><small>Arquivado</small></li>`,
+              `<li class="muted">${renderInstrumentListLabel(instrument, cardCurrency)}<small>Arquivado</small></li>`,
           )
           .join("")}
       </ul>
@@ -1093,22 +1093,36 @@ function renderAccountOptions(accounts: readonly AccountRecord[]): string {
     .join("");
 }
 
-function formatInstrumentLabel(
-  instrument: CardInstrumentRecord | undefined,
-  currency: string | undefined,
-): string {
+function formatInstrumentIdentity(instrument: CardInstrumentRecord | undefined): string {
   if (!instrument) return "Instrumento arquivado ou indisponível";
   const title =
     instrument.name?.trim() ||
     `${formatInstrumentType(instrument.type)} - ${formatInstrumentHolder(instrument.holder)}`;
-  const identifier = instrument.maskedIdentifier ? ` · ${instrument.maskedIdentifier}` : "";
-  const limit =
-    instrument.effectiveCreditLimitMinor === undefined
-      ? ""
-      : currency
-        ? ` · limite ${currency} ${formatMinorNumber(instrument.effectiveCreditLimitMinor)}`
-        : " · limite com moeda indisponível";
-  return `${title}${identifier}${limit}`;
+  return `${title}${instrument.maskedIdentifier ? ` · ${instrument.maskedIdentifier}` : ""}`;
+}
+function formatInstrumentLimit(
+  instrument: CardInstrumentRecord | undefined,
+  currency: string | undefined,
+): string | undefined {
+  if (instrument?.effectiveCreditLimitMinor === undefined) return undefined;
+  return currency
+    ? `Limite ${currency} ${formatMinorNumber(instrument.effectiveCreditLimitMinor)}`
+    : "Limite com moeda indisponível";
+}
+function formatInstrumentLabel(
+  instrument: CardInstrumentRecord | undefined,
+  currency: string | undefined,
+): string {
+  const identity = formatInstrumentIdentity(instrument);
+  const limit = formatInstrumentLimit(instrument, currency);
+  return limit ? `${identity} · ${limit}` : identity;
+}
+function renderInstrumentListLabel(
+  instrument: CardInstrumentRecord,
+  currency: string | undefined,
+): string {
+  const limit = formatInstrumentLimit(instrument, currency);
+  return `<span class="cards-instrument-copy"><span class="cards-instrument-name">${escapeHtml(formatInstrumentIdentity(instrument))}</span>${limit ? `<small class="cards-instrument-limit">${escapeHtml(limit)}</small>` : ""}</span>`;
 }
 function formatInstrumentType(type: string): string {
   if (type === "physical") return "Físico";
