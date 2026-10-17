@@ -179,6 +179,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     categories,
     consolidated ? currency : undefined,
     availableCurrencies,
+    filters,
   );
   const contextHtml = renderStatementContext(
     selectedAccount,
@@ -331,6 +332,18 @@ function renderQuickActions(selectedAccount: AccountRecord | undefined): string 
   </div>`;
 }
 
+/** The financial day follows Brazil's civil calendar, not the server's UTC clock. */
+export function statementTodayInSaoPaulo(now: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const value = (type: string): string => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
 function renderFilters(
   accounts: readonly AccountRecord[],
   selectedAccount: AccountRecord | undefined,
@@ -341,12 +354,12 @@ function renderFilters(
   categories: readonly CategoryRecord[],
   consolidatedCurrency?: string,
   availableCurrencies: readonly string[] = [],
+  resolvedPeriod: Pick<StatementFilters, "startsOn" | "endsOn" | "day">,
 ): string {
   const preserved = [
     "profileId",
     ...(consolidatedCurrency ? [] : ["currency"]),
     "evidence",
-    "day",
     "from",
     "to",
     "merchantKey",
@@ -357,20 +370,16 @@ function renderFilters(
     })
     .join("");
 
-  const day = url?.searchParams.get("day");
-  const activePeriod =
-    day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? { startsOn: day, endsOn: day } : monthToPeriod(month);
-  const shortcutBase = new URLSearchParams();
+  const day = resolvedPeriod.day;
+  const activePeriod = resolvedPeriod;
+  const rangeSelected = Boolean(url?.searchParams.get("from") && url?.searchParams.get("to"));
+  // Keep user/profile/currency and search filters; replace only the period.
+  const shortcutBase = new URLSearchParams(url?.searchParams);
+  for (const param of ["day", "from", "to", "startsOn", "endsOn"]) {
+    shortcutBase.delete(param);
+  }
   if (selectedId) shortcutBase.set("accountId", selectedId);
   if (consolidatedCurrency) shortcutBase.set("currency", consolidatedCurrency);
-  if (presentation.search) shortcutBase.set("q", presentation.search);
-  if (presentation.filterKind) shortcutBase.set("kind", presentation.filterKind);
-  if (presentation.filterStatus) shortcutBase.set("status", presentation.filterStatus);
-  if (presentation.filterReconciliation)
-    shortcutBase.set("reconciliation", presentation.filterReconciliation);
-  if (presentation.insightCategoryId)
-    shortcutBase.set("categoryId", presentation.insightCategoryId);
-  if (presentation.sort !== "date_asc") shortcutBase.set("sort", presentation.sort);
   const shortcut = (
     key: string,
     label: string,
@@ -384,33 +393,36 @@ function renderFilters(
     }
     return `<a class="statement-period-chip" data-period-shortcut="${key}" href="/lancamentos?${query.toString()}"${active ? ' aria-current="true"' : ""}>${label}</a>`;
   };
+  const todayIso = statementTodayInSaoPaulo();
   const dayOffset = (count: number): string => {
-    const date = new Date();
+    const date = new Date(todayIso + "T12:00:00.000Z");
     date.setUTCDate(date.getUTCDate() - count);
     return date.toISOString().slice(0, 10);
   };
-  const todayIso = dayOffset(0);
   const previousMonth = (() => {
-    const date = new Date();
+    const date = new Date(todayIso + "T12:00:00.000Z");
     date.setUTCDate(1);
     date.setUTCMonth(date.getUTCMonth() - 1);
     return date.toISOString().slice(0, 7);
   })();
+  const currentMonth = todayIso.slice(0, 7);
   const periodShortcuts = [
-    shortcut("today", "Hoje", { day: todayIso }, day === todayIso),
-    shortcut("last7", "7 dias", { from: dayOffset(6), to: todayIso }, false),
-    shortcut("last30", "30 dias", { from: dayOffset(29), to: todayIso }, false),
+    shortcut("today", "Hoje", { month: currentMonth, day: todayIso }, day === todayIso && !rangeSelected),
+    shortcut("last7", "7 dias", { month: currentMonth, from: dayOffset(6), to: todayIso },
+      rangeSelected && activePeriod.startsOn === dayOffset(6) && activePeriod.endsOn === todayIso),
+    shortcut("last30", "30 dias", { month: currentMonth, from: dayOffset(29), to: todayIso },
+      rangeSelected && activePeriod.startsOn === dayOffset(29) && activePeriod.endsOn === todayIso),
     shortcut(
       "thisMonth",
       "Este mês",
-      { month: todayIso.slice(0, 7) },
-      month === todayIso.slice(0, 7) && !day,
+      { month: currentMonth },
+      month === currentMonth && !day && !rangeSelected,
     ),
     shortcut(
       "previousMonth",
       "Mês anterior",
       { month: previousMonth },
-      month === previousMonth && !day,
+      month === previousMonth && !day && !rangeSelected,
     ),
   ].join("");
   const activeFilterCount = [
@@ -420,11 +432,12 @@ function renderFilters(
     presentation.filterReconciliation,
     presentation.insightCategoryId,
     day,
+    rangeSelected ? "range" : undefined,
     presentation.sort !== "date_asc" ? presentation.sort : undefined,
   ].filter(Boolean).length;
 
   return `<form class="filter-form" method="get" action="/lancamentos" data-auto-submit>
-    ${preserved}
+    ${preserved}${day ? `<noscript><input type="hidden" name="day" value="${escapeHtml(day)}"></noscript>` : ""}
     ${renderAccountPicker(accounts, selectedAccount, selectedId, consolidatedCurrency, availableCurrencies)}
     <div class="month-field">
       <label for="filter-month">Mês</label>
