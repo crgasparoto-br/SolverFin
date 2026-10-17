@@ -242,11 +242,16 @@ Payload permitido:
 {
   "description": "Assinatura ficticia ajustada",
   "note": "Observacao ficticia opcional",
-  "categoryId": "category-demo"
+  "categoryId": "category-demo",
+  "amountMinor": 10125
 }
 ```
 
-Todos os campos sao opcionais, mas o payload deve trazer pelo menos um deles. `note` pode ser `null` para limpar a observacao. Campos fora da allowlist retornam `400 INSTALLMENT_PAYLOAD_INVALID`.
+Todos os campos sao opcionais, mas o payload deve trazer pelo menos um deles. `note` pode ser `null` para limpar a observacao. `amountMinor` e inteiro positivo de centavos e precisa ser um inteiro seguro. Campos fora da allowlist retornam `400 INSTALLMENT_PAYLOAD_INVALID`.
+
+**Elegibilidade separada:** descricao, observacao e categoria continuam editaveis apenas quando `editable=true` (parcela planejada elegivel). O valor da parcela e editavel quando `amountEditable=true`: parcelas planejadas ou efetivadas nao conciliadas, com estados da parcela e da transacao correspondentes, sem vinculo com cartao/fatura. Parcelas conciliadas, canceladas, de cartao, com fatura ou sem transacao vinculada permanecem bloqueadas. Para uma parcela efetivada, enviar somente `amountMinor`; os demais campos sao rejeitados por `409 INSTALLMENT_EDIT_BLOCKED`.
+
+A correcao do valor altera atomicamente `Transaction.amountMinor` e `Installment.amountMinor` pela manutencao canonica ja auditada, sem redistribuir centavos a outras parcelas, mudar status ou datas. O servidor revalida a elegibilidade sob bloqueios antes de persistir.
 
 A mutacao atualiza a transacao vinculada de forma atomica pelo fluxo existente de transacao, sincroniza a parcela quando necessario e grava auditoria minimizada/redigida da mutacao financeira. A resposta retorna a parcela recarregada:
 
