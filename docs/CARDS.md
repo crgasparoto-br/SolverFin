@@ -430,3 +430,11 @@ segundo limite local de 1500/1560 px. No desktop de 1920 px o layout A3 deve pre
 a largura efetiva de `.main-area > main`, sem faixas laterais extras, conforme a
 mesma área útil do Extrato. O Chrome captura `cards-wide-desktop.png` e reprova
 uma redução artificial da largura antes de restaurar a composição.
+
+## Formulário de compra — padrão visual Golden Screen (PR #720)
+
+O diálogo centralizado de **Registrar compra** e **Editar compra** reutiliza o mesmo formulário SSR, agrupado por significado: **Valores**, **Dados da compra**, **Classificação** e **Repetição e parcelas**. A última seção é ocultada na edição de compra simples, mas continua disponível na criação; não são introduzidos fluxos ou endpoints alternativos.
+
+O valor principal tem prioridade tipográfica; valor da parcela aparece ao lado do total somente ao editar uma compra parcelada. Moeda e data permanecem visíveis, inclusive em modo somente leitura. Os controles usam alvos mínimos de 44 px, duas colunas em desktop e uma em mobile. O diálogo limita a altura a 90dvh, mantém cabeçalho e ações acessíveis e rola somente o corpo. **Cancelar** é secundário, e **Salvar compra** é a única ação primária, na mesma linha no desktop.
+
+Os estados de compra simples, compra parcelada, recorrência fixa, cartão sem moeda e indisponibilidade de edição preservam os contratos de campos, validações e API. Validar criação/edição em 1366×768, 390×844 e 320×740 com teclado, foco, rolagem, leitura de erros, estados de parcela e comparação visual com o Extrato antes de aprovar o gate independente.
