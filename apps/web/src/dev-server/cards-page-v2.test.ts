@@ -371,7 +371,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     ),
   );
   assert.ok(
-    html.includes(".cards-invoice-current>strong{font-size:.72rem;letter-spacing:-.03em;white-space:nowrap}"),
+    html.includes(
+      ".cards-invoice-current>strong{font-size:.72rem;letter-spacing:-.03em;white-space:nowrap}",
+    ),
   );
   assert.match(invoiceHeader, /<span class="cards-kicker">Situação da fatura<\/span>/);
   assert.ok(
