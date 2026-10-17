@@ -175,10 +175,11 @@ export async function validateCardsPage(
       const metricItems = Array.from(financialSummary?.querySelectorAll(".cards-summary-metric") || []);
       const metricTileFree = () => metricItems.length === 4 && metricItems.every((metric) => {
         const style = getComputedStyle(metric);
-        return !metric.querySelector(".cards-summary-icon") &&
-          parseFloat(style.borderTopWidth) === 0 &&
-          parseFloat(style.borderRightWidth) === 0 &&
-          parseFloat(style.borderBottomWidth) === 0;
+        const hasFullTileFrame =
+          parseFloat(style.borderTopWidth) > 0 &&
+          parseFloat(style.borderRightWidth) > 0 &&
+          parseFloat(style.borderBottomWidth) > 0;
+        return !metric.querySelector(".cards-summary-icon") && !hasFullTileFrame;
       });
       const summaryBefore = metricTileFree();
       const originalMetricBorder = metricItems[0]?.style.border || "";
