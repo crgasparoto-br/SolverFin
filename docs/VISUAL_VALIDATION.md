@@ -221,3 +221,10 @@ No Extrato (`/lancamentos`), o ícone de Situação passa a abrir o mesmo menu n
 Lançamentos previstos, sugestões, parcelas, grupos, movimentos de cartão e remuneração protegida exibem explicação, sem prometer mudanças que dependam de fluxos específicos. O menu mantém foco visível, 44 px de alvo, feedback assíncrono (inclusive erro de conexão), Escape com devolução de foco e posição visível mesmo com rolagem horizontal.
 
 Validar em Chrome 1366×768, 390×844 e 320×740, com teclado e toque, alternância nos dois sentidos, erro HTTP e de rede, conta individual e visão consolidada. A implementação por si só não equivale à aprovação visual independente no HEAD da PR.
+
+
+### PR #720 — Valor da parcela e anexo recolhível (17/10/2026)
+
+Na tela `/lancamentos`, conferir no modal **Editar parcela** e **Ajustar valor da parcela** que `amountEditable` só aparece com estados planejado/planejado ou efetivado/efetivado não conciliados. Alterar um valor em centavos deve atualizar `Transaction` e `Installment` atomicamente, sem redistribuição para outras parcelas e sem alteração de status. Para conciliadas, canceladas e parcelas de fatura, a edição permanece bloqueada. Verificar formato BRL, validação de 0, caracteres inválidos, conflito 409 e navegação por teclado.
+
+O bloco de anexos inicia recolhido, com `<details><summary>Anexos do lançamento</summary>`; ao expandir, mantém todos os controles de anexos e não perde arquivo selecionado. Verificar viewport desktop 1366×768, celular 390×844 e 320×740, rolagem do diálogo, foco, contraste e equivalência ao `Mais opções`. Asserções de SSR e testes sem navegador não equivalem à homologação visual.
