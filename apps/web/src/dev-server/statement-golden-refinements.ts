@@ -629,7 +629,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
       /* Reference anatomy: check | glyph | date | description | category | value | status | actions.
          Rows and header share one track list, so the columns always line up. */
-      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 44px 4.5rem minmax(14rem,1fr) minmax(8rem,11rem) minmax(7.5rem,auto) minmax(7.5rem,auto) 3.5rem 36px;min-height:52px}
+      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 44px 4.5rem minmax(14rem,1fr) minmax(8rem,11rem) minmax(7.5rem,auto) minmax(7.5rem,auto) 3.5rem 36px;min-height:52px;min-width:960px}
       ${root} .statement-body{grid-template-areas:"select icon date description category amount balance status actions";grid-template-rows:minmax(44px,auto)}
       ${root} .statement-body .col-row-icon{grid-area:icon}
       ${root} .statement-body .statement-row-footer{display:contents}
