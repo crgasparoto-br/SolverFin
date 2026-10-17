@@ -187,7 +187,9 @@ test("installment scope selection follows Golden Screen neutral button states", 
   assert.ok(script.includes('data-button-variant="neutral" data-scope="current"'));
   assert.ok(script.includes('data-button-variant="neutral" data-scope="current_and_future"'));
   assert.ok(
-    script.includes(".installment-scope-dialog button.installment-scope-option:hover:not(:disabled)"),
+    script.includes(
+      ".installment-scope-dialog button.installment-scope-option:hover:not(:disabled)",
+    ),
   );
   assert.ok(
     script.includes(".installment-scope-dialog button.installment-scope-option:focus-visible"),
