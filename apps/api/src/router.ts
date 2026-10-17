@@ -445,6 +445,7 @@ async function listTransactionsHandler(
   const categoryId = request.query.get("categoryId");
   const occurredFrom = request.query.get("occurredFrom");
   const occurredTo = request.query.get("occurredTo");
+  const statementTo = request.query.get("statementTo");
   const plannedFrom = request.query.get("plannedFrom");
   const plannedTo = request.query.get("plannedTo");
   const effectiveFrom = request.query.get("effectiveFrom");
@@ -456,6 +457,7 @@ async function listTransactionsHandler(
     ...(categoryId ? { categoryId } : {}),
     ...(occurredFrom ? { occurredFrom } : {}),
     ...(occurredTo ? { occurredTo } : {}),
+    ...(statementTo ? { statementTo } : {}),
     ...(plannedFrom ? { plannedFrom } : {}),
     ...(plannedTo ? { plannedTo } : {}),
     ...(effectiveFrom ? { effectiveFrom } : {}),
