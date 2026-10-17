@@ -590,7 +590,6 @@ export function statementListArchetypeStyles(): string {
     ${root} .statement-body .col-status { grid-area: status; justify-self: center; }
     ${root} .statement-body .col-amount { margin-left: 0; font-size: 1rem; font-weight: 750; grid-area: amount; justify-self: end; text-align: right; }
     ${root} .statement-body .col-balance { display: block; font-weight: 500; grid-area: balance; justify-self: end; text-align: right; }
-    ${root} .statement-body .col-balance::before { content: "Saldo "; font-size: .7rem; font-weight: 400; }
     ${root} .statement-body .col-category,
     ${root} .statement-body .col-kind,
     ${root} .statement-body .col-balance { color: var(--muted); font-size: .75rem; }
