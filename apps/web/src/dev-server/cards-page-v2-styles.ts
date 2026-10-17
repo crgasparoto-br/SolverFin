@@ -161,7 +161,13 @@ export function cardsPageStyles(): string {
     .cards-day-content{display:grid;gap:0;min-width:0}
     .cards-day-content>.cards-instrument-group{border:0;border-top:1px solid var(--line)}
     .cards-day-content>.cards-instrument-group>summary{background:var(--surface);padding:7px 12px}
-    .cards-day-content .cards-purchase-row{min-height:42px;padding:7px 10px}
+    .cards-day-content .cards-purchase-row{min-height:42px;padding:5px 10px}
+    /* Keep the first complete purchase above the first fold at 1366x768, even with day headers. */
+    @media(min-width:761px){
+      .cards-purchase-groups:has(.cards-day-group){padding-top:1px}
+      .cards-day-content>.cards-instrument-group>summary{min-height:44px;padding:5px 10px}
+      .cards-day-content>.cards-instrument-group>summary>div:first-child{align-items:center;display:flex;flex-wrap:wrap;gap:3px 10px}
+    }
 
     /* One icon system for card purchases and the Golden Statement: 26px circles inside 44px targets. */
     .cards-purchase-status{height:26px;width:26px}
