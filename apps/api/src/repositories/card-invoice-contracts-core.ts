@@ -569,7 +569,7 @@ export async function reconcileInvoiceInstallmentForContext(
       action: "update",
       entityKind: "installment",
       entityId: installmentId,
-      redactedChanges: { status: { before: row.status.toLowerCase(), after: status } },
+      redactedChanges: { status: "changed" },
     });
   });
   return {
