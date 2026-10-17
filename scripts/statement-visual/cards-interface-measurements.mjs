@@ -783,7 +783,10 @@ export async function validateCardsPage(
       hover.hovered &&
         hover.enabled &&
         hover.contrastRatio >= 4.5 &&
-        hover.effectiveBackground.match(/[\\d.]+/g).slice(0, 3).every((value) => Number(value) >= 210),
+        hover.effectiveBackground
+          .match(/[\\d.]+/g)
+          .slice(0, 3)
+          .every((value) => Number(value) >= 210),
       "Golden Screen status option must remain light with readable text on hover",
       hover,
     );
