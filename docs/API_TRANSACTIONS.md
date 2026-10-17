@@ -325,7 +325,6 @@ Todos os exemplos usam dados ficticios.
 
 A criação parcelada do Extrato não usa múltiplos `POST /api/transactions`. O cliente chama `POST /api/installments`, e cada transação resultante recebe `source=installment` e `installmentId`. A descrição base não recebe sufixo `N/M`; a sequência pertence ao registro `Installment`, e a observação permanece em `Transaction.note`.
 
-
 ## Filtro opcional de data canonica do Extrato
 
 `GET /api/transactions?accountId=...&status=all&statementTo=YYYY-MM-DD` aplica um cutoff inclusivo sobre a data de exibicao da movimentacao (`effectiveOn ?? plannedOn ?? occurredOn`). Essa regra garante que uma movimentacao efetivada no dia consultado nao desapareca apenas porque `occurredOn` difere do dia efetivo. O filtro respeita o contexto autenticado de organizacao e perfil e nao altera lancamentos.
