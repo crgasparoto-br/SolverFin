@@ -186,6 +186,16 @@ const OPERATIONAL_INSTALLMENTS_CSS = `
   .installment-form-status.error { color: #b91c1c; }
   .installment-form-status.success { color: #166534; }
   .installment-reload { justify-self: start; }
+  .installment-scope-dialog { border: 0; border-radius: var(--radius-lg); box-shadow: 0 24px 70px rgba(6,25,35,.23); color: var(--text); max-width: min(460px, calc(100vw - 32px)); padding: 0; width: 100%; }
+  .installment-scope-dialog::backdrop { background: rgba(6,25,35,.38); }
+  .installment-scope-panel { display: grid; gap: 12px; padding: 22px; }
+  .installment-scope-panel h3 { font-size: 1.1rem; margin: 0; }
+  .installment-scope-panel p { color: var(--muted); font-size: .85rem; line-height: 1.5; margin: 0; }
+  .installment-scope-option { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); cursor: pointer; font-size: .875rem; font-weight: 650; min-height: 48px; padding: 12px; text-align: left; width: 100%; }
+  .installment-scope-option:hover { background: var(--neutral-control-hover); color: var(--neutral-control-text-hover); }
+  .installment-scope-option:focus-visible, .installment-scope-cancel:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .installment-scope-panel .installment-scope-cancel { justify-self: end; min-height: 44px; }
+  .installment-scope-panel .installment-scope-note { font-size: .75rem; }
   @media (max-width: 560px) {
     .installment-details dl { grid-template-columns: 1fr; }
     .installment-badge { margin-left: 4px; }
@@ -240,11 +250,15 @@ export function operationalInstallmentsController(): string {
       }
 
       function installmentLabel(installment) {
-        const total = Number(installment.totalInstallments) > 0 ? installment.totalInstallments : "?";
-        return "Parcela " + installment.sequenceNumber + " de " + total;
+        if (installment.recurrenceId || Number(installment.totalInstallments) <= 0) {
+          return "Ocorrência " + installment.sequenceNumber;
+        }
+        return "Parcela " + installment.sequenceNumber + " de " + installment.totalInstallments;
       }
 
       function addBadge(row, installment) {
+        // Fixed recurrences already carry the recurrence icon; they are not finite installment plans.
+        if (installment.recurrenceId || Number(installment.totalInstallments) <= 0) return;
         const description = row && row.querySelector(".description strong");
         if (!description || description.querySelector('[data-installment-badge="' + installment.id + '"]')) return;
         const label = installmentLabel(installment);
@@ -498,7 +512,7 @@ export function operationalInstallmentsController(): string {
         form.categoryId.value = initial.categoryId;
 
         const details = createDetails(form);
-        details.querySelector("[data-installment-sequence]").textContent = installmentLabel(installment).replace("Parcela ", "");
+        details.querySelector("[data-installment-sequence]").textContent = installmentLabel(installment).replace(/^Parcela /, "");
         details.querySelector("[data-installment-due]").textContent = formatDate(installment.dueOn);
         details.querySelector("[data-installment-status]").textContent = statusLabel(installment.status);
         details.querySelector("[data-installment-amount]").textContent = formatMoney(installment.amountMinor, installment.currency);
@@ -531,6 +545,38 @@ export function operationalInstallmentsController(): string {
           rememberAndSet(saveButton, "disabled", !anyEditable);
           saveButton.textContent = "Salvar parcela";
         }
+      }
+
+      function chooseInstallmentScope(installment) {
+        return new Promise((resolve) => {
+          const dialog = document.createElement("dialog");
+          dialog.className = "installment-scope-dialog";
+          dialog.setAttribute("aria-labelledby", "installment-scope-title");
+          const hasFuture = !installment.recurrenceId &&
+            Number(installment.totalInstallments) > Number(installment.sequenceNumber);
+          dialog.innerHTML = '<section class="installment-scope-panel">' +
+            '<h3 id="installment-scope-title">Onde aplicar o novo valor?</h3>' +
+            '<p>Escolha quais parcelas receberão o valor informado.</p>' +
+            '<button type="button" class="installment-scope-option" data-scope="current">Somente esta parcela</button>' +
+            (hasFuture ? '<button type="button" class="installment-scope-option" data-scope="current_and_future">Esta e as próximas</button>' : '') +
+            '<p class="installment-scope-note">As anteriores e as conciliadas ou canceladas serão preservadas.</p>' +
+            '<button type="button" class="ghost-btn installment-scope-cancel" data-scope-cancel>Voltar sem salvar</button>' +
+            '</section>';
+          let choice;
+          dialog.addEventListener("close", () => {
+            dialog.remove();
+            resolve(choice);
+          }, { once: true });
+          dialog.addEventListener("click", (event) => {
+            const target = event.target.closest("[data-scope], [data-scope-cancel]");
+            if (!target) return;
+            choice = target.dataset.scope;
+            dialog.close();
+          });
+          document.body.append(dialog);
+          dialog.showModal();
+          dialog.querySelector("[data-scope='current']")?.focus();
+        });
       }
 
       function parseInstallmentAmount(value) {
@@ -674,6 +720,21 @@ export function operationalInstallmentsController(): string {
           return;
         }
         const patch = patchFromForm(form);
+        if (patch.amountMinor !== undefined) {
+          const scope = await chooseInstallmentScope(installment);
+          if (!scope) {
+            status.textContent = "A alteração não foi salva.";
+            status.className = "installment-form-status";
+            return;
+          }
+          if (scope === "current_and_future" &&
+              Object.keys(patch).some((field) => field !== "amountMinor")) {
+            status.textContent = "Para aplicar o valor às próximas, salve primeiro as alterações de descrição, observação e categoria.";
+            status.className = "installment-form-status error";
+            return;
+          }
+          patch.scope = scope;
+        }
         if (!Object.keys(patch).length) {
           status.textContent = "Nenhuma alteração para salvar.";
           status.className = "installment-form-status";
@@ -708,7 +769,11 @@ export function operationalInstallmentsController(): string {
             if (saveButton) saveButton.disabled = false;
             return;
           }
-          status.textContent = "Parcela atualizada. Atualizando a lista...";
+          const count = Number(body.updatedCount || 1);
+          const skipped = Number(body.skippedCount || 0);
+          status.textContent = (count === 1 ? "Parcela atualizada." : count + " parcelas atualizadas.") +
+            (skipped ? " " + skipped + " parcela(s) protegida(s) não foram alteradas." : "") +
+            " Atualizando a lista...";
           status.className = "installment-form-status success";
           window.setTimeout(() => window.location.reload(), 450);
         } catch (_error) {
