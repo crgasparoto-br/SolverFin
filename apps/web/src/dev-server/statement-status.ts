@@ -91,8 +91,16 @@ export function renderStatementStatusControl(
     presentation.iconHtml +
     "</span></summary>" +
     '<div class="statement-status-menu" role="group" aria-label="Situação do lançamento">' +
-    '<span class="statement-status-current">Atual: ' +
+    '<span class="statement-status-current statement-status statement-status-' +
+    presentation.tone +
+    '" role="img" aria-label="Situação atual: ' +
     label +
+    '" title="' +
+    label +
+    '" data-tooltip="' +
+    label +
+    '">' +
+    presentation.iconHtml +
     "</span>" +
     items +
     '<p class="statement-status-feedback" role="status" aria-live="polite" hidden></p></div></details>'
