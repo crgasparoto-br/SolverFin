@@ -83,7 +83,8 @@ export function cardsPageStyles(): string {
     .cards-purchase-status-menu{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:grid;gap:3px;min-width:218px;padding:8px;position:absolute;right:0;text-align:left;top:calc(100% + 4px);width:max-content;max-width:min(260px,calc(100vw - 26px));z-index:45}
     .cards-purchase-status-current{color:var(--muted);font-size:.7rem;font-weight:700;padding:4px 8px}
     .cards-purchase-status-option{background:transparent;border:0;border-radius:8px;color:var(--text);cursor:pointer;display:block;font-size:.78rem;font-weight:700;min-height:44px;padding:9px 10px;text-align:left;white-space:normal}
-    .cards-purchase-status-option:hover,.cards-purchase-status-option:focus-visible{background:var(--primary-soft);color:var(--primary)}
+    /* Override the global button:hover:not(:disabled) primary fill; menu actions are neutral, as in Extrato. */
+    .cards-purchase-status-menu>button.cards-purchase-status-option:hover:not(:disabled),.cards-purchase-status-menu>button.cards-purchase-status-option:focus-visible{background:var(--neutral-control-hover);color:var(--neutral-control-text-hover)}
     .cards-purchase-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:0}
     .cards-purchase-status-option:disabled{cursor:wait;opacity:.55}
     .cards-purchase-status-readonly,.cards-purchase-status-feedback{color:var(--muted);font-size:.73rem;line-height:1.4;margin:0;padding:7px 8px;white-space:normal}
