@@ -268,3 +268,13 @@ distintos e por valor/descrição sem grupos para respeitar o sort global;
 
 A execução unitária/SSR não substitui a homologação de geometria visual e
 do comportamento no Chrome no HEAD exato da PR.
+
+
+### PR #720 — Gate de proporção para novos controles (17/10/2026)
+
+O processo de tela deve executar a Skill `design-interface` do projeto `skill` antes
+de iniciar a implementação. Evidenciar geometria real no Chrome para 1366x768,
+1665x900, 390x844 e 320x740, com Dia do mês vazio e preenchido, mês completo e
+reflow responsivo. Falhar quando o seletor de dia exceder 196px em desktop, quando
+for igual/maior que Busca ou quando os dois campos estiverem desalinhados
+verticalmente. Anexar capturas e medidas ao mesmo HEAD auditado.
