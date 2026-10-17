@@ -137,6 +137,9 @@ class FakeElement {
     if (selector === "#filter-day") {
       return this.find((element) => element.id === "filter-day");
     }
+    if (selector === "[name='day']") {
+      return this.find((element) => element.name === "day");
+    }
 
     return null;
   }
@@ -206,10 +209,14 @@ class FakeDocument {
   private readonly listeners = new Map<string, FakeListener[]>();
   readonly heading = new FakeElement("p");
 
-  constructor(readonly monthInput: FakeElement) {}
+  constructor(
+    readonly monthInput: FakeElement,
+    readonly form: FakeForm,
+  ) {}
 
   querySelector(selector: string): FakeElement | null {
     if (selector === "#filter-month") return this.monthInput;
+    if (selector === ".filter-form") return this.form;
     if (selector === ".statement-heading > div > .muted") return this.heading;
     return null;
   }
@@ -250,9 +257,16 @@ function createHarness(search: string): {
   const sortInput = input("sort", "date_desc");
   const currentMonthButton = new FakeElement("button");
   currentMonthButton.dataset.monthCurrent = "";
-  form.append(accountInput, monthInput, sortInput, currentMonthButton);
+  const dayField = new FakeElement("div");
+  dayField.dataset.statementDayField = "";
+  const dayInput = input("day", "");
+  dayInput.id = "filter-day";
+  const clearButton = new FakeElement("button");
+  clearButton.dataset.clearStatementDay = "";
+  dayField.append(dayInput, clearButton);
+  form.append(accountInput, monthInput, sortInput, dayField, currentMonthButton);
 
-  const document = new FakeDocument(monthInput);
+  const document = new FakeDocument(monthInput, form);
   const script = statementPresentationScript()
     .replace(/^\s*<script>\s*/, "")
     .replace(/\s*<\/script>\s*$/, "");
@@ -268,10 +282,8 @@ function createHarness(search: string): {
     },
   });
 
-  const dayInput = form.querySelector("#filter-day");
-  const clearButton = form.querySelector("[data-clear-statement-day]");
-  assert.ok(dayInput, "Expected the day input to be inserted.");
-  assert.ok(clearButton, "Expected the clear-day button to be inserted.");
+  assert.ok(form.querySelector("#filter-day"), "The day input must be in the SSR form.");
+  assert.ok(form.querySelector("[data-clear-statement-day]"), "The clear-day action must exist.");
 
   return { form, monthInput, dayInput, clearButton };
 }
