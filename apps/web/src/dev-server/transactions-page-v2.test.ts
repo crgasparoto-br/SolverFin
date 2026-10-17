@@ -882,7 +882,7 @@ test("A2 consolidated FX transfer opens the account of the displayed currency", 
     assert.match(brl, /Recebida de Conta internacional/);
     assert.match(brl, /data-edit="fx-in"/);
     assert.match(brl, /data-clone="fx-in"/);
-    assert.match(brl, /data-method="PATCH" data-path="\/api\/transactions\/fx-in"/);
+    assert.match(brl, /data-set-statement-status="reconciled" data-status-transaction-id="fx-in"/);
     assert.match(brl, /data-method="POST" data-path="\/api\/transactions\/fx-in\/void"/);
     assert.match(brl, /<span>Ver na conta<\/span>/);
     assert.match(brl, /"accountId":"account-usd"/);
