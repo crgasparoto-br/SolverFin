@@ -348,9 +348,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     html.includes(".cards-card-identity{align-items:center;background:transparent;border:0;"),
   );
   assert.ok(html.includes(".cards-card-identity>div strong{display:none}"));
-  assert.ok(
-    html.includes(".cards-instrument-group{border:0;border-top:1px solid var(--line)"),
-  );
+  assert.ok(html.includes(".cards-instrument-group{border:0;border-top:1px solid var(--line)"));
   const limitMetricStart = summaryHtml.indexOf("Limite disponível");
   const limitDetailsStart = summaryHtml.indexOf('class="cards-limit-detail"');
   assert.ok(limitMetricStart >= 0 && limitDetailsStart > limitMetricStart);
