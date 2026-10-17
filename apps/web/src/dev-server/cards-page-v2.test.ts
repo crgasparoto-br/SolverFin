@@ -361,6 +361,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.equal((invoiceHeader.match(/class="sf-button sf-button-primary"/g) ?? []).length, 1);
   assert.ok(!invoiceHeader.slice(secondaryAt).includes("sf-button-primary"));
   assert.ok(html.includes('grid-template-areas:"context amount" "secondary amount"'));
+  assert.ok(html.includes(".cards-invoice-heading-row{clip-path:inset(50%);height:1px"));
+  assert.match(invoiceHeader, /<h2 id="cards-invoice-title">/);
   assert.ok(
     html.includes(
       ".cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){min-height:44px}",
