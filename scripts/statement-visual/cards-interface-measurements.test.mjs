@@ -14,10 +14,7 @@ test("#715: first desktop purchase must be fully readable, not just begin above 
   assert.match(measurementSource, /firstPurchaseDescriptionBottom/);
   assert.match(measurementSource, /firstPurchaseAmountBottom/);
   assert.match(negativeSource, /box.bottom <= threshold/);
-  assert.doesNotMatch(
-    measurementSource,
-    /firstPurchaseRowTop < measurements.viewport.height - 15/,
-  );
+  assert.doesNotMatch(measurementSource, /firstPurchaseRowTop < measurements.viewport.height - 15/);
 });
 
 test("#715: mobile invoice amount leads the header and rejects a late decision", () => {
