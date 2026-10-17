@@ -1793,12 +1793,14 @@ function css(): string {
     .statement-status-control[open],.statement-row:has(.statement-status-control[open]){z-index:55}
     .statement-status-menu{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:flex;gap:6px;max-width:calc(100vw - 16px);min-width:0;padding:8px;position:absolute;top:calc(100% + 4px);width:max-content;z-index:60}
     .statement-status-current{align-items:center;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
-    .statement-status-option{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;min-height:44px;padding:0;width:44px}
-    .statement-status-option[data-set-statement-status=reconciled]{color:var(--success)}
-    .statement-status-menu>button.statement-status-option:hover:not(:disabled),.statement-status-menu>button.statement-status-option:focus-visible{background:var(--neutral-control-hover);border-color:var(--neutral-control-border-hover);color:var(--neutral-control-text-hover)}
+    .statement-status-option{align-items:center;background:transparent;border:0;border-radius:999px;cursor:pointer;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;min-height:44px;padding:0;width:44px}
+    .statement-status-menu .statement-status-option>.statement-status,.statement-status-menu .statement-status-current .statement-status,.statement-status-readonly>.statement-status{box-sizing:border-box;flex:0 0 26px;height:26px;width:26px}
+    .statement-status-menu .statement-status-option svg,.statement-status-menu .statement-status-current svg,.statement-status-readonly svg{height:15px;width:15px}
+    .statement-status-menu>button.statement-status-option:hover:not(:disabled),.statement-status-menu>button.statement-status-option:focus-visible{background:transparent;border-color:transparent}
+    .statement-status-menu>button.statement-status-option:hover:not(:disabled)>.statement-status,.statement-status-menu>button.statement-status-option:focus-visible>.statement-status{box-shadow:0 0 0 2px var(--neutral-control-border-hover)}
     .statement-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
     .statement-status-option:disabled{cursor:wait;opacity:.55}
-    .statement-status-readonly{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
+    .statement-status-readonly{align-items:center;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
     .statement-status-feedback{align-items:center;border-radius:999px;color:var(--muted);display:inline-flex;flex:0 0 32px;height:32px;justify-content:center;margin:0;width:32px}
     .statement-status-feedback[hidden]{display:none}
     .statement-status-feedback-ok,.statement-status-feedback-error{display:none}
