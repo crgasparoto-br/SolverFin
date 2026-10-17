@@ -255,9 +255,11 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-invoice-title-block{border-left:0;border-top:1px solid var(--line);gap:5px;order:0;padding:8px 0 0}
       .cards-invoice-title-row{align-items:center;flex-direction:row}
       .cards-invoice-metadata{gap:5px 14px}
-      .cards-invoice-secondary-actions{gap:4px;min-height:44px;padding:2px 0}
-      .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){min-height:44px;padding:7px 6px}
-      .cards-settlement-note{margin-left:0}
+      .cards-invoice-secondary-actions{align-items:center;display:grid;gap:3px 6px;grid-template-columns:repeat(2,minmax(0,1fr));min-height:44px;padding:2px 0}
+      .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){justify-content:center;min-height:44px;min-width:0;padding:7px 4px;width:100%}
+      .cards-settlement-note{grid-column:1/-1;justify-self:end;margin:0;min-width:0;text-align:right}
+      .cards-settlement-note[open]{justify-self:stretch;text-align:left}
+      .cards-settlement-note[open]>p{box-shadow:none;max-width:100%;padding:8px;position:static;right:auto;width:auto}
     }
     @media(max-width:430px){
       .cards-invoice-primary{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto}
@@ -270,7 +272,7 @@ export function cardsGoldenCompositionStyles(): string {
     @media(max-width:350px){
       .cards-invoice-header{padding:8px 10px 0}
       .cards-invoice-primary>strong{font-size:1.5rem}
-      .cards-invoice-current>strong{font-size:.82rem}
+      .cards-invoice-current>strong{font-size:.72rem;letter-spacing:-.03em;white-space:nowrap}
       .cards-invoice-secondary-actions{gap:2px}
       .cards-settlement-note{margin-left:0}
     }
