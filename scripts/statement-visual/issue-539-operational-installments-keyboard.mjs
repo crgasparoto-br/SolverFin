@@ -24,6 +24,7 @@ try {
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07&day=2026-07-15`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const requestScope = await waitForInstallmentLine(fixture.transactionId);
+  check(!requestScope.badgePresent, "Fixed recurring entry must not show a parcel badge", requestScope);
   check(
     requestScope.installmentQuery.includes("operationalFrom=2026-07-15") &&
       requestScope.installmentQuery.includes("operationalTo=2026-07-15"),
@@ -52,10 +53,10 @@ try {
     "note",
     "Cancelar",
     "Salvar parcela",
-    "kind",
-    "file",
-    "Adicionar anexo",
+    "Anexos do lançamento",
     "Fechar",
+    "description",
+    "categoryId",
   ];
   check(
     focusOrder.join(",") === expected.join(","),
@@ -145,13 +146,13 @@ async function waitForInstallmentLine(transactionId) {
         const row = node?.closest("article");
         const edit = row?.querySelector('[data-edit="${transactionId}"]');
         const badge = row?.querySelector("[data-installment-badge]");
-        if (row && edit && badge && !edit.disabled) {
+        if (row && edit?.dataset.installmentEdit && !edit.disabled) {
           const installmentQuery = performance.getEntriesByType("resource")
             .map((entry) => new URL(entry.name, window.location.origin))
             .find((url) => url.pathname === "/api/installments" && url.searchParams.has("accountId"));
           return {
             installmentQuery: installmentQuery ? installmentQuery.pathname + installmentQuery.search : "",
-            badge: badge.textContent.trim()
+            badgePresent: Boolean(badge)
           };
         }
         await new Promise((resolve) => setTimeout(resolve, 100));
