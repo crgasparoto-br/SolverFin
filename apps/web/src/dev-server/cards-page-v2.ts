@@ -1325,38 +1325,23 @@ function renderPurchaseStatusIcon(status: string): string {
 
 function renderPurchaseStatusControl(purchase: CardPurchaseRecord, invoiceLocked: boolean): string {
   const currentStatus = formatPurchaseStatus(purchase.status);
-  const immutableInstallment = Boolean(purchase.installmentId);
   const eligibleStatus = ["planned", "posted", "reconciled"].includes(purchase.status);
-  const options =
-    !invoiceLocked && !immutableInstallment && eligibleStatus
-      ? purchase.status === "reconciled"
-        ? [{ status: "posted", label: "Desconciliar" }]
-        : [
-            ...(purchase.status === "planned"
-              ? [{ status: "posted", label: "Marcar como não conciliada" }]
-              : []),
-            { status: "reconciled", label: "Marcar como conciliada" },
-          ]
-      : [];
+  const allowed = !invoiceLocked && eligibleStatus;
+  const nextStatus = purchase.status === "reconciled" ? "posted" : "reconciled";
+  const actionLabel = nextStatus === "reconciled" ? "Marcar como conciliada" : "Desconciliar";
+  const nextIcon = renderPurchaseStatusIcon(nextStatus);
   const explanation = invoiceLocked
     ? "A situação não pode ser alterada porque a fatura está fechada, paga ou cancelada."
-    : immutableInstallment
-      ? "A conciliação desta parcela exige manutenção específica para não alterar outras parcelas."
-      : "Esta situação não pode ser alterada.";
-  const actionHtml = options.length
-    ? options
-        .map(
-          (option) =>
-            `<button type="button" class="cards-purchase-status-option" data-set-purchase-status="${option.status}" data-status-purchase-id="${escapeHtml(purchase.id)}" data-status-card-id="${escapeHtml(purchase.cardId)}">${escapeHtml(option.label)}</button>`,
-        )
-        .join("")
-    : `<p class="cards-purchase-status-readonly">${explanation}</p>`;
+    : "Esta situação não pode ser alterada.";
+  const actionHtml = allowed
+    ? `<button type="button" class="cards-purchase-status-option" data-button-variant="neutral" data-set-purchase-status="${nextStatus}" data-status-purchase-id="${escapeHtml(purchase.id)}" data-status-card-id="${escapeHtml(purchase.cardId)}"${purchase.installmentId ? ` data-status-installment-id="${escapeHtml(purchase.installmentId)}" data-status-invoice-id="${escapeHtml(purchase.invoiceId ?? "")}"` : ""} aria-label="${actionLabel}" title="${actionLabel}" data-tooltip="${actionLabel}">${nextIcon}</button>`
+    : `<span class="cards-purchase-status-readonly" role="img" aria-label="${explanation}" title="${explanation}" data-tooltip="${explanation}">${icon("lock", 15)}</span>`;
   return `<details class="cards-purchase-status-control" data-purchase-status-control>
-    <summary aria-label="Situação: ${escapeHtml(currentStatus)}. ${options.length ? "Alterar situação" : "Ver restrição de alteração"}" title="${escapeHtml(currentStatus)}">${renderPurchaseStatusIcon(purchase.status)}</summary>
+    <summary aria-label="Situação: ${escapeHtml(currentStatus)}. ${allowed ? "Alterar situação" : "Ver restrição de alteração"}" title="${escapeHtml(currentStatus)}">${renderPurchaseStatusIcon(purchase.status)}</summary>
     <div class="cards-purchase-status-menu" role="group" aria-label="Situação da compra">
-      <span class="cards-purchase-status-current">Atual: ${escapeHtml(currentStatus)}</span>
+      <span class="cards-purchase-status-current" role="img" aria-label="Situação atual: ${escapeHtml(currentStatus)}" title="${escapeHtml(currentStatus)}" data-tooltip="${escapeHtml(currentStatus)}">${renderPurchaseStatusIcon(purchase.status)}</span>
       ${actionHtml}
-      <p class="cards-purchase-status-feedback" role="status" aria-live="polite" hidden></p>
+      <span class="cards-purchase-status-feedback" role="status" aria-live="polite" hidden><span class="cards-status-feedback-icon" aria-hidden="true">${icon("clock", 15)}</span><span class="sf-visually-hidden" data-cards-status-feedback-message></span></span>
     </div>
   </details>`;
 }
@@ -1668,40 +1653,46 @@ function clientScript(): string {
         if (response.ok) window.setTimeout(() => window.location.reload(), 350);
       });
 
-      // Reconciliation is a status-only change: never send amount, date or installment structure.
+      // Status-only reconciliation follows the Golden Screen. For finite installments,
+      // use the occurrence-specific route so sibling invoices are unaffected.
       document.querySelectorAll("[data-set-purchase-status]").forEach((button) => {
         button.addEventListener("click", async () => {
           const control = button.closest("[data-purchase-status-control]");
           const feedback = control?.querySelector(".cards-purchase-status-feedback");
+          const message = feedback?.querySelector("[data-cards-status-feedback-message]");
           const targetStatus = button.dataset.setPurchaseStatus;
           const purchaseId = button.dataset.statusPurchaseId;
           const cardId = button.dataset.statusCardId;
-          if (!control || !feedback || !purchaseId || !cardId ||
+          if (!control || !feedback || !message || !purchaseId || !cardId ||
               !["posted", "reconciled"].includes(targetStatus)) return;
+          const showFeedback = (text, tone) => {
+            feedback.hidden = false;
+            feedback.className = "cards-purchase-status-feedback" + (tone ? " " + tone : "");
+            message.textContent = text;
+            feedback.title = text;
+            feedback.dataset.tooltip = text;
+          };
           const buttons = Array.from(control.querySelectorAll("[data-set-purchase-status]"));
           buttons.forEach((item) => { item.disabled = true; });
-          feedback.hidden = false;
-          feedback.className = "cards-purchase-status-feedback";
-          feedback.textContent = "Atualizando situação...";
+          showFeedback("Atualizando situação...", "");
           try {
-            const response = await request(
-              "/api/credit-card-accounts/" + encodeURIComponent(cardId) +
-                "/purchases/" + encodeURIComponent(purchaseId),
-              "PATCH",
-              { status: targetStatus },
-            );
+            const installmentId = button.dataset.statusInstallmentId;
+            const invoiceId = button.dataset.statusInvoiceId;
+            const path = installmentId && invoiceId
+              ? "/api/invoices/" + encodeURIComponent(invoiceId) +
+                "/installments/" + encodeURIComponent(installmentId) + "/reconciliation"
+              : "/api/credit-card-accounts/" + encodeURIComponent(cardId) +
+                "/purchases/" + encodeURIComponent(purchaseId);
+            const response = await request(path, "PATCH", { status: targetStatus });
             if (!response.ok) {
-              feedback.className = "cards-purchase-status-feedback error";
-              feedback.textContent = await responseMessage(response);
+              showFeedback(await responseMessage(response), "error");
               buttons.forEach((item) => { item.disabled = false; });
               return;
             }
-            feedback.className = "cards-purchase-status-feedback success";
-            feedback.textContent = "Situação atualizada. Atualizando fatura...";
+            showFeedback("Situação atualizada. Atualizando fatura...", "success");
             window.setTimeout(() => window.location.reload(), 350);
           } catch {
-            feedback.className = "cards-purchase-status-feedback error";
-            feedback.textContent = "Falha de conexão. Tente novamente.";
+            showFeedback("Falha de conexão. Tente novamente.", "error");
             buttons.forEach((item) => { item.disabled = false; });
           }
         });
