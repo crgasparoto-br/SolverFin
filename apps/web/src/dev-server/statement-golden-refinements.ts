@@ -646,7 +646,7 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-head .col-description{grid-area:description}
       ${root} .statement-head .col-category{clip-path:none;grid-area:category;height:auto;overflow:visible;position:static;width:auto}
       ${root} .statement-head .col-amount{grid-area:amount}
-      ${root} .statement-head .col-balance{grid-area:balance}
+      ${root} .statement-head .col-balance{clip-path:none;grid-area:balance;height:auto;overflow:visible;position:static;text-align:right;width:auto}
       ${root} .statement-head .col-status{grid-area:status;justify-self:center;text-align:center}
       ${root} .statement-head .col-actions{grid-area:actions}
     }
