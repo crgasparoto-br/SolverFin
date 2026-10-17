@@ -37,15 +37,18 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-invoice-period-row{align-items:center;flex:1 1 auto;gap:8px;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);max-width:none}
     .cards-invoice-period-link{min-height:42px;padding:5px 8px}
     .cards-invoice-period-link strong{font-size:.76rem}
+    .cards-invoice-period-link>span:not([aria-hidden]){align-items:baseline;display:flex;flex-wrap:wrap;gap:3px 6px}
+    .cards-invoice-period-link small{white-space:nowrap}
     .cards-invoice-current>strong{font-size:1rem;line-height:1.4}
-    .cards-invoice-header{align-items:center;gap:12px;grid-template-columns:minmax(0,1fr) minmax(235px,auto);padding:10px 16px}
-    .cards-invoice-title-block{gap:5px;min-width:0}
+    .cards-invoice-header{align-items:center;gap:8px;grid-template-columns:minmax(0,1fr) minmax(235px,auto);padding:8px 14px}
+    .cards-invoice-title-block{gap:4px;min-width:0}
+    .cards-invoice-heading-row{align-items:center;display:flex;flex-wrap:wrap;gap:4px 10px;min-width:0}
     .cards-invoice-title-row{align-items:center;flex-wrap:wrap;gap:8px}
     .cards-invoice-status-actions{align-items:center;display:flex;flex-wrap:wrap;gap:9px}
     .cards-close-invoice{align-items:center;display:inline-flex;gap:6px;min-height:40px;padding:7px 10px}
     .cards-invoice-metadata{align-items:center;display:flex;flex-wrap:wrap;gap:5px 12px}
     .cards-invoice-metadata p{margin:0}
-    .cards-invoice-documents{align-items:center;align-self:start;background:transparent;border:0;border-radius:8px;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.77rem;font-weight:700;gap:7px;justify-self:start;min-height:40px;padding:7px 9px;text-align:left}
+    .cards-invoice-documents{align-items:center;background:transparent;border:0;border-radius:8px;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.77rem;font-weight:700;gap:7px;min-height:40px;padding:7px 9px;text-align:left}
     .cards-invoice-documents:hover{background:var(--primary-soft)}
     .cards-invoice-documents:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
     .cards-invoice-title-block h2{font-size:1.18rem;line-height:1.3;margin:0}
@@ -54,15 +57,15 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-invoice-primary>strong{font-size:1.55rem;line-height:1.15;overflow-wrap:anywhere;text-align:right}
     .cards-invoice-actions{align-items:center;display:flex;gap:7px;justify-content:flex-end;margin-top:5px}
     .cards-invoice-actions .sf-button{min-height:44px;white-space:nowrap}
-    .cards-purchase-section-header{align-items:center;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;padding:6px 14px}
+    .cards-purchase-section-header{align-items:center;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:4px 14px}
     .cards-purchase-section-header h3{font-size:.96rem;font-weight:800;line-height:1.4;margin:0}
     .cards-purchase-title{align-items:baseline;display:flex;flex-wrap:wrap;gap:6px 10px}
     .cards-purchase-title>span{color:var(--muted);font-size:.72rem;font-weight:700}
     .cards-purchase-section-header .sf-button{align-items:center;display:inline-flex;justify-content:center;min-height:44px}
     .cards-settlement-note{font-size:.73rem}
-    .cards-invoice-summary{gap:8px;padding:8px 14px}
+    .cards-invoice-summary{gap:4px;padding:6px 14px}
     .cards-invoice-summary .sf-summary-grid{gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}
-    .cards-summary-metric{background:var(--surface);border:1px solid var(--line);border-radius:9px;gap:5px;min-height:64px;padding:9px 11px}
+    .cards-summary-metric{background:var(--surface);border:1px solid var(--line);border-radius:9px;gap:5px;min-height:56px;padding:6px 9px}
     .cards-summary-metric>span{font-size:.71rem;line-height:1.35}
     .cards-summary-metric{align-items:center;grid-template-columns:32px minmax(0,1fr);gap:9px}
     .cards-summary-icon{align-items:center;background:var(--primary-soft);border-radius:9px;color:var(--primary);display:inline-flex;height:32px;justify-content:center;width:32px}
@@ -71,8 +74,10 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-summary-copy{display:grid;gap:4px;min-width:0}
     .cards-summary-copy>span{color:var(--muted);font-size:.71rem;line-height:1.3}
     .cards-summary-copy>strong{font-size:.86rem;font-variant-numeric:tabular-nums;line-height:1.35;overflow-wrap:anywhere}
+    .cards-limit-detail{align-self:start;min-width:0;position:relative}
     .cards-limit-detail>summary{min-height:22px}
-    .cards-detail-panel .sf-filter-bar{gap:7px;padding:8px 14px}
+    .cards-limit-detail[open]>dl{background:var(--surface);border:1px solid var(--line);border-radius:9px;box-shadow:0 12px 32px rgba(15,23,42,.12);display:grid;gap:6px;min-width:200px;padding:10px;position:absolute;right:0;top:100%;z-index:35}
+    .cards-detail-panel .sf-filter-bar{gap:5px;padding:5px 14px}
     .cards-purchase-filter-form{align-items:end;gap:8px;grid-template-columns:minmax(0,1fr) auto auto}
     .cards-search-field{font-size:.77rem!important;gap:5px!important;line-height:1.35!important}
     .cards-search-field input{min-height:44px}
@@ -80,15 +85,15 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-reconciliation-filters{gap:6px}
     .cards-filter-chip{min-height:34px;padding:6px 10px}
     .cards-results-status{font-size:.73rem;margin-left:auto}
-    .cards-purchase-groups{gap:8px;padding:8px 14px 14px}
+    .cards-purchase-groups{gap:6px;padding:5px 14px 14px}
     .cards-section-heading{align-items:baseline}
     .cards-section-heading h3{font-size:1rem}
     .cards-instrument-group{border:1px solid var(--line);border-radius:10px;overflow:visible}
-    .cards-instrument-group>summary{background:var(--bg);border-radius:10px 10px 0 0;gap:12px;min-height:44px;padding:8px 12px}
+    .cards-instrument-group>summary{background:var(--bg);border-radius:10px 10px 0 0;gap:10px;min-height:44px;padding:6px 12px}
     .cards-instrument-group>summary strong{font-size:.8rem;overflow-wrap:anywhere}
     .cards-instrument-totals{font-size:.79rem;white-space:nowrap}
     .cards-purchase-table-head,.cards-purchase-row{gap:8px;grid-template-columns:5.7rem minmax(0,1.4fr) minmax(5.7rem,.65fr) 4.2rem minmax(7.5rem,.68fr) 3rem}
-    .cards-purchase-table-head{padding:9px 10px}
+    .cards-purchase-table-head{padding:6px 10px}
     .cards-purchase-row{min-height:60px;padding:8px 10px}
     .cards-purchase-description strong{font-size:.86rem;line-height:1.35}
     .cards-purchase-category{font-size:.75rem;line-height:1.4}
@@ -118,7 +123,9 @@ export function cardsGoldenCompositionStyles(): string {
     @media(max-width:760px){
       .cards-a3-page{gap:10px;padding:10px var(--sf-layout-gutter-mobile) 20px}
       .cards-a3-page .sf-detail-layout{gap:10px;grid-template-columns:1fr}
-      .cards-master-panel{display:grid;gap:8px;grid-template-columns:minmax(0,1fr) auto;padding:11px 12px;position:static}
+      .cards-master-panel{display:grid;gap:6px;grid-template-columns:minmax(0,1fr) auto;padding:8px 12px;position:static}
+    .cards-card-picker{position:relative}
+    .cards-card-picker label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;white-space:nowrap;width:1px}
       .cards-master-heading{grid-column:2;grid-row:1}
       .cards-master-heading>div{display:none}
       .cards-card-picker{grid-column:1;grid-row:1}
@@ -133,14 +140,23 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-invoice-period-row{grid-template-columns:40px minmax(0,1fr) 40px;gap:2px}
       .cards-invoice-period-link{justify-content:center;min-height:44px;padding:5px}
       .cards-invoice-current>strong{font-size:.91rem}
-      .cards-invoice-header{grid-template-columns:1fr;gap:10px;padding:12px}
+      .cards-invoice-header{align-items:stretch;display:flex;flex-direction:column;gap:6px;padding:9px 12px}
+    .cards-invoice-primary{order:-1}
+    .cards-invoice-title-block{order:0}
+    .cards-invoice-title-block h2{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;white-space:nowrap;width:1px}
+    .cards-invoice-title-row>.cards-kicker{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;white-space:nowrap;width:1px}
+    .cards-invoice-heading-row{gap:0}
+    .cards-invoice-metadata{gap:3px}
+    .cards-invoice-period-link>span:not([aria-hidden]){display:none}
       .cards-invoice-primary{justify-items:start}
-      .cards-invoice-primary>strong{font-size:1.5rem;text-align:left}
+      .cards-invoice-primary>strong{font-size:1.6rem;text-align:left}
+    .cards-invoice-actions{margin-top:2px}
       .cards-purchase-section-header{align-items:stretch;padding:9px 10px}
       .cards-purchase-section-header .sf-button{margin-left:auto}
       .cards-invoice-actions{display:flex;flex-wrap:wrap;gap:7px;width:100%}
       .cards-invoice-actions .sf-button{flex:1 1 120px;min-width:0}
-      .cards-invoice-summary{padding:10px}
+      .cards-invoice-summary{padding:8px 10px}
+    .cards-limit-detail[open]>dl{left:0;right:auto}
       .cards-invoice-summary .sf-summary-grid{gap:6px;grid-template-columns:repeat(2,minmax(0,1fr))}
       .cards-summary-metric{min-height:62px;padding:8px}
       .cards-summary-metric>strong{font-size:.83rem}

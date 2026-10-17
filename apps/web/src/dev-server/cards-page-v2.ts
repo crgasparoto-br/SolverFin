@@ -743,10 +743,12 @@ function renderInvoiceHeader(
           ${canClose ? `<button type="button" class="sf-button sf-button-secondary cards-close-invoice" data-api-path="/api/invoices/${escapeHtml(invoice.id)}/close" data-confirm="Fechar esta fatura?">${icon("lock", 15)} Fechar fatura</button>` : ""}
         </div>
       </div>
-      <h2 id="cards-invoice-title">${escapeHtml(formatInvoicePeriod(invoice))}</h2>
+      <div class="cards-invoice-heading-row">
+        <h2 id="cards-invoice-title">${escapeHtml(formatInvoicePeriod(invoice))}</h2>
+        <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura" aria-label="Documentos da fatura">${icon("file-text", 16)} <span>Documentos da fatura</span></button>
+      </div>
       <div class="cards-invoice-metadata">
         <p>${escapeHtml(currency ?? "Moeda indisponível")} · Fechamento ${formatDate(invoice.periodEndOn)} · Vencimento ${formatDate(invoice.dueOn)}</p>
-        <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura">${icon("file-text", 16)} <span>Documentos da fatura</span></button>
       </div>
     </div>
     <div class="cards-invoice-primary">
@@ -766,6 +768,10 @@ function renderInvoiceSummary(
   const limitTotal = totals.reduce((sum, item) => sum + item.limitTotalMinor, 0);
   const limitUsed = totals.reduce((sum, item) => sum + item.limitUsedMinor, 0);
   const limitAvailable = totals.reduce((sum, item) => sum + item.limitAvailableMinor, 0);
+  const limitDetails =
+    totals.length > 0
+      ? `<details class="cards-limit-detail"><summary>Detalhes do limite</summary><dl><div><dt>Limite total</dt><dd>${money(limitTotal, currency)}</dd></div><div><dt>Limite utilizado</dt><dd>${money(limitUsed, currency)}</dd></div></dl></details>`
+      : "";
   return `<section class="cards-invoice-summary" aria-label="Resumo da fatura">
     ${renderSummaryGrid({
       childrenHtml: [
@@ -778,18 +784,14 @@ function renderInvoiceSummary(
         summaryMetric(
           "Limite disponível",
           totals.length > 0 ? money(limitAvailable, currency) : "Indisponível",
+          limitDetails,
         ),
       ].join(""),
     })}
-    ${
-      totals.length > 0
-        ? `<details class="cards-limit-detail"><summary>Detalhes do limite</summary><dl><div><dt>Limite total</dt><dd>${money(limitTotal, currency)}</dd></div><div><dt>Limite utilizado</dt><dd>${money(limitUsed, currency)}</dd></div></dl></details>`
-        : ""
-    }
   </section>`;
 }
 
-function summaryMetric(label: string, valueHtml: string): string {
+function summaryMetric(label: string, valueHtml: string, extraHtml = ""): string {
   const glyph =
     label === "Conciliado"
       ? "check-circle"
@@ -798,7 +800,7 @@ function summaryMetric(label: string, valueHtml: string): string {
         : label === "Limite disponível"
           ? "wallet"
           : "receipt";
-  return `<section class="cards-summary-metric"><span class="cards-summary-icon" aria-hidden="true">${icon(glyph, 17)}</span><div class="cards-summary-copy"><span>${escapeHtml(label)}</span><strong>${valueHtml}</strong></div></section>`;
+  return `<section class="cards-summary-metric"><span class="cards-summary-icon" aria-hidden="true">${icon(glyph, 17)}</span><div class="cards-summary-copy"><span>${escapeHtml(label)}</span><strong>${valueHtml}</strong>${extraHtml}</div></section>`;
 }
 
 function renderPurchaseFilters(

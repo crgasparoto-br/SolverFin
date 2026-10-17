@@ -329,6 +329,17 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     /<details class="cards-settlement-note"><summary>Sobre a liquidação<\/summary>/,
   );
   assert.match(html, /<details class="cards-limit-detail"><summary>Detalhes do limite<\/summary>/);
+  // #715: keep the card master discoverable, but show the amount first on narrow screens.
+  assert.match(html, /\.cards-invoice-primary\{order:-1\}/);
+  assert.match(html, /\.cards-card-picker label\{clip-path:inset\(50%\)/);
+  assert.match(html, /\.cards-invoice-heading-row\{align-items:center;display:flex/);
+  const summaryStart = html.indexOf('class="cards-invoice-summary"');
+  const purchaseHeadingStart = html.indexOf('class="cards-purchase-section-header"');
+  const summaryHtml = html.slice(summaryStart, purchaseHeadingStart);
+  const limitMetricStart = summaryHtml.indexOf('Limite disponível');
+  const limitDetailsStart = summaryHtml.indexOf('class="cards-limit-detail"');
+  assert.ok(limitMetricStart >= 0 && limitDetailsStart > limitMetricStart);
+  assert.ok(limitDetailsStart < summaryHtml.indexOf('</section>', limitMetricStart));
   const invoiceHeaderStart = html.indexOf('class="cards-invoice-header"');
   const invoiceHeaderEnd = html.indexOf("</header>", invoiceHeaderStart);
   const invoiceHeader = html.slice(invoiceHeaderStart, invoiceHeaderEnd);
@@ -338,6 +349,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const documentsAt = invoiceHeader.indexOf('data-open-modal="invoice-attachments"');
   assert.ok(documentsAt > invoiceHeader.indexOf('class="cards-invoice-title-block"'));
   assert.ok(documentsAt < invoiceHeader.indexOf('class="cards-invoice-primary"'));
+  assert.ok(documentsAt > invoiceHeader.indexOf('class="cards-invoice-heading-row"'));
+  assert.ok(documentsAt < invoiceHeader.indexOf('class="cards-invoice-metadata"'));
   assert.ok(
     invoiceHeader.indexOf('data-open-modal="payment"') >
       invoiceHeader.indexOf('class="cards-invoice-primary"'),

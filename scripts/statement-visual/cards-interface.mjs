@@ -125,9 +125,20 @@ async function validateFirstFoldNegativeControl(cdp, viewportKind) {
         ${JSON.stringify(viewportKind === "desktop" ? "[data-purchase-item]" : ".cards-invoice-primary > strong")}
       );
       if (!target) return { acceptedBefore: false, acceptedDuring: false, acceptedAfter: false };
-      const threshold = window.innerHeight * ${viewportKind === "desktop" ? "1" : "0.75"} - ${viewportKind === "desktop" ? "15" : "0"};
+      const threshold = window.innerHeight * ${viewportKind === "desktop" ? "1" : "0.62"} - ${viewportKind === "desktop" ? "12" : "0"};
       const original = target.style.transform;
-      const accepted = () => target.getBoundingClientRect().top < threshold;
+      const accepted = () => {
+        const box = target.getBoundingClientRect();
+        if (${viewportKind === "desktop"}) {
+          const description = target.querySelector('.cards-purchase-description strong');
+          const amount = target.querySelector('.cards-purchase-amount');
+          return box.bottom <= threshold && Boolean(description && amount &&
+            description.getBoundingClientRect().bottom <= threshold &&
+            amount.getBoundingClientRect().bottom <= threshold);
+        }
+        const header = document.querySelector('.cards-invoice-header');
+        return box.top < threshold && Boolean(header && box.top - header.getBoundingClientRect().top < 88);
+      };
       const acceptedBefore = accepted();
       target.style.transform = 'translateY(' + window.innerHeight + 'px)';
       const acceptedDuring = accepted();

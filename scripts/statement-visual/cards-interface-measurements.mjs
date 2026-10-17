@@ -136,6 +136,14 @@ export async function validateCardsPage(
         visible(master?.querySelector('.cards-instrument-nav li'));
       const primaryAmount = document.querySelector('.cards-invoice-primary > strong');
       const firstPurchaseRow = rows[0];
+      const firstPurchaseDescription = firstPurchaseRow?.querySelector('.cards-purchase-description strong');
+      const firstPurchaseAmount = firstPurchaseRow?.querySelector('.cards-purchase-amount');
+      const firstPurchaseLegible = Boolean(firstPurchaseRow && [firstPurchaseDescription, firstPurchaseAmount].every(
+        (node) => visible(node) && rect(node).top >= 0 &&
+          rect(node).bottom <= window.innerHeight - 12 &&
+          rect(node).left >= rect(firstPurchaseRow).left - 1 &&
+          rect(node).right <= rect(firstPurchaseRow).right + 1
+      ));
       const status = document.querySelector('.cards-invoice-title-row .sf-badge');
       const search = document.querySelector('[data-purchase-search]');
       const invoiceNavigation = document.querySelector('.cards-invoice-period-row');
@@ -199,6 +207,9 @@ export async function validateCardsPage(
         primaryAmountTop: rect(primaryAmount).top,
         firstPurchaseRowTop: rect(firstPurchaseRow).top,
         firstPurchaseRowBottom: rect(firstPurchaseRow).bottom,
+        firstPurchaseDescriptionBottom: rect(firstPurchaseDescription).bottom,
+        firstPurchaseAmountBottom: rect(firstPurchaseAmount).bottom,
+        firstPurchaseLegible,
         masterBottom: rect(master).bottom,
         masterWidth: rect(master).width,
         detailWidth: rect(detail).width,
@@ -383,8 +394,9 @@ export async function validateCardsPage(
 
   if (viewportKind === "desktop") {
     check(
-      measurements.firstPurchaseRowTop < measurements.viewport.height - 15,
-      "Golden Screen: first purchase row is below the desktop fold",
+      measurements.firstPurchaseLegible &&
+        measurements.firstPurchaseRowBottom <= measurements.viewport.height - 12,
+      "Golden Screen: the full first purchase (description and amount) must be readable in the first desktop fold",
       measurements,
     );
     check(
@@ -411,8 +423,9 @@ export async function validateCardsPage(
     );
   } else {
     check(
-      measurements.primaryAmountTop < measurements.viewport.height * 0.75,
-      "Golden Screen: invoice amount is below the mobile decision area",
+      measurements.primaryAmountTop < measurements.viewport.height * 0.62 &&
+        measurements.primaryAmountTop - measurements.invoiceHeaderTop < 88,
+      "Golden Screen: invoice amount must lead the mobile invoice decision without preceding metadata blocks",
       measurements,
     );
     check(
