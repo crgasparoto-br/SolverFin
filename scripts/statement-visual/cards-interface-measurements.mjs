@@ -204,7 +204,7 @@ export async function validateCardsPage(
           visible(category)
         );
       });
-      const invoiceCopy = document.querySelector('.cards-invoice-title-block p')?.textContent || '';
+      const invoiceCopy = document.querySelector('.cards-invoice-metadata')?.textContent || '';
       const settlementCopy = document.querySelector('.cards-settlement-note')?.textContent || '';
       const currencies = Array.from(document.querySelectorAll('.sf-money[data-currency]')).map((node) => node.getAttribute('data-currency'));
       return {
