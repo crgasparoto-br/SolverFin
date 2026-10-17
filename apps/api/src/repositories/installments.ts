@@ -525,7 +525,7 @@ function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
  * be corrected without enabling generic edits to posted transaction metadata.
  */
 export function canEditInstallmentAmount(row: Readonly<Record<string, unknown>>): boolean {
-  if (!row.transactionId || !row.transactionStatus || row.invoiceId || row.transactionCardId) return false;
+  if (!row.transactionId || !row.transactionStatus || row.invoiceId || row.cardId || row.transactionCardId) return false;
   const installmentStatus = lower(row.status);
   const transactionStatus = lower(row.transactionStatus);
   return (installmentStatus === "planned" && transactionStatus === "planned") ||
