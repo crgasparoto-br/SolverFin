@@ -180,7 +180,9 @@ export function buildTransactionQuery(filters: StatementFilters): string {
   return new URLSearchParams({
     status: "all",
     accountId: filters.accountId ?? "",
-    occurredTo: filters.endsOn,
+    // Match the date actually displayed in the statement; occurredOn may differ
+    // from effectiveOn or plannedOn and must not hide today's transactions.
+    statementTo: filters.endsOn,
   }).toString();
 }
 
