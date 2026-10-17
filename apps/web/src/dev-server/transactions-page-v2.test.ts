@@ -203,11 +203,18 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
     );
-    const statusIcon = (id: string, action: string): boolean =>
-      html.includes(
-        `data-status-transaction-id="${id}" aria-label="${action}" ` +
-          `title="${action}" data-tooltip="${action}"><svg`,
+    const statusIcon = (id: string, action: string): boolean => {
+      const marker = `data-status-transaction-id="${id}"`;
+      const start = html.indexOf(marker);
+      if (start === -1) return false;
+      const option = html.slice(start, html.indexOf("</button>", start));
+      return (
+        option.includes(`aria-label="${action}"`) &&
+        option.includes(`title="${action}"`) &&
+        option.includes(`data-tooltip="${action}"`) &&
+        option.includes("<svg")
       );
+    };
     assert.ok(statusIcon("posted-row", "Marcar como conciliado"));
     assert.ok(statusIcon("reconciled-row", "Desconciliar"));
     assert.ok(html.includes("Situação: Efetivado não conciliado. Alterar situação"));
