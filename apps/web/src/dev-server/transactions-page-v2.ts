@@ -1481,30 +1481,34 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       button.addEventListener("click", async () => {
         const control = button.closest("[data-statement-status-control]");
         const feedback = control?.querySelector(".statement-status-feedback");
+        const feedbackMessage = feedback?.querySelector("[data-statement-status-feedback-message]");
         const transactionId = button.dataset.statusTransactionId;
         const nextStatus = button.dataset.setStatementStatus;
-        if (!control || !feedback || !transactionId || !["posted", "reconciled"].includes(nextStatus)) return;
+        if (!control || !feedback || !feedbackMessage || !transactionId || !["posted", "reconciled"].includes(nextStatus)) return;
+        const showStatusFeedback = (text, tone) => {
+          feedback.hidden = false;
+          feedback.className = "statement-status-feedback" + (tone ? " " + tone : "");
+          feedbackMessage.textContent = text;
+          feedback.title = text;
+          feedback.dataset.tooltip = text;
+          positionStatementStatus(control);
+        };
         const buttons = Array.from(control.querySelectorAll("[data-set-statement-status]"));
         buttons.forEach((item) => { item.disabled = true; });
-        feedback.hidden = false;
-        feedback.className = "statement-status-feedback";
-        feedback.textContent = "Atualizando situação...";
+        showStatusFeedback("Atualizando situação...", "");
         try {
           // PATCH is status-only: no amount, currency, account or date fields.
           const response = await send("/api/transactions/" + encodeURIComponent(transactionId), "PATCH", { status: nextStatus });
           if (!response.ok) {
             const body = await response.json().catch(() => ({}));
-            feedback.className = "statement-status-feedback error";
-            feedback.textContent = body?.error?.message || "Não foi possível alterar a situação.";
+            showStatusFeedback(body?.error?.message || "Não foi possível alterar a situação.", "error");
             buttons.forEach((item) => { item.disabled = false; });
             return;
           }
-          feedback.className = "statement-status-feedback success";
-          feedback.textContent = "Situação atualizada. Atualizando extrato...";
+          showStatusFeedback("Situação atualizada. Atualizando extrato...", "success");
           window.setTimeout(() => location.reload(), 350);
         } catch {
-          feedback.className = "statement-status-feedback error";
-          feedback.textContent = "Falha de conexão. Tente novamente.";
+          showStatusFeedback("Falha de conexão. Tente novamente.", "error");
           buttons.forEach((item) => { item.disabled = false; });
         }
       });
@@ -1787,13 +1791,19 @@ function css(): string {
     .statement-status-control>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
     .statement-status-control>summary:hover .statement-status,.statement-status-control[open]>summary .statement-status{box-shadow:0 0 0 2px var(--line)}
     .statement-status-control[open],.statement-row:has(.statement-status-control[open]){z-index:55}
-    .statement-status-menu{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:grid;gap:3px;max-width:min(270px,calc(100vw - 16px));min-width:220px;padding:8px;position:absolute;text-align:left;top:calc(100% + 4px);width:max-content;z-index:60}
-    .statement-status-current{justify-self:start;margin:4px 8px 6px}
-    .statement-status-option{background:transparent;border:0;border-radius:8px;color:var(--text);cursor:pointer;font-size:.78rem;font-weight:700;min-height:44px;padding:9px 10px;text-align:left;white-space:normal}
-    .statement-status-menu>button.statement-status-option:hover:not(:disabled),.statement-status-menu>button.statement-status-option:focus-visible{background:var(--neutral-control-hover);color:var(--neutral-control-text-hover)}
-    .statement-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:0}
+    .statement-status-menu{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:flex;gap:6px;max-width:calc(100vw - 16px);min-width:0;padding:8px;position:absolute;top:calc(100% + 4px);width:max-content;z-index:60}
+    .statement-status-current{align-items:center;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
+    .statement-status-option{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;min-height:44px;padding:0;width:44px}
+    .statement-status-option[data-set-statement-status=reconciled]{color:var(--success)}
+    .statement-status-menu>button.statement-status-option:hover:not(:disabled),.statement-status-menu>button.statement-status-option:focus-visible{background:var(--neutral-control-hover);border-color:var(--neutral-control-border-hover);color:var(--neutral-control-text-hover)}
+    .statement-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
     .statement-status-option:disabled{cursor:wait;opacity:.55}
-    .statement-status-readonly,.statement-status-feedback{color:var(--muted);font-size:.73rem;line-height:1.4;margin:0;padding:7px 8px;white-space:normal}
+    .statement-status-readonly{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
+    .statement-status-feedback{align-items:center;border-radius:999px;color:var(--muted);display:inline-flex;flex:0 0 32px;height:32px;justify-content:center;margin:0;width:32px}
+    .statement-status-feedback[hidden]{display:none}
+    .statement-status-feedback-ok,.statement-status-feedback-error{display:none}
+    .statement-status-feedback.success .statement-status-feedback-pending,.statement-status-feedback.error .statement-status-feedback-pending{display:none}
+    .statement-status-feedback.success .statement-status-feedback-ok,.statement-status-feedback.error .statement-status-feedback-error{display:inline-flex}
     .statement-status-feedback.error{color:var(--danger)}
     .statement-status-feedback.success{color:var(--success)}
 
