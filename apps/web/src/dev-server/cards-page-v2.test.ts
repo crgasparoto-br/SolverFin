@@ -503,15 +503,16 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.match(
     html,
-    /<summary aria-label="Situação: Não conciliada\. Alterar situação" title="Não conciliada"><span class="cards-purchase-status cards-purchase-status-posted" role="img" aria-label="Não conciliada" title="Não conciliada" data-tooltip="Não conciliada"><svg/,
+    /<summary aria-label="Situação: Não conciliada\. Ver restrição de alteração" title="Não conciliada"><span class="cards-purchase-status cards-purchase-status-posted" role="img" aria-label="Não conciliada" title="Não conciliada" data-tooltip="Não conciliada"><svg/,
   );
   assert.match(
     html,
     /<summary aria-label="Situação: Planejada\. Alterar situação" title="Planejada"><span class="cards-purchase-status cards-purchase-status-planned" role="img" aria-label="Planejada" title="Planejada" data-tooltip="Planejada"><svg/,
   );
-  assert.match(html, /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-taxi" data-status-card-id="card-usd">Marcar como conciliada<\/button>/);
+  assert.doesNotMatch(html, /data-status-purchase-id="purchase-taxi"/);
   assert.match(html, /data-set-purchase-status="posted" data-status-purchase-id="purchase-hotel" data-status-card-id="card-usd">Desconciliar<\/button>/);
   assert.match(html, /data-set-purchase-status="posted" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como não conciliada<\/button>/);
+  assert.match(html, /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como conciliada<\/button>/);
   assert.match(html, /A conciliação desta parcela exige manutenção específica/);
   assert.match(html, /\.cards-purchase-status-control>summary\{[^}]*min-height:44px;min-width:44px/);
   assert.match(html, /\.cards-purchase-status-option\{[^}]*min-height:44px/);
