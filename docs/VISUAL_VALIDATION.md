@@ -254,3 +254,18 @@ a homologacao real do Chrome segue necessaria no SHA final.
 4. Verificar 7 dias/30 dias, voltar para mês anterior/atual e aplicar filtros após Hoje sem duplicar o parâmetro `day` nem gerar erro de inserção de elemento no DOM.
 
 Exigir evidência real no Chrome em desktop e mobile no SHA final. Testes estáticos e unitários não substituem essa homologação.
+
+
+### PR #720 — Filtro de dia, agrupamento diário e tabela compacta (17/10/2026)
+
+Verificar em `/lancamentos` com conta individual e visão `all`: (1) selecionar dias
+1, 15 e último dia, alterar mês, limpar filtro e aplicar com/sem JavaScript;
+(2) dias com zero/um/múltiplos lançamentos, incluindo receita, despesa e transferência;
+(3) expandir/recolher por teclado e ponteiro, verificando que saldo, totalizações,
+ordem das linhas e seleção não mudam; (4) ordenações por data asc/desc com grupos
+distintos e por valor/descrição sem grupos para respeitar o sort global;
+(5) comparar linhas com saldo em coluna independente em 1366×768, 1100×800,
+390×844 e 320×740, com textos/categorias longos, moeda BRL e USD.
+
+A execução unitária/SSR não substitui a homologação de geometria visual e
+do comportamento no Chrome no HEAD exato da PR.
