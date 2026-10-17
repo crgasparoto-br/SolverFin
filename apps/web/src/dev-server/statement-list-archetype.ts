@@ -174,7 +174,100 @@ function statementListArchetypeRuntime(): string {
         }
       });
     })();
-  </script>${statementActionMenusRuntime()}`;
+  </script>${statementAccountPreferenceRuntime()}${statementActionMenusRuntime()}`;
+}
+
+/**
+ * Keep the statement's last account in this browser across logout/login, scoped
+ * by the authenticated user and financial profile. URLs with accountId win.
+ */
+function statementAccountPreferenceRuntime(): string {
+  return `<script data-statement-account-preference-runtime="true">
+    (() => {
+      const root = document.querySelector('[data-statement-archetype="A2"]');
+      const picker = root?.querySelector('[data-account-picker]');
+      const input = picker?.querySelector('[data-account-input]');
+      const form = picker?.closest('form');
+      const menu = picker?.querySelector('[data-account-menu]');
+      if (!input || !form || !menu) return;
+
+      const currentUrl = new URL(window.location.href);
+      const explicitAccount = currentUrl.searchParams.has('accountId');
+      const available = Array.from(menu.querySelectorAll('[data-account-option]'));
+      const findOption = (id) => available.find((option) => option.dataset.accountOption === id);
+      const isAvailable = (id) => Boolean(id && findOption(id));
+      const requestedProfileId = currentUrl.searchParams.get('profileId');
+      const profileUrl = '/api/financial-profiles' +
+        (requestedProfileId ? '?profileId=' + encodeURIComponent(requestedProfileId) : '');
+      let storageKey;
+      let contextReady = false;
+      let manuallyChanged = false;
+
+      const remember = () => {
+        if (!storageKey || !isAvailable(input.value)) return;
+        try { window.localStorage.setItem(storageKey, input.value); } catch {
+          // Storage disabled/private browsing: the GET filter continues working.
+        }
+      };
+      input.addEventListener('change', () => {
+        manuallyChanged = true;
+        remember();
+      });
+
+      const identity = Promise.all([
+        fetch('/api/me', { headers: { accept: 'application/json' } }),
+        fetch(profileUrl, { headers: { accept: 'application/json' } }),
+      ]).then(async ([me, profiles]) => {
+        if (!me.ok || !profiles.ok) return;
+        const [userData, profileData] = await Promise.all([me.json(), profiles.json()]);
+        const userId = userData?.user?.id;
+        const profileId = profileData?.activeProfileId;
+        if (typeof userId !== 'string' || !userId ||
+            typeof profileId !== 'string' || !profileId) return;
+
+        storageKey = 'solverfin:statement:last-account:v1:' + userId + ':' + profileId;
+        if (manuallyChanged) {
+          remember();
+          return;
+        }
+        if (explicitAccount) {
+          // Deep links and explicit filter choices always override memory.
+          if (isAvailable(currentUrl.searchParams.get('accountId'))) remember();
+          return;
+        }
+        let stored;
+        try { stored = window.localStorage.getItem(storageKey); } catch { return; }
+        if (!stored) return;
+        const option = findOption(stored);
+        if (!option) {
+          try { window.localStorage.removeItem(storageKey); } catch {}
+          return;
+        }
+        // An explicitly requested currency must not be replaced by another account.
+        const currency = currentUrl.searchParams.get('currency');
+        if (currency && stored !== 'all' && option.dataset.accountCurrency !== currency) return;
+        if (stored === input.value) return;
+        currentUrl.searchParams.set('accountId', stored);
+        window.location.replace(currentUrl.pathname + currentUrl.search + currentUrl.hash);
+      }).catch(() => {
+        // Authentication or network errors never block the server-rendered filters.
+      }).finally(() => { contextReady = true; });
+
+      // Account changes can submit immediately; await identity before navigating
+      // so rapid first clicks after login are also saved in the right scope.
+      form.addEventListener('submit', (event) => {
+        if (!manuallyChanged || contextReady) {
+          if (manuallyChanged) remember();
+          return;
+        }
+        event.preventDefault();
+        void identity.then(() => {
+          remember();
+          form.submit();
+        });
+      }, true);
+    })();
+  </script>`;
 }
 
 function statementActionMenusRuntime(): string {
