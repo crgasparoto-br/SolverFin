@@ -373,7 +373,9 @@ function renderFilters(
   const day = resolvedPeriod.day;
   const dayBounds = monthToPeriod(month);
   const activePeriod = resolvedPeriod;
-  const rangeSelected = Boolean(!day && url?.searchParams.get("from") && url?.searchParams.get("to"));
+  const rangeSelected = Boolean(
+    !day && url?.searchParams.get("from") && url?.searchParams.get("to"),
+  );
   // Keep user/profile/currency and search filters; replace only the period.
   const shortcutBase = new URLSearchParams(url?.searchParams);
   for (const param of ["day", "from", "to", "startsOn", "endsOn"]) {
