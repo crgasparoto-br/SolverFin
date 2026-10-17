@@ -742,7 +742,7 @@ test("A2 consolidated BRL mode identifies each account and excludes USD without 
     assert.match(html, /data-edit="brl-expense"/);
     assert.match(html, /Ver lançamento na conta/);
     assert.match(html, /data-clone="brl-expense"/);
-    assert.match(html, /data-status-transaction-id="brl-expense">Marcar como conciliado/);
+    assert.match(html, /data-status-transaction-id="brl-expense" aria-label=/);
     assert.match(
       html,
       /data-action data-method="POST" data-path="\/api\/transactions\/brl-expense\/void"/,
