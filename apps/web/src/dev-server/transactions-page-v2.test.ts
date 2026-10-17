@@ -127,7 +127,9 @@ test("A2 day grouping is expandable and keeps monetary values in separate column
     assert.match(html, /aria-label="[^"]*Expandir ou recolher lançamentos deste dia"/);
     const amountSorted = await renderTransactionsPageV2(
       "session-token",
-      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&sort=amount_desc"),
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&sort=amount_desc",
+      ),
     );
     assert.doesNotMatch(amountSorted, /class="statement-day-group"/);
   } finally {

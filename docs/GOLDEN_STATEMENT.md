@@ -304,7 +304,6 @@ Na Golden Screen do Extrato, **Hoje** consulta o dia civil de São Paulo (`Ameri
 
 A consulta de transações do Extrato deve filtrar pelo **dia efetivamente exibido** (`effectiveOn ?? plannedOn ?? occurredOn`, cutoff `statementTo`) e não somente por `occurredOn`; o servidor mantém os filtros de ocorrência existentes para outros consumidores. O saldo inicial depende das transações anteriores ao começo do intervalo e os saldos da tabela devem respeitar a mesma data canônica. O formulário GET não deve duplicar o campo `day`: com JavaScript, o controle de data é inserido antes do contêiner de ações, e sem JavaScript o valor é preservado via `noscript`.
 
-
 ## Extrato por dia e densidade da tabela — PR #720 (17/10/2026)
 
 O seletor **Dia do mês** faz parte do HTML do filtro, inclusive quando o JavaScript não carrega.

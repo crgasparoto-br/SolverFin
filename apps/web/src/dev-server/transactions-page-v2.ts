@@ -636,7 +636,16 @@ function renderRowsWithTemporalGroups(
   if (sort !== "date_asc" && sort !== "date_desc") {
     return rows
       .map((row) =>
-        renderRow(row, selectedAccount, accounts, categories, recurrences, currency, consolidated, month),
+        renderRow(
+          row,
+          selectedAccount,
+          accounts,
+          categories,
+          recurrences,
+          currency,
+          consolidated,
+          month,
+        ),
       )
       .join("");
   }
@@ -656,7 +665,18 @@ function renderRowsWithTemporalGroups(
       ? `<span class="statement-day-in">Entradas ${formatMoney(income, currency)}</span><span class="statement-day-out">Saídas ${formatMoney(expense, currency)}</span>`
       : "";
     const content = dayRows
-      .map((row) => renderRow(row, selectedAccount, accounts, categories, recurrences, currency, consolidated, month))
+      .map((row) =>
+        renderRow(
+          row,
+          selectedAccount,
+          accounts,
+          categories,
+          recurrences,
+          currency,
+          consolidated,
+          month,
+        ),
+      )
       .join("");
     return `<details class="statement-day-group" data-statement-date-group="${escapeHtml(date)}" open>
       <summary class="statement-date-group" aria-label="${escapeHtml(formatDate(date))}, ${label}. Expandir ou recolher lançamentos deste dia">

@@ -255,7 +255,6 @@ a homologacao real do Chrome segue necessaria no SHA final.
 
 Exigir evidência real no Chrome em desktop e mobile no SHA final. Testes estáticos e unitários não substituem essa homologação.
 
-
 ### PR #720 — Filtro de dia, agrupamento diário e tabela compacta (17/10/2026)
 
 Verificar em `/lancamentos` com conta individual e visão `all`: (1) selecionar dias
