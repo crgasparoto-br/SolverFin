@@ -354,7 +354,7 @@ function renderFilters(
   categories: readonly CategoryRecord[],
   consolidatedCurrency?: string,
   availableCurrencies: readonly string[] = [],
-  resolvedPeriod: Pick<StatementFilters, "startsOn" | "endsOn" | "day">,
+  resolvedPeriod: { startsOn: string; endsOn: string; day?: string },
 ): string {
   const preserved = [
     "profileId",
