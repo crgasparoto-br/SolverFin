@@ -100,11 +100,15 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-purchase-row{min-height:54px;padding:7px 10px}
     .cards-purchase-row:hover{background:var(--bg)}
     .cards-purchase-description strong{font-size:.86rem;line-height:1.35}
-    /* Golden Screen: category label follows the outgoing movement arrow, as in Extrato. */
-    .cards-purchase-category{align-items:start;color:var(--muted);display:grid;font-size:.75rem;gap:6px;grid-template-columns:13px minmax(0,1fr);line-height:1.4;min-width:0;overflow-wrap:anywhere}
-    .cards-purchase-category>svg{display:block;flex-shrink:0;height:13px;margin-top:2px;width:13px}
+    /* Golden Screen: direction badges use the same semantic backgrounds as Extrato. */
+    .cards-purchase-category{color:var(--muted);display:block;font-size:.75rem;line-height:1.4;min-width:0;overflow-wrap:anywhere}
+    .cards-purchase-category-badge{align-items:start;background:var(--surface-soft);border-radius:8px;color:var(--muted);display:inline-grid;font-weight:650;gap:6px;grid-template-columns:13px minmax(0,1fr);max-width:100%;padding:5px 8px;vertical-align:middle}
+    .cards-purchase-category[data-category-direction="in"]>.cards-purchase-category-badge{background:var(--success-bg);color:var(--success)}
+    .cards-purchase-category[data-category-direction="out"]>.cards-purchase-category-badge{background:var(--danger-bg);color:var(--danger)}
+    .cards-purchase-category[data-category-direction="transfer"]>.cards-purchase-category-badge{background:var(--surface-soft);color:var(--muted)}
+    .cards-purchase-category-badge>svg{display:block;flex-shrink:0;height:13px;margin-top:2px;width:13px}
     .cards-purchase-category-label{min-width:0;overflow-wrap:anywhere}
-    @media(max-width:760px){.cards-purchase-row>.cards-purchase-category[data-label="Categoria"]::before{grid-column:1/-1}}
+    @media(max-width:760px){.cards-purchase-row>.cards-purchase-category[data-label="Categoria"]::before{display:block;margin-bottom:4px}}
     .cards-purchase-amount{font-size:.82rem;font-variant-numeric:tabular-nums;white-space:normal}
     .cards-summary-copy>strong{overflow-wrap:normal;word-break:normal}
     @media(max-width:1190px){
