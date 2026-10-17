@@ -172,8 +172,10 @@ export function statementPresentationScript(): string {
           clearButton.setAttribute("aria-label", "Remover filtro por dia e exibir o mês completo");
 
           const currentMonthButton = form.querySelector("[data-month-current]");
-          form.insertBefore(dayField, currentMonthButton);
-          form.insertBefore(clearButton, currentMonthButton);
+          const actions = currentMonthButton?.closest(".statement-filter-actions");
+          if (!actions || actions.parentElement !== form) return;
+          form.insertBefore(dayField, actions);
+          form.insertBefore(clearButton, actions);
 
           function syncDayBounds(clearInvalid) {
             const monthValue = monthInput.value;
