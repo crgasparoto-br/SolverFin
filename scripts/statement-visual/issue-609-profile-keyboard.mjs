@@ -161,6 +161,47 @@ async function validateViewport(width, height, fixture) {
     "Account context disappeared after keyboard selection.",
   );
 
+
+  // Session logout must not erase the per-user/per-profile last account preference.
+  const savedSelection = await evaluate(
+    browser.cdp,
+    `(async () => {
+      const [meResponse, profilesResponse] = await Promise.all([
+        fetch('/api/me'), fetch('/api/financial-profiles')
+      ]);
+      const me = await meResponse.json();
+      const profiles = await profilesResponse.json();
+      const storageKey = 'solverfin:statement:last-account:v1:' +
+        me.user.id + ':' + profiles.activeProfileId;
+      return localStorage.getItem(storageKey);
+    })()`,
+  );
+  assert.equal(savedSelection, expectedAccountId, "The selected account was not remembered.");
+
+  const logoutStatus = await evaluate(
+    browser.cdp,
+    `(async () => (await fetch('/api/session', { method: 'DELETE' })).status)()`,
+  );
+  assert.ok(logoutStatus >= 200 && logoutStatus < 300, "Logout did not complete");
+  await navigate(browser.cdp, `${baseUrl}/login`);
+  const loginAgain = await evaluate(browser.cdp, loginExpression());
+  assert.equal(loginAgain.ok, true, "Re-login failed");
+
+  const restoredRoute = "/lancamentos?month=2026-07";
+  await navigate(browser.cdp, `${baseUrl}${restoredRoute}`);
+  await waitForAccountNavigation(expectedAccountId);
+  const restored = await evaluate(
+    browser.cdp,
+    `(() => ({
+      accountId: new URL(location.href).searchParams.get('accountId'),
+      month: new URL(location.href).searchParams.get('month'),
+      selected: document.querySelector('[data-account-option][aria-selected="true"]')?.dataset.accountOption
+    }))()`,
+  );
+  assert.equal(restored.accountId, expectedAccountId, "Last account was not restored after login");
+  assert.equal(restored.month, "2026-07", "Restoring account changed the user's period filter");
+  assert.equal(restored.selected, expectedAccountId, "Picker did not reflect the restored account");
+
   const filename = `issue-609-profile-keyboard-${width}x${height}.png`;
   await screenshot(browser.cdp, join(outputDir, filename));
   scenarios.push({
@@ -170,6 +211,7 @@ async function validateViewport(width, height, fixture) {
     pickerReady,
     focusedOption,
     selectedState,
+    restored,
     screenshot: filename,
   });
 }
