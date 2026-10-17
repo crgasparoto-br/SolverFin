@@ -144,12 +144,12 @@ export function cardsPageStyles(): string {
 
     /* #720: show a day filter without stretching the compact date field. */
     .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) minmax(9rem,11.5rem) auto auto}
-    .cards-purchase-day-filter{align-items:end;display:flex;gap:6px;min-width:0}
+    .cards-purchase-day-filter{align-items:end;display:grid;gap:2px;max-width:11.5rem;min-width:0;position:relative}
     .cards-purchase-day-filter>label{min-width:0;width:100%}
     .cards-purchase-day-filter input{font:inherit;min-width:0;width:100%}
-    .cards-clear-day{align-items:center;border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);display:inline-flex;font-size:.73rem;font-weight:700;min-height:44px;padding:4px 8px;text-decoration:none;white-space:nowrap}
+    .cards-clear-day{color:var(--primary);font-size:.7rem;font-weight:700;padding:0 2px;position:absolute;right:0;text-decoration:underline;top:0;white-space:nowrap}
     .cards-clear-day:hover,.cards-clear-day:focus-visible{background:var(--primary-soft);border-color:var(--primary)}
-    .cards-purchase-day-filter:has(.cards-clear-day){grid-column:span 2}
+    .cards-purchase-day-filter:has(.cards-clear-day){grid-column:auto}
     .cards-day-group{border:1px solid var(--line);border-radius:var(--radius);min-width:0;overflow:visible}
     .cards-day-group>summary{align-items:center;background:var(--bg);border-radius:var(--radius);cursor:pointer;display:flex;gap:10px;justify-content:space-between;list-style:none;min-height:44px;padding:8px 12px}
     .cards-day-group>summary::-webkit-details-marker{display:none}
