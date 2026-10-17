@@ -558,6 +558,7 @@ interface ApiInstallmentHistory {
     categoryId?: string;
     description?: string;
     note?: string;
+    amountMinor?: number;
     status?: string;
   };
   category?: { id: string };
