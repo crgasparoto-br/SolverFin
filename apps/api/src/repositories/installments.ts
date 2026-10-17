@@ -29,6 +29,7 @@ export interface UpdateInstallmentPayload {
   description?: string;
   note?: string | null;
   categoryId?: EntityId | null;
+  amountMinor?: number;
 }
 
 export type InstallmentEditBlockedReason =
@@ -56,6 +57,7 @@ export interface InstallmentHistoryItem {
   cardInstrument?: Record<string, unknown>;
   category?: Record<string, unknown>;
   editable: boolean;
+  amountEditable: boolean;
   editBlockedReason?: InstallmentEditBlockedReason;
 }
 
@@ -224,7 +226,11 @@ export async function updateInstallmentForContext(
     await lockInstallmentMutationRows(context, installmentId);
     const current = await getInstallmentForMutation(context, installmentId);
 
-    if (!current.editable) {
+    const metadataChanged =
+      payload.description !== undefined || payload.note !== undefined ||
+      payload.categoryId !== undefined;
+    if ((metadataChanged && !current.editable) ||
+        (payload.amountMinor !== undefined && !current.amountEditable)) {
       throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
     }
 
@@ -281,12 +287,14 @@ function buildTransactionUpdatePayload(payload: UpdateInstallmentPayload): {
   description?: string;
   note?: string | null;
   categoryId?: EntityId | null;
+  amountMinor?: number;
 } {
-  const update: { description?: string; note?: string | null; categoryId?: EntityId | null } = {};
+  const update: { description?: string; note?: string | null; categoryId?: EntityId | null; amountMinor?: number } = {};
 
   if (payload.description !== undefined) update.description = payload.description;
   if (payload.note !== undefined) update.note = payload.note;
   if (payload.categoryId !== undefined) update.categoryId = payload.categoryId;
+  if (payload.amountMinor !== undefined) update.amountMinor = payload.amountMinor;
 
   return update;
 }
@@ -397,6 +405,7 @@ function mapInstallmentHistoryRow(row: Row): InstallmentHistoryItem {
     amountMinor: numberValue(row.amountMinor),
     currency: text(row.currency),
     editable: blockedReason === undefined,
+    amountEditable: canEditInstallmentAmount(row),
   };
 
   if (row.initialSequenceNumber !== null && row.initialSequenceNumber !== undefined) {
@@ -509,6 +518,18 @@ function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
     kind: lower(row.categoryKind),
     status: lower(row.categoryStatus),
   };
+}
+
+/**
+ * Amount adjustment has its own eligibility: posted-but-unreconciled parcels may
+ * be corrected without enabling generic edits to posted transaction metadata.
+ */
+export function canEditInstallmentAmount(row: Readonly<Record<string, unknown>>): boolean {
+  if (!row.transactionId || !row.transactionStatus || row.invoiceId || row.transactionCardId) return false;
+  const installmentStatus = lower(row.status);
+  const transactionStatus = lower(row.transactionStatus);
+  return (installmentStatus === "planned" && transactionStatus === "planned") ||
+    (installmentStatus === "posted" && transactionStatus === "posted");
 }
 
 export function resolveEditBlockedReason(
