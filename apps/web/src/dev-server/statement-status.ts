@@ -56,8 +56,15 @@ export function renderStatementStatusControl(
   const label = escapeStatusHtml(presentation.label);
   const options = allowed
     ? transaction.status === "reconciled"
-      ? [{ status: "posted", text: "Desconciliar", iconHtml: POSTED_ICON }]
-      : [{ status: "reconciled", text: "Marcar como conciliado", iconHtml: icon("check", 18) }]
+      ? [{ status: "posted", text: "Desconciliar", iconHtml: POSTED_ICON, tone: "posted" }]
+      : [
+          {
+            status: "reconciled",
+            text: "Marcar como conciliado",
+            iconHtml: icon("check", 15),
+            tone: "ok",
+          },
+        ]
     : [];
   const items = options.length
     ? options
@@ -73,9 +80,11 @@ export function renderStatementStatusControl(
             option.text +
             '" data-tooltip="' +
             option.text +
-            '">' +
+            '"><span class="statement-status statement-status-' +
+            option.tone +
+            '" aria-hidden="true">' +
             option.iconHtml +
-            "</button>",
+            "</span></button>",
         )
         .join("")
     : '<span class="statement-status-readonly" role="img" aria-label="' +
@@ -84,9 +93,9 @@ export function renderStatementStatusControl(
       escapeStatusHtml(restriction) +
       '" data-tooltip="' +
       escapeStatusHtml(restriction) +
-      '">' +
-      icon("lock", 18) +
-      "</span>";
+      '"><span class="statement-status statement-status-pending" aria-hidden="true">' +
+      icon("lock", 15) +
+      "</span></span>";
   return (
     '<details class="statement-status-control col-status" data-statement-status-control>' +
     '<summary aria-label="Situação: ' +
