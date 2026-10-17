@@ -129,7 +129,7 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.doesNotMatch(script, /data-installment-edit.*data-edit-purchase/s);
   assert.match(script, /INSTALLMENT_EDIT_BLOCKED/);
   assert.match(script, /Recarregar estado atual/);
-  assert.match(script, /rememberAndSet\(saveButton, "hidden", !editable\)/);
+  assert.match(script, /rememberAndSet\(saveButton, "hidden", !anyEditable\)/);
   assert.match(script, /data-installment-reload/);
   assert.ok(script.includes('attachments.dataset.entityId = installment.transaction?.id || ""'));
   assert.ok(script.includes("window.SolverFinAttachments?.resetPending(attachments)"));
@@ -157,4 +157,17 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /aria-describedby/);
   assert.match(script, /installment-assistive-text/);
   assert.match(script, /installmentBlockReason/);
+});
+
+test("installment value correction sends only changed cents and keeps metadata protected on posted records", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes("const amountEditable = installment.amountEditable === true"));
+  assert.ok(script.includes('name="adjustedInstallmentAmount"'));
+  assert.ok(script.includes("parseInstallmentAmount(value)"));
+  assert.ok(script.includes("patch.amountMinor = cents"));
+  assert.ok(script.includes('rememberAndSet(saveButton, "hidden", !anyEditable)'));
+  assert.ok(script.includes("Ajuste somente o valor desta parcela"));
+  assert.ok(script.includes("sem redistribuir as demais"));
+  assert.ok(script.includes("installment.editable === true && !form.description.value.trim()"));
+  assert.ok(script.includes('method: "PATCH"'));
 });
