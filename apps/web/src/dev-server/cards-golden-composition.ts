@@ -202,5 +202,49 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-invoice-actions .sf-button{white-space:normal;width:100%}
       .cards-invoice-period-row{grid-template-columns:40px minmax(0,1fr) 40px}
     }
+    /* Invoice decision workspace: one primary action and a grouped secondary toolbar. */
+    .cards-invoice-navigation{background:var(--bg);padding:6px 14px}
+    .cards-invoice-period-row,.cards-invoice-period-link{min-width:0}
+    .cards-invoice-period-link:focus-visible,.cards-month-picker>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .cards-invoice-current>strong{letter-spacing:-.015em}
+    .cards-month-picker>summary{background:var(--surface);border:1px solid var(--line);border-radius:8px;font-weight:700;min-height:44px;padding:7px 10px}
+    .cards-month-picker[open]>summary{background:var(--primary-soft);border-color:var(--primary)}
+    .cards-invoice-header{align-items:start;column-gap:20px;display:grid;grid-template-areas:"context amount" "secondary amount";grid-template-columns:minmax(0,1fr) minmax(220px,auto);padding:13px 16px;row-gap:8px}
+    .cards-invoice-title-block{gap:5px;grid-area:context;min-width:0}
+    .cards-invoice-title-row{gap:9px}
+    .cards-invoice-title-block h2{font-size:1.18rem;letter-spacing:-.02em}
+    .cards-invoice-metadata{align-items:baseline;display:flex;flex-wrap:wrap;gap:6px 18px;margin:0;min-width:0}
+    .cards-invoice-metadata>div{align-items:baseline;display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+    .cards-invoice-metadata dt{color:var(--muted);font-size:.73rem}
+    .cards-invoice-metadata dd{color:var(--text);font-size:.78rem;font-weight:700;margin:0}
+    .cards-invoice-secondary-actions{align-items:center;display:flex;flex-wrap:wrap;gap:7px;grid-area:secondary;min-width:0}
+    .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){min-height:44px}
+    .cards-invoice-documents{border:1px solid transparent;color:var(--primary);font-size:.78rem;padding:8px 10px}
+    .cards-close-invoice{font-size:.78rem;white-space:normal}
+    .cards-invoice-primary{align-items:end;border-left:1px solid var(--line);gap:5px;grid-area:amount;justify-items:end;min-width:0;padding-left:20px}
+    .cards-invoice-primary>span{font-size:.76rem}
+    .cards-invoice-primary>strong{font-size:1.65rem;font-variant-numeric:tabular-nums;line-height:1.2}
+    .cards-invoice-actions{margin-top:3px}
+    .cards-settlement-note{max-width:100%;text-align:right}
+    .cards-settlement-note>summary{display:inline-block;min-height:24px;padding:3px 0}
+    .cards-settlement-note p{line-height:1.4;text-align:left}
+    @media(max-width:760px){
+      .cards-invoice-navigation{padding:6px 10px}
+      .cards-invoice-header{align-items:stretch;display:grid;gap:9px;grid-template-areas:"amount" "context" "secondary";grid-template-columns:minmax(0,1fr);padding:11px 12px}
+      .cards-invoice-primary{align-items:start;border-bottom:1px solid var(--line);border-left:0;gap:4px;justify-items:start;order:0;padding:0 0 11px;width:100%}
+      .cards-invoice-primary>strong{font-size:1.65rem;text-align:left}
+      .cards-invoice-actions{justify-content:flex-start;margin-top:3px;width:100%}
+      .cards-invoice-actions .sf-button{max-width:300px;width:100%}
+      .cards-settlement-note{text-align:left}
+      .cards-invoice-title-block{gap:3px;order:0}
+      .cards-invoice-metadata{gap:5px 14px}
+      .cards-invoice-secondary-actions{gap:6px}
+      .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){flex:1 1 auto;justify-content:center;white-space:normal}
+    }
+    @media(max-width:350px){
+      .cards-invoice-header{padding:9px 10px}
+      .cards-invoice-primary>strong{font-size:1.55rem}
+      .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){font-size:.73rem;padding:7px 6px}
+    }
   `;
 }
