@@ -274,6 +274,7 @@ export function cardsGoldenCompositionStyles(): string {
       .cards-invoice-primary>strong{font-size:1.5rem}
       .cards-invoice-current>strong{font-size:.72rem;letter-spacing:-.03em;white-space:nowrap}
       .cards-invoice-secondary-actions{gap:2px}
+      .cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){font-size:.68rem;gap:3px;padding:7px 1px;white-space:nowrap}
       .cards-settlement-note{margin-left:0}
     }
 
