@@ -159,6 +159,18 @@ function transactionQueryKeepsPreviousBalanceWindow(): void {
   assert.equal(dailyQuery.get("occurredFrom"), null);
   assert.equal(dailyQuery.get("statementTo"), "2026-06-15");
   assert.equal(dailyQuery.get("plannedTo"), null);
+
+  const posted = new URLSearchParams(buildTransactionQuery({
+    ...dailyFilters, evidence: "posted",
+  }));
+  assert.equal(posted.get("occurredTo"), "2026-06-15");
+  assert.equal(posted.get("statementTo"), null);
+
+  const planned = new URLSearchParams(buildTransactionQuery({
+    ...dailyFilters, evidence: "planned",
+  }));
+  assert.equal(planned.get("plannedTo"), "2026-06-15");
+  assert.equal(planned.get("statementTo"), null);
 }
 
 function dayFilterKeepsOpeningBalanceAndDailyRows(): void {
