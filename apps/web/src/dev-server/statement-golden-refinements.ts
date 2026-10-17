@@ -704,20 +704,40 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-kind,${root} .statement-head .col-kind{display:none}
     ${root} .statement-body .col-balance{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;white-space:nowrap}
     ${root} .statement-body .col-description{min-width:0}
-    ${root} .statement-day-field{display:grid;gap:4px;min-width:0}
+    /* design-interface: dates are short fields; never give a day picker a broad grid span.
+       Keep the clear action beside the label instead of compressing the native calendar. */
+    ${root} .statement-day-field{display:grid;gap:4px;min-width:0;position:relative}
     ${root} .statement-day-field>label{color:var(--muted);font-size:.75rem}
-    ${root} .statement-day-controls{align-items:center;display:flex;gap:6px;min-width:0}
+    ${root} .statement-day-controls{align-items:center;display:flex;min-width:0}
     ${root} .statement-day-controls>input{box-sizing:border-box;flex:1 1 auto;min-width:0;min-height:40px;width:100%}
-    ${root} .statement-day-clear{background:var(--surface);border:1px solid var(--line);color:var(--primary);font-size:.72rem;min-height:40px;white-space:nowrap}
+    ${root} .filter-form .statement-day-clear{background:transparent;border:0;color:var(--primary);font-size:.7rem;min-height:26px;padding:0 3px;position:absolute;right:0;top:-5px;white-space:nowrap}
     ${root} .statement-day-clear[hidden]{display:none}
-    ${root} .statement-day-clear:hover:not(:disabled){background:var(--neutral-control-hover);color:var(--neutral-control-text-hover)}
+    ${root} .filter-form .statement-day-clear:hover:not(:disabled){background:var(--neutral-control-hover);color:var(--neutral-control-text-hover);text-decoration:underline}
+    @media(min-width:761px){
+      ${root} .filter-form>.statement-day-field{max-width:11.5rem;width:100%}
+    }
+    @media(min-width:1340px){
+      /* One balanced seven-track row: day, search, four selectors and actions.
+         Match the higher-specificity Golden options grid; no implicit tracks. */
+      ${root}[data-statement-options] .filter-form{
+        align-items:end;
+        grid-template-columns:minmax(10.5rem,11.5rem) minmax(13rem,1.5fr) repeat(4,minmax(8.75rem,1fr)) minmax(0,max-content);
+      }
+      ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
+      ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:auto}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:auto}
+      ${root}[data-statement-options] .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:auto}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto}
+    }
+    @media(min-width:1101px) and (max-width:1339px){
+      /* Reflow rather than squeeze a 7-column desktop bar into a narrow screen. */
+      ${root}[data-statement-options] .filter-form{grid-template-columns:minmax(10.5rem,11.5rem) repeat(2,minmax(0,1fr))}
+      ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
+      ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:1}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:2/-1}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
+    }
     @media(min-width:1101px){
-      ${root} .filter-form{grid-template-columns:repeat(20,minmax(0,1fr))}
-      ${root} .filter-form>.statement-period-shortcuts{grid-column:span 16}
-      ${root} .filter-form>.statement-day-field{grid-column:span 4}
-      ${root} .filter-form .statement-search-field{grid-column:span 4}
-      ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:span 3}
-      ${root} .filter-form .statement-filter-actions{grid-column:span 4}
       ${root} .statement-row.statement-body{padding-block:4px;row-gap:0}
       ${root} .statement-body .statement-row-metadata{justify-content:center}
       ${root} .statement-body .col-balance{color:var(--text);font-size:.8rem}
