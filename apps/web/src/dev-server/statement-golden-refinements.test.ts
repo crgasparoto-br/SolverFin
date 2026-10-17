@@ -208,3 +208,11 @@ assert.match(
   styles,
   /dialog\[data-modal\]:has\(form\[data-method="PATCH"\]\)\{height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\)\}/,
 );
+
+
+assert.match(styles, /statement-day-group>summary\.statement-date-group/);
+assert.match(styles, /statement-day-group:not\(\[open\]\) \.statement-day-chevron/);
+assert.match(styles, /grid-template-areas:"select icon date description category amount balance status actions"/);
+assert.match(styles, /\.statement-body \.col-kind[^}]*display:none/);
+assert.match(styles, /\.statement-body \.col-balance[^}]*text-align:right/);
+assert.match(styles, /statement-day-field\{display:grid/);
