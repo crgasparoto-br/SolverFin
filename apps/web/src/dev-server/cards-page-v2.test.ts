@@ -524,10 +524,19 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Situação: Conciliada\. Alterar situação/);
   assert.match(html, /Situação: Não conciliada\. Alterar situação/);
   assert.match(html, /Situação: Planejada\. Alterar situação/);
-  assert.match(html, /class="cards-purchase-status-current" role="img" aria-label="Situação atual: Conciliada"/);
+  assert.match(
+    html,
+    /class="cards-purchase-status-current" role="img" aria-label="Situação atual: Conciliada"/,
+  );
   assert.match(html, /data-set-purchase-status="posted" data-status-purchase-id="purchase-hotel"/);
-  assert.match(html, /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-coffee"/);
-  assert.match(html, /data-status-installment-id="installment-taxi-2" data-status-invoice-id="invoice-aug"/);
+  assert.match(
+    html,
+    /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-coffee"/,
+  );
+  assert.match(
+    html,
+    /data-status-installment-id="installment-taxi-2" data-status-invoice-id="invoice-aug"/,
+  );
   assert.doesNotMatch(html, /cards-purchase-status-current">Atual:/);
   assert.match(html, /data-cards-status-feedback-message/);
   assert.match(html, /status: targetStatus/);
@@ -536,7 +545,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes(".cards-purchase-status-menu>button.cards-purchase-status-option{"));
   assert.ok(html.includes(".cards-purchase-status{height:26px;width:26px}"));
   assert.ok(html.includes(".cards-purchase-status svg{height:15px;width:15px}"));
-  assert.match(html, /\.cards-purchase-status-control>summary:focus-visible\{outline:2px solid var\(--primary\)/);
+  assert.match(
+    html,
+    /\.cards-purchase-status-control>summary:focus-visible\{outline:2px solid var\(--primary\)/,
+  );
   assert.match(html, /class="cards-purchase-status-cell"/);
   assert.match(html, /title="Ações da compra"><svg[^>]*aria-hidden="true"/);
   assert.doesNotMatch(html, /Ações da compra[^>]*>•••<\/summary>/);
@@ -631,7 +643,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
 
   const sortedByAmount = await renderCardsPageV2(
     "session-token",
-    new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc"),
+    new URL(
+      "http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc",
+    ),
   );
   assert.doesNotMatch(sortedByAmount, /data-cards-day-groups/);
   assert.match(sortedByAmount, /data-instrument-purchase-group/);
