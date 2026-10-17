@@ -350,8 +350,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const closeAt = invoiceHeader.indexOf('data-api-path="/api/invoices/invoice-aug/close"');
   const documentsAt = invoiceHeader.indexOf('data-open-modal="invoice-attachments"');
   const paymentAt = invoiceHeader.indexOf('data-open-modal="payment"');
-  assert.ok(contextAt >= 0 && primaryAt > contextAt && secondaryAt > primaryAt);
+  assert.ok(primaryAt >= 0 && contextAt > primaryAt && secondaryAt > contextAt);
   assert.ok(paymentAt > primaryAt && paymentAt < secondaryAt);
+  assert.ok(invoiceHeader.indexOf("Valor a pagar") < contextAt);
   assert.ok(documentsAt > secondaryAt && closeAt > secondaryAt);
   assert.match(invoiceHeader, /role="group" aria-label="Outras ações da fatura"/);
   assert.match(invoiceHeader, /<dl class="cards-invoice-metadata"/);
@@ -360,13 +361,19 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(invoiceHeader, /<dt>Moeda<\/dt><dd>USD<\/dd>/);
   assert.equal((invoiceHeader.match(/class="sf-button sf-button-primary"/g) ?? []).length, 1);
   assert.ok(!invoiceHeader.slice(secondaryAt).includes("sf-button-primary"));
-  assert.ok(html.includes('grid-template-areas:"context amount" "secondary amount"'));
+  assert.ok(html.includes('grid-template-areas:"amount context" "secondary secondary"'));
   assert.ok(html.includes(".cards-invoice-heading-row{clip-path:inset(50%);height:1px"));
   assert.match(invoiceHeader, /<h2 id="cards-invoice-title">/);
+  assert.ok(html.includes("grid-template-columns:minmax(0,1.2fr) minmax(255px,.8fr)"));
+  assert.match(invoiceHeader, /<span class="cards-kicker">Situação da fatura<\/span>/);
   assert.ok(
     html.includes(
-      ".cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){min-height:44px}",
+      ".cards-invoice-secondary-actions :is(.cards-invoice-documents,.cards-close-invoice){align-items:center;background:transparent",
     ),
+  );
+  assert.ok(
+    invoiceHeader.indexOf('class="cards-settlement-note"') >
+      invoiceHeader.indexOf('class="cards-invoice-secondary-actions"'),
   );
   const purchaseHeaderStart = html.indexOf('class="cards-purchase-section-header"');
   const purchaseFilterStart = html.indexOf('class="cards-reconciliation-filters"');
@@ -426,7 +433,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /class="sf-button sf-button-secondary" data-open-modal="purchase"/);
   assert.doesNotMatch(html, /class="sf-button sf-button-primary" data-open-modal="purchase"/);
   assert.match(html, /<span>Valor a pagar<\/span>\s*<strong>[\s\S]*?data-currency="USD"/);
-  assert.match(html, /<dt>Fechamento<\/dt>[\s\S]*?<dt>Vencimento<\/dt>/);
+  assert.match(html, /<dt>Vencimento<\/dt>[\s\S]*?<dt>Fechamento<\/dt>/);
   // Secondary filters are progressively disclosed, but selected non-default filters stay evident.
   assert.match(html, /<details class="cards-advanced-filters" open>/);
   assert.match(html, /Mais filtros · ativos/);
