@@ -355,3 +355,20 @@ independentemente do indicador visual de recorrencia; um item conciliado oferece
 menu neutro ja aprovado pela Golden Screen. Os bloqueios de compras no cartao,
 grupos financeiros e remuneracoes continuam validos. Nenhum botao novo ou modal
 concorrente deve ser criado apenas para reconciliar itens recorrentes.
+
+## Conciliação universal dos movimentos elegíveis — PR #720 (17/10/2026)
+
+O ícone interativo da coluna Situação oferece conciliar/desconciliar uma ocorrência individual
+para os estados `planned`, `posted` e `reconciled`, mesmo sem `effectiveOn`,
+incluindo parcelas finitas, ocorrências recorrentes e lançamentos avulsos.
+O envio permanece exclusivamente `PATCH /api/transactions/:id` com `{ status }`;
+não altera parcelas irmãs, regras de recorrência, datas ou valores.
+A proteção do domínio para parcelas continua vigente para **quaisquer outras alterações**.
+Compras de cartão/fatura, grupos financeiros, remuneração automática,
+sugestões ainda não confirmadas e lançamentos excluídos mantêm seus fluxos próprios.
+
+O menu de Situação exibe, no resumo, apenas o ícone sem texto redundante de estado,
+reutilizando exatamente o tom/ícone da coluna. O nome acessível
+`Situação atual: …`, o `title` e o `data-tooltip` preservam a interpretação
+sem depender exclusivamente de cor; controles mantêm foco e ações neutras
+da Golden Screen.
