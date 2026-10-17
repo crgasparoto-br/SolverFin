@@ -227,3 +227,20 @@ npm run test:integration
 
 Mudanças visuais ou de interação também devem executar o workflow de validação real em Chrome e
 preservar os artefatos aplicáveis ao cenário alterado.
+
+
+### Conciliacao individual de ocorrencias recorrentes (PR #720)
+
+O icone **Situacao** do Extrato deve permitir conciliar cada ocorrencia recorrente
+materializada, inclusive em estado `planned` (Previsto). A acao envia apenas
+`PATCH /api/transactions/:transactionId` com `{ "status": "reconciled" }`,
+referenciando o ID daquela ocorrencia. A data de efetivacao e definida pela
+regra de transicao do dominio; as outras ocorrencias, a definicao da recorrencia,
+valores, categoria, conta e datas previstas nao devem ser alterados.
+
+Apos conciliacao, o mesmo menu deve permitir **Desconciliar** (`status: posted`)
+sem desfazer a efetivacao. Recorrencias materializadas com `installmentId` podem
+usar a mesma atualizacao exclusivamente de status aceita pelo backend; grupos
+financeiros, compras do cartao, remuneracoes automaticas, sugestoes pendentes e
+lancamentos excluidos continuam sujeitos as restricoes atuais. A conciliacao
+**nao** equivale a editar toda a serie recorrente.
