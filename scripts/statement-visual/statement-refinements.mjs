@@ -37,6 +37,7 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
   try {
     for (const [width, height] of [
       [1366, 768],
+      [1665, 900],
       [390, 844],
       [320, 740],
     ]) {
@@ -48,6 +49,43 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       report.observations.push({ width, height, geometry, composition });
       assertStatementRefinements(geometry, width <= 760);
       assertMockupComposition(composition);
+      // Golden Screen proportion guard: fail when a new short date field expands
+      // across the filter bar or loses its baseline alignment with search.
+      const filterGeometry = await read(`(() => {
+        const field = document.querySelector('.filter-form [data-statement-day-field]');
+        const day = document.querySelector('.filter-form #filter-day');
+        const search = document.querySelector('.filter-form #statement-search');
+        if (!field || !day || !search) return { ready: false };
+        const dateRect = day.getBoundingClientRect();
+        const searchRect = search.getBoundingClientRect();
+        return {
+          ready: true,
+          dateWidth: dateRect.width,
+          searchWidth: searchRect.width,
+          dateTop: dateRect.top,
+          searchTop: searchRect.top,
+          dateMaxWidth: getComputedStyle(field).maxWidth,
+          dayVisible: dateRect.width > 0 && dateRect.height > 0,
+        };
+      })()`);
+      report.observations.at(-1).filterGeometry = filterGeometry;
+      assert.equal(filterGeometry.ready, true, 'Golden Screen day filter must exist.');
+      assert.equal(filterGeometry.dayVisible, true, 'Golden Screen day filter must be visible.');
+      if (width >= 1340) {
+        assert.ok(
+          filterGeometry.dateWidth >= 145 && filterGeometry.dateWidth <= 196,
+          `Day filter is disproportionate at ${width}px: ${JSON.stringify(filterGeometry)}`,
+        );
+        assert.ok(
+          filterGeometry.searchWidth > filterGeometry.dateWidth,
+          `Search must be wider than the date picker: ${JSON.stringify(filterGeometry)}`,
+        );
+        assert.ok(
+          Math.abs(filterGeometry.dateTop - filterGeometry.searchTop) <= 8,
+          `Day and search controls are vertically misaligned: ${JSON.stringify(filterGeometry)}`,
+        );
+      }
+      report.controls.push({ id: 'GS-DAY-FILTER-PROPORTIONS', width, status: 'passed' });
       await screenshot(cdp, join(outputDir, `statement-refinement-top-${width}x${height}.png`));
 
       await read("document.querySelector('.statement-secondary-actions>summary').focus()");
