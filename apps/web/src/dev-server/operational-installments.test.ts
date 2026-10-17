@@ -176,15 +176,12 @@ test("fixed recurring occurrences do not display finite installment badges", () 
   const script = operationalInstallmentsController();
   assert.ok(
     script.includes(
-      "if (installment.recurrenceId || Number(installment.totalInstallments) <= 0) return;",
+      "if (!installment.recurrenceId && Number(installment.totalInstallments) > 0) {",
     ),
   );
-  assert.ok(script.includes('return "Ocorrência " + installment.sequenceNumber;'));
-  assert.ok(
-    script.includes(
-      'return "Parcela " + installment.sequenceNumber + " de " + installment.totalInstallments;',
-    ),
-  );
+  assert.ok(script.includes('const total = Number(installment.totalInstallments) > 0'));
+  assert.ok(script.includes('return "Parcela " + installment.sequenceNumber + " de " + total;'));
+  assert.ok(script.includes('findNodeByData("script[data-purchase]", transactionId)'));
   assert.ok(script.includes("addBadge(row, installment)"));
 });
 
