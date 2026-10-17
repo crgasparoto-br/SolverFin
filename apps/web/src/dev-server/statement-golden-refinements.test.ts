@@ -217,6 +217,11 @@ assert.match(
 );
 assert.match(styles, /\.statement-body \.col-kind[^}]*display:none/);
 assert.match(styles, /\.statement-body \.col-balance[^}]*text-align:right/);
+assert.match(
+  styles,
+  /\.statement-head \.col-balance\{clip-path:none;grid-area:balance;height:auto;overflow:visible;position:static;text-align:right;width:auto\}/,
+);
+
 assert.match(styles, /statement-day-field\{display:grid/);
 
 // Design-interface regression: a date is a compact field in the existing Golden
