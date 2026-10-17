@@ -340,11 +340,17 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const summaryHtml = html.slice(summaryStart, purchaseHeadingStart);
   assert.equal((summaryHtml.match(/class="cards-summary-metric"/g) ?? []).length, 4);
   assert.doesNotMatch(summaryHtml, /class="cards-summary-icon"/);
-  assert.ok(html.includes(".cards-summary-metric{align-items:start;background:transparent;border:0;"));
+  assert.ok(
+    html.includes(".cards-summary-metric{align-items:start;background:transparent;border:0;"),
+  );
   assert.ok(html.includes(".cards-invoice-summary .sf-summary-grid{display:grid;gap:0;"));
-  assert.ok(html.includes(".cards-card-identity{align-items:center;background:transparent;border:0;"));
+  assert.ok(
+    html.includes(".cards-card-identity{align-items:center;background:transparent;border:0;"),
+  );
   assert.ok(html.includes(".cards-card-identity>div strong{display:none}"));
-  assert.ok(html.includes(".cards-instrument-group{border:0;border-top:1px solid(var--placeholder)".replace("solid(var--placeholder)", "solid var(--line)")));
+  assert.ok(
+    html.includes(".cards-instrument-group{border:0;border-top:1px solid var(--line)"),
+  );
   const limitMetricStart = summaryHtml.indexOf("Limite disponível");
   const limitDetailsStart = summaryHtml.indexOf('class="cards-limit-detail"');
   assert.ok(limitMetricStart >= 0 && limitDetailsStart > limitMetricStart);
