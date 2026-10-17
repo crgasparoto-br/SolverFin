@@ -285,7 +285,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
   assert.match(html, /data-open-modal="invoice-attachments"/);
-  assert.ok(html.includes("<span>Documentos da fatura</span>"));
+  assert.ok(html.includes("<span>Documentos</span>"));
   assert.match(html, /<dialog class="cards-dialog" data-modal="invoice-attachments"/);
   assert.match(html, /data-entity-kind="invoice" data-entity-id="invoice-aug"/);
   const firstInvoiceDialog = html.indexOf(
@@ -365,6 +365,14 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes(".cards-invoice-heading-row{clip-path:inset(50%);height:1px"));
   assert.match(invoiceHeader, /<h2 id="cards-invoice-title">/);
   assert.ok(html.includes("grid-template-columns:minmax(0,1.2fr) minmax(255px,.8fr)"));
+  assert.ok(
+    html.includes(
+      ".cards-invoice-secondary-actions{align-items:center;display:grid;gap:3px 6px;grid-template-columns:repeat(2,minmax(0,1fr))",
+    ),
+  );
+  assert.ok(
+    html.includes(".cards-invoice-current>strong{font-size:.72rem;letter-spacing:-.03em;white-space:nowrap}"),
+  );
   assert.match(invoiceHeader, /<span class="cards-kicker">Situação da fatura<\/span>/);
   assert.ok(
     html.includes(
