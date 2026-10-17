@@ -507,7 +507,7 @@ function renderCardMaster(
     : "/contas-cartoes";
   return `<section class="cards-master-panel" aria-labelledby="cards-master-title">
     <div class="cards-master-heading">
-      <div><h2 id="cards-master-title">Cartão selecionado</h2></div>
+      <div><h2 id="cards-master-title">Cartão</h2></div>
       <a class="cards-edit-link" href="${escapeHtml(manageHref)}">Gerenciar</a>
     </div>
     <form method="get" action="/cartoes" class="cards-card-picker" data-card-picker-form>
@@ -519,7 +519,7 @@ function renderCardMaster(
       selectedCard
         ? `<div class="cards-card-identity">
       <span class="cards-card-icon" aria-hidden="true">${institution ? renderInstitutionIcon(institution.key) : ""}</span>
-      <div><strong>${escapeHtml(selectedCard.name)}</strong><span>${escapeHtml(selectedCard.maskedIdentifier ?? "Identificador não informado")}</span></div>
+      <div><strong>${escapeHtml(selectedCard.name)}</strong>${selectedCard.maskedIdentifier ? `<span>${escapeHtml(selectedCard.maskedIdentifier)}</span>` : ""}</div>
       ${renderBadge({
         label: formatCardStatus(selectedCard.status),
         tone: selectedCard.status === "active" ? "positive" : "attention",
@@ -795,15 +795,7 @@ function renderInvoiceSummary(
 }
 
 function summaryMetric(label: string, valueHtml: string, extraHtml = ""): string {
-  const glyph =
-    label === "Conciliado"
-      ? "check-circle"
-      : label === "Não conciliado"
-        ? "clock"
-        : label === "Limite disponível"
-          ? "wallet"
-          : "receipt";
-  return `<section class="cards-summary-metric"><span class="cards-summary-icon" aria-hidden="true">${icon(glyph, 17)}</span><div class="cards-summary-copy"><span>${escapeHtml(label)}</span><strong>${valueHtml}</strong>${extraHtml}</div></section>`;
+  return `<section class="cards-summary-metric"><div class="cards-summary-copy"><span>${escapeHtml(label)}</span><strong>${valueHtml}</strong>${extraHtml}</div></section>`;
 }
 
 function renderPurchaseFilters(
