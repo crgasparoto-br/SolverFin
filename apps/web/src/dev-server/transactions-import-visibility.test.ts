@@ -42,7 +42,7 @@ function importedTransactionsRemainVisibleAndAffectBalances(): void {
 
   assert.equal(query.get("status"), "all");
   assert.equal(query.get("accountId"), account.id);
-  assert.equal(query.get("occurredTo"), "2026-06-30");
+  assert.equal(query.get("statementTo"), "2026-06-30");
   assert.equal(statementDate(importedIncome), "2026-06-10");
   assert.equal(statementDate(importedExpense), "2026-06-11");
 
