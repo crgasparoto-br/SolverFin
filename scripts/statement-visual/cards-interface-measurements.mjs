@@ -67,6 +67,10 @@ export async function validateCardsPage(
           const row = node.closest('[data-purchase-item]');
           const reconciled = row?.dataset.reconciliation === 'reconciled';
           const isReconciled = node.classList.contains('cards-purchase-status-reconciled');
+          const control = node.closest('[data-purchase-status-control]');
+          const trigger = control?.querySelector(':scope > summary');
+          const menu = control?.querySelector('.cards-purchase-status-menu');
+          const isInstallment = Boolean(row?.querySelector('[data-purchase]')?.textContent?.includes('"installmentId"'));
           return (
             Boolean(svg) &&
             visible(svg) &&
@@ -75,10 +79,32 @@ export async function validateCardsPage(
             node.getAttribute('aria-label') === node.dataset.tooltip &&
             node.textContent.trim() === '' &&
             node.getAttribute('role') === 'img' &&
-            node.tabIndex === 0 &&
+            trigger?.tabIndex === 0 &&
+            trigger?.getAttribute('aria-label')?.includes(node.getAttribute('aria-label')) &&
+            rect(trigger).width >= 44 && rect(trigger).height >= 44 &&
+            Boolean(menu) &&
+            (isInstallment
+              ? Boolean(menu.querySelector('.cards-purchase-status-readonly')) &&
+                !menu.querySelector('[data-set-purchase-status]')
+              : Boolean(menu.querySelector('[data-set-purchase-status]'))) &&
             reconciled === isReconciled
           );
         });
+      const actionableStatus = Array.from(
+        document.querySelectorAll('[data-purchase-status-control]'),
+      ).find((node) => node.querySelector('[data-set-purchase-status]'));
+      const actionableTrigger = actionableStatus?.querySelector(':scope > summary');
+      const actionableMenu = actionableStatus?.querySelector('.cards-purchase-status-menu');
+      if (actionableTrigger) actionableTrigger.click();
+      const statusMenuOperable = Boolean(
+        actionableStatus?.open && actionableMenu && visible(actionableMenu) &&
+        Array.from(actionableMenu.querySelectorAll('[data-set-purchase-status]')).every(
+          (button) => rect(button).height >= 44 && visible(button),
+        ) &&
+        rect(actionableMenu).left >= -1 &&
+        rect(actionableMenu).right <= window.innerWidth + 1,
+      );
+      if (actionableStatus) actionableStatus.open = false;
       const firstStatusSvg = statuses[0]?.querySelector('svg');
       const originalStatusVisibility = firstStatusSvg?.style.visibility || '';
       if (firstStatusSvg) firstStatusSvg.style.visibility = 'hidden';
@@ -400,6 +426,7 @@ export async function validateCardsPage(
         shellNegativeRejected: shellNegativeRejected && shellRestored,
         noRepeatedHeader,
         iconOnlyPurchaseStatuses: statusIconContract,
+        statusMenuOperable,
         statusIconNegativeRejected: statusIconNegativeRejected && statusIconRestored,
         purchaseActionIcons:
           actions.length > 0 &&
@@ -444,6 +471,11 @@ export async function validateCardsPage(
   check(
     measurements.instrumentLimitsBelowIdentity,
     "Instrument limits must appear below identifiers and start with Limite",
+    measurements,
+  );
+  check(
+    measurements.iconOnlyPurchaseStatuses && measurements.statusMenuOperable,
+    "Purchase status icon must open an accessible, correctly placed reconciliation menu",
     measurements,
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
