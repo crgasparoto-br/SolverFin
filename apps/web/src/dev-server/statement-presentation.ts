@@ -153,6 +153,14 @@ export function statementPresentationScript(): string {
           const clearButton = dayField?.querySelector("[data-clear-statement-day]");
           if (!monthInput || !form || !dayInput || !clearButton) return;
 
+          function clearPreviousRange() {
+            // A new day/month takes precedence over an earlier 7/30-day shortcut.
+            for (const name of ["from", "to"]) {
+              const hidden = form.querySelector('input[name="' + name + '"]');
+              if (hidden) hidden.disabled = true;
+            }
+          }
+
           function syncDayBounds(clearInvalid) {
             const monthValue = monthInput.value;
             dayInput.min = monthValue ? monthValue + "-01" : "";
@@ -174,18 +182,21 @@ export function statementPresentationScript(): string {
           if (dayInput.value) rewriteActiveDayCopy(form, dayInput.value);
 
           monthInput.addEventListener("change", () => {
+            clearPreviousRange();
             dayInput.disabled = false;
             dayInput.value = "";
             syncDayBounds(true);
           });
 
           dayInput.addEventListener("change", () => {
+            clearPreviousRange();
             dayInput.disabled = false;
             syncDayBounds(true);
             form.requestSubmit();
           });
 
           clearButton.addEventListener("click", () => {
+            clearPreviousRange();
             dayInput.disabled = false;
             dayInput.value = "";
             clearButton.hidden = true;
