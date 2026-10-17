@@ -189,6 +189,31 @@ async function assertCommonCardPurchaseEdit(
   assert.equal(result.transaction.installmentId, undefined);
   assert.equal(result.invoice.invoiceId, originalInvoiceId);
   assert.equal(result.invoice.totalExpensesMinor, purchase.invoice.totalAmountMinor + 500);
+  // The inline status control changes only reconciliation, never invoice totals or purchase fields.
+  const reconciled = await updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+    status: "reconciled",
+  });
+  assert.equal(reconciled.transaction.status, "reconciled");
+  assert.equal(reconciled.transaction.amountMinor, 2_500);
+  assert.equal(reconciled.transaction.description, result.transaction.description);
+  assert.equal(reconciled.invoice.totalExpensesMinor, result.invoice.totalExpensesMinor);
+  assert.equal(
+    reconciled.invoice.reconciledExpensesMinor - result.invoice.reconciledExpensesMinor,
+    result.transaction.status === "reconciled" ? 0 : 2_500,
+  );
+  const unreconciled = await updateCardPurchaseForContext(
+    CONTEXT,
+    cardId,
+    purchase.transaction.id,
+    { status: "posted" },
+  );
+  assert.equal(unreconciled.transaction.status, "posted");
+  assert.equal(unreconciled.transaction.amountMinor, 2_500);
+  assert.equal(unreconciled.invoice.totalExpensesMinor, result.invoice.totalExpensesMinor);
+  assert.equal(
+    unreconciled.invoice.reconciledExpensesMinor,
+    result.invoice.reconciledExpensesMinor - (result.transaction.status === "reconciled" ? 2_500 : 0),
+  );
 
   const row = await readTransaction(purchase.transaction.id);
   assert.equal(row.accountId, null);
