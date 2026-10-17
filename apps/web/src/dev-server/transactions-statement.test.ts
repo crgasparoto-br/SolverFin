@@ -147,7 +147,7 @@ function transactionQueryKeepsPreviousBalanceWindow(): void {
   assert.equal(monthlyQuery.get("status"), "all");
   assert.equal(monthlyQuery.get("accountId"), "account-1");
   assert.equal(monthlyQuery.get("occurredFrom"), null);
-  assert.equal(monthlyQuery.get("occurredTo"), "2026-06-30");
+  assert.equal(monthlyQuery.get("statementTo"), "2026-06-30");
   assert.equal(monthlyQuery.get("plannedTo"), null);
 
   const dailyFilters = resolveFilters(
@@ -157,7 +157,7 @@ function transactionQueryKeepsPreviousBalanceWindow(): void {
   const dailyQuery = new URLSearchParams(buildTransactionQuery(dailyFilters));
 
   assert.equal(dailyQuery.get("occurredFrom"), null);
-  assert.equal(dailyQuery.get("occurredTo"), "2026-06-15");
+  assert.equal(dailyQuery.get("statementTo"), "2026-06-15");
   assert.equal(dailyQuery.get("plannedTo"), null);
 }
 
