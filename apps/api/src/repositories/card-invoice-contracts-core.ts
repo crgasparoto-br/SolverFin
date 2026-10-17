@@ -156,7 +156,7 @@ export async function summarizeInvoiceForContext(
   const card = await findCard(context, invoice.cardId);
   const [totals] = await query<PurchaseTotalsRow>(
     `with invoice_occurrences as (
-       select t."status", t."amountMinor"
+       select t."status"::text as "status", t."amountMinor"
          from "Transaction" t
         where t."organizationId" = $1 and t."financialProfileId" = $2
           and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
@@ -167,7 +167,7 @@ export async function summarizeInvoiceForContext(
                and pi."financialProfileId" = t."financialProfileId"
           )
        union all
-       select i."status", i."amountMinor"
+       select i."status"::text as "status", i."amountMinor"
          from "Installment" i
          join "Transaction" p
            on p."id" = i."transactionId"
