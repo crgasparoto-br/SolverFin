@@ -232,7 +232,7 @@ function statementAccountPreferenceRuntime(): string {
         }
         if (explicitAccount) {
           // Deep links and explicit filter choices always override memory.
-          if (isAvailable(currentUrl.searchParams.get('accountId'))) remember();
+          if (currentUrl.searchParams.get('accountId') === input.value && isAvailable(input.value)) remember();
           return;
         }
         let stored;
