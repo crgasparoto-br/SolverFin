@@ -58,7 +58,7 @@ export async function validateCardsPage(
       const shellRestored = lightShell();
       const noRepeatedHeader = !visible(shellTitle) || !visible(pageTitle);
       const statuses = Array.from(
-        document.querySelectorAll('[data-purchase-item] .cards-purchase-status'),
+        document.querySelectorAll('[data-purchase-item] [data-purchase-status-control] > summary > .cards-purchase-status'),
       );
       const statusIconContract =
         statuses.length === rows.length &&
@@ -70,7 +70,9 @@ export async function validateCardsPage(
           const control = node.closest('[data-purchase-status-control]');
           const trigger = control?.querySelector(':scope > summary');
           const menu = control?.querySelector('.cards-purchase-status-menu');
-          const isInstallment = Boolean(row?.querySelector('[data-purchase]')?.textContent?.includes('"installmentId"'));
+          const canChange = trigger?.getAttribute('aria-label')?.includes('Alterar situação');
+          const action = menu?.querySelector('[data-set-purchase-status]');
+          const readonly = menu?.querySelector('.cards-purchase-status-readonly');
           return (
             Boolean(svg) &&
             visible(svg) &&
@@ -83,10 +85,9 @@ export async function validateCardsPage(
             trigger?.getAttribute('aria-label')?.includes(node.getAttribute('aria-label')) &&
             rect(trigger).width >= 44 && rect(trigger).height >= 44 &&
             Boolean(menu) &&
-            (isInstallment
-              ? Boolean(menu.querySelector('.cards-purchase-status-readonly')) &&
-                !menu.querySelector('[data-set-purchase-status]')
-              : Boolean(menu.querySelector('[data-set-purchase-status]'))) &&
+            (canChange
+              ? Boolean(action && action.querySelector('.cards-purchase-status svg[aria-hidden="true"]') && !readonly)
+              : Boolean(readonly && !action)) &&
             reconciled === isReconciled
           );
         });
