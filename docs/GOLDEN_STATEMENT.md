@@ -275,3 +275,26 @@ explícitas e visualmente subordinadas.
 ## Visão consolidada na mesma Golden Screen (decisão de 2026-10-14)
 
 A opção **Todas as contas** em `/lancamentos?accountId=all&currency=BRL&month=AAAA-MM` preserva o mesmo layout da conta individual, identifica a conta sob a descrição e soma saldos **somente de contas da moeda selecionada**. Na conta individual, transferências recebidas compõem Entradas e enviadas compõem Saídas (na moeda da conta). No modo consolidado, as transferências internas da mesma moeda não compõem os cards, mas as **transferências cambiais permanecem** como entradas/saídas na moeda filtrada, sem alterar a projeção do saldo. As previstas não entram no saldo efetivo, e o menu Ações permite editar, clonar, conciliar/desconciliar e excluir lançamentos existentes com a conta de origem real identificada (além de Ver na conta). Novo lançamento sem conta selecionada não pode ser salvo. O filtro de moeda é obrigatório nesse modo. Para regras, controles negativos e razão da decisão, consulte [ADR 0018](./adr/0018-golden-statement-consolidated-by-currency.md).
+
+
+## Ultima conta selecionada entre sessoes
+
+No Extrato (`/lancamentos`), ao escolher uma conta individual ou `Todas as contas`,
+a ultima selecao e lembrada no mesmo navegador, inclusive depois de encerrar a sessao
+e autenticar-se novamente. O identificador e salvo em `localStorage`, no escopo
+da combinacao **usuario autenticado + perfil financeiro ativo** (sem token, credencial,
+saldo ou informacao de lancamentos). Um usuario ou perfil diferente nunca reutiliza
+a selecao do anterior.
+
+Um link com `accountId` explicito prevalece sobre a preferencia local e passa a
+ser a nova selecao quando pertencer as contas disponiveis no perfil. Na entrada
+sem `accountId`, restaurar apenas uma conta disponivel no seletor ou a opcao
+`all`. Se a conta foi arquivada/removida, limpar a preferencia invalida e manter
+o fallback da tela. Um filtro `currency` explicito nao deve ser substituido por
+conta de outra moeda. Preservar mes, filtros e parametros ja informados na URL.
+Falhas da API de identidade/perfil ou indisponibilidade do armazenamento local
+nao impedem usar os filtros e formulario GET do Extrato.
+
+A preferencia e **local ao navegador/dispositivo**; sincronizacao entre dispositivos
+nao esta neste requisito. Logout invalida somente credenciais/sessao, sem apagar
+essa escolha. 
