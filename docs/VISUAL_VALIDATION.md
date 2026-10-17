@@ -230,3 +230,19 @@ O bloco de anexos inicia recolhido, com `<details><summary>Anexos do lançamento
 ### PR #720 — Recorrências fixas e escolha de escopo de valor (17/10/2026)
 
 No Extrato, recorrências fixas mostram somente o indicador próprio, sem `Parcela 2 de ?` (como Sabesp, CPFL e Telefônica do print). Parcelamentos finitos continuam com `Parcela N de M` (como Teste de parcelamento). Ao alterar valor de uma parcela, validar confirmação modal antes de persistir com opções **Somente esta parcela**, **Esta e as próximas** e **Voltar sem salvar**. A segunda só aparece quando existem parcelas posteriores; Escape e Voltar não salvam. Confirmar preservação das parcelas anteriores, conciliadas e canceladas, resposta `updatedCount/skippedCount`, erro 409 para série sem origem confiável e 404 fora do perfil. Validar desktop 1366×768, mobile 390×844 e teclado/foco.
+
+
+### PR #720 — Restaurar a ultima conta apos novo login (17/10/2026)
+
+Validar no navegador real, em desktop e mobile: selecionar a conta B, sair, entrar
+novamente, abrir `/lancamentos` sem `accountId` e verificar se conta B reaparece;
+repetir com `Todas as contas`. Confirmar que selecao de outro usuario ou outro
+perfil financeiro nao herda a conta, links com `accountId` prevalecem, conta
+inexistente/arquivada nao causa loop, moeda explicita nao e sobrescrita, e
+`month`/outros filtros permanecem inalterados. Verificar modo com JavaScript
+ou localStorage indisponivel (GET funcional), refresh, Escape/teclado do combobox,
+persistencia com selecao feita imediatamente apos login e ausencia de armazenamento
+de dados financeiros/credenciais.
+
+Os testes de runtime simulam abertura de nova sessao e perfis distintos;
+a homologacao real do Chrome segue necessaria no SHA final.
