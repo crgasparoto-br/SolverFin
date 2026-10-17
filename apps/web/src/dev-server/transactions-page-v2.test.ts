@@ -1,9 +1,60 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { renderTransactionsPageV2 } from "./transactions-page-v2.js";
+import { renderTransactionsPageV2, statementTodayInSaoPaulo } from "./transactions-page-v2.js";
 
 const originalFetch = globalThis.fetch;
+
+test("Today resolves Brazil's civil day across UTC midnight", () => {
+  assert.equal(statementTodayInSaoPaulo(new Date("2026-10-18T01:20:00.000Z")), "2026-10-17");
+  assert.equal(statementTodayInSaoPaulo(new Date("2026-11-01T03:10:00.000Z")), "2026-11-01");
+});
+
+test("Today shortcut uses the real current month and preserves the chosen profile/account", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?profileId=profile-custom&accountId=account-usd&month=2026-09&day=2026-09-15&kind=expense&currency=USD",
+      ),
+    );
+    const link = /data-period-shortcut="today" href="([^"]+)"/.exec(html);
+    assert.ok(link, "Today must be a navigable period shortcut");
+    const todayUrl = new URL(link[1]!.replaceAll("&amp;", "&"), "http://solverfin.test");
+    const today = statementTodayInSaoPaulo();
+    assert.equal(todayUrl.searchParams.get("month"), today.slice(0, 7));
+    assert.equal(todayUrl.searchParams.get("day"), today);
+    assert.equal(todayUrl.searchParams.get("profileId"), "profile-custom");
+    assert.equal(todayUrl.searchParams.get("accountId"), "account-usd");
+    assert.equal(todayUrl.searchParams.get("currency"), "USD");
+    assert.equal(todayUrl.searchParams.get("kind"), "expense");
+    assert.equal(todayUrl.searchParams.get("from"), null);
+    assert.equal(todayUrl.searchParams.get("to"), null);
+    assert.equal(todayUrl.searchParams.getAll("day").length, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("period heading shows real range, not month bounds, and daily filter has no duplicate active control", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const rangeHtml = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&from=2026-08-25&to=2026-09-07"),
+    );
+    assert.ok(rangeHtml.includes("Período 25/08/2026 – 07/09/2026"));
+    const dailyHtml = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&day=2026-09-07"),
+    );
+    assert.ok(dailyHtml.includes('<noscript><input type="hidden" name="day" value="2026-09-07"></noscript>'));
+    assert.ok(!dailyHtml.includes('<input type="hidden" name="day" value="2026-09-07"><input'));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
 
 test("A2 statement keeps account and USD currency explicit while sorting before render", async () => {
   globalThis.fetch = mockFetch([
