@@ -228,7 +228,6 @@ npm run test:integration
 Mudanças visuais ou de interação também devem executar o workflow de validação real em Chrome e
 preservar os artefatos aplicáveis ao cenário alterado.
 
-
 ### Conciliacao individual de ocorrencias recorrentes (PR #720)
 
 O icone **Situacao** do Extrato deve permitir conciliar cada ocorrencia recorrente

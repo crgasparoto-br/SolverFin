@@ -211,7 +211,7 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
     );
     assert.ok(!html.includes('data-status-transaction-id="recurring-grouped"'));
     assert.ok(!html.includes('data-status-transaction-id="recurring-voided"'));
-    assert.ok(html.includes('Situação: Previsto. Alterar situação'));
+    assert.ok(html.includes("Situação: Previsto. Alterar situação"));
     assert.ok(html.includes('role="group" aria-label="Situação do lançamento"'));
     assert.ok(
       html.includes('class="statement-status-feedback" role="status" aria-live="polite" hidden'),

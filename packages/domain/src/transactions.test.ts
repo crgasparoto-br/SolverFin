@@ -410,7 +410,11 @@ function testReconcileSinglePlannedRecurringOccurrence(): void {
   });
   assertEqual(mutation.transaction.id, "recurring-sep", "only selected occurrence is reconciled");
   assertEqual(mutation.transaction.status, "reconciled", "planned recurring occurrence reconciled");
-  assertEqual(mutation.transaction.effectiveOn, "2026-09-10", "effective date assigned on reconcile");
+  assertEqual(
+    mutation.transaction.effectiveOn,
+    "2026-09-10",
+    "effective date assigned on reconcile",
+  );
   assertEqual(
     mutation.transaction.reconciledAt,
     "2026-09-10T12:00:00.000Z",
@@ -427,7 +431,11 @@ function testReconcileSinglePlannedRecurringOccurrence(): void {
     account,
     payload: { status: "posted" },
   });
-  assertEqual(backToPosted.transaction.status, "posted", "reconciled occurrence can be unreconciled");
+  assertEqual(
+    backToPosted.transaction.status,
+    "posted",
+    "reconciled occurrence can be unreconciled",
+  );
   assertEqual(
     backToPosted.transaction.effectiveOn,
     mutation.transaction.effectiveOn,

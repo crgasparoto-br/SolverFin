@@ -278,7 +278,6 @@ reflow responsivo. Falhar quando o seletor de dia exceder 196px em desktop, quan
 for igual/maior que Busca ou quando os dois campos estiverem desalinhados
 verticalmente. Anexar capturas e medidas ao mesmo HEAD auditado.
 
-
 ### PR #720 — Conciliacao de recorrencia no icone Situacao
 
 Conferir no Chrome: ocorrencia fixa prevista com icone de relogio abre

@@ -345,7 +345,6 @@ A aceitação exige observação real de proporções, alturas, foco, contraste 
 de overflow em 1366x768, 1665x900 e nos breakpoints mobile. Toda alteração de
 padrão deve atualizar os testes e evidências da Golden Screen, não apenas o CSS.
 
-
 ## Situacao da ocorrencia recorrente no Extrato — PR #720
 
 O menu acessivel do icone de situacao deve habilitar `Marcar como conciliado`
