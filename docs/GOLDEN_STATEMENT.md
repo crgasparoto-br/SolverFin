@@ -374,3 +374,19 @@ reutilizando exatamente o tom/ícone da coluna. O nome acessível
 `Situação atual: …`, o `title` e o `data-tooltip` preservam a interpretação
 sem depender exclusivamente de cor; controles mantêm foco e ações neutras
 da Golden Screen.
+
+## Menu de Situação somente por ícones — PR #720 (17/10/2026)
+
+Na coluna Situação, o popover compacto mostra **apenas ícones**, inclusive
+situação atual, conciliar, desconciliar, ação bloqueada e feedback de
+processamento/sucesso/erro. O ícone de estado conserva o mesmo formato e tom
+da linha do extrato; as ações usam a variante neutra com alvo mínimo de
+44 × 44 px e estados de hover/foco com contraste legível, sem fundo escuro.
+
+Cada ação expõe o significado por `aria-label`, `title` e `data-tooltip`;
+restrições financeiras continuam explicadas em tooltip acessível.
+Feedback de erro conserva a mensagem para leitor de tela e em tooltip,
+sem voltar a criar um botão textual. Textos dos atributos acessíveis e
+tooltips **não** são rótulos visíveis permanentes.
+A submissão continua sendo somente `PATCH /api/transactions/:id`
+com `{ status }`, afetando uma única ocorrência.
