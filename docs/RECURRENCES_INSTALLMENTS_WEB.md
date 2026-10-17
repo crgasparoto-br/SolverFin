@@ -64,7 +64,9 @@ Em uma transferência fixa, o escopo **Este lançamento e os próximos** também
 
 As telas `/lancamentos` e `/cartoes` enriquecem as linhas já existentes com `Parcela X de Y`, associando o retorno de `/api/installments` por `transaction.id`. A consulta é única por tela/escopo e degradável: indisponibilidade da API de parcelas não bloqueia a lista principal. O Extrato usa o período da data operacional exibida, não apenas `dueOn`, e mantém as ações de edição temporariamente indisponíveis quando a elegibilidade não pode ser consultada. O endpoint genérico rejeita mutações de dados da parcela canônica, preservando somente o payload de situação usado para conciliar ou desconciliar.
 
-No Extrato, a ação da própria linha abre o modal existente em modo restrito. Apenas descrição, observação e categoria podem ser alteradas quando `editable=true`; número, total, vencimento, valor, situação, conta, tipo e repetição permanecem somente leitura. Quando bloqueada, a mesma ação abre detalhes compactos com o motivo traduzido.
+No Extrato, a ação da própria linha abre o modal existente em modo restrito. Descrição, observação e categoria podem ser alteradas quando `editable=true`. O valor da parcela aparece em campo monetário dedicado quando `amountEditable=true`, incluindo parcelas **efetivadas não conciliadas**. O ajuste corrige apenas a parcela selecionada e o lançamento vinculado, preservando as demais parcelas, situação, conta e datas. Para parcelas efetivadas, os outros metadados permanecem bloqueados. Parcelas conciliadas, canceladas e ligadas à fatura continuam sem ajuste direto. Número, total e vencimento nunca são alterados nesse formulário.
+
+Os anexos do lançamento ficam dentro de um `details` fechado inicialmente, com botão/linha **Anexos do lançamento** para comprimir ou expandir tal como `Mais opções`. O recolhimento não altera vínculo, permissões, upload ou listagem dos anexos.
 
 Em Cartões, a parcela apenas identifica a compra. A manutenção continua usando o contrato da compra, respeitando o bloqueio da fatura. `invoice_linked` não cria bloqueio adicional sobre uma compra que já seja editável.
 
