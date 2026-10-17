@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { canEditInstallmentAmount, resolveEditBlockedReason } from "./installments.js";
+import { canEditInstallmentAmount, readManualInstallmentFamily, resolveEditBlockedReason } from "./installments.js";
 
 for (const transactionStatus of ["PLANNED", "POSTED", "RECONCILED", "CANCELLED"]) {
   test(`invoice-linked installment takes precedence over ${transactionStatus.toLowerCase()} transaction status`, () => {
@@ -60,4 +60,29 @@ test("only planned and posted unconciliated account installments allow amount ad
   assert.equal(canEditInstallmentAmount({ ...base, cardId: "card-demo" }), false);
   assert.equal(canEditInstallmentAmount({ ...base, transactionCardId: "card-demo" }), false);
   assert.equal(canEditInstallmentAmount({ ...base, transactionId: null }), false);
+});
+
+test("manual installment family requires immutable, unique creation-receipt provenance", () => {
+  const response = { installments: [
+    { id: "three", sequenceNumber: 3 },
+    { id: "one", sequenceNumber: 1 },
+    { id: "two", sequenceNumber: 2 },
+  ] };
+  assert.deepEqual(readManualInstallmentFamily(response, "two"), [
+    { id: "one", sequenceNumber: 1 },
+    { id: "two", sequenceNumber: 2 },
+    { id: "three", sequenceNumber: 3 },
+  ]);
+  assert.deepEqual(readManualInstallmentFamily(response, "not-in-series"), []);
+  assert.deepEqual(readManualInstallmentFamily({ installments: [
+    { id: "one", sequenceNumber: 1 }, { id: "one", sequenceNumber: 2 },
+  ] }, "one"), []);
+  assert.deepEqual(readManualInstallmentFamily({ installments: [
+    { id: "one", sequenceNumber: 1 }, { id: "two", sequenceNumber: 1 },
+  ] }, "one"), []);
+  assert.deepEqual(readManualInstallmentFamily({ installments: [
+    { id: "one", sequenceNumber: 1 }, { id: "two", sequenceNumber: 0 },
+  ] }, "one"), []);
+  assert.deepEqual(readManualInstallmentFamily({ installments: [] }, "one"), []);
+  assert.deepEqual(readManualInstallmentFamily(null, "one"), []);
 });
