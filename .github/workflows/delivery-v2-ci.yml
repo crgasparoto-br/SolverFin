@@ -186,7 +186,13 @@ jobs:
       - run: npm run prisma:validate
       - run: npm run db:seed:check
       - name: Enforce complete repository formatting
+        id: formatting
         run: npm run format:check
+      - name: Diagnose Prettier drift without weakening formatting gate
+        if: ${{ failure() && steps.formatting.outcome == 'failure' }}
+        run: |
+          npx prettier apps/web/src/dev-server/transactions-page-v2.test.ts --write
+          git --no-pager diff -- apps/web/src/dev-server/transactions-page-v2.test.ts
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run prisma:generate
