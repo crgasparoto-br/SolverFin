@@ -351,7 +351,7 @@ function renderFilters(
   presentation: StatementPresentation,
   url: URL | undefined,
   categories: readonly CategoryRecord[],
-  consolidatedCurrency?: string,
+  consolidatedCurrency: string | undefined,
   availableCurrencies: readonly string[],
   resolvedPeriod: { startsOn: string; endsOn: string; day?: string },
 ): string {
