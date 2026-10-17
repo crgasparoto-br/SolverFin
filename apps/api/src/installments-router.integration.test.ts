@@ -43,6 +43,7 @@ async function main(): Promise<void> {
   await assertRejectsGenericPostingOfPlannedInstallment(token, editableInstallment);
   await assertAllowsGenericReconciliation(token, reconciliationInstallment);
   await assertFiltersOperationalPeriod(token, reconciliationInstallment, account.id);
+  await assertUpdatesPostedInstallmentAmount(token, reconciliationInstallment);
   await assertUpdatesEligibleInstallment(
     token,
     editableInstallment.installmentId,
@@ -251,6 +252,49 @@ async function assertFiltersOperationalPeriod(
   assert.equal(dueOnlyIds.includes(ref.installmentId), false);
 }
 
+async function assertUpdatesPostedInstallmentAmount(
+  token: string,
+  ref: InstallmentRef,
+): Promise<void> {
+  // This is the operational state of a posted, unreconciled account parcel.
+  await getPool().query(
+    `update "Installment" set "status" = 'POSTED' where "id" = $1`,
+    [ref.installmentId],
+  );
+  const original = await readInstallment(token, ref.installmentId);
+  assert.equal(original.editable, false);
+  assert.equal(original.amountEditable, true);
+
+  const amountMinor = original.amountMinor + 125;
+  const patch = await apiRequest(token, "PATCH", `/api/installments/${ref.installmentId}`, { amountMinor });
+  assert.equal(patch.statusCode, 200);
+  const updated = await readInstallment(token, ref.installmentId);
+  assert.equal(updated.amountMinor, amountMinor);
+  assert.equal(updated.transaction?.amountMinor, amountMinor);
+  assert.equal(updated.transaction?.status, "posted");
+
+  // Metadata is still locked for a posted installment.
+  const blockedMetadata = await apiRequest(token, "PATCH", `/api/installments/${ref.installmentId}`, {
+    description: "Mudança não permitida em parcela efetivada",
+  });
+  assert.equal(blockedMetadata.statusCode, 409);
+  assert.equal(readErrorCode(blockedMetadata), "INSTALLMENT_EDIT_BLOCKED");
+
+  const reconcile = await apiRequest(token, "PATCH", `/api/transactions/${ref.transactionId}`, {
+    status: "reconciled",
+  });
+  assert.equal(reconcile.statusCode, 200);
+  const reconciled = await readInstallment(token, ref.installmentId);
+  assert.equal(reconciled.amountEditable, false);
+  const blockedAmount = await apiRequest(token, "PATCH", `/api/installments/${ref.installmentId}`, {
+    amountMinor: amountMinor + 100,
+  });
+  assert.equal(blockedAmount.statusCode, 409);
+  assert.equal(readErrorCode(blockedAmount), "INSTALLMENT_EDIT_BLOCKED");
+  const unchanged = await readInstallment(token, ref.installmentId);
+  assert.equal(unchanged.amountMinor, amountMinor);
+}
+
 async function assertRevalidatesConcurrentStateChange(
   token: string,
   ref: InstallmentRef,
@@ -351,7 +395,7 @@ async function assertRejectsInvalidInstallmentPatch(
   installmentId: string,
 ): Promise<void> {
   const response = await apiRequest(token, "PATCH", `/api/installments/${installmentId}`, {
-    amountMinor: 1,
+    amountMinor: 0,
   });
 
   assert.equal(response.statusCode, 400);
@@ -518,5 +562,6 @@ interface ApiInstallmentHistory {
   };
   category?: { id: string };
   editable: boolean;
+  amountEditable: boolean;
   editBlockedReason?: string;
 }
