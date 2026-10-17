@@ -497,9 +497,13 @@ export async function validateStatementContextualSurfaces(
       );
       await activate(`${reconciliationControl} > summary`);
       await inspectIconOnlyMenu("reconciled", initialLabel);
-      await capture("reconciliation", width, height, "[data-contextual-reconciliation] .statement-status-menu", {
-        canonicalScope: "Single-transaction status-only PATCH from icon menu",
-      });
+      await capture(
+        "reconciliation",
+        width,
+        height,
+        "[data-contextual-reconciliation] .statement-status-menu",
+        { canonicalScope: "Single-transaction status-only PATCH from icon menu" },
+      );
       await activate(`${reconciliationControl} [data-set-statement-status="reconciled"]`);
       await sleep(600);
       const status = await read(
