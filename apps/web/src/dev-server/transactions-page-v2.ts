@@ -407,11 +407,24 @@ function renderFilters(
   })();
   const currentMonth = todayIso.slice(0, 7);
   const periodShortcuts = [
-    shortcut("today", "Hoje", { month: currentMonth, day: todayIso }, day === todayIso && !rangeSelected),
-    shortcut("last7", "7 dias", { month: currentMonth, from: dayOffset(6), to: todayIso },
-      rangeSelected && activePeriod.startsOn === dayOffset(6) && activePeriod.endsOn === todayIso),
-    shortcut("last30", "30 dias", { month: currentMonth, from: dayOffset(29), to: todayIso },
-      rangeSelected && activePeriod.startsOn === dayOffset(29) && activePeriod.endsOn === todayIso),
+    shortcut(
+      "today",
+      "Hoje",
+      { month: currentMonth, day: todayIso },
+      day === todayIso && !rangeSelected,
+    ),
+    shortcut(
+      "last7",
+      "7 dias",
+      { month: currentMonth, from: dayOffset(6), to: todayIso },
+      rangeSelected && activePeriod.startsOn === dayOffset(6) && activePeriod.endsOn === todayIso,
+    ),
+    shortcut(
+      "last30",
+      "30 dias",
+      { month: currentMonth, from: dayOffset(29), to: todayIso },
+      rangeSelected && activePeriod.startsOn === dayOffset(29) && activePeriod.endsOn === todayIso,
+    ),
     shortcut(
       "thisMonth",
       "Este mês",

@@ -386,9 +386,7 @@ function testListAndUpdateTransactions(): void {
 }
 
 function testStatementDateCutoffMatchesDisplayedDate(): void {
-  const base = createTransactionFixture(
-    tenantA, "statement-date-base", "expense", "account-list",
-  );
+  const base = createTransactionFixture(tenantA, "statement-date-base", "expense", "account-list");
   const postedTodayDespiteLaterOccurrence: Transaction = {
     ...base,
     id: "today-effective",

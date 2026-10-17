@@ -246,7 +246,6 @@ de dados financeiros/credenciais.
 Os testes de runtime simulam abertura de nova sessao e perfis distintos;
 a homologacao real do Chrome segue necessaria no SHA final.
 
-
 ### PR #720 — Validação do filtro Hoje (17/10/2026)
 
 1. Em `/lancamentos`, partindo de um mês anterior, selecionar **Hoje**; conferir que `month` e `day` representam o dia civil atual de São Paulo, sem `from`/`to` antigos, que o período visível corresponde ao filtro efetivo e que o extrato mostra apenas movimentações do dia.

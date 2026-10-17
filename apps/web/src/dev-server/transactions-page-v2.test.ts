@@ -42,14 +42,22 @@ test("period heading shows real range, not month bounds, and daily filter has no
   try {
     const rangeHtml = await renderTransactionsPageV2(
       "session-token",
-      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&from=2026-08-25&to=2026-09-07"),
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&from=2026-08-25&to=2026-09-07",
+      ),
     );
     assert.ok(rangeHtml.includes("Período 25/08/2026 – 07/09/2026"));
     const dailyHtml = await renderTransactionsPageV2(
       "session-token",
-      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&day=2026-09-07"),
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&day=2026-09-07",
+      ),
     );
-    assert.ok(dailyHtml.includes('<noscript><input type="hidden" name="day" value="2026-09-07"></noscript>'));
+    assert.ok(
+      dailyHtml.includes(
+        '<noscript><input type="hidden" name="day" value="2026-09-07"></noscript>',
+      ),
+    );
     assert.ok(!dailyHtml.includes('<input type="hidden" name="day" value="2026-09-07"><input'));
   } finally {
     globalThis.fetch = originalFetch;

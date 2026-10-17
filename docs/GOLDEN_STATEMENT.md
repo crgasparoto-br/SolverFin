@@ -298,7 +298,6 @@ A preferencia e **local ao navegador/dispositivo**; sincronizacao entre disposit
 nao esta neste requisito. Logout invalida somente credenciais/sessao, sem apagar
 essa escolha.
 
-
 ## Atalhos de período — Hoje e intervalos relativos (17/10/2026)
 
 Na Golden Screen do Extrato, **Hoje** consulta o dia civil de São Paulo (`America/Sao_Paulo`), independentemente do relógio UTC da VPS, e atualiza conjuntamente `month` e `day`. Os atalhos de 7/30 dias definem limites reais `from`/`to` e exibem o período efetivo; atalhos não podem manter um dia ou intervalo antigo nem perder `profileId`, `accountId`, moeda, pesquisa ou demais filtros.
