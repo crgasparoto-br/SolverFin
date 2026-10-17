@@ -447,6 +447,10 @@ export async function validateStatementContextualSurfaces(
           const menu = control?.querySelector(".statement-status-menu");
           const current = menu?.querySelector(".statement-status-current");
           const action = menu?.querySelector("[data-set-statement-status=" + ${JSON.stringify(nextStatus)} + "]");
+          const currentCircle = current?.querySelector(".statement-status");
+          const actionCircle = action?.querySelector(".statement-status");
+          const currentGlyph = currentCircle?.querySelector("svg");
+          const actionGlyph = actionCircle?.querySelector("svg");
           const rect = menu?.getBoundingClientRect();
           return {
             open: Boolean(control?.open),
@@ -458,6 +462,10 @@ export async function validateStatementContextualSurfaces(
             menuTextless: Boolean(menu) && !menu.textContent.trim(),
             width: rect?.width ?? 0,
             actionTarget: action?.getBoundingClientRect().width ?? 0,
+            currentCircle: currentCircle?.getBoundingClientRect().width ?? 0,
+            actionCircle: actionCircle?.getBoundingClientRect().width ?? 0,
+            currentGlyph: currentGlyph?.getBoundingClientRect().width ?? 0,
+            actionGlyph: actionGlyph?.getBoundingClientRect().width ?? 0,
             inside: Boolean(rect) && rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && rect.bottom <= innerHeight,
           };
         })()`);
@@ -483,6 +491,10 @@ export async function validateStatementContextualSurfaces(
         );
         assert.ok(state.width <= 160, "Status menu must remain compact");
         assert.ok(state.actionTarget >= 44, "Status action touch target must be at least 44px");
+        assert.equal(state.currentCircle, 26, "Current status circle must be 26px");
+        assert.equal(state.actionCircle, 26, "Action status circle must match the current one");
+        assert.equal(state.currentGlyph, 15, "Current glyph must be 15px");
+        assert.equal(state.actionGlyph, 15, "Action glyph must match the current one");
         assert.equal(state.inside, true, "Status popover must stay inside the viewport");
         report.controls.push({
           id: "GS-STATUS-ICON-ONLY",
