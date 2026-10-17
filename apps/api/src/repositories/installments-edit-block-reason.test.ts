@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { resolveEditBlockedReason } from "./installments.js";
+import { canEditInstallmentAmount, resolveEditBlockedReason } from "./installments.js";
 
 for (const transactionStatus of ["PLANNED", "POSTED", "RECONCILED", "CANCELLED"]) {
   test(`invoice-linked installment takes precedence over ${transactionStatus.toLowerCase()} transaction status`, () => {
@@ -47,4 +47,17 @@ test("non-invoice installments retain status-specific reasons", () => {
     "installment_status_locked",
   );
   assert.equal(resolveEditBlockedReason({ status: "PLANNED" }), "linked_transaction_missing");
+});
+
+test("only planned and posted unconciliated account installments allow amount adjustment", () => {
+  const base = { transactionId: "transaction-demo", transactionStatus: "PLANNED", status: "PLANNED" };
+  assert.equal(canEditInstallmentAmount(base), true);
+  assert.equal(canEditInstallmentAmount({ ...base, status: "POSTED", transactionStatus: "POSTED" }), true);
+  assert.equal(canEditInstallmentAmount({ ...base, transactionStatus: "POSTED" }), false);
+  assert.equal(canEditInstallmentAmount({ ...base, status: "RECONCILED", transactionStatus: "RECONCILED" }), false);
+  assert.equal(canEditInstallmentAmount({ ...base, status: "CANCELLED", transactionStatus: "CANCELLED" }), false);
+  assert.equal(canEditInstallmentAmount({ ...base, invoiceId: "invoice-demo" }), false);
+  assert.equal(canEditInstallmentAmount({ ...base, cardId: "card-demo" }), false);
+  assert.equal(canEditInstallmentAmount({ ...base, transactionCardId: "card-demo" }), false);
+  assert.equal(canEditInstallmentAmount({ ...base, transactionId: null }), false);
 });
