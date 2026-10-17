@@ -149,6 +149,26 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
       status: "planned",
       effectiveOn: undefined,
     },
+    {
+      ...transaction("finite-planned", "Parcela finita prevista", 900, "2026-08-06"),
+      status: "planned",
+      effectiveOn: undefined,
+      installmentId: "installment-one",
+    },
+    {
+      ...transaction("finite-posted", "Parcela finita efetivada", 950, "2026-08-06"),
+      installmentId: "installment-two",
+    },
+    {
+      ...transaction("finite-reconciled", "Parcela finita conciliada", 980, "2026-08-06"),
+      status: "reconciled",
+      installmentId: "installment-three",
+    },
+    {
+      ...transaction("suggested-row", "Sugestão sem confirmação", 990, "2026-08-06"),
+      status: "suggested",
+      effectiveOn: undefined,
+    },
     { ...transaction("card-row", "Compra protegida", 1100, "2026-08-06"), cardId: "card-one" },
     {
       ...transaction("recurring-planned", "Conta fixa prevista", 2500, "2026-08-07"),
@@ -189,11 +209,20 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
     assert.ok(html.includes('data-status-transaction-id="reconciled-row">Desconciliar</button>'));
     assert.ok(html.includes("Situação: Efetivado não conciliado. Alterar situação"));
     assert.ok(html.includes("Situação: Conciliado. Alterar situação"));
-    assert.ok(html.includes("Situação: Previsto. Ver restrição de alteração"));
-    assert.ok(html.includes("Efetive o lançamento na edição antes de conciliar"));
+    assert.ok(html.includes('data-status-transaction-id="planned-row">Marcar como conciliado</button>'));
+    assert.ok(html.includes('data-status-transaction-id="finite-planned">Marcar como conciliado</button>'));
+    assert.ok(html.includes('data-status-transaction-id="finite-posted">Marcar como conciliado</button>'));
+    assert.ok(html.includes('data-status-transaction-id="finite-reconciled">Desconciliar</button>'));
     assert.ok(html.includes("Altere a conciliação na fatura do cartão"));
-    assert.ok(!html.includes('data-status-transaction-id="planned-row"'));
+    assert.ok(!html.includes("Este lançamento exige manutenção pelo fluxo de parcelas."));
+    assert.ok(!html.includes('data-status-transaction-id="suggested-row"'));
     assert.ok(!html.includes('data-status-transaction-id="card-row"'));
+    assert.ok(html.includes("Confirme a sugestão antes de conciliar."));
+    assert.match(
+      html,
+      /class="statement-status-current statement-status statement-status-posted" role="img" aria-label="Situação atual: Efetivado não conciliado" title="Efetivado não conciliado"/,
+    );
+    assert.ok(!html.includes("Atual: Efetivado não conciliado"));
     assert.ok(
       html.includes(
         'data-status-transaction-id="recurring-planned">Marcar como conciliado</button>',
