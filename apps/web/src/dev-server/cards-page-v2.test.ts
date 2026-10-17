@@ -504,8 +504,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /name="day"/);
   assert.equal((html.match(/name="day"/g) ?? []).length, 1);
   assert.match(html, /class="cards-purchase-day-filter"/);
-  assert.match(html, /data-cards-day-groups/);
-  assert.match(html, /data-cards-day-group data-day="2026-08-19" open/);
+  assert.doesNotMatch(html, /data-cards-day-groups/);
+  assert.doesNotMatch(html, /data-cards-day-group data-day="2026-08-19" open/);
   assert.match(html, /Dia da fatura/);
   // Fail-closed CSS guards for long descriptions, explicit currencies and compact mobile.
   assert.match(
@@ -634,6 +634,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.match(byDay, /value="2026-08-19"/);
   assert.match(byDay, /class="cards-clear-day" href="\/cartoes\?[^"]*cardId=card-usd/);
+  assert.match(byDay, /data-cards-day-groups/);
   assert.match(byDay, /data-day="2026-08-19" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-18" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-20" open/);
