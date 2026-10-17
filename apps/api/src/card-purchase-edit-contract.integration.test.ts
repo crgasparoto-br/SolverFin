@@ -201,18 +201,16 @@ async function assertCommonCardPurchaseEdit(
     reconciled.invoice.reconciledExpensesMinor - result.invoice.reconciledExpensesMinor,
     result.transaction.status === "reconciled" ? 0 : 2_500,
   );
-  const unreconciled = await updateCardPurchaseForContext(
-    CONTEXT,
-    cardId,
-    purchase.transaction.id,
-    { status: "posted" },
-  );
+  const unreconciled = await updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+    status: "posted",
+  });
   assert.equal(unreconciled.transaction.status, "posted");
   assert.equal(unreconciled.transaction.amountMinor, 2_500);
   assert.equal(unreconciled.invoice.totalExpensesMinor, result.invoice.totalExpensesMinor);
   assert.equal(
     unreconciled.invoice.reconciledExpensesMinor,
-    result.invoice.reconciledExpensesMinor - (result.transaction.status === "reconciled" ? 2_500 : 0),
+    result.invoice.reconciledExpensesMinor -
+      (result.transaction.status === "reconciled" ? 2_500 : 0),
   );
 
   const row = await readTransaction(purchase.transaction.id);
