@@ -177,13 +177,20 @@ export function dayToPeriod(day: string): Pick<StatementFilters, "startsOn" | "e
 }
 
 export function buildTransactionQuery(filters: StatementFilters): string {
-  return new URLSearchParams({
+  const query = new URLSearchParams({
     status: "all",
     accountId: filters.accountId ?? "",
-    // Match the date actually displayed in the statement; occurredOn may differ
-    // from effectiveOn or plannedOn and must not hide today's transactions.
-    statementTo: filters.endsOn,
-  }).toString();
+  });
+  // Drilldowns have their own date semantics. Normal statements use the date
+  // displayed to the user, never the occurrence date as an implicit cutoff.
+  const cutoffKey =
+    filters.evidence === "posted"
+      ? "occurredTo"
+      : filters.evidence === "planned"
+        ? "plannedTo"
+        : "statementTo";
+  query.set(cutoffKey, filters.endsOn);
+  return query.toString();
 }
 
 export function isAccountStatementTransaction(transaction: TransactionRecord): boolean {
