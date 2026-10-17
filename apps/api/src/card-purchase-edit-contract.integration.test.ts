@@ -333,6 +333,16 @@ async function assertLockedInvoiceRejectsCardPurchaseEdit(suffix: string): Promi
         error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",
     );
 
+    // A status-only shortcut must not bypass invoice lifecycle restrictions.
+    await assert.rejects(
+      () =>
+        updateCardPurchaseForContext(CONTEXT, account.id, purchase.transaction.id, {
+          status: "reconciled",
+        }),
+      (error: unknown) =>
+        error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",
+    );
+
     const row = await readTransaction(purchase.transaction.id);
     assert.equal(row.cardInstrumentId, physicalInstrument.id);
 
