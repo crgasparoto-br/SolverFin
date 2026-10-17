@@ -755,7 +755,7 @@ function renderInvoiceHeader(
       </dl>
     </div>
     <div class="cards-invoice-secondary-actions" role="group" aria-label="Outras ações da fatura">
-      <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura" aria-label="Documentos da fatura">${icon("file-text", 16)} <span>Documentos da fatura</span></button>
+      <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura" aria-label="Documentos da fatura">${icon("file-text", 16)} <span>Documentos</span></button>
       ${canClose ? `<button type="button" class="sf-button sf-button-secondary cards-close-invoice" data-api-path="/api/invoices/${escapeHtml(invoice.id)}/close" data-confirm="Fechar esta fatura?">${icon("lock", 15)} Fechar fatura</button>` : ""}
       <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
     </div>
