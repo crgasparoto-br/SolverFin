@@ -510,14 +510,32 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     /<summary aria-label="Situação: Planejada\. Alterar situação" title="Planejada"><span class="cards-purchase-status cards-purchase-status-planned" role="img" aria-label="Planejada" title="Planejada" data-tooltip="Planejada"><svg/,
   );
   assert.doesNotMatch(html, /data-status-purchase-id="purchase-taxi"/);
-  assert.match(html, /data-set-purchase-status="posted" data-status-purchase-id="purchase-hotel" data-status-card-id="card-usd">Desconciliar<\/button>/);
-  assert.match(html, /data-set-purchase-status="posted" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como não conciliada<\/button>/);
-  assert.match(html, /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como conciliada<\/button>/);
+  assert.match(
+    html,
+    /data-set-purchase-status="posted" data-status-purchase-id="purchase-hotel" data-status-card-id="card-usd">Desconciliar<\/button>/,
+  );
+  assert.match(
+    html,
+    /data-set-purchase-status="posted" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como não conciliada<\/button>/,
+  );
+  assert.match(
+    html,
+    /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como conciliada<\/button>/,
+  );
   assert.match(html, /A conciliação desta parcela exige manutenção específica/);
-  assert.match(html, /\.cards-purchase-status-control>summary\{[^}]*min-height:44px;min-width:44px/);
+  assert.match(
+    html,
+    /\.cards-purchase-status-control>summary\{[^}]*min-height:44px;min-width:44px/,
+  );
   assert.match(html, /\.cards-purchase-status-option\{[^}]*min-height:44px/);
-  assert.match(html, /\.cards-purchase-status-control>summary:focus-visible\{outline:2px solid var\(--primary\)/);
-  assert.match(html, /const response = await request\([\s\S]*?"PATCH",[\s\S]*?\{ status: targetStatus \}/);
+  assert.match(
+    html,
+    /\.cards-purchase-status-control>summary:focus-visible\{outline:2px solid var\(--primary\)/,
+  );
+  assert.match(
+    html,
+    /const response = await request\([\s\S]*?"PATCH",[\s\S]*?\{ status: targetStatus \}/,
+  );
   assert.match(html, /document\.querySelectorAll\("\[data-purchase-status-control\]"\)/);
   assert.match(html, /\.cards-purchase-status-control\[open\]/);
   assert.doesNotMatch(html, /data-label="Situação">\s*<span class="sf-badge/);
