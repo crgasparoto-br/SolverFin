@@ -287,6 +287,44 @@ export async function validateCardsPage(
           visible(category)
         );
       });
+      // Assert all three visual tones without fabricating financial movements.
+      const categoryBadge = firstCategory?.querySelector('.cards-purchase-category-badge');
+      const colorProbe = document.createElement('span');
+      colorProbe.style.position = 'absolute';
+      document.body.append(colorProbe);
+      const tokenBackground = (token) => {
+        colorProbe.style.backgroundColor = 'var(' + token + ')';
+        return getComputedStyle(colorProbe).backgroundColor;
+      };
+      const backgroundByDirection = {
+        in: tokenBackground('--success-bg'),
+        out: tokenBackground('--danger-bg'),
+        transfer: tokenBackground('--surface-soft'),
+      };
+      colorProbe.remove();
+      const originalCategoryDirection = firstCategory?.dataset.categoryDirection;
+      const categoryBadgeBackground = () =>
+        categoryBadge ? getComputedStyle(categoryBadge).backgroundColor : '';
+      const directionFillsMatch = Boolean(
+        firstCategory && categoryBadge &&
+        Object.entries(backgroundByDirection).every(([direction, expected]) => {
+          firstCategory.dataset.categoryDirection = direction;
+          return expected !== 'rgba(0, 0, 0, 0)' &&
+            categoryBadgeBackground() === expected;
+        })
+      );
+      if (firstCategory && originalCategoryDirection) {
+        firstCategory.dataset.categoryDirection = originalCategoryDirection;
+      }
+      const categoryToneContract = Boolean(
+        purchaseCategoryContract &&
+        originalCategoryDirection === 'out' &&
+        directionFillsMatch &&
+        categoryBadgeBackground() === backgroundByDirection.out &&
+        rect(categoryBadge).width > 0 &&
+        rect(categoryBadge).right <= rect(firstCategory).right + 1 &&
+        !getComputedStyle(firstCategory).backgroundColor.includes('254, 226, 226')
+      );
       const invoiceCopy = document.querySelector('.cards-invoice-metadata')?.textContent || '';
       const settlementCopy = document.querySelector('.cards-settlement-note')?.textContent || '';
       const currencies = Array.from(document.querySelectorAll('.sf-money[data-currency]')).map((node) => node.getAttribute('data-currency'));
@@ -350,6 +388,7 @@ export async function validateCardsPage(
           )
         ),
         categoryCellsSeparate: purchaseCategoryContract,
+        categoryToneContract,
         mobileCategoryLabel: firstCategory
           ? getComputedStyle(firstCategory, '::before').content.replaceAll('"', '')
           : '',
@@ -387,6 +426,11 @@ export async function validateCardsPage(
 
   check(measurements.archetype === "A3", "Cards route is not rendered as A3", measurements);
   check(measurements.noHorizontalOverflow, "Cards page has horizontal overflow", measurements);
+  check(
+    measurements.categoryToneContract,
+    "Category backgrounds must match Extrato: green in, red out, gray transfer",
+    measurements,
+  );
   check(
     measurements.fullWidthUsesCanonicalShell,
     "Golden Screen: cards must fill the canonical main area without a narrower page cap",
