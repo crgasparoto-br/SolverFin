@@ -297,3 +297,10 @@ nao impedem usar os filtros e formulario GET do Extrato.
 A preferencia e **local ao navegador/dispositivo**; sincronizacao entre dispositivos
 nao esta neste requisito. Logout invalida somente credenciais/sessao, sem apagar
 essa escolha.
+
+
+## Atalhos de período — Hoje e intervalos relativos (17/10/2026)
+
+Na Golden Screen do Extrato, **Hoje** consulta o dia civil de São Paulo (`America/Sao_Paulo`), independentemente do relógio UTC da VPS, e atualiza conjuntamente `month` e `day`. Os atalhos de 7/30 dias definem limites reais `from`/`to` e exibem o período efetivo; atalhos não podem manter um dia ou intervalo antigo nem perder `profileId`, `accountId`, moeda, pesquisa ou demais filtros.
+
+A consulta de transações do Extrato deve filtrar pelo **dia efetivamente exibido** (`effectiveOn ?? plannedOn ?? occurredOn`, cutoff `statementTo`) e não somente por `occurredOn`; o servidor mantém os filtros de ocorrência existentes para outros consumidores. O saldo inicial depende das transações anteriores ao começo do intervalo e os saldos da tabela devem respeitar a mesma data canônica. O formulário GET não deve duplicar o campo `day`: com JavaScript, o controle de data é inserido antes do contêiner de ações, e sem JavaScript o valor é preservado via `noscript`.
