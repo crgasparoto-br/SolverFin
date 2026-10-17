@@ -191,9 +191,33 @@ const OPERATIONAL_INSTALLMENTS_CSS = `
   .installment-scope-panel { display: grid; gap: 12px; padding: 22px; }
   .installment-scope-panel h3 { font-size: 1.1rem; margin: 0; }
   .installment-scope-panel p { color: var(--muted); font-size: .85rem; line-height: 1.5; margin: 0; }
-  .installment-scope-option { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); cursor: pointer; font-size: .875rem; font-weight: 650; min-height: 48px; padding: 12px; text-align: left; width: 100%; }
-  .installment-scope-option:hover { background: var(--neutral-control-hover); color: var(--neutral-control-text-hover); }
-  .installment-scope-option:focus-visible, .installment-scope-cancel:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  /* Golden Screen: choices are neutral controls, never primary/dark actions. */
+  .installment-scope-dialog button.installment-scope-option {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--primary);
+    cursor: pointer;
+    font-size: .875rem;
+    font-weight: 650;
+    min-height: 48px;
+    padding: 12px;
+    text-align: center;
+    white-space: normal;
+    width: 100%;
+  }
+  /* More specific than the shell's button:hover:not(:disabled). */
+  .installment-scope-dialog button.installment-scope-option:hover:not(:disabled),
+  .installment-scope-dialog button.installment-scope-option:focus-visible {
+    background: var(--neutral-control-hover);
+    border-color: var(--neutral-control-border-hover);
+    color: var(--neutral-control-text-hover);
+  }
+  .installment-scope-dialog button.installment-scope-option:focus-visible,
+  .installment-scope-dialog button.installment-scope-cancel:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
   .installment-scope-panel .installment-scope-cancel { justify-self: end; min-height: 44px; }
   .installment-scope-panel .installment-scope-note { font-size: .75rem; }
   @media (max-width: 560px) {
@@ -556,8 +580,8 @@ export function operationalInstallmentsController(): string {
           dialog.innerHTML = '<section class="installment-scope-panel">' +
             '<h3 id="installment-scope-title">Onde aplicar o novo valor?</h3>' +
             '<p>Escolha quais parcelas receberão o valor informado.</p>' +
-            '<button type="button" class="installment-scope-option" data-scope="current">Somente esta parcela</button>' +
-            (hasFuture ? '<button type="button" class="installment-scope-option" data-scope="current_and_future">Esta e as próximas</button>' : '') +
+            '<button type="button" class="installment-scope-option" data-button-variant="neutral" data-scope="current">Somente esta parcela</button>' +
+            (hasFuture ? '<button type="button" class="installment-scope-option" data-button-variant="neutral" data-scope="current_and_future">Esta e as próximas</button>' : '') +
             '<p class="installment-scope-note">As anteriores e as conciliadas ou canceladas serão preservadas.</p>' +
             '<button type="button" class="ghost-btn installment-scope-cancel" data-scope-cancel>Voltar sem salvar</button>' +
             '</section>';
