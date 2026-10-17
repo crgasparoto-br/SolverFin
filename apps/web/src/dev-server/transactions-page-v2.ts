@@ -17,7 +17,7 @@ import {
   renderStatementListArchetype,
   statementListArchetypeStyles,
 } from "./statement-list-archetype.js";
-import { renderStatementStatus } from "./statement-status.js";
+import { renderStatementStatus, renderStatementStatusControl } from "./statement-status.js";
 import { buildConsolidatedStatement } from "./transactions-consolidated.js";
 import {
   buildRows,
@@ -635,7 +635,6 @@ function renderRow(
     ? (categories.find((category) => category.id === transaction.categoryId)?.name ??
       "Categoria não localizada")
     : "Sem categoria";
-  const nextStatus = transaction.status === "reconciled" ? "posted" : "reconciled";
   const date = statementDate(transaction);
   const recurrence = transaction.recurrenceId
     ? recurrences.find((candidate) => candidate.id === transaction.recurrenceId)
@@ -663,19 +662,36 @@ function renderRow(
     <time class="col-date" datetime="${escapeHtml(date)}" title="${escapeHtml(formatDate(date))}">${formatMovementDate(date)}</time>
     <div class="description col-description">${renderTransactionDescription(transaction, contextAccount, accounts)}${consolidated ? renderConsolidatedAccountLabel(transaction, accounts) : ""}</div>
     ${renderCategoryChip(categoryName, transaction.kind)}<span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
-    ${renderStatementStatus(transaction)}
+    ${renderStatementStatusControl(transaction, canToggleStatementStatus(transaction), statementStatusRestriction(transaction))}
     <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     <details class="actions col-actions"><summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary><div class="actions-menu" role="menu">
       ${consolidated && consolidatedAccountId ? `<a class="actions-item" href="/lancamentos?accountId=${encodeURIComponent(consolidatedAccountId)}&month=${encodeURIComponent(month)}" aria-label="Ver lançamento na conta"><span>Ver na conta</span></a>` : ""}
       <button type="button" class="actions-item" data-edit="${escapeHtml(transaction.id)}">${renderEditIcon()}<span>Editar</span></button>
-      <button type="button" class="actions-item" data-action data-method="PATCH" data-path="/api/transactions/${escapeHtml(transaction.id)}" data-payload='${escapeHtml(JSON.stringify({ status: nextStatus }))}'>${renderReconcileIcon(transaction.status === "reconciled")}<span>${transaction.status === "reconciled" ? "Desconciliar" : "Marcar como conciliado"}</span></button>
       ${renderTransactionCloneAction(transaction)}<hr class="actions-divider" />
       <button type="button" class="actions-item danger" data-action data-method="POST" data-path="/api/transactions/${escapeHtml(transaction.id)}/void" data-confirm="${escapeHtml(transaction.status === "reconciled" ? "Este lançamento já está conciliado. Excluir mesmo assim?" : "Excluir este lançamento?")}">${renderTrashIcon()}<span>Excluir</span></button>
       ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
     </div></details>
     <script type="application/json" data-transaction="${escapeHtml(transaction.id)}">${serializeScriptJson(transaction)}</script>
   </article>`;
+}
+
+function canToggleStatementStatus(transaction: TransactionRecord): boolean {
+  return (transaction.status === "posted" || transaction.status === "reconciled") &&
+    Boolean(transaction.effectiveOn) &&
+    !transaction.cardId && !transaction.invoiceId &&
+    !transaction.installmentId && !transaction.transactionGroupId &&
+    !transaction.group && !transaction.accountRemuneration;
+}
+
+function statementStatusRestriction(transaction: TransactionRecord): string {
+  if (transaction.cardId || transaction.invoiceId) return "Altere a conciliação na fatura do cartão.";
+  if (transaction.installmentId || transaction.transactionGroupId || transaction.group)
+    return "Este lançamento exige manutenção pelo fluxo de parcelas ou grupos.";
+  if (transaction.accountRemuneration) return "Consulte a edição para alterar a situação da remuneração.";
+  if (transaction.status === "suggested") return "Confirme a sugestão antes de conciliar.";
+  if (transaction.status === "voided") return "Lançamentos excluídos não podem ser conciliados.";
+  return "Efetive o lançamento na edição antes de conciliar.";
 }
 
 function renderTransactionDescription(
@@ -984,12 +1000,6 @@ function renderCloneIcon(): string {
 function renderTrashIcon(): string {
   return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
-function renderReconcileIcon(isReconciled: boolean): string {
-  return isReconciled
-    ? `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 14 5 10l4-4M5 10h9a5 5 0 1 1 0 10h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-    : `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-}
-
 function clientScript(currency: string | undefined, accounts: readonly AccountRecord[]): string {
   return String.raw`<script data-statement-a2-runtime="true">
   (() => {
