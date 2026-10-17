@@ -209,10 +209,18 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
     assert.ok(html.includes('data-status-transaction-id="reconciled-row">Desconciliar</button>'));
     assert.ok(html.includes("Situação: Efetivado não conciliado. Alterar situação"));
     assert.ok(html.includes("Situação: Conciliado. Alterar situação"));
-    assert.ok(html.includes('data-status-transaction-id="planned-row">Marcar como conciliado</button>'));
-    assert.ok(html.includes('data-status-transaction-id="finite-planned">Marcar como conciliado</button>'));
-    assert.ok(html.includes('data-status-transaction-id="finite-posted">Marcar como conciliado</button>'));
-    assert.ok(html.includes('data-status-transaction-id="finite-reconciled">Desconciliar</button>'));
+    assert.ok(
+      html.includes('data-status-transaction-id="planned-row">Marcar como conciliado</button>'),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="finite-planned">Marcar como conciliado</button>'),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="finite-posted">Marcar como conciliado</button>'),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="finite-reconciled">Desconciliar</button>'),
+    );
     assert.ok(html.includes("Altere a conciliação na fatura do cartão"));
     assert.ok(!html.includes("Este lançamento exige manutenção pelo fluxo de parcelas."));
     assert.ok(!html.includes('data-status-transaction-id="suggested-row"'));
