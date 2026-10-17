@@ -321,7 +321,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.doesNotMatch(html, /\.cards-a3-page\{[^}]*max-width:(?:1500|1560)px/);
   assert.match(html, /Instrumentos <span>2 ativos<\/span>/);
   // #715: instrument identity and its capitalized Limite must be distinct visual lines.
-  const instrumentsHtml = html.split('<details class="cards-instrument-nav" open>')[1]?.split("</details>")[0] ?? "";
+  const instrumentsHtml =
+    html.split('<details class="cards-instrument-nav" open>')[1]?.split("</details>")[0] ?? "";
   assert.ok(
     instrumentsHtml.includes(
       '<span class="cards-instrument-copy"><span class="cards-instrument-name">Físico - Titular principal · final 4242</span><small class="cards-instrument-limit">Limite USD 1.000,00</small></span><strong>Padrão</strong>',
