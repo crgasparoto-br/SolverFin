@@ -754,18 +754,17 @@ function renderRow(
 }
 
 function canToggleStatementStatus(transaction: TransactionRecord): boolean {
-  // A materialized recurring occurrence may be reconciled directly even while
-  // planned. PATCH status-only affects that occurrence, not its recurrence rule
-  // or future occurrences. Canonical installments use the same safe API path.
+  // The status-only PATCH reconciles an individual movement, including finite
+  // installments and recurring occurrences. It does not edit its installment
+  // schedule, recurrence rule or sibling movements.
   const eligibleStatus =
-    ((transaction.status === "posted" || transaction.status === "reconciled") &&
-      Boolean(transaction.effectiveOn)) ||
-    (transaction.status === "planned" && Boolean(transaction.recurrenceId));
+    transaction.status === "planned" ||
+    transaction.status === "posted" ||
+    transaction.status === "reconciled";
   return (
     eligibleStatus &&
     !transaction.cardId &&
     !transaction.invoiceId &&
-    (!transaction.installmentId || Boolean(transaction.recurrenceId)) &&
     !transaction.transactionGroupId &&
     !transaction.group &&
     !transaction.accountRemuneration
@@ -777,8 +776,6 @@ function statementStatusRestriction(transaction: TransactionRecord): string {
     return "Altere a conciliação na fatura do cartão.";
   if (transaction.transactionGroupId || transaction.group)
     return "Desagrupe os lançamentos antes de alterar a conciliação.";
-  if (transaction.installmentId && !transaction.recurrenceId)
-    return "Este lançamento exige manutenção pelo fluxo de parcelas.";
   if (transaction.accountRemuneration)
     return "Consulte a edição para alterar a situação da remuneração.";
   if (transaction.status === "suggested") return "Confirme a sugestão antes de conciliar.";
@@ -1791,7 +1788,7 @@ function css(): string {
     .statement-status-control>summary:hover .statement-status,.statement-status-control[open]>summary .statement-status{box-shadow:0 0 0 2px var(--line)}
     .statement-status-control[open],.statement-row:has(.statement-status-control[open]){z-index:55}
     .statement-status-menu{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:grid;gap:3px;max-width:min(270px,calc(100vw - 16px));min-width:220px;padding:8px;position:absolute;text-align:left;top:calc(100% + 4px);width:max-content;z-index:60}
-    .statement-status-current{color:var(--muted);font-size:.7rem;font-weight:700;padding:4px 8px}
+    .statement-status-current{justify-self:start;margin:4px 8px 6px}
     .statement-status-option{background:transparent;border:0;border-radius:8px;color:var(--text);cursor:pointer;font-size:.78rem;font-weight:700;min-height:44px;padding:9px 10px;text-align:left;white-space:normal}
     .statement-status-menu>button.statement-status-option:hover:not(:disabled),.statement-status-menu>button.statement-status-option:focus-visible{background:var(--neutral-control-hover);color:var(--neutral-control-text-hover)}
     .statement-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:0}
