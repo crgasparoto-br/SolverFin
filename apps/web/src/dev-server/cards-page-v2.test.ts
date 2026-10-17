@@ -231,6 +231,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             sequenceNumber: 2,
             totalInstallments: 3,
             initialSequenceNumber: 1,
+            status: "posted",
+            dueOn: "2026-08-19",
             amountMinor: 5000,
             currency: "USD",
             invoice: { id: "invoice-aug" },
@@ -500,6 +502,11 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Mais filtros · ativos/);
   assert.match(html, /name="sort"/);
   assert.match(html, /name="day"/);
+  assert.equal((html.match(/name="day"/g) ?? []).length, 1);
+  assert.match(html, /class="cards-purchase-day-filter"/);
+  assert.match(html, /data-cards-day-groups/);
+  assert.match(html, /data-cards-day-group data-day="2026-08-19" open/);
+  assert.match(html, /Dia da fatura/);
   // Fail-closed CSS guards for long descriptions, explicit currencies and compact mobile.
   assert.match(
     html,
