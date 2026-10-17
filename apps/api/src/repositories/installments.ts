@@ -30,6 +30,7 @@ export interface UpdateInstallmentPayload {
   note?: string | null;
   categoryId?: EntityId | null;
   amountMinor?: number;
+  scope?: "current" | "current_and_future";
 }
 
 export type InstallmentEditBlockedReason =
@@ -217,15 +218,77 @@ export async function listInstallmentsForContext(
   return rows.map(mapInstallmentHistoryRow);
 }
 
+
+export interface InstallmentUpdateResult {
+  installment: InstallmentHistoryItem;
+  updatedCount: number;
+  skippedCount: number;
+}
+
+/** Provenance comes only from the persisted idempotent creation receipt, never description/date. */
+export function readManualInstallmentFamily(
+  response: unknown,
+  selectedId: EntityId,
+): Array<{ id: EntityId; sequenceNumber: number }> {
+  if (!response || typeof response !== "object" || !("installments" in response)) return [];
+  const items = (response as { installments?: unknown }).installments;
+  if (!Array.isArray(items) || items.length < 2 || items.length > 60) return [];
+  const valid = items.every((item) =>
+    item && typeof item === "object" &&
+    typeof item.id === "string" &&
+    Number.isSafeInteger(item.sequenceNumber) && item.sequenceNumber > 0);
+  if (!valid) return [];
+  const rows = items.map((item) => ({
+    id: item.id as string,
+    sequenceNumber: item.sequenceNumber as number,
+  }));
+  if (new Set(rows.map((row) => row.id)).size !== rows.length ||
+      new Set(rows.map((row) => row.sequenceNumber)).size !== rows.length ||
+      !rows.some((row) => row.id === selectedId)) return [];
+  return rows.sort((a, b) => a.sequenceNumber - b.sequenceNumber);
+}
+
+async function findManualInstallmentFamily(
+  context: TenantContext,
+  installmentId: EntityId,
+): Promise<{ requestId: EntityId; members: Array<{ id: EntityId; sequenceNumber: number }> }> {
+  const matches = await query<{ id: EntityId; response: unknown }>(
+    'select "id", "response" from "InstallmentCreationRequest" ' +
+    'where "organizationId" = $1 and "financialProfileId" = $2 ' +
+    'and "response"->\'installments\' @> $3::jsonb limit 2',
+    [context.organizationId, context.financialProfileId, JSON.stringify([{ id: installmentId }])],
+  );
+  if (matches.length !== 1) {
+    throw Object.assign(new Error("Não foi possível identificar com segurança o parcelamento original."), {
+      code: "INSTALLMENT_SCOPE_UNAVAILABLE", statusCode: 409,
+    });
+  }
+  const request = matches[0]!;
+  const members = readManualInstallmentFamily(request.response, installmentId);
+  if (!members.length) {
+    throw Object.assign(new Error("As próximas parcelas não puderam ser identificadas."), {
+      code: "INSTALLMENT_SCOPE_UNAVAILABLE", statusCode: 409,
+    });
+  }
+  return { requestId: request.id, members };
+}
+
 export async function updateInstallmentForContext(
   context: TenantContext,
   installmentId: EntityId,
   payload: UpdateInstallmentPayload,
-): Promise<InstallmentHistoryItem> {
+): Promise<InstallmentUpdateResult> {
   return withSharedTransaction(async () => {
+    const isFutureScope = payload.scope === "current_and_future";
+    const family = isFutureScope ? await findManualInstallmentFamily(context, installmentId) : undefined;
+    if (family) {
+      await query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [
+        "installment-amount-scope:" + context.organizationId + ":" +
+          context.financialProfileId + ":" + family.requestId,
+      ]);
+    }
     await lockInstallmentMutationRows(context, installmentId);
     const current = await getInstallmentForMutation(context, installmentId);
-
     const metadataChanged =
       payload.description !== undefined || payload.note !== undefined ||
       payload.categoryId !== undefined;
@@ -233,20 +296,44 @@ export async function updateInstallmentForContext(
         (payload.amountMinor !== undefined && !current.amountEditable)) {
       throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
     }
-
     const transactionId = readNestedId(current.transaction);
+    if (!transactionId) throwInstallmentEditBlocked("linked_transaction_missing");
+    if (isFutureScope && (payload.amountMinor === undefined || metadataChanged || current.recurrenceId ||
+        current.card || current.invoice)) {
+      throw Object.assign(new Error("A atualização futura aceita apenas valor de parcelamento manual."), {
+        code: "INSTALLMENT_SCOPE_INVALID", statusCode: 409,
+      });
+    }
 
-    if (!transactionId) {
-      throwInstallmentEditBlocked("linked_transaction_missing");
+    const eligibleFuture: Array<{ id: EntityId; transactionId: EntityId }> = [];
+    let skippedCount = 0;
+    if (family) {
+      const selected = family.members.find((row) => row.id === installmentId)!;
+      const future = family.members.filter((row) => row.sequenceNumber > selected.sequenceNumber);
+      for (const row of future) await lockInstallmentMutationRows(context, row.id);
+      for (const row of future) {
+        const item = await getInstallmentForMutation(context, row.id);
+        if (!item.amountEditable || item.recurrenceId || item.invoice || item.card ||
+            item.sequenceNumber !== row.sequenceNumber || item.currency !== current.currency ||
+            item.dueOn < current.dueOn || !readNestedId(item.transaction)) {
+          skippedCount += 1;
+          continue;
+        }
+        eligibleFuture.push({ id: row.id, transactionId: readNestedId(item.transaction)! });
+      }
     }
 
     await updateTransactionForContext(
-      context,
-      transactionId,
-      buildTransactionUpdatePayload(payload),
+      context, transactionId, buildTransactionUpdatePayload(payload),
     );
-
-    return getInstallmentForMutation(context, installmentId);
+    for (const row of eligibleFuture) {
+      await updateTransactionForContext(context, row.transactionId, { amountMinor: payload.amountMinor! });
+    }
+    return {
+      installment: await getInstallmentForMutation(context, installmentId),
+      updatedCount: 1 + eligibleFuture.length,
+      skippedCount,
+    };
   });
 }
 
