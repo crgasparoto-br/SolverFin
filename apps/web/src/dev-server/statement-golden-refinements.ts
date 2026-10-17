@@ -629,8 +629,8 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
       /* Reference anatomy: check | glyph | date | description | category | value | status | actions.
          Rows and header share one track list, so the columns always line up. */
-      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 48px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) 3.5rem 36px}
-      ${root} .statement-body{grid-template-areas:"select icon date description category amount status actions" "select icon date . . balance . actions"}
+      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 44px 4.5rem minmax(14rem,1fr) minmax(8rem,11rem) minmax(7.5rem,auto) minmax(7.5rem,auto) 3.5rem 36px;min-height:52px}
+      ${root} .statement-body{grid-template-areas:"select icon date description category amount balance status actions";grid-template-rows:minmax(44px,auto)}
       ${root} .statement-body .col-row-icon{grid-area:icon}
       ${root} .statement-body .statement-row-footer{display:contents}
       ${root} .statement-body .col-date{grid-area:date}
@@ -640,12 +640,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-body .col-amount{grid-area:amount}
       ${root} .statement-body .col-balance{grid-area:balance}
       ${root} .statement-body .col-actions{grid-area:actions}
-      ${root} .statement-head{grid-template-areas:"select icon date description category amount status actions";row-gap:0}
+      ${root} .statement-head{grid-template-areas:"select icon date description category amount balance status actions";row-gap:0}
       ${root} .statement-head .col-row-icon{grid-area:icon}
       ${root} .statement-head .col-date{grid-area:date}
       ${root} .statement-head .col-description{grid-area:description}
       ${root} .statement-head .col-category{clip-path:none;grid-area:category;height:auto;overflow:visible;position:static;width:auto}
       ${root} .statement-head .col-amount{grid-area:amount}
+      ${root} .statement-head .col-balance{grid-area:balance}
       ${root} .statement-head .col-status{grid-area:status;justify-self:center;text-align:center}
       ${root} .statement-head .col-actions{grid-area:actions}
     }
@@ -682,6 +683,59 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .summary-total-copy>strong{display:block;font-size:clamp(11px,2.9vw,13px);max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;width:100%;word-break:normal}
     }
 
+
+    /* Golden Screen: day headers stay readable and groups may be collapsed natively. */
+    ${root} .statement-day-group{display:block;min-width:0}
+    ${root} .statement-day-group>summary.statement-date-group{
+      align-items:center;background:var(--surface-soft);border-bottom:1px solid var(--line);
+      color:var(--text);cursor:pointer;display:flex;flex-wrap:wrap;gap:6px 14px;
+      list-style:none;min-height:40px;padding:6px 12px;
+    }
+    ${root} .statement-day-group>summary::-webkit-details-marker{display:none}
+    ${root} .statement-day-group>summary:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+    ${root} .statement-day-group .statement-date-group>strong{font-size:.8rem;font-weight:750}
+    ${root} .statement-day-count{color:var(--muted);font-size:.75rem}
+    ${root} .statement-day-in,${root} .statement-day-out{font-size:.75rem;font-weight:600;font-variant-numeric:tabular-nums}
+    ${root} .statement-day-in{color:var(--success);margin-left:auto}
+    ${root} .statement-day-out{color:var(--danger)}
+    ${root} .statement-day-chevron{border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);height:7px;width:7px;transform:rotate(45deg);transition:transform .15s}
+    ${root} .statement-day-group:not([open]) .statement-day-chevron{transform:rotate(-45deg)}
+    /* Category already encodes type; the redundant text must not create another row. */
+    ${root} .statement-body .col-kind,${root} .statement-head .col-kind{display:none}
+    ${root} .statement-body .col-balance{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;white-space:nowrap}
+    ${root} .statement-body .col-description{min-width:0}
+    ${root} .statement-day-field{display:grid;gap:4px;min-width:0}
+    ${root} .statement-day-field>label{color:var(--muted);font-size:.75rem}
+    ${root} .statement-day-controls{align-items:center;display:flex;gap:6px;min-width:0}
+    ${root} .statement-day-controls>input{box-sizing:border-box;flex:1 1 auto;min-width:0;min-height:40px;width:100%}
+    ${root} .statement-day-clear{background:var(--surface);border:1px solid var(--line);color:var(--primary);font-size:.72rem;min-height:40px;white-space:nowrap}
+    ${root} .statement-day-clear[hidden]{display:none}
+    ${root} .statement-day-clear:hover:not(:disabled){background:var(--neutral-control-hover);color:var(--neutral-control-text-hover)}
+    @media(min-width:1101px){
+      ${root} .filter-form{grid-template-columns:repeat(20,minmax(0,1fr))}
+      ${root} .filter-form>.statement-period-shortcuts{grid-column:span 16}
+      ${root} .filter-form>.statement-day-field{grid-column:span 4}
+      ${root} .filter-form .statement-search-field{grid-column:span 4}
+      ${root} .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:span 3}
+      ${root} .filter-form .statement-filter-actions{grid-column:span 4}
+      ${root} .statement-row.statement-body{padding-block:4px;row-gap:0}
+      ${root} .statement-body .statement-row-metadata{justify-content:center}
+      ${root} .statement-body .col-balance{color:var(--text);font-size:.8rem}
+    }
+    @media(min-width:761px) and (max-width:1100px){
+      ${root} .filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+      ${root} .filter-form>.statement-period-shortcuts{grid-column:1/-1}
+      ${root} .filter-form>.statement-day-field{grid-column:1}
+    }
+    @media(max-width:760px){
+      ${root} .filter-form{grid-template-columns:minmax(0,1fr)}
+      ${root} .filter-form>.statement-period-shortcuts{grid-column:1}
+      ${root} .filter-form>.statement-day-field{grid-column:1}
+      ${root} .statement-day-group>summary.statement-date-group{gap:4px 8px;padding:7px 10px}
+      ${root} .statement-day-in{margin-left:0}
+      ${root} .statement-day-group .statement-day-count{margin-right:auto}
+      ${root} .statement-body .col-balance{font-size:.75rem}
+    }
     ${statementMockupControlsStyles()}
   `;
 }
