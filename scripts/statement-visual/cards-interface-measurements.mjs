@@ -171,6 +171,27 @@ export async function validateCardsPage(
       const sidebarRestored = window.innerWidth < 1000 || sidebarGeometryValid();
       const masterFactsVisible = visible(master?.querySelector('.cards-master-meta dt')) &&
         visible(master?.querySelector('.cards-instrument-nav li'));
+      const instrumentDisclosure = master?.querySelector('.cards-instrument-nav');
+      const disclosureOriginallyOpen = Boolean(instrumentDisclosure?.open);
+      if (instrumentDisclosure) instrumentDisclosure.open = true;
+      const instrumentLimitRows = Array.from(
+        instrumentDisclosure?.querySelectorAll('li:has(.cards-instrument-limit)') || [],
+      );
+      const instrumentLimitsBelowIdentity = instrumentLimitRows.length > 0 &&
+        instrumentLimitRows.every((row) => {
+          const identity = row.querySelector('.cards-instrument-name');
+          const limit = row.querySelector('.cards-instrument-limit');
+          const copy = row.querySelector('.cards-instrument-copy');
+          return Boolean(
+            identity && limit && copy &&
+            visible(identity) && visible(limit) &&
+            limit.textContent.trim().startsWith('Limite ') &&
+            rect(limit).top >= rect(identity).bottom - 1 &&
+            rect(limit).left >= rect(copy).left - 1 &&
+            rect(limit).right <= rect(copy).right + 1
+          );
+        });
+      if (instrumentDisclosure) instrumentDisclosure.open = disclosureOriginallyOpen;
       const financialSummary = document.querySelector(".cards-invoice-summary");
       const metricItems = Array.from(financialSummary?.querySelectorAll(".cards-summary-metric") || []);
       const metricTileFree = () => metricItems.length === 4 && metricItems.every((metric) => {
@@ -301,6 +322,7 @@ export async function validateCardsPage(
         sidebarBefore,
         sidebarNegativeRejected: sidebarNegativeRejected && sidebarRestored,
         masterFactsVisible,
+        instrumentLimitsBelowIdentity,
         summaryUnboxed,
         summaryHeight: rect(financialSummary).height,
         mobileContextConcise,
@@ -373,6 +395,11 @@ export async function validateCardsPage(
   check(
     measurements.masterVisible && measurements.detailVisible,
     "Master-detail hierarchy is incomplete",
+    measurements,
+  );
+  check(
+    measurements.instrumentLimitsBelowIdentity,
+    "Instrument limits must appear below identifiers and start with Limite",
     measurements,
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
