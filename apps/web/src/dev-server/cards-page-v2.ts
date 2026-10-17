@@ -98,6 +98,8 @@ interface CardPurchaseRecord {
 }
 interface InvoiceInstallmentRecord {
   id: string;
+  status: string;
+  dueOn: string;
   sequenceNumber: number;
   totalInstallments: number;
   initialSequenceNumber?: number;
@@ -342,6 +344,9 @@ function projectInvoicePurchases(
         ...purchase,
         invoiceId: installment.invoice.id,
         installmentId: installment.id,
+        occurredOn: installment.dueOn,
+        plannedOn: installment.dueOn,
+        status: installment.status,
         amountMinor: installment.amountMinor,
         currency: installment.currency,
         purchaseTotalAmountMinor: purchase.amountMinor,
@@ -622,6 +627,7 @@ function renderInvoiceDetail(input: {
       input.recurrences,
       input.invoices,
       input.invoice,
+      input.presentation.sort,
     )}
   </section>`;
 }
@@ -828,14 +834,17 @@ function renderPurchaseFilters(
       <label class="cards-search-field" for="cards-purchase-search">Buscar compras
         <input id="cards-purchase-search" type="search" name="q" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" data-purchase-search autocomplete="off">
       </label>
-      <details class="cards-advanced-filters"${presentation.sort !== "date_desc" || presentation.day ? " open" : ""}>
-        <summary>Mais filtros${presentation.sort !== "date_desc" || presentation.day ? " · ativos" : ""}</summary>
+      <div class="cards-purchase-day-filter">
+        <label for="cards-purchase-day">Dia da fatura
+          <input id="cards-purchase-day" type="date" name="day" min="${escapeHtml(invoice.periodStartOn)}" max="${escapeHtml(invoice.periodEndOn)}" value="${escapeHtml(presentation.day ?? "")}">
+        </label>
+        ${presentation.day ? `<a class="cards-clear-day" href="${escapeHtml(withQuery(base, { day: null, reconciliation: presentation.reconciliation }))}" aria-label="Exibir todos os dias da fatura">Todos os dias</a>` : ""}
+      </div>
+      <details class="cards-advanced-filters"${presentation.sort !== "date_desc" ? " open" : ""}>
+        <summary>Mais filtros${presentation.sort !== "date_desc" ? " · ativos" : ""}</summary>
         <div class="cards-advanced-fields">
       <label for="cards-purchase-sort">Ordenar
         <select id="cards-purchase-sort" name="sort">${renderSortOptions(presentation.sort)}</select>
-      </label>
-      <label for="cards-purchase-day">Dia
-        <input id="cards-purchase-day" type="date" name="day" min="${escapeHtml(invoice.periodStartOn)}" max="${escapeHtml(invoice.periodEndOn)}" value="${escapeHtml(presentation.day ?? "")}">
       </label>
         </div>
       </details>
@@ -866,6 +875,7 @@ function renderPurchaseGroups(
   recurrences: readonly RecurrenceRecord[],
   invoices: readonly InvoiceRecord[],
   selectedInvoice: InvoiceRecord,
+  sort: CardSort,
 ): string {
   if (groups.length === 0) {
     return `<div class="cards-purchase-empty" data-purchase-filter-empty>${renderEmptyState({
@@ -873,11 +883,46 @@ function renderPurchaseGroups(
       description: "Ajuste os filtros ou registre uma compra para esta fatura.",
     })}</div>`;
   }
-  return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title">
-    ${groups
-      .map((group) =>
-        renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
-      )
+  if (sort !== "date_asc" && sort !== "date_desc") {
+    return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title">
+      ${groups
+        .map((group) =>
+          renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
+        )
+        .join("")}
+    </section>`;
+  }
+  const days = new Map<string, InstrumentPurchaseGroup[]>();
+  for (const group of groups) {
+    for (const purchase of group.purchases) {
+      const dayGroups = days.get(purchase.occurredOn) ?? [];
+      let dayInstrument = dayGroups.find((candidate) => candidate.id === group.id);
+      if (!dayInstrument) {
+        dayInstrument = { id: group.id, label: group.label, purchases: [] };
+        dayGroups.push(dayInstrument);
+      }
+      dayInstrument.purchases.push(purchase);
+      days.set(purchase.occurredOn, dayGroups);
+    }
+  }
+  const orderedDays = [...days.keys()].sort((left, right) =>
+    sort === "date_asc" ? left.localeCompare(right) : right.localeCompare(left),
+  );
+  return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title" data-cards-day-groups>
+    ${orderedDays
+      .map((date) => {
+        const dayGroups = days.get(date) ?? [];
+        const purchases = dayGroups.flatMap((group) => group.purchases);
+        const totals = totalsByCurrency(purchases);
+        return `<details class="cards-day-group" data-cards-day-group data-day="${escapeHtml(date)}" open>
+          <summary><span class="cards-day-title"><time datetime="${escapeHtml(date)}">${formatDate(date)}</time><small>${formatPurchaseCount(purchases.length)}</small></span><strong>${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</strong></summary>
+          <div class="cards-day-content">${dayGroups
+            .map((group) =>
+              renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
+            )
+            .join("")}</div>
+        </details>`;
+      })
       .join("")}
   </section>`;
 }
