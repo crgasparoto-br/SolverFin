@@ -754,12 +754,18 @@ function renderRow(
 }
 
 function canToggleStatementStatus(transaction: TransactionRecord): boolean {
+  // A materialized recurring occurrence may be reconciled directly even while
+  // planned. PATCH status-only affects that occurrence, not its recurrence rule
+  // or future occurrences. Canonical installments use the same safe API path.
+  const eligibleStatus =
+    ((transaction.status === "posted" || transaction.status === "reconciled") &&
+      Boolean(transaction.effectiveOn)) ||
+    (transaction.status === "planned" && Boolean(transaction.recurrenceId));
   return (
-    (transaction.status === "posted" || transaction.status === "reconciled") &&
-    Boolean(transaction.effectiveOn) &&
+    eligibleStatus &&
     !transaction.cardId &&
     !transaction.invoiceId &&
-    !transaction.installmentId &&
+    (!transaction.installmentId || Boolean(transaction.recurrenceId)) &&
     !transaction.transactionGroupId &&
     !transaction.group &&
     !transaction.accountRemuneration
@@ -769,8 +775,10 @@ function canToggleStatementStatus(transaction: TransactionRecord): boolean {
 function statementStatusRestriction(transaction: TransactionRecord): string {
   if (transaction.cardId || transaction.invoiceId)
     return "Altere a conciliação na fatura do cartão.";
-  if (transaction.installmentId || transaction.transactionGroupId || transaction.group)
-    return "Este lançamento exige manutenção pelo fluxo de parcelas ou grupos.";
+  if (transaction.transactionGroupId || transaction.group)
+    return "Desagrupe os lançamentos antes de alterar a conciliação.";
+  if (transaction.installmentId && !transaction.recurrenceId)
+    return "Este lançamento exige manutenção pelo fluxo de parcelas.";
   if (transaction.accountRemuneration)
     return "Consulte a edição para alterar a situação da remuneração.";
   if (transaction.status === "suggested") return "Confirme a sugestão antes de conciliar.";
