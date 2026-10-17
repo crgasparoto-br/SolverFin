@@ -503,7 +503,10 @@ export async function reconcileInvoiceInstallmentForContext(
   status: "posted" | "reconciled",
 ): Promise<{ installmentId: EntityId; status: string; invoice: InvoiceSummaryContract }> {
   if (status !== "posted" && status !== "reconciled") {
-    throw new InvoiceContractError("CARD_INSTALLMENT_STATUS_INVALID", "Situação de conciliação inválida.");
+    throw new InvoiceContractError(
+      "CARD_INSTALLMENT_STATUS_INVALID",
+      "Situação de conciliação inválida.",
+    );
   }
   await withTransaction(async (executeQuery) => {
     const rows = await executeQuery<{ status: string; invoiceStatus: string }>(
