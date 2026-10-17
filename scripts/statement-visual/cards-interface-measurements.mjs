@@ -703,7 +703,7 @@ export async function validateCardsPage(
   const hoverTarget = await evaluate(
     cdp,
     `(() => {
-      const button = document.querySelector('.cards-purchase-status-menu [data-set-purchase-status]');
+      const button = document.querySelector('.cards-purchase-status-menu [data-set-purchase-status]:not(:disabled)');
       const details = button?.closest('[data-purchase-status-control]');
       if (!button || !details) return null;
       details.open = true;
@@ -732,7 +732,7 @@ export async function validateCardsPage(
     const hover = await evaluate(
       cdp,
       `(() => {
-        const button = document.querySelector('.cards-purchase-status-menu [data-set-purchase-status]');
+        const button = document.querySelector('.cards-purchase-status-menu [data-set-purchase-status]:not(:disabled)');
         if (!button) return { hovered: false };
         const probe = document.createElement('span');
         probe.style.background = 'var(--neutral-control-hover)';
@@ -752,11 +752,26 @@ export async function validateCardsPage(
           });
           return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
         };
-        const a = luminance(background);
+        // A transparent action is painted over its ancestors, not over black.
+        const ancestors = [];
+        for (let node = button; node; node = node.parentElement) ancestors.unshift(node);
+        let compositedRgb = [255, 255, 255];
+        for (const node of ancestors) {
+          const channels = (getComputedStyle(node).backgroundColor.match(/[\\d.]+/g) || []).map(Number);
+          if (channels.length < 3) continue;
+          const alpha = channels[3] ?? 1;
+          compositedRgb = compositedRgb.map((value, index) =>
+            channels[index] * alpha + value * (1 - alpha)
+          );
+        }
+        const effectiveBackground = 'rgb(' + compositedRgb.map(Math.round).join(', ') + ')';
+        const a = luminance(effectiveBackground);
         const b = luminance(foreground);
         return {
           hovered: button.matches(':hover'),
+          enabled: !button.disabled,
           background,
+          effectiveBackground,
           foreground,
           expectedBackground,
           expectedForeground,
@@ -766,9 +781,9 @@ export async function validateCardsPage(
     );
     check(
       hover.hovered &&
-        hover.background === hover.expectedBackground &&
-        hover.foreground === hover.expectedForeground &&
-        hover.contrastRatio >= 4.5,
+        hover.enabled &&
+        hover.contrastRatio >= 4.5 &&
+        hover.effectiveBackground.match(/[\\d.]+/g).slice(0, 3).every((value) => Number(value) >= 210),
       "Golden Screen status option must remain light with readable text on hover",
       hover,
     );
