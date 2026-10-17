@@ -353,7 +353,7 @@ function renderFilters(
   url: URL | undefined,
   categories: readonly CategoryRecord[],
   consolidatedCurrency?: string,
-  availableCurrencies: readonly string[] = [],
+  availableCurrencies: readonly string[],
   resolvedPeriod: { startsOn: string; endsOn: string; day?: string },
 ): string {
   const preserved = [
