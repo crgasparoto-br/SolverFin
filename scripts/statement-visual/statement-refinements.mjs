@@ -86,6 +86,33 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
         );
       }
       report.controls.push({ id: "GS-DAY-FILTER-PROPORTIONS", width, status: "passed" });
+      const balanceColumn = await read(`(() => {
+        const header = document.querySelector('.statement-head .col-balance');
+        const row = document.querySelector('.statement-body .col-balance');
+        const headerRect = header?.getBoundingClientRect();
+        const rowRect = row?.getBoundingClientRect();
+        return {
+          hasHeader: header?.textContent?.trim() === 'Saldo',
+          headerVisible: !!headerRect && headerRect.width > 0 && headerRect.height > 0 &&
+            getComputedStyle(header).clipPath === 'none',
+          hasRow: !!row,
+          rowPrefix: row ? getComputedStyle(row, '::before').content : null,
+          valueAligned: !!headerRect && !!rowRect &&
+            Math.abs(headerRect.right - rowRect.right) <= 3,
+        };
+      })()`);
+      report.observations.at(-1).balanceColumn = balanceColumn;
+      assert.equal(balanceColumn.hasHeader, true, "Saldo must be named by the column heading.");
+      assert.equal(balanceColumn.hasRow, true, "A balance cell must be present in statement rows.");
+      assert.ok(
+        !balanceColumn.rowPrefix?.includes("Saldo"),
+        `Repeated Saldo label found in statement row: ${JSON.stringify(balanceColumn)}`,
+      );
+      if (width >= 1101) {
+        assert.equal(balanceColumn.headerVisible, true, "The Saldo column header must be visible.");
+        assert.equal(balanceColumn.valueAligned, true, "Balance amounts must align with the Saldo header.");
+      }
+      report.controls.push({ id: "GS-BALANCE-COLUMN-HEADER", width, status: "passed" });
       await screenshot(cdp, join(outputDir, `statement-refinement-top-${width}x${height}.png`));
 
       await read("document.querySelector('.statement-secondary-actions>summary').focus()");
