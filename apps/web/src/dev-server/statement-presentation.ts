@@ -144,38 +144,14 @@ export function statementPresentationScript(): string {
         }
 
         function setupStatementDayFilter() {
+          // Fields come from SSR, so filtering works with or without JavaScript.
+          // Golden refinements move the month picker outside the GET form.
           const monthInput = document.querySelector("#filter-month");
-          const form = monthInput?.closest("form");
-          if (!monthInput || !form || form.querySelector("[data-statement-day-field]")) return;
-
-          const dayField = document.createElement("div");
-          dayField.className = "statement-day-field";
-          dayField.dataset.statementDayField = "";
-
-          const dayLabel = document.createElement("label");
-          dayLabel.htmlFor = "filter-day";
-          dayLabel.textContent = "Dia";
-
-          const dayInput = document.createElement("input");
-          dayInput.id = "filter-day";
-          dayInput.name = "day";
-          dayInput.type = "date";
-          dayInput.setAttribute("aria-label", "Filtrar extrato por dia");
-
-          dayField.append(dayLabel, dayInput);
-
-          const clearButton = document.createElement("button");
-          clearButton.type = "button";
-          clearButton.className = "ghost-btn";
-          clearButton.dataset.clearStatementDay = "";
-          clearButton.textContent = "Mês completo";
-          clearButton.setAttribute("aria-label", "Remover filtro por dia e exibir o mês completo");
-
-          const currentMonthButton = form.querySelector("[data-month-current]");
-          const actions = currentMonthButton?.closest(".statement-filter-actions");
-          if (!actions || actions.parentElement !== form) return;
-          form.insertBefore(dayField, actions);
-          form.insertBefore(clearButton, actions);
+          const form = document.querySelector('.filter-form');
+          const dayField = form?.querySelector("[data-statement-day-field]");
+          const dayInput = dayField?.querySelector("[name='day']");
+          const clearButton = dayField?.querySelector("[data-clear-statement-day]");
+          if (!monthInput || !form || !dayInput || !clearButton) return;
 
           function syncDayBounds(clearInvalid) {
             const monthValue = monthInput.value;
