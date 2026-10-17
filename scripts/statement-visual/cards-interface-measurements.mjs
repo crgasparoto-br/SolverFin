@@ -252,10 +252,16 @@ export async function validateCardsPage(
         const cells = Array.from(row.querySelectorAll(':scope > [role="cell"]'));
         const category = row.querySelector(':scope > .cards-purchase-category[role="cell"]');
         const description = row.querySelector(':scope > .cards-purchase-description[role="cell"]');
+        const arrow = category?.querySelector('svg[aria-hidden="true"]');
+        const label = category?.querySelector('.cards-purchase-category-label');
         return Boolean(
           cells.length === 6 &&
           category && description &&
-          category.textContent.trim() &&
+          category.dataset.categoryDirection === 'out' &&
+          arrow?.querySelector('path[d="M10 3.5v12"]') &&
+          visible(arrow) &&
+          label?.textContent.trim() &&
+          visible(label) &&
           !description.contains(category) &&
           visible(category)
         );
