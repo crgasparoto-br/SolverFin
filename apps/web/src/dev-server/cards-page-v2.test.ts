@@ -527,15 +527,31 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out">/,
   );
   assert.match(html, /\.cards-purchase-category\{[^}]*overflow-wrap:anywhere/);
+  // The same semantic fill palette as Extrato: entry green, expense red, transfer gray.
+  for (const [direction, background, foreground] of [
+    ["in", "--success-bg", "--success"],
+    ["out", "--danger-bg", "--danger"],
+    ["transfer", "--surface-soft", "--muted"],
+  ]) {
+    assert.ok(
+      html.includes(
+        `.cards-purchase-category[data-category-direction="${direction}"]>.cards-purchase-category-badge{background:var(${background});color:var(${foreground})}`,
+      ),
+    );
+  }
+  assert.match(
+    html,
+    /\.cards-purchase-category-badge\{[^}]*border-radius:8px[^}]*display:inline-grid/,
+  );
   // Same visual grammar as Extrato: downward expense arrow and category name, not a plain cell.
   assert.match(
     html,
-    /data-category-direction="out"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1\.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3\.5v12"\/><path d="m5\.5 11 4\.5 4\.5L14\.5 11"\/><\/svg><span class="cards-purchase-category-label">Bares e restaurantes<\/span><\/span>/,
+    /data-category-direction="out"><span class="cards-purchase-category-badge"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1\.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3\.5v12"\/><path d="m5\.5 11 4\.5 4\.5L14\.5 11"\/><\/svg><span class="cards-purchase-category-label">Bares e restaurantes<\/span><\/span><\/span>/,
   );
-  assert.match(html, /\.cards-purchase-category>svg\{[^}]*height:13px/);
+  assert.match(html, /\.cards-purchase-category-badge>svg\{[^}]*height:13px/);
   assert.match(
     html,
-    /@media\(max-width:760px\)\{\.cards-purchase-row>\.cards-purchase-category\[data-label="Categoria"\]::before\{grid-column:1\/-1\}/,
+    /@media\(max-width:760px\)\{\.cards-purchase-row>\.cards-purchase-category\[data-label="Categoria"\]::before\{display:block;margin-bottom:4px\}/,
   );
   assert.match(
     html,
