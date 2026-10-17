@@ -182,6 +182,20 @@ test("fixed recurring occurrences do not display finite installment badges", () 
   assert.ok(script.includes("addBadge(row, installment)"));
 });
 
+test("installment scope selection follows Golden Screen neutral button states", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes('data-button-variant=\\"neutral\\" data-scope=\\"current\\"'));
+  assert.ok(script.includes('data-button-variant=\\"neutral\\" data-scope=\\"current_and_future\\"'));
+  assert.ok(script.includes(".installment-scope-dialog button.installment-scope-option:hover:not(:disabled)"));
+  assert.ok(script.includes(".installment-scope-dialog button.installment-scope-option:focus-visible"));
+  assert.ok(script.includes("background: var(--neutral-control-hover)"));
+  assert.ok(script.includes("border-color: var(--neutral-control-border-hover)"));
+  assert.ok(script.includes("color: var(--neutral-control-text-hover)"));
+  assert.ok(script.includes("box-shadow: var(--shadow-focus)"));
+  assert.ok(script.includes("background: var(--surface)"));
+  assert.ok(script.includes("color: var(--primary)"));
+});
+
 test("amount edit requires an explicit current or future scope before the PATCH", () => {
   const script = operationalInstallmentsController();
   assert.ok(script.includes("function chooseInstallmentScope(installment)"));
