@@ -171,6 +171,29 @@ export async function validateCardsPage(
       const sidebarRestored = window.innerWidth < 1000 || sidebarGeometryValid();
       const masterFactsVisible = visible(master?.querySelector('.cards-master-meta dt')) &&
         visible(master?.querySelector('.cards-instrument-nav li'));
+      const financialSummary = document.querySelector(".cards-invoice-summary");
+      const metricItems = Array.from(financialSummary?.querySelectorAll(".cards-summary-metric") || []);
+      const metricTileFree = () => metricItems.length === 4 && metricItems.every((metric) => {
+        const style = getComputedStyle(metric);
+        return !metric.querySelector(".cards-summary-icon") &&
+          parseFloat(style.borderTopWidth) === 0 &&
+          parseFloat(style.borderRightWidth) === 0 &&
+          parseFloat(style.borderBottomWidth) === 0;
+      });
+      const summaryBefore = metricTileFree();
+      const originalMetricBorder = metricItems[0]?.style.border || "";
+      if (metricItems[0]) metricItems[0].style.border = "2px solid rgb(19, 33, 50)";
+      const metricTileNegativeRejected = !metricTileFree();
+      if (metricItems[0]) metricItems[0].style.border = originalMetricBorder;
+      const summaryUnboxed = summaryBefore && metricTileNegativeRejected && metricTileFree();
+      const mobileContextConcise = window.innerWidth > 760 || Boolean(
+        master && rect(master).height < 150 &&
+        !visible(master.querySelector(".cards-card-identity>div strong")),
+      );
+      const mobileSummaryConcise = window.innerWidth > 760 || Boolean(
+        financialSummary &&
+        rect(financialSummary).height < (window.innerWidth <= 350 ? 215 : 165),
+      );
 
       const firstPurchaseRow = rows[0];
       const firstPurchaseDescription = firstPurchaseRow?.querySelector('.cards-purchase-description strong');
@@ -271,6 +294,10 @@ export async function validateCardsPage(
         sidebarBefore,
         sidebarNegativeRejected: sidebarNegativeRejected && sidebarRestored,
         masterFactsVisible,
+        summaryUnboxed,
+        summaryHeight: rect(financialSummary).height,
+        mobileContextConcise,
+        mobileSummaryConcise,
         invoiceHeaderTop: rect(header).top,
         statusVisible: visible(status),
         searchVisible: visible(search),
@@ -342,6 +369,16 @@ export async function validateCardsPage(
     measurements,
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
+  check(
+    measurements.summaryUnboxed,
+    "Design skill: summary metrics must not regress into bordered tile cards",
+    measurements,
+  );
+  check(
+    measurements.mobileContextConcise && measurements.mobileSummaryConcise,
+    "Design skill: mobile card selection or summary wastes first-fold space",
+    measurements,
+  );
   check(
     measurements.invoiceFactsReadable,
     "Invoice closing, due date or currency is unreadable",
