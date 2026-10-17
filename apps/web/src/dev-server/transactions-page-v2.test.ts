@@ -53,12 +53,13 @@ test("period heading shows real range, not month bounds, and daily filter has no
         "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&day=2026-09-07",
       ),
     );
-    assert.ok(
-      dailyHtml.includes(
-        '<noscript><input type="hidden" name="day" value="2026-09-07"></noscript>',
-      ),
+    assert.match(
+      dailyHtml,
+      /id="filter-day" name="day" type="date"[^>]+min="2026-09-01" max="2026-09-30" value="2026-09-07"/,
     );
-    assert.ok(!dailyHtml.includes('<input type="hidden" name="day" value="2026-09-07"><input'));
+    assert.equal((dailyHtml.match(/name="day" type="date"/g) ?? []).length, 1);
+    assert.doesNotMatch(dailyHtml, /<noscript><input type="hidden" name="day"/);
+    assert.match(dailyHtml, /data-clear-statement-day/);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -100,6 +101,35 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
     assert.match(html, /data-statement-date-group="2026-08-20"/);
     assert.match(html, /name="q" type="search"/);
     assert.match(html, /name="sort"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 day grouping is expandable and keeps monetary values in separate columns", async () => {
+  globalThis.fetch = mockFetch([
+    transaction("expense-aug20", "Despesa", 2500, "2026-08-20"),
+    transaction("income-aug20", "Entrada", 15000, "2026-08-20", "income"),
+    transaction("expense-aug21", "Outra despesa", 4100, "2026-08-21"),
+  ]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.equal((html.match(/class="statement-day-group"/g) ?? []).length, 2);
+    assert.match(html, /data-statement-date-group="2026-08-20" open>/);
+    assert.match(html, /2 lançamentos/);
+    assert.match(html, /Entradas US\$\s150,00/);
+    assert.match(html, /Saídas US\$\s25,00/);
+    assert.match(html, /<span class="col-balance">Saldo<\/span>/);
+    assert.match(html, /<strong class="col-balance[^"]*" data-balance-minor="/);
+    assert.match(html, /aria-label="[^"]*Expandir ou recolher lançamentos deste dia"/);
+    const amountSorted = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&sort=amount_desc"),
+    );
+    assert.doesNotMatch(amountSorted, /class="statement-day-group"/);
   } finally {
     globalThis.fetch = originalFetch;
   }
