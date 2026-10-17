@@ -189,6 +189,7 @@ test("Golden Screen persists the account across logout/login for the same user a
   const storage = new Map<string, string>();
   const first = await runPreferenceCase({
     url: "http://solverfin.test/lancamentos?accountId=account-b&month=2026-10",
+    current: "account-b",
     stored: storage,
   });
   assert.equal(first.replaced, undefined);
