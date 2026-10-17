@@ -735,29 +735,29 @@ function renderInvoiceHeader(
   const canPay = !["paid", "cancelled"].includes(status);
   const amountDueMinor = summary?.amountDueMinor ?? invoice.totalAmountMinor;
   return `<header class="cards-invoice-header">
+    <div class="cards-invoice-primary">
+      <span>Valor a pagar</span>
+      <strong>${money(amountDueMinor, currency)}</strong>
+      ${canPay ? `<div class="cards-invoice-actions"><button type="button" class="sf-button sf-button-primary" data-open-modal="payment"${paymentAccounts.length > 0 ? "" : " disabled"} title="${paymentAccounts.length > 0 ? "Liquidar esta fatura" : "Cadastre uma conta ativa na mesma moeda da fatura"}">Liquidar fatura</button></div>` : ""}
+    </div>
     <div class="cards-invoice-title-block">
       <div class="cards-invoice-title-row">
-        <span class="cards-kicker">Fatura selecionada</span>
+        <span class="cards-kicker">Situação da fatura</span>
         ${renderBadge({ label: formatInvoiceStatus(status), tone: invoiceTone(status) })}
       </div>
       <div class="cards-invoice-heading-row">
         <h2 id="cards-invoice-title">${escapeHtml(formatInvoicePeriod(invoice))}</h2>
       </div>
       <dl class="cards-invoice-metadata" aria-label="Datas e moeda da fatura">
-        <div><dt>Fechamento</dt><dd><time datetime="${escapeHtml(invoice.periodEndOn)}">${formatDate(invoice.periodEndOn)}</time></dd></div>
-        <div><dt>Vencimento</dt><dd><time datetime="${escapeHtml(invoice.dueOn)}">${formatDate(invoice.dueOn)}</time></dd></div>
-        <div><dt>Moeda</dt><dd>${escapeHtml(currency ?? "Indisponível")}</dd></div>
+        <div class="cards-invoice-due"><dt>Vencimento</dt><dd><time datetime="${escapeHtml(invoice.dueOn)}">${formatDate(invoice.dueOn)}</time></dd></div>
+        <div class="cards-invoice-closing"><dt>Fechamento</dt><dd><time datetime="${escapeHtml(invoice.periodEndOn)}">${formatDate(invoice.periodEndOn)}</time></dd></div>
+        <div class="cards-invoice-currency"><dt>Moeda</dt><dd>${escapeHtml(currency ?? "Indisponível")}</dd></div>
       </dl>
-    </div>
-    <div class="cards-invoice-primary">
-      <span>Valor a pagar</span>
-      <strong>${money(amountDueMinor, currency)}</strong>
-      ${canPay ? `<div class="cards-invoice-actions"><button type="button" class="sf-button sf-button-primary" data-open-modal="payment"${paymentAccounts.length > 0 ? "" : " disabled"} title="${paymentAccounts.length > 0 ? "Liquidar esta fatura" : "Cadastre uma conta ativa na mesma moeda da fatura"}">Liquidar fatura</button></div>` : ""}
-      <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
     </div>
     <div class="cards-invoice-secondary-actions" role="group" aria-label="Outras ações da fatura">
       <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura" aria-label="Documentos da fatura">${icon("file-text", 16)} <span>Documentos da fatura</span></button>
       ${canClose ? `<button type="button" class="sf-button sf-button-secondary cards-close-invoice" data-api-path="/api/invoices/${escapeHtml(invoice.id)}/close" data-confirm="Fechar esta fatura?">${icon("lock", 15)} Fechar fatura</button>` : ""}
+      <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
     </div>
   </header>`;
 }
