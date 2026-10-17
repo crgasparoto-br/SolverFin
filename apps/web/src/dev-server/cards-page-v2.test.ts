@@ -311,7 +311,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /<details class="cards-instrument-nav" open>/);
   assert.match(html, /Moeda padrão<\/dt><dd>USD/);
   assert.match(html, /Fechamento contratual/);
-  assert.match(html, /cards-summary-icon/);
+  assert.doesNotMatch(html, /class="cards-summary-icon"/);
+  assert.match(html, /class="cards-summary-metric"/);
+  assert.match(html, /id="cards-master-title">Cartão<\/h2>/);
   assert.match(html, /cards-summary-copy/);
   assert.ok(html.includes(".cards-a3-page{max-width:var(--sf-layout-content-max-width);"));
   assert.ok(html.includes("padding:18px var(--sf-layout-gutter-desktop) 24px"));
@@ -336,6 +338,13 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const summaryStart = html.indexOf('class="cards-invoice-summary"');
   const purchaseHeadingStart = html.indexOf('class="cards-purchase-section-header"');
   const summaryHtml = html.slice(summaryStart, purchaseHeadingStart);
+  assert.equal((summaryHtml.match(/class="cards-summary-metric"/g) ?? []).length, 4);
+  assert.doesNotMatch(summaryHtml, /class="cards-summary-icon"/);
+  assert.ok(html.includes(".cards-summary-metric{align-items:start;background:transparent;border:0;"));
+  assert.ok(html.includes(".cards-invoice-summary .sf-summary-grid{display:grid;gap:0;"));
+  assert.ok(html.includes(".cards-card-identity{align-items:center;background:transparent;border:0;"));
+  assert.ok(html.includes(".cards-card-identity>div strong{display:none}"));
+  assert.ok(html.includes(".cards-instrument-group{border:0;border-top:1px solid(var--placeholder)".replace("solid(var--placeholder)", "solid var(--line)")));
   const limitMetricStart = summaryHtml.indexOf("Limite disponível");
   const limitDetailsStart = summaryHtml.indexOf('class="cards-limit-detail"');
   assert.ok(limitMetricStart >= 0 && limitDetailsStart > limitMetricStart);
