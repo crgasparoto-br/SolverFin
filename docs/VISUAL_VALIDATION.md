@@ -212,3 +212,12 @@ O gate agregado do repositorio continua sendo `npm run validate`. Testes de domi
 ## Dados e privacidade
 
 Fixtures, nomes, valores e screenshots devem ser ficticios e minimizados. O workflow executa `assert-artifact-safety` antes de publicar a evidencia. Nao registre secrets, dados financeiros reais nem identificadores pessoais em artefatos visuais.
+
+
+### PR #720 — Conciliação pelo ícone Situação no Extrato (17/10/2026)
+
+No Extrato (`/lancamentos`), o ícone de Situação passa a abrir o mesmo menu neutro dos Cartões. Lançamentos efetivados e independentes permitem **Marcar como conciliado** ou **Desconciliar**, usando o contrato atual `PATCH /api/transactions/:id` com envio exclusivo de `status`. A ação redundante sai do menu de três pontos; edição e exclusão permanecem.
+
+Lançamentos previstos, sugestões, parcelas, grupos, movimentos de cartão e remuneração protegida exibem explicação, sem prometer mudanças que dependam de fluxos específicos. O menu mantém foco visível, 44 px de alvo, feedback assíncrono (inclusive erro de conexão), Escape com devolução de foco e posição visível mesmo com rolagem horizontal.
+
+Validar em Chrome 1366×768, 390×844 e 320×740, com teclado e toque, alternância nos dois sentidos, erro HTTP e de rede, conta individual e visão consolidada. A implementação por si só não equivale à aprovação visual independente no HEAD da PR.
