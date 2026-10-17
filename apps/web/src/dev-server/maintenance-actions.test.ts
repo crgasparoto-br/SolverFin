@@ -78,7 +78,11 @@ async function transactionsKeepStatementAndExposeMaintenanceActions(): Promise<v
   assert.doesNotMatch(html, /class="[^"]*summary-grid[^"]*"/);
   assert.match(
     html,
-    /data-action data-method="PATCH" data-path="\/api\/transactions\/transaction-1"/,
+    /data-set-statement-status="reconciled" data-status-transaction-id="transaction-1"/,
+  );
+  assert.match(
+    html,
+    /send\("\/api\/transactions\/" \+ encodeURIComponent\(transactionId\), "PATCH", \{ status: nextStatus \}\)/,
   );
   assert.match(html, /Excluir/);
 }

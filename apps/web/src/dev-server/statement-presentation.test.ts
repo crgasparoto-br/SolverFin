@@ -15,6 +15,16 @@ async function main(): Promise<void> {
   await assertApiFailureRestoresTheForm();
   await assertTransferPayloadAndValidationError();
   await assertCreationAndRecurringEditsAreNotIntercepted();
+  assertDayFilterUsesARealDirectChildOfTheForm();
+}
+
+function assertDayFilterUsesARealDirectChildOfTheForm(): void {
+  const script = statementPresentationScript();
+  assert.ok(script.includes("const form = document.querySelector('.filter-form')"));
+  assert.ok(script.includes('form?.querySelector("[data-statement-day-field]")'));
+  assert.ok(script.includes("dayField?.querySelector(\"[name='day']\")"));
+  assert.ok(script.includes("form.requestSubmit()"));
+  assert.equal(script.includes("form.insertBefore(dayField"), false);
 }
 
 async function assertChangedAccountAndDuplicateSubmission(): Promise<void> {

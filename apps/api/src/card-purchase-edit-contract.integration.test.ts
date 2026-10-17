@@ -5,6 +5,7 @@ import type { TenantContext } from "@solverfin/domain";
 import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import {
+  reconcileInvoiceInstallmentForContext,
   summarizeInvoiceForContext,
   updateCardPurchaseForContext,
 } from "./repositories/card-invoice-contracts.js";
@@ -92,12 +93,14 @@ async function assertInstallmentPurchaseEdit(
     [],
   );
 
+  const occurrenceIds: string[] = [];
   for (const [index, invoice] of invoices.entries()) {
     const occurrences = await listInstallmentsForContext(CONTEXT, {
       invoiceId: invoice.id,
       status: "all",
     });
     assert.equal(occurrences.length, 1);
+    occurrenceIds.push(occurrences[0]!.id);
     assert.equal(occurrences[0]?.transaction?.id, purchase.transaction.id);
     assert.equal(occurrences[0]?.invoice?.id, invoice.id);
     assert.equal(occurrences[0]?.sequenceNumber, index + 1);
@@ -106,6 +109,47 @@ async function assertInstallmentPurchaseEdit(
     assert.equal(summary.purchasesCount, 1);
     assert.equal(summary.unreconciledExpensesMinor, [3_334, 3_333, 3_333][index]);
   }
+
+  // Reconciliation changes only this invoice occurrence, never the parent purchase or sibling parcels.
+  const firstInvoiceId = invoices[0]!.id;
+  const firstOccurrenceId = occurrenceIds[0]!;
+  const reconciled = await reconcileInvoiceInstallmentForContext(
+    CONTEXT,
+    firstInvoiceId,
+    firstOccurrenceId,
+    "reconciled",
+  );
+  assert.equal(reconciled.invoice.reconciledExpensesMinor, 3_334);
+  assert.equal(reconciled.invoice.unreconciledExpensesMinor, 0);
+  assert.equal(
+    (await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id }))[0]?.status,
+    "planned",
+  );
+  await assert.rejects(
+    () =>
+      reconcileInvoiceInstallmentForContext(
+        OTHER_PROFILE_CONTEXT,
+        firstInvoiceId,
+        firstOccurrenceId,
+        "posted",
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
+  );
+  await assert.rejects(
+    () =>
+      reconcileInvoiceInstallmentForContext(CONTEXT, invoices[1]!.id, firstOccurrenceId, "posted"),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
+  );
+  const posted = await reconcileInvoiceInstallmentForContext(
+    CONTEXT,
+    firstInvoiceId,
+    firstOccurrenceId,
+    "posted",
+  );
+  assert.equal(posted.invoice.reconciledExpensesMinor, 0);
+  assert.equal(posted.invoice.unreconciledExpensesMinor, 3_334);
 
   for (const forbiddenPayload of [
     { amountMinor: 12_000 },
@@ -144,6 +188,17 @@ async function assertInstallmentPurchaseEdit(
   assert.ok(rows.every((row) => row.transactionId === purchase.transaction.id && row.invoiceId));
 
   await query(`update "Invoice" set "status" = 'CLOSED' where "id" = $1`, [invoices[2]?.id]);
+  await assert.rejects(
+    () =>
+      reconcileInvoiceInstallmentForContext(
+        CONTEXT,
+        invoices[2]!.id,
+        occurrenceIds[2]!,
+        "reconciled",
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",
+  );
   await assert.rejects(
     () =>
       updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
@@ -189,6 +244,32 @@ async function assertCommonCardPurchaseEdit(
   assert.equal(result.transaction.installmentId, undefined);
   assert.equal(result.invoice.invoiceId, originalInvoiceId);
   assert.equal(result.invoice.totalExpensesMinor, purchase.invoice.totalAmountMinor + 500);
+  // The inline status control changes only reconciliation, never invoice totals or purchase fields.
+  const reconciled = await updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+    status: "reconciled",
+  });
+  assert.equal(reconciled.transaction.status, "reconciled");
+  assert.equal(reconciled.transaction.amountMinor, 2_500);
+  assert.equal(reconciled.transaction.description, result.transaction.description);
+  assert.equal(reconciled.invoice.totalExpensesMinor, result.invoice.totalExpensesMinor);
+  assert.equal(
+    reconciled.invoice.reconciledExpensesMinor - result.invoice.reconciledExpensesMinor,
+    result.transaction.status === "reconciled" ? 0 : 2_500,
+  );
+  const unreconciled = await updateCardPurchaseForContext(
+    CONTEXT,
+    cardId,
+    purchase.transaction.id,
+    { status: "posted" },
+  );
+  assert.equal(unreconciled.transaction.status, "posted");
+  assert.equal(unreconciled.transaction.amountMinor, 2_500);
+  assert.equal(unreconciled.invoice.totalExpensesMinor, result.invoice.totalExpensesMinor);
+  assert.equal(
+    unreconciled.invoice.reconciledExpensesMinor,
+    result.invoice.reconciledExpensesMinor -
+      (result.transaction.status === "reconciled" ? 2_500 : 0),
+  );
 
   const row = await readTransaction(purchase.transaction.id);
   assert.equal(row.accountId, null);
@@ -303,6 +384,16 @@ async function assertLockedInvoiceRejectsCardPurchaseEdit(suffix: string): Promi
       () =>
         updateCardPurchaseForContext(CONTEXT, account.id, purchase.transaction.id, {
           amountMinor: 4_500,
+        }),
+      (error: unknown) =>
+        error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",
+    );
+
+    // A status-only shortcut must not bypass invoice lifecycle restrictions.
+    await assert.rejects(
+      () =>
+        updateCardPurchaseForContext(CONTEXT, account.id, purchase.transaction.id, {
+          status: "reconciled",
         }),
       (error: unknown) =>
         error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",

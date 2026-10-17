@@ -211,3 +211,30 @@ assert.match(
   styles,
   /dialog\[data-modal\]:has\(form\[data-method="PATCH"\]\)\{height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\)\}/,
 );
+
+assert.match(styles, /statement-day-group>summary\.statement-date-group/);
+assert.match(styles, /statement-day-group:not\(\[open\]\) \.statement-day-chevron/);
+assert.match(
+  styles,
+  /grid-template-areas:"select icon date description category amount balance status actions"/,
+);
+assert.match(styles, /\.statement-body \.col-kind[^}]*display:none/);
+assert.match(styles, /\.statement-body \.col-balance[^}]*text-align:right/);
+assert.match(
+  styles,
+  /\.statement-head \.col-balance\{clip-path:none;grid-area:balance;height:auto;overflow:visible;position:static;text-align:right;width:auto\}/,
+);
+
+assert.match(styles, /statement-day-field\{display:grid/);
+
+// Design-interface regression: a date is a compact field in the existing Golden
+// desktop grid, not an implicit four-column span. The stronger selector must
+// override the older options-layout selector at 1366px and 1665px.
+assert.match(
+  styles,
+  /\[data-statement-options\] \.filter-form\{\s*align-items:end;\s*grid-template-columns:minmax\(10\.5rem,11\.5rem\) minmax\(13rem,1\.5fr\)/,
+);
+assert.match(styles, /\.filter-form>\.statement-day-field\{max-width:11\.5rem;width:100%\}/);
+assert.match(styles, /\.filter-form>\.statement-period-shortcuts\{grid-column:1\/-1\}/);
+assert.match(styles, /max-width:1339px\)\{/);
+assert.doesNotMatch(styles, /\.filter-form>\.statement-day-field\{grid-column:span 4\}/);

@@ -232,7 +232,7 @@ transaction_status_locked
 invoice_linked
 ```
 
-Parcelas ligadas a fatura, transacao postada/conciliada/cancelada, parcela nao planejada ou sem transacao vinculada nao devem exibir acao de edicao direta. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
+A edicao de descricao, observacao e categoria permanece restrita a parcelas planejadas. O ajuste especifico de valor e permitido tambem para parcelas efetivadas nao conciliadas, desde que a transacao vinculada esteja efetivada. Parcelas conciliadas, canceladas, ligadas a fatura/cartao ou sem transacao vinculada nao admitem ajuste direto. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
 
 ## PATCH /api/installments/:installmentId
 
@@ -242,11 +242,19 @@ Payload permitido:
 {
   "description": "Assinatura ficticia ajustada",
   "note": "Observacao ficticia opcional",
-  "categoryId": "category-demo"
+  "categoryId": "category-demo",
+  "amountMinor": 10125,
+  "scope": "current"
 }
 ```
 
-Todos os campos sao opcionais, mas o payload deve trazer pelo menos um deles. `note` pode ser `null` para limpar a observacao. Campos fora da allowlist retornam `400 INSTALLMENT_PAYLOAD_INVALID`.
+Todos os campos sao opcionais, mas o payload deve trazer pelo menos um deles. `note` pode ser `null` para limpar a observacao. `amountMinor` e inteiro positivo de centavos e precisa ser um inteiro seguro. Campos fora da allowlist retornam `400 INSTALLMENT_PAYLOAD_INVALID`.
+
+**Elegibilidade separada:** descricao, observacao e categoria continuam editaveis apenas quando `editable=true` (parcela planejada elegivel). O valor da parcela e editavel quando `amountEditable=true`: parcelas planejadas ou efetivadas nao conciliadas, com estados da parcela e da transacao correspondentes, sem vinculo com cartao/fatura. Parcelas conciliadas, canceladas, de cartao, com fatura ou sem transacao vinculada permanecem bloqueadas. Para uma parcela efetivada, enviar somente `amountMinor`; os demais campos sao rejeitados por `409 INSTALLMENT_EDIT_BLOCKED`.
+
+O ajuste de valor exige escopo explícito na experiência web: `scope="current"` aplica somente à parcela selecionada; `scope="current_and_future"` aplica a ela e às parcelas seguintes do **mesmo parcelamento manual**. O escopo é aceito somente no `PATCH` da parcela; quando omitido, mantém-se a compatibilidade de atualização individual. No modo futuro, o payload deve conter somente `amountMinor` e `scope`. Valores, datas e situações das parcelas anteriores, conciliadas, canceladas ou não elegíveis são preservados.
+
+A associação das parcelas futuras é obtida exclusivamente pelo recibo persistido de `InstallmentCreationRequest.response.installments` filtrado por `organizationId` e `financialProfileId`, sem heurística por descrição, calendário, categoria ou valor. Em série legada sem recibo inequívoco, o servidor retorna `409 INSTALLMENT_SCOPE_UNAVAILABLE`; IDs fora do perfil retornam `404`. A operação utiliza transação e bloqueios por grupo/parcela, revalida elegibilidade antes de escrever e atualiza atomicamente `Transaction.amountMinor` e `Installment.amountMinor` em cada parcela autorizada. A resposta preserva `installment` e acrescenta `updatedCount` e `skippedCount`. O valor de cada parcela selecionada passa a ser o informado, sem redistribuição residual, sem mudar datas, contas ou situação.
 
 A mutacao atualiza a transacao vinculada de forma atomica pelo fluxo existente de transacao, sincroniza a parcela quando necessario e grava auditoria minimizada/redigida da mutacao financeira. A resposta retorna a parcela recarregada:
 

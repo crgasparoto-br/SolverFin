@@ -50,6 +50,23 @@ qualquer tela de propagacao.
   Validacao nativa invalida torna o select visivel novamente, sem campo focavel oculto.
 - Logos continuam resolvidos pelo catalogo institucional compartilhado.
 
+## Componentes de escolha e confirmacao
+
+A Golden Screen inclui os estados interativos dos botoes e nao somente
+suas posicoes. Opcoes alternativas de escopo, categoria, situacao e outras
+escolhas em dialog devem usar controles neutros compartilhados, sem botao
+primario preselecionado. As opcoes possuem fundo branco, borda sutil e
+texto azul-petroleo legivel; hover e foco adotam os tokens neutros
+compartilhados, sem transformar um botao em superficie azul-escura.
+Apenas a confirmacao final de uma acao usa a variante primaria.
+
+Ao criar novos dialogos e menus, auditar a precedencia de
+`button:hover:not(:disabled)` do shell frente aos seletores locais.
+Conferir fundo, texto, borda, foco visivel e contraste para mouse e teclado
+em desktop e mobile. Evitar classes locais de botao que reimplementem
+cores e estados com menor especificidade do que a regra global. Consulte
+`docs/DESIGN_SYSTEM.md` para o contrato obrigatorio.
+
 O mockup orienta acabamento, densidade e hierarquia, nao altera regras financeiras.
 A propagacao para outras rotas permanece na epica #702, posterior a aprovacao
 independente da referencia.
@@ -258,3 +275,126 @@ explícitas e visualmente subordinadas.
 ## Visão consolidada na mesma Golden Screen (decisão de 2026-10-14)
 
 A opção **Todas as contas** em `/lancamentos?accountId=all&currency=BRL&month=AAAA-MM` preserva o mesmo layout da conta individual, identifica a conta sob a descrição e soma saldos **somente de contas da moeda selecionada**. Na conta individual, transferências recebidas compõem Entradas e enviadas compõem Saídas (na moeda da conta). No modo consolidado, as transferências internas da mesma moeda não compõem os cards, mas as **transferências cambiais permanecem** como entradas/saídas na moeda filtrada, sem alterar a projeção do saldo. As previstas não entram no saldo efetivo, e o menu Ações permite editar, clonar, conciliar/desconciliar e excluir lançamentos existentes com a conta de origem real identificada (além de Ver na conta). Novo lançamento sem conta selecionada não pode ser salvo. O filtro de moeda é obrigatório nesse modo. Para regras, controles negativos e razão da decisão, consulte [ADR 0018](./adr/0018-golden-statement-consolidated-by-currency.md).
+
+## Ultima conta selecionada entre sessoes
+
+No Extrato (`/lancamentos`), ao escolher uma conta individual ou `Todas as contas`,
+a ultima selecao e lembrada no mesmo navegador, inclusive depois de encerrar a sessao
+e autenticar-se novamente. O identificador e salvo em `localStorage`, no escopo
+da combinacao **usuario autenticado + perfil financeiro ativo** (sem token, credencial,
+saldo ou informacao de lancamentos). Um usuario ou perfil diferente nunca reutiliza
+a selecao do anterior.
+
+Um link com `accountId` explicito prevalece sobre a preferencia local e passa a
+ser a nova selecao quando pertencer as contas disponiveis no perfil. Na entrada
+sem `accountId`, restaurar apenas uma conta disponivel no seletor ou a opcao
+`all`. Se a conta foi arquivada/removida, limpar a preferencia invalida e manter
+o fallback da tela. Um filtro `currency` explicito nao deve ser substituido por
+conta de outra moeda. Preservar mes, filtros e parametros ja informados na URL.
+Falhas da API de identidade/perfil ou indisponibilidade do armazenamento local
+nao impedem usar os filtros e formulario GET do Extrato.
+
+A preferencia e **local ao navegador/dispositivo**; sincronizacao entre dispositivos
+nao esta neste requisito. Logout invalida somente credenciais/sessao, sem apagar
+essa escolha.
+
+## Atalhos de período — Hoje e intervalos relativos (17/10/2026)
+
+Na Golden Screen do Extrato, **Hoje** consulta o dia civil de São Paulo (`America/Sao_Paulo`), independentemente do relógio UTC da VPS, e atualiza conjuntamente `month` e `day`. Os atalhos de 7/30 dias definem limites reais `from`/`to` e exibem o período efetivo; atalhos não podem manter um dia ou intervalo antigo nem perder `profileId`, `accountId`, moeda, pesquisa ou demais filtros.
+
+A consulta de transações do Extrato deve filtrar pelo **dia efetivamente exibido** (`effectiveOn ?? plannedOn ?? occurredOn`, cutoff `statementTo`) e não somente por `occurredOn`; o servidor mantém os filtros de ocorrência existentes para outros consumidores. O saldo inicial depende das transações anteriores ao começo do intervalo e os saldos da tabela devem respeitar a mesma data canônica. O formulário GET não deve duplicar o campo `day`: o campo é renderizado pelo servidor dentro do formulário original, com ou sem JavaScript; o script apenas atualiza limites, limpa o dia e aplica o filtro.
+
+## Extrato por dia e densidade da tabela — PR #720 (17/10/2026)
+
+O seletor **Dia do mês** faz parte do HTML do filtro, inclusive quando o JavaScript não carrega.
+Seu `min` e `max` são o primeiro e o último dia do mês selecionado, permitindo filtrar
+exatamente um dia, sem consultar datas de outro mês. O botão **Mês completo** remove apenas
+o dia, preservando conta, perfil, moeda e os demais filtros. Mudar de mês limpa um dia
+anterior. O período, totais e saldos usam as mesmas datas efetivas exibidas na tabela.
+
+Com ordenação por data (ascendente ou descendente), as movimentações aparecem em **grupos
+diários abertos por padrão**. Cada cabeçalho mostra data, quantidade, entradas e saídas
+do dia; clique, Enter ou Espaço sobre o cabeçalho recolhe/expande somente aquele dia,
+sem remover filtros ou alterar cálculo financeiro. Transferências contam com o sinal
+da conta exibida. Em ordenações globais por valor ou descrição, as linhas permanecem
+sem agrupamento para não alterar o resultado da ordenação escolhida.
+
+No desktop, o Extrato usa uma única linha para cada movimento, com **Valor** e
+**Saldo** em colunas distintas, alinhadas à direita. O título **Saldo** aparece apenas
+no cabeçalho dessa coluna, nunca repetido antes do valor de cada linha. A categoria já comunica
+o tipo com sua cor e ícone; o texto duplicado de Tipo não deve ocupar uma nova linha.
+A grade respeita a Golden Screen, mantendo ícone de situação interativo, ações,
+checkbox e acessibilidade; em telas estreitas, há reflow sem truncar valores.
+O agrupamento visual não modifica a natureza dos grupos financeiros persistidos.
+
+### Contrato visual obrigatório para novos filtros (PR #720)
+
+Toda alteração em telas deve passar pela Skill `design-interface` do repositório
+`crgasparoto-br/skill` (branch `develop`), consultando também os tokens e a Golden
+Screen vigente **antes** de editar CSS/HTML. Não é suficiente renderizar o componente:
+as dimensões e o alinhamento precisam ser conferidos no Chrome no mesmo SHA.
+
+Campos curtos, como **Dia do mês**, não podem herdar spans de buscas ou tabelas.
+No desktop (largura a partir de 1340px), o filtro fica na mesma linha de Busca,
+Tipo, Status, Conciliação, Categoria e Aplicar, com largura máxima de `11.5rem`
+(~184px), enquanto Busca mantém espaço flexível; os atalhos ocupam linha anterior.
+De 1101px a 1339px, a grade faz reflow sem aumentar o seletor de dia; em tablet
+o dia permanece compacto e em celulares pode ocupar a largura disponível.
+O controle nativo de calendário e a ação de limpar dia devem permanecer utilizáveis.
+
+A aceitação exige observação real de proporções, alturas, foco, contraste e ausência
+de overflow em 1366x768, 1665x900 e nos breakpoints mobile. Toda alteração de
+padrão deve atualizar os testes e evidências da Golden Screen, não apenas o CSS.
+
+## Situacao da ocorrencia recorrente no Extrato — PR #720
+
+O menu acessivel do icone de situacao deve habilitar `Marcar como conciliado`
+para ocorrencia recorrente materializada em estado **Previsto** ou **Efetivado**,
+independentemente do indicador visual de recorrencia; um item conciliado oferece
+`Desconciliar`. A operacao afeta somente a ocorrencia selecionada e usa o mesmo
+menu neutro ja aprovado pela Golden Screen. Os bloqueios de compras no cartao,
+grupos financeiros e remuneracoes continuam validos. Nenhum botao novo ou modal
+concorrente deve ser criado apenas para reconciliar itens recorrentes.
+
+## Conciliação universal dos movimentos elegíveis — PR #720 (17/10/2026)
+
+O ícone interativo da coluna Situação oferece conciliar/desconciliar uma ocorrência individual
+para os estados `planned`, `posted` e `reconciled`, mesmo sem `effectiveOn`,
+incluindo parcelas finitas, ocorrências recorrentes e lançamentos avulsos.
+O envio permanece exclusivamente `PATCH /api/transactions/:id` com `{ status }`;
+não altera parcelas irmãs, regras de recorrência, datas planejadas ou valores.
+Na transição de `planned` para `reconciled`, a data efetiva segue a regra
+existente do domínio para efetivação do lançamento.
+A proteção do domínio para parcelas continua vigente para **quaisquer outras alterações**.
+Compras de cartão/fatura, grupos financeiros, remuneração automática,
+sugestões ainda não confirmadas e lançamentos excluídos mantêm seus fluxos próprios.
+
+O menu de Situação exibe, no resumo, apenas o ícone sem texto redundante de estado,
+reutilizando exatamente o tom/ícone da coluna. O nome acessível
+`Situação atual: …`, o `title` e o `data-tooltip` preservam a interpretação
+sem depender exclusivamente de cor; controles mantêm foco e ações neutras
+da Golden Screen.
+
+## Menu de Situação somente por ícones — PR #720 (17/10/2026)
+
+Na coluna Situação, o popover compacto mostra **apenas ícones**, inclusive
+situação atual, conciliar, desconciliar, ação bloqueada e feedback de
+processamento/sucesso/erro. O ícone de estado conserva o mesmo formato e tom
+da linha do extrato; as ações usam a variante neutra com alvo mínimo de
+44 × 44 px e estados de hover/foco com contraste legível, sem fundo escuro.
+
+Cada ação expõe o significado por `aria-label`, `title` e `data-tooltip`;
+restrições financeiras continuam explicadas em tooltip acessível.
+Feedback de erro conserva a mensagem para leitor de tela e em tooltip,
+sem voltar a criar um botão textual. Textos dos atributos acessíveis e
+tooltips **não** são rótulos visíveis permanentes.
+
+**Padronização dos diâmetros (PR #720):** no popover, o indicador atual,
+o botão de conciliar/desconciliar e o estado bloqueado utilizam o mesmo
+círculo visual de **26 px** com SVG de **15 px**. O alvo da ação continua
+com **44 × 44 px**, mas sem uma segunda borda circular de 44 px.
+O foco permanece visível e os estados hover/focus usam tokens neutros.
+A verificação visual compara o diâmetro e o glyph dos dois ícones em
+desktop e mobile.
+A submissão continua sendo somente `PATCH /api/transactions/:id`
+com `{ status }`, afetando uma única ocorrência.

@@ -35,6 +35,16 @@ function statementDayFilterRunsBehaviorally(): void {
   assert.equal(harness.clearButton.hidden, true);
 }
 
+function statementDayFilterClearsPreviousRange(): void {
+  const harness = createHarness("?month=2026-06&from=2026-06-01&to=2026-06-07");
+  harness.dayInput.value = "2026-06-05";
+  harness.dayInput.dispatch("change");
+  const submitted = harness.form.lastSubmission();
+  assert.equal(submitted.get("day"), "2026-06-05");
+  assert.equal(submitted.get("from"), null);
+  assert.equal(submitted.get("to"), null);
+}
+
 function statementDayFilterSupportsMonthBoundaries(): void {
   const firstDay = createHarness("?month=2026-06&day=2026-06-01");
   assert.equal(firstDay.dayInput.value, "2026-06-01");
@@ -137,6 +147,12 @@ class FakeElement {
     if (selector === "#filter-day") {
       return this.find((element) => element.id === "filter-day");
     }
+    if (selector === "[name='day']") {
+      return this.find((element) => element.name === "day");
+    }
+    if (selector === 'input[name="from"]' || selector === 'input[name="to"]') {
+      return this.find((element) => element.name === selector.slice(12, -2));
+    }
 
     return null;
   }
@@ -206,10 +222,14 @@ class FakeDocument {
   private readonly listeners = new Map<string, FakeListener[]>();
   readonly heading = new FakeElement("p");
 
-  constructor(readonly monthInput: FakeElement) {}
+  constructor(
+    readonly monthInput: FakeElement,
+    readonly form: FakeForm,
+  ) {}
 
   querySelector(selector: string): FakeElement | null {
     if (selector === "#filter-month") return this.monthInput;
+    if (selector === ".filter-form") return this.form;
     if (selector === ".statement-heading > div > .muted") return this.heading;
     return null;
   }
@@ -250,9 +270,21 @@ function createHarness(search: string): {
   const sortInput = input("sort", "date_desc");
   const currentMonthButton = new FakeElement("button");
   currentMonthButton.dataset.monthCurrent = "";
-  form.append(accountInput, monthInput, sortInput, currentMonthButton);
+  const dayField = new FakeElement("div");
+  dayField.dataset.statementDayField = "";
+  const dayInput = input("day", "");
+  dayInput.id = "filter-day";
+  const clearButton = new FakeElement("button");
+  clearButton.dataset.clearStatementDay = "";
+  dayField.append(dayInput, clearButton);
+  form.append(accountInput, monthInput, sortInput, dayField, currentMonthButton);
+  const searchParams = new URLSearchParams(search);
+  for (const name of ["from", "to"]) {
+    const value = searchParams.get(name);
+    if (value) form.append(input(name, value));
+  }
 
-  const document = new FakeDocument(monthInput);
+  const document = new FakeDocument(monthInput, form);
   const script = statementPresentationScript()
     .replace(/^\s*<script>\s*/, "")
     .replace(/\s*<\/script>\s*$/, "");
@@ -268,10 +300,8 @@ function createHarness(search: string): {
     },
   });
 
-  const dayInput = form.querySelector("#filter-day");
-  const clearButton = form.querySelector("[data-clear-statement-day]");
-  assert.ok(dayInput, "Expected the day input to be inserted.");
-  assert.ok(clearButton, "Expected the clear-day button to be inserted.");
+  assert.ok(form.querySelector("#filter-day"), "The day input must be in the SSR form.");
+  assert.ok(form.querySelector("[data-clear-statement-day]"), "The clear-day action must exist.");
 
   return { form, monthInput, dayInput, clearButton };
 }
@@ -285,5 +315,6 @@ function input(name: string, value: string): FakeElement {
 
 statementDayFilterRunsBehaviorally();
 statementDayFilterSupportsMonthBoundaries();
+statementDayFilterClearsPreviousRange();
 statementDayFilterClearsWhenMonthChanges();
 statementDayFilterIncludesResponsiveStyles();

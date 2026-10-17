@@ -118,6 +118,11 @@ test("bank identity context and transaction metadata follow visual hierarchy", (
   );
 });
 
+test("statement running balance is a value-only cell, never a repeated text prefix", () => {
+  const css = statementListArchetypeStyles();
+  assert.doesNotMatch(css, /\.statement-body \.col-balance::before/);
+});
+
 test("period summary keeps four financial indicators on desktop", () => {
   const css = statementListArchetypeStyles();
   assert.match(

@@ -218,7 +218,12 @@ describe("shared shell styles", () => {
   for (const moduleFileName of consumingModules) {
     it(`${moduleFileName} composes its styles from sharedShellStyles()`, () => {
       const source = readFileSync(join(currentDir, moduleFileName), "utf8");
-
+      if (moduleFileName === "cards-page-v2.js" && source.includes("cardsPageStyles()")) {
+        assert.match(source, /import \{ cardsPageStyles \} from "\.\/cards-page-v2-styles\.js"/);
+        const extractedStyles = readFileSync(join(currentDir, "cards-page-v2-styles.js"), "utf8");
+        assert.match(extractedStyles, /sharedShellStyles\(\)/);
+        return;
+      }
       assert.match(source, /sharedShellStyles\(\)/);
     });
   }

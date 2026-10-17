@@ -254,20 +254,52 @@ async function validateAssistivePositionGuard(fixture) {
       const reason = document.querySelector('.installment-assistive-text');
       if (!reason) throw new Error('Installment accessible reason did not render');
       const originalStyle = reason.getAttribute('style');
+      const originalReasonText = reason.textContent;
       const title = reason.parentElement.firstChild;
       const originalTitle = title.textContent;
+      const normalStyle = getComputedStyle(reason);
+      const normalRect = reason.getBoundingClientRect();
+      const baseline = {
+        contained: document.documentElement.scrollWidth <= innerWidth + 1,
+        visuallyHidden: normalStyle.position === 'absolute' &&
+          normalRect.width <= 1.5 && normalRect.height <= 1.5,
+        accessible: Boolean(reason.id && document.querySelector('[aria-describedby="' + reason.id + '"]')),
+      };
       try {
+        // Removing only left/top no longer creates overflow because #715 makes
+        // long descriptions wrap. Model a real failure: an accessible reason
+        // loses its screen-reader-only positioning and intrinsic size clipping.
         title.textContent = 'Compra parcelada com uma descrição longa para verificar o limite da página';
-        reason.style.left = 'auto';
-        reason.style.top = 'auto';
-        return { rejected: document.documentElement.scrollWidth > innerWidth + 1 };
+        reason.textContent = [originalReasonText, originalReasonText, originalReasonText].join(' ');
+        reason.style.position = 'static';
+        reason.style.display = 'inline-block';
+        reason.style.width = 'max-content';
+        reason.style.height = 'auto';
+        reason.style.margin = '0';
+        reason.style.whiteSpace = 'nowrap';
+        reason.style.overflow = 'visible';
+        reason.style.clip = 'auto';
+        reason.style.clipPath = 'none';
+        const reasonRect = reason.getBoundingClientRect();
+        const scrollWidth = document.documentElement.scrollWidth;
+        return {
+          ...baseline,
+          rejected: reasonRect.right > innerWidth + 1 || scrollWidth > innerWidth + 1,
+          negativeReasonRight: reasonRect.right,
+          negativeScrollWidth: scrollWidth,
+          viewportWidth: innerWidth,
+        };
       } finally {
+        reason.textContent = originalReasonText;
         title.textContent = originalTitle;
         if (originalStyle === null) reason.removeAttribute('style');
         else reason.setAttribute('style', originalStyle);
       }
     })()`,
   );
+  check(state.contained, "mobile: accessible reason leaks into normal page overflow", state);
+  check(state.visuallyHidden, "mobile: accessible reason is not visually hidden", state);
+  check(state.accessible, "mobile: accessible reason is not linked to the installment", state);
   check(state.rejected, "mobile: accessible reason overflow negative control did not fail", state);
   const restored = await evaluate(
     browser.cdp,

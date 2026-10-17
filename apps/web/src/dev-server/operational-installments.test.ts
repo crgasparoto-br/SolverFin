@@ -129,8 +129,11 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.doesNotMatch(script, /data-installment-edit.*data-edit-purchase/s);
   assert.match(script, /INSTALLMENT_EDIT_BLOCKED/);
   assert.match(script, /Recarregar estado atual/);
-  assert.match(script, /rememberAndSet\(saveButton, "hidden", !editable\)/);
+  assert.match(script, /rememberAndSet\(saveButton, "hidden", !anyEditable\)/);
   assert.match(script, /data-installment-reload/);
+  assert.ok(script.includes('attachments.dataset.entityId = installment.transaction?.id || ""'));
+  assert.ok(script.includes("window.SolverFinAttachments?.resetPending(attachments)"));
+  assert.ok(script.includes("window.SolverFinAttachments?.refresh(attachments)"));
   assert.match(script, /data-installment-historical-category/);
   assert.match(script, /ensureHistoricalCategoryOption\(form\.categoryId, installment\)/);
   assert.match(script, /setAccountEditLookupState\("loading"\)/);
@@ -154,4 +157,63 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /aria-describedby/);
   assert.match(script, /installment-assistive-text/);
   assert.match(script, /installmentBlockReason/);
+});
+
+test("installment value correction sends only changed cents and keeps metadata protected on posted records", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes("const amountEditable = installment.amountEditable === true"));
+  assert.ok(script.includes('name="adjustedInstallmentAmount"'));
+  assert.ok(script.includes("parseInstallmentAmount(value)"));
+  assert.ok(script.includes("patch.amountMinor = cents"));
+  assert.ok(script.includes('rememberAndSet(saveButton, "hidden", !anyEditable)'));
+  assert.ok(script.includes("Ajuste somente o valor desta parcela"));
+  assert.ok(script.includes("sem redistribuir as demais"));
+  assert.ok(script.includes("installment.editable === true && !form.description.value.trim()"));
+  assert.ok(script.includes('method: "PATCH"'));
+});
+
+test("fixed recurring occurrences do not display finite installment badges", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes("if (!installment.recurrenceId"));
+  assert.ok(script.includes("Number(installment.totalInstallments) > 0"));
+  assert.ok(script.includes("const total = Number(installment.totalInstallments) > 0"));
+  assert.ok(script.includes('return "Parcela " + installment.sequenceNumber + " de " + total;'));
+  assert.ok(script.includes('findNodeByData("script[data-purchase]", transactionId)'));
+  assert.ok(script.includes("addBadge(row, installment)"));
+});
+
+test("installment scope selection follows Golden Screen neutral button states", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes('data-button-variant="neutral" data-scope="current"'));
+  assert.ok(script.includes('data-button-variant="neutral" data-scope="current_and_future"'));
+  assert.ok(
+    script.includes(
+      ".installment-scope-dialog button.installment-scope-option:hover:not(:disabled)",
+    ),
+  );
+  assert.ok(
+    script.includes(".installment-scope-dialog button.installment-scope-option:focus-visible"),
+  );
+  assert.ok(script.includes("background: var(--neutral-control-hover)"));
+  assert.ok(script.includes("border-color: var(--neutral-control-border-hover)"));
+  assert.ok(script.includes("color: var(--neutral-control-text-hover)"));
+  assert.ok(script.includes("box-shadow: var(--shadow-focus)"));
+  assert.ok(script.includes("background: var(--surface)"));
+  assert.ok(script.includes("color: var(--primary)"));
+});
+
+test("amount edit requires an explicit current or future scope before the PATCH", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes("function chooseInstallmentScope(installment)"));
+  assert.ok(script.includes("Onde aplicar o novo valor?"));
+  assert.ok(script.includes("Somente esta parcela"));
+  assert.ok(script.includes("Esta e as próximas"));
+  assert.ok(script.includes("data-scope-cancel>Voltar sem salvar"));
+  assert.ok(script.includes("const scope = await chooseInstallmentScope(installment)"));
+  assert.ok(script.includes("patch.scope = scope"));
+  assert.ok(script.includes("const hasFuture = !installment.recurrenceId"));
+  assert.ok(script.includes("if (!scope) {"));
+  assert.ok(script.includes('Object.keys(patch).some((field) => field !== "amountMinor")'));
+  assert.ok(script.includes("body: JSON.stringify(patch)"));
+  assert.ok(script.includes(".installment-scope-dialog::backdrop"));
 });

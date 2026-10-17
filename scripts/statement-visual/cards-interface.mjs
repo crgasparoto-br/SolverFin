@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { validateCardsPage } from "./cards-interface-measurements.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -19,26 +20,64 @@ const report = {
   browser: "unknown",
   failures,
   desktop: undefined,
+  wideDesktop: undefined,
   filteredEmpty: undefined,
   desktopModal: undefined,
   mobile: undefined,
   mobileModal: undefined,
+  compactMobile: undefined,
+  compactMobileModal: undefined,
+  longContentCompactMobile: undefined,
+  longContentDesktop: undefined,
+  longContentMobile: undefined,
+  filteredEmptyMobile: undefined,
+  filteredEmptyCompactMobile: undefined,
   screenshots: [],
 };
 
-await runViewportSession("desktop", 1440, 900, async (cdp) => {
+const validatePage = (cdp, viewportKind, captureName = viewportKind) =>
+  validateCardsPage(cdp, viewportKind, captureName, {
+    check,
+    outputDir,
+    validateFirstFoldNegativeControl,
+  });
+
+await runViewportSession("desktop", 1366, 768, async (cdp) => {
   report.desktop = await validatePage(cdp, "desktop");
   report.screenshots.push("cards-desktop.png");
-  report.filteredEmpty = await validateFilteredEmpty(cdp);
+  report.filteredEmpty = await validateFilteredEmpty(cdp, "desktop");
+  report.screenshots.push("cards-empty-desktop.png");
+  report.longContentDesktop = await validateLongDescription(cdp, "desktop");
+  report.screenshots.push("cards-long-desktop.png");
   report.desktopModal = await validateModal(cdp, "desktop");
   report.screenshots.push("cards-modal-desktop.png");
+});
+
+await runViewportSession("wide-desktop", 1920, 1080, async (cdp) => {
+  report.wideDesktop = await validatePage(cdp, "desktop", "wide-desktop");
+  report.screenshots.push("cards-wide-desktop.png");
 });
 
 await runViewportSession("mobile", 390, 844, async (cdp) => {
   report.mobile = await validatePage(cdp, "mobile");
   report.screenshots.push("cards-mobile.png");
+  report.longContentMobile = await validateLongDescription(cdp, "mobile");
+  report.screenshots.push("cards-long-mobile.png");
+  report.filteredEmptyMobile = await validateFilteredEmpty(cdp, "mobile");
+  report.screenshots.push("cards-empty-mobile.png");
   report.mobileModal = await validateModal(cdp, "mobile");
   report.screenshots.push("cards-modal-mobile.png");
+});
+
+await runViewportSession("compact-mobile", 320, 740, async (cdp) => {
+  report.compactMobile = await validatePage(cdp, "mobile", "compact-mobile");
+  report.screenshots.push("cards-compact-mobile.png");
+  report.longContentCompactMobile = await validateLongDescription(cdp, "compact-mobile");
+  report.screenshots.push("cards-long-compact-mobile.png");
+  report.filteredEmptyCompactMobile = await validateFilteredEmpty(cdp, "compact-mobile");
+  report.screenshots.push("cards-empty-compact-mobile.png");
+  report.compactMobileModal = await validateModal(cdp, "mobile", "compact-mobile");
+  report.screenshots.push("cards-modal-compact-mobile.png");
 });
 
 await writeFile(join(outputDir, "cards-interface.json"), `${JSON.stringify(report, null, 2)}\n`);
@@ -61,6 +100,7 @@ async function runViewportSession(label, width, height, validate) {
     const login = await evaluate(browser.cdp, loginExpression());
     assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
     await openCards(browser.cdp);
+    await validateCardDayAndStatus(browser.cdp);
     await validate(browser.cdp);
   } catch (error) {
     const details = serializeError(error);
@@ -78,156 +118,89 @@ async function openCards(cdp) {
   await waitFor(cdp, "[data-purchase-item]");
 }
 
-async function validatePage(cdp, viewportKind) {
-  const measurements = await evaluate(
+async function validateCardDayAndStatus(cdp) {
+  const result = await evaluate(
     cdp,
     `(() => {
-      const rect = (element) => {
-        if (!element) return { width: 0, height: 0, left: 0, right: 0, top: 0, bottom: 0 };
-        const value = element.getBoundingClientRect();
-        return { width: value.width, height: value.height, left: value.left, right: value.right, top: value.top, bottom: value.bottom };
+      const day = document.querySelector('.cards-purchase-day-filter input[name="day"]');
+      const groups = [...document.querySelectorAll('[data-cards-day-group]')];
+      const documents = document.querySelector('.cards-invoice-documents');
+      const close = document.querySelector('.cards-close-invoice');
+      const status = [...document.querySelectorAll('[data-purchase-status-control]')].find(
+        (item) => item.querySelector('[data-set-purchase-status]'),
+      );
+      if (status) status.open = true;
+      const action = status?.querySelector('.cards-purchase-status-option');
+      const current = status?.querySelector('.cards-purchase-status-current .cards-purchase-status');
+      const next = action?.querySelector('.cards-purchase-status');
+      const result = {
+        dayVisible: Boolean(day && day.getClientRects().length > 0),
+        dayWidth: day?.getBoundingClientRect().width ?? 0,
+        groupCount: groups.length,
+        groupsOpen: groups.every((group) => group.open),
+        documentsBorder: documents ? parseFloat(getComputedStyle(documents).borderTopWidth) : 0,
+        closeBorder: close ? parseFloat(getComputedStyle(close).borderTopWidth) : null,
+        actionLabel: action?.getAttribute('aria-label'),
+        actionTextless: Boolean(action && !action.textContent.trim()),
+        actionTarget: action?.getBoundingClientRect().width ?? 0,
+        currentCircle: current?.getBoundingClientRect().width ?? 0,
+        actionCircle: next?.getBoundingClientRect().width ?? 0,
+        currentGlyph: current?.querySelector('svg')?.getBoundingClientRect().width ?? 0,
+        actionGlyph: next?.querySelector('svg')?.getBoundingClientRect().width ?? 0,
       };
-      const visible = (element) => {
-        if (!element) return false;
-        const value = rect(element);
-        const style = getComputedStyle(element);
-        return value.width > 0 && value.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
-      };
-      const rows = Array.from(document.querySelectorAll('[data-purchase-item]'));
-      const actions = Array.from(document.querySelectorAll('.cards-purchase-actions > summary'));
-      const header = document.querySelector('.cards-invoice-header');
-      const master = document.querySelector('.cards-master-panel');
-      const detail = document.querySelector('.cards-detail-panel');
-      const primaryAmount = document.querySelector('.cards-invoice-primary > strong');
-      const status = document.querySelector('.cards-invoice-title-row .sf-badge');
-      const search = document.querySelector('[data-purchase-search]');
-      const tableHead = document.querySelector('.cards-purchase-table-head');
-      const firstDate = document.querySelector('[data-purchase-item] [data-label="Data"]');
-      const firstStatus = document.querySelector('[data-purchase-item] [data-label="Situação"]');
-      const invoiceCopy = document.querySelector('.cards-invoice-title-block p')?.textContent || '';
-      const settlementCopy = document.querySelector('.cards-settlement-note')?.textContent || '';
-      const currencies = Array.from(document.querySelectorAll('.sf-money[data-currency]')).map((node) => node.getAttribute('data-currency'));
-      return {
-        viewport: { width: window.innerWidth, height: window.innerHeight },
-        archetype: document.querySelector('[data-cards-archetype]')?.getAttribute('data-cards-archetype') || '',
-        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
-        masterVisible: visible(master),
-        detailVisible: visible(detail),
-        invoiceHeaderVisible: visible(header),
-        primaryAmountVisible: visible(primaryAmount),
-        statusVisible: visible(status),
-        searchVisible: visible(search),
-        searchHeight: rect(search).height,
-        heroAction: rect(document.querySelector('[data-open-modal="purchase"]')),
-        tableHeaderVisible: visible(tableHead),
-        rowCount: rows.length,
-        minimumRowHeight: rows.length ? Math.min(...rows.map((row) => rect(row).height)) : 0,
-        minimumActionTarget: actions.length ? Math.min(...actions.map((action) => rect(action).height)) : 0,
-        filterCount: document.querySelectorAll('[data-reconciliation-toggle]').length,
-        resultAnnouncement: document.querySelector('[data-purchase-results-status]')?.textContent?.trim() || '',
-        invoiceCopy,
-        settlementCopy,
-        currencies,
-        cardSelect: Boolean(document.querySelector('[data-card-select]')),
-        invoicePeriodNavigation: Boolean(document.querySelector('.cards-invoice-period-row')),
-        previousPeriodControl: Boolean(document.querySelector('.cards-invoice-period-link-previous')),
-        nextPeriodControl: Boolean(document.querySelector('.cards-invoice-period-link-next')),
-        monthInput: Boolean(document.querySelector('[data-invoice-month-input]')),
-        mobileDateLabel: firstDate ? getComputedStyle(firstDate, '::before').content.replaceAll('"', '') : '',
-        mobileStatusLabel: firstStatus ? getComputedStyle(firstStatus, '::before').content.replaceAll('"', '') : '',
-      };
+      if (status) status.open = false;
+      return result;
     })()`,
   );
-
-  check(measurements.archetype === "A3", "Cards route is not rendered as A3", measurements);
-  check(measurements.noHorizontalOverflow, "Cards page has horizontal overflow", measurements);
-  check(
-    measurements.masterVisible && measurements.detailVisible,
-    "Master-detail hierarchy is incomplete",
-    measurements,
-  );
-  check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
-  check(measurements.primaryAmountVisible, "Invoice amount due is not visible", measurements);
-  check(measurements.statusVisible, "Invoice status is not visible", measurements);
-  check(
-    measurements.invoiceCopy.includes("Fechamento") &&
-      measurements.invoiceCopy.includes("Vencimento"),
-    "Invoice closing and due dates are not explicit",
-    measurements,
-  );
-  check(
-    measurements.settlementCopy.includes("não é uma nova compra"),
-    "Settlement semantics are not explicit",
-    measurements,
-  );
-  check(
-    measurements.currencies.length > 0 && measurements.currencies.every(Boolean),
-    "Money is rendered without explicit currency",
-    measurements,
-  );
-  check(measurements.cardSelect, "Card master selector is unavailable", measurements);
-  check(
-    measurements.invoicePeriodNavigation &&
-      measurements.previousPeriodControl &&
-      measurements.nextPeriodControl &&
-      measurements.monthInput,
-    "Invoice period navigation is incomplete",
-    measurements,
-  );
-  check(measurements.searchVisible, "Purchase search is unavailable", measurements);
-  check(measurements.filterCount >= 3, "Reconciliation filters are incomplete", measurements);
-  check(measurements.rowCount > 0, "Cards page rendered no purchase rows", measurements);
-  check(
-    measurements.resultAnnouncement.includes("compra"),
-    "Purchase result count is not announced",
-    measurements,
-  );
-
-  if (viewportKind === "desktop") {
-    check(
-      measurements.tableHeaderVisible,
-      "Purchase table header is not visible on desktop",
-      measurements,
-    );
-    check(
-      measurements.minimumRowHeight >= 40,
-      "Purchase rows are too small on desktop",
-      measurements,
-    );
-  } else {
-    check(
-      measurements.heroAction.height >= 44,
-      "Primary purchase action is smaller than 44px",
-      measurements,
-    );
-    check(measurements.searchHeight >= 40, "Purchase search is too small on mobile", measurements);
-    check(
-      !measurements.tableHeaderVisible,
-      "Desktop purchase header remains visible on mobile",
-      measurements,
-    );
-    check(
-      measurements.mobileDateLabel.includes("Data"),
-      "Mobile purchase date lost its contextual label",
-      measurements,
-    );
-    check(
-      measurements.mobileStatusLabel.includes("Situação"),
-      "Mobile purchase status lost its contextual label",
-      measurements,
-    );
-    check(
-      measurements.minimumActionTarget >= 30,
-      "Purchase action target is too small on mobile",
-      measurements,
-    );
+  assert.equal(result.dayVisible, true, "Day filter must remain visible");
+  assert.ok(result.dayWidth <= 200, "Day filter must remain proportional");
+  assert.ok(result.groupCount > 0, "Invoice purchases must be grouped by day");
+  assert.equal(result.groupsOpen, true, "Day groups must be expanded initially");
+  assert.ok(result.documentsBorder >= 1, "Documents must look like a button");
+  if (result.closeBorder !== null) {
+    assert.ok(result.closeBorder >= 1, "Close invoice must look like a button");
   }
-
-  await screenshot(cdp, join(outputDir, `cards-${viewportKind}.png`));
-  return measurements;
+  assert.ok(result.actionLabel, "Status action requires a tooltip and accessible label");
+  assert.equal(result.actionTextless, true, "Status action should display only an icon");
+  assert.ok(result.actionTarget >= 44, "Status action must preserve its target");
+  assert.equal(result.currentCircle, 26, "Current status circle must be 26px");
+  assert.equal(result.actionCircle, 26, "Action status circle must be 26px");
+  assert.equal(result.currentGlyph, 15, "Current glyph must be 15px");
+  assert.equal(result.actionGlyph, 15, "Action glyph must be 15px");
 }
 
-async function validateFilteredEmpty(cdp) {
+async function validateFirstFoldNegativeControl(cdp, viewportKind) {
+  return evaluate(
+    cdp,
+    `(() => {
+      const target = document.querySelector(
+        ${JSON.stringify(viewportKind === "desktop" ? "[data-purchase-item]" : ".cards-invoice-primary > strong")}
+      );
+      if (!target) return { acceptedBefore: false, acceptedDuring: false, acceptedAfter: false };
+      const threshold = window.innerHeight * ${viewportKind === "desktop" ? "1" : "0.62"} - ${viewportKind === "desktop" ? "12" : "0"};
+      const original = target.style.transform;
+      const accepted = () => {
+        const box = target.getBoundingClientRect();
+        if (${viewportKind === "desktop"}) {
+          const description = target.querySelector('.cards-purchase-description strong');
+          const amount = target.querySelector('.cards-purchase-amount');
+          return box.bottom <= threshold && Boolean(description && amount &&
+            description.getBoundingClientRect().bottom <= threshold &&
+            amount.getBoundingClientRect().bottom <= threshold);
+        }
+        const header = document.querySelector('.cards-invoice-header');
+        return box.top < threshold && Boolean(header && box.top - header.getBoundingClientRect().top < 88);
+      };
+      const acceptedBefore = accepted();
+      target.style.transform = 'translateY(' + window.innerHeight + 'px)';
+      const acceptedDuring = accepted();
+      target.style.transform = original;
+      return { acceptedBefore, acceptedDuring, acceptedAfter: accepted(), threshold };
+    })()`,
+  );
+}
+
+async function validateFilteredEmpty(cdp, captureName) {
   const current = await evaluate(cdp, "window.location.href");
   const filteredUrl = new URL(current);
   filteredUrl.searchParams.set("q", "__solverfin_no_purchase_matches__");
@@ -252,11 +225,69 @@ async function validateFilteredEmpty(cdp) {
     result,
   );
 
+  await screenshot(cdp, join(outputDir, `cards-empty-${captureName}.png`));
   await openCards(cdp);
   return result;
 }
 
-async function validateModal(cdp, viewportKind) {
+async function validateLongDescription(cdp, captureName) {
+  const original = await evaluate(
+    cdp,
+    `(() => {
+      const description = document.querySelector('[data-purchase-item] .cards-purchase-description strong');
+      if (!description) return null;
+      const html = description.innerHTML;
+      description.textContent = 'Assinatura internacional recorrente com uma descricao operacional extensa para validar leitura integral, valor e moeda sem truncamento no extrato do cartao';
+      return html;
+    })()`,
+  );
+  assert.notEqual(original, null, "No purchase description for long-content validation");
+  await sleep(80);
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const text = document.querySelector('[data-purchase-item] .cards-purchase-description strong');
+      const amount = document.querySelector('[data-purchase-item] .cards-purchase-amount');
+      const row = document.querySelector('[data-purchase-item]');
+      const style = getComputedStyle(text);
+      const descriptionRect = text.getBoundingClientRect();
+      const amountRect = amount.getBoundingClientRect();
+      const rowRect = row.getBoundingClientRect();
+      return {
+        viewport: window.innerWidth,
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+        whiteSpace: style.whiteSpace,
+        ellipsis: style.textOverflow === 'ellipsis',
+        lineWrap: descriptionRect.height > (parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.35) * 1.4,
+        rowInViewport: rowRect.left >= -1 && rowRect.right <= window.innerWidth + 1,
+        amountVisible: amountRect.width > 0 && amountRect.right <= window.innerWidth + 1,
+        currencyVisible: Boolean(amount.querySelector('.sf-money[data-currency]')),
+      };
+    })()`,
+  );
+  check(result.noHorizontalOverflow, "Long description causes horizontal overflow", result);
+  check(
+    result.whiteSpace !== "nowrap" && !result.ellipsis && result.lineWrap,
+    "Long description is truncated",
+    result,
+  );
+  check(
+    result.rowInViewport && result.amountVisible && result.currencyVisible,
+    "Long description hides actions, values or currency",
+    result,
+  );
+  await screenshot(cdp, join(outputDir, `cards-long-${captureName}.png`));
+  await evaluate(
+    cdp,
+    `(() => {
+      const description = document.querySelector('[data-purchase-item] .cards-purchase-description strong');
+      if (description) description.innerHTML = ${JSON.stringify(original)};
+    })()`,
+  );
+  return result;
+}
+
+async function validateModal(cdp, viewportKind, captureName = viewportKind) {
   await evaluate(cdp, `document.querySelector('[data-open-modal="purchase"]')?.click()`);
   await waitFor(cdp, 'dialog[data-modal="purchase"][open]');
   const measurements = await evaluate(
@@ -273,6 +304,10 @@ async function validateModal(cdp, viewportKind) {
         labelled: Boolean(dialog?.getAttribute('aria-labelledby')),
         insideViewport: Boolean(rect && rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1),
         closeTarget: close?.getBoundingClientRect().height || 0,
+        closeIconText: close?.textContent?.trim() || "",
+        closeIconColor: close ? getComputedStyle(close).color : "",
+        dialogBackground: dialog ? getComputedStyle(dialog).backgroundColor : "",
+        closeIconOpacity: close ? Number(getComputedStyle(close).opacity) : 0,
         singleColumn: style?.gridTemplateColumns ? style.gridTemplateColumns.split(' ').length === 1 : false,
         minimumActionHeight: buttons.length ? Math.min(...buttons.map((button) => button.getBoundingClientRect().height)) : 0,
       };
@@ -282,6 +317,30 @@ async function validateModal(cdp, viewportKind) {
   check(measurements.labelled, "Purchase modal is not labelled", measurements);
   check(measurements.insideViewport, "Purchase modal exceeds the viewport", measurements);
   check(measurements.closeTarget >= 40, "Purchase modal close action is too small", measurements);
+  check(
+    measurements.closeIconText === "×" &&
+      measurements.closeIconOpacity > 0 &&
+      measurements.closeIconColor !== measurements.dialogBackground,
+    "Purchase modal close icon is missing or visually indistinguishable",
+    measurements,
+  );
+  // An invisible close icon must fail: restore the original DOM style.
+  const negative = await evaluate(
+    cdp,
+    `(() => {
+    const close = document.querySelector('dialog[data-modal="purchase"] [data-close-modal]');
+    const original = close.style.visibility;
+    close.style.visibility = 'hidden';
+    const rejected = getComputedStyle(close).visibility === 'hidden';
+    close.style.visibility = original;
+    return { rejected, restored: getComputedStyle(close).visibility === 'visible' };
+  })()`,
+  );
+  check(
+    negative.rejected && negative.restored,
+    "Close icon negative control did not reject and restore",
+    negative,
+  );
   if (viewportKind === "mobile") {
     check(measurements.singleColumn, "Purchase modal is not single-column on mobile", measurements);
     check(
@@ -290,7 +349,7 @@ async function validateModal(cdp, viewportKind) {
       measurements,
     );
   }
-  await screenshot(cdp, join(outputDir, `cards-modal-${viewportKind}.png`));
+  await screenshot(cdp, join(outputDir, `cards-modal-${captureName}.png`));
   await evaluate(
     cdp,
     `document.querySelector('dialog[data-modal="purchase"] [data-close-modal]')?.click()`,

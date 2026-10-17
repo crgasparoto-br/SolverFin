@@ -27,6 +27,7 @@ import { readCreateTransactionOccurredOn } from "./transaction-create-temporal-i
 import {
   closeInvoiceForContext,
   listCardPurchasesForContext,
+  reconcileInvoiceInstallmentForContext,
   summarizeInvoiceForContext,
   type PurchaseReconciliationFilter,
 } from "./repositories/card-invoice-contracts.js";
@@ -167,6 +168,11 @@ route("GET", "/api/invoices", listInvoicesHandler);
 route("GET", "/api/invoices/:invoiceId", getInvoiceHandler);
 route("GET", "/api/invoices/:invoiceId/summary", getInvoiceSummaryHandler);
 route("GET", "/api/invoices/:invoiceId/purchases", listInvoicePurchasesHandler);
+route(
+  "PATCH",
+  "/api/invoices/:invoiceId/installments/:installmentId/reconciliation",
+  reconcileInvoiceInstallmentHandler,
+);
 route("POST", "/api/invoices/:invoiceId/close", closeInvoiceHandler);
 route("POST", "/api/invoices/:invoiceId/pay", payInvoiceHandler);
 
@@ -445,6 +451,7 @@ async function listTransactionsHandler(
   const categoryId = request.query.get("categoryId");
   const occurredFrom = request.query.get("occurredFrom");
   const occurredTo = request.query.get("occurredTo");
+  const statementTo = request.query.get("statementTo");
   const plannedFrom = request.query.get("plannedFrom");
   const plannedTo = request.query.get("plannedTo");
   const effectiveFrom = request.query.get("effectiveFrom");
@@ -456,6 +463,7 @@ async function listTransactionsHandler(
     ...(categoryId ? { categoryId } : {}),
     ...(occurredFrom ? { occurredFrom } : {}),
     ...(occurredTo ? { occurredTo } : {}),
+    ...(statementTo ? { statementTo } : {}),
     ...(plannedFrom ? { plannedFrom } : {}),
     ...(plannedTo ? { plannedTo } : {}),
     ...(effectiveFrom ? { effectiveFrom } : {}),
@@ -958,6 +966,29 @@ async function listInvoicePurchasesHandler(
   });
 
   return json(200, { purchases });
+}
+
+async function reconcileInvoiceInstallmentHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  if (Object.keys(body).length !== 1 || !["posted", "reconciled"].includes(String(body.status))) {
+    return json(400, {
+      error: {
+        code: "CARD_INSTALLMENT_STATUS_INVALID",
+        message: "Informe apenas a situação de conciliação.",
+      },
+    });
+  }
+  const result = await reconcileInvoiceInstallmentForContext(
+    context,
+    requireParam(match, "invoiceId"),
+    requireParam(match, "installmentId"),
+    body.status as "posted" | "reconciled",
+  );
+  return json(200, result);
 }
 
 async function closeInvoiceHandler(

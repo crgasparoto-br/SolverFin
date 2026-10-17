@@ -129,6 +129,8 @@ export interface ListTransactionsFilters {
   categoryId?: EntityId;
   occurredFrom?: ISODate;
   occurredTo?: ISODate;
+  /** Inclusive cutoff using the canonical date shown on the statement. */
+  statementTo?: ISODate;
   plannedFrom?: ISODate;
   plannedTo?: ISODate;
   effectiveFrom?: ISODate;
@@ -201,6 +203,10 @@ export function listTransactions(
       filters.occurredFrom === undefined || transaction.occurredOn >= filters.occurredFrom;
     const toMatches =
       filters.occurredTo === undefined || transaction.occurredOn <= filters.occurredTo;
+    const statementToMatches =
+      filters.statementTo === undefined ||
+      (transaction.effectiveOn ?? transaction.plannedOn ?? transaction.occurredOn) <=
+        filters.statementTo;
     const plannedFromMatches =
       filters.plannedFrom === undefined || transaction.plannedOn >= filters.plannedFrom;
     const plannedToMatches =
@@ -219,6 +225,7 @@ export function listTransactions(
       categoryMatches &&
       fromMatches &&
       toMatches &&
+      statementToMatches &&
       plannedFromMatches &&
       plannedToMatches &&
       effectiveFromMatches &&
