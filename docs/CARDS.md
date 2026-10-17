@@ -438,3 +438,34 @@ O diálogo centralizado de **Registrar compra** e **Editar compra** reutiliza o 
 O valor principal tem prioridade tipográfica; valor da parcela aparece ao lado do total somente ao editar uma compra parcelada. Moeda e data permanecem visíveis, inclusive em modo somente leitura. Os controles usam alvos mínimos de 44 px, duas colunas em desktop e uma em mobile. O diálogo limita a altura a 90dvh, mantém cabeçalho e ações acessíveis e rola somente o corpo. **Cancelar** é secundário, e **Salvar compra** é a única ação primária, na mesma linha no desktop.
 
 Os estados de compra simples, compra parcelada, recorrência fixa, cartão sem moeda e indisponibilidade de edição preservam os contratos de campos, validações e API. Validar criação/edição em 1366×768, 390×844 e 320×740 com teclado, foco, rolagem, leitura de erros, estados de parcela e comparação visual com o Extrato antes de aprovar o gate independente.
+
+## Fatura por dia e conciliação no padrão da Golden Screen — PR #720
+
+O campo **Dia da fatura** permanece visível no formulário GET de compras, com
+limites reais `periodStartOn`/`periodEndOn` (o ciclo da fatura pode atravessar dois
+meses civis). O atalho **Todos os dias** remove somente `day`, preservando cartão,
+fatura, perfil, busca, ordenação e conciliação. O filtro compara a data da
+**ocorrência mostrada**; parcelas financeiras usam `Installment.dueOn`, e não
+a data da compra-mãe.
+
+Nas ordenações cronológicas, um agrupamento global por dia, expandido por padrão,
+exibe data, quantidade de compras e valor agregado por moeda. Dentro de cada
+dia são mantidos os subtotais e a identidade dos instrumentos, sem duplicar
+compras nem alterar o resumo financeiro da fatura. Para ordenação por valor ou
+descrição, permanece a ordem global escolhida, sem cabeçalhos diários.
+
+A coluna **Situação** usa apenas ícones (atual e ação), mesma escala do
+Extrato, tooltips e rótulos acessíveis, com conciliar/desconciliar por `PATCH`
+de somente status. Compras simples e recorrentes seguem o endpoint existente;
+parcela finita usa
+`PATCH /api/invoices/:invoiceId/installments/:installmentId/reconciliation`
+com corpo `{ "status": "posted" | "reconciled" }`. A operação altera só
+`Installment.status` da ocorrência e recalcula a repartição conciliada/não
+conciliada do resumo. Permanecem bloqueios para fatura fechada, paga ou cancelada,
+status inválido e recurso fora do perfil autorizado. Os campos estruturais da
+compra parcelada continuam imutáveis neste fluxo.
+
+Os botões secundários **Documentos** e **Fechar fatura** recebem fundo neutro
+e borda fina `var(--line)`, com hover/foco consistentes e sem competir com
+**Liquidar fatura**, a ação primária. Verificar calendário, grupos recolhíveis,
+situação e contraste em desktop e mobile no último SHA.
