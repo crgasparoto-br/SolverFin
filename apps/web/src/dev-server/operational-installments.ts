@@ -639,7 +639,7 @@ export function operationalInstallmentsController(): string {
       function focusableInstallmentControls(modal) {
       return Array.from(
         modal.querySelectorAll(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ),
       ).filter(
         (control) =>
