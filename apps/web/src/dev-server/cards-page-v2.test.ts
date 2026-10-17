@@ -520,58 +520,22 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Total da compra:[\s\S]*?data-currency="USD"/);
   assert.match(html, /Físico - Titular principal · final 4242/);
   assert.match(html, /Virtual - Titular principal · final 9001/);
-  // Golden Screen: status remains icon-only; the summary is a keyboard-accessible action.
-  assert.match(
-    html,
-    /<details class="cards-purchase-status-control" data-purchase-status-control>\s*<summary aria-label="Situação: Conciliada\. Alterar situação" title="Conciliada"><span class="cards-purchase-status cards-purchase-status-reconciled" role="img" aria-label="Conciliada" title="Conciliada" data-tooltip="Conciliada"><svg/,
-  );
-  assert.match(
-    html,
-    /<summary aria-label="Situação: Não conciliada\. Ver restrição de alteração" title="Não conciliada"><span class="cards-purchase-status cards-purchase-status-posted" role="img" aria-label="Não conciliada" title="Não conciliada" data-tooltip="Não conciliada"><svg/,
-  );
-  assert.match(
-    html,
-    /<summary aria-label="Situação: Planejada\. Alterar situação" title="Planejada"><span class="cards-purchase-status cards-purchase-status-planned" role="img" aria-label="Planejada" title="Planejada" data-tooltip="Planejada"><svg/,
-  );
-  assert.doesNotMatch(html, /data-status-purchase-id="purchase-taxi"/);
-  assert.match(
-    html,
-    /data-set-purchase-status="posted" data-status-purchase-id="purchase-hotel" data-status-card-id="card-usd">Desconciliar<\/button>/,
-  );
-  assert.match(
-    html,
-    /data-set-purchase-status="posted" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como não conciliada<\/button>/,
-  );
-  assert.match(
-    html,
-    /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como conciliada<\/button>/,
-  );
-  assert.match(html, /A conciliação desta parcela exige manutenção específica/);
-  assert.match(
-    html,
-    /\.cards-purchase-status-control>summary\{[^}]*min-height:44px;min-width:44px/,
-  );
-  assert.match(html, /\.cards-purchase-status-option\{[^}]*min-height:44px/);
-  // The Golden Screen neutral-action token must beat global button:hover primary-dark styling.
-  assert.match(
-    html,
-    /\.cards-purchase-status-menu>button\.cards-purchase-status-option:hover:not\(:disabled\),\.cards-purchase-status-menu>button\.cards-purchase-status-option:focus-visible\{background:var\(--neutral-control-hover\);color:var\(--neutral-control-text-hover\)/,
-  );
-  assert.doesNotMatch(
-    html,
-    /\.cards-purchase-status-option:hover,\.cards-purchase-status-option:focus-visible\{background:var\(--primary-soft\)/,
-  );
-  assert.match(
-    html,
-    /\.cards-purchase-status-control>summary:focus-visible\{outline:2px solid var\(--primary\)/,
-  );
-  assert.match(
-    html,
-    /const response = await request\([\s\S]*?"PATCH",[\s\S]*?\{ status: targetStatus \}/,
-  );
-  assert.match(html, /document\.querySelectorAll\("\[data-purchase-status-control\]"\)/);
-  assert.match(html, /\.cards-purchase-status-control\[open\]/);
-  assert.doesNotMatch(html, /data-label="Situação">\s*<span class="sf-badge/);
+  // Status icons and actions follow the Golden Screen; finite installments use a dedicated route.
+  assert.match(html, /Situação: Conciliada\. Alterar situação/);
+  assert.match(html, /Situação: Não conciliada\. Alterar situação/);
+  assert.match(html, /Situação: Planejada\. Alterar situação/);
+  assert.match(html, /class="cards-purchase-status-current" role="img" aria-label="Situação atual: Conciliada"/);
+  assert.match(html, /data-set-purchase-status="posted" data-status-purchase-id="purchase-hotel"/);
+  assert.match(html, /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-coffee"/);
+  assert.match(html, /data-status-installment-id="installment-taxi-2" data-status-invoice-id="invoice-aug"/);
+  assert.doesNotMatch(html, /cards-purchase-status-current">Atual:/);
+  assert.match(html, /data-cards-status-feedback-message/);
+  assert.match(html, /status: targetStatus/);
+  assert.match(html, /\/installments\/".*\/reconciliation"/);
+  assert.ok(html.includes(".cards-purchase-status-menu>button.cards-purchase-status-option{"));
+  assert.ok(html.includes(".cards-purchase-status{height:26px;width:26px}"));
+  assert.ok(html.includes(".cards-purchase-status svg{height:15px;width:15px}"));
+  assert.match(html, /\.cards-purchase-status-control>summary:focus-visible\{outline:2px solid var\(--primary\)/);
   assert.match(html, /class="cards-purchase-status-cell"/);
   assert.match(html, /title="Ações da compra"><svg[^>]*aria-hidden="true"/);
   assert.doesNotMatch(html, /Ações da compra[^>]*>•••<\/summary>/);
