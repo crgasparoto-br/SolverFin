@@ -56,23 +56,37 @@ export function renderStatementStatusControl(
   const label = escapeStatusHtml(presentation.label);
   const options = allowed
     ? transaction.status === "reconciled"
-      ? [{ status: "posted", text: "Desconciliar" }]
-      : [{ status: "reconciled", text: "Marcar como conciliado" }]
+      ? [{ status: "posted", text: "Desconciliar", iconHtml: POSTED_ICON }]
+      : [{ status: "reconciled", text: "Marcar como conciliado", iconHtml: icon("check", 18) }]
     : [];
   const items = options.length
     ? options
         .map(
           (option) =>
-            '<button type="button" class="statement-status-option" data-set-statement-status="' +
+            '<button type="button" class="statement-status-option" data-button-variant="neutral" data-set-statement-status="' +
             option.status +
             '" data-status-transaction-id="' +
             id +
-            '">' +
+            '" aria-label="' +
             option.text +
+            '" title="' +
+            option.text +
+            '" data-tooltip="' +
+            option.text +
+            '">' +
+            option.iconHtml +
             "</button>",
         )
         .join("")
-    : '<p class="statement-status-readonly">' + escapeStatusHtml(restriction) + "</p>";
+    : '<span class="statement-status-readonly" role="img" aria-label="' +
+      escapeStatusHtml(restriction) +
+      '" title="' +
+      escapeStatusHtml(restriction) +
+      '" data-tooltip="' +
+      escapeStatusHtml(restriction) +
+      '">' +
+      icon("lock", 18) +
+      "</span>";
   return (
     '<details class="statement-status-control col-status" data-statement-status-control>' +
     '<summary aria-label="Situação: ' +
@@ -91,19 +105,30 @@ export function renderStatementStatusControl(
     presentation.iconHtml +
     "</span></summary>" +
     '<div class="statement-status-menu" role="group" aria-label="Situação do lançamento">' +
-    '<span class="statement-status-current statement-status statement-status-' +
-    presentation.tone +
-    '" role="img" aria-label="Situação atual: ' +
+    '<span class="statement-status-current" role="img" aria-label="Situação atual: ' +
     label +
     '" title="' +
     label +
     '" data-tooltip="' +
     label +
+    '"><span class="statement-status statement-status-' +
+    presentation.tone +
     '">' +
     presentation.iconHtml +
-    "</span>" +
+    "</span></span>" +
     items +
-    '<p class="statement-status-feedback" role="status" aria-live="polite" hidden></p></div></details>'
+    '<span class="statement-status-feedback" role="status" aria-live="polite" hidden>' +
+    '<span class="statement-status-feedback-pending" aria-hidden="true">' +
+    icon("clock", 18) +
+    "</span>" +
+    '<span class="statement-status-feedback-ok" aria-hidden="true">' +
+    icon("check", 18) +
+    "</span>" +
+    '<span class="statement-status-feedback-error" aria-hidden="true">' +
+    icon("alert-triangle", 18) +
+    "</span>" +
+    '<span class="sf-visually-hidden" data-statement-status-feedback-message></span>' +
+    "</span></div></details>"
   );
 }
 
