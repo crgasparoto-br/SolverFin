@@ -114,6 +114,11 @@ export async function validateCardsPage(
         rect(secondaryActions).top >=
           Math.max(rect(primaryDecision).bottom, rect(invoiceContext).bottom) - 1
       );
+      const mobileInvoiceActionsCompact = window.innerWidth > 760 || Boolean(
+        secondaryActions && documentsTrigger && closeTrigger &&
+        getComputedStyle(secondaryActions).display === 'grid' &&
+        Math.abs(rect(documentsTrigger).top - rect(closeTrigger).top) < 3
+      );
       const payNextToAmount = Boolean(
         primaryAmount &&
         (!payTrigger || (window.innerWidth <= 430
@@ -208,6 +213,13 @@ export async function validateCardsPage(
         rect(currentPeriod).right <= rect(nextPeriod).left + 1 &&
         periodTitleContained
       );
+      const monthTitle = currentPeriod?.querySelector('strong');
+      const monthTitleSingleLine = window.innerWidth > 760 || Boolean(
+        monthTitle &&
+        rect(monthTitle).height < 24 &&
+        rect(monthTitle).left >= rect(currentPeriod).left - 1 &&
+        rect(monthTitle).right <= rect(currentPeriod).right + 1
+      );
       const tableHead = document.querySelector('.cards-purchase-table-head');
       const firstDate = document.querySelector('[data-purchase-item] [data-label="Data"]');
       const firstStatus = document.querySelector('[data-purchase-item] [data-label="Situação"]');
@@ -238,6 +250,8 @@ export async function validateCardsPage(
         invoiceActionsSeparated,
         invoiceAmountLeads,
         invoiceSecondaryFooter,
+        mobileInvoiceActionsCompact,
+        monthTitleSingleLine,
         payNextToAmount,
         invoiceFactsReadable,
         primaryAmountVisible: visible(primaryAmount),
@@ -348,6 +362,8 @@ export async function validateCardsPage(
     "Invoice secondary operations must stay in the footer below the decision",
     measurements,
   );
+  check(measurements.mobileInvoiceActionsCompact, "Mobile invoice actions are not aligned", measurements);
+  check(measurements.monthTitleSingleLine, "Selected month wraps or overflows on mobile", measurements);
   check(
     measurements.actionsBelongToContext,
     "Golden Screen: register, document, close and settle actions must stay with their respective context",
