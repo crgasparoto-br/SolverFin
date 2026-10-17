@@ -497,12 +497,22 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     html,
     /role="columnheader">Compra<\/span><span role="columnheader">Categoria<\/span><span role="columnheader">Situação/,
   );
-  assert.match(html, /role="cell" data-label="Categoria" class="cards-purchase-category">/);
+  assert.match(html, /role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out">/);
   assert.match(
     html,
-    /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category">/,
+    /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out">/,
   );
   assert.match(html, /\.cards-purchase-category\{[^}]*overflow-wrap:anywhere/);
+  // Same visual grammar as Extrato: downward expense arrow and category name, not a plain cell.
+  assert.match(
+    html,
+    /data-category-direction="out"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1\.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3\.5v12"\/><path d="m5\.5 11 4\.5 4\.5L14\.5 11"\/><\/svg><span class="cards-purchase-category-label">Bares e restaurantes<\/span><\/span>/,
+  );
+  assert.match(html, /\.cards-purchase-category>svg\{[^}]*height:13px/);
+  assert.match(
+    html,
+    /@media\(max-width:760px\)\{\.cards-purchase-row>\.cards-purchase-category\[data-label="Categoria"\]::before\{grid-column:1\/-1\}/,
+  );
   assert.match(
     html,
     /@media\(max-width:760px\)\{\.cards-purchase-row\{grid-template-columns:minmax\(0,1fr\) auto\}/,
