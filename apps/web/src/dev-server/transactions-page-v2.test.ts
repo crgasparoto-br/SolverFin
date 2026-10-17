@@ -49,8 +49,15 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
 test("A2 statement status icon offers reconciliation and shows restrictions without changing values", async () => {
   globalThis.fetch = mockFetch([
     transaction("posted-row", "Despesa não conciliada", 2500, "2026-08-03"),
-    { ...transaction("reconciled-row", "Receita conciliada", 5000, "2026-08-04", "income"), status: "reconciled" },
-    { ...transaction("planned-row", "Despesa prevista", 1300, "2026-08-05"), status: "planned", effectiveOn: undefined },
+    {
+      ...transaction("reconciled-row", "Receita conciliada", 5000, "2026-08-04", "income"),
+      status: "reconciled",
+    },
+    {
+      ...transaction("planned-row", "Despesa prevista", 1300, "2026-08-05"),
+      status: "planned",
+      effectiveOn: undefined,
+    },
     { ...transaction("card-row", "Compra protegida", 1100, "2026-08-06"), cardId: "card-one" },
   ]);
   try {
@@ -58,7 +65,9 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
     );
-    assert.ok(html.includes('data-status-transaction-id="posted-row">Marcar como conciliado</button>'));
+    assert.ok(
+      html.includes('data-status-transaction-id="posted-row">Marcar como conciliado</button>'),
+    );
     assert.ok(html.includes('data-status-transaction-id="reconciled-row">Desconciliar</button>'));
     assert.ok(html.includes("Situação: Efetivado não conciliado. Alterar situação"));
     assert.ok(html.includes("Situação: Conciliado. Alterar situação"));
@@ -68,11 +77,21 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
     assert.ok(!html.includes('data-status-transaction-id="planned-row"'));
     assert.ok(!html.includes('data-status-transaction-id="card-row"'));
     assert.ok(html.includes('role="group" aria-label="Situação do lançamento"'));
-    assert.ok(html.includes('class="statement-status-feedback" role="status" aria-live="polite" hidden'));
-    assert.ok(html.includes('send("/api/transactions/" + encodeURIComponent(transactionId), "PATCH", { status: nextStatus })'));
-    assert.ok(!html.includes('data-action data-method="PATCH" data-path="/api/transactions/posted-row"'));
+    assert.ok(
+      html.includes('class="statement-status-feedback" role="status" aria-live="polite" hidden'),
+    );
+    assert.ok(
+      html.includes(
+        'send("/api/transactions/" + encodeURIComponent(transactionId), "PATCH", { status: nextStatus })',
+      ),
+    );
+    assert.ok(
+      !html.includes('data-action data-method="PATCH" data-path="/api/transactions/posted-row"'),
+    );
     assert.ok(html.includes("positionStatementStatus(control)"));
-    assert.ok(html.includes(".statement-status-menu>button.statement-status-option:hover:not(:disabled)"));
+    assert.ok(
+      html.includes(".statement-status-menu>button.statement-status-option:hover:not(:disabled)"),
+    );
     assert.ok(html.includes(".statement-status-control>summary{align-items:center"));
     assert.ok(html.includes('window.addEventListener("scroll", syncStatementMenus, true)'));
   } finally {
@@ -87,12 +106,18 @@ test("A2 attachments in installment and statement dialogs start collapsed like M
       "session-token",
       new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
     );
-    assert.ok(html.includes('class="statement-entry-attachments full" data-statement-attachments><summary>Anexos do lançamento</summary>'));
-    assert.ok(html.includes('class="statement-entry-advanced full"><summary>Mais opções</summary>'));
+    assert.ok(
+      html.includes(
+        'class="statement-entry-attachments full" data-statement-attachments><summary>Anexos do lançamento</summary>',
+      ),
+    );
+    assert.ok(
+      html.includes('class="statement-entry-advanced full"><summary>Mais opções</summary>'),
+    );
     assert.ok(html.includes('data-attachment-workspace data-entity-kind="transaction"'));
-    assert.ok(!html.includes('data-statement-attachments open'));
-    assert.ok(html.includes('.statement-entry-attachments>summary:focus-visible'));
-    assert.ok(html.includes('.statement-entry-attachments[open]>summary::after'));
+    assert.ok(!html.includes("data-statement-attachments open"));
+    assert.ok(html.includes(".statement-entry-attachments>summary:focus-visible"));
+    assert.ok(html.includes(".statement-entry-attachments[open]>summary::after"));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -535,10 +560,7 @@ test("A2 consolidated BRL mode identifies each account and excludes USD without 
     assert.match(html, /data-edit="brl-expense"/);
     assert.match(html, /Ver lançamento na conta/);
     assert.match(html, /data-clone="brl-expense"/);
-    assert.match(
-      html,
-      /data-status-transaction-id="brl-expense">Marcar como conciliado/,
-    );
+    assert.match(html, /data-status-transaction-id="brl-expense">Marcar como conciliado/);
     assert.match(
       html,
       /data-action data-method="POST" data-path="\/api\/transactions\/brl-expense\/void"/,

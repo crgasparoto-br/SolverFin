@@ -677,18 +677,25 @@ function renderRow(
 }
 
 function canToggleStatementStatus(transaction: TransactionRecord): boolean {
-  return (transaction.status === "posted" || transaction.status === "reconciled") &&
+  return (
+    (transaction.status === "posted" || transaction.status === "reconciled") &&
     Boolean(transaction.effectiveOn) &&
-    !transaction.cardId && !transaction.invoiceId &&
-    !transaction.installmentId && !transaction.transactionGroupId &&
-    !transaction.group && !transaction.accountRemuneration;
+    !transaction.cardId &&
+    !transaction.invoiceId &&
+    !transaction.installmentId &&
+    !transaction.transactionGroupId &&
+    !transaction.group &&
+    !transaction.accountRemuneration
+  );
 }
 
 function statementStatusRestriction(transaction: TransactionRecord): string {
-  if (transaction.cardId || transaction.invoiceId) return "Altere a conciliação na fatura do cartão.";
+  if (transaction.cardId || transaction.invoiceId)
+    return "Altere a conciliação na fatura do cartão.";
   if (transaction.installmentId || transaction.transactionGroupId || transaction.group)
     return "Este lançamento exige manutenção pelo fluxo de parcelas ou grupos.";
-  if (transaction.accountRemuneration) return "Consulte a edição para alterar a situação da remuneração.";
+  if (transaction.accountRemuneration)
+    return "Consulte a edição para alterar a situação da remuneração.";
   if (transaction.status === "suggested") return "Confirme a sugestão antes de conciliar.";
   if (transaction.status === "voided") return "Lançamentos excluídos não podem ser conciliados.";
   return "Efetive o lançamento na edição antes de conciliar.";

@@ -213,7 +213,6 @@ O gate agregado do repositorio continua sendo `npm run validate`. Testes de domi
 
 Fixtures, nomes, valores e screenshots devem ser ficticios e minimizados. O workflow executa `assert-artifact-safety` antes de publicar a evidencia. Nao registre secrets, dados financeiros reais nem identificadores pessoais em artefatos visuais.
 
-
 ### PR #720 — Conciliação pelo ícone Situação no Extrato (17/10/2026)
 
 No Extrato (`/lancamentos`), o ícone de Situação passa a abrir o mesmo menu neutro dos Cartões. Lançamentos efetivados e independentes permitem **Marcar como conciliado** ou **Desconciliar**, usando o contrato atual `PATCH /api/transactions/:id` com envio exclusivo de `status`. A ação redundante sai do menu de três pontos; edição e exclusão permanecem.
@@ -222,13 +221,11 @@ Lançamentos previstos, sugestões, parcelas, grupos, movimentos de cartão e re
 
 Validar em Chrome 1366×768, 390×844 e 320×740, com teclado e toque, alternância nos dois sentidos, erro HTTP e de rede, conta individual e visão consolidada. A implementação por si só não equivale à aprovação visual independente no HEAD da PR.
 
-
 ### PR #720 — Valor da parcela e anexo recolhível (17/10/2026)
 
 Na tela `/lancamentos`, conferir no modal **Editar parcela** e **Ajustar valor da parcela** que `amountEditable` só aparece com estados planejado/planejado ou efetivado/efetivado não conciliados. Alterar um valor em centavos deve atualizar `Transaction` e `Installment` atomicamente, sem redistribuição para outras parcelas e sem alteração de status. Para conciliadas, canceladas e parcelas de fatura, a edição permanece bloqueada. Verificar formato BRL, validação de 0, caracteres inválidos, conflito 409 e navegação por teclado.
 
 O bloco de anexos inicia recolhido, com `<details><summary>Anexos do lançamento</summary>`; ao expandir, mantém todos os controles de anexos e não perde arquivo selecionado. Verificar viewport desktop 1366×768, celular 390×844 e 320×740, rolagem do diálogo, foco, contraste e equivalência ao `Mais opções`. Asserções de SSR e testes sem navegador não equivalem à homologação visual.
-
 
 ### PR #720 — Recorrências fixas e escolha de escopo de valor (17/10/2026)
 

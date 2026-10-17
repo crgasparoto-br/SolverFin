@@ -60,23 +60,50 @@ export function renderStatementStatusControl(
       : [{ status: "reconciled", text: "Marcar como conciliado" }]
     : [];
   const items = options.length
-    ? options.map((option) => 
-      '<button type="button" class="statement-status-option" data-set-statement-status="' +
-      option.status + '" data-status-transaction-id="' + id + '">' + option.text + "</button>",
-    ).join("")
+    ? options
+        .map(
+          (option) =>
+            '<button type="button" class="statement-status-option" data-set-statement-status="' +
+            option.status +
+            '" data-status-transaction-id="' +
+            id +
+            '">' +
+            option.text +
+            "</button>",
+        )
+        .join("")
     : '<p class="statement-status-readonly">' + escapeStatusHtml(restriction) + "</p>";
-  return '<details class="statement-status-control col-status" data-statement-status-control>' +
-    '<summary aria-label="Situação: ' + label + ". " +
+  return (
+    '<details class="statement-status-control col-status" data-statement-status-control>' +
+    '<summary aria-label="Situação: ' +
+    label +
+    ". " +
     (options.length ? "Alterar situação" : "Ver restrição de alteração") +
-    '" title="' + label + '"><span class="statement-status statement-status-' + presentation.tone +
-    '" role="img" aria-label="' + label + '" data-tooltip="' + label + '">' +
-    presentation.iconHtml + '</span></summary>' +
+    '" title="' +
+    label +
+    '"><span class="statement-status statement-status-' +
+    presentation.tone +
+    '" role="img" aria-label="' +
+    label +
+    '" data-tooltip="' +
+    label +
+    '">' +
+    presentation.iconHtml +
+    "</span></summary>" +
     '<div class="statement-status-menu" role="group" aria-label="Situação do lançamento">' +
-    '<span class="statement-status-current">Atual: ' + label + '</span>' + items +
-    '<p class="statement-status-feedback" role="status" aria-live="polite" hidden></p></div></details>';
+    '<span class="statement-status-current">Atual: ' +
+    label +
+    "</span>" +
+    items +
+    '<p class="statement-status-feedback" role="status" aria-live="polite" hidden></p></div></details>'
+  );
 }
 
 function escapeStatusHtml(value: string): string {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }

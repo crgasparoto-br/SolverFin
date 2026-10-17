@@ -378,9 +378,13 @@ export function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPay
     if (payload.scope !== "current" && payload.scope !== "current_and_future") {
       throwInstallmentPayloadInvalid("Escopo de atualização da parcela inválido.");
     }
-    if (payload.scope === "current_and_future" &&
-        (payload.amountMinor === undefined || payload.description !== undefined ||
-         payload.categoryId !== undefined || payload.note !== undefined)) {
+    if (
+      payload.scope === "current_and_future" &&
+      (payload.amountMinor === undefined ||
+        payload.description !== undefined ||
+        payload.categoryId !== undefined ||
+        payload.note !== undefined)
+    ) {
       throwInstallmentPayloadInvalid("A alteração futura permite somente o valor da parcela.");
     }
     update.scope = payload.scope;
