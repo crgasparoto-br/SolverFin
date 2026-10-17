@@ -112,8 +112,8 @@ async function assertManualInstallmentScopeUpdates(
     "/api/installments/" + second.id + "?profileId=" + MEI_PROFILE_ID, {
       scope: "current_and_future", amountMinor: 15000,
     });
-  assert.equal(wrongProfile.statusCode, 409);
-  assert.equal(readErrorCode(wrongProfile), "INSTALLMENT_SCOPE_UNAVAILABLE");
+  assert.equal(wrongProfile.statusCode, 404);
+  assert.equal(readErrorCode(wrongProfile), "TENANT_RESOURCE_NOT_FOUND");
 }
 
 async function createAccount(token: string, suffix: string): Promise<ApiAccount> {
