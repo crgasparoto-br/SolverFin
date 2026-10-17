@@ -80,6 +80,24 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
   }
 });
 
+test("A2 attachments in installment and statement dialogs start collapsed like More options", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.ok(html.includes('class="statement-entry-attachments full" data-statement-attachments><summary>Anexos do lançamento</summary>'));
+    assert.ok(html.includes('class="statement-entry-advanced full"><summary>Mais opções</summary>'));
+    assert.ok(html.includes('data-attachment-workspace data-entity-kind="transaction"'));
+    assert.ok(!html.includes('data-statement-attachments open'));
+    assert.ok(html.includes('.statement-entry-attachments>summary:focus-visible'));
+    assert.ok(html.includes('.statement-entry-attachments[open]>summary::after'));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("A2 transaction modal exposes status through tooltips and keeps Cancel and Save together", async () => {
   globalThis.fetch = mockFetch([]);
   try {
