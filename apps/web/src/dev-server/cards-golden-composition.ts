@@ -29,6 +29,9 @@ export function cardsGoldenCompositionStyles(): string {
     .cards-instrument-nav ul{list-style:none;margin:0}
     .cards-instrument-nav li{align-items:start;border-radius:8px;display:grid;gap:4px;grid-template-columns:minmax(0,1fr) auto;line-height:1.35}
     .cards-instrument-nav li>span{font-size:.75rem;overflow-wrap:anywhere}
+    .cards-instrument-copy{display:grid;gap:2px;min-width:0}
+    .cards-instrument-name{display:block;min-width:0;overflow-wrap:anywhere}
+    .cards-instrument-nav li .cards-instrument-limit{color:var(--muted);display:block;font-size:.71rem;font-weight:400;line-height:1.35;overflow-wrap:anywhere;white-space:normal}
     .cards-instrument-nav li :is(strong,small){color:var(--muted);font-size:.68rem}
     .cards-master-panel :is(summary,select,a):focus-visible{outline:2px solid var(--primary);outline-offset:3px}
     /* The detail column uses clean, horizontally aligned decisions rather than stacked boxes. */
