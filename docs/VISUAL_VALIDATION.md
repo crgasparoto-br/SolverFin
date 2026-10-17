@@ -277,3 +277,14 @@ de iniciar a implementação. Evidenciar geometria real no Chrome para 1366x768,
 reflow responsivo. Falhar quando o seletor de dia exceder 196px em desktop, quando
 for igual/maior que Busca ou quando os dois campos estiverem desalinhados
 verticalmente. Anexar capturas e medidas ao mesmo HEAD auditado.
+
+
+### PR #720 — Conciliacao de recorrencia no icone Situacao
+
+Conferir no Chrome: ocorrencia fixa prevista com icone de relogio abre
+`Marcar como conciliado`; apos a acao, o icone indica conciliado e oferece
+`Desconciliar`. Repetir em ocorrencia fixa efetivada e materializada com
+`installmentId`. Confirmar que os meses seguintes e a definicao da recorrencia
+nao mudam. Testar controles negativos para compra no cartao, sugestao nao
+confirmada, item excluido, remuneracao automatica e lancamento agrupado.
+Verificar foco, tooltip, contraste e navegacao por teclado conforme a Golden Screen.
