@@ -496,19 +496,29 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Total da compra:[\s\S]*?data-currency="USD"/);
   assert.match(html, /Físico - Titular principal · final 4242/);
   assert.match(html, /Virtual - Titular principal · final 9001/);
-  // Golden Screen: status cells are pictograms, not repeated text badges.
+  // Golden Screen: status remains icon-only; the summary is a keyboard-accessible action.
   assert.match(
     html,
-    /class="cards-purchase-status cards-purchase-status-reconciled" role="img" tabindex="0" aria-label="Conciliada" title="Conciliada" data-tooltip="Conciliada"><svg/,
+    /<details class="cards-purchase-status-control" data-purchase-status-control>\s*<summary aria-label="Situação: Conciliada\. Alterar situação" title="Conciliada"><span class="cards-purchase-status cards-purchase-status-reconciled" role="img" aria-label="Conciliada" title="Conciliada" data-tooltip="Conciliada"><svg/,
   );
   assert.match(
     html,
-    /class="cards-purchase-status cards-purchase-status-posted" role="img" tabindex="0" aria-label="Não conciliada" title="Não conciliada" data-tooltip="Não conciliada"><svg/,
+    /<summary aria-label="Situação: Não conciliada\. Alterar situação" title="Não conciliada"><span class="cards-purchase-status cards-purchase-status-posted" role="img" aria-label="Não conciliada" title="Não conciliada" data-tooltip="Não conciliada"><svg/,
   );
   assert.match(
     html,
-    /class="cards-purchase-status cards-purchase-status-planned" role="img" tabindex="0" aria-label="Planejada" title="Planejada" data-tooltip="Planejada"><svg/,
+    /<summary aria-label="Situação: Planejada\. Alterar situação" title="Planejada"><span class="cards-purchase-status cards-purchase-status-planned" role="img" aria-label="Planejada" title="Planejada" data-tooltip="Planejada"><svg/,
   );
+  assert.match(html, /data-set-purchase-status="reconciled" data-status-purchase-id="purchase-taxi" data-status-card-id="card-usd">Marcar como conciliada<\/button>/);
+  assert.match(html, /data-set-purchase-status="posted" data-status-purchase-id="purchase-hotel" data-status-card-id="card-usd">Desconciliar<\/button>/);
+  assert.match(html, /data-set-purchase-status="posted" data-status-purchase-id="purchase-coffee" data-status-card-id="card-usd">Marcar como não conciliada<\/button>/);
+  assert.match(html, /A conciliação desta parcela exige manutenção específica/);
+  assert.match(html, /\.cards-purchase-status-control>summary\{[^}]*min-height:44px;min-width:44px/);
+  assert.match(html, /\.cards-purchase-status-option\{[^}]*min-height:44px/);
+  assert.match(html, /\.cards-purchase-status-control>summary:focus-visible\{outline:2px solid var\(--primary\)/);
+  assert.match(html, /const response = await request\([\s\S]*?"PATCH",[\s\S]*?\{ status: targetStatus \}/);
+  assert.match(html, /document\.querySelectorAll\("\[data-purchase-status-control\]"\)/);
+  assert.match(html, /\.cards-purchase-status-control\[open\]/);
   assert.doesNotMatch(html, /data-label="Situação">\s*<span class="sf-badge/);
   assert.match(html, /class="cards-purchase-status-cell"/);
   assert.match(html, /title="Ações da compra"><svg[^>]*aria-hidden="true"/);
