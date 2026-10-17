@@ -400,9 +400,9 @@ function testStatementDateCutoffMatchesDisplayedDate(): void {
     id: "today-planned",
     occurredOn: "2026-10-21",
     plannedOn: "2026-10-17",
-    effectiveOn: undefined,
     status: "planned",
   };
+  delete plannedTodayDespiteLaterOccurrence.effectiveOn;
   const futurePosting: Transaction = {
     ...base,
     id: "tomorrow-effective",
