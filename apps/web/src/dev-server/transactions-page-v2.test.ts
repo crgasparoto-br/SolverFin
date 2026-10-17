@@ -150,6 +150,33 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
       effectiveOn: undefined,
     },
     { ...transaction("card-row", "Compra protegida", 1100, "2026-08-06"), cardId: "card-one" },
+    {
+      ...transaction("recurring-planned", "Conta fixa prevista", 2500, "2026-08-07"),
+      status: "planned",
+      effectiveOn: undefined,
+      recurrenceId: "recurrence-one",
+    },
+    {
+      ...transaction("recurring-installment", "Ocorrência fixa materializada", 2800, "2026-08-08"),
+      status: "planned",
+      effectiveOn: undefined,
+      recurrenceId: "recurrence-two",
+      installmentId: "installment-two",
+    },
+    {
+      ...transaction("recurring-posted", "Conta fixa efetivada", 3200, "2026-08-09"),
+      recurrenceId: "recurrence-three",
+    },
+    {
+      ...transaction("recurring-grouped", "Conta fixa agrupada", 3500, "2026-08-10"),
+      recurrenceId: "recurrence-four",
+      transactionGroupId: "group-four",
+    },
+    {
+      ...transaction("recurring-voided", "Conta fixa excluída", 3400, "2026-08-11"),
+      recurrenceId: "recurrence-five",
+      status: "voided",
+    },
   ]);
   try {
     const html = await renderTransactionsPageV2(
@@ -167,6 +194,24 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
     assert.ok(html.includes("Altere a conciliação na fatura do cartão"));
     assert.ok(!html.includes('data-status-transaction-id="planned-row"'));
     assert.ok(!html.includes('data-status-transaction-id="card-row"'));
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-planned">Marcar como conciliado</button>',
+      ),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-installment">Marcar como conciliado</button>',
+      ),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-posted">Marcar como conciliado</button>',
+      ),
+    );
+    assert.ok(!html.includes('data-status-transaction-id="recurring-grouped"'));
+    assert.ok(!html.includes('data-status-transaction-id="recurring-voided"'));
+    assert.ok(html.includes('Situação: Previsto. Alterar situação'));
     assert.ok(html.includes('role="group" aria-label="Situação do lançamento"'));
     assert.ok(
       html.includes('class="statement-status-feedback" role="status" aria-live="polite" hidden'),
