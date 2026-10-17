@@ -114,6 +114,32 @@ export function cardsPageStyles(): string {
     .cards-purchase-actions .cards-purchase-menu{top:calc(100% + 4px)}
     .cards-advanced-filters>summary,.cards-month-picker>summary{min-height:44px;align-items:center;display:flex;justify-content:center}
     .cards-purchase-actions>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+    /* Purchase form: Golden Screen information hierarchy and centered, keyboard-safe dialog. */
+    .cards-dialog[data-modal="purchase"]{max-width:min(720px,calc(100vw - 24px));overflow:hidden}
+    .cards-purchase-dialog-panel{display:flex;flex-direction:column;gap:0;max-height:min(90dvh,calc(100dvh - 24px));min-height:0;padding:0}
+    .cards-purchase-dialog-header{align-items:flex-start;flex-shrink:0;padding:20px 24px 4px}
+    .cards-purchase-dialog-header>div{display:grid;gap:3px;min-width:0}
+    .cards-purchase-dialog-header .cards-kicker{display:block}
+    .cards-purchase-dialog-header h2{font-size:1.25rem;line-height:1.3;margin:0}
+    .cards-purchase-card-name{color:var(--muted);font-size:.8rem;overflow-wrap:anywhere}
+    .cards-purchase-dialog-panel>.cards-dialog-description{flex-shrink:0;line-height:1.45;padding:2px 24px 16px}
+    .cards-dialog[data-modal="purchase"] form{display:flex;flex:1;flex-direction:column;gap:0;min-height:0;min-width:0}
+    .cards-purchase-form-body{display:grid;flex:1;gap:18px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 24px 20px}
+    .cards-purchase-fieldset{border:0;display:grid;gap:10px;margin:0;min-width:0;padding:0}
+    .cards-purchase-fieldset legend{color:var(--text);font-size:.8rem;font-weight:750;line-height:1.4;margin:0 0 10px;padding:0}
+    .cards-purchase-field-grid{display:grid;gap:12px 16px;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
+    .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid>label{color:var(--text);font-size:.8rem;font-weight:550;min-width:0}
+    .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid>.full{grid-column:1/-1}
+    .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid :is(input,select){font:inherit;font-size:.875rem;min-height:44px;min-width:0;width:100%}
+    .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid :is(input[readonly],input:disabled,select:disabled){background:var(--bg);color:var(--muted);cursor:default;opacity:1}
+    .cards-dialog[data-modal="purchase"] .cards-purchase-amounts [name="amountMinor"]{font-size:1.1rem;font-variant-numeric:tabular-nums;font-weight:750}
+    .cards-purchase-amounts .cards-purchase-field-grid:has([data-purchase-field="installmentAmountMinor"][hidden])>label:first-child{max-width:330px}
+    .cards-purchase-installment-note{background:var(--bg);border-radius:var(--radius);color:var(--muted);font-size:.79rem;line-height:1.5;margin:0;padding:10px 12px}
+    .cards-purchase-form-body>.form-status:empty{display:none}
+    .cards-purchase-dialog-actions{align-items:center;border-top:1px solid var(--line);display:flex;flex-shrink:0;gap:10px;justify-content:flex-end;padding:14px 24px 18px}
+    .cards-purchase-dialog-actions .sf-button{min-height:44px;min-width:120px}
+    @media(max-width:600px){.cards-dialog[data-modal="purchase"]{max-width:calc(100vw - 16px)}.cards-purchase-dialog-header{padding:16px 16px 4px}.cards-purchase-dialog-panel>.cards-dialog-description{padding:2px 16px 12px}.cards-purchase-form-body{gap:16px;padding:8px 16px 16px}.cards-purchase-field-grid{grid-template-columns:minmax(0,1fr)}.cards-purchase-amounts .cards-purchase-field-grid:has([data-purchase-field="installmentAmountMinor"][hidden])>label:first-child{max-width:none}.cards-purchase-dialog-actions{padding:12px 16px 16px}.cards-purchase-dialog-actions .sf-button{flex:1;min-width:0}}
     ${cardsGoldenCompositionStyles()}
   `;
 }
