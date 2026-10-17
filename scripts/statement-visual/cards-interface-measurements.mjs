@@ -697,5 +697,84 @@ export async function validateCardsPage(
   );
   measurements.firstFoldNegative = negative;
   await screenshot(cdp, join(outputDir, `cards-${captureName}.png`));
+
+  // Regression: the global button:hover rule must never turn a contextual action
+  // into a dark primary button with unreadable dark text.
+  const hoverTarget = await evaluate(
+    cdp,
+    `(() => {
+      const button = document.querySelector('.cards-purchase-status-menu [data-set-purchase-status]');
+      const details = button?.closest('[data-purchase-status-control]');
+      if (!button || !details) return null;
+      details.open = true;
+      button.scrollIntoView({ block: 'center', inline: 'nearest' });
+      const rect = button.getBoundingClientRect();
+      return {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        visible: rect.width >= 44 && rect.height >= 44 &&
+          rect.top >= 0 && rect.bottom <= window.innerHeight &&
+          rect.left >= 0 && rect.right <= window.innerWidth,
+      };
+    })()`,
+  );
+  check(Boolean(hoverTarget?.visible), "Status menu action is outside the visible viewport", hoverTarget);
+  if (hoverTarget?.visible) {
+    await cdp.send("Input.dispatchMouseEvent", {
+      type: "mouseMoved",
+      x: hoverTarget.x,
+      y: hoverTarget.y,
+    });
+    const hover = await evaluate(
+      cdp,
+      `(() => {
+        const button = document.querySelector('.cards-purchase-status-menu [data-set-purchase-status]');
+        if (!button) return { hovered: false };
+        const probe = document.createElement('span');
+        probe.style.background = 'var(--neutral-control-hover)';
+        probe.style.color = 'var(--neutral-control-text-hover)';
+        document.body.append(probe);
+        const expectedBackground = getComputedStyle(probe).backgroundColor;
+        const expectedForeground = getComputedStyle(probe).color;
+        probe.remove();
+        const style = getComputedStyle(button);
+        const background = style.backgroundColor;
+        const foreground = style.color;
+        const luminance = (value) => {
+          const rgb = value.match(/[\\d.]+/g)?.slice(0, 3).map(Number) || [0, 0, 0];
+          const channels = rgb.map((value) => {
+            const normalized = value / 255;
+            return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+          });
+          return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+        };
+        const a = luminance(background);
+        const b = luminance(foreground);
+        return {
+          hovered: button.matches(':hover'),
+          background,
+          foreground,
+          expectedBackground,
+          expectedForeground,
+          contrastRatio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05),
+        };
+      })()`,
+    );
+    check(
+      hover.hovered &&
+        hover.background === hover.expectedBackground &&
+        hover.foreground === hover.expectedForeground &&
+        hover.contrastRatio >= 4.5,
+      "Golden Screen status option must remain light with readable text on hover",
+      hover,
+    );
+    measurements.statusMenuHover = hover;
+    await screenshot(cdp, join(outputDir, `cards-status-menu-${captureName}.png`));
+    await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
+    await evaluate(
+      cdp,
+      `document.querySelectorAll('[data-purchase-status-control]').forEach((node) => { node.open = false; })`,
+    );
+  }
   return measurements;
 }
