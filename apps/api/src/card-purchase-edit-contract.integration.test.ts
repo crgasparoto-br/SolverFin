@@ -121,14 +121,26 @@ async function assertInstallmentPurchaseEdit(
   );
   assert.equal(reconciled.invoice.reconciledExpensesMinor, 3_334);
   assert.equal(reconciled.invoice.unreconciledExpensesMinor, 0);
-  assert.equal((await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id }))[0]?.status, "planned");
-  await assert.rejects(
-    () => reconcileInvoiceInstallmentForContext(OTHER_PROFILE_CONTEXT, firstInvoiceId, firstOccurrenceId, "posted"),
-    (error: unknown) => error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
+  assert.equal(
+    (await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id }))[0]?.status,
+    "planned",
   );
   await assert.rejects(
-    () => reconcileInvoiceInstallmentForContext(CONTEXT, invoices[1]!.id, firstOccurrenceId, "posted"),
-    (error: unknown) => error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
+    () =>
+      reconcileInvoiceInstallmentForContext(
+        OTHER_PROFILE_CONTEXT,
+        firstInvoiceId,
+        firstOccurrenceId,
+        "posted",
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
+  );
+  await assert.rejects(
+    () =>
+      reconcileInvoiceInstallmentForContext(CONTEXT, invoices[1]!.id, firstOccurrenceId, "posted"),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
   );
   const posted = await reconcileInvoiceInstallmentForContext(
     CONTEXT,
@@ -177,8 +189,15 @@ async function assertInstallmentPurchaseEdit(
 
   await query(`update "Invoice" set "status" = 'CLOSED' where "id" = $1`, [invoices[2]?.id]);
   await assert.rejects(
-    () => reconcileInvoiceInstallmentForContext(CONTEXT, invoices[2]!.id, occurrenceIds[2]!, "reconciled"),
-    (error: unknown) => error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",
+    () =>
+      reconcileInvoiceInstallmentForContext(
+        CONTEXT,
+        invoices[2]!.id,
+        occurrenceIds[2]!,
+        "reconciled",
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_INVOICE_LOCKED",
   );
   await assert.rejects(
     () =>
