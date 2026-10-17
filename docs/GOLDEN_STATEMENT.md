@@ -303,3 +303,26 @@ essa escolha.
 Na Golden Screen do Extrato, **Hoje** consulta o dia civil de São Paulo (`America/Sao_Paulo`), independentemente do relógio UTC da VPS, e atualiza conjuntamente `month` e `day`. Os atalhos de 7/30 dias definem limites reais `from`/`to` e exibem o período efetivo; atalhos não podem manter um dia ou intervalo antigo nem perder `profileId`, `accountId`, moeda, pesquisa ou demais filtros.
 
 A consulta de transações do Extrato deve filtrar pelo **dia efetivamente exibido** (`effectiveOn ?? plannedOn ?? occurredOn`, cutoff `statementTo`) e não somente por `occurredOn`; o servidor mantém os filtros de ocorrência existentes para outros consumidores. O saldo inicial depende das transações anteriores ao começo do intervalo e os saldos da tabela devem respeitar a mesma data canônica. O formulário GET não deve duplicar o campo `day`: com JavaScript, o controle de data é inserido antes do contêiner de ações, e sem JavaScript o valor é preservado via `noscript`.
+
+
+## Extrato por dia e densidade da tabela — PR #720 (17/10/2026)
+
+O seletor **Dia do mês** faz parte do HTML do filtro, inclusive quando o JavaScript não carrega.
+Seu `min` e `max` são o primeiro e o último dia do mês selecionado, permitindo filtrar
+exatamente um dia, sem consultar datas de outro mês. O botão **Mês completo** remove apenas
+o dia, preservando conta, perfil, moeda e os demais filtros. Mudar de mês limpa um dia
+anterior. O período, totais e saldos usam as mesmas datas efetivas exibidas na tabela.
+
+Com ordenação por data (ascendente ou descendente), as movimentações aparecem em **grupos
+diários abertos por padrão**. Cada cabeçalho mostra data, quantidade, entradas e saídas
+do dia; clique, Enter ou Espaço sobre o cabeçalho recolhe/expande somente aquele dia,
+sem remover filtros ou alterar cálculo financeiro. Transferências contam com o sinal
+da conta exibida. Em ordenações globais por valor ou descrição, as linhas permanecem
+sem agrupamento para não alterar o resultado da ordenação escolhida.
+
+No desktop, o Extrato usa uma única linha para cada movimento, com **Valor** e
+**Saldo** em colunas distintas, alinhadas à direita. A categoria já comunica
+o tipo com sua cor e ícone; o texto duplicado de Tipo não deve ocupar uma nova linha.
+A grade respeita a Golden Screen, mantendo ícone de situação interativo, ações,
+checkbox e acessibilidade; em telas estreitas, há reflow sem truncar valores.
+O agrupamento visual não modifica a natureza dos grupos financeiros persistidos.
