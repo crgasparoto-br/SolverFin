@@ -24,7 +24,11 @@ try {
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07&day=2026-07-15`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const requestScope = await waitForInstallmentLine(fixture.transactionId);
-  check(!requestScope.badgePresent, "Fixed recurring entry must not show a parcel badge", requestScope);
+  check(
+    !requestScope.badgePresent,
+    "Fixed recurring entry must not show a parcel badge",
+    requestScope,
+  );
   check(
     requestScope.installmentQuery.includes("operationalFrom=2026-07-15") &&
       requestScope.installmentQuery.includes("operationalTo=2026-07-15"),
