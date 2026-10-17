@@ -245,3 +245,13 @@ de dados financeiros/credenciais.
 
 Os testes de runtime simulam abertura de nova sessao e perfis distintos;
 a homologacao real do Chrome segue necessaria no SHA final.
+
+
+### PR #720 — Validação do filtro Hoje (17/10/2026)
+
+1. Em `/lancamentos`, partindo de um mês anterior, selecionar **Hoje**; conferir que `month` e `day` representam o dia civil atual de São Paulo, sem `from`/`to` antigos, que o período visível corresponde ao filtro efetivo e que o extrato mostra apenas movimentações do dia.
+2. Confirmar casos em que `occurredOn` e `effectiveOn` ou `plannedOn` são diferentes (inclusive lançamento efetivado hoje com ocorrência futura), e verificar saldo de abertura, totais e moeda em conta individual e visão consolidada.
+3. Repetir na virada de mês e no horário 21h–24h de Brasília (quando UTC já está no dia seguinte), com pesquisa, `profileId` diferente do padrão e contas distintas.
+4. Verificar 7 dias/30 dias, voltar para mês anterior/atual e aplicar filtros após Hoje sem duplicar o parâmetro `day` nem gerar erro de inserção de elemento no DOM.
+
+Exigir evidência real no Chrome em desktop e mobile no SHA final. Testes estáticos e unitários não substituem essa homologação.
