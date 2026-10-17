@@ -1345,6 +1345,82 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
 
     document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async () => { if (button.dataset.confirm && !confirm(button.dataset.confirm)) return; const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {}); if (response.ok) setTimeout(() => location.reload(), 300); }));
 
+
+    // Reconcile from the status icon, with the same accessible neutral menu as Cards.
+    const statementStatusControls = Array.from(document.querySelectorAll("[data-statement-status-control]"));
+    const positionStatementStatus = (control) => {
+      const menu = control.querySelector(".statement-status-menu");
+      const summary = control.querySelector("summary");
+      if (!menu || !summary) return;
+      const rect = summary.getBoundingClientRect();
+      menu.style.position = "fixed"; menu.style.left = "0px"; menu.style.top = "0px";
+      const width = menu.offsetWidth; const height = menu.offsetHeight;
+      menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) + "px";
+      menu.style.top = (rect.bottom + height + 6 < window.innerHeight
+        ? rect.bottom + 6 : Math.max(8, rect.top - height - 6)) + "px";
+    };
+    const closeStatementStatuses = (except) => {
+      statementStatusControls.forEach((control) => {
+        if (control !== except && control.open) control.open = false;
+      });
+    };
+    statementStatusControls.forEach((control) => control.addEventListener("toggle", () => {
+      if (!control.open) return;
+      closeStatementStatuses(control);
+      closeActions();
+      positionStatementStatus(control);
+    }));
+    const syncStatementMenus = () => statementStatusControls.forEach((control) => {
+      if (control.open) positionStatementStatus(control);
+    });
+    window.addEventListener("scroll", syncStatementMenus, true);
+    window.addEventListener("resize", syncStatementMenus);
+    document.addEventListener("click", (event) => {
+      statementStatusControls.forEach((control) => {
+        if (control.open && !control.contains(event.target)) control.open = false;
+      });
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      statementStatusControls.forEach((control) => {
+        if (!control.open) return;
+        control.open = false;
+        control.querySelector("summary")?.focus();
+      });
+    });
+    document.querySelectorAll("[data-set-statement-status]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const control = button.closest("[data-statement-status-control]");
+        const feedback = control?.querySelector(".statement-status-feedback");
+        const transactionId = button.dataset.statusTransactionId;
+        const nextStatus = button.dataset.setStatementStatus;
+        if (!control || !feedback || !transactionId || !["posted", "reconciled"].includes(nextStatus)) return;
+        const buttons = Array.from(control.querySelectorAll("[data-set-statement-status]"));
+        buttons.forEach((item) => { item.disabled = true; });
+        feedback.hidden = false;
+        feedback.className = "statement-status-feedback";
+        feedback.textContent = "Atualizando situação...";
+        try {
+          // PATCH is status-only: no amount, currency, account or date fields.
+          const response = await send("/api/transactions/" + encodeURIComponent(transactionId), "PATCH", { status: nextStatus });
+          if (!response.ok) {
+            const body = await response.json().catch(() => ({}));
+            feedback.className = "statement-status-feedback error";
+            feedback.textContent = body?.error?.message || "Não foi possível alterar a situação.";
+            buttons.forEach((item) => { item.disabled = false; });
+            return;
+          }
+          feedback.className = "statement-status-feedback success";
+          feedback.textContent = "Situação atualizada. Atualizando extrato...";
+          window.setTimeout(() => location.reload(), 350);
+        } catch {
+          feedback.className = "statement-status-feedback error";
+          feedback.textContent = "Falha de conexão. Tente novamente.";
+          buttons.forEach((item) => { item.disabled = false; });
+        }
+      });
+    });
+
     const groupModal = document.querySelector("[data-group-modal]"); const groupForm = document.querySelector("[data-group-form]"); const selectionBar = document.querySelector("[data-selection-bar]"); const selectable = Array.from(document.querySelectorAll("[data-select-transaction]")); const groupOpen = document.querySelector("[data-group-open]");
     const selected = () => selectable.filter((input) => input.checked);
     const compatible = (items) => items.length >= 2 && /^[A-Z]{3}$/.test(items[0]?.dataset.currency || "") && items.every((item) => item.dataset.kind === items[0].dataset.kind && item.dataset.status === items[0].dataset.status && item.dataset.currency === items[0].dataset.currency);
@@ -1617,5 +1693,22 @@ function css(): string {
     @media(max-width:1100px){.statement-filter-actions{grid-column:1/-1}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:761px) and (max-width:900px){.filter-form{grid-template-columns:minmax(0,1fr)}.statement-filter-actions{grid-column:1}}
     @media(max-width:760px){main{padding:14px 14px 24px}.filter-form,.modal-panel form[data-form],.group-modal-panel form,.summary-totals{grid-template-columns:1fr}.statement-filter-actions{align-items:stretch;display:grid}.statement-toolbar{align-items:stretch;display:grid}.save-row{align-items:stretch;flex-direction:column}.statement-table{overflow-x:visible}.statement-head{display:none}.statement-row.statement-body{align-items:center;display:flex;flex-wrap:wrap;gap:5px 8px;min-width:0;padding:10px}.statement-row.statement-body .col-select{left:auto;order:1;position:static}.statement-row.statement-body .col-date{color:var(--muted);flex:0 0 auto;font-size:.75rem;order:1;padding-left:0}.statement-row.statement-body .col-actions{margin-left:auto;order:2}.statement-row.statement-body .col-description{flex:1 1 100%;order:3}.statement-row.statement-body .col-category,.statement-row.statement-body .col-kind{color:var(--muted);font-size:.75rem;order:4}.statement-row.statement-body .col-status{order:5}.statement-row.statement-body .col-amount{font-size:.9375rem;margin-left:auto;order:6}.statement-row.statement-body .col-balance{color:var(--muted);font-size:.75rem;order:7}.statement-date-group{position:sticky;top:0;z-index:2}}
+
+    /* #720: match the neutral Golden Screen status menu used on Cards. */
+    .statement-status-control{display:inline-block;justify-self:start;position:relative}
+    .statement-status-control>summary{align-items:center;border-radius:999px;cursor:pointer;display:inline-flex;height:44px;justify-content:center;list-style:none;min-height:44px;min-width:44px;width:44px}
+    .statement-status-control>summary::-webkit-details-marker{display:none}
+    .statement-status-control>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .statement-status-control>summary:hover .statement-status,.statement-status-control[open]>summary .statement-status{box-shadow:0 0 0 2px var(--line)}
+    .statement-status-control[open],.statement-row:has(.statement-status-control[open]){z-index:55}
+    .statement-status-menu{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:grid;gap:3px;max-width:min(270px,calc(100vw - 16px));min-width:220px;padding:8px;position:absolute;text-align:left;top:calc(100% + 4px);width:max-content;z-index:60}
+    .statement-status-current{color:var(--muted);font-size:.7rem;font-weight:700;padding:4px 8px}
+    .statement-status-option{background:transparent;border:0;border-radius:8px;color:var(--text);cursor:pointer;font-size:.78rem;font-weight:700;min-height:44px;padding:9px 10px;text-align:left;white-space:normal}
+    .statement-status-menu>button.statement-status-option:hover:not(:disabled),.statement-status-menu>button.statement-status-option:focus-visible{background:var(--neutral-control-hover);color:var(--neutral-control-text-hover)}
+    .statement-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:0}
+    .statement-status-option:disabled{cursor:wait;opacity:.55}
+    .statement-status-readonly,.statement-status-feedback{color:var(--muted);font-size:.73rem;line-height:1.4;margin:0;padding:7px 8px;white-space:normal}
+    .statement-status-feedback.error{color:var(--danger)}
+    .statement-status-feedback.success{color:var(--success)}
     ${recurrencesSectionStyles()}`;
 }
