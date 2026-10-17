@@ -305,8 +305,16 @@ export async function validateCardsPage(
     measurements,
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
-  check(measurements.invoiceFactsReadable, "Invoice closing, due date or currency is unreadable", measurements);
-  check(measurements.invoiceActionsSeparated, "Invoice primary and secondary actions overlap", measurements);
+  check(
+    measurements.invoiceFactsReadable,
+    "Invoice closing, due date or currency is unreadable",
+    measurements,
+  );
+  check(
+    measurements.invoiceActionsSeparated,
+    "Invoice primary and secondary actions overlap",
+    measurements,
+  );
   check(
     measurements.actionsBelongToContext,
     "Golden Screen: register, document, close and settle actions must stay with their respective context",
