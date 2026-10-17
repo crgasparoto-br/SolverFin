@@ -1257,25 +1257,29 @@ function renderPurchaseStatusControl(purchase: CardPurchaseRecord, invoiceLocked
   const currentStatus = formatPurchaseStatus(purchase.status);
   const immutableInstallment = Boolean(purchase.installmentId);
   const eligibleStatus = ["planned", "posted", "reconciled"].includes(purchase.status);
-  const options = !invoiceLocked && !immutableInstallment && eligibleStatus
-    ? (purchase.status === "reconciled"
+  const options =
+    !invoiceLocked && !immutableInstallment && eligibleStatus
+      ? purchase.status === "reconciled"
         ? [{ status: "posted", label: "Desconciliar" }]
         : [
             ...(purchase.status === "planned"
               ? [{ status: "posted", label: "Marcar como não conciliada" }]
               : []),
             { status: "reconciled", label: "Marcar como conciliada" },
-          ])
-    : [];
+          ]
+      : [];
   const explanation = invoiceLocked
     ? "A situação não pode ser alterada porque a fatura está fechada, paga ou cancelada."
     : immutableInstallment
       ? "A conciliação desta parcela exige manutenção específica para não alterar outras parcelas."
       : "Esta situação não pode ser alterada.";
   const actionHtml = options.length
-    ? options.map((option) =>
-        `<button type="button" class="cards-purchase-status-option" data-set-purchase-status="${option.status}" data-status-purchase-id="${escapeHtml(purchase.id)}" data-status-card-id="${escapeHtml(purchase.cardId)}">${escapeHtml(option.label)}</button>`,
-      ).join("")
+    ? options
+        .map(
+          (option) =>
+            `<button type="button" class="cards-purchase-status-option" data-set-purchase-status="${option.status}" data-status-purchase-id="${escapeHtml(purchase.id)}" data-status-card-id="${escapeHtml(purchase.cardId)}">${escapeHtml(option.label)}</button>`,
+        )
+        .join("")
     : `<p class="cards-purchase-status-readonly">${explanation}</p>`;
   return `<details class="cards-purchase-status-control" data-purchase-status-control>
     <summary aria-label="Situação: ${escapeHtml(currentStatus)}. ${options.length ? "Alterar situação" : "Ver restrição de alteração"}" title="${escapeHtml(currentStatus)}">${renderPurchaseStatusIcon(purchase.status)}</summary>
