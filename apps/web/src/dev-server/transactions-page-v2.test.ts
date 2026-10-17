@@ -204,22 +204,22 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
       new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
     );
     assert.ok(
-      html.includes('data-status-transaction-id="posted-row">Marcar como conciliado</button>'),
+      html.includes('data-status-transaction-id="posted-row" aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado"><svg'),
     );
-    assert.ok(html.includes('data-status-transaction-id="reconciled-row">Desconciliar</button>'));
+    assert.ok(html.includes('data-status-transaction-id="reconciled-row" aria-label="Desconciliar" title="Desconciliar" data-tooltip="Desconciliar"><svg'));
     assert.ok(html.includes("Situação: Efetivado não conciliado. Alterar situação"));
     assert.ok(html.includes("Situação: Conciliado. Alterar situação"));
     assert.ok(
-      html.includes('data-status-transaction-id="planned-row">Marcar como conciliado</button>'),
+      html.includes('data-status-transaction-id="planned-row" aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado"><svg'),
     );
     assert.ok(
-      html.includes('data-status-transaction-id="finite-planned">Marcar como conciliado</button>'),
+      html.includes('data-status-transaction-id="finite-planned" aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado"><svg'),
     );
     assert.ok(
-      html.includes('data-status-transaction-id="finite-posted">Marcar como conciliado</button>'),
+      html.includes('data-status-transaction-id="finite-posted" aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado"><svg'),
     );
     assert.ok(
-      html.includes('data-status-transaction-id="finite-reconciled">Desconciliar</button>'),
+      html.includes('data-status-transaction-id="finite-reconciled" aria-label="Desconciliar" title="Desconciliar" data-tooltip="Desconciliar"><svg'),
     );
     assert.ok(html.includes("Altere a conciliação na fatura do cartão"));
     assert.ok(!html.includes("Este lançamento exige manutenção pelo fluxo de parcelas."));
@@ -228,22 +228,32 @@ test("A2 statement status icon offers reconciliation and shows restrictions with
     assert.ok(html.includes("Confirme a sugestão antes de conciliar."));
     assert.match(
       html,
-      /class="statement-status-current statement-status statement-status-posted" role="img" aria-label="Situação atual: Efetivado não conciliado" title="Efetivado não conciliado"/,
+      /class="statement-status-current" role="img" aria-label="Situação atual: Efetivado não conciliado" title="Efetivado não conciliado"/,
     );
     assert.ok(!html.includes("Atual: Efetivado não conciliado"));
+    assert.doesNotMatch(html, /<button[^>]*data-set-statement-status[^>]*>[^<]+<\/button>/);
+    assert.doesNotMatch(html, /<p class="statement-status-readonly">/);
+    assert.match(
+      html,
+      /class="statement-status-readonly" role="img" aria-label="Confirme a sugestão antes de conciliar."/,
+    );
+    assert.match(html, /data-statement-status-feedback-message/);
+    assert.ok(html.includes('feedbackMessage.textContent = text'));
+    assert.match(html, /\.statement-status-menu\{align-items:center/);
+    assert.match(html, /\.statement-status-feedback\[hidden\]\{display:none\}/);
     assert.ok(
       html.includes(
-        'data-status-transaction-id="recurring-planned">Marcar como conciliado</button>',
+        'data-status-transaction-id="recurring-planned" aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado"><svg',
       ),
     );
     assert.ok(
       html.includes(
-        'data-status-transaction-id="recurring-installment">Marcar como conciliado</button>',
+        'data-status-transaction-id="recurring-installment" aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado"><svg',
       ),
     );
     assert.ok(
       html.includes(
-        'data-status-transaction-id="recurring-posted">Marcar como conciliado</button>',
+        'data-status-transaction-id="recurring-posted" aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado"><svg',
       ),
     );
     assert.ok(!html.includes('data-status-transaction-id="recurring-grouped"'));
