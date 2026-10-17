@@ -362,7 +362,9 @@ O ícone interativo da coluna Situação oferece conciliar/desconciliar uma ocor
 para os estados `planned`, `posted` e `reconciled`, mesmo sem `effectiveOn`,
 incluindo parcelas finitas, ocorrências recorrentes e lançamentos avulsos.
 O envio permanece exclusivamente `PATCH /api/transactions/:id` com `{ status }`;
-não altera parcelas irmãs, regras de recorrência, datas ou valores.
+não altera parcelas irmãs, regras de recorrência, datas planejadas ou valores.
+Na transição de `planned` para `reconciled`, a data efetiva segue a regra
+existente do domínio para efetivação do lançamento.
 A proteção do domínio para parcelas continua vigente para **quaisquer outras alterações**.
 Compras de cartão/fatura, grupos financeiros, remuneração automática,
 sugestões ainda não confirmadas e lançamentos excluídos mantêm seus fluxos próprios.
