@@ -29,7 +29,7 @@ type InstallmentsHandler = (
 ) => Promise<ApiResponse>;
 
 const BASE_PATH = "/api/installments";
-const ALLOWED_PATCH_FIELDS = new Set(["description", "note", "categoryId"]);
+const ALLOWED_PATCH_FIELDS = new Set(["description", "note", "categoryId", "amountMinor"]);
 const ALLOWED_CREATE_FIELDS = new Set([
   "accountId",
   "destinationAccountId",
@@ -401,6 +401,13 @@ export function readInstallmentPatchPayload(body: unknown): UpdateInstallmentPay
 
       update.categoryId = payload.categoryId;
     }
+  }
+
+  if (payload.amountMinor !== undefined) {
+    if (!Number.isSafeInteger(payload.amountMinor) || Number(payload.amountMinor) <= 0) {
+      throwInstallmentPayloadInvalid("Valor da parcela deve ser um inteiro positivo em centavos.");
+    }
+    update.amountMinor = Number(payload.amountMinor);
   }
 
   return update;
