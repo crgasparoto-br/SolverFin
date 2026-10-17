@@ -949,33 +949,58 @@ function renderPurchaseModal(
     ? `/contas-cartoes?resource=${encodeURIComponent(`card:${selectedCard.id}`)}`
     : "/contas-cartoes";
   return `<dialog class="cards-dialog" data-modal="purchase" aria-labelledby="cards-purchase-dialog-title" aria-describedby="cards-purchase-dialog-description">
-    <section class="cards-dialog-panel">
-      <header><div><span class="cards-kicker">Compra no cartão</span><h2 id="cards-purchase-dialog-title" data-purchase-modal-title>Registrar compra</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
-      <p class="cards-dialog-description" id="cards-purchase-dialog-description">Informe os dados da compra no cartão selecionado. A moeda é vinculada ao cartão.</p>
+    <section class="cards-dialog-panel cards-purchase-dialog-panel">
+      <header class="cards-purchase-dialog-header"><div><span class="cards-kicker">Compra no cartão</span><h2 id="cards-purchase-dialog-title" data-purchase-modal-title>Registrar compra</h2><span class="cards-purchase-card-name">${escapeHtml(selectedCard?.name ?? "Cartão não selecionado")}</span></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+      <p class="cards-dialog-description" id="cards-purchase-dialog-description" data-purchase-modal-description>Informe valor e dados da compra. A moeda segue a configuração do cartão.</p>
       <form data-purchase-form data-path="/api/credit-card-accounts/${escapeHtml(selectedCard?.id ?? "")}/purchases">
         <input type="hidden" name="currentPurchaseId"><input type="hidden" name="recurrenceId">
+        <div class="cards-purchase-form-body">
+          <fieldset class="cards-purchase-fieldset cards-purchase-amounts">
+            <legend>Valores</legend>
+            <div class="cards-purchase-field-grid">
         <label><span data-purchase-amount-label>Valor${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}</span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00"></label>
         <label data-purchase-field="installmentAmountMinor" hidden>Valor desta parcela${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}<input name="installmentAmountMinor" data-money inputmode="decimal" readonly aria-readonly="true"></label>
+            </div>
+          </fieldset>
+          <fieldset class="cards-purchase-fieldset">
+            <legend>Dados da compra</legend>
+            <div class="cards-purchase-field-grid">
         <label>Moeda<input name="currency" value="${escapeHtml(cardCurrency ?? "")}" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" required readonly aria-readonly="true" autocomplete="off"></label>
         <label>Data<input name="occurredOn" type="date" required data-default-local-today></label>
-        <label class="full">Descrição<input name="description" required placeholder="Compra no cartão"></label>
+        <label class="full">Descrição<input name="description" required placeholder="Descreva a compra"></label>
+            </div>
+          </fieldset>
+          <fieldset class="cards-purchase-fieldset">
+            <legend>Classificação</legend>
+            <div class="cards-purchase-field-grid">
         <label>Instrumento<select name="cardInstrumentId"${instruments.length === 0 ? " disabled" : " required"}>${renderInstrumentOptions(instruments, cardCurrency)}</select></label>
         <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
+            </div>
+          </fieldset>
+          <fieldset class="cards-purchase-fieldset" data-purchase-section="schedule">
+            <legend>Repetição e parcelas</legend>
+            <div class="cards-purchase-field-grid">
         <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
         <label data-purchase-field="totalInstallments" hidden>Parcelas<input name="totalInstallments" type="number" min="2" max="120" value="2"></label>
         <label data-purchase-field="installmentStart" hidden>Parcela inicial<input name="installmentStart" type="number" min="1" max="120" value="1"></label>
         <label data-purchase-field="installmentValueMode" hidden>Interpretação do valor<select name="installmentValueMode"><option value="total" selected>Valor total da compra</option><option value="per_installment">Valor da parcela</option></select><small data-installment-value-help>O valor será dividido pelo total de parcelas.</small></label>
-        <p class="cards-installment-context full" data-purchase-field="installmentContext" hidden aria-live="polite"></p>
+        <p class="cards-installment-context cards-purchase-installment-note full" data-purchase-field="installmentContext" hidden aria-live="polite"></p>
         <label data-purchase-field="interval" hidden>A cada<input name="interval" type="number" min="1" max="60" value="1"></label>
         <label data-purchase-field="frequency" hidden>Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label>
         <label data-purchase-field="endOn" hidden>Fim opcional<input name="endOn" type="date"></label>
+            </div>
+          </fieldset>
         ${
           selectedCard && !cardCurrency
             ? `<p class="form-status error full" role="status">Defina a moeda padrão do cartão antes de registrar uma compra. <a href="${escapeHtml(cardSettingsHref)}">Editar cartão em Contas e Cartões</a>.</p>`
             : ""
         }
         <p class="form-status full" data-form-status aria-live="polite"></p>
-        <button class="sf-button sf-button-primary full" type="submit"${canSave ? "" : " disabled"}>Salvar compra</button>
+        </div>
+        <footer class="cards-purchase-dialog-actions">
+          <button class="sf-button sf-button-secondary" type="button" data-close-modal>Cancelar</button>
+          <button class="sf-button sf-button-primary" type="submit"${canSave ? "" : " disabled"}>Salvar compra</button>
+        </footer>
       </form>
     </section>
   </dialog>`;
@@ -1414,6 +1439,12 @@ function clientScript(): string {
         const currencyField = purchaseForm.querySelector('[name="currency"]');
         if (currencyField) currencyField.disabled = false;
         document.querySelector("[data-purchase-modal-title]").textContent = "Registrar compra";
+        const purchaseDescription = document.querySelector("[data-purchase-modal-description]");
+        if (purchaseDescription) purchaseDescription.textContent = "Informe valor e dados da compra. A moeda segue a configuração do cartão.";
+        const scheduleSection = purchaseForm.querySelector('[data-purchase-section="schedule"]');
+        if (scheduleSection) scheduleSection.hidden = false;
+        setField("installmentAmountMinor", false);
+        setField("installmentContext", false);
         syncRepeatFields();
       };
       document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => {
@@ -1454,6 +1485,8 @@ function clientScript(): string {
             currencyField.disabled = true;
           }
           if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = !isInstallmentPurchase;
+          const scheduleSection = purchaseForm.querySelector('[data-purchase-section="schedule"]');
+          if (scheduleSection) scheduleSection.hidden = !isInstallmentPurchase;
           if (isInstallmentPurchase) {
             repeatMode.value = "installment";
             repeatMode.disabled = true;
@@ -1480,6 +1513,10 @@ function clientScript(): string {
             setField("installmentContext", false);
           }
           document.querySelector("[data-purchase-modal-title]").textContent = "Editar compra";
+          const purchaseDescription = document.querySelector("[data-purchase-modal-description]");
+          if (purchaseDescription) purchaseDescription.textContent = isInstallmentPurchase
+            ? "A estrutura do parcelamento é somente leitura. Você pode atualizar descrição, categoria e instrumento."
+            : "Atualize os dados da compra e salve as alterações.";
           lastDialogTrigger = button;
           document.querySelector('dialog[data-modal="purchase"]')?.showModal();
         });
