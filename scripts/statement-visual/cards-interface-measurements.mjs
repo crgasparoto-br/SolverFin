@@ -95,12 +95,24 @@ export async function validateCardsPage(
       const closeTrigger = header?.querySelector('[data-api-path$="/close"]');
       const payTrigger = header?.querySelector('[data-open-modal="payment"]');
       const documentsTrigger = header?.querySelector('[data-open-modal="invoice-attachments"]');
+      const secondaryActions = header?.querySelector('.cards-invoice-secondary-actions');
+      const invoiceFacts = Array.from(header?.querySelectorAll('.cards-invoice-metadata > div') || []);
+      const invoiceFactsReadable = invoiceFacts.length === 3 && invoiceFacts.every(
+        (fact) => visible(fact.querySelector('dt')) && visible(fact.querySelector('dd')),
+      );
+      const invoiceActionsSeparated = Boolean(
+        secondaryActions &&
+        (!payTrigger ||
+          rect(secondaryActions).right <= rect(payTrigger).left + 1 ||
+          rect(payTrigger).bottom <= rect(secondaryActions).top + 1)
+      );
       const actionsBelongToContext = Boolean(
         visible(purchaseTrigger) &&
         purchaseHeader?.querySelector('h3')?.textContent.trim() === 'Itens da fatura' &&
-        (!closeTrigger || closeTrigger.closest('.cards-invoice-status-actions')) &&
+        (!closeTrigger || closeTrigger.closest('.cards-invoice-secondary-actions')) &&
         (!payTrigger || payTrigger.closest('.cards-invoice-primary')) &&
-        documentsTrigger?.closest('.cards-invoice-title-block') &&
+        documentsTrigger?.closest('.cards-invoice-secondary-actions') &&
+        !secondaryActions?.querySelector('.sf-button-primary') &&
         !document.querySelector('.cards-reconciliation-filters [data-open-modal="purchase"]') &&
         !document.querySelector('.sf-page-header [data-open-modal="purchase"]') &&
         !document.querySelector('.cards-invoice-document-link')
@@ -203,6 +215,8 @@ export async function validateCardsPage(
         detailVisible: visible(detail),
         invoiceHeaderVisible: visible(header),
         actionsBelongToContext,
+        invoiceActionsSeparated,
+        invoiceFactsReadable,
         primaryAmountVisible: visible(primaryAmount),
         primaryAmountTop: rect(primaryAmount).top,
         firstPurchaseRowTop: rect(firstPurchaseRow).top,
@@ -291,6 +305,8 @@ export async function validateCardsPage(
     measurements,
   );
   check(measurements.invoiceHeaderVisible, "Selected invoice context is not visible", measurements);
+  check(measurements.invoiceFactsReadable, "Invoice closing, due date or currency is unreadable", measurements);
+  check(measurements.invoiceActionsSeparated, "Invoice primary and secondary actions overlap", measurements);
   check(
     measurements.actionsBelongToContext,
     "Golden Screen: register, document, close and settle actions must stay with their respective context",
