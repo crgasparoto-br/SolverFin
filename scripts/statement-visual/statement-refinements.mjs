@@ -110,7 +110,11 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       );
       if (width >= 1101) {
         assert.equal(balanceColumn.headerVisible, true, "The Saldo column header must be visible.");
-        assert.equal(balanceColumn.valueAligned, true, "Balance amounts must align with the Saldo header.");
+        assert.equal(
+          balanceColumn.valueAligned,
+          true,
+          "Balance amounts must align with the Saldo header.",
+        );
       }
       report.controls.push({ id: "GS-BALANCE-COLUMN-HEADER", width, status: "passed" });
       await screenshot(cdp, join(outputDir, `statement-refinement-top-${width}x${height}.png`));
