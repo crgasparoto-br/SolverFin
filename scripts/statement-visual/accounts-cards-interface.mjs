@@ -254,7 +254,20 @@ async function validateGoldenActionToolbar(cdp, resourceKind) {
         return { x: box.x, right: box.right, width: box.width, height: box.height };
       };
       const buttons = Array.from(actions.querySelectorAll('button.resource-action-button'));
+      const instrumentButtons = Array.from(detail.querySelectorAll('.instrument-actions button.resource-action-button'));
+      const instrumentStylesConsistent = instrumentButtons.every((button) => {
+        const box = button.getBoundingClientRect();
+        const svg = button.querySelector('svg')?.getBoundingClientRect();
+        const panel = detail.getBoundingClientRect();
+        return box.width >= 43 && box.height >= 43 &&
+          Math.abs(box.width - box.height) <= 1 &&
+          Boolean(button.title && button.getAttribute('aria-label')) &&
+          Boolean(svg && svg.width >= 16 && svg.width <= 21 && svg.height >= 16 && svg.height <= 21) &&
+          box.left >= panel.left - 1 && box.right <= panel.right + 1;
+      });
       return {
+        instrumentActionCount: instrumentButtons.length,
+        instrumentStylesConsistent,
         kinds: {
           card: Boolean(detail?.getAttribute('data-resource-detail') === 'card'),
           cdi: Boolean(actions.querySelector('.resource-account-cdi-row')),
@@ -297,6 +310,12 @@ async function validateGoldenActionToolbar(cdp, resourceKind) {
   );
   assert.equal(snapshot.allGoldenSize, true, "Golden Screen controls must have 44x44px targets.");
   assert.equal(snapshot.allGoldenGlyphs, true, "Action glyphs must use the same icon scale.");
+  assert.equal(snapshot.instrumentStylesConsistent, true, "Instrument controls must reuse the same Golden Screen dimensions and labels.");
+  if (resourceKind === "card") {
+    assert.ok(snapshot.instrumentActionCount > 0, "Card instruments must expose canonical maintenance actions.");
+  } else {
+    assert.equal(snapshot.instrumentActionCount, 0);
+  }
   assert.equal(snapshot.allWithinDetail, true, "Subscreen controls overflow their detail panel.");
   assert.equal(snapshot.noHorizontalOverflow, true, "Toolbar introduces a horizontal overflow.");
   assert.equal(snapshot.kinds.cdi, resourceKind === "account");
