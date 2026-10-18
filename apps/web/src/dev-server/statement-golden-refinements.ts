@@ -665,11 +665,19 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-period-control [data-month-current]{justify-self:end}
     }
     @media(min-width:361px) and (max-width:430px){
-      /* At 390px the month navigator and "Mes atual" fit on one line.
-         Recover the extra row without shrinking financial amounts or touch targets. */
-      ${root} .statement-period-control{align-items:center;grid-template-columns:minmax(0,1fr) auto}
+      /* Preserve the month field's 240px readability floor. Recover mobile
+         density from excess spacing instead of squeezing its native controls. */
+      ${root} .statement-period-control{gap:4px;grid-template-columns:minmax(0,1fr)}
       ${root} .statement-period-control .month-field{min-width:0}
-      ${root} .statement-period-control [data-month-current]{padding-inline:8px;white-space:nowrap}
+      ${root} .statement-period-control .month-nav{height:44px}
+      ${root} .statement-period-control [data-month-current]{height:44px;justify-self:end}
+      ${root} .statement-account-heading{gap:4px;padding-block:5px}
+      ${root} .account-summary[data-mockup-composition]{row-gap:2px}
+      ${root} .account-summary[data-mockup-composition] .summary-total{gap:2px;padding:2px 6px}
+      ${root} .account-summary[data-mockup-composition] .summary-total-copy{gap:1px}
+      ${root} .account-summary[data-mockup-composition] .summary-total-copy>strong{line-height:1.1}
+      ${root} .statement-query{padding:2px 4px}
+      ${root} .filter-form{row-gap:2px}
     }
     @media(max-width:360px){
       /* Keep the 320px first-viewport budget without truncating the selected account. */
