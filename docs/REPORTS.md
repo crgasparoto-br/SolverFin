@@ -29,6 +29,16 @@ A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, ca
 
 Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
 
+## Propagacao visual Golden Screen (#718)
+
+A rota adota o nivel de acabamento da Golden Screen do Extrato, **sem copiar o arquetipo de listagem**. O arquetipo A5 continua sendo a referencia: contexto de visao e filtros no topo, indicador decisivo por moeda, visualizacao, destaques e detalhe. Navegacao entre visoes usa abas discretas; controles mantem altura e foco padronizados. Nos blocos multi-moedas, a moeda permanece identificada no cabecalho e em cada valor por `Money`; o destaque do resultado e do total mensal nunca une BRL e USD.
+
+A evolucao por categoria oferece barras de tendencia com rolagem local por teclado e rotulos/valores textuais acessiveis. A arvore e a matriz permanecem semanticamente tabulares, com cabecalhos e valores completos em scroll local; nomes extensos podem quebrar linha. As distribuicoes de parcelas preservam os links canonicos, mas evitam cards e bordas aninhadas. A projecao de caixa apresenta, entre resumo e tabela, uma **amostra visual** dos saldos diarios canonicos (ate aproximadamente oito datas, incluindo a ultima): nenhuma interpolacao, soma, nova formula financeira ou supressao da serie completa. A tabela continua mostrando todas as datas e evidencias.
+
+Falha de consulta exibe um link de tentativa novamente para a propria URL, preservando parametros sem exibir resultados parciais. Erro de filtro continua permitindo correcao no formulario SSR. Tabelas largas e graficos utilizam overflow horizontal local com foco visivel em desktop/mobile.
+
+A aceitacao visual exige comparar capturas Chrome autenticadas e a arvore acessivel nos viewports desktop, 390px e 320px no SHA material desta PR, incluindo BRL/USD, recorte vazio, erro, tabela longa e controle negativo de truncamento. Testes automatizados e CI verde sao requisitos distintos da aprovacao independente.
+
 ## Evolucao por categoria
 
 **Status:** disponivel desde a issue #542, ampliada pelas issues #546 e #611.
