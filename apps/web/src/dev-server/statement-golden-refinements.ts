@@ -674,13 +674,13 @@ export function statementGoldenRefinementStyles(): string {
       /* Recover vertical space at 390px without shrinking month navigation,
          financial values, search or 44px interactive targets. */
       ${root} .statement-toolbar{padding-block:0}
-      ${root} .statement-account-heading{gap:4px;padding-block:3px}
+      ${root} .statement-account-heading{gap:4px;padding-block:2px}
       ${root} .statement-account-heading .summary-balance{padding-top:4px}
-      ${root} .account-summary[data-mockup-composition]{row-gap:2px;padding-block:6px}
+      ${root} .account-summary[data-mockup-composition]{row-gap:2px;padding-block:4px}
       ${root} .account-summary[data-mockup-composition] .summary-total{gap:2px;padding:2px 6px}
       ${root} .account-summary[data-mockup-composition] .summary-total-copy{gap:1px}
       ${root} .account-summary[data-mockup-composition] .summary-total-copy>strong{line-height:1.1}
-      ${root} .statement-query{padding:2px 4px}
+      ${root} .statement-query{padding:1px 4px}
       ${root} .filter-form{row-gap:2px}
     }
     @media(max-width:360px){
