@@ -131,10 +131,11 @@ export function accountsCardsPageStyles(): string {
       align-items: center;
       column-gap: 12px;
       display: grid;
-      grid-template-columns: minmax(0, 1.75fr) minmax(75px, .45fr) minmax(150px, .95fr) minmax(78px, .55fr);
+      grid-template-columns: minmax(0, 1.7fr) minmax(58px, .4fr) minmax(140px, .9fr) minmax(78px, .6fr) minmax(74px, .5fr);
     }
     .resource-master-columns { border-bottom: 1px solid var(--line); color: var(--muted); font-size: .71rem; font-weight: 750; padding: 11px 10px; }
-    .resource-master-columns > span:nth-child(3), .resource-master-columns > span:nth-child(4) { text-align: right; }
+    .resource-master-columns > span:nth-child(3), .resource-master-columns > span:nth-child(5) { text-align: right; }
+    .resource-master-columns > span:nth-child(4) { text-align: center; }
     .resource-master-list { gap: 0; max-height: none; overflow: visible; padding: 0; }
     .resource-master-item { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
     .resource-master-item:last-child { border-bottom: 0; }
@@ -149,7 +150,9 @@ export function accountsCardsPageStyles(): string {
     .resource-master-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
     .resource-master-title strong { color: var(--text); font-size: .93rem; line-height: 1.3; overflow-wrap: anywhere; }
     .resource-master-institution, .resource-master-context { color: var(--muted); font-size: .75rem; line-height: 1.3; }
-    .resource-master-cdi { color: var(--sf-color-success); font-weight: 700; white-space: nowrap; }
+    .resource-master-cdi-column { display: flex; justify-content: center; white-space: nowrap; }
+    .resource-master-cdi-column .sf-badge { font-size: .69rem; }
+    .resource-master-cdi-compact { color: var(--sf-color-success); display: none; font-weight: 700; white-space: nowrap; }
     .resource-master-currency { background: transparent; border: 0; color: var(--text) !important; font-size: .8rem; font-weight: 700; overflow-wrap: anywhere; }
     .resource-master-amount { display: grid; gap: 3px; justify-items: end; min-width: 0; text-align: right; }
     .resource-master-amount strong { color: var(--text); font-size: .96rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -205,6 +208,8 @@ export function accountsCardsPageStyles(): string {
       .resource-master-amount { grid-column: 2; grid-row: 1; }
       .resource-master-currency { grid-column: 1; grid-row: 2; margin-left: 52px; }
       .resource-master-state { grid-column: 2; grid-row: 2; }
+      .resource-master-cdi-column { display: none; }
+      .resource-master-cdi-compact { display: inline; }
       .resource-detail-heading { grid-template-columns: 40px minmax(0, 1fr); }
       .resource-detail-identity { display: flex; }
       .resource-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

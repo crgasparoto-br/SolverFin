@@ -130,3 +130,7 @@ A rota aplica o contrato global de `docs/DESIGN_SYSTEM.md`, a paleta e os estado
 ### Identificação de remuneração CDI ativa na lista
 
 Na rota `/contas-cartoes`, somente contas com configuração habilitada no endpoint autenticado `GET /api/account-remuneration/configurations` recebem a indicação discreta `CDI ativo` após o tipo da conta. O vínculo é feito pelo `accountId` no perfil financeiro atual; exige `enabled: true`, `indexKind: cdi`, conta ativa e moeda BRL. Configurações desabilitadas, contas arquivadas, outras moedas e cartões não exibem o indicador. Não mostrar `CDI inativo`. Quando a consulta da configuração falhar, a lista continua disponível e exibe um aviso de indisponibilidade, sem presumir que a conta está desabilitada. Não há alteração das regras de remuneração, percentuais, saldos ou de agregação monetária.
+
+### Exibição da coluna CDI
+
+Na lista mestre, o indicador de remuneração é visível em **coluna própria `CDI` no desktop** (badge compartilhado `CDI ativo`), de modo que o usuário não precise abrir o detalhe da conta para identificá-lo. Linhas de cartões ou contas sem remuneração habilitada deixam a célula vazia — não afirmar `CDI inativo` sem informação. No mobile, a coluna é condensada para `· CDI ativo` na linha auxiliar da identidade, preservando espaço para valor e situação. A origem continua sendo a configuração autenticada da conta, vinculada pelo ID e filtrada por elegibilidade. A alteração estará visível somente quando a versão da PR #723 for executada (não está em `develop` até o merge autorizado).

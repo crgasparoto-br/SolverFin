@@ -76,6 +76,8 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.detailLayoutVisible, true, "A3 DetailLayout is not visible.");
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
   assert.equal(baseline.listAmountsVisible, true, "Master amounts are missing.");
+  assert.equal(baseline.cdiColumnPresent, true, "The dedicated CDI column is missing.");
+  assert.equal(baseline.cdiStateConsistent, true, "CDI labels must be account-only and match the active configuration.");
   assert.equal(baseline.listIsPrimary, true, "Master list should dominate the detail.");
   assert.equal(baseline.detailVisible, true, "Selected detail is not visible.");
   assert.equal(baseline.noHorizontalOverflow, true, "A3 page overflows horizontally.");
@@ -236,6 +238,13 @@ async function inspectPage(cdp) {
         detailVisible: visible(document.querySelector('.resource-detail-panel')),
         masterItemCount: masterItems.length,
         listAmountsVisible: masterItems.every((item) => Boolean(item.querySelector('.resource-master-amount strong'))),
+        cdiColumnPresent: Array.from(document.querySelectorAll('.resource-master-columns > span')).some((column) => column.textContent.trim() === 'CDI'),
+        cdiStateConsistent: masterItems.every((item) => {
+          const active = item.getAttribute('data-cdi-active') === 'true';
+          const label = item.querySelector('.resource-master-cdi-column')?.textContent?.trim() || '';
+          const compact = item.querySelector('.resource-master-cdi-compact')?.textContent?.trim() || '';
+          return active === (item.getAttribute('data-kind') === 'account' && label === 'CDI ativo' && compact.includes('CDI ativo'));
+        }),
         listIsPrimary: (() => {
           const master = document.querySelector('.sf-detail-layout-master')?.getBoundingClientRect();
           const secondary = document.querySelector('.sf-detail-layout-detail')?.getBoundingClientRect();

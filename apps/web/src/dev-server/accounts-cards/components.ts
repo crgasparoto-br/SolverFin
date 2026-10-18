@@ -98,7 +98,7 @@ export function renderResourceMaster(resources: readonly ResourceMasterViewModel
         <label>Status<select data-master-status><option value="all">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></label>
       </div>
       <div class="resource-master-columns" aria-hidden="true">
-        <span>Conta ou cartão</span><span>Moeda</span><span>Saldo inicial / Limite</span><span>Situação</span>
+        <span>Conta ou cartão</span><span>Moeda</span><span>Saldo inicial / Limite</span><span>CDI</span><span>Situação</span>
       </div>
       <div class="resource-master-list" data-master-list>${list}</div>
       <div data-filter-empty hidden>${renderEmptyState({ title: "Nenhum recurso encontrado", description: "Ajuste a busca ou os filtros de tipo, moeda e status." })}</div>
@@ -125,14 +125,14 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
     ? formatMinorCurrency(resource.amountMinor, { currency: resource.currency })
     : "Indisponível";
   return `
-    <article class="master-item resource-master-item${resource.isSelected ? " is-selected" : ""}" data-resource-master-item data-kind="${escapeHtml(resource.kind)}" data-currency="${escapeHtml(resource.currency ?? "unavailable")}" data-status="${escapeHtml(resource.status)}" data-search="${escapeHtml(resource.search)}">
+    <article class="master-item resource-master-item${resource.isSelected ? " is-selected" : ""}" data-resource-master-item data-kind="${escapeHtml(resource.kind)}" data-currency="${escapeHtml(resource.currency ?? "unavailable")}" data-status="${escapeHtml(resource.status)}" data-cdi-active="${resource.kind === "account" && resource.cdiActive === true}" data-search="${escapeHtml(resource.search)}">
       <a class="resource-master-link" href="${escapeHtml(resource.href)}"${resource.isSelected ? ' aria-current="page"' : ""}>
         <span class="resource-master-identity">
           <span class="resource-master-icon" aria-hidden="true">${renderInstitutionIcon(resource.institutionKey)}</span>
           <span class="resource-master-copy">
             <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong></span>
             <span class="resource-master-institution">${escapeHtml(resource.institutionLabel)} · ${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")}</span>
-            <span class="resource-master-context">${escapeHtml(resource.secondaryLabel)}${resource.kind === "account" && resource.cdiActive ? ' <span class="resource-master-cdi" title="Remuneração pelo CDI habilitada">· CDI ativo</span>' : ""}</span>
+            <span class="resource-master-context">${escapeHtml(resource.secondaryLabel)}${resource.kind === "account" && resource.cdiActive ? ' <span class="resource-master-cdi-compact">· CDI ativo</span>' : ""}</span>
           </span>
         </span>
         <span class="resource-master-currency" aria-label="Moeda ${escapeHtml(currencyLabel)}">${escapeHtml(resource.currency ?? "Indisponível")}</span>
@@ -140,6 +140,7 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
           <strong>${escapeHtml(money)}</strong>
           <small>${escapeHtml(resource.amountLabel)}</small>
         </span>
+        <span class="resource-master-cdi-column">${resource.kind === "account" && resource.cdiActive ? renderBadge({ label: "CDI ativo", tone: "positive" }) : ""}</span>
         <span class="resource-master-state">${renderBadge({ label: formatGenericStatus(resource.status), tone: resource.status === "active" ? "positive" : "neutral" })}</span>
       </a>
     </article>`;

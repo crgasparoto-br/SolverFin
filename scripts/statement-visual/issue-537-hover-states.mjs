@@ -11,7 +11,7 @@ const chromePath = process.env.CHROME_BIN;
 const failures = [];
 const scenarios = [];
 const accountsCardsSelectors = {
-  primary: ".resource-detail-actions .resource-primary-action:not(:disabled)",
+  primary: ".sf-page-header-actions .resource-primary-action:not(:disabled)",
   neutral: ".resource-detail-actions .secondary-button:not(:disabled)",
   destructive: ".resource-detail-actions .danger-button:not(:disabled)",
 };
