@@ -93,11 +93,11 @@ export async function renderCategoriesPage(token: string): Promise<string> {
               </div>
               <p class="category-results-status" data-category-results-status role="status" aria-live="polite"></p>
             </div>
-            <div class="category-filter-empty" data-category-filter-empty hidden>
+            ${categoryItems.length ? `<div class="category-filter-empty" data-category-filter-empty hidden>` : ""}
               <strong>Nenhuma categoria encontrada</strong>
               <p class="sf-muted">Revise a busca ou selecione outro filtro.</p>
               <button class="secondary-button" type="button" data-reset-category-view>Limpar busca e filtros</button>
-            </div>
+            ${categoryItems.length ? "</div>" : ""}
             <div class="category-tree-list" data-category-list>
               ${renderCategoryTree(categoryItems)}
             </div>
@@ -496,8 +496,9 @@ function categoryPageScript(): string {
 
       function openModal(trigger) {
         if (!modal) return;
+        const contextTrigger = trigger?.closest?.(".category-action-menu")?.querySelector("[data-category-menu-button]");
         closeCategoryMenus();
-        lastTrigger = trigger || openButton;
+        lastTrigger = contextTrigger || trigger || openButton;
         document.querySelectorAll("[data-category-item][data-category-editing]").forEach((item) => {
           delete item.dataset.categoryEditing;
         });
@@ -945,6 +946,8 @@ function pageCss(): string {
     .categories-page .category-dialog-header { display: flex; align-items: flex-start; gap: 12px; justify-content: space-between; }
     .categories-page .category-dialog-header > div { display: grid; gap: 4px; min-width: 0; }
     .categories-page .category-dialog-header h2 { overflow-wrap: anywhere; }
+    .categories-page .category-dialog-header button.icon-button { width: 44px; min-width: 44px; min-height: 44px; border: 1px solid var(--line); background: var(--surface); color: var(--primary); }
+    .categories-page .category-dialog-header button.icon-button:hover:not(:disabled) { background: var(--primary-soft); color: var(--primary); border-color: var(--cyan); }
     .categories-page .category-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .categories-page .category-form label { display: grid; gap: 6px; min-width: 0; }
     .categories-page .category-form input, .categories-page .category-form select { min-width: 0; width: 100%; }
