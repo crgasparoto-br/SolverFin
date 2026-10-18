@@ -219,6 +219,96 @@ async function validateViewport(cdp, viewport) {
   }
 
   await screenshot(cdp, join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`));
+  if (viewport.width === 1366) {
+    const cdi = await validateCdiSwitch(cdp);
+    scenarios.push({ kind: "cdi-toggle", viewport: "1366x768", measurements: cdi });
+  }
+}
+
+
+async function validateCdiSwitch(cdp) {
+  const eligibleHref = await evaluate(cdp, `(() => {
+    const item = document.querySelector('[data-resource-master-item][data-kind="account"][data-currency="BRL"][data-status="active"]');
+    const link = item?.querySelector('a.resource-master-link');
+    return link ? new URL(link.href).pathname + new URL(link.href).search : null;
+  })()`);
+  assert.ok(eligibleHref, "No eligible BRL account for CDI switch validation.");
+  await navigate(cdp, `${baseUrl}${eligibleHref}`);
+  await waitForDetail(cdp, "account");
+  const setup = await evaluate(cdp, `(() => {
+    const toggle = document.querySelector('[data-resource-detail="account"] [data-cdi-toggle]');
+    if (!toggle || toggle.disabled) return null;
+    const accountId = toggle.dataset.accountId;
+    const initiallyActive = toggle.getAttribute('aria-checked') === 'true';
+    const originalFetch = window.fetch;
+    window.__issue716CdiProof = { calls: [], initiallyActive, failNextPut: true };
+    window.__issue716Fetch = originalFetch;
+    window.fetch = async (url, options = {}) => {
+      const path = String(url);
+      const method = options.method || 'GET';
+      if (path === '/api/account-remuneration/configurations' && method === 'GET') {
+        return { ok: true, json: async () => ({ configurations: [{
+          accountId, accountCurrency: 'BRL', indexKind: 'cdi', enabled: initiallyActive,
+          remunerationPercent: 95, startsOn: '2026-10-01', categoryId: 'income-1'
+        }] }) };
+      }
+      if (path === '/api/account-remuneration/configurations/' + encodeURIComponent(accountId) && method === 'PUT') {
+        window.__issue716CdiProof.calls.push(JSON.parse(options.body));
+        if (window.__issue716CdiProof.failNextPut) {
+          window.__issue716CdiProof.failNextPut = false;
+          return { ok: false, json: async () => ({ error: { message: 'Falha CDI simulada' } }) };
+        }
+        return { ok: true, json: async () => ({ operation: { message: 'CDI atualizado' } }) };
+      }
+      return originalFetch(url, options);
+    };
+    toggle.focus();
+    toggle.click();
+    return { focused: document.activeElement === toggle, label: toggle.getAttribute('aria-label') };
+  })()`);
+  assert.ok(setup?.focused && setup.label?.includes("Remuneração CDI"), "CDI switch must be keyboard focusable and named.");
+  await waitFor(cdp, `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`, "CDI confirmation did not open.");
+  await evaluate(cdp, `document.querySelector('[data-confirm-cancel]')?.click()`);
+  await sleep(80);
+  const cancelled = await evaluate(cdp, `(() => ({
+    requests: window.__issue716CdiProof.calls.length,
+    checked: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
+  }))()`);
+  assert.equal(cancelled.requests, 0, "Cancelling CDI must not write.");
+  const before = await evaluate(cdp, "String(window.__issue716CdiProof.initiallyActive)");
+  assert.equal(cancelled.checked, before, "Cancel must preserve state.");
+
+  await evaluate(cdp, "document.querySelector('[data-cdi-toggle]')?.click()");
+  await waitFor(cdp, `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`, "CDI retry confirmation absent.");
+  await evaluate(cdp, "document.querySelector('[data-confirm-accept]')?.click()");
+  await waitFor(cdp, `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('Falha CDI simulada')`, "CDI failure was not surfaced.");
+  const failed = await evaluate(cdp, `(() => ({
+    checked: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
+    canRetry: !document.querySelector('[data-cdi-toggle]')?.disabled,
+  }))()`);
+  assert.equal(failed.checked, before, "Failed write must not flip CDI.");
+  assert.equal(failed.canRetry, true, "Failed CDI write must allow retry.");
+
+  await evaluate(cdp, "document.querySelector('[data-cdi-toggle]')?.click()");
+  await waitFor(cdp, `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`, "CDI successful retry confirmation absent.");
+  await evaluate(cdp, "document.querySelector('[data-confirm-accept]')?.click()");
+  await waitFor(cdp, `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('CDI atualizado')`, "CDI successful write not surfaced.");
+  const success = await evaluate(cdp, `(() => ({
+    checked: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
+    calls: window.__issue716CdiProof.calls,
+    busy: document.querySelector('[data-cdi-toggle]')?.disabled,
+  }))()`);
+  assert.equal(success.checked, String(before !== "true"), "Successful write must flip CDI.");
+  assert.equal(success.calls.length, 2, "Expected failed then successful PUT after cancelled attempt.");
+  assert.deepEqual(success.calls[1], {
+    enabled: before !== "true",
+    remunerationPercent: 95,
+    startsOn: "2026-10-01",
+    categoryId: "income-1",
+  });
+  assert.equal(success.busy, true, "Switch must lock until reload after successful write.");
+  return { cancelled, failed, success };
+}
 }
 
 async function inspectPage(cdp) {
@@ -301,7 +391,7 @@ async function inspectPage(cdp) {
         controlsUseGoldenPrimitives: Boolean(
           document.querySelector('.resource-master-filters.sf-filter-bar') &&
           document.querySelector('.accounts-cards-a3-page .sf-page-header-actions .sf-button-primary') &&
-          document.querySelector('.resource-detail-actions .sf-button-secondary')
+          document.querySelector('.resource-detail-actions .sf-button-ghost.sf-icon-button')
         ),
         directActionCount: detail ? detail.querySelectorAll('.resource-detail-actions button, .resource-detail-actions a').length : 0,
       };
