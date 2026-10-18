@@ -85,7 +85,7 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
         eyebrow: "Cadastros financeiros",
         title: "Contas e cartões",
         description:
-          "Selecione um recurso para consultar contexto, moeda, instrumentos e ações de manutenção sem perder a listagem.",
+          "Compare contas e cartões por instituição, moeda, saldo inicial e limite. Selecione uma linha para editar ou consultar os detalhes.",
         actionsHtml: headerActions,
       })}${loading}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderSolverFinUiInteractionsScriptTag()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
     }),
