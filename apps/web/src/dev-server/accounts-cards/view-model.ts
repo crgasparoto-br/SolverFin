@@ -144,10 +144,7 @@ export function buildAccountsCardsPageViewModel(
   };
 }
 
-function buildAccountResource(
-  account: AccountRecord,
-  cdiActive: boolean,
-): ResourceMasterViewModel {
+function buildAccountResource(account: AccountRecord, cdiActive: boolean): ResourceMasterViewModel {
   const item = buildAccountItemViewModel(account);
   const currency = normalizeCurrency(account.currency);
   const key = `account:${account.id}` as const;
