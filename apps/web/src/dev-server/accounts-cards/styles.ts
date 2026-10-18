@@ -64,7 +64,21 @@ export function accountsCardsPageStyles(): string {
     .danger-button { background: var(--sf-color-surface); border: 1px solid var(--sf-color-danger-border); color: var(--sf-color-danger); }
     .danger-button:hover:not(:disabled), .danger-button:focus-visible { background: var(--danger-bg); border-color: var(--sf-color-danger-border); color: var(--danger); }
     .icon-button { align-items: center; border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-md); display: inline-flex; height: var(--sf-density-interactive-target-min); justify-content: center; min-width: var(--sf-density-interactive-target-min); padding: 0; }
-    .danger-icon-button { color: var(--danger); }
+    .danger-icon-button { color: var(--sf-color-danger); }
+    /* The shared shell has a generic button:hover. Keep destructive actions on the
+       canonical danger palette instead of accidentally turning them primary. */
+    .instrument-actions .danger-icon-button:hover:not(:disabled),
+    .instrument-actions .danger-icon-button:focus-visible {
+      background: var(--sf-color-danger-surface);
+      border-color: var(--sf-color-danger-border);
+      color: var(--sf-color-danger);
+    }
+    #accounts-cards-confirm-dialog [data-confirm-accept]:hover:not(:disabled),
+    #accounts-cards-confirm-dialog [data-confirm-accept]:focus-visible {
+      background: var(--sf-color-danger);
+      border-color: var(--sf-color-danger-border);
+      color: var(--sf-color-on-danger);
+    }
     .edit-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: 10px; }
     .edit-grid button, .edit-grid .form-status, .edit-grid .legacy-account-identifier { grid-column: 1 / -1; }
     .dialog-subsection { border-top: 1px solid var(--line); display: grid; gap: 10px; margin-top: 14px; padding-top: 14px; }
