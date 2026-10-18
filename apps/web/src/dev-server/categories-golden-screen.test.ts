@@ -5,8 +5,20 @@ import { renderCategoryParentOptions, renderCategoryTree } from "./categories-pa
 
 const fixtures = [
   { id: "root", name: "Alimentação", kind: "expense", status: "active" },
-  { id: "child", name: "Restaurantes e lanchonetes", kind: "expense", status: "active", parentCategoryId: "root" },
-  { id: "grandchild", name: "Refeições de trabalho com um nome realmente longo que precisa quebrar no mobile", kind: "expense", status: "archived", parentCategoryId: "child" },
+  {
+    id: "child",
+    name: "Restaurantes e lanchonetes",
+    kind: "expense",
+    status: "active",
+    parentCategoryId: "root",
+  },
+  {
+    id: "grandchild",
+    name: "Refeições de trabalho com um nome realmente longo que precisa quebrar no mobile",
+    kind: "expense",
+    status: "archived",
+    parentCategoryId: "child",
+  },
   { id: "income", name: "Salário", kind: "income", status: "active" },
 ];
 
@@ -30,7 +42,13 @@ describe("Golden Screen categories hierarchy issue 717", () => {
 
   it("keeps hierarchy readable without relying on color, including orphaned parents", () => {
     const html = renderCategoryTree([
-      { id: "orphan", name: "Filha sem pai carregado", kind: "expense", status: "active", parentCategoryId: "missing" },
+      {
+        id: "orphan",
+        name: "Filha sem pai carregado",
+        kind: "expense",
+        status: "active",
+        parentCategoryId: "missing",
+      },
       { id: "parent", name: "Transferências", kind: "transfer", status: "active" },
     ]);
     assert.match(html, /Categoria principal/);
