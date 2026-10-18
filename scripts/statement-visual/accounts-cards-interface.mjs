@@ -227,17 +227,21 @@ async function validateViewport(cdp, viewport) {
   }
 }
 
-
 async function validateCdiSettings(cdp) {
-  const href = await evaluate(cdp, `(() => {
+  const href = await evaluate(
+    cdp,
+    `(() => {
     const item = document.querySelector('[data-resource-master-item][data-kind="account"][data-currency="BRL"][data-status="active"]');
     const link = item?.querySelector('a.resource-master-link');
     return link ? new URL(link.href).pathname + new URL(link.href).search : null;
-  })()`);
+  })()`,
+  );
   assert.ok(href, "Missing eligible account for CDI settings.");
   await navigate(cdp, `${baseUrl}${href}`);
   await waitForDetail(cdp, "account");
-  const setup = await evaluate(cdp, `(() => {
+  const setup = await evaluate(
+    cdp,
+    `(() => {
     const trigger = document.querySelector('[data-resource-detail="account"] [data-sf-dialog-open^="account-cdi-dialog-"]');
     if (!trigger || trigger.disabled) return null;
     const accountId = trigger.closest('[data-resource-detail]')?.dataset.resourceKey?.slice(8);
@@ -264,7 +268,8 @@ async function validateCdiSettings(cdp) {
     trigger.focus();
     trigger.click();
     return { label: trigger.getAttribute('aria-label'), title: trigger.title };
-  })()`);
+  })()`,
+  );
   assert.ok(
     setup?.label?.includes("Configurar remuneração CDI"),
     "Settings icon missing accessible name.",
@@ -285,7 +290,9 @@ async function validateCdiSettings(cdp) {
     `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Falha configurações CDI simulada')`,
     "Settings API error was not visible.",
   );
-  const failed = await evaluate(cdp, `(() => {
+  const failed = await evaluate(
+    cdp,
+    `(() => {
     const form = document.querySelector('[data-cdi-configuration-form]');
     return {
       modalOpen: form.closest('dialog')?.open,
@@ -293,7 +300,8 @@ async function validateCdiSettings(cdp) {
       date: form.querySelector('[name="startsOn"]').value,
       retryAllowed: !form.querySelector('[type="submit"]').disabled,
     };
-  })()`);
+  })()`,
+  );
   assert.deepEqual(failed, {
     modalOpen: true,
     percent: "88.5",
@@ -319,15 +327,20 @@ async function validateCdiSettings(cdp) {
 }
 
 async function validateCdiSwitch(cdp) {
-  const eligibleHref = await evaluate(cdp, `(() => {
+  const eligibleHref = await evaluate(
+    cdp,
+    `(() => {
     const item = document.querySelector('[data-resource-master-item][data-kind="account"][data-currency="BRL"][data-status="active"]');
     const link = item?.querySelector('a.resource-master-link');
     return link ? new URL(link.href).pathname + new URL(link.href).search : null;
-  })()`);
+  })()`,
+  );
   assert.ok(eligibleHref, "No eligible BRL account for CDI switch validation.");
   await navigate(cdp, `${baseUrl}${eligibleHref}`);
   await waitForDetail(cdp, "account");
-  const setup = await evaluate(cdp, `(() => {
+  const setup = await evaluate(
+    cdp,
+    `(() => {
     const toggle = document.querySelector('[data-resource-detail="account"] [data-cdi-toggle]');
     if (!toggle || toggle.disabled) return null;
     const accountId = toggle.dataset.accountId;
@@ -357,7 +370,8 @@ async function validateCdiSwitch(cdp) {
     toggle.focus();
     toggle.click();
     return { focused: document.activeElement === toggle, label: toggle.getAttribute('aria-label') };
-  })()`);
+  })()`,
+  );
   assert.ok(
     setup?.focused && setup.label?.includes("Remuneração CDI"),
     "CDI switch must be keyboard focusable and named.",
@@ -369,10 +383,13 @@ async function validateCdiSwitch(cdp) {
   );
   await evaluate(cdp, `document.querySelector('[data-confirm-cancel]')?.click()`);
   await sleep(80);
-  const cancelled = await evaluate(cdp, `(() => ({
+  const cancelled = await evaluate(
+    cdp,
+    `(() => ({
     requests: window.__issue716CdiProof.calls.length,
     checked: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
-  }))()`);
+  }))()`,
+  );
   assert.equal(cancelled.requests, 0, "Cancelling CDI must not write.");
   const before = await evaluate(cdp, "String(window.__issue716CdiProof.initiallyActive)");
   assert.equal(cancelled.checked, before, "Cancel must preserve state.");
@@ -389,10 +406,13 @@ async function validateCdiSwitch(cdp) {
     `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('Falha CDI simulada')`,
     "CDI failure was not surfaced.",
   );
-  const failed = await evaluate(cdp, `(() => ({
+  const failed = await evaluate(
+    cdp,
+    `(() => ({
     checked: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
     canRetry: !document.querySelector('[data-cdi-toggle]')?.disabled,
-  }))()`);
+  }))()`,
+  );
   assert.equal(failed.checked, before, "Failed write must not flip CDI.");
   assert.equal(failed.canRetry, true, "Failed CDI write must allow retry.");
 
@@ -408,11 +428,14 @@ async function validateCdiSwitch(cdp) {
     `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('CDI atualizado')`,
     "CDI successful write not surfaced.",
   );
-  const success = await evaluate(cdp, `(() => ({
+  const success = await evaluate(
+    cdp,
+    `(() => ({
     checked: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
     calls: window.__issue716CdiProof.calls,
     busy: document.querySelector('[data-cdi-toggle]')?.disabled,
-  }))()`);
+  }))()`,
+  );
   assert.equal(success.checked, String(before !== "true"), "Successful write must flip CDI.");
   assert.equal(
     success.calls.length,
