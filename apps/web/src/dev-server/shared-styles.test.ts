@@ -190,7 +190,7 @@ describe("shared shell styles", () => {
       "utf8",
     );
 
-    assert.match(accountsCardsSource, /class="icon-button danger-icon-button"/);
+    assert.match(accountsCardsSource, /class="sf-button sf-button-ghost sf-icon-button icon-button danger-icon-button"/);
     assert.match(css, /:not\(\.danger-icon-button\):hover:not\(:disabled\)/);
     assert.match(css, /:not\(\.danger-icon-button\):focus-visible/);
     assert.match(
