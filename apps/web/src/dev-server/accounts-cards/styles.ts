@@ -137,12 +137,8 @@ export function accountsCardsPageStyles(): string {
     .resource-detail-actions .danger-button:hover:not(:disabled), .resource-detail-actions .danger-button:focus-visible { background: var(--danger-bg); color: var(--danger); }
     .resource-primary-action:hover:not(:disabled), .resource-primary-action:focus-visible { background: var(--primary); color: #fff; filter: brightness(1.08); }
     .resource-detail-actions :is(button, a):focus-visible, .resource-form-actions button:focus-visible, .instrument-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-    .master-dialog { width: min(740px, calc(100vw - 32px)); max-width: 740px; max-height: 90dvh; }
-    .master-dialog .sf-dialog-panel { display: flex; flex-direction: column; max-height: calc(90dvh - 2px); min-height: 0; }
-    .master-dialog .sf-dialog-body { min-height: 0; overflow: auto; overscroll-behavior: contain; }
-    .master-dialog .edit-grid { align-items: start; }
-    .master-dialog .edit-grid > label { min-width: 0; }
-    .master-dialog .edit-grid input, .master-dialog .edit-grid select { min-width: 0; width: 100%; }
+    .edit-grid > label { min-width: 0; }
+    .edit-grid input, .edit-grid select { min-width: 0; width: 100%; }
     .resource-form-actions { align-items: center; background: var(--surface); border-top: 1px solid var(--line); bottom: 0; display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; justify-content: flex-end; padding: 12px 0 2px; position: sticky; z-index: 1; }
     .resource-form-actions button { align-items: center; border-radius: var(--radius); display: inline-flex; justify-content: center; min-height: 44px; padding: 0 16px; width: auto; }
     .resource-form-actions button[type="submit"] { background: var(--primary); border: 1px solid var(--primary); color: #fff; font-weight: 700; }
@@ -166,7 +162,6 @@ export function accountsCardsPageStyles(): string {
       .resource-detail-actions { display: flex; }
       .resource-detail-actions > *, .resource-detail-actions form > button { width: auto; }
       .resource-form-actions { padding-top: 10px; }
-      .master-dialog { width: calc(100vw - 24px); max-height: 90dvh; }
     }
     @media (max-width: 360px) {
       .resource-master-filters, .resource-detail-grid, .edit-grid { grid-template-columns: minmax(0,1fr); }
