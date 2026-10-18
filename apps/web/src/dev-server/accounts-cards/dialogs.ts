@@ -49,7 +49,6 @@ function renderCardCurrencyOptions(selected?: string): string {
   return `${placeholder}${renderCurrencyOptions(selected ?? "")}`;
 }
 
-
 export interface CdiIncomeCategory {
   id: string;
   name: string;
