@@ -5,6 +5,7 @@ export interface AnalysisSummaryItem {
   label: string;
   primaryHtml: string;
   secondaryHtml?: string;
+  emphasis?: boolean;
   tone?: "positive" | "negative" | "neutral" | "attention" | "information";
 }
 
@@ -157,7 +158,7 @@ export function renderAnalysisSummaryGrid(
       const secondary = item.secondaryHtml
         ? `<div class="report-summary-secondary">${item.secondaryHtml}</div>`
         : "";
-      return `<article class="${renderText(itemClassName)}" data-tone="${item.tone ?? "neutral"}"><span>${renderText(item.label)}</span><strong>${item.primaryHtml}</strong>${secondary}</article>`;
+      return `<article class="${renderText(itemClassName)}" data-tone="${item.tone ?? "neutral"}"${item.emphasis ? ' data-emphasis="true"' : ""}><span>${renderText(item.label)}</span><strong>${item.primaryHtml}</strong>${secondary}</article>`;
     })
     .join("");
 
@@ -167,9 +168,12 @@ export function renderAnalysisSummaryGrid(
   return renderSummaryGrid({ childrenHtml });
 }
 
-export function renderResultTrend(points: readonly TrendPoint[]): string {
+export function renderResultTrend(
+  points: readonly TrendPoint[],
+  ariaLabel = "Resultado por período",
+): string {
   const maxAbsolute = Math.max(1, ...points.map((point) => Math.abs(point.amountMinor)));
-  return `<ol class="report-trend" aria-label="Resultado por período">${points
+  return `<ol class="report-trend" aria-label="${renderText(ariaLabel)}">${points
     .map((point) => {
       const scale =
         point.amountMinor === 0
