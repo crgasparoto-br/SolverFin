@@ -121,6 +121,13 @@ async function validateViewport(cdp, viewport) {
     await waitForDetail(cdp, "account");
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "account");
+    const accountActions = await validateGoldenActionToolbar(cdp, "account");
+    scenarios.push({
+      kind: "golden-detail-toolbar",
+      resourceKind: "account",
+      viewport: `${viewport.width}x${viewport.height}`,
+      measurements: accountActions,
+    });
     assert.equal(
       measurements.financialContextVisible,
       true,
@@ -150,6 +157,13 @@ async function validateViewport(cdp, viewport) {
     await waitForDetail(cdp, "card");
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "card");
+    const cardActions = await validateGoldenActionToolbar(cdp, "card");
+    scenarios.push({
+      kind: "golden-detail-toolbar",
+      resourceKind: "card",
+      viewport: `${viewport.width}x${viewport.height}`,
+      measurements: cardActions,
+    });
     assert.equal(
       measurements.financialContextVisible,
       true,
@@ -225,6 +239,68 @@ async function validateViewport(cdp, viewport) {
     const cdi = await validateCdiSwitch(cdp);
     scenarios.push({ kind: "cdi-toggle", viewport: "1366x768", measurements: cdi });
   }
+}
+
+async function validateGoldenActionToolbar(cdp, resourceKind) {
+  const snapshot = await evaluate(
+    cdp,
+    `(() => {
+      const detail = document.querySelector('[data-resource-detail]');
+      const actions = detail?.querySelector('.resource-detail-actions');
+      const toolbar = actions?.querySelector('.resource-action-toolbar');
+      if (!actions || !toolbar) return null;
+      const bounds = (node) => {
+        const box = node.getBoundingClientRect();
+        return { x: box.x, right: box.right, width: box.width, height: box.height };
+      };
+      const buttons = Array.from(actions.querySelectorAll('button.resource-action-button'));
+      return {
+        kinds: {
+          card: Boolean(detail?.getAttribute('data-resource-detail') === 'card'),
+          cdi: Boolean(actions.querySelector('.resource-account-cdi-row')),
+        },
+        buttonCount: buttons.length,
+        allNamed: buttons.every((button) => Boolean(button.title && button.getAttribute('aria-label'))),
+        allGoldenSize: buttons.every((button) => {
+          const box = button.getBoundingClientRect();
+          return box.width >= 43 && box.height >= 43 && Math.abs(box.width - box.height) <= 1;
+        }),
+        allGoldenGlyphs: buttons.every((button) => {
+          const svg = button.querySelector('svg');
+          if (!svg) return false;
+          const box = svg.getBoundingClientRect();
+          return box.width >= 16 && box.width <= 21 && box.height >= 16 && box.height <= 21;
+        }),
+        allWithinDetail: buttons.every((button) => {
+          const box = button.getBoundingClientRect();
+          const panel = detail.getBoundingClientRect();
+          return box.left >= panel.left - 1 && box.right <= panel.right + 1;
+        }),
+        cdiSwitch: (() => {
+          const el = actions.querySelector('[data-cdi-toggle]');
+          if (!el) return null;
+          const box = el.getBoundingClientRect();
+          return { width: box.width, height: box.height, role: el.getAttribute('role') };
+        })(),
+        toolbar: bounds(toolbar),
+        actions: bounds(actions),
+        noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+      };
+    })()`,
+  );
+  assert.ok(snapshot, "Golden Screen maintenance toolbar is missing.");
+  assert.equal(snapshot.buttonCount, resourceKind === "card" ? 4 : 4);
+  assert.equal(snapshot.allNamed, true, "Subscreen icon controls need accessible names and tooltips.");
+  assert.equal(snapshot.allGoldenSize, true, "Golden Screen controls must have 44x44px targets.");
+  assert.equal(snapshot.allGoldenGlyphs, true, "Action glyphs must use the same icon scale.");
+  assert.equal(snapshot.allWithinDetail, true, "Subscreen controls overflow their detail panel.");
+  assert.equal(snapshot.noHorizontalOverflow, true, "Toolbar introduces a horizontal overflow.");
+  assert.equal(snapshot.kinds.cdi, resourceKind === "account");
+  if (resourceKind === "account") {
+    assert.equal(snapshot.cdiSwitch?.role, "switch");
+    assert.ok(snapshot.cdiSwitch?.width >= 43 && snapshot.cdiSwitch?.height >= 24);
+  }
+  return snapshot;
 }
 
 async function validateCdiSettings(cdp) {
