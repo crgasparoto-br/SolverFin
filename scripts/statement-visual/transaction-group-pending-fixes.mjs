@@ -293,6 +293,19 @@ async function readProjection(cdp, currentGroupId, trailingId) {
         groupDate: row.querySelector(".col-date")?.getAttribute("datetime"),
         trailingDate: following.querySelector(".col-date")?.getAttribute("datetime"),
         trailingDescription: following.querySelector(".col-description")?.textContent?.trim(),
+        timeline: Array.from(document.querySelectorAll(".statement-row.statement-body"))
+          .filter(candidate => {
+            const date = candidate.querySelector(".col-date")?.getAttribute("datetime");
+            return date >= "2026-07-26" && date <= "2026-07-29";
+          })
+          .slice(-20)
+          .map(candidate => ({
+            date: candidate.querySelector(".col-date")?.getAttribute("datetime"),
+            groupId: candidate.dataset.groupRow || "",
+            transactionId: candidate.querySelector("script[data-transaction]")?.dataset.transaction || "",
+            amount: candidate.querySelector(".col-amount")?.textContent?.trim(),
+            balance: candidate.querySelector(".col-balance")?.dataset.balanceMinor,
+          })),
         amountText: row.querySelector(".col-amount").textContent,
         memberCountText: row.querySelector(".col-description span").textContent,
         groupBalanceMinor: row.querySelector(".col-balance").dataset.balanceMinor === undefined
