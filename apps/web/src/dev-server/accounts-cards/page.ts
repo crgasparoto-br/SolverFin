@@ -61,13 +61,14 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
     url?.searchParams.get("resource"),
     cdiConfigurations.ok ? cdiConfigurations.data.configurations : [],
   );
-  const cdiUnavailableNotice = cdiConfigurations.ok
-    ? ""
-    : renderAlert({
-        title: "Indicador CDI indisponível",
-        description: "Não foi possível verificar quais contas têm CDI ativo. Tente atualizar a página.",
-        tone: "attention",
-      });
+  let cdiUnavailableNotice = "";
+  if (!cdiConfigurations.ok) {
+    cdiUnavailableNotice = renderAlert({
+      title: "Indicador CDI indisponível",
+      description: "Não foi possível verificar quais contas têm CDI ativo. Tente atualizar a página.",
+      tone: "attention",
+    });
+  }
 
   const headerActions = [
     renderHeaderDialogTrigger({
