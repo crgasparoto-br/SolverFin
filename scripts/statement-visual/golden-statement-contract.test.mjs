@@ -100,6 +100,12 @@ test("filter action overlap is rejected", () => {
   assert.throws(() => assertGoldenStatement(layout), /filter actions overlap/);
 });
 
+test("exposed status text fails the icon-only contract", () => {
+  const layout = fixture();
+  layout.statusTextExposed = ['"Conciliado"'];
+  assert.throws(() => assertGoldenStatement(layout), /icons only/);
+});
+
 test("overlapping summary values fail the Golden Screen gate", () => {
   const layout = fixture();
   layout.viewport = { width: 320, height: 740 };
