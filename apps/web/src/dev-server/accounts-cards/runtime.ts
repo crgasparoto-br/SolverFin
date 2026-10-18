@@ -87,6 +87,88 @@ export function renderAccountsCardsApiFormScript(): string {
           });
         }
 
+        function localToday() {
+          const now = new Date();
+          const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+          return local.toISOString().slice(0, 10);
+        }
+
+        document.querySelectorAll("[data-cdi-toggle]").forEach((toggle) => {
+          const container = toggle.closest(".resource-cdi-control");
+          const feedback = container && container.querySelector("[data-cdi-feedback]");
+          const stateLabel = container && container.querySelector("[data-cdi-state]");
+          if (!container || !feedback || !stateLabel) return;
+          toggle.addEventListener("click", async () => {
+            if (toggle.disabled || toggle.getAttribute("aria-busy") === "true") return;
+            const accountId = toggle.dataset.accountId;
+            toggle.disabled = true;
+            toggle.setAttribute("aria-busy", "true");
+            feedback.textContent = "Verificando configuração CDI...";
+            feedback.className = "resource-cdi-feedback muted";
+            let saved = false;
+            try {
+              const currentResponse = await fetch("/api/account-remuneration/configurations", {
+                headers: { accept: "application/json" },
+              });
+              const currentBody = await currentResponse.json().catch(() => ({}));
+              if (!currentResponse.ok) {
+                throw new Error((currentBody.error && currentBody.error.message) || "Não foi possível consultar o CDI.");
+              }
+              const configurations = Array.isArray(currentBody.configurations)
+                ? currentBody.configurations
+                : [];
+              const configuration = configurations.find((item) => item.accountId === accountId);
+              if (!configuration || configuration.accountCurrency !== "BRL" || configuration.indexKind !== "cdi") {
+                throw new Error("Esta conta não está elegível para remuneração CDI no perfil atual.");
+              }
+
+              const enable = configuration.enabled !== true;
+              const percent = configuration.remunerationPercent ?? 100;
+              const startsOn = configuration.startsOn || localToday();
+              const message = enable
+                ? "Ativar a remuneração desta conta a " + String(percent).replace(".", ",") +
+                  "% do CDI a partir de " + startsOn + "? Você pode alterar percentual, data e categoria em Remuneração de Contas."
+                : "Desativar a remuneração CDI desta conta? As configurações existentes serão preservadas.";
+              if (!(await requestConfirmation(message))) {
+                feedback.textContent = "";
+                return;
+              }
+              feedback.textContent = "Salvando remuneração CDI...";
+              const payload = {
+                enabled: enable,
+                remunerationPercent: percent,
+                startsOn,
+                ...(configuration.categoryId ? { categoryId: configuration.categoryId } : {}),
+              };
+              const response = await fetch(
+                "/api/account-remuneration/configurations/" + encodeURIComponent(accountId),
+                {
+                  method: "PUT",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify(payload),
+                },
+              );
+              const body = await response.json().catch(() => ({}));
+              if (!response.ok) {
+                throw new Error((body.error && body.error.message) || "Não foi possível salvar o CDI.");
+              }
+              saved = true;
+              toggle.setAttribute("aria-checked", String(enable));
+              toggle.title = enable ? "Desativar remuneração CDI" : "Ativar remuneração CDI";
+              stateLabel.textContent = enable ? "Ativo" : "Inativo";
+              feedback.className = "resource-cdi-feedback success";
+              feedback.textContent = (body.operation && body.operation.message) || "CDI atualizado.";
+              window.setTimeout(() => window.location.reload(), 350);
+            } catch (error) {
+              feedback.className = "resource-cdi-feedback error";
+              feedback.textContent = error instanceof Error ? error.message : "Não foi possível atualizar o CDI.";
+            } finally {
+              toggle.removeAttribute("aria-busy");
+              if (!saved) toggle.disabled = false;
+            }
+          });
+        });
+
         document.querySelectorAll("[data-api-form]").forEach((form) => {
           const status = ensureStatus(form);
           form.addEventListener("submit", async (event) => {
