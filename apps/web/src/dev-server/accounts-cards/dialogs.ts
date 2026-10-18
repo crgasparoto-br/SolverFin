@@ -26,15 +26,19 @@ function renderAccountsCardsDialog(input: {
   eyebrow: string;
   bodyHtml: string;
 }): string {
-  const formBody = input.bodyHtml.replace(
-    /(<button type="submit" title="[^"]+">[\s\S]*?<\/button>)/g,
-    '<div class="resource-form-actions"><button type="button" class="secondary-button" data-sf-dialog-close>Cancelar</button>$1</div>',
-  );
   return renderDialog({
     id: input.id,
     title: input.title,
-    bodyHtml: `<p class="eyebrow">${escapeHtml(input.eyebrow)}</p>${formBody}`,
+    bodyHtml: `<p class="eyebrow">${escapeHtml(input.eyebrow)}</p>${input.bodyHtml}`,
   }).replace('class="sf-dialog"', 'class="sf-dialog master-dialog"');
+}
+
+/** Golden Screen: neutral choice/cancel, primary only for final form submit. */
+function renderDialogFormActions(title: string, label: string): string {
+  return `<div class="resource-form-actions">
+    <button class="sf-button sf-button-secondary" data-button-variant="neutral" type="button" data-sf-dialog-close>Cancelar</button>
+    <button class="sf-button sf-button-primary" type="submit" title="${escapeHtml(title)}">${icon("save", 14)} ${escapeHtml(label)}</button>
+  </div>`;
 }
 
 function renderCardCurrencyOptions(selected?: string): string {
@@ -59,7 +63,7 @@ export function renderAccountEditDialog(account: AccountRecord, dialogId: string
         <label>Agência<input name="agencyIdentifier" value="${escapeHtml(account.agencyIdentifier ?? "")}" autocomplete="off" /></label>
         <label>Conta<input name="accountIdentifier" value="${escapeHtml(account.accountIdentifier ?? "")}" autocomplete="off" /></label>
         ${renderLegacyAccountIdentifier(account)}
-        <button type="submit" title="Salvar alterações da conta">${icon("save", 14)} Salvar conta</button>
+        ${renderDialogFormActions("Salvar alterações da conta", "Salvar conta")}
       </form>`,
   });
 }
@@ -83,7 +87,7 @@ export function renderCardEditDialog(
         <label>Vence dia<input name="dueDay" type="number" min="1" max="31" value="${card.dueDay}" required /></label>
         <label>Limite total (moeda do cartão)<input name="creditLimitMinor" data-money value="${formatMoneyInput(card.creditLimitMinor ?? 0)}" inputmode="decimal" /></label>
         <label>Conta de pagamento<select name="paymentAccountId"><option value="">Sem vínculo</option>${renderAccountOptions(accounts, card.paymentAccountId)}</select></label>
-        <button type="submit" title="Salvar alterações do cartão">${icon("save", 14)} Salvar cartão</button>
+        ${renderDialogFormActions("Salvar alterações do cartão", "Salvar cartão")}
       </form>
       ${renderCardInlineInstrumentForms(card)}`,
   });
@@ -139,7 +143,7 @@ function renderCardInlineInstrumentForm(instrument: CardInstrumentRecord): strin
       <label>Nome do instrumento<input name="name" value="${escapeHtml(instrument.name ?? "")}" /></label>
       <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
       <label>Limite do instrumento (moeda do cartão)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
-      <button type="submit" title="Salvar alterações do instrumento">${icon("save", 14)} Salvar instrumento</button>
+      ${renderDialogFormActions("Salvar alterações do instrumento", "Salvar instrumento")}
     </form>`;
 }
 
@@ -158,7 +162,7 @@ export function renderCardInstrumentCreateDialog(
         <label>Nome do instrumento<input name="name" placeholder="Virtual titular" /></label>
         <label>Final mascarado<input name="maskedIdentifier" placeholder="**** 1234" /></label>
         <label>Limite do instrumento (moeda do cartão)<input name="creditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
-        <button type="submit" title="Criar novo instrumento">${icon("save", 14)} Criar instrumento</button>
+        ${renderDialogFormActions("Criar novo instrumento", "Criar instrumento")}
       </form>`,
   });
 }
@@ -180,7 +184,7 @@ export function renderCardInstrumentEditDialog(instrument: CardInstrumentRecord)
         <label>Nome do instrumento<input name="name" value="${escapeHtml(instrument.name ?? "")}" /></label>
         <label>Final mascarado<input name="maskedIdentifier" value="${escapeHtml(instrument.maskedIdentifier ?? "")}" /></label>
         <label>Limite do instrumento (moeda do cartão)<input name="creditLimitMinor" data-money value="${instrument.creditLimitMinor !== undefined ? formatMoneyInput(instrument.creditLimitMinor) : ""}" inputmode="decimal" /></label>
-        <button type="submit" title="Salvar alterações do instrumento">${icon("save", 14)} Salvar instrumento</button>
+        ${renderDialogFormActions("Salvar alterações do instrumento", "Salvar instrumento")}
       </form>`,
   });
 }
@@ -199,7 +203,7 @@ export function renderAccountDialog(): string {
         <label>Saldo inicial<input name="openingBalanceMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
         <label>Agência<input name="agencyIdentifier" placeholder="Ex.: 0001" autocomplete="off" /></label>
         <label>Conta<input name="accountIdentifier" placeholder="Ex.: 12345-6" autocomplete="off" /></label>
-        <button type="submit" title="Salvar nova conta">${icon("save", 14)} Criar conta</button>
+        ${renderDialogFormActions("Salvar nova conta", "Criar conta")}
       </form>`,
   });
 }
@@ -224,7 +228,7 @@ export function renderCardDialog(accounts: AccountRecord[]): string {
         <label>Nome do instrumento<input name="instrumentName" placeholder="Físico titular" /></label>
         <label>Final mascarado<input name="instrumentMaskedIdentifier" placeholder="**** 1234" /></label>
         <label>Limite do instrumento (moeda do cartão)<input name="instrumentCreditLimitMinor" data-money inputmode="decimal" placeholder="0,00" /></label>
-        <button type="submit" title="Salvar novo cartão">${icon("save", 14)} Criar cartão</button>
+        ${renderDialogFormActions("Salvar novo cartão", "Criar cartão")}
       </form>`,
   });
 }

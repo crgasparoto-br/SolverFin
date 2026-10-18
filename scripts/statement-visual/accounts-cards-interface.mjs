@@ -88,6 +88,7 @@ async function validateViewport(cdp, viewport) {
   assert.ok(baseline.masterItemCount > 0, "No master resources were rendered.");
   assert.equal(baseline.selectedMasterCount, 1, "Exactly one master resource must be selected.");
   assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
+  assert.equal(baseline.controlsUseGoldenPrimitives, true, "Golden Screen shared button and filter variants are missing.");
   assert.deepEqual(baseline.kindOptions, ["all", "account", "card"]);
   assert.equal(baseline.currencyOptions[0], "all");
   assert.equal(baseline.currencyOptionLabels[0], "Todas as moedas");
@@ -110,7 +111,7 @@ async function validateViewport(cdp, viewport) {
     await waitForDetail(cdp, "account");
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "account");
-    assert.equal(measurements.financialContextVisible, true, "Account summary is not visible.");
+    assert.equal(measurements.financialContextVisible, true, "Account financial context is not visible in the selected list row and detail.");
     assert.equal(
       measurements.institutionIdentityVisible,
       true,
@@ -135,7 +136,7 @@ async function validateViewport(cdp, viewport) {
     await waitForDetail(cdp, "card");
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "card");
-    assert.equal(measurements.financialContextVisible, true, "Card limit summary is not visible.");
+    assert.equal(measurements.financialContextVisible, true, "Card limit context is not visible in the selected list row and detail.");
     assert.equal(
       measurements.institutionIdentityVisible,
       true,
@@ -232,7 +233,16 @@ async function inspectPage(cdp) {
             : master.top <= secondary.top && master.width <= innerWidth;
         })(),
         institutionLogosOnMaster: masterItems.every((item) => Boolean(item.querySelector('.resource-master-icon .institution-logo-img, .resource-master-icon .institution-badge-icon'))),
-        financialContextVisible: visible(document.querySelector('.resource-financial-summary')),
+        financialContextVisible: (() => {
+          const selected = document.querySelector('[data-resource-master-item].is-selected');
+          const rowAmount = selected?.querySelector('.resource-master-amount strong');
+          const kind = detail?.getAttribute('data-resource-detail');
+          const expected = kind === 'account' ? 'Saldo inicial' : kind === 'card' ? 'Limite total' : '';
+          return visible(rowAmount) &&
+            selected?.querySelector('.resource-master-amount')?.getAttribute('data-amount-label') === expected &&
+            Boolean(detail?.textContent?.includes(expected)) &&
+            visible(detail?.querySelector('.resource-detail-grid'));
+        })(),
         institutionIdentityVisible: visible(document.querySelector('.resource-detail-identity .institution-logo-img, .resource-detail-identity .institution-badge-icon')),
         selectedMasterCount: document.querySelectorAll('[data-resource-master-item] [aria-current="page"]').length,
         selectedKind: detail?.getAttribute('data-resource-detail') || '',
@@ -250,6 +260,11 @@ async function inspectPage(cdp) {
         instrumentSectionVisible: visible(document.querySelector('.resource-instruments')),
         instrumentCount: document.querySelectorAll('[data-card-instrument]').length,
         loadingStatePresent: Boolean(document.querySelector('[data-resource-loading]')),
+        controlsUseGoldenPrimitives: Boolean(
+          document.querySelector('.resource-master-filters.sf-filter-bar') &&
+          document.querySelector('.accounts-cards-a3-page .sf-page-header-actions .sf-button-primary') &&
+          document.querySelector('.resource-detail-actions .sf-button-secondary')
+        ),
         directActionCount: detail ? detail.querySelectorAll('.resource-detail-actions button, .resource-detail-actions a').length : 0,
       };
     })()`,

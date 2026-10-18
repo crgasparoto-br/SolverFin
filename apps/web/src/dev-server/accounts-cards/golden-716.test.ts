@@ -99,8 +99,8 @@ test("#716 formularios mantem labels, foco compartilhado e confirmacao neutra", 
     assert.match(html, /class="sf-dialog master-dialog"/);
     assert.match(html, /data-sf-dialog-close/);
     assert.match(html, /class="resource-form-actions"/);
-    assert.match(html, /class="secondary-button" data-sf-dialog-close>Cancelar/);
-    assert.match(html, /button type="submit" title=/);
+    assert.match(html, /class="sf-button sf-button-secondary" data-button-variant="neutral" type="button" data-sf-dialog-close>Cancelar/);
+    assert.match(html, /class="sf-button sf-button-primary" type="submit" title=/);
     assert.match(html, /<label>Moeda<select name="currency"/);
   }
   const styles = accountsCardsPageStyles();
@@ -110,6 +110,9 @@ test("#716 formularios mantem labels, foco compartilhado e confirmacao neutra", 
   assert.match(styles, /resource-master-link:focus-visible/);
   assert.match(styles, /grid-template-columns: minmax\(0, 2\.55fr\) minmax\(288px, 1fr\)/);
   assert.match(styles, /resource-master-columns/);
+  assert.match(styles, /--sf-color-neutral-control-hover/);
+  assert.match(styles, /resource-master-filters.sf-filter-bar/);
+  assert.doesNotMatch(styles, /filter: brightness/);
   assert.match(styles, /max-width: 1099px/);
 });
 
@@ -120,4 +123,14 @@ test("#716 arquivamento nao permite novo instrumento, preserva edicao e confirma
   assert.match(detail, /data-sf-dialog-open="new-card-instrument-dialog-c-1"/);
   assert.match(detail, /disabled/);
   assert.match(detail, /data-confirm="Inativar/);
+});
+
+test("#716 aplica variantes de Golden Screen no mestre e mantém edição secundária", () => {
+  const view = buildAccountsCardsPageViewModel([account], [card], "account:a-1");
+  const master = renderResourceMaster(view.resources);
+  const detail = renderSelectedResourceDetail(view.selectedResource, [account]);
+  assert.match(master, /resource-master-filters sf-filter-bar/);
+  assert.match(detail, /sf-button-secondary/);
+  assert.doesNotMatch(detail, /resource-primary-action/);
+  assert.match(detail, /data-button-variant="neutral"/);
 });

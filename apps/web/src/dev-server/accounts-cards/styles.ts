@@ -53,17 +53,17 @@ export function accountsCardsPageStyles(): string {
     .instrument-meta { color: var(--muted); font-size: .8rem; line-height: 1.45; margin-top: 3px; }
     .instrument-side { display: grid; gap: 6px; justify-items: end; }
     .instrument-tags, .instrument-actions { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
-    .instrument-pill { background: #e0f2fe; border-radius: 999px; color: #075985; font-size: .68rem; font-weight: 700; padding: 2px 7px; }
-    .instrument-pill.is-archived { background: #f1f5f9; color: #475569; }
-    .instrument-warning { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: var(--radius); color: var(--warning); font-size: .8rem; font-weight: 650; padding: 8px 10px; }
+    .instrument-pill { background: var(--sf-color-information-surface); border-radius: var(--sf-radius-full); color: var(--sf-color-information); font-size: .68rem; font-weight: 700; padding: 2px 7px; }
+    .instrument-pill.is-archived { background: var(--sf-color-surface-soft); color: var(--sf-color-muted-text); }
+    .instrument-warning { background: var(--warning-bg); border: 1px solid var(--sf-color-warning-border); border-radius: var(--radius); color: var(--warning); font-size: .8rem; font-weight: 650; padding: 8px 10px; }
     .resource-detail-actions { align-items: center; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px; padding-top: 14px; }
     .resource-detail-actions form { display: inline-flex; margin: 0; }
-    .resource-primary-action { align-items: center; background: var(--primary); border: 1px solid var(--primary); border-radius: var(--radius); color: #fff; display: inline-flex; font: inherit; font-weight: 700; gap: 7px; min-height: 40px; padding: 0 14px; }
-    .secondary-button, .danger-button { align-items: center; border-radius: var(--radius); display: inline-flex; font: inherit; font-weight: 650; gap: 7px; min-height: 40px; padding: 0 12px; }
-    .secondary-button { background: var(--surface); border: 1px solid var(--line); color: var(--text); }
-    .danger-button { background: var(--surface); border: 1px solid #fecaca; color: var(--danger); }
+    .resource-primary-action { align-items: center; border-radius: var(--sf-radius-md); display: inline-flex; gap: var(--sf-space-2); }
+    .secondary-button, .danger-button { align-items: center; border-radius: var(--sf-radius-md); display: inline-flex; font: inherit; font-weight: 650; gap: var(--sf-space-2); min-height: var(--sf-density-interactive-target-min); padding: 0 var(--sf-space-3); }
+    .secondary-button { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); color: var(--sf-color-primary); }
+    .danger-button { background: var(--sf-color-surface); border: 1px solid var(--sf-color-danger-border); color: var(--sf-color-danger); }
     .danger-button:hover:not(:disabled), .danger-button:focus-visible { background: var(--danger-bg); border-color: var(--sf-color-danger-border); color: var(--danger); }
-    .icon-button { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; color: var(--primary); display: inline-flex; height: 40px; justify-content: center; min-width: 40px; padding: 0; }
+    .icon-button { align-items: center; border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-md); display: inline-flex; height: var(--sf-density-interactive-target-min); justify-content: center; min-width: var(--sf-density-interactive-target-min); padding: 0; }
     .danger-icon-button { color: var(--danger); }
     .edit-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: 10px; }
     .edit-grid button, .edit-grid .form-status, .edit-grid .legacy-account-identifier { grid-column: 1 / -1; }
@@ -108,6 +108,11 @@ export function accountsCardsPageStyles(): string {
     .resource-master-filters { gap: 8px; grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(96px, 1fr)); }
     .resource-master-filters > label:first-child, .resource-master-filters > label:last-child { grid-column: auto; }
     .resource-master-filters > label { font-size: .76rem; min-width: 0; }
+    /* The Golden Screen filter bar is neutral; the master panel already owns the surface. */
+    .resource-master-filters.sf-filter-bar { background: transparent; border: 0; border-radius: 0; padding: 0; }
+    .resource-master-filters :is(input, select) { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); color: var(--sf-color-text); min-height: var(--sf-density-interactive-target-min); }
+    .resource-master-filters :is(input, select):hover:not(:disabled) { border-color: var(--sf-color-neutral-control-border-hover); }
+    .resource-master-filters :is(input, select):focus-visible { border-color: var(--sf-color-primary); box-shadow: var(--sf-shadow-focus); outline: none; }
     .resource-master-columns, .resource-master-link {
       align-items: center;
       column-gap: 12px;
@@ -150,10 +155,10 @@ export function accountsCardsPageStyles(): string {
     .resource-detail-field > strong { font-size: .83rem; font-weight: 650; overflow-wrap: anywhere; }
     .resource-detail-actions { border-top: 1px solid var(--line); gap: 7px; padding-top: 12px; }
     .resource-detail-actions :is(button, a) { font-size: .79rem; }
-    .resource-detail-actions .secondary-button { background: var(--surface); border: 1px solid var(--line); }
-    .resource-detail-actions .secondary-button:hover:not(:disabled), .resource-detail-actions .secondary-button:focus-visible { background: var(--surface-soft); border-color: var(--primary); color: var(--text); }
+    .resource-detail-actions .secondary-button { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); color: var(--sf-color-primary); }
+    .resource-detail-actions .secondary-button:hover:not(:disabled), .resource-detail-actions .secondary-button:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
     .resource-detail-actions :is(button, a):focus-visible, .resource-form-actions button:focus-visible, .instrument-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-    .resource-primary-action:hover:not(:disabled), .resource-primary-action:focus-visible { background: var(--primary); color: #fff; filter: brightness(1.08); }
+    .resource-primary-action:hover:not(:disabled), .resource-primary-action:focus-visible { background: var(--sf-color-primary-hover); color: var(--sf-color-on-primary); }
     .resource-instruments { gap: 10px; }
     .instrument-list { border: 0; border-radius: 0; }
     .instrument-item { background: transparent; border-color: var(--line); padding: 10px 0; }
@@ -164,9 +169,10 @@ export function accountsCardsPageStyles(): string {
     .edit-grid input, .edit-grid select { min-width: 0; width: 100%; }
     .resource-form-actions { align-items: center; background: var(--surface); border-top: 1px solid var(--line); bottom: 0; display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; justify-content: flex-end; padding: 12px 0 2px; position: sticky; z-index: 1; }
     .resource-form-actions button { align-items: center; border-radius: var(--radius); display: inline-flex; justify-content: center; min-height: 44px; padding: 0 16px; width: auto; }
-    .resource-form-actions button[type="submit"] { background: var(--primary); border: 1px solid var(--primary); color: #fff; font-weight: 700; }
-    .resource-form-actions button[type="submit"]:hover:not(:disabled), .resource-form-actions button[type="submit"]:focus-visible { background: var(--primary); color: #fff; filter: brightness(1.08); }
-    .resource-form-actions .secondary-button:hover:not(:disabled), .resource-form-actions .secondary-button:focus-visible { background: var(--surface-soft); border-color: var(--primary); color: var(--text); }
+    .resource-form-actions .sf-button-primary { background: var(--sf-color-primary); border-color: var(--sf-color-primary); color: var(--sf-color-on-primary); }
+    .resource-form-actions .sf-button-primary:hover:not(:disabled), .resource-form-actions .sf-button-primary:focus-visible { background: var(--sf-color-primary-hover); border-color: var(--sf-color-primary-hover); color: var(--sf-color-on-primary); }
+    .resource-form-actions .sf-button-secondary { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); color: var(--sf-color-primary); }
+    .resource-form-actions .sf-button-secondary:hover:not(:disabled), .resource-form-actions .sf-button-secondary:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
     @media (max-width: 1099px) {
       .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: minmax(0, 1fr); }
       .resource-detail-panel { max-width: none; }

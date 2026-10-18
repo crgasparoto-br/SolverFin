@@ -82,6 +82,21 @@ A referencia inclui, sem exigir copia estrutural:
 - dialogs e drawers com o mesmo nivel de refinamento da tela principal;
 - comportamento mobile equivalente em clareza e acabamento.
 
+### Regra normativa para TODAS as telas — Golden Screen
+
+**Obrigatorio em qualquer alteracao visual** (telas autenticadas, administrativas, publicas, dialogs, drawers, menus, formularios e estados de erro/vazio): usar este documento como **fonte de verdade**, o Extrato `/lancamentos` como **referencia oficial de acabamento visual** e os tokens/primitivas de `apps/web/src/design-system/` como implementacao executavel. A Golden Screen rege **qualidade e linguagem visual**, nao impõe a todos os arquetipos a mesma grade, os mesmos campos ou a mesma largura de painel. A hierarquia segue sempre a tarefa dominante da rota; em `/contas-cartoes`, a lista de contas/cartoes e dominante, e o detalhe e auxiliar.
+
+O padrao transversal de aceite inclui:
+
+1. **Superficies e ritmo:** tipografia, espacamento, densidade, bordas e cores do design system; sem nova paleta, sombras, botoes ou espacamentos locais se houver token equivalente.
+2. **Controles operacionais:** busca, select, filtros, menus e opcoes equivalentes com variante neutra, borda discreta e texto legivel; repouso, hover, active, focus-visible e disabled coerentes. Escolha nao e confirmacao; somente o ato final de salvar/confirmar utiliza primary.
+3. **Acoes:** uma acao primaria por contexto; demais secondary/ghost, perigo sem ambiguidade e com confirmacao; icones compartilhados com aria-label e foco visivel.
+4. **Dados financeiros e lista:** informacao decisiva domina, metadados secundarios, alinhamento numerico a direita e moeda explicita; nunca somar moedas sem conversao.
+5. **Modais e estados:** mesmo acabamento e acessibilidade em criar, editar, excluir, vazio, loading, indisponivel e erro; dialogs centralizados quando a tarefa e CRUD curta, cancelar neutro e confirmacao primaria; sem regex para compor HTML final.
+6. **Evidencia bloqueante:** screenshots e interacoes no SHA final em desktop 1440x900 e 1366x768 e mobile 390x844, 320x740 quando relevante, verificando computed styles de background/foreground/border, hover, foco e disabled, overflow, teclado/Escape e volta do foco. Testes/CI verdes nao comprovam paridade por si.
+
+**Ordem de precedencia:** contrato financeiro/funcional da rota e acessibilidade > componentes/tokens compartilhados > arquetipo de `docs/SCREEN_ARCHETYPES.md` > disposicao especifica da referencia visual. Desvios necessarios devem ficar justificados e cobertos por evidencia na PR. A conformidade transversal deve ser verificada a cada issue de interface, nao apenas na epica #702.
+
 ### Contrato obrigatorio: escolhas em modal e menus da Golden Screen
 
 A padronizacao da Golden Screen se aplica a **todos os estados** dos controles, nao

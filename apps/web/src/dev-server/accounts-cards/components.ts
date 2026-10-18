@@ -91,7 +91,7 @@ export function renderResourceMaster(resources: readonly ResourceMasterViewModel
       <div class="resource-master-summary">
         <div><h2>Lista de contas e cartões</h2><span>${accountCount} ${accountCount === 1 ? "conta" : "contas"} · ${cardCount} ${cardCount === 1 ? "cartão" : "cartões"}</span></div>
       </div>
-      <div class="resource-master-filters" role="group" aria-label="Filtros dos recursos">
+      <div class="resource-master-filters sf-filter-bar" role="group" aria-label="Filtros dos recursos">
         <label>Buscar<input data-master-search type="search" placeholder="Nome, instituição, conta, bandeira ou moeda" autocomplete="off" /></label>
         <label>Tipo<select data-master-kind><option value="all">Todos</option><option value="account">Contas</option><option value="card">Cartões</option></select></label>
         <label>Moeda<select data-master-currency>${currencyOptions}</select></label>
@@ -185,13 +185,13 @@ function renderAccountDetail(account: AccountRecord, currency: string | undefine
         ${detailField("Estado", formatGenericStatus(account.status))}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(account.name)}">
-        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar conta", className: "resource-primary-action", iconHtml: renderEditIcon() })}
+        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar conta", className: "secondary-button", variant: "secondary", iconHtml: renderEditIcon() })}
         <a class="button-link secondary" href="/remuneracao-contas">Remuneração CDI</a>
         <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
-          <button type="submit" class="secondary-button"${viewModel.isArchived ? " disabled" : ""}>${renderArchiveIcon()} Arquivar</button>
+          <button type="submit" class="sf-button sf-button-secondary secondary-button" data-button-variant="neutral"${viewModel.isArchived ? " disabled" : ""}>${renderArchiveIcon()} Arquivar</button>
         </form>
         <form data-api-form data-api-method="DELETE" data-api-path="/api/accounts/${escapeHtml(account.id)}" data-confirm="Excluir ${escapeHtml(account.name)}? Só é possível excluir contas sem vínculos financeiros." class="inline-action-form">
-          <button type="submit" class="danger-button">${renderTrashIcon()} Excluir</button>
+          <button type="submit" class="sf-button danger-button">${renderTrashIcon()} Excluir</button>
         </form>
       </div>
     </section>
@@ -229,13 +229,13 @@ function renderCardDetail(
         ${detailField("Fechamento / vencimento", `Dia ${card.closingDay} / dia ${card.dueDay}`)}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(card.name)}">
-        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar cartão", className: "resource-primary-action", iconHtml: renderEditIcon() })}
+        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar cartão", className: "secondary-button", variant: "secondary", iconHtml: renderEditIcon() })}
         ${renderRouteDialogTrigger({ dialogId: viewModel.newInstrumentDialogId, label: "Adicionar instrumento", className: "secondary-button", variant: "secondary", disabled: viewModel.isArchived, iconHtml: renderAddIcon() })}
         <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
-          <button type="submit" class="secondary-button"${viewModel.isArchived ? " disabled" : ""}>${renderArchiveIcon()} Arquivar</button>
+          <button type="submit" class="sf-button sf-button-secondary secondary-button" data-button-variant="neutral"${viewModel.isArchived ? " disabled" : ""}>${renderArchiveIcon()} Arquivar</button>
         </form>
         <form data-api-form data-api-method="DELETE" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}" data-confirm="Excluir ${escapeHtml(card.name)}? Só é possível excluir cartões sem vínculos financeiros." class="inline-action-form">
-          <button type="submit" class="danger-button">${renderTrashIcon()} Excluir</button>
+          <button type="submit" class="sf-button danger-button">${renderTrashIcon()} Excluir</button>
         </form>
       </div>
       <section class="resource-instruments" aria-labelledby="resource-instruments-title-${escapeHtml(card.id)}">
@@ -287,10 +287,10 @@ function renderCardInstrumentItem(
       : ` · limite ${formatAmountWithCurrency(instrument.creditLimitMinor, currency)}`;
   const setDefaultAction =
     isActive && !instrument.isDefault
-      ? `<form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/default-instrument" class="inline-action-form"><input type="hidden" name="instrumentId" value="${escapeHtml(instrument.id)}" /><button type="submit" class="icon-button" aria-label="Definir ${escapedTitle} como default">${renderDefaultIcon()}</button></form>`
+      ? `<form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/default-instrument" class="inline-action-form"><input type="hidden" name="instrumentId" value="${escapeHtml(instrument.id)}" /><button type="submit" class="sf-button sf-button-ghost sf-icon-button icon-button" data-button-variant="neutral" aria-label="Definir ${escapedTitle} como default">${renderDefaultIcon()}</button></form>`
       : "";
   const archiveAction = isActive
-    ? `<form data-api-form data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}/archive" data-confirm="Arquivar ${escapedTitle}? Ele continuará visível, mas não poderá receber novas compras." class="inline-action-form"><button type="submit" class="icon-button danger-icon-button" aria-label="Arquivar ${escapedTitle}">${renderArchiveIcon()}</button></form>`
+    ? `<form data-api-form data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}/archive" data-confirm="Arquivar ${escapedTitle}? Ele continuará visível, mas não poderá receber novas compras." class="inline-action-form"><button type="submit" class="sf-button sf-button-ghost sf-icon-button icon-button danger-icon-button" aria-label="Arquivar ${escapedTitle}">${renderArchiveIcon()}</button></form>`
     : "";
   const editAction = renderRouteDialogTrigger({
     dialogId: editDialogId,
@@ -309,7 +309,7 @@ export function renderConfirmationDialog(): string {
     id: "accounts-cards-confirm-dialog",
     title: "Deseja continuar?",
     bodyHtml: `<p class="eyebrow">Confirmar ação</p><p data-confirm-message></p>`,
-    actionsHtml: `<button type="button" class="secondary-button" data-confirm-cancel>Cancelar</button><button type="button" class="danger-button" data-confirm-accept>Confirmar</button>`,
+    actionsHtml: `<button type="button" class="sf-button sf-button-secondary" data-button-variant="neutral" data-confirm-cancel>Cancelar</button><button type="button" class="sf-button sf-button-danger" data-confirm-accept>Confirmar</button>`,
   });
 }
 
