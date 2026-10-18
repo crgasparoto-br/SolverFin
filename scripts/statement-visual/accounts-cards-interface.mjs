@@ -309,7 +309,6 @@ async function validateCdiSwitch(cdp) {
   assert.equal(success.busy, true, "Switch must lock until reload after successful write.");
   return { cancelled, failed, success };
 }
-}
 
 async function inspectPage(cdp) {
   return evaluate(
