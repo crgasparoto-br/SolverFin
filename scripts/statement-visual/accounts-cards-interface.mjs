@@ -618,7 +618,7 @@ async function inspectPage(cdp) {
         controlsUseGoldenPrimitives: Boolean(
           document.querySelector('.resource-master-filters.sf-filter-bar') &&
           document.querySelector('.accounts-cards-a3-page .sf-page-header-actions .sf-button-primary') &&
-          document.querySelector('.resource-detail-actions .sf-button-ghost.sf-icon-button')
+          document.querySelector('.resource-detail-actions .sf-button-secondary.sf-icon-button.resource-action-button')
         ),
         directActionCount: detail ? detail.querySelectorAll('.resource-detail-actions button, .resource-detail-actions a').length : 0,
       };
