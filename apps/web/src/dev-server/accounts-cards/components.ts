@@ -415,16 +415,16 @@ function renderCardInstrumentItem(
       : ` · limite ${formatAmountWithCurrency(instrument.creditLimitMinor, currency)}`;
   const setDefaultAction =
     isActive && !instrument.isDefault
-      ? `<form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/default-instrument" class="inline-action-form"><input type="hidden" name="instrumentId" value="${escapeHtml(instrument.id)}" /><button type="submit" class="sf-button sf-button-ghost sf-icon-button icon-button" data-button-variant="neutral" aria-label="Definir ${escapedTitle} como default">${renderDefaultIcon()}</button></form>`
+      ? `<form data-api-form data-api-method="PATCH" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/default-instrument" class="inline-action-form"><input type="hidden" name="instrumentId" value="${escapeHtml(instrument.id)}" /><button type="submit" class="sf-button sf-button-secondary sf-icon-button sf-focus-ring resource-action-button" data-button-variant="neutral" title="Definir ${escapedTitle} como padrão" aria-label="Definir ${escapedTitle} como padrão">${renderDefaultIcon()}</button></form>`
       : "";
   const archiveAction = isActive
-    ? `<form data-api-form data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}/archive" data-confirm="Arquivar ${escapedTitle}? Ele continuará visível, mas não poderá receber novas compras." class="inline-action-form"><button type="submit" class="sf-button sf-button-ghost sf-icon-button icon-button danger-icon-button" aria-label="Arquivar ${escapedTitle}">${renderArchiveIcon()}</button></form>`
+    ? `<form data-api-form data-api-path="/api/credit-card-instruments/${escapeHtml(instrument.id)}/archive" data-confirm="Arquivar ${escapedTitle}? Ele continuará visível, mas não poderá receber novas compras." class="inline-action-form"><button type="submit" class="sf-button sf-button-secondary sf-icon-button sf-focus-ring resource-action-button danger-icon-button" title="Arquivar ${escapedTitle}" aria-label="Arquivar ${escapedTitle}">${renderArchiveIcon()}</button></form>`
     : "";
   const editAction = renderRouteDialogTrigger({
     dialogId: editDialogId,
     label: `Editar instrumento ${title}`,
-    className: "icon-button",
-    variant: "ghost",
+    className: "sf-icon-button resource-action-button",
+    variant: "secondary",
     iconHtml: renderEditIcon(),
     iconOnly: true,
   });
