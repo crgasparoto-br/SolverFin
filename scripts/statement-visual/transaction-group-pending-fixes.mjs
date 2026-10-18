@@ -150,7 +150,7 @@ try {
     "Closing the clone form did not restore the group modal.",
   );
 
-  const beforeEdit = await readProjection(browser.cdp, created.groupId);
+  const beforeEdit = await readProjection(browser.cdp, created.groupId, created.trailingId);
   await evaluate(
     browser.cdp,
     `document.querySelector('[data-member-id="${created.memberIds[0]}"][data-member-action="edit"]').focus()`,
@@ -170,7 +170,7 @@ try {
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(450);
 
-  const afterEdit = await readProjection(browser.cdp, created.groupId);
+  const afterEdit = await readProjection(browser.cdp, created.groupId, created.trailingId);
   assert.equal(afterEdit.groupTotalMinor, 65000);
   assert.equal(afterEdit.rowProjectionMinor, 65000);
   assert.equal(afterEdit.groupBalanceMinor - beforeEdit.groupBalanceMinor, 5000);
@@ -181,7 +181,7 @@ try {
   await evaluate(browser.cdp, `document.querySelector('[data-group-action="status"]').focus()`);
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(250);
-  const reconciledProjection = await readProjection(browser.cdp, created.groupId);
+  const reconciledProjection = await readProjection(browser.cdp, created.groupId, created.trailingId);
   assert.equal(reconciledProjection.groupStatus, "reconciled");
   assert.equal(reconciledProjection.rowStatus, "Conciliado");
 
@@ -192,7 +192,7 @@ try {
   );
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(250);
-  const afterDelete = await readProjection(browser.cdp, created.groupId);
+  const afterDelete = await readProjection(browser.cdp, created.groupId, created.trailingId);
   assert.equal(afterDelete.memberCount, 2);
   assert.equal(afterDelete.groupTotalMinor, 35000);
   assert.equal(afterDelete.rowProjectionMinor, 35000);
@@ -256,7 +256,7 @@ async function pressKey(cdp, key, code, virtualKeyCode) {
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...params });
 }
 
-async function readProjection(cdp, currentGroupId) {
+async function readProjection(cdp, currentGroupId, trailingId) {
   return evaluate(
     cdp,
     `(() => {
@@ -269,11 +269,12 @@ async function readProjection(cdp, currentGroupId) {
       }
       const row = document.querySelector('[data-group-row="${currentGroupId}"]');
       if (!row) throw new Error("Grouped statement row was not found for balance projection validation.");
-      // Daily disclosure groups wrap rows; traverse semantic order across group boundaries.
-      const orderedRows = Array.from(document.querySelectorAll(".statement-table .statement-row.statement-body"));
-      const rowIndex = orderedRows.indexOf(row);
-      const following = orderedRows.slice(rowIndex + 1).find(candidate => !candidate.hidden);
-      if (rowIndex < 0 || !following) throw new Error("A following statement row was not found for balance projection validation.");
+      // The statement sorts by date descending. The later-in-time fixture can be
+      // rendered before the group, so DOM adjacency is not a financial invariant.
+      const following = document.querySelector(
+        'script[data-transaction="${trailingId}"]',
+      )?.closest(".statement-row.statement-body");
+      if (!following) throw new Error("The later chronological statement row was not found for balance projection validation.");
       const group = JSON.parse(row.querySelector('script[data-group="${currentGroupId}"]').textContent);
       return {
         groupTotalMinor: group.totalAmountMinor,
