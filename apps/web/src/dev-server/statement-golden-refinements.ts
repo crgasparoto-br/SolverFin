@@ -717,8 +717,8 @@ export function statementGoldenRefinementStyles(): string {
     @media(min-width:761px){
       ${root} .filter-form>.statement-day-field{max-width:11.5rem;width:100%}
     }
-    @media(min-width:1340px){
-      /* One balanced seven-track row: day, search, four selectors and actions.
+    @media(min-width:1600px){
+      /* One balanced seven-track row only when content width supports every selector: day, search, four selectors and actions.
          Match the higher-specificity Golden options grid; no implicit tracks. */
       ${root}[data-statement-options] .filter-form{
         align-items:end;
@@ -730,8 +730,8 @@ export function statementGoldenRefinementStyles(): string {
       ${root}[data-statement-options] .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:auto}
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto}
     }
-    @media(min-width:1101px) and (max-width:1339px){
-      /* Reflow rather than squeeze a 7-column desktop bar into a narrow screen. */
+    @media(min-width:1101px) and (max-width:1599px){
+      /* Reflow rather than squeeze a 7-column desktop bar into the available workspace. */
       ${root}[data-statement-options] .filter-form{grid-template-columns:minmax(10.5rem,11.5rem) repeat(2,minmax(0,1fr))}
       ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
       ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:1}
