@@ -116,7 +116,8 @@ export function buildAccountsCardsPageViewModel(
       .map((configuration) => configuration.accountId),
   );
   const accountResources = accounts.map((account) => {
-    const cdiEligible = account.status === "active" && normalizeCurrency(account.currency) === "BRL";
+    const cdiEligible =
+      account.status === "active" && normalizeCurrency(account.currency) === "BRL";
     const cdiActive = cdiEligible && enabledCdiAccountIds.has(account.id);
     const cdiStatus = !cdiEligible
       ? "ineligible"
