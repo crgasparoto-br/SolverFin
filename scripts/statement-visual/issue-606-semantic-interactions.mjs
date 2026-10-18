@@ -368,7 +368,11 @@ async function validateStatement(cdp) {
   );
   assert.equal(focus.exists, true, "Statement exposes no focusable status indicator.");
   assert.equal(focus.focused, true, "Statement status control did not accept focus.");
-  assert.equal(focus.accessible, true, "Focusable status control lost its accessible situation label.");
+  assert.equal(
+    focus.accessible,
+    true,
+    "Focusable status control lost its accessible situation label.",
+  );
   for (const viewportWidth of [1101, 1100, 761, 760]) {
     await setViewport(cdp, viewportWidth, 900);
     await navigate(cdp, `${baseUrl}${baseRoute}`);
