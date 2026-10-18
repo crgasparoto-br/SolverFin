@@ -34,13 +34,17 @@ export function renderReportState(
   state: ReportAnalysisState,
   title: string,
   description: string,
+  retryHref?: string,
 ): string {
+  const retry = state === "api-error" && retryHref
+    ? `<a class="report-retry sf-focus-ring" href="${escapeReportHtml(retryHref)}">Tentar novamente</a>`
+    : "";
   return renderReportAnalysisStateBlock({
     id: `report-state-${state}`,
     state,
     title,
     description,
-  });
+  }) + retry;
 }
 
 export function renderReportsShell(content: string): string {
