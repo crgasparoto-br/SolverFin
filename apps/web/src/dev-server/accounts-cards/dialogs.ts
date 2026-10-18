@@ -13,6 +13,7 @@ import {
   renderLegacyAccountIdentifier,
 } from "./presentation.js";
 import type { AccountRecord, CardInstrumentRecord, CreditCardAccountRecord } from "./types.js";
+import type { AccountCdiConfiguration } from "./view-model.js";
 import {
   countActive,
   formatGenericStatus,
@@ -46,6 +47,42 @@ function renderCardCurrencyOptions(selected?: string): string {
     ? ""
     : '<option value="" disabled selected>Selecione a moeda</option>';
   return `${placeholder}${renderCurrencyOptions(selected ?? "")}`;
+}
+
+
+export interface CdiIncomeCategory {
+  id: string;
+  name: string;
+  kind: string;
+  status: string;
+}
+
+export function renderAccountCdiConfigurationDialog(
+  account: AccountRecord,
+  configuration: AccountCdiConfiguration | undefined,
+  categories: readonly CdiIncomeCategory[],
+): string {
+  const categoryOptions = categories
+    .filter((category) => category.status === "active" && category.kind === "income")
+    .map(
+      (category) =>
+        `<option value="${escapeHtml(category.id)}"${category.id === configuration?.categoryId ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
+    )
+    .join("");
+  const percent = String(configuration?.remunerationPercent ?? 100);
+  return renderAccountsCardsDialog({
+    id: `account-cdi-dialog-${account.id}`,
+    title: `Remuneração pelo CDI — ${account.name}`,
+    eyebrow: "Configurar conta remunerada",
+    bodyHtml: `<form data-cdi-configuration-form data-account-id="${escapeHtml(account.id)}" class="edit-grid">
+      <label>Percentual do CDI (%)<input type="number" name="remunerationPercent" min="0.0001" max="1000" step="0.0001" value="${escapeHtml(percent)}" required /></label>
+      <label>Data inicial<input type="date" name="startsOn" value="${escapeHtml(configuration?.startsOn ?? "")}" required /></label>
+      <label>Categoria de receita<select name="categoryId"><option value="">Sem categoria padrão</option>${categoryOptions}</select></label>
+      <p class="remuneration-help">O cálculo usa o saldo final do dia anterior. O flag CDI controla a ativação separadamente; editar estes parâmetros não altera o estado atual.</p>
+      ${renderDialogFormActions("Salvar parâmetros de remuneração", "Salvar configuração")}
+      <p class="form-status muted" role="status" aria-live="polite" data-cdi-form-status></p>
+    </form>`,
+  });
 }
 
 export function renderAccountEditDialog(account: AccountRecord, dialogId: string): string {
