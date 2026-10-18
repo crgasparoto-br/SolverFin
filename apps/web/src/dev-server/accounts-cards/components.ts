@@ -73,10 +73,7 @@ function renderRouteDialogTrigger(input: {
   trigger = trigger.replace(visibleLabel, replacement);
 
   if (input.iconOnly) {
-    trigger = trigger.replace(
-      "<button ",
-      `<button title="${label}" aria-label="${label}" `,
-    );
+    trigger = trigger.replace("<button ", `<button title="${label}" aria-label="${label}" `);
   }
   return trigger;
 }
@@ -219,7 +216,14 @@ function renderAccountDetail(
         ${detailField("Estado", formatGenericStatus(account.status))}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(account.name)}">
-        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar conta", className: "icon-button", variant: "ghost", iconHtml: renderEditIcon(), iconOnly: true })}
+        ${renderRouteDialogTrigger({
+          dialogId: viewModel.editDialogId,
+          label: "Editar conta",
+          className: "icon-button",
+          variant: "ghost",
+          iconHtml: renderEditIcon(),
+          iconOnly: true,
+        })}
         ${renderAccountCdiControl(account, currency, configuration, cdiAvailable)}
         ${renderRouteDialogTrigger({
           dialogId: `account-cdi-dialog-${account.id}`,
@@ -333,8 +337,23 @@ function renderCardDetail(
         ${detailField("Fechamento / vencimento", `Dia ${card.closingDay} / dia ${card.dueDay}`)}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(card.name)}">
-        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar cartão", className: "icon-button", variant: "ghost", iconHtml: renderEditIcon(), iconOnly: true })}
-        ${renderRouteDialogTrigger({ dialogId: viewModel.newInstrumentDialogId, label: "Adicionar instrumento", className: "icon-button", variant: "ghost", disabled: viewModel.isArchived, iconHtml: renderAddIcon(), iconOnly: true })}
+        ${renderRouteDialogTrigger({
+          dialogId: viewModel.editDialogId,
+          label: "Editar cartão",
+          className: "icon-button",
+          variant: "ghost",
+          iconHtml: renderEditIcon(),
+          iconOnly: true,
+        })}
+        ${renderRouteDialogTrigger({
+          dialogId: viewModel.newInstrumentDialogId,
+          label: "Adicionar instrumento",
+          className: "icon-button",
+          variant: "ghost",
+          disabled: viewModel.isArchived,
+          iconHtml: renderAddIcon(),
+          iconOnly: true,
+        })}
         <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
           ${renderResourceIconAction("Arquivar cartão", renderArchiveIcon(), viewModel.isArchived)}
         </form>
