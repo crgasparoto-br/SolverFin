@@ -117,7 +117,15 @@ export function assertGoldenStatement(layout) {
       "Selection control must stay a rounded square.",
     );
   }
-  assert.ok(layout.balance.y > layout.amount.y, "Running balance must be below the amount.");
+  if (layout.viewport.width > 1100) {
+    // Approved desktop compact composition: balance occupies its own adjacent column.
+    assert.ok(
+      layout.balance.x >= layout.amount.right - 1,
+      "Running balance must occupy the column after the amount.",
+    );
+  } else {
+    assert.ok(layout.balance.y > layout.amount.y, "Mobile running balance must be below the amount.");
+  }
   if (layout.viewport.width >= 1280 && layout.viewport.height >= 740) {
     assert.ok(
       layout.row.bottom <= layout.viewport.height,
