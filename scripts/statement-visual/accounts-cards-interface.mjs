@@ -77,7 +77,11 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
   assert.equal(baseline.listAmountsVisible, true, "Master amounts are missing.");
   assert.equal(baseline.cdiColumnPresent, true, "The dedicated CDI column is missing.");
-  assert.equal(baseline.cdiStateConsistent, true, "CDI labels must be account-only and match the active configuration.");
+  assert.equal(
+    baseline.cdiStateConsistent,
+    true,
+    "CDI labels must be account-only and match the active configuration.",
+  );
   assert.equal(baseline.listIsPrimary, true, "Master list should dominate the detail.");
   assert.equal(baseline.detailVisible, true, "Selected detail is not visible.");
   assert.equal(baseline.noHorizontalOverflow, true, "A3 page overflows horizontally.");
