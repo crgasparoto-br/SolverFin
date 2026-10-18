@@ -109,7 +109,11 @@ async function validateViewport(cdp, viewport) {
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "account");
     assert.equal(measurements.financialContextVisible, true, "Account summary is not visible.");
-    assert.equal(measurements.institutionIdentityVisible, true, "Account institution identity is hidden.");
+    assert.equal(
+      measurements.institutionIdentityVisible,
+      true,
+      "Account institution identity is hidden.",
+    );
     assert.equal(measurements.selectedMasterCount, 1);
     assert.equal(
       measurements.currencyContextVisible,
@@ -130,7 +134,11 @@ async function validateViewport(cdp, viewport) {
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "card");
     assert.equal(measurements.financialContextVisible, true, "Card limit summary is not visible.");
-    assert.equal(measurements.institutionIdentityVisible, true, "Card institution identity is hidden.");
+    assert.equal(
+      measurements.institutionIdentityVisible,
+      true,
+      "Card institution identity is hidden.",
+    );
     assert.equal(measurements.selectedMasterCount, 1);
     assert.equal(measurements.currencyContextVisible, true, "Card currency context is ambiguous.");
     assert.equal(
