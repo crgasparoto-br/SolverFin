@@ -664,6 +664,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-period-control{display:grid;grid-template-columns:minmax(0,1fr)}
       ${root} .statement-period-control [data-month-current]{justify-self:end}
     }
+    @media(min-width:361px) and (max-width:430px){
+      /* At 390px the month navigator and "Mes atual" fit on one line.
+         Recover the extra row without shrinking financial amounts or touch targets. */
+      ${root} .statement-period-control{align-items:center;grid-template-columns:minmax(0,1fr) auto}
+      ${root} .statement-period-control .month-field{min-width:0}
+      ${root} .statement-period-control [data-month-current]{padding-inline:8px;white-space:nowrap}
+    }
     @media(max-width:360px){
       /* Keep the 320px first-viewport budget without truncating the selected account. */
       ${root} .statement-account-heading{gap:${spacing[1]}}
