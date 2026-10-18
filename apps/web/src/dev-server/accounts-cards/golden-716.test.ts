@@ -103,7 +103,10 @@ test("#716 mostra CDI ativo apenas para contas BRL com configuração habilitada
   assert.equal(view.resources[4]?.cdiActive, undefined);
   const master = renderResourceMaster(view.resources);
   assert.equal((master.match(/class="resource-master-cdi-column"/g) ?? []).length, 5);
-  assert.equal((master.match(/class="resource-master-cdi-compact(?: is-active)?"/g) ?? []).length, 4);
+  assert.equal(
+    (master.match(/class="resource-master-cdi-compact(?: is-active)?"/g) ?? []).length,
+    4,
+  );
   assert.deepEqual(
     view.resources.map((resource) => resource.cdiStatus),
     ["active", "inactive", "ineligible", "ineligible", undefined],
