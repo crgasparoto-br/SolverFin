@@ -23,6 +23,8 @@ const report = {
   mobile: null,
   empty: null,
   filterError: null,
+  multiCurrency: [],
+  negativeControl: null,
   failures,
   screenshots,
 };
@@ -38,6 +40,8 @@ try {
   report.mobile = await validateReadyMobile(browser.cdp, seeded.month);
   report.empty = await validateEmptyState(browser.cdp);
   report.filterError = await validateFilterError(browser.cdp);
+  report.multiCurrency = await validateMultiCurrency(browser.cdp, seeded.month);
+  report.negativeControl = await validateClippedCategoryNegativeControl(browser.cdp);
 } catch (error) {
   failures.push({ message: "Reports visual validation crashed", details: serializeError(error) });
 } finally {
@@ -96,6 +100,15 @@ async function seedReportData(cdp) {
           method: 'POST',
           body: JSON.stringify({ name: 'Despesa visual ' + suffix, kind: 'expense' }),
         })).category;
+        const usdAccount = (await request('/api/accounts', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: 'Conta USD relatorio visual ' + suffix,
+            kind: 'checking',
+            openingBalanceMinor: 0,
+            currency: 'USD',
+          }),
+        })).account;
         const occurredOn = new Date().toISOString().slice(0, 10);
         const createTransaction = (payload) => request('/api/transactions', {
           method: 'POST',
@@ -117,7 +130,15 @@ async function seedReportData(cdp) {
           kind: 'expense',
           categoryId: expenseCategory.id,
           amountMinor: 87500,
-          description: 'Despesa visual ' + suffix,
+          description: 'Despesa visual de categoria com texto extenso ' + suffix,
+        });
+        await createTransaction({
+          kind: 'income',
+          categoryId: incomeCategory.id,
+          accountId: usdAccount.id,
+          amountMinor: 12345,
+          currency: 'USD',
+          description: 'Receita em USD para confirmar separacao monetaria ' + suffix,
         });
         return { month: occurredOn.slice(0, 7), incomeCategory: incomeCategory.name, expenseCategory: expenseCategory.name };
       };
@@ -242,6 +263,79 @@ async function validateFilterError(cdp) {
     measurements,
   );
   return { viewport: "1024x700", measurements, screenshot: screenshots.at(-1) };
+}
+
+async function validateMultiCurrency(cdp, month) {
+  const snapshots = [];
+  for (const [width, height, label] of [
+    [1366, 768, "desktop"],
+    [390, 844, "mobile"],
+    [320, 740, "mobile-small"],
+  ]) {
+    await setViewport(cdp, width, height);
+    await navigateWithRetry(
+      cdp,
+      `${baseUrl}/relatorios?view=category-evolution&interval=monthly&start=${month}&periods=12`,
+      `reports multi-currency ${label}`,
+    );
+    await waitForState(cdp, "ready");
+    const measurements = await evaluate(cdp, `(() => {
+      const blocks = Array.from(document.querySelectorAll('[data-report-analysis="a5"][data-currency]'));
+      return {
+        currencies: blocks.map((block) => block.getAttribute('data-currency')),
+        currenciesComplete: ['BRL', 'USD'].every((currency) => {
+          const block = blocks.find((item) => item.getAttribute('data-currency') === currency);
+          if (!block) return false;
+          const layers = Array.from(block.querySelectorAll('[data-analysis-layer]'))
+            .map((layer) => layer.getAttribute('data-analysis-layer'));
+          const money = Array.from(block.querySelectorAll('.sf-money[data-currency]'));
+          return layers.join('|') === 'summary|visualization|highlights|detail'
+            && money.length > 0
+            && money.every((node) => node.getAttribute('data-currency') === currency)
+            && Boolean(block.querySelector('[data-emphasis="true"]'));
+        }),
+        globalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+        tableScrollLocal: Array.from(document.querySelectorAll('.evolution-table-scroll'))
+          .every((node) => node.scrollWidth > node.clientWidth && node.tabIndex === 0),
+        longLabelsReadable: Array.from(document.querySelectorAll('.report-category-label > span:last-child'))
+          .every((node) => getComputedStyle(node).textOverflow !== 'ellipsis'),
+      };
+    })()`);
+    const filename = `reports-multicurrency-${label}-${width}x${height}.png`;
+    await screenshot(cdp, join(outputDir, filename));
+    screenshots.push(filename);
+    check(measurements.currencies.includes("BRL"), "Missing BRL block", measurements);
+    check(measurements.currencies.includes("USD"), "Missing USD block", measurements);
+    check(measurements.currenciesComplete, "Per-currency layers or Money values became mixed", measurements);
+    check(!measurements.globalOverflow, "Reports multi-currency page leaks horizontal overflow", measurements);
+    check(measurements.longLabelsReadable, "Reports category labels are truncated", measurements);
+    if (width <= 390) {
+      check(measurements.tableScrollLocal, "Multi-currency mobile table lost local scroll", measurements);
+    }
+    snapshots.push({ viewport: `${width}x${height}`, screenshot: filename, measurements });
+  }
+  return snapshots;
+}
+
+async function validateClippedCategoryNegativeControl(cdp) {
+  const checkClip = await evaluate(cdp, `(() => {
+    const label = document.querySelector('.report-category-label > span:last-child');
+    if (!label) return { observed: false, restored: false };
+    const previous = label.getAttribute('style');
+    label.style.maxWidth = '2px';
+    label.style.overflow = 'hidden';
+    label.style.whiteSpace = 'nowrap';
+    label.style.textOverflow = 'ellipsis';
+    const observed = getComputedStyle(label).textOverflow === 'ellipsis'
+      && label.scrollWidth > label.clientWidth;
+    if (previous === null) label.removeAttribute('style');
+    else label.setAttribute('style', previous);
+    const restored = getComputedStyle(label).textOverflow !== 'ellipsis';
+    return { observed, restored };
+  })()`);
+  check(checkClip.observed, "Negative control did not detect a clipped category", checkClip);
+  check(checkClip.restored, "Negative control did not restore readable category styles", checkClip);
+  return checkClip;
 }
 
 function measurementExpression() {
