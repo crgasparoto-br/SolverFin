@@ -73,7 +73,10 @@ function renderRouteDialogTrigger(input: {
   trigger = trigger.replace(visibleLabel, replacement);
 
   if (input.iconOnly) {
-    trigger = trigger.replace("<button ", `<button title="${label}" aria-label="${label}" `);
+    trigger = trigger.replace(
+      "<button ",
+      `<button title="${label}" aria-label="${label}" `,
+    );
   }
   return trigger;
 }
@@ -225,7 +228,11 @@ function renderAccountDetail(
           variant: "ghost",
           iconHtml: icon("settings", 16),
           iconOnly: true,
-          disabled: account.status !== "active" || currency !== "BRL" || !cdiAvailable || !cdiCategoriesAvailable,
+          disabled:
+            account.status !== "active" ||
+            currency !== "BRL" ||
+            !cdiAvailable ||
+            !cdiCategoriesAvailable,
         })}
         <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
           ${renderResourceIconAction("Arquivar conta", renderArchiveIcon(), viewModel.isArchived)}
@@ -236,9 +243,14 @@ function renderAccountDetail(
       </div>
     </section>
     ${renderAccountEditDialog(account, viewModel.editDialogId)}
-    ${account.status === "active" && currency === "BRL" && cdiAvailable && cdiCategoriesAvailable
-      ? renderAccountCdiConfigurationDialog(account, configuration, cdiCategories)
-      : ""}`;
+    ${
+      account.status === "active" &&
+      currency === "BRL" &&
+      cdiAvailable &&
+      cdiCategoriesAvailable
+        ? renderAccountCdiConfigurationDialog(account, configuration, cdiCategories)
+        : ""
+    }`;
 }
 
 function renderResourceIconAction(
