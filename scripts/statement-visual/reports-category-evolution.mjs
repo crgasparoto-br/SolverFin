@@ -279,7 +279,9 @@ async function validateMultiCurrency(cdp, month) {
       `reports multi-currency ${label}`,
     );
     await waitForState(cdp, "ready");
-    const measurements = await evaluate(cdp, `(() => {
+    const measurements = await evaluate(
+      cdp,
+      `(() => {
       const blocks = Array.from(document.querySelectorAll('[data-report-analysis="a5"][data-currency]'));
       return {
         currencies: blocks.map((block) => block.getAttribute('data-currency')),
@@ -300,7 +302,8 @@ async function validateMultiCurrency(cdp, month) {
         longLabelsReadable: Array.from(document.querySelectorAll('.report-category-label > span:last-child'))
           .every((node) => getComputedStyle(node).textOverflow !== 'ellipsis'),
       };
-    })()`);
+    })()`,
+    );
     const filename = `reports-multicurrency-${label}-${width}x${height}.png`;
     await screenshot(cdp, join(outputDir, filename));
     screenshots.push(filename);
@@ -330,7 +333,9 @@ async function validateMultiCurrency(cdp, month) {
 }
 
 async function validateClippedCategoryNegativeControl(cdp) {
-  const checkClip = await evaluate(cdp, `(() => {
+  const checkClip = await evaluate(
+    cdp,
+    `(() => {
     const label = document.querySelector('.report-category-label > span:last-child');
     if (!label) return { observed: false, restored: false };
     const previous = label.getAttribute('style');
@@ -344,7 +349,8 @@ async function validateClippedCategoryNegativeControl(cdp) {
     else label.setAttribute('style', previous);
     const restored = getComputedStyle(label).textOverflow !== 'ellipsis';
     return { observed, restored };
-  })()`);
+  })()`,
+  );
   check(checkClip.observed, "Negative control did not detect a clipped category", checkClip);
   check(checkClip.restored, "Negative control did not restore readable category styles", checkClip);
   return checkClip;
