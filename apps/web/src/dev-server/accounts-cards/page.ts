@@ -16,6 +16,7 @@ import {
   renderSelectedResourceDetail,
 } from "./components.js";
 import { renderAccountDialog, renderCardDialog } from "./dialogs.js";
+import type { CdiIncomeCategory } from "./dialogs.js";
 import { escapeHtml } from "./presentation.js";
 import { renderAccountsCardsApiFormScript, renderAccountsCardsRuntimeScript } from "./runtime.js";
 import { accountsCardsPageStyles } from "./styles.js";
@@ -98,6 +99,13 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
           (configuration) => configuration.accountId === selectedAccountId,
         )
       : undefined;
+  const eligibleForCdiSettings =
+    viewModel.selectedResource?.kind === "account" &&
+    viewModel.selectedResource.account.status === "active" &&
+    viewModel.selectedResource.account.currency === "BRL";
+  const cdiCategoryResult = eligibleForCdiSettings && cdiConfigurations.ok
+    ? await apiGet<{ categories: CdiIncomeCategory[] }>(token, "/api/categories?status=all")
+    : undefined;
   const masterDetail = renderDetailLayout({
     masterHtml: renderResourceMaster(viewModel.resources),
     detailHtml: renderSelectedResourceDetail(
@@ -105,6 +113,8 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
       viewModel.accounts,
       selectedCdiConfiguration,
       cdiConfigurations.ok,
+      cdiCategoryResult?.ok ? cdiCategoryResult.data.categories : [],
+      cdiCategoryResult?.ok ?? false,
     ),
   });
   const loading = `<div data-resource-loading hidden>${renderLoading({ title: "Atualizando cadastro", description: "Aguarde enquanto a alteração é salva." })}</div>`;
@@ -120,7 +130,7 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
         description:
           "Compare contas e cartões por instituição, moeda, saldo inicial e limite. Selecione uma linha para editar ou consultar os detalhes.",
         actionsHtml: headerActions,
-      })}${loading}${cdiUnavailableNotice}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderSolverFinUiInteractionsScriptTag()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
+      })}${loading}${cdiUnavailableNotice}${cdiCategoryResult && !cdiCategoryResult.ok ? renderAlert({ title: "Configuração CDI indisponível", description: "Não foi possível carregar categorias de receita. Atualize a página para configurar os parâmetros.", tone: "attention" }) : ""}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderSolverFinUiInteractionsScriptTag()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
     }),
   });
 }
