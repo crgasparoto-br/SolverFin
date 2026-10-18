@@ -26,6 +26,9 @@ export interface AccountCdiConfiguration {
   accountCurrency: string;
   enabled: boolean;
   indexKind: "cdi";
+  remunerationPercent?: number;
+  startsOn?: string;
+  categoryId?: string;
 }
 
 export interface ResourceMasterViewModel {
