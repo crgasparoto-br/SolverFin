@@ -144,7 +144,7 @@ export function accountsCardsPageStyles(): string {
       flex: 0 0 auto;
       margin: 0;
     }
-    .resource-detail-actions button.resource-action-button {
+    .resource-detail-panel button.resource-action-button {
       align-items: center;
       background: var(--sf-color-surface);
       border: 1px solid var(--sf-color-border);
@@ -160,29 +160,29 @@ export function accountsCardsPageStyles(): string {
       padding: 0;
       width: var(--sf-density-interactive-target-min);
     }
-    .resource-detail-actions button.resource-action-button svg {
+    .resource-detail-panel button.resource-action-button svg {
       display: block;
       height: 18px;
       width: 18px;
     }
-    .resource-detail-actions button.resource-action-button:hover:not(:disabled),
-    .resource-detail-actions button.resource-action-button:focus-visible {
+    .resource-detail-panel button.resource-action-button:hover:not(:disabled),
+    .resource-detail-panel button.resource-action-button:focus-visible {
       background: var(--sf-color-neutral-control-hover);
       border-color: var(--sf-color-neutral-control-border-hover);
       color: var(--sf-color-neutral-control-text-hover);
     }
-    .resource-detail-actions button.resource-action-button:focus-visible,
+    .resource-detail-panel button.resource-action-button:focus-visible,
     .resource-detail-actions button.resource-cdi-switch:focus-visible {
       box-shadow: var(--sf-shadow-focus);
       outline: 2px solid var(--sf-color-primary);
       outline-offset: 2px;
     }
-    .resource-detail-actions button.danger-icon-button {
+    .resource-detail-panel button.danger-icon-button {
       border-color: var(--sf-color-danger-border);
       color: var(--sf-color-danger);
     }
-    .resource-detail-actions button.danger-icon-button:hover:not(:disabled),
-    .resource-detail-actions button.danger-icon-button:focus-visible {
+    .resource-detail-panel button.danger-icon-button:hover:not(:disabled),
+    .resource-detail-panel button.danger-icon-button:focus-visible {
       background: var(--sf-color-danger-surface);
       border-color: var(--sf-color-danger-border);
       color: var(--sf-color-danger);
