@@ -75,6 +75,8 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.archetype, "A3");
   assert.equal(baseline.detailLayoutVisible, true, "A3 DetailLayout is not visible.");
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
+  assert.equal(baseline.listAmountsVisible, true, "Master amounts are missing.");
+  assert.equal(baseline.listIsPrimary, true, "Master list should dominate the detail.");
   assert.equal(baseline.detailVisible, true, "Selected detail is not visible.");
   assert.equal(baseline.noHorizontalOverflow, true, "A3 page overflows horizontally.");
   assert.equal(baseline.hasTabs, false, "Retired tab markup is still present.");
@@ -220,6 +222,15 @@ async function inspectPage(cdp) {
         masterVisible: visible(document.querySelector('.resource-master-panel')),
         detailVisible: visible(document.querySelector('.resource-detail-panel')),
         masterItemCount: masterItems.length,
+        listAmountsVisible: masterItems.every((item) => Boolean(item.querySelector('.resource-master-amount strong'))),
+        listIsPrimary: (() => {
+          const master = document.querySelector('.sf-detail-layout-master')?.getBoundingClientRect();
+          const secondary = document.querySelector('.sf-detail-layout-detail')?.getBoundingClientRect();
+          if (!master || !secondary) return false;
+          return innerWidth >= 1100
+            ? master.width >= secondary.width * 1.8
+            : master.top <= secondary.top && master.width <= innerWidth;
+        })(),
         institutionLogosOnMaster: masterItems.every((item) => Boolean(item.querySelector('.resource-master-icon .institution-logo-img, .resource-master-icon .institution-badge-icon'))),
         financialContextVisible: visible(document.querySelector('.resource-financial-summary')),
         institutionIdentityVisible: visible(document.querySelector('.resource-detail-identity .institution-logo-img, .resource-detail-identity .institution-badge-icon')),

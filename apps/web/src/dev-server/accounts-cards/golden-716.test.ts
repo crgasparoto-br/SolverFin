@@ -46,13 +46,19 @@ test("#716 preserva master-detail, identidade institucional e moedas distintas",
   assert.equal(view.selectedResource?.kind, "card");
   assert.match(master, /data-kind="account" data-currency="BRL"/);
   assert.match(master, /data-kind="card" data-currency="USD"/);
-  assert.equal((master.match(/resource-master-icon/g) ?? []).length, 2);
+  assert.equal((master.match(/class="resource-master-icon"/g) ?? []).length, 2);
+  assert.match(master, /class="resource-master-columns"/);
+  assert.match(master, /data-amount-label="Saldo inicial"/);
+  assert.match(master, /data-amount-label="Limite total"/);
+  assert.match(master, /R\\$\\s*1\\.234,56/);
+  assert.match(master, /US\\$\\s*2\\.500,00/);
   assert.ok((master.match(/institution-badge-icon|institution-logo-img/g) ?? []).length >= 2);
   assert.match(master, /aria-current="page"/);
   const detail = renderSelectedResourceDetail(view.selectedResource, [account]);
   assert.match(detail, /data-resource-detail="card" data-resource-key="card:c-1"/);
-  assert.match(detail, /data-financial-context="card"/);
-  assert.match(detail, /Limite total · USD/);
+  assert.doesNotMatch(detail, /resource-financial-summary/);
+  assert.match(detail, /Limite total/);
+  assert.match(detail, /US\\$\\s*2\\.500,00/);
   assert.match(detail, /Visa/);
   assert.match(detail, /data-card-instrument/);
   assert.ok(
@@ -65,8 +71,9 @@ test("#716 preserva master-detail, identidade institucional e moedas distintas",
 test("#716 identifica conta com saldo inicial, nunca soma saldos BRL e USD", () => {
   const view = buildAccountsCardsPageViewModel([account], [card], "account:a-1");
   const html = renderSelectedResourceDetail(view.selectedResource, [account]);
-  assert.match(html, /data-financial-context="account"/);
-  assert.match(html, /Saldo inicial · BRL/);
+  assert.doesNotMatch(html, /resource-financial-summary/);
+  assert.match(html, /Saldo inicial/);
+  assert.match(html, /R\\$\\s*1\\.234,56/);
   assert.doesNotMatch(html, /Limite total · USD/);
   assert.match(html, /Editar conta/);
   assert.match(html, /data-confirm="Inativar/);
@@ -101,6 +108,9 @@ test("#716 formularios mantem labels, foco compartilhado e confirmacao neutra", 
   assert.doesNotMatch(styles, /\\.master-dialog\\s*\\{/);
   assert.match(styles, /max-width: 360px/);
   assert.match(styles, /resource-master-link:focus-visible/);
+  assert.match(styles, /grid-template-columns: minmax\\(0, 2\\.55fr\\) minmax\\(288px, 1fr\\)/);
+  assert.match(styles, /resource-master-columns/);
+  assert.match(styles, /max-width: 1099px/);
 });
 
 test("#716 arquivamento nao permite novo instrumento, preserva edicao e confirmacao", () => {

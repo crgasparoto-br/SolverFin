@@ -83,17 +83,22 @@ export function renderResourceMaster(resources: readonly ResourceMasterViewModel
           description: "Adicione uma conta ou um cartão para iniciar o cadastro financeiro.",
         });
   const currencyOptions = renderCurrencyFilterOptions(resources);
+  const accountCount = resources.filter((resource) => resource.kind === "account").length;
+  const cardCount = resources.length - accountCount;
 
   return `
     <section class="resource-master-panel" aria-label="Contas e cartões">
       <div class="resource-master-summary">
-        <div><strong>Recursos financeiros</strong><span>${resources.length} ${resources.length === 1 ? "cadastro" : "cadastros"}</span></div>
+        <div><h2>Lista de contas e cartões</h2><span>${accountCount} ${accountCount === 1 ? "conta" : "contas"} · ${cardCount} ${cardCount === 1 ? "cartão" : "cartões"}</span></div>
       </div>
       <div class="resource-master-filters" role="group" aria-label="Filtros dos recursos">
         <label>Buscar<input data-master-search type="search" placeholder="Nome, instituição, conta, bandeira ou moeda" autocomplete="off" /></label>
         <label>Tipo<select data-master-kind><option value="all">Todos</option><option value="account">Contas</option><option value="card">Cartões</option></select></label>
         <label>Moeda<select data-master-currency>${currencyOptions}</select></label>
         <label>Status<select data-master-status><option value="all">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></label>
+      </div>
+      <div class="resource-master-columns" aria-hidden="true">
+        <span>Conta ou cartão</span><span>Moeda</span><span>Saldo inicial / Limite</span><span>Situação</span>
       </div>
       <div class="resource-master-list" data-master-list>${list}</div>
       <div data-filter-empty hidden>${renderEmptyState({ title: "Nenhum recurso encontrado", description: "Ajuste a busca ou os filtros de tipo, moeda e status." })}</div>
@@ -115,19 +120,27 @@ function renderCurrencyFilterOptions(resources: readonly ResourceMasterViewModel
 }
 
 function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
-  // A instituicao e a identidade primaria de ambos os recursos; a bandeira e contexto do cartao.
-  const icon = renderInstitutionIcon(resource.institutionKey);
-  const currencyLabel =
-    resource.currency ?? (resource.kind === "card" ? "Moeda indisponível" : resource.currencyLabel);
+  const currencyLabel = resource.currency ?? "Moeda indisponível";
+  const money = resource.currency
+    ? formatMinorCurrency(resource.amountMinor, { currency: resource.currency })
+    : "Indisponível";
   return `
     <article class="master-item resource-master-item${resource.isSelected ? " is-selected" : ""}" data-resource-master-item data-kind="${escapeHtml(resource.kind)}" data-currency="${escapeHtml(resource.currency ?? "unavailable")}" data-status="${escapeHtml(resource.status)}" data-search="${escapeHtml(resource.search)}">
       <a class="resource-master-link" href="${escapeHtml(resource.href)}"${resource.isSelected ? ' aria-current="page"' : ""}>
-        <span class="resource-master-icon" aria-hidden="true">${icon}</span>
-        <span class="resource-master-copy">
-          <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong>${renderBadge({ label: formatGenericStatus(resource.status), tone: resource.status === "active" ? "positive" : "neutral" })}</span>
-          <span class="resource-master-institution">${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")} · ${escapeHtml(resource.institutionLabel)}</span>
-          <span class="resource-master-context">${escapeHtml(resource.secondaryLabel)} <span class="resource-master-currency" aria-label="Moeda ${escapeHtml(currencyLabel)}">${escapeHtml(currencyLabel)}</span></span>
+        <span class="resource-master-identity">
+          <span class="resource-master-icon" aria-hidden="true">${renderInstitutionIcon(resource.institutionKey)}</span>
+          <span class="resource-master-copy">
+            <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong></span>
+            <span class="resource-master-institution">${escapeHtml(resource.institutionLabel)} · ${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")}</span>
+            <span class="resource-master-context">${escapeHtml(resource.secondaryLabel)}</span>
+          </span>
         </span>
+        <span class="resource-master-currency" aria-label="Moeda ${escapeHtml(currencyLabel)}">${escapeHtml(resource.currency ?? "Indisponível")}</span>
+        <span class="resource-master-amount" data-amount-label="${escapeHtml(resource.amountLabel)}">
+          <strong>${escapeHtml(money)}</strong>
+          <small>${escapeHtml(resource.amountLabel)}</small>
+        </span>
+        <span class="resource-master-state">${renderBadge({ label: formatGenericStatus(resource.status), tone: resource.status === "active" ? "positive" : "neutral" })}</span>
       </a>
     </article>`;
 }
@@ -164,8 +177,8 @@ function renderAccountDetail(account: AccountRecord, currency: string | undefine
         <div><span class="resource-kicker">Conta</span><h2>${escapeHtml(account.name)}</h2><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(formatAccountKind(account.kind))}</p></div>
         ${renderBadge({ label: formatGenericStatus(account.status), tone: account.status === "active" ? "positive" : "neutral" })}
       </header>
-      <div class="resource-financial-summary" data-financial-context="account"><span>Saldo inicial · ${escapeHtml(currency ?? "Moeda não informada")}</span><strong>${escapeHtml(money)}</strong></div>
       <div class="resource-detail-grid">
+        ${detailField("Saldo inicial", money, !currency)}
         ${detailField("Tipo", formatAccountKind(account.kind))}
         ${detailField("Moeda", currency ?? "Moeda não informada", !currency)}
         ${detailField("Agência / conta", viewModel.bankIdentifier ?? "Não informado")}
@@ -208,8 +221,8 @@ function renderCardDetail(
         <div><span class="resource-kicker">Cartão</span><h2>${escapeHtml(card.name)}</h2><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(viewModel.brandLabel)}</p></div>
         ${renderBadge({ label: formatGenericStatus(card.status), tone: card.status === "active" ? "positive" : "neutral" })}
       </header>
-      <div class="resource-financial-summary" data-financial-context="card"><span>Limite total · ${escapeHtml(currency ?? "Moeda não informada")}</span><strong>${escapeHtml(limit)}</strong></div>
       <div class="resource-detail-grid">
+        ${detailField("Limite total", limit, !currency)}
         ${detailField("Bandeira", viewModel.brandLabel)}
         ${currencyState}
         ${detailField("Conta de pagamento", paymentAccount?.name ?? "Não vinculada", !paymentAccount)}

@@ -33,6 +33,8 @@ export interface ResourceMasterViewModel {
   secondaryLabel: string;
   currency: string | undefined;
   currencyLabel: string;
+  amountMinor: number;
+  amountLabel: "Saldo inicial" | "Limite total";
   search: string;
   href: string;
   isSelected: boolean;
@@ -132,6 +134,8 @@ function buildAccountResource(account: AccountRecord): ResourceMasterViewModel {
     secondaryLabel: formatAccountKind(account.kind),
     currency,
     currencyLabel: currency ?? "Moeda não informada",
+    amountMinor: account.openingBalanceMinor ?? 0,
+    amountLabel: "Saldo inicial",
     search: [item.search, currency ?? "moeda indisponível", "conta"].join(" ").toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(key)}`,
     isSelected: false,
@@ -156,6 +160,8 @@ function buildCardResource(
     secondaryLabel: `${item.brandLabel} · ${item.activeInstrumentCount} ${item.activeInstrumentCount === 1 ? "instrumento ativo" : "instrumentos ativos"}`,
     currency: item.cardCurrency,
     currencyLabel: item.cardCurrency ?? "Moeda não informada",
+    amountMinor: card.creditLimitMinor ?? 0,
+    amountLabel: "Limite total",
     search: [item.search, item.cardCurrency ?? "moeda não informada", "cartão"]
       .join(" ")
       .toLowerCase(),

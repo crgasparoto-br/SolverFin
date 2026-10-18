@@ -114,3 +114,11 @@ O recorte é protegido por:
 - O contexto financeiro dominante do detalhe é **Saldo inicial** na conta ou **Limite total** no cartão, acompanhado de moeda nativa. Não é saldo atual calculado e não soma moedas; ausência de moeda permanece declarada. Os demais atributos usam lista compacta sem cards aninhados. Ações de manutenção permanecem associadas ao recurso, e ações destrutivas continuam com confirmação.
 - Os modais existentes continuam no controller `Dialog` compartilhado, centralizados, com campos essenciais rotulados, corpo rolável, botões neutros de Cancelar e confirmação primária na mesma linha, teclado/Escape e restauração de foco. Instrumentos possuem ações individuais e não migram para a lista master.
 - Verificação: SSR de conta/cartão e instituição sem logo, seleção e moedas distintas, vazio, ações bloqueadas e confirmação; Chrome em 1440×900, 1366×768, 390×844 e 320×740 com detalhe e modal acessíveis sem overflow. Aprovação visual humana e auditoria independente são gates separados dos testes automáticos.
+
+## Diretriz de hierarquia — refatoração orientada à lista (18/10/2026)
+
+A tarefa dominante da rota `/contas-cartoes` é **localizar, comparar e selecionar contas/cartões**, não inspecionar um único detalhe. O arquétipo continua A3, mas a coleção mestre ocupa a maior parte da largura em desktop. O detalhe permanece como contexto auxiliar à direita e fica abaixo da lista em viewports menores.
+
+A listagem mostra em cada linha o nome, a instituição com logo/fallback, o tipo, a moeda nativa, o **saldo inicial da conta** ou o **limite total do cartão** e a situação. Os valores são individuais, sem subtotal cruzando moedas; são diferenciados por rótulo para não confundir saldo atual com saldo inicial. Filtros de busca, tipo, moeda e status continuam cumulativos e com persistência por aba.
+
+O detalhe concentra metadados, edição, operações de manutenção e instrumentos do cartão, sem resumo financeiro gigante duplicado. A seleção continua por `?resource=...`, preservando as ações, os estados de filtro/vazio, os diálogos compartilhados e a restauração de foco. Em mobile, a lista antecede o detalhe, com valores alinhados à direita e sem tabela comprimida. A verificação Chrome exige lista dominante em desktop, valores presentes em cada linha, reflow e ausência de overflow.
