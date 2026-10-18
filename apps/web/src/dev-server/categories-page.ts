@@ -93,11 +93,13 @@ export async function renderCategoriesPage(token: string): Promise<string> {
               </div>
               <p class="category-results-status" data-category-results-status role="status" aria-live="polite"></p>
             </div>
-            ${categoryItems.length ? `<div class="category-filter-empty" data-category-filter-empty hidden>` : ""}
-              <strong>Nenhuma categoria encontrada</strong>
-              <p class="sf-muted">Revise a busca ou selecione outro filtro.</p>
-              <button class="secondary-button" type="button" data-reset-category-view>Limpar busca e filtros</button>
-            ${categoryItems.length ? "</div>" : ""}
+            ${categoryItems.length ? `
+              <div class="category-filter-empty" data-category-filter-empty hidden>
+                <strong>Nenhuma categoria encontrada</strong>
+                <p class="sf-muted">Revise a busca ou selecione outro filtro.</p>
+                <button class="secondary-button" type="button" data-reset-category-view>Limpar busca e filtros</button>
+              </div>
+            ` : ""}
             <div class="category-tree-list" data-category-list>
               ${renderCategoryTree(categoryItems)}
             </div>
