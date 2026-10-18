@@ -190,6 +190,7 @@ function renderCurrencyBlock(
         </div>
         <div class="evolution-table-scroll" tabindex="0" aria-label="Projeção diária em ${escapeHtml(block.currency)}">
           <table class="cash-flow-table">
+            <caption class="sr-only">Projeção diária completa em ${escapeHtml(block.currency)}, com movimento líquido, saldo e evidências</caption>
             <thead><tr><th scope="col">Data</th><th scope="col">Movimento líquido</th><th scope="col">Saldo projetado</th><th scope="col">Evidências</th></tr></thead>
             <tbody>${block.points.map((point) => renderPoint(point, block.currency)).join("")}</tbody>
           </table>
