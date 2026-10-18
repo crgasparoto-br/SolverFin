@@ -296,7 +296,24 @@ describe("reports route page", () => {
     assert.match(html, /name="profileId" value="profile-1"/);
   });
 
-  it("separates currencies and keeps the analytical hierarchy in each block", async () => {
+  it("does not present a partial installment report when category filters fail", async () => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const path = new URL(String(input)).pathname;
+      if (path === "/api/installments") return jsonResponse({ installments: [] });
+      if (path === "/api/cards") return jsonResponse({ cards: [] });
+      return errorResponse();
+    };
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL("http://localhost/relatorios?view=installments&month=2026-07"),
+    );
+    assert.match(html, /data-report-state="api-error"/);
+    assert.match(html, /Não foi possível carregar o relatório de parcelas/);
+    assert.match(html, /Tentar novamente/);
+    assert.doesNotMatch(html, /data-report-state="ready"/);
+  });
+
+    it("separates currencies and keeps the analytical hierarchy in each block", async () => {
     const report = readyReport();
     report.currencyBlocks.push({
       ...report.currencyBlocks[0]!,
