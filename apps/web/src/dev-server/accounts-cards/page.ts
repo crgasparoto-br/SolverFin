@@ -20,10 +20,9 @@ import { escapeHtml } from "./presentation.js";
 import { renderAccountsCardsApiFormScript, renderAccountsCardsRuntimeScript } from "./runtime.js";
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
-import {
-  buildAccountsCardsPageViewModel,
-  type AccountCdiConfiguration,
-} from "./view-model.js";
+import { buildAccountsCardsPageViewModel, type AccountCdiConfiguration } from "./view-model.js";
+
+type CdiConfigurationsResponse = { configurations: AccountCdiConfiguration[] };
 
 function renderHeaderDialogTrigger(input: {
   dialogId: string;
@@ -46,10 +45,7 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
       token,
       "/api/credit-card-accounts?status=all",
     ),
-    apiGet<{ configurations: AccountCdiConfiguration[] }>(
-      token,
-      "/api/account-remuneration/configurations",
-    ),
+    apiGet<CdiConfigurationsResponse>(token, "/api/account-remuneration/configurations"),
   ]);
 
   if (!accounts.ok) {
