@@ -488,7 +488,7 @@ async function readRenderedStatuses(cdp, created) {
       return {
         groupPresent: Boolean(groupRow),
         groupStatus: groupRow?.querySelector('.grouped-status > .statement-status:not(.transaction-group-state)')?.getAttribute('aria-label') || '',
-        directStatus: directRow?.querySelector('.col-status')?.getAttribute('aria-label') || ''
+        directStatus: directRow?.querySelector('.statement-status-control > summary .statement-status')?.getAttribute('aria-label') || ''
       };
     })()`,
   );
