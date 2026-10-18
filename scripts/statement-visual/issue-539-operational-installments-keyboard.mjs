@@ -86,7 +86,8 @@ try {
   check(
     restrictions.canonicalKindDisabled &&
       restrictions.kindButtonsDisabled &&
-      restrictions.editableNames.join(",") === "adjustedInstallmentAmount,categoryId,description,note" &&
+      restrictions.editableNames.join(",") ===
+        "adjustedInstallmentAmount,categoryId,description,note" &&
       restrictions.cancelEnabled,
     "Mockup controls must not relax restricted installment editing",
     restrictions,
