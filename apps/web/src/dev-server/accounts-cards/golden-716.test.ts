@@ -223,18 +223,31 @@ test("#716 controla CDI por conta e ações somente com ícones nomeados", () =>
     assert.match(active, new RegExp('title="' + label + '" aria-label="' + label + '"'));
   }
   assert.doesNotMatch(active, /sf-button-label">Editar conta/);
-  const unverified = renderSelectedResourceDetail(configured.selectedResource, configured.accounts, undefined, false);
+  const unverified = renderSelectedResourceDetail(
+    configured.selectedResource,
+    configured.accounts,
+    undefined,
+    false,
+  );
   assert.match(unverified, /data-cdi-toggle data-account-id="a-1" disabled/);
   assert.match(unverified, /data-cdi-state>Não verificado</);
   const ineligibleAccount = { ...account, status: "archived" };
   const ineligibleView = buildAccountsCardsPageViewModel([ineligibleAccount], []);
-  const ineligible = renderSelectedResourceDetail(ineligibleView.selectedResource, [ineligibleAccount]);
+  const ineligible = renderSelectedResourceDetail(
+    ineligibleView.selectedResource,
+    [ineligibleAccount],
+  );
   assert.match(ineligible, /data-cdi-toggle data-account-id="a-1" disabled/);
   assert.match(ineligible, /data-cdi-state>Não elegível</);
   const cardView = buildAccountsCardsPageViewModel([], [card], "card:c-1");
   const cardDetail = renderSelectedResourceDetail(cardView.selectedResource, []);
   assert.doesNotMatch(cardDetail, /data-cdi-toggle/);
-  for (const label of ["Editar cartão", "Adicionar instrumento", "Arquivar cartão", "Excluir cartão"]) {
+  for (const label of [
+    "Editar cartão",
+    "Adicionar instrumento",
+    "Arquivar cartão",
+    "Excluir cartão",
+  ]) {
     assert.match(cardDetail, new RegExp('title="' + label + '" aria-label="' + label + '"'));
   }
 });
