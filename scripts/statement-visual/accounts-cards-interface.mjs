@@ -310,9 +310,16 @@ async function validateGoldenActionToolbar(cdp, resourceKind) {
   );
   assert.equal(snapshot.allGoldenSize, true, "Golden Screen controls must have 44x44px targets.");
   assert.equal(snapshot.allGoldenGlyphs, true, "Action glyphs must use the same icon scale.");
-  assert.equal(snapshot.instrumentStylesConsistent, true, "Instrument controls must reuse the same Golden Screen dimensions and labels.");
+  assert.equal(
+    snapshot.instrumentStylesConsistent,
+    true,
+    "Instrument controls must reuse the same Golden Screen dimensions and labels.",
+  );
   if (resourceKind === "card") {
-    assert.ok(snapshot.instrumentActionCount > 0, "Card instruments must expose canonical maintenance actions.");
+    assert.ok(
+      snapshot.instrumentActionCount > 0,
+      "Card instruments must expose canonical maintenance actions.",
+    );
   } else {
     assert.equal(snapshot.instrumentActionCount, 0);
   }
