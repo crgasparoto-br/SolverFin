@@ -65,7 +65,7 @@ export function reportPageStyles(): string {
     .report-summary-secondary { color:var(--muted); font-size:.8125rem; }
     .report-summary-secondary .sf-money { font-size:.8125rem; }
     .report-trend { display:grid; gap:0; grid-auto-columns:minmax(9.5rem,1fr); grid-auto-flow:column; list-style:none; margin:0; max-width:100%; overflow-x:auto; padding:2px 0 8px; scrollbar-gutter:stable; }
-    .report-trend:focus-within { outline-offset:2px; }
+    .report-trend:focus-visible { border-radius:3px; outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
     .report-trend-point { border-right:1px solid var(--line); display:grid; gap:8px; min-width:0; padding:8px 12px; }
     .report-trend-point:first-child { padding-left:0; }
     .report-trend-point:last-child { border-right:0; }
