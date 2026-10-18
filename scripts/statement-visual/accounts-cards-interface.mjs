@@ -220,11 +220,80 @@ async function validateViewport(cdp, viewport) {
 
   await screenshot(cdp, join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`));
   if (viewport.width === 1366) {
+    const cdiSettings = await validateCdiSettings(cdp);
+    scenarios.push({ kind: "cdi-settings", viewport: "1366x768", measurements: cdiSettings });
     const cdi = await validateCdiSwitch(cdp);
     scenarios.push({ kind: "cdi-toggle", viewport: "1366x768", measurements: cdi });
   }
 }
 
+
+async function validateCdiSettings(cdp) {
+  const href = await evaluate(cdp, `(() => {
+    const item = document.querySelector('[data-resource-master-item][data-kind="account"][data-currency="BRL"][data-status="active"]');
+    const link = item?.querySelector('a.resource-master-link');
+    return link ? new URL(link.href).pathname + new URL(link.href).search : null;
+  })()`);
+  assert.ok(href, "Missing eligible account for CDI settings.");
+  await navigate(cdp, `${baseUrl}${href}`);
+  await waitForDetail(cdp, "account");
+  const setup = await evaluate(cdp, `(() => {
+    const trigger = document.querySelector('[data-resource-detail="account"] [data-sf-dialog-open^="account-cdi-dialog-"]');
+    if (!trigger || trigger.disabled) return null;
+    const accountId = trigger.closest('[data-resource-detail]')?.dataset.resourceKey?.slice(8);
+    const originalFetch = window.fetch;
+    window.__issue716SettingsFetch = originalFetch;
+    window.__issue716SettingsProof = { calls: [], firstFails: true };
+    window.fetch = async (url, options = {}) => {
+      const path = String(url);
+      if (path === '/api/account-remuneration/configurations' && !options.method) {
+        return { ok: true, json: async () => ({
+          configurations: [{ accountId, accountCurrency: 'BRL', indexKind: 'cdi', enabled: true }]
+        }) };
+      }
+      if (path === '/api/account-remuneration/configurations/' + encodeURIComponent(accountId) && options.method === 'PUT') {
+        window.__issue716SettingsProof.calls.push(JSON.parse(options.body));
+        if (window.__issue716SettingsProof.firstFails) {
+          window.__issue716SettingsProof.firstFails = false;
+          return { ok: false, json: async () => ({ error: { message: 'Falha configurações CDI simulada' } }) };
+        }
+        return { ok: true, json: async () => ({ operation: { message: 'Configuração CDI salva' } }) };
+      }
+      return originalFetch(url, options);
+    };
+    trigger.focus();
+    trigger.click();
+    return { label: trigger.getAttribute('aria-label'), title: trigger.title };
+  })()`);
+  assert.ok(setup?.label?.includes("Configurar remuneração CDI"), "Settings icon missing accessible name.");
+  await waitFor(cdp, `Boolean(document.querySelector('dialog.master-dialog[open] [data-cdi-configuration-form]'))`, "Settings dialog did not open.");
+  await evaluate(cdp, `(() => {
+    const form = document.querySelector('[data-cdi-configuration-form]');
+    form.querySelector('[name="remunerationPercent"]').value = '88.5';
+    form.querySelector('[name="startsOn"]').value = '2026-10-14';
+    form.requestSubmit();
+  })()`);
+  await waitFor(cdp, `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Falha configurações CDI simulada')`, "Settings API error was not visible.");
+  const failed = await evaluate(cdp, `(() => {
+    const form = document.querySelector('[data-cdi-configuration-form]');
+    return {
+      modalOpen: form.closest('dialog')?.open,
+      percent: form.querySelector('[name="remunerationPercent"]').value,
+      date: form.querySelector('[name="startsOn"]').value,
+      retryAllowed: !form.querySelector('[type="submit"]').disabled,
+    };
+  })()`);
+  assert.deepEqual(failed, { modalOpen: true, percent: "88.5", date: "2026-10-14", retryAllowed: true });
+  await evaluate(cdp, "document.querySelector('[data-cdi-configuration-form]')?.requestSubmit()");
+  await waitFor(cdp, `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Configuração CDI salva')`, "Settings successful PUT was not visible.");
+  const success = await evaluate(cdp, "window.__issue716SettingsProof.calls");
+  assert.equal(success.length, 2);
+  assert.equal(success[1].enabled, true, "Editing settings must not disable active CDI.");
+  assert.equal(success[1].remunerationPercent, 88.5);
+  assert.equal(success[1].startsOn, "2026-10-14");
+  await sleep(450);
+  return { failed, success, accessibleLabel: setup.label };
+}
 
 async function validateCdiSwitch(cdp) {
   const eligibleHref = await evaluate(cdp, `(() => {
