@@ -398,3 +398,7 @@ A verificação visual compara o diâmetro e o glyph dos dois ícones em
 desktop e mobile.
 A submissão continua sendo somente `PATCH /api/transactions/:id`
 com `{ status }`, afetando uma única ocorrência.
+
+### Contratos de regressao vigentes apos PR #720
+
+A coluna **Situacao** tem icone com descricao acessivel e tooltip; o acionador de teclado e o `summary`, nao o `span` ilustrativo. Agrupadores diarios preservam a sequencia financeira sem tornar `article` irmao direto de outro `article`. Em desktop largo, **Valor** e **Saldo** sao colunas independentes e alinhadas a direita, com **Valor** maior; em mobile, o saldo continua na linha secundaria. Os testes nao devem recuperar texto oculto do status nem exigir saldo abaixo do valor no layout desktop.
