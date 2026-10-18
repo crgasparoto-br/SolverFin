@@ -220,7 +220,10 @@ test("#716 controla CDI por conta e ações somente com ícones nomeados", () =>
   assert.match(active, /aria-live="polite" data-cdi-feedback/);
   assert.doesNotMatch(active, /href="\/remuneracao-contas"/);
   for (const label of ["Editar conta", "Arquivar conta", "Excluir conta"]) {
-    assert.match(active, new RegExp('title="' + label + '" aria-label="' + label + '"'));
+    assert.match(
+      active,
+      new RegExp('title="' + label + '" aria-label="' + label + '"'),
+    );
   }
   assert.doesNotMatch(active, /sf-button-label">Editar conta/);
   const unverified = renderSelectedResourceDetail(
@@ -248,7 +251,10 @@ test("#716 controla CDI por conta e ações somente com ícones nomeados", () =>
     "Arquivar cartão",
     "Excluir cartão",
   ]) {
-    assert.match(cardDetail, new RegExp('title="' + label + '" aria-label="' + label + '"'));
+    assert.match(
+      cardDetail,
+      new RegExp('title="' + label + '" aria-label="' + label + '"'),
+    );
   }
 });
 
