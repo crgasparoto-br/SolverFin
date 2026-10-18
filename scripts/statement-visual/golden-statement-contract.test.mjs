@@ -94,7 +94,7 @@ test("visible elements outside the viewport fail the Golden Screen gate", () => 
   assert.throws(() => assertGoldenStatement(layout), /outside the viewport/);
 });
 
-test("filter actions overlapping the category selector fail the Golden Screen gate", () => {
+test("filter action overlap is rejected", () => {
   const layout = fixture();
   layout.filterControlCollisions = ["Aplicar"];
   assert.throws(() => assertGoldenStatement(layout), /filter actions overlap/);
