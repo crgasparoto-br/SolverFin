@@ -63,6 +63,7 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
     creditCardAccounts.data.creditCardAccounts,
     url?.searchParams.get("resource"),
     cdiConfigurations.ok ? cdiConfigurations.data.configurations : [],
+    cdiConfigurations.ok,
   );
   let cdiUnavailableNotice = "";
   if (!cdiConfigurations.ok) {
