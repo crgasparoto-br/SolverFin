@@ -2,6 +2,7 @@ import { formatDateOnly } from "@solverfin/shared";
 
 import { renderMoney } from "../design-system/money.js";
 import { apiGet } from "./api.js";
+import { renderResultTrend } from "./reports-analysis-archetype.js";
 import {
   escapeReportHtml as escapeHtml,
   renderReportHeading as renderHeading,
@@ -93,6 +94,7 @@ export async function renderCashFlowProjectionView(
           "api-error",
           "Não foi possível carregar a projeção",
           `${result.error} Tente novamente antes de tomar uma decisão financeira.`,
+          `${url.pathname}${url.search}`,
         ),
     );
   }
@@ -162,7 +164,9 @@ function renderCurrencyBlock(
         </div>
         <span>Referência: ${escapeHtml(formatDateOnly(projection.referenceDate))}</span>
       </div>
-      <div class="cash-flow-summary-grid" aria-label="Resumo projetado em ${escapeHtml(block.currency)}">
+      <section class="report-analysis-layer" data-analysis-layer="summary" aria-label="Resumo projetado em ${escapeHtml(block.currency)}">
+        <div class="report-layer-heading"><p class="eyebrow">Resumo</p><h3>Posição de caixa</h3></div>
+        <div class="cash-flow-summary-grid">
         <article class="report-summary-metric" data-tone="information">
           <span>Saldo inicial</span>
           <strong>${renderMoney({ amountMinor: block.openingBalanceMinor, currency: block.currency })}</strong>
@@ -171,8 +175,14 @@ function renderCurrencyBlock(
           <span>Saldo no fim do horizonte</span>
           <strong>${renderMoney({ amountMinor: block.closingBalanceMinor, currency: block.currency })}</strong>
         </article>
-      </div>
-      <div class="report-analysis-layer report-detail-layer">
+        </div>
+      </section>
+      <section class="report-analysis-layer" data-analysis-layer="visualization" aria-label="Visualização em ${escapeHtml(block.currency)}">
+        <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>Evolução do saldo projetado</h3></div>
+        <p class="report-visual-legend">Amostra de saldos diários em ${escapeHtml(block.currency)}. As barras representam a magnitude relativa; a tabela seguinte preserva todos os dias e movimentos.</p>
+        ${renderCashFlowTrend(block)}
+      </section>
+      <div class="report-analysis-layer report-detail-layer" data-analysis-layer="detail" aria-label="Detalhe em ${escapeHtml(block.currency)}">
         <div class="report-layer-heading">
           <p class="eyebrow">Detalhe diário</p>
           <h3>Série contínua</h3>
@@ -187,6 +197,22 @@ function renderCurrencyBlock(
       </div>
     </section>
   `;
+}
+
+function renderCashFlowTrend(block: CashFlowProjectionCurrencyBlock): string {
+  const step = Math.max(1, Math.ceil(block.points.length / 7));
+  const snapshots = block.points.filter(
+    (_, index) => index % step === 0 || index === block.points.length - 1,
+  );
+  return renderResultTrend(
+    snapshots.map((point) => ({
+      label: formatDateOnly(point.date),
+      accessibleLabel: formatDateOnly(point.date),
+      amountMinor: point.closingBalanceMinor,
+      currency: block.currency,
+    })),
+    `Saldo projetado em ${block.currency} por data selecionada`,
+  );
 }
 
 function renderPoint(point: CashFlowProjectionPoint, currency: string): string {
