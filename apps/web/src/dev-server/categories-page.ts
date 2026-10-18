@@ -307,7 +307,7 @@ function renderCategoryKindOptions(selected?: string): string {
     .join("");
 }
 
-function renderCategoryParentOptions(
+export function renderCategoryParentOptions(
   categories: CategoryRecord[],
   currentCategory?: CategoryRecord,
 ): string {
@@ -795,7 +795,7 @@ function categoryPageScript(): string {
           const rootItems = Array.from(
             group.querySelectorAll(":scope > .category-tree-nodes > [data-category-item]"),
           );
-          const hasVisibleItems = rootItems.map((item) => applyViewToNode(item, query)).some(Boolean);
+          const hasVisibleItems = rootItems.map((item) => applyViewToNode(item, query)).includes(true);
           group.hidden = !hasVisibleItems;
         });
         categoryItems.forEach((item) => {
