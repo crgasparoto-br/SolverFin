@@ -90,7 +90,17 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
   ].join("");
   const masterDetail = renderDetailLayout({
     masterHtml: renderResourceMaster(viewModel.resources),
-    detailHtml: renderSelectedResourceDetail(viewModel.selectedResource, viewModel.accounts),
+    detailHtml: renderSelectedResourceDetail(
+      viewModel.selectedResource,
+      viewModel.accounts,
+      viewModel.selectedResource?.kind === "account" && cdiConfigurations.ok
+        ? cdiConfigurations.data.configurations.find(
+            (configuration) =>
+              configuration.accountId === viewModel.selectedResource?.account.id,
+          )
+        : undefined,
+      cdiConfigurations.ok,
+    ),
   });
   const loading = `<div data-resource-loading hidden>${renderLoading({ title: "Atualizando cadastro", description: "Aguarde enquanto a alteração é salva." })}</div>`;
 
