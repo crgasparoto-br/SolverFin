@@ -108,7 +108,6 @@ O recorte é protegido por:
 - `docs/adr/0014-incremental-component-ui-architecture.md`;
 - `docs/LEGACY_HTML_POST_PROCESSORS.md`.
 
-
 ## Issue #716 — acabamento Golden Screen no cadastro mestre
 
 - A rota conserva o arquétipo A3 e a seleção por `?resource=account:<id>` ou `card:<id>`; não introduz abas ou mistura contas, cartões e instrumentos. A instituição (incluindo fallback do catálogo central) passa a identificar contas **e cartões** no master e no detalhe; a bandeira permanece metadado secundário de cartão.
