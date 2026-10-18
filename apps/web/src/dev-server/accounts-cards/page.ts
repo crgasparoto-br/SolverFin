@@ -68,7 +68,8 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
   if (!cdiConfigurations.ok) {
     cdiUnavailableNotice = renderAlert({
       title: "Indicador CDI indisponível",
-      description: "Não foi possível verificar quais contas têm CDI ativo. Tente atualizar a página.",
+      description:
+        "Não foi possível verificar quais contas têm CDI ativo. Tente atualizar a página.",
       tone: "attention",
     });
   }
