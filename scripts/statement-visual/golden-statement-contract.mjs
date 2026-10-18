@@ -124,7 +124,10 @@ export function assertGoldenStatement(layout) {
       "Running balance must occupy the column after the amount.",
     );
   } else {
-    assert.ok(layout.balance.y > layout.amount.y, "Mobile running balance must be below the amount.");
+    assert.ok(
+      layout.balance.y > layout.amount.y,
+      "Mobile running balance must be below the amount.",
+    );
   }
   if (layout.viewport.width >= 1280 && layout.viewport.height >= 740) {
     assert.ok(
