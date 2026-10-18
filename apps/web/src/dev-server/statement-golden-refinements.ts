@@ -741,6 +741,7 @@ export function statementGoldenRefinementStyles(): string {
     @media(min-width:1101px){
       ${root} .statement-row.statement-body{padding-block:4px;row-gap:0}
       ${root} .statement-body .statement-row-metadata{justify-content:center}
+      ${root} .statement-body .col-amount{font-size:1rem}
       ${root} .statement-body .col-balance{color:var(--text);font-size:.8rem}
     }
     @media(min-width:761px) and (max-width:1100px){
