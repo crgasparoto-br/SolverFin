@@ -208,3 +208,7 @@ O schema utiliza o formato multifile. Os modelos de índices e remuneração fic
 - proteção de banco rejeita alteração da identidade de um lançamento de remuneração.
 
 Todas as importações e processamentos geram registro em `FinancialIndexOperation`, incluindo contagens, estado, mensagem e falhas.
+
+## Controle CDI na listagem de Contas e Cartões (#716)
+
+Na rota `/contas-cartoes`, o flag CDI da conta selecionada consulta novamente a configuração corrente antes de gravar. O usuário confirma a alternância; a ativação reutiliza percentual/data/categoria já salvos, ou, se ainda não existir configuração, os padrões **100% do CDI a partir da data local de hoje**, exibidos no diálogo de confirmação. A desativação envia os valores existentes para preservar a configuração futura. O endpoint de gravação continua sendo exclusivamente `PUT /api/account-remuneration/configurations/:accountId` e o servidor valida conta ativa, moeda BRL, tenant/perfil, percentual, data e categoria. Cancelamento não grava; falhas exibem aviso recuperável sem alterar o estado do flag. Os demais parâmetros seguem editáveis na tela `/remuneracao-contas`.
