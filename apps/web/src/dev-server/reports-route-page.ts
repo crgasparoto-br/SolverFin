@@ -490,6 +490,7 @@ function renderCurrencyMatrix(
   return `<div class="evolution-block">
       <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução em ${escapeHtml(block.currency)}">
         <table class="evolution-table" data-category-tree="${blockIndex}">
+          <caption class="sr-only">Evolução por categoria em ${escapeHtml(block.currency)} por período, média e total</caption>
           <thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods
             .map(renderPeriodHeader)
             .join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
@@ -522,7 +523,7 @@ function renderEmptyEvolutionMatrix(report: CategoryEvolutionReport): string {
     <section class="panel evolution-block" aria-label="Matriz sem movimentos e sem moeda definida">
       <p class="sr-only">Não há moeda associada a movimentos neste período.</p>
       <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução sem movimentos">
-        <table class="evolution-table"><thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods.map(renderPeriodHeader).join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
+        <table class="evolution-table"><caption class="sr-only">Evolução sem movimentos no recorte selecionado</caption><thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods.map(renderPeriodHeader).join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
         <tbody>${renderNeutralSeriesRow("Receitas", report.periodCount, "income")}${renderNeutralSeriesRow("Despesas", report.periodCount, "expense")}${renderNeutralSeriesRow("Resultado", report.periodCount, "result")}</tbody></table>
       </div>
     </section>`;
