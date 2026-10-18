@@ -804,7 +804,7 @@ async function validateKeyboardDialog(cdp) {
   const prepared = await evaluate(
     cdp,
     `(() => {
-      const trigger = document.querySelector('[data-resource-detail] [data-open-dialog]');
+      const trigger = document.querySelector('[data-resource-detail] [data-open-dialog^="edit-account-dialog-"]');
       if (!trigger) return false;
       trigger.focus();
       return document.activeElement === trigger;
@@ -843,7 +843,7 @@ async function validateKeyboardDialog(cdp) {
     cdp,
     `(() => ({
       open: Boolean(document.querySelector('dialog.master-dialog[open]:not(#accounts-cards-confirm-dialog)')),
-      focusRestored: document.activeElement?.matches?.('[data-resource-detail] [data-open-dialog]') === true,
+      focusRestored: document.activeElement?.matches?.('[data-resource-detail] [data-open-dialog^="edit-account-dialog-"]') === true,
     }))()`,
   );
   assert.equal(closed.open, false, "Resource dialog did not close with Escape.");
@@ -854,7 +854,7 @@ async function validateKeyboardDialog(cdp) {
 async function validateSaveFailureStates(cdp) {
   await evaluate(
     cdp,
-    `document.querySelector('[data-resource-detail] [data-open-dialog]')?.click()`,
+    `document.querySelector('[data-resource-detail] [data-open-dialog^="edit-account-dialog-"]')?.click()`,
   );
   await waitFor(
     cdp,
