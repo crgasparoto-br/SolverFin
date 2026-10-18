@@ -229,6 +229,7 @@ async function renderCategoryEvolutionView(
           "api-error",
           "Não foi possível carregar contas e cartões",
           `${sourceError} Tente novamente antes de consultar o relatório.`,
+          `${url.pathname}${url.search}`,
         ) +
         renderCategoryEvolutionRuntime(),
     );
@@ -259,6 +260,7 @@ async function renderCategoryEvolutionView(
           "api-error",
           "Não foi possível carregar o relatório",
           `${reportResult.error} Revise os filtros ou tente novamente.`,
+          `${url.pathname}${url.search}`,
         ) +
         renderCategoryEvolutionRuntime(),
     );
@@ -320,6 +322,7 @@ function renderCategoryEvolutionAnalysis(
       },
       {
         label: "Resultado",
+        emphasis: true,
         primaryHtml: renderMoney({
           amountMinor: analysis.summary.resultMinor,
           currency: analysis.currency,
