@@ -87,14 +87,21 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     ) + renderViewNavigation("installments", filters.profileId);
   const form = renderInstallmentFilterForm(filters, cards, categories);
 
-  if (!installmentsResult.ok) {
+  if (!installmentsResult.ok || !cardsResult.ok || !categoriesResult.ok) {
+    const error = !installmentsResult.ok
+      ? installmentsResult.error
+      : !cardsResult.ok
+        ? cardsResult.error
+        : !categoriesResult.ok
+          ? categoriesResult.error
+          : "Não foi possível carregar as fontes do relatório.";
     return renderShell(
       header +
         form +
         renderState(
           "api-error",
-          "Não foi possível carregar as parcelas",
-          installmentsResult.error,
+          "Não foi possível carregar o relatório de parcelas",
+          error,
           `${url.pathname}${url.search}`,
         ),
     );
