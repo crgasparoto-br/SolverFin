@@ -98,7 +98,7 @@ test("#716 formularios mantem labels, foco compartilhado e confirmacao neutra", 
   }
   const styles = accountsCardsPageStyles();
   assert.match(styles, /resource-form-actions/);
-  assert.match(styles, /max-height: 90dvh/);
+  assert.doesNotMatch(styles, /\\.master-dialog\\s*\\{/);
   assert.match(styles, /max-width: 360px/);
   assert.match(styles, /resource-master-link:focus-visible/);
 });
