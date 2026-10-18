@@ -291,7 +291,7 @@ test("#716 aplica Golden Screen aos grupos de ação das subtelas de contas e ca
   assert.match(accountDetail, /aria-label="Configurar remuneração CDI"/);
   assert.match(accountDetail, /aria-label="Excluir conta"/);
   assert.match(accountDetail, /danger-icon-button"/);
-  assert.doesNotMatch(accountDetail, /class="resource-detail-actions"[^]*class="icon-button"/);
+  assert.equal((accountDetail.match(/resource-action-button/g) ?? []).length, 4);
 
   const cardView = buildAccountsCardsPageViewModel([], [card], "card:c-1");
   const cardDetail = renderSelectedResourceDetail(cardView.selectedResource, []);
