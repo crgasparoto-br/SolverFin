@@ -194,10 +194,7 @@ describe("shared shell styles", () => {
       accountsCardsSource,
       /class="sf-button sf-button-secondary sf-icon-button sf-focus-ring resource-action-button danger-icon-button"/,
     );
-    const detailCssSource = readFileSync(
-      join(currentDir, "accounts-cards", "styles.js"),
-      "utf8",
-    );
+    const detailCssSource = readFileSync(join(currentDir, "accounts-cards", "styles.js"), "utf8");
     assert.match(
       detailCssSource,
       /\.resource-detail-panel button\.danger-icon-button:hover:not\(:disabled\)/,
