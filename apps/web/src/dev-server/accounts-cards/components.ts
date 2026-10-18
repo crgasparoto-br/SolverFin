@@ -32,6 +32,7 @@ import {
   formatInstrumentHolder,
   formatInstrumentType,
   normalizeCurrency,
+  type AccountCdiConfiguration,
   type ResourceMasterViewModel,
   type SelectedResourceViewModel,
 } from "./view-model.js";
@@ -69,7 +70,7 @@ function renderRouteDialogTrigger(input: {
   trigger = trigger.replace(visibleLabel, replacement);
 
   if (input.iconOnly) {
-    trigger = trigger.replace("<button ", `<button aria-label="${label}" `);
+    trigger = trigger.replace("<button ", `<button title="${label}" aria-label="${label}" `);
   }
   return trigger;
 }
@@ -157,6 +158,8 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
 export function renderSelectedResourceDetail(
   selected: SelectedResourceViewModel | undefined,
   accounts: AccountRecord[],
+  cdiConfiguration?: AccountCdiConfiguration,
+  cdiAvailable = true,
 ): string {
   if (!selected) {
     return `<section class="resource-detail-panel resource-detail-empty">${renderEmptyState({
@@ -167,7 +170,7 @@ export function renderSelectedResourceDetail(
 
   const detail =
     selected.kind === "account"
-      ? renderAccountDetail(selected.account, selected.currency)
+      ? renderAccountDetail(selected.account, selected.currency, cdiConfiguration, cdiAvailable)
       : renderCardDetail(selected.card, accounts, selected.paymentAccount, selected.currency);
   const filteredEmpty = renderEmptyState({
     title: "Selecione um recurso",
@@ -176,7 +179,12 @@ export function renderSelectedResourceDetail(
   return `${detail}<section class="resource-detail-panel resource-detail-empty" data-filter-selection-empty hidden>${filteredEmpty}</section>`;
 }
 
-function renderAccountDetail(account: AccountRecord, currency: string | undefined): string {
+function renderAccountDetail(
+  account: AccountRecord,
+  currency: string | undefined,
+  configuration?: AccountCdiConfiguration,
+  cdiAvailable = true,
+): string {
   const viewModel = buildAccountItemViewModel(account);
   const money = formatAmountWithCurrency(account.openingBalanceMinor ?? 0, currency);
   return `
@@ -194,17 +202,66 @@ function renderAccountDetail(account: AccountRecord, currency: string | undefine
         ${detailField("Estado", formatGenericStatus(account.status))}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(account.name)}">
-        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar conta", className: "secondary-button", variant: "secondary", iconHtml: renderEditIcon() })}
-        <a class="button-link secondary" href="/remuneracao-contas">Remuneração CDI</a>
+        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar conta", className: "icon-button", variant: "ghost", iconHtml: renderEditIcon(), iconOnly: true })}
+        ${renderAccountCdiControl(account, currency, configuration, cdiAvailable)}
         <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
-          <button type="submit" class="sf-button sf-button-secondary secondary-button" data-button-variant="neutral"${viewModel.isArchived ? " disabled" : ""}>${renderArchiveIcon()} Arquivar</button>
+          ${renderResourceIconAction("Arquivar conta", renderArchiveIcon(), viewModel.isArchived)}
         </form>
         <form data-api-form data-api-method="DELETE" data-api-path="/api/accounts/${escapeHtml(account.id)}" data-confirm="Excluir ${escapeHtml(account.name)}? Só é possível excluir contas sem vínculos financeiros." class="inline-action-form">
-          <button type="submit" class="sf-button danger-button">${renderTrashIcon()} Excluir</button>
+          ${renderResourceIconAction("Excluir conta", renderTrashIcon(), false, true)}
         </form>
       </div>
     </section>
     ${renderAccountEditDialog(account, viewModel.editDialogId)}`;
+}
+
+function renderResourceIconAction(
+  label: string,
+  glyph: string,
+  disabled = false,
+  danger = false,
+): string {
+  const text = escapeHtml(label);
+  const classes = danger
+    ? "sf-button sf-button-ghost sf-icon-button icon-button danger-icon-button"
+    : "sf-button sf-button-ghost sf-icon-button icon-button";
+  return `<button type="submit" class="${classes}" title="${text}" aria-label="${text}"${disabled ? " disabled" : ""}>${glyph}</button>`;
+}
+
+function renderAccountCdiControl(
+  account: AccountRecord,
+  currency: string | undefined,
+  configuration: AccountCdiConfiguration | undefined,
+  available: boolean,
+): string {
+  const eligible = account.status === "active" && currency === "BRL";
+  const active =
+    eligible &&
+    available &&
+    configuration?.enabled === true &&
+    configuration.accountCurrency === "BRL" &&
+    configuration.indexKind === "cdi";
+  const enabled = eligible && available;
+  const label = !eligible
+    ? "Não elegível"
+    : !available
+      ? "Não verificado"
+      : active
+        ? "Ativo"
+        : "Inativo";
+  const title = !eligible
+    ? "Remuneração CDI disponível apenas para contas ativas em BRL"
+    : !available
+      ? "Não foi possível verificar a configuração CDI"
+      : active
+        ? "Desativar remuneração CDI"
+        : "Ativar remuneração CDI";
+  return `<div class="resource-cdi-control" role="group" aria-label="Remuneração CDI">
+    <span class="resource-cdi-title">CDI</span>
+    <button type="button" class="resource-cdi-switch" role="switch" aria-label="Remuneração CDI de ${escapeHtml(account.name)}" title="${escapeHtml(title)}" aria-checked="${active}" data-cdi-toggle data-account-id="${escapeHtml(account.id)}"${enabled ? "" : " disabled"}><span class="resource-cdi-switch-thumb" aria-hidden="true"></span></button>
+    <span class="resource-cdi-state" data-cdi-state>${label}</span>
+    <span class="sf-visually-hidden" role="status" aria-live="polite" data-cdi-feedback></span>
+  </div>`;
 }
 
 function renderCardDetail(
@@ -238,13 +295,13 @@ function renderCardDetail(
         ${detailField("Fechamento / vencimento", `Dia ${card.closingDay} / dia ${card.dueDay}`)}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(card.name)}">
-        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar cartão", className: "secondary-button", variant: "secondary", iconHtml: renderEditIcon() })}
-        ${renderRouteDialogTrigger({ dialogId: viewModel.newInstrumentDialogId, label: "Adicionar instrumento", className: "secondary-button", variant: "secondary", disabled: viewModel.isArchived, iconHtml: renderAddIcon() })}
+        ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar cartão", className: "icon-button", variant: "ghost", iconHtml: renderEditIcon(), iconOnly: true })}
+        ${renderRouteDialogTrigger({ dialogId: viewModel.newInstrumentDialogId, label: "Adicionar instrumento", className: "icon-button", variant: "ghost", disabled: viewModel.isArchived, iconHtml: renderAddIcon(), iconOnly: true })}
         <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
-          <button type="submit" class="sf-button sf-button-secondary secondary-button" data-button-variant="neutral"${viewModel.isArchived ? " disabled" : ""}>${renderArchiveIcon()} Arquivar</button>
+          ${renderResourceIconAction("Arquivar cartão", renderArchiveIcon(), viewModel.isArchived)}
         </form>
         <form data-api-form data-api-method="DELETE" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}" data-confirm="Excluir ${escapeHtml(card.name)}? Só é possível excluir cartões sem vínculos financeiros." class="inline-action-form">
-          <button type="submit" class="sf-button danger-button">${renderTrashIcon()} Excluir</button>
+          ${renderResourceIconAction("Excluir cartão", renderTrashIcon(), false, true)}
         </form>
       </div>
       <section class="resource-instruments" aria-labelledby="resource-instruments-title-${escapeHtml(card.id)}">
