@@ -293,7 +293,7 @@ test("#716 aplica Golden Screen aos grupos de ação das subtelas de contas e ca
   assert.equal(
     (accountDetail.match(/class="sf-button sf-button-secondary[^"]*resource-action-button/g) ?? [])
       .length,
-    2,
+    4,
   );
   assert.match(accountDetail, /aria-label="Configurar remuneração CDI"/);
   assert.match(accountDetail, /aria-label="Excluir conta"/);
