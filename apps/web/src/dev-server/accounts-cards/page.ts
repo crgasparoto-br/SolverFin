@@ -88,17 +88,22 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
       variant: "secondary",
     }),
   ].join("");
+  const selectedAccountId =
+    viewModel.selectedResource?.kind === "account"
+      ? viewModel.selectedResource.account.id
+      : undefined;
+  const selectedCdiConfiguration =
+    selectedAccountId && cdiConfigurations.ok
+      ? cdiConfigurations.data.configurations.find(
+          (configuration) => configuration.accountId === selectedAccountId,
+        )
+      : undefined;
   const masterDetail = renderDetailLayout({
     masterHtml: renderResourceMaster(viewModel.resources),
     detailHtml: renderSelectedResourceDetail(
       viewModel.selectedResource,
       viewModel.accounts,
-      viewModel.selectedResource?.kind === "account" && cdiConfigurations.ok
-        ? cdiConfigurations.data.configurations.find(
-            (configuration) =>
-              configuration.accountId === viewModel.selectedResource?.account.id,
-          )
-        : undefined,
+      selectedCdiConfiguration,
       cdiConfigurations.ok,
     ),
   });
