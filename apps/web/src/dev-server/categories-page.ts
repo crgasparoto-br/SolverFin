@@ -93,13 +93,17 @@ export async function renderCategoriesPage(token: string): Promise<string> {
               </div>
               <p class="category-results-status" data-category-results-status role="status" aria-live="polite"></p>
             </div>
-            ${categoryItems.length ? `
+            ${
+              categoryItems.length
+                ? `
               <div class="category-filter-empty" data-category-filter-empty hidden>
                 <strong>Nenhuma categoria encontrada</strong>
                 <p class="sf-muted">Revise a busca ou selecione outro filtro.</p>
                 <button class="secondary-button" type="button" data-reset-category-view>Limpar busca e filtros</button>
               </div>
-            ` : ""}
+            `
+                : ""
+            }
             <div class="category-tree-list" data-category-list>
               ${renderCategoryTree(categoryItems)}
             </div>
@@ -198,17 +202,24 @@ export function renderCategoryTree(categories: CategoryRecord[]): string {
             </div>
           </header>
           <ul class="category-tree-nodes">
-            ${rootCategories.map((category) => renderCategoryTreeNode(category, categories, 0)).join("") ||
-              '<li class="category-empty">Sem categorias principais neste grupo.</li>'}
+            ${
+              rootCategories
+                .map((category) => renderCategoryTreeNode(category, categories, 0))
+                .join("") ||
+              '<li class="category-empty">Sem categorias principais neste grupo.</li>'
+            }
           </ul>
         </section>
       `;
     })
     .join("");
 
-  return content || renderEmptyState(
-    "Nenhuma categoria cadastrada.",
-    "Crie uma categoria para organizar receitas e despesas.",
+  return (
+    content ||
+    renderEmptyState(
+      "Nenhuma categoria cadastrada.",
+      "Crie uma categoria para organizar receitas e despesas.",
+    )
   );
 }
 
@@ -218,7 +229,9 @@ function renderCategoryTreeNode(
   depth: number,
 ): string {
   const children = categories
-    .filter((candidate) => candidate.parentCategoryId === category.id && candidate.kind === category.kind)
+    .filter(
+      (candidate) => candidate.parentCategoryId === category.id && candidate.kind === category.kind,
+    )
     .sort((left, right) => left.name.localeCompare(right.name, "pt-BR"));
   const displayName = getCategoryDisplayName(category, categories);
   const hasChildren = children.length > 0;
