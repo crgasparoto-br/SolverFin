@@ -630,8 +630,8 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-mobile-advanced-filters::details-content{display:contents}
       /* Reference anatomy: check | glyph | date | description | category | value | status | actions.
          Rows and header share one track list, so the columns always line up. */
-      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 48px 5.5rem minmax(0,1fr) minmax(0,10rem) minmax(9rem,auto) 3.5rem 36px}
-      ${root} .statement-body{grid-template-areas:"select icon date description category amount status actions" "select icon date . . balance . actions"}
+      ${root} .statement-row{column-gap:${spacing[2]};grid-template-columns:24px 44px 4.5rem minmax(14rem,1fr) minmax(8rem,11rem) minmax(7.5rem,auto) minmax(7.5rem,auto) 3.5rem 36px;min-height:52px;min-width:960px}
+      ${root} .statement-body{grid-template-areas:"select icon date description category amount balance status actions";grid-template-rows:minmax(44px,auto)}
       ${root} .statement-body .col-row-icon{grid-area:icon}
       ${root} .statement-body .statement-row-footer{display:contents}
       ${root} .statement-body .col-date{grid-area:date}
@@ -641,12 +641,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-body .col-amount{grid-area:amount}
       ${root} .statement-body .col-balance{grid-area:balance}
       ${root} .statement-body .col-actions{grid-area:actions}
-      ${root} .statement-head{grid-template-areas:"select icon date description category amount status actions";row-gap:0}
+      ${root} .statement-head{grid-template-areas:"select icon date description category amount balance status actions";row-gap:0}
       ${root} .statement-head .col-row-icon{grid-area:icon}
       ${root} .statement-head .col-date{grid-area:date}
       ${root} .statement-head .col-description{grid-area:description}
       ${root} .statement-head .col-category{clip-path:none;grid-area:category;height:auto;overflow:visible;position:static;width:auto}
       ${root} .statement-head .col-amount{grid-area:amount}
+      ${root} .statement-head .col-balance{clip-path:none;grid-area:balance;height:auto;overflow:visible;position:static;text-align:right;width:auto}
       ${root} .statement-head .col-status{grid-area:status;justify-self:center;text-align:center}
       ${root} .statement-head .col-actions{grid-area:actions}
     }
@@ -683,6 +684,79 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .summary-total-copy>strong{display:block;font-size:clamp(11px,2.9vw,13px);max-width:100%;min-width:0;overflow-wrap:anywhere;white-space:normal;width:100%;word-break:normal}
     }
 
+
+    /* Golden Screen: day headers stay readable and groups may be collapsed natively. */
+    ${root} .statement-day-group{display:block;min-width:0}
+    ${root} .statement-day-group>summary.statement-date-group{
+      align-items:center;background:var(--surface-soft);border-bottom:1px solid var(--line);
+      color:var(--text);cursor:pointer;display:flex;flex-wrap:wrap;gap:6px 14px;
+      list-style:none;min-height:40px;padding:6px 12px;
+    }
+    ${root} .statement-day-group>summary::-webkit-details-marker{display:none}
+    ${root} .statement-day-group>summary:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+    ${root} .statement-day-group .statement-date-group>strong{font-size:.8rem;font-weight:750}
+    ${root} .statement-day-count{color:var(--muted);font-size:.75rem}
+    ${root} .statement-day-in,${root} .statement-day-out{font-size:.75rem;font-weight:600;font-variant-numeric:tabular-nums}
+    ${root} .statement-day-in{color:var(--success);margin-left:auto}
+    ${root} .statement-day-out{color:var(--danger)}
+    ${root} .statement-day-chevron{border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);height:7px;width:7px;transform:rotate(45deg);transition:transform .15s}
+    ${root} .statement-day-group:not([open]) .statement-day-chevron{transform:rotate(-45deg)}
+    /* Category already encodes type; the redundant text must not create another row. */
+    ${root} .statement-body .col-kind,${root} .statement-head .col-kind{display:none}
+    ${root} .statement-body .col-balance{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;white-space:nowrap}
+    ${root} .statement-body .col-description{min-width:0}
+    /* design-interface: dates are short fields; never give a day picker a broad grid span.
+       Keep the clear action beside the label instead of compressing the native calendar. */
+    ${root} .statement-day-field{display:grid;gap:4px;min-width:0;position:relative}
+    ${root} .statement-day-field>label{color:var(--muted);font-size:.75rem}
+    ${root} .statement-day-controls{align-items:center;display:flex;min-width:0}
+    ${root} .statement-day-controls>input{box-sizing:border-box;flex:1 1 auto;min-width:0;min-height:40px;width:100%}
+    ${root} .filter-form .statement-day-clear{background:transparent;border:0;color:var(--primary);font-size:.7rem;min-height:26px;padding:0 3px;position:absolute;right:0;top:-5px;white-space:nowrap}
+    ${root} .statement-day-clear[hidden]{display:none}
+    ${root} .filter-form .statement-day-clear:hover:not(:disabled){background:var(--neutral-control-hover);color:var(--neutral-control-text-hover);text-decoration:underline}
+    @media(min-width:761px){
+      ${root} .filter-form>.statement-day-field{max-width:11.5rem;width:100%}
+    }
+    @media(min-width:1340px){
+      /* One balanced seven-track row: day, search, four selectors and actions.
+         Match the higher-specificity Golden options grid; no implicit tracks. */
+      ${root}[data-statement-options] .filter-form{
+        align-items:end;
+        grid-template-columns:minmax(10.5rem,11.5rem) minmax(13rem,1.5fr) repeat(4,minmax(8.75rem,1fr)) minmax(0,max-content);
+      }
+      ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
+      ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:auto}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:auto}
+      ${root}[data-statement-options] .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:auto}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto}
+    }
+    @media(min-width:1101px) and (max-width:1339px){
+      /* Reflow rather than squeeze a 7-column desktop bar into a narrow screen. */
+      ${root}[data-statement-options] .filter-form{grid-template-columns:minmax(10.5rem,11.5rem) repeat(2,minmax(0,1fr))}
+      ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
+      ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:1}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:2/-1}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
+    }
+    @media(min-width:1101px){
+      ${root} .statement-row.statement-body{padding-block:4px;row-gap:0}
+      ${root} .statement-body .statement-row-metadata{justify-content:center}
+      ${root} .statement-body .col-balance{color:var(--text);font-size:.8rem}
+    }
+    @media(min-width:761px) and (max-width:1100px){
+      ${root} .filter-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+      ${root} .filter-form>.statement-period-shortcuts{grid-column:1/-1}
+      ${root} .filter-form>.statement-day-field{grid-column:1}
+    }
+    @media(max-width:760px){
+      ${root} .filter-form{grid-template-columns:minmax(0,1fr)}
+      ${root} .filter-form>.statement-period-shortcuts{grid-column:1}
+      ${root} .filter-form>.statement-day-field{grid-column:1}
+      ${root} .statement-day-group>summary.statement-date-group{gap:4px 8px;padding:7px 10px}
+      ${root} .statement-day-in{margin-left:0}
+      ${root} .statement-day-group .statement-day-count{margin-right:auto}
+      ${root} .statement-body .col-balance{font-size:.75rem}
+    }
     ${statementMockupControlsStyles()}
   `;
 }

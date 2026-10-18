@@ -58,6 +58,19 @@ somente o conteúdo do diálogo pode rolar. Capturar criação, clonagem e ediç
 três viewports e aplicar controles negativos de centralização, incluindo uma
 ancoragem à direita ainda inteiramente contida na viewport.
 
+## Portao discriminante da Issue #715 — Cartoes
+
+A propagacao visual da Golden Screen na rota `/cartoes` tem escopo proprio, diferente da aprovacao do Extrato. Capturas geradas antes do commit material desta entrega nao certificam a mudanca.
+
+- **Hierarquia da fatura:** fatura aberta com conta de pagamento na moeda correta; valor e moeda visiveis, liquidacao como unica acao primaria; fechamento e compra sem competir.
+- **Filtros progressivos:** ordenacao padrao e alterada; controles secundarios recolhidos por padrao, estado ativo exposto e selecao preservada.
+- **Compras longas:** descricoes extensas e parcelas em moedas explicitas; texto e valores nao cortados e totais separados por moeda.
+- **Busca sem resultado:** estado vazio orienta a ajustar os filtros sem omitir o contexto da fatura.
+- **Formulario:** abrir, percorrer e fechar modal de compra no teclado; dialog identificado, foco visivel, scroll interno, Escape e retorno do foco.
+- **Controle negativo:** mutar para truncamento ou destacar simultaneamente compra e fechamento deve gerar falha estrutural ou rejeicao visual documentada.
+
+Inspecionar os estados em 1366x768, 390x844 e, nas divergencias de reflow, 320x740. Registrar em cada linha viewport, artefato, assertion, SHA exato e parecer de avaliador independente. A ausencia de capturas ou parecer deixa o gate de aceite aberto, mesmo se Repository CI e o workflow Chrome terminarem com sucesso.
+
 ## Unidade de cobertura
 
 Cada evidencia representativa declara, no minimo:
@@ -199,3 +212,78 @@ O gate agregado do repositorio continua sendo `npm run validate`. Testes de domi
 ## Dados e privacidade
 
 Fixtures, nomes, valores e screenshots devem ser ficticios e minimizados. O workflow executa `assert-artifact-safety` antes de publicar a evidencia. Nao registre secrets, dados financeiros reais nem identificadores pessoais em artefatos visuais.
+
+### PR #720 — Conciliação pelo ícone Situação no Extrato (17/10/2026)
+
+No Extrato (`/lancamentos`), o ícone de Situação passa a abrir o mesmo menu neutro dos Cartões. Lançamentos efetivados e independentes permitem **Marcar como conciliado** ou **Desconciliar**, usando o contrato atual `PATCH /api/transactions/:id` com envio exclusivo de `status`. A ação redundante sai do menu de três pontos; edição e exclusão permanecem.
+
+Lançamentos previstos, sugestões, parcelas, grupos, movimentos de cartão e remuneração protegida exibem explicação, sem prometer mudanças que dependam de fluxos específicos. O menu mantém foco visível, 44 px de alvo, feedback assíncrono (inclusive erro de conexão), Escape com devolução de foco e posição visível mesmo com rolagem horizontal.
+
+Validar em Chrome 1366×768, 390×844 e 320×740, com teclado e toque, alternância nos dois sentidos, erro HTTP e de rede, conta individual e visão consolidada. A implementação por si só não equivale à aprovação visual independente no HEAD da PR.
+
+### PR #720 — Valor da parcela e anexo recolhível (17/10/2026)
+
+Na tela `/lancamentos`, conferir no modal **Editar parcela** e **Ajustar valor da parcela** que `amountEditable` só aparece com estados planejado/planejado ou efetivado/efetivado não conciliados. Alterar um valor em centavos deve atualizar `Transaction` e `Installment` atomicamente, sem redistribuição para outras parcelas e sem alteração de status. Para conciliadas, canceladas e parcelas de fatura, a edição permanece bloqueada. Verificar formato BRL, validação de 0, caracteres inválidos, conflito 409 e navegação por teclado.
+
+O bloco de anexos inicia recolhido, com `<details><summary>Anexos do lançamento</summary>`; ao expandir, mantém todos os controles de anexos e não perde arquivo selecionado. Verificar viewport desktop 1366×768, celular 390×844 e 320×740, rolagem do diálogo, foco, contraste e equivalência ao `Mais opções`. Asserções de SSR e testes sem navegador não equivalem à homologação visual.
+
+### PR #720 — Recorrências fixas e escolha de escopo de valor (17/10/2026)
+
+No Extrato, recorrências fixas mostram somente o indicador próprio, sem `Parcela 2 de ?` (como Sabesp, CPFL e Telefônica do print). Parcelamentos finitos continuam com `Parcela N de M` (como Teste de parcelamento). Ao alterar valor de uma parcela, validar confirmação modal antes de persistir com opções **Somente esta parcela**, **Esta e as próximas** e **Voltar sem salvar**. A segunda só aparece quando existem parcelas posteriores; Escape e Voltar não salvam. Confirmar preservação das parcelas anteriores, conciliadas e canceladas, resposta `updatedCount/skippedCount`, erro 409 para série sem origem confiável e 404 fora do perfil. Validar desktop 1366×768, mobile 390×844 e teclado/foco.
+
+### PR #720 — Restaurar a ultima conta apos novo login (17/10/2026)
+
+Validar no navegador real, em desktop e mobile: selecionar a conta B, sair, entrar
+novamente, abrir `/lancamentos` sem `accountId` e verificar se conta B reaparece;
+repetir com `Todas as contas`. Confirmar que selecao de outro usuario ou outro
+perfil financeiro nao herda a conta, links com `accountId` prevalecem, conta
+inexistente/arquivada nao causa loop, moeda explicita nao e sobrescrita, e
+`month`/outros filtros permanecem inalterados. Verificar modo com JavaScript
+ou localStorage indisponivel (GET funcional), refresh, Escape/teclado do combobox,
+persistencia com selecao feita imediatamente apos login e ausencia de armazenamento
+de dados financeiros/credenciais.
+
+Os testes de runtime simulam abertura de nova sessao e perfis distintos;
+a homologacao real do Chrome segue necessaria no SHA final.
+
+### PR #720 — Validação do filtro Hoje (17/10/2026)
+
+1. Em `/lancamentos`, partindo de um mês anterior, selecionar **Hoje**; conferir que `month` e `day` representam o dia civil atual de São Paulo, sem `from`/`to` antigos, que o período visível corresponde ao filtro efetivo e que o extrato mostra apenas movimentações do dia.
+2. Confirmar casos em que `occurredOn` e `effectiveOn` ou `plannedOn` são diferentes (inclusive lançamento efetivado hoje com ocorrência futura), e verificar saldo de abertura, totais e moeda em conta individual e visão consolidada.
+3. Repetir na virada de mês e no horário 21h–24h de Brasília (quando UTC já está no dia seguinte), com pesquisa, `profileId` diferente do padrão e contas distintas.
+4. Verificar 7 dias/30 dias, voltar para mês anterior/atual e aplicar filtros após Hoje sem duplicar o parâmetro `day` nem gerar erro de inserção de elemento no DOM.
+
+Exigir evidência real no Chrome em desktop e mobile no SHA final. Testes estáticos e unitários não substituem essa homologação.
+
+### PR #720 — Filtro de dia, agrupamento diário e tabela compacta (17/10/2026)
+
+Verificar em `/lancamentos` com conta individual e visão `all`: (1) selecionar dias
+1, 15 e último dia, alterar mês, limpar filtro e aplicar com/sem JavaScript;
+(2) dias com zero/um/múltiplos lançamentos, incluindo receita, despesa e transferência;
+(3) expandir/recolher por teclado e ponteiro, verificando que saldo, totalizações,
+ordem das linhas e seleção não mudam; (4) ordenações por data asc/desc com grupos
+distintos e por valor/descrição sem grupos para respeitar o sort global;
+(5) comparar linhas com saldo em coluna independente em 1366×768, 1100×800,
+390×844 e 320×740, com textos/categorias longos, moeda BRL e USD.
+
+A execução unitária/SSR não substitui a homologação de geometria visual e
+do comportamento no Chrome no HEAD exato da PR.
+
+### PR #720 — Gate de proporção para novos controles (17/10/2026)
+
+O processo de tela deve executar a Skill `design-interface` do projeto `skill` antes
+de iniciar a implementação. Evidenciar geometria real no Chrome para 1366x768,
+1665x900, 390x844 e 320x740, com Dia do mês vazio e preenchido, mês completo e
+reflow responsivo. Falhar quando o seletor de dia exceder 196px em desktop, quando
+for igual/maior que Busca ou quando os dois campos estiverem desalinhados
+verticalmente. Anexar capturas e medidas ao mesmo HEAD auditado.
+
+### PR #720 — Conciliacao de recorrencia no icone Situacao
+
+Conferir no Chrome: ocorrencia fixa prevista com icone de relogio abre
+`Marcar como conciliado`; apos a acao, o icone indica conciliado e oferece
+`Desconciliar`. Repetir em ocorrencia fixa efetivada e materializada com
+`installmentId`. Confirmar que os meses seguintes e a definicao da recorrencia
+nao mudam. Testar controles negativos para compra no cartao, sugestao nao
+confirmada, item excluido, remuneracao automatica e lancamento agrupado.
+Verificar foco, tooltip, contraste e navegacao por teclado conforme a Golden Screen.

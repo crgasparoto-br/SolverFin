@@ -1,0 +1,3 @@
+{
+  "scripts/statement-visual/cards-interface-measurements.mjs": "Extracao coesa das medicoes e assercoes Chrome da Golden Screen de Cartoes, isolando responsabilidade do orquestrador de cenarios. As 391 linhas incluem multiplos viewports, semantica financeira, acessibilidade, controles negativos que devem falhar e restauracao de estado; fragmentar apenas por limite separaria indevidamente os controles da mesma medicao. Permanece abaixo do limite absoluto de 500 linhas."
+}

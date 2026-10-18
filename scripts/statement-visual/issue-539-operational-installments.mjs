@@ -56,7 +56,7 @@ async function validateAccountDesktop(fixture) {
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const line = await waitForAccountLine(fixture.accountTransactionId);
-  check(line.badge === fixture.accountBadge, "Account installment badge is missing", line);
+  check(line.badge === "", "Fixed recurrence should not display a finite installment badge", line);
   check(line.hasRecurrenceIndicator, "Recurrence indicator was not preserved", line);
   check(line.editable, "Installment edit action did not become available", line);
 
@@ -463,9 +463,9 @@ async function waitForAccountLine(transactionId) {
         const row = node?.closest("article");
         const edit = row?.querySelector('[data-edit="${transactionId}"]');
         const badge = row?.querySelector("[data-installment-badge]");
-        if (row && edit && badge && !edit.disabled) {
+        if (row && edit?.dataset.installmentEdit && !edit.disabled) {
           return {
-            badge: badge.textContent.trim(),
+            badge: badge?.textContent.trim() || "",
             editable: Boolean(edit.dataset.installmentEdit) && !edit.disabled,
             installmentEditable: edit.dataset.installmentEditable === "true",
             hasRecurrenceIndicator: Boolean(row.querySelector(".recurrence-indicator")),

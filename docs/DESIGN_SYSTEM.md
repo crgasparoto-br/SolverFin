@@ -82,6 +82,33 @@ A referencia inclui, sem exigir copia estrutural:
 - dialogs e drawers com o mesmo nivel de refinamento da tela principal;
 - comportamento mobile equivalente em clareza e acabamento.
 
+### Contrato obrigatorio: escolhas em modal e menus da Golden Screen
+
+A padronizacao da Golden Screen se aplica a **todos os estados** dos controles, nao
+apenas ao visual estatico. Ao adicionar uma escolha em modal, popover, combobox ou
+menu, reutilizar as variantes compartilhadas de `docs/UI_PRIMITIVES.md`. Escolhas
+equivalentes (por exemplo, "Somente esta parcela" e "Esta e as proximas") sao
+**controles neutros**: mesmo fundo claro, texto legivel e borda discreta;
+nenhuma recebe o estilo `primary` antes de uma escolha explicita. A cor
+primaria e reservada a acao final de confirmar/salvar, nunca a opcao que o
+usuario ainda nao selecionou.
+
+No SSR atual, preferir `button[data-button-variant="neutral"]` e as cores
+canonicas `--surface`, `--primary`, `--neutral-control-hover`,
+`--neutral-control-border-hover` e `--neutral-control-text-hover`
+(aliases de `--sf-*`). O estilo global `button:hover:not(:disabled)`
+pinta o fundo `primary-hover`: **revisar a especificidade** de todo seletor
+local de `:hover` e `:focus-visible` para nao produzir fundo escuro com
+texto escuro, nem substituir foco/hover neutro por aparencia primaria.
+
+Aceite obrigatorio: validar computed styles de **fundo, texto e borda** em
+repouso, hover, foco pelo teclado e disabled, nos modos desktop e mobile;
+verificar contraste WCAG AA, ausencia de selecao falsa, foco visivel,
+navegacao por Tab, Escape e retorno de foco. Se um estado divergir dos tokens
+ou da Golden Screen, a implementacao visual esta **reprovada**, mesmo com
+testes funcionais verdes. Registrar evidencia no HEAD exato da PR antes
+de dar o ajuste como concluido.
+
 A Golden Screen so pode ser considerada valida como referencia depois que a implementacao de `/lancamentos` atender ao contrato de qualidade visual e possuir evidencia visual aprovada. Ate esse ponto, o mockup e a especificacao funcionam como alvo de design, nao como prova de implementacao concluida.
 
 ### Identidade visual de instituicoes financeiras

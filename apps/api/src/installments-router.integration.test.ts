@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 import { closePool, getPool } from "./db.js";
 import { handleInstallmentsApiRequest } from "./installments-router.js";
@@ -43,6 +44,7 @@ async function main(): Promise<void> {
   await assertRejectsGenericPostingOfPlannedInstallment(token, editableInstallment);
   await assertAllowsGenericReconciliation(token, reconciliationInstallment);
   await assertFiltersOperationalPeriod(token, reconciliationInstallment, account.id);
+  await assertUpdatesPostedInstallmentAmount(token, reconciliationInstallment);
   await assertUpdatesEligibleInstallment(
     token,
     editableInstallment.installmentId,
@@ -54,6 +56,86 @@ async function main(): Promise<void> {
   await assertRevalidatesConcurrentStateChange(token, concurrentInstallment, suffix);
   await assertFiltersTenantProfile(token, recurrence.id);
   await assertRejectsInvalidFilters(token);
+  await assertManualInstallmentScopeUpdates(token, account.id, category.id, suffix);
+}
+
+async function assertManualInstallmentScopeUpdates(
+  token: string,
+  accountId: string,
+  categoryId: string,
+  suffix: string,
+): Promise<void> {
+  const response = await apiRequest(token, "POST", "/api/installments", {
+    accountId,
+    categoryId,
+    kind: "expense",
+    status: "posted",
+    description: "Parcelamento independente " + suffix,
+    plannedOn: "2026-08-10",
+    effectiveOn: "2026-08-10",
+    amountMinor: 10000,
+    amountMode: "per_installment",
+    totalInstallments: 4,
+    initialSequenceNumber: 1,
+    idempotencyKey: randomUUID(),
+  });
+  assert.equal(response.statusCode, 201);
+  const created = readBody<{ installments: ApiInstallmentHistory[] }>(response).installments;
+  assert.equal(created.length, 4);
+  const [first, second, third, fourth] = created;
+  assert.ok(first && second && third && fourth);
+  const currentOnly = await apiRequest(token, "PATCH", "/api/installments/" + first.id, {
+    scope: "current",
+    amountMinor: 11000,
+  });
+  assert.equal(currentOnly.statusCode, 200);
+  assert.equal(readBody<{ updatedCount: number }>(currentOnly).updatedCount, 1);
+  assert.equal((await readInstallment(token, second.id)).amountMinor, 10000);
+
+  const protectedRow = await apiRequest(
+    token,
+    "PATCH",
+    "/api/transactions/" + third.transaction?.id,
+    { status: "reconciled" },
+  );
+  assert.equal(protectedRow.statusCode, 200);
+  const future = await apiRequest(token, "PATCH", "/api/installments/" + second.id, {
+    scope: "current_and_future",
+    amountMinor: 13555,
+  });
+  assert.equal(future.statusCode, 200);
+  const result = readBody<{ updatedCount: number; skippedCount: number }>(future);
+  assert.equal(result.updatedCount, 2);
+  assert.equal(result.skippedCount, 1);
+
+  assert.equal((await readInstallment(token, first.id)).amountMinor, 11000);
+  for (const target of [second, fourth]) {
+    const row = await readInstallment(token, target.id);
+    assert.equal(row.amountMinor, 13555);
+    assert.equal(row.transaction?.amountMinor, 13555);
+  }
+  assert.equal((await readInstallment(token, third.id)).amountMinor, 10000);
+  assert.equal((await readInstallment(token, third.id)).transaction?.status, "reconciled");
+
+  const forbiddenMetadata = await apiRequest(token, "PATCH", "/api/installments/" + second.id, {
+    scope: "current_and_future",
+    amountMinor: 14000,
+    description: "nao permitido",
+  });
+  assert.equal(forbiddenMetadata.statusCode, 400);
+  assert.equal(readErrorCode(forbiddenMetadata), "INSTALLMENT_PAYLOAD_INVALID");
+
+  const wrongProfile = await apiRequest(
+    token,
+    "PATCH",
+    "/api/installments/" + second.id + "?profileId=" + MEI_PROFILE_ID,
+    {
+      scope: "current_and_future",
+      amountMinor: 15000,
+    },
+  );
+  assert.equal(wrongProfile.statusCode, 404);
+  assert.equal(readErrorCode(wrongProfile), "TENANT_RESOURCE_NOT_FOUND");
 }
 
 async function createAccount(token: string, suffix: string): Promise<ApiAccount> {
@@ -251,6 +333,55 @@ async function assertFiltersOperationalPeriod(
   assert.equal(dueOnlyIds.includes(ref.installmentId), false);
 }
 
+async function assertUpdatesPostedInstallmentAmount(
+  token: string,
+  ref: InstallmentRef,
+): Promise<void> {
+  // This is the operational state of a posted, unreconciled account parcel.
+  await getPool().query(`update "Installment" set "status" = 'POSTED' where "id" = $1`, [
+    ref.installmentId,
+  ]);
+  const original = await readInstallment(token, ref.installmentId);
+  assert.equal(original.editable, false);
+  assert.equal(original.amountEditable, true);
+
+  const amountMinor = original.amountMinor + 125;
+  const patch = await apiRequest(token, "PATCH", `/api/installments/${ref.installmentId}`, {
+    amountMinor,
+  });
+  assert.equal(patch.statusCode, 200);
+  const updated = await readInstallment(token, ref.installmentId);
+  assert.equal(updated.amountMinor, amountMinor);
+  assert.equal(updated.transaction?.amountMinor, amountMinor);
+  assert.equal(updated.transaction?.status, "posted");
+
+  // Metadata is still locked for a posted installment.
+  const blockedMetadata = await apiRequest(
+    token,
+    "PATCH",
+    `/api/installments/${ref.installmentId}`,
+    {
+      description: "Mudança não permitida em parcela efetivada",
+    },
+  );
+  assert.equal(blockedMetadata.statusCode, 409);
+  assert.equal(readErrorCode(blockedMetadata), "INSTALLMENT_EDIT_BLOCKED");
+
+  const reconcile = await apiRequest(token, "PATCH", `/api/transactions/${ref.transactionId}`, {
+    status: "reconciled",
+  });
+  assert.equal(reconcile.statusCode, 200);
+  const reconciled = await readInstallment(token, ref.installmentId);
+  assert.equal(reconciled.amountEditable, false);
+  const blockedAmount = await apiRequest(token, "PATCH", `/api/installments/${ref.installmentId}`, {
+    amountMinor: amountMinor + 100,
+  });
+  assert.equal(blockedAmount.statusCode, 409);
+  assert.equal(readErrorCode(blockedAmount), "INSTALLMENT_EDIT_BLOCKED");
+  const unchanged = await readInstallment(token, ref.installmentId);
+  assert.equal(unchanged.amountMinor, amountMinor);
+}
+
 async function assertRevalidatesConcurrentStateChange(
   token: string,
   ref: InstallmentRef,
@@ -351,7 +482,7 @@ async function assertRejectsInvalidInstallmentPatch(
   installmentId: string,
 ): Promise<void> {
   const response = await apiRequest(token, "PATCH", `/api/installments/${installmentId}`, {
-    amountMinor: 1,
+    amountMinor: 0,
   });
 
   assert.equal(response.statusCode, 400);
@@ -514,9 +645,11 @@ interface ApiInstallmentHistory {
     categoryId?: string;
     description?: string;
     note?: string;
+    amountMinor?: number;
     status?: string;
   };
   category?: { id: string };
   editable: boolean;
+  amountEditable: boolean;
   editBlockedReason?: string;
 }

@@ -1,9 +1,69 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { renderTransactionsPageV2 } from "./transactions-page-v2.js";
+import { renderTransactionsPageV2, statementTodayInSaoPaulo } from "./transactions-page-v2.js";
 
 const originalFetch = globalThis.fetch;
+
+test("Today resolves Brazil's civil day across UTC midnight", () => {
+  assert.equal(statementTodayInSaoPaulo(new Date("2026-10-18T01:20:00.000Z")), "2026-10-17");
+  assert.equal(statementTodayInSaoPaulo(new Date("2026-11-01T03:10:00.000Z")), "2026-11-01");
+});
+
+test("Today shortcut uses the real current month and preserves the chosen profile/account", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?profileId=profile-custom&accountId=account-usd&month=2026-09&day=2026-09-15&kind=expense&currency=USD",
+      ),
+    );
+    const link = /data-period-shortcut="today" href="([^"]+)"/.exec(html);
+    assert.ok(link, "Today must be a navigable period shortcut");
+    const todayUrl = new URL(link[1]!.replaceAll("&amp;", "&"), "http://solverfin.test");
+    const today = statementTodayInSaoPaulo();
+    assert.equal(todayUrl.searchParams.get("month"), today.slice(0, 7));
+    assert.equal(todayUrl.searchParams.get("day"), today);
+    assert.equal(todayUrl.searchParams.get("profileId"), "profile-custom");
+    assert.equal(todayUrl.searchParams.get("accountId"), "account-usd");
+    assert.equal(todayUrl.searchParams.get("currency"), "USD");
+    assert.equal(todayUrl.searchParams.get("kind"), "expense");
+    assert.equal(todayUrl.searchParams.get("from"), null);
+    assert.equal(todayUrl.searchParams.get("to"), null);
+    assert.equal(todayUrl.searchParams.getAll("day").length, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("period heading shows real range, not month bounds, and daily filter has no duplicate active control", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const rangeHtml = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&from=2026-08-25&to=2026-09-07",
+      ),
+    );
+    assert.ok(rangeHtml.includes("Período 25/08/2026 – 07/09/2026"));
+    const dailyHtml = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&day=2026-09-07",
+      ),
+    );
+    assert.match(
+      dailyHtml,
+      /id="filter-day" name="day" type="date"[^>]+min="2026-09-01" max="2026-09-30" value="2026-09-07"/,
+    );
+    assert.equal((dailyHtml.match(/name="day" type="date"/g) ?? []).length, 1);
+    assert.doesNotMatch(dailyHtml, /<noscript><input type="hidden" name="day"/);
+    assert.match(dailyHtml, /data-clear-statement-day/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
 
 test("A2 statement keeps account and USD currency explicit while sorting before render", async () => {
   globalThis.fetch = mockFetch([
@@ -20,6 +80,17 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
     );
 
     assert.match(html, /data-statement-archetype="A2"/);
+    assert.match(
+      html,
+      /data-attachment-workspace data-entity-kind="transaction" data-entity-id="" data-pending-create/,
+    );
+    assert.match(
+      html,
+      /window\.SolverFinAttachments\.uploadPending\(attachmentWorkspace, linkedId\)/,
+    );
+    assert.match(html, /response\.clone\(\)\.json\(\)/);
+    assert.match(html, /form\.dataset\.method = "PATCH"/);
+    assert.match(html, /Em parcelas ou recorrências, anexe na edição de uma ocorrência/);
     assert.match(html, /class="sf-page-header"/);
     assert.match(html, /class="sf-filter-bar"/);
     assert.match(html, /Conta internacional/);
@@ -30,6 +101,213 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
     assert.match(html, /data-statement-date-group="2026-08-20"/);
     assert.match(html, /name="q" type="search"/);
     assert.match(html, /name="sort"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 day grouping is expandable and keeps monetary values in separate columns", async () => {
+  globalThis.fetch = mockFetch([
+    transaction("expense-aug20", "Despesa", 2500, "2026-08-20"),
+    transaction("income-aug20", "Entrada", 15000, "2026-08-20", "income"),
+    transaction("expense-aug21", "Outra despesa", 4100, "2026-08-21"),
+  ]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.equal((html.match(/class="statement-day-group"/g) ?? []).length, 2);
+    assert.match(html, /data-statement-date-group="2026-08-20" open>/);
+    assert.match(html, /2 lançamentos/);
+    assert.match(html, /Entradas US\$\s150,00/);
+    assert.match(html, /Saídas US\$\s25,00/);
+    assert.match(html, /<span class="col-balance">Saldo<\/span>/);
+    assert.match(html, /<strong class="col-balance[^"]*" data-balance-minor="/);
+    assert.match(html, /aria-label="[^"]*Expandir ou recolher lançamentos deste dia"/);
+    const amountSorted = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&sort=amount_desc",
+      ),
+    );
+    assert.doesNotMatch(amountSorted, /class="statement-day-group"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 statement status icon offers reconciliation and shows restrictions without changing values", async () => {
+  globalThis.fetch = mockFetch([
+    transaction("posted-row", "Despesa não conciliada", 2500, "2026-08-03"),
+    {
+      ...transaction("reconciled-row", "Receita conciliada", 5000, "2026-08-04", "income"),
+      status: "reconciled",
+    },
+    {
+      ...transaction("planned-row", "Despesa prevista", 1300, "2026-08-05"),
+      status: "planned",
+      effectiveOn: undefined,
+    },
+    {
+      ...transaction("finite-planned", "Parcela finita prevista", 900, "2026-08-06"),
+      status: "planned",
+      effectiveOn: undefined,
+      installmentId: "installment-one",
+    },
+    {
+      ...transaction("finite-posted", "Parcela finita efetivada", 950, "2026-08-06"),
+      installmentId: "installment-two",
+    },
+    {
+      ...transaction("finite-reconciled", "Parcela finita conciliada", 980, "2026-08-06"),
+      status: "reconciled",
+      installmentId: "installment-three",
+    },
+    {
+      ...transaction("suggested-row", "Sugestão sem confirmação", 990, "2026-08-06"),
+      status: "suggested",
+      effectiveOn: undefined,
+    },
+    { ...transaction("card-row", "Compra protegida", 1100, "2026-08-06"), cardId: "card-one" },
+    {
+      ...transaction("recurring-planned", "Conta fixa prevista", 2500, "2026-08-07"),
+      status: "planned",
+      effectiveOn: undefined,
+      recurrenceId: "recurrence-one",
+    },
+    {
+      ...transaction("recurring-installment", "Ocorrência fixa materializada", 2800, "2026-08-08"),
+      status: "planned",
+      effectiveOn: undefined,
+      recurrenceId: "recurrence-two",
+      installmentId: "installment-two",
+    },
+    {
+      ...transaction("recurring-posted", "Conta fixa efetivada", 3200, "2026-08-09"),
+      recurrenceId: "recurrence-three",
+    },
+    {
+      ...transaction("recurring-grouped", "Conta fixa agrupada", 3500, "2026-08-10"),
+      recurrenceId: "recurrence-four",
+      transactionGroupId: "group-four",
+    },
+    {
+      ...transaction("recurring-voided", "Conta fixa excluída", 3400, "2026-08-11"),
+      recurrenceId: "recurrence-five",
+      status: "voided",
+    },
+  ]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="posted-row" aria-label="Marcar como conciliado"'),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="reconciled-row" aria-label="Desconciliar"'),
+    );
+    assert.ok(html.includes("Situação: Efetivado não conciliado. Alterar situação"));
+    assert.ok(html.includes("Situação: Conciliado. Alterar situação"));
+    assert.ok(
+      html.includes('data-status-transaction-id="planned-row" aria-label="Marcar como conciliado"'),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="finite-planned" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="finite-posted" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="finite-reconciled" aria-label="Desconciliar"'),
+    );
+    assert.ok(html.includes("Altere a conciliação na fatura do cartão"));
+    assert.ok(!html.includes("Este lançamento exige manutenção pelo fluxo de parcelas."));
+    assert.ok(!html.includes('data-status-transaction-id="suggested-row"'));
+    assert.ok(!html.includes('data-status-transaction-id="card-row"'));
+    assert.ok(html.includes("Confirme a sugestão antes de conciliar."));
+    assert.match(
+      html,
+      /class="statement-status-current" role="img" aria-label="Situação atual: Efetivado não conciliado" title="Efetivado não conciliado"/,
+    );
+    assert.ok(!html.includes("Atual: Efetivado não conciliado"));
+    assert.match(html, /data-tooltip="Marcar como conciliado"><span/);
+    assert.match(html, /statement-status-ok" aria-hidden="true"/);
+    assert.match(html, /aria-label="Desconciliar"[^>]*><span/);
+    assert.match(html, /statement-status-posted" aria-hidden="true"/);
+    assert.match(html, /statement-status-readonly"[^>]*><span/);
+    assert.match(html, /statement-status-pending" aria-hidden="true"/);
+    assert.ok(html.includes("flex:0 0 26px;height:26px;width:26px"));
+    assert.ok(html.includes("height:15px;width:15px"));
+    assert.ok(html.includes("flex:0 0 44px;height:44px"));
+    assert.match(html, /class="statement-status-readonly" role="img"/);
+    assert.doesNotMatch(html, /<button[^>]*data-set-statement-status[^>]*>[^<]+<\/button>/);
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-planned" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-installment" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-posted" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(!html.includes('data-status-transaction-id="recurring-grouped"'));
+    assert.ok(!html.includes('data-status-transaction-id="recurring-voided"'));
+    assert.ok(html.includes("Situação: Previsto. Alterar situação"));
+    assert.ok(html.includes('role="group" aria-label="Situação do lançamento"'));
+    assert.ok(
+      html.includes('class="statement-status-feedback" role="status" aria-live="polite" hidden'),
+    );
+    assert.ok(
+      html.includes(
+        'send("/api/transactions/" + encodeURIComponent(transactionId), "PATCH", { status: nextStatus })',
+      ),
+    );
+    assert.ok(
+      !html.includes('data-action data-method="PATCH" data-path="/api/transactions/posted-row"'),
+    );
+    assert.ok(html.includes("positionStatementStatus(control)"));
+    assert.ok(
+      html.includes(".statement-status-menu>button.statement-status-option:hover:not(:disabled)"),
+    );
+    assert.ok(html.includes(".statement-status-control>summary{align-items:center"));
+    assert.ok(html.includes('window.addEventListener("scroll", syncStatementMenus, true)'));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 attachments in installment and statement dialogs start collapsed like More options", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.ok(
+      html.includes(
+        'class="statement-entry-attachments full" data-statement-attachments><summary>Anexos do lançamento</summary>',
+      ),
+    );
+    assert.ok(
+      html.includes('class="statement-entry-advanced full"><summary>Mais opções</summary>'),
+    );
+    assert.ok(html.includes('data-attachment-workspace data-entity-kind="transaction"'));
+    assert.ok(!html.includes("data-statement-attachments open"));
+    assert.ok(html.includes(".statement-entry-attachments>summary:focus-visible"));
+    assert.ok(html.includes(".statement-entry-attachments[open]>summary::after"));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -476,10 +754,7 @@ test("A2 consolidated BRL mode identifies each account and excludes USD without 
     assert.match(html, /data-edit="brl-expense"/);
     assert.match(html, /Ver lançamento na conta/);
     assert.match(html, /data-clone="brl-expense"/);
-    assert.match(
-      html,
-      /data-action data-method="PATCH" data-path="\/api\/transactions\/brl-expense"/,
-    );
+    assert.match(html, /data-status-transaction-id="brl-expense" aria-label=/);
     assert.match(
       html,
       /data-action data-method="POST" data-path="\/api\/transactions\/brl-expense\/void"/,
@@ -628,7 +903,7 @@ test("A2 consolidated FX transfer opens the account of the displayed currency", 
     assert.match(brl, /Recebida de Conta internacional/);
     assert.match(brl, /data-edit="fx-in"/);
     assert.match(brl, /data-clone="fx-in"/);
-    assert.match(brl, /data-method="PATCH" data-path="\/api\/transactions\/fx-in"/);
+    assert.match(brl, /data-set-statement-status="reconciled" data-status-transaction-id="fx-in"/);
     assert.match(brl, /data-method="POST" data-path="\/api\/transactions\/fx-in\/void"/);
     assert.match(brl, /<span>Ver na conta<\/span>/);
     assert.match(brl, /"accountId":"account-usd"/);

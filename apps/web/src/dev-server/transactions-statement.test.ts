@@ -35,6 +35,7 @@ periodHelpersResolveMonthBoundaries();
 filtersKeepCurrentAndLegacyFallbacks();
 dayFilterUsesSelectedDateWithinMonth();
 dayFilterSupportsMonthBoundaries();
+daySelectionOverridesOlderRange();
 invalidOrDifferentMonthDayFallsBackToFullMonth();
 transactionQueryKeepsPreviousBalanceWindow();
 dayFilterKeepsOpeningBalanceAndDailyRows();
@@ -108,6 +109,18 @@ function dayFilterUsesSelectedDateWithinMonth(): void {
   );
 }
 
+function daySelectionOverridesOlderRange(): void {
+  const filters = resolveFilters(
+    new URL(
+      "http://solverfin.test/lancamentos?month=2026-06&from=2026-06-01&to=2026-06-07&day=2026-06-15",
+    ),
+    [account],
+  );
+  assert.equal(filters.startsOn, "2026-06-15");
+  assert.equal(filters.endsOn, "2026-06-15");
+  assert.equal(filters.day, "2026-06-15");
+}
+
 function dayFilterSupportsMonthBoundaries(): void {
   for (const day of ["2026-06-01", "2026-06-30"]) {
     const filters = resolveFilters(
@@ -147,7 +160,7 @@ function transactionQueryKeepsPreviousBalanceWindow(): void {
   assert.equal(monthlyQuery.get("status"), "all");
   assert.equal(monthlyQuery.get("accountId"), "account-1");
   assert.equal(monthlyQuery.get("occurredFrom"), null);
-  assert.equal(monthlyQuery.get("occurredTo"), "2026-06-30");
+  assert.equal(monthlyQuery.get("statementTo"), "2026-06-30");
   assert.equal(monthlyQuery.get("plannedTo"), null);
 
   const dailyFilters = resolveFilters(
@@ -157,8 +170,26 @@ function transactionQueryKeepsPreviousBalanceWindow(): void {
   const dailyQuery = new URLSearchParams(buildTransactionQuery(dailyFilters));
 
   assert.equal(dailyQuery.get("occurredFrom"), null);
-  assert.equal(dailyQuery.get("occurredTo"), "2026-06-15");
+  assert.equal(dailyQuery.get("statementTo"), "2026-06-15");
   assert.equal(dailyQuery.get("plannedTo"), null);
+
+  const posted = new URLSearchParams(
+    buildTransactionQuery({
+      ...dailyFilters,
+      evidence: "posted",
+    }),
+  );
+  assert.equal(posted.get("occurredTo"), "2026-06-15");
+  assert.equal(posted.get("statementTo"), null);
+
+  const planned = new URLSearchParams(
+    buildTransactionQuery({
+      ...dailyFilters,
+      evidence: "planned",
+    }),
+  );
+  assert.equal(planned.get("plannedTo"), "2026-06-15");
+  assert.equal(planned.get("statementTo"), null);
 }
 
 function dayFilterKeepsOpeningBalanceAndDailyRows(): void {

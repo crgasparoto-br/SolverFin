@@ -158,6 +158,8 @@ async function validateLongContent(cdp) {
     "Long card content pushes invoice detail outside viewport",
   );
   assert.equal(measurements.rowActionVisible, true, "Long card content hides row action");
+  await screenshot(cdp, join(outputDir, "cards-long-compact-desktop.png"));
+  report.screenshots.push("cards-long-compact-desktop.png");
 
   await evaluate(
     cdp,

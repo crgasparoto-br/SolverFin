@@ -156,7 +156,7 @@ export async function summarizeInvoiceForContext(
   const card = await findCard(context, invoice.cardId);
   const [totals] = await query<PurchaseTotalsRow>(
     `with invoice_occurrences as (
-       select t."status", t."amountMinor"
+       select t."status"::text as "status", t."amountMinor"
          from "Transaction" t
         where t."organizationId" = $1 and t."financialProfileId" = $2
           and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
@@ -167,7 +167,7 @@ export async function summarizeInvoiceForContext(
                and pi."financialProfileId" = t."financialProfileId"
           )
        union all
-       select p."status", i."amountMinor"
+       select i."status"::text as "status", i."amountMinor"
          from "Installment" i
          join "Transaction" p
            on p."id" = i."transactionId"
@@ -492,6 +492,93 @@ export async function updateCardPurchaseForContext(
   return {
     transaction: await findCardPurchase(context, cardId, transactionId).then(mapPurchaseRow),
     invoice: await summarizeInvoiceForContext(context, invoice.id),
+  };
+}
+
+/** A single invoice installment is reconciled without changing its purchase schedule or sibling invoices. */
+export async function reconcileInvoiceInstallmentForContext(
+  context: TenantContext,
+  invoiceId: EntityId,
+  installmentId: EntityId,
+  status: "posted" | "reconciled",
+): Promise<{ installmentId: EntityId; status: string; invoice: InvoiceSummaryContract }> {
+  if (status !== "posted" && status !== "reconciled") {
+    throw new InvoiceContractError(
+      "CARD_INSTALLMENT_STATUS_INVALID",
+      "Situação de conciliação inválida.",
+    );
+  }
+  await withTransaction(async (executeQuery) => {
+    const rows = await executeQuery<{ status: string; invoiceStatus: string }>(
+      `select i."status", inv."status" as "invoiceStatus"
+         from "Installment" i
+         join "Invoice" inv on inv."id" = i."invoiceId"
+           and inv."organizationId" = i."organizationId"
+           and inv."financialProfileId" = i."financialProfileId"
+         join "Transaction" t on t."id" = i."transactionId"
+           and t."organizationId" = i."organizationId"
+           and t."financialProfileId" = i."financialProfileId"
+        where i."id" = $1 and i."invoiceId" = $2
+          and i."organizationId" = $3 and i."financialProfileId" = $4
+          and i."cardId" = inv."cardId" and t."cardId" = inv."cardId"
+          and t."accountId" is null and t."kind" = 'EXPENSE'
+        for update of i, inv`,
+      [installmentId, invoiceId, context.organizationId, context.financialProfileId],
+    );
+    const row = rows[0];
+    if (!row) {
+      throw new InvoiceContractError(
+        "CARD_INSTALLMENT_NOT_FOUND",
+        "Parcela não encontrada nesta fatura.",
+        404,
+      );
+    }
+    if (LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(row.invoiceStatus)) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_INVOICE_LOCKED",
+        "Não é possível conciliar parcelas de fatura fechada, paga ou cancelada.",
+        409,
+      );
+    }
+    if (!["PLANNED", "POSTED", "RECONCILED"].includes(row.status)) {
+      throw new InvoiceContractError(
+        "CARD_INSTALLMENT_STATUS_LOCKED",
+        "Esta parcela não permite conciliação.",
+        409,
+      );
+    }
+    const now = new Date().toISOString();
+    await executeQuery(
+      `update "Installment" set "status" = $5, "updatedAt" = $6,
+          "updatedByUserId" = $7
+        where "id" = $1 and "invoiceId" = $2
+          and "organizationId" = $3 and "financialProfileId" = $4`,
+      [
+        installmentId,
+        invoiceId,
+        context.organizationId,
+        context.financialProfileId,
+        status.toUpperCase(),
+        now,
+        context.userId,
+      ],
+    );
+    await insertAuditLogEntry(executeQuery, {
+      organizationId: context.organizationId,
+      financialProfileId: context.financialProfileId,
+      occurredAt: now,
+      actorKind: "user",
+      actorId: context.userId,
+      action: "update",
+      entityKind: "installment",
+      entityId: installmentId,
+      redactedChanges: { status: "changed" },
+    });
+  });
+  return {
+    installmentId,
+    status,
+    invoice: await summarizeInvoiceForContext(context, invoiceId),
   };
 }
 

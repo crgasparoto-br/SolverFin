@@ -26,6 +26,15 @@ const resolveAuthenticatedSources = (
     };
   }
 
+  if (routeId === "cards") {
+    const renderer = readModuleSource(moduleFileName);
+    assert.match(renderer, /cardsPageStyles\(\)/);
+    return {
+      renderer,
+      styles: readModuleSource("cards-page-v2-styles.js"),
+    };
+  }
+
   const source = readModuleSource(moduleFileName);
   return { renderer: source, styles: source };
 };

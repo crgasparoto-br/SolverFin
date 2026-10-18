@@ -17,7 +17,7 @@ import {
   renderStatementListArchetype,
   statementListArchetypeStyles,
 } from "./statement-list-archetype.js";
-import { renderStatementStatus } from "./statement-status.js";
+import { renderStatementStatus, renderStatementStatusControl } from "./statement-status.js";
 import { buildConsolidatedStatement } from "./transactions-consolidated.js";
 import {
   buildRows,
@@ -179,6 +179,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     categories,
     consolidated ? currency : undefined,
     availableCurrencies,
+    filters,
   );
   const contextHtml = renderStatementContext(
     selectedAccount,
@@ -331,6 +332,18 @@ function renderQuickActions(selectedAccount: AccountRecord | undefined): string 
   </div>`;
 }
 
+/** The financial day follows Brazil's civil calendar, not the server's UTC clock. */
+export function statementTodayInSaoPaulo(now: Date = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const value = (type: string): string => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
 function renderFilters(
   accounts: readonly AccountRecord[],
   selectedAccount: AccountRecord | undefined,
@@ -339,14 +352,14 @@ function renderFilters(
   presentation: StatementPresentation,
   url: URL | undefined,
   categories: readonly CategoryRecord[],
-  consolidatedCurrency?: string,
-  availableCurrencies: readonly string[] = [],
+  consolidatedCurrency: string | undefined,
+  availableCurrencies: readonly string[],
+  resolvedPeriod: { startsOn: string; endsOn: string; day?: string },
 ): string {
   const preserved = [
     "profileId",
     ...(consolidatedCurrency ? [] : ["currency"]),
     "evidence",
-    "day",
     "from",
     "to",
     "merchantKey",
@@ -357,20 +370,19 @@ function renderFilters(
     })
     .join("");
 
-  const day = url?.searchParams.get("day");
-  const activePeriod =
-    day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? { startsOn: day, endsOn: day } : monthToPeriod(month);
-  const shortcutBase = new URLSearchParams();
+  const day = resolvedPeriod.day;
+  const dayBounds = monthToPeriod(month);
+  const activePeriod = resolvedPeriod;
+  const rangeSelected = Boolean(
+    !day && url?.searchParams.get("from") && url?.searchParams.get("to"),
+  );
+  // Keep user/profile/currency and search filters; replace only the period.
+  const shortcutBase = new URLSearchParams(url?.searchParams);
+  for (const param of ["day", "from", "to", "startsOn", "endsOn"]) {
+    shortcutBase.delete(param);
+  }
   if (selectedId) shortcutBase.set("accountId", selectedId);
   if (consolidatedCurrency) shortcutBase.set("currency", consolidatedCurrency);
-  if (presentation.search) shortcutBase.set("q", presentation.search);
-  if (presentation.filterKind) shortcutBase.set("kind", presentation.filterKind);
-  if (presentation.filterStatus) shortcutBase.set("status", presentation.filterStatus);
-  if (presentation.filterReconciliation)
-    shortcutBase.set("reconciliation", presentation.filterReconciliation);
-  if (presentation.insightCategoryId)
-    shortcutBase.set("categoryId", presentation.insightCategoryId);
-  if (presentation.sort !== "date_asc") shortcutBase.set("sort", presentation.sort);
   const shortcut = (
     key: string,
     label: string,
@@ -384,33 +396,49 @@ function renderFilters(
     }
     return `<a class="statement-period-chip" data-period-shortcut="${key}" href="/lancamentos?${query.toString()}"${active ? ' aria-current="true"' : ""}>${label}</a>`;
   };
+  const todayIso = statementTodayInSaoPaulo();
   const dayOffset = (count: number): string => {
-    const date = new Date();
+    const date = new Date(todayIso + "T12:00:00.000Z");
     date.setUTCDate(date.getUTCDate() - count);
     return date.toISOString().slice(0, 10);
   };
-  const todayIso = dayOffset(0);
   const previousMonth = (() => {
-    const date = new Date();
+    const date = new Date(todayIso + "T12:00:00.000Z");
     date.setUTCDate(1);
     date.setUTCMonth(date.getUTCMonth() - 1);
     return date.toISOString().slice(0, 7);
   })();
+  const currentMonth = todayIso.slice(0, 7);
   const periodShortcuts = [
-    shortcut("today", "Hoje", { day: todayIso }, day === todayIso),
-    shortcut("last7", "7 dias", { from: dayOffset(6), to: todayIso }, false),
-    shortcut("last30", "30 dias", { from: dayOffset(29), to: todayIso }, false),
+    shortcut(
+      "today",
+      "Hoje",
+      { month: currentMonth, day: todayIso },
+      day === todayIso && !rangeSelected,
+    ),
+    shortcut(
+      "last7",
+      "7 dias",
+      { month: currentMonth, from: dayOffset(6), to: todayIso },
+      rangeSelected && activePeriod.startsOn === dayOffset(6) && activePeriod.endsOn === todayIso,
+    ),
+    shortcut(
+      "last30",
+      "30 dias",
+      { month: currentMonth, from: dayOffset(29), to: todayIso },
+      rangeSelected && activePeriod.startsOn === dayOffset(29) && activePeriod.endsOn === todayIso,
+    ),
     shortcut(
       "thisMonth",
       "Este mês",
-      { month: todayIso.slice(0, 7) },
-      month === todayIso.slice(0, 7) && !day,
+      { month: currentMonth },
+      month === currentMonth && !day && !rangeSelected,
     ),
     shortcut(
       "previousMonth",
       "Mês anterior",
       { month: previousMonth },
-      month === previousMonth && !day,
+      month === previousMonth && !day && !rangeSelected,
     ),
   ].join("");
   const activeFilterCount = [
@@ -420,6 +448,7 @@ function renderFilters(
     presentation.filterReconciliation,
     presentation.insightCategoryId,
     day,
+    rangeSelected ? "range" : undefined,
     presentation.sort !== "date_asc" ? presentation.sort : undefined,
   ].filter(Boolean).length;
 
@@ -435,6 +464,13 @@ function renderFilters(
       </div>
     </div>
     <div class="statement-period-shortcuts" role="group" aria-label="Atalhos de período"><span class="statement-period-range" data-period-range>Período ${formatDate(activePeriod.startsOn)} – ${formatDate(activePeriod.endsOn)}</span>${periodShortcuts}<span class="statement-filter-count" data-filter-count>Filtros (${activeFilterCount})</span></div>
+    <div class="statement-day-field" data-statement-day-field>
+      <label for="filter-day">Dia do mês</label>
+      <div class="statement-day-controls">
+        <input id="filter-day" name="day" type="date" lang="pt-BR" aria-label="Filtrar lançamentos por dia do mês" min="${escapeHtml(dayBounds.startsOn)}" max="${escapeHtml(dayBounds.endsOn)}" value="${escapeHtml(day ?? "")}" />
+        <button type="button" class="ghost-btn statement-day-clear" data-clear-statement-day aria-label="Exibir o mês completo"${day ? "" : " hidden"}>Mês completo</button>
+      </div>
+    </div>
     <label class="statement-search-field" for="statement-search">Buscar
       <input id="statement-search" name="q" type="search" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" autocomplete="off" />
     </label>
@@ -597,19 +633,60 @@ function renderRowsWithTemporalGroups(
   consolidated = false,
   month = "",
 ): string {
-  const groupByDate = sort === "date_asc" || sort === "date_desc";
-  let previousDate = "";
-  return rows
-    .map((row) => {
-      const date = statementDate(row.transaction);
-      const separator =
-        groupByDate && date !== previousDate
-          ? `<div class="statement-date-group" data-statement-date-group="${escapeHtml(date)}"><span>${formatDate(date)}</span><span>${escapeHtml(resolveEvidenceLabel(row.transaction))}</span></div>`
-          : "";
-      previousDate = date;
-      return `${separator}${renderRow(row, selectedAccount, accounts, categories, recurrences, currency, consolidated, month)}`;
-    })
-    .join("");
+  // A non-date sort must retain its global ordering; date sorts provide
+  // semantic, collapsible daily groups without changing the running balance.
+  if (sort !== "date_asc" && sort !== "date_desc") {
+    return rows
+      .map((row) =>
+        renderRow(
+          row,
+          selectedAccount,
+          accounts,
+          categories,
+          recurrences,
+          currency,
+          consolidated,
+          month,
+        ),
+      )
+      .join("");
+  }
+  const groups = new Map<string, StatementRow[]>();
+  for (const row of rows) {
+    const date = statementDate(row.transaction);
+    const entries = groups.get(date);
+    if (entries) entries.push(row);
+    else groups.set(date, [row]);
+  }
+
+  return Array.from(groups, ([date, dayRows]) => {
+    const income = dayRows.reduce((sum, row) => sum + Math.max(row.amountMinor, 0), 0);
+    const expense = dayRows.reduce((sum, row) => sum + Math.max(-row.amountMinor, 0), 0);
+    const label = dayRows.length === 1 ? "1 lançamento" : `${dayRows.length} lançamentos`;
+    const totals = currency
+      ? `<span class="statement-day-in">Entradas ${formatMoney(income, currency)}</span><span class="statement-day-out">Saídas ${formatMoney(expense, currency)}</span>`
+      : "";
+    const content = dayRows
+      .map((row) =>
+        renderRow(
+          row,
+          selectedAccount,
+          accounts,
+          categories,
+          recurrences,
+          currency,
+          consolidated,
+          month,
+        ),
+      )
+      .join("");
+    return `<details class="statement-day-group" data-statement-date-group="${escapeHtml(date)}" open>
+      <summary class="statement-date-group" aria-label="${escapeHtml(formatDate(date))}, ${label}. Expandir ou recolher lançamentos deste dia">
+        <strong>${formatDate(date)}</strong><span class="statement-day-count">${label}</span>${totals}
+        <span class="statement-day-chevron" aria-hidden="true"></span>
+      </summary>${content}
+    </details>`;
+  }).join("");
 }
 
 function renderTableHeader(): string {
@@ -635,7 +712,6 @@ function renderRow(
     ? (categories.find((category) => category.id === transaction.categoryId)?.name ??
       "Categoria não localizada")
     : "Sem categoria";
-  const nextStatus = transaction.status === "reconciled" ? "posted" : "reconciled";
   const date = statementDate(transaction);
   const recurrence = transaction.recurrenceId
     ? recurrences.find((candidate) => candidate.id === transaction.recurrenceId)
@@ -663,19 +739,48 @@ function renderRow(
     <time class="col-date" datetime="${escapeHtml(date)}" title="${escapeHtml(formatDate(date))}">${formatMovementDate(date)}</time>
     <div class="description col-description">${renderTransactionDescription(transaction, contextAccount, accounts)}${consolidated ? renderConsolidatedAccountLabel(transaction, accounts) : ""}</div>
     ${renderCategoryChip(categoryName, transaction.kind)}<span class="col-kind">${escapeHtml(formatKind(transaction.kind))}</span>
-    ${renderStatementStatus(transaction)}
+    ${renderStatementStatusControl(transaction, canToggleStatementStatus(transaction), statementStatusRestriction(transaction))}
     <strong class="col-amount ${row.amountMinor < 0 ? "debit" : "credit"}">${currency ? formatSignedAmount(row.amountMinor, currency) : "Moeda indisponível"}</strong>
     <strong class="col-balance${row.balanceAfterMinor < 0 ? " debit" : ""}" data-balance-minor="${row.balanceAfterMinor}">${currency ? formatMoney(row.balanceAfterMinor, currency) : "Moeda indisponível"}</strong>
     <details class="actions col-actions"><summary aria-label="Ações do lançamento ${escapeHtml(transaction.description || "sem descrição")}">${renderDotsIcon()}</summary><div class="actions-menu" role="menu">
       ${consolidated && consolidatedAccountId ? `<a class="actions-item" href="/lancamentos?accountId=${encodeURIComponent(consolidatedAccountId)}&month=${encodeURIComponent(month)}" aria-label="Ver lançamento na conta"><span>Ver na conta</span></a>` : ""}
       <button type="button" class="actions-item" data-edit="${escapeHtml(transaction.id)}">${renderEditIcon()}<span>Editar</span></button>
-      <button type="button" class="actions-item" data-action data-method="PATCH" data-path="/api/transactions/${escapeHtml(transaction.id)}" data-payload='${escapeHtml(JSON.stringify({ status: nextStatus }))}'>${renderReconcileIcon(transaction.status === "reconciled")}<span>${transaction.status === "reconciled" ? "Desconciliar" : "Marcar como conciliado"}</span></button>
       ${renderTransactionCloneAction(transaction)}<hr class="actions-divider" />
       <button type="button" class="actions-item danger" data-action data-method="POST" data-path="/api/transactions/${escapeHtml(transaction.id)}/void" data-confirm="${escapeHtml(transaction.status === "reconciled" ? "Este lançamento já está conciliado. Excluir mesmo assim?" : "Excluir este lançamento?")}">${renderTrashIcon()}<span>Excluir</span></button>
       ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
     </div></details>
     <script type="application/json" data-transaction="${escapeHtml(transaction.id)}">${serializeScriptJson(transaction)}</script>
   </article>`;
+}
+
+function canToggleStatementStatus(transaction: TransactionRecord): boolean {
+  // The status-only PATCH reconciles an individual movement, including finite
+  // installments and recurring occurrences. It does not edit its installment
+  // schedule, recurrence rule or sibling movements.
+  const eligibleStatus =
+    transaction.status === "planned" ||
+    transaction.status === "posted" ||
+    transaction.status === "reconciled";
+  return (
+    eligibleStatus &&
+    !transaction.cardId &&
+    !transaction.invoiceId &&
+    !transaction.transactionGroupId &&
+    !transaction.group &&
+    !transaction.accountRemuneration
+  );
+}
+
+function statementStatusRestriction(transaction: TransactionRecord): string {
+  if (transaction.cardId || transaction.invoiceId)
+    return "Altere a conciliação na fatura do cartão.";
+  if (transaction.transactionGroupId || transaction.group)
+    return "Desagrupe os lançamentos antes de alterar a conciliação.";
+  if (transaction.accountRemuneration)
+    return "Consulte a edição para alterar a situação da remuneração.";
+  if (transaction.status === "suggested") return "Confirme a sugestão antes de conciliar.";
+  if (transaction.status === "voided") return "Lançamentos excluídos não podem ser conciliados.";
+  return "Efetive o lançamento na edição antes de conciliar.";
 }
 
 function renderTransactionDescription(
@@ -891,7 +996,7 @@ function renderModal(
   categories: readonly CategoryRecord[],
   currency: string | undefined,
 ): string {
-  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit" aria-label="Fechar">&times;</button></form><div class="statement-entry-heading"><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>Novo lançamento</h2><p class="muted">Adicione um lançamento manual na sua conta.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label data-field="kind">Tipo<select name="kind" required>${renderKindOptions()}</select></label><label data-field="sourceAccount" hidden><span class="field-label">Conta origem</span><input data-source-account-display value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="destinationAccountId" hidden><span class="field-label">Conta destino</span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino</option>${renderAccountOptions(accounts)}</select></label><label class="full statement-entry-account"><span class="field-label">Conta</span><input value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label><span class="field-label">Valor origem <span class="nowrap">(<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)</span></span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="destinationAmountMinor" hidden><span class="field-label">Valor destino <span class="nowrap">(<span data-destination-currency>moeda destino</span>)</span></span><input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden><span class="field-label">Taxa efetiva</span><span class="rate-value"><output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></span></label><label class="full">Descrição<input name="description" maxlength="240" required placeholder="Ex.: Supermercado São Vicente" /></label><label class="full">Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label class="full">Observação<textarea name="note" rows="3" maxlength="200" placeholder="Informações adicionais (opcional)"></textarea></label><details class="statement-entry-advanced full"><summary>Mais opções</summary><div class="statement-entry-advanced-grid"><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label></div></details><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label aria-live="polite">Efetivado não conciliado</span></div><div class="statement-save-actions"><button type="button" class="ghost-btn" data-transaction-cancel data-statement-entry-cancel>Cancelar</button><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></div></form>${renderAttachmentWorkspace({ entityKind: "transaction", title: "Anexos do lançamento", className: "full" })}</section></dialog>`;
+  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit" aria-label="Fechar">&times;</button></form><div class="statement-entry-heading"><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>Novo lançamento</h2><p class="muted">Adicione um lançamento manual na sua conta.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label data-field="kind">Tipo<select name="kind" required>${renderKindOptions()}</select></label><label data-field="sourceAccount" hidden><span class="field-label">Conta origem</span><input data-source-account-display value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="destinationAccountId" hidden><span class="field-label">Conta destino</span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino</option>${renderAccountOptions(accounts)}</select></label><label class="full statement-entry-account"><span class="field-label">Conta</span><input value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label><span class="field-label">Valor origem <span class="nowrap">(<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)</span></span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="destinationAmountMinor" hidden><span class="field-label">Valor destino <span class="nowrap">(<span data-destination-currency>moeda destino</span>)</span></span><input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden><span class="field-label">Taxa efetiva</span><span class="rate-value"><output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></span></label><label class="full">Descrição<input name="description" maxlength="240" required placeholder="Ex.: Supermercado São Vicente" /></label><label class="full">Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label class="full">Observação<textarea name="note" rows="3" maxlength="200" placeholder="Informações adicionais (opcional)"></textarea></label><details class="statement-entry-advanced full"><summary>Mais opções</summary><div class="statement-entry-advanced-grid"><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label></div></details><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label aria-live="polite">Efetivado não conciliado</span></div><div class="statement-save-actions"><button type="button" class="ghost-btn" data-transaction-cancel data-statement-entry-cancel>Cancelar</button><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></div></form><details class="statement-entry-attachments full" data-statement-attachments><summary>Anexos do lançamento</summary><div class="statement-entry-attachments-body">${renderAttachmentWorkspace({ entityKind: "transaction", title: "Anexos do lançamento", className: "full", pendingCreate: true })}</div></details></section></dialog>`;
 }
 
 function renderGroupModal(
@@ -984,12 +1089,6 @@ function renderCloneIcon(): string {
 function renderTrashIcon(): string {
   return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
-function renderReconcileIcon(isReconciled: boolean): string {
-  return isReconciled
-    ? `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M9 14 5 10l4-4M5 10h9a5 5 0 1 1 0 10h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-    : `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-}
-
 function clientScript(currency: string | undefined, accounts: readonly AccountRecord[]): string {
   return String.raw`<script data-statement-a2-runtime="true">
   (() => {
@@ -1227,7 +1326,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     const payload = () => { const data = new FormData(form); return basePayload(String(data.get("plannedOn") || ""), String(data.get("effectiveOn") || ""), moneyToMinor(data.get("amountMinor")), String(data.get("description") || "")); };
     const newIdempotencyKey = () => window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
 
-    document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) attachmentWorkspace.dataset.entityId = ""; form.reset(); const today = currentLocalDate(); form.occurredOn.value = today; form.plannedOn.value = today; form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; const submitButton = form.querySelector('.save-row [type="submit"]'); if (submitButton) submitButton.disabled = !accountCurrencies.get(sourceAccountId()); setStatus("posted"); syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }));
+    document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace); form.reset(); document.querySelector("[data-modal-title]").textContent = "Novo lançamento"; const today = currentLocalDate(); form.occurredOn.value = today; form.plannedOn.value = today; form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; const submitButton = form.querySelector('.save-row [type="submit"]'); if (submitButton) submitButton.disabled = !accountCurrencies.get(sourceAccountId()); setStatus("posted"); syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }));
     document.querySelectorAll("[data-transaction]").forEach((node) => {
       const transaction = JSON.parse(node.textContent);
       if (transaction.accountRemuneration) remunerationIds.add(transaction.id);
@@ -1237,7 +1336,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       const accountDisplay = form.querySelector(".statement-entry-account input");
       if (accountDisplay) accountDisplay.value = accountLabels.get(rowSourceId) || "Conta indisponível";
       const submitButton = form.querySelector('.save-row [type="submit"]');
-      if (submitButton) submitButton.disabled = false; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) attachmentWorkspace.dataset.entityId = clone ? "" : transaction.id; document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
+      if (submitButton) submitButton.disabled = false; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) { if (clone) window.SolverFinAttachments?.resetPending(attachmentWorkspace); else attachmentWorkspace.dataset.entityId = transaction.id; } document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
       hydrate('[data-edit="', false); hydrate('[data-clone="', true);
     });
     const positionActions = (details) => {
@@ -1300,7 +1399,10 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     form.addEventListener("submit", async (event) => {
       event.preventDefault(); if (form.dataset.submitting === "true") return;
       if (!form.checkValidity()) { form.reportValidity(); return; }
-      const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]'); form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
+      const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]');
+      const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); const queuedFile = attachmentWorkspace?.querySelector('[data-attachment-form] [name="file"]')?.files?.[0];
+      if (queuedFile && method === "POST" && mode !== "single") { statusNode.className = "form-status error full"; statusNode.textContent = "Para anexar arquivos, salve um lançamento único. Em parcelas ou recorrências, anexe na edição de uma ocorrência."; return; }
+      form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
       let shouldReload = false;
       try {
         let response;
@@ -1309,12 +1411,108 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
         } else if (mode === "installment" && method === "POST") {
           const data = new FormData(form); const item = payload(); response = await send("/api/installments", "POST", { accountId: String(data.get("accountId")), destinationAccountId: String(data.get("destinationAccountId") || "") || null, categoryId: String(data.get("categoryId") || "") || null, kind: String(data.get("kind")), status: String(data.get("status")), description: String(data.get("description") || "").trim(), note: String(data.get("note") || "").trim() || null, plannedOn: item.plannedOn, effectiveOn: item.effectiveOn, amountMinor: moneyToMinor(data.get("amountMinor")), amountMode: String(data.get("installmentValueMode") || "per_installment"), totalInstallments: Math.max(2, Number(data.get("installments") || 2)), initialSequenceNumber: Math.max(1, Number(data.get("installmentStart") || 1)), idempotencyKey: newIdempotencyKey() });
         } else response = await send(form.dataset.path || "/api/transactions", method, payload());
-        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response); if (response.ok) { shouldReload = true; setTimeout(() => location.reload(), 350); }
+        const created = response.ok && queuedFile && method === "POST" ? await response.clone().json().catch(() => ({})) : null;
+        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response);
+        if (response.ok && queuedFile) {
+          const linkedId = method === "POST" ? created?.transaction?.id : attachmentWorkspace?.dataset.entityId;
+          if (!linkedId) { statusNode.className = "form-status error full"; statusNode.textContent = "Lançamento salvo, mas o identificador não foi retornado. Abra a edição para anexar o arquivo."; return; }
+          if (method === "POST") {
+            form.dataset.method = "PATCH"; form.dataset.path = "/api/transactions/" + encodeURIComponent(linkedId); document.querySelector("[data-modal-title]").textContent = "Editar lançamento";
+          }
+          try {
+            await window.SolverFinAttachments.uploadPending(attachmentWorkspace, linkedId);
+          } catch {
+            statusNode.className = "form-status error full";
+            statusNode.textContent = "Lançamento salvo, mas o anexo não foi enviado. Use Adicionar anexo para tentar novamente.";
+            return;
+          }
+        }
+        if (response.ok) { shouldReload = true; setTimeout(() => location.reload(), 350); }
       } catch { statusNode.className = "form-status error full"; statusNode.textContent = "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente."; }
       finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit && !shouldReload) submit.disabled = false; }
     });
 
     document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async () => { if (button.dataset.confirm && !confirm(button.dataset.confirm)) return; const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {}); if (response.ok) setTimeout(() => location.reload(), 300); }));
+
+
+    // Reconcile from the status icon, with the same accessible neutral menu as Cards.
+    const statementStatusControls = Array.from(document.querySelectorAll("[data-statement-status-control]"));
+    const positionStatementStatus = (control) => {
+      const menu = control.querySelector(".statement-status-menu");
+      const summary = control.querySelector("summary");
+      if (!menu || !summary) return;
+      const rect = summary.getBoundingClientRect();
+      menu.style.position = "fixed"; menu.style.left = "0px"; menu.style.top = "0px";
+      const width = menu.offsetWidth; const height = menu.offsetHeight;
+      menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) + "px";
+      menu.style.top = (rect.bottom + height + 6 < window.innerHeight
+        ? rect.bottom + 6 : Math.max(8, rect.top - height - 6)) + "px";
+    };
+    const closeStatementStatuses = (except) => {
+      statementStatusControls.forEach((control) => {
+        if (control !== except && control.open) control.open = false;
+      });
+    };
+    statementStatusControls.forEach((control) => control.addEventListener("toggle", () => {
+      if (!control.open) return;
+      closeStatementStatuses(control);
+      closeActions();
+      positionStatementStatus(control);
+    }));
+    const syncStatementMenus = () => statementStatusControls.forEach((control) => {
+      if (control.open) positionStatementStatus(control);
+    });
+    window.addEventListener("scroll", syncStatementMenus, true);
+    window.addEventListener("resize", syncStatementMenus);
+    document.addEventListener("click", (event) => {
+      statementStatusControls.forEach((control) => {
+        if (control.open && !control.contains(event.target)) control.open = false;
+      });
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      statementStatusControls.forEach((control) => {
+        if (!control.open) return;
+        control.open = false;
+        control.querySelector("summary")?.focus();
+      });
+    });
+    document.querySelectorAll("[data-set-statement-status]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const control = button.closest("[data-statement-status-control]");
+        const feedback = control?.querySelector(".statement-status-feedback");
+        const feedbackMessage = feedback?.querySelector("[data-statement-status-feedback-message]");
+        const transactionId = button.dataset.statusTransactionId;
+        const nextStatus = button.dataset.setStatementStatus;
+        if (!control || !feedback || !feedbackMessage || !transactionId || !["posted", "reconciled"].includes(nextStatus)) return;
+        const showStatusFeedback = (text, tone) => {
+          feedback.hidden = false;
+          feedback.className = "statement-status-feedback" + (tone ? " " + tone : "");
+          feedbackMessage.textContent = text;
+          feedback.title = text;
+          feedback.dataset.tooltip = text;
+          positionStatementStatus(control);
+        };
+        const buttons = Array.from(control.querySelectorAll("[data-set-statement-status]"));
+        buttons.forEach((item) => { item.disabled = true; });
+        showStatusFeedback("Atualizando situação...", "");
+        try {
+          // PATCH is status-only: no amount, currency, account or date fields.
+          const response = await send("/api/transactions/" + encodeURIComponent(transactionId), "PATCH", { status: nextStatus });
+          if (!response.ok) {
+            const body = await response.json().catch(() => ({}));
+            showStatusFeedback(body?.error?.message || "Não foi possível alterar a situação.", "error");
+            buttons.forEach((item) => { item.disabled = false; });
+            return;
+          }
+          showStatusFeedback("Situação atualizada. Atualizando extrato...", "success");
+          window.setTimeout(() => location.reload(), 350);
+        } catch {
+          showStatusFeedback("Falha de conexão. Tente novamente.", "error");
+          buttons.forEach((item) => { item.disabled = false; });
+        }
+      });
+    });
 
     const groupModal = document.querySelector("[data-group-modal]"); const groupForm = document.querySelector("[data-group-form]"); const selectionBar = document.querySelector("[data-selection-bar]"); const selectable = Array.from(document.querySelectorAll("[data-select-transaction]")); const groupOpen = document.querySelector("[data-group-open]");
     const selected = () => selectable.filter((input) => input.checked);
@@ -1516,9 +1714,6 @@ function formatKind(kind: string): string {
         ? "Transferência"
         : kind;
 }
-function resolveEvidenceLabel(transaction: TransactionRecord): string {
-  return transaction.effectiveOn ? "Efetivo" : transaction.plannedOn ? "Previsto" : "Evento";
-}
 function emptyState(title: string, description: string): string {
   return `<div class="empty"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(description)}</p></div>`;
 }
@@ -1588,5 +1783,39 @@ function css(): string {
     @media(max-width:1100px){.statement-filter-actions{grid-column:1/-1}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:761px) and (max-width:900px){.filter-form{grid-template-columns:minmax(0,1fr)}.statement-filter-actions{grid-column:1}}
     @media(max-width:760px){main{padding:14px 14px 24px}.filter-form,.modal-panel form[data-form],.group-modal-panel form,.summary-totals{grid-template-columns:1fr}.statement-filter-actions{align-items:stretch;display:grid}.statement-toolbar{align-items:stretch;display:grid}.save-row{align-items:stretch;flex-direction:column}.statement-table{overflow-x:visible}.statement-head{display:none}.statement-row.statement-body{align-items:center;display:flex;flex-wrap:wrap;gap:5px 8px;min-width:0;padding:10px}.statement-row.statement-body .col-select{left:auto;order:1;position:static}.statement-row.statement-body .col-date{color:var(--muted);flex:0 0 auto;font-size:.75rem;order:1;padding-left:0}.statement-row.statement-body .col-actions{margin-left:auto;order:2}.statement-row.statement-body .col-description{flex:1 1 100%;order:3}.statement-row.statement-body .col-category,.statement-row.statement-body .col-kind{color:var(--muted);font-size:.75rem;order:4}.statement-row.statement-body .col-status{order:5}.statement-row.statement-body .col-amount{font-size:.9375rem;margin-left:auto;order:6}.statement-row.statement-body .col-balance{color:var(--muted);font-size:.75rem;order:7}.statement-date-group{position:sticky;top:0;z-index:2}}
+
+    /* #720: match the neutral Golden Screen status menu used on Cards. */
+    .statement-status-control{display:inline-block;justify-self:start;position:relative}
+    .statement-status-control>summary{align-items:center;border-radius:999px;cursor:pointer;display:inline-flex;height:44px;justify-content:center;list-style:none;min-height:44px;min-width:44px;width:44px}
+    .statement-status-control>summary::-webkit-details-marker{display:none}
+    .statement-status-control>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .statement-status-control>summary:hover .statement-status,.statement-status-control[open]>summary .statement-status{box-shadow:0 0 0 2px var(--line)}
+    .statement-status-control[open],.statement-row:has(.statement-status-control[open]){z-index:55}
+    .statement-status-menu{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:flex;gap:6px;max-width:calc(100vw - 16px);min-width:0;padding:8px;position:absolute;top:calc(100% + 4px);width:max-content;z-index:60}
+    .statement-status-current{align-items:center;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
+    .statement-status-option{align-items:center;background:transparent;border:0;border-radius:999px;cursor:pointer;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;min-height:44px;padding:0;width:44px}
+    .statement-status-menu .statement-status-option>.statement-status,.statement-status-menu .statement-status-current .statement-status,.statement-status-readonly>.statement-status{box-sizing:border-box;flex:0 0 26px;height:26px;width:26px}
+    .statement-status-menu .statement-status-option svg,.statement-status-menu .statement-status-current svg,.statement-status-readonly svg{height:15px;width:15px}
+    .statement-status-menu>button.statement-status-option:hover:not(:disabled),.statement-status-menu>button.statement-status-option:focus-visible{background:transparent;border-color:transparent}
+    .statement-status-menu>button.statement-status-option:hover:not(:disabled)>.statement-status,.statement-status-menu>button.statement-status-option:focus-visible>.statement-status{box-shadow:0 0 0 2px var(--neutral-control-border-hover)}
+    .statement-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .statement-status-option:disabled{cursor:wait;opacity:.55}
+    .statement-status-readonly{align-items:center;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
+    .statement-status-feedback{align-items:center;border-radius:999px;color:var(--muted);display:inline-flex;flex:0 0 32px;height:32px;justify-content:center;margin:0;width:32px}
+    .statement-status-feedback[hidden]{display:none}
+    .statement-status-feedback-ok,.statement-status-feedback-error{display:none}
+    .statement-status-feedback.success .statement-status-feedback-pending,.statement-status-feedback.error .statement-status-feedback-pending{display:none}
+    .statement-status-feedback.success .statement-status-feedback-ok,.statement-status-feedback.error .statement-status-feedback-error{display:inline-flex}
+    .statement-status-feedback.error{color:var(--danger)}
+    .statement-status-feedback.success{color:var(--success)}
+
+    .statement-entry-attachments{border-top:1px solid var(--line);margin-top:4px;min-width:0}
+    .statement-entry-attachments>summary{align-items:center;color:var(--primary);cursor:pointer;display:flex;font-size:.875rem;font-weight:700;justify-content:space-between;list-style:none;min-height:44px;padding:10px 0}
+    .statement-entry-attachments>summary::-webkit-details-marker{display:none}
+    .statement-entry-attachments>summary::after{border-bottom:2px solid currentColor;border-right:2px solid currentColor;content:"";height:7px;margin-right:6px;transform:rotate(45deg);transition:transform .15s ease;width:7px}
+    .statement-entry-attachments[open]>summary::after{transform:rotate(225deg)}
+    .statement-entry-attachments>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    .statement-entry-attachments-body{padding:4px 0 12px}
+    .statement-entry-attachments .attachment-workspace .section-heading h3{display:none}
     ${recurrencesSectionStyles()}`;
 }

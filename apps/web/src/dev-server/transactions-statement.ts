@@ -127,7 +127,8 @@ export function resolveFilters(
   const month = resolveSelectedMonth(url, currentMonth);
   const day = resolveSelectedDay(url, month);
   const range = resolveSelectedRange(url);
-  const period = range ?? (day ? dayToPeriod(day) : monthToPeriod(month));
+  // An explicit day is more specific than a stale relative range in a GET filter.
+  const period = day ? dayToPeriod(day) : (range ?? monthToPeriod(month));
   const currency = normalizeCurrency(url?.searchParams.get("currency"));
   const kind = normalizeKindFilter(url?.searchParams.get("kind"));
   const evidence = normalizeEvidenceFilter(url?.searchParams.get("evidence"));
@@ -177,11 +178,20 @@ export function dayToPeriod(day: string): Pick<StatementFilters, "startsOn" | "e
 }
 
 export function buildTransactionQuery(filters: StatementFilters): string {
-  return new URLSearchParams({
+  const query = new URLSearchParams({
     status: "all",
     accountId: filters.accountId ?? "",
-    occurredTo: filters.endsOn,
-  }).toString();
+  });
+  // Drilldowns have their own date semantics. Normal statements use the date
+  // displayed to the user, never the occurrence date as an implicit cutoff.
+  const cutoffKey =
+    filters.evidence === "posted"
+      ? "occurredTo"
+      : filters.evidence === "planned"
+        ? "plannedTo"
+        : "statementTo";
+  query.set(cutoffKey, filters.endsOn);
+  return query.toString();
 }
 
 export function isAccountStatementTransaction(transaction: TransactionRecord): boolean {

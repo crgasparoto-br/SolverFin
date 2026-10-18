@@ -1,0 +1,75 @@
+# On-demand, read-only checkout export for independently validated delivery handoffs.
+# The archived bundles contain public repository objects only (no runner credentials).
+name: Delivery audit workspace
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - .github/workflows/delivery-audit-workspace.yml
+      - apps/web/src/dev-server/cards-page-v2.ts
+      - apps/web/src/dev-server/cards-page-v2.test.ts
+      - scripts/statement-visual/cards-interface.mjs
+  workflow_dispatch:
+    inputs:
+      material_ref:
+        description: "Existing branch or commit to export"
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  export:
+    # Until promotion this PR is the bootstrap test; dispatch stays generic.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 720 }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout material candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || inputs.material_ref }}
+          path: solverfin
+          persist-credentials: false
+      - name: Checkout canonical delivery skill
+        uses: actions/checkout@v4
+        with:
+          repository: crgasparoto-br/skill
+          ref: develop
+          fetch-depth: 0
+          path: delivery-skill
+          persist-credentials: false
+      - name: Create verifiable Git bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit-bundle
+          (
+            cd solverfin
+            git fsck --no-reflogs --connectivity-only
+            git branch audit-material HEAD
+            git bundle create ../audit-bundle/solverfin.bundle audit-material
+            git bundle verify ../audit-bundle/solverfin.bundle
+            git rev-parse HEAD > ../audit-bundle/material-head.txt
+            git rev-parse HEAD^{tree} > ../audit-bundle/material-tree.txt
+          )
+          (
+            cd delivery-skill
+            git fsck --no-reflogs --connectivity-only
+            git branch audit-skill HEAD
+            git bundle create ../audit-bundle/skill.bundle audit-skill
+            git bundle verify ../audit-bundle/skill.bundle
+            git rev-parse HEAD > ../audit-bundle/skill-head.txt
+          )
+          test "$(cat audit-bundle/material-head.txt)" = "${{ github.event.pull_request.head.sha || inputs.material_ref }}" || (
+            # Dispatch may supply a branch name instead of a literal SHA.
+            test -n "${{ inputs.material_ref || '' }}"
+          )
+          ( cd audit-bundle && sha256sum solverfin.bundle skill.bundle > SHA256SUMS )
+      - name: Upload immutable checkout
+        uses: actions/upload-artifact@v4
+        with:
+          name: delivery-audit-checkout-${{ github.event.pull_request.head.sha || github.sha }}
+          path: audit-bundle/
+          retention-days: 3
+          if-no-files-found: error

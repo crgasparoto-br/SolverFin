@@ -255,6 +255,35 @@ A validacao visual permanente da rota usa `scripts/statement-visual/accounts-car
 
 A rota `/cartoes` deve priorizar a decisao operacional sobre a fatura selecionada, sem alterar os contratos financeiros descritos neste documento.
 
+### Refatoração de interface — `design-interface` (Issue #715 / PR #720)
+
+A Skill `crgasparoto-br/skill/design-interface` foi aplicada em modo `implementation`, seguindo o contrato `2026-08-20.3` sobre o arquétipo **A3** e a referência aprovada do Extrato. A tarefa principal permanece `cartão → fatura → compras`, sem reproduzir literalmente a geometria do Extrato.
+
+- **Contexto do cartão:** painel esquerdo desktop preserva seleção, instituição/identificação mascarada, estado, moedas, dados contratuais e instrumentos. A identidade do cartão perde o card aninhado; no mobile, a seleção continua visível e o nome repetido fica apenas no seletor, preservando status e acesso aos detalhes expansíveis.
+- **Instrumentos em duas linhas (PR #720):** no painel lateral de `/cartoes`, cada instrumento exibe a identificação (tipo/nome e número mascarado) na primeira linha e **`Limite <MOEDA> <VALOR>`** na segunda (por exemplo, `Limite BRL 84.000,00`), sempre com `L` maiúsculo. `Padrão` e `Arquivado` continuam em coluna separada, alinhados ao item. Sem limite informado, não mostrar linha vazia; sem moeda, usar `Limite com moeda indisponível`. A lista continua acessível no mobile e a seleção de instrumentos nos formulários mantém rótulo compacto em linha única.
+- **Faixa financeira:** `Total da fatura`, `Conciliado`, `Não conciliado` e `Limite disponível` continuam valores independentes na moeda da fatura, mas formam uma faixa comparável sem quatro cartões decorados ou ícones supérfluos. O detalhamento do limite permanece contextual. Em 390 px, os quatro fatos compõem uma grade compacta 2×2; em 320 px, viram linhas rótulo/valor para evitar corte ou quebra da moeda.
+- **Consulta e compras:** busca, filtros e contadores permanecem funcionais no mesmo GET; chips ativos usam contraste sem bordas de destaque repetidas. Instrumentos usam subtotais agrupados por moeda e divisores discretos, e compras mantêm as seis colunas semânticas (categoria independente, situação em pictograma, descrição e valor priorizados). `Registrar compra` continua junto à coleção, enquanto fechar/documentar/liquidar pertencem à fatura.
+- **Verificação visual:** usar cenário autenticado `/cartoes` com fixture fictícia em 1366×768, 1920×1080, 390×844 e 320×740, além de estados de filtro vazio, conteúdo longo, modal e teclado. O Chrome exige faixa com quatro métricas sem caixas completas, controle negativo que reaplica uma moldura e falha, contexto mobile compacto e ausência de overflow. O parecer visual independente permanece obrigatório, mesmo com CI verde.
+
+### Propagação visual da Golden Screen — Issue #715
+
+A Golden Screen do Extrato (`/lancamentos`) define o **nível de acabamento**, não a geometria literal de Cartões. A composição A3 da rota `/cartoes` deve usar a largura útil da aplicação para a hierarquia cartão selecionado → valor e decisão da fatura → compras; uma coluna fixa de metadados do cartão não deve atrasar a leitura da coleção financeira.
+
+- O cabeçalho evita repetir título/descrição já presentes no shell e mantém **Registrar compra** no contexto das compras quando existe fatura. Liquidar fatura é a única ação visual primária no escopo da fatura; fechamento é secundário.
+- **Redesenho orientado a decisão (#715, PR #720):** com fatura selecionada, o cabeçalho da rota `/cartoes` usa composição **valor → situação/datas → ações secundárias**. No desktop, **Valor a pagar** lidera à esquerda com **Liquidar fatura** alinhado ao mesmo grupo; situação, vencimento, fechamento e moeda ficam em um bloco factual à direita, separados por divisor discreto. A faixa inferior agrupa **Documentos** (nome acessível **Documentos da fatura**), **Fechar fatura** (somente aberta) e explicação progressiva **Sobre a liquidação**, sem duplicar botões de maior peso. Em telas estreitas, os dois comandos ocupam uma linha de duas colunas, e a explicação fica abaixo. No mobile, valor e liquidação aparecem primeiro; depois situação/datas e faixa secundária, com alvos de pelo menos 44 px. **Registrar compra** permanece exclusivamente no contexto de Itens da fatura; sem fatura, o cabeçalho da página oferece o primeiro registro. Não mudar operações, permissões ou endpoints.
+
+- **Primeira dobra / hierarquia responsiva (#715):** em 1366×768, o início de uma compra não basta: a primeira linha, sua descrição e seu valor devem estar integralmente visíveis com margem inferior de 12 px, sem ocultar o painel esquerdo. O resumo contém o acesso aos detalhes do limite no próprio indicador de limite, enquanto documentos e fechamento pertencem à mesma faixa secundária, sem competir com a liquidação. Em 390×844 e 320×740, a navegação do mês identifica a fatura e a seção começa pelo **Valor a pagar** e sua ação, antes das datas e dos comandos secundários, sem esconder status, vencimento, fechamento ou a gestão dos instrumentos. Os controles Chrome rejeitam deslocamento artificial da compra ou do valor principal e restauram a geometria após o teste.
+- **Navegação e acessibilidade do cabeçalho (PR #720):** anterior/mês/próxima formam um seletor compacto à esquerda; **Escolher outro mês** fica à direita, com foco de teclado perceptível e escolha explícita de meses históricos. O mês é exibido visualmente uma só vez; o `<h2>` da fatura fica disponível para leitores de tela. **Vencimento**, **Fechamento** e **Moeda** permanecem fatos separados com `<dt>/<dd>`; ambas as datas usam `<time datetime>` sem alterar fuso. O contraste e a dimensão dos valores têm precedência sobre badges e bordas. O modal de documentos e os comandos financeiros existentes mantêm sua semântica.
+- A lista de compras utiliza **Categoria como coluna própria**, entre Compra e Situação, no desktop; a descrição não duplica a categoria em linha secundária. **Paridade com o Extrato:** a célula Categoria mostra o mesmo SVG de direção de saída (seta para baixo, `data-category-direction="out"`), seguido do nome, com iconografia de 13 px e espaçamento coerentes com a Golden Screen. O ícone e o nome ficam num badge semântico: entrada com fundo verde (`--success-bg`), saída com fundo vermelho (`--danger-bg`) e transferência com fundo cinza (`--surface-soft`), utilizando também as respectivas cores de texto dos tokens. Em compras com cartão, a direção atual é sempre saída; as outras duas variantes estão disponíveis no CSS sem introduzir transferências ou receitas artificiais no modelo. O rótulo contextual mobile permanece fora do fundo colorido, e textos longos quebram sem scroll horizontal. Compras em cartão são despesas; por isso não exibem o ícone de entrada. A indicação visual é decorativa (`aria-hidden`) e o nome permanece legível/acessível, inclusive para `Sem categoria`. No mobile, a categoria continua como célula independente com rótulo contextual, sem scroll horizontal e sem cortar nomes longos. A ordem é Data, Compra, Categoria, Situação, Valor e Ações.
+- A coluna **Situação** das compras conserva pictogramas SVG da iconografia compartilhada, equivalentes aos do Extrato: conciliada (check), efetivada não conciliada (círculo) e planejada (relógio). O ícone fica dentro de um acionador `summary` com alvo de pelo menos 44×44 px e foco de teclado. **Ao clicar ou pressionar Enter/Espaço**, abre um menu com a situação atual e as alterações permitidas: **Marcar como conciliada** para não conciliadas, **Desconciliar** para conciliadas e, em planejadas, **Marcar como não conciliada** ou **Marcar como conciliada**. A ação usa exclusivamente `PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId` com `{status}`, atualiza a fatura após sucesso, preserva filtros e exibe erros de API/rede no próprio menu para nova tentativa. Escape e clique fora fecham o menu, e o ícone mantém `role="img"`, `aria-label`, `title` e `data-tooltip` sem texto visual duplicado. Em **faturas fechadas, pagas ou canceladas** e nas **ocorrências parceladas**, o ícone abre apenas uma explicação de bloqueio: a API proíbe a mudança direta de status de uma compra parcelada para não alterar outras parcelas. Essa restrição não pode ser contornada por PATCH genérico. O menu de ações continua usando SVG compartilhado, não caracteres `•••`. **Padrão de interação visual:** o menu contextual e suas opções são controles neutros sobre superfície clara, inclusive no hover e no foco. A cor de fundo da opção em hover/foco é `--neutral-control-hover` e o texto é `--neutral-control-text-hover`; o `button:hover:not(:disabled)` global, reservado às ações primárias, **não** pode prevalecer neste menu. O teste SSR valida a precedência dos tokens neutros sobre `button:hover`. O teste Chrome deve mover o cursor de verdade sobre a opção e medir o **fundo final composto com os elementos pais** (um botão transparente sobre menu branco não equivale a fundo preto), rejeitando opções escuras e exigindo contraste visual de pelo menos 4,5:1 em desktop e mobile.
+- O seletor e a identidade mascarada do cartão ficam num contexto compacto. Dados contratuais e instrumentos permanecem acessíveis sob expansão, **inclusive no mobile**, sem apagar moeda, identidade, seleção nem navegação.
+- A navegação corrente/futura e a escolha explícita de mês histórico seguem as regras cronológicas documentadas abaixo. O resumo prioriza valor a pagar, vencimento, fechamento e estado; limites e conciliação aparecem como indicadores contidos, enquanto explicações operacionais e detalhes complementares usam divulgação progressiva.
+- No Chrome autenticado 1366×768, a **primeira linha de compra inteira**, incluindo descrição e valor, deve terminar antes do limite de 12 px acima da primeira dobra; em 390×844 e 320×740, o **valor a pagar** deve iniciar antes de 62% da altura da viewport e a menos de 88 px do começo do cabeçalho da fatura. O controle negativo deve deslocar temporariamente esses elementos para fora do limite, observar rejeição e restaurar sem efeitos persistentes.
+- Em fluxo normal, busca sem resultados, descrição longa e diálogos, a apresentação deve preservar leitura integral, valor/moeda, foco, alvos de toque, estado e hierarquia. Uma execução do CI ou do Chrome sem inspeção comparativa com a Golden Screen não é aceite visual independente.
+- **Acabamento GS715-V03:** o shell compartilhado recebe tema claro apenas na rota A3 `/cartoes`, mantendo o menu e a ação de sair. O cabeçalho interno da fatura não duplica o título do shell no mobile; no desktop o cabeçalho interno substitui a barra superior redundante. Em telas sem fatura o cabeçalho com ação de registro permanece disponível.
+- **Alvo de toque REC-715-01:** o menu SVG de cada compra usa alvo mínimo de 44×44 px, com foco explícito e menu ancorado abaixo do acionador; Chrome/SSR verificam o alvo e controle negativo reversível de 30 px.
+- **Comparativo visual:** as capturas de `cards-desktop.png`, `cards-mobile.png` e `cards-compact-mobile.png` devem ser confrontadas com as capturas da Golden Screen do mesmo workflow/HEAD material. O CI valida geometria e regressões; o parecer de acabamento independente permanece uma etapa distinta.
+
 Ordem esperada de leitura:
 
 1. selecao do cartao e do periodo da fatura;
@@ -268,7 +297,7 @@ A navegacao de periodo da fatura usa um controle compacto com **Anterior**, peri
 A lista de compras deve:
 
 - preservar o agrupamento e os subtotais por instrumento;
-- exibir cabecalho comparavel no desktop com data, compra, situacao, valor e acoes;
+- exibir cabecalho comparavel no desktop com data, compra, categoria, situacao, valor e acoes;
 - manter rotulos de contexto por campo no mobile, sem depender da posicao de uma coluna;
 - representar conciliacao com icone e texto acessivel, sem depender apenas de cor;
 - mostrar contadores nos filtros e anunciar a quantidade de compras visiveis;
@@ -288,6 +317,20 @@ No modal de nova compra:
 Os modais de compra e pagamento devem ter titulo e descricao acessiveis, fechamento por controle identificado, foco inicial em campo interativo e layout de coluna unica nas viewports moveis.
 
 A validacao visual permanente usa `scripts/statement-visual/cards-interface.mjs` para os estados principal e modal em desktop e mobile, e `scripts/statement-visual/cards-interface-adversarial.mjs` para `1366x768`, arvore de acessibilidade, anuncio unico da regiao viva, agrupamentos recolhidos e fluxo completo por teclado. O workflow `Statement visual validation` deve preservar as evidencias `cards-desktop.png`, `cards-modal-desktop.png`, `cards-mobile.png`, `cards-modal-mobile.png`, `cards-compact-desktop.png`, `cards-collapsed-groups.png`, `cards-modal-compact-desktop.png`, `cards-interface.json` e `cards-interface-adversarial.json`.
+
+## Propagacao da Golden Screen — Issue #715
+
+A implementacao de `/cartoes` adota o **nivel de acabamento** do Extrato aprovado em 14/10/2026, sem copiar a geometria do Extrato. A ordem de leitura continua `cartao -> fatura -> compras` e o material de referencia integrado na `develop` e o merge da PR #713 (`b50ee44238dd9e63129ebc87a3ee31c0965b19f8`). A certificacao tecnica independente da Issue #714 e um marco distinto do aceite de produto.
+
+- **Acao principal:** quando a fatura permite liquidacao, **Liquidar fatura** tem a unica aparencia primaria no escopo da fatura; **Fechar fatura** e **Registrar compra** sao acoes secundarias, sem alterar autorizacao ou endpoints. Quando a liquidacao nao e permitida, o fechamento permanece visivel como acao secundaria.
+- **Composicao:** valor a pagar, situacao, fechamento e vencimento ficam no cabecalho da fatura; limite, conciliacao e total da fatura ficam em faixa compacta de metricas, sem uma grade de cards coloridos.
+- **Filtros:** busca e conciliacao sao visiveis; ordenacao e dia ficam em **Mais filtros**, reaberto no SSR quando filtros nao padrao estao ativos. Os inputs continuam associados ao mesmo formulario GET e preservam IDs, query params e controles existentes.
+- **Compras:** linha financeira com descricao, valor e codigo de moeda legiveis; descricao e identificacao de cartao longas podem quebrar linha, em vez de serem truncadas. Os totais por instrumento continuam usando agrupamento por moeda, nunca conversao implicita.
+- **Mobile e modais:** composicao compacta em 390x844, fallback em 320x740, rolagem interna de formulario, foco perceptivel e botoes com rotulos acessiveis.
+- **Documentos da fatura:** retirar o formulário completo da lista principal e apresentá-lo em modal secundário por **Documentos da fatura**, mantendo o vínculo `invoice` e a separação dos anexos de lançamentos (`transaction`).
+- **Invariantes:** ocorrencias parceladas, recorrencias, conciliacao, moeda da compra e pagamento da fatura continuam usando os contratos atuais; pagamento e liquidacao da obrigacao e nao segunda compra.
+
+A validacao visual de aceite exige cenarios reais SSR/Chrome com fatura normal, busca sem resultado, descricao longa e modal de compra em 1366x768 e 390x844, alem de 320x740 quando a composicao mudar. A matriz `requisito -> cenario -> screenshot/assertion -> SHA -> parecer independente` deve ser vinculada a Issue #715 e revisada no HEAD final. CI verde nao atesta por si so equivalencia estetica.
 
 ## Cobertura esperada
 
@@ -359,3 +402,70 @@ Regras específicas:
 - parcelamento só é materializado quando sequência e total foram extraídos de forma consistente e o valor total revisado da compra reproduz exatamente o valor da parcela observado no documento; `Transaction.amountMinor` continua sendo o total da compra e `installmentAmountMinor` é apenas evidência imutável da ocorrência importada;
 - total da fatura, pagamento, saldo anterior e linhas de resumo não são tratados como compras;
 - deduplicação/conciliação usa o mesmo detector determinístico compartilhado, incluindo `cardId` como evidência.
+
+## Golden Screen — composição e painel contextual (Issue #715)
+
+A rota `/cartoes` reutiliza a linguagem visual aprovada do Extrato: hierarquia textual,
+contraste, botões do sistema, filtros acessíveis, resumo financeiro compacto e
+lista de compras escaneável. **A composição é master-detail própria de cartões**:
+no desktop largo, o painel contextual ocupa a coluna esquerda, com identificação,
+seletor do cartão, status, moeda, fechamento, vencimento e instrumentos ativos
+visíveis, sem menus sobrepostos nem competir com a área de consulta. A fatura,
+valor a pagar, ações de liquidação, indicadores e compras ficam na coluna direita.
+Abaixo de 940 px, a composição passa a ser vertical. No mobile, dados contratuais
+e instrumentos continuam disponíveis em disclosures acessíveis sem dominar a
+primeira viewport.
+
+O registro de compras permanece como ação secundária da página, enquanto a
+liquidação mantém precedência **somente no contexto da fatura**; fechamento é
+secundário. A lista preserva categoria em coluna, situação por ícone com tooltip,
+moeda explícita, ações de 44 px, filtros por conciliação, grupo de instrumentos e
+documentos da fatura em diálogo dedicado. Os testes Chrome verificam a coluna
+lateral separada e suas informações visíveis e rejeitam uma mutação que volte a
+empilhar o painel no desktop. Preservar os contratos financeiros existentes.
+
+A largura externa usa exclusivamente `--sf-layout-content-max-width` e os gutters
+`--sf-layout-gutter-desktop` / `--sf-layout-gutter-mobile` do design system, sem
+segundo limite local de 1500/1560 px. No desktop de 1920 px o layout A3 deve preencher
+a largura efetiva de `.main-area > main`, sem faixas laterais extras, conforme a
+mesma área útil do Extrato. O Chrome captura `cards-wide-desktop.png` e reprova
+uma redução artificial da largura antes de restaurar a composição.
+
+## Formulário de compra — padrão visual Golden Screen (PR #720)
+
+O diálogo centralizado de **Registrar compra** e **Editar compra** reutiliza o mesmo formulário SSR, agrupado por significado: **Valores**, **Dados da compra**, **Classificação** e **Repetição e parcelas**. A última seção é ocultada na edição de compra simples, mas continua disponível na criação; não são introduzidos fluxos ou endpoints alternativos.
+
+O valor principal tem prioridade tipográfica; valor da parcela aparece ao lado do total somente ao editar uma compra parcelada. Moeda e data permanecem visíveis, inclusive em modo somente leitura. Os controles usam alvos mínimos de 44 px, duas colunas em desktop e uma em mobile. O diálogo limita a altura a 90dvh, mantém cabeçalho e ações acessíveis e rola somente o corpo. **Cancelar** é secundário, e **Salvar compra** é a única ação primária, na mesma linha no desktop.
+
+Os estados de compra simples, compra parcelada, recorrência fixa, cartão sem moeda e indisponibilidade de edição preservam os contratos de campos, validações e API. Validar criação/edição em 1366×768, 390×844 e 320×740 com teclado, foco, rolagem, leitura de erros, estados de parcela e comparação visual com o Extrato antes de aprovar o gate independente.
+
+## Fatura por dia e conciliação no padrão da Golden Screen — PR #720
+
+O campo **Dia da fatura** permanece visível no formulário GET de compras, com
+limites reais `periodStartOn`/`periodEndOn` (o ciclo da fatura pode atravessar dois
+meses civis). O atalho **Todos os dias** remove somente `day`, preservando cartão,
+fatura, perfil, busca, ordenação e conciliação. O filtro compara a data da
+**ocorrência mostrada**; parcelas financeiras usam `Installment.dueOn`, e não
+a data da compra-mãe.
+
+Nas ordenações cronológicas, um agrupamento global por dia, expandido por padrão,
+exibe data, quantidade de compras e valor agregado por moeda. Dentro de cada
+dia são mantidos os subtotais e a identidade dos instrumentos, sem duplicar
+compras nem alterar o resumo financeiro da fatura. Para ordenação por valor ou
+descrição, permanece a ordem global escolhida, sem cabeçalhos diários.
+
+A coluna **Situação** usa apenas ícones (atual e ação), mesma escala do
+Extrato, tooltips e rótulos acessíveis, com conciliar/desconciliar por `PATCH`
+de somente status. Compras simples e recorrentes seguem o endpoint existente;
+parcela finita usa
+`PATCH /api/invoices/:invoiceId/installments/:installmentId/reconciliation`
+com corpo `{ "status": "posted" | "reconciled" }`. A operação altera só
+`Installment.status` da ocorrência e recalcula a repartição conciliada/não
+conciliada do resumo. Permanecem bloqueios para fatura fechada, paga ou cancelada,
+status inválido e recurso fora do perfil autorizado. Os campos estruturais da
+compra parcelada continuam imutáveis neste fluxo.
+
+Os botões secundários **Documentos** e **Fechar fatura** recebem fundo neutro
+e borda fina `var(--line)`, com hover/foco consistentes e sem competir com
+**Liquidar fatura**, a ação primária. Verificar calendário, grupos recolhíveis,
+situação e contraste em desktop e mobile no último SHA.
