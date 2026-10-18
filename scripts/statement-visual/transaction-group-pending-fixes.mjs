@@ -174,7 +174,11 @@ try {
   assert.equal(afterEdit.groupTotalMinor, 65000);
   assert.equal(afterEdit.rowProjectionMinor, 65000);
   assert.equal(afterEdit.groupBalanceMinor - beforeEdit.groupBalanceMinor, 5000);
-  assert.equal(afterEdit.followingBalanceMinor - beforeEdit.followingBalanceMinor, 5000);
+  assert.equal(
+    afterEdit.followingBalanceMinor - beforeEdit.followingBalanceMinor,
+    5000,
+    `Projected trailing balance should include the grouped edit. before=${JSON.stringify(beforeEdit)} after=${JSON.stringify(afterEdit)}`,
+  );
   assert.match(afterEdit.amountText, /650,00/);
 
   await evaluate(browser.cdp, `window.confirm = () => true`);
@@ -286,6 +290,9 @@ async function readProjection(cdp, currentGroupId, trailingId) {
         memberCount: group.members.length,
         rowProjectionMinor: Number(row.dataset.groupProjectionAmountMinor),
         rowStatus: row.querySelector(".col-status").getAttribute("aria-label"),
+        groupDate: row.querySelector(".col-date")?.getAttribute("datetime"),
+        trailingDate: following.querySelector(".col-date")?.getAttribute("datetime"),
+        trailingDescription: following.querySelector(".col-description")?.textContent?.trim(),
         amountText: row.querySelector(".col-amount").textContent,
         memberCountText: row.querySelector(".col-description span").textContent,
         groupBalanceMinor: row.querySelector(".col-balance").dataset.balanceMinor === undefined
