@@ -44,6 +44,11 @@ export function assertGoldenStatement(layout) {
     [],
     "Statement status text overlaps its icon or escapes its badge.",
   );
+  assert.deepEqual(
+    layout.statusTextExposed ?? [],
+    [],
+    "Statement status must display icons only while keeping its accessible label.",
+  );
   assert.ok(
     Math.abs(layout.list.width - layout.root.width) <= 2,
     "Statement list lost the available width.",
@@ -262,6 +267,24 @@ export const goldenStatementMeasurements = `(() => {
         }
       }
       return collisions;
+    })(),
+    statusTextExposed: (() => {
+      const visibleLabels = Array.from(document.querySelectorAll('.statement-body .statement-status-label'))
+        .filter(label => {
+          const style = getComputedStyle(label);
+          return style.display !== 'none' && style.visibility !== 'hidden' &&
+            label.getClientRects().length > 0;
+        }).map(label => label.textContent.trim());
+      const pseudoLabels = Array.from(document.querySelectorAll(
+        '.statement-body [data-statement-status-control] > summary',
+      )).flatMap(summary => {
+        const pseudo = getComputedStyle(summary, '::after');
+        const value = pseudo.content;
+        const shown = pseudo.display !== 'none' && pseudo.visibility !== 'hidden' &&
+          value && value !== 'none' && value !== 'normal' && value !== '""';
+        return shown ? [value] : [];
+      });
+      return [...visibleLabels, ...pseudoLabels];
     })(),
     statusCollisions: Array.from(document.querySelectorAll('.statement-body .statement-status')).flatMap(badge => {
       const label = badge.querySelector('.statement-status-label');
