@@ -115,10 +115,8 @@ function renderCurrencyFilterOptions(resources: readonly ResourceMasterViewModel
 }
 
 function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
-  const icon =
-    resource.kind === "account"
-      ? renderInstitutionIcon(resource.institutionKey)
-      : renderCardBrandIcon(resource.brandKey ?? "");
+  // A instituicao e a identidade primaria de ambos os recursos; a bandeira e contexto do cartao.
+  const icon = renderInstitutionIcon(resource.institutionKey);
   const currencyLabel =
     resource.currency ?? (resource.kind === "card" ? "Moeda indisponível" : resource.currencyLabel);
   return `
@@ -127,9 +125,8 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
         <span class="resource-master-icon" aria-hidden="true">${icon}</span>
         <span class="resource-master-copy">
           <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong>${renderBadge({ label: formatGenericStatus(resource.status), tone: resource.status === "active" ? "positive" : "neutral" })}</span>
-          <span>${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")} · ${escapeHtml(resource.institutionLabel)}</span>
-          <span>${escapeHtml(resource.secondaryLabel)}</span>
-          <span class="resource-master-currency">${escapeHtml(currencyLabel)}</span>
+          <span class="resource-master-institution">${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")} · ${escapeHtml(resource.institutionLabel)}</span>
+          <span class="resource-master-context">${escapeHtml(resource.secondaryLabel)} <span class="resource-master-currency" aria-label="Moeda ${escapeHtml(currencyLabel)}">${escapeHtml(currencyLabel)}</span></span>
         </span>
       </a>
     </article>`;
@@ -167,12 +164,11 @@ function renderAccountDetail(account: AccountRecord, currency: string | undefine
         <div><span class="resource-kicker">Conta</span><h2>${escapeHtml(account.name)}</h2><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(formatAccountKind(account.kind))}</p></div>
         ${renderBadge({ label: formatGenericStatus(account.status), tone: account.status === "active" ? "positive" : "neutral" })}
       </header>
+      <div class="resource-financial-summary" data-financial-context="account"><span>Saldo inicial · ${escapeHtml(currency ?? "Moeda não informada")}</span><strong>${escapeHtml(money)}</strong></div>
       <div class="resource-detail-grid">
-        ${detailField("Instituição", viewModel.institutionLabel)}
         ${detailField("Tipo", formatAccountKind(account.kind))}
         ${detailField("Moeda", currency ?? "Moeda não informada", !currency)}
         ${detailField("Agência / conta", viewModel.bankIdentifier ?? "Não informado")}
-        ${detailField("Saldo inicial", money, !currency)}
         ${detailField("Estado", formatGenericStatus(account.status))}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(account.name)}">
@@ -208,22 +204,17 @@ function renderCardDetail(
   return `
     <section class="resource-detail-panel" data-resource-detail="card" data-resource-key="card:${escapeHtml(card.id)}">
       <header class="resource-detail-heading">
-        <div class="resource-detail-identity card-mark" aria-hidden="true">${renderCardBrandIcon(viewModel.brandKey)}</div>
+        <div class="resource-detail-identity">${renderInstitutionIcon(viewModel.institutionKey)}</div>
         <div><span class="resource-kicker">Cartão</span><h2>${escapeHtml(card.name)}</h2><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(viewModel.brandLabel)}</p></div>
         ${renderBadge({ label: formatGenericStatus(card.status), tone: card.status === "active" ? "positive" : "neutral" })}
       </header>
+      <div class="resource-financial-summary" data-financial-context="card"><span>Limite total · ${escapeHtml(currency ?? "Moeda não informada")}</span><strong>${escapeHtml(limit)}</strong></div>
       <div class="resource-detail-grid">
-        ${detailField("Instituição", viewModel.institutionLabel)}
         ${detailField("Bandeira", viewModel.brandLabel)}
         ${currencyState}
         ${detailField("Conta de pagamento", paymentAccount?.name ?? "Não vinculada", !paymentAccount)}
         ${detailField("Fechamento / vencimento", `Dia ${card.closingDay} / dia ${card.dueDay}`)}
-        ${detailField("Limite total", limit, !currency)}
       </div>
-      <section class="resource-instruments" aria-labelledby="resource-instruments-title-${escapeHtml(card.id)}">
-        <div class="resource-subheading"><div><span class="resource-kicker">Instrumentos</span><h3 id="resource-instruments-title-${escapeHtml(card.id)}">Instrumentos do cartão</h3></div><span>${viewModel.activeInstrumentCount} ativos</span></div>
-        ${renderCardInstrumentList(card, currency)}
-      </section>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(card.name)}">
         ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar cartão", className: "resource-primary-action", iconHtml: renderEditIcon() })}
         ${renderRouteDialogTrigger({ dialogId: viewModel.newInstrumentDialogId, label: "Adicionar instrumento", className: "secondary-button", variant: "secondary", disabled: viewModel.isArchived, iconHtml: renderAddIcon() })}
@@ -234,6 +225,10 @@ function renderCardDetail(
           <button type="submit" class="danger-button">${renderTrashIcon()} Excluir</button>
         </form>
       </div>
+      <section class="resource-instruments" aria-labelledby="resource-instruments-title-${escapeHtml(card.id)}">
+        <div class="resource-subheading"><div><span class="resource-kicker">Instrumentos</span><h3 id="resource-instruments-title-${escapeHtml(card.id)}">Instrumentos do cartão</h3></div><span>${viewModel.activeInstrumentCount} ativos</span></div>
+        ${renderCardInstrumentList(card, currency)}
+      </section>
       ${renderCardEditDialog(card, accounts, viewModel.editDialogId)}
       ${renderCardInstrumentCreateDialog(card, viewModel.newInstrumentDialogId)}
       ${card.instruments.map(renderCardInstrumentEditDialog).join("")}

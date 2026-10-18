@@ -26,10 +26,14 @@ function renderAccountsCardsDialog(input: {
   eyebrow: string;
   bodyHtml: string;
 }): string {
+  const formBody = input.bodyHtml.replace(
+    /(<button type="submit" title="[^"]+">[\s\S]*?<\/button>)/g,
+    '<div class="resource-form-actions"><button type="button" class="secondary-button" data-sf-dialog-close>Cancelar</button>$1</div>',
+  );
   return renderDialog({
     id: input.id,
     title: input.title,
-    bodyHtml: `<p class="eyebrow">${escapeHtml(input.eyebrow)}</p>${input.bodyHtml}`,
+    bodyHtml: `<p class="eyebrow">${escapeHtml(input.eyebrow)}</p>${formBody}`,
   }).replace('class="sf-dialog"', 'class="sf-dialog master-dialog"');
 }
 

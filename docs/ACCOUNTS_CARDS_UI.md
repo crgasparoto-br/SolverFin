@@ -107,3 +107,11 @@ O recorte é protegido por:
 - `docs/SCREEN_ARCHETYPES.md`;
 - `docs/adr/0014-incremental-component-ui-architecture.md`;
 - `docs/LEGACY_HTML_POST_PROCESSORS.md`.
+
+
+## Issue #716 — acabamento Golden Screen no cadastro mestre
+
+- A rota conserva o arquétipo A3 e a seleção por `?resource=account:<id>` ou `card:<id>`; não introduz abas ou mistura contas, cartões e instrumentos. A instituição (incluindo fallback do catálogo central) passa a identificar contas **e cartões** no master e no detalhe; a bandeira permanece metadado secundário de cartão.
+- O contexto financeiro dominante do detalhe é **Saldo inicial** na conta ou **Limite total** no cartão, acompanhado de moeda nativa. Não é saldo atual calculado e não soma moedas; ausência de moeda permanece declarada. Os demais atributos usam lista compacta sem cards aninhados. Ações de manutenção permanecem associadas ao recurso, e ações destrutivas continuam com confirmação.
+- Os modais existentes continuam no controller `Dialog` compartilhado, centralizados, com campos essenciais rotulados, corpo rolável, botões neutros de Cancelar e confirmação primária na mesma linha, teclado/Escape e restauração de foco. Instrumentos possuem ações individuais e não migram para a lista master.
+- Verificação: SSR de conta/cartão e instituição sem logo, seleção e moedas distintas, vazio, ações bloqueadas e confirmação; Chrome em 1440×900, 1366×768, 390×844 e 320×740 com detalhe e modal acessíveis sem overflow. Aprovação visual humana e auditoria independente são gates separados dos testes automáticos.

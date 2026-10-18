@@ -16,6 +16,7 @@ const viewports = [
   { width: 1440, height: 900, suffix: "desktop-1440x900" },
   { width: 1366, height: 768, suffix: "desktop-1366x768" },
   { width: 390, height: 844, suffix: "mobile-390x844" },
+  { width: 320, height: 740, suffix: "mobile-320x740" },
 ];
 
 if (!chromePath) {
@@ -91,6 +92,7 @@ async function validateViewport(cdp, viewport) {
   assert.ok(baseline.currencyOptions.length > 1, "Currency filter has no resource options.");
   assert.deepEqual(baseline.statusOptions, ["all", "active", "inactive"]);
   assert.equal(baseline.loadingStatePresent, true, "Route loading state is not wired.");
+  assert.equal(baseline.institutionLogosOnMaster, true, "Institution logo/fallback missing from a master resource.");
 
   const account = await selectResource(cdp, "account");
   const card = await selectResource(cdp, "card");
@@ -102,6 +104,8 @@ async function validateViewport(cdp, viewport) {
     await waitForDetail(cdp, "account");
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "account");
+    assert.equal(measurements.financialContextVisible, true, "Account summary is not visible.");
+    assert.equal(measurements.institutionIdentityVisible, true, "Account institution identity is hidden.");
     assert.equal(measurements.selectedMasterCount, 1);
     assert.equal(
       measurements.currencyContextVisible,
@@ -121,6 +125,8 @@ async function validateViewport(cdp, viewport) {
     await waitForDetail(cdp, "card");
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "card");
+    assert.equal(measurements.financialContextVisible, true, "Card limit summary is not visible.");
+    assert.equal(measurements.institutionIdentityVisible, true, "Card institution identity is hidden.");
     assert.equal(measurements.selectedMasterCount, 1);
     assert.equal(measurements.currencyContextVisible, true, "Card currency context is ambiguous.");
     assert.equal(
@@ -202,6 +208,9 @@ async function inspectPage(cdp) {
         masterVisible: visible(document.querySelector('.resource-master-panel')),
         detailVisible: visible(document.querySelector('.resource-detail-panel')),
         masterItemCount: masterItems.length,
+        institutionLogosOnMaster: masterItems.every((item) => Boolean(item.querySelector('.resource-master-icon .institution-logo-img, .resource-master-icon .institution-badge-icon'))),
+        financialContextVisible: visible(document.querySelector('.resource-financial-summary')),
+        institutionIdentityVisible: visible(document.querySelector('.resource-detail-identity .institution-logo-img, .resource-detail-identity .institution-badge-icon')),
         selectedMasterCount: document.querySelectorAll('[data-resource-master-item] [aria-current="page"]').length,
         selectedKind: detail?.getAttribute('data-resource-detail') || '',
         hasTabs: document.querySelectorAll('[data-tab-panel], [role="tab"], .sf-tabs').length > 0,
