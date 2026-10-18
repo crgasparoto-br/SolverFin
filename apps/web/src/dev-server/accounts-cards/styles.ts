@@ -149,6 +149,7 @@ export function accountsCardsPageStyles(): string {
     .resource-master-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
     .resource-master-title strong { color: var(--text); font-size: .93rem; line-height: 1.3; overflow-wrap: anywhere; }
     .resource-master-institution, .resource-master-context { color: var(--muted); font-size: .75rem; line-height: 1.3; }
+    .resource-master-cdi { color: var(--sf-color-success); font-weight: 700; white-space: nowrap; }
     .resource-master-currency { background: transparent; border: 0; color: var(--text) !important; font-size: .8rem; font-weight: 700; overflow-wrap: anywhere; }
     .resource-master-amount { display: grid; gap: 3px; justify-items: end; min-width: 0; text-align: right; }
     .resource-master-amount strong { color: var(--text); font-size: .96rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }

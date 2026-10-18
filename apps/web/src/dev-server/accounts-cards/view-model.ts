@@ -21,6 +21,13 @@ export const accountCurrencies = ["BRL", "USD", "EUR"] as const;
 export type ResourceKind = "account" | "card";
 export type ResourceKey = `${ResourceKind}:${string}`;
 
+export interface AccountCdiConfiguration {
+  accountId: string;
+  accountCurrency: string;
+  enabled: boolean;
+  indexKind: "cdi";
+}
+
 export interface ResourceMasterViewModel {
   key: ResourceKey;
   kind: ResourceKind;
@@ -35,6 +42,7 @@ export interface ResourceMasterViewModel {
   currencyLabel: string;
   amountMinor: number;
   amountLabel: "Saldo inicial" | "Limite total";
+  cdiActive?: boolean;
   search: string;
   href: string;
   isSelected: boolean;
@@ -93,8 +101,26 @@ export function buildAccountsCardsPageViewModel(
   accounts: AccountRecord[],
   cards: CreditCardAccountRecord[],
   requestedResource?: string | null,
+  cdiConfigurations: readonly AccountCdiConfiguration[] = [],
 ): AccountsCardsPageViewModel {
-  const accountResources = accounts.map((account) => buildAccountResource(account));
+  const enabledCdiAccountIds = new Set(
+    cdiConfigurations
+      .filter(
+        (configuration) =>
+          configuration.enabled === true &&
+          configuration.indexKind === "cdi" &&
+          configuration.accountCurrency === "BRL",
+      )
+      .map((configuration) => configuration.accountId),
+  );
+  const accountResources = accounts.map((account) =>
+    buildAccountResource(
+      account,
+      account.status === "active" &&
+        normalizeCurrency(account.currency) === "BRL" &&
+        enabledCdiAccountIds.has(account.id),
+    ),
+  );
   const cardResources = cards.map((card) => buildCardResource(card, accounts));
   const resources = [...accountResources, ...cardResources];
   const requestedKey = parseResourceKey(requestedResource);
@@ -118,7 +144,10 @@ export function buildAccountsCardsPageViewModel(
   };
 }
 
-function buildAccountResource(account: AccountRecord): ResourceMasterViewModel {
+function buildAccountResource(
+  account: AccountRecord,
+  cdiActive: boolean,
+): ResourceMasterViewModel {
   const item = buildAccountItemViewModel(account);
   const currency = normalizeCurrency(account.currency);
   const key = `account:${account.id}` as const;
@@ -136,7 +165,10 @@ function buildAccountResource(account: AccountRecord): ResourceMasterViewModel {
     currencyLabel: currency ?? "Moeda não informada",
     amountMinor: account.openingBalanceMinor ?? 0,
     amountLabel: "Saldo inicial",
-    search: [item.search, currency ?? "moeda indisponível", "conta"].join(" ").toLowerCase(),
+    cdiActive,
+    search: [item.search, currency ?? "moeda indisponível", "conta", cdiActive ? "cdi ativo" : ""]
+      .join(" ")
+      .toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(key)}`,
     isSelected: false,
   };

@@ -1,4 +1,5 @@
 import {
+  renderAlert,
   renderDetailLayout,
   renderDialogTrigger,
   renderLoading,
@@ -19,7 +20,7 @@ import { escapeHtml } from "./presentation.js";
 import { renderAccountsCardsApiFormScript, renderAccountsCardsRuntimeScript } from "./runtime.js";
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
-import { buildAccountsCardsPageViewModel } from "./view-model.js";
+import { buildAccountsCardsPageViewModel, type AccountCdiConfiguration } from "./view-model.js";
 
 function renderHeaderDialogTrigger(input: {
   dialogId: string;
@@ -36,11 +37,15 @@ function renderHeaderDialogTrigger(input: {
 }
 
 export async function renderAccountsCardsPage(token: string, url?: URL): Promise<string> {
-  const [accounts, creditCardAccounts] = await Promise.all([
+  const [accounts, creditCardAccounts, cdiConfigurations] = await Promise.all([
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts?status=all"),
     apiGet<{ creditCardAccounts: CreditCardAccountRecord[] }>(
       token,
       "/api/credit-card-accounts?status=all",
+    ),
+    apiGet<{ configurations: AccountCdiConfiguration[] }>(
+      token,
+      "/api/account-remuneration/configurations",
     ),
   ]);
 
@@ -55,7 +60,15 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
     accounts.data.accounts,
     creditCardAccounts.data.creditCardAccounts,
     url?.searchParams.get("resource"),
+    cdiConfigurations.ok ? cdiConfigurations.data.configurations : [],
   );
+  const cdiUnavailableNotice = cdiConfigurations.ok
+    ? ""
+    : renderAlert({
+        title: "Indicador CDI indisponível",
+        description: "Não foi possível verificar quais contas têm CDI ativo. Tente atualizar a página.",
+        tone: "attention",
+      });
 
   const headerActions = [
     renderHeaderDialogTrigger({
@@ -87,7 +100,7 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
         description:
           "Compare contas e cartões por instituição, moeda, saldo inicial e limite. Selecione uma linha para editar ou consultar os detalhes.",
         actionsHtml: headerActions,
-      })}${loading}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderSolverFinUiInteractionsScriptTag()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
+      })}${loading}${cdiUnavailableNotice}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderSolverFinUiInteractionsScriptTag()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
     }),
   });
 }

@@ -126,3 +126,7 @@ O detalhe concentra metadados, edição, operações de manutenção e instrumen
 ### Conformidade visual obrigatória (Golden Screen)
 
 A rota aplica o contrato global de `docs/DESIGN_SYSTEM.md`, a paleta e os estados de `apps/web/src/design-system/tokens.ts` e os controles de `docs/UI_PRIMITIVES.md`. A lista mestre mantém protagonismo; botões de edição são secundários, Cancelar é sempre neutro e Salvar/confirmação são as únicas ações primárias dos formulários. Filtros reutilizam a família de `sf-filter-bar` sem superfície aninhada. A validação Chrome confere o saldo/limite na **linha selecionada** (não o antigo resumo ampliado do detalhe). A documentação global é normativa para todas as telas, não apenas esta rota.
+
+### Identificação de remuneração CDI ativa na lista
+
+Na rota `/contas-cartoes`, somente contas com configuração habilitada no endpoint autenticado `GET /api/account-remuneration/configurations` recebem a indicação discreta `CDI ativo` após o tipo da conta. O vínculo é feito pelo `accountId` no perfil financeiro atual; exige `enabled: true`, `indexKind: cdi`, conta ativa e moeda BRL. Configurações desabilitadas, contas arquivadas, outras moedas e cartões não exibem o indicador. Não mostrar `CDI inativo`. Quando a consulta da configuração falhar, a lista continua disponível e exibe um aviso de indisponibilidade, sem presumir que a conta está desabilitada. Não há alteração das regras de remuneração, percentuais, saldos ou de agregação monetária.

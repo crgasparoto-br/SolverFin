@@ -132,7 +132,7 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
           <span class="resource-master-copy">
             <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong></span>
             <span class="resource-master-institution">${escapeHtml(resource.institutionLabel)} · ${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")}</span>
-            <span class="resource-master-context">${escapeHtml(resource.secondaryLabel)}</span>
+            <span class="resource-master-context">${escapeHtml(resource.secondaryLabel)}${resource.kind === "account" && resource.cdiActive ? ' <span class="resource-master-cdi" title="Remuneração pelo CDI habilitada">· CDI ativo</span>' : ""}</span>
           </span>
         </span>
         <span class="resource-master-currency" aria-label="Moeda ${escapeHtml(currencyLabel)}">${escapeHtml(resource.currency ?? "Indisponível")}</span>

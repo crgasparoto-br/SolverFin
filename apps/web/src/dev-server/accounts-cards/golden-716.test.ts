@@ -68,6 +68,48 @@ test("#716 preserva master-detail, identidade institucional e moedas distintas",
   assert.doesNotMatch(detail, /data-financial-context="account"/);
 });
 
+test("#716 mostra CDI ativo apenas para contas BRL com configuração habilitada", () => {
+  const disabled: AccountRecord = { ...account, id: "a-disabled", name: "Conta sem CDI" };
+  const usd: AccountRecord = {
+    ...account,
+    id: "a-usd",
+    name: "Conta em dólar",
+    currency: "USD",
+  };
+  const archived: AccountRecord = {
+    ...account,
+    id: "a-archived",
+    name: "Conta arquivada",
+    status: "archived",
+  };
+  const view = buildAccountsCardsPageViewModel(
+    [account, disabled, usd, archived],
+    [card],
+    "account:a-1",
+    [
+      { accountId: account.id, accountCurrency: "BRL", enabled: true, indexKind: "cdi" },
+      { accountId: disabled.id, accountCurrency: "BRL", enabled: false, indexKind: "cdi" },
+      { accountId: usd.id, accountCurrency: "USD", enabled: true, indexKind: "cdi" },
+      { accountId: archived.id, accountCurrency: "BRL", enabled: true, indexKind: "cdi" },
+      { accountId: card.id, accountCurrency: "BRL", enabled: true, indexKind: "cdi" },
+    ],
+  );
+  assert.equal(view.resources.filter((resource) => resource.cdiActive).length, 1);
+  assert.equal(view.resources[0]?.cdiActive, true);
+  assert.match(view.resources[0]?.search ?? "", /cdi ativo/);
+  assert.equal(view.resources[1]?.cdiActive, false);
+  assert.equal(view.resources[2]?.cdiActive, false);
+  assert.equal(view.resources[3]?.cdiActive, false);
+  assert.equal(view.resources[4]?.cdiActive, undefined);
+  const master = renderResourceMaster(view.resources);
+  assert.equal((master.match(/class="resource-master-cdi"/g) ?? []).length, 1);
+  assert.match(master, /Conta corrente.*CDI ativo/s);
+  assert.match(master, /Remuneração pelo CDI habilitada/);
+  assert.match(accountsCardsPageStyles(), /\.resource-master-cdi \{ color: var\(--sf-color-success\)/);
+  const noConfiguration = buildAccountsCardsPageViewModel([account], [card]);
+  assert.doesNotMatch(renderResourceMaster(noConfiguration.resources), /CDI ativo/);
+});
+
 test("#716 identifica conta com saldo inicial, nunca soma saldos BRL e USD", () => {
   const view = buildAccountsCardsPageViewModel([account], [card], "account:a-1");
   const html = renderSelectedResourceDetail(view.selectedResource, [account]);
