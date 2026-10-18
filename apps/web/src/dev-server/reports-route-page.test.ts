@@ -357,9 +357,7 @@ describe("reports route page", () => {
     };
     const html = await renderReportsRoutePage(
       "token",
-      new URL(
-        "http://localhost/relatorios?view=category-evolution&start=2026-06&periods=2",
-      ),
+      new URL("http://localhost/relatorios?view=category-evolution&start=2026-06&periods=2"),
     );
     assert.match(html, /data-report-state="api-error"/);
     assert.match(
