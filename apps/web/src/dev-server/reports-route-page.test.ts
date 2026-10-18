@@ -337,7 +337,8 @@ describe("reports route page", () => {
     assert.equal((html.match(/data-report-analysis="a5" data-currency=/g) ?? []).length, 2);
     assert.match(html, /data-currency="BRL"/);
     assert.match(html, /data-currency="USD"/);
-    assert.equal((html.match(/data-emphasis="true"/g) ?? []).length, 2);
+    const emphasized = html.match(/<article class="report-summary-metric"[^>]*data-emphasis="true"/g);
+    assert.equal(emphasized?.length, 2);
     const summary = html.indexOf('data-analysis-layer="summary"');
     const visualization = html.indexOf('data-analysis-layer="visualization"');
     const highlights = html.indexOf('data-analysis-layer="highlights"');
