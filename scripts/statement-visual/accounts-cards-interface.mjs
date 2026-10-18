@@ -265,15 +265,26 @@ async function validateCdiSettings(cdp) {
     trigger.click();
     return { label: trigger.getAttribute('aria-label'), title: trigger.title };
   })()`);
-  assert.ok(setup?.label?.includes("Configurar remuneração CDI"), "Settings icon missing accessible name.");
-  await waitFor(cdp, `Boolean(document.querySelector('dialog.master-dialog[open] [data-cdi-configuration-form]'))`, "Settings dialog did not open.");
+  assert.ok(
+    setup?.label?.includes("Configurar remuneração CDI"),
+    "Settings icon missing accessible name.",
+  );
+  await waitFor(
+    cdp,
+    `Boolean(document.querySelector('dialog.master-dialog[open] [data-cdi-configuration-form]'))`,
+    "Settings dialog did not open.",
+  );
   await evaluate(cdp, `(() => {
     const form = document.querySelector('[data-cdi-configuration-form]');
     form.querySelector('[name="remunerationPercent"]').value = '88.5';
     form.querySelector('[name="startsOn"]').value = '2026-10-14';
     form.requestSubmit();
   })()`);
-  await waitFor(cdp, `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Falha configurações CDI simulada')`, "Settings API error was not visible.");
+  await waitFor(
+    cdp,
+    `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Falha configurações CDI simulada')`,
+    "Settings API error was not visible.",
+  );
   const failed = await evaluate(cdp, `(() => {
     const form = document.querySelector('[data-cdi-configuration-form]');
     return {
@@ -283,9 +294,21 @@ async function validateCdiSettings(cdp) {
       retryAllowed: !form.querySelector('[type="submit"]').disabled,
     };
   })()`);
-  assert.deepEqual(failed, { modalOpen: true, percent: "88.5", date: "2026-10-14", retryAllowed: true });
-  await evaluate(cdp, "document.querySelector('[data-cdi-configuration-form]')?.requestSubmit()");
-  await waitFor(cdp, `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Configuração CDI salva')`, "Settings successful PUT was not visible.");
+  assert.deepEqual(failed, {
+    modalOpen: true,
+    percent: "88.5",
+    date: "2026-10-14",
+    retryAllowed: true,
+  });
+  await evaluate(
+    cdp,
+    "document.querySelector('[data-cdi-configuration-form]')?.requestSubmit()",
+  );
+  await waitFor(
+    cdp,
+    `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Configuração CDI salva')`,
+    "Settings successful PUT was not visible.",
+  );
   const success = await evaluate(cdp, "window.__issue716SettingsProof.calls");
   assert.equal(success.length, 2);
   assert.equal(success[1].enabled, true, "Editing settings must not disable active CDI.");
@@ -335,8 +358,15 @@ async function validateCdiSwitch(cdp) {
     toggle.click();
     return { focused: document.activeElement === toggle, label: toggle.getAttribute('aria-label') };
   })()`);
-  assert.ok(setup?.focused && setup.label?.includes("Remuneração CDI"), "CDI switch must be keyboard focusable and named.");
-  await waitFor(cdp, `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`, "CDI confirmation did not open.");
+  assert.ok(
+    setup?.focused && setup.label?.includes("Remuneração CDI"),
+    "CDI switch must be keyboard focusable and named.",
+  );
+  await waitFor(
+    cdp,
+    `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
+    "CDI confirmation did not open.",
+  );
   await evaluate(cdp, `document.querySelector('[data-confirm-cancel]')?.click()`);
   await sleep(80);
   const cancelled = await evaluate(cdp, `(() => ({
@@ -348,9 +378,17 @@ async function validateCdiSwitch(cdp) {
   assert.equal(cancelled.checked, before, "Cancel must preserve state.");
 
   await evaluate(cdp, "document.querySelector('[data-cdi-toggle]')?.click()");
-  await waitFor(cdp, `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`, "CDI retry confirmation absent.");
+  await waitFor(
+    cdp,
+    `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
+    "CDI retry confirmation absent.",
+  );
   await evaluate(cdp, "document.querySelector('[data-confirm-accept]')?.click()");
-  await waitFor(cdp, `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('Falha CDI simulada')`, "CDI failure was not surfaced.");
+  await waitFor(
+    cdp,
+    `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('Falha CDI simulada')`,
+    "CDI failure was not surfaced.",
+  );
   const failed = await evaluate(cdp, `(() => ({
     checked: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
     canRetry: !document.querySelector('[data-cdi-toggle]')?.disabled,
@@ -359,23 +397,39 @@ async function validateCdiSwitch(cdp) {
   assert.equal(failed.canRetry, true, "Failed CDI write must allow retry.");
 
   await evaluate(cdp, "document.querySelector('[data-cdi-toggle]')?.click()");
-  await waitFor(cdp, `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`, "CDI successful retry confirmation absent.");
+  await waitFor(
+    cdp,
+    `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
+    "CDI successful retry confirmation absent.",
+  );
   await evaluate(cdp, "document.querySelector('[data-confirm-accept]')?.click()");
-  await waitFor(cdp, `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('CDI atualizado')`, "CDI successful write not surfaced.");
+  await waitFor(
+    cdp,
+    `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('CDI atualizado')`,
+    "CDI successful write not surfaced.",
+  );
   const success = await evaluate(cdp, `(() => ({
     checked: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
     calls: window.__issue716CdiProof.calls,
     busy: document.querySelector('[data-cdi-toggle]')?.disabled,
   }))()`);
   assert.equal(success.checked, String(before !== "true"), "Successful write must flip CDI.");
-  assert.equal(success.calls.length, 2, "Expected failed then successful PUT after cancelled attempt.");
+  assert.equal(
+    success.calls.length,
+    2,
+    "Expected failed then successful PUT after cancelled attempt.",
+  );
   assert.deepEqual(success.calls[1], {
     enabled: before !== "true",
     remunerationPercent: 95,
     startsOn: "2026-10-01",
     categoryId: "income-1",
   });
-  assert.equal(success.busy, true, "Switch must lock until reload after successful write.");
+  assert.equal(
+    success.busy,
+    true,
+    "Switch must lock until reload after successful write.",
+  );
   return { cancelled, failed, success };
 }
 
