@@ -247,7 +247,20 @@ async function inspectPage(cdp) {
           const active = item.getAttribute('data-cdi-active') === 'true';
           const label = item.querySelector('.resource-master-cdi-column')?.textContent?.trim() || '';
           const compact = item.querySelector('.resource-master-cdi-compact')?.textContent?.trim() || '';
-          return active === (item.getAttribute('data-kind') === 'account' && label === 'CDI ativo' && compact.includes('CDI ativo'));
+          const state = item.getAttribute('data-cdi-state');
+          if (item.getAttribute('data-kind') === 'card') {
+            return state === 'not-applicable' && !active && label === '—' && compact === '';
+          }
+          const expected = state === 'active'
+            ? 'CDI ativo'
+            : state === 'inactive'
+              ? 'Sem CDI ativo'
+              : state === 'ineligible'
+                ? 'Não elegível'
+                : state === 'unavailable'
+                  ? 'Não verificado'
+                  : null;
+          return Boolean(expected) && label === expected && compact.includes(expected) && active === (state === 'active');
         }),
         listIsPrimary: (() => {
           const master = document.querySelector('.sf-detail-layout-master')?.getBoundingClientRect();
