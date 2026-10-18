@@ -730,7 +730,15 @@ export function statementGoldenRefinementStyles(): string {
       ${root}[data-statement-options] .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:auto}
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto}
     }
-    @media(min-width:1101px) and (max-width:1599px){
+    @media(min-width:1101px) and (max-width:1339px){
+      /* Below 1340px, the six-field row would clip native selectors. */
+      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(3,minmax(0,1fr))}
+      ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
+      ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:1}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:2/-1}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
+    }
+    @media(min-width:1340px) and (max-width:1599px){
       /* Keep the short day, search and four selectors on one row at 1366px.
          Only the actions use a second row, preventing collision and excessive height. */
       ${root}[data-statement-options] .filter-form{
