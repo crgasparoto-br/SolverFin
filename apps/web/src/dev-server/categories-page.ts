@@ -91,7 +91,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
                 </div>
                 ${renderCategoryCollapseActions()}
               </div>
-              <p class="category-results-status" data-category-results-status aria-live="polite"></p>
+              <p class="category-results-status" data-category-results-status role="status" aria-live="polite"></p>
             </div>
             <div class="category-filter-empty" data-category-filter-empty hidden>
               <strong>Nenhuma categoria encontrada</strong>
@@ -268,6 +268,7 @@ function renderCategoryActionMenu(category: CategoryRecord): string {
     <div class="category-action-menu">
               <button class="category-menu-button icon-button" type="button" data-category-menu-button aria-expanded="false" aria-label="Abrir acoes da categoria ${escapeHtml(category.name)}" title="Mais ações">${icon("more-vertical", 14)}</button>
       <div class="category-menu-popover" data-category-menu role="menu" hidden>
+        ${!isArchived ? `<button type="button" role="menuitem" data-category-menu-action="create-child" ${renderCategoryDataAttributes(category)} title="Criar subcategoria">${icon("plus", 13)} Nova subcategoria</button>` : ""}
         <button type="button" role="menuitem" data-category-menu-action="edit" ${renderCategoryDataAttributes(category)} title="Editar categoria">${icon("pencil", 13)} Editar</button>
         <button type="button" role="menuitem" data-category-menu-action="request" data-api-method="POST" data-api-path="${escapeHtml(statusPath)}"${statusConfirm ? ` data-api-confirm="${escapeHtml(statusConfirm)}"` : ""} title="${isArchived ? "Restaurar categoria" : "Arquivar categoria"}">${isArchived ? icon("refresh-cw", 13) : icon("archive", 13)} ${statusLabel}</button>
         <button class="danger-menu-item" type="button" role="menuitem" data-category-menu-action="request" data-api-method="DELETE" data-api-path="/api/categories/${escapeHtml(category.id)}" data-api-confirm="Excluir esta categoria? Ela so sera removida se nao tiver subcategorias, lançamentos ou outros registros vinculados." title="Excluir categoria">${icon("trash-2", 13)} Excluir</button>
@@ -497,6 +498,11 @@ function categoryPageScript(): string {
         if (!modal) return;
         closeCategoryMenus();
         lastTrigger = trigger || openButton;
+        document.querySelectorAll("[data-category-item][data-category-editing]").forEach((item) => {
+          delete item.dataset.categoryEditing;
+        });
+        const currentItem = trigger?.closest?.("[data-category-item]");
+        if (currentItem) currentItem.dataset.categoryEditing = "true";
         modal.hidden = false;
         modal.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
@@ -508,6 +514,9 @@ function categoryPageScript(): string {
         modal.hidden = true;
         modal.setAttribute("aria-hidden", "true");
         document.body.classList.remove("modal-open");
+        document.querySelectorAll("[data-category-item][data-category-editing]").forEach((item) => {
+          delete item.dataset.categoryEditing;
+        });
         lastTrigger?.focus();
       }
 
@@ -637,6 +646,16 @@ function categoryPageScript(): string {
 
       document.querySelectorAll("[data-category-menu]").forEach((menu) => {
         menu.addEventListener("click", (event) => event.stopPropagation());
+      });
+
+      document.querySelectorAll('[data-category-menu-action="create-child"]').forEach((button) => {
+        button.addEventListener("click", () => {
+          openCreateModal(button);
+          categoryForm.elements.kind.value = button.dataset.categoryKindValue || "expense";
+          filterParentCategoryOptions(categoryForm.elements.kind.value, button.dataset.categoryId || "");
+          modalEyebrow.textContent = "Dentro da hierarquia";
+          modalTitle.textContent = "Nova subcategoria";
+        });
       });
 
       document.querySelectorAll('[data-category-menu-action="edit"]').forEach((button) => {
