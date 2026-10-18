@@ -8,16 +8,35 @@ import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
 import { buildAccountsCardsPageViewModel } from "./view-model.js";
 
 const account: AccountRecord = {
-  id: "a-1", name: "Conta de exemplo", kind: "checking", status: "active",
-  currency: "BRL", openingBalanceMinor: 123456, institutionKey: "unknown-bank",
+  id: "a-1",
+  name: "Conta de exemplo",
+  kind: "checking",
+  status: "active",
+  currency: "BRL",
+  openingBalanceMinor: 123456,
+  institutionKey: "unknown-bank",
 };
 const card: CreditCardAccountRecord = {
-  id: "c-1", name: "Cartao de exemplo", status: "active", closingDay: 12,
-  dueDay: 20, currency: "USD", creditLimitMinor: 250000, institutionKey: "unknown-bank",
-  brandKey: "visa", paymentAccountId: account.id, instruments: [{
-    id: "i-1", type: "virtual", holder: "primary", status: "active",
-    isDefault: true, maskedIdentifier: "**** 4567",
-  }],
+  id: "c-1",
+  name: "Cartao de exemplo",
+  status: "active",
+  closingDay: 12,
+  dueDay: 20,
+  currency: "USD",
+  creditLimitMinor: 250000,
+  institutionKey: "unknown-bank",
+  brandKey: "visa",
+  paymentAccountId: account.id,
+  instruments: [
+    {
+      id: "i-1",
+      type: "virtual",
+      holder: "primary",
+      status: "active",
+      isDefault: true,
+      maskedIdentifier: "**** 4567",
+    },
+  ],
 };
 
 test("#716 preserva master-detail, identidade institucional e moedas distintas", () => {
@@ -28,7 +47,7 @@ test("#716 preserva master-detail, identidade institucional e moedas distintas",
   assert.match(master, /data-kind="account" data-currency="BRL"/);
   assert.match(master, /data-kind="card" data-currency="USD"/);
   assert.equal((master.match(/resource-master-icon/g) ?? []).length, 2);
-  assert.equal((master.match(/institution-badge-icon|institution-logo-img/g) ?? []).length >= 2, true);
+  assert.ok((master.match(/institution-badge-icon|institution-logo-img/g) ?? []).length >= 2);
   assert.match(master, /aria-current="page"/);
   const detail = renderSelectedResourceDetail(view.selectedResource, [account]);
   assert.match(detail, /data-resource-detail="card" data-resource-key="card:c-1"/);
@@ -36,7 +55,10 @@ test("#716 preserva master-detail, identidade institucional e moedas distintas",
   assert.match(detail, /Limite total · USD/);
   assert.match(detail, /Visa/);
   assert.match(detail, /data-card-instrument/);
-  assert.ok(detail.indexOf('class="resource-detail-actions"') < detail.indexOf('class="resource-instruments"'));
+  assert.ok(
+    detail.indexOf('class="resource-detail-actions"') <
+      detail.indexOf('class="resource-instruments"'),
+  );
   assert.doesNotMatch(detail, /data-financial-context="account"/);
 });
 
@@ -51,7 +73,8 @@ test("#716 identifica conta com saldo inicial, nunca soma saldos BRL e USD", () 
 });
 
 test("#716 moedas ausentes e ausencia de recursos sao estados explicitos", () => {
-  const withoutCurrency = { ...card, currency: undefined, instruments: [] };
+  const withoutCurrency: CreditCardAccountRecord = { ...card, instruments: [] };
+  delete withoutCurrency.currency;
   const view = buildAccountsCardsPageViewModel([], [withoutCurrency], "card:c-1");
   const html = renderSelectedResourceDetail(view.selectedResource, []);
   assert.match(html, /Moeda não informada/);
@@ -61,7 +84,11 @@ test("#716 moedas ausentes e ausencia de recursos sao estados explicitos", () =>
 });
 
 test("#716 formularios mantem labels, foco compartilhado e confirmacao neutra", () => {
-  for (const html of [renderAccountDialog(), renderCardDialog([account]), renderCardEditDialog(card, [account], "edit-c-1")]) {
+  for (const html of [
+    renderAccountDialog(),
+    renderCardDialog([account]),
+    renderCardEditDialog(card, [account], "edit-c-1"),
+  ]) {
     assert.match(html, /class="sf-dialog master-dialog"/);
     assert.match(html, /data-sf-dialog-close/);
     assert.match(html, /class="resource-form-actions"/);
