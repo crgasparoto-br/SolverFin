@@ -20,7 +20,10 @@ import { escapeHtml } from "./presentation.js";
 import { renderAccountsCardsApiFormScript, renderAccountsCardsRuntimeScript } from "./runtime.js";
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
-import { buildAccountsCardsPageViewModel, type AccountCdiConfiguration } from "./view-model.js";
+import {
+  buildAccountsCardsPageViewModel,
+  type AccountCdiConfiguration,
+} from "./view-model.js";
 
 function renderHeaderDialogTrigger(input: {
   dialogId: string;
