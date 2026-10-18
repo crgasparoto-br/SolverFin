@@ -216,34 +216,39 @@ function renderAccountDetail(
         ${detailField("Estado", formatGenericStatus(account.status))}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(account.name)}">
-        ${renderRouteDialogTrigger({
-          dialogId: viewModel.editDialogId,
-          label: "Editar conta",
-          className: "icon-button",
-          variant: "ghost",
-          iconHtml: renderEditIcon(),
-          iconOnly: true,
-        })}
-        ${renderAccountCdiControl(account, currency, configuration, cdiAvailable)}
-        ${renderRouteDialogTrigger({
-          dialogId: `account-cdi-dialog-${account.id}`,
-          label: "Configurar remuneração CDI",
-          className: "icon-button",
-          variant: "ghost",
-          iconHtml: icon("settings", 16),
-          iconOnly: true,
-          disabled:
-            account.status !== "active" ||
-            currency !== "BRL" ||
-            !cdiAvailable ||
-            !cdiCategoriesAvailable,
-        })}
-        <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
-          ${renderResourceIconAction("Arquivar conta", renderArchiveIcon(), viewModel.isArchived)}
-        </form>
-        <form data-api-form data-api-method="DELETE" data-api-path="/api/accounts/${escapeHtml(account.id)}" data-confirm="Excluir ${escapeHtml(account.name)}? Só é possível excluir contas sem vínculos financeiros." class="inline-action-form">
-          ${renderResourceIconAction("Excluir conta", renderTrashIcon(), false, true)}
-        </form>
+        <div class="resource-account-cdi-row" role="group" aria-label="Controle CDI da conta">
+          ${renderAccountCdiControl(account, currency, configuration, cdiAvailable)}
+          ${renderRouteDialogTrigger({
+            dialogId: `account-cdi-dialog-${account.id}`,
+            label: "Configurar remuneração CDI",
+            className: "sf-icon-button resource-action-button",
+            variant: "secondary",
+            iconHtml: icon("settings", 18),
+            iconOnly: true,
+            disabled:
+              account.status !== "active" ||
+              currency !== "BRL" ||
+              !cdiAvailable ||
+              !cdiCategoriesAvailable,
+          })}
+        </div>
+        <div class="resource-action-toolbar" role="group" aria-label="Manutenção da conta">
+          ${renderRouteDialogTrigger({
+            dialogId: viewModel.editDialogId,
+            label: "Editar conta",
+            className: "sf-icon-button resource-action-button",
+            variant: "secondary",
+            iconHtml: renderEditIcon(),
+            iconOnly: true,
+          })}
+          <span class="resource-action-toolbar-separator" aria-hidden="true"></span>
+          <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
+            ${renderResourceIconAction("Arquivar conta", renderArchiveIcon(), viewModel.isArchived)}
+          </form>
+          <form data-api-form data-api-method="DELETE" data-api-path="/api/accounts/${escapeHtml(account.id)}" data-confirm="Excluir ${escapeHtml(account.name)}? Só é possível excluir contas sem vínculos financeiros." class="inline-action-form">
+            ${renderResourceIconAction("Excluir conta", renderTrashIcon(), false, true)}
+          </form>
+        </div>
       </div>
     </section>
     ${renderAccountEditDialog(account, viewModel.editDialogId)}
@@ -262,8 +267,8 @@ function renderResourceIconAction(
 ): string {
   const text = escapeHtml(label);
   const classes = danger
-    ? "sf-button sf-button-ghost sf-icon-button icon-button danger-icon-button"
-    : "sf-button sf-button-ghost sf-icon-button icon-button";
+    ? "sf-button sf-button-secondary sf-icon-button sf-focus-ring resource-action-button danger-icon-button"
+    : "sf-button sf-button-secondary sf-icon-button sf-focus-ring resource-action-button";
   return `<button type="submit" class="${classes}" title="${text}" aria-label="${text}"${disabled ? " disabled" : ""}>${glyph}</button>`;
 }
 
@@ -334,29 +339,32 @@ function renderCardDetail(
         ${detailField("Fechamento / vencimento", `Dia ${card.closingDay} / dia ${card.dueDay}`)}
       </div>
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(card.name)}">
-        ${renderRouteDialogTrigger({
-          dialogId: viewModel.editDialogId,
-          label: "Editar cartão",
-          className: "icon-button",
-          variant: "ghost",
-          iconHtml: renderEditIcon(),
-          iconOnly: true,
-        })}
-        ${renderRouteDialogTrigger({
-          dialogId: viewModel.newInstrumentDialogId,
-          label: "Adicionar instrumento",
-          className: "icon-button",
-          variant: "ghost",
-          disabled: viewModel.isArchived,
-          iconHtml: renderAddIcon(),
-          iconOnly: true,
-        })}
-        <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
-          ${renderResourceIconAction("Arquivar cartão", renderArchiveIcon(), viewModel.isArchived)}
-        </form>
-        <form data-api-form data-api-method="DELETE" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}" data-confirm="Excluir ${escapeHtml(card.name)}? Só é possível excluir cartões sem vínculos financeiros." class="inline-action-form">
-          ${renderResourceIconAction("Excluir cartão", renderTrashIcon(), false, true)}
-        </form>
+        <div class="resource-action-toolbar" role="group" aria-label="Manutenção do cartão">
+          ${renderRouteDialogTrigger({
+            dialogId: viewModel.editDialogId,
+            label: "Editar cartão",
+            className: "sf-icon-button resource-action-button",
+            variant: "secondary",
+            iconHtml: renderEditIcon(),
+            iconOnly: true,
+          })}
+          ${renderRouteDialogTrigger({
+            dialogId: viewModel.newInstrumentDialogId,
+            label: "Adicionar instrumento",
+            className: "sf-icon-button resource-action-button",
+            variant: "secondary",
+            disabled: viewModel.isArchived,
+            iconHtml: renderAddIcon(),
+            iconOnly: true,
+          })}
+          <span class="resource-action-toolbar-separator" aria-hidden="true"></span>
+          <form data-api-form data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}/archive" data-confirm="Inativar ${escapeHtml(card.name)}? Este cartão deixará de aparecer nas operações ativas." class="inline-action-form">
+            ${renderResourceIconAction("Arquivar cartão", renderArchiveIcon(), viewModel.isArchived)}
+          </form>
+          <form data-api-form data-api-method="DELETE" data-api-path="/api/credit-card-accounts/${escapeHtml(card.id)}" data-confirm="Excluir ${escapeHtml(card.name)}? Só é possível excluir cartões sem vínculos financeiros." class="inline-action-form">
+            ${renderResourceIconAction("Excluir cartão", renderTrashIcon(), false, true)}
+          </form>
+        </div>
       </div>
       <section class="resource-instruments" aria-labelledby="resource-instruments-title-${escapeHtml(card.id)}">
         <div class="resource-subheading"><div><span class="resource-kicker">Instrumentos</span><h3 id="resource-instruments-title-${escapeHtml(card.id)}">Instrumentos do cartão</h3></div><span>${viewModel.activeInstrumentCount} ativos</span></div>
