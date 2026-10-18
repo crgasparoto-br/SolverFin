@@ -103,18 +103,28 @@ test("#716 mostra CDI ativo apenas para contas BRL com configuração habilitada
   assert.equal(view.resources[4]?.cdiActive, undefined);
   const master = renderResourceMaster(view.resources);
   assert.equal((master.match(/class="resource-master-cdi-column"/g) ?? []).length, 5);
-  assert.equal((master.match(/class="resource-master-cdi-compact"/g) ?? []).length, 1);
-  assert.equal((master.match(/CDI ativo/g) ?? []).length, 2);
+  assert.equal((master.match(/class="resource-master-cdi-compact(?: is-active)?"/g) ?? []).length, 4);
+  assert.deepEqual(
+    view.resources.map((resource) => resource.cdiStatus),
+    ["active", "inactive", "ineligible", "ineligible", undefined],
+  );
+  assert.match(master, /Sem CDI ativo/);
+  assert.match(master, /Não elegível/);
   assert.match(master, /<span>CDI<\/span><span>Situação<\/span>/);
   assert.match(master, /data-cdi-active="true"/);
   assert.match(master, /Conta corrente.*CDI ativo/s);
   assert.match(master, /data-kind="card"[^>]*data-cdi-active="false"/);
   assert.match(
     accountsCardsPageStyles(),
-    /\.resource-master-cdi-compact \{ color: var\(--sf-color-success\)/,
+    /\.resource-master-cdi-compact\.is-active \{ color: var\(--sf-color-success\)/,
   );
   const noConfiguration = buildAccountsCardsPageViewModel([account], [card]);
-  assert.doesNotMatch(renderResourceMaster(noConfiguration.resources), /CDI ativo/);
+  assert.equal(noConfiguration.resources[0]?.cdiStatus, "inactive");
+  assert.match(renderResourceMaster(noConfiguration.resources), /Sem CDI ativo/);
+  const failedQuery = buildAccountsCardsPageViewModel([account], [card], "account:a-1", [], false);
+  assert.equal(failedQuery.resources[0]?.cdiStatus, "unavailable");
+  assert.match(renderResourceMaster(failedQuery.resources), /Não verificado/);
+  assert.doesNotMatch(renderResourceMaster(failedQuery.resources), />Sem CDI ativo</);
 });
 
 test("#716 identifica conta com saldo inicial, nunca soma saldos BRL e USD", () => {
