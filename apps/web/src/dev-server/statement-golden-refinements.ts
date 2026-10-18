@@ -689,9 +689,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-account-control .account-field>label#account-picker-label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
       ${root} .statement-account-heading .summary-balance{align-items:baseline;display:flex;gap:${spacing[1]};justify-content:space-between}
       ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.md};white-space:nowrap}
-      ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr);row-gap:0}
-      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:nowrap;gap:${spacing[1]};justify-content:space-between;padding:2px 0}
-      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};line-height:${typography.lineHeights.compact};white-space:nowrap;word-break:normal;width:auto}
+      /* Four full-width financial rows push movements below the 320px viewport.
+         Keep all four values, but place them in two compact, self-contained rows. */
+      ${root} .account-summary[data-mockup-composition]{column-gap:4px;grid-template-columns:repeat(2,minmax(0,1fr));padding-block:6px;row-gap:4px}
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:2px;min-width:0;padding:4px 6px}
+      ${root} .account-summary[data-mockup-composition] .summary-total-icon{display:none}
+      ${root} .account-summary[data-mockup-composition] .summary-total-copy{min-width:0}
+      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:11px;line-height:1.2;max-width:100%;overflow-wrap:anywhere;white-space:normal;word-break:normal;width:auto}
     }
 
     /* F-702-04: in the two-column phone layout, a long amount needs its own
