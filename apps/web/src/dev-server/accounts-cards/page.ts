@@ -103,9 +103,10 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
     viewModel.selectedResource?.kind === "account" &&
     viewModel.selectedResource.account.status === "active" &&
     viewModel.selectedResource.account.currency === "BRL";
-  const cdiCategoryResult = eligibleForCdiSettings && cdiConfigurations.ok
-    ? await apiGet<{ categories: CdiIncomeCategory[] }>(token, "/api/categories?status=all")
-    : undefined;
+  const cdiCategoryResult =
+    eligibleForCdiSettings && cdiConfigurations.ok
+      ? await apiGet<{ categories: CdiIncomeCategory[] }>(token, "/api/categories?status=all")
+      : undefined;
   const masterDetail = renderDetailLayout({
     masterHtml: renderResourceMaster(viewModel.resources),
     detailHtml: renderSelectedResourceDetail(
@@ -117,6 +118,15 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
       cdiCategoryResult?.ok ?? false,
     ),
   });
+  const cdiCategoryUnavailableNotice =
+    cdiCategoryResult && !cdiCategoryResult.ok
+      ? renderAlert({
+          title: "Configuração CDI indisponível",
+          description:
+            "Não foi possível carregar categorias de receita. Atualize a página para configurar os parâmetros.",
+          tone: "attention",
+        })
+      : "";
   const loading = `<div data-resource-loading hidden>${renderLoading({ title: "Atualizando cadastro", description: "Aguarde enquanto a alteração é salva." })}</div>`;
 
   return renderAuthenticatedPage({
@@ -130,7 +140,7 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
         description:
           "Compare contas e cartões por instituição, moeda, saldo inicial e limite. Selecione uma linha para editar ou consultar os detalhes.",
         actionsHtml: headerActions,
-      })}${loading}${cdiUnavailableNotice}${cdiCategoryResult && !cdiCategoryResult.ok ? renderAlert({ title: "Configuração CDI indisponível", description: "Não foi possível carregar categorias de receita. Atualize a página para configurar os parâmetros.", tone: "attention" }) : ""}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderSolverFinUiInteractionsScriptTag()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
+      })}${loading}${cdiUnavailableNotice}${cdiCategoryUnavailableNotice}<div data-accounts-cards-archetype="A3">${masterDetail}</div>${renderAccountDialog()}${renderCardDialog(viewModel.accounts)}${renderConfirmationDialog()}${renderSolverFinUiInteractionsScriptTag()}${renderAccountsCardsApiFormScript()}${renderAccountsCardsRuntimeScript()}`,
     }),
   });
 }
