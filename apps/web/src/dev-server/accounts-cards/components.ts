@@ -248,10 +248,7 @@ function renderAccountDetail(
     </section>
     ${renderAccountEditDialog(account, viewModel.editDialogId)}
     ${
-      account.status === "active" &&
-      currency === "BRL" &&
-      cdiAvailable &&
-      cdiCategoriesAvailable
+      account.status === "active" && currency === "BRL" && cdiAvailable && cdiCategoriesAvailable
         ? renderAccountCdiConfigurationDialog(account, configuration, cdiCategories)
         : ""
     }`;
