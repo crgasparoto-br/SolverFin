@@ -45,7 +45,7 @@ try {
   const focusOrder = [await activeControl()];
   await pressKey("Tab", { shift: true });
   focusOrder.push(await activeControl());
-  for (let step = 0; step < 9; step += 1) {
+  for (let step = 0; step < 10; step += 1) {
     await pressKey("Tab");
     focusOrder.push(await activeControl());
   }
@@ -55,6 +55,7 @@ try {
     "description",
     "categoryId",
     "note",
+    "adjustedInstallmentAmount",
     "Cancelar",
     "Salvar parcela",
     "Anexos do lançamento",
@@ -85,7 +86,7 @@ try {
   check(
     restrictions.canonicalKindDisabled &&
       restrictions.kindButtonsDisabled &&
-      restrictions.editableNames.join(",") === "categoryId,description,note" &&
+      restrictions.editableNames.join(",") === "adjustedInstallmentAmount,categoryId,description,note" &&
       restrictions.cancelEnabled,
     "Mockup controls must not relax restricted installment editing",
     restrictions,
