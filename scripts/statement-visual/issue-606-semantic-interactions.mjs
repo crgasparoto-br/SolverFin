@@ -354,14 +354,21 @@ async function validateStatement(cdp) {
   const focus = await evaluate(
     cdp,
     `(() => {
-      const trigger = document.querySelector('.statement-status[data-tooltip]');
-      if (!trigger) return { exists: false, focused: false };
+      const control = document.querySelector('[data-statement-status-control]');
+      const trigger = control?.querySelector(':scope > summary');
+      const indicator = trigger?.querySelector('.statement-status[data-tooltip]');
+      if (!trigger || !indicator) return { exists: false, focused: false, accessible: false };
       trigger.focus();
-      return { exists: true, focused: document.activeElement === trigger };
+      return {
+        exists: true,
+        focused: document.activeElement === trigger,
+        accessible: trigger.getAttribute('aria-label')?.includes(indicator.getAttribute('aria-label')) === true
+      };
     })()`,
   );
   assert.equal(focus.exists, true, "Statement exposes no focusable status indicator.");
-  assert.equal(focus.focused, true, "Statement status indicator did not accept focus.");
+  assert.equal(focus.focused, true, "Statement status control did not accept focus.");
+  assert.equal(focus.accessible, true, "Focusable status control lost its accessible situation label.");
   for (const viewportWidth of [1101, 1100, 761, 760]) {
     await setViewport(cdp, viewportWidth, 900);
     await navigate(cdp, `${baseUrl}${baseRoute}`);
