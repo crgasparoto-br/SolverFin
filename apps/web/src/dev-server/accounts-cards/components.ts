@@ -260,7 +260,7 @@ function renderAccountCdiControl(
     <span class="resource-cdi-title">CDI</span>
     <button type="button" class="resource-cdi-switch" role="switch" aria-label="Remuneração CDI de ${escapeHtml(account.name)}" title="${escapeHtml(title)}" aria-checked="${active}" data-cdi-toggle data-account-id="${escapeHtml(account.id)}"${enabled ? "" : " disabled"}><span class="resource-cdi-switch-thumb" aria-hidden="true"></span></button>
     <span class="resource-cdi-state" data-cdi-state>${label}</span>
-    <span class="sf-visually-hidden" role="status" aria-live="polite" data-cdi-feedback></span>
+    <span class="resource-cdi-feedback" role="status" aria-live="polite" data-cdi-feedback></span>
   </div>`;
 }
 
