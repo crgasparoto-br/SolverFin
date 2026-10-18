@@ -731,11 +731,15 @@ export function statementGoldenRefinementStyles(): string {
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto}
     }
     @media(min-width:1101px) and (max-width:1599px){
-      /* Reflow rather than squeeze a 7-column desktop bar into the available workspace. */
-      ${root}[data-statement-options] .filter-form{grid-template-columns:minmax(10.5rem,11.5rem) repeat(2,minmax(0,1fr))}
+      /* Keep the short day, search and four selectors on one row at 1366px.
+         Only the actions use a second row, preventing collision and excessive height. */
+      ${root}[data-statement-options] .filter-form{
+        grid-template-columns:minmax(10.5rem,11.5rem) minmax(11rem,1.35fr) repeat(4,minmax(7.5rem,1fr));
+      }
       ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
       ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:1}
-      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:2/-1}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:2}
+      ${root}[data-statement-options] .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:auto}
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
     }
     @media(min-width:1101px){
