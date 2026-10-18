@@ -308,10 +308,7 @@ async function validateCdiSettings(cdp) {
     date: "2026-10-14",
     retryAllowed: true,
   });
-  await evaluate(
-    cdp,
-    "document.querySelector('[data-cdi-configuration-form]')?.requestSubmit()",
-  );
+  await evaluate(cdp, "document.querySelector('[data-cdi-configuration-form]')?.requestSubmit()");
   await waitFor(
     cdp,
     `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Configuração CDI salva')`,
