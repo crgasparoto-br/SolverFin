@@ -43,6 +43,7 @@ export interface ResourceMasterViewModel {
   amountMinor: number;
   amountLabel: "Saldo inicial" | "Limite total";
   cdiActive?: boolean;
+  cdiStatus?: "active" | "inactive" | "unavailable" | "ineligible";
   search: string;
   href: string;
   isSelected: boolean;
@@ -102,6 +103,7 @@ export function buildAccountsCardsPageViewModel(
   cards: CreditCardAccountRecord[],
   requestedResource?: string | null,
   cdiConfigurations: readonly AccountCdiConfiguration[] = [],
+  cdiConfigurationsAvailable = true,
 ): AccountsCardsPageViewModel {
   const enabledCdiAccountIds = new Set(
     cdiConfigurations
@@ -113,14 +115,18 @@ export function buildAccountsCardsPageViewModel(
       )
       .map((configuration) => configuration.accountId),
   );
-  const accountResources = accounts.map((account) =>
-    buildAccountResource(
-      account,
-      account.status === "active" &&
-        normalizeCurrency(account.currency) === "BRL" &&
-        enabledCdiAccountIds.has(account.id),
-    ),
-  );
+  const accountResources = accounts.map((account) => {
+    const cdiEligible = account.status === "active" && normalizeCurrency(account.currency) === "BRL";
+    const cdiActive = cdiEligible && enabledCdiAccountIds.has(account.id);
+    const cdiStatus = !cdiEligible
+      ? "ineligible"
+      : !cdiConfigurationsAvailable
+        ? "unavailable"
+        : cdiActive
+          ? "active"
+          : "inactive";
+    return buildAccountResource(account, cdiActive, cdiStatus);
+  });
   const cardResources = cards.map((card) => buildCardResource(card, accounts));
   const resources = [...accountResources, ...cardResources];
   const requestedKey = parseResourceKey(requestedResource);
@@ -144,7 +150,11 @@ export function buildAccountsCardsPageViewModel(
   };
 }
 
-function buildAccountResource(account: AccountRecord, cdiActive: boolean): ResourceMasterViewModel {
+function buildAccountResource(
+  account: AccountRecord,
+  cdiActive: boolean,
+  cdiStatus: "active" | "inactive" | "unavailable" | "ineligible",
+): ResourceMasterViewModel {
   const item = buildAccountItemViewModel(account);
   const currency = normalizeCurrency(account.currency);
   const key = `account:${account.id}` as const;
@@ -163,7 +173,19 @@ function buildAccountResource(account: AccountRecord, cdiActive: boolean): Resou
     amountMinor: account.openingBalanceMinor ?? 0,
     amountLabel: "Saldo inicial",
     cdiActive,
-    search: [item.search, currency ?? "moeda indisponível", "conta", cdiActive ? "cdi ativo" : ""]
+    cdiStatus,
+    search: [
+      item.search,
+      currency ?? "moeda indisponível",
+      "conta",
+      cdiStatus === "active"
+        ? "cdi ativo"
+        : cdiStatus === "inactive"
+          ? "sem cdi ativo"
+          : cdiStatus === "ineligible"
+            ? "cdi não elegível"
+            : "cdi não verificado",
+    ]
       .join(" ")
       .toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(key)}`,
