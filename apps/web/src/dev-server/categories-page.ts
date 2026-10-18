@@ -622,8 +622,34 @@ function categoryPageScript(): string {
       closeButtons.forEach((button) => button.addEventListener("click", closeModal));
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
-          closeCategoryMenus();
-          if (modal && !modal.hidden) closeModal();
+          const openMenu = Array.from(document.querySelectorAll("[data-category-menu]"))
+            .find((menu) => !menu.hidden);
+          if (openMenu) {
+            event.preventDefault();
+            const trigger = openMenu.parentElement?.querySelector("[data-category-menu-button]");
+            closeCategoryMenus();
+            trigger?.focus();
+            return;
+          }
+          if (modal && !modal.hidden) {
+            event.preventDefault();
+            closeModal();
+          }
+        }
+        if (event.key === "Tab" && modal && !modal.hidden) {
+          const focusable = Array.from(modal.querySelectorAll(
+            'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+          )).filter((element) => !element.closest("[hidden]"));
+          if (!focusable.length) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && (document.activeElement === first || !modal.contains(document.activeElement))) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && (document.activeElement === last || !modal.contains(document.activeElement))) {
+            event.preventDefault();
+            first.focus();
+          }
         }
       });
       document.addEventListener("click", () => closeCategoryMenus());
@@ -641,11 +667,22 @@ function categoryPageScript(): string {
           closeCategoryMenus(menu);
           menu.hidden = !shouldOpen;
           button.setAttribute("aria-expanded", String(shouldOpen));
+          if (shouldOpen) menu.querySelector('[role="menuitem"]')?.focus();
         });
       });
 
       document.querySelectorAll("[data-category-menu]").forEach((menu) => {
         menu.addEventListener("click", (event) => event.stopPropagation());
+        menu.addEventListener("keydown", (event) => {
+          const actions = Array.from(menu.querySelectorAll('[role="menuitem"]:not([disabled])'));
+          const index = actions.indexOf(document.activeElement);
+          if (!actions.length || !["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          const next = event.key === "Home" ? 0
+            : event.key === "End" ? actions.length - 1
+            : (index + (event.key === "ArrowDown" ? 1 : -1) + actions.length) % actions.length;
+          actions[next].focus();
+        });
       });
 
       document.querySelectorAll('[data-category-menu-action="create-child"]').forEach((button) => {
