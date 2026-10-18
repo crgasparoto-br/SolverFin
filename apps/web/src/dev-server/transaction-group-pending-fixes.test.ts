@@ -25,6 +25,9 @@ assert.match(enhanced, /MutationObserver/);
 assert.match(enhanced, /groupProjectionAmountMinor/);
 assert.match(enhanced, /deltaMinor = nextAmountMinor - previousAmountMinor/);
 assert.match(enhanced, /updateBalance\(affectedRow, deltaMinor, group\.currency\)/);
+assert.match(enhanced, /data-balance-order/);
+assert.match(enhanced, /Number\.isSafeInteger\(order\) && order >= start/);
+assert.doesNotMatch(enhanced, /affectedRow = affectedRow\.nextElementSibling/);
 assert.match(enhanced, /statement-status-/);
 assert.match(enhanced, /lançamentos agrupados/);
 assert.equal(
