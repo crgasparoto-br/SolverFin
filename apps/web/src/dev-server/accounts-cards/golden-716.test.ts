@@ -105,7 +105,10 @@ test("#716 mostra CDI ativo apenas para contas BRL com configuração habilitada
   assert.equal((master.match(/class="resource-master-cdi"/g) ?? []).length, 1);
   assert.match(master, /Conta corrente.*CDI ativo/s);
   assert.match(master, /Remuneração pelo CDI habilitada/);
-  assert.match(accountsCardsPageStyles(), /\.resource-master-cdi \{ color: var\(--sf-color-success\)/);
+  assert.match(
+    accountsCardsPageStyles(),
+    /\.resource-master-cdi \{ color: var\(--sf-color-success\)/,
+  );
   const noConfiguration = buildAccountsCardsPageViewModel([account], [card]);
   assert.doesNotMatch(renderResourceMaster(noConfiguration.resources), /CDI ativo/);
 });
