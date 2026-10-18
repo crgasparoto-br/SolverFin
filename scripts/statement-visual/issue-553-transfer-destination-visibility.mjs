@@ -78,7 +78,7 @@ try {
   check(modal.open, "Destination installment modal did not open", modal);
   check(modal.title === "Editar parcela", "Destination modal did not use installment mode", modal);
   check(
-    modal.visibleEditableNames.join(",") === "categoryId,description,note",
+    modal.visibleEditableNames.join(",") === "adjustedInstallmentAmount,categoryId,description,note",
     "Destination modal exposed fields outside the conservative allowlist",
     modal,
   );
