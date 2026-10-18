@@ -30,6 +30,11 @@ export function assertGoldenStatement(layout) {
   );
   assert.deepEqual(layout.summaryCollisions ?? [], [], "Golden statement summary values overlap.");
   assert.deepEqual(
+    layout.filterControlCollisions ?? [],
+    [],
+    "Statement filter actions overlap the category selector.",
+  );
+  assert.deepEqual(
     layout.summaryCardOverflow ?? [],
     [],
     "Golden statement amounts must stay within their own summary cards.",
@@ -219,6 +224,24 @@ export const goldenStatementMeasurements = `(() => {
       const misplaced = valueBox.left < cardBox.left - 1 || valueBox.right > cardBox.right + 1;
       return outside || clipped || misplaced ? [card.dataset.summaryTotal || value.textContent.trim()] : [];
     }),
+    // The 1366px workspace is narrower than the viewport after the sidebar.
+    // Fail if action buttons cover a select even when document overflow is absent.
+    filterControlCollisions: (() => {
+      const actionButtons = Array.from(document.querySelectorAll('.statement-filter-actions button'))
+        .filter(button => {
+          const style = getComputedStyle(button);
+          const box = button.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
+        });
+      const category = document.querySelector('.statement-category-field select');
+      if (!category || category.getBoundingClientRect().width === 0) return [];
+      const target = category.getBoundingClientRect();
+      return actionButtons.filter(button => {
+        const box = button.getBoundingClientRect();
+        return Math.min(box.right, target.right) - Math.max(box.left, target.left) > 1 &&
+          Math.min(box.bottom, target.bottom) - Math.max(box.top, target.top) > 1;
+      }).map(button => button.textContent.trim());
+    })(),
     summaryCollisions: (() => {
       const nodes = Array.from(document.querySelectorAll('.account-summary .summary-total strong'))
         .filter(element => {
