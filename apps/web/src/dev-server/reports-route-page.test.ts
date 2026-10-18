@@ -295,6 +295,107 @@ describe("reports route page", () => {
     assert.match(html, /name="view" value="installments"/);
     assert.match(html, /name="profileId" value="profile-1"/);
   });
+
+  it("separates currencies and keeps the analytical hierarchy in each block", async () => {
+    const report = readyReport();
+    report.currencyBlocks.push({
+      ...report.currencyBlocks[0]!,
+      currency: "USD",
+    });
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const path = new URL(String(input)).pathname;
+      if (path === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (path === "/api/credit-card-accounts") {
+        return jsonResponse({ creditCardAccounts: [] });
+      }
+      return jsonResponse({ report });
+    };
+
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2",
+      ),
+    );
+    assert.equal((html.match(/data-report-analysis="a5" data-currency=/g) ?? []).length, 2);
+    assert.match(html, /data-currency="BRL"/);
+    assert.match(html, /data-currency="USD"/);
+    assert.equal((html.match(/data-emphasis="true"/g) ?? []).length, 2);
+    const summary = html.indexOf('data-analysis-layer="summary"');
+    const visualization = html.indexOf('data-analysis-layer="visualization"');
+    const highlights = html.indexOf('data-analysis-layer="highlights"');
+    const detail = html.indexOf('data-analysis-layer="detail"');
+    assert.ok(summary < visualization && visualization < highlights && highlights < detail);
+    assert.match(html, /tabindex="0" aria-label="Resultado por período"/);
+  });
+
+  it("offers a retry URL preserving the selected filters after an API failure", async () => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const path = new URL(String(input)).pathname;
+      if (path === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (path === "/api/credit-card-accounts") {
+        return jsonResponse({ creditCardAccounts: [] });
+      }
+      return errorResponse();
+    };
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&start=2026-06&periods=2",
+      ),
+    );
+    assert.match(html, /data-report-state="api-error"/);
+    assert.match(
+      html,
+      /class="report-retry sf-focus-ring" href="\/relatorios\?view=category-evolution&amp;start=2026-06&amp;periods=2"/,
+    );
+    assert.match(html, /Tentar novamente/);
+  });
+
+  it("shows cash flow overview, sampled accessible trend and full daily detail", async () => {
+    globalThis.fetch = async (): Promise<Response> =>
+      jsonResponse({
+        referenceDate: "2026-10-17",
+        horizonDays: 30,
+        from: "2026-10-18",
+        to: "2026-11-16",
+        currencyBlocks: [
+          {
+            currency: "USD",
+            openingBalanceMinor: 10000,
+            closingBalanceMinor: 9900,
+            points: [
+              {
+                date: "2026-10-18",
+                netMovementMinor: -100,
+                closingBalanceMinor: 9900,
+                movements: [],
+              },
+              {
+                date: "2026-10-19",
+                netMovementMinor: 0,
+                closingBalanceMinor: 9900,
+                movements: [],
+              },
+            ],
+          },
+        ],
+      });
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL("http://localhost/relatorios?view=cash-flow&horizonDays=30"),
+      new Date("2026-10-17T12:00:00.000Z"),
+    );
+    assert.match(html, /data-analysis-layer="summary"/);
+    assert.match(html, /data-analysis-layer="visualization"/);
+    assert.match(html, /data-analysis-layer="detail"/);
+    assert.match(html, /tabindex="0" aria-label="Saldo projetado em USD por data selecionada"/);
+    assert.match(html, /Amostra de saldos diários em USD/);
+    assert.match(html, /<table class="cash-flow-table">/);
+    assert.match(html, /2026-10-18/);
+    assert.match(html, /2026-10-19/);
+  });
+
 });
 
 function readyReport() {
