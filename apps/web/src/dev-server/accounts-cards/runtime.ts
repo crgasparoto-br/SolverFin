@@ -93,6 +93,22 @@ export function renderAccountsCardsApiFormScript(): string {
           return local.toISOString().slice(0, 10);
         }
 
+        async function fetchCurrentCdiConfiguration(accountId) {
+          const response = await fetch("/api/account-remuneration/configurations", {
+            headers: { accept: "application/json" },
+          });
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error((body.error && body.error.message) || "Não foi possível consultar o CDI.");
+          }
+          const configurations = Array.isArray(body.configurations) ? body.configurations : [];
+          const configuration = configurations.find((item) => item.accountId === accountId);
+          if (!configuration || configuration.accountCurrency !== "BRL" || configuration.indexKind !== "cdi") {
+            throw new Error("Esta conta não está elegível para remuneração CDI no perfil atual.");
+          }
+          return configuration;
+        }
+
         document.querySelectorAll("[data-cdi-toggle]").forEach((toggle) => {
           const container = toggle.closest(".resource-cdi-control");
           const feedback = container && container.querySelector("[data-cdi-feedback]");
@@ -107,21 +123,7 @@ export function renderAccountsCardsApiFormScript(): string {
             feedback.className = "resource-cdi-feedback muted";
             let saved = false;
             try {
-              const currentResponse = await fetch("/api/account-remuneration/configurations", {
-                headers: { accept: "application/json" },
-              });
-              const currentBody = await currentResponse.json().catch(() => ({}));
-              if (!currentResponse.ok) {
-                throw new Error((currentBody.error && currentBody.error.message) || "Não foi possível consultar o CDI.");
-              }
-              const configurations = Array.isArray(currentBody.configurations)
-                ? currentBody.configurations
-                : [];
-              const configuration = configurations.find((item) => item.accountId === accountId);
-              if (!configuration || configuration.accountCurrency !== "BRL" || configuration.indexKind !== "cdi") {
-                throw new Error("Esta conta não está elegível para remuneração CDI no perfil atual.");
-              }
-
+              const configuration = await fetchCurrentCdiConfiguration(accountId);
               const enable = configuration.enabled !== true;
               const percent = configuration.remunerationPercent ?? 100;
               const startsOn = configuration.startsOn || localToday();
@@ -165,6 +167,52 @@ export function renderAccountsCardsApiFormScript(): string {
             } finally {
               toggle.removeAttribute("aria-busy");
               if (!saved) toggle.disabled = false;
+            }
+          });
+        });
+
+        document.querySelectorAll("[data-cdi-configuration-form]").forEach((form) => {
+          const status = form.querySelector("[data-cdi-form-status]");
+          const submit = form.querySelector('button[type="submit"]');
+          const startsOn = form.querySelector('[name="startsOn"]');
+          if (startsOn && !startsOn.value) startsOn.value = localToday();
+          form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            if (!submit || submit.disabled || !status) return;
+            submit.disabled = true;
+            status.className = "form-status muted";
+            status.textContent = "Salvando configuração CDI...";
+            let saved = false;
+            try {
+              const configuration = await fetchCurrentCdiConfiguration(form.dataset.accountId);
+              const values = new FormData(form);
+              const payload = {
+                enabled: configuration.enabled === true,
+                remunerationPercent: Number(values.get("remunerationPercent")),
+                startsOn: String(values.get("startsOn") || ""),
+                ...(values.get("categoryId") ? { categoryId: String(values.get("categoryId")) } : {}),
+              };
+              const response = await fetch(
+                "/api/account-remuneration/configurations/" + encodeURIComponent(form.dataset.accountId),
+                {
+                  method: "PUT",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify(payload),
+                },
+              );
+              const body = await response.json().catch(() => ({}));
+              if (!response.ok) {
+                throw new Error((body.error && body.error.message) || "Não foi possível salvar a configuração CDI.");
+              }
+              saved = true;
+              status.className = "form-status success";
+              status.textContent = (body.operation && body.operation.message) || "Configuração CDI salva.";
+              window.setTimeout(() => window.location.reload(), 350);
+            } catch (error) {
+              status.className = "form-status error";
+              status.textContent = error instanceof Error ? error.message : "Não foi possível salvar o CDI.";
+            } finally {
+              if (!saved) submit.disabled = false;
             }
           });
         });
