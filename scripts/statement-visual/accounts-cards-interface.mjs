@@ -289,8 +289,12 @@ async function validateGoldenActionToolbar(cdp, resourceKind) {
     })()`,
   );
   assert.ok(snapshot, "Golden Screen maintenance toolbar is missing.");
-  assert.equal(snapshot.buttonCount, resourceKind === "card" ? 4 : 4);
-  assert.equal(snapshot.allNamed, true, "Subscreen icon controls need accessible names and tooltips.");
+  assert.equal(snapshot.buttonCount, 4);
+  assert.equal(
+    snapshot.allNamed,
+    true,
+    "Subscreen icon controls need accessible names and tooltips.",
+  );
   assert.equal(snapshot.allGoldenSize, true, "Golden Screen controls must have 44x44px targets.");
   assert.equal(snapshot.allGoldenGlyphs, true, "Action glyphs must use the same icon scale.");
   assert.equal(snapshot.allWithinDetail, true, "Subscreen controls overflow their detail panel.");
