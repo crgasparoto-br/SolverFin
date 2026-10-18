@@ -150,11 +150,7 @@ try {
     "Closing the clone form did not restore the group modal.",
   );
 
-  const beforeEdit = await readProjection(
-    browser.cdp,
-    created.groupId,
-    created.trailingId,
-  );
+  const beforeEdit = await readProjection(browser.cdp, created.groupId, created.trailingId);
   await evaluate(
     browser.cdp,
     `document.querySelector('[data-member-id="${created.memberIds[0]}"][data-member-action="edit"]').focus()`,
@@ -174,11 +170,7 @@ try {
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(450);
 
-  const afterEdit = await readProjection(
-    browser.cdp,
-    created.groupId,
-    created.trailingId,
-  );
+  const afterEdit = await readProjection(browser.cdp, created.groupId, created.trailingId);
   assert.equal(afterEdit.groupTotalMinor, 65000);
   assert.equal(afterEdit.rowProjectionMinor, 65000);
   assert.equal(afterEdit.groupBalanceMinor - beforeEdit.groupBalanceMinor, 5000);
@@ -204,11 +196,7 @@ try {
   );
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(250);
-  const afterDelete = await readProjection(
-    browser.cdp,
-    created.groupId,
-    created.trailingId,
-  );
+  const afterDelete = await readProjection(browser.cdp, created.groupId, created.trailingId);
   assert.equal(afterDelete.memberCount, 2);
   assert.equal(afterDelete.groupTotalMinor, 35000);
   assert.equal(afterDelete.rowProjectionMinor, 35000);
