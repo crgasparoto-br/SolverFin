@@ -16,7 +16,7 @@ function fixture() {
     descriptionText: { font: 16 },
     category: { y: 620, x: 712, right: 860, width: 148, font: 12 },
     amount: { y: 600, x: 900, right: 1040, width: 140, font: 16 },
-    balance: { y: 630, font: 12 },
+    balance: { x: 1044, y: 630, font: 12 },
     rowIcon: { x: 272, y: 600, width: 36, height: 36 },
     date: { x: 320, y: 600, width: 88 },
     overflow: false,
@@ -33,6 +33,12 @@ test("excess vertical chrome cannot pass only because horizontal layout is corre
   const layout = fixture();
   layout.row.bottom = 814;
   assert.throws(() => assertGoldenStatement(layout), /first transaction out/);
+});
+
+test("desktop balance must not overlap the value column", () => {
+  const layout = fixture();
+  layout.balance.x = layout.amount.right - 16;
+  assert.throws(() => assertGoldenStatement(layout), /column after the amount/);
 });
 
 test("mobile reflow is not forced into a desktop height budget", () => {
