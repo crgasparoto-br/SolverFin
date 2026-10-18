@@ -313,7 +313,7 @@ describe("reports route page", () => {
     assert.doesNotMatch(html, /data-report-state="ready"/);
   });
 
-    it("separates currencies and keeps the analytical hierarchy in each block", async () => {
+  it("separates currencies and keeps the analytical hierarchy in each block", async () => {
     const report = readyReport();
     report.currencyBlocks.push({
       ...report.currencyBlocks[0]!,
@@ -406,13 +406,15 @@ describe("reports route page", () => {
     assert.match(html, /data-analysis-layer="summary"/);
     assert.match(html, /data-analysis-layer="visualization"/);
     assert.match(html, /data-analysis-layer="detail"/);
-    assert.match(html, /tabindex="0" aria-label="Saldo projetado em USD por data selecionada"/);
+    assert.match(
+      html,
+      /tabindex="0" aria-label="Saldo projetado em USD por data selecionada"/,
+    );
     assert.match(html, /Amostra de saldos diários em USD/);
     assert.match(html, /<table class="cash-flow-table">/);
     assert.match(html, /2026-10-18/);
     assert.match(html, /2026-10-19/);
   });
-
 });
 
 function readyReport() {
