@@ -306,11 +306,23 @@ async function validateMultiCurrency(cdp, month) {
     screenshots.push(filename);
     check(measurements.currencies.includes("BRL"), "Missing BRL block", measurements);
     check(measurements.currencies.includes("USD"), "Missing USD block", measurements);
-    check(measurements.currenciesComplete, "Per-currency layers or Money values became mixed", measurements);
-    check(!measurements.globalOverflow, "Reports multi-currency page leaks horizontal overflow", measurements);
+    check(
+      measurements.currenciesComplete,
+      "Per-currency layers or Money values became mixed",
+      measurements,
+    );
+    check(
+      !measurements.globalOverflow,
+      "Reports multi-currency page leaks horizontal overflow",
+      measurements,
+    );
     check(measurements.longLabelsReadable, "Reports category labels are truncated", measurements);
     if (width <= 390) {
-      check(measurements.tableScrollLocal, "Multi-currency mobile table lost local scroll", measurements);
+      check(
+        measurements.tableScrollLocal,
+        "Multi-currency mobile table lost local scroll",
+        measurements,
+      );
     }
     snapshots.push({ viewport: `${width}x${height}`, screenshot: filename, measurements });
   }
