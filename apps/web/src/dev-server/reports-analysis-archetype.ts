@@ -173,7 +173,7 @@ export function renderResultTrend(
   ariaLabel = "Resultado por período",
 ): string {
   const maxAbsolute = Math.max(1, ...points.map((point) => Math.abs(point.amountMinor)));
-  return `<ol class="report-trend" aria-label="${renderText(ariaLabel)}">${points
+  return `<ol class="report-trend" tabindex="0" aria-label="${renderText(ariaLabel)}">${points
     .map((point) => {
       const scale =
         point.amountMinor === 0
