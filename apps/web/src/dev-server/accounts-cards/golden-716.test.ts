@@ -309,16 +309,19 @@ test("#716 aplica Golden Screen aos grupos de ação das subtelas de contas e ca
   assert.doesNotMatch(cardDetail, /class="resource-account-cdi-row"/);
   assert.match(cardDetail, /aria-label="Adicionar instrumento"/);
   assert.match(cardDetail, /aria-label="Excluir cartão"/);
+  assert.match(cardDetail, /class="instrument-actions"/);
+  assert.match(cardDetail, /aria-label="Editar instrumento/);
+  assert.match(cardDetail, /title="Arquivar/);
 
   const css = accountsCardsPageStyles();
-  assert.match(css, /\.resource-detail-actions button\.resource-action-button \{/);
+  assert.match(css, /\.resource-detail-panel button\.resource-action-button \{/);
   assert.match(css, /height: var\(--sf-density-interactive-target-min\)/);
   assert.match(css, /width: var\(--sf-density-interactive-target-min\)/);
   assert.match(
     css,
-    /\.resource-detail-actions button\.resource-action-button:hover:not\(:disabled\)/,
+    /\.resource-detail-panel button\.resource-action-button:hover:not\(:disabled\)/,
   );
-  assert.match(css, /\.resource-detail-actions button\.danger-icon-button:focus-visible/);
+  assert.match(css, /\.resource-detail-panel button\.danger-icon-button:focus-visible/);
   assert.match(css, /\.resource-detail-actions button\.resource-cdi-switch\[aria-checked="true"\]/);
   assert.match(css, /\.resource-account-cdi-row \{ flex-wrap: wrap; \}/);
 });
