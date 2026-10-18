@@ -313,12 +313,21 @@ function renderCategoryParentOptions(
     .sort((left, right) =>
       getCategoryDisplayName(left, categories).localeCompare(
         getCategoryDisplayName(right, categories),
+        "pt-BR",
       ),
     )
     .map((category) => {
       const selected = currentCategory?.parentCategoryId === category.id ? " selected" : "";
       const archived = category.status === "archived" ? " - arquivada" : "";
-      return `<option value="${escapeHtml(category.id)}"${selected}>${escapeHtml(formatCategoryKind(category.kind))} - ${escapeHtml(getCategoryDisplayName(category, categories))}${archived}</option>`;
+      const ancestors: string[] = [];
+      const visited = new Set([category.id]);
+      let parentId = category.parentCategoryId;
+      while (parentId && !visited.has(parentId)) {
+        visited.add(parentId);
+        ancestors.push(parentId);
+        parentId = categories.find((candidate) => candidate.id === parentId)?.parentCategoryId;
+      }
+      return `<option value="${escapeHtml(category.id)}" data-category-ancestor-ids="${escapeHtml(ancestors.join(","))}"${selected}>${escapeHtml(formatCategoryKind(category.kind))} - ${escapeHtml(getCategoryDisplayName(category, categories))}${archived}</option>`;
     })
     .join("");
 }
@@ -462,8 +471,13 @@ function categoryPageScript(): string {
         const select = categoryForm?.elements.parentCategoryId;
         if (!select) return;
         const label = categoryKindLabel(kind);
+        const currentCategoryId = categoryForm?.dataset.currentCategoryId || "";
         Array.from(select.options).forEach((option, index) => {
-          const visible = index === 0 || option.textContent.startsWith(label + " - ");
+          const forbidden = currentCategoryId && (
+            option.value === currentCategoryId ||
+            (option.dataset.categoryAncestorIds || "").split(",").includes(currentCategoryId)
+          );
+          const visible = (index === 0 || option.textContent.startsWith(label + " - ")) && !forbidden;
           option.hidden = !visible;
           option.disabled = !visible;
         });
@@ -507,6 +521,7 @@ function categoryPageScript(): string {
       function openCreateModal(trigger) {
         if (!categoryForm) return;
         categoryForm.reset();
+        delete categoryForm.dataset.currentCategoryId;
         categoryForm.dataset.apiPath = "/api/categories";
         delete categoryForm.dataset.apiMethod;
         filterParentCategoryOptions(categoryForm.elements.kind.value);
@@ -523,6 +538,7 @@ function categoryPageScript(): string {
         categoryForm.reset();
         categoryForm.dataset.apiPath = "/api/categories/" + button.dataset.categoryId;
         categoryForm.dataset.apiMethod = "PATCH";
+        categoryForm.dataset.currentCategoryId = button.dataset.categoryId || "";
         categoryForm.elements.name.value = button.dataset.categoryName || "";
         categoryForm.elements.kind.value = button.dataset.categoryKindValue || "expense";
         filterParentCategoryOptions(categoryForm.elements.kind.value, button.dataset.categoryParentId || "");
@@ -577,8 +593,7 @@ function categoryPageScript(): string {
           toggle.setAttribute("aria-expanded", String(!collapsed));
           const name = item.querySelector(":scope > .category-node-row [data-edit-category]")?.dataset.categoryName || "categoria";
           toggle.setAttribute("aria-label", (collapsed ? "Mostrar" : "Ocultar") + " subcategorias de " + name);
-          const icon = toggle.querySelector("span");
-          if (icon) icon.textContent = collapsed ? ">" : "v";
+          // SVG orientation follows the accessible expanded state in CSS.
         }
       }
 
@@ -703,7 +718,7 @@ function categoryPageScript(): string {
         const children = Array.from(
           item.querySelectorAll(":scope > .category-tree-children > [data-category-item]"),
         );
-        const childMatches = children.map((child) => applyViewToNode(child, query)).some(Boolean);
+        const childMatches = children.map((child) => applyViewToNode(child, query)).includes(true);
         const ownMatches =
           matchesFilter(item) &&
           (!query || (item.dataset.categorySearchText || "").includes(query));
