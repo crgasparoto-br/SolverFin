@@ -280,3 +280,32 @@ test("#716 restaura a configuração CDI via modal na própria tela", () => {
   assert.match(dialog, /data-sf-dialog-close>Cancelar/);
   assert.match(dialog, /data-cdi-form-status/);
 });
+
+test("#716 aplica Golden Screen aos grupos de ação das subtelas de contas e cartões", () => {
+  const accountView = buildAccountsCardsPageViewModel([account], [], "account:a-1");
+  const accountDetail = renderSelectedResourceDetail(accountView.selectedResource, [account]);
+  assert.match(accountDetail, /class="resource-account-cdi-row"/);
+  assert.match(accountDetail, /class="resource-action-toolbar" role="group" aria-label="Manutenção da conta"/);
+  assert.match(accountDetail, /class="resource-action-toolbar-separator"/);
+  assert.equal((accountDetail.match(/class="sf-button sf-button-secondary[^"]*resource-action-button/g) ?? []).length, 2);
+  assert.match(accountDetail, /aria-label="Configurar remuneração CDI"/);
+  assert.match(accountDetail, /aria-label="Excluir conta"/);
+  assert.match(accountDetail, /danger-icon-button"/);
+  assert.doesNotMatch(accountDetail, /class="resource-detail-actions"[^]*class="icon-button"/);
+
+  const cardView = buildAccountsCardsPageViewModel([], [card], "card:c-1");
+  const cardDetail = renderSelectedResourceDetail(cardView.selectedResource, []);
+  assert.match(cardDetail, /class="resource-action-toolbar" role="group" aria-label="Manutenção do cartão"/);
+  assert.doesNotMatch(cardDetail, /class="resource-account-cdi-row"/);
+  assert.match(cardDetail, /aria-label="Adicionar instrumento"/);
+  assert.match(cardDetail, /aria-label="Excluir cartão"/);
+
+  const css = accountsCardsPageStyles();
+  assert.match(css, /\.resource-detail-actions button\.resource-action-button \{/);
+  assert.match(css, /height: var\(--sf-density-interactive-target-min\)/);
+  assert.match(css, /width: var\(--sf-density-interactive-target-min\)/);
+  assert.match(css, /\.resource-detail-actions button\.resource-action-button:hover:not\(:disabled\)/);
+  assert.match(css, /\.resource-detail-actions button\.danger-icon-button:focus-visible/);
+  assert.match(css, /\.resource-detail-actions button\.resource-cdi-switch\[aria-checked="true"\]/);
+  assert.match(css, /\.resource-account-cdi-row \{ flex-wrap: wrap; \}/);
+});
