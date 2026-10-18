@@ -1,9 +1,7 @@
 import {
-  renderMetricCard,
   renderPageContainer,
   renderPageHeader,
   renderRecoverableError,
-  renderSummaryGrid,
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
@@ -61,54 +59,15 @@ export async function renderCategoriesPage(token: string): Promise<string> {
           description: categoriesPageModel.description,
           actionsHtml: `<button class="sf-button" type="button" data-open-category-modal title="Criar nova categoria">${icon("plus", 14)} Nova categoria</button>`,
         })}
-        ${renderSummaryGrid({
-          childrenHtml:
-            renderMetricCard({
-              label: "Total",
-              value: String(summary.total),
-              detail: "categorias cadastradas",
-              className: "category-summary-item",
-            }) +
-            renderMetricCard({
-              label: "Ativas",
-              value: String(summary.active),
-              detail: "disponíveis para uso",
-              tone: "positive",
-              className: "category-summary-item",
-            }) +
-            renderMetricCard({
-              label: "Arquivadas",
-              value: String(summary.archived),
-              detail: "mantidas no histórico",
-              className: "category-summary-item",
-            }) +
-            renderMetricCard({
-              label: "Principais",
-              value: String(summary.roots),
-              detail: "sem categoria superior",
-              tone: "information",
-              className: "category-summary-item",
-            }),
-        })}
+        <dl class="category-overview" aria-label="Resumo das categorias">
+          <div><dt>Total de categorias</dt><dd>${summary.total}</dd></div>
+          <div><dt>Ativas</dt><dd>${summary.active}</dd></div>
+          <div><dt>Arquivadas</dt><dd>${summary.archived}</dd></div>
+          <div><dt>Categorias principais</dt><dd>${summary.roots}</dd></div>
+        </dl>
 
         <section class="categories-workspace">
-          <aside class="sf-panel categories-insights" aria-label="Distribuicao por tipo">
-            <div class="section-heading compact">
-              <div>
-                <h2>Visão geral do catálogo</h2>
-                <p class="sf-muted">Distribuição atual das categorias.</p>
-              </div>
-            </div>
-            <div class="kind-meters">
-              ${renderKindMeter("Despesa", summary.expense, summary.total, "expense")}
-              ${renderKindMeter("Receita", summary.income, summary.total, "income")}
-              ${renderKindMeter("Transferência", summary.transfer, summary.total, "transfer")}
-            </div>
-            <div class="catalog-note">
-              <strong>${summary.roots} categorias principais</strong>
-              <p class="sf-muted">Use subcategorias apenas quando o detalhe ajudar na rotina ou nos relatórios.</p>
-            </div>
-          </aside>
+
 
           <section class="sf-panel category-directory">
             <div class="category-toolbar">
@@ -117,12 +76,12 @@ export async function renderCategoriesPage(token: string): Promise<string> {
                 <p class="sf-muted">Use o menu de cada categoria para editar, arquivar ou excluir.</p>
               </div>
               <div class="category-toolbar-actions">
-                <label class="category-search" for="category-search-input">
-                  <span class="visually-hidden">Buscar categorias</span>
+                <div class="category-search" role="search">
+                  <label class="visually-hidden" for="category-search-input">Buscar categorias</label>
                   <span aria-hidden="true">${icon("search", 14)}</span>
                   <input id="category-search-input" type="search" autocomplete="off" placeholder="Buscar por nome ou caminho" data-category-search-input />
                   <button class="category-search-clear" type="button" data-clear-category-search aria-label="Limpar busca" title="Limpar busca" hidden>${icon("x", 14)}</button>
-                </label>
+                </div>
                 <div class="filter-chips" aria-label="Filtros locais de categorias">
                   ${renderFilterButton("Todas", "all", true)}
                   ${renderFilterButton("Despesas", "expense")}
@@ -130,6 +89,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
                   ${renderFilterButton("Transferências", "transfer")}
                   ${renderFilterButton("Arquivadas", "archived")}
                 </div>
+                ${renderCategoryCollapseActions()}
               </div>
               <p class="category-results-status" data-category-results-status aria-live="polite"></p>
             </div>
@@ -153,7 +113,7 @@ export async function renderCategoriesPage(token: string): Promise<string> {
                 <h2 id="category-modal-title" data-category-modal-title>Nova categoria</h2>
                 <p id="category-modal-description" class="sf-muted">Preencha os dados da categoria e salve para aplicar em novos lançamentos.</p>
               </div>
-              <button class="icon-button" type="button" data-close-category-modal aria-label="Fechar modal">x</button>
+              <button class="icon-button" type="button" data-close-category-modal aria-label="Fechar modal" title="Fechar">${icon("x", 16)}</button>
             </div>
             <form class="category-form" data-api-form data-category-form data-api-path="/api/categories">
               <label for="category-name">Nome<input id="category-name" name="name" autocomplete="off" required /></label>
@@ -199,16 +159,6 @@ function summarizeCategories(categories: CategoryRecord[]): CategorySummary {
   );
 }
 
-function renderKindMeter(label: string, count: number, total: number, tone: string): string {
-  const percent = total > 0 ? Math.round((count / total) * 100) : 0;
-  return `
-    <div class="kind-meter">
-      <div><strong>${escapeHtml(label)}</strong><span>${count} itens</span></div>
-      <div class="meter-track" aria-hidden="true"><span class="meter-fill meter-${escapeHtml(tone)}" style="width: ${percent}%"></span></div>
-    </div>
-  `;
-}
-
 function renderFilterButton(label: string, filter: string, pressed = false): string {
   return `<button class="filter-chip" type="button" data-category-filter="${escapeHtml(filter)}" aria-pressed="${pressed ? "true" : "false"}">${escapeHtml(label)}</button>`;
 }
@@ -222,72 +172,83 @@ function renderCategoryCollapseActions(): string {
   `;
 }
 
-function renderCategoryTree(categories: CategoryRecord[]): string {
+export function renderCategoryTree(categories: CategoryRecord[]): string {
   const visibleKinds = ["expense", "income", "transfer"];
   const content = visibleKinds
-    .map((kind, index) => {
+    .map((kind) => {
       const categoriesForKind = categories.filter((category) => category.kind === kind);
-      const rootCategories = categoriesForKind.filter((category) => !category.parentCategoryId);
+      const rootCategories = categoriesForKind
+        .filter(
+          (category) =>
+            !category.parentCategoryId ||
+            !categoriesForKind.some((candidate) => candidate.id === category.parentCategoryId),
+        )
+        .sort((left, right) => left.name.localeCompare(right.name, "pt-BR"));
 
       if (categoriesForKind.length === 0) return "";
 
       return `
-        <section class="category-kind-group" data-category-kind="${escapeHtml(kind)}" aria-label="${escapeHtml(formatCategoryKind(kind))}">
+        <section class="category-kind-group" data-category-kind="${escapeHtml(kind)}" aria-labelledby="category-kind-${escapeHtml(kind)}">
           <header>
             <div>
-              <h3>${escapeHtml(formatCategoryKind(kind))}</h3>
-              <p class="sf-muted">${categoriesForKind.length} categorias neste tipo</p>
+              <h3 id="category-kind-${escapeHtml(kind)}">${escapeHtml(formatCategoryKind(kind))}</h3>
+              <p class="sf-muted">${categoriesForKind.length} categorias · organização por níveis</p>
             </div>
-            ${index === 0 ? renderCategoryCollapseActions() : ""}
-            <span class="kind-badge kind-badge-${escapeHtml(kind)}">${categoriesForKind.length}</span>
           </header>
-          <div class="category-tree-nodes">
-            ${rootCategories.map((category) => renderCategoryTreeNode(category, categories)).join("") || renderEmptyState("Nenhuma categoria principal.", "Crie uma categoria sem superior para iniciar este grupo.")}
-          </div>
+          <ul class="category-tree-nodes">
+            ${rootCategories.map((category) => renderCategoryTreeNode(category, categories, 0)).join("") ||
+              '<li class="category-empty">Sem categorias principais neste grupo.</li>'}
+          </ul>
         </section>
       `;
     })
     .join("");
 
-  return (
-    content ||
-    renderEmptyState(
-      "Nenhuma categoria cadastrada.",
-      "Crie categorias para organizar receitas e despesas.",
-    )
+  return content || renderEmptyState(
+    "Nenhuma categoria cadastrada.",
+    "Crie uma categoria para organizar receitas e despesas.",
   );
 }
 
-function renderCategoryTreeNode(category: CategoryRecord, categories: CategoryRecord[]): string {
+function renderCategoryTreeNode(
+  category: CategoryRecord,
+  categories: CategoryRecord[],
+  depth: number,
+): string {
   const children = categories
-    .filter((candidate) => candidate.parentCategoryId === category.id)
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .filter((candidate) => candidate.parentCategoryId === category.id && candidate.kind === category.kind)
+    .sort((left, right) => left.name.localeCompare(right.name, "pt-BR"));
   const displayName = getCategoryDisplayName(category, categories);
   const hasChildren = children.length > 0;
   const childrenId = `category-children-${category.id}`;
+  const parentLabel = depth === 0 ? "Categoria principal" : `Nível ${depth + 1}`;
+  const statusLabel = formatGenericStatus(category.status);
 
   return `
-    <article class="category-tree-node ${category.parentCategoryId ? "category-tree-child" : ""}" data-category-item data-category-kind="${escapeHtml(category.kind)}" data-category-status="${escapeHtml(category.status)}" data-category-collapsed="false">
+    <li class="category-tree-node ${depth ? "category-tree-child" : ""}"
+      data-category-item data-category-depth="${depth}" data-category-kind="${escapeHtml(category.kind)}"
+      data-category-status="${escapeHtml(category.status)}" data-category-collapsed="false">
       <div class="category-node-row">
-        ${hasChildren ? renderCategoryCollapseButton(category, childrenId) : `<span class="category-collapse-spacer" aria-hidden="true"></span>`}
+        ${hasChildren ? renderCategoryCollapseButton(category, childrenId) : '<span class="category-collapse-spacer" aria-hidden="true"></span>'}
         <button
           class="category-node-button"
           type="button"
           data-edit-category
           ${renderCategoryDataAttributes(category)}
-          aria-label="Editar categoria ${escapeHtml(category.name)}"
+          aria-label="Editar ${escapeHtml(parentLabel.toLowerCase())} ${escapeHtml(category.name)}"
+          title="Editar categoria ${escapeHtml(category.name)}"
         >
-          <span class="category-dot category-dot-${escapeHtml(category.kind)}" aria-hidden="true"></span>
+          <span class="category-node-icon" aria-hidden="true">${icon(depth ? "tag" : "layers", 16)}</span>
           <span class="category-node-text">
             <strong>${escapeHtml(category.name)}</strong>
-            <span>${category.parentCategoryId ? "Categoria detalhada" : "Categoria principal"} - ${escapeHtml(formatGenericStatus(category.status))}</span>
+            <span>${escapeHtml(parentLabel)} · ${escapeHtml(formatCategoryKind(category.kind))} · ${escapeHtml(statusLabel)}</span>
+            ${depth ? `<small class="category-path" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</small>` : ""}
           </span>
-          <span class="category-path">${escapeHtml(displayName)}</span>
         </button>
         ${renderCategoryActionMenu(category)}
       </div>
-      ${hasChildren ? `<div id="${escapeHtml(childrenId)}" class="category-tree-children" data-category-children>${children.map((child) => renderCategoryTreeNode(child, categories)).join("")}</div>` : ""}
-    </article>
+      ${hasChildren ? `<ul id="${escapeHtml(childrenId)}" class="category-tree-children" data-category-children>${children.map((child) => renderCategoryTreeNode(child, categories, depth + 1)).join("")}</ul>` : ""}
+    </li>
   `;
 }
 
