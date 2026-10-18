@@ -71,7 +71,6 @@ A propagacao visual da Golden Screen na rota `/cartoes` tem escopo proprio, dife
 
 Inspecionar os estados em 1366x768, 390x844 e, nas divergencias de reflow, 320x740. Registrar em cada linha viewport, artefato, assertion, SHA exato e parecer de avaliador independente. A ausencia de capturas ou parecer deixa o gate de aceite aberto, mesmo se Repository CI e o workflow Chrome terminarem com sucesso.
 
-
 ## Portão discriminante da Issue #717 — Categorias
 
 A rota `/categorias` aplica a qualidade visual da Golden Screen do Extrato à árvore real de categorias, **sem copiar o layout de lançamentos e sem usar cards por categoria**. A composição mantém lista semântica agrupada por tipo, recuo e relação pai–filho explícitos, níveis mais profundos, nomes longos quebráveis e edição/criação contextual; o modelo e as permissões da API continuam inalterados.
@@ -83,7 +82,6 @@ A rota `/categorias` aplica a qualidade visual da Golden Screen do Extrato à á
 - **Controle negativo:** rejeitar mudanças que retirem `ul/li` aninhados, escondam as ações em 320px, quebrem a contagem por filtro ao encontrar um ramo sem correspondência ou permitam selecionar um descendente como pai.
 
 O executor Chrome `scripts/statement-visual/categories-interface.mjs` produz `categories-interface.json` e capturas `categories-desktop.png`, `categories-mobile.png`, `categories-compact-mobile.png` e dos diálogos. A evidência deve identificar o **SHA material exato**, a rota, os dados de teste, as interações e o viewport. Os testes `categories-golden-screen.test.ts` protegem estrutura e regressões de renderização; **testes e CI verdes não substituem revisão visual e auditoria independente desta subissue**.
-
 
 ## Unidade de cobertura
 
