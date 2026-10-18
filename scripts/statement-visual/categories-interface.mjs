@@ -16,6 +16,7 @@ let desktop;
 let desktopModal;
 let mobile;
 let mobileModal;
+let compactMobile;
 let browserVersion = "unknown";
 const completedScreenshots = [];
 
@@ -33,6 +34,11 @@ await runViewportSession("mobile", 390, 844, async (cdp) => {
   completedScreenshots.push("categories-modal-mobile.png");
 });
 
+await runViewportSession("compact-mobile", 320, 740, async (cdp) => {
+  compactMobile = await validateCompactMobile(cdp);
+  completedScreenshots.push("categories-compact-mobile.png");
+});
+
 const report = {
   generatedAt: new Date().toISOString(),
   commit: process.env.GITHUB_SHA ?? "local",
@@ -42,6 +48,7 @@ const report = {
   desktopModal,
   mobile,
   mobileModal,
+  compactMobile,
   screenshots: completedScreenshots,
 };
 
@@ -111,7 +118,7 @@ async function validateDesktop(cdp) {
   );
   check(
     measurements.summaryCount === 4,
-    "Categories summary does not have four indicators",
+    "Categories semantic overview does not have four indicators",
     measurements,
   );
   check(
@@ -131,6 +138,8 @@ async function validateDesktop(cdp) {
     measurements,
   );
   check(measurements.rowCount > 0, "Categories hierarchy rendered no rows", measurements);
+  check(measurements.semanticLists > 0, "Category hierarchy lost native list semantics", measurements);
+  check(measurements.nestedLists > 0, "Category hierarchy lost nested parent-child lists", measurements);
   check(
     measurements.minimumRowHeight >= 44,
     "Category rows are smaller than the interaction target",
@@ -245,7 +254,23 @@ async function validateSearch(cdp) {
   await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
   await sleep(80);
 
-  return { query, ...result, pathResult };
+  const emptyResult = await evaluate(cdp, `(() => {
+    const input = document.querySelector('[data-category-search-input]');
+    input.value = 'no-results-717-unmatched-abcdef';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    return {
+      emptyVisible: !document.querySelector('[data-category-filter-empty]')?.hidden,
+      allRowsHidden: Array.from(document.querySelectorAll('[data-category-item]'))
+        .every((item) => item.hidden),
+      status: document.querySelector('[data-category-results-status]')?.textContent || ''
+    };
+  })()`);
+  check(emptyResult.emptyVisible && emptyResult.allRowsHidden,
+    "Category empty filter fails to hide every row", emptyResult);
+  await evaluate(cdp, `document.querySelector('[data-reset-category-view]')?.click()`);
+  await sleep(80);
+
+  return { query, ...result, pathResult, emptyResult };
 }
 
 async function validateDesktopModal(cdp) {
@@ -302,7 +327,7 @@ async function validateMobile(cdp) {
   );
   check(
     measurements.summaryCount === 4,
-    "Categories summary is incomplete on mobile",
+    "Categories semantic overview is incomplete on mobile",
     measurements,
   );
   check(
@@ -312,6 +337,18 @@ async function validateMobile(cdp) {
   );
 
   return { viewport: "390x844", measurements, screenshot: "categories-mobile.png" };
+}
+
+async function validateCompactMobile(cdp) {
+  await setViewport(cdp, 320, 740);
+  await waitForCategories(cdp);
+  const measurements = await evaluate(cdp, pageMeasurementExpression());
+  await screenshot(cdp, join(outputDir, "categories-compact-mobile.png"));
+  check(measurements.viewport.width === 320, "Category narrow mobile viewport is not 320px", measurements);
+  check(measurements.noHorizontalOverflow, "Categories exceed narrow mobile viewport", measurements);
+  check(measurements.minimumMenuTarget >= 44, "Narrow mobile action is less than 44px", measurements);
+  check(measurements.minimumRowHeight >= 44, "Narrow mobile row is too small", measurements);
+  return { viewport: "320x740", measurements, screenshot: "categories-compact-mobile.png" };
 }
 
 async function validateMobileModal(cdp) {
@@ -415,7 +452,11 @@ function pageMeasurementExpression() {
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
-      summaryCount: document.querySelectorAll('.category-summary-item').length,
+      summaryCount: document.querySelectorAll('.category-overview > div').length,
+      semanticLists: document.querySelectorAll('ul.category-tree-nodes').length,
+      nestedLists: document.querySelectorAll('ul.category-tree-children').length,
+      deepestRenderedLevel: Math.max(0, ...Array.from(document.querySelectorAll('[data-category-depth]'))
+        .map((item) => Number(item.dataset.categoryDepth) + 1)),
       filterCount: document.querySelectorAll('[data-category-filter]').length,
       allFilterPressed: document.querySelector('[data-category-filter="all"]')?.getAttribute('aria-pressed') === 'true',
       rowCount: rows.length,
@@ -460,5 +501,5 @@ function check(condition, message, details) {
 function renderReport(report) {
   const status = report.failures.length === 0 ? "APROVADO" : "REPROVADO";
   const screenshot = (result) => result?.screenshot ?? "não gerada";
-  return `# Evidência visual — Categorias\n\n- Status: **${status}**\n- Commit: \`${report.commit}\`\n- Navegador: ${report.browser}\n- Desktop: \`${screenshot(report.desktop)}\`\n- Modal desktop: \`${screenshot(report.desktopModal)}\`\n- Mobile: \`${screenshot(report.mobile)}\`\n- Modal mobile: \`${screenshot(report.mobileModal)}\`\n\n## Falhas\n\n${report.failures.length === 0 ? "Nenhuma falha encontrada.\n" : report.failures.map((failure) => `- ${failure.message}`).join("\n") + "\n"}`;
+  return `# Evidência visual — Categorias\n\n- Status: **${status}**\n- Commit: \`${report.commit}\`\n- Navegador: ${report.browser}\n- Desktop: \`${screenshot(report.desktop)}\`\n- Modal desktop: \`${screenshot(report.desktopModal)}\`\n- Mobile: \`${screenshot(report.mobile)}\`\n- Modal mobile: \`${screenshot(report.mobileModal)}\`\n- Mobile estreito: \`${screenshot(report.compactMobile)}\`\n\n## Falhas\n\n${report.failures.length === 0 ? "Nenhuma falha encontrada.\n" : report.failures.map((failure) => `- ${failure.message}`).join("\n") + "\n"}`;
 }
