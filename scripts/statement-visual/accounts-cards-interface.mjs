@@ -92,7 +92,11 @@ async function validateViewport(cdp, viewport) {
   assert.ok(baseline.currencyOptions.length > 1, "Currency filter has no resource options.");
   assert.deepEqual(baseline.statusOptions, ["all", "active", "inactive"]);
   assert.equal(baseline.loadingStatePresent, true, "Route loading state is not wired.");
-  assert.equal(baseline.institutionLogosOnMaster, true, "Institution logo/fallback missing from a master resource.");
+  assert.equal(
+    baseline.institutionLogosOnMaster,
+    true,
+    "Institution logo/fallback missing from a master resource.",
+  );
 
   const account = await selectResource(cdp, "account");
   const card = await selectResource(cdp, "card");
