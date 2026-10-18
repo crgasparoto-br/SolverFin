@@ -148,7 +148,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     );
     await negativeControl(
       "GS-NC-STATUS-LABEL-EXPOSED",
-      "[data-golden-screen] .statement-body .statement-status-label{display:inline!important}",
+      "[data-golden-screen] .statement-body [data-statement-status-control]>summary::after{content:'Conciliado'!important;display:inline!important}",
     );
     await negativeControl(
       "GS-NC-STATUS-GLYPH-HIDDEN",
