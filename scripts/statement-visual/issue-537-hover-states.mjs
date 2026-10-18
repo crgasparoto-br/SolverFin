@@ -12,8 +12,8 @@ const failures = [];
 const scenarios = [];
 const accountsCardsSelectors = {
   primary: ".sf-page-header-actions .resource-primary-action:not(:disabled)",
-  neutral: ".resource-detail-actions .secondary-button:not(:disabled)",
-  destructive: ".resource-detail-actions .danger-button:not(:disabled)",
+  neutral: ".resource-detail-actions .sf-icon-button:not(.danger-icon-button):not(:disabled)",
+  destructive: ".resource-detail-actions .danger-icon-button:not(:disabled)",
 };
 const statementNeutralSelectors = {
   accountPicker: ".account-select-trigger",
