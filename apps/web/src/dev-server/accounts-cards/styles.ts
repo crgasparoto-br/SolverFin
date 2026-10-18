@@ -152,7 +152,8 @@ export function accountsCardsPageStyles(): string {
     .resource-master-institution, .resource-master-context { color: var(--muted); font-size: .75rem; line-height: 1.3; }
     .resource-master-cdi-column { display: flex; justify-content: center; white-space: nowrap; }
     .resource-master-cdi-column .sf-badge { font-size: .69rem; }
-    .resource-master-cdi-compact { color: var(--sf-color-success); display: none; font-weight: 700; white-space: nowrap; }
+    .resource-master-cdi-compact { color: var(--sf-color-muted-text); display: none; font-weight: 650; white-space: normal; }
+    .resource-master-cdi-compact.is-active { color: var(--sf-color-success); }
     .resource-master-currency { background: transparent; border: 0; color: var(--text) !important; font-size: .8rem; font-weight: 700; overflow-wrap: anywhere; }
     .resource-master-amount { display: grid; gap: 3px; justify-items: end; min-width: 0; text-align: right; }
     .resource-master-amount strong { color: var(--text); font-size: .96rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
