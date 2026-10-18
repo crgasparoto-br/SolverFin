@@ -138,8 +138,16 @@ async function validateDesktop(cdp) {
     measurements,
   );
   check(measurements.rowCount > 0, "Categories hierarchy rendered no rows", measurements);
-  check(measurements.semanticLists > 0, "Category hierarchy lost native list semantics", measurements);
-  check(measurements.nestedLists > 0, "Category hierarchy lost nested parent-child lists", measurements);
+  check(
+    measurements.semanticLists > 0,
+    "Category hierarchy lost native list semantics",
+    measurements,
+  );
+  check(
+    measurements.nestedLists > 0,
+    "Category hierarchy lost nested parent-child lists",
+    measurements,
+  );
   check(
     measurements.minimumRowHeight >= 44,
     "Category rows are smaller than the interaction target",
@@ -254,7 +262,9 @@ async function validateSearch(cdp) {
   await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
   await sleep(80);
 
-  const emptyResult = await evaluate(cdp, `(() => {
+  const emptyResult = await evaluate(
+    cdp,
+    `(() => {
     const input = document.querySelector('[data-category-search-input]');
     input.value = 'no-results-717-unmatched-abcdef';
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -264,9 +274,13 @@ async function validateSearch(cdp) {
         .every((item) => item.hidden),
       status: document.querySelector('[data-category-results-status]')?.textContent || ''
     };
-  })()`);
-  check(emptyResult.emptyVisible && emptyResult.allRowsHidden,
-    "Category empty filter fails to hide every row", emptyResult);
+  })()`,
+  );
+  check(
+    emptyResult.emptyVisible && emptyResult.allRowsHidden,
+    "Category empty filter fails to hide every row",
+    emptyResult,
+  );
   await evaluate(cdp, `document.querySelector('[data-reset-category-view]')?.click()`);
   await sleep(80);
 
@@ -344,9 +358,21 @@ async function validateCompactMobile(cdp) {
   await waitForCategories(cdp);
   const measurements = await evaluate(cdp, pageMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-compact-mobile.png"));
-  check(measurements.viewport.width === 320, "Category narrow mobile viewport is not 320px", measurements);
-  check(measurements.noHorizontalOverflow, "Categories exceed narrow mobile viewport", measurements);
-  check(measurements.minimumMenuTarget >= 44, "Narrow mobile action is less than 44px", measurements);
+  check(
+    measurements.viewport.width === 320,
+    "Category narrow mobile viewport is not 320px",
+    measurements,
+  );
+  check(
+    measurements.noHorizontalOverflow,
+    "Categories exceed narrow mobile viewport",
+    measurements,
+  );
+  check(
+    measurements.minimumMenuTarget >= 44,
+    "Narrow mobile action is less than 44px",
+    measurements,
+  );
   check(measurements.minimumRowHeight >= 44, "Narrow mobile row is too small", measurements);
   return { viewport: "320x740", measurements, screenshot: "categories-compact-mobile.png" };
 }
