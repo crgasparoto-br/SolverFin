@@ -88,7 +88,11 @@ async function validateViewport(cdp, viewport) {
   assert.ok(baseline.masterItemCount > 0, "No master resources were rendered.");
   assert.equal(baseline.selectedMasterCount, 1, "Exactly one master resource must be selected.");
   assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
-  assert.equal(baseline.controlsUseGoldenPrimitives, true, "Golden Screen shared button and filter variants are missing.");
+  assert.equal(
+    baseline.controlsUseGoldenPrimitives,
+    true,
+    "Golden Screen shared button and filter variants are missing.",
+  );
   assert.deepEqual(baseline.kindOptions, ["all", "account", "card"]);
   assert.equal(baseline.currencyOptions[0], "all");
   assert.equal(baseline.currencyOptionLabels[0], "Todas as moedas");
@@ -111,7 +115,11 @@ async function validateViewport(cdp, viewport) {
     await waitForDetail(cdp, "account");
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "account");
-    assert.equal(measurements.financialContextVisible, true, "Account financial context is not visible in the selected list row and detail.");
+    assert.equal(
+      measurements.financialContextVisible,
+      true,
+      "Account financial context is not visible in the selected list row and detail.",
+    );
     assert.equal(
       measurements.institutionIdentityVisible,
       true,
@@ -136,7 +144,11 @@ async function validateViewport(cdp, viewport) {
     await waitForDetail(cdp, "card");
     const measurements = await inspectPage(cdp);
     assert.equal(measurements.selectedKind, "card");
-    assert.equal(measurements.financialContextVisible, true, "Card limit context is not visible in the selected list row and detail.");
+    assert.equal(
+      measurements.financialContextVisible,
+      true,
+      "Card limit context is not visible in the selected list row and detail.",
+    );
     assert.equal(
       measurements.institutionIdentityVisible,
       true,

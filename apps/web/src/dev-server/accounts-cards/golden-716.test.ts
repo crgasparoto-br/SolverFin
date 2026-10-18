@@ -99,7 +99,10 @@ test("#716 formularios mantem labels, foco compartilhado e confirmacao neutra", 
     assert.match(html, /class="sf-dialog master-dialog"/);
     assert.match(html, /data-sf-dialog-close/);
     assert.match(html, /class="resource-form-actions"/);
-    assert.match(html, /class="sf-button sf-button-secondary" data-button-variant="neutral" type="button" data-sf-dialog-close>Cancelar/);
+    assert.match(
+      html,
+      /class="sf-button sf-button-secondary" data-button-variant="neutral" type="button" data-sf-dialog-close>Cancelar/,
+    );
     assert.match(html, /class="sf-button sf-button-primary" type="submit" title=/);
     assert.match(html, /<label>Moeda<select name="currency"/);
   }
