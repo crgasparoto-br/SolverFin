@@ -7,7 +7,9 @@ import {
   renderUnavailableState,
 } from "../../design-system/primitives.js";
 import { renderInstitutionIcon } from "../institutions.js";
+import { icon } from "../icons.js";
 import {
+  renderAccountCdiConfigurationDialog,
   renderAccountEditDialog,
   renderCardEditDialog,
   renderCardInstrumentCreateDialog,
@@ -24,6 +26,7 @@ import {
   renderTrashIcon,
 } from "./presentation.js";
 import type { AccountRecord, CardInstrumentRecord, CreditCardAccountRecord } from "./types.js";
+import type { CdiIncomeCategory } from "./dialogs.js";
 import {
   buildAccountItemViewModel,
   buildCardItemViewModel,
@@ -160,6 +163,8 @@ export function renderSelectedResourceDetail(
   accounts: AccountRecord[],
   cdiConfiguration?: AccountCdiConfiguration,
   cdiAvailable = true,
+  cdiCategories: readonly CdiIncomeCategory[] = [],
+  cdiCategoriesAvailable = true,
 ): string {
   if (!selected) {
     return `<section class="resource-detail-panel resource-detail-empty">${renderEmptyState({
@@ -170,7 +175,14 @@ export function renderSelectedResourceDetail(
 
   const detail =
     selected.kind === "account"
-      ? renderAccountDetail(selected.account, selected.currency, cdiConfiguration, cdiAvailable)
+      ? renderAccountDetail(
+          selected.account,
+          selected.currency,
+          cdiConfiguration,
+          cdiAvailable,
+          cdiCategories,
+          cdiCategoriesAvailable,
+        )
       : renderCardDetail(selected.card, accounts, selected.paymentAccount, selected.currency);
   const filteredEmpty = renderEmptyState({
     title: "Selecione um recurso",
@@ -184,6 +196,8 @@ function renderAccountDetail(
   currency: string | undefined,
   configuration?: AccountCdiConfiguration,
   cdiAvailable = true,
+  cdiCategories: readonly CdiIncomeCategory[] = [],
+  cdiCategoriesAvailable = true,
 ): string {
   const viewModel = buildAccountItemViewModel(account);
   const money = formatAmountWithCurrency(account.openingBalanceMinor ?? 0, currency);
@@ -204,6 +218,15 @@ function renderAccountDetail(
       <div class="resource-detail-actions" aria-label="Ações de ${escapeHtml(account.name)}">
         ${renderRouteDialogTrigger({ dialogId: viewModel.editDialogId, label: "Editar conta", className: "icon-button", variant: "ghost", iconHtml: renderEditIcon(), iconOnly: true })}
         ${renderAccountCdiControl(account, currency, configuration, cdiAvailable)}
+        ${renderRouteDialogTrigger({
+          dialogId: `account-cdi-dialog-${account.id}`,
+          label: "Configurar remuneração CDI",
+          className: "icon-button",
+          variant: "ghost",
+          iconHtml: icon("settings", 16),
+          iconOnly: true,
+          disabled: account.status !== "active" || currency !== "BRL" || !cdiAvailable || !cdiCategoriesAvailable,
+        })}
         <form data-api-form data-api-path="/api/accounts/${escapeHtml(account.id)}/archive" data-confirm="Inativar ${escapeHtml(account.name)}? Esta conta deixará de aparecer nas operações ativas." class="inline-action-form">
           ${renderResourceIconAction("Arquivar conta", renderArchiveIcon(), viewModel.isArchived)}
         </form>
@@ -212,7 +235,10 @@ function renderAccountDetail(
         </form>
       </div>
     </section>
-    ${renderAccountEditDialog(account, viewModel.editDialogId)}`;
+    ${renderAccountEditDialog(account, viewModel.editDialogId)}
+    ${account.status === "active" && currency === "BRL" && cdiAvailable && cdiCategoriesAvailable
+      ? renderAccountCdiConfigurationDialog(account, configuration, cdiCategories)
+      : ""}`;
 }
 
 function renderResourceIconAction(
