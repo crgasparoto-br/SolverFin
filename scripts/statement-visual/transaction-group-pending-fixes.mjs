@@ -268,9 +268,12 @@ async function readProjection(cdp, currentGroupId) {
         return Math.round(Number(normalized) * 100);
       }
       const row = document.querySelector('[data-group-row="${currentGroupId}"]');
-      let following = row.nextElementSibling;
-      while (following && !following.matches(".statement-row.statement-body")) following = following.nextElementSibling;
-      if (!following) throw new Error("A following statement row was not found for balance projection validation.");
+      if (!row) throw new Error("Grouped statement row was not found for balance projection validation.");
+      // Daily disclosure groups wrap rows; traverse semantic order across group boundaries.
+      const orderedRows = Array.from(document.querySelectorAll(".statement-table .statement-row.statement-body"));
+      const rowIndex = orderedRows.indexOf(row);
+      const following = orderedRows.slice(rowIndex + 1).find(candidate => !candidate.hidden);
+      if (rowIndex < 0 || !following) throw new Error("A following statement row was not found for balance projection validation.");
       const group = JSON.parse(row.querySelector('script[data-group="${currentGroupId}"]').textContent);
       return {
         groupTotalMinor: group.totalAmountMinor,
