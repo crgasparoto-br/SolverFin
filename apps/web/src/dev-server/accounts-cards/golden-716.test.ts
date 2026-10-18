@@ -209,11 +209,12 @@ test("#716 controla CDI por conta e ações somente com ícones nomeados", () =>
   const configured = buildAccountsCardsPageViewModel([account], [], "account:a-1", [
     { accountId: account.id, accountCurrency: "BRL", enabled: true, indexKind: "cdi" },
   ]);
-  const active = renderSelectedResourceDetail(
-    configured.selectedResource,
-    configured.accounts,
-    { accountId: account.id, accountCurrency: "BRL", enabled: true, indexKind: "cdi" },
-  );
+  const active = renderSelectedResourceDetail(configured.selectedResource, configured.accounts, {
+    accountId: account.id,
+    accountCurrency: "BRL",
+    enabled: true,
+    indexKind: "cdi",
+  });
   assert.match(active, /role="switch" aria-label="Remuneração CDI de Conta de exemplo"/);
   assert.match(active, /aria-checked="true" data-cdi-toggle data-account-id="a-1"/);
   assert.match(active, /data-cdi-state>Ativo</);
@@ -233,10 +234,9 @@ test("#716 controla CDI por conta e ações somente com ícones nomeados", () =>
   assert.match(unverified, /data-cdi-state>Não verificado</);
   const ineligibleAccount = { ...account, status: "archived" };
   const ineligibleView = buildAccountsCardsPageViewModel([ineligibleAccount], []);
-  const ineligible = renderSelectedResourceDetail(
-    ineligibleView.selectedResource,
-    [ineligibleAccount],
-  );
+  const ineligible = renderSelectedResourceDetail(ineligibleView.selectedResource, [
+    ineligibleAccount,
+  ]);
   assert.match(ineligible, /data-cdi-toggle data-account-id="a-1" disabled/);
   assert.match(ineligible, /data-cdi-state>Não elegível</);
   const cardView = buildAccountsCardsPageViewModel([], [card], "card:c-1");
