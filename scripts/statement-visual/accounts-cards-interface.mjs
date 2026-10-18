@@ -279,12 +279,15 @@ async function validateCdiSettings(cdp) {
     `Boolean(document.querySelector('dialog.master-dialog[open] [data-cdi-configuration-form]'))`,
     "Settings dialog did not open.",
   );
-  await evaluate(cdp, `(() => {
+  await evaluate(
+    cdp,
+    `(() => {
     const form = document.querySelector('[data-cdi-configuration-form]');
     form.querySelector('[name="remunerationPercent"]').value = '88.5';
     form.querySelector('[name="startsOn"]').value = '2026-10-14';
     form.requestSubmit();
-  })()`);
+  })()`,
+  );
   await waitFor(
     cdp,
     `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Falha configurações CDI simulada')`,
@@ -412,6 +415,12 @@ async function validateCdiSwitch(cdp) {
   );
   assert.equal(failed.checked, before, "Failed write must not flip CDI.");
   assert.equal(failed.canRetry, true, "Failed CDI write must allow retry.");
+  await sleep(120);
+  await waitFor(
+    cdp,
+    `!document.querySelector('#accounts-cards-confirm-dialog[open]') && !document.querySelector('[data-cdi-toggle]')?.disabled`,
+    "CDI retry must wait for prior dialog close and toggle unlock.",
+  );
 
   await evaluate(cdp, "document.querySelector('[data-cdi-toggle]')?.click()");
   await waitFor(
@@ -445,11 +454,7 @@ async function validateCdiSwitch(cdp) {
     startsOn: "2026-10-01",
     categoryId: "income-1",
   });
-  assert.equal(
-    success.busy,
-    true,
-    "Switch must lock until reload after successful write.",
-  );
+  assert.equal(success.busy, true, "Switch must lock until reload after successful write.");
   return { cancelled, failed, success };
 }
 
