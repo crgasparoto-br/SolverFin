@@ -671,8 +671,12 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-period-control .month-field{min-width:0}
       ${root} .statement-period-control .month-nav{height:44px}
       ${root} .statement-period-control [data-month-current]{height:44px;justify-self:end}
-      ${root} .statement-account-heading{gap:4px;padding-block:5px}
-      ${root} .account-summary[data-mockup-composition]{row-gap:2px}
+      /* Recover vertical space at 390px without shrinking month navigation,
+         financial values, search or 44px interactive targets. */
+      ${root} .statement-toolbar{padding-block:0}
+      ${root} .statement-account-heading{gap:4px;padding-block:3px}
+      ${root} .statement-account-heading .summary-balance{padding-top:4px}
+      ${root} .account-summary[data-mockup-composition]{row-gap:2px;padding-block:6px}
       ${root} .account-summary[data-mockup-composition] .summary-total{gap:2px;padding:2px 6px}
       ${root} .account-summary[data-mockup-composition] .summary-total-copy{gap:1px}
       ${root} .account-summary[data-mockup-composition] .summary-total-copy>strong{line-height:1.1}
