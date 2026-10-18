@@ -111,6 +111,44 @@ export function accountsCardsPageStyles(): string {
       .resource-detail-actions > *, .resource-detail-actions form > button { width: 100%; }
     }
 
+
+    /* #716: compact account CDI switch and icon-only actions reuse the Golden Screen tokens. */
+    .resource-detail-actions { align-items: center; }
+    .resource-detail-actions > form > button, .resource-detail-actions > button.icon-button { padding: 0; }
+    .resource-detail-actions > .icon-button,
+    .resource-detail-actions form > .icon-button { background: var(--sf-color-surface); color: var(--sf-color-primary); }
+    .resource-detail-actions .danger-icon-button { color: var(--sf-color-danger); }
+    .resource-detail-actions .danger-icon-button:hover:not(:disabled),
+    .resource-detail-actions .danger-icon-button:focus-visible {
+      background: var(--sf-color-danger-surface);
+      border-color: var(--sf-color-danger-border);
+      color: var(--sf-color-danger);
+    }
+    .resource-cdi-control {
+      align-items: center; border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-md);
+      display: flex; flex-wrap: wrap; gap: 7px; min-height: var(--sf-density-interactive-target-min);
+      padding: 5px 9px;
+    }
+    .resource-cdi-title { color: var(--sf-color-muted-text); font-size: .75rem; font-weight: 700; }
+    .resource-cdi-state { color: var(--sf-color-muted-text); font-size: .74rem; font-weight: 650; }
+    .resource-cdi-switch {
+      align-items: center; background: var(--sf-color-border); border: 1px solid var(--sf-color-border);
+      border-radius: 999px; cursor: pointer; display: flex; height: 24px;
+      padding: 2px; transition: background .15s; width: 44px;
+    }
+    .resource-cdi-switch-thumb {
+      background: var(--sf-color-surface); border-radius: 50%; display: block;
+      height: 18px; transition: transform .15s; width: 18px;
+    }
+    .resource-cdi-switch[aria-checked="true"] { background: var(--sf-color-success); border-color: var(--sf-color-success); }
+    .resource-cdi-switch[aria-checked="true"] .resource-cdi-switch-thumb { transform: translateX(20px); }
+    .resource-cdi-switch:hover:not(:disabled) { border-color: var(--sf-color-primary); }
+    .resource-cdi-switch:focus-visible { box-shadow: var(--sf-shadow-focus); outline: 2px solid var(--sf-color-primary); outline-offset: 2px; }
+    .resource-cdi-switch:disabled { cursor: not-allowed; opacity: .55; }
+    .resource-cdi-feedback { flex-basis: 100%; font-size: .72rem; }
+    .resource-cdi-feedback:empty { display: none; }
+    .resource-cdi-feedback.error { color: var(--sf-color-danger); }
+    .resource-cdi-feedback.success { color: var(--sf-color-success); }
     /* #716: lista mestre dominante; detalhe e manutencao em segundo plano. */
     .accounts-cards-a3-page .sf-detail-layout { gap: 16px; grid-template-columns: minmax(0, 2.55fr) minmax(288px, 1fr); }
     .resource-master-panel, .resource-detail-panel { box-shadow: none; }
@@ -225,6 +263,11 @@ export function accountsCardsPageStyles(): string {
       .resource-master-amount strong { font-size: .84rem; }
       .resource-form-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .resource-form-actions button { padding-inline: 6px; width: 100%; }
+    }
+
+    @media (max-width: 760px) {
+      .resource-detail-actions { align-items: center; display: flex; flex-wrap: wrap; }
+      .resource-detail-actions > *, .resource-detail-actions form > button { width: auto; }
     }
   `;
 }
