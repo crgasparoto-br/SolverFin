@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { renderResourceMaster, renderSelectedResourceDetail } from "./components.js";
-import { renderAccountDialog, renderCardDialog, renderCardEditDialog } from "./dialogs.js";
+import {
+  renderAccountCdiConfigurationDialog,
+  renderAccountDialog,
+  renderCardDialog,
+  renderCardEditDialog,
+} from "./dialogs.js";
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
 import { buildAccountsCardsPageViewModel } from "./view-model.js";
@@ -232,4 +237,33 @@ test("#716 controla CDI por conta e ações somente com ícones nomeados", () =>
   for (const label of ["Editar cartão", "Adicionar instrumento", "Arquivar cartão", "Excluir cartão"]) {
     assert.match(cardDetail, new RegExp('title="' + label + '" aria-label="' + label + '"'));
   }
+});
+
+test("#716 restaura a configuração CDI via modal na própria tela", () => {
+  const dialog = renderAccountCdiConfigurationDialog(
+    account,
+    {
+      accountId: account.id,
+      accountCurrency: "BRL",
+      enabled: true,
+      indexKind: "cdi",
+      remunerationPercent: 95.25,
+      startsOn: "2026-10-15",
+      categoryId: "receita-1",
+    },
+    [
+      { id: "receita-1", name: "Rendimentos", kind: "income", status: "active" },
+      { id: "saida-1", name: "Despesa", kind: "expense", status: "active" },
+      { id: "inativa-1", name: "Desativada", kind: "income", status: "archived" },
+    ],
+  );
+  assert.match(dialog, /id="account-cdi-dialog-a-1"/);
+  assert.match(dialog, /data-cdi-configuration-form data-account-id="a-1"/);
+  assert.match(dialog, /name="remunerationPercent"[^>]+value="95.25"/);
+  assert.match(dialog, /name="startsOn"[^>]+value="2026-10-15"/);
+  assert.match(dialog, /value="receita-1" selected/);
+  assert.doesNotMatch(dialog, /value="saida-1"/);
+  assert.doesNotMatch(dialog, /value="inativa-1"/);
+  assert.match(dialog, /data-sf-dialog-close>Cancelar/);
+  assert.match(dialog, /data-cdi-form-status/);
 });
