@@ -91,7 +91,12 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     return renderShell(
       header +
         form +
-        renderState("api-error", "Não foi possível carregar as parcelas", installmentsResult.error),
+        renderState(
+          "api-error",
+          "Não foi possível carregar as parcelas",
+          installmentsResult.error,
+          `${url.pathname}${url.search}`,
+        ),
     );
   }
 
@@ -210,13 +215,16 @@ function renderInstallmentCurrencyBlock(
       summary.overdueCount > 0 ? "attention" : "neutral",
     ),
     installmentSummaryItem("Futuras", summary.futureCount, summary.futureMinor, block.currency),
-    installmentSummaryItem(
-      "Total mensal",
-      summary.activeCount,
-      summary.totalMinor,
-      block.currency,
-      "information",
-    ),
+    {
+      ...installmentSummaryItem(
+        "Total mensal",
+        summary.activeCount,
+        summary.totalMinor,
+        block.currency,
+        "information",
+      ),
+      emphasis: true,
+    },
   ];
 
   return renderReportAnalysisBlock({
@@ -255,15 +263,15 @@ function renderInstallmentDistribution(
 ): string {
   return `<div class="report-grid" aria-label="Agrupamentos de parcelas em ${escapeHtml(block.currency)}">
       <section class="panel report-results">
-        <div class="section-heading"><h2>Comprometimento por mês</h2><span>${block.summary.activeCount} parcelas</span></div>
+        <div class="section-heading"><h4>Comprometimento por mês</h4><span>${block.summary.activeCount} parcelas</span></div>
         ${renderAggregateRows(block.groups.months, "month", block.currency)}
       </section>
       <section class="panel report-results">
-        <div class="section-heading"><h2>Por cartão</h2><span>${block.summary.activeCount} parcelas</span></div>
+        <div class="section-heading"><h4>Por cartão</h4><span>${block.summary.activeCount} parcelas</span></div>
         ${renderAggregateRows(block.groups.cards, "card", block.currency, filters)}
       </section>
       <section class="panel report-results">
-        <div class="section-heading"><h2>Por categoria</h2><span>${block.summary.activeCount} parcelas</span></div>
+        <div class="section-heading"><h4>Por categoria</h4><span>${block.summary.activeCount} parcelas</span></div>
         ${renderAggregateRows(block.groups.categories, "category", block.currency, filters)}
       </section>
     </div>`;
