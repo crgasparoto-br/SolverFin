@@ -83,4 +83,30 @@ describe("Golden Screen categories hierarchy issue 717", () => {
   it("shows a meaningful catalogue empty state", () => {
     assert.match(renderCategoryTree([]), /Nenhuma categoria cadastrada/);
   });
+  it("shows compact columns, hierarchical paths and icon-only situation without losing actions", () => {
+    const html = renderCategoryTree(fixtures);
+    assert.equal((html.match(/class="category-column-headings"/g) ?? []).length, 2);
+    assert.equal((html.match(/class="category-parent-cell"/g) ?? []).length, 4);
+    assert.equal((html.match(/class="category-level-cell"/g) ?? []).length, 4);
+    assert.equal((html.match(/data-category-status-icon=/g) ?? []).length, 4);
+    assert.match(html, /data-category-path="Alimentação &gt; Restaurantes e lanchonetes"/);
+    assert.match(html, /class="category-parent-cell" title="Alimentação">Alimentação/);
+    assert.match(html, /aria-label="Nível 3">3/);
+    assert.match(html, /role="img" aria-label="Arquivado"/);
+    assert.doesNotMatch(html, /class="category-path"/);
+    assert.match(html, /data-toggle-category-children/);
+    assert.match(html, /data-category-menu-action="edit"/);
+  });
+
+  it("labels orphaned parents and escapes category ancestors", () => {
+    const html = renderCategoryTree([
+      { id: "parent", name: "<Grupo> & outros", kind: "expense", status: "active" },
+      { id: "child", name: "Filho", kind: "expense", status: "active", parentCategoryId: "parent" },
+      { id: "orphan", name: "Sem pai", kind: "expense", status: "active", parentCategoryId: "gone" },
+    ]);
+    assert.match(html, /&lt;Grupo&gt; &amp; outros/);
+    assert.match(html, /title="Categoria indisponível"/);
+    assert.match(html, /data-category-path="&lt;Grupo&gt; &amp; outros &gt; Filho"/);
+  });
+
 });

@@ -154,6 +154,15 @@ async function validateDesktop(cdp) {
     measurements,
   );
 
+  check(measurements.headerCount === 3, "Desktop lost compact column headers", measurements);
+  check(
+    measurements.parentCellCount === measurements.rowCount &&
+      measurements.levelCellCount === measurements.rowCount &&
+      measurements.statusCellCount === measurements.rowCount,
+    "Categories lost parent, level or situation columns",
+    measurements,
+  );
+  check(measurements.compactRowHeight <= 56, "Short category names exceed compact row height", measurements);
   const search = await validateSearch(cdp);
   return { viewport: "1440x1000", measurements, search, screenshot: "categories-desktop.png" };
 }
@@ -212,7 +221,7 @@ async function validateSearch(cdp) {
 
       for (const item of items) {
         const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName?.trim() || '';
-        const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent?.trim() || '';
+        const path = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryPath?.trim() || '';
         if (!name || !path || normalize(name) === normalize(path)) continue;
         const ancestor = path
           .split('>')
@@ -232,7 +241,7 @@ async function validateSearch(cdp) {
 
       const expectedMatchCount = items.filter((item) => {
         const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName || '';
-        const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent || '';
+        const path = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryPath || '';
         return normalize(name + ' ' + path).includes(normalize(query));
       }).length;
       const status = document.querySelector('[data-category-results-status]')?.textContent?.trim() || '';
@@ -314,6 +323,7 @@ async function validateMobile(cdp) {
   const measurements = await evaluate(cdp, pageMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-mobile.png"));
 
+  check(!measurements.columnHeadingsVisible, "Mobile column headers should be hidden", measurements);
   check(
     measurements.viewport.width === 390,
     "Categories mobile viewport is not 390px",
@@ -558,6 +568,14 @@ function pageMeasurementExpression() {
       filterCount: document.querySelectorAll('[data-category-filter]').length,
       allFilterPressed: document.querySelector('[data-category-filter="all"]')?.getAttribute('aria-pressed') === 'true',
       rowCount: rows.length,
+      headerCount: document.querySelectorAll('.category-column-headings').length,
+      columnHeadingsVisible: visible(document.querySelector('.category-column-headings')),
+      parentCellCount: document.querySelectorAll('.category-parent-cell').length,
+      levelCellCount: document.querySelectorAll('.category-level-cell').length,
+      statusCellCount: document.querySelectorAll('.category-status-cell').length,
+      compactRowHeight: Math.max(0, ...rows
+        .filter((row) => (row.querySelector('[data-edit-category]')?.dataset.categoryName || '').length < 25)
+        .map((row) => rect(row).height)),
       minimumRowHeight: rows.length ? Math.min(...rows.map((row) => rect(row).height)) : 0,
       minimumMenuTarget: menus.length ? Math.min(...menus.map((menu) => rect(menu).height)) : 0,
       minimumFilterTarget: filters.length ? Math.min(...filters.map((filter) => rect(filter).height)) : 0,

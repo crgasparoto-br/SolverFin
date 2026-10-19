@@ -200,6 +200,7 @@ export function renderCategoryTree(categories: CategoryRecord[]): string {
               <p class="sf-muted">${categoriesForKind.length} categorias · organização por níveis</p>
             </div>
           </header>
+          <div class="category-column-headings" aria-hidden="true"><span>Categoria</span><span>Categoria superior</span><span>Nível</span><span>Situação</span><span>Ações</span></div>
           <ul class="category-tree-nodes">
             ${
               rootCategories
@@ -237,28 +238,31 @@ function renderCategoryTreeNode(
   const childrenId = `category-children-${category.id}`;
   const parentLabel = depth === 0 ? "Categoria principal" : `Nível ${depth + 1}`;
   const statusLabel = formatGenericStatus(category.status);
+  const parent = categories.find((candidate) => candidate.id === category.parentCategoryId);
+  const parentName = category.parentCategoryId
+    ? (parent?.name ?? "Categoria indisponível")
+    : "Principal";
+  const statusIcon = icon(category.status === "archived" ? "archive" : "check-circle", 16);
 
   return `
     <li class="category-tree-node ${depth ? "category-tree-child" : ""}"
       data-category-item data-category-depth="${depth}" data-category-kind="${escapeHtml(category.kind)}"
       data-category-status="${escapeHtml(category.status)}" data-category-collapsed="false">
       <div class="category-node-row">
-        ${hasChildren ? renderCategoryCollapseButton(category, childrenId) : '<span class="category-collapse-spacer" aria-hidden="true"></span>'}
-        <button
-          class="category-node-button"
-          type="button"
-          data-edit-category
-          ${renderCategoryDataAttributes(category)}
-          aria-label="Editar ${escapeHtml(parentLabel.toLowerCase())} ${escapeHtml(category.name)}"
-          title="Editar categoria ${escapeHtml(category.name)}"
-        >
-          <span class="category-node-icon" aria-hidden="true">${icon(depth ? "tag" : "layers", 16)}</span>
-          <span class="category-node-text">
-            <strong>${escapeHtml(category.name)}</strong>
-            <span>${escapeHtml(parentLabel)} · ${escapeHtml(formatCategoryKind(category.kind))} · ${escapeHtml(statusLabel)}</span>
-            ${depth ? `<small class="category-path" title="${escapeHtml(displayName)}">${escapeHtml(displayName)}</small>` : ""}
-          </span>
-        </button>
+        <div class="category-name-cell" style="--category-level: ${Math.min(depth, 8)}">
+          ${hasChildren ? renderCategoryCollapseButton(category, childrenId) : '<span class="category-collapse-spacer" aria-hidden="true"></span>'}
+          <button class="category-node-button" type="button" data-edit-category
+            ${renderCategoryDataAttributes(category)} data-category-path="${escapeHtml(displayName)}"
+            aria-label="Editar categoria ${escapeHtml(displayName)}" title="Editar categoria ${escapeHtml(category.name)}">
+            <span class="category-node-icon" aria-hidden="true">${icon(depth ? "tag" : "layers", 16)}</span>
+            <span class="category-node-text"><strong>${escapeHtml(category.name)}</strong></span>
+          </button>
+        </div>
+        <div class="category-secondary-cells">
+          <span class="category-parent-cell" title="${escapeHtml(parentName)}">${escapeHtml(parentName)}</span>
+          <span class="category-level-cell" aria-label="Nível ${depth + 1}">${depth + 1}</span>
+          <span class="category-status-cell" role="img" aria-label="${escapeHtml(statusLabel)}" title="${escapeHtml(statusLabel)}" data-category-status-icon="${escapeHtml(category.status)}">${statusIcon}</span>
+        </div>
         ${renderCategoryActionMenu(category)}
       </div>
       ${hasChildren ? `<ul id="${escapeHtml(childrenId)}" class="category-tree-children" data-category-children>${children.map((child) => renderCategoryTreeNode(child, categories, depth + 1)).join("")}</ul>` : ""}
@@ -610,7 +614,7 @@ function categoryPageScript(): string {
       function setCategoryCollapsed(item, collapsed) {
         if (!item) return;
         const children = item.querySelector(":scope > .category-tree-children");
-        const toggle = item.querySelector(":scope > .category-node-row > [data-toggle-category-children]");
+        const toggle = item.querySelector(":scope > .category-node-row .category-name-cell > [data-toggle-category-children]");
         item.dataset.categoryCollapsed = String(collapsed);
         if (children) children.hidden = collapsed;
         if (toggle) {
@@ -774,8 +778,7 @@ function categoryPageScript(): string {
           button?.dataset.categoryName ||
           item.querySelector(":scope > .category-node-row .category-node-text strong")?.textContent ||
           "";
-        const path = item.querySelector(":scope > .category-node-row .category-path");
-        const pathText = path?.textContent?.trim() || "";
+        const pathText = button?.dataset.categoryPath || "";
         item.dataset.categorySearchText = normalizeCategoryText(name + " " + pathText);
       });
 
@@ -913,40 +916,35 @@ function pageCss(): string {
     .categories-page .category-kind-group > header { display: flex; align-items: center; gap: 10px; padding: 2px 0 8px; }
     .categories-page .category-kind-group h3 { margin: 0; color: var(--primary); font-size: .9rem; }
     .categories-page .category-kind-group header p { color: var(--muted); font-size: .75rem; margin: 4px 0 0; }
-    .categories-page ul.category-tree-nodes,
-    .categories-page ul.category-tree-children { list-style: none; margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; min-width: 0; max-width: 100%; }
-    .categories-page ul.category-tree-nodes { padding-left: 0; padding-right: 0; }
-    .categories-page ul.category-tree-children { border-left: 1px solid var(--line); margin-left: 20px; padding-left: 14px; padding-right: 0; }
+    .categories-page .category-kind-group { --category-columns: minmax(0, 2.4fr) minmax(0, 1.55fr) 64px 70px 44px; }
+    .categories-page .category-column-headings { display: grid; grid-template-columns: var(--category-columns); gap: 8px; align-items: center; padding: 8px 0; border-block: 1px solid var(--line); color: var(--muted); font-size: .75rem; font-weight: 600; }
+    .categories-page .category-column-headings span:nth-child(n + 3) { text-align: center; }
+    .categories-page ul.category-tree-nodes, .categories-page ul.category-tree-children { list-style: none; margin: 0; padding: 0; min-width: 0; max-width: 100%; }
     .categories-page li.category-tree-node { position: relative; min-width: 0; margin: 0; padding: 0; }
     .categories-page li.category-tree-node + li.category-tree-node { border-top: 1px solid var(--line); }
-    .categories-page .category-node-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 8px; min-width: 0; max-width: 100%; min-height: 58px; padding: 6px 0; }
-    .categories-page .category-tree-child > .category-node-row { min-height: 54px; }
-    .categories-page .category-collapse-spacer { display: block; width: 44px; height: 44px; }
-    .categories-page button.category-collapse-button {
-      min-width: 44px; width: 44px; min-height: 44px; padding: 0; border: 1px solid transparent;
-      background: transparent; color: var(--primary); border-radius: var(--radius);
-    }
-    .categories-page button.category-collapse-button:hover:not(:disabled) { background: var(--primary-soft); border-color: var(--line); color: var(--primary); }
+    .categories-page .category-node-row { display: grid; grid-template-columns: var(--category-columns); align-items: center; gap: 8px; width: 100%; min-width: 0; min-height: 52px; padding: 2px 0; }
+    .categories-page .category-node-row:hover { background: var(--primary-soft); }
+    .categories-page .category-name-cell { display: flex; align-items: center; gap: 4px; min-width: 0; padding-inline-start: calc(var(--category-level, 0) * 14px); }
+    .categories-page .category-collapse-spacer { display: block; flex: 0 0 44px; width: 44px; height: 44px; }
+    .categories-page button.category-collapse-button { flex: 0 0 44px; width: 44px; min-height: 44px; padding: 0; border: 1px solid transparent; background: transparent; color: var(--primary); border-radius: var(--radius); }
+    .categories-page button.category-collapse-button:hover:not(:disabled) { background: var(--primary-soft); border-color: var(--line); }
     .categories-page button.category-collapse-button[aria-expanded="false"] svg { transform: rotate(-90deg); }
     .categories-page button.category-collapse-button svg { transition: transform .16s ease; }
-    .categories-page button.category-node-button {
-      display: flex; gap: 10px; align-items: flex-start; min-width: 0; width: 100%; min-height: 44px;
-      justify-content: flex-start; padding: 7px 8px; text-align: left; border: 1px solid transparent;
-      border-radius: var(--radius); background: transparent; color: var(--text);
-    }
-    .categories-page button.category-node-button:hover:not(:disabled) { background: var(--primary-soft); color: var(--text); }
+    .categories-page button.category-node-button { display: flex; align-items: center; gap: 8px; flex: 1 1 0%; min-width: 0; width: 100%; min-height: 44px; justify-content: flex-start; padding: 4px 6px; text-align: left; border: 1px solid transparent; border-radius: var(--radius); background: transparent; color: var(--text); }
+    .categories-page button.category-node-button:hover:not(:disabled) { background: var(--surface); color: var(--text); border-color: var(--line); }
     .categories-page li.category-tree-node[data-category-editing="true"] > .category-node-row button.category-node-button { border-color: var(--cyan); background: var(--primary-soft); }
-    .categories-page .category-node-icon { flex: 0 0 18px; margin-top: 1px; color: var(--muted); }
+    .categories-page .category-node-icon { flex: 0 0 16px; color: var(--muted); }
     .categories-page .category-tree-child .category-node-icon { color: var(--primary); }
-    .categories-page .category-node-text { flex: 1 1 0%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; min-width: 0; max-width: 100%; }
-    .categories-page .category-node-text > * { min-width: 0; max-width: 100%; }
-    .categories-page .category-node-text strong { font-size: .875rem; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
-    .categories-page .category-node-text span { color: var(--muted); font-size: .75rem; line-height: 1.45; overflow-wrap: anywhere; }
-    .categories-page .category-path { display: block; color: var(--muted); font-size: .6875rem; line-height: 1.4; font-weight: 400; overflow-wrap: anywhere; }
-    .categories-page .category-action-menu { position: relative; align-self: center; }
+    .categories-page .category-node-text { display: block; flex: 1 1 0%; min-width: 0; }
+    .categories-page .category-node-text strong { display: block; min-width: 0; font-size: .84375rem; line-height: 1.3; font-weight: 650; overflow-wrap: anywhere; }
+    .categories-page .category-secondary-cells { display: contents; }
+    .categories-page .category-parent-cell { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: .8125rem; }
+    .categories-page .category-level-cell { text-align: center; color: var(--muted); font-size: .8125rem; }
+    .categories-page .category-status-cell { display: inline-flex; justify-content: center; align-items: center; min-width: 0; color: var(--success); }
+    .categories-page .category-status-cell[data-category-status-icon="archived"] { color: var(--muted); }
+    .categories-page .category-action-menu { position: relative; align-self: center; min-width: 0; }
     .categories-page button.category-menu-button { width: 44px; min-height: 44px; border: 1px solid var(--line); padding: 0; background: var(--surface); color: var(--primary); border-radius: var(--radius); }
-    .categories-page button.category-menu-button:hover:not(:disabled),
-    .categories-page button.category-menu-button[aria-expanded="true"] { background: var(--primary-soft); border-color: var(--cyan); color: var(--primary); }
+    .categories-page button.category-menu-button:hover:not(:disabled), .categories-page button.category-menu-button[aria-expanded="true"] { background: var(--primary-soft); border-color: var(--cyan); color: var(--primary); }
     .categories-page .category-menu-popover { display: grid; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: 0 12px 32px rgba(15,23,42,.16); min-width: 172px; padding: 6px; position: absolute; top: calc(100% + 4px); right: 0; z-index: 8; }
     .categories-page .category-menu-popover button { display: flex; gap: 8px; justify-content: flex-start; align-items: center; text-align: left; width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid transparent; border-radius: var(--radius); background: var(--surface); color: var(--primary); font-size: .8125rem; }
     .categories-page .category-menu-popover button:hover:not(:disabled) { background: var(--primary-soft); border-color: var(--line); color: var(--primary); }
@@ -971,6 +969,16 @@ function pageCss(): string {
     .categories-page .dialog-actions button { min-height: 44px; }
     .categories-page .dialog-actions .danger-action { margin-right: auto; }
     .categories-page button.sf-button.secondary:hover:not(:disabled) { background: var(--primary-soft); color: var(--primary); border-color: var(--line); }
+    @media (max-width: 840px) {
+      .categories-page .category-column-headings { display: none; }
+      .categories-page .category-node-row { grid-template-columns: minmax(0, 1fr) 44px; grid-template-rows: auto auto; column-gap: 4px; row-gap: 0; min-height: 56px; padding: 2px 0; }
+      .categories-page .category-name-cell { grid-column: 1; grid-row: 1; }
+      .categories-page .category-secondary-cells { display: flex; grid-column: 1; grid-row: 2; align-items: center; gap: 8px; min-width: 0; overflow: hidden; padding-inline-start: calc(44px + var(--category-level, 0) * 14px); }
+      .categories-page .category-parent-cell { flex: 0 1 auto; min-width: 0; font-size: .75rem; }
+      .categories-page .category-level-cell { flex: 0 0 auto; font-size: .75rem; }
+      .categories-page .category-status-cell { flex: 0 0 18px; }
+      .categories-page .category-action-menu { grid-column: 2; grid-row: 1 / span 2; }
+    }
     @media (max-width: 760px) {
       .app-shell { grid-template-columns: minmax(0, 1fr); max-width: 100%; }
       .main-area { min-width: 0; max-width: 100%; }
@@ -985,8 +993,6 @@ function pageCss(): string {
       .categories-page .category-search { flex: 1 1 100%; max-width: none; }
       .categories-page .category-collapse-actions { margin-left: 0; }
       .categories-page .category-kind-group { padding: 14px 12px; }
-      .categories-page .category-node-row { grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 3px; }
-      .categories-page ul.category-tree-children { margin-left: 14px; padding-left: 7px; }
       .categories-page .category-form { grid-template-columns: minmax(0, 1fr); }
       .categories-page .dialog-actions { justify-content: stretch; }
       .categories-page .dialog-actions button { flex: 1 1 120px; }
@@ -996,8 +1002,8 @@ function pageCss(): string {
       .categories-page .category-toolbar { padding-inline: 10px; }
       .categories-page .category-kind-group { padding-inline: 10px; }
       .categories-page ul.category-tree-children { margin-left: 7px; padding-left: 5px; }
-      .categories-page .category-node-row { gap: 2px; }
-      .categories-page button.category-node-button { gap: 6px; padding-inline: 4px; }
+      .categories-page .category-name-cell { padding-inline-start: calc(var(--category-level, 0) * 10px); }
+      .categories-page .category-secondary-cells { padding-inline-start: calc(44px + var(--category-level, 0) * 10px); }
       .categories-page .category-menu-popover { max-width: min(220px, calc(100vw - 20px)); }
     }
     @media (prefers-reduced-motion: reduce) {
