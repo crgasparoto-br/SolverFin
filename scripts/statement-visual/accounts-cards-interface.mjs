@@ -115,6 +115,11 @@ async function validateViewport(cdp, viewport) {
     true,
     "Institution logo/fallback missing from a master resource.",
   );
+  assert.equal(
+    baseline.institutionImageMatchesGolden,
+    true,
+    "List institution logos must match the 44px and 11px Golden Statement frame.",
+  );
 
   const account = await selectResource(cdp, "account");
   const card = await selectResource(cdp, "card");
@@ -142,6 +147,11 @@ async function validateViewport(cdp, viewport) {
       measurements.institutionIdentityVisible,
       true,
       "Account institution identity is hidden.",
+    );
+    assert.equal(
+      measurements.detailImageMatchesGolden,
+      true,
+      "Account detail logo must match Golden Statement image geometry.",
     );
     assert.equal(measurements.selectedMasterCount, 1);
     assert.equal(
@@ -178,6 +188,11 @@ async function validateViewport(cdp, viewport) {
       measurements.institutionIdentityVisible,
       true,
       "Card institution identity is hidden.",
+    );
+    assert.equal(
+      measurements.detailImageMatchesGolden,
+      true,
+      "Card detail logo must match Golden Statement image geometry.",
     );
     assert.equal(measurements.selectedMasterCount, 1);
     assert.equal(measurements.currencyContextVisible, true, "Card currency context is ambiguous.");
@@ -679,6 +694,21 @@ async function inspectPage(cdp) {
         const style = getComputedStyle(element);
         return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
       };
+      const goldenLogoFrame = (root) => {
+        if (!root) return false;
+        const frame = root.getBoundingClientRect();
+        const radius = parseFloat(getComputedStyle(root).borderTopLeftRadius);
+        const visibleLogo = Array.from(root.querySelectorAll('img, svg')).find(visible);
+        if (!visibleLogo) return false;
+        const logo = visibleLogo.getBoundingClientRect();
+        const logoStyle = getComputedStyle(visibleLogo);
+        return Math.abs(frame.width - 44) <= 1 &&
+          Math.abs(frame.height - 44) <= 1 &&
+          Math.abs(radius - 11) <= 1 &&
+          logo.width > 0 && logo.height > 0 &&
+          logo.width <= frame.width + 1 && logo.height <= frame.height + 1 &&
+          (visibleLogo.tagName.toLowerCase() !== 'img' || logoStyle.objectFit === 'contain');
+      };
       const detail = document.querySelector('[data-resource-detail]');
       const detailText = detail?.textContent || '';
       const masterItems = Array.from(document.querySelectorAll('[data-resource-master-item]'));
@@ -719,6 +749,8 @@ async function inspectPage(cdp) {
             : master.top <= secondary.top && master.width <= innerWidth;
         })(),
         institutionLogosOnMaster: masterItems.every((item) => Boolean(item.querySelector('.resource-master-icon .institution-logo-img, .resource-master-icon .institution-badge-icon'))),
+        institutionImageMatchesGolden: masterItems.every((item) => goldenLogoFrame(item.querySelector('.resource-master-icon'))),
+        detailImageMatchesGolden: goldenLogoFrame(detail?.querySelector('.resource-detail-identity')),
         financialContextVisible: (() => {
           const selected = document.querySelector('[data-resource-master-item].is-selected');
           const rowAmount = selected?.querySelector('.resource-master-amount strong');
