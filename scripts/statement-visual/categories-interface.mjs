@@ -327,7 +327,11 @@ async function validateMobile(cdp) {
   const measurements = await evaluate(cdp, pageMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-mobile.png"));
 
-  check(!measurements.columnHeadingsVisible, "Mobile column headers should be hidden", measurements);
+  check(
+    !measurements.columnHeadingsVisible,
+    "Mobile column headers should be hidden",
+    measurements,
+  );
   check(
     measurements.viewport.width === 390,
     "Categories mobile viewport is not 390px",
