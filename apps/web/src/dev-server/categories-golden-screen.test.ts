@@ -51,7 +51,8 @@ describe("Golden Screen categories hierarchy issue 717", () => {
       },
       { id: "parent", name: "Transferências", kind: "transfer", status: "active" },
     ]);
-    assert.match(html, /Categoria principal/);
+    assert.match(html, /title="Categoria indisponível"/);
+    assert.match(html, /title="Principal"/);
     assert.match(html, /data-category-kind="expense"/);
     assert.match(html, /data-category-kind="transfer"/);
     assert.match(html, /Filha sem pai carregado/);

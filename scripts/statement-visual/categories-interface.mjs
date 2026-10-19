@@ -554,6 +554,23 @@ function pageMeasurementExpression() {
       bodyScrollWidth: document.body.scrollWidth,
       pageScrollWidth: document.querySelector('.categories-page')?.scrollWidth || 0,
       pageClientWidth: document.querySelector('.categories-page')?.clientWidth || 0,
+      pageScrollSources: Array.from(document.querySelectorAll('.categories-page *'))
+        .filter((element) => element.scrollWidth > element.clientWidth + 2 && element.clientWidth > 0)
+        .slice(0, 24)
+        .map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          className: String(element.className?.baseVal || element.className || '').slice(0, 90),
+          client: element.clientWidth,
+          scroll: element.scrollWidth,
+          left: Math.round(element.getBoundingClientRect().left),
+          right: Math.round(element.getBoundingClientRect().right),
+          overflowX: getComputedStyle(element).overflowX,
+        })),
+      structuralWidths: ['.app-shell', '.sidebar', '.sidebar nav', '.main-area', '.main-area main', '.categories-page', '.category-directory', '.category-toolbar', '.category-kind-group']
+        .map((selector) => {
+          const element = document.querySelector(selector);
+          return element ? { selector, client: element.clientWidth, scroll: element.scrollWidth, right: Math.round(element.getBoundingClientRect().right) } : null;
+        }).filter(Boolean),
       globalOverflowElements: Array.from(document.querySelectorAll('body *'))
         .filter((element) => {
           const bounds = element.getBoundingClientRect();
