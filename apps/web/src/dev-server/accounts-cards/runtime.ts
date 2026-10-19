@@ -129,7 +129,7 @@ export function renderAccountsCardsApiFormScript(): string {
               const startsOn = configuration.startsOn || localToday();
               const message = enable
                 ? "Ativar a remuneração desta conta a " + String(percent).replace(".", ",") +
-                  "% do CDI a partir de " + startsOn + "? Você pode alterar percentual, data e categoria em Remuneração de Contas."
+                  "% do CDI a partir de " + startsOn + "? Use o ícone de engrenagem ao lado do flag CDI nesta tela para alterar percentual, data e categoria."
                 : "Desativar a remuneração CDI desta conta? As configurações existentes serão preservadas.";
               if (!(await requestConfirmation(message))) {
                 feedback.textContent = "";
