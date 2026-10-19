@@ -53,6 +53,18 @@ Uma implementacao deve ser revisada quando introduzir, sem justificativa funcion
 - medidas, raios, sombras, espacamentos ou iconografia locais que criem linguagem visual paralela ao design system;
 - aprovacao baseada somente em "funciona", "esta responsivo" ou "os testes passaram" sem inspecao da composicao final.
 
+### Navegacao autenticada unificada (Issue #717)
+
+O menu lateral do shell autenticado usa **sempre o tema claro aprovado no Extrato**,
+inclusive em Dashboard, Categorias, Contas, Cartoes e rotas administrativas. A
+fonte executavel e `sharedShellStyles()` em
+`apps/web/src/dev-server/shared-styles.ts`; telas individuais nao podem
+sobrescrever o tema da sidebar por rota. A estrutura de navegacao e permissao
+continua centralizada em `shell.ts`. O fundo e claro, o texto e legivel, o
+item ativo usa realce azul discreto, e hover/foco seguem o mesmo contrato em
+todas as telas. A composicao compacta/mobile preserva os mesmos tokens,
+alvos acessiveis e navegacao por teclado.
+
 ### Referencia visual e Golden Screens
 
 Rotas ou estados explicitamente designados como referencia visual podem funcionar como **Golden Screens**. Uma Golden Screen nao autoriza copia cega de layout; ela fixa o nivel esperado de acabamento, hierarquia, densidade, tipografia, espacamento e iconografia para telas da mesma familia. Quando uma issue indicar uma Golden Screen, a validacao deve comparar o candidato contra esses atributos, nao apenas contra a presenca dos mesmos componentes.
