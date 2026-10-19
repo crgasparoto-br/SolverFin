@@ -259,7 +259,7 @@ export function accountsCardsPageStyles(): string {
     .resource-master-summary > div { align-items: baseline; }
     .resource-master-summary h2 { font-size: 1.05rem; line-height: 1.35; margin: 0; }
     .resource-master-summary span { color: var(--muted); font-size: .78rem; white-space: nowrap; }
-    .resource-master-filters { gap: 8px; grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(96px, 1fr)); }
+    .resource-master-filters { gap: 8px; grid-template-columns: minmax(0, 2fr) minmax(96px, 1fr) minmax(165px, 1.3fr) minmax(96px, 1fr); }
     .resource-master-filters > label:first-child, .resource-master-filters > label:last-child { grid-column: auto; }
     .resource-master-filters > label { font-size: .76rem; min-width: 0; }
     /* The Golden Screen filter bar is neutral; the master panel already owns the surface. */
