@@ -102,7 +102,7 @@ export function renderResourceMaster(resources: readonly ResourceMasterViewModel
         <label>Status<select data-master-status><option value="all">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></label>
       </div>
       <div class="resource-master-columns" aria-hidden="true">
-        <span>Tipo</span><span>Conta ou cartão</span><span>Moeda</span><span>Saldo inicial / Limite</span><span>CDI</span><span>Situação</span>
+        <span>Tipo</span><span>Conta ou cartão</span><span>Instituição</span><span>Moeda</span><span>Valor</span><span>CDI</span><span>Situação</span>
       </div>
       <div class="resource-master-list" data-master-list>${list}</div>
       <div data-filter-empty hidden>${renderEmptyState({ title: "Nenhum recurso encontrado", description: "Ajuste a busca ou os filtros de tipo, moeda e status." })}</div>
@@ -124,21 +124,10 @@ function renderCurrencyFilterOptions(resources: readonly ResourceMasterViewModel
 }
 
 function renderResourceTypeIcon(resource: ResourceMasterViewModel): string {
-  // The account subtype is kept in the view model, not inferred from translated text.
-  const iconName =
-    resource.kind === "card"
-      ? "credit-card"
-      : resource.accountKind === "checking"
-        ? "building-2"
-        : resource.accountKind === "savings"
-          ? "wallet"
-          : resource.accountKind === "cash"
-            ? "dollar-sign"
-            : resource.accountKind === "investment"
-              ? "trending-up"
-              : "layers";
+  // Keep the list in sync with the icons used by the add-account/add-card actions.
+  const iconName = resource.kind === "account" ? "wallet" : "credit-card";
   const label =
-    resource.kind === "account" ? resource.secondaryLabel : `Cartão · ${resource.secondaryLabel}`;
+    resource.kind === "account" ? `Conta · ${resource.secondaryLabel}` : `Cartão · ${resource.secondaryLabel}`;
   const description = escapeHtml(label);
   return `<span class="resource-master-type" role="img" aria-label="${description}" title="${description}">${icon(iconName, 18)}</span>`;
 }
@@ -161,16 +150,16 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
       <a class="resource-master-link" href="${escapeHtml(resource.href)}"${resource.isSelected ? ' aria-current="page"' : ""}>
         ${renderResourceTypeIcon(resource)}
         <span class="resource-master-identity">
+          <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong></span>
+        </span>
+        <span class="resource-master-institution">
           <span class="resource-master-icon" aria-hidden="true">${renderInstitutionIcon(resource.institutionKey)}</span>
-          <span class="resource-master-copy">
-            <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong></span>
-            <span class="resource-master-institution" title="${escapeHtml(resource.institutionLabel)}">${escapeHtml(resource.institutionLabel)}${resource.kind === "account" ? ` <span class="resource-master-cdi-compact${resource.cdiActive ? " is-active" : ""}">· ${escapeHtml(cdiLabel)}</span>` : ""}</span>
-          </span>
+          <span class="resource-master-institution-label" title="${escapeHtml(resource.institutionLabel)}">${escapeHtml(resource.institutionLabel)}</span>
         </span>
         <span class="resource-master-currency" aria-label="Moeda ${escapeHtml(currencyLabel)}">${escapeHtml(resource.currency ?? "Indisponível")}</span>
         <span class="resource-master-amount" data-amount-label="${escapeHtml(resource.amountLabel)}">
           <strong>${escapeHtml(money)}</strong>
-          <small>${escapeHtml(resource.amountLabel)}</small>
+          <span class="resource-master-amount-kind" role="img" aria-label="${escapeHtml(resource.amountLabel)}" title="${escapeHtml(resource.amountLabel)}">${icon(resource.kind === "account" ? "dollar-sign" : "credit-card", 15)}</span>
         </span>
         <span class="resource-master-cdi-column">${resource.kind === "account" ? renderBadge({ label: cdiLabel, tone: resource.cdiActive ? "positive" : "neutral" }) : '<span aria-label="Não se aplica">—</span>'}</span>
         <span class="resource-master-state">${renderBadge({ label: formatGenericStatus(resource.status), tone: resource.status === "active" ? "positive" : "neutral" })}</span>
