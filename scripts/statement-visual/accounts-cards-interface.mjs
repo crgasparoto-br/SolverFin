@@ -102,6 +102,11 @@ async function validateViewport(cdp, viewport) {
   assert.deepEqual(baseline.kindOptions, ["all", "account", "card"]);
   assert.equal(baseline.currencyOptions[0], "all");
   assert.equal(baseline.currencyOptionLabels[0], "Todas as moedas");
+  assert.equal(
+    baseline.currencyFilterLabelFits,
+    true,
+    "Selected currency filter label must remain readable at every supported viewport.",
+  );
   assert.ok(baseline.currencyOptions.length > 1, "Currency filter has no resource options.");
   assert.deepEqual(baseline.statusOptions, ["all", "active", "inactive"]);
   assert.equal(baseline.loadingStatePresent, true, "Route loading state is not wired.");
@@ -736,6 +741,17 @@ async function inspectPage(cdp) {
         currencyOptionLabels: Array.from(
           document.querySelectorAll('[data-master-currency] option'),
         ).map((option) => option.textContent?.trim() || ''),
+        currencyFilterLabelFits: (() => {
+          const select = document.querySelector('[data-master-currency]');
+          if (!visible(select)) return false;
+          const style = getComputedStyle(select);
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          if (!context) return false;
+          context.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
+          const label = select.selectedOptions[0]?.textContent?.trim() || '';
+          return select.getBoundingClientRect().width >= context.measureText(label).width + 40;
+        })(),
         statusOptions: Array.from(document.querySelectorAll('[data-master-status] option')).map((option) => option.value),
         currencyContextVisible: /Moeda\\s*(BRL|USD|EUR)\\b/i.test(detailText) || /Moeda\\s*(indisponível|não informada)/i.test(detailText),
         instrumentSectionVisible: visible(document.querySelector('.resource-instruments')),
