@@ -150,11 +150,12 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
       <a class="resource-master-link" href="${escapeHtml(resource.href)}"${resource.isSelected ? ' aria-current="page"' : ""}>
         ${renderResourceTypeIcon(resource)}
         <span class="resource-master-identity">
-          <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong></span>
+          <span class="resource-master-title" title="${escapeHtml(resource.name)}"><strong>${escapeHtml(resource.name)}</strong></span>
         </span>
         <span class="resource-master-institution">
           <span class="resource-master-icon" aria-hidden="true">${renderInstitutionIcon(resource.institutionKey)}</span>
           <span class="resource-master-institution-label" title="${escapeHtml(resource.institutionLabel)}">${escapeHtml(resource.institutionLabel)}</span>
+          ${resource.kind === "account" ? `<span class="resource-master-cdi-compact${resource.cdiActive ? " is-active" : ""}" role="img" aria-label="${escapeHtml(cdiLabel)}" title="${escapeHtml(cdiLabel)}">${icon("zap", 15)}</span>` : ""}
         </span>
         <span class="resource-master-currency" aria-label="Moeda ${escapeHtml(currencyLabel)}">${escapeHtml(resource.currency ?? "Indisponível")}</span>
         <span class="resource-master-amount" data-amount-label="${escapeHtml(resource.amountLabel)}">
