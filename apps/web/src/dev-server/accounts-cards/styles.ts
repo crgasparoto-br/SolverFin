@@ -271,22 +271,27 @@ export function accountsCardsPageStyles(): string {
       align-items: center;
       column-gap: 12px;
       display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(58px, .4fr) minmax(140px, .9fr) minmax(78px, .6fr) minmax(74px, .5fr);
+      grid-template-columns: minmax(0, 1.7fr) 44px minmax(56px, .4fr) minmax(132px, .9fr) minmax(78px, .6fr) minmax(74px, .5fr);
     }
     .resource-master-columns { border-bottom: 1px solid var(--line); color: var(--muted); font-size: .71rem; font-weight: 750; padding: 11px 10px; }
-    .resource-master-columns > span:nth-child(3), .resource-master-columns > span:nth-child(5) { text-align: right; }
-    .resource-master-columns > span:nth-child(4) { text-align: center; }
+    .resource-master-columns > span:nth-child(4), .resource-master-columns > span:nth-child(6) { text-align: right; }
+    .resource-master-columns > span:nth-child(2), .resource-master-columns > span:nth-child(5) { text-align: center; }
     .resource-master-list { gap: 0; max-height: none; overflow: visible; padding: 0; }
     .resource-master-item { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
     .resource-master-item:last-child { border-bottom: 0; }
     .resource-master-item.is-selected { background: var(--primary-soft); border: 0; border-bottom: 1px solid var(--line); box-shadow: inset 3px 0 var(--primary); }
-    .resource-master-link { color: inherit; min-height: 72px; padding: 9px 10px; text-decoration: none; }
+    .resource-master-link { color: inherit; min-height: 56px; padding: 6px 10px; text-decoration: none; }
     .resource-master-link:hover { background: var(--surface-soft); border-radius: 0; }
     .resource-master-item.is-selected .resource-master-link:hover { background: transparent; }
     .resource-master-link:focus-visible { border-radius: 0; outline: 2px solid var(--primary); outline-offset: -2px; }
     .resource-master-identity { align-items: center; display: grid; gap: 10px; grid-template-columns: 44px minmax(0, 1fr); min-width: 0; }
     .resource-master-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
     .resource-master-title strong { color: var(--text); font-size: .93rem; line-height: 1.3; overflow-wrap: anywhere; }
+    .resource-master-type { align-items: center; background: var(--sf-color-surface-soft); border: 1px solid var(--sf-color-border); border-radius: 8px; color: var(--sf-color-primary); display: inline-flex; height: 30px; justify-content: center; justify-self: center; width: 30px; }
+    .resource-master-type svg { flex: 0 0 auto; }
+    .resource-master-institution { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .resource-header-action-icon { flex: 0 0 auto; }
+    .accounts-cards-a3-page .sf-page-header-actions .sf-dialog-trigger { align-items: center; display: inline-flex; gap: 8px; }
     .resource-master-institution, .resource-master-context { color: var(--muted); font-size: .75rem; line-height: 1.3; }
     .resource-master-cdi-column { display: flex; justify-content: center; white-space: nowrap; }
     .resource-master-cdi-column .sf-badge { font-size: .69rem; }
@@ -340,10 +345,11 @@ export function accountsCardsPageStyles(): string {
       .resource-master-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .resource-master-filters > label:first-child, .resource-master-filters > label:last-child { grid-column: 1 / -1; }
       .resource-master-columns { display: none; }
-      .resource-master-link { column-gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(96px, auto); min-height: 76px; row-gap: 6px; }
+      .resource-master-link { column-gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(96px, auto); min-height: 66px; row-gap: 4px; }
       .resource-master-identity { grid-column: 1; grid-row: 1; }
       .resource-master-amount { grid-column: 2; grid-row: 1; }
-      .resource-master-currency { grid-column: 1; grid-row: 2; margin-left: 54px; }
+      .resource-master-type { grid-column: 1; grid-row: 2; justify-self: start; }
+    .resource-master-currency { align-self: center; grid-column: 1; grid-row: 2; margin-left: 40px; }
       .resource-master-state { grid-column: 2; grid-row: 2; }
       .resource-master-cdi-column { display: none; }
       .resource-master-cdi-compact { display: inline; }
