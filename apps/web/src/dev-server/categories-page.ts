@@ -236,7 +236,6 @@ function renderCategoryTreeNode(
   const displayName = getCategoryDisplayName(category, categories);
   const hasChildren = children.length > 0;
   const childrenId = `category-children-${category.id}`;
-  const parentLabel = depth === 0 ? "Categoria principal" : `Nível ${depth + 1}`;
   const statusLabel = formatGenericStatus(category.status);
   const parent = categories.find((candidate) => candidate.id === category.parentCategoryId);
   const parentName = category.parentCategoryId
@@ -982,8 +981,8 @@ function pageCss(): string {
     @media (max-width: 760px) {
       .app-shell { grid-template-columns: minmax(0, 1fr); max-width: 100%; }
       .main-area { min-width: 0; max-width: 100%; }
-      .sidebar { min-width: 0; max-width: 100%; }
-      .sidebar > nav { flex: 1 1 0%; min-width: 0; max-width: 100%; }
+      .sidebar { min-width: 0; max-width: 100%; width: 100%; overflow-x: hidden; }
+      .sidebar > nav { flex: 1 1 0%; min-width: 0; max-width: 100%; overflow-x: auto; }
       .categories-page .category-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .categories-page .category-overview > div:nth-child(3) { border-left: 0; }
       .categories-page .category-overview > div:nth-child(n + 3) { border-top: 1px solid var(--line); }

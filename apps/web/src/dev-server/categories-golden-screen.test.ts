@@ -83,7 +83,8 @@ describe("Golden Screen categories hierarchy issue 717", () => {
   it("shows a meaningful catalogue empty state", () => {
     assert.match(renderCategoryTree([]), /Nenhuma categoria cadastrada/);
   });
-  it("shows compact columns, hierarchical paths and icon-only situation without losing actions", () => {
+
+  it("shows compact columns and icon-only situation without losing actions", () => {
     const html = renderCategoryTree(fixtures);
     assert.equal((html.match(/class="category-column-headings"/g) ?? []).length, 2);
     assert.equal((html.match(/class="category-parent-cell"/g) ?? []).length, 4);
@@ -102,11 +103,10 @@ describe("Golden Screen categories hierarchy issue 717", () => {
     const html = renderCategoryTree([
       { id: "parent", name: "<Grupo> & outros", kind: "expense", status: "active" },
       { id: "child", name: "Filho", kind: "expense", status: "active", parentCategoryId: "parent" },
-      { id: "orphan", name: "Sem pai", kind: "expense", status: "active", parentCategoryId: "gone" },
+      { id: "o", name: "Sem pai", kind: "expense", status: "active", parentCategoryId: "gone" },
     ]);
     assert.match(html, /&lt;Grupo&gt; &amp; outros/);
     assert.match(html, /title="Categoria indisponível"/);
     assert.match(html, /data-category-path="&lt;Grupo&gt; &amp; outros &gt; Filho"/);
   });
-
 });

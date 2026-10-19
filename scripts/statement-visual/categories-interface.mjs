@@ -162,7 +162,11 @@ async function validateDesktop(cdp) {
     "Categories lost parent, level or situation columns",
     measurements,
   );
-  check(measurements.compactRowHeight <= 56, "Short category names exceed compact row height", measurements);
+  check(
+    measurements.compactRowHeight <= 56,
+    "Short category names exceed compact row height",
+    measurements,
+  );
   const search = await validateSearch(cdp);
   return { viewport: "1440x1000", measurements, search, screenshot: "categories-desktop.png" };
 }
