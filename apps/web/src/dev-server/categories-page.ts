@@ -938,7 +938,8 @@ function pageCss(): string {
     .categories-page li.category-tree-node[data-category-editing="true"] > .category-node-row button.category-node-button { border-color: var(--cyan); background: var(--primary-soft); }
     .categories-page .category-node-icon { flex: 0 0 18px; margin-top: 1px; color: var(--muted); }
     .categories-page .category-tree-child .category-node-icon { color: var(--primary); }
-    .categories-page .category-node-text { display: grid; gap: 3px; min-width: 0; }
+    .categories-page .category-node-text { flex: 1 1 0%; display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; min-width: 0; max-width: 100%; }
+    .categories-page .category-node-text > * { min-width: 0; max-width: 100%; }
     .categories-page .category-node-text strong { font-size: .875rem; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
     .categories-page .category-node-text span { color: var(--muted); font-size: .75rem; line-height: 1.45; overflow-wrap: anywhere; }
     .categories-page .category-path { display: block; color: var(--muted); font-size: .6875rem; line-height: 1.4; font-weight: 400; overflow-wrap: anywhere; }
