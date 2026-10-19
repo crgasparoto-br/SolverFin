@@ -58,7 +58,6 @@ function rendersCompactAccountTypeColumnWithTooltips(): void {
       currency: "BRL",
       currencyLabel: "BRL",
     }),
-    accountKind: "checking",
     institutionLabel: "Banco exemplo",
     secondaryLabel: "Conta corrente",
   };
@@ -77,32 +76,34 @@ function rendersCompactAccountTypeColumnWithTooltips(): void {
 
   assert.match(
     html,
-    /<span>Tipo<\/span><span>Conta ou cartão<\/span><span>Moeda<\/span>/,
+    /<span>Tipo<\/span><span>Instituição<\/span><span>Conta ou cartão<\/span><span>Moeda<\/span><span>Valor<\/span>/,
   );
   assert.match(
     html,
-    /class="resource-master-type" role="img" aria-label="Conta corrente" title="Conta corrente"/,
+    /class="resource-master-type" role="img" aria-label="Conta · Conta corrente" title="Conta · Conta corrente"/,
   );
   assert.match(
     html,
     /class="resource-master-type" role="img" aria-label="Cartão · Visa · 2 instrumentos ativos"/,
   );
-  assert.match(
-    html,
-    /<span class="resource-master-institution"[^>]*>Banco exemplo/,
-  );
+  assert.match(html, /class="resource-master-institution-label"[^>]*>Banco exemplo/);
   assert.doesNotMatch(html, /class="resource-master-context"/);
   const accountStart = html.indexOf('data-kind="account"');
-  const accountRow = html.slice(
-    accountStart,
-    html.indexOf("</article>", accountStart),
+  const accountRow = html.slice(accountStart, html.indexOf("</article>", accountStart));
+  assert.ok(accountStart >= 0 && accountRow);
+  const type = accountRow.indexOf('class="resource-master-type"');
+  const institution = accountRow.indexOf('class="resource-master-institution"');
+  const identity = accountRow.indexOf('class="resource-master-identity"');
+  assert.ok(type >= 0 && type < institution && institution < identity);
+  assert.match(
+    accountRow,
+    /class="resource-master-amount-kind" role="img" aria-label="Saldo inicial" title="Saldo inicial"/,
   );
-  assert.ok(accountRow, "Account row must render");
-  assert.ok(
-    accountRow.indexOf('class="resource-master-type"') <
-      accountRow.indexOf('class="resource-master-identity"'),
-    "The type icon must precede account identity in document order",
+  assert.match(
+    html,
+    /class="resource-master-amount-kind" role="img" aria-label="Limite total" title="Limite total"/,
   );
+  assert.doesNotMatch(html, /<small>Saldo inicial<\/small>|<small>Limite total<\/small>/);
   assert.match(html, /data-kind="account"/);
   assert.match(html, /data-kind="card"/);
 }
