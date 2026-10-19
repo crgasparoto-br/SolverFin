@@ -135,6 +135,12 @@ Na rota `/contas-cartoes`, somente contas com configuração habilitada no endpo
 
 Na lista mestre, o indicador de remuneração é visível em **coluna própria `CDI` no desktop** (badge compartilhado `CDI ativo`), de modo que o usuário não precise abrir o detalhe da conta para identificá-lo. A coluna apresenta também `Sem CDI ativo` quando a consulta autenticada confirma ausência de habilitação, `Não elegível` para contas inaptas e `—` para cartões; não confundir ausência de ativação com falha de consulta, sinalizada por `Não verificado`. No mobile, o mesmo estado é condensado na linha auxiliar da identidade, preservando espaço para valor e situação. A origem continua sendo a configuração autenticada da conta, vinculada pelo ID e filtrada por elegibilidade. A alteração estará visível somente quando a versão da PR #723 for executada (não está em `develop` até o merge autorizado).
 
+### Evidência operacional de CDI e isolamento (#716)
+
+O gate Chrome `accounts-cards-interface.mjs` conserva cenários simulados para cancelamento, erro e retry, mas agora executa também uma alternância **real** de CDI em conta de teste ativa BRL, usando sessão autenticada e a API existente: ativação por switch, novo GET autenticado, reload SSR com coluna CDI, desativação e nova conferência de persistência. O teste registra o resultado por SHA e tenta excluir a conta auxiliar depois de deixar a configuração desativada. Isso verifica a ligação browser → API → banco, não apenas o conteúdo do request simulado.
+
+A suíte de integração da API exercita sem token (GET/PUT = 401), seleção de perfil não autorizado (403), conta fora do escopo (404), ausência de mutação após tentativas negadas, bloqueio de moeda/arquivo com CDI ativo e persistência de parâmetros ao desativar/reativar. A verificação visual/mockada não substitui as provas de autorização da API. São exigidas evidências de execução e CI no SHA material antes de declarar a matriz aprovada.
+
 ### Controles contextuais do detalhe (#716)
 
 A seção de ações de conta e cartão segue o padrão Golden Screen: **Editar, Arquivar, Excluir e Adicionar instrumento** (quando aplicável) usam **somente ícones compartilhados**, com `title` como tooltip nativo e `aria-label` textual, além de foco visível e alvo de toque de no mínimo 40 px. Arquivamento e exclusão continuam utilizando a confirmação compartilhada; não há alteração de permissões nem de API. Os formulários de cadastro/edição mantêm seus botões textuais de Cancelar/Salvar.
