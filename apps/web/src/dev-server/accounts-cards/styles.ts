@@ -22,8 +22,10 @@ export function accountsCardsPageStyles(): string {
     .resource-master-item.is-selected { background: var(--primary-soft); border-color: #c8dde5; }
     .resource-master-link { align-items: start; color: inherit; display: grid; gap: 10px; grid-template-columns: 40px minmax(0,1fr); min-height: 64px; padding: 10px; text-decoration: none; }
     .resource-master-link:hover, .resource-master-link:focus-visible { background: var(--surface-soft); border-radius: inherit; outline: 2px solid transparent; }
-    .resource-master-icon { align-items: center; background: var(--surface-soft); border-radius: 8px; display: flex; height: 40px; justify-content: center; overflow: hidden; width: 40px; }
-    .resource-master-icon .brand-icon { height: 40px; width: 40px; }
+    /* Golden Statement parity: 44px imagery with 11px corners, preserving the shared bank logo catalog. */
+    .resource-master-icon, .resource-detail-identity { align-items: center; background: transparent; border: 0; border-radius: 11px; display: inline-flex; flex: 0 0 44px; height: 44px; justify-content: center; overflow: hidden; width: 44px; }
+    .resource-master-icon .brand-icon-wrap, .resource-detail-identity .brand-icon-wrap { align-items: center; display: inline-flex; height: 100%; justify-content: center; min-width: 0; width: 100%; }
+    .resource-master-icon :is(img, svg), .resource-detail-identity :is(img, svg) { display: block; height: 100%; max-height: 100%; max-width: 100%; object-fit: contain; width: 100%; }
     .resource-master-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
     .resource-master-title { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
     .resource-master-currency { color: var(--text) !important; font-weight: 700; }
@@ -32,8 +34,6 @@ export function accountsCardsPageStyles(): string {
     .resource-detail-heading > div:nth-child(2) { display: grid; gap: 3px; min-width: 0; }
     .resource-detail-heading h2, .resource-subheading h3 { margin: 0; overflow-wrap: anywhere; }
     .resource-detail-heading p { color: var(--muted); font-size: .86rem; overflow-wrap: anywhere; }
-    .resource-detail-identity { align-items: center; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 10px; display: flex; height: 48px; justify-content: center; overflow: hidden; width: 48px; }
-    .resource-detail-identity .brand-icon { height: 48px; width: 48px; }
     .resource-kicker { color: var(--primary); font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
     .resource-detail-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0,1fr)); }
     .resource-detail-field { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; min-height: 72px; padding: 10px; }
@@ -284,9 +284,7 @@ export function accountsCardsPageStyles(): string {
     .resource-master-link:hover { background: var(--surface-soft); border-radius: 0; }
     .resource-master-item.is-selected .resource-master-link:hover { background: transparent; }
     .resource-master-link:focus-visible { border-radius: 0; outline: 2px solid var(--primary); outline-offset: -2px; }
-    .resource-master-identity { align-items: center; display: grid; gap: 10px; grid-template-columns: 42px minmax(0, 1fr); min-width: 0; }
-    .resource-master-icon { background: var(--surface-soft); border-radius: 8px; height: 42px; width: 42px; }
-    .resource-master-icon .brand-icon { height: 42px; width: 42px; }
+    .resource-master-identity { align-items: center; display: grid; gap: 10px; grid-template-columns: 44px minmax(0, 1fr); min-width: 0; }
     .resource-master-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
     .resource-master-title strong { color: var(--text); font-size: .93rem; line-height: 1.3; overflow-wrap: anywhere; }
     .resource-master-institution, .resource-master-context { color: var(--muted); font-size: .75rem; line-height: 1.3; }
@@ -300,13 +298,11 @@ export function accountsCardsPageStyles(): string {
     .resource-master-amount small { color: var(--muted); font-size: .71rem; }
     .resource-master-state { justify-self: end; }
     .resource-detail-panel { gap: 14px; padding: 17px; }
-    .resource-detail-heading { align-items: start; gap: 9px; grid-template-columns: 40px minmax(0, 1fr); }
+    .resource-detail-heading { align-items: start; gap: 9px; grid-template-columns: 44px minmax(0, 1fr); }
     .resource-detail-heading > div:nth-child(2) { gap: 2px; }
     .resource-detail-heading h2 { font-size: 1.06rem; line-height: 1.35; }
     .resource-detail-heading p { font-size: .76rem; margin: 0; }
     .resource-detail-heading .sf-badge { grid-column: 2; justify-self: start; }
-    .resource-detail-identity { height: 40px; width: 40px; }
-    .resource-detail-identity .brand-icon { height: 40px; width: 40px; }
     .resource-detail-grid { gap: 6px 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .resource-detail-field { background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; min-height: 52px; padding: 9px 0 3px; }
     .resource-detail-field.is-unavailable { background: transparent; }
@@ -347,11 +343,11 @@ export function accountsCardsPageStyles(): string {
       .resource-master-link { column-gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(96px, auto); min-height: 76px; row-gap: 6px; }
       .resource-master-identity { grid-column: 1; grid-row: 1; }
       .resource-master-amount { grid-column: 2; grid-row: 1; }
-      .resource-master-currency { grid-column: 1; grid-row: 2; margin-left: 52px; }
+      .resource-master-currency { grid-column: 1; grid-row: 2; margin-left: 54px; }
       .resource-master-state { grid-column: 2; grid-row: 2; }
       .resource-master-cdi-column { display: none; }
       .resource-master-cdi-compact { display: inline; }
-      .resource-detail-heading { grid-template-columns: 40px minmax(0, 1fr); }
+      .resource-detail-heading { grid-template-columns: 44px minmax(0, 1fr); }
       .resource-detail-identity { display: flex; }
       .resource-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .resource-detail-actions { align-items: center; display: flex; }
