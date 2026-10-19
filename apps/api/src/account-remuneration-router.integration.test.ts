@@ -111,11 +111,7 @@ async function main(): Promise<void> {
   );
   assert.equal(foreignAccountWrite.statusCode, 404, "unowned accounts cannot be configured");
 
-  const postDeniedRead = await apiRequest(
-    token,
-    "GET",
-    "/api/account-remuneration/configurations",
-  );
+  const postDeniedRead = await apiRequest(token, "GET", "/api/account-remuneration/configurations");
   assert.equal(postDeniedRead.statusCode, 200);
   const persistedAfterDenied = readBody<{
     configurations: Array<{ accountId: string; enabled: boolean }>;
