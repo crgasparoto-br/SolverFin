@@ -78,6 +78,8 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.listAmountsVisible, true, "Master amounts are missing.");
   assert.equal(baseline.masterTypeColumn, true, "Account subtype icon column is absent.");
   assert.equal(baseline.masterTypeFirst, true, "Type icon must be the first visible column.");
+  assert.equal(baseline.masterInstitutionSecond, true, "Institution must be between type and account/card.");
+  assert.equal(baseline.amountKindInline, true, "Balance/limit icon must be inline with the amount.");
   assert.equal(baseline.masterTypeTooltips, true, "Account/card type icons need accessible tooltips.");
   assert.equal(baseline.compactRowMinHeight, true, "Master rows must use compact Golden Screen density.");
   assert.equal(baseline.headerActionsHaveIcons, true, "Add-account and add-card buttons need icons.");
@@ -727,17 +729,41 @@ async function inspectPage(cdp) {
         listAmountsVisible: masterItems.every((item) => Boolean(item.querySelector('.resource-master-amount strong'))),
         masterTypeColumn: Array.from(document.querySelectorAll('.resource-master-columns > span'))
           .map((column) => column.textContent.trim()).join('|') ===
-          'Tipo|Conta ou cartão|Moeda|Saldo inicial / Limite|CDI|Situação',
+          'Tipo|Instituição|Conta ou cartão|Moeda|Valor|CDI|Situação',
         masterTypeFirst: masterItems.every((item) => {
           const link = item.querySelector('.resource-master-link');
           const type = link?.querySelector('.resource-master-type');
           const identity = link?.querySelector('.resource-master-identity');
           if (!link || !type || !identity || link.firstElementChild !== type) return false;
-          if (innerWidth <= 760) {
+          if (innerWidth <= 1099) {
             return type.getBoundingClientRect().left < identity.getBoundingClientRect().left;
           }
-          return getComputedStyle(link).gridTemplateColumns.split(' ').length === 6 &&
+          return getComputedStyle(link).gridTemplateColumns.split(' ').length === 7 &&
             type.getBoundingClientRect().left < identity.getBoundingClientRect().left;
+        }),
+        masterInstitutionSecond: masterItems.every((item) => {
+          const row = item.querySelector('.resource-master-link');
+          const type = row?.querySelector('.resource-master-type');
+          const institution = row?.querySelector('.resource-master-institution');
+          const identity = row?.querySelector('.resource-master-identity');
+          return type && institution && identity &&
+            row.children[0] === type && row.children[1] === institution && row.children[2] === identity &&
+            type.getBoundingClientRect().left < institution.getBoundingClientRect().left &&
+            (innerWidth <= 1099 || institution.getBoundingClientRect().left < identity.getBoundingClientRect().left);
+        }),
+        amountKindInline: masterItems.every((item) => {
+          const amount = item.querySelector('.resource-master-amount');
+          const numeric = amount?.querySelector('strong');
+          const kind = amount?.querySelector('.resource-master-amount-kind');
+          const expectedLabel = item.getAttribute('data-kind') === 'account' ? 'Saldo inicial' : 'Limite total';
+          if (!numeric || !kind) return false;
+          const a = numeric.getBoundingClientRect();
+          const b = kind.getBoundingClientRect();
+          return kind.getAttribute('aria-label') === expectedLabel &&
+            kind.getAttribute('title') === expectedLabel &&
+            Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)) <= 3 &&
+            b.left >= a.right - 1 &&
+            !amount.querySelector('small');
         }),
         masterTypeTooltips: masterItems.every((item) => {
           const badge = item.querySelector('.resource-master-type');
@@ -749,7 +775,7 @@ async function inspectPage(cdp) {
         }),
         compactRowMinHeight: masterItems.every((item) => {
           const link = item.querySelector('.resource-master-link');
-          const expected = innerWidth <= 760 ? 66 : 56;
+          const expected = innerWidth <= 1099 ? 76 : 54;
           return link && Math.abs(parseFloat(getComputedStyle(link).minHeight) - expected) <= 1;
         }),
         headerActionsHaveIcons: ['new-account-dialog', 'new-card-dialog'].every((id) =>
@@ -759,7 +785,7 @@ async function inspectPage(cdp) {
         cdiStateConsistent: masterItems.every((item) => {
           const active = item.getAttribute('data-cdi-active') === 'true';
           const label = item.querySelector('.resource-master-cdi-column')?.textContent?.trim() || '';
-          const compact = item.querySelector('.resource-master-cdi-compact')?.textContent?.trim() || '';
+          const compact = item.querySelector('.resource-master-cdi-compact')?.getAttribute('aria-label') || '';
           const state = item.getAttribute('data-cdi-state');
           if (item.getAttribute('data-kind') === 'card') {
             return state === 'not-applicable' && !active && label === '—' && compact === '';
