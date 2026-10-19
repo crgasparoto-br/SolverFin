@@ -780,6 +780,11 @@ export function statementGoldenRefinementStyles(): string {
       ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:2/-1}
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
     }
+    @media(min-width:1101px) and (max-width:1599px){
+      /* Two intermediate-desktop filter rows must meet the 150px density budget
+         without clipping native controls or removing the action row. */
+      ${root}[data-statement-options] .filter-form{row-gap:0}
+    }
     @media(min-width:1340px) and (max-width:1599px){
       /* Keep the short day, search and four selectors on one row at 1366px.
          Only the actions use a second row, preventing collision and excessive height. */
