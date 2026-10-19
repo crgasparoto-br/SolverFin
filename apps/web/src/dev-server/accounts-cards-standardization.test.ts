@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import { accountsCardsPageStyles } from "./accounts-cards/styles.js";
 import { standardizeAccountsCardsPage } from "./accounts-cards-standardization.js";
 
 const fixture = `<!doctype html><html><head></head><body>
@@ -58,4 +59,14 @@ test("gate visual comprova o A3 direto sem tabs ou menus pós-processados", () =
   assert.match(visualGateSource, /Moeda indisponível|currencyContext/);
   assert.doesNotMatch(visualGateSource, /expectedTab/);
   assert.doesNotMatch(visualGateSource, /row-action-menu/);
+});
+
+test("logos de contas e cartoes adotam a moldura da Golden Screen sem criar outro catalogo", () => {
+  const css = accountsCardsPageStyles();
+  assert.match(css, /\.resource-master-icon, \.resource-detail-identity \{[^}]*border-radius: 11px/s);
+  assert.match(css, /\.resource-master-icon, \.resource-detail-identity \{[^}]*height: 44px/s);
+  assert.match(css, /\.resource-master-icon, \.resource-detail-identity \{[^}]*width: 44px/s);
+  assert.match(css, /\.resource-master-icon :is\(img, svg\)[^{]*\{[^}]*object-fit: contain/s);
+  assert.match(css, /grid-template-columns: 44px minmax\(0, 1fr\)/);
+  assert.doesNotMatch(css, /\.resource-master-icon \{[^}]*height: 42px/s);
 });
