@@ -102,7 +102,7 @@ export function renderResourceMaster(resources: readonly ResourceMasterViewModel
         <label>Status<select data-master-status><option value="all">Todos</option><option value="active">Ativos</option><option value="inactive">Inativos</option></select></label>
       </div>
       <div class="resource-master-columns" aria-hidden="true">
-        <span>Conta ou cartão</span><span>Moeda</span><span>Saldo inicial / Limite</span><span>CDI</span><span>Situação</span>
+        <span>Conta ou cartão</span><span>Tipo</span><span>Moeda</span><span>Saldo inicial / Limite</span><span>CDI</span><span>Situação</span>
       </div>
       <div class="resource-master-list" data-master-list>${list}</div>
       <div data-filter-empty hidden>${renderEmptyState({ title: "Nenhum recurso encontrado", description: "Ajuste a busca ou os filtros de tipo, moeda e status." })}</div>
@@ -121,6 +121,26 @@ function renderCurrencyFilterOptions(resources: readonly ResourceMasterViewModel
     ),
     ...(hasUnavailableCurrency ? ['<option value="unavailable">Moeda indisponível</option>'] : []),
   ].join("");
+}
+
+function renderResourceTypeIcon(resource: ResourceMasterViewModel): string {
+  // The account subtype is kept in the view model, not inferred from translated text.
+  const iconName =
+    resource.kind === "card"
+      ? "credit-card"
+      : resource.accountKind === "checking"
+        ? "building-2"
+        : resource.accountKind === "savings"
+          ? "wallet"
+          : resource.accountKind === "cash"
+            ? "dollar-sign"
+            : resource.accountKind === "investment"
+              ? "trending-up"
+              : "layers";
+  const label =
+    resource.kind === "account" ? resource.secondaryLabel : `Cartão · ${resource.secondaryLabel}`;
+  const description = escapeHtml(label);
+  return `<span class="resource-master-type" role="img" aria-label="${description}" title="${description}">${icon(iconName, 18)}</span>`;
 }
 
 function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
@@ -143,10 +163,10 @@ function renderResourceMasterItem(resource: ResourceMasterViewModel): string {
           <span class="resource-master-icon" aria-hidden="true">${renderInstitutionIcon(resource.institutionKey)}</span>
           <span class="resource-master-copy">
             <span class="resource-master-title"><strong>${escapeHtml(resource.name)}</strong></span>
-            <span class="resource-master-institution">${escapeHtml(resource.institutionLabel)} · ${escapeHtml(resource.kind === "account" ? "Conta" : "Cartão")}</span>
-            <span class="resource-master-context">${escapeHtml(resource.secondaryLabel)}${resource.kind === "account" ? ` <span class="resource-master-cdi-compact${resource.cdiActive ? " is-active" : ""}">· ${escapeHtml(cdiLabel)}</span>` : ""}</span>
+            <span class="resource-master-institution" title="${escapeHtml(resource.institutionLabel)}">${escapeHtml(resource.institutionLabel)}${resource.kind === "account" ? ` <span class="resource-master-cdi-compact${resource.cdiActive ? " is-active" : ""}">· ${escapeHtml(cdiLabel)}</span>` : ""}</span>
           </span>
         </span>
+        ${renderResourceTypeIcon(resource)}
         <span class="resource-master-currency" aria-label="Moeda ${escapeHtml(currencyLabel)}">${escapeHtml(resource.currency ?? "Indisponível")}</span>
         <span class="resource-master-amount" data-amount-label="${escapeHtml(resource.amountLabel)}">
           <strong>${escapeHtml(money)}</strong>
