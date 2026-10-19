@@ -34,6 +34,8 @@ export interface AccountCdiConfiguration {
 export interface ResourceMasterViewModel {
   key: ResourceKey;
   kind: ResourceKind;
+  /** Raw account subtype; only applies to kind=account. */
+  accountKind?: string;
   id: string;
   name: string;
   status: string;
@@ -165,6 +167,7 @@ function buildAccountResource(
   return {
     key,
     kind: "account",
+    accountKind: account.kind,
     id: account.id,
     name: account.name,
     status: account.status,
