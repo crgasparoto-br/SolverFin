@@ -271,7 +271,7 @@ export function accountsCardsPageStyles(): string {
       align-items: center;
       column-gap: 12px;
       display: grid;
-      grid-template-columns: 36px minmax(115px, 1.5fr) minmax(120px, 1fr) minmax(50px, .35fr) minmax(125px, .85fr) minmax(75px, .48fr) minmax(72px, .45fr);
+      grid-template-columns: 36px minmax(125px, 1fr) minmax(115px, 1.5fr) minmax(50px, .35fr) minmax(125px, .85fr) minmax(75px, .48fr) minmax(72px, .45fr);
     }
     .resource-master-columns { border-bottom: 1px solid var(--line); color: var(--muted); font-size: .71rem; font-weight: 750; padding: 11px 10px; }
     .resource-master-columns > span:nth-child(5), .resource-master-columns > span:nth-child(7) { text-align: right; }
@@ -337,12 +337,31 @@ export function accountsCardsPageStyles(): string {
     .resource-form-actions .sf-button-primary:hover:not(:disabled), .resource-form-actions .sf-button-primary:focus-visible { background: var(--sf-color-primary-hover); border-color: var(--sf-color-primary-hover); color: var(--sf-color-on-primary); }
     .resource-form-actions .sf-button-secondary { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); color: var(--sf-color-primary); }
     .resource-form-actions .sf-button-secondary:hover:not(:disabled), .resource-form-actions .sf-button-secondary:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
-    @media (max-width: 1099px) {
+    @media (max-width: 1220px) {
       .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: minmax(0, 1fr); }
       .resource-detail-panel { max-width: none; }
       .resource-master-filters { grid-template-columns: minmax(0, 2fr) repeat(3, minmax(96px, 1fr)); }
-      /* Seven data columns are single-line on desktop; compact two-row fallback
-         avoids clipping currency and balances on narrow master layouts. */
+    }
+    @media (max-width: 1099px) {
+      /* On narrow screens retain the semantic DOM order: type, institution, name. */
+      .resource-master-columns { display: none; }
+      .resource-master-link { column-gap: 8px; grid-template-columns: 30px minmax(0, 1fr) minmax(96px, auto); min-height: 76px; row-gap: 4px; }
+      .resource-master-type { grid-column: 1; grid-row: 1; justify-self: start; }
+      .resource-master-institution { grid-column: 2; grid-row: 1; }
+      .resource-master-institution .resource-master-icon { flex: 0 0 44px; height: 44px; width: 44px; }
+      .resource-master-cdi-compact { display: inline-flex; }
+      .resource-master-identity { grid-column: 2; grid-row: 2; }
+      .resource-master-amount { grid-column: 3; grid-row: 1; }
+      .resource-master-currency { align-self: center; grid-column: 1; grid-row: 2; text-align: center; }
+      .resource-master-state { grid-column: 3; grid-row: 2; }
+      .resource-master-cdi-column { display: none; }
+    }
+    @media (max-width: 760px) {
+      .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      .resource-master-panel, .resource-detail-panel { padding: 14px; }
+      .resource-master-summary > div { align-items: start; flex-wrap: wrap; }
+      .resource-master-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .resource-master-filters > label:first-child, .resource-master-filters > label:last-child { grid-column: 1 / -1; }
       .resource-detail-heading { grid-template-columns: 44px minmax(0, 1fr); }
       .resource-detail-identity { display: flex; }
       .resource-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -356,7 +375,6 @@ export function accountsCardsPageStyles(): string {
       .resource-master-link { column-gap: 6px; grid-template-columns: 30px minmax(0, 1fr) minmax(82px, auto); }
       .resource-master-institution-label { font-size: .71rem; }
       .resource-master-amount strong { font-size: .8rem; }
-      .resource-master-amount strong { font-size: .84rem; }
       .resource-form-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .resource-form-actions button { padding-inline: 6px; width: 100%; }
     }
