@@ -236,6 +236,8 @@ async function validateViewport(cdp, viewport) {
   if (viewport.width === 1366) {
     const cdiSettings = await validateCdiSettings(cdp);
     scenarios.push({ kind: "cdi-settings", viewport: "1366x768", measurements: cdiSettings });
+    const cdiPersistence = await validateCdiRealPersistence(cdp);
+    scenarios.push({ kind: "cdi-real-api", viewport: "1366x768", measurements: cdiPersistence });
     const cdi = await validateCdiSwitch(cdp);
     scenarios.push({ kind: "cdi-toggle", viewport: "1366x768", measurements: cdi });
   }
@@ -430,6 +432,89 @@ async function validateCdiSettings(cdp) {
   assert.equal(success[1].startsOn, "2026-10-14");
   await sleep(450);
   return { failed, success, accessibleLabel: setup.label };
+}
+
+/**
+ * Exercises the real API, session scope and database via the browser. The existing
+ * mocked scenarios remain responsible for deterministic cancel/error/retry cases.
+ */
+async function validateCdiRealPersistence(cdp) {
+  const created = await evaluate(
+    cdp,
+    `(async () => {
+      const result = await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: "QA CDI real " + Date.now().toString(36),
+          kind: "checking",
+          currency: "BRL",
+          openingBalanceMinor: 0,
+        }),
+      });
+      return { status: result.status, body: await result.json() };
+    })()`,
+  );
+  assert.equal(created.status, 201, "A real CDI test account must be created.");
+  const accountId = created.body.account?.id;
+  assert.ok(accountId, "The real account API did not return an id.");
+  const href = `/contas-cartoes?resource=${encodeURIComponent(`account:${accountId}`)}`;
+  const persisted = { accountId, activated: false, deactivated: false, cleanupStatus: null };
+  try {
+    await navigate(cdp, `${baseUrl}${href}`);
+    await waitForDetail(cdp, "account");
+    const initial = await evaluate(cdp, `document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked')`);
+    assert.equal(initial, "false", "A newly created account must not start with CDI active.");
+
+    async function toggleAndVerify(enabled) {
+      await evaluate(cdp, `document.querySelector('[data-cdi-toggle]')?.click()`);
+      await waitFor(
+        cdp,
+        `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
+        "Real CDI confirmation did not open.",
+      );
+      await evaluate(cdp, `document.querySelector('[data-confirm-accept]')?.click()`);
+      await waitFor(
+        cdp,
+        `document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked') === ${JSON.stringify(String(enabled))}`,
+        "The CDI switch did not reflect the successful real API update.",
+      );
+      await navigate(cdp, `${baseUrl}${href}`);
+      await waitForDetail(cdp, "account");
+      const current = await evaluate(
+        cdp,
+        `(async () => {
+          const response = await fetch("/api/account-remuneration/configurations");
+          const body = await response.json();
+          return {
+            status: response.status,
+            entry: body.configurations?.find((entry) => entry.accountId === ${JSON.stringify(accountId)}),
+            switchState: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
+            masterState: document.querySelector('[data-resource-master-item][data-kind="account"].is-selected')?.getAttribute('data-cdi-state'),
+          };
+        })()`,
+      );
+      assert.equal(current.status, 200, "The authenticated API must permit reading CDI.");
+      assert.equal(current.entry?.enabled, enabled, "CDI must persist across a new HTTP GET and page load.");
+      assert.equal(current.switchState, String(enabled), "The server-rendered switch must match the persisted CDI state.");
+      assert.equal(current.masterState, enabled ? "active" : "inactive", "The master list must use persisted CDI state.");
+    }
+    await toggleAndVerify(true);
+    persisted.activated = true;
+    await toggleAndVerify(false);
+    persisted.deactivated = true;
+  } finally {
+    // Isolated CI fixture; do not leave an active remuneration on a test account.
+    const cleanup = await evaluate(
+      cdp,
+      `(async () => {
+        const response = await fetch("/api/accounts/" + encodeURIComponent(${JSON.stringify(accountId)}), { method: "DELETE" });
+        return { status: response.status };
+      })()`,
+    ).catch(() => null);
+    persisted.cleanupStatus = cleanup?.status ?? null;
+  }
+  return persisted;
 }
 
 async function validateCdiSwitch(cdp) {
