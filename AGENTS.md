@@ -18,7 +18,7 @@ Antes de implementar, leia:
 - `docs/EVOLUTION_STRATEGY.md`, quando a issue tocar core financeiro, multi-moedas, arquitetura web, dashboard, extrato, cartoes, relatorios, orcamentos ou projecoes;
 - `docs/ARCHITECTURE.md`;
 - `docs/BRAND.md`, quando houver interface ou texto visivel;
-- `docs/DESIGN_SYSTEM.md`, quando houver interface;
+- `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md` e `docs/UI_PRIMITIVES.md`, obrigatoriamente em qualquer mudança de interface, mesmo fora do Extrato;
 - `docs/adr/README.md` e ADRs relacionados;
 - `.github/copilot-instructions.md`, quando trabalhar no GitHub/Copilot.
 
@@ -44,6 +44,7 @@ Se houver conflito entre issue, documentacao e codigo, explicite o conflito na P
 16. Para novas interfaces, prefira componentes/primitivas estruturadas e view-models. Nao adicione transformacao por regex/string sobre HTML final como mecanismo normal de composicao.
 17. Pos-processadores HTML existentes sao legado de transicao: preserve cobertura enquanto existirem e remova-os gradualmente quando a rota correspondente migrar.
 18. Preserve SSR, acessibilidade, responsividade e evidencia visual durante a migracao da arquitetura de interface. Nao faca big-bang do frontend sem ADR propria.
+19. **Golden Screen é padrão transversal obrigatório de acabamento para TODAS as telas, inclusive administração, filtros e modais.** Aplique os tokens e componentes executáveis de `apps/web/src/design-system/` conforme `docs/DESIGN_SYSTEM.md`; use o Extrato aprovado como referência visual de qualidade, sem copiar sua composição quando a tarefa principal for diferente. Compare repouso, hover, active, focus-visible, disabled, contraste, responsividade e evidências Chrome do SHA. Uma alteração visual sem essa verificação não está pronta.
 
 ## Padrao de trabalho
 

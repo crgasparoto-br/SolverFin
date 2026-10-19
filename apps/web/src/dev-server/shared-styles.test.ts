@@ -190,7 +190,19 @@ describe("shared shell styles", () => {
       "utf8",
     );
 
-    assert.match(accountsCardsSource, /class="icon-button danger-icon-button"/);
+    assert.match(
+      accountsCardsSource,
+      /class="sf-button sf-button-secondary sf-icon-button sf-focus-ring resource-action-button danger-icon-button"/,
+    );
+    const detailCssSource = readFileSync(join(currentDir, "accounts-cards", "styles.js"), "utf8");
+    assert.match(
+      detailCssSource,
+      /\.resource-detail-panel button\.danger-icon-button:hover:not\(:disabled\)/,
+    );
+    assert.match(
+      detailCssSource,
+      /\.resource-detail-panel button\.danger-icon-button:focus-visible/,
+    );
     assert.match(css, /:not\(\.danger-icon-button\):hover:not\(:disabled\)/);
     assert.match(css, /:not\(\.danger-icon-button\):focus-visible/);
     assert.match(

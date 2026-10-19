@@ -10,6 +10,10 @@ Este documento complementa `docs/DESIGN_SYSTEM.md` com o contrato executavel int
 
 As receitas de `components.ts` continuam como referencia conceitual durante a transicao. Novas composicoes devem preferir as primitivas executaveis quando a responsabilidade correspondente ja existir aqui.
 
+## Aplicação obrigatória do padrão Golden Screen
+
+Este catálogo é a implementação reutilizável do contrato visual transversal de `docs/DESIGN_SYSTEM.md`. Usá-lo em **todas as rotas e modais**, não apenas no Extrato. `renderButton` aplica `sf-button-primary` à ação principal; `sf-button-secondary` e `sf-button-ghost` às ações contextuais e cancelamento. O estado neutro operacional no shell atual usa `data-button-variant="neutral"`, com tokens `--sf-color-neutral-control-*`. Evite classes locais que redefinam cores/hover/foco, inclusive em modais. Layout mestre/detalhe é decidido pela tarefa dominante da rota (ex.: lista principal em `/contas-cartoes`).
+
 ## UI disponivel
 
 - `renderButton`: acao textual com variantes `primary`, `secondary`, `ghost` e `danger`, alem de `disabled` e `busy`.

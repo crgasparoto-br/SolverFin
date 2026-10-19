@@ -121,12 +121,29 @@ export function enhanceTransactionGroupPendingFixes(html: string): string {
           }
 
           if (deltaMinor !== 0) {
-            let affectedRow = row;
-            while (affectedRow) {
-              if (affectedRow.matches(".statement-row.statement-body")) {
+            const statement = row.closest(".statement-table");
+            const orderedRows = Array.from(
+              (statement || row.parentElement).querySelectorAll(".statement-row.statement-body"),
+            );
+            const groupOrder = row.dataset.balanceOrder;
+            if (groupOrder !== undefined && groupOrder !== "") {
+              const start = Number(groupOrder);
+              // Compare canonical running-balance order, not display order or DOM
+              // sibling relationships: day disclosures and non-date sorts reorder rows.
+              for (const affectedRow of orderedRows) {
+                const rawOrder = affectedRow.dataset.balanceOrder;
+                const order = rawOrder === undefined || rawOrder === "" ? NaN : Number(rawOrder);
+                if (Number.isSafeInteger(order) && order >= start) {
+                  updateBalance(affectedRow, deltaMinor, group.currency);
+                }
+              }
+            } else {
+              // Legacy statement pages without canonical metadata retain their
+              // historical DOM order, including rows nested inside date groups.
+              const start = orderedRows.indexOf(row);
+              for (const affectedRow of orderedRows.slice(start)) {
                 updateBalance(affectedRow, deltaMinor, group.currency);
               }
-              affectedRow = affectedRow.nextElementSibling;
             }
           }
         }

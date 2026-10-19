@@ -72,6 +72,52 @@ async function main(): Promise<void> {
     ),
   );
 
+  // #716: validate the real authenticated API boundary, not only a browser fetch mock.
+  const noTokenRead = await handleAccountRemunerationApiRequest({
+    method: "GET",
+    pathname: "/api/account-remuneration/configurations",
+    query: new URLSearchParams(),
+    headers: {},
+    body: undefined,
+  });
+  assert.equal(noTokenRead?.statusCode, 401, "unauthenticated users cannot list CDI settings");
+
+  const noTokenWrite = await handleAccountRemunerationApiRequest({
+    method: "PUT",
+    pathname: `/api/account-remuneration/configurations/${account.id}`,
+    query: new URLSearchParams(),
+    headers: {},
+    body: { enabled: false },
+  });
+  assert.equal(noTokenWrite?.statusCode, 401, "unauthenticated users cannot toggle CDI");
+
+  const foreignProfileRead = await apiRequest(
+    token,
+    "GET",
+    "/api/account-remuneration/configurations?profileId=33333333-3333-4333-8333-999999999999",
+  );
+  assert.equal(
+    foreignProfileRead.statusCode,
+    403,
+    "a profile outside the user's scope must be rejected",
+  );
+  assert.equal(readError(foreignProfileRead).code, "TENANT_ACCESS_DENIED");
+
+  const foreignAccountWrite = await apiRequest(
+    token,
+    "PUT",
+    "/api/account-remuneration/configurations/33333333-3333-4333-8333-999999999999",
+    { enabled: true, remunerationPercent: 100, startsOn: COMPETENCE_ON },
+  );
+  assert.equal(foreignAccountWrite.statusCode, 404, "unowned accounts cannot be configured");
+
+  const postDeniedRead = await apiRequest(token, "GET", "/api/account-remuneration/configurations");
+  assert.equal(postDeniedRead.statusCode, 200);
+  const persistedAfterDenied = readBody<{
+    configurations: Array<{ accountId: string; enabled: boolean }>;
+  }>(postDeniedRead).configurations.find((item) => item.accountId === account.id);
+  assert.equal(persistedAfterDenied?.enabled, true, "rejected operations must not mutate CDI");
+
   await importCdiRates(
     { startsOn: COMPETENCE_ON, endsOn: COMPETENCE_ON },
     async () =>
