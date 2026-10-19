@@ -17,6 +17,8 @@ let desktopModal;
 let mobile;
 let mobileModal;
 let compactMobile;
+let mutationFailures;
+let sidebarParity;
 let browserVersion = "unknown";
 const completedScreenshots = [];
 
@@ -25,6 +27,8 @@ await runViewportSession("desktop", 1440, 1000, async (cdp) => {
   completedScreenshots.push("categories-desktop.png");
   desktopModal = await validateDesktopModal(cdp);
   completedScreenshots.push("categories-modal-desktop.png");
+  mutationFailures = await validateCategoryMutationFailures(cdp);
+  sidebarParity = await validateSidebarThemeParity(cdp);
 });
 
 await runViewportSession("mobile", 390, 844, async (cdp) => {
@@ -49,6 +53,8 @@ const report = {
   mobile,
   mobileModal,
   compactMobile,
+  mutationFailures,
+  sidebarParity,
   screenshots: completedScreenshots,
 };
 
@@ -319,6 +325,147 @@ async function validateDesktopModal(cdp) {
 
   await closeModal(cdp);
   return { viewport: "1440x1000", measurements, screenshot: "categories-modal-desktop.png" };
+}
+
+async function validateCategoryMutationFailures(cdp) {
+  // No persistent data is changed: intercept exactly at the browser's request boundary.
+  const result = await evaluate(cdp, `(async () => {
+    const originalFetch = window.fetch;
+    const originalConfirm = window.confirm;
+    const requests = [];
+    const delay = () => new Promise((resolve) => setTimeout(resolve, 50));
+    const form = document.querySelector('[data-category-form]');
+    const close = () => document.querySelector('.category-dialog [data-close-category-modal]')?.click();
+    const record = (button, status) => ({
+      retryEnabled: Boolean(button && !button.disabled),
+      errorVisible: status?.classList.contains('error') && status.textContent.includes('Falha de conexão'),
+    });
+    window.fetch = async (url, options = {}) => {
+      if (String(url).startsWith('/api/categories')) {
+        requests.push({ path: String(url), method: options.method || 'GET', body: options.body || '' });
+      }
+      throw new TypeError('simulated browser connection interruption');
+    };
+    window.confirm = () => true;
+    try {
+      const createChildButton = document.querySelector('[data-category-menu-action="create-child"]');
+      if (!createChildButton || !form) return { missingFixture: true };
+      const parentId = createChildButton.dataset.categoryId;
+      createChildButton.closest('.category-action-menu').querySelector('[data-category-menu-button]').click();
+      createChildButton.click();
+      const createContext = {
+        parentId,
+        selectedParent: form.elements.parentCategoryId.value,
+        kind: form.elements.kind.value,
+        expectedKind: createChildButton.dataset.categoryKindValue,
+      };
+      form.elements.name.value = 'Teste de interrupção de criação';
+      form.requestSubmit();
+      await delay();
+      const create = record(form.querySelector('[type="submit"]'), form.querySelector('[data-form-status]'));
+      close();
+
+      const row = createChildButton.closest('[data-category-item]');
+      row.querySelector('[data-edit-category]').click();
+      form.elements.name.value = 'Teste de interrupção de edição';
+      form.requestSubmit();
+      await delay();
+      const edit = record(form.querySelector('[type="submit"]'), form.querySelector('[data-form-status]'));
+      const modalStatusButton = document.querySelector('[data-category-status-action]');
+      modalStatusButton.click();
+      await delay();
+      const modalStatus = record(modalStatusButton, form.querySelector('[data-form-status]'));
+      close();
+
+      const menuButton = row.querySelector('[data-category-menu-button]');
+      document.body.click();
+      menuButton.click();
+      const menu = row.querySelector('[data-category-menu]');
+      menu.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+      const keyboardEnd = document.activeElement === menu.querySelector('[role="menuitem"]:last-child');
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      const keyboardEscape = menu.hidden && document.activeElement === menuButton;
+      menuButton.click();
+
+      const archiveButton = row.querySelector('[data-category-menu-action="request"][data-api-method="POST"]');
+      archiveButton.click();
+      await delay();
+      const archive = record(archiveButton, row.querySelector('[data-form-status]'));
+      const deleteButton = row.querySelector('[data-category-menu-action="request"][data-api-method="DELETE"]');
+      deleteButton.click();
+      await delay();
+      const remove = record(deleteButton, row.querySelector('[data-form-status]'));
+
+      return { missingFixture: false, createContext, create, edit, modalStatus, archive, remove, keyboardEnd, keyboardEscape, requests };
+    } finally {
+      window.fetch = originalFetch;
+      window.confirm = originalConfirm;
+      close();
+    }
+  })()`);
+  check(!result.missingFixture, "Category interaction fixture is missing", result);
+  if (result.missingFixture) return result;
+  check(
+    result.createContext.selectedParent === result.createContext.parentId &&
+      result.createContext.kind === result.createContext.expectedKind,
+    "Creating a child category loses its parent or kind context",
+    result,
+  );
+  for (const action of ["create", "edit", "modalStatus", "archive", "remove"]) {
+    check(
+      result[action].retryEnabled && result[action].errorVisible,
+      "Category " + action + " must show a recoverable network error and enable retry",
+      result,
+    );
+  }
+  check(result.keyboardEnd && result.keyboardEscape, "Category item menu keyboard focus regression", result);
+  const categoryRequests = result.requests.filter((entry) => entry.path.startsWith("/api/categories"));
+  const methods = categoryRequests.map((entry) => entry.method);
+  check(
+    methods.includes("POST") && methods.includes("PATCH") && methods.includes("DELETE"),
+    "Category create/edit/maintenance/delete requests did not reach browser fetch",
+    result,
+  );
+  check(
+    categoryRequests.some((entry) => entry.method === "POST" &&
+      entry.path === "/api/categories" && entry.body.includes(result.createContext.parentId)),
+    "Create-child request did not preserve parentCategoryId",
+    result,
+  );
+  return result;
+}
+
+async function validateSidebarThemeParity(cdp) {
+  const readTheme = async (route) => {
+    await navigateWithRetry(cdp, baseUrl + route, "sidebar " + route);
+    return evaluate(cdp, `(() => {
+      const sidebar = document.querySelector('.sidebar');
+      const link = sidebar?.querySelector('nav a:not([aria-current="page"])');
+      if (!sidebar || !link) return null;
+      const style = getComputedStyle(sidebar);
+      return {
+        background: style.backgroundColor,
+        foreground: style.color,
+        border: style.borderRightColor,
+        link: getComputedStyle(link).color,
+      };
+    })()`);
+  };
+  const categories = await readTheme("/categorias");
+  const statement = await readTheme("/lancamentos");
+  const dashboard = await readTheme("/dashboard");
+  check(categories && statement && dashboard, "Missing shared sidebar on authenticated route", {
+    categories, statement, dashboard,
+  });
+  check(
+    categories && JSON.stringify(categories) === JSON.stringify(statement) &&
+      JSON.stringify(categories) === JSON.stringify(dashboard),
+    "Sidebar theme differs between Categories, Golden Screen and Dashboard",
+    { categories, statement, dashboard },
+  );
+  await navigateWithRetry(cdp, baseUrl + "/categorias", "categories after sidebar check");
+  await waitForCategories(cdp);
+  return { categories, statement, dashboard };
 }
 
 async function validateMobile(cdp) {
