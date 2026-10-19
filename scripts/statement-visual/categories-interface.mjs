@@ -18,6 +18,7 @@ let mobile;
 let mobileModal;
 let compactMobile;
 let mutationFailures;
+let categoryCrud;
 let sidebarParity;
 let browserVersion = "unknown";
 const completedScreenshots = [];
@@ -28,6 +29,7 @@ await runViewportSession("desktop", 1440, 1000, async (cdp) => {
   desktopModal = await validateDesktopModal(cdp);
   completedScreenshots.push("categories-modal-desktop.png");
   mutationFailures = await validateCategoryMutationFailures(cdp);
+  categoryCrud = await validateCategoryCrud(cdp);
   sidebarParity = await validateSidebarThemeParity(cdp);
 });
 
@@ -54,6 +56,7 @@ const report = {
   mobileModal,
   compactMobile,
   mutationFailures,
+  categoryCrud,
   sidebarParity,
   screenshots: completedScreenshots,
 };
@@ -433,6 +436,143 @@ async function validateCategoryMutationFailures(cdp) {
     result,
   );
   return result;
+}
+
+async function validateCategoryCrud(cdp) {
+  // Real API persistence checks are limited to the disposable CI test environment.
+  if (process.env.GITHUB_ACTIONS !== "true") {
+    return { skipped: true, reason: "requires disposable GitHub Actions test database" };
+  }
+  const name = "Auditoria 717 " + Date.now();
+  const childName = name + " filha";
+  const renamedChild = name + " editada";
+  const observed = [];
+  const refresh = async () => {
+    await sleep(750);
+    await navigateWithRetry(cdp, baseUrl + "/categorias", "category CRUD reread");
+    await waitForCategories(cdp);
+  };
+  const find = async (label) => evaluate(cdp, `(() => {
+    const label = ${JSON.stringify(label)};
+    const button = Array.from(document.querySelectorAll('[data-edit-category]'))
+      .find((item) => item.dataset.categoryName === label);
+    return button ? { id: button.dataset.categoryId, status: button.dataset.categoryStatusValue,
+      parent: button.dataset.categoryParentId } : null;
+  })()`);
+  const submit = async (expression) => {
+    const action = await evaluate(cdp, expression);
+    check(action, "Category CRUD UI action was unavailable", { expression });
+    if (!action) return false;
+    await refresh();
+    return true;
+  };
+  let parent;
+  let child;
+  try {
+    await submit(`(() => {
+      document.querySelector('[data-open-category-modal]').click();
+      const form = document.querySelector('[data-category-form]');
+      form.elements.name.value = ${JSON.stringify(name)};
+      form.elements.kind.value = 'expense';
+      form.requestSubmit();
+      return true;
+    })()`);
+    parent = await find(name);
+    check(Boolean(parent && parent.status === "active"), "UI create did not persist a parent category", parent);
+    if (!parent) return { observed, failedAt: "create-parent" };
+    observed.push("create-parent");
+
+    await submit(`(() => {
+      const id = ${JSON.stringify(parent.id)};
+      const row = Array.from(document.querySelectorAll('[data-category-item]'))
+        .find((item) => item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryId === id);
+      const action = row?.querySelector('[data-category-menu-action="create-child"]');
+      if (!action) return false;
+      row.querySelector('[data-category-menu-button]').click();
+      action.click();
+      const form = document.querySelector('[data-category-form]');
+      if (form.elements.parentCategoryId.value !== id) return false;
+      form.elements.name.value = ${JSON.stringify(childName)};
+      form.requestSubmit();
+      return true;
+    })()`);
+    child = await find(childName);
+    check(Boolean(child && child.parent === parent.id), "UI create-child lost the persisted parent relationship", child);
+    if (!child) return { observed, failedAt: "create-child" };
+    observed.push("create-child");
+
+    const cycle = await evaluate(cdp, `(() => {
+      const id = ${JSON.stringify(parent.id)};
+      const row = Array.from(document.querySelectorAll('[data-edit-category]'))
+        .find((element) => element.dataset.categoryId === id);
+      row?.click();
+      const option = Array.from(document.querySelector('[data-category-form]').elements.parentCategoryId.options)
+        .find((candidate) => candidate.value === ${JSON.stringify(child.id)});
+      const protectedAgainstCycle = Boolean(option?.disabled);
+      document.querySelector('.category-dialog [data-close-category-modal]')?.click();
+      return protectedAgainstCycle;
+    })()`);
+    check(cycle, "Parent edit must prohibit choosing its descendant", { parent, child });
+    observed.push("cycle-guard");
+
+    await submit(`(() => {
+      const id = ${JSON.stringify(child.id)};
+      const row = Array.from(document.querySelectorAll('[data-edit-category]'))
+        .find((element) => element.dataset.categoryId === id);
+      if (!row) return false;
+      row.click();
+      const form = document.querySelector('[data-category-form]');
+      form.elements.name.value = ${JSON.stringify(renamedChild)};
+      form.requestSubmit();
+      return true;
+    })()`);
+    child = await find(renamedChild);
+    check(Boolean(child && child.parent === parent.id), "UI edit did not persist the child category", child);
+    if (!child) return { observed, failedAt: "edit-child" };
+    observed.push("edit-child");
+
+    const mutateStatus = async (suffix) => submit(`(() => {
+      const id = ${JSON.stringify(child.id)};
+      const suffix = ${JSON.stringify(suffix)};
+      const row = Array.from(document.querySelectorAll('[data-category-item]'))
+        .find((item) => item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryId === id);
+      const button = Array.from(row?.querySelectorAll('[data-category-menu-action="request"]') || [])
+        .find((item) => item.dataset.apiPath.endsWith('/' + suffix));
+      if (!button) return false;
+      window.confirm = () => true;
+      row.querySelector('[data-category-menu-button]').click();
+      button.click();
+      return true;
+    })()`);
+    await mutateStatus("archive");
+    check((await find(renamedChild))?.status === "archived", "UI archive did not persist", child);
+    observed.push("archive");
+    await mutateStatus("restore");
+    check((await find(renamedChild))?.status === "active", "UI restore did not persist", child);
+    observed.push("restore");
+
+    const removeById = async (id) => submit(`(() => {
+      const id = ${JSON.stringify(id)};
+      const row = Array.from(document.querySelectorAll('[data-category-item]'))
+        .find((item) => item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryId === id);
+      const button = row?.querySelector('[data-category-menu-action="request"][data-api-method="DELETE"]');
+      if (!button) return false;
+      window.confirm = () => true;
+      row.querySelector('[data-category-menu-button]').click();
+      button.click();
+      return true;
+    })()`);
+    await removeById(child.id);
+    check(!(await find(renamedChild)), "UI delete child did not remove the category", child);
+    observed.push("delete-child");
+    await removeById(parent.id);
+    check(!(await find(name)), "UI delete parent did not remove the category", parent);
+    observed.push("delete-parent");
+    return { skipped: false, observed, parentId: parent.id, childId: child.id };
+  } finally {
+    await evaluate(cdp, "window.confirm = () => true");
+    // CI uses a disposable profile. Any failed case is isolated to that profile.
+  }
 }
 
 async function validateSidebarThemeParity(cdp) {
