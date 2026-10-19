@@ -60,7 +60,6 @@ A **Instituição**, em segunda coluna, exibe o logo compartilhado de **44 × 44
 
 Em telas estreitas (até 1099 px), a grade é compactada de forma responsiva, preservando a ordem semântica: Tipo, Instituição e Conta/Cartão. Nome e valor podem ocupar a segunda linha para não provocar rolagem horizontal no mobile de 390/320 px; a regra de **uma linha por conta** vale para a tabela desktop. Moeda, situação e CDI mantêm acesso sem alterar as APIs, a busca, os filtros e o estado selecionado. Os ícones e valores respeitam tooltips, acessibilidade, texto longo e navegação por teclado. Os testes de SSR e `accounts-cards-interface.mjs` protegem a ordem, as medidas e os papéis dos ícones nos viewports de 1440/1366/390/320 px.
 
-
 ## Ações e dialogs
 
 Criação e edição permanecem no contexto da tela por dialogs. Os acionadores são produzidos por `renderDialogTrigger` e as superfícies por `renderDialog`; o comportamento genérico vem do controller compartilhado da Fase 3B. As ações primárias são diretas no detalhe.
