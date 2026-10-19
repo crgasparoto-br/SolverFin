@@ -13,7 +13,7 @@ const enhanced = enhanceAccountRemunerationDisclosure(source);
 assert.match(enhanced, /data-account-remuneration-disclosure-affordance/);
 assert.match(
   enhanced,
-  /<summary aria-label="Ver memória do cálculo" title="Ver memória do cálculo">/,
+  /<summary tabindex="0" aria-label="Ver memória do cálculo" title="Ver memória do cálculo">/,
 );
 assert.match(enhanced, /account-remuneration-disclosure-full">Ver memória do cálculo<\/span>/);
 assert.match(
