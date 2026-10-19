@@ -77,6 +77,7 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
   assert.equal(baseline.listAmountsVisible, true, "Master amounts are missing.");
   assert.equal(baseline.masterTypeColumn, true, "Account subtype icon column is absent.");
+  assert.equal(baseline.masterTypeFirst, true, "Type icon must be the first visible column.");
   assert.equal(baseline.masterTypeTooltips, true, "Account/card type icons need accessible tooltips.");
   assert.equal(baseline.compactRowMinHeight, true, "Master rows must use compact Golden Screen density.");
   assert.equal(baseline.headerActionsHaveIcons, true, "Add-account and add-card buttons need icons.");
@@ -726,7 +727,18 @@ async function inspectPage(cdp) {
         listAmountsVisible: masterItems.every((item) => Boolean(item.querySelector('.resource-master-amount strong'))),
         masterTypeColumn: Array.from(document.querySelectorAll('.resource-master-columns > span'))
           .map((column) => column.textContent.trim()).join('|') ===
-          'Conta ou cartão|Tipo|Moeda|Saldo inicial / Limite|CDI|Situação',
+          'Tipo|Conta ou cartão|Moeda|Saldo inicial / Limite|CDI|Situação',
+        masterTypeFirst: masterItems.every((item) => {
+          const link = item.querySelector('.resource-master-link');
+          const type = link?.querySelector('.resource-master-type');
+          const identity = link?.querySelector('.resource-master-identity');
+          if (!link || !type || !identity || link.firstElementChild !== type) return false;
+          if (innerWidth <= 760) {
+            return type.getBoundingClientRect().left < identity.getBoundingClientRect().left;
+          }
+          return getComputedStyle(link).gridTemplateColumns.split(' ').length === 6 &&
+            type.getBoundingClientRect().left < identity.getBoundingClientRect().left;
+        }),
         masterTypeTooltips: masterItems.every((item) => {
           const badge = item.querySelector('.resource-master-type');
           return badge?.getAttribute('role') === 'img' &&
