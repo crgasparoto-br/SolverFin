@@ -36,6 +36,11 @@ qualquer tela de propagacao.
 - Categoria, Tipo, Status e Conciliacao ficam diretamente disponiveis na barra
   compacta desktop. No mobile, os filtros sao progressivos e filtros ativos abrem
   o painel inicialmente; Aplicar/Limpar permanecem disponiveis quando ele esta fechado.
+  Em 320px, **Dia do mes** fica no mesmo painel progressivo, sem desaparecer: o
+  campo continua operavel com o painel aberto, e retorna a barra principal ao
+  ampliar a viewport. O atalho **Mes atual** permanece ao lado do navegador de
+  meses como icone de 44px, com nome acessivel e comando inalterado. Essa
+  compactacao preserva a entrada da secao Movimentacoes na primeira viewport.
   Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o
   formulario GET completo permanece disponivel. Conta e periodo pertencem ao
   contexto financeiro, preservando o vinculo nativo com o formulario de consulta.
