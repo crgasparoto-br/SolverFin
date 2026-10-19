@@ -71,6 +71,20 @@ A propagacao visual da Golden Screen na rota `/cartoes` tem escopo proprio, dife
 
 Inspecionar os estados em 1366x768, 390x844 e, nas divergencias de reflow, 320x740. Registrar em cada linha viewport, artefato, assertion, SHA exato e parecer de avaliador independente. A ausencia de capturas ou parecer deixa o gate de aceite aberto, mesmo se Repository CI e o workflow Chrome terminarem com sucesso.
 
+### Issue #717 — Navegacao compartilhada e recuperacao de erros (19/10/2026)
+
+Validar em Chrome, no SHA material final, que `/categorias`, `/lancamentos` e
+`/dashboard` exibam sidebar de tema claro identico (fundo, texto, borda e
+links nao ativos), sem regressao do menu mobile, indicador ativo ou tabulacao.
+A fonte e `shared-styles.ts`, sem excecao visual por rota no CSS da Golden Screen.
+
+Exercitar na interface a criacao contextual de subcategoria (tipo e pai),
+edicao, arquivamento/restauracao e exclusao com as autorizacoes da API. Injetar
+falha de conexao no submit, no menu de manutencao e no modal, exigindo mensagem
+recuperavel e botao novamente habilitado; a simulacao de erro de rede nao
+substitui validacao positiva de persistencia em ambiente descartavel. Registrar
+os casos e resultados no artefato `categories-interface.json` exact-SHA.
+
 ## Portão discriminante da Issue #717 — Categorias
 
 A rota `/categorias` aplica a qualidade visual da Golden Screen do Extrato à árvore real de categorias, **sem copiar o layout de lançamentos e sem usar cards por categoria**. A composição mantém lista semântica agrupada por tipo, recuo e relação pai–filho explícitos, níveis mais profundos, nomes longos quebráveis e edição/criação contextual; o modelo e as permissões da API continuam inalterados.
