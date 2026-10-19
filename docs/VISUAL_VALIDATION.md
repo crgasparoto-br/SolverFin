@@ -293,3 +293,8 @@ Verificar foco, tooltip, contraste e navegacao por teclado conforme a Golden Scr
 A Golden Screen do Extrato usa o acionador `summary` de `details.statement-status-control` para foco, Enter e Espaco; o icone interno e descritivo, com `aria-label` e tooltip. A ordenacao por data envolve os movimentos em `details.statement-day-group`: validadores percorrem a ordem logica de linhas inclusive entre grupos, nao `nextElementSibling` do `article`. Em desktop largo, **Valor** e **Saldo** ocupam colunas distintas, com precedencia tipografica do valor; no mobile, o saldo fica abaixo do valor.
 
 Parcelas elegiveis apresentam `adjustedInstallmentAmount` sem liberar dados protegidos. Os cenarios Chrome da #539 e da visibilidade por transferencia devem verificar esse campo junto com a restricao de todos os demais inputs. Cenarios indiretos da #606 dependem da evidencia semantica do caso primario: uma falha na geracao causa falha dependente e nao deve ser mascarada como sucesso independente.
+
+
+### Issue #734 — foco na memória de cálculo CDI após menu de ações
+
+No extrato, `details.account-remuneration-audit > summary` deve receber foco e alternar com Enter tanto no desktop quanto no mobile. Quando o menu de ações da mesma linha está aberto, o fluxo de teclado fecha primeiro esse menu com **Escape**, verifica o seu fechamento e então move foco para a memória de cálculo. O controle negativo continua rejeitando resumo que não receba foco e Enter que não expanda/recolha. A evidência `issue-490-account-remuneration.json` só é considerada completa se o fluxo desktop/mobile terminar, incluindo o teste do menu de ações; uma falha no caso primário mantém o caso mobile dependente reprovado, sem mascaramento.
