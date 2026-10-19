@@ -89,7 +89,6 @@ os casos e resultados no artefato `categories-interface.json` exact-SHA.
 
 Comparar `/contas-cartoes` com a Golden Screen `/lancamentos`: os logos e fallbacks de instituicoes nas linhas da lista mestre e no cabecalho de detalhe de contas e cartoes usam **44 x 44 px**, cantos de **11 px**, sem superficie secundaria cinza ou distorcao/corte (`object-fit: contain` nas imagens). Testar assets presentes e SVG de fallback, desktop 1440x900/1366x768 e mobile 390x844/320x740, com linhas longas e sem overflow horizontal. A automacao `accounts-cards-interface.mjs` verifica as medidas renderizadas, enquanto a aprovacao visual requer inspecao das capturas produzidas no mesmo SHA.
 
-
 ## Portão discriminante da Issue #717 — Categorias
 
 A rota `/categorias` aplica a qualidade visual da Golden Screen do Extrato à árvore real de categorias, **sem copiar o layout de lançamentos e sem usar cards por categoria**. A composição mantém lista semântica agrupada por tipo, recuo e relação pai–filho explícitos, níveis mais profundos, nomes longos quebráveis e edição/criação contextual; o modelo e as permissões da API continuam inalterados.
