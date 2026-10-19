@@ -77,9 +77,8 @@ export async function renderCategoriesPage(token: string): Promise<string> {
               </div>
               <div class="category-toolbar-actions">
                 <div class="category-search" role="search">
-                  <label class="visually-hidden" for="category-search-input">Buscar categorias</label>
                   <span aria-hidden="true">${icon("search", 14)}</span>
-                  <input id="category-search-input" type="search" autocomplete="off" placeholder="Buscar por nome ou caminho" data-category-search-input />
+                  <input id="category-search-input" type="search" aria-label="Buscar categorias" autocomplete="off" placeholder="Buscar por nome ou caminho" data-category-search-input />
                   <button class="category-search-clear" type="button" data-clear-category-search aria-label="Limpar busca" title="Limpar busca" hidden>${icon("x", 14)}</button>
                 </div>
                 <div class="filter-chips" aria-label="Filtros locais de categorias">

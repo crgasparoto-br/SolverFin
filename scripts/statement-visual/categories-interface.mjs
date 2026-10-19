@@ -334,6 +334,7 @@ async function validateMobile(cdp) {
     "Category search mobile target is smaller than 44px",
     measurements,
   );
+  check(measurements.search.width >= 100, "Category search mobile input is squeezed by visible label", measurements);
   check(
     measurements.filterCount === 5,
     "Categories filters are incomplete on mobile",
@@ -378,6 +379,7 @@ async function validateCompactMobile(cdp) {
   );
   check(measurements.minimumRowHeight >= 44, "Narrow mobile row is too small", measurements);
   check(measurements.search.height >= 44, "Narrow mobile search input is too small", measurements);
+  check(measurements.search.width >= 100, "Narrow mobile search input has insufficient usable width", measurements);
   check(measurements.minimumFilterTarget >= 44, "Narrow mobile filter action is less than 44px", measurements);
   check(measurements.minimumCollapseTarget >= 44, "Narrow mobile hierarchy expand action is less than 44px", measurements);
   check(measurements.minimumCompactTarget >= 44, "Narrow mobile expand-all action is less than 44px", measurements);
