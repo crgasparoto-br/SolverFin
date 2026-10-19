@@ -286,18 +286,19 @@ export function accountsCardsPageStyles(): string {
     .resource-master-link:focus-visible { border-radius: 0; outline: 2px solid var(--primary); outline-offset: -2px; }
     .resource-master-identity { align-items: center; display: flex; min-width: 0; }
     .resource-master-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
-    .resource-master-title strong { color: var(--text); font-size: .93rem; line-height: 1.3; overflow-wrap: anywhere; }
+    .resource-master-title { display: block; min-width: 0; overflow: hidden; }
+    .resource-master-title strong { color: var(--text); display: block; font-size: .93rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .resource-master-type { align-items: center; background: var(--sf-color-surface-soft); border: 1px solid var(--sf-color-border); border-radius: 8px; color: var(--sf-color-primary); display: inline-flex; height: 30px; justify-content: center; justify-self: center; width: 30px; }
     .resource-master-type svg { flex: 0 0 auto; }
     .resource-master-institution { align-items: center; display: flex; gap: 7px; min-width: 0; }
-    .resource-master-institution .resource-master-icon { flex: 0 0 38px; height: 38px; width: 38px; }
+    .resource-master-institution .resource-master-icon { flex: 0 0 44px; height: 44px; width: 44px; }
     .resource-master-institution-label { color: var(--muted); font-size: .78rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .resource-header-action-icon { flex: 0 0 auto; }
     .accounts-cards-a3-page .sf-page-header-actions .sf-dialog-trigger { align-items: center; display: inline-flex; gap: 8px; }
     .resource-master-institution { color: var(--muted); line-height: 1.3; }
     .resource-master-cdi-column { display: flex; justify-content: center; white-space: nowrap; }
     .resource-master-cdi-column .sf-badge { font-size: .69rem; }
-    .resource-master-cdi-compact { color: var(--sf-color-muted-text); display: none; font-weight: 650; white-space: normal; }
+    .resource-master-cdi-compact { align-items: center; color: var(--sf-color-muted-text); display: none; flex: 0 0 auto; justify-content: center; }
     .resource-master-cdi-compact.is-active { color: var(--sf-color-success); }
     .resource-master-currency { background: transparent; border: 0; color: var(--text) !important; font-size: .8rem; font-weight: 700; overflow-wrap: anywhere; }
     .resource-master-amount { align-items: center; display: flex; gap: 5px; justify-content: flex-end; min-width: 0; text-align: right; white-space: nowrap; }
@@ -340,23 +341,8 @@ export function accountsCardsPageStyles(): string {
       .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: minmax(0, 1fr); }
       .resource-detail-panel { max-width: none; }
       .resource-master-filters { grid-template-columns: minmax(0, 2fr) repeat(3, minmax(96px, 1fr)); }
-    }
-    @media (max-width: 760px) {
-      .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-      .resource-master-panel, .resource-detail-panel { padding: 14px; }
-      .resource-master-summary > div { align-items: start; flex-wrap: wrap; }
-      .resource-master-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .resource-master-filters > label:first-child, .resource-master-filters > label:last-child { grid-column: 1 / -1; }
-      .resource-master-columns { display: none; }
-      .resource-master-link { column-gap: 8px; grid-template-columns: 30px minmax(0, 1fr) minmax(96px, auto); min-height: 76px; row-gap: 4px; }
-      .resource-master-type { grid-column: 1; grid-row: 1; justify-self: start; }
-      .resource-master-identity { grid-column: 2; grid-row: 1; }
-      .resource-master-institution { grid-column: 2; grid-row: 2; }
-      .resource-master-institution .resource-master-icon { flex-basis: 26px; height: 26px; width: 26px; }
-      .resource-master-amount { grid-column: 3; grid-row: 1; }
-      .resource-master-currency { align-self: center; grid-column: 1; grid-row: 2; text-align: center; }
-      .resource-master-state { grid-column: 3; grid-row: 2; }
-      .resource-master-cdi-column { display: none; }
+      /* Seven data columns are single-line on desktop; compact two-row fallback
+         avoids clipping currency and balances on narrow master layouts. */
       .resource-detail-heading { grid-template-columns: 44px minmax(0, 1fr); }
       .resource-detail-identity { display: flex; }
       .resource-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
