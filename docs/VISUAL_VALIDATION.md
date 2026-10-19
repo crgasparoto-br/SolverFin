@@ -287,3 +287,9 @@ Conferir no Chrome: ocorrencia fixa prevista com icone de relogio abre
 nao mudam. Testar controles negativos para compra no cartao, sugestao nao
 confirmada, item excluido, remuneracao automatica e lancamento agrupado.
 Verificar foco, tooltip, contraste e navegacao por teclado conforme a Golden Screen.
+
+### Compatibilidade dos validadores apos PR #720
+
+A Golden Screen do Extrato usa o acionador `summary` de `details.statement-status-control` para foco, Enter e Espaco; o icone interno e descritivo, com `aria-label` e tooltip. A ordenacao por data envolve os movimentos em `details.statement-day-group`: validadores percorrem a ordem logica de linhas inclusive entre grupos, nao `nextElementSibling` do `article`. Em desktop largo, **Valor** e **Saldo** ocupam colunas distintas, com precedencia tipografica do valor; no mobile, o saldo fica abaixo do valor.
+
+Parcelas elegiveis apresentam `adjustedInstallmentAmount` sem liberar dados protegidos. Os cenarios Chrome da #539 e da visibilidade por transferencia devem verificar esse campo junto com a restricao de todos os demais inputs. Cenarios indiretos da #606 dependem da evidencia semantica do caso primario: uma falha na geracao causa falha dependente e nao deve ser mascarada como sucesso independente.

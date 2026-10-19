@@ -6,7 +6,7 @@ import { enhanceTransactionGroupModalLayout } from "./transaction-group-modal-la
 import { enhanceTransactionGroupPendingFixes } from "./transaction-group-pending-fixes.js";
 
 const DISCLOSURE_STYLE_MARKER = "data-account-remuneration-disclosure-affordance";
-const DISCLOSURE_SUMMARY = `<summary aria-label="Ver memória do cálculo" title="Ver memória do cálculo"><span class="account-remuneration-disclosure-full">Ver memória do cálculo</span><span class="account-remuneration-disclosure-compact" aria-hidden="true">Memória</span></summary>`;
+const DISCLOSURE_SUMMARY = `<summary tabindex="0" aria-label="Ver memória do cálculo" title="Ver memória do cálculo"><span class="account-remuneration-disclosure-full">Ver memória do cálculo</span><span class="account-remuneration-disclosure-compact" aria-hidden="true">Memória</span></summary>`;
 
 export function enhanceAccountRemunerationDisclosure(html: string): string {
   const groupEnhancedHtml = enhanceTransactionBulkSelectionLayout(
