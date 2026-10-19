@@ -5,6 +5,7 @@ import { renderAccountsCardsRuntimeScript } from "./runtime.js";
 import type { ResourceMasterViewModel } from "./view-model.js";
 
 rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata();
+rendersCompactAccountTypeColumnWithTooltips();
 keepsCombinedFilterControlsInTheRouteRuntime();
 persistsAndRestoresTheFourFilterControls();
 degradesUnsupportedPersistedSelectValuesToNeutralDefaults();
@@ -42,6 +43,42 @@ function rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata(): void {
   assert.match(html, /data-kind="account" data-currency="USD"/);
   assert.match(html, /data-kind="card" data-currency="unavailable"/);
   assert.match(html, /Ajuste a busca ou os filtros de tipo, moeda e status/);
+}
+
+function rendersCompactAccountTypeColumnWithTooltips(): void {
+  const account: ResourceMasterViewModel = {
+    ...resourceFixture({
+      key: "account:checking",
+      kind: "account",
+      id: "checking",
+      name: "Conta principal",
+      currency: "BRL",
+      currencyLabel: "BRL",
+    }),
+    accountKind: "checking",
+    institutionLabel: "Banco exemplo",
+    secondaryLabel: "Conta corrente",
+  };
+  const card: ResourceMasterViewModel = {
+    ...resourceFixture({
+      key: "card:credit",
+      kind: "card",
+      id: "credit",
+      name: "Cartão principal",
+      currency: "BRL",
+      currencyLabel: "BRL",
+    }),
+    secondaryLabel: "Visa · 2 instrumentos ativos",
+  };
+  const html = renderResourceMaster([account, card]);
+
+  assert.match(html, /<span>Conta ou cartão<\/span><span>Tipo<\/span><span>Moeda<\/span>/);
+  assert.match(html, /class="resource-master-type" role="img" aria-label="Conta corrente" title="Conta corrente"/);
+  assert.match(html, /class="resource-master-type" role="img" aria-label="Cartão · Visa · 2 instrumentos ativos"/);
+  assert.match(html, /<span class="resource-master-institution"[^>]*>Banco exemplo/);
+  assert.doesNotMatch(html, /class="resource-master-context"/);
+  assert.match(html, /data-kind="account"/);
+  assert.match(html, /data-kind="card"/);
 }
 
 function keepsCombinedFilterControlsInTheRouteRuntime(): void {
