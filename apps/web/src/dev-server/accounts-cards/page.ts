@@ -19,7 +19,10 @@ import {
 import { renderAccountDialog, renderCardDialog } from "./dialogs.js";
 import type { CdiIncomeCategory } from "./dialogs.js";
 import { escapeHtml } from "./presentation.js";
-import { renderAccountsCardsApiFormScript, renderAccountsCardsRuntimeScript } from "./runtime.js";
+import {
+  renderAccountsCardsApiFormScript,
+  renderAccountsCardsRuntimeScript,
+} from "./runtime.js";
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
 import { buildAccountsCardsPageViewModel } from "./view-model.js";
@@ -50,21 +53,35 @@ function renderHeaderDialogTrigger(input: {
     : button;
 }
 
-export async function renderAccountsCardsPage(token: string, url?: URL): Promise<string> {
+export async function renderAccountsCardsPage(
+  token: string,
+  url?: URL,
+): Promise<string> {
   const [accounts, creditCardAccounts, cdiConfigurations] = await Promise.all([
     apiGet<{ accounts: AccountRecord[] }>(token, "/api/accounts?status=all"),
     apiGet<{ creditCardAccounts: CreditCardAccountRecord[] }>(
       token,
       "/api/credit-card-accounts?status=all",
     ),
-    apiGet<CdiConfigurationsResponse>(token, "/api/account-remuneration/configurations"),
+    apiGet<CdiConfigurationsResponse>(
+      token,
+      "/api/account-remuneration/configurations",
+    ),
   ]);
 
   if (!accounts.ok) {
-    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", accounts.error);
+    return renderApiErrorPage(
+      "/contas-cartoes",
+      "Contas e Cartões",
+      accounts.error,
+    );
   }
   if (!creditCardAccounts.ok) {
-    return renderApiErrorPage("/contas-cartoes", "Contas e Cartões", creditCardAccounts.error);
+    return renderApiErrorPage(
+      "/contas-cartoes",
+      "Contas e Cartões",
+      creditCardAccounts.error,
+    );
   }
 
   const viewModel = buildAccountsCardsPageViewModel(
@@ -115,7 +132,10 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
     viewModel.selectedResource.account.currency === "BRL";
   const cdiCategoryResult =
     eligibleForCdiSettings && cdiConfigurations.ok
-      ? await apiGet<{ categories: CdiIncomeCategory[] }>(token, "/api/categories?status=all")
+      ? await apiGet<{ categories: CdiIncomeCategory[] }>(
+          token,
+          "/api/categories?status=all",
+        )
       : undefined;
   const masterDetail = renderDetailLayout({
     masterHtml: renderResourceMaster(viewModel.resources),
@@ -168,7 +188,11 @@ function renderAuthenticatedPage(input: {
   });
 }
 
-function renderApiErrorPage(pathname: string, currentLabel: string, error: string): string {
+function renderApiErrorPage(
+  pathname: string,
+  currentLabel: string,
+  error: string,
+): string {
   return renderAuthenticatedPage({
     pathname,
     currentLabel,
