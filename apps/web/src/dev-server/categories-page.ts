@@ -972,6 +972,10 @@ function pageCss(): string {
     .categories-page .dialog-actions .danger-action { margin-right: auto; }
     .categories-page button.sf-button.secondary:hover:not(:disabled) { background: var(--primary-soft); color: var(--primary); border-color: var(--line); }
     @media (max-width: 760px) {
+      .app-shell { grid-template-columns: minmax(0, 1fr); max-width: 100%; }
+      .main-area { min-width: 0; max-width: 100%; }
+      .sidebar { min-width: 0; max-width: 100%; }
+      .sidebar > nav { flex: 1 1 0%; min-width: 0; max-width: 100%; }
       .categories-page .category-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .categories-page .category-overview > div:nth-child(3) { border-left: 0; }
       .categories-page .category-overview > div:nth-child(n + 3) { border-top: 1px solid var(--line); }

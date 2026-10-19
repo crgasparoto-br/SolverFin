@@ -532,6 +532,24 @@ function pageMeasurementExpression() {
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      documentScrollWidth: document.documentElement.scrollWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+      pageScrollWidth: document.querySelector('.categories-page')?.scrollWidth || 0,
+      pageClientWidth: document.querySelector('.categories-page')?.clientWidth || 0,
+      globalOverflowElements: Array.from(document.querySelectorAll('body *'))
+        .filter((element) => {
+          const bounds = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return style.display !== 'none' && bounds.width > 0 &&
+            (bounds.right > window.innerWidth + 1 || bounds.left < -1);
+        })
+        .slice(0, 25)
+        .map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          className: String(element.className?.baseVal || element.className || '').slice(0, 100),
+          right: Math.round(element.getBoundingClientRect().right),
+          left: Math.round(element.getBoundingClientRect().left),
+        })),
       summaryCount: document.querySelectorAll('.category-overview > div').length,
       semanticLists: document.querySelectorAll('ul.category-tree-nodes').length,
       nestedLists: document.querySelectorAll('ul.category-tree-children').length,
