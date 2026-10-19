@@ -432,27 +432,50 @@ function apiFormScript(): string {
         return (body.error && body.error.message) || "Nao foi possivel concluir a acao.";
       }
 
+      // All category mutations use one resilient request path (form, item menu and modal).
+      async function sendCategoryMutation({ path, method = "POST", payload, status, button }) {
+        if (!path || button?.disabled) return false;
+        if (button) button.disabled = true;
+        if (status) {
+          status.className = "form-status muted";
+          status.textContent = method === "PATCH" ? "Salvando..." : "Enviando...";
+        }
+        let successful = false;
+        try {
+          const response = await fetch(path, {
+            method,
+            headers: { "content-type": "application/json" },
+            ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
+          });
+          if (status) {
+            status.className = response.ok ? "form-status success" : "form-status error";
+            status.textContent = await readApiMessage(response);
+          }
+          successful = response.ok;
+          if (successful) window.setTimeout(() => window.location.reload(), 450);
+          return successful;
+        } catch {
+          if (status) {
+            status.className = "form-status error";
+            status.textContent = "Falha de conexão. Tente novamente.";
+          }
+          return false;
+        } finally {
+          if (!successful && button) button.disabled = false;
+        }
+      }
+
       document.querySelectorAll("[data-api-form]").forEach((form) => {
         const status = ensureStatus(form);
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
-          const submitButton = form.querySelector('button[type="submit"]');
-          const method = form.dataset.apiMethod || "POST";
-          if (submitButton) submitButton.disabled = true;
-          status.className = "form-status muted";
-          status.textContent = "Salvando...";
-          const response = await fetch(form.dataset.apiPath, {
-            method,
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(buildPayload(form)),
+          await sendCategoryMutation({
+            path: form.dataset.apiPath,
+            method: form.dataset.apiMethod || "POST",
+            payload: buildPayload(form),
+            status,
+            button: form.querySelector('button[type="submit"]'),
           });
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 450);
-            return;
-          }
-          if (submitButton) submitButton.disabled = false;
         });
       });
     </script>
@@ -590,24 +613,12 @@ function categoryPageScript(): string {
         if (confirmation && !window.confirm(confirmation)) return;
         const item = button.closest("[data-category-item]");
         const status = item ? ensureStatus(item) : null;
-        button.disabled = true;
-        if (status) {
-          status.className = "form-status muted";
-          status.textContent = "Enviando...";
-        }
-        const response = await fetch(path, {
+        await sendCategoryMutation({
+          path,
           method: button.dataset.apiMethod || "POST",
-          headers: { "content-type": "application/json" },
+          status,
+          button,
         });
-        if (status) {
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-        }
-        if (response.ok) {
-          window.setTimeout(() => window.location.reload(), 450);
-          return;
-        }
-        button.disabled = false;
       }
 
       function setCategoryCollapsed(item, collapsed) {
@@ -736,21 +747,11 @@ function categoryPageScript(): string {
         const confirmation = statusActionButton.dataset.apiConfirm;
         if (confirmation && !window.confirm(confirmation)) return;
         const status = formStatus();
-        statusActionButton.disabled = true;
-        if (status) {
-          status.className = "form-status muted";
-          status.textContent = "Enviando...";
-        }
-        const response = await fetch(path, { method: "POST", headers: { "content-type": "application/json" } });
-        if (status) {
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-        }
-        if (response.ok) {
-          window.setTimeout(() => window.location.reload(), 450);
-          return;
-        }
-        statusActionButton.disabled = false;
+        await sendCategoryMutation({
+          path,
+          status,
+          button: statusActionButton,
+        });
       });
 
       const filterButtons = Array.from(document.querySelectorAll("[data-category-filter]"));
