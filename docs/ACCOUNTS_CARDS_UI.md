@@ -52,6 +52,12 @@ A moeda nunca é inferida silenciosamente:
 
 Limites do cartão e de seus instrumentos usam o contexto monetário de `Card.currency`. Enquanto não existir conversão cambial, o domínio mantém separadamente a regra de compatibilidade entre a moeda do cartão e a conta de pagamento vinculada.
 
+## Lista compacta e iconografia (PR #731)
+
+A lista mestre usa colunas `Conta ou cartão | Tipo | Moeda | Saldo inicial / Limite | CDI | Situação`. Na coluna **Tipo**, contas exibem um ícone específico para conta corrente, poupança, dinheiro, investimento ou outros; cartões usam o ícone de cartão. O nome completo do tipo é o `title`/tooltip e o `aria-label` do ícone, sem uma terceira linha textual. A chave de tipo de conta vem do `view-model` e não é inferida do nome traduzido. Identidade institucional, busca, estado CDI e detalhes continuam disponíveis.
+
+No desktop, cada item tem altura mínima de **56 px**, respeitando o logo institucional de 44 px da Golden Screen. No mobile, o tipo e a moeda ocupam a linha secundária compacta; o cabeçalho tabular é ocultado, mas não os dados. Conteúdo longo, tooltips, foco nos links e os controles de filtros devem continuar acessíveis. `Adicionar conta` e `Adicionar cartão` conservam seus rótulos e passam a usar os ícones `wallet` e `credit-card` existentes, sem criar botões ou fluxos novos. A validação Chrome em `accounts-cards-interface.mjs` deve comprovar esses elementos em 1440/1366/390/320 px no SHA final.
+
 ## Ações e dialogs
 
 Criação e edição permanecem no contexto da tela por dialogs. Os acionadores são produzidos por `renderDialogTrigger` e as superfícies por `renderDialog`; o comportamento genérico vem do controller compartilhado da Fase 3B. As ações primárias são diretas no detalhe.
