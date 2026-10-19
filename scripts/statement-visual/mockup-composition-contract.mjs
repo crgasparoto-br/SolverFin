@@ -391,10 +391,7 @@ export function measureMockupComposition() {
         labelHidden: visibleLabel
           ? getComputedStyle(visibleLabel).display === "none"
           : chip.textContent.trim().length === 0,
-        hasTooltip:
-          !!label &&
-          tooltip === label &&
-          chip.dataset.tooltip === label,
+        hasTooltip: !!label && tooltip === label && chip.dataset.tooltip === label,
         accessible: trigger
           ? trigger.tagName === "SUMMARY" &&
             (trigger.getAttribute("aria-label") || "").includes(label)
