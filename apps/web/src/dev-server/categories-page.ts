@@ -862,7 +862,7 @@ function pageCss(): string {
     ${sharedShellStyles()}
     [hidden] { display: none !important; }
     body.modal-open { overflow: hidden; }
-    .categories-page { min-width: 0; }
+    .categories-page { min-width: 0; max-width: 100%; }
     .categories-page .sf-muted { color: var(--muted); line-height: 1.4; }
     .categories-page .category-overview {
       display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -881,50 +881,50 @@ function pageCss(): string {
     .categories-page .category-toolbar > div:first-child { display: grid; gap: 4px; }
     .categories-page .category-toolbar h2 { margin: 0; font-size: 1rem; }
     .categories-page .category-toolbar p { margin: 0; }
-    .categories-page .category-toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; min-width: 0; }
+    .categories-page .category-toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; min-width: 0; max-width: 100%; }
     .categories-page .category-search {
       flex: 1 1 250px; min-width: 0; max-width: 420px; display: grid; align-items: center;
-      grid-template-columns: 20px minmax(0, 1fr) 40px; gap: 8px; min-height: 44px;
+      grid-template-columns: 20px minmax(0, 1fr) 44px; gap: 8px; min-height: 44px;
       border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 0 6px 0 12px; color: var(--muted);
     }
     .categories-page .category-search:focus-within { outline: 2px solid var(--cyan); outline-offset: 2px; }
-    .categories-page .category-search input { border: none; background: transparent; width: 100%; min-width: 0; min-height: 42px; padding: 0; box-shadow: none; }
+    .categories-page .category-search input { border: none; background: transparent; width: 100%; min-width: 0; min-height: 44px; padding: 0; box-shadow: none; }
     .categories-page .category-search input:focus-visible { outline: 0; box-shadow: none; }
-    .categories-page button.category-search-clear { min-height: 40px; min-width: 40px; padding: 0; background: transparent; border: 0; color: var(--muted); }
+    .categories-page button.category-search-clear { min-height: 44px; min-width: 44px; padding: 0; background: transparent; border: 0; color: var(--muted); }
     .categories-page button.category-search-clear:hover:not(:disabled) { background: var(--primary-soft); color: var(--primary); }
-    .categories-page .filter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .categories-page .filter-chips { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; max-width: 100%; }
     .categories-page button.filter-chip {
-      min-height: 40px; border: 1px solid var(--line); padding: 0 12px;
+      min-height: 44px; border: 1px solid var(--line); padding: 0 12px;
       background: var(--surface); color: var(--primary); font-size: .8125rem; font-weight: 600; border-radius: var(--radius);
     }
     .categories-page button.filter-chip:hover:not(:disabled) { background: var(--primary-soft); border-color: var(--cyan); color: var(--primary); }
     .categories-page button.filter-chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: white; }
     .categories-page button.filter-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-    .categories-page .category-collapse-actions { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
+    .categories-page .category-collapse-actions { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; max-width: 100%; }
     .categories-page button.compact-button {
-      min-height: 40px; padding: 0 10px; gap: 4px; border: 1px solid var(--line); border-radius: var(--radius);
+      min-height: 44px; padding: 0 10px; gap: 4px; border: 1px solid var(--line); border-radius: var(--radius);
       background: var(--surface); color: var(--primary); font-weight: 600; font-size: .75rem;
     }
     .categories-page button.compact-button:hover:not(:disabled) { background: var(--primary-soft); border-color: var(--cyan); color: var(--primary); }
     .categories-page .category-results-status { color: var(--muted); font-size: .75rem; }
     .categories-page .category-filter-empty { display: grid; gap: 8px; padding: 24px 20px; justify-items: start; }
-    .categories-page .category-tree-list { display: grid; min-width: 0; }
+    .categories-page .category-tree-list { display: grid; min-width: 0; max-width: 100%; }
     .categories-page .category-kind-group { display: grid; gap: 6px; padding: 14px 20px 18px; min-width: 0; }
     .categories-page .category-kind-group + .category-kind-group { border-top: 1px solid var(--line); }
     .categories-page .category-kind-group > header { display: flex; align-items: center; gap: 10px; padding: 2px 0 8px; }
     .categories-page .category-kind-group h3 { margin: 0; color: var(--primary); font-size: .9rem; }
     .categories-page .category-kind-group header p { color: var(--muted); font-size: .75rem; margin: 4px 0 0; }
     .categories-page ul.category-tree-nodes,
-    .categories-page ul.category-tree-children { list-style: none; margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; min-width: 0; }
+    .categories-page ul.category-tree-children { list-style: none; margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; min-width: 0; max-width: 100%; }
     .categories-page ul.category-tree-nodes { padding-left: 0; padding-right: 0; }
     .categories-page ul.category-tree-children { border-left: 1px solid var(--line); margin-left: 20px; padding-left: 14px; padding-right: 0; }
     .categories-page li.category-tree-node { position: relative; min-width: 0; margin: 0; padding: 0; }
     .categories-page li.category-tree-node + li.category-tree-node { border-top: 1px solid var(--line); }
-    .categories-page .category-node-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 44px; align-items: center; gap: 8px; min-height: 58px; padding: 6px 0; }
+    .categories-page .category-node-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 8px; min-width: 0; max-width: 100%; min-height: 58px; padding: 6px 0; }
     .categories-page .category-tree-child > .category-node-row { min-height: 54px; }
-    .categories-page .category-collapse-spacer { display: block; width: 40px; height: 40px; }
+    .categories-page .category-collapse-spacer { display: block; width: 44px; height: 44px; }
     .categories-page button.category-collapse-button {
-      min-width: 40px; width: 40px; min-height: 40px; padding: 0; border: 1px solid transparent;
+      min-width: 44px; width: 44px; min-height: 44px; padding: 0; border: 1px solid transparent;
       background: transparent; color: var(--primary); border-radius: var(--radius);
     }
     .categories-page button.category-collapse-button:hover:not(:disabled) { background: var(--primary-soft); border-color: var(--line); color: var(--primary); }
@@ -981,12 +981,20 @@ function pageCss(): string {
       .categories-page .category-search { flex: 1 1 100%; max-width: none; }
       .categories-page .category-collapse-actions { margin-left: 0; }
       .categories-page .category-kind-group { padding: 14px 12px; }
-      .categories-page .category-node-row { grid-template-columns: 40px minmax(0, 1fr) 44px; gap: 3px; }
+      .categories-page .category-node-row { grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 3px; }
       .categories-page ul.category-tree-children { margin-left: 14px; padding-left: 7px; }
       .categories-page .category-form { grid-template-columns: minmax(0, 1fr); }
       .categories-page .dialog-actions { justify-content: stretch; }
       .categories-page .dialog-actions button { flex: 1 1 120px; }
       .categories-page .dialog-actions button.danger-action { flex-basis: 100%; }
+    }
+    @media (max-width: 420px) {
+      .categories-page .category-toolbar { padding-inline: 10px; }
+      .categories-page .category-kind-group { padding-inline: 10px; }
+      .categories-page ul.category-tree-children { margin-left: 7px; padding-left: 5px; }
+      .categories-page .category-node-row { gap: 2px; }
+      .categories-page button.category-node-button { gap: 6px; padding-inline: 4px; }
+      .categories-page .category-menu-popover { max-width: min(220px, calc(100vw - 20px)); }
     }
     @media (prefers-reduced-motion: reduce) {
       .categories-page button.category-collapse-button svg { transition: none; }

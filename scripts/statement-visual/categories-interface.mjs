@@ -345,11 +345,14 @@ async function validateMobile(cdp) {
     measurements,
   );
   check(
-    measurements.minimumMenuTarget >= 40,
+    measurements.minimumMenuTarget >= 44,
     "Category row menu target is too small on mobile",
     measurements,
   );
 
+  check(measurements.minimumFilterTarget >= 44, "Mobile filter action is less than 44px", measurements);
+  check(measurements.minimumCollapseTarget >= 44, "Mobile hierarchy expand action is less than 44px", measurements);
+  check(measurements.minimumCompactTarget >= 44, "Mobile expand-all action is less than 44px", measurements);
   return { viewport: "390x844", measurements, screenshot: "categories-mobile.png" };
 }
 
@@ -374,6 +377,10 @@ async function validateCompactMobile(cdp) {
     measurements,
   );
   check(measurements.minimumRowHeight >= 44, "Narrow mobile row is too small", measurements);
+  check(measurements.search.height >= 44, "Narrow mobile search input is too small", measurements);
+  check(measurements.minimumFilterTarget >= 44, "Narrow mobile filter action is less than 44px", measurements);
+  check(measurements.minimumCollapseTarget >= 44, "Narrow mobile hierarchy expand action is less than 44px", measurements);
+  check(measurements.minimumCompactTarget >= 44, "Narrow mobile expand-all action is less than 44px", measurements);
   return { viewport: "320x740", measurements, screenshot: "categories-compact-mobile.png" };
 }
 
@@ -472,6 +479,9 @@ function pageMeasurementExpression() {
     };
     const rows = Array.from(document.querySelectorAll('[data-category-item] > .category-node-row'));
     const menus = Array.from(document.querySelectorAll('[data-category-menu-button]'));
+    const filters = Array.from(document.querySelectorAll('[data-category-filter]'));
+    const collapses = Array.from(document.querySelectorAll('[data-toggle-category-children]'));
+    const compactActions = Array.from(document.querySelectorAll('.category-collapse-actions button'));
     const search = document.querySelector('[data-category-search-input]');
     const heroAction = document.querySelector('[data-open-category-modal]');
     const directory = document.querySelector('.category-directory');
@@ -488,6 +498,23 @@ function pageMeasurementExpression() {
       rowCount: rows.length,
       minimumRowHeight: rows.length ? Math.min(...rows.map((row) => rect(row).height)) : 0,
       minimumMenuTarget: menus.length ? Math.min(...menus.map((menu) => rect(menu).height)) : 0,
+      minimumFilterTarget: filters.length ? Math.min(...filters.map((filter) => rect(filter).height)) : 0,
+      minimumCollapseTarget: collapses.length ? Math.min(...collapses.map((button) => rect(button).height)) : 44,
+      minimumCompactTarget: compactActions.length ? Math.min(...compactActions.map((button) => rect(button).height)) : 0,
+      overflowElements: Array.from(document.querySelectorAll('.categories-page *'))
+        .filter((element) => {
+          const bounds = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return style.display !== 'none' && bounds.width > 0 &&
+            (bounds.right > window.innerWidth + 1 || bounds.left < -1);
+        })
+        .slice(0, 12)
+        .map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          className: String(element.className?.baseVal || element.className || '').slice(0, 120),
+          right: Math.round(element.getBoundingClientRect().right),
+          left: Math.round(element.getBoundingClientRect().left),
+        })),
       search: { ...rect(search), visible: visible(search) },
       heroAction: rect(heroAction),
       directory: { ...rect(directory), visible: visible(directory) },
