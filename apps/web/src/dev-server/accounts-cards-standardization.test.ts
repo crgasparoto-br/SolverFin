@@ -63,7 +63,10 @@ test("gate visual comprova o A3 direto sem tabs ou menus pós-processados", () =
 
 test("logos de contas e cartoes adotam a moldura da Golden Screen sem criar outro catalogo", () => {
   const css = accountsCardsPageStyles();
-  assert.match(css, /\.resource-master-icon, \.resource-detail-identity \{[^}]*border-radius: 11px/s);
+  assert.match(
+    css,
+    /\.resource-master-icon, \.resource-detail-identity \{[^}]*border-radius: 11px/s,
+  );
   assert.match(css, /\.resource-master-icon, \.resource-detail-identity \{[^}]*height: 44px/s);
   assert.match(css, /\.resource-master-icon, \.resource-detail-identity \{[^}]*width: 44px/s);
   assert.match(css, /\.resource-master-icon :is\(img, svg\)[^{]*\{[^}]*object-fit: contain/s);
