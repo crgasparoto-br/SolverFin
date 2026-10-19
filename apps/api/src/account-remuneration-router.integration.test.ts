@@ -96,7 +96,11 @@ async function main(): Promise<void> {
     "GET",
     "/api/account-remuneration/configurations?profileId=33333333-3333-4333-8333-999999999999",
   );
-  assert.equal(foreignProfileRead.statusCode, 403, "a profile outside the user's scope must be rejected");
+  assert.equal(
+    foreignProfileRead.statusCode,
+    403,
+    "a profile outside the user's scope must be rejected",
+  );
   assert.equal(readError(foreignProfileRead).code, "TENANT_ACCESS_DENIED");
 
   const foreignAccountWrite = await apiRequest(
