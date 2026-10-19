@@ -149,6 +149,8 @@ A identidade visual de uma instituicao financeira e responsabilidade de um catal
 - instituicoes sem identidade conhecida devem usar fallback padronizado, acessivel e consistente;
 - Extrato, Cartoes, Contas e Cartoes, Relatorios, seletores e formularios devem consumir o mesmo componente/contrato de identidade institucional.
 
+Em `/contas-cartoes`, a lista mestre e o cabecalho dos detalhes devem apresentar o mesmo enquadramento institucional aprovado em `/lancamentos`: **imagem de 44 x 44 px, raio de 11 px, sem moldura cinza adicional e `object-fit: contain` para logos rasterizados**. O SVG de fallback ocupa a mesma area e a hierarquia/listagem responsiva deve reservar exatamente a largura da imagem. A regra estiliza `renderInstitutionIcon()` sem recriar tabelas locais de instituicoes.
+
 O banco pode manter metadados administrativos da instituicao ou do asset global quando necessario para gestao do catalogo, mas esses dados nao pertencem ao registro individual da conta nem podem transformar a conta em dona do logo.
 
 ## Estado atual e estado-alvo
