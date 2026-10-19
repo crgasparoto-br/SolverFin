@@ -76,6 +76,10 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.detailLayoutVisible, true, "A3 DetailLayout is not visible.");
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
   assert.equal(baseline.listAmountsVisible, true, "Master amounts are missing.");
+  assert.equal(baseline.masterTypeColumn, true, "Account subtype icon column is absent.");
+  assert.equal(baseline.masterTypeTooltips, true, "Account/card type icons need accessible tooltips.");
+  assert.equal(baseline.compactRowMinHeight, true, "Master rows must use compact Golden Screen density.");
+  assert.equal(baseline.headerActionsHaveIcons, true, "Add-account and add-card buttons need icons.");
   assert.equal(baseline.cdiColumnPresent, true, "The dedicated CDI column is missing.");
   assert.equal(
     baseline.cdiStateConsistent,
@@ -720,6 +724,25 @@ async function inspectPage(cdp) {
         detailVisible: visible(document.querySelector('.resource-detail-panel')),
         masterItemCount: masterItems.length,
         listAmountsVisible: masterItems.every((item) => Boolean(item.querySelector('.resource-master-amount strong'))),
+        masterTypeColumn: Array.from(document.querySelectorAll('.resource-master-columns > span'))
+          .map((column) => column.textContent.trim()).join('|') ===
+          'Conta ou cartão|Tipo|Moeda|Saldo inicial / Limite|CDI|Situação',
+        masterTypeTooltips: masterItems.every((item) => {
+          const badge = item.querySelector('.resource-master-type');
+          return badge?.getAttribute('role') === 'img' &&
+            Boolean(badge.getAttribute('aria-label')) &&
+            badge.getAttribute('aria-label') === badge.getAttribute('title') &&
+            Boolean(badge.querySelector('svg')) &&
+            !item.querySelector('.resource-master-context');
+        }),
+        compactRowMinHeight: masterItems.every((item) => {
+          const link = item.querySelector('.resource-master-link');
+          const expected = innerWidth <= 760 ? 66 : 56;
+          return link && Math.abs(parseFloat(getComputedStyle(link).minHeight) - expected) <= 1;
+        }),
+        headerActionsHaveIcons: ['new-account-dialog', 'new-card-dialog'].every((id) =>
+          Boolean(document.querySelector('[data-open-dialog="' + id + '"] svg.resource-header-action-icon')),
+        ),
         cdiColumnPresent: Array.from(document.querySelectorAll('.resource-master-columns > span')).some((column) => column.textContent.trim() === 'CDI'),
         cdiStateConsistent: masterItems.every((item) => {
           const active = item.getAttribute('data-cdi-active') === 'true';
