@@ -76,13 +76,16 @@ export function statementGoldenRefinementRuntime(): string {
           '.statement-reconciliation-field', '.statement-category-field', '.statement-sort-field'];
         const fields = selectors.map((selector) => filterForm.querySelector(selector)).filter(Boolean);
         if (fields.length === selectors.length) {
+          const dayField = filterForm.querySelector('.statement-day-field');
+          const searchField = filterForm.querySelector('.statement-search-field');
+          const narrowPhone = window.matchMedia('(max-width: 360px)');
           const details = document.createElement('details');
           details.className = 'statement-mobile-advanced-filters';
           const trigger = document.createElement('summary');
           const activeCount = () => fields.filter((field) => {
             const select = field.querySelector('select');
             return select && select.value !== '' && !(select.name === 'sort' && select.value === 'date_asc');
-          }).length;
+          }).length + (dayField?.querySelector('input[name="day"]')?.value ? 1 : 0);
           const updateTrigger = () => {
             const count = activeCount();
             trigger.textContent = count ? 'Filtros ativos (' + count + ')' : 'Filtros e ordenação';
@@ -95,6 +98,13 @@ export function statementGoldenRefinementRuntime(): string {
           details.append(trigger, content);
           const compact = window.matchMedia('(max-width: 760px)');
           const sync = () => {
+            // At 320px the day input is a progressive filter, not a vanished
+            // control. Restore its canonical position when the viewport grows.
+            if (dayField && searchField) {
+              if (narrowPhone.matches) content.prepend(dayField);
+              else searchField.before(dayField);
+            }
+            updateTrigger();
             if (!compact.matches) {
               details.open = true;
               details.removeAttribute('data-mobile-initialized');
@@ -104,6 +114,8 @@ export function statementGoldenRefinementRuntime(): string {
             }
           };
           compact.addEventListener('change', sync);
+          narrowPhone.addEventListener('change', sync);
+          dayField?.querySelector('input[name="day"]')?.addEventListener('change', updateTrigger);
           for (const field of fields) field.addEventListener('change', updateTrigger);
           filterForm.addEventListener('reset', () => queueMicrotask(updateTrigger));
           sync();
@@ -684,6 +696,13 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .filter-form{row-gap:2px}
     }
     @media(max-width:360px){
+      /* Reclaim a whole line without hiding period navigation or its shortcut.
+         The 44px shortcut keeps its text accessible and shows a compact glyph. */
+      ${root} .statement-period-control{align-items:center;gap:4px;grid-template-columns:minmax(0,1fr) 44px}
+      ${root} .statement-period-control .month-field{min-width:0}
+      ${root} .statement-period-control .month-nav{min-width:0;width:100%}
+      ${root} .statement-period-control [data-month-current]{font-size:0;height:44px;min-height:44px;min-width:44px;padding:0}
+      ${root} .statement-period-control [data-month-current]::before{content:"↻";font-size:20px;line-height:1}
       /* Keep the 320px first-viewport budget without truncating the selected account. */
       ${root} .statement-account-heading{gap:${spacing[1]}}
       ${root} .statement-account-control .account-field>label#account-picker-label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
