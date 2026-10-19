@@ -205,6 +205,12 @@ test("#716 aplica variantes de Golden Screen no mestre e mantém edição secund
   assert.match(detail, /data-button-variant="neutral"/);
 });
 
+test("#716 confirma configuração pelo ícone da tela atual, sem direcionar para rota aposentada", () => {
+  const runtime = renderAccountsCardsApiFormScript();
+  assert.match(runtime, /ícone de engrenagem ao lado do flag CDI nesta tela/);
+  assert.doesNotMatch(runtime, /em Remuneração de Contas/);
+});
+
 test("#716 controla CDI por conta e ações somente com ícones nomeados", () => {
   const configured = buildAccountsCardsPageViewModel([account], [], "account:a-1", [
     { accountId: account.id, accountCurrency: "BRL", enabled: true, indexKind: "cdi" },
