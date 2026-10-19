@@ -78,6 +78,7 @@ async function main(): Promise<void> {
     pathname: "/api/account-remuneration/configurations",
     query: new URLSearchParams(),
     headers: {},
+    body: undefined,
   });
   assert.equal(noTokenRead?.statusCode, 401, "unauthenticated users cannot list CDI settings");
 
