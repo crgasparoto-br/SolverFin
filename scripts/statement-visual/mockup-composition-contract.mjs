@@ -374,6 +374,13 @@ export function measureMockupComposition() {
       const chip = root?.querySelector(".statement-body .statement-status");
       if (!chip) return undefined;
       const style = getComputedStyle(chip);
+      // The inline reconciliation selector is itself the keyboard/tooltip
+      // surface; its nested icon intentionally has no text-label span.
+      const control = chip.closest(".statement-status-control");
+      const trigger = control?.querySelector(":scope > summary");
+      const label = chip.getAttribute("aria-label") || chip.dataset.tooltip || "";
+      const visibleLabel = chip.querySelector(".statement-status-label");
+      const tooltip = trigger?.title || chip.title;
       return {
         hasGlyph:
           !!chip.querySelector("svg") &&
@@ -381,13 +388,17 @@ export function measureMockupComposition() {
         background: style.backgroundColor,
         radius: parseFloat(style.borderTopLeftRadius) || 0,
         width: chip.getBoundingClientRect().width,
-        labelHidden:
-          getComputedStyle(chip.querySelector(".statement-status-label")).display === "none",
+        labelHidden: visibleLabel
+          ? getComputedStyle(visibleLabel).display === "none"
+          : chip.textContent.trim().length === 0,
         hasTooltip:
-          !!chip.title &&
-          chip.title === chip.getAttribute("aria-label") &&
-          chip.dataset.tooltip === chip.title,
-        accessible: chip.getAttribute("role") === "img" && chip.tabIndex === 0,
+          !!label &&
+          tooltip === label &&
+          chip.dataset.tooltip === label,
+        accessible: trigger
+          ? trigger.tagName === "SUMMARY" &&
+            (trigger.getAttribute("aria-label") || "").includes(label)
+          : chip.getAttribute("role") === "img" && chip.tabIndex === 0,
       };
     })(),
     selectionControl: (() => {
