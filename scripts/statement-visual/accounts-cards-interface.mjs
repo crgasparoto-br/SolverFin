@@ -463,7 +463,10 @@ async function validateCdiRealPersistence(cdp) {
   try {
     await navigate(cdp, `${baseUrl}${href}`);
     await waitForDetail(cdp, "account");
-    const initial = await evaluate(cdp, `document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked')`);
+    const initial = await evaluate(
+      cdp,
+      `document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked')`,
+    );
     assert.equal(initial, "false", "A newly created account must not start with CDI active.");
 
     async function toggleAndVerify(enabled) {
@@ -495,9 +498,21 @@ async function validateCdiRealPersistence(cdp) {
         })()`,
       );
       assert.equal(current.status, 200, "The authenticated API must permit reading CDI.");
-      assert.equal(current.entry?.enabled, enabled, "CDI must persist across a new HTTP GET and page load.");
-      assert.equal(current.switchState, String(enabled), "The server-rendered switch must match the persisted CDI state.");
-      assert.equal(current.masterState, enabled ? "active" : "inactive", "The master list must use persisted CDI state.");
+      assert.equal(
+        current.entry?.enabled,
+        enabled,
+        "CDI must persist across a new HTTP GET and page load.",
+      );
+      assert.equal(
+        current.switchState,
+        String(enabled),
+        "The server-rendered switch must match the persisted CDI state.",
+      );
+      assert.equal(
+        current.masterState,
+        enabled ? "active" : "inactive",
+        "The master list must use persisted CDI state.",
+      );
     }
     await toggleAndVerify(true);
     persisted.activated = true;
