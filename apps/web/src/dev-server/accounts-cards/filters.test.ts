@@ -72,11 +72,18 @@ function rendersCompactAccountTypeColumnWithTooltips(): void {
   };
   const html = renderResourceMaster([account, card]);
 
-  assert.match(html, /<span>Conta ou cartão<\/span><span>Tipo<\/span><span>Moeda<\/span>/);
+  assert.match(html, /<span>Tipo<\/span><span>Conta ou cartão<\/span><span>Moeda<\/span>/);
   assert.match(html, /class="resource-master-type" role="img" aria-label="Conta corrente" title="Conta corrente"/);
   assert.match(html, /class="resource-master-type" role="img" aria-label="Cartão · Visa · 2 instrumentos ativos"/);
   assert.match(html, /<span class="resource-master-institution"[^>]*>Banco exemplo/);
   assert.doesNotMatch(html, /class="resource-master-context"/);
+  const accountRow = html.match(/<article[^>]*data-kind="account"[\\s\\S]*?<\\/article>/)?.[0];
+  assert.ok(accountRow, "Account row must render");
+  assert.ok(
+    accountRow.indexOf('class="resource-master-type"') <
+      accountRow.indexOf('class="resource-master-identity"'),
+    "The type icon must precede account identity in document order",
+  );
   assert.match(html, /data-kind="account"/);
   assert.match(html, /data-kind="card"/);
 }
