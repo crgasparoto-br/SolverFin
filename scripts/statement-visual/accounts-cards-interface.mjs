@@ -2,14 +2,24 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const candidateSha =
-  process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local";
+  process.env.STATEMENT_VISUAL_CANDIDATE_SHA ??
+  process.env.GITHUB_SHA ??
+  "local";
 const failures = [];
 const scenarios = [];
 const viewports = [
@@ -29,7 +39,11 @@ try {
   await setViewport(browser.cdp, 1440, 900);
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
-  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
+  assert.equal(
+    login.ok,
+    true,
+    `Demo login failed: ${login.status} ${login.body}`,
+  );
 
   for (const viewport of viewports) {
     try {
@@ -73,25 +87,73 @@ async function validateViewport(cdp, viewport) {
 
   const baseline = await inspectPage(cdp);
   assert.equal(baseline.archetype, "A3");
-  assert.equal(baseline.detailLayoutVisible, true, "A3 DetailLayout is not visible.");
+  assert.equal(
+    baseline.detailLayoutVisible,
+    true,
+    "A3 DetailLayout is not visible.",
+  );
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
-  assert.equal(baseline.listAmountsVisible, true, "Master amounts are missing.");
-  assert.equal(baseline.masterTypeColumn, true, "Account subtype icon column is absent.");
-  assert.equal(baseline.masterTypeFirst, true, "Type icon must be the first visible column.");
-  assert.equal(baseline.masterInstitutionSecond, true, "Institution must be between type and account/card.");
-  assert.equal(baseline.amountKindInline, true, "Balance/limit icon must be inline with the amount.");
-  assert.equal(baseline.masterTypeTooltips, true, "Account/card type icons need accessible tooltips.");
-  assert.equal(baseline.compactRowMinHeight, true, "Master rows must use compact Golden Screen density.");
-  assert.equal(baseline.headerActionsHaveIcons, true, "Add-account and add-card buttons need icons.");
-  assert.equal(baseline.cdiColumnPresent, true, "The dedicated CDI column is missing.");
+  assert.equal(
+    baseline.listAmountsVisible,
+    true,
+    "Master amounts are missing.",
+  );
+  assert.equal(
+    baseline.masterTypeColumn,
+    true,
+    "Account subtype icon column is absent.",
+  );
+  assert.equal(
+    baseline.masterTypeFirst,
+    true,
+    "Type icon must be the first visible column.",
+  );
+  assert.equal(
+    baseline.masterInstitutionSecond,
+    true,
+    "Institution must be between type and account/card.",
+  );
+  assert.equal(
+    baseline.amountKindInline,
+    true,
+    "Balance/limit icon must be inline with the amount.",
+  );
+  assert.equal(
+    baseline.masterTypeTooltips,
+    true,
+    "Account/card type icons need accessible tooltips.",
+  );
+  assert.equal(
+    baseline.compactRowMinHeight,
+    true,
+    "Master rows must use compact Golden Screen density.",
+  );
+  assert.equal(
+    baseline.headerActionsHaveIcons,
+    true,
+    "Add-account and add-card buttons need icons.",
+  );
+  assert.equal(
+    baseline.cdiColumnPresent,
+    true,
+    "The dedicated CDI column is missing.",
+  );
   assert.equal(
     baseline.cdiStateConsistent,
     true,
     "CDI labels must be account-only and match the active configuration.",
   );
-  assert.equal(baseline.listIsPrimary, true, "Master list should dominate the detail.");
+  assert.equal(
+    baseline.listIsPrimary,
+    true,
+    "Master list should dominate the detail.",
+  );
   assert.equal(baseline.detailVisible, true, "Selected detail is not visible.");
-  assert.equal(baseline.noHorizontalOverflow, true, "A3 page overflows horizontally.");
+  assert.equal(
+    baseline.noHorizontalOverflow,
+    true,
+    "A3 page overflows horizontally.",
+  );
   assert.equal(baseline.hasTabs, false, "Retired tab markup is still present.");
   assert.equal(
     baseline.legacyActionMenuCount,
@@ -99,7 +161,11 @@ async function validateViewport(cdp, viewport) {
     "Post-processed row action menus are still present.",
   );
   assert.ok(baseline.masterItemCount > 0, "No master resources were rendered.");
-  assert.equal(baseline.selectedMasterCount, 1, "Exactly one master resource must be selected.");
+  assert.equal(
+    baseline.selectedMasterCount,
+    1,
+    "Exactly one master resource must be selected.",
+  );
   assert.equal(baseline.searchVisible, true, "Master search is unavailable.");
   assert.equal(
     baseline.controlsUseGoldenPrimitives,
@@ -114,9 +180,16 @@ async function validateViewport(cdp, viewport) {
     true,
     "Selected currency filter label must remain readable at every supported viewport.",
   );
-  assert.ok(baseline.currencyOptions.length > 1, "Currency filter has no resource options.");
+  assert.ok(
+    baseline.currencyOptions.length > 1,
+    "Currency filter has no resource options.",
+  );
   assert.deepEqual(baseline.statusOptions, ["all", "active", "inactive"]);
-  assert.equal(baseline.loadingStatePresent, true, "Route loading state is not wired.");
+  assert.equal(
+    baseline.loadingStatePresent,
+    true,
+    "Route loading state is not wired.",
+  );
   assert.equal(
     baseline.institutionLogosOnMaster,
     true,
@@ -202,7 +275,11 @@ async function validateViewport(cdp, viewport) {
       "Card detail logo must match Golden Statement image geometry.",
     );
     assert.equal(measurements.selectedMasterCount, 1);
-    assert.equal(measurements.currencyContextVisible, true, "Card currency context is ambiguous.");
+    assert.equal(
+      measurements.currencyContextVisible,
+      true,
+      "Card currency context is ambiguous.",
+    );
     assert.equal(
       measurements.instrumentSectionVisible,
       true,
@@ -259,14 +336,29 @@ async function validateViewport(cdp, viewport) {
     });
   }
 
-  await screenshot(cdp, join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`));
+  await screenshot(
+    cdp,
+    join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`),
+  );
   if (viewport.width === 1366) {
     const cdiSettings = await validateCdiSettings(cdp);
-    scenarios.push({ kind: "cdi-settings", viewport: "1366x768", measurements: cdiSettings });
+    scenarios.push({
+      kind: "cdi-settings",
+      viewport: "1366x768",
+      measurements: cdiSettings,
+    });
     const cdiPersistence = await validateCdiRealPersistence(cdp);
-    scenarios.push({ kind: "cdi-real-api", viewport: "1366x768", measurements: cdiPersistence });
+    scenarios.push({
+      kind: "cdi-real-api",
+      viewport: "1366x768",
+      measurements: cdiPersistence,
+    });
     const cdi = await validateCdiSwitch(cdp);
-    scenarios.push({ kind: "cdi-toggle", viewport: "1366x768", measurements: cdi });
+    scenarios.push({
+      kind: "cdi-toggle",
+      viewport: "1366x768",
+      measurements: cdi,
+    });
   }
 }
 
@@ -337,8 +429,16 @@ async function validateGoldenActionToolbar(cdp, resourceKind) {
     true,
     "Subscreen icon controls need accessible names and tooltips.",
   );
-  assert.equal(snapshot.allGoldenSize, true, "Golden Screen controls must have 44x44px targets.");
-  assert.equal(snapshot.allGoldenGlyphs, true, "Action glyphs must use the same icon scale.");
+  assert.equal(
+    snapshot.allGoldenSize,
+    true,
+    "Golden Screen controls must have 44x44px targets.",
+  );
+  assert.equal(
+    snapshot.allGoldenGlyphs,
+    true,
+    "Action glyphs must use the same icon scale.",
+  );
   assert.equal(
     snapshot.instrumentStylesConsistent,
     true,
@@ -352,12 +452,22 @@ async function validateGoldenActionToolbar(cdp, resourceKind) {
   } else {
     assert.equal(snapshot.instrumentActionCount, 0);
   }
-  assert.equal(snapshot.allWithinDetail, true, "Subscreen controls overflow their detail panel.");
-  assert.equal(snapshot.noHorizontalOverflow, true, "Toolbar introduces a horizontal overflow.");
+  assert.equal(
+    snapshot.allWithinDetail,
+    true,
+    "Subscreen controls overflow their detail panel.",
+  );
+  assert.equal(
+    snapshot.noHorizontalOverflow,
+    true,
+    "Toolbar introduces a horizontal overflow.",
+  );
   assert.equal(snapshot.kinds.cdi, resourceKind === "account");
   if (resourceKind === "account") {
     assert.equal(snapshot.cdiSwitch?.role, "switch");
-    assert.ok(snapshot.cdiSwitch?.width >= 43 && snapshot.cdiSwitch?.height >= 24);
+    assert.ok(
+      snapshot.cdiSwitch?.width >= 43 && snapshot.cdiSwitch?.height >= 24,
+    );
   }
   return snapshot;
 }
@@ -446,7 +556,10 @@ async function validateCdiSettings(cdp) {
     date: "2026-10-14",
     retryAllowed: true,
   });
-  await evaluate(cdp, "document.querySelector('[data-cdi-configuration-form]')?.requestSubmit()");
+  await evaluate(
+    cdp,
+    "document.querySelector('[data-cdi-configuration-form]')?.requestSubmit()",
+  );
   await waitFor(
     cdp,
     `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Configuração CDI salva')`,
@@ -454,7 +567,11 @@ async function validateCdiSettings(cdp) {
   );
   const success = await evaluate(cdp, "window.__issue716SettingsProof.calls");
   assert.equal(success.length, 2);
-  assert.equal(success[1].enabled, true, "Editing settings must not disable active CDI.");
+  assert.equal(
+    success[1].enabled,
+    true,
+    "Editing settings must not disable active CDI.",
+  );
   assert.equal(success[1].remunerationPercent, 88.5);
   assert.equal(success[1].startsOn, "2026-10-14");
   await sleep(450);
@@ -486,7 +603,12 @@ async function validateCdiRealPersistence(cdp) {
   const accountId = created.body.account?.id;
   assert.ok(accountId, "The real account API did not return an id.");
   const href = `/contas-cartoes?resource=${encodeURIComponent(`account:${accountId}`)}`;
-  const persisted = { accountId, activated: false, deactivated: false, cleanupStatus: null };
+  const persisted = {
+    accountId,
+    activated: false,
+    deactivated: false,
+    cleanupStatus: null,
+  };
   try {
     await navigate(cdp, `${baseUrl}${href}`);
     await waitForDetail(cdp, "account");
@@ -494,16 +616,26 @@ async function validateCdiRealPersistence(cdp) {
       cdp,
       `document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked')`,
     );
-    assert.equal(initial, "false", "A newly created account must not start with CDI active.");
+    assert.equal(
+      initial,
+      "false",
+      "A newly created account must not start with CDI active.",
+    );
 
     async function toggleAndVerify(enabled) {
-      await evaluate(cdp, `document.querySelector('[data-cdi-toggle]')?.click()`);
+      await evaluate(
+        cdp,
+        `document.querySelector('[data-cdi-toggle]')?.click()`,
+      );
       await waitFor(
         cdp,
         `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
         "Real CDI confirmation did not open.",
       );
-      await evaluate(cdp, `document.querySelector('[data-confirm-accept]')?.click()`);
+      await evaluate(
+        cdp,
+        `document.querySelector('[data-confirm-accept]')?.click()`,
+      );
       await waitFor(
         cdp,
         `document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked') === ${JSON.stringify(String(enabled))}`,
@@ -524,7 +656,11 @@ async function validateCdiRealPersistence(cdp) {
           };
         })()`,
       );
-      assert.equal(current.status, 200, "The authenticated API must permit reading CDI.");
+      assert.equal(
+        current.status,
+        200,
+        "The authenticated API must permit reading CDI.",
+      );
       assert.equal(
         current.entry?.enabled,
         enabled,
@@ -614,7 +750,10 @@ async function validateCdiSwitch(cdp) {
     `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
     "CDI confirmation did not open.",
   );
-  await evaluate(cdp, `document.querySelector('[data-confirm-cancel]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-confirm-cancel]')?.click()`,
+  );
   await sleep(80);
   const cancelled = await evaluate(
     cdp,
@@ -624,7 +763,10 @@ async function validateCdiSwitch(cdp) {
   }))()`,
   );
   assert.equal(cancelled.requests, 0, "Cancelling CDI must not write.");
-  const before = await evaluate(cdp, "String(window.__issue716CdiProof.initiallyActive)");
+  const before = await evaluate(
+    cdp,
+    "String(window.__issue716CdiProof.initiallyActive)",
+  );
   assert.equal(cancelled.checked, before, "Cancel must preserve state.");
 
   await evaluate(cdp, "document.querySelector('[data-cdi-toggle]')?.click()");
@@ -633,7 +775,10 @@ async function validateCdiSwitch(cdp) {
     `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
     "CDI retry confirmation absent.",
   );
-  await evaluate(cdp, "document.querySelector('[data-confirm-accept]')?.click()");
+  await evaluate(
+    cdp,
+    "document.querySelector('[data-confirm-accept]')?.click()",
+  );
   await waitFor(
     cdp,
     `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('Falha CDI simulada')`,
@@ -661,7 +806,10 @@ async function validateCdiSwitch(cdp) {
     `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
     "CDI successful retry confirmation absent.",
   );
-  await evaluate(cdp, "document.querySelector('[data-confirm-accept]')?.click()");
+  await evaluate(
+    cdp,
+    "document.querySelector('[data-confirm-accept]')?.click()",
+  );
   await waitFor(
     cdp,
     `document.querySelector('[data-cdi-feedback]')?.textContent?.includes('CDI atualizado')`,
@@ -675,7 +823,11 @@ async function validateCdiSwitch(cdp) {
     busy: document.querySelector('[data-cdi-toggle]')?.disabled,
   }))()`,
   );
-  assert.equal(success.checked, String(before !== "true"), "Successful write must flip CDI.");
+  assert.equal(
+    success.checked,
+    String(before !== "true"),
+    "Successful write must flip CDI.",
+  );
   assert.equal(
     success.calls.length,
     2,
@@ -687,7 +839,11 @@ async function validateCdiSwitch(cdp) {
     startsOn: "2026-10-01",
     categoryId: "income-1",
   });
-  assert.equal(success.busy, true, "Switch must lock until reload after successful write.");
+  assert.equal(
+    success.busy,
+    true,
+    "Switch must lock until reload after successful write.",
+  );
   return { cancelled, failed, success };
 }
 
@@ -990,8 +1146,16 @@ async function validateFilter(cdp) {
     state.totalCount,
     "Search did not filter the unified master list.",
   );
-  assert.equal(state.emptyVisible, true, "Filtered empty state is not visible.");
-  assert.equal(state.selectedMasterCountAfterEmpty, 0, "Filtered-out resource kept aria-current.");
+  assert.equal(
+    state.emptyVisible,
+    true,
+    "Filtered empty state is not visible.",
+  );
+  assert.equal(
+    state.selectedMasterCountAfterEmpty,
+    0,
+    "Filtered-out resource kept aria-current.",
+  );
   assert.equal(
     state.selectedClassCountAfterEmpty,
     0,
@@ -1017,21 +1181,38 @@ async function validateFilter(cdp) {
     true,
     "Clearing filters hid the neutral detail without an explicit selection.",
   );
-  assert.ok(state.accountVisibleCount > 0, "Type filter did not keep any account visible.");
-  assert.equal(state.accountOnly, true, "Type filter left non-account resources visible.");
+  assert.ok(
+    state.accountVisibleCount > 0,
+    "Type filter did not keep any account visible.",
+  );
+  assert.equal(
+    state.accountOnly,
+    true,
+    "Type filter left non-account resources visible.",
+  );
   assert.notEqual(
     state.selectedCurrency,
     "all",
     "Currency filter has no selectable currency state.",
   );
-  assert.ok(state.currencyVisibleCount > 0, "Currency filter hid every resource unexpectedly.");
+  assert.ok(
+    state.currencyVisibleCount > 0,
+    "Currency filter hid every resource unexpectedly.",
+  );
   assert.equal(
     state.currencyOnly,
     true,
     "Currency filter left resources from another currency visible.",
   );
-  assert.ok(state.combinedVisibleCount > 0, "Combined filters hid the target resource.");
-  assert.equal(state.combinedMatches, true, "Search, type, currency and status are not combined.");
+  assert.ok(
+    state.combinedVisibleCount > 0,
+    "Combined filters hid the target resource.",
+  );
+  assert.equal(
+    state.combinedMatches,
+    true,
+    "Search, type, currency and status are not combined.",
+  );
   return state;
 }
 
@@ -1069,8 +1250,16 @@ async function validateKeyboardDialog(cdp) {
   );
   assert.equal(opened.open, true);
   assert.equal(opened.labelled, true);
-  assert.equal(opened.insideViewport, true, "Resource dialog exceeds the viewport.");
-  assert.equal(opened.focusInside, true, "Resource dialog did not receive focus.");
+  assert.equal(
+    opened.insideViewport,
+    true,
+    "Resource dialog exceeds the viewport.",
+  );
+  assert.equal(
+    opened.focusInside,
+    true,
+    "Resource dialog did not receive focus.",
+  );
 
   await pressEscape(cdp);
   await sleep(100);
@@ -1081,8 +1270,16 @@ async function validateKeyboardDialog(cdp) {
       focusRestored: document.activeElement?.matches?.('[data-resource-detail] [data-open-dialog^="edit-account-dialog-"]') === true,
     }))()`,
   );
-  assert.equal(closed.open, false, "Resource dialog did not close with Escape.");
-  assert.equal(closed.focusRestored, true, "Focus was not restored to the dialog trigger.");
+  assert.equal(
+    closed.open,
+    false,
+    "Resource dialog did not close with Escape.",
+  );
+  assert.equal(
+    closed.focusRestored,
+    true,
+    "Focus was not restored to the dialog trigger.",
+  );
   return { ...opened, closed };
 }
 
@@ -1110,7 +1307,11 @@ async function validateSaveFailureStates(cdp) {
       return true;
     })()`,
   );
-  assert.equal(prepared, true, "Could not prepare a valid save form for loading/error coverage.");
+  assert.equal(
+    prepared,
+    true,
+    "Could not prepare a valid save form for loading/error coverage.",
+  );
   await sleep(80);
 
   const loading = await evaluate(
@@ -1120,7 +1321,11 @@ async function validateSaveFailureStates(cdp) {
       status: document.querySelector('dialog.master-dialog[open] [data-form-status]')?.textContent?.trim() || '',
     }))()`,
   );
-  assert.equal(loading.visible, true, "Loading state did not become visible during save.");
+  assert.equal(
+    loading.visible,
+    true,
+    "Loading state did not become visible during save.",
+  );
   assert.match(loading.status, /Salvando/i);
 
   await evaluate(
@@ -1148,7 +1353,11 @@ async function validateSaveFailureStates(cdp) {
       return result;
     })()`,
   );
-  assert.equal(failed.loadingHidden, true, "Loading state remained visible after save failure.");
+  assert.equal(
+    failed.loadingHidden,
+    true,
+    "Loading state remained visible after save failure.",
+  );
   assert.match(failed.status, /Falha simulada/i);
   assert.match(failed.statusClass, /error/);
 
@@ -1173,13 +1382,20 @@ async function validateConfirmationCancellation(cdp) {
       return true;
     })()`,
   );
-  assert.equal(prepared, true, "No destructive action requiring confirmation was found.");
+  assert.equal(
+    prepared,
+    true,
+    "No destructive action requiring confirmation was found.",
+  );
   await waitFor(
     cdp,
     `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
     "Confirmation dialog did not open.",
   );
-  await evaluate(cdp, `document.querySelector('[data-confirm-cancel]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-confirm-cancel]')?.click()`,
+  );
   await sleep(80);
   const result = await evaluate(
     cdp,
@@ -1194,8 +1410,16 @@ async function validateConfirmationCancellation(cdp) {
       return value;
     })()`,
   );
-  assert.equal(result.open, false, "Confirmation dialog did not close after cancellation.");
-  assert.equal(result.requestCount, 0, "Cancelled destructive action still called the API.");
+  assert.equal(
+    result.open,
+    false,
+    "Confirmation dialog did not close after cancellation.",
+  );
+  assert.equal(
+    result.requestCount,
+    0,
+    "Cancelled destructive action still called the API.",
+  );
   return { ...result, cancelledWithoutRequest: true };
 }
 
@@ -1221,9 +1445,17 @@ async function validateLongContent(cdp) {
       actionsVisible: Boolean(document.querySelector('.resource-detail-actions')?.getClientRects().length),
     }))()`,
   );
-  assert.equal(result.noHorizontalOverflow, true, "Long content creates horizontal overflow.");
+  assert.equal(
+    result.noHorizontalOverflow,
+    true,
+    "Long content creates horizontal overflow.",
+  );
   assert.equal(result.detailVisible, true);
-  assert.equal(result.actionsVisible, true, "Long content hides maintenance actions.");
+  assert.equal(
+    result.actionsVisible,
+    true,
+    "Long content hides maintenance actions.",
+  );
   await evaluate(
     cdp,
     `((values) => {
@@ -1303,5 +1535,7 @@ async function pressEnter(cdp) {
 }
 
 function serializeError(error) {
-  return error instanceof Error ? (error.stack ?? error.message) : String(error);
+  return error instanceof Error
+    ? (error.stack ?? error.message)
+    : String(error);
 }
