@@ -478,6 +478,10 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-status{justify-self:center}
     ${root} .statement-body .statement-status-label{display:none}
     ${root} .statement-body .statement-status svg{flex:0 0 auto;height:14px;width:14px}
+    /* The row indicator is 32px, but the compact reconciliation popover uses
+       the canonical 26px circle and 15px glyph; do not enlarge its 44px target. */
+    ${root} .statement-body .statement-status-menu .statement-status{height:26px;min-width:26px;width:26px}
+    ${root} .statement-body .statement-status-menu .statement-status svg{height:15px;width:15px}
     ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:inherit;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
     ${root} .statement-body .statement-status-ok{background:#dcfce7;border-color:#bbf7d0;color:#166534}
     ${root} .statement-body .statement-status-posted{background:#f1f5f9;border-color:#e2e8f0;color:#475569}

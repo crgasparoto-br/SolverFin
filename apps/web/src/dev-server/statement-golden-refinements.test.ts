@@ -101,6 +101,10 @@ assert.match(styles, /\.col-row-icon\{[^}]*height:44px/);
 // Reference status chip is a defined pill, not bare text.
 assert.match(styles, /\.statement-status\{align-items:center;border:1px solid transparent/);
 assert.match(styles, /\.statement-status-ok\{background:#dcfce7;border-color:#bbf7d0/);
+// The row icon may be 32px, but the reconciliation popover must keep
+// its matching 26px circles and 15px glyphs (44px action targets are separate).
+assert.match(styles, /\.statement-body \.statement-status-menu \.statement-status\{height:26px;min-width:26px;width:26px\}/);
+assert.match(styles, /\.statement-body \.statement-status-menu \.statement-status svg\{height:15px;width:15px\}/);
 // Reference header is a quiet label row, not a heavy uppercase band.
 assert.match(
   styles,
