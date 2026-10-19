@@ -336,13 +336,6 @@ export function statementGoldenRefinementStyles(): string {
     /* Mockup parity layer: route-scoped so the Golden Screen can evolve without changing other surfaces. */
     body:has(${root}){background:#f5f7fb}
     body:has(${root}) .app-shell{grid-template-columns:200px minmax(0,1fr)}
-    body:has(${root}) .sidebar{background:#fff;border-right:1px solid var(--line);box-shadow:none;color:var(--text);padding:14px 12px}
-    body:has(${root}) .brand{color:var(--text)}
-    body:has(${root}) .nav-section-label{color:#94a3b8}
-    body:has(${root}) .sidebar nav a{color:#334155}
-    body:has(${root}) .sidebar nav a:hover{background:#f1f5f9;color:#0f172a}
-    body:has(${root}) .sidebar nav a[aria-current="page"]{background:#eef4ff;color:#1d4ed8}
-    body:has(${root}) .sidebar .logout{background:transparent;border-color:transparent;color:#475569}
     body:has(${root}) .topbar{display:none}
     body:has(${root}) .main-area>main{box-sizing:border-box;margin:0;max-width:none;padding:18px 20px 32px;width:100%}
     ${root}{gap:${spacing[2]}}
@@ -563,9 +556,6 @@ export function statementGoldenRefinementStyles(): string {
     }
     @media(max-width:1100px){
       body:has(${root}) .app-shell{grid-template-columns:1fr}
-      body:has(${root}) .sidebar{background:var(--primary);border-right:0;color:#fff}
-      body:has(${root}) .sidebar nav a{color:rgba(255,255,255,.78)}
-      body:has(${root}) .sidebar nav a[aria-current="page"]{background:rgba(34,211,238,.18);color:#fff}
       body:has(${root}) .main-area>main{padding:${spacing[2]} ${spacing[3]} ${spacing[6]}}
       ${root} .statement-breadcrumb{display:none}
       body:has(${root}) .sidebar{overflow-x:hidden}
