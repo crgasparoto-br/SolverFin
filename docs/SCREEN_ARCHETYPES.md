@@ -146,6 +146,8 @@ retry; vazio por filtro nao vira ausencia total; cards grandes nao substituem a 
 
 ## A3 - Master-detail
 
+> **Importante para `/contas-cartoes`:** a lista de contas/cartoes é a tarefa principal, ocupando a maior largura no desktop; detalhes e manutencao sao auxiliares. Em mobile, listar antes de detalhar. A Golden Screen do Extrato padroniza tokens, acoes, filtros e acabamento, **nao** impoe uma hierarquia de detalhe dominante.
+
 **Quando usar:** selecionar recurso mestre e trabalhar com dados ou filhos relacionados sem perder
 o contexto. Exemplos: `/cartoes` e `/contas-cartoes`.
 

@@ -112,6 +112,8 @@ function resourceFixture(
     institutionLabel: "Instituição",
     brandKey: undefined,
     secondaryLabel: "Contexto",
+    amountMinor: 0,
+    amountLabel: overrides.kind === "account" ? "Saldo inicial" : "Limite total",
     search: `${overrides.name} ${overrides.currencyLabel}`.toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(overrides.key)}`,
     isSelected: false,
