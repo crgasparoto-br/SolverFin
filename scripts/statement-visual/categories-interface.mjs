@@ -2,15 +2,24 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
+import {
+  evaluate,
+  launchChrome,
+  navigate,
+  screenshot,
+  setViewport,
+  sleep,
+} from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
-const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
+const outputDir =
+  process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 
-if (!chromePath) throw new Error("CHROME_BIN is required for categories visual validation.");
+if (!chromePath)
+  throw new Error("CHROME_BIN is required for categories visual validation.");
 await mkdir(outputDir, { recursive: true });
 let desktop;
 let desktopModal;
@@ -66,7 +75,10 @@ await writeFile(
   `${JSON.stringify(report, null, 2)}
 `,
 );
-await writeFile(join(outputDir, "CATEGORIES-INTERFACE.md"), renderReport(report));
+await writeFile(
+  join(outputDir, "CATEGORIES-INTERFACE.md"),
+  renderReport(report),
+);
 
 if (failures.length > 0) {
   for (const failure of failures) console.error(`- ${failure.message}`);
@@ -85,7 +97,10 @@ async function runViewportSession(label, width, height, validate) {
     await validate(browser.cdp);
   } catch (error) {
     const details = serializeError(error);
-    failures.push({ message: `Categories ${label} validation crashed`, details });
+    failures.push({
+      message: `Categories ${label} validation crashed`,
+      details,
+    });
     console.error(`Categories ${label} validation crashed:`, details);
   } finally {
     if (browser) await browser.close(outputDir);
@@ -95,7 +110,11 @@ async function runViewportSession(label, width, height, validate) {
 
 function serializeError(error) {
   if (error instanceof Error) {
-    return { name: error.name, message: error.message, stack: error.stack ?? "" };
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack ?? "",
+    };
   }
   return { name: "UnknownError", message: String(error), stack: "" };
 }
@@ -104,7 +123,11 @@ async function loginAndOpenCategories(cdp, width, height) {
   await setViewport(cdp, width, height);
   await navigateWithRetry(cdp, `${baseUrl}/login`, "login");
   const login = await evaluate(cdp, loginExpression());
-  assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
+  assert.equal(
+    login.ok,
+    true,
+    `Demo login failed: ${login.status} ${login.body}`,
+  );
   await navigateWithRetry(cdp, `${baseUrl}/categorias`, "categories");
   await waitForCategories(cdp);
 }
@@ -135,7 +158,11 @@ async function validateDesktop(cdp) {
     "Categories toolbar does not have five filters",
     measurements,
   );
-  check(measurements.search.visible, "Categories search is not visible on desktop", measurements);
+  check(
+    measurements.search.visible,
+    "Categories search is not visible on desktop",
+    measurements,
+  );
   check(
     measurements.directory.visible,
     "Categories directory is not visible on desktop",
@@ -146,7 +173,11 @@ async function validateDesktop(cdp) {
     "All categories filter is not selected initially",
     measurements,
   );
-  check(measurements.rowCount > 0, "Categories hierarchy rendered no rows", measurements);
+  check(
+    measurements.rowCount > 0,
+    "Categories hierarchy rendered no rows",
+    measurements,
+  );
   check(
     measurements.semanticLists > 0,
     "Category hierarchy lost native list semantics",
@@ -163,7 +194,11 @@ async function validateDesktop(cdp) {
     measurements,
   );
 
-  check(measurements.headerCount === 3, "Desktop lost compact column headers", measurements);
+  check(
+    measurements.headerCount === 3,
+    "Desktop lost compact column headers",
+    measurements,
+  );
   check(
     measurements.parentCellCount === measurements.rowCount &&
       measurements.levelCellCount === measurements.rowCount &&
@@ -177,7 +212,12 @@ async function validateDesktop(cdp) {
     measurements,
   );
   const search = await validateSearch(cdp);
-  return { viewport: "1440x1000", measurements, search, screenshot: "categories-desktop.png" };
+  return {
+    viewport: "1440x1000",
+    measurements,
+    search,
+    screenshot: "categories-desktop.png",
+  };
 }
 
 async function validateSearch(cdp) {
@@ -185,7 +225,10 @@ async function validateSearch(cdp) {
     cdp,
     `document.querySelector('[data-category-item] [data-edit-category]')?.dataset.categoryName || ''`,
   );
-  assert.ok(firstName, "Expected at least one category name for search validation");
+  assert.ok(
+    firstName,
+    "Expected at least one category name for search validation",
+  );
   const query = firstName.slice(0, Math.min(4, firstName.length));
 
   await evaluate(
@@ -208,17 +251,31 @@ async function validateSearch(cdp) {
     })()`,
   );
 
-  check(result.visibleCount > 0, "Category search hid every category", { query, result });
-  check(result.status.includes("exibida"), "Category search did not announce its result count", {
+  check(result.visibleCount > 0, "Category search hid every category", {
     query,
     result,
   });
-  check(result.clearVisible, "Category search clear action did not become visible", {
-    query,
-    result,
-  });
+  check(
+    result.status.includes("exibida"),
+    "Category search did not announce its result count",
+    {
+      query,
+      result,
+    },
+  );
+  check(
+    result.clearVisible,
+    "Category search clear action did not become visible",
+    {
+      query,
+      result,
+    },
+  );
 
-  await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-clear-category-search]')?.click()`,
+  );
   await sleep(80);
 
   const pathResult = await evaluate(
@@ -273,15 +330,26 @@ async function validateSearch(cdp) {
     })()`,
   );
 
-  check(pathResult.candidateFound, "Expected nested category for path search", pathResult);
-  check(pathResult.targetVisible, "Category path search lost ancestor matching", pathResult);
+  check(
+    pathResult.candidateFound,
+    "Expected nested category for path search",
+    pathResult,
+  );
+  check(
+    pathResult.targetVisible,
+    "Category path search lost ancestor matching",
+    pathResult,
+  );
   check(
     pathResult.statusCount === pathResult.expectedMatchCount,
     "Category search count is not direct-match only",
     pathResult,
   );
 
-  await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-clear-category-search]')?.click()`,
+  );
   await sleep(80);
 
   const emptyResult = await evaluate(
@@ -303,36 +371,68 @@ async function validateSearch(cdp) {
     "Category empty filter fails to hide every row",
     emptyResult,
   );
-  await evaluate(cdp, `document.querySelector('[data-reset-category-view]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-reset-category-view]')?.click()`,
+  );
   await sleep(80);
 
   return { query, ...result, pathResult, emptyResult };
 }
 
 async function validateDesktopModal(cdp) {
-  await evaluate(cdp, `document.querySelector('[data-open-category-modal]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-open-category-modal]')?.click()`,
+  );
   await waitForModal(cdp);
   const measurements = await evaluate(cdp, modalMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-modal-desktop.png"));
 
-  check(measurements.visible, "Category modal did not open on desktop", measurements);
-  check(measurements.insideViewport, "Category modal exceeds the desktop viewport", measurements);
-  check(measurements.hasDescription, "Category modal has no accessible description", measurements);
+  check(
+    measurements.visible,
+    "Category modal did not open on desktop",
+    measurements,
+  );
+  check(
+    measurements.insideViewport,
+    "Category modal exceeds the desktop viewport",
+    measurements,
+  );
+  check(
+    measurements.hasDescription,
+    "Category modal has no accessible description",
+    measurements,
+  );
   check(
     measurements.labelledControls === 3,
     "Category modal controls are not fully labelled",
     measurements,
   );
-  check(measurements.nameFocused, "Category name did not receive initial focus", measurements);
-  check(measurements.closeTarget >= 34, "Category modal close action is too small", measurements);
+  check(
+    measurements.nameFocused,
+    "Category name did not receive initial focus",
+    measurements,
+  );
+  check(
+    measurements.closeTarget >= 34,
+    "Category modal close action is too small",
+    measurements,
+  );
 
   await closeModal(cdp);
-  return { viewport: "1440x1000", measurements, screenshot: "categories-modal-desktop.png" };
+  return {
+    viewport: "1440x1000",
+    measurements,
+    screenshot: "categories-modal-desktop.png",
+  };
 }
 
 async function validateCategoryMutationFailures(cdp) {
   // No persistent data is changed: intercept exactly at the browser's request boundary.
-  const result = await evaluate(cdp, `(async () => {
+  const result = await evaluate(
+    cdp,
+    `(async () => {
     const originalFetch = window.fetch;
     const originalConfirm = window.confirm;
     const requests = [];
@@ -405,8 +505,13 @@ async function validateCategoryMutationFailures(cdp) {
       window.confirm = originalConfirm;
       close();
     }
-  })()`);
-  check(!result.missingFixture, "Category interaction fixture is missing", result);
+  })()`,
+  );
+  check(
+    !result.missingFixture,
+    "Category interaction fixture is missing",
+    result,
+  );
   if (result.missingFixture) return result;
   check(
     result.createContext.selectedParent === result.createContext.parentId &&
@@ -417,21 +522,35 @@ async function validateCategoryMutationFailures(cdp) {
   for (const action of ["create", "edit", "modalStatus", "archive", "remove"]) {
     check(
       result[action].retryEnabled && result[action].errorVisible,
-      "Category " + action + " must show a recoverable network error and enable retry",
+      "Category " +
+        action +
+        " must show a recoverable network error and enable retry",
       result,
     );
   }
-  check(result.keyboardEnd && result.keyboardEscape, "Category item menu keyboard focus regression", result);
-  const categoryRequests = result.requests.filter((entry) => entry.path.startsWith("/api/categories"));
+  check(
+    result.keyboardEnd && result.keyboardEscape,
+    "Category item menu keyboard focus regression",
+    result,
+  );
+  const categoryRequests = result.requests.filter((entry) =>
+    entry.path.startsWith("/api/categories"),
+  );
   const methods = categoryRequests.map((entry) => entry.method);
   check(
-    methods.includes("POST") && methods.includes("PATCH") && methods.includes("DELETE"),
+    methods.includes("POST") &&
+      methods.includes("PATCH") &&
+      methods.includes("DELETE"),
     "Category create/edit/maintenance/delete requests did not reach browser fetch",
     result,
   );
   check(
-    categoryRequests.some((entry) => entry.method === "POST" &&
-      entry.path === "/api/categories" && entry.body.includes(result.createContext.parentId)),
+    categoryRequests.some(
+      (entry) =>
+        entry.method === "POST" &&
+        entry.path === "/api/categories" &&
+        entry.body.includes(result.createContext.parentId),
+    ),
     "Create-child request did not preserve parentCategoryId",
     result,
   );
@@ -441,7 +560,10 @@ async function validateCategoryMutationFailures(cdp) {
 async function validateCategoryCrud(cdp) {
   // Real API persistence checks are limited to the disposable CI test environment.
   if (process.env.GITHUB_ACTIONS !== "true") {
-    return { skipped: true, reason: "requires disposable GitHub Actions test database" };
+    return {
+      skipped: true,
+      reason: "requires disposable GitHub Actions test database",
+    };
   }
   const name = "Auditoria 717 " + Date.now();
   const childName = name + " filha";
@@ -449,16 +571,24 @@ async function validateCategoryCrud(cdp) {
   const observed = [];
   const refresh = async () => {
     await sleep(750);
-    await navigateWithRetry(cdp, baseUrl + "/categorias", "category CRUD reread");
+    await navigateWithRetry(
+      cdp,
+      baseUrl + "/categorias",
+      "category CRUD reread",
+    );
     await waitForCategories(cdp);
   };
-  const find = async (label) => evaluate(cdp, `(() => {
+  const find = async (label) =>
+    evaluate(
+      cdp,
+      `(() => {
     const label = ${JSON.stringify(label)};
     const button = Array.from(document.querySelectorAll('[data-edit-category]'))
       .find((item) => item.dataset.categoryName === label);
     return button ? { id: button.dataset.categoryId, status: button.dataset.categoryStatusValue,
       parent: button.dataset.categoryParentId } : null;
-  })()`);
+  })()`,
+    );
   const submit = async (expression) => {
     const action = await evaluate(cdp, expression);
     check(action, "Category CRUD UI action was unavailable", { expression });
@@ -478,7 +608,11 @@ async function validateCategoryCrud(cdp) {
       return true;
     })()`);
     parent = await find(name);
-    check(Boolean(parent && parent.status === "active"), "UI create did not persist a parent category", parent);
+    check(
+      Boolean(parent && parent.status === "active"),
+      "UI create did not persist a parent category",
+      parent,
+    );
     if (!parent) return { observed, failedAt: "create-parent" };
     observed.push("create-parent");
 
@@ -497,11 +631,17 @@ async function validateCategoryCrud(cdp) {
       return true;
     })()`);
     child = await find(childName);
-    check(Boolean(child && child.parent === parent.id), "UI create-child lost the persisted parent relationship", child);
+    check(
+      Boolean(child && child.parent === parent.id),
+      "UI create-child lost the persisted parent relationship",
+      child,
+    );
     if (!child) return { observed, failedAt: "create-child" };
     observed.push("create-child");
 
-    const cycle = await evaluate(cdp, `(() => {
+    const cycle = await evaluate(
+      cdp,
+      `(() => {
       const id = ${JSON.stringify(parent.id)};
       const row = Array.from(document.querySelectorAll('[data-edit-category]'))
         .find((element) => element.dataset.categoryId === id);
@@ -511,8 +651,12 @@ async function validateCategoryCrud(cdp) {
       const protectedAgainstCycle = Boolean(option?.disabled);
       document.querySelector('.category-dialog [data-close-category-modal]')?.click();
       return protectedAgainstCycle;
-    })()`);
-    check(cycle, "Parent edit must prohibit choosing its descendant", { parent, child });
+    })()`,
+    );
+    check(cycle, "Parent edit must prohibit choosing its descendant", {
+      parent,
+      child,
+    });
     observed.push("cycle-guard");
 
     await submit(`(() => {
@@ -527,11 +671,16 @@ async function validateCategoryCrud(cdp) {
       return true;
     })()`);
     child = await find(renamedChild);
-    check(Boolean(child && child.parent === parent.id), "UI edit did not persist the child category", child);
+    check(
+      Boolean(child && child.parent === parent.id),
+      "UI edit did not persist the child category",
+      child,
+    );
     if (!child) return { observed, failedAt: "edit-child" };
     observed.push("edit-child");
 
-    const mutateStatus = async (suffix) => submit(`(() => {
+    const mutateStatus = async (suffix) =>
+      submit(`(() => {
       const id = ${JSON.stringify(child.id)};
       const suffix = ${JSON.stringify(suffix)};
       const row = Array.from(document.querySelectorAll('[data-category-item]'))
@@ -545,13 +694,22 @@ async function validateCategoryCrud(cdp) {
       return true;
     })()`);
     await mutateStatus("archive");
-    check((await find(renamedChild))?.status === "archived", "UI archive did not persist", child);
+    check(
+      (await find(renamedChild))?.status === "archived",
+      "UI archive did not persist",
+      child,
+    );
     observed.push("archive");
     await mutateStatus("restore");
-    check((await find(renamedChild))?.status === "active", "UI restore did not persist", child);
+    check(
+      (await find(renamedChild))?.status === "active",
+      "UI restore did not persist",
+      child,
+    );
     observed.push("restore");
 
-    const removeById = async (id) => submit(`(() => {
+    const removeById = async (id) =>
+      submit(`(() => {
       const id = ${JSON.stringify(id)};
       const row = Array.from(document.querySelectorAll('[data-category-item]'))
         .find((item) => item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryId === id);
@@ -563,10 +721,18 @@ async function validateCategoryCrud(cdp) {
       return true;
     })()`);
     await removeById(child.id);
-    check(!(await find(renamedChild)), "UI delete child did not remove the category", child);
+    check(
+      !(await find(renamedChild)),
+      "UI delete child did not remove the category",
+      child,
+    );
     observed.push("delete-child");
     await removeById(parent.id);
-    check(!(await find(name)), "UI delete parent did not remove the category", parent);
+    check(
+      !(await find(name)),
+      "UI delete parent did not remove the category",
+      parent,
+    );
     observed.push("delete-parent");
     return { skipped: false, observed, parentId: parent.id, childId: child.id };
   } finally {
@@ -578,7 +744,9 @@ async function validateCategoryCrud(cdp) {
 async function validateSidebarThemeParity(cdp) {
   const readTheme = async (route) => {
     await navigateWithRetry(cdp, baseUrl + route, "sidebar " + route);
-    return evaluate(cdp, `(() => {
+    return evaluate(
+      cdp,
+      `(() => {
       const sidebar = document.querySelector('.sidebar');
       const link = sidebar?.querySelector('nav a:not([aria-current="page"])');
       if (!sidebar || !link) return null;
@@ -589,21 +757,33 @@ async function validateSidebarThemeParity(cdp) {
         border: style.borderRightColor,
         link: getComputedStyle(link).color,
       };
-    })()`);
+    })()`,
+    );
   };
   const categories = await readTheme("/categorias");
   const statement = await readTheme("/lancamentos");
   const dashboard = await readTheme("/dashboard");
-  check(categories && statement && dashboard, "Missing shared sidebar on authenticated route", {
-    categories, statement, dashboard,
-  });
   check(
-    categories && JSON.stringify(categories) === JSON.stringify(statement) &&
+    categories && statement && dashboard,
+    "Missing shared sidebar on authenticated route",
+    {
+      categories,
+      statement,
+      dashboard,
+    },
+  );
+  check(
+    categories &&
+      JSON.stringify(categories) === JSON.stringify(statement) &&
       JSON.stringify(categories) === JSON.stringify(dashboard),
     "Sidebar theme differs between Categories, Golden Screen and Dashboard",
     { categories, statement, dashboard },
   );
-  await navigateWithRetry(cdp, baseUrl + "/categorias", "categories after sidebar check");
+  await navigateWithRetry(
+    cdp,
+    baseUrl + "/categorias",
+    "categories after sidebar check",
+  );
   await waitForCategories(cdp);
   return { categories, statement, dashboard };
 }
@@ -680,7 +860,11 @@ async function validateMobile(cdp) {
     "Mobile expand-all action is less than 44px",
     measurements,
   );
-  return { viewport: "390x844", measurements, screenshot: "categories-mobile.png" };
+  return {
+    viewport: "390x844",
+    measurements,
+    screenshot: "categories-mobile.png",
+  };
 }
 
 async function validateCompactMobile(cdp) {
@@ -703,8 +887,16 @@ async function validateCompactMobile(cdp) {
     "Narrow mobile action is less than 44px",
     measurements,
   );
-  check(measurements.minimumRowHeight >= 44, "Narrow mobile row is too small", measurements);
-  check(measurements.search.height >= 44, "Narrow mobile search input is too small", measurements);
+  check(
+    measurements.minimumRowHeight >= 44,
+    "Narrow mobile row is too small",
+    measurements,
+  );
+  check(
+    measurements.search.height >= 44,
+    "Narrow mobile search input is too small",
+    measurements,
+  );
   check(
     measurements.search.width >= 100,
     "Narrow mobile search input has insufficient usable width",
@@ -730,18 +922,37 @@ async function validateCompactMobile(cdp) {
     "Narrow mobile expand-all action is less than 44px",
     measurements,
   );
-  return { viewport: "320x740", measurements, screenshot: "categories-compact-mobile.png" };
+  return {
+    viewport: "320x740",
+    measurements,
+    screenshot: "categories-compact-mobile.png",
+  };
 }
 
 async function validateMobileModal(cdp) {
-  await evaluate(cdp, `document.querySelector('[data-open-category-modal]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-open-category-modal]')?.click()`,
+  );
   await waitForModal(cdp);
   const measurements = await evaluate(cdp, modalMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-modal-mobile.png"));
 
-  check(measurements.visible, "Category modal did not open on mobile", measurements);
-  check(measurements.insideViewport, "Category modal exceeds the mobile viewport", measurements);
-  check(measurements.singleColumn, "Category modal is not single-column on mobile", measurements);
+  check(
+    measurements.visible,
+    "Category modal did not open on mobile",
+    measurements,
+  );
+  check(
+    measurements.insideViewport,
+    "Category modal exceeds the mobile viewport",
+    measurements,
+  );
+  check(
+    measurements.singleColumn,
+    "Category modal is not single-column on mobile",
+    measurements,
+  );
   check(
     measurements.minimumActionHeight >= 44,
     "Category modal mobile actions are smaller than 44px",
@@ -749,7 +960,11 @@ async function validateMobileModal(cdp) {
   );
 
   await closeModal(cdp);
-  return { viewport: "390x844", measurements, screenshot: "categories-modal-mobile.png" };
+  return {
+    viewport: "390x844",
+    measurements,
+    screenshot: "categories-modal-mobile.png",
+  };
 }
 
 async function navigateWithRetry(cdp, url, label) {
@@ -770,12 +985,16 @@ async function navigateWithRetry(cdp, url, label) {
       }
 
       if (pageState.href.startsWith(url)) {
-        console.warn(`Navigation to ${label} reached the page despite a missing load event.`);
+        console.warn(
+          `Navigation to ${label} reached the page despite a missing load event.`,
+        );
         return;
       }
 
       if (attempt === attempts) throw error;
-      console.warn(`Navigation to ${label} failed on attempt ${attempt}; retrying.`);
+      console.warn(
+        `Navigation to ${label} failed on attempt ${attempt}; retrying.`,
+      );
       await sleep(400 * attempt);
     }
   }
