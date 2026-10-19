@@ -8,6 +8,7 @@ import {
   renderCardDialog,
   renderCardEditDialog,
 } from "./dialogs.js";
+import { renderAccountsCardsApiFormScript } from "./runtime.js";
 import { accountsCardsPageStyles } from "./styles.js";
 import type { AccountRecord, CreditCardAccountRecord } from "./types.js";
 import { buildAccountsCardsPageViewModel } from "./view-model.js";
