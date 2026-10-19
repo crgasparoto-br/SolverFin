@@ -696,12 +696,14 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .filter-form{row-gap:2px}
     }
     @media(max-width:360px){
-      /* Reclaim a whole line without hiding period navigation or its shortcut.
-         The 44px shortcut keeps its text accessible and shows a compact glyph. */
-      ${root} .statement-period-control{align-items:center;gap:4px;grid-template-columns:minmax(0,1fr) 44px}
-      ${root} .statement-period-control .month-field{min-width:0}
-      ${root} .statement-period-control .month-nav{min-width:0;width:100%}
-      ${root} .statement-period-control [data-month-current]{font-size:0;height:44px;min-height:44px;min-width:44px;padding:0}
+      /* At 320px, an inline month shortcut clips the native year. Pin the
+         44px shortcut to the spare header corner so month navigation keeps
+         the full row and Movimentacoes still enters the first viewport. */
+      ${root} .statement-account-heading{position:relative}
+      ${root} .statement-period-control{display:block;min-width:0;position:static;width:100%}
+      ${root} .statement-period-control .month-field{min-width:0;width:100%}
+      ${root} .statement-period-control .month-nav{box-sizing:border-box;min-width:0;width:100%}
+      ${root} .statement-period-control [data-month-current]{font-size:0;height:44px;min-height:44px;min-width:44px;padding:0;position:absolute;right:6px;top:2px}
       ${root} .statement-period-control [data-month-current]::before{content:"↻";font-size:20px;line-height:1}
       /* Keep the 320px first-viewport budget without truncating the selected account. */
       ${root} .statement-account-heading{gap:${spacing[1]}}
