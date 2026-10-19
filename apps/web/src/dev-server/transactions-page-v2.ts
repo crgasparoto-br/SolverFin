@@ -164,7 +164,11 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     );
   const summary = consolidatedStatement?.summary ?? summarize(canonicalRows, openingMinor);
   const visibleRows = sortRows(
-    filterRowsForPresentation(canonicalRows, categories, presentation),
+    filterRowsForPresentation(
+      canonicalRows.map((row, balanceOrder) => ({ ...row, balanceOrder })),
+      categories,
+      presentation,
+    ),
     presentation.sort,
   );
 
@@ -733,7 +737,7 @@ function renderRow(
   const contextAccount = consolidated
     ? accounts.find((account) => account.id === consolidatedAccountId)
     : selectedAccount;
-  return `<article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row" data-row-glyph="${escapeHtml(rowGlyph.key)}">
+  return `<article class="statement-row statement-body${transaction.accountRemuneration ? " account-remuneration-row" : ""}" role="row" data-row-glyph="${escapeHtml(rowGlyph.key)}" data-balance-order="${row.balanceOrder ?? ""}">
     <label class="col-select"><input type="checkbox" data-select-transaction value="${escapeHtml(transaction.id)}" data-kind="${escapeHtml(transaction.kind)}" data-status="${escapeHtml(transaction.status)}" data-currency="${escapeHtml(currency ?? "")}" data-amount="${row.amountMinor}" data-date="${escapeHtml(date)}" data-description="${escapeHtml(transaction.description)}" data-category="${escapeHtml(categoryName)}" aria-label="Selecionar lançamento ${escapeHtml(transaction.description || "sem descrição")}"${eligible ? "" : " disabled"}></label>
     ${renderRowGlyph(categoryName, transaction.kind)}
     <time class="col-date" datetime="${escapeHtml(date)}" title="${escapeHtml(formatDate(date))}">${formatMovementDate(date)}</time>
@@ -841,7 +845,7 @@ function renderGroupRow(
   group: TransactionGroupRecord,
   currency: string | undefined,
 ): string {
-  return `<article class="statement-row statement-body grouped-row" role="row" data-row-glyph="${escapeHtml(resolveRowGlyph("", group.kind).key)}" data-group-row="${escapeHtml(group.id)}">
+  return `<article class="statement-row statement-body grouped-row" role="row" data-row-glyph="${escapeHtml(resolveRowGlyph("", group.kind).key)}" data-group-row="${escapeHtml(group.id)}" data-balance-order="${row.balanceOrder ?? ""}">
     <span class="col-select group-indicator" aria-label="Grupo de lançamentos">&#128279;</span>
     ${renderRowGlyph("", group.kind)}
     <time class="col-date" datetime="${escapeHtml(group.displayOn)}" title="${escapeHtml(formatDate(group.displayOn))}">${formatMovementDate(group.displayOn)}</time>

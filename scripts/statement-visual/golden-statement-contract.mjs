@@ -30,6 +30,11 @@ export function assertGoldenStatement(layout) {
   );
   assert.deepEqual(layout.summaryCollisions ?? [], [], "Golden statement summary values overlap.");
   assert.deepEqual(
+    layout.filterControlCollisions ?? [],
+    [],
+    "Statement filter actions overlap the category selector.",
+  );
+  assert.deepEqual(
     layout.summaryCardOverflow ?? [],
     [],
     "Golden statement amounts must stay within their own summary cards.",
@@ -38,6 +43,11 @@ export function assertGoldenStatement(layout) {
     layout.statusCollisions ?? [],
     [],
     "Statement status text overlaps its icon or escapes its badge.",
+  );
+  assert.deepEqual(
+    layout.statusTextExposed ?? [],
+    [],
+    "Statement status must display icons only while keeping its accessible label.",
   );
   assert.ok(
     Math.abs(layout.list.width - layout.root.width) <= 2,
@@ -117,7 +127,18 @@ export function assertGoldenStatement(layout) {
       "Selection control must stay a rounded square.",
     );
   }
-  assert.ok(layout.balance.y > layout.amount.y, "Running balance must be below the amount.");
+  if (layout.viewport.width > 1100) {
+    // Approved desktop compact composition: balance occupies its own adjacent column.
+    assert.ok(
+      layout.balance.x >= layout.amount.right - 1,
+      "Running balance must occupy the column after the amount.",
+    );
+  } else {
+    assert.ok(
+      layout.balance.y > layout.amount.y,
+      "Mobile running balance must be below the amount.",
+    );
+  }
   if (layout.viewport.width >= 1280 && layout.viewport.height >= 740) {
     assert.ok(
       layout.row.bottom <= layout.viewport.height,
@@ -208,6 +229,24 @@ export const goldenStatementMeasurements = `(() => {
       const misplaced = valueBox.left < cardBox.left - 1 || valueBox.right > cardBox.right + 1;
       return outside || clipped || misplaced ? [card.dataset.summaryTotal || value.textContent.trim()] : [];
     }),
+    // The 1366px workspace is narrower than the viewport after the sidebar.
+    // Fail if action buttons cover a select even when document overflow is absent.
+    filterControlCollisions: (() => {
+      const actionButtons = Array.from(document.querySelectorAll('.statement-filter-actions button'))
+        .filter(button => {
+          const style = getComputedStyle(button);
+          const box = button.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden' && box.width > 0 && box.height > 0;
+        });
+      const category = document.querySelector('.statement-category-field select');
+      if (!category || category.getBoundingClientRect().width === 0) return [];
+      const target = category.getBoundingClientRect();
+      return actionButtons.filter(button => {
+        const box = button.getBoundingClientRect();
+        return Math.min(box.right, target.right) - Math.max(box.left, target.left) > 1 &&
+          Math.min(box.bottom, target.bottom) - Math.max(box.top, target.top) > 1;
+      }).map(button => button.textContent.trim());
+    })(),
     summaryCollisions: (() => {
       const nodes = Array.from(document.querySelectorAll('.account-summary .summary-total strong'))
         .filter(element => {
@@ -228,6 +267,24 @@ export const goldenStatementMeasurements = `(() => {
         }
       }
       return collisions;
+    })(),
+    statusTextExposed: (() => {
+      const visibleLabels = Array.from(document.querySelectorAll('.statement-body .statement-status-label'))
+        .filter(label => {
+          const style = getComputedStyle(label);
+          return style.display !== 'none' && style.visibility !== 'hidden' &&
+            label.getClientRects().length > 0;
+        }).map(label => label.textContent.trim());
+      const pseudoLabels = Array.from(document.querySelectorAll(
+        '.statement-body [data-statement-status-control] > summary',
+      )).flatMap(summary => {
+        const pseudo = getComputedStyle(summary, '::after');
+        const value = pseudo.content;
+        const shown = pseudo.display !== 'none' && pseudo.visibility !== 'hidden' &&
+          value && value !== 'none' && value !== 'normal' && value !== '""';
+        return shown ? [value] : [];
+      });
+      return [...visibleLabels, ...pseudoLabels];
     })(),
     statusCollisions: Array.from(document.querySelectorAll('.statement-body .statement-status')).flatMap(badge => {
       const label = badge.querySelector('.statement-status-label');

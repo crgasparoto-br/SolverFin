@@ -36,6 +36,12 @@ qualquer tela de propagacao.
 - Categoria, Tipo, Status e Conciliacao ficam diretamente disponiveis na barra
   compacta desktop. No mobile, os filtros sao progressivos e filtros ativos abrem
   o painel inicialmente; Aplicar/Limpar permanecem disponiveis quando ele esta fechado.
+  Em 320px, **Dia do mes** fica no mesmo painel progressivo, sem desaparecer: o
+  campo continua operavel com o painel aberto, e retorna a barra principal ao
+  ampliar a viewport. O atalho **Mes atual** continua como icone de 44px,
+  com nome acessivel e comando inalterado, no canto livre superior do
+  cabecalho em 320px. Assim o navegador de meses preserva a largura integral
+  e o ano nao e cortado. A secao Movimentacoes permanece na primeira viewport.
   Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o
   formulario GET completo permanece disponivel. Conta e periodo pertencem ao
   contexto financeiro, preservando o vinculo nativo com o formulario de consulta.
@@ -137,8 +143,10 @@ Isso rejeita o chrome vertical excessivo sem esconder conta, moeda, periodo ou b
 Campos e valores permanecem acessiveis; o formulario mobile preserva alvos de
 44 px e a acao de salvar usa um rodape aderente ao dialog.
 
-Em larguras de ate 360 px, os indicadores usam linhas com rotulo e valor
-completos, e o periodo separa a navegacao mensal da acao Mes atual. A busca e
+Em larguras de ate 360 px, os quatro indicadores mantem rotulo e valor
+completos em grade compacta 2 x 2, sem icones decorativos, e o periodo separa
+a navegacao mensal da acao Mes atual. Valores longos podem quebrar linha dentro
+do proprio card, sem sobrepor outros valores. A busca e
 as acoes Aplicar/Limpar continuam visiveis; a ordenacao nativa permanece no
 grupo expansivel Filtros e ordenacao. No dialog, Despesa e Receita dividem a
 primeira linha, Transferencia ocupa a segunda, e Cancelar/Salvar usam a largura
@@ -398,3 +406,7 @@ A verificação visual compara o diâmetro e o glyph dos dois ícones em
 desktop e mobile.
 A submissão continua sendo somente `PATCH /api/transactions/:id`
 com `{ status }`, afetando uma única ocorrência.
+
+### Contratos de regressao vigentes apos PR #720
+
+A coluna **Situacao** tem icone com descricao acessivel e tooltip; o acionador de teclado e o `summary`, nao o `span` ilustrativo. Agrupadores diarios preservam a sequencia financeira sem tornar `article` irmao direto de outro `article`. Em desktop largo, **Valor** e **Saldo** sao colunas independentes e alinhadas a direita, com **Valor** maior; em mobile, o saldo continua na linha secundaria. Os testes nao devem recuperar texto oculto do status nem exigir saldo abaixo do valor no layout desktop.

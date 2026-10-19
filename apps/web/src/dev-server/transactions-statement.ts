@@ -103,6 +103,8 @@ export interface StatementRow {
   transaction: TransactionRecord;
   amountMinor: number;
   balanceAfterMinor: number;
+  /** Canonical ascending running-balance order, preserved when presentation sorts rows. */
+  balanceOrder?: number;
 }
 
 export interface StatementSummary {
