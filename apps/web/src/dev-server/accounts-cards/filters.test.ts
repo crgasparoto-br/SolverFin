@@ -77,7 +77,8 @@ function rendersCompactAccountTypeColumnWithTooltips(): void {
   assert.match(html, /class="resource-master-type" role="img" aria-label="Cartão · Visa · 2 instrumentos ativos"/);
   assert.match(html, /<span class="resource-master-institution"[^>]*>Banco exemplo/);
   assert.doesNotMatch(html, /class="resource-master-context"/);
-  const accountRow = html.match(/<article[^>]*data-kind="account"[\\s\\S]*?<\\/article>/)?.[0];
+  const accountStart = html.indexOf('data-kind="account"');
+  const accountRow = html.slice(accountStart, html.indexOf("</article>", accountStart));
   assert.ok(accountRow, "Account row must render");
   assert.ok(
     accountRow.indexOf('class="resource-master-type"') <
