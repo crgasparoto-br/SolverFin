@@ -86,10 +86,16 @@ function rendersCompactAccountTypeColumnWithTooltips(): void {
     html,
     /class="resource-master-type" role="img" aria-label="Cartão · Visa · 2 instrumentos ativos"/,
   );
-  assert.match(html, /class="resource-master-institution-label"[^>]*>Banco exemplo/);
+  assert.match(
+    html,
+    /class="resource-master-institution-label"[^>]*>Banco exemplo/,
+  );
   assert.doesNotMatch(html, /class="resource-master-context"/);
   const accountStart = html.indexOf('data-kind="account"');
-  const accountRow = html.slice(accountStart, html.indexOf("</article>", accountStart));
+  const accountRow = html.slice(
+    accountStart,
+    html.indexOf("</article>", accountStart),
+  );
   assert.ok(accountStart >= 0 && accountRow);
   const type = accountRow.indexOf('class="resource-master-type"');
   const institution = accountRow.indexOf('class="resource-master-institution"');
@@ -103,7 +109,10 @@ function rendersCompactAccountTypeColumnWithTooltips(): void {
     html,
     /class="resource-master-amount-kind" role="img" aria-label="Limite total" title="Limite total"/,
   );
-  assert.doesNotMatch(html, /<small>Saldo inicial<\/small>|<small>Limite total<\/small>/);
+  assert.doesNotMatch(
+    html,
+    /<small>Saldo inicial<\/small>|<small>Limite total<\/small>/,
+  );
   assert.match(html, /data-kind="account"/);
   assert.match(html, /data-kind="card"/);
 }
