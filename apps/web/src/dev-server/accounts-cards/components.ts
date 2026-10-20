@@ -25,11 +25,7 @@ import {
   renderEditIcon,
   renderTrashIcon,
 } from "./presentation.js";
-import type {
-  AccountRecord,
-  CardInstrumentRecord,
-  CreditCardAccountRecord,
-} from "./types.js";
+import type { AccountRecord, CardInstrumentRecord, CreditCardAccountRecord } from "./types.js";
 import type { CdiIncomeCategory } from "./dialogs.js";
 import {
   buildAccountItemViewModel,
@@ -77,29 +73,21 @@ function renderRouteDialogTrigger(input: {
   trigger = trigger.replace(visibleLabel, replacement);
 
   if (input.iconOnly) {
-    trigger = trigger.replace(
-      "<button ",
-      `<button title="${label}" aria-label="${label}" `,
-    );
+    trigger = trigger.replace("<button ", `<button title="${label}" aria-label="${label}" `);
   }
   return trigger;
 }
 
-export function renderResourceMaster(
-  resources: readonly ResourceMasterViewModel[],
-): string {
+export function renderResourceMaster(resources: readonly ResourceMasterViewModel[]): string {
   const list =
     resources.length > 0
       ? resources.map(renderResourceMasterItem).join("")
       : renderEmptyState({
           title: "Nenhuma conta ou cartão cadastrado",
-          description:
-            "Adicione uma conta ou um cartão para iniciar o cadastro financeiro.",
+          description: "Adicione uma conta ou um cartão para iniciar o cadastro financeiro.",
         });
   const currencyOptions = renderCurrencyFilterOptions(resources);
-  const accountCount = resources.filter(
-    (resource) => resource.kind === "account",
-  ).length;
+  const accountCount = resources.filter((resource) => resource.kind === "account").length;
   const cardCount = resources.length - accountCount;
 
   return `
@@ -121,28 +109,17 @@ export function renderResourceMaster(
     </section>`;
 }
 
-function renderCurrencyFilterOptions(
-  resources: readonly ResourceMasterViewModel[],
-): string {
+function renderCurrencyFilterOptions(resources: readonly ResourceMasterViewModel[]): string {
   const currencies = Array.from(
-    new Set(
-      resources.flatMap((resource) =>
-        resource.currency ? [resource.currency] : [],
-      ),
-    ),
+    new Set(resources.flatMap((resource) => (resource.currency ? [resource.currency] : []))),
   ).sort();
-  const hasUnavailableCurrency = resources.some(
-    (resource) => !resource.currency,
-  );
+  const hasUnavailableCurrency = resources.some((resource) => !resource.currency);
   return [
     '<option value="all">Todas as moedas</option>',
     ...currencies.map(
-      (currency) =>
-        `<option value="${escapeHtml(currency)}">${escapeHtml(currency)}</option>`,
+      (currency) => `<option value="${escapeHtml(currency)}">${escapeHtml(currency)}</option>`,
     ),
-    ...(hasUnavailableCurrency
-      ? ['<option value="unavailable">Moeda indisponível</option>']
-      : []),
+    ...(hasUnavailableCurrency ? ['<option value="unavailable">Moeda indisponível</option>'] : []),
   ].join("");
 }
 
@@ -202,13 +179,10 @@ export function renderSelectedResourceDetail(
   cdiCategoriesAvailable = true,
 ): string {
   if (!selected) {
-    return `<section class="resource-detail-panel resource-detail-empty">${renderEmptyState(
-      {
-        title: "Selecione um recurso",
-        description:
-          "Escolha uma conta ou cartão na lista para consultar e manter o cadastro.",
-      },
-    )}</section>`;
+    return `<section class="resource-detail-panel resource-detail-empty">${renderEmptyState({
+      title: "Selecione um recurso",
+      description: "Escolha uma conta ou cartão na lista para consultar e manter o cadastro.",
+    })}</section>`;
   }
 
   const detail =
@@ -221,16 +195,10 @@ export function renderSelectedResourceDetail(
           cdiCategories,
           cdiCategoriesAvailable,
         )
-      : renderCardDetail(
-          selected.card,
-          accounts,
-          selected.paymentAccount,
-          selected.currency,
-        );
+      : renderCardDetail(selected.card, accounts, selected.paymentAccount, selected.currency);
   const filteredEmpty = renderEmptyState({
     title: "Selecione um recurso",
-    description:
-      "Escolha uma conta ou cartão na lista para consultar e manter o cadastro.",
+    description: "Escolha uma conta ou cartão na lista para consultar e manter o cadastro.",
   });
   return `${detail}<section class="resource-detail-panel resource-detail-empty" data-filter-selection-empty hidden>${filteredEmpty}</section>`;
 }
@@ -244,10 +212,7 @@ function renderAccountDetail(
   cdiCategoriesAvailable = true,
 ): string {
   const viewModel = buildAccountItemViewModel(account);
-  const money = formatAmountWithCurrency(
-    account.openingBalanceMinor ?? 0,
-    currency,
-  );
+  const money = formatAmountWithCurrency(account.openingBalanceMinor ?? 0, currency);
   return `
     <section class="resource-detail-panel" data-resource-detail="account" data-resource-key="account:${escapeHtml(account.id)}">
       <header class="resource-detail-heading">
@@ -300,15 +265,8 @@ function renderAccountDetail(
     </section>
     ${renderAccountEditDialog(account, viewModel.editDialogId)}
     ${
-      account.status === "active" &&
-      currency === "BRL" &&
-      cdiAvailable &&
-      cdiCategoriesAvailable
-        ? renderAccountCdiConfigurationDialog(
-            account,
-            configuration,
-            cdiCategories,
-          )
+      account.status === "active" && currency === "BRL" && cdiAvailable && cdiCategoriesAvailable
+        ? renderAccountCdiConfigurationDialog(account, configuration, cdiCategories)
         : ""
     }`;
 }
@@ -372,8 +330,7 @@ function renderCardDetail(
   const limit = formatAmountWithCurrency(card.creditLimitMinor ?? 0, currency);
   const unavailableCurrencyState = renderUnavailableState({
     title: "Moeda indisponível",
-    description:
-      "Edite o cartão e informe a moeda padrão antes de registrar novas compras.",
+    description: "Edite o cartão e informe a moeda padrão antes de registrar novas compras.",
   });
   const currencyState = currency
     ? detailField("Moeda", currency)
@@ -431,29 +388,17 @@ function renderCardDetail(
     </section>`;
 }
 
-function detailField(
-  label: string,
-  value: string,
-  unavailable = false,
-): string {
+function detailField(label: string, value: string, unavailable = false): string {
   return `<div class="resource-detail-field${unavailable ? " is-unavailable" : ""}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
 }
 
-function formatAmountWithCurrency(
-  amountMinor: number,
-  currency: string | undefined,
-): string {
+function formatAmountWithCurrency(amountMinor: number, currency: string | undefined): string {
   if (!currency) return `${formatMoneyInput(amountMinor)} · moeda indisponível`;
   return formatMinorCurrency(amountMinor, { currency });
 }
 
-function renderCardInstrumentList(
-  card: CreditCardAccountRecord,
-  currency?: string,
-): string {
-  const hasActiveInstrument = card.instruments.some(
-    (instrument) => instrument.status === "active",
-  );
+function renderCardInstrumentList(card: CreditCardAccountRecord, currency?: string): string {
+  const hasActiveInstrument = card.instruments.some((instrument) => instrument.status === "active");
   const inactiveNotice = hasActiveInstrument
     ? ""
     : `<p class="instrument-warning" role="status">Sem instrumento ativo para novos lançamentos. Cadastre um novo instrumento para voltar a usar este cartão.</p>`;
@@ -514,10 +459,7 @@ export function renderAccountItem(account: AccountRecord): string {
   return `<article class="master-item" data-master-item data-status="${escapeHtml(account.status)}" data-search="${escapeHtml(viewModel.search)}"><div class="identity-mark">${renderInstitutionIcon(viewModel.institutionKey)}</div><div class="item-main"><div class="item-title-row"><strong>${escapeHtml(account.name)}</strong><span class="status-pill">${escapeHtml(formatGenericStatus(account.status))}</span></div><p>${escapeHtml(formatAccountKind(account.kind))} · ${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(account.currency ?? "Moeda não informada")}${viewModel.bankIdentifier ? ` · ${escapeHtml(viewModel.bankIdentifier)}` : ""}</p></div><div class="amount-stack"><span>Saldo inicial</span><strong>${formatAmountWithCurrency(account.openingBalanceMinor ?? 0, normalizeCurrency(account.currency))}</strong></div>${renderAccountEditDialog(account, viewModel.editDialogId)}</article>`;
 }
 
-export function renderCardItem(
-  card: CreditCardAccountRecord,
-  accounts: AccountRecord[],
-): string {
+export function renderCardItem(card: CreditCardAccountRecord, accounts: AccountRecord[]): string {
   const viewModel = buildCardItemViewModel(card, accounts);
   return `<article class="master-item card-account-item" data-master-item data-status="${escapeHtml(card.status)}" data-search="${escapeHtml(viewModel.search)}"><div class="identity-mark card-mark" aria-hidden="true">${renderCardBrandIcon(viewModel.brandKey)}</div><div class="item-main"><div class="item-title-row"><strong>${escapeHtml(card.name)}</strong><span class="status-pill">${escapeHtml(formatGenericStatus(card.status))}</span></div><p>${escapeHtml(viewModel.institutionLabel)} · ${escapeHtml(viewModel.brandLabel)} · fecha ${card.closingDay}, vence ${card.dueDay}</p></div><div class="amount-stack"><span>Limite total</span><strong>${viewModel.cardCurrency ? formatAmountWithCurrency(card.creditLimitMinor ?? 0, viewModel.cardCurrency) : "Moeda indisponível"}</strong></div>${renderCardEditDialog(card, accounts, viewModel.editDialogId)}</article>`;
 }
