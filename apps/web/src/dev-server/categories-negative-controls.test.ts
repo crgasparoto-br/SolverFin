@@ -12,8 +12,20 @@ import { renderCategoryParentOptions, renderCategoryTree } from "./categories-pa
  */
 const categories = [
   { id: "root", name: "Alimentação", kind: "expense", status: "active" },
-  { id: "child", name: "Restaurantes e lanchonetes", kind: "expense", status: "active", parentCategoryId: "root" },
-  { id: "grandchild", name: "Refeições com descrição longa", kind: "expense", status: "archived", parentCategoryId: "child" },
+  {
+    id: "child",
+    name: "Restaurantes e lanchonetes",
+    kind: "expense",
+    status: "active",
+    parentCategoryId: "root",
+  },
+  {
+    id: "grandchild",
+    name: "Refeições com descrição longa",
+    kind: "expense",
+    status: "archived",
+    parentCategoryId: "child",
+  },
   { id: "income", name: "Salário", kind: "income", status: "active" },
 ];
 
@@ -35,7 +47,10 @@ describe("Issue 717 executed negative controls", () => {
     assertKilled(
       "NC-717-01",
       html,
-      html.replace('role="img" aria-label="Arquivado"', 'role="presentation" aria-label="Arquivado"'),
+      html.replace(
+        'role="img" aria-label="Arquivado"',
+        'role="presentation" aria-label="Arquivado"',
+      ),
       (value) => assert.match(value, /role="img" aria-label="Arquivado"/),
     );
   });
@@ -55,7 +70,10 @@ describe("Issue 717 executed negative controls", () => {
     assertKilled(
       "NC-717-03",
       html,
-      html.replace('value="grandchild" data-category-ancestor-ids="child,root"', 'value="grandchild" data-category-ancestor-ids=""'),
+      html.replace(
+        'value="grandchild" data-category-ancestor-ids="child,root"',
+        'value="grandchild" data-category-ancestor-ids=""',
+      ),
       (value) => assert.match(value, /value="grandchild" data-category-ancestor-ids="child,root"/),
     );
   });
@@ -130,7 +148,10 @@ describe("Issue 717 executed negative controls", () => {
     assertKilled(
       "NC-717-10",
       html,
-      html.replace('data-api-path="/api/categories/archived/restore"', 'data-api-path="/api/categories/archived/archive"'),
+      html.replace(
+        'data-api-path="/api/categories/archived/restore"',
+        'data-api-path="/api/categories/archived/archive"',
+      ),
       (value) => assert.match(value, /data-api-path="\/api\/categories\/archived\/restore"/),
     );
   });
