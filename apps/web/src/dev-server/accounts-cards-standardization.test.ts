@@ -47,10 +47,7 @@ test("preserva confirmação, tooltips e agrupamento no código histórico", () 
 
 test("gate visual comprova o A3 direto sem tabs ou menus pós-processados", () => {
   const visualGateSource = readFileSync(
-    new URL(
-      "../../../scripts/statement-visual/accounts-cards-interface.mjs",
-      import.meta.url,
-    ),
+    new URL("../../../scripts/statement-visual/accounts-cards-interface.mjs", import.meta.url),
     "utf8",
   );
   assert.match(visualGateSource, /data-accounts-cards-archetype/);
@@ -70,18 +67,9 @@ test("logos de contas e cartoes adotam a moldura da Golden Screen sem criar outr
     css,
     /\.resource-master-icon, \.resource-detail-identity \{[^}]*border-radius: 11px/s,
   );
-  assert.match(
-    css,
-    /\.resource-master-icon, \.resource-detail-identity \{[^}]*height: 44px/s,
-  );
-  assert.match(
-    css,
-    /\.resource-master-icon, \.resource-detail-identity \{[^}]*width: 44px/s,
-  );
-  assert.match(
-    css,
-    /\.resource-master-icon :is\(img, svg\)[^{]*\{[^}]*object-fit: contain/s,
-  );
+  assert.match(css, /\.resource-master-icon, \.resource-detail-identity \{[^}]*height: 44px/s);
+  assert.match(css, /\.resource-master-icon, \.resource-detail-identity \{[^}]*width: 44px/s);
+  assert.match(css, /\.resource-master-icon :is\(img, svg\)[^{]*\{[^}]*object-fit: contain/s);
   assert.match(css, /grid-template-columns: 44px minmax\(0, 1fr\)/);
   assert.doesNotMatch(css, /\.resource-master-icon \{[^}]*height: 42px/s);
 });
