@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-10-20T21:36:42.166Z",
+  "created_at": "2026-10-20T22:55:36.506045+00:00",
   "identity": {
-    "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
-    "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+    "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
+    "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
     "base_sha": "b7f5cae7fcc1ecba278582ce574f553acb9e98f3",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
@@ -22,7 +22,7 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
-    "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+    "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
     "issue_changed_paths": [
       ".github/workflows/delivery-v2-ci.yml",
       "apps/web/src/dev-server/categories-negative-controls.test.ts",
@@ -36,33 +36,31 @@
       "scripts/statement-visual/categories-interface.mjs",
       "scripts/statement-visual/categories-visual-desktop.mjs",
       "scripts/statement-visual/categories-visual-operations.mjs",
-      "scripts/statement-visual/categories-visual-state.mjs"
+      "scripts/statement-visual/categories-visual-state.mjs",
+      "scripts/statement-visual/statement-contextual-surfaces.mjs"
     ],
-    "issue_delta_sha256": "aab38e4fe9a7e237484ee78b42c719db9341723e733e00bcfc1fc2d1f22085eb"
+    "issue_delta_sha256": "b124de36de6d4d9714ea39daf4cade7cf8d78ca32cfcde0ee50071146b35d715"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/audit-escape-closure-717.json",
       ".audit/entregar-issue/audit-remediation.json",
-      ".audit/entregar-issue/audit-source-result.json",
       ".audit/entregar-issue/code-growth.json",
       ".audit/entregar-issue/codebase-grounding.json",
       ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/learning-closure.json",
       ".audit/entregar-issue/negative-control-evidence-717.json",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
       ".audit/entregar-issue/standard-evidence.json"
     ]
   },
   "contract_version": "2026-08-20.3",
   "evidence_profile": "standard",
-  "remediation_mode": "targeted-remediation",
+  "remediation_mode": null,
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "d0d9bcf5f5996c659950f0085f50b566705990b68f6f7bf107c6230559d2332f"
+    "skill_sha256": "3491f0077eff338325c2257c900bd38560bb28596b592b669b5b101672155dfe"
   },
   "validators": {
     "validate_specification_coverage.py": "097d0d56edd5495f2a0fc3cc0606514a972d6995e6e8977d56e7595ceeb139e3",
@@ -75,7 +73,7 @@
     "validate_learning_closure.py": "d7baa1043776f7362bd2cf10125174803ba036c395f0df1268b80a89def0e0bc",
     "validate_independent_rejection_closure.py": "0cb612507e62ee1d3dd4310677f50e7a075f0005ee67777f505e379deb2f4c85",
     "validate_audit_remediation.py": "cee10219bdc601262534c9f09682c35f6e4c76ceb0eeb876e6cc3f20f74cab6c",
-    "validate_evidence_source_locations.py": "f37817f6982f101aec617f00e2e9ad8627f4775459028bc1f097166152112562"
+    "validate_evidence_source_locations.py": "7ef2c25299c03dfaebd4c6a455952934364f28123238f777224677f8760d01a3"
   },
   "artifact_transport": {
     "version": 1,
@@ -97,8 +95,8 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "581e4a27f036af06f52db6141d51037fc6ebb6ed184a80e70143e55044b5cffe",
-      "logical_sha256": "581e4a27f036af06f52db6141d51037fc6ebb6ed184a80e70143e55044b5cffe",
+      "sha256": "fab5caa190757a7437a251556a7e4b6e10c238d766497f8da911ce787197dc38",
+      "logical_sha256": "fab5caa190757a7437a251556a7e4b6e10c238d766497f8da911ce787197dc38",
       "logical_size": 19398,
       "artifact_transport": {
         "format": "plain-json",
@@ -107,8 +105,8 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "f43dc7b18959df5fbf61164cc225b4fdbd9a064b3b52426a7f05d040553bfeb6",
-      "logical_sha256": "f43dc7b18959df5fbf61164cc225b4fdbd9a064b3b52426a7f05d040553bfeb6",
+      "sha256": "8c12104649018c1335aa60cf55328f2f0f65d8dffaaa29d02c5acba9da53b90b",
+      "logical_sha256": "8c12104649018c1335aa60cf55328f2f0f65d8dffaaa29d02c5acba9da53b90b",
       "logical_size": 21901,
       "artifact_transport": {
         "format": "plain-json",
@@ -117,19 +115,9 @@
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure-717.json",
-      "sha256": "dcb4789898c3dbef760ab4f6e6773e819c3ae87879333ea45ab2f54085283401",
-      "logical_sha256": "dcb4789898c3dbef760ab4f6e6773e819c3ae87879333ea45ab2f54085283401",
+      "sha256": "173d0772ad9cf2b18f211c0f232c00ee02ce149c995d7e99f1e0d5ce9c4e9d7a",
+      "logical_sha256": "173d0772ad9cf2b18f211c0f232c00ee02ce149c995d7e99f1e0d5ce9c4e9d7a",
       "logical_size": 6907,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "learning_closure": {
-      "name": "learning-closure.json",
-      "sha256": "1528f1772c1aec31e359f008cba629d7d69d8807d51804b26e87fd3110ebe559",
-      "logical_sha256": "1528f1772c1aec31e359f008cba629d7d69d8807d51804b26e87fd3110ebe559",
-      "logical_size": 623,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -137,19 +125,9 @@
     },
     "audit_remediation": {
       "name": "audit-remediation.json",
-      "sha256": "590833ff48d5672fac52103b4abef14b3882ba3de371f2f25db0f1f259b12cbf",
-      "logical_sha256": "590833ff48d5672fac52103b4abef14b3882ba3de371f2f25db0f1f259b12cbf",
+      "sha256": "577f55b58d91aa66b07a2cbba7b31be5c92069f06645f1cedd5641b5ae1fb4a2",
+      "logical_sha256": "577f55b58d91aa66b07a2cbba7b31be5c92069f06645f1cedd5641b5ae1fb4a2",
       "logical_size": 2247,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_source_result": {
-      "name": "audit-source-result.json",
-      "sha256": "497c54270c0573b01cf6cfabd2b429d96af45bd032a4e1611ff0531879f1767b",
-      "logical_sha256": "497c54270c0573b01cf6cfabd2b429d96af45bd032a4e1611ff0531879f1767b",
-      "logical_size": 1213,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -157,8 +135,8 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "8550864b85b774575048b11e64b9633c739f194bb7ecfc7ce5deb273869fb5a1",
-      "logical_sha256": "8550864b85b774575048b11e64b9633c739f194bb7ecfc7ce5deb273869fb5a1",
+      "sha256": "3978692314de5a07e61a1fddb5264e85847f7d5f95bc64f10d26f35074774f80",
+      "logical_sha256": "3978692314de5a07e61a1fddb5264e85847f7d5f95bc64f10d26f35074774f80",
       "logical_size": 11532,
       "artifact_transport": {
         "format": "plain-json",
@@ -167,9 +145,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "83cdb20faae492e6f54e183ca08e0efab8c37a256484415e9e948dc15b9472a6",
-      "logical_sha256": "83cdb20faae492e6f54e183ca08e0efab8c37a256484415e9e948dc15b9472a6",
-      "logical_size": 1937,
+      "sha256": "a83c60d4590986ee3c34ae8ec046c7b2afd290c5b02f517d76c08ac50d20f5f9",
+      "logical_sha256": "a83c60d4590986ee3c34ae8ec046c7b2afd290c5b02f517d76c08ac50d20f5f9",
+      "logical_size": 2207,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -187,13 +165,12 @@
       "applicable": true,
       "status": "passed",
       "checked": 104,
-      "subject_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "subject_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "evidence_artifacts": [
         "requirement_closure",
         "standard_evidence"
-      ],
-      "verification_method": "connector-native full-file checks; official Python validators not executed"
+      ]
     }
   },
-  "previous_independent_rejection": true
+  "previous_independent_rejection": false
 }

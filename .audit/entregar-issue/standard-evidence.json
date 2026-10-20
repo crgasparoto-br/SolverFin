@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+  "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
   "requirements": [
     {
       "requirement_id": "REQ-717-01",
       "positive_evidence": [
-        "Dependência Golden Screen: docs/DESIGN_SYSTEM.md and docs/VISUAL_VALIDATION.md; route /categorias inherits Golden Screen layout; Repository CI run 39458950992 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b"
+        "Dependência Golden Screen: docs/DESIGN_SYSTEM.md and docs/VISUAL_VALIDATION.md; route /categorias inherits Golden Screen layout; Repository CI run 39458950992 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940"
       ],
       "primary_negative_control": {
         "id": "NC-717-01",
@@ -14,7 +14,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:88 reject textual status and mismatched columns",
         "expected": "No visual-standard parity or wrong route layout must fail, or be rejected by the stated gate.",
         "observed": "Golden Screen columns present; CI and Chrome exact-SHA passed",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "4699f3392db18a78c0b967b51709cee555ac4da1ae47c9db20732ead20e3f161",
@@ -30,7 +30,7 @@
     {
       "requirement_id": "REQ-717-02",
       "positive_evidence": [
-        "Hierarquia, tipo, ordens, recuo: apps/web/src/dev-server/categories-golden-screen.test.ts:26 nested ul/li 3 levels, controls and actions; Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
+        "Hierarquia, tipo, ordens, recuo: apps/web/src/dev-server/categories-golden-screen.test.ts:26 nested ul/li 3 levels, controls and actions; Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
       ],
       "primary_negative_control": {
         "id": "NC-717-02",
@@ -38,7 +38,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:26 asserts 2 nested UL and levels 0,1,2; rejects flat cards",
         "expected": "Flatten all levels into cards lacking UL and aria-expanded must fail, or be rejected by the stated gate.",
         "observed": "Three nested levels, UL elements, accessible toggle, no flat cards",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "621a29b2b2955642171cf62e315927bc38bd12e6f452e0be4b852a87ced94bf6",
@@ -54,7 +54,7 @@
     {
       "requirement_id": "REQ-717-03",
       "positive_evidence": [
-        "Busca/filtros/CRUD: scripts/statement-visual/categories-visual-desktop.mjs:90-221 search and scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD checks; Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
+        "Busca/filtros/CRUD: scripts/statement-visual/categories-visual-desktop.mjs:90-221 search and scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD checks; Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
       ],
       "primary_negative_control": {
         "id": "NC-717-03",
@@ -62,7 +62,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:78 refuses selecting self/descendant as parent",
         "expected": "Search without descendants, or modal that allows category cycle must fail, or be rejected by the stated gate.",
         "observed": "Ancestor-chain controls asserted, Chrome CRUD and search passed",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "c0825965aefefa75d28386ca39ec1f7b6c2d330d36d38291b36d0efa3e4429b0",
@@ -78,7 +78,7 @@
     {
       "requirement_id": "REQ-717-04",
       "positive_evidence": [
-        "Sem badges/cartões redundantes: apps/web/src/dev-server/categories-golden-screen.test.ts:26 rejects category-summary-item/category-tree-node-card; Repository CI run 39458950992 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b"
+        "Sem badges/cartões redundantes: apps/web/src/dev-server/categories-golden-screen.test.ts:26 rejects category-summary-item/category-tree-node-card; Repository CI run 39458950992 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940"
       ],
       "primary_negative_control": {
         "id": "NC-717-04",
@@ -86,7 +86,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:26 assert.doesNotMatch flat card selectors",
         "expected": "Cardized duplicated summary and color-only hierarchy must fail, or be rejected by the stated gate.",
         "observed": "Tests reject card selectors; level labels and native lists asserted",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "2d6f1b70b1b3c1f6a375d1e8129f939685d37d6e6fa7878f18349e05ff2fe818",
@@ -102,7 +102,7 @@
     {
       "requirement_id": "REQ-717-05",
       "positive_evidence": [
-        "Teclado/leitor/mobile/erro: scripts/statement-visual/categories-interface.mjs:140-295 mobile layouts and interaction checks; Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
+        "Teclado/leitor/mobile/erro: scripts/statement-visual/categories-interface.mjs:140-295 mobile layouts and interaction checks; Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
       ],
       "primary_negative_control": {
         "id": "NC-717-05",
@@ -110,7 +110,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:61 malicious category name rendered escaped not HTML",
         "expected": "Raw HTML injection in category name or horizontally overflowing narrow mobile must fail, or be rejected by the stated gate.",
         "observed": "Escaped markup observed in fixture, mobile 320/390 Chrome assertions passed",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "db546976ad6972446c77e1d67c6fe6b1636b2be7dd29d31ab015a8cd10b8fa2d",
@@ -126,7 +126,7 @@
     {
       "requirement_id": "REQ-717-06",
       "positive_evidence": [
-        "Pai/filho/neto e nomes longos: apps/web/src/dev-server/categories-golden-screen.test.ts:26 three-level fixture with long grandchild name; Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
+        "Pai/filho/neto e nomes longos: apps/web/src/dev-server/categories-golden-screen.test.ts:26 three-level fixture with long grandchild name; Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
       ],
       "primary_negative_control": {
         "id": "NC-717-06",
@@ -134,7 +134,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:26 assert depth=0/1/2, two nested lists and long name",
         "expected": "Grandchild disappears or flattens on render must fail, or be rejected by the stated gate.",
         "observed": "Three levels and long name asserted on exact material SHA",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "5f037b9b263a0dabe73420d70d6734fac8c582d9fbe5efe3f9f3f0494828da03",
@@ -150,7 +150,7 @@
     {
       "requirement_id": "REQ-717-07",
       "positive_evidence": [
-        "Filtrar/editar sem perder parent: scripts/statement-visual/categories-visual-desktop.mjs:14-221 filters and scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD; Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
+        "Filtrar/editar sem perder parent: scripts/statement-visual/categories-visual-desktop.mjs:14-221 filters and scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD; Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
       ],
       "primary_negative_control": {
         "id": "NC-717-07",
@@ -158,7 +158,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:69 rejects create-child action on archived category",
         "expected": "Offer unauthorized create-child on archived category or permit descendant parent must fail, or be rejected by the stated gate.",
         "observed": "Archived create-child absent; restore allowed, cycle option guarded",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "3930e30ca337eef3ed065969fedba4fc69df195d349ddfc5560528cbecd38bf0",
@@ -174,7 +174,7 @@
     {
       "requirement_id": "REQ-717-08",
       "positive_evidence": [
-        "Evidências SHA atual não herdadas: Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579); apps/web/src/dev-server/categories-golden-screen.test.ts:26 real hierarchy fixture; independent visual verification separately required"
+        "Evidências SHA atual não herdadas: Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579); apps/web/src/dev-server/categories-golden-screen.test.ts:26 real hierarchy fixture; independent visual verification separately required"
       ],
       "primary_negative_control": {
         "id": "NC-717-08",
@@ -182,7 +182,7 @@
         "procedure": "scripts/statement-visual/categories-interface.mjs:483-490 records failures and marks report REPROVADO if nonzero",
         "expected": "Accept screenshot from #615 as proof for #717 without running current SHA must fail, or be rejected by the stated gate.",
         "observed": "Run 39458950987 belongs to material SHA; artifact has categories-specific report",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "2bd934113a944060594cb5aaa6587073163edd6e95d7383e5045f2d457209a55",
@@ -198,7 +198,7 @@
     {
       "requirement_id": "REQ-717-09",
       "positive_evidence": [
-        "Itens hierárquicos sem cor única: apps/web/src/dev-server/categories-golden-screen.test.ts:26 depth and native list; apps/web/src/dev-server/categories-golden-screen.test.ts:43 orphan labels; Repository CI run 39458950992 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b"
+        "Itens hierárquicos sem cor única: apps/web/src/dev-server/categories-golden-screen.test.ts:26 depth and native list; apps/web/src/dev-server/categories-golden-screen.test.ts:43 orphan labels; Repository CI run 39458950992 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940"
       ],
       "primary_negative_control": {
         "id": "NC-717-09",
@@ -206,7 +206,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:43 checks title Categoria indisponível and kind",
         "expected": "Remove all text and rely on color badges for parent/type must fail, or be rejected by the stated gate.",
         "observed": "Fallback label, aria roles, type attributes and actions asserted",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "2b84dd567259e7ef3c9722a9872b1e15422416b0c75eabf1e43ce043cbd9cb75",
@@ -222,7 +222,7 @@
     {
       "requirement_id": "REQ-717-10",
       "positive_evidence": [
-        "Ações/contexto/autorização: scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD transaction tests; Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
+        "Ações/contexto/autorização: scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD transaction tests; Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
       ],
       "primary_negative_control": {
         "id": "NC-717-10",
@@ -230,7 +230,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:69 no create-child for archived; apps/web/src/dev-server/categories-golden-screen.test.ts:78 ancestors for cycle reject",
         "expected": "Archived categories allow prohibited subcategory creation must fail, or be rejected by the stated gate.",
         "observed": "Archived create-child absent, maintenance actions remain",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "51fe5d3b4ff586912ef3265e2121114985229376672a64539bda292b31d6aaad",
@@ -246,7 +246,7 @@
     {
       "requirement_id": "REQ-717-11",
       "positive_evidence": [
-        "Desktop e mobile/longos/vazio: scripts/statement-visual/categories-interface.mjs:140-295 desktop/mobile/compact checks; Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
+        "Desktop e mobile/longos/vazio: scripts/statement-visual/categories-interface.mjs:140-295 desktop/mobile/compact checks; Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579)"
       ],
       "primary_negative_control": {
         "id": "NC-717-11",
@@ -254,7 +254,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:84 asserts meaningful empty state instead of blank screen",
         "expected": "Blank when no categories or overflow narrow 320px must fail, or be rejected by the stated gate.",
         "observed": "Empty state asserted; desktop/390/320px Chrome validation green",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "6fe6ab1814c5e900f50c14c4222618e1bc9d942ce03b7355377a21105a970891",
@@ -270,7 +270,7 @@
     {
       "requirement_id": "REQ-717-12",
       "positive_evidence": [
-        "Testes/CI/independente: Repository CI run 39458950992 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b; Chrome validation run 39458950987 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579); audit rejection id audit-rejection:72d01a43-cea3-4d7a-bb85-5eaffc32883a still requires new certified handoff"
+        "Testes/CI/independente: Repository CI run 39458950992 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940; Chrome validation run 39458950987 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940, artifact id 12282626418 (sha256:8a10c719a0d4daa90bf1ca49ab8b59ffa1d7e7b8962308930098cb0606dd5579); audit rejection id audit-rejection:72d01a43-cea3-4d7a-bb85-5eaffc32883a still requires new certified handoff"
       ],
       "primary_negative_control": {
         "id": "NC-717-12",
@@ -278,7 +278,7 @@
         "procedure": "scripts/statement-visual/categories-interface.mjs:483-490 marks REPROVADO upon any browser check failure; CI green never substitutes independent audit",
         "expected": "Claim independently approved solely on CI green must fail, or be rejected by the stated gate.",
         "observed": "External audit explicitly still blocked pending own handoff; PR remains draft",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "c60f7781f9db4794845300a05b73fbaa34eebbcfaf3ae81d7d8f05d7e2132f56",
@@ -294,7 +294,7 @@
     {
       "requirement_id": "REQ-717-13",
       "positive_evidence": [
-        "Documentação: docs/DESIGN_SYSTEM.md docs/VISUAL_VALIDATION.md docs/ACCOUNTS_CARDS_UI.md updated on PR 731; Repository CI run 39458950992 completed/success exact head 5acdd58d730702ba65eed009b0b2aad9be39641b"
+        "Documentação: docs/DESIGN_SYSTEM.md docs/VISUAL_VALIDATION.md docs/ACCOUNTS_CARDS_UI.md updated on PR 731; Repository CI run 39458950992 completed/success exact head be002887dca11dd987cb9668a1db2ec68909b940"
       ],
       "primary_negative_control": {
         "id": "NC-717-13",
@@ -302,7 +302,7 @@
         "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:88 rejects missing status icon and column/size contracts specified in docs",
         "expected": "Document one layout while SSR renders old layout must fail, or be rejected by the stated gate.",
         "observed": "SSR test asserts documented compact layout; repository CI passed",
-        "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+        "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
         "evidence_sha256": "56e7aaa86d2d8a836ebd4c8ea20d1035d2940d30aeec2940b91a879b1b9105b4",
         "raw_case_sha256": "ca9732a73e5ac039c14ab1649cce35cc87a71c5b018577b7171ed78b026cf062",

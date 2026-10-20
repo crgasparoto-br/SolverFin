@@ -5,7 +5,7 @@
       "escape_id": "A-717-02",
       "escape_class": "foreign-target-handoff-inheritance",
       "status": "passed",
-      "revalidated_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "revalidated_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:72d01a43-cea3-4d7a-bb85-5eaffc32883a",
@@ -20,7 +20,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Compare base and PR inherited handoff identity; rebuild all source/closure/evidence for issue #717; certify final material SHA and check direct result-only child with remote current head.",
-        "observed": "Initial inherited-base-artifact classified stale; new local #717 snapshot/closure/evidence generated for candidate 5acdd58d730702ba65eed009b0b2aad9be39641b and controlled by terminal prepublication simulation."
+        "observed": "Initial inherited-base-artifact classified stale; new local #717 snapshot/closure/evidence generated for candidate be002887dca11dd987cb9668a1db2ec68909b940 and controlled by terminal prepublication simulation."
       },
       "sibling_cases": [
         {
@@ -64,7 +64,7 @@
       "escape_id": "A-717-03",
       "escape_class": "outdated-source-location",
       "status": "passed",
-      "revalidated_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "revalidated_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
@@ -79,7 +79,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Verify source anchor/run metadata and control-specific raw log traces",
-        "observed": "104 fully qualified source ranges verified against immutable material SHA 5acdd58d730702ba65eed009b0b2aad9be39641b by connector-native source checks; 13 matching negative-control traces corroborated by official material-CI job logs (synthetic assertion mutations, not mutations to production code). Formal Python handoff gates were not executed in this session."
+        "observed": "104 fully qualified source ranges verified against immutable material SHA be002887dca11dd987cb9668a1db2ec68909b940 by connector-native source checks; 13 matching negative-control traces corroborated by official material-CI job logs (synthetic assertion mutations, not mutations to production code). Formal Python handoff gates were not executed in this session."
       },
       "sibling_cases": [
         {
@@ -118,7 +118,7 @@
       "escape_id": "A-717-04",
       "escape_class": "negative-control-proof-gap",
       "status": "passed",
-      "revalidated_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "revalidated_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
@@ -133,7 +133,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Verify source anchor/run metadata and control-specific raw log traces",
-        "observed": "104 fully qualified source ranges verified against immutable material SHA 5acdd58d730702ba65eed009b0b2aad9be39641b by connector-native source checks; 13 matching negative-control traces corroborated by official material-CI job logs (synthetic assertion mutations, not mutations to production code). Formal Python handoff gates were not executed in this session."
+        "observed": "104 fully qualified source ranges verified against immutable material SHA be002887dca11dd987cb9668a1db2ec68909b940 by connector-native source checks; 13 matching negative-control traces corroborated by official material-CI job logs (synthetic assertion mutations, not mutations to production code). Formal Python handoff gates were not executed in this session."
       },
       "sibling_cases": [
         {

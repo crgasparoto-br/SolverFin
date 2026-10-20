@@ -153,7 +153,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions run 39458950987 exact material head 5acdd58d730702ba65eed009b0b2aad9be39641b artifact 12282626418"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions run 39458950987 exact material head be002887dca11dd987cb9668a1db2ec68909b940 artifact 12282626418"
     },
     {
       "id": "OBL-009",
@@ -449,7 +449,7 @@
       "apps/web/src/dev-server/categories-page.ts:609-741; scripts/statement-visual/categories-interface.mjs:140-295",
       "apps/web/src/dev-server/categories-page.ts:180-269; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 and 100-113",
       "apps/web/src/dev-server/categories-page.ts:511-526,717-733; scripts/statement-visual/categories-visual-operations.mjs:130-293",
-      "GitHub Actions run 39458950987 exact material head 5acdd58d730702ba65eed009b0b2aad9be39641b artifact 12282626418",
+      "GitHub Actions run 39458950987 exact material head be002887dca11dd987cb9668a1db2ec68909b940 artifact 12282626418",
       "apps/web/src/dev-server/categories-page.ts:226-308; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57",
       "apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; scripts/statement-visual/categories-visual-operations.mjs:9-293",
       "apps/web/src/dev-server/categories-page-assets.ts:193-235; scripts/statement-visual/categories-interface.mjs:140-295; run 39458950987",

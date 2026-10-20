@@ -3,13 +3,13 @@
   "repository": "crgasparoto-br/SolverFin",
   "issue_number": 717,
   "pull_request": 731,
-  "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+  "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
   "evidence_scope": "13 executed negative-controls in CI at exact material SHA; mutations operate on SSR output/assertion predicates, not a mutated production build.",
   "controls": [
     {
       "id": "NC-717-01",
       "requirement_id": "REQ-717-01",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "status-icon-missing",
       "synthetic_wrong_input": "<li class=\"category-tree-node\">no state</li>",
       "synthetic_invalid_case_rejected": true,
@@ -25,7 +25,7 @@
     {
       "id": "NC-717-02",
       "requirement_id": "REQ-717-02",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "flat-tree",
       "synthetic_wrong_input": "<div class=\"category-tree-node-card\">flattened</div>",
       "synthetic_invalid_case_rejected": true,
@@ -41,7 +41,7 @@
     {
       "id": "NC-717-03",
       "requirement_id": "REQ-717-03",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "missing-ancestor",
       "synthetic_wrong_input": "<option value=\"child\">without ancestor</option>",
       "synthetic_invalid_case_rejected": true,
@@ -57,7 +57,7 @@
     {
       "id": "NC-717-04",
       "requirement_id": "REQ-717-04",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "redundant-cards",
       "synthetic_wrong_input": "<div class=\"category-summary-item\">card</div>",
       "synthetic_invalid_case_rejected": true,
@@ -73,7 +73,7 @@
     {
       "id": "NC-717-05",
       "requirement_id": "REQ-717-05",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "raw-HTML",
       "synthetic_wrong_input": "<span><Compras> & outras</span>",
       "synthetic_invalid_case_rejected": true,
@@ -89,7 +89,7 @@
     {
       "id": "NC-717-06",
       "requirement_id": "REQ-717-06",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "missing-grandchild",
       "synthetic_wrong_input": "<li data-category-depth=\"1\">lost grandchild</li>",
       "synthetic_invalid_case_rejected": true,
@@ -105,7 +105,7 @@
     {
       "id": "NC-717-07",
       "requirement_id": "REQ-717-07",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "archived-create-child",
       "synthetic_wrong_input": "<button data-category-menu-action=\"create-child\">archived</button>",
       "synthetic_invalid_case_rejected": true,
@@ -121,7 +121,7 @@
     {
       "id": "NC-717-08",
       "requirement_id": "REQ-717-08",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "wrong-material-run",
       "synthetic_wrong_input": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
       "synthetic_invalid_case_rejected": true,
@@ -137,7 +137,7 @@
     {
       "id": "NC-717-09",
       "requirement_id": "REQ-717-09",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "color-only-parent",
       "synthetic_wrong_input": "<li style=\"color:green\">color alone</li>",
       "synthetic_invalid_case_rejected": true,
@@ -153,7 +153,7 @@
     {
       "id": "NC-717-10",
       "requirement_id": "REQ-717-10",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "unauthorized-menu",
       "synthetic_wrong_input": "<button data-category-menu-action=\"create-child\">archived</button>",
       "synthetic_invalid_case_rejected": true,
@@ -169,7 +169,7 @@
     {
       "id": "NC-717-11",
       "requirement_id": "REQ-717-11",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "blank-empty-state",
       "synthetic_wrong_input": "",
       "synthetic_invalid_case_rejected": true,
@@ -185,7 +185,7 @@
     {
       "id": "NC-717-12",
       "requirement_id": "REQ-717-12",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "visual-not-fail-closed",
       "synthetic_wrong_input": "{\"failures\":[\"failure\"]}",
       "synthetic_invalid_case_rejected": true,
@@ -201,7 +201,7 @@
     {
       "id": "NC-717-13",
       "requirement_id": "REQ-717-13",
-      "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
       "plausible_wrong_implementation": "missing-compact-columns",
       "synthetic_wrong_input": "<li class=\"category-tree-node\">old grid</li>",
       "synthetic_invalid_case_rejected": true,
