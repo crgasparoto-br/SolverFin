@@ -39,10 +39,7 @@ function rendersTypeAndCurrencyFiltersWithExplicitResourceMetadata(): void {
   assert.match(html, /data-master-currency/);
   assert.match(html, /<option value="all">Todas as moedas<\/option>/);
   assert.match(html, /<option value="USD">USD<\/option>/);
-  assert.match(
-    html,
-    /<option value="unavailable">Moeda indisponível<\/option>/,
-  );
+  assert.match(html, /<option value="unavailable">Moeda indisponível<\/option>/);
   assert.match(html, /data-kind="account" data-currency="USD"/);
   assert.match(html, /data-kind="card" data-currency="unavailable"/);
   assert.match(html, /Ajuste a busca ou os filtros de tipo, moeda e status/);
@@ -86,16 +83,10 @@ function rendersCompactAccountTypeColumnWithTooltips(): void {
     html,
     /class="resource-master-type" role="img" aria-label="Cartão · Visa · 2 instrumentos ativos"/,
   );
-  assert.match(
-    html,
-    /class="resource-master-institution-label"[^>]*>Banco exemplo/,
-  );
+  assert.match(html, /class="resource-master-institution-label"[^>]*>Banco exemplo/);
   assert.doesNotMatch(html, /class="resource-master-context"/);
   const accountStart = html.indexOf('data-kind="account"');
-  const accountRow = html.slice(
-    accountStart,
-    html.indexOf("</article>", accountStart),
-  );
+  const accountRow = html.slice(accountStart, html.indexOf("</article>", accountStart));
   assert.ok(accountStart >= 0 && accountRow);
   const type = accountRow.indexOf('class="resource-master-type"');
   const institution = accountRow.indexOf('class="resource-master-institution"');
@@ -109,10 +100,7 @@ function rendersCompactAccountTypeColumnWithTooltips(): void {
     html,
     /class="resource-master-amount-kind" role="img" aria-label="Limite total" title="Limite total"/,
   );
-  assert.doesNotMatch(
-    html,
-    /<small>Saldo inicial<\/small>|<small>Limite total<\/small>/,
-  );
+  assert.doesNotMatch(html, /<small>Saldo inicial<\/small>|<small>Limite total<\/small>/);
   assert.match(html, /data-kind="account"/);
   assert.match(html, /data-kind="card"/);
 }
@@ -124,10 +112,7 @@ function keepsCombinedFilterControlsInTheRouteRuntime(): void {
   assert.match(script, /data-master-currency/);
   assert.match(script, /matchesKind/);
   assert.match(script, /matchesCurrency/);
-  assert.match(
-    script,
-    /matchesSearch && matchesKind && matchesCurrency && matchesStatus/,
-  );
+  assert.match(script, /matchesSearch && matchesKind && matchesCurrency && matchesStatus/);
 }
 
 function persistsAndRestoresTheFourFilterControls(): void {
@@ -140,22 +125,10 @@ function persistsAndRestoresTheFourFilterControls(): void {
     /sessionStorage\.setItem\(filterStorageKey, JSON\.stringify\(currentFilterState\(\)\)\)/,
   );
   assert.match(script, /restorePersistedFilters\(\)/);
-  assert.match(
-    script,
-    /search: String\(searchInput && searchInput\.value \|\| ""\)/,
-  );
-  assert.match(
-    script,
-    /kind: String\(kindSelect && kindSelect\.value \|\| "all"\)/,
-  );
-  assert.match(
-    script,
-    /currency: String\(currencySelect && currencySelect\.value \|\| "all"\)/,
-  );
-  assert.match(
-    script,
-    /status: String\(statusSelect && statusSelect\.value \|\| "all"\)/,
-  );
+  assert.match(script, /search: String\(searchInput && searchInput\.value \|\| ""\)/);
+  assert.match(script, /kind: String\(kindSelect && kindSelect\.value \|\| "all"\)/);
+  assert.match(script, /currency: String\(currencySelect && currencySelect\.value \|\| "all"\)/);
+  assert.match(script, /status: String\(statusSelect && statusSelect\.value \|\| "all"\)/);
   assert.match(script, /persistFilters\(\);\s*applyFilters\(\);/);
 }
 
@@ -201,8 +174,7 @@ function resourceFixture(
     brandKey: undefined,
     secondaryLabel: "Contexto",
     amountMinor: 0,
-    amountLabel:
-      overrides.kind === "account" ? "Saldo inicial" : "Limite total",
+    amountLabel: overrides.kind === "account" ? "Saldo inicial" : "Limite total",
     search: `${overrides.name} ${overrides.currencyLabel}`.toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(overrides.key)}`,
     isSelected: false,
