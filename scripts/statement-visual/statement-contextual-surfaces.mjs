@@ -45,8 +45,6 @@ export async function validateStatementContextualSurfaces(
     await press("Enter", 13);
     await sleep(100);
   };
-  // Details menus are positioned after an asynchronous toggle event. Wait for
-  // their actual rendered/focusable state before testing keyboard activation.
   // A genuine account/edit failure still fails the assertions below.
   const activateMenuAction = async (selector) => {
     const readiness = await read(`(async () => {
