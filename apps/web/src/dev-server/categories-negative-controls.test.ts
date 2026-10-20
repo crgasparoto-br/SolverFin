@@ -90,17 +90,17 @@ describe("Issue 717 executed negative controls", () => {
 
   it("NC-717-05 rejects unescaped names in SSR output", () => {
     const html = renderCategoryTree([
-      { id: "danger", name: "<Compras> & outras", kind: "expense", status: "active" },
-    ]);
-    assertKilled(
-      "NC-717-05",
-      html,
-      html.replace("&lt;Compras&gt;", "<Compras>"),
-      (value) => {
-        assert.match(value, /&lt;Compras&gt;/);
-        assert.doesNotMatch(value, /<Compras>/);
+      {
+        id: "danger",
+        name: "<Compras> & outras",
+        kind: "expense",
+        status: "active",
       },
-    );
+    ]);
+    assertKilled("NC-717-05", html, html.replace("&lt;Compras&gt;", "<Compras>"), (value) => {
+      assert.match(value, /&lt;Compras&gt;/);
+      assert.doesNotMatch(value, /<Compras>/);
+    });
   });
 
   it("NC-717-06 rejects a missing third hierarchy level", () => {
@@ -158,27 +158,22 @@ describe("Issue 717 executed negative controls", () => {
 
   it("NC-717-11 rejects a blank empty-state explanation", () => {
     const html = renderCategoryTree([]);
-    assertKilled(
-      "NC-717-11",
-      html,
-      html.replace("Nenhuma categoria cadastrada.", ""),
-      (value) => assert.match(value, /Nenhuma categoria cadastrada/),
+    assertKilled("NC-717-11", html, html.replace("Nenhuma categoria cadastrada.", ""), (value) =>
+      assert.match(value, /Nenhuma categoria cadastrada/),
     );
   });
 
   it("NC-717-12 rejects a visual report with failures", () => {
     const current = JSON.stringify({ failures: [], route: "/categorias" });
-    const rejected = JSON.stringify({ failures: ["category overflow"], route: "/categorias" });
-    assertKilled(
-      "NC-717-12",
-      current,
-      rejected,
-      (value) => {
-        const report = JSON.parse(value) as { failures: string[]; route: string };
-        assert.equal(report.route, "/categorias");
-        assert.equal(report.failures.length, 0);
-      },
-    );
+    const rejected = JSON.stringify({
+      failures: ["category overflow"],
+      route: "/categorias",
+    });
+    assertKilled("NC-717-12", current, rejected, (value) => {
+      const report = JSON.parse(value) as { failures: string[]; route: string };
+      assert.equal(report.route, "/categorias");
+      assert.equal(report.failures.length, 0);
+    });
   });
 
   it("NC-717-13 rejects a compact list missing its parent column", () => {
