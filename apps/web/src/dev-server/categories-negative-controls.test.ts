@@ -186,7 +186,7 @@ describe("Issue 717 executed negative controls", () => {
     assertKilled(
       "NC-717-13",
       html,
-      html.replace("Categoria superior</span>", "Coluna ausente</span>"),
+      html.replaceAll("Categoria superior</span>", "Coluna ausente</span>"),
       (value) => assert.match(value, /Categoria superior<\/span>/),
     );
   });
