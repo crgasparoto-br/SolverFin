@@ -3,35 +3,56 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+  "candidate_head_sha": "92410e63b75103c0f298f88fdd520160d48be333",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:issuecomment-6189467904",
-    "audited_head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
-    "audit_report_sha256": "388cce3ba05ecffee5b12388549eecc6bfd0dfc0617f0507f2546f6e302fae7b"
+    "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
+    "audited_head_sha": "18b1a397be0edcc737ae0e8f9c03cc16ac4a974a",
+    "audit_report_sha256": "497c54270c0573b01cf6cfabd2b429d96af45bd032a4e1611ff0531879f1767b"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "F-714-03",
+      "source_id": "A-717-03",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        "apps/web/src/dev-server/statement-golden-refinements.ts",
-        "scripts/statement-visual/statement-contextual-surfaces.mjs",
-        "scripts/statement-visual/statement-contextual-assertions.mjs",
-        "apps/web/src/dev-server/transactions-page-v2.test.ts"
+        ".audit/entregar-issue/standard-evidence.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/negative-control-evidence-717.json",
+        ".audit/entregar-issue/handoff-ready.json"
       ],
       "evidence": [
-        "evidence-714-controls.txt",
-        "audit-71403-original.txt"
+        "standard-evidence.json",
+        "requirement-closure.json",
+        "negative-control-evidence-717.json"
       ],
       "validations": [
-        "Cancel and Save buttons contained in modal content at 320px, 390px and desktop for new/edit/clone.",
-        "Nine visual negative controls inject clipped Cancel, reject the regression and pass after restoration.",
-        "Exact-material Repository CI #38731099576 and visual validation #38731099631 (require both terminal green).",
-        "CODE-GROWTH-001 passes on 07fb199 after extracting assertions without modifying API."
+        "62 source locations checked against exact material SHA; no out-of-range anchors",
+        "CI and Chrome metadata anchored to material exact SHA"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-717-04",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        ".audit/entregar-issue/standard-evidence.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/negative-control-evidence-717.json",
+        ".audit/entregar-issue/handoff-ready.json"
+      ],
+      "evidence": [
+        "standard-evidence.json",
+        "requirement-closure.json",
+        "negative-control-evidence-717.json"
+      ],
+      "validations": [
+        "13 individual original log traces verified, each carrying a SHA-256",
+        "13 synthetic invalid-input counterexamples rejected (not production mutations)"
       ]
     }
   ]
