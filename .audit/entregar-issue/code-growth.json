@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
+  "subject_sha": "b2de05ee85f772176ad064c118092322191766c6",
   "base_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
   "policy": {
     "new_file_soft_limit": 300,
@@ -66,8 +66,7 @@
     {
       "path": "scripts/statement-visual/statement-contextual-surfaces.mjs",
       "lines_before": 674,
-      "lines_after": 696,
-      "justification": "Visual keyboard activation regression: verify expanded/visible/focused contextual action before Enter."
+      "lines_after": 694
     }
   ],
   "blocking_files": []

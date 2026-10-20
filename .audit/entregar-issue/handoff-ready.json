@@ -1,10 +1,10 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-10-20T22:55:36.506045+00:00",
+  "created_at": "2026-10-20T23:07:53.109321+00:00",
   "identity": {
-    "head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
-    "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
+    "head_sha": "b2de05ee85f772176ad064c118092322191766c6",
+    "material_head_sha": "b2de05ee85f772176ad064c118092322191766c6",
     "base_sha": "b7f5cae7fcc1ecba278582ce574f553acb9e98f3",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
@@ -22,7 +22,7 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
-    "material_head_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
+    "material_head_sha": "b2de05ee85f772176ad064c118092322191766c6",
     "issue_changed_paths": [
       ".github/workflows/delivery-v2-ci.yml",
       "apps/web/src/dev-server/categories-negative-controls.test.ts",
@@ -39,7 +39,7 @@
       "scripts/statement-visual/categories-visual-state.mjs",
       "scripts/statement-visual/statement-contextual-surfaces.mjs"
     ],
-    "issue_delta_sha256": "b124de36de6d4d9714ea39daf4cade7cf8d78ca32cfcde0ee50071146b35d715"
+    "issue_delta_sha256": "80d3d35953184851070cf13c54f4cbacdde8463a3429080ac8794518a1469837"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -95,8 +95,8 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "fab5caa190757a7437a251556a7e4b6e10c238d766497f8da911ce787197dc38",
-      "logical_sha256": "fab5caa190757a7437a251556a7e4b6e10c238d766497f8da911ce787197dc38",
+      "sha256": "b4838b2e2ceaecfd62a79e9cd1065aef994bcdbf138ff050b8048a5193f42ce6",
+      "logical_sha256": "b4838b2e2ceaecfd62a79e9cd1065aef994bcdbf138ff050b8048a5193f42ce6",
       "logical_size": 19398,
       "artifact_transport": {
         "format": "plain-json",
@@ -105,8 +105,8 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "8c12104649018c1335aa60cf55328f2f0f65d8dffaaa29d02c5acba9da53b90b",
-      "logical_sha256": "8c12104649018c1335aa60cf55328f2f0f65d8dffaaa29d02c5acba9da53b90b",
+      "sha256": "e02130dee005c39f280aad678439bf1449807ea233761179135a16684d0efd02",
+      "logical_sha256": "e02130dee005c39f280aad678439bf1449807ea233761179135a16684d0efd02",
       "logical_size": 21901,
       "artifact_transport": {
         "format": "plain-json",
@@ -115,9 +115,9 @@
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure-717.json",
-      "sha256": "173d0772ad9cf2b18f211c0f232c00ee02ce149c995d7e99f1e0d5ce9c4e9d7a",
-      "logical_sha256": "173d0772ad9cf2b18f211c0f232c00ee02ce149c995d7e99f1e0d5ce9c4e9d7a",
-      "logical_size": 6907,
+      "sha256": "a26a5bfc78b97eb6afe067545a298390d5468d1e756dd62997be2e21ea40c523",
+      "logical_sha256": "a26a5bfc78b97eb6afe067545a298390d5468d1e756dd62997be2e21ea40c523",
+      "logical_size": 7085,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -125,8 +125,8 @@
     },
     "audit_remediation": {
       "name": "audit-remediation.json",
-      "sha256": "577f55b58d91aa66b07a2cbba7b31be5c92069f06645f1cedd5641b5ae1fb4a2",
-      "logical_sha256": "577f55b58d91aa66b07a2cbba7b31be5c92069f06645f1cedd5641b5ae1fb4a2",
+      "sha256": "f2ff1032f8f72333c74fd8d7bdaedfe70bfc398cf27a8f25c33f8de9937e837b",
+      "logical_sha256": "f2ff1032f8f72333c74fd8d7bdaedfe70bfc398cf27a8f25c33f8de9937e837b",
       "logical_size": 2247,
       "artifact_transport": {
         "format": "plain-json",
@@ -135,8 +135,8 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "3978692314de5a07e61a1fddb5264e85847f7d5f95bc64f10d26f35074774f80",
-      "logical_sha256": "3978692314de5a07e61a1fddb5264e85847f7d5f95bc64f10d26f35074774f80",
+      "sha256": "8f43b6478b995f18bc67d584088e190977985b2e24fc6f533cec1ced72aabefb",
+      "logical_sha256": "8f43b6478b995f18bc67d584088e190977985b2e24fc6f533cec1ced72aabefb",
       "logical_size": 11532,
       "artifact_transport": {
         "format": "plain-json",
@@ -145,9 +145,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "a83c60d4590986ee3c34ae8ec046c7b2afd290c5b02f517d76c08ac50d20f5f9",
-      "logical_sha256": "a83c60d4590986ee3c34ae8ec046c7b2afd290c5b02f517d76c08ac50d20f5f9",
-      "logical_size": 2207,
+      "sha256": "4918c5f5b887ef48b65b2c43455eaeedd1b73b562912950196483f146fd20356",
+      "logical_sha256": "4918c5f5b887ef48b65b2c43455eaeedd1b73b562912950196483f146fd20356",
+      "logical_size": 2078,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -165,7 +165,7 @@
       "applicable": true,
       "status": "passed",
       "checked": 104,
-      "subject_sha": "be002887dca11dd987cb9668a1db2ec68909b940",
+      "subject_sha": "b2de05ee85f772176ad064c118092322191766c6",
       "evidence_artifacts": [
         "requirement_closure",
         "standard_evidence"
