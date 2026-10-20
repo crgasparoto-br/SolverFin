@@ -4,10 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, it } from "node:test";
 
-import {
-  solverFinDesignTokens,
-  type SolverFinDesignTokens,
-} from "../design-system/tokens.js";
+import { solverFinDesignTokens, type SolverFinDesignTokens } from "../design-system/tokens.js";
 import { createSolverFinDesignSystemCss } from "../design-system/styles.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import { solverFinSsrStyleContracts } from "./ssr-style-contract.js";
@@ -19,9 +16,7 @@ const consumingModules = [
     solverFinSsrStyleContracts
       .filter((contract) => contract.shell === "authenticated")
       .map((contract) =>
-        contract.routeId === "accountsCards"
-          ? "accounts-cards/styles.js"
-          : contract.moduleFileName,
+        contract.routeId === "accountsCards" ? "accounts-cards/styles.js" : contract.moduleFileName,
       ),
   ),
 ].sort();
@@ -52,30 +47,15 @@ describe("shared shell styles", () => {
   it("shares the Golden Screen light navigation palette with every authenticated SSR route", () => {
     const css = sharedShellStyles();
     assert.match(css, /\.sidebar\s*\{[^}]*background:\s*var\(--surface\)/s);
-    assert.match(
-      css,
-      /\.sidebar\s*\{[^}]*border-right:\s*1px solid var\(--line\)/s,
-    );
+    assert.match(css, /\.sidebar\s*\{[^}]*border-right:\s*1px solid var\(--line\)/s);
     assert.match(css, /\.sidebar nav a\s*\{[^}]*color:\s*#334155/s);
     assert.match(css, /\.sidebar nav a:hover\s*\{[^}]*background:\s*#f1f5f9/s);
-    assert.match(
-      css,
-      /\.sidebar nav a\[aria-current="page"\]\s*\{[^}]*background:\s*#eef4ff/s,
-    );
-    assert.match(
-      css,
-      /\.sidebar nav a\[aria-current="page"\]\s*\{[^}]*color:\s*#1d4ed8/s,
-    );
+    assert.match(css, /\.sidebar nav a\[aria-current="page"\]\s*\{[^}]*background:\s*#eef4ff/s);
+    assert.match(css, /\.sidebar nav a\[aria-current="page"\]\s*\{[^}]*color:\s*#1d4ed8/s);
     assert.match(css, /\.nav-section-label\s*\{[^}]*color:\s*#94a3b8/s);
     assert.match(css, /\.logout\s*\{[^}]*color:\s*#475569/s);
-    assert.doesNotMatch(
-      css,
-      /\.sidebar\s*\{[^}]*background:\s*var\(--primary\)/s,
-    );
-    assert.match(
-      css,
-      /\.nav-more-toggle\[aria-expanded="true"\]\s*\{[^}]*color:\s*#1d4ed8/s,
-    );
+    assert.doesNotMatch(css, /\.sidebar\s*\{[^}]*background:\s*var\(--primary\)/s);
+    assert.match(css, /\.nav-more-toggle\[aria-expanded="true"\]\s*\{[^}]*color:\s*#1d4ed8/s);
   });
 
   it("derives executable SSR output from a changed canonical token without a second edit", () => {
@@ -109,9 +89,7 @@ describe("shared shell styles", () => {
     assert.match(css, /--sf-layout-grid-gap:\s*1rem/);
     assert.match(css, /--sf-motion-fast:\s*120ms ease-out/);
     assert.ok(
-      css.includes(
-        `@media (max-width: ${solverFinDesignTokens.breakpoints.shellCompact})`,
-      ),
+      css.includes(`@media (max-width: ${solverFinDesignTokens.breakpoints.shellCompact})`),
     );
     assert.match(css, /--sf-breakpoint-dialog-stack:\s*56\.25rem/);
   });
@@ -119,34 +97,19 @@ describe("shared shell styles", () => {
   it("gives positive, negative, neutral, attention and information states a non-color marker", () => {
     const css = createSolverFinDesignSystemCss();
 
-    for (const state of [
-      "positive",
-      "negative",
-      "neutral",
-      "attention",
-      "information",
-    ] as const) {
-      assert.match(
-        css,
-        new RegExp(`\\.sf-semantic-state\\[data-state="${state}"\\]`),
-      );
+    for (const state of ["positive", "negative", "neutral", "attention", "information"] as const) {
+      assert.match(css, new RegExp(`\\.sf-semantic-state\\[data-state="${state}"\\]`));
       assert.match(css, new RegExp(`--sf-state-${state}-marker:`));
     }
 
-    assert.match(
-      css,
-      /\.sf-semantic-state::before\s*\{[^}]*content:\s*var\(--sf-state-marker\)/s,
-    );
+    assert.match(css, /\.sf-semantic-state::before\s*\{[^}]*content:\s*var\(--sf-state-marker\)/s);
     assert.match(css, /border-inline-start-width:\s*var\(--sf-space-1\)/);
   });
 
   it("uses the light statement hover palette for neutral controls globally", () => {
     const css = sharedShellStyles();
 
-    assert.match(
-      css,
-      /--neutral-control-hover:\s*var\(--sf-color-neutral-control-hover\)/,
-    );
+    assert.match(css, /--neutral-control-hover:\s*var\(--sf-color-neutral-control-hover\)/);
     assert.match(
       css,
       /--neutral-control-border-hover:\s*var\(--sf-color-neutral-control-border-hover\)/,
@@ -161,15 +124,9 @@ describe("shared shell styles", () => {
     );
     assert.match(css, /button\[aria-pressed\][^{]+:hover:not\(:disabled\)/);
     assert.match(css, /button\[aria-selected\][^{]+:focus-visible/);
-    assert.match(
-      css,
-      /button\[aria-haspopup="listbox"\][^{]+:hover:not\(:disabled\)/,
-    );
+    assert.match(css, /button\[aria-haspopup="listbox"\][^{]+:hover:not\(:disabled\)/);
     assert.match(css, /button\[role="menuitem"\][^{]+:hover:not\(:disabled\)/);
-    assert.match(
-      css,
-      /button\[data-button-variant="neutral"\][^{]+:hover:not\(:disabled\)/,
-    );
+    assert.match(css, /button\[data-button-variant="neutral"\][^{]+:hover:not\(:disabled\)/);
     assert.match(css, /\.tab-button/);
     assert.match(css, /\.sort-button/);
     assert.match(css, /\.month-nav-button/);
@@ -178,18 +135,14 @@ describe("shared shell styles", () => {
     assert.match(css, /background:\s*var\(--neutral-control-active-hover\)/);
     assert.match(css, /color:\s*var\(--neutral-control-text-hover\)/);
     assert.ok(
-      css.indexOf("button[aria-pressed]:not(.danger)") >
-        css.indexOf("button:hover:not(:disabled)"),
+      css.indexOf("button[aria-pressed]:not(.danger)") > css.indexOf("button:hover:not(:disabled)"),
       "the neutral hover rule must override the generic dark primary hover",
     );
   });
 
   it("maps legacy operational controls and close actions to the shared neutral contract", () => {
     const css = sharedShellStyles();
-    const recurrenceSource = readFileSync(
-      join(currentDir, "recurrences-section.js"),
-      "utf8",
-    );
+    const recurrenceSource = readFileSync(join(currentDir, "recurrences-section.js"), "utf8");
 
     for (const alias of legacyNeutralAliases) {
       assert.ok(css.includes(alias), `${alias} is not neutral`);
@@ -207,18 +160,14 @@ describe("shared shell styles", () => {
       /<button type="button" class="close-form" data-recurrence-scope-cancel aria-label="Fechar">/,
     );
     assert.ok(
-      css.lastIndexOf("form.close-form > button") >
-        css.indexOf("button:hover:not(:disabled)"),
+      css.lastIndexOf("form.close-form > button") > css.indexOf("button:hover:not(:disabled)"),
       "close actions must override the generic primary hover",
     );
   });
 
   it("keeps legacy semantic resting states outside the neutral base selector", () => {
     const css = sharedShellStyles();
-    const transactionsSource = readFileSync(
-      join(currentDir, "transactions-page.js"),
-      "utf8",
-    );
+    const transactionsSource = readFileSync(join(currentDir, "transactions-page.js"), "utf8");
     const baseRuleStart = css.indexOf("form.close-form > button");
     const hoverRuleStart = css.indexOf("button[aria-pressed]", baseRuleStart);
     const neutralBaseRule = css.slice(baseRuleStart, hoverRuleStart);
@@ -259,10 +208,7 @@ describe("shared shell styles", () => {
       accountsCardsSource,
       /class="sf-button sf-button-secondary sf-icon-button sf-focus-ring resource-action-button danger-icon-button"/,
     );
-    const detailCssSource = readFileSync(
-      join(currentDir, "accounts-cards", "styles.js"),
-      "utf8",
-    );
+    const detailCssSource = readFileSync(join(currentDir, "accounts-cards", "styles.js"), "utf8");
     assert.match(
       detailCssSource,
       /\.resource-detail-panel button\.danger-icon-button:hover:not\(:disabled\)/,
@@ -298,18 +244,9 @@ describe("shared shell styles", () => {
   for (const moduleFileName of consumingModules) {
     it(`${moduleFileName} composes its styles from sharedShellStyles()`, () => {
       const source = readFileSync(join(currentDir, moduleFileName), "utf8");
-      if (
-        moduleFileName === "cards-page-v2.js" &&
-        source.includes("cardsPageStyles()")
-      ) {
-        assert.match(
-          source,
-          /import \{ cardsPageStyles \} from "\.\/cards-page-v2-styles\.js"/,
-        );
-        const extractedStyles = readFileSync(
-          join(currentDir, "cards-page-v2-styles.js"),
-          "utf8",
-        );
+      if (moduleFileName === "cards-page-v2.js" && source.includes("cardsPageStyles()")) {
+        assert.match(source, /import \{ cardsPageStyles \} from "\.\/cards-page-v2-styles\.js"/);
+        const extractedStyles = readFileSync(join(currentDir, "cards-page-v2-styles.js"), "utf8");
         assert.match(extractedStyles, /sharedShellStyles\(\)/);
         return;
       }
