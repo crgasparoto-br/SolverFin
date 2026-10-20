@@ -224,3 +224,15 @@ jobs:
         run: node --test scripts/ci-gate.test.mjs
       - name: Enforce exactly one risk path
         run: node scripts/ci-gate.mjs
+
+  repository_gate:
+    name: Repository CI gate
+    needs: [gate]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      LEGACY_GATE_RESULT: ${{ needs.gate.result }}
+    steps:
+      - name: Require full deterministic CI success
+        run: test "$LEGACY_GATE_RESULT" = "success"
