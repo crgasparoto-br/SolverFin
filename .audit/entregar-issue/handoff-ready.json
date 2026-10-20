@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-10-20T05:39:54.392009+00:00",
+  "created_at": "2026-10-20T21:36:42.166Z",
   "identity": {
-    "head_sha": "92410e63b75103c0f298f88fdd520160d48be333",
-    "material_head_sha": "92410e63b75103c0f298f88fdd520160d48be333",
-    "base_sha": "4d3933a3800a9a597339bbc5eb067a7a9c21f77e",
+    "head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+    "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+    "base_sha": "b7f5cae7fcc1ecba278582ce574f553acb9e98f3",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
   },
@@ -22,10 +22,14 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
-    "material_head_sha": "92410e63b75103c0f298f88fdd520160d48be333",
+    "material_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
     "issue_changed_paths": [
+      ".github/workflows/delivery-v2-ci.yml",
+      "apps/web/src/dev-server/categories-negative-controls.test.ts",
       "apps/web/src/dev-server/categories-page-assets.ts",
       "apps/web/src/dev-server/categories-page.ts",
+      "docs/CI_INDEPENDENT.md",
+      "scripts/ci-legacy-dependency.test.mjs",
       "scripts/statement-visual/accounts-cards-interface.mjs",
       "scripts/statement-visual/accounts-visual-cdi.mjs",
       "scripts/statement-visual/accounts-visual-state.mjs",
@@ -34,7 +38,7 @@
       "scripts/statement-visual/categories-visual-operations.mjs",
       "scripts/statement-visual/categories-visual-state.mjs"
     ],
-    "issue_delta_sha256": "ecb6df2e6e1e8a4a37818d9f3cfaaa7be1e1934fe5f77a1c3d2834e4c71f2ce3"
+    "issue_delta_sha256": "aab38e4fe9a7e237484ee78b42c719db9341723e733e00bcfc1fc2d1f22085eb"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -58,7 +62,7 @@
   "remediation_mode": "targeted-remediation",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "8f24de77a47d6877dd7ea98718eb7a0447875d5cae8f16e091c6eba76c7d9986"
+    "skill_sha256": "d0d9bcf5f5996c659950f0085f50b566705990b68f6f7bf107c6230559d2332f"
   },
   "validators": {
     "validate_specification_coverage.py": "097d0d56edd5495f2a0fc3cc0606514a972d6995e6e8977d56e7595ceeb139e3",
@@ -70,7 +74,8 @@
     "validate_inherited_controls.py": "38e4e6f3a6ae79622737b1df57e4d81ee1512c8e3143003621769ba199def220",
     "validate_learning_closure.py": "d7baa1043776f7362bd2cf10125174803ba036c395f0df1268b80a89def0e0bc",
     "validate_independent_rejection_closure.py": "0cb612507e62ee1d3dd4310677f50e7a075f0005ee67777f505e379deb2f4c85",
-    "validate_audit_remediation.py": "cee10219bdc601262534c9f09682c35f6e4c76ceb0eeb876e6cc3f20f74cab6c"
+    "validate_audit_remediation.py": "cee10219bdc601262534c9f09682c35f6e4c76ceb0eeb876e6cc3f20f74cab6c",
+    "validate_evidence_source_locations.py": "f37817f6982f101aec617f00e2e9ad8627f4775459028bc1f097166152112562"
   },
   "artifact_transport": {
     "version": 1,
@@ -92,9 +97,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "2e756008bbf21c19f933b7b52e531effa06b6d0abc8c6db7ba1c681aef31a372",
-      "logical_sha256": "2e756008bbf21c19f933b7b52e531effa06b6d0abc8c6db7ba1c681aef31a372",
-      "logical_size": 18766,
+      "sha256": "581e4a27f036af06f52db6141d51037fc6ebb6ed184a80e70143e55044b5cffe",
+      "logical_sha256": "581e4a27f036af06f52db6141d51037fc6ebb6ed184a80e70143e55044b5cffe",
+      "logical_size": 19398,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -102,9 +107,9 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "a1e7fecf80715829e70f3231e3d77e99a0968833bb79770aff1b8d4135fe8eae",
-      "logical_sha256": "a1e7fecf80715829e70f3231e3d77e99a0968833bb79770aff1b8d4135fe8eae",
-      "logical_size": 22120,
+      "sha256": "f43dc7b18959df5fbf61164cc225b4fdbd9a064b3b52426a7f05d040553bfeb6",
+      "logical_sha256": "f43dc7b18959df5fbf61164cc225b4fdbd9a064b3b52426a7f05d040553bfeb6",
+      "logical_size": 21901,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -112,9 +117,9 @@
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure-717.json",
-      "sha256": "a9814f0a1fd7e53d2b8ecc29b51331097b1e7a2d78f8d65778657f641fc0eb10",
-      "logical_sha256": "a9814f0a1fd7e53d2b8ecc29b51331097b1e7a2d78f8d65778657f641fc0eb10",
-      "logical_size": 6405,
+      "sha256": "dcb4789898c3dbef760ab4f6e6773e819c3ae87879333ea45ab2f54085283401",
+      "logical_sha256": "dcb4789898c3dbef760ab4f6e6773e819c3ae87879333ea45ab2f54085283401",
+      "logical_size": 6907,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -132,9 +137,9 @@
     },
     "audit_remediation": {
       "name": "audit-remediation.json",
-      "sha256": "89a8dc1fa84a3ce2080ba9277aba64180d899d0a48346213ebd5cd47dde04e01",
-      "logical_sha256": "89a8dc1fa84a3ce2080ba9277aba64180d899d0a48346213ebd5cd47dde04e01",
-      "logical_size": 2110,
+      "sha256": "590833ff48d5672fac52103b4abef14b3882ba3de371f2f25db0f1f259b12cbf",
+      "logical_sha256": "590833ff48d5672fac52103b4abef14b3882ba3de371f2f25db0f1f259b12cbf",
+      "logical_size": 2247,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -152,8 +157,8 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "8477377e1a74c61a23da0272142a39ac2dfa6ba5109e71fb8e8b5fabeec44351",
-      "logical_sha256": "8477377e1a74c61a23da0272142a39ac2dfa6ba5109e71fb8e8b5fabeec44351",
+      "sha256": "8550864b85b774575048b11e64b9633c739f194bb7ecfc7ce5deb273869fb5a1",
+      "logical_sha256": "8550864b85b774575048b11e64b9633c739f194bb7ecfc7ce5deb273869fb5a1",
       "logical_size": 11532,
       "artifact_transport": {
         "format": "plain-json",
@@ -162,19 +167,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "98b4da6836ac0b0c7f8281718898811684de6fa9c82b78983d7db65ffafe1686",
-      "logical_sha256": "98b4da6836ac0b0c7f8281718898811684de6fa9c82b78983d7db65ffafe1686",
-      "logical_size": 2082,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "negative_control_evidence_717": {
-      "name": "negative-control-evidence-717.json",
-      "sha256": "892d885f9d3db817e72b671cfd9a9dd589455efdfb4c341704da3879bfad083d",
-      "logical_sha256": "892d885f9d3db817e72b671cfd9a9dd589455efdfb4c341704da3879bfad083d",
-      "logical_size": 12439,
+      "sha256": "83cdb20faae492e6f54e183ca08e0efab8c37a256484415e9e948dc15b9472a6",
+      "logical_sha256": "83cdb20faae492e6f54e183ca08e0efab8c37a256484415e9e948dc15b9472a6",
+      "logical_size": 1937,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -187,6 +182,17 @@
     },
     "code_growth": {
       "applicable": true
+    },
+    "source_locations": {
+      "applicable": true,
+      "status": "passed",
+      "checked": 104,
+      "subject_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
+      "evidence_artifacts": [
+        "requirement_closure",
+        "standard_evidence"
+      ],
+      "verification_method": "connector-native full-file checks; official Python validators not executed"
     }
   },
   "previous_independent_rejection": true

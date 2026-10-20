@@ -21,7 +21,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:53-109 and docs/GOLDEN_STATEMENT.md; CI exact head 39375178107"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:53-109 and docs/GOLDEN_STATEMENT.md; CI exact head 39458950992"
     },
     {
       "id": "OBL-002",
@@ -38,7 +38,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:180-269 and :919-945; categories-golden-screen.test.ts; visual 39375178129"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:180-269 and apps/web/src/dev-server/categories-page.ts:270-320; apps/web/src/dev-server/categories-golden-screen.test.ts; visual 39458950987"
     },
     {
       "id": "OBL-003",
@@ -57,7 +57,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:69-143 and :485-857; categories-visual-desktop.mjs:14-221,473-635"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:69-143 and apps/web/src/dev-server/categories-page.ts:485-660; scripts/statement-visual/categories-visual-desktop.mjs:14-221"
     },
     {
       "id": "OBL-004",
@@ -78,7 +78,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page-assets.ts:134-190; categories-golden-screen.test.ts:17-45; Chrome 39375178129"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page-assets.ts:134-190; apps/web/src/dev-server/categories-golden-screen.test.ts:17-45; Chrome 39458950987"
     },
     {
       "id": "OBL-005",
@@ -95,7 +95,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:609-741,973-1011; categories-interface.mjs:140-295"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:609-741; scripts/statement-visual/categories-interface.mjs:140-295"
     },
     {
       "id": "OBL-006",
@@ -115,7 +115,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:180-269; categories-golden-screen.test.ts:17-57 and 100-113"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:180-269; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 and 100-113"
     },
     {
       "id": "OBL-007",
@@ -134,7 +134,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:511-526,717-733,785-857; categories-visual-operations.mjs:130-293"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:511-526,717-733; scripts/statement-visual/categories-visual-operations.mjs:130-293"
     },
     {
       "id": "OBL-008",
@@ -153,7 +153,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions run 39375178129 exact material head 92410e63b75103c0f298f88fdd520160d48be333 artifact 12243571173"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions run 39458950987 exact material head 5acdd58d730702ba65eed009b0b2aad9be39641b artifact 12282626418"
     },
     {
       "id": "OBL-009",
@@ -172,7 +172,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:226-308; categories-golden-screen.test.ts:17-57"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:226-308; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57"
     },
     {
       "id": "OBL-010",
@@ -189,7 +189,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; categories-visual-operations.mjs:9-293"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; scripts/statement-visual/categories-visual-operations.mjs:9-293"
     },
     {
       "id": "OBL-011",
@@ -206,7 +206,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page-assets.ts:193-235; categories-interface.mjs:140-295; run 39375178129"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page-assets.ts:193-235; scripts/statement-visual/categories-interface.mjs:140-295; run 39458950987"
     },
     {
       "id": "OBL-012",
@@ -223,7 +223,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions 39375178107 Repository CI + 39375178129 Chrome success; independent audit after handoff is external gate"
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions 39458950992 Repository CI + 39458950987 Chrome success; independent audit after handoff is external gate"
     },
     {
       "id": "OBL-013",
@@ -297,7 +297,7 @@
           "long-name-orphan"
         ],
         "negative_control_evidence": [
-          "categories-golden-screen.test.ts:17-57 rejects missing nested ul/li or data-category-depth"
+          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 rejects missing nested ul/li or data-category-depth"
         ]
       }
     ],
@@ -339,7 +339,7 @@
           "archived-category"
         ],
         "negative_control_evidence": [
-          "categories-golden-screen.test.ts:17-57,75-96 protects nesting, orphan parent, archived menu"
+          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57,75-96 protects nesting, orphan parent, archived menu"
         ]
       }
     ],
@@ -373,7 +373,7 @@
           "cycle-protection"
         ],
         "negative_control_evidence": [
-          "categories-golden-screen.test.ts:17-57,83-103 verifies source-backed hierarchy and ancestors"
+          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57,83-103 verifies source-backed hierarchy and ancestors"
         ],
         "divergent_fixture": {
           "canonical_value": "grandchild parentCategoryId=child, child parentCategoryId=root",
@@ -442,18 +442,18 @@
       "OBL-013"
     ],
     "evidence": [
-      "apps/web/src/dev-server/categories-page.ts:53-109 and docs/GOLDEN_STATEMENT.md; CI exact head 39375178107",
-      "apps/web/src/dev-server/categories-page.ts:180-269 and :919-945; categories-golden-screen.test.ts; visual 39375178129",
-      "apps/web/src/dev-server/categories-page.ts:69-143 and :485-857; categories-visual-desktop.mjs:14-221,473-635",
-      "apps/web/src/dev-server/categories-page-assets.ts:134-190; categories-golden-screen.test.ts:17-45; Chrome 39375178129",
-      "apps/web/src/dev-server/categories-page.ts:609-741,973-1011; categories-interface.mjs:140-295",
-      "apps/web/src/dev-server/categories-page.ts:180-269; categories-golden-screen.test.ts:17-57 and 100-113",
-      "apps/web/src/dev-server/categories-page.ts:511-526,717-733,785-857; categories-visual-operations.mjs:130-293",
-      "GitHub Actions run 39375178129 exact material head 92410e63b75103c0f298f88fdd520160d48be333 artifact 12243571173",
-      "apps/web/src/dev-server/categories-page.ts:226-308; categories-golden-screen.test.ts:17-57",
-      "apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; categories-visual-operations.mjs:9-293",
-      "apps/web/src/dev-server/categories-page-assets.ts:193-235; categories-interface.mjs:140-295; run 39375178129",
-      "GitHub Actions 39375178107 Repository CI + 39375178129 Chrome success; independent audit after handoff is external gate",
+      "apps/web/src/dev-server/categories-page.ts:53-109 and docs/GOLDEN_STATEMENT.md; CI exact head 39458950992",
+      "apps/web/src/dev-server/categories-page.ts:180-269 and apps/web/src/dev-server/categories-page.ts:270-320; apps/web/src/dev-server/categories-golden-screen.test.ts; visual 39458950987",
+      "apps/web/src/dev-server/categories-page.ts:69-143 and apps/web/src/dev-server/categories-page.ts:485-660; scripts/statement-visual/categories-visual-desktop.mjs:14-221",
+      "apps/web/src/dev-server/categories-page-assets.ts:134-190; apps/web/src/dev-server/categories-golden-screen.test.ts:17-45; Chrome 39458950987",
+      "apps/web/src/dev-server/categories-page.ts:609-741; scripts/statement-visual/categories-interface.mjs:140-295",
+      "apps/web/src/dev-server/categories-page.ts:180-269; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 and 100-113",
+      "apps/web/src/dev-server/categories-page.ts:511-526,717-733; scripts/statement-visual/categories-visual-operations.mjs:130-293",
+      "GitHub Actions run 39458950987 exact material head 5acdd58d730702ba65eed009b0b2aad9be39641b artifact 12282626418",
+      "apps/web/src/dev-server/categories-page.ts:226-308; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57",
+      "apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; scripts/statement-visual/categories-visual-operations.mjs:9-293",
+      "apps/web/src/dev-server/categories-page-assets.ts:193-235; scripts/statement-visual/categories-interface.mjs:140-295; run 39458950987",
+      "GitHub Actions 39458950992 Repository CI + 39458950987 Chrome success; independent audit after handoff is external gate",
       "docs/DESIGN_SYSTEM.md + docs/VISUAL_VALIDATION.md changed on PR 731, documented issue717 constraints"
     ],
     "rederived_without_pr_description": true,

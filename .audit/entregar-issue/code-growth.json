@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "92410e63b75103c0f298f88fdd520160d48be333",
+  "subject_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
   "base_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
   "policy": {
     "new_file_soft_limit": 300,
@@ -56,7 +56,7 @@
       "path": "scripts/statement-visual/categories-visual-operations.mjs",
       "lines_before": null,
       "lines_after": 331,
-      "justification": "This module preserves the existing real-browser CRUD, mutation failure and visual parity controls formerly embedded in categories-interface.mjs. Its 339 lines keep related stateful browser scenarios together under the enforced 500-line hard limit; splitting these scenarios would duplicate fixture orchestration and reduce test traceability."
+      "justification": "Refactoring of existing category browser CRUD validation away from monolithic categories-interface.mjs, preserving original operation assertions and reducing the main orchestrator below 500 lines."
     },
     {
       "path": "scripts/statement-visual/categories-visual-state.mjs",

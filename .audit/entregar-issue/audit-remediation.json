@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "92410e63b75103c0f298f88fdd520160d48be333",
+  "candidate_head_sha": "5acdd58d730702ba65eed009b0b2aad9be39641b",
   "remediation_mode": "targeted-remediation",
   "source": {
     "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
@@ -29,8 +29,8 @@
         "negative-control-evidence-717.json"
       ],
       "validations": [
-        "62 source locations checked against exact material SHA; no out-of-range anchors",
-        "CI and Chrome metadata anchored to material exact SHA"
+        "104 fully qualified source references checked against exact material SHA 5acdd58d730702ba65eed009b0b2aad9be39641b; no abbreviations, missing files or out-of-bounds ranges",
+        "Repository CI 39458950992 and Chrome 39458950987 completed/success for unchanged exact material SHA"
       ]
     },
     {
