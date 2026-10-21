@@ -1,27 +1,318 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "2174b49111e7080beafe0f77dfc995058bf10731",
+  "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
   "requirements": [
     {
-      "requirement_id": "REQ-618",
+      "requirement_id": "REQ-717-01",
       "positive_evidence": [
-        "packages/domain/src/free-to-spend.test.ts",
-        "apps/api/src/cash-flow-projection.integration.test.ts",
-        "apps/web/src/dev-server/dashboard-presenter.test.ts",
-        "apps/web/src/dev-server/dashboard-page.test.ts",
-        "GitHub Actions Delivery V2 CI run 36030045019 completed success on exact material head"
+        "Dependência Golden Screen: docs/DESIGN_SYSTEM.md and docs/VISUAL_VALIDATION.md; route /categorias inherits Golden Screen layout; Repository CI run 39603347505 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526"
       ],
       "primary_negative_control": {
-        "id": "NEG-618-CANONICAL-TRAJECTORY",
-        "procedure": "Exercise intermediate deficit followed by later income, reference-date tie, BRL/USD independence, known-zero opening balance, missing opening-balance provenance, and unavailable projection through domain/API boundaries.",
-        "expected": "The minimum is derived only from the canonical projection, known numeric zero remains available, missing mandatory opening-balance provenance is unavailable without synthetic numeric fields, and currencies remain independent.",
-        "observed": "Exact-head domain/API/UI regression coverage passed; JPY with a real zero account remained available while requested EUR with no opening-balance source returned unavailable and omitted numeric free-to-spend fields.",
-        "status": "passed"
+        "id": "NC-717-01",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:88 reject textual status and mismatched columns",
+        "expected": "No visual-standard parity or wrong route layout must fail, or be rejected by the stated gate.",
+        "observed": "Golden Screen columns present; CI and Chrome exact-SHA passed",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "35126600c7518cb4069d2f9ae85e34877ca26cac7c71304145d4473e8cf01a4b",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "status-icon-missing",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
       },
       "regression_evidence": [
-        "Delivery V2 CI run 36030045019 success on exact material head",
-        "Statement visual validation run 36030044744 success on exact material head"
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:88 icon-only situation and columns"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-02",
+      "positive_evidence": [
+        "Hierarquia, tipo, ordens, recuo: apps/web/src/dev-server/categories-golden-screen.test.ts:26 nested ul/li 3 levels, controls and actions; Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227)"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-02",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:26 asserts 2 nested UL and levels 0,1,2; rejects flat cards",
+        "expected": "Flatten all levels into cards lacking UL and aria-expanded must fail, or be rejected by the stated gate.",
+        "observed": "Three nested levels, UL elements, accessible toggle, no flat cards",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "481d8471b1c42e75bdab8bc7ff6713396b70da210668fc02b09129391bb2c18d",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "flat-tree",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:43 parent-orphan and expense/transfer types"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-03",
+      "positive_evidence": [
+        "Busca/filtros/CRUD: scripts/statement-visual/categories-visual-desktop.mjs:90-221 search and scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD checks; Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227)"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-03",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:78 refuses selecting self/descendant as parent",
+        "expected": "Search without descendants, or modal that allows category cycle must fail, or be rejected by the stated gate.",
+        "observed": "Ancestor-chain controls asserted, Chrome CRUD and search passed",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "b346e33b246172dadbd56c0abc02355398ce8d528952d347e1a633e70254990f",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "missing-ancestor",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:78 ancestor cycle preflight"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-04",
+      "positive_evidence": [
+        "Sem badges/cartões redundantes: apps/web/src/dev-server/categories-golden-screen.test.ts:26 rejects category-summary-item/category-tree-node-card; Repository CI run 39603347505 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-04",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:26 assert.doesNotMatch flat card selectors",
+        "expected": "Cardized duplicated summary and color-only hierarchy must fail, or be rejected by the stated gate.",
+        "observed": "Tests reject card selectors; level labels and native lists asserted",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "8bddc7c1be6fe992868d89483e808e6346134fe81d49c1b5d0086a5fe35a3ddf",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "redundant-cards",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:88 compact columns with status icon"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-05",
+      "positive_evidence": [
+        "Teclado/leitor/mobile/erro: scripts/statement-visual/categories-visual-mobile-evidence.mjs:5-100 hierarchy visibility, name widths and viewport screenshots; Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227)"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-05",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:61 malicious category name rendered escaped not HTML",
+        "expected": "Raw HTML injection in category name or horizontally overflowing narrow mobile must fail, or be rejected by the stated gate.",
+        "observed": "Escaped markup observed in fixture, mobile 320/390 Chrome assertions passed",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "936f9cdb3d1eabb70459b9e92c79c5dedf97c833a0862113373aee44f844fb5c",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "raw-HTML",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:43 orphan, apps/web/src/dev-server/categories-golden-screen.test.ts:61 XSS, apps/web/src/dev-server/categories-golden-screen.test.ts:84 empty, apps/web/src/dev-server/categories-golden-screen.test.ts:103 escaped ancestors"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-06",
+      "positive_evidence": [
+        "Pai/filho/neto e nomes longos: apps/web/src/dev-server/categories-golden-screen.test.ts:26 three-level fixture with long grandchild name; Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227)"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-06",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:26 assert depth=0/1/2, two nested lists and long name",
+        "expected": "Grandchild disappears or flattens on render must fail, or be rejected by the stated gate.",
+        "observed": "Three levels and long name asserted on exact material SHA",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "bbac79a5bbe49ea0ef44ce0028edf82e7e5e28254751e51d3a7aa28d8c8e24a0",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "missing-grandchild",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:43 orphan, apps/web/src/dev-server/categories-golden-screen.test.ts:103 ancestor escaping"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-07",
+      "positive_evidence": [
+        "Filtrar/editar sem perder parent: scripts/statement-visual/categories-visual-desktop.mjs:14-221 filters and scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD; Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227)"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-07",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:69 rejects create-child action on archived category",
+        "expected": "Offer unauthorized create-child on archived category or permit descendant parent must fail, or be rejected by the stated gate.",
+        "observed": "Archived create-child absent; restore allowed, cycle option guarded",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "22ec3d4c8c056655e5a87c4b5d3fa83ad6af4c21431960aeedc45faf2ef98a61",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "archived-create-child",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:69 archived category action absent, apps/web/src/dev-server/categories-golden-screen.test.ts:78 parent selection cycle guard"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-08",
+      "positive_evidence": [
+        "Evidências SHA atual não herdadas: Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227); apps/web/src/dev-server/categories-golden-screen.test.ts:26 real hierarchy fixture; independent visual verification separately required"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-08",
+        "status": "passed",
+        "procedure": "scripts/statement-visual/categories-interface.mjs:483-490 records failures and marks report REPROVADO if nonzero",
+        "expected": "Accept screenshot from #615 as proof for #717 without running current SHA must fail, or be rejected by the stated gate.",
+        "observed": "Run 39603346820 belongs to material SHA; artifact has categories-specific report",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "a607f7e9ec9c28fcf951697a14a446984e1240c84d45e6a39c72e8e8f023558e",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "wrong-material-run",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:43 type and orphan checked, visual Chrome desktop + mobile evidence"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-09",
+      "positive_evidence": [
+        "Itens hierárquicos sem cor única: apps/web/src/dev-server/categories-golden-screen.test.ts:26 depth and native list; apps/web/src/dev-server/categories-golden-screen.test.ts:43 orphan labels; Repository CI run 39603347505 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-09",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:43 checks title Categoria indisponível and kind",
+        "expected": "Remove all text and rely on color badges for parent/type must fail, or be rejected by the stated gate.",
+        "observed": "Fallback label, aria roles, type attributes and actions asserted",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "d3f78ef6ce1ef3c7727f34a519938495015c47ea6bb499a878a19d86aba70b72",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "color-only-parent",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:88 status icon and actions"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-10",
+      "positive_evidence": [
+        "Ações/contexto/autorização: scripts/statement-visual/categories-visual-operations.mjs:130-293 CRUD transaction tests; Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227)"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-10",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:69 no create-child for archived; apps/web/src/dev-server/categories-golden-screen.test.ts:78 ancestors for cycle reject",
+        "expected": "Archived categories allow prohibited subcategory creation must fail, or be rejected by the stated gate.",
+        "observed": "Archived create-child absent, maintenance actions remain",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "05c12af9bcaffea548bea26b940051ca4258fcc1f8dac14ebf3d0e04a8ed0106",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "unauthorized-menu",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:69 archive/restore controls, apps/web/src/dev-server/categories-golden-screen.test.ts:78 cyclic parent protection"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-11",
+      "positive_evidence": [
+        "Desktop e mobile/longos/vazio: scripts/statement-visual/categories-visual-mobile-evidence.mjs:5-100 mobile/compact hierarchy and long-name checks; Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227)"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-11",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:84 asserts meaningful empty state instead of blank screen",
+        "expected": "Blank when no categories or overflow narrow 320px must fail, or be rejected by the stated gate.",
+        "observed": "Empty state asserted; desktop/390/320px Chrome validation green",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "2b4229ab3ee19442d839425c11f1da77e432b7298a4cd2049530df424e096aae",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "blank-empty-state",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:26 long names; apps/web/src/dev-server/categories-golden-screen.test.ts:84 empty catalogue"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-12",
+      "positive_evidence": [
+        "Testes/CI/independente: Repository CI run 39603347505 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526; Chrome validation run 39603346820 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526, artifact id 12347248486 (sha256:2558466e526a7c4e195865e73a4fb51ab782dbc47fb9396f44a0f82c6ec31227); audit rejection id audit-rejection:72d01a43-cea3-4d7a-bb85-5eaffc32883a still requires new certified handoff"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-12",
+        "status": "passed",
+        "procedure": "scripts/statement-visual/categories-interface.mjs:483-490 marks REPROVADO upon any browser check failure; CI green never substitutes independent audit",
+        "expected": "Claim independently approved solely on CI green must fail, or be rejected by the stated gate.",
+        "observed": "External audit explicitly still blocked pending own handoff; PR remains draft",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "cf1f5b359a8abc40c68b1a4c6f5c1d694745e4c3a25a0e5aa81874fc8eda1811",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "visual-not-fail-closed",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:26-112 regression suite, scripts/statement-visual/categories-interface.mjs:483-490 fail closed if failures"
+      ]
+    },
+    {
+      "requirement_id": "REQ-717-13",
+      "positive_evidence": [
+        "Documentação: docs/DESIGN_SYSTEM.md docs/VISUAL_VALIDATION.md docs/ACCOUNTS_CARDS_UI.md updated on PR 731; Repository CI run 39603347505 completed/success exact head 5e63423beefaf57598f3490365a5acee0e123526"
+      ],
+      "primary_negative_control": {
+        "id": "NC-717-13",
+        "status": "passed",
+        "procedure": "apps/web/src/dev-server/categories-golden-screen.test.ts:88 rejects missing status icon and column/size contracts specified in docs",
+        "expected": "Document one layout while SSR renders old layout must fail, or be rejected by the stated gate.",
+        "observed": "SSR test asserts documented compact layout; repository CI passed",
+        "head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-717.json",
+        "evidence_sha256": "7b3c39c7a7c563166febd79d012046c8d388c8024f901da9aaf3f8b49b197e8f",
+        "raw_case_sha256": "d1d71ecfd59df999075939fa63fcab27cf8645b798345f5c3aae263021b34a3e",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "plausible_wrong_implementation": "missing-compact-columns",
+        "evidence_scope_note": "Executed current-SHA SSR output mutation control KILLED in Repository CI; not a mutated production build."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/categories-golden-screen.test.ts:88 compact columns and documentation contract"
       ]
     }
   ]

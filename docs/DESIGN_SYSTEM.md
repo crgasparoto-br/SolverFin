@@ -53,6 +53,18 @@ Uma implementacao deve ser revisada quando introduzir, sem justificativa funcion
 - medidas, raios, sombras, espacamentos ou iconografia locais que criem linguagem visual paralela ao design system;
 - aprovacao baseada somente em "funciona", "esta responsivo" ou "os testes passaram" sem inspecao da composicao final.
 
+### Navegacao autenticada unificada (Issue #717)
+
+O menu lateral do shell autenticado usa **sempre o tema claro aprovado no Extrato**,
+inclusive em Dashboard, Categorias, Contas, Cartoes e rotas administrativas. A
+fonte executavel e `sharedShellStyles()` em
+`apps/web/src/dev-server/shared-styles.ts`; telas individuais nao podem
+sobrescrever o tema da sidebar por rota. A estrutura de navegacao e permissao
+continua centralizada em `shell.ts`. O fundo e claro, o texto e legivel, o
+item ativo usa realce azul discreto, e hover/foco seguem o mesmo contrato em
+todas as telas. A composicao compacta/mobile preserva os mesmos tokens,
+alvos acessiveis e navegacao por teclado.
+
 ### Referencia visual e Golden Screens
 
 Rotas ou estados explicitamente designados como referencia visual podem funcionar como **Golden Screens**. Uma Golden Screen nao autoriza copia cega de layout; ela fixa o nivel esperado de acabamento, hierarquia, densidade, tipografia, espacamento e iconografia para telas da mesma familia. Quando uma issue indicar uma Golden Screen, a validacao deve comparar o candidato contra esses atributos, nao apenas contra a presenca dos mesmos componentes.
@@ -136,6 +148,8 @@ A identidade visual de uma instituicao financeira e responsabilidade de um catal
 - nenhuma rota deve manter uma tabela local de logos ou permitir que cada conta defina sua propria identidade visual;
 - instituicoes sem identidade conhecida devem usar fallback padronizado, acessivel e consistente;
 - Extrato, Cartoes, Contas e Cartoes, Relatorios, seletores e formularios devem consumir o mesmo componente/contrato de identidade institucional.
+
+Em `/contas-cartoes`, a lista mestre e o cabecalho dos detalhes devem apresentar o mesmo enquadramento institucional aprovado em `/lancamentos`: **imagem de 44 x 44 px, raio de 11 px, sem moldura cinza adicional e `object-fit: contain` para logos rasterizados**. O SVG de fallback ocupa a mesma area e a hierarquia/listagem responsiva deve reservar exatamente a largura da imagem. A regra estiliza `renderInstitutionIcon()` sem recriar tabelas locais de instituicoes.
 
 O banco pode manter metadados administrativos da instituicao ou do asset global quando necessario para gestao do catalogo, mas esses dados nao pertencem ao registro individual da conta nem podem transformar a conta em dona do logo.
 

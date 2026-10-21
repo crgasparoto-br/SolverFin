@@ -1,1 +1,464 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"requirement-closure","compression":"gzip","encoded_size":20436,"encoded_sha256":"9219f480f5bcce5e38c884d791ccd43fcca951add78469f5fd32abb1fa42be99","decoded_size":99706,"decoded_sha256":"871fc0d0bd7421bfde8cc1fb8ac12d8087c4a567688cd61a6b5dc286b6773b4a","parts":[{"path":"requirement-closure.parts/part-000.b64","size":12288,"sha256":"7f3989221c41996eba4f7a73c17e654532f1f2d59e1bbe43c755ffd092391f2b"},{"path":"requirement-closure.parts/part-001.b64","size":8148,"sha256":"237c10c99f5371434a60a1d344142d637e03a478390d70d626ca1339db68e32f"}]}
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/vercel/work717/artifacts/specification-snapshot.json",
+    "sha256": "09c200edb9c7adb4a6b87d1c6e2e459b6a7edc29ee6f737fa859b342cdb8aaa9"
+  },
+  "primary_issue_source_id": "SRC-ISSUE",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "d2ef4c04cca21c61dd85688d43bd3ddda86294f61ba2e28f50a54b744159a6bd",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 5,
+      "source_text": "**Dependência:** #714 — marco técnico da Golden Screen e referência validada na `develop`.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-01"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:53-109 and docs/GOLDEN_STATEMENT.md; CI exact head 39603347505"
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "5f3ba84512ebfc3420f999e19117ceab94336fa888bec45e19fb02b66952ba2d",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 11,
+      "source_text": "Refinar árvore/grupos/subcategorias: recuo, contraste tipográfico, ícones, expansão, ordenação, níveis e estado ativo.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-02"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:180-269 and apps/web/src/dev-server/categories-page.ts:270-320; apps/web/src/dev-server/categories-golden-screen.test.ts; visual 39603346820"
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "c50a8a106047b501bd655409ef3b8a34ae105da43909f36b3cb5ca7991f13936",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 12,
+      "source_text": "Dar clareza a busca/filtros, categorias de receitas/despesas, edição/criação e ações por item, mantendo modais e confirmação existentes.",
+      "flags": [
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-03"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:69-143 and apps/web/src/dev-server/categories-page.ts:485-660; scripts/statement-visual/categories-visual-desktop.mjs:14-221"
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "9cff79888db2f1e51ebb50f4309e5312ac018d91f235073e6f497ca4a9b064bc",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 13,
+      "source_text": "Reduzir bordas, superfícies e badges redundantes; tornar hierarquia legível por estrutura e não apenas cor.",
+      "flags": [
+        "observable",
+        "negative",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-04"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page-assets.ts:134-190; apps/web/src/dev-server/categories-golden-screen.test.ts:17-45; Chrome 39603346820"
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "c55f8f52b9b3f2dd89699d97d76859daaac5db8f7c6c6fe42bb133673e55124f",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 14,
+      "source_text": "Proteger navegação por teclado, leitor de tela, reflow mobile, estados vazio/erro e nomes longos.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-05"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:609-741; scripts/statement-visual/categories-interface.mjs:140-295"
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "8cd12cdab5925f349ea299fc05a288908e2a9143eefed6f5b7f1b82a69e251c2",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 19,
+      "source_text": "**Hierarquia real:** exibir pelo menos pai, filho e nível mais profundo quando suportado pelo domínio, com nome longo; recuo, expansão/contração e tipo de categoria permanecem compreensíveis sem depender apenas de cor ou bordas aninhadas.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-06"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:180-269; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 and 100-113"
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "e6941c68f612d1c14f7d943f02a5394141908ac874fff6b2af3d83b5094c7810",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 20,
+      "source_text": "**Operação:** filtrar por tipo, buscar, criar/editar dentro da hierarquia e usar ações autorizadas sem perder o contexto de parent e sem inventar novos campos/fluxos.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-07"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:511-526,717-733; scripts/statement-visual/categories-visual-operations.mjs:130-293"
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "da5931f0c6b2db15ad1f25dada659c681a4d05ef46d8a9c72df7d98a8e772522",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 24,
+      "source_text": "**Evidência de aceite:** capturas e testes de hierarquia reais no SHA material, sem deduzir equivalência visual da migração anterior #615.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-08"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions run 39603346820 exact material head 5e63423beefaf57598f3490365a5acee0e123526 artifact 12347248486"
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "b045c4926bb080a31ef2c0716b1007b56301e3958c5047b963099b57b76355c8",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 27,
+      "source_text": "[ ] Categoria pai/filha, tipo e ação principal identificáveis; hierarquia não depende apenas de cor/caixas.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-09"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:226-308; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57"
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "299d719997cef81f61d5833e82ba1967d964ae9f70306ed699c14467f4aada3c",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 28,
+      "source_text": "[ ] Filtros, expansão/seleção, CRUD e diálogos preservam funcionalidades e autorização existentes.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-10"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; scripts/statement-visual/categories-visual-operations.mjs:9-293"
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "897157ba5b29a5fbb69cd0ec039dc280b5cb14d3dbb0f8fb2935d4e4b7f67c15",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 29,
+      "source_text": "[ ] Composição desktop/mobile compatível com acabamento Golden Screen; conteúdo longo e vazio cobertos.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-11"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page-assets.ts:193-235; scripts/statement-visual/categories-interface.mjs:140-295; run 39603346820"
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "b7891b9fffce6ba671f21b933f193865aab389d97411161f44443f22bae631b9",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 30,
+      "source_text": "[ ] Evidências exact-SHA, testes de acessibilidade/regressão, CI verde e auditoria independente por subissue.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-12"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions 39603347505 Repository CI + 39603346820 Chrome success; independent audit after handoff is external gate"
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "4f7071b0416fc3d2ecd7b28eb587be5d0cdf774979786f32f946b7966a87fafe",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_line": 31,
+      "source_text": "[ ] Documentação relevante atualizada.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-717-13"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: docs/DESIGN_SYSTEM.md + docs/VISUAL_VALIDATION.md changed on PR 731, documented issue717 constraints"
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "candidate_count": 13,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "A árvore deve manter listas ul/li aninhadas; testes de três níveis e data-category-depth refutam achatamento.",
+    "entries": [
+      {
+        "id": "SIC-717",
+        "kind": "structural",
+        "requirement_ids": [
+          "REQ-717-06",
+          "REQ-717-04"
+        ],
+        "obligation_ids": [
+          "OBL-006",
+          "OBL-004"
+        ],
+        "plausible_wrong_implementation": "Renderizar todos os registros como linhas planas perdendo ancestrais e recuos.",
+        "canonical_path": "apps/web/src/dev-server/categories-page.ts:180-269",
+        "competing_paths": [
+          "flattened card list"
+        ],
+        "evidence_ids": [
+          "E-CAT-UL-LI",
+          "E-CAT-DEPTH"
+        ],
+        "scenario_ids": [
+          "three-level-parent-child-grandchild",
+          "long-name-orphan"
+        ],
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 rejects missing nested ul/li or data-category-depth"
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "passed",
+    "applicability_reason": "SSR recebe categorias de /api/categories e renderiza coluna categoria superior, nível e estado sem excluir dados.",
+    "entries": [
+      {
+        "id": "RMC-717",
+        "contract_kind": "read-model",
+        "requirement_ids": [
+          "REQ-717-06",
+          "REQ-717-10"
+        ],
+        "required_fields": [
+          "id",
+          "name",
+          "kind",
+          "status",
+          "parentCategoryId"
+        ],
+        "producer_evidence": [
+          "apps/web/src/dev-server/categories-page.ts:34-37 GET /api/categories?status=all"
+        ],
+        "public_projection_evidence": [
+          "apps/web/src/dev-server/categories-page.ts:12-18 CategoryRecord"
+        ],
+        "consumer_evidence": [
+          "apps/web/src/dev-server/categories-page.ts:180-269 hierarchy per kind"
+        ],
+        "visible_surface_evidence": [
+          "apps/web/src/dev-server/categories-page.ts:247-267 parent/type/level/status/actions"
+        ],
+        "scenario_ids": [
+          "category-grandchild",
+          "category-orphan",
+          "archived-category"
+        ],
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57,75-96 protects nesting, orphan parent, archived menu"
+        ]
+      }
+    ],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "A fonte de categorias é apiGet e os mesmos registros alimentam summary, filtros e lista.",
+    "entries": [
+      {
+        "id": "CSC-717",
+        "semantic_field": "category parent and kind in shared SSR view",
+        "canonical_source": "categories.data.categories from GET /api/categories?status=all",
+        "alternative_sources": [
+          "independent flat list derived from labels",
+          "hardcoded fake depth values"
+        ],
+        "surfaces": [
+          "renderCategoryTree",
+          "renderCategoryParentOptions",
+          "summarizeCategories"
+        ],
+        "evidence_ids": [
+          "E-CAT-SOURCE",
+          "E-CAT-HIERARCHY"
+        ],
+        "scenario_ids": [
+          "three-level-hierarchy",
+          "orphan-category",
+          "cycle-protection"
+        ],
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57,83-103 verifies source-backed hierarchy and ancestors"
+        ],
+        "divergent_fixture": {
+          "canonical_value": "grandchild parentCategoryId=child, child parentCategoryId=root",
+          "alternative_values": [
+            "flattened parent=none",
+            "display depth=0 for grandchild"
+          ]
+        }
+      }
+    ],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Documentação Golden Screen e aceitação da rota categorias atualizadas na PR 731; conferidos DESIGN_SYSTEM e VISUAL_VALIDATION.",
+    "old_contract_terms": [],
+    "new_contract_terms": [
+      "Golden Screen",
+      "categorias hierarquicas"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "docs/DESIGN_SYSTEM.md",
+      "docs/VISUAL_VALIDATION.md",
+      "docs/SCREEN_ARCHETYPES.md",
+      "apps/web/src/dev-server/categories-page.ts"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-717-01",
+      "REQ-717-02",
+      "REQ-717-03",
+      "REQ-717-04",
+      "REQ-717-05",
+      "REQ-717-06",
+      "REQ-717-07",
+      "REQ-717-08",
+      "REQ-717-09",
+      "REQ-717-10",
+      "REQ-717-11",
+      "REQ-717-12",
+      "REQ-717-13"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013"
+    ],
+    "evidence": [
+      "apps/web/src/dev-server/categories-page.ts:53-109 and docs/GOLDEN_STATEMENT.md; CI exact head 39603347505",
+      "apps/web/src/dev-server/categories-page.ts:180-269 and apps/web/src/dev-server/categories-page.ts:270-320; apps/web/src/dev-server/categories-golden-screen.test.ts; visual 39603346820",
+      "apps/web/src/dev-server/categories-page.ts:69-143 and apps/web/src/dev-server/categories-page.ts:485-660; scripts/statement-visual/categories-visual-desktop.mjs:14-221",
+      "apps/web/src/dev-server/categories-page-assets.ts:134-190; apps/web/src/dev-server/categories-golden-screen.test.ts:17-45; Chrome 39603346820",
+      "apps/web/src/dev-server/categories-page.ts:609-741; scripts/statement-visual/categories-interface.mjs:140-295",
+      "apps/web/src/dev-server/categories-page.ts:180-269; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 and 100-113",
+      "apps/web/src/dev-server/categories-page.ts:511-526,717-733; scripts/statement-visual/categories-visual-operations.mjs:130-293",
+      "GitHub Actions run 39603346820 exact material head 5e63423beefaf57598f3490365a5acee0e123526 artifact 12347248486",
+      "apps/web/src/dev-server/categories-page.ts:226-308; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57",
+      "apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; scripts/statement-visual/categories-visual-operations.mjs:9-293",
+      "apps/web/src/dev-server/categories-page-assets.ts:193-235; scripts/statement-visual/categories-interface.mjs:140-295; run 39603346820",
+      "GitHub Actions 39603347505 Repository CI + 39603346820 Chrome success; independent audit after handoff is external gate",
+      "docs/DESIGN_SYSTEM.md + docs/VISUAL_VALIDATION.md changed on PR 731, documented issue717 constraints"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

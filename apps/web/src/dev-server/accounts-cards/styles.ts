@@ -22,8 +22,10 @@ export function accountsCardsPageStyles(): string {
     .resource-master-item.is-selected { background: var(--primary-soft); border-color: #c8dde5; }
     .resource-master-link { align-items: start; color: inherit; display: grid; gap: 10px; grid-template-columns: 40px minmax(0,1fr); min-height: 64px; padding: 10px; text-decoration: none; }
     .resource-master-link:hover, .resource-master-link:focus-visible { background: var(--surface-soft); border-radius: inherit; outline: 2px solid transparent; }
-    .resource-master-icon { align-items: center; background: var(--surface-soft); border-radius: 8px; display: flex; height: 40px; justify-content: center; overflow: hidden; width: 40px; }
-    .resource-master-icon .brand-icon { height: 40px; width: 40px; }
+    /* Golden Statement parity: 44px imagery with 11px corners, preserving the shared bank logo catalog. */
+    .resource-master-icon, .resource-detail-identity { align-items: center; background: transparent; border: 0; border-radius: 11px; display: inline-flex; flex: 0 0 44px; height: 44px; justify-content: center; overflow: hidden; width: 44px; }
+    .resource-master-icon .brand-icon-wrap, .resource-detail-identity .brand-icon-wrap { align-items: center; display: inline-flex; height: 100%; justify-content: center; min-width: 0; width: 100%; }
+    .resource-master-icon :is(img, svg), .resource-detail-identity :is(img, svg) { display: block; height: 100%; max-height: 100%; max-width: 100%; object-fit: contain; width: 100%; }
     .resource-master-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
     .resource-master-title { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
     .resource-master-currency { color: var(--text) !important; font-weight: 700; }
@@ -32,8 +34,6 @@ export function accountsCardsPageStyles(): string {
     .resource-detail-heading > div:nth-child(2) { display: grid; gap: 3px; min-width: 0; }
     .resource-detail-heading h2, .resource-subheading h3 { margin: 0; overflow-wrap: anywhere; }
     .resource-detail-heading p { color: var(--muted); font-size: .86rem; overflow-wrap: anywhere; }
-    .resource-detail-identity { align-items: center; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 10px; display: flex; height: 48px; justify-content: center; overflow: hidden; width: 48px; }
-    .resource-detail-identity .brand-icon { height: 48px; width: 48px; }
     .resource-kicker { color: var(--primary); font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
     .resource-detail-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0,1fr)); }
     .resource-detail-field { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; min-height: 72px; padding: 10px; }
@@ -271,42 +271,47 @@ export function accountsCardsPageStyles(): string {
       align-items: center;
       column-gap: 12px;
       display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(58px, .4fr) minmax(140px, .9fr) minmax(78px, .6fr) minmax(74px, .5fr);
+      grid-template-columns: 36px minmax(125px, 1fr) minmax(115px, 1.5fr) minmax(50px, .35fr) minmax(125px, .85fr) minmax(75px, .48fr) minmax(72px, .45fr);
     }
     .resource-master-columns { border-bottom: 1px solid var(--line); color: var(--muted); font-size: .71rem; font-weight: 750; padding: 11px 10px; }
-    .resource-master-columns > span:nth-child(3), .resource-master-columns > span:nth-child(5) { text-align: right; }
-    .resource-master-columns > span:nth-child(4) { text-align: center; }
+    .resource-master-columns > span:nth-child(5), .resource-master-columns > span:nth-child(7) { text-align: right; }
+    .resource-master-columns > span:nth-child(1), .resource-master-columns > span:nth-child(6) { text-align: center; }
     .resource-master-list { gap: 0; max-height: none; overflow: visible; padding: 0; }
     .resource-master-item { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
     .resource-master-item:last-child { border-bottom: 0; }
     .resource-master-item.is-selected { background: var(--primary-soft); border: 0; border-bottom: 1px solid var(--line); box-shadow: inset 3px 0 var(--primary); }
-    .resource-master-link { color: inherit; min-height: 72px; padding: 9px 10px; text-decoration: none; }
+    .resource-master-link { color: inherit; min-height: 54px; padding: 5px 10px; text-decoration: none; }
     .resource-master-link:hover { background: var(--surface-soft); border-radius: 0; }
     .resource-master-item.is-selected .resource-master-link:hover { background: transparent; }
     .resource-master-link:focus-visible { border-radius: 0; outline: 2px solid var(--primary); outline-offset: -2px; }
-    .resource-master-identity { align-items: center; display: grid; gap: 10px; grid-template-columns: 42px minmax(0, 1fr); min-width: 0; }
-    .resource-master-icon { background: var(--surface-soft); border-radius: 8px; height: 42px; width: 42px; }
-    .resource-master-icon .brand-icon { height: 42px; width: 42px; }
+    .resource-master-identity { align-items: center; display: flex; min-width: 0; }
     .resource-master-copy { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
-    .resource-master-title strong { color: var(--text); font-size: .93rem; line-height: 1.3; overflow-wrap: anywhere; }
-    .resource-master-institution, .resource-master-context { color: var(--muted); font-size: .75rem; line-height: 1.3; }
+    .resource-master-title { display: block; min-width: 0; overflow: hidden; }
+    .resource-master-title strong { color: var(--text); display: block; font-size: .93rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .resource-master-type { align-items: center; background: var(--sf-color-surface-soft); border: 1px solid var(--sf-color-border); border-radius: 8px; color: var(--sf-color-primary); display: inline-flex; height: 30px; justify-content: center; justify-self: center; width: 30px; }
+    .resource-master-type svg { flex: 0 0 auto; }
+    .resource-master-institution { align-items: center; display: flex; gap: 7px; min-width: 0; }
+    .resource-master-institution .resource-master-icon { flex: 0 0 44px; height: 44px; width: 44px; }
+    .resource-master-institution-label { color: var(--muted); font-size: .78rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .resource-header-action-icon { flex: 0 0 auto; }
+    .accounts-cards-a3-page .sf-page-header-actions .sf-dialog-trigger { align-items: center; display: inline-flex; gap: 8px; }
+    .resource-master-institution { color: var(--muted); line-height: 1.3; }
     .resource-master-cdi-column { display: flex; justify-content: center; white-space: nowrap; }
     .resource-master-cdi-column .sf-badge { font-size: .69rem; }
-    .resource-master-cdi-compact { color: var(--sf-color-muted-text); display: none; font-weight: 650; white-space: normal; }
+    .resource-master-cdi-compact { align-items: center; color: var(--sf-color-muted-text); display: none; flex: 0 0 auto; justify-content: center; }
     .resource-master-cdi-compact.is-active { color: var(--sf-color-success); }
     .resource-master-currency { background: transparent; border: 0; color: var(--text) !important; font-size: .8rem; font-weight: 700; overflow-wrap: anywhere; }
-    .resource-master-amount { display: grid; gap: 3px; justify-items: end; min-width: 0; text-align: right; }
+    .resource-master-amount { align-items: center; display: flex; gap: 5px; justify-content: flex-end; min-width: 0; text-align: right; white-space: nowrap; }
+    .resource-master-amount-kind { align-items: center; color: var(--muted); display: inline-flex; flex: 0 0 auto; justify-content: center; }
     .resource-master-amount strong { color: var(--text); font-size: .96rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-    .resource-master-amount small { color: var(--muted); font-size: .71rem; }
+    .resource-master-amount-kind svg { display: block; }
     .resource-master-state { justify-self: end; }
     .resource-detail-panel { gap: 14px; padding: 17px; }
-    .resource-detail-heading { align-items: start; gap: 9px; grid-template-columns: 40px minmax(0, 1fr); }
+    .resource-detail-heading { align-items: start; gap: 9px; grid-template-columns: 44px minmax(0, 1fr); }
     .resource-detail-heading > div:nth-child(2) { gap: 2px; }
     .resource-detail-heading h2 { font-size: 1.06rem; line-height: 1.35; }
     .resource-detail-heading p { font-size: .76rem; margin: 0; }
     .resource-detail-heading .sf-badge { grid-column: 2; justify-self: start; }
-    .resource-detail-identity { height: 40px; width: 40px; }
-    .resource-detail-identity .brand-icon { height: 40px; width: 40px; }
     .resource-detail-grid { gap: 6px 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .resource-detail-field { background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; min-height: 52px; padding: 9px 0 3px; }
     .resource-detail-field.is-unavailable { background: transparent; }
@@ -332,10 +337,24 @@ export function accountsCardsPageStyles(): string {
     .resource-form-actions .sf-button-primary:hover:not(:disabled), .resource-form-actions .sf-button-primary:focus-visible { background: var(--sf-color-primary-hover); border-color: var(--sf-color-primary-hover); color: var(--sf-color-on-primary); }
     .resource-form-actions .sf-button-secondary { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); color: var(--sf-color-primary); }
     .resource-form-actions .sf-button-secondary:hover:not(:disabled), .resource-form-actions .sf-button-secondary:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
-    @media (max-width: 1099px) {
+    @media (max-width: 1220px) {
       .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: minmax(0, 1fr); }
       .resource-detail-panel { max-width: none; }
       .resource-master-filters { grid-template-columns: minmax(0, 2fr) repeat(3, minmax(96px, 1fr)); }
+    }
+    @media (max-width: 1099px) {
+      /* On narrow screens retain the semantic DOM order: type, institution, name. */
+      .resource-master-columns { display: none; }
+      .resource-master-link { column-gap: 8px; grid-template-columns: 30px minmax(0, 1fr) minmax(96px, auto); min-height: 76px; row-gap: 4px; }
+      .resource-master-type { grid-column: 1; grid-row: 1; justify-self: start; }
+      .resource-master-institution { grid-column: 2; grid-row: 1; }
+      .resource-master-institution .resource-master-icon { flex: 0 0 44px; height: 44px; width: 44px; }
+      .resource-master-cdi-compact { display: inline-flex; }
+      .resource-master-identity { grid-column: 2; grid-row: 2; }
+      .resource-master-amount { grid-column: 3; grid-row: 1; }
+      .resource-master-currency { align-self: center; grid-column: 1; grid-row: 2; text-align: center; }
+      .resource-master-state { grid-column: 3; grid-row: 2; }
+      .resource-master-cdi-column { display: none; }
     }
     @media (max-width: 760px) {
       .accounts-cards-a3-page .sf-detail-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; }
@@ -343,15 +362,7 @@ export function accountsCardsPageStyles(): string {
       .resource-master-summary > div { align-items: start; flex-wrap: wrap; }
       .resource-master-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .resource-master-filters > label:first-child, .resource-master-filters > label:last-child { grid-column: 1 / -1; }
-      .resource-master-columns { display: none; }
-      .resource-master-link { column-gap: 10px; grid-template-columns: minmax(0, 1fr) minmax(96px, auto); min-height: 76px; row-gap: 6px; }
-      .resource-master-identity { grid-column: 1; grid-row: 1; }
-      .resource-master-amount { grid-column: 2; grid-row: 1; }
-      .resource-master-currency { grid-column: 1; grid-row: 2; margin-left: 52px; }
-      .resource-master-state { grid-column: 2; grid-row: 2; }
-      .resource-master-cdi-column { display: none; }
-      .resource-master-cdi-compact { display: inline; }
-      .resource-detail-heading { grid-template-columns: 40px minmax(0, 1fr); }
+      .resource-detail-heading { grid-template-columns: 44px minmax(0, 1fr); }
       .resource-detail-identity { display: flex; }
       .resource-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .resource-detail-actions { align-items: center; display: flex; }
@@ -361,8 +372,9 @@ export function accountsCardsPageStyles(): string {
     @media (max-width: 360px) {
       .resource-master-filters, .resource-detail-grid, .edit-grid { grid-template-columns: minmax(0, 1fr); }
       .resource-master-filters > label { grid-column: 1 / -1; }
-      .resource-master-link { grid-template-columns: minmax(0, 1fr) minmax(88px, auto); }
-      .resource-master-amount strong { font-size: .84rem; }
+      .resource-master-link { column-gap: 6px; grid-template-columns: 30px minmax(0, 1fr) minmax(82px, auto); }
+      .resource-master-institution-label { font-size: .71rem; }
+      .resource-master-amount strong { font-size: .8rem; }
       .resource-form-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .resource-form-actions button { padding-inline: 6px; width: 100%; }
     }

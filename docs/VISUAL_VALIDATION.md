@@ -71,6 +71,36 @@ A propagacao visual da Golden Screen na rota `/cartoes` tem escopo proprio, dife
 
 Inspecionar os estados em 1366x768, 390x844 e, nas divergencias de reflow, 320x740. Registrar em cada linha viewport, artefato, assertion, SHA exato e parecer de avaliador independente. A ausencia de capturas ou parecer deixa o gate de aceite aberto, mesmo se Repository CI e o workflow Chrome terminarem com sucesso.
 
+### Issue #717 — Navegacao compartilhada e recuperacao de erros (19/10/2026)
+
+Validar em Chrome, no SHA material final, que `/categorias`, `/lancamentos` e
+`/dashboard` exibam sidebar de tema claro identico (fundo, texto, borda e
+links nao ativos), sem regressao do menu mobile, indicador ativo ou tabulacao.
+A fonte e `shared-styles.ts`, sem excecao visual por rota no CSS da Golden Screen.
+
+Exercitar na interface a criacao contextual de subcategoria (tipo e pai),
+edicao, arquivamento/restauracao e exclusao com as autorizacoes da API. Injetar
+falha de conexao no submit, no menu de manutencao e no modal, exigindo mensagem
+recuperavel e botao novamente habilitado; a simulacao de erro de rede nao
+substitui validacao positiva de persistencia em ambiente descartavel. Registrar
+os casos e resultados no artefato `categories-interface.json` exact-SHA.
+
+### PR #731 — Paridade das imagens institucionais em Contas e Cartões (19/10/2026)
+
+Comparar `/contas-cartoes` com a Golden Screen `/lancamentos`: os logos e fallbacks de instituicoes nas linhas da lista mestre e no cabecalho de detalhe de contas e cartoes usam **44 x 44 px**, cantos de **11 px**, sem superficie secundaria cinza ou distorcao/corte (`object-fit: contain` nas imagens). Testar assets presentes e SVG de fallback, desktop 1440x900/1366x768 e mobile 390x844/320x740, com linhas longas e sem overflow horizontal. A automacao `accounts-cards-interface.mjs` verifica as medidas renderizadas, enquanto a aprovacao visual requer inspecao das capturas produzidas no mesmo SHA.
+
+## Portão discriminante da Issue #717 — Categorias
+
+A rota `/categorias` aplica a qualidade visual da Golden Screen do Extrato à árvore real de categorias, **sem copiar o layout de lançamentos e sem usar cards por categoria**. A composição mantém lista semântica agrupada por tipo, recuo e relação pai–filho explícitos, níveis mais profundos, nomes longos quebráveis e edição/criação contextual; o modelo e as permissões da API continuam inalterados.
+
+- **Desktop (1440x1000):** conferir linhas compactas de 52px com colunas alinhadas `Categoria`, `Categoria superior`, `Nível`, `Situação` (ícone com tooltip) e `Ações`; preservar agrupamento por tipo, recuo na primeira coluna, `ul/li`, busca, filtros e ações.
+- **Mobile (390x844 e 320x740):** exibir nome e ações na primeira linha, categoria superior, nível e situação na segunda; cabeçalhos de colunas são ocultados, não as ações. Exigir reflow sem rolagem horizontal, nomes longos e alvos de 44px para busca, filtros, expansão e menu. Capturar elementos que ultrapassem viewport sem esconder conteúdo, mantendo recuo compacto por nível.
+- **Estados:** grupo e catálogo vazios são diferentes de busca sem correspondência; filtros por tipo e por arquivamento preservam contexto pai/filho; revisão das mensagens de erro e recuperação.
+- **Teclado e formulário:** validar Tab, Escape, retorno ao acionador, expansão com `aria-expanded`, foco do menu e seleção de categoria superior sem descendentes como pais possíveis. Criar, editar, arquivar, restaurar e excluir devem continuar a usar os endpoints e confirmações preexistentes.
+- **Controle negativo:** rejeitar mudanças que retirem `ul/li` aninhados, escondam as ações em 320px, quebrem a contagem por filtro ao encontrar um ramo sem correspondência ou permitam selecionar um descendente como pai.
+
+O executor Chrome `scripts/statement-visual/categories-interface.mjs` produz `categories-interface.json`, capturas iniciais `categories-desktop.png`, `categories-mobile.png`, `categories-compact-mobile.png`, dos diálogos e **quatro capturas discriminantes** `categories-mobile-hierarchy.png`, `categories-compact-mobile-hierarchy.png`, `categories-mobile-long-name.png` e `categories-compact-mobile-long-name.png`. Estas últimas devem mostrar linhas reais abaixo dos filtros, com três níveis visíveis, situação e ação por linha, além do nome longo e seu menu totalmente dentro da viewport. Em 320 px, a hierarquia reduz recuos decorativos e o espaçador de linhas sem filhos, preservando controles de 44 px para dar largura legível ao nome; o gate falha se as três linhas não estiverem visíveis ou se a área útil do nome ficar abaixo de 85 px. A evidência deve identificar o **SHA material exato**, a rota, os dados de teste, as interações e o viewport. Os testes `categories-golden-screen.test.ts` protegem estrutura e regressões de renderização; **testes e CI verdes não substituem revisão visual e auditoria independente desta subissue**.
+
 ## Unidade de cobertura
 
 Cada evidencia representativa declara, no minimo:

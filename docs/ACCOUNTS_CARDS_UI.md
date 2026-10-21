@@ -52,6 +52,14 @@ A moeda nunca é inferida silenciosamente:
 
 Limites do cartão e de seus instrumentos usam o contexto monetário de `Card.currency`. Enquanto não existir conversão cambial, o domínio mantém separadamente a regra de compatibilidade entre a moeda do cartão e a conta de pagamento vinculada.
 
+## Lista compacta e iconografia (PR #731)
+
+No desktop, a lista mestre usa a ordem **`Tipo | Instituição | Conta ou cartão | Moeda | Valor | CDI | Situação`**, com uma única linha por registro. O tipo ocupa a primeira coluna usando exatamente os ícones `wallet` (conta) e `credit-card` (cartão) presentes nos botões `Adicionar conta` e `Adicionar cartão`. O nome acessível e o `title`/tooltip discriminam o recurso e o subtipo sem reintroduzir texto abaixo da conta.
+
+A **Instituição**, em segunda coluna, exibe o logo compartilhado de **44 × 44 px** e o nome institucional abreviado por elipse quando necessário, mantendo o nome completo no tooltip. A terceira coluna apresenta o nome da conta/cartão. A coluna **Valor** mantém o montante e um ícone pequeno **ao lado**, nunca abaixo: `dollar-sign` para `Saldo inicial` das contas e `credit-card` para `Limite total` dos cartões, ambos com `aria-label` e tooltip. O atributo `data-amount-label` preserva o contexto para o teste e o painel de detalhes. A linha tem altura mínima de **54 px**, mantendo 44 px para o logo e acabamento Golden Screen.
+
+Em telas estreitas (até 1099 px), a grade é compactada de forma responsiva, preservando a ordem semântica: Tipo, Instituição e Conta/Cartão. Nome e valor podem ocupar a segunda linha para não provocar rolagem horizontal no mobile de 390/320 px; a regra de **uma linha por conta** vale para a tabela desktop. Moeda, situação e CDI mantêm acesso sem alterar as APIs, a busca, os filtros e o estado selecionado. Os ícones e valores respeitam tooltips, acessibilidade, texto longo e navegação por teclado. Os testes de SSR e `accounts-cards-interface.mjs` protegem a ordem, as medidas e os papéis dos ícones nos viewports de 1440/1366/390/320 px.
+
 ## Ações e dialogs
 
 Criação e edição permanecem no contexto da tela por dialogs. Os acionadores são produzidos por `renderDialogTrigger` e as superfícies por `renderDialog`; o comportamento genérico vem do controller compartilhado da Fase 3B. As ações primárias são diretas no detalhe.

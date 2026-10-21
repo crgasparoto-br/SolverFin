@@ -3,15 +3,16 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:issuecomment-6189467904",
+    "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
     "finding_ids": [
-      "F-714-03"
+      "A-717-03",
+      "A-717-04"
     ],
-    "audit_report_sha256": "c33705c178269726c35ba37fdf030599537f5dbbcb56e0c921fa456fdbf3486f"
+    "audit_report_sha256": "497c54270c0573b01cf6cfabd2b429d96af45bd032a4e1611ff0531879f1767b"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The repository already contains a Chrome negative-controls framework; F-714-03 extends it to containment of action button text and boxes in all viewport/state combinations. No global skill relaxation."
+    "reason": "The official Skill already requires exact SHA source-location validation and per-control raw evidence; this is remediation of per-target evidence."
   },
   "skill_changes": []
 }

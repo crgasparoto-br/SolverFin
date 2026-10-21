@@ -1,3 +1,5 @@
+import { accountVisualState } from "./accounts-visual-state.mjs";
+import { validateCdiSettings, validateCdiRealPersistence } from "./accounts-visual-cdi.mjs";
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -19,6 +21,7 @@ const viewports = [
   { width: 320, height: 740, suffix: "mobile-320x740" },
 ];
 
+Object.assign(accountVisualState, { waitForDetail, waitFor });
 if (!chromePath) {
   throw new Error("CHROME_BIN is required for accounts/cards A3 validation.");
 }
@@ -76,6 +79,33 @@ async function validateViewport(cdp, viewport) {
   assert.equal(baseline.detailLayoutVisible, true, "A3 DetailLayout is not visible.");
   assert.equal(baseline.masterVisible, true, "Master list is not visible.");
   assert.equal(baseline.listAmountsVisible, true, "Master amounts are missing.");
+  assert.equal(baseline.masterTypeColumn, true, "Account subtype icon column is absent.");
+  assert.equal(baseline.masterTypeFirst, true, "Type icon must be the first visible column.");
+  assert.equal(
+    baseline.masterInstitutionSecond,
+    true,
+    "Institution must be between type and account/card.",
+  );
+  assert.equal(
+    baseline.amountKindInline,
+    true,
+    "Balance/limit icon must be inline with the amount.",
+  );
+  assert.equal(
+    baseline.masterTypeTooltips,
+    true,
+    "Account/card type icons need accessible tooltips.",
+  );
+  assert.equal(
+    baseline.compactRowMinHeight,
+    true,
+    "Master rows must use compact Golden Screen density.",
+  );
+  assert.equal(
+    baseline.headerActionsHaveIcons,
+    true,
+    "Add-account and add-card buttons need icons.",
+  );
   assert.equal(baseline.cdiColumnPresent, true, "The dedicated CDI column is missing.");
   assert.equal(
     baseline.cdiStateConsistent,
@@ -115,6 +145,11 @@ async function validateViewport(cdp, viewport) {
     true,
     "Institution logo/fallback missing from a master resource.",
   );
+  assert.equal(
+    baseline.institutionImageMatchesGolden,
+    true,
+    "List institution logos must match the 44px and 11px Golden Statement frame.",
+  );
 
   const account = await selectResource(cdp, "account");
   const card = await selectResource(cdp, "card");
@@ -142,6 +177,11 @@ async function validateViewport(cdp, viewport) {
       measurements.institutionIdentityVisible,
       true,
       "Account institution identity is hidden.",
+    );
+    assert.equal(
+      measurements.detailImageMatchesGolden,
+      true,
+      "Account detail logo must match Golden Statement image geometry.",
     );
     assert.equal(measurements.selectedMasterCount, 1);
     assert.equal(
@@ -178,6 +218,11 @@ async function validateViewport(cdp, viewport) {
       measurements.institutionIdentityVisible,
       true,
       "Card institution identity is hidden.",
+    );
+    assert.equal(
+      measurements.detailImageMatchesGolden,
+      true,
+      "Card detail logo must match Golden Statement image geometry.",
     );
     assert.equal(measurements.selectedMasterCount, 1);
     assert.equal(measurements.currencyContextVisible, true, "Card currency context is ambiguous.");
@@ -240,11 +285,23 @@ async function validateViewport(cdp, viewport) {
   await screenshot(cdp, join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`));
   if (viewport.width === 1366) {
     const cdiSettings = await validateCdiSettings(cdp);
-    scenarios.push({ kind: "cdi-settings", viewport: "1366x768", measurements: cdiSettings });
+    scenarios.push({
+      kind: "cdi-settings",
+      viewport: "1366x768",
+      measurements: cdiSettings,
+    });
     const cdiPersistence = await validateCdiRealPersistence(cdp);
-    scenarios.push({ kind: "cdi-real-api", viewport: "1366x768", measurements: cdiPersistence });
+    scenarios.push({
+      kind: "cdi-real-api",
+      viewport: "1366x768",
+      measurements: cdiPersistence,
+    });
     const cdi = await validateCdiSwitch(cdp);
-    scenarios.push({ kind: "cdi-toggle", viewport: "1366x768", measurements: cdi });
+    scenarios.push({
+      kind: "cdi-toggle",
+      viewport: "1366x768",
+      measurements: cdi,
+    });
   }
 }
 
@@ -338,203 +395,6 @@ async function validateGoldenActionToolbar(cdp, resourceKind) {
     assert.ok(snapshot.cdiSwitch?.width >= 43 && snapshot.cdiSwitch?.height >= 24);
   }
   return snapshot;
-}
-
-async function validateCdiSettings(cdp) {
-  const href = await evaluate(
-    cdp,
-    `(() => {
-    const item = document.querySelector('[data-resource-master-item][data-kind="account"][data-currency="BRL"][data-status="active"]');
-    const link = item?.querySelector('a.resource-master-link');
-    return link ? new URL(link.href).pathname + new URL(link.href).search : null;
-  })()`,
-  );
-  assert.ok(href, "Missing eligible account for CDI settings.");
-  await navigate(cdp, `${baseUrl}${href}`);
-  await waitForDetail(cdp, "account");
-  const setup = await evaluate(
-    cdp,
-    `(() => {
-    const trigger = document.querySelector('[data-resource-detail="account"] [data-sf-dialog-open^="account-cdi-dialog-"]');
-    if (!trigger || trigger.disabled) return null;
-    const accountId = trigger.closest('[data-resource-detail]')?.dataset.resourceKey?.slice(8);
-    const originalFetch = window.fetch;
-    window.__issue716SettingsFetch = originalFetch;
-    window.__issue716SettingsProof = { calls: [], firstFails: true };
-    window.fetch = async (url, options = {}) => {
-      const path = String(url);
-      if (path === '/api/account-remuneration/configurations' && !options.method) {
-        return { ok: true, json: async () => ({
-          configurations: [{ accountId, accountCurrency: 'BRL', indexKind: 'cdi', enabled: true }]
-        }) };
-      }
-      if (path === '/api/account-remuneration/configurations/' + encodeURIComponent(accountId) && options.method === 'PUT') {
-        window.__issue716SettingsProof.calls.push(JSON.parse(options.body));
-        if (window.__issue716SettingsProof.firstFails) {
-          window.__issue716SettingsProof.firstFails = false;
-          return { ok: false, json: async () => ({ error: { message: 'Falha configurações CDI simulada' } }) };
-        }
-        return { ok: true, json: async () => ({ operation: { message: 'Configuração CDI salva' } }) };
-      }
-      return originalFetch(url, options);
-    };
-    trigger.focus();
-    trigger.click();
-    return { label: trigger.getAttribute('aria-label'), title: trigger.title };
-  })()`,
-  );
-  assert.ok(
-    setup?.label?.includes("Configurar remuneração CDI"),
-    "Settings icon missing accessible name.",
-  );
-  await waitFor(
-    cdp,
-    `Boolean(document.querySelector('dialog.master-dialog[open] [data-cdi-configuration-form]'))`,
-    "Settings dialog did not open.",
-  );
-  await evaluate(
-    cdp,
-    `(() => {
-    const form = document.querySelector('[data-cdi-configuration-form]');
-    form.querySelector('[name="remunerationPercent"]').value = '88.5';
-    form.querySelector('[name="startsOn"]').value = '2026-10-14';
-    form.requestSubmit();
-  })()`,
-  );
-  await waitFor(
-    cdp,
-    `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Falha configurações CDI simulada')`,
-    "Settings API error was not visible.",
-  );
-  const failed = await evaluate(
-    cdp,
-    `(() => {
-    const form = document.querySelector('[data-cdi-configuration-form]');
-    return {
-      modalOpen: form.closest('dialog')?.open,
-      percent: form.querySelector('[name="remunerationPercent"]').value,
-      date: form.querySelector('[name="startsOn"]').value,
-      retryAllowed: !form.querySelector('[type="submit"]').disabled,
-    };
-  })()`,
-  );
-  assert.deepEqual(failed, {
-    modalOpen: true,
-    percent: "88.5",
-    date: "2026-10-14",
-    retryAllowed: true,
-  });
-  await evaluate(cdp, "document.querySelector('[data-cdi-configuration-form]')?.requestSubmit()");
-  await waitFor(
-    cdp,
-    `document.querySelector('[data-cdi-form-status]')?.textContent?.includes('Configuração CDI salva')`,
-    "Settings successful PUT was not visible.",
-  );
-  const success = await evaluate(cdp, "window.__issue716SettingsProof.calls");
-  assert.equal(success.length, 2);
-  assert.equal(success[1].enabled, true, "Editing settings must not disable active CDI.");
-  assert.equal(success[1].remunerationPercent, 88.5);
-  assert.equal(success[1].startsOn, "2026-10-14");
-  await sleep(450);
-  return { failed, success, accessibleLabel: setup.label };
-}
-
-/**
- * Exercises the real API, session scope and database via the browser. The existing
- * mocked scenarios remain responsible for deterministic cancel/error/retry cases.
- */
-async function validateCdiRealPersistence(cdp) {
-  const created = await evaluate(
-    cdp,
-    `(async () => {
-      const result = await fetch("/api/accounts", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: "QA CDI real " + Date.now().toString(36),
-          kind: "checking",
-          currency: "BRL",
-          openingBalanceMinor: 0,
-        }),
-      });
-      return { status: result.status, body: await result.json() };
-    })()`,
-  );
-  assert.equal(created.status, 201, "A real CDI test account must be created.");
-  const accountId = created.body.account?.id;
-  assert.ok(accountId, "The real account API did not return an id.");
-  const href = `/contas-cartoes?resource=${encodeURIComponent(`account:${accountId}`)}`;
-  const persisted = { accountId, activated: false, deactivated: false, cleanupStatus: null };
-  try {
-    await navigate(cdp, `${baseUrl}${href}`);
-    await waitForDetail(cdp, "account");
-    const initial = await evaluate(
-      cdp,
-      `document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked')`,
-    );
-    assert.equal(initial, "false", "A newly created account must not start with CDI active.");
-
-    async function toggleAndVerify(enabled) {
-      await evaluate(cdp, `document.querySelector('[data-cdi-toggle]')?.click()`);
-      await waitFor(
-        cdp,
-        `Boolean(document.querySelector('#accounts-cards-confirm-dialog[open]'))`,
-        "Real CDI confirmation did not open.",
-      );
-      await evaluate(cdp, `document.querySelector('[data-confirm-accept]')?.click()`);
-      await waitFor(
-        cdp,
-        `document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked') === ${JSON.stringify(String(enabled))}`,
-        "The CDI switch did not reflect the successful real API update.",
-      );
-      await navigate(cdp, `${baseUrl}${href}`);
-      await waitForDetail(cdp, "account");
-      const current = await evaluate(
-        cdp,
-        `(async () => {
-          const response = await fetch("/api/account-remuneration/configurations");
-          const body = await response.json();
-          return {
-            status: response.status,
-            entry: body.configurations?.find((entry) => entry.accountId === ${JSON.stringify(accountId)}),
-            switchState: document.querySelector('[data-cdi-toggle]')?.getAttribute('aria-checked'),
-            masterState: document.querySelector('[data-resource-master-item][data-kind="account"].is-selected')?.getAttribute('data-cdi-state'),
-          };
-        })()`,
-      );
-      assert.equal(current.status, 200, "The authenticated API must permit reading CDI.");
-      assert.equal(
-        current.entry?.enabled,
-        enabled,
-        "CDI must persist across a new HTTP GET and page load.",
-      );
-      assert.equal(
-        current.switchState,
-        String(enabled),
-        "The server-rendered switch must match the persisted CDI state.",
-      );
-      assert.equal(
-        current.masterState,
-        enabled ? "active" : "inactive",
-        "The master list must use persisted CDI state.",
-      );
-    }
-    await toggleAndVerify(true);
-    persisted.activated = true;
-    await toggleAndVerify(false);
-    persisted.deactivated = true;
-  } finally {
-    // Isolated CI fixture; do not leave an active remuneration on a test account.
-    const cleanup = await evaluate(
-      cdp,
-      `(async () => {
-        const response = await fetch("/api/accounts/" + encodeURIComponent(${JSON.stringify(accountId)}), { method: "DELETE" });
-        return { status: response.status };
-      })()`,
-    ).catch(() => null);
-    persisted.cleanupStatus = cleanup?.status ?? null;
-  }
-  return persisted;
 }
 
 async function validateCdiSwitch(cdp) {
@@ -679,6 +539,21 @@ async function inspectPage(cdp) {
         const style = getComputedStyle(element);
         return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
       };
+      const goldenLogoFrame = (root) => {
+        if (!root) return false;
+        const frame = root.getBoundingClientRect();
+        const radius = parseFloat(getComputedStyle(root).borderTopLeftRadius);
+        const visibleLogo = Array.from(root.querySelectorAll('img, svg')).find(visible);
+        if (!visibleLogo) return false;
+        const logo = visibleLogo.getBoundingClientRect();
+        const logoStyle = getComputedStyle(visibleLogo);
+        return Math.abs(frame.width - 44) <= 1 &&
+          Math.abs(frame.height - 44) <= 1 &&
+          Math.abs(radius - 11) <= 1 &&
+          logo.width > 0 && logo.height > 0 &&
+          logo.width <= frame.width + 1 && logo.height <= frame.height + 1 &&
+          (visibleLogo.tagName.toLowerCase() !== 'img' || logoStyle.objectFit === 'contain');
+      };
       const detail = document.querySelector('[data-resource-detail]');
       const detailText = detail?.textContent || '';
       const masterItems = Array.from(document.querySelectorAll('[data-resource-master-item]'));
@@ -690,11 +565,65 @@ async function inspectPage(cdp) {
         detailVisible: visible(document.querySelector('.resource-detail-panel')),
         masterItemCount: masterItems.length,
         listAmountsVisible: masterItems.every((item) => Boolean(item.querySelector('.resource-master-amount strong'))),
+        masterTypeColumn: Array.from(document.querySelectorAll('.resource-master-columns > span'))
+          .map((column) => column.textContent.trim()).join('|') ===
+          'Tipo|Instituição|Conta ou cartão|Moeda|Valor|CDI|Situação',
+        masterTypeFirst: masterItems.every((item) => {
+          const link = item.querySelector('.resource-master-link');
+          const type = link?.querySelector('.resource-master-type');
+          const identity = link?.querySelector('.resource-master-identity');
+          if (!link || !type || !identity || link.firstElementChild !== type) return false;
+          if (innerWidth <= 1099) {
+            return type.getBoundingClientRect().left < identity.getBoundingClientRect().left;
+          }
+          return getComputedStyle(link).gridTemplateColumns.split(' ').length === 7 &&
+            type.getBoundingClientRect().left < identity.getBoundingClientRect().left;
+        }),
+        masterInstitutionSecond: masterItems.every((item) => {
+          const row = item.querySelector('.resource-master-link');
+          const type = row?.querySelector('.resource-master-type');
+          const institution = row?.querySelector('.resource-master-institution');
+          const identity = row?.querySelector('.resource-master-identity');
+          return type && institution && identity &&
+            row.children[0] === type && row.children[1] === institution && row.children[2] === identity &&
+            type.getBoundingClientRect().left < institution.getBoundingClientRect().left &&
+            (innerWidth <= 1099 || institution.getBoundingClientRect().left < identity.getBoundingClientRect().left);
+        }),
+        amountKindInline: masterItems.every((item) => {
+          const amount = item.querySelector('.resource-master-amount');
+          const numeric = amount?.querySelector('strong');
+          const kind = amount?.querySelector('.resource-master-amount-kind');
+          const expectedLabel = item.getAttribute('data-kind') === 'account' ? 'Saldo inicial' : 'Limite total';
+          if (!numeric || !kind) return false;
+          const a = numeric.getBoundingClientRect();
+          const b = kind.getBoundingClientRect();
+          return kind.getAttribute('aria-label') === expectedLabel &&
+            kind.getAttribute('title') === expectedLabel &&
+            Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)) <= 3 &&
+            b.left >= a.right - 1 &&
+            !amount.querySelector('small');
+        }),
+        masterTypeTooltips: masterItems.every((item) => {
+          const badge = item.querySelector('.resource-master-type');
+          return badge?.getAttribute('role') === 'img' &&
+            Boolean(badge.getAttribute('aria-label')) &&
+            badge.getAttribute('aria-label') === badge.getAttribute('title') &&
+            Boolean(badge.querySelector('svg')) &&
+            !item.querySelector('.resource-master-context');
+        }),
+        compactRowMinHeight: masterItems.every((item) => {
+          const link = item.querySelector('.resource-master-link');
+          const expected = innerWidth <= 1099 ? 76 : 54;
+          return link && Math.abs(parseFloat(getComputedStyle(link).minHeight) - expected) <= 1;
+        }),
+        headerActionsHaveIcons: ['new-account-dialog', 'new-card-dialog'].every((id) =>
+          Boolean(document.querySelector('[data-open-dialog="' + id + '"] svg.resource-header-action-icon')),
+        ),
         cdiColumnPresent: Array.from(document.querySelectorAll('.resource-master-columns > span')).some((column) => column.textContent.trim() === 'CDI'),
         cdiStateConsistent: masterItems.every((item) => {
           const active = item.getAttribute('data-cdi-active') === 'true';
           const label = item.querySelector('.resource-master-cdi-column')?.textContent?.trim() || '';
-          const compact = item.querySelector('.resource-master-cdi-compact')?.textContent?.trim() || '';
+          const compact = item.querySelector('.resource-master-cdi-compact')?.getAttribute('aria-label') || '';
           const state = item.getAttribute('data-cdi-state');
           if (item.getAttribute('data-kind') === 'card') {
             return state === 'not-applicable' && !active && label === '—' && compact === '';
@@ -719,6 +648,8 @@ async function inspectPage(cdp) {
             : master.top <= secondary.top && master.width <= innerWidth;
         })(),
         institutionLogosOnMaster: masterItems.every((item) => Boolean(item.querySelector('.resource-master-icon .institution-logo-img, .resource-master-icon .institution-badge-icon'))),
+        institutionImageMatchesGolden: masterItems.every((item) => goldenLogoFrame(item.querySelector('.resource-master-icon'))),
+        detailImageMatchesGolden: goldenLogoFrame(detail?.querySelector('.resource-detail-identity')),
         financialContextVisible: (() => {
           const selected = document.querySelector('[data-resource-master-item].is-selected');
           const rowAmount = selected?.querySelector('.resource-master-amount strong');

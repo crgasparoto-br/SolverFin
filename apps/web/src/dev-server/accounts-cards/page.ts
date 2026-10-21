@@ -9,6 +9,7 @@ import {
   renderSolverFinUiInteractionsScriptTag,
 } from "../../design-system/primitives.js";
 import { apiGet } from "../api.js";
+import { icon } from "../icons.js";
 import { renderAuthenticatedShellDocument } from "../shell.js";
 import {
   renderConfirmationDialog,
@@ -33,13 +34,20 @@ function renderHeaderDialogTrigger(input: {
   label: string;
   className: string;
   variant?: "primary" | "secondary";
+  iconName?: "wallet" | "credit-card";
 }): string {
   // data-open-dialog remains only as a stable visual-evidence selector. Interaction is owned by
   // data-sf-dialog-open from renderDialogTrigger and the shared Phase 3B controller.
-  return renderDialogTrigger(input).replace(
+  const button = renderDialogTrigger(input).replace(
     "<button ",
     `<button data-open-dialog="${escapeHtml(input.dialogId)}" `,
   );
+  return input.iconName
+    ? button.replace(
+        '<span class="sf-button-label">',
+        `${icon(input.iconName, 16, "resource-header-action-icon")}<span class="sf-button-label">`,
+      )
+    : button;
 }
 
 export async function renderAccountsCardsPage(token: string, url?: URL): Promise<string> {
@@ -81,11 +89,13 @@ export async function renderAccountsCardsPage(token: string, url?: URL): Promise
       dialogId: "new-account-dialog",
       label: "Adicionar conta",
       className: "resource-primary-action",
+      iconName: "wallet",
     }),
     renderHeaderDialogTrigger({
       dialogId: "new-card-dialog",
       label: "Adicionar cartão",
       className: "secondary-button",
+      iconName: "credit-card",
       variant: "secondary",
     }),
   ].join("");
