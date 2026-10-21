@@ -344,8 +344,7 @@ async function validateMultiCurrency(cdp, month) {
             };
           })()`,
         );
-        const sectionScreenshot =
-          `reports-${label}-${width}x${height}-${currency.toLowerCase()}-${layer}.png`;
+        const sectionScreenshot = `reports-${label}-${width}x${height}-${currency.toLowerCase()}-${layer}.png`;
         await screenshot(cdp, join(outputDir, sectionScreenshot));
         screenshots.push(sectionScreenshot);
         check(section.visible, `${currency} ${layer} is not visible in ${label} evidence`, section);
