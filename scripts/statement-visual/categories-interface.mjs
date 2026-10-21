@@ -57,6 +57,7 @@ await runViewportSession("desktop", 1440, 1000, async (cdp) => {
 await runViewportSession("mobile", 390, 844, async (cdp) => {
   mobile = await validateMobile(cdp);
   completedScreenshots.push("categories-mobile.png");
+  completedScreenshots.push(...mobile.hierarchyScreenshots);
   mobileModal = await validateMobileModal(cdp);
   completedScreenshots.push("categories-modal-mobile.png");
 });
@@ -64,6 +65,7 @@ await runViewportSession("mobile", 390, 844, async (cdp) => {
 await runViewportSession("compact-mobile", 320, 740, async (cdp) => {
   compactMobile = await validateCompactMobile(cdp);
   completedScreenshots.push("categories-compact-mobile.png");
+  completedScreenshots.push(...compactMobile.hierarchyScreenshots);
 });
 
 const report = {
@@ -209,10 +211,12 @@ async function validateMobile(cdp) {
     "Mobile expand-all action is less than 44px",
     measurements,
   );
+  const hierarchy = await captureMobileHierarchyEvidence(cdp, "mobile");
   return {
     viewport: "390x844",
     measurements,
     screenshot: "categories-mobile.png",
+    ...hierarchy,
   };
 }
 
@@ -263,10 +267,93 @@ async function validateCompactMobile(cdp) {
     "Narrow mobile expand-all action is less than 44px",
     measurements,
   );
+  const hierarchy = await captureMobileHierarchyEvidence(cdp, "compact-mobile");
   return {
     viewport: "320x740",
     measurements,
     screenshot: "categories-compact-mobile.png",
+    ...hierarchy,
+  };
+}
+
+/** Capture the actual hierarchy below the toolbar, not just the initial mobile fold. */
+async function captureMobileHierarchyEvidence(cdp, viewport) {
+  const selection = await evaluate(cdp, `(() => {
+    const items = [...document.querySelectorAll('[data-category-item]')];
+    const chains = items.filter(item => item.dataset.categoryDepth === '2').map(leaf => {
+      const child = leaf.parentElement?.closest('[data-category-item]');
+      const root = child?.parentElement?.closest('[data-category-item]');
+      return root && child ? [root, child, leaf] : null;
+    }).filter(Boolean);
+    chains.sort((a, b) =>
+      (items.indexOf(a[2]) - items.indexOf(a[0])) -
+      (items.indexOf(b[2]) - items.indexOf(b[0])));
+    const chosen = chains[0];
+    if (!chosen) return { indexes: [], names: [] };
+    chosen[0].querySelector(':scope > .category-node-row').scrollIntoView({ block: 'start' });
+    window.scrollBy(0, -96);
+    return {
+      indexes: chosen.map(item => items.indexOf(item)),
+      names: chosen.map(item => item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName),
+    };
+  })()`);
+  await sleep(160);
+  const hierarchyVisible = await evaluate(cdp, `(() => {
+    const items = [...document.querySelectorAll('[data-category-item]')];
+    return ${JSON.stringify(selection.indexes)}.map((index, depth) => {
+      const item = items[index];
+      const row = item?.querySelector(':scope > .category-node-row');
+      const menu = row?.querySelector('[data-category-menu-button]');
+      const status = row?.querySelector('[data-category-status-icon]');
+      const bounds = row?.getBoundingClientRect();
+      const menuBounds = menu?.getBoundingClientRect();
+      return {
+        depth, name: row?.querySelector('[data-edit-category]')?.dataset.categoryName,
+        inViewport: Boolean(bounds && bounds.top >= 72 && bounds.bottom <= innerHeight - 4),
+        menuVisible: Boolean(menuBounds && menuBounds.left >= 0 && menuBounds.right <= innerWidth && menuBounds.width > 0),
+        statusVisible: Boolean(status && status.getBoundingClientRect().width > 0),
+      };
+    });
+  })()`);
+  const hierarchyScreenshot = `categories-${viewport}-hierarchy.png`;
+  await screenshot(cdp, join(outputDir, hierarchyScreenshot));
+  check(
+    hierarchyVisible.length === 3 &&
+      hierarchyVisible.every((row) => row.inViewport && row.menuVisible && row.statusVisible),
+    `Mobile ${viewport} evidence does not expose all three hierarchy levels and actions`,
+    { selection, hierarchyVisible },
+  );
+
+  const longest = await evaluate(cdp, `(() => {
+    const items = [...document.querySelectorAll('[data-category-item]')];
+    const item = items.sort((a, b) =>
+      (b.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName.length || 0) -
+      (a.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName.length || 0))[0];
+    const row = item?.querySelector(':scope > .category-node-row');
+    row?.scrollIntoView({ block: 'center' });
+    return { name: row?.querySelector('[data-edit-category]')?.dataset.categoryName || '' };
+  })()`);
+  await sleep(160);
+  const longNameVisible = await evaluate(cdp, `(() => {
+    const item = [...document.querySelectorAll('[data-category-item]')].find(item =>
+      item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName === ${JSON.stringify(longest.name)});
+    const row = item?.querySelector(':scope > .category-node-row');
+    const action = row?.querySelector('[data-category-menu-button]');
+    const rect = row?.getBoundingClientRect();
+    const button = action?.getBoundingClientRect();
+    return Boolean(rect && rect.top >= 72 && rect.bottom <= innerHeight - 4 &&
+      button && button.left >= 0 && button.right <= innerWidth);
+  })()`);
+  const longNameScreenshot = `categories-${viewport}-long-name.png`;
+  await screenshot(cdp, join(outputDir, longNameScreenshot));
+  check(
+    longest.name.length >= 25 && longNameVisible,
+    `Mobile ${viewport} long-name evidence does not show the row and its action`,
+    { longest, longNameVisible },
+  );
+  return {
+    hierarchyScreenshots: [hierarchyScreenshot, longNameScreenshot],
+    hierarchyEvidence: { selection, hierarchyVisible, longest, longNameVisible },
   };
 }
 
@@ -487,5 +574,6 @@ function check(condition, message, details) {
 function renderReport(report) {
   const status = report.failures.length === 0 ? "APROVADO" : "REPROVADO";
   const screenshot = (result) => result?.screenshot ?? "não gerada";
-  return `# Evidência visual — Categorias\n\n- Status: **${status}**\n- Commit: \`${report.commit}\`\n- Navegador: ${report.browser}\n- Desktop: \`${screenshot(report.desktop)}\`\n- Modal desktop: \`${screenshot(report.desktopModal)}\`\n- Mobile: \`${screenshot(report.mobile)}\`\n- Modal mobile: \`${screenshot(report.mobileModal)}\`\n- Mobile estreito: \`${screenshot(report.compactMobile)}\`\n\n## Falhas\n\n${report.failures.length === 0 ? "Nenhuma falha encontrada.\n" : report.failures.map((failure) => `- ${failure.message}`).join("\n") + "\n"}`;
+  const hierarchyScreenshots = (result) => result?.hierarchyScreenshots?.join(", ") ?? "não geradas";
+  return `# Evidência visual — Categorias\n\n- Status: **${status}**\n- Commit: \`${report.commit}\`\n- Navegador: ${report.browser}\n- Desktop: \`${screenshot(report.desktop)}\`\n- Modal desktop: \`${screenshot(report.desktopModal)}\`\n- Mobile: \`${screenshot(report.mobile)}\`\n- Modal mobile: \`${screenshot(report.mobileModal)}\`\n- Mobile estreito: \`${screenshot(report.compactMobile)}\`\n- Árvore e nomes longos 390px: \`${hierarchyScreenshots(report.mobile)}\`\n- Árvore e nomes longos 320px: \`${hierarchyScreenshots(report.compactMobile)}\`\n\n## Falhas\n\n${report.failures.length === 0 ? "Nenhuma falha encontrada.\n" : report.failures.map((failure) => `- ${failure.message}`).join("\n") + "\n"}`;
 }
