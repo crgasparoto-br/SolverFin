@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 import { pageMeasurementExpression } from "./measurements.mjs";
+import { reportPageViewportExpression } from "./report-page-viewport.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
 import { inspectStatementActionMenu } from "./statement-action-menu-visual.mjs";
 
@@ -605,6 +606,7 @@ async function inspectReportStructure(cdp, focusScroller) {
       const form = document.querySelector('.evolution-filters');
       const formRect = form?.getBoundingClientRect();
       const tables = Array.from(document.querySelectorAll('table.evolution-table'));
+      const pageViewport = ${reportPageViewportExpression()};
       return {
         viewportWidth: innerWidth,
         focused: document.activeElement === scroller,
@@ -612,15 +614,8 @@ async function inspectReportStructure(cdp, focusScroller) {
         trendLocalScroll: Array.from(document.querySelectorAll('.report-trend'))
           .every((element) => element.scrollWidth > element.clientWidth + 1
             && ['auto', 'scroll'].includes(getComputedStyle(element).overflowX)),
-        pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
-        overflowDiagnostics: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
-          ? null
-          : {
-              boundaries: ['html', 'body', '.app-shell', '.main-area', 'main', '.currency-report-list', '.report-trend'].map((selector) => {
-                const node = document.querySelector(selector);
-                return { selector, width: node?.clientWidth, scrollWidth: node?.scrollWidth, overflowX: node && getComputedStyle(node).overflowX };
-              }),
-            },
+        pageFits: pageViewport.fits,
+        overflowDiagnostics: pageViewport.fits ? null : pageViewport,
         filterVisible: Boolean(formRect && formRect.width > 0 && formRect.height > 0),
         filterControlCount: form?.querySelectorAll('input, select, button, a').length || 0,
         tableCount: tables.length,

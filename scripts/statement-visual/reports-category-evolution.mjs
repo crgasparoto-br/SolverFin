@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { reportPageViewportExpression } from "./report-page-viewport.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -42,6 +43,7 @@ try {
   report.filterError = await validateFilterError(browser.cdp);
   report.multiCurrency = await validateMultiCurrency(browser.cdp, seeded.month);
   report.negativeControl = await validateClippedCategoryNegativeControl(browser.cdp);
+  report.viewportNegativeControl = await validateReportViewportNegativeControl(browser.cdp);
 } catch (error) {
   failures.push({ message: "Reports visual validation crashed", details: serializeError(error) });
 } finally {
@@ -282,6 +284,7 @@ async function validateMultiCurrency(cdp, month) {
     const measurements = await evaluate(
       cdp,
       `(() => {
+      const pageViewport = ${reportPageViewportExpression()};
       const blocks = Array.from(document.querySelectorAll('[data-report-analysis="a5"][data-currency]'));
       return {
         currencies: blocks.map((block) => block.getAttribute('data-currency')),
@@ -296,7 +299,8 @@ async function validateMultiCurrency(cdp, month) {
             && money.every((node) => node.getAttribute('data-currency') === currency)
             && Boolean(block.querySelector('[data-emphasis="true"]'));
         }),
-        globalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+        globalOverflow: !pageViewport.fits,
+        pageViewport,
         tableScrollLocal: Array.from(document.querySelectorAll('.evolution-table-scroll'))
           .every((node) => node.scrollWidth > node.clientWidth && node.tabIndex === 0),
         trendScrollLocal: Array.from(document.querySelectorAll('.report-trend'))
@@ -341,6 +345,29 @@ async function validateMultiCurrency(cdp, month) {
   return snapshots;
 }
 
+async function validateReportViewportNegativeControl(cdp) {
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const main = document.querySelector('main');
+      if (!main) return { observed: false, restored: false };
+      const before = ${reportPageViewportExpression()};
+      const previous = main.getAttribute('style');
+      main.style.maxWidth = 'none';
+      main.style.width = 'calc(100vw + 64px)';
+      const observed = !${reportPageViewportExpression()}.fits;
+      if (previous === null) main.removeAttribute('style');
+      else main.setAttribute('style', previous);
+      const restored = ${reportPageViewportExpression()}.fits;
+      return { before: before.fits, observed, restored };
+    })()`,
+  );
+  check(result.before, "Report viewport negative control has an invalid baseline", result);
+  check(result.observed, "Report viewport negative control missed a real width expansion", result);
+  check(result.restored, "Report viewport negative control did not restore layout", result);
+  return result;
+}
+
 async function validateClippedCategoryNegativeControl(cdp) {
   const checkClip = await evaluate(
     cdp,
@@ -372,10 +399,12 @@ function measurementExpression() {
     const form = document.querySelector('.evolution-filters');
     const style = form ? getComputedStyle(form) : null;
     const text = document.body.textContent || '';
+    const pageViewport = ${reportPageViewportExpression()};
     return {
       state: document.querySelector('[data-report-state]')?.getAttribute('data-report-state') || '',
       viewportWidth: window.innerWidth,
-      pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      pageFitsViewport: pageViewport.fits,
+      pageViewport,
       tableCount: document.querySelectorAll('table.evolution-table').length,
       columnHeaders: table?.querySelectorAll('th[scope="col"]').length || 0,
       rowHeaders: table?.querySelectorAll('th[scope="row"]').length || 0,
