@@ -348,11 +348,7 @@ async function validateMultiCurrency(cdp, month) {
           `reports-${label}-${width}x${height}-${currency.toLowerCase()}-${layer}.png`;
         await screenshot(cdp, join(outputDir, sectionScreenshot));
         screenshots.push(sectionScreenshot);
-        check(
-          section.visible,
-          `${currency} ${layer} is not visible in ${label} evidence`,
-          section,
-        );
+        check(section.visible, `${currency} ${layer} is not visible in ${label} evidence`, section);
         check(section.correctCurrency, `${currency} ${layer} lost the currency heading`, section);
         check(section.hasContent, `${currency} ${layer} has no inspectable content`, section);
         capturedSections.push({

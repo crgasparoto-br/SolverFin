@@ -73,17 +73,23 @@ test("#718 adapter does not accept an omitted small mobile viewport", async () =
   await assert.rejects(collectReport718Evidence(async () => partial));
 });
 
-test("#718 adapter rejects opening-only screenshot evidence with no offscreen captures", async () => {
-  const missing = fixture();
-  missing.multiCurrency[0].capturedSections = [];
-  await assert.rejects(collectReport718Evidence(async () => missing), /visual capture/);
-});
+test(
+  "#718 adapter rejects opening-only screenshot evidence with no offscreen captures",
+  async () => {
+    const missing = fixture();
+    missing.multiCurrency[0].capturedSections = [];
+    await assert.rejects(collectReport718Evidence(async () => missing), /visual capture/);
+  },
+);
 
-test("#718 adapter rejects a capture without visible monetary content or currency context", async () => {
-  const obscured = fixture();
-  obscured.multiCurrency[1].capturedSections[2].measurements.visible = false;
-  await assert.rejects(collectReport718Evidence(async () => obscured), /outside the viewport/);
-  const wrongCurrency = fixture();
-  wrongCurrency.multiCurrency[2].capturedSections[3].measurements.correctCurrency = false;
-  await assert.rejects(collectReport718Evidence(async () => wrongCurrency), /currency context/);
-});
+test(
+  "#718 adapter rejects a capture without visible monetary content or currency context",
+  async () => {
+    const obscured = fixture();
+    obscured.multiCurrency[1].capturedSections[2].measurements.visible = false;
+    await assert.rejects(collectReport718Evidence(async () => obscured), /outside the viewport/);
+    const wrongCurrency = fixture();
+    wrongCurrency.multiCurrency[2].capturedSections[3].measurements.correctCurrency = false;
+    await assert.rejects(collectReport718Evidence(async () => wrongCurrency), /currency context/);
+  },
+);
