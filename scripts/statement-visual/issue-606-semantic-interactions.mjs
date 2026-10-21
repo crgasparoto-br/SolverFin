@@ -616,8 +616,6 @@ async function inspectReportStructure(cdp, focusScroller) {
         overflowDiagnostics: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
           ? null
           : {
-              rootScrollWidth: document.documentElement.scrollWidth,
-              viewportWidth: document.documentElement.clientWidth,
               candidates: Array.from(document.querySelectorAll('main *'))
                 .filter((element) => element.getBoundingClientRect().right > innerWidth + 1)
                 .slice(0, 15)
@@ -625,8 +623,6 @@ async function inspectReportStructure(cdp, focusScroller) {
                   tag: element.tagName.toLowerCase(),
                   classes: typeof element.className === 'string' ? element.className.slice(0, 120) : '',
                   right: Math.round(element.getBoundingClientRect().right),
-                  scrollWidth: element.scrollWidth,
-                  clientWidth: element.clientWidth,
                 })),
             },
         filterVisible: Boolean(formRect && formRect.width > 0 && formRect.height > 0),
