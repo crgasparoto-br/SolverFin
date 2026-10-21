@@ -4,23 +4,23 @@ name: Delivery audit workspace
 on:
   pull_request:
     branches: [develop]
-    paths:
-      - .github/workflows/delivery-audit-workspace.yml
-      - apps/web/src/dev-server/cards-page-v2.ts
-      - apps/web/src/dev-server/cards-page-v2.test.ts
-      - scripts/statement-visual/cards-interface.mjs
+    types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
     inputs:
       material_ref:
-        description: "Existing branch or commit to export"
+        description: "Immutable 40-character SHA of the candidate to export"
+        required: true
+        type: string
+      base_sha:
+        description: "Immutable 40-character develop base SHA from the same PR snapshot"
         required: true
         type: string
 permissions:
   contents: read
 jobs:
   export:
-    # Until promotion this PR is the bootstrap test; dispatch stays generic.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 720 }}
+    # Forks are not exported: exact-SHA source is authenticated against this repository.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -40,6 +40,7 @@ jobs:
           path: delivery-skill
           persist-credentials: false
       - name: Create verifiable Git bundles
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -67,9 +68,95 @@ jobs:
           )
           ( cd audit-bundle && sha256sum solverfin.bundle skill.bundle > SHA256SUMS )
       - name: Upload immutable checkout
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@v4
         with:
           name: delivery-audit-checkout-${{ github.event.pull_request.head.sha || github.sha }}
           path: audit-bundle/
           retention-days: 3
           if-no-files-found: error
+
+      # New exact-SHA transport for auditar-issue (skill PR #108); legacy export above remains intact.
+      - name: Build official offline audit Git Bundle
+        shell: bash
+        env:
+          AUDIT_REPOSITORY: ${{ github.repository }}
+          AUDIT_BASE_REF: ${{ github.event.pull_request.base.ref || 'develop' }}
+          AUDIT_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+          AUDIT_HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.material_ref }}
+          AUDIT_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          [[ "$AUDIT_BASE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid trusted base SHA"; exit 1; }
+          [[ "$AUDIT_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid trusted head SHA"; exit 1; }
+          test "$AUDIT_BASE_REF" = "develop"
+          test "$(git -C solverfin rev-parse HEAD)" = "$AUDIT_HEAD_SHA"
+          git -C solverfin cat-file -e "$AUDIT_BASE_SHA^{commit}"
+          git -C solverfin merge-base "$AUDIT_BASE_SHA" "$AUDIT_HEAD_SHA" >/dev/null
+          git -C solverfin update-ref refs/ci-verification/base "$AUDIT_BASE_SHA"
+          git -C solverfin update-ref refs/ci-verification/head "$AUDIT_HEAD_SHA"
+          mkdir -p audit-ci-bundle
+          git -C solverfin bundle create ../audit-ci-bundle/repository.bundle \
+            refs/ci-verification/base refs/ci-verification/head
+          git -C solverfin bundle verify ../audit-ci-bundle/repository.bundle
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          metadata = {
+              "schemaVersion": 1,
+              "repository": os.environ["AUDIT_REPOSITORY"],
+              "baseRef": os.environ["AUDIT_BASE_REF"],
+              "baseSha": os.environ["AUDIT_BASE_SHA"],
+              "headSha": os.environ["AUDIT_HEAD_SHA"],
+              "runId": os.environ["AUDIT_RUN_ID"],
+          }
+          Path("audit-ci-bundle/manifest.json").write_text(
+              json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+          )
+          PY
+
+      - name: Smoke-test official skill offline restorer
+        shell: bash
+        env:
+          AUDIT_REPOSITORY: ${{ github.repository }}
+          AUDIT_BASE_REF: ${{ github.event.pull_request.base.ref || 'develop' }}
+          AUDIT_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+          AUDIT_HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.material_ref }}
+          AUDIT_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import zipfile
+          from pathlib import Path
+
+          with zipfile.ZipFile("/tmp/audit-ci-bundle-smoke.zip", "w", compression=zipfile.ZIP_STORED) as zf:
+              for name in ("manifest.json", "repository.bundle"):
+                  zf.write(Path("audit-ci-bundle") / name, arcname=name)
+          PY
+          python3 delivery-skill/auditar-issue/scripts/restore_ci_git_bundle.py \
+            --archive /tmp/audit-ci-bundle-smoke.zip \
+            --output /tmp/restored-audit.git \
+            --repository "$AUDIT_REPOSITORY" \
+            --base-ref "$AUDIT_BASE_REF" \
+            --trusted-base-sha "$AUDIT_BASE_SHA" \
+            --trusted-head-sha "$AUDIT_HEAD_SHA" \
+            --run-id "$AUDIT_RUN_ID" > /tmp/audit-bundle-smoke-result.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path("/tmp/audit-bundle-smoke-result.json").read_text())
+          assert result["status"] == "restored"
+          assert result["git_repo"] == "/tmp/restored-audit.git"
+          print("Official offline restorer: PASS")
+          PY
+
+      - name: Upload trusted offline audit Git Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: trusted-audit-git-bundle-${{ github.event.pull_request.head.sha || inputs.material_ref }}
+          path: audit-ci-bundle/
+          if-no-files-found: error
+          retention-days: 14
