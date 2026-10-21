@@ -150,7 +150,7 @@ try {
     "Closing the clone form did not restore the group modal.",
   );
 
-  const beforeEdit = await readProjection(browser.cdp, created.groupId);
+  const beforeEdit = await readProjection(browser.cdp, created.groupId, created.trailingId);
   await evaluate(
     browser.cdp,
     `document.querySelector('[data-member-id="${created.memberIds[0]}"][data-member-action="edit"]').focus()`,
@@ -170,18 +170,26 @@ try {
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(450);
 
-  const afterEdit = await readProjection(browser.cdp, created.groupId);
+  const afterEdit = await readProjection(browser.cdp, created.groupId, created.trailingId);
   assert.equal(afterEdit.groupTotalMinor, 65000);
   assert.equal(afterEdit.rowProjectionMinor, 65000);
   assert.equal(afterEdit.groupBalanceMinor - beforeEdit.groupBalanceMinor, 5000);
-  assert.equal(afterEdit.followingBalanceMinor - beforeEdit.followingBalanceMinor, 5000);
+  assert.equal(
+    afterEdit.followingBalanceMinor - beforeEdit.followingBalanceMinor,
+    5000,
+    `Projected trailing balance should include the grouped edit. before=${JSON.stringify(beforeEdit)} after=${JSON.stringify(afterEdit)}`,
+  );
   assert.match(afterEdit.amountText, /650,00/);
 
   await evaluate(browser.cdp, `window.confirm = () => true`);
   await evaluate(browser.cdp, `document.querySelector('[data-group-action="status"]').focus()`);
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(250);
-  const reconciledProjection = await readProjection(browser.cdp, created.groupId);
+  const reconciledProjection = await readProjection(
+    browser.cdp,
+    created.groupId,
+    created.trailingId,
+  );
   assert.equal(reconciledProjection.groupStatus, "reconciled");
   assert.equal(reconciledProjection.rowStatus, "Conciliado");
 
@@ -192,7 +200,7 @@ try {
   );
   await pressKey(browser.cdp, "Enter", "Enter", 13);
   await sleep(250);
-  const afterDelete = await readProjection(browser.cdp, created.groupId);
+  const afterDelete = await readProjection(browser.cdp, created.groupId, created.trailingId);
   assert.equal(afterDelete.memberCount, 2);
   assert.equal(afterDelete.groupTotalMinor, 35000);
   assert.equal(afterDelete.rowProjectionMinor, 35000);
@@ -256,7 +264,7 @@ async function pressKey(cdp, key, code, virtualKeyCode) {
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...params });
 }
 
-async function readProjection(cdp, currentGroupId) {
+async function readProjection(cdp, currentGroupId, trailingId) {
   return evaluate(
     cdp,
     `(() => {
@@ -268,9 +276,13 @@ async function readProjection(cdp, currentGroupId) {
         return Math.round(Number(normalized) * 100);
       }
       const row = document.querySelector('[data-group-row="${currentGroupId}"]');
-      let following = row.nextElementSibling;
-      while (following && !following.matches(".statement-row.statement-body")) following = following.nextElementSibling;
-      if (!following) throw new Error("A following statement row was not found for balance projection validation.");
+      if (!row) throw new Error("Grouped statement row was not found for balance projection validation.");
+      // The statement sorts by date descending. The later-in-time fixture can be
+      // rendered before the group, so DOM adjacency is not a financial invariant.
+      const following = document.querySelector(
+        'script[data-transaction="${trailingId}"]',
+      )?.closest(".statement-row.statement-body");
+      if (!following) throw new Error("The later chronological statement row was not found for balance projection validation.");
       const group = JSON.parse(row.querySelector('script[data-group="${currentGroupId}"]').textContent);
       return {
         groupTotalMinor: group.totalAmountMinor,
@@ -278,6 +290,22 @@ async function readProjection(cdp, currentGroupId) {
         memberCount: group.members.length,
         rowProjectionMinor: Number(row.dataset.groupProjectionAmountMinor),
         rowStatus: row.querySelector(".col-status").getAttribute("aria-label"),
+        groupDate: row.querySelector(".col-date")?.getAttribute("datetime"),
+        trailingDate: following.querySelector(".col-date")?.getAttribute("datetime"),
+        trailingDescription: following.querySelector(".col-description")?.textContent?.trim(),
+        timeline: Array.from(document.querySelectorAll(".statement-row.statement-body"))
+          .filter(candidate => {
+            const date = candidate.querySelector(".col-date")?.getAttribute("datetime");
+            return date >= "2026-07-26" && date <= "2026-07-29";
+          })
+          .slice(-20)
+          .map(candidate => ({
+            date: candidate.querySelector(".col-date")?.getAttribute("datetime"),
+            groupId: candidate.dataset.groupRow || "",
+            transactionId: candidate.querySelector("script[data-transaction]")?.dataset.transaction || "",
+            amount: candidate.querySelector(".col-amount")?.textContent?.trim(),
+            balance: candidate.querySelector(".col-balance")?.dataset.balanceMinor,
+          })),
         amountText: row.querySelector(".col-amount").textContent,
         memberCountText: row.querySelector(".col-description span").textContent,
         groupBalanceMinor: row.querySelector(".col-balance").dataset.balanceMinor === undefined

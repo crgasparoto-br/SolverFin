@@ -16,6 +16,14 @@ Os gates existentes continuam independentes: `.github/workflows/ci.yml` executa 
 4. Para futura renomeação do gate, adicionar o novo check e atualizar regras na mesma janela operacional, confirmar PR de prova e então retirar o antigo.
 5. Validar a PR desta migração com classificação CRITICAL e checar head SHA, merge preview, testes unitários, integração e gates visuais aplicáveis. Não habilitar merge automático.
 
+## Transicao protegida do nome do gate (20/10/2026)
+
+Inventario remoto read-only do ruleset de `develop`: ID `25007371`, `Protection develp`, enforcement `active`, contexto requerido literal `Delivery V2 gate` com integration_id `15368`. O access token de integracao desta sessao nao possui permissoes para editar branch protection, e nao foi feita alteracao no ruleset.
+
+O workflow agora publica em paralelo o novo check **`Repository CI gate`**, que roda com `always()` e falha salvo quando o gate legado concluir `success`. O nome original e todos os gates de produto permanecem inalterados. `scripts/ci-legacy-dependency.test.mjs` prova que o sucessor depende do gate legado e nao mascara falha.
+
+Migracao segura ainda pendente: (1) confirmar, na PR de transicao, que ambos os checks aparecem em estado final verde no mesmo HEAD e no merge preview; (2) verificar o escopo do ruleset e a origem do check; (3) alterar a exigencia da protecao para `Repository CI gate` somente com permissao administrativa e evidencias da nova origem; (4) revalidar PR real sob o ruleset novo e rollback; (5) so entao programar remocao da nomenclatura do job legado, `.delivery-v2` e aliases que nao tenham consumidores. Nao excluir arquivos nesta fase.
+
 ## Rollback
 
 Se a validação falhar, reverter o commit da migração em PR de rollback, sem excluir evidências de CI. Os nomes atuais de check/arquivo não foram alterados para tornar esse rollback seguro e evitar bloqueios de branch protection. `.delivery-v2` permanece somente como legado não referenciado pelo novo workflow; sua exclusão exige uma etapa posterior, após validação dos consumidores e comunicação prévia.

@@ -1,34 +1,38 @@
-Parent epic: #590
-Depends on: #603, #604
+**Parent epic:** #702
+**Fase:** 1 — propagação por superfície.
+**Rota:** `/categorias`.
+**Antecedente:** #615 (rotas secundárias da fase 3C) e #232 (categorias hierárquicas); não substituem comparação com o padrão aprovado.
+**Dependência:** #714 — marco técnico da Golden Screen e referência validada na `develop`.
 
 ## Objetivo
-
-Reduzir o acoplamento e o tamanho dos módulos web mais extensos usando as fronteiras de componentes, layouts e view-models definidas na Fase 3B.
+Elevar o acabamento da manutenção de categorias ao nível do Extrato, respeitando a estrutura hierárquica real e sem transformá-la em uma lista de cards.
 
 ## Escopo
+- Refinar árvore/grupos/subcategorias: recuo, contraste tipográfico, ícones, expansão, ordenação, níveis e estado ativo.
+- Dar clareza a busca/filtros, categorias de receitas/despesas, edição/criação e ações por item, mantendo modais e confirmação existentes.
+- Reduzir bordas, superfícies e badges redundantes; tornar hierarquia legível por estrutura e não apenas cor.
+- Proteger navegação por teclado, leitor de tela, reflow mobile, estados vazio/erro e nomes longos.
 
-- identificar arquivos com múltiplas responsabilidades em `apps/web/src/dev-server`;
-- separar preparação de dados, renderização, interação e estilos quando houver boundary real;
-- evitar apenas fragmentar arquivos sem reduzir acoplamento;
-- eliminar gerações paralelas/legadas de uma tela quando a migração permitir;
-- preservar imports, contratos SSR e testes.
+<!-- review-702-2026-10-15 -->
+## Cenários de aceite discriminantes — revisão de 15/10/2026
+
+- **Hierarquia real:** exibir pelo menos pai, filho e nível mais profundo quando suportado pelo domínio, com nome longo; recuo, expansão/contração e tipo de categoria permanecem compreensíveis sem depender apenas de cor ou bordas aninhadas.
+- **Operação:** filtrar por tipo, buscar, criar/editar dentro da hierarquia e usar ações autorizadas sem perder o contexto de parent e sem inventar novos campos/fluxos.
+- **Estados e acessibilidade:** comparar normal, sem resultado e nomes longos em desktop/mobile; exigir foco visível, rótulo acessível e alvo utilizável.
+- **Controle negativo:** o critério falha se uma alteração visual achatar níveis da árvore, fizer pai/filho indistinguíveis ou esconder a ação de manutenção em viewport reduzida.
+
+**Evidência de aceite:** capturas e testes de hierarquia reais no SHA material, sem deduzir equivalência visual da migração anterior #615.
 
 ## Critérios de aceite
-
-- [ ] módulos migrados possuem responsabilidade clara e coesa;
-- [ ] não há duplicação de implementação antiga e nova sem status de transição explícito;
-- [ ] extrações seguem boundaries reutilizáveis, não apenas limite de linhas;
-- [ ] testes focados continuam cobrindo comportamento;
-- [ ] documentação identifica qualquer legado ainda intencional.
+- [ ] Categoria pai/filha, tipo e ação principal identificáveis; hierarquia não depende apenas de cor/caixas.
+- [ ] Filtros, expansão/seleção, CRUD e diálogos preservam funcionalidades e autorização existentes.
+- [ ] Composição desktop/mobile compatível com acabamento Golden Screen; conteúdo longo e vazio cobertos.
+- [ ] Evidências exact-SHA, testes de acessibilidade/regressão, CI verde e auditoria independente por subissue.
+- [ ] Documentação relevante atualizada.
 
 ## Fora de escopo
+Modificar o modelo de categorias, regras de categorização automática, agregados financeiros ou relatório.
 
-- refactor de todos os arquivos do monorepo;
-- mudanças de domínio financeiro não necessárias à separação.
+Referências obrigatórias: épica [#702](https://github.com/crgasparoto-br/SolverFin/issues/702), Golden Screen aprovada pelo usuário em 14/10/2026, `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md`, `docs/GOLDEN_STATEMENT.md`, `AGENTS.md` e mockup `SolverFin Bank Statement UI Mockup.png`.
 
-## Referências
-
-- #590
-- #603
-- #604
-- ADR 0014
+**Base de todas as PRs:** `develop`. Preservar arquitetura SSR, primitivas e contratos financeiros, acessibilidade, LGPD e responsividade. A referência é o **nível de acabamento** da Golden Screen, não uma cópia de seus componentes ou disposição. Exigir evidência Chrome/SSR desktop/mobile do **SHA material da entrega**, testes e checks relevantes verdes e auditoria independente por subissue. Não fazer merge automático.

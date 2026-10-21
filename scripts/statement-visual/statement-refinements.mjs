@@ -49,6 +49,17 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
       report.observations.push({ width, height, geometry, composition });
       assertStatementRefinements(geometry, width <= 760);
       assertMockupComposition(composition);
+      // The 320px variant keeps Dia do mês inside the accessible progressive
+      // filter; open it for the same visible-control geometry assertions.
+      if (width <= 360) {
+        const opened = await read(`(() => {
+          const details = document.querySelector('.statement-mobile-advanced-filters');
+          if (!details) return false;
+          details.open = true;
+          return details.open;
+        })()`);
+        assert.equal(opened, true, "The day filter disclosure must be operable at 320px.");
+      }
       // Golden Screen proportion guard: fail when a new short date field expands
       // across the filter bar or loses its baseline alignment with search.
       const filterGeometry = await read(`(() => {
@@ -86,6 +97,9 @@ export async function validateStatementRefinements(cdp, { baseUrl, route, output
         );
       }
       report.controls.push({ id: "GS-DAY-FILTER-PROPORTIONS", width, status: "passed" });
+      if (width <= 360) {
+        await read(`document.querySelector('.statement-mobile-advanced-filters').open = false`);
+      }
       const balanceColumn = await read(`(() => {
         const header = document.querySelector('.statement-head .col-balance');
         const row = document.querySelector('.statement-body .col-balance');

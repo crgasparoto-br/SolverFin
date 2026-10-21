@@ -45,6 +45,35 @@ export async function validateStatementContextualSurfaces(
     await press("Enter", 13);
     await sleep(100);
   };
+  const activateMenuAction = async (selector) => {
+    const readiness = await read(`(async () => {
+      const action = document.querySelector(${JSON.stringify(selector)});
+      const details = action?.closest("details");
+      if (!action || !details) return { present: Boolean(action), menu: Boolean(details) };
+      details.open = true;
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        action.scrollIntoView({ block: "center", inline: "nearest" });
+        action.focus({ preventScroll: true });
+        if (document.activeElement === action) break;
+        await new Promise((resolve) => setTimeout(resolve, 75));
+      }
+      return {
+        present: true,
+        menuOpen: details.open,
+        focused: document.activeElement === action,
+        visible: action.getClientRects().length > 0 &&
+          getComputedStyle(action).visibility === "visible",
+      };
+    })()`);
+    assert.deepEqual(
+      readiness,
+      { present: true, menuOpen: true, focused: true, visible: true },
+      "Consolidated action must be rendered, expanded and keyboard-focusable",
+    );
+    await press("Enter", 13);
+    await sleep(100);
+  };
   const measure = async (selector) =>
     read(`(() => {
       const surface = document.querySelector(${JSON.stringify(selector)});
@@ -136,7 +165,6 @@ export async function validateStatementContextualSurfaces(
       accessibilityFile,
       ...extra,
     });
-    // Regress a viewport-anchored overlay, then prove the original surface still passes.
     const savedStyle = await read(`(() => {
       const node = document.querySelector(${JSON.stringify(selector)});
       const original = node.getAttribute('style');
@@ -338,8 +366,6 @@ export async function validateStatementContextualSurfaces(
       await capture("edit", width, height, "dialog[data-modal][open]");
       await press("Escape", 27);
 
-      // The consolidated row action must open an editable form, not merely
-      // render the menu item. Check the correct source account and save state.
       if (width === 1366) {
         const sourceAccountId = new URL(route, baseUrl).searchParams.get("accountId");
         const sourceCurrency = await read(`(() => {
@@ -355,10 +381,7 @@ export async function validateStatementContextualSurfaces(
         await navigate(cdp, `${baseUrl}${allAccountsRoute}`);
         const allEdit = `[data-edit="${transactionId}"]`;
         assert.equal(await read(`!!document.querySelector(${JSON.stringify(allEdit)})`), true);
-        await read(
-          `document.querySelector(${JSON.stringify(allEdit)}).closest("details").open = true`,
-        );
-        await activate(allEdit);
+        await activateMenuAction(allEdit);
         const modalState = await read(`(() => {
           const modal = document.querySelector("dialog[data-modal]");
           const form = modal?.querySelector("[data-form]");
@@ -402,10 +425,7 @@ export async function validateStatementContextualSurfaces(
         await navigate(cdp, `${baseUrl}${allAccountsRoute}`);
         const allClone = `[data-clone="${transactionId}"]`;
         assert.equal(await read(`!!document.querySelector(${JSON.stringify(allClone)})`), true);
-        await read(
-          `document.querySelector(${JSON.stringify(allClone)}).closest("details").open = true`,
-        );
-        await activate(allClone);
+        await activateMenuAction(allClone);
         const cloneState = await read(`(() => {
           const modal = document.querySelector("dialog[data-modal]");
           const form = modal?.querySelector("[data-form]");

@@ -148,7 +148,7 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
     );
     await negativeControl(
       "GS-NC-STATUS-LABEL-EXPOSED",
-      "[data-golden-screen] .statement-body .statement-status-label{display:inline!important}",
+      "[data-golden-screen] .statement-body [data-statement-status-control]>summary::after{content:'Conciliado'!important;display:inline!important}",
     );
     await negativeControl(
       "GS-NC-STATUS-GLYPH-HIDDEN",
@@ -224,7 +224,9 @@ export async function validateGoldenStatement(cdp, { baseUrl, route, outputDir }
         await negativeControl(
           "GS-MOBILE-NC-SUMMARY-CARD-OVERFLOW",
           '[data-golden-screen] .summary-total[data-summary-total="income"] .summary-total-copy>strong{display:block!important;font-size:14px!important;white-space:nowrap!important;width:max-content!important;max-width:none!important;overflow-wrap:normal!important;transform:translateX(-30px)!important}',
-          /within their own summary cards/,
+          // The injected spill must be rejected whether the first guard catches
+          // a card boundary violation or the overlapping values themselves.
+          /within their own summary cards|summary values overlap/,
         );
       }
       await read(`document.querySelector('[data-quick-kind="expense"]').click()`);

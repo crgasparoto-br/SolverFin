@@ -76,7 +76,8 @@ async function validateAccountDesktop(fixture) {
   check(modal.categoryLabel.includes("arquivada"), "Archived category is not identified", modal);
   check(modal.categoryOptionDisabled, "Archived historical option should be read-only", modal);
   check(
-    modal.visibleEditableNames.join(",") === "categoryId,description,note",
+    modal.visibleEditableNames.join(",") ===
+      "adjustedInstallmentAmount,categoryId,description,note",
     "Restricted modal exposes fields outside the allowlist",
     modal,
   );
