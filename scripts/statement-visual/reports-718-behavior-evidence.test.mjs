@@ -73,7 +73,6 @@ test("#718 adapter does not accept an omitted small mobile viewport", async () =
   await assert.rejects(collectReport718Evidence(async () => partial));
 });
 
-
 test("#718 adapter rejects opening-only screenshot evidence with no offscreen captures", async () => {
   const missing = fixture();
   missing.multiCurrency[0].capturedSections = [];

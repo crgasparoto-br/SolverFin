@@ -24,10 +24,25 @@ export async function collectReport718Evidence(readEvidence) {
           (item) => item.currency === currency && item.layer === layer,
         );
         assert.ok(capture, `${viewport} has no ${currency} ${layer} visual capture.`);
-        assert.ok(report.screenshots?.includes(capture.screenshot), `${capture.screenshot} not registered.`);
-        assert.equal(capture.measurements?.visible, true, `${capture.screenshot} is outside the viewport.`);
-        assert.equal(capture.measurements?.correctCurrency, true, `${capture.screenshot} lost currency context.`);
-        assert.equal(capture.measurements?.hasContent, true, `${capture.screenshot} has no financial content.`);
+        assert.ok(
+          report.screenshots?.includes(capture.screenshot),
+          `${capture.screenshot} not registered.`,
+        );
+        assert.equal(
+          capture.measurements?.visible,
+          true,
+          `${capture.screenshot} is outside the viewport.`,
+        );
+        assert.equal(
+          capture.measurements?.correctCurrency,
+          true,
+          `${capture.screenshot} lost currency context.`,
+        );
+        assert.equal(
+          capture.measurements?.hasContent,
+          true,
+          `${capture.screenshot} has no financial content.`,
+        );
       }
     }
     assert.ok(measurements.currencies?.includes("BRL"));
