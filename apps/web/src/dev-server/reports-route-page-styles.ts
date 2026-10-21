@@ -2,7 +2,7 @@ import { sharedShellStyles } from "./shared-styles.js";
 
 export function reportPageStyles(): string {
   return `${sharedShellStyles()}
-    main { display:grid; gap:18px; grid-template-columns:minmax(0,1fr); margin:0 auto; max-width:100%; min-width:0; padding:18px clamp(14px,2vw,28px); width:100%; }
+    main { display:grid; gap:18px; grid-template-columns:minmax(0,1fr); margin:0 auto; max-width:100%; min-width:0; overflow-x:clip; padding:18px clamp(14px,2vw,28px); width:100%; }
     .reports-heading { align-items:center; display:flex; gap:12px; justify-content:space-between; }
     .reports-heading > div { display:grid; gap:4px; max-width:820px; }
     .readonly-pill { background:var(--primary-soft); border:1px solid #d4e6ec; border-radius:999px; color:var(--primary); font-size:.75rem; font-weight:700; padding:3px 10px; white-space:nowrap; }
@@ -64,7 +64,7 @@ export function reportPageStyles(): string {
     .report-summary-metric > strong { font-size:1.05rem; min-width:0; }
     .report-summary-secondary { color:var(--muted); font-size:.8125rem; }
     .report-summary-secondary .sf-money { font-size:.8125rem; }
-    .report-trend { display:grid; gap:0; grid-auto-columns:minmax(9.5rem,1fr); grid-auto-flow:column; list-style:none; margin:0; max-width:100%; min-width:0; overflow-x:auto; padding:2px 0 8px; scrollbar-gutter:stable; width:100%; }
+    .report-trend { contain:inline-size; display:grid; gap:0; grid-auto-columns:minmax(9.5rem,1fr); grid-auto-flow:column; list-style:none; margin:0; max-width:100%; min-width:0; overflow-x:auto; padding:2px 0 8px; scrollbar-gutter:stable; width:100%; }
     .report-trend:focus-visible { border-radius:3px; outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
     .report-trend-point { border-right:1px solid var(--line); display:grid; gap:8px; min-width:0; padding:8px 12px; }
     .report-trend-point:first-child { padding-left:0; }
