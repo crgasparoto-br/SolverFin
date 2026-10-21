@@ -2,7 +2,7 @@ import { sharedShellStyles } from "./shared-styles.js";
 
 export function reportPageStyles(): string {
   return `${sharedShellStyles()}
-    main { display:grid; gap:18px; margin:0 auto; max-width:100%; min-width:0; padding:18px clamp(14px,2vw,28px); width:100%; }
+    main { display:grid; gap:18px; grid-template-columns:minmax(0,1fr); margin:0 auto; max-width:100%; min-width:0; padding:18px clamp(14px,2vw,28px); width:100%; }
     .reports-heading { align-items:center; display:flex; gap:12px; justify-content:space-between; }
     .reports-heading > div { display:grid; gap:4px; max-width:820px; }
     .readonly-pill { background:var(--primary-soft); border:1px solid #d4e6ec; border-radius:999px; color:var(--primary); font-size:.75rem; font-weight:700; padding:3px 10px; white-space:nowrap; }
