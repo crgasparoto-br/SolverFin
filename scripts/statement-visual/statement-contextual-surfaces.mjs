@@ -45,16 +45,12 @@ export async function validateStatementContextualSurfaces(
     await press("Enter", 13);
     await sleep(100);
   };
-  // A genuine account/edit failure still fails the assertions below.
   const activateMenuAction = async (selector) => {
     const readiness = await read(`(async () => {
       const action = document.querySelector(${JSON.stringify(selector)});
       const details = action?.closest("details");
       if (!action || !details) return { present: Boolean(action), menu: Boolean(details) };
       details.open = true;
-      // Native details toggle, menu layout and dialog focus restoration may
-      // complete on different frames. Retry focus, never activation, and still
-      // fail when the action is not genuinely keyboard-focusable.
       for (let attempt = 0; attempt < 5; attempt += 1) {
         await new Promise((resolve) => requestAnimationFrame(resolve));
         action.scrollIntoView({ block: "center", inline: "nearest" });
@@ -169,7 +165,6 @@ export async function validateStatementContextualSurfaces(
       accessibilityFile,
       ...extra,
     });
-    // Regress a viewport-anchored overlay, then prove the original surface still passes.
     const savedStyle = await read(`(() => {
       const node = document.querySelector(${JSON.stringify(selector)});
       const original = node.getAttribute('style');
@@ -371,8 +366,6 @@ export async function validateStatementContextualSurfaces(
       await capture("edit", width, height, "dialog[data-modal][open]");
       await press("Escape", 27);
 
-      // The consolidated row action must open an editable form, not merely
-      // render the menu item. Check the correct source account and save state.
       if (width === 1366) {
         const sourceAccountId = new URL(route, baseUrl).searchParams.get("accountId");
         const sourceCurrency = await read(`(() => {
