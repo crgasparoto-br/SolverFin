@@ -52,9 +52,16 @@ export async function validateStatementContextualSurfaces(
       const details = action?.closest("details");
       if (!action || !details) return { present: Boolean(action), menu: Boolean(details) };
       details.open = true;
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-      action.scrollIntoView({ block: "center", inline: "nearest" });
-      action.focus({ preventScroll: true });
+      // Native details toggle, menu layout and dialog focus restoration may
+      // complete on different frames. Retry focus, never activation, and still
+      // fail when the action is not genuinely keyboard-focusable.
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        action.scrollIntoView({ block: "center", inline: "nearest" });
+        action.focus({ preventScroll: true });
+        if (document.activeElement === action) break;
+        await new Promise((resolve) => setTimeout(resolve, 75));
+      }
       return {
         present: true,
         menuOpen: details.open,
