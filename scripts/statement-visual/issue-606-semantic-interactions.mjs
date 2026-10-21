@@ -573,7 +573,7 @@ async function validateReports(cdp) {
   const mobile = await inspectReportStructure(cdp, true);
   assert.equal(mobile.focused, true, "Reports matrix did not accept focus.");
   assert.equal(mobile.localOverflow, true, "Reports mobile matrix lost local overflow.");
-  assert.equal(mobile.pageFits, true, "Reports mobile page leaks horizontal overflow.");
+  assert.equal(mobile.pageFits, true, `Reports mobile page leaks horizontal overflow: ${JSON.stringify(mobile.overflowDiagnostics)}`);
   assert.equal(mobile.filterVisible, true, "Reports mobile filter bar is not visible.");
   assert.ok(mobile.tableCount >= 1, "Reports mobile has no semantic table.");
 
@@ -594,6 +594,22 @@ async function inspectReportStructure(cdp, focusScroller) {
         focused: document.activeElement === scroller,
         localOverflow: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
         pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        overflowDiagnostics: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
+          ? null
+          : {
+              rootScrollWidth: document.documentElement.scrollWidth,
+              viewportWidth: document.documentElement.clientWidth,
+              candidates: Array.from(document.querySelectorAll('main *'))
+                .filter((element) => element.getBoundingClientRect().right > innerWidth + 1)
+                .slice(0, 15)
+                .map((element) => ({
+                  tag: element.tagName.toLowerCase(),
+                  classes: typeof element.className === 'string' ? element.className.slice(0, 120) : '',
+                  right: Math.round(element.getBoundingClientRect().right),
+                  scrollWidth: element.scrollWidth,
+                  clientWidth: element.clientWidth,
+                })),
+            },
         filterVisible: Boolean(formRect && formRect.width > 0 && formRect.height > 0),
         filterControlCount: form?.querySelectorAll('input, select, button, a').length || 0,
         tableCount: tables.length,

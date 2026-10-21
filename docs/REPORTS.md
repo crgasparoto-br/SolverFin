@@ -37,7 +37,7 @@ A evolucao por categoria oferece barras de tendencia com rolagem local por tecla
 
 Falha de consulta exibe um link de tentativa novamente para a propria URL, preservando parametros sem exibir resultados parciais. Erro de filtro continua permitindo correcao no formulario SSR. Tabelas largas e graficos utilizam overflow horizontal local com foco visivel em desktop/mobile.
 
-A aceitacao visual exige comparar capturas Chrome autenticadas e a arvore acessivel nos viewports desktop, 390px e 320px no SHA material desta PR, incluindo BRL/USD, recorte vazio, erro, tabela longa e controle negativo de truncamento. Testes automatizados e CI verde sao requisitos distintos da aprovacao independente.
+A aceitacao visual exige comparar capturas Chrome autenticadas e a arvore acessivel nos viewports desktop, 390px e 320px no SHA material desta PR, incluindo BRL/USD, recorte vazio, erro, tabela longa e controle negativo de truncamento. O cenário dedicado `reports-718-visual-acceptance` executa `scripts/statement-visual/reports-category-evolution.mjs` no workflow agregado, além dos controles legados de responsividade. Testes automatizados e CI verde sao requisitos distintos da aprovacao independente.
 
 ## Evolucao por categoria
 

@@ -38,15 +38,15 @@ export function reportPageStyles(): string {
     .interval-switcher a[aria-current="page"] { background:var(--primary); border-color:var(--primary); color:#fff; }
     .report-state { display:grid; gap:4px; }
     .report-state-filter-error,.report-state-api-error { border-color:#fecaca; }
-    .currency-report-list { display:grid; gap:24px; min-width:0; }
-    .report-analysis-block { display:grid; gap:18px; min-width:0; padding:0 0 20px; }
+    .currency-report-list { display:grid; gap:24px; grid-template-columns:minmax(0,1fr); min-width:0; width:100%; }
+    .report-analysis-block { display:grid; gap:18px; grid-template-columns:minmax(0,1fr); min-width:0; padding:0 0 20px; }
     .report-analysis-block + .report-analysis-block { border-top:1px solid var(--line); padding-top:22px; }
     .report-analysis-heading { align-items:end; border-bottom:1px solid var(--line); display:flex; gap:12px; justify-content:space-between; padding-bottom:12px; }
     .report-analysis-heading h2 { font-size:1.35rem; letter-spacing:-.025em; }
     .report-analysis-heading .muted { overflow-wrap:anywhere; }
     .report-analysis-heading > div,.report-layer-heading { display:grid; gap:3px; }
     .report-analysis-heading > span { color:var(--muted); font-size:.75rem; font-weight:600; white-space:normal; }
-    .report-analysis-layer { display:grid; gap:10px; min-width:0; }
+    .report-analysis-layer { display:grid; gap:10px; grid-template-columns:minmax(0,1fr); min-width:0; }
     .report-analysis-layer > .sf-summary-grid:not(.summary-grid) { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); }
     .report-visual-legend { color:var(--muted); font-size:.75rem; line-height:1.55; margin:0; }
     .report-retry { align-items:center; border:1px solid var(--line); border-radius:8px; color:var(--primary); display:inline-flex; font-weight:700; justify-self:start; margin-top:6px; padding:8px 12px; text-decoration:none; }
@@ -64,7 +64,7 @@ export function reportPageStyles(): string {
     .report-summary-metric > strong { font-size:1.05rem; min-width:0; }
     .report-summary-secondary { color:var(--muted); font-size:.8125rem; }
     .report-summary-secondary .sf-money { font-size:.8125rem; }
-    .report-trend { display:grid; gap:0; grid-auto-columns:minmax(9.5rem,1fr); grid-auto-flow:column; list-style:none; margin:0; max-width:100%; overflow-x:auto; padding:2px 0 8px; scrollbar-gutter:stable; }
+    .report-trend { display:grid; gap:0; grid-auto-columns:minmax(9.5rem,1fr); grid-auto-flow:column; list-style:none; margin:0; max-width:100%; min-width:0; overflow-x:auto; padding:2px 0 8px; scrollbar-gutter:stable; width:100%; }
     .report-trend:focus-visible { border-radius:3px; outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
     .report-trend-point { border-right:1px solid var(--line); display:grid; gap:8px; min-width:0; padding:8px 12px; }
     .report-trend-point:first-child { padding-left:0; }
@@ -81,8 +81,8 @@ export function reportPageStyles(): string {
     .report-highlight > span { color:var(--muted); font-size:.75rem; font-weight:700; }
     .report-highlight > strong { font-size:.875rem; }
     .report-detail-layer { border-top:1px solid var(--line); padding-top:14px; }
-    .evolution-block { min-width:0; }
-    .evolution-table-scroll { border:1px solid var(--line); border-radius:8px; max-width:100%; min-width:0; overflow:auto; overscroll-behavior-x:contain; }
+    .evolution-block { min-width:0; width:100%; }
+    .evolution-table-scroll { border:1px solid var(--line); border-radius:8px; max-width:100%; min-width:0; overflow:auto; overscroll-behavior-x:contain; width:100%; }
     .evolution-table-scroll:focus-visible { outline:3px solid color-mix(in srgb,var(--primary) 35%,transparent); outline-offset:2px; }
     .evolution-table { border-collapse:separate; border-spacing:0; min-width:max(920px,100%); width:100%; }
     .evolution-table th,.evolution-table td { background:var(--surface); border-bottom:1px solid var(--line); padding:8px 10px; text-align:right; vertical-align:middle; white-space:nowrap; }
