@@ -616,14 +616,10 @@ async function inspectReportStructure(cdp, focusScroller) {
         overflowDiagnostics: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
           ? null
           : {
-              candidates: Array.from(document.querySelectorAll('main *'))
-                .filter((element) => element.getBoundingClientRect().right > innerWidth + 1)
-                .slice(0, 15)
-                .map((element) => ({
-                  tag: element.tagName.toLowerCase(),
-                  classes: typeof element.className === 'string' ? element.className.slice(0, 120) : '',
-                  right: Math.round(element.getBoundingClientRect().right),
-                })),
+              boundaries: ['html', 'body', '.app-shell', '.main-area', 'main', '.currency-report-list', '.report-trend'].map((selector) => {
+                const node = document.querySelector(selector);
+                return { selector, width: node?.clientWidth, scrollWidth: node?.scrollWidth, overflowX: node && getComputedStyle(node).overflowX };
+              }),
             },
         filterVisible: Boolean(formRect && formRect.width > 0 && formRect.height > 0),
         filterControlCount: form?.querySelectorAll('input, select, button, a').length || 0,
