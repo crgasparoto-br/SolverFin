@@ -223,9 +223,11 @@ export function pageCss(): string {
     @media (max-width: 420px) {
       .categories-page .category-toolbar { padding-inline: 10px; }
       .categories-page .category-kind-group { padding-inline: 10px; }
-      .categories-page ul.category-tree-children { margin-left: 7px; padding-left: 5px; }
-      .categories-page .category-name-cell { padding-inline-start: calc(var(--category-level, 0) * 10px); }
-      .categories-page .category-secondary-cells { padding-inline-start: calc(44px + var(--category-level, 0) * 10px); }
+      .categories-page ul.category-tree-children { margin-left: 3px; padding-left: 3px; }
+      .categories-page .category-name-cell { padding-inline-start: calc(var(--category-level, 0) * 6px); }
+      .categories-page .category-collapse-spacer { flex-basis: 20px; width: 20px; }
+      .categories-page button.category-node-button { gap: 5px; padding-inline: 4px; }
+      .categories-page .category-secondary-cells { padding-inline-start: calc(28px + var(--category-level, 0) * 6px); }
       .categories-page .category-menu-popover { max-width: min(220px, calc(100vw - 20px)); }
     }
     @media (prefers-reduced-motion: reduce) {

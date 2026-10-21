@@ -38,8 +38,10 @@ export async function captureMobileHierarchyEvidence(cdp, viewport, { outputDir,
       const status = row?.querySelector('[data-category-status-icon]');
       const bounds = row?.getBoundingClientRect();
       const menuBounds = menu?.getBoundingClientRect();
+      const nameBounds = row?.querySelector('.category-node-text strong')?.getBoundingClientRect();
       return {
         depth, name: row?.querySelector('[data-edit-category]')?.dataset.categoryName,
+        usableNameWidth: Math.round(nameBounds?.width || 0),
         inViewport: Boolean(bounds && bounds.top >= 72 && bounds.bottom <= innerHeight - 4),
         menuVisible: Boolean(menuBounds && menuBounds.left >= 0 && menuBounds.right <= innerWidth && menuBounds.width > 0),
         statusVisible: Boolean(status && status.getBoundingClientRect().width > 0),
@@ -49,9 +51,11 @@ export async function captureMobileHierarchyEvidence(cdp, viewport, { outputDir,
   );
   const hierarchyScreenshot = `categories-${viewport}-hierarchy.png`;
   await screenshot(cdp, join(outputDir, hierarchyScreenshot));
+  const readableNameWidths = hierarchyVisible.every((row) => row.usableNameWidth >= 85);
   check(
     hierarchyVisible.length === 3 &&
-      hierarchyVisible.every((row) => row.inViewport && row.menuVisible && row.statusVisible),
+      hierarchyVisible.every((row) => row.inViewport && row.menuVisible && row.statusVisible) &&
+      readableNameWidths,
     `Mobile ${viewport} evidence does not expose all three hierarchy levels and actions`,
     { selection, hierarchyVisible },
   );
