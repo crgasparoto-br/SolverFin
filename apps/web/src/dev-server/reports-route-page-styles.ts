@@ -38,7 +38,7 @@ export function reportPageStyles(): string {
     .interval-switcher a[aria-current="page"] { background:var(--primary); border-color:var(--primary); color:#fff; }
     .report-state { display:grid; gap:4px; }
     .report-state-filter-error,.report-state-api-error { border-color:#fecaca; }
-    .currency-report-list { display:grid; gap:24px; grid-template-columns:minmax(0,1fr); min-width:0; width:100%; }
+    .currency-report-list { display:grid; gap:24px; grid-template-columns:minmax(0,1fr); min-width:0; overflow-x:clip; width:100%; }
     .report-analysis-block { display:grid; gap:18px; grid-template-columns:minmax(0,1fr); min-width:0; padding:0 0 20px; }
     .report-analysis-block + .report-analysis-block { border-top:1px solid var(--line); padding-top:22px; }
     .report-analysis-heading { align-items:end; border-bottom:1px solid var(--line); display:flex; gap:12px; justify-content:space-between; padding-bottom:12px; }

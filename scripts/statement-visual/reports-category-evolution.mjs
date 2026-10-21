@@ -299,6 +299,10 @@ async function validateMultiCurrency(cdp, month) {
         globalOverflow: document.documentElement.scrollWidth > window.innerWidth + 1,
         tableScrollLocal: Array.from(document.querySelectorAll('.evolution-table-scroll'))
           .every((node) => node.scrollWidth > node.clientWidth && node.tabIndex === 0),
+        trendScrollLocal: Array.from(document.querySelectorAll('.report-trend'))
+          .every((node) => node.scrollWidth > node.clientWidth
+            && ['auto', 'scroll'].includes(getComputedStyle(node).overflowX)
+            && node.tabIndex === 0),
         longLabelsReadable: Array.from(document.querySelectorAll('.report-category-label > span:last-child'))
           .every((node) => getComputedStyle(node).textOverflow !== 'ellipsis'),
       };
@@ -321,6 +325,11 @@ async function validateMultiCurrency(cdp, month) {
     );
     check(measurements.longLabelsReadable, "Reports category labels are truncated", measurements);
     if (width <= 390) {
+      check(
+        measurements.trendScrollLocal,
+        "Multi-currency mobile trend lost local scroll",
+        measurements,
+      );
       check(
         measurements.tableScrollLocal,
         "Multi-currency mobile table lost local scroll",
