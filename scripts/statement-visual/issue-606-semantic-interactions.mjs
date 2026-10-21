@@ -573,7 +573,11 @@ async function validateReports(cdp) {
   const mobile = await inspectReportStructure(cdp, true);
   assert.equal(mobile.focused, true, "Reports matrix did not accept focus.");
   assert.equal(mobile.localOverflow, true, "Reports mobile matrix lost local overflow.");
-  assert.equal(mobile.pageFits, true, `Reports mobile page leaks horizontal overflow: ${JSON.stringify(mobile.overflowDiagnostics)}`);
+  assert.equal(
+    mobile.pageFits,
+    true,
+    `Reports mobile page leaks horizontal overflow: ${JSON.stringify(mobile.overflowDiagnostics)}`,
+  );
   assert.equal(mobile.filterVisible, true, "Reports mobile filter bar is not visible.");
   assert.ok(mobile.tableCount >= 1, "Reports mobile has no semantic table.");
 
