@@ -4,11 +4,7 @@ name: Delivery audit workspace
 on:
   pull_request:
     branches: [develop]
-    paths:
-      - .github/workflows/delivery-audit-workspace.yml
-      - apps/web/src/dev-server/cards-page-v2.ts
-      - apps/web/src/dev-server/cards-page-v2.test.ts
-      - scripts/statement-visual/cards-interface.mjs
+    types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
     inputs:
       material_ref:
@@ -23,6 +19,8 @@ permissions:
   contents: read
 jobs:
   export:
+    # Forks are not exported: exact-SHA source is authenticated against this repository.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -42,6 +40,7 @@ jobs:
           path: delivery-skill
           persist-credentials: false
       - name: Create verifiable Git bundles
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -69,6 +68,7 @@ jobs:
           )
           ( cd audit-bundle && sha256sum solverfin.bundle skill.bundle > SHA256SUMS )
       - name: Upload immutable checkout
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/upload-artifact@v4
         with:
           name: delivery-audit-checkout-${{ github.event.pull_request.head.sha || github.sha }}
