@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+  "subject_sha": "5e63423beefaf57598f3490365a5acee0e123526",
   "base_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
   "policy": {
     "new_file_soft_limit": 300,
@@ -20,7 +20,7 @@
     {
       "path": "apps/web/src/dev-server/categories-page-assets.ts",
       "lines_before": null,
-      "lines_after": 235
+      "lines_after": 237
     },
     {
       "path": "apps/web/src/dev-server/categories-page.ts",
@@ -45,7 +45,7 @@
     {
       "path": "scripts/statement-visual/categories-interface.mjs",
       "lines_before": 1027,
-      "lines_after": 491
+      "lines_after": 503
     },
     {
       "path": "scripts/statement-visual/categories-visual-desktop.mjs",
@@ -53,10 +53,15 @@
       "lines_after": 245
     },
     {
+      "path": "scripts/statement-visual/categories-visual-mobile-evidence.mjs",
+      "lines_before": null,
+      "lines_after": 100
+    },
+    {
       "path": "scripts/statement-visual/categories-visual-operations.mjs",
       "lines_before": null,
       "lines_after": 331,
-      "justification": "Refactoring of existing category browser CRUD validation away from monolithic categories-interface.mjs, preserving original operation assertions and reducing the main orchestrator below 500 lines."
+      "justification": "Extracted existing category CRUD browser checks from monolithic categories-interface.mjs, preserving operation assertions while isolating a cohesive test module of 331 lines."
     },
     {
       "path": "scripts/statement-visual/categories-visual-state.mjs",

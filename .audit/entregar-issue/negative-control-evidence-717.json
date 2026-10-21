@@ -3,214 +3,214 @@
   "repository": "crgasparoto-br/SolverFin",
   "issue_number": 717,
   "pull_request": 731,
-  "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+  "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
   "evidence_scope": "13 executed negative-controls in CI at exact material SHA; mutations operate on SSR output/assertion predicates, not a mutated production build.",
   "controls": [
     {
       "id": "NC-717-01",
       "requirement_id": "REQ-717-01",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "status-icon-missing",
       "synthetic_wrong_input": "<li class=\"category-tree-node\">no state</li>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5772090Z [categories-negative] NC-717-01 KILLED by executable assertion",
-        "sha256": "9f4b704e935d325c600e95ac10b50b86de125cd800ebb0cab55bd9ac1abdfb25",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9077304Z [categories-negative] NC-717-01 KILLED by executable assertion",
+        "sha256": "35126600c7518cb4069d2f9ae85e34877ca26cac7c71304145d4473e8cf01a4b",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-02",
       "requirement_id": "REQ-717-02",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "flat-tree",
       "synthetic_wrong_input": "<div class=\"category-tree-node-card\">flattened</div>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5782348Z [categories-negative] NC-717-02 KILLED by executable assertion",
-        "sha256": "ac07ff2d9d0f60abba0386906cb74061c0ec6a715944bc81c45e60fa119a7536",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9090601Z [categories-negative] NC-717-02 KILLED by executable assertion",
+        "sha256": "481d8471b1c42e75bdab8bc7ff6713396b70da210668fc02b09129391bb2c18d",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-03",
       "requirement_id": "REQ-717-03",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "missing-ancestor",
       "synthetic_wrong_input": "<option value=\"child\">without ancestor</option>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5830958Z [categories-negative] NC-717-03 KILLED by executable assertion",
-        "sha256": "31e8d60c8ae909e12f5c4357cb3fd90cc7105a0b0844b01d90970c3a874d0ce7",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9151875Z [categories-negative] NC-717-03 KILLED by executable assertion",
+        "sha256": "b346e33b246172dadbd56c0abc02355398ce8d528952d347e1a633e70254990f",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-04",
       "requirement_id": "REQ-717-04",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "redundant-cards",
       "synthetic_wrong_input": "<div class=\"category-summary-item\">card</div>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5837000Z [categories-negative] NC-717-04 KILLED by executable assertion",
-        "sha256": "c985f47261530846171a999752c5c1a9d3e1fc7be7f230658f2a1a28439ae223",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9159490Z [categories-negative] NC-717-04 KILLED by executable assertion",
+        "sha256": "8bddc7c1be6fe992868d89483e808e6346134fe81d49c1b5d0086a5fe35a3ddf",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-05",
       "requirement_id": "REQ-717-05",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "raw-HTML",
       "synthetic_wrong_input": "<span><Compras> & outras</span>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5840456Z [categories-negative] NC-717-05 KILLED by executable assertion",
-        "sha256": "1fdd98860311e59bef4f3173b8cd7e99b7e349e0cfb2275c71b7a8f029e67ece",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9164245Z [categories-negative] NC-717-05 KILLED by executable assertion",
+        "sha256": "936f9cdb3d1eabb70459b9e92c79c5dedf97c833a0862113373aee44f844fb5c",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-06",
       "requirement_id": "REQ-717-06",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "missing-grandchild",
       "synthetic_wrong_input": "<li data-category-depth=\"1\">lost grandchild</li>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5844446Z [categories-negative] NC-717-06 KILLED by executable assertion",
-        "sha256": "bc4bc4c34fd493553bc1f7bc5997213e4f6e18fa2c0a265860d5448fcb24b481",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9169322Z [categories-negative] NC-717-06 KILLED by executable assertion",
+        "sha256": "bbac79a5bbe49ea0ef44ce0028edf82e7e5e28254751e51d3a7aa28d8c8e24a0",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-07",
       "requirement_id": "REQ-717-07",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "archived-create-child",
       "synthetic_wrong_input": "<button data-category-menu-action=\"create-child\">archived</button>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5847482Z [categories-negative] NC-717-07 KILLED by executable assertion",
-        "sha256": "3b55b902f77852b5cb85461d55c5d587940bee5e6365c8354a103c5f3c1fe0e7",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9173598Z [categories-negative] NC-717-07 KILLED by executable assertion",
+        "sha256": "22ec3d4c8c056655e5a87c4b5d3fa83ad6af4c21431960aeedc45faf2ef98a61",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-08",
       "requirement_id": "REQ-717-08",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "wrong-material-run",
       "synthetic_wrong_input": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5850438Z [categories-negative] NC-717-08 KILLED by executable assertion",
-        "sha256": "dc7712646b124bd7e063f3e20e4dc103f48d669ebb4c0fafa472ab03d7e1f454",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9177568Z [categories-negative] NC-717-08 KILLED by executable assertion",
+        "sha256": "a607f7e9ec9c28fcf951697a14a446984e1240c84d45e6a39c72e8e8f023558e",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-09",
       "requirement_id": "REQ-717-09",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "color-only-parent",
       "synthetic_wrong_input": "<li style=\"color:green\">color alone</li>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5856051Z [categories-negative] NC-717-09 KILLED by executable assertion",
-        "sha256": "fae30b584725dcb9387010e8c8f13513a8eb24baf6ec85c21b8fdf9a21e177e2",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9184962Z [categories-negative] NC-717-09 KILLED by executable assertion",
+        "sha256": "d3f78ef6ce1ef3c7727f34a519938495015c47ea6bb499a878a19d86aba70b72",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-10",
       "requirement_id": "REQ-717-10",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "unauthorized-menu",
       "synthetic_wrong_input": "<button data-category-menu-action=\"create-child\">archived</button>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5861509Z [categories-negative] NC-717-10 KILLED by executable assertion",
-        "sha256": "d8ac94a2dd4dd8cb74a661413ee33ba14cfcadaada0f5b8c46d26be9e3475440",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9192098Z [categories-negative] NC-717-10 KILLED by executable assertion",
+        "sha256": "05c12af9bcaffea548bea26b940051ca4258fcc1f8dac14ebf3d0e04a8ed0106",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-11",
       "requirement_id": "REQ-717-11",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "blank-empty-state",
       "synthetic_wrong_input": "",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5865965Z [categories-negative] NC-717-11 KILLED by executable assertion",
-        "sha256": "2ffbb2504e97acfa25f53d6443d5c7a21ffd2c638c0f15809abfb9c96e254686",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9197824Z [categories-negative] NC-717-11 KILLED by executable assertion",
+        "sha256": "2b4229ab3ee19442d839425c11f1da77e432b7298a4cd2049530df424e096aae",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-12",
       "requirement_id": "REQ-717-12",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "visual-not-fail-closed",
       "synthetic_wrong_input": "{\"failures\":[\"failure\"]}",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5868127Z [categories-negative] NC-717-12 KILLED by executable assertion",
-        "sha256": "c3edf83b6c6ed508bde994c60f6fcb4dcf322e43a28d8179b2caea8f0697a4e7",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9200514Z [categories-negative] NC-717-12 KILLED by executable assertion",
+        "sha256": "cf1f5b359a8abc40c68b1a4c6f5c1d694745e4c3a25a0e5aa81874fc8eda1811",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     },
     {
       "id": "NC-717-13",
       "requirement_id": "REQ-717-13",
-      "material_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
+      "material_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
       "plausible_wrong_implementation": "missing-compact-columns",
       "synthetic_wrong_input": "<li class=\"category-tree-node\">old grid</li>",
       "synthetic_invalid_case_rejected": true,
       "raw_evidence": {
-        "content": "2026-10-21T00:29:42.5875573Z [categories-negative] NC-717-13 KILLED by executable assertion",
-        "sha256": "2b0f71a7d90d6628169cfb6c43fde3b3018362bfed7467a13dba967ae2c55d56",
-        "run_id": 39520975044,
-        "job_id": 118965806509,
-        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39520975044"
+        "content": "2026-10-21T12:58:09.9210275Z [categories-negative] NC-717-13 KILLED by executable assertion",
+        "sha256": "d1d71ecfd59df999075939fa63fcab27cf8645b798345f5c3aae263021b34a3e",
+        "run_id": 39603347505,
+        "job_id": 119233570957,
+        "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/39603347505"
       },
       "scope": "Actual SSR output mutation assertion KILLED at the current exact-SHA CI; does not assert a mutated production build."
     }
