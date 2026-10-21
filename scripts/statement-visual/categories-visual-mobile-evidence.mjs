@@ -94,4 +94,3 @@ export async function captureMobileHierarchyEvidence(cdp, viewport, { outputDir,
     hierarchyEvidence: { selection, hierarchyVisible, longest, longNameVisible },
   };
 }
-
