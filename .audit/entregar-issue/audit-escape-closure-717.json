@@ -5,7 +5,7 @@
       "escape_id": "A-717-02",
       "escape_class": "foreign-target-handoff-inheritance",
       "status": "passed",
-      "revalidated_head_sha": "b2de05ee85f772176ad064c118092322191766c6",
+      "revalidated_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:72d01a43-cea3-4d7a-bb85-5eaffc32883a",
@@ -20,7 +20,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Compare base and PR inherited handoff identity; rebuild all source/closure/evidence for issue #717; certify final material SHA and check direct result-only child with remote current head.",
-        "observed": "Initial inherited-base-artifact classified stale; new local #717 snapshot/closure/evidence generated for candidate b2de05ee85f772176ad064c118092322191766c6 and controlled by terminal prepublication simulation."
+        "observed": "Initial inherited-base-artifact classified stale; new local #717 snapshot/closure/evidence generated for candidate 567a3571a600ecd4a6b37732029eed6eed8813d9 and controlled by terminal prepublication simulation."
       },
       "sibling_cases": [
         {
@@ -64,7 +64,7 @@
       "escape_id": "A-717-03",
       "escape_class": "outdated-source-location",
       "status": "passed",
-      "revalidated_head_sha": "b2de05ee85f772176ad064c118092322191766c6",
+      "revalidated_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
@@ -79,7 +79,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Verify source anchor/run metadata and control-specific raw log traces",
-        "observed": "104 fully qualified source ranges verified against immutable material SHA b2de05ee85f772176ad064c118092322191766c6 by official validate_evidence_source_locations.py on the exact material checkout; 13 negative-control traces corroborated by material-CI logs (synthetic assertion mutations, not production-code mutations). Official validate_terminal_handoff.py returned READY for the prepublication child and is required again after remote publication."
+        "observed": "104 fully qualified source ranges verified against immutable material SHA 567a3571a600ecd4a6b37732029eed6eed8813d9 by official validate_evidence_source_locations.py on the exact material checkout; 13 negative-control traces corroborated by material-CI logs (synthetic assertion mutations, not production-code mutations). Official validate_terminal_handoff.py returned READY for the prepublication child and is required again after remote publication."
       },
       "sibling_cases": [
         {
@@ -118,7 +118,7 @@
       "escape_id": "A-717-04",
       "escape_class": "negative-control-proof-gap",
       "status": "passed",
-      "revalidated_head_sha": "b2de05ee85f772176ad064c118092322191766c6",
+      "revalidated_head_sha": "567a3571a600ecd4a6b37732029eed6eed8813d9",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
@@ -133,7 +133,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Verify source anchor/run metadata and control-specific raw log traces",
-        "observed": "104 fully qualified source ranges verified against immutable material SHA b2de05ee85f772176ad064c118092322191766c6 by official validate_evidence_source_locations.py on the exact material checkout; 13 negative-control traces corroborated by material-CI logs (synthetic assertion mutations, not production-code mutations). Official validate_terminal_handoff.py returned READY for the prepublication child and is required again after remote publication."
+        "observed": "104 fully qualified source ranges verified against immutable material SHA 567a3571a600ecd4a6b37732029eed6eed8813d9 by official validate_evidence_source_locations.py on the exact material checkout; 13 negative-control traces corroborated by material-CI logs (synthetic assertion mutations, not production-code mutations). Official validate_terminal_handoff.py returned READY for the prepublication child and is required again after remote publication."
       },
       "sibling_cases": [
         {
