@@ -4,7 +4,19 @@ import test from "node:test";
 import { collectReport718Evidence } from "./reports-718-behavior-evidence.mjs";
 
 function fixture() {
+  const sections = ["1366x768", "390x844", "320x740"].flatMap((viewport) =>
+    ["BRL", "USD"].flatMap((currency) =>
+      ["summary", "visualization", "detail"].map((layer) => ({
+        viewport,
+        currency,
+        layer,
+        screenshot: `reports-${viewport}-${currency}-${layer}.png`,
+        measurements: { visible: true, correctCurrency: true, hasContent: true },
+      })),
+    ),
+  );
   return {
+    screenshots: sections.map((section) => section.screenshot),
     failures: [],
     desktop: { measurements: { pageFitsViewport: true } },
     mobile: {
@@ -16,6 +28,7 @@ function fixture() {
     },
     multiCurrency: ["1366x768", "390x844", "320x740"].map((viewport) => ({
       viewport,
+      capturedSections: sections.filter((section) => section.viewport === viewport),
       measurements: {
         currencies: ["BRL", "USD"],
         currenciesComplete: true,
@@ -58,4 +71,20 @@ test("#718 adapter does not accept an omitted small mobile viewport", async () =
   const partial = fixture();
   partial.multiCurrency.pop();
   await assert.rejects(collectReport718Evidence(async () => partial));
+});
+
+
+test("#718 adapter rejects opening-only screenshot evidence with no offscreen captures", async () => {
+  const missing = fixture();
+  missing.multiCurrency[0].capturedSections = [];
+  await assert.rejects(collectReport718Evidence(async () => missing), /visual capture/);
+});
+
+test("#718 adapter rejects a capture without visible monetary content or currency context", async () => {
+  const obscured = fixture();
+  obscured.multiCurrency[1].capturedSections[2].measurements.visible = false;
+  await assert.rejects(collectReport718Evidence(async () => obscured), /outside the viewport/);
+  const wrongCurrency = fixture();
+  wrongCurrency.multiCurrency[2].capturedSections[3].measurements.correctCurrency = false;
+  await assert.rejects(collectReport718Evidence(async () => wrongCurrency), /currency context/);
 });

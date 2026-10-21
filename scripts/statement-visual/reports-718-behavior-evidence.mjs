@@ -16,6 +16,20 @@ export async function collectReport718Evidence(readEvidence) {
     const scenario = scenarios.find((candidate) => candidate.viewport === viewport);
     assert.ok(scenario, `${fileName} lacks multi-currency evidence for ${viewport}.`);
     const { measurements } = scenario;
+    // Each block must be photographed in the actual browser *after scrolling to
+    // its content*. An opening-viewport capture cannot prove offscreen sections.
+    for (const currency of ["BRL", "USD"]) {
+      for (const layer of ["summary", "visualization", "detail"]) {
+        const capture = scenario.capturedSections?.find(
+          (item) => item.currency === currency && item.layer === layer,
+        );
+        assert.ok(capture, `${viewport} has no ${currency} ${layer} visual capture.`);
+        assert.ok(report.screenshots?.includes(capture.screenshot), `${capture.screenshot} not registered.`);
+        assert.equal(capture.measurements?.visible, true, `${capture.screenshot} is outside the viewport.`);
+        assert.equal(capture.measurements?.correctCurrency, true, `${capture.screenshot} lost currency context.`);
+        assert.equal(capture.measurements?.hasContent, true, `${capture.screenshot} has no financial content.`);
+      }
+    }
     assert.ok(measurements.currencies?.includes("BRL"));
     assert.ok(measurements.currencies?.includes("USD"));
     assert.equal(measurements.currenciesComplete, true);
@@ -41,6 +55,7 @@ export async function collectReport718Evidence(readEvidence) {
     observations: {
       viewports: expectedViewports,
       currencies: ["BRL", "USD"],
+      visualSectionCaptures: expectedViewports.length * 2 * 3,
       negativeControls: ["clipped-category", "uncontained-viewport"],
     },
   };

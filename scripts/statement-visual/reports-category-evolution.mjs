@@ -312,6 +312,49 @@ async function validateMultiCurrency(cdp, month) {
       };
     })()`,
     );
+    // Preserve the opening viewport and independently capture every currency below
+    // the fold. A screenshot of filters alone cannot attest monetary readability.
+    const capturedSections = [];
+    for (const currency of ["BRL", "USD"]) {
+      for (const layer of ["summary", "visualization", "detail"]) {
+        const section = await evaluate(
+          cdp,
+          `(() => {
+            const block = Array.from(document.querySelectorAll('[data-report-analysis="a5"][data-currency]'))
+              .find((candidate) => candidate.getAttribute('data-currency') === ${JSON.stringify(currency)});
+            const target = block?.querySelector('[data-analysis-layer="${layer}"]');
+            if (!block || !target) return { visible: false, correctCurrency: false, hasContent: false };
+            target.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
+            const bounds = target.getBoundingClientRect();
+            const viewportHeight = document.documentElement.clientHeight;
+            const visibleHeight = Math.max(0, Math.min(bounds.bottom, viewportHeight) - Math.max(bounds.top, 0));
+            const heading = block.querySelector('.report-analysis-heading');
+            const money = target.querySelectorAll('.sf-money[data-currency]');
+            const hasContent = '${layer}' === 'summary'
+              ? money.length > 0 && Array.from(money).every((item) => item.getAttribute('data-currency') === '${currency}')
+              : '${layer}' === 'visualization'
+                ? Boolean(target.querySelector('.report-trend'))
+                : Boolean(target.querySelector('table, .sf-table-wrap'));
+            return {
+              visible: bounds.top >= -2 && bounds.top <= viewportHeight - 100 && visibleHeight >= 100,
+              correctCurrency: heading?.textContent?.includes('${currency}') === true,
+              hasContent,
+              viewportTop: Math.round(bounds.top),
+              visibleHeight: Math.round(visibleHeight),
+            };
+          })()`,
+        );
+        const sectionScreenshot = `reports-${label}-${width}x${height}-${currency.toLowerCase()}-${layer}.png`;
+        await screenshot(cdp, join(outputDir, sectionScreenshot));
+        screenshots.push(sectionScreenshot);
+        check(section.visible, `${currency} ${layer} is not visible in ${label} evidence`, section);
+        check(section.correctCurrency, `${currency} ${layer} lost the currency heading`, section);
+        check(section.hasContent, `${currency} ${layer} has no inspectable content`, section);
+        capturedSections.push({ currency, layer, screenshot: sectionScreenshot, measurements: section });
+      }
+    }
+    // Return to the top so the original reference capture remains comparable.
+    await evaluate(cdp, `window.scrollTo({ top: 0, behavior: 'instant' })`);
     const filename = `reports-multicurrency-${label}-${width}x${height}.png`;
     await screenshot(cdp, join(outputDir, filename));
     screenshots.push(filename);
@@ -340,7 +383,7 @@ async function validateMultiCurrency(cdp, month) {
         measurements,
       );
     }
-    snapshots.push({ viewport: `${width}x${height}`, screenshot: filename, measurements });
+    snapshots.push({ viewport: `${width}x${height}`, screenshot: filename, measurements, capturedSections });
   }
   return snapshots;
 }

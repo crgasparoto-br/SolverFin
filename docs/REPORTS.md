@@ -37,6 +37,8 @@ A evolucao por categoria oferece barras de tendencia com rolagem local por tecla
 
 Falha de consulta exibe um link de tentativa novamente para a propria URL, preservando parametros sem exibir resultados parciais. Erro de filtro continua permitindo correcao no formulario SSR. Tabelas largas e graficos utilizam overflow horizontal local com foco visivel em desktop/mobile. A superfície de blocos monetários não permite que a largura intrínseca dos gráficos escape para a viewport; cada gráfico e matriz mantém seu próprio scroll acessível.
 
+O cenário Chrome #718 agora fotografa separadamente as três camadas (resumo, visualização e detalhe) **de cada bloco BRL e USD**, rolando até o conteúdo antes da captura em cada viewport. Os metadados das 18 capturas comprovam visibilidade na viewport, contexto da moeda, existência do conteúdo financeiro e presença dos arquivos no relatório do run; não se aceita apenas uma fotografia da primeira dobra com filtros.
+
 A aceitacao visual exige comparar capturas Chrome autenticadas e a arvore acessivel nos viewports desktop, 390px e 320px no SHA material desta PR, incluindo BRL/USD, recorte vazio, erro, tabela longa e controle negativo de truncamento. O cenário dedicado `reports-718-visual-acceptance` reutiliza `scripts/statement-visual/reports-category-evolution.mjs` por um módulo de entrada separado no workflow agregado, além dos controles legados de responsividade. Testes automatizados e CI verde sao requisitos distintos da aprovacao independente.
 
 ## Evolucao por categoria
