@@ -46,7 +46,7 @@ export async function validateCashFlow(cdp, context) {
       return {
         pageFitsViewport: viewport.fits,
         trendMoney: ${trendMoneyTextFitExpression()},
-        blockCurrencies: blocks.map((block) => block.querySelector('.report-analysis-heading h2')?.textContent?.trim()),
+        blockCurrencies: blocks.map((block) => block.querySelector('.report-layer-topline h2')?.textContent?.trim()?.split(' - ').at(-1)),
         tableScrollLocal: blocks.every((block) => {
           const table = block.querySelector('.evolution-table-scroll');
           return table?.tabIndex === 0 && (innerWidth > 390 || table.scrollWidth > table.clientWidth + 1);
@@ -94,8 +94,11 @@ export async function validateCashFlow(cdp, context) {
           const bounds = target.getBoundingClientRect();
           const visibleHeight = Math.max(0, Math.min(bounds.bottom, innerHeight) - Math.max(bounds.top, 0));
           const money = Array.from(target.querySelectorAll('.sf-money[data-currency]'));
-          const correctCurrency = block.querySelector('.report-analysis-heading h2')?.textContent?.trim() === '${currency}'
-            && money.every((item) => item.getAttribute('data-currency') === '${currency}');
+          const heading = target.querySelector('.report-layer-heading h2, .report-layer-heading h3');
+          const correctCurrency = heading?.textContent?.trim()?.endsWith(' - ${currency}') === true
+            && money.every((item) => item.getAttribute('data-currency') === '${currency}')
+            && Array.from(target.querySelectorAll('.sf-money-currency'))
+              .every((item) => getComputedStyle(item).display === 'none');
           const hasContent = '${layer}' === 'visualization'
             ? Boolean(target.querySelector('.report-trend .report-trend-point'))
             : '${layer}' === 'detail'
