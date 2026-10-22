@@ -376,7 +376,7 @@ function renderCategoryEvolutionAnalysis(
         : undefined,
       negativePeriodCount: analysis.highlights.negativePeriodCount,
     }),
-    detailTitle: "Matriz por categoria",
+    detailTitle: `Matriz por categoria - ${analysis.currency}`,
     detailHtml: renderCurrencyMatrix(report, block, blockIndex),
   });
 }
