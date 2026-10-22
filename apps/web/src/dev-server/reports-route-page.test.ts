@@ -315,9 +315,15 @@ describe("reports route page", () => {
     assert.match(html, /class="sf-table installment-detail-table"/);
     assert.match(html, /class="installment-col-amount"/);
     assert.match(html, /class="installment-table-row"/);
-    assert.match(html, /\.installment-table \.installment-detail-table \{ border-collapse:collapse; display:table;/);
+    assert.match(
+      html,
+      /\.installment-table \.installment-detail-table \{ border-collapse:collapse; display:table;/,
+    );
     assert.doesNotMatch(html, /\.installment-table-head,\.installment-table-row \{/);
-    assert.match(html, /\.installment-table \.installment-detail-table th:last-child,\.installment-table \.installment-detail-table td:last-child \{ text-align:right;/);
+    assert.match(
+      html,
+      /\.installment-table \.installment-detail-table th:last-child,\.installment-table \.installment-detail-table td:last-child \{ text-align:right;/,
+    );
     assert.match(html, /Principal/);
     assert.match(html, /Reserva/);
     assert.match(html, /Tecnologia/);
