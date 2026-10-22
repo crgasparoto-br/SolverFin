@@ -345,6 +345,8 @@ function renderCategoryEvolutionAnalysis(
         ...point,
         currency: analysis.currency,
       })),
+      "Resultado por período",
+      "grid",
     ),
     highlightsHtml: renderAnalysisHighlights({
       currency: analysis.currency,
