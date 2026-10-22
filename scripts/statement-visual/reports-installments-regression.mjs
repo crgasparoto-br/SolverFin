@@ -80,12 +80,12 @@ async function validateDesktop(cdp, fixture) {
     measurements,
   );
   check(
-    measurements.aggregateKinds.join("|") === "month|card|category",
+    measurements.aggregateKinds.join("|") === "month|category|card",
     "Installment aggregate families were not fully preserved",
     measurements,
   );
   check(
-    measurements.groupHeadings.join("|") === "Comprometimento por mês|Por cartão|Por categoria",
+    measurements.groupHeadings.join("|") === "Comprometimento por mês|Por categoria|Por cartão",
     "Installment aggregate headings are incomplete",
     measurements,
   );
@@ -104,8 +104,8 @@ async function validateDesktop(cdp, fixture) {
     measurements,
   );
   check(
-    measurements.reportColumns === 3,
-    "Desktop installment groupings are not in three columns",
+    measurements.reportColumns === 2,
+    "Desktop installment category/card groups are not in two columns",
     measurements,
   );
   check(
@@ -299,7 +299,7 @@ function fixtureExpression() {
 function measurementExpression() {
   return `(() => {
     const summary = document.querySelector('.summary-grid');
-    const reportGrid = document.querySelector('.report-grid');
+    const reportGrid = document.querySelector('.installment-distribution-grid');
     const installmentTable = document.querySelector('.installment-table');
     const text = document.body.textContent || '';
     const fixture = ${JSON.stringify({ marker: true })};
@@ -310,7 +310,7 @@ function measurementExpression() {
       metricCount: document.querySelectorAll('.summary-grid .metric-card').length,
       metricLabels: Array.from(document.querySelectorAll('.summary-grid .metric-card > span')).map((item) => item.textContent.trim()),
       aggregateKinds: Array.from(document.querySelectorAll('[data-aggregate-kind]')).map((item) => item.getAttribute('data-aggregate-kind')),
-      groupHeadings: Array.from(document.querySelectorAll('.report-grid h2')).map((item) => item.textContent.trim()),
+      groupHeadings: Array.from(document.querySelectorAll('.installment-distribution h2')).map((item) => item.textContent.trim()),
       installmentRows: document.querySelectorAll('.installment-table-row').length,
       hasCardName: text.includes(${JSON.stringify("QA Cartao relatorio")}),
       hasFirstCategory: text.includes(${JSON.stringify("QA Moradia")}),
