@@ -281,12 +281,17 @@ async function renderCategoryEvolutionView(
         form +
         renderState(
           "empty",
-          filters.currency ? `Nenhum lançamento em ${filters.currency} no período` : "Nenhum lançamento realizado no período",
+          filters.currency
+            ? `Nenhum lançamento em ${filters.currency} no período`
+            : "Nenhum lançamento realizado no período",
           filters.currency
             ? "Esta moeda não tem lançamentos no recorte. Selecione Todas as moedas ou ajuste os filtros para consultar outro período."
             : "Os períodos continuam disponíveis. Ajuste o início, a quantidade, a conta ou o cartão para consultar outro recorte.",
         ) +
-        renderEvolutionCurrencyFilter(filters, report.currencyBlocks.map((block) => block.currency)) +
+        renderEvolutionCurrencyFilter(
+          filters,
+          report.currencyBlocks.map((block) => block.currency),
+        ) +
         renderEmptyEvolutionMatrix(report) +
         renderCategoryEvolutionRuntime(),
     );
@@ -297,8 +302,19 @@ async function renderCategoryEvolutionView(
       navigation +
       form +
       `<div data-report-state="ready" class="currency-report-list">${visibleCurrencyBlocks
-        .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex,
-          blockIndex === 0 ? renderEvolutionCurrencyFilter(filters, report.currencyBlocks.map((item) => item.currency)) : undefined))
+        .map((block, blockIndex) =>
+          renderCategoryEvolutionAnalysis(
+            report,
+            block,
+            blockIndex,
+            blockIndex === 0
+              ? renderEvolutionCurrencyFilter(
+                  filters,
+                  report.currencyBlocks.map((item) => item.currency),
+                )
+              : undefined,
+          ),
+        )
         .join("")}</div>` +
       renderCategoryEvolutionRuntime(),
   );
@@ -462,8 +478,9 @@ function renderEvolutionCurrencyFilter(
   filters: EvolutionFilters,
   currencies: readonly string[],
 ): string {
-  const choices = [...new Set([...currencies, ...(filters.currency ? [filters.currency] : [])])]
-    .sort((left, right) => left.localeCompare(right));
+  const choices = [
+    ...new Set([...currencies, ...(filters.currency ? [filters.currency] : [])]),
+  ].sort((left, right) => left.localeCompare(right));
   const options = choices
     .map(
       (code) =>
@@ -728,7 +745,9 @@ function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
     ...(draft.profileId ? { profileId: draft.profileId } : {}),
     ...(draft.accountId ? { accountId: draft.accountId.toLowerCase() } : {}),
     ...(draft.cardId ? { cardId: draft.cardId.toLowerCase() } : {}),
-    ...(draft.currency && draft.currency !== "all" ? { currency: draft.currency.toUpperCase() } : {}),
+    ...(draft.currency && draft.currency !== "all"
+      ? { currency: draft.currency.toUpperCase() }
+      : {}),
   };
 }
 
@@ -776,7 +795,10 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
       accountId: accountId !== "" && !UUID_PATTERN.test(accountId),
       cardId: cardId !== "" && !UUID_PATTERN.test(cardId),
       sourceConflict: requestedAccountId !== null && requestedCardId !== null,
-      currency: requestedCurrency !== "" && requestedCurrency !== "all" && !/^[A-Za-z]{3}$/.test(requestedCurrency),
+      currency:
+        requestedCurrency !== "" &&
+        requestedCurrency !== "all" &&
+        !/^[A-Za-z]{3}$/.test(requestedCurrency),
     },
   };
 }
