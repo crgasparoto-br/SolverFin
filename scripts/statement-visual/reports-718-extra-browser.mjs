@@ -47,6 +47,29 @@ export async function validateCashFlow(cdp, context) {
         pageFitsViewport: viewport.fits,
         trendMoney: ${trendMoneyTextFitExpression()},
         blockCurrencies: blocks.map((block) => block.querySelector('.report-layer-topline h2')?.textContent?.trim()?.split(' - ').at(-1)),
+        dailyTable: blocks.map((block) => {
+          const table = block.querySelector('.cash-flow-table');
+          const headers = Array.from(table?.querySelectorAll('thead th') ?? []);
+          const rows = Array.from(table?.querySelectorAll('tbody tr.cash-flow-day-row') ?? []);
+          const idle = rows.filter((row) => row.dataset.movementCount === '0');
+          const evidence = Array.from(table?.querySelectorAll('.cash-flow-evidence') ?? []);
+          const firstCells = rows[0] ? Array.from(rows[0].children) : [];
+          return {
+            currency: block.id,
+            columnCount: headers.length,
+            rowCount: rows.length,
+            idleCount: idle.length,
+            maxIdleHeight: Math.max(0, ...idle.map((row) => row.getBoundingClientRect().height)),
+            compact: idle.length > 0 && idle.every((row) => row.getBoundingClientRect().height <= 36),
+            aligned: headers.length === 4 && firstCells.length === 4
+              && headers.every((header, index) => {
+                const head = header.getBoundingClientRect();
+                const cell = firstCells[index].getBoundingClientRect();
+                return Math.abs(head.left - cell.left) <= 1 && Math.abs(head.width - cell.width) <= 1;
+              }),
+            evidenceInline: evidence.every((item) => getComputedStyle(item).display === 'flex'),
+          };
+        }),
         tableScrollLocal: blocks.every((block) => {
           const table = block.querySelector('.evolution-table-scroll');
           return table?.tabIndex === 0 && (innerWidth > 390 || table.scrollWidth > table.clientWidth + 1);
@@ -68,6 +91,14 @@ export async function validateCashFlow(cdp, context) {
       ["BRL", "USD"].every((currency) => measurements.blockCurrencies.includes(currency)),
       `Cash flow ${viewport} does not isolate BRL and USD`,
       measurements,
+    );
+    check(
+      measurements.dailyTable.length === 2 &&
+        measurements.dailyTable.every(
+          (table) => table.compact && table.aligned && table.evidenceInline,
+        ),
+      `Cash flow ${viewport} daily table rows are tall or its columns misaligned`,
+      measurements.dailyTable,
     );
     if (width <= 390) {
       check(
