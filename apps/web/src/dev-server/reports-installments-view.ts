@@ -69,7 +69,8 @@ type InstallmentDrilldownKind = "card" | "category";
 export async function renderInstallmentsView(token: string, url: URL): Promise<string> {
   const filters = readInstallmentFilters(url);
   try {
-    filters.currency = parseReportCurrencyFilter(url.searchParams.get("currency"));
+    const requestedCurrency = parseReportCurrencyFilter(url.searchParams.get("currency"));
+    if (requestedCurrency) filters.currency = requestedCurrency;
   } catch (error) {
     return renderShell(
       renderHeading("Parcelas consolidadas", "Acompanhe o comprometimento mensal sem alterar lançamentos, faturas ou recorrências.") +
