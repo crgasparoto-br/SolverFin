@@ -967,6 +967,7 @@ function renderPurchaseRow(
   const sequence = purchase.installmentSequenceNumber;
   const total = purchase.totalInstallments;
   const installmentLabel =
+    !purchase.recurrenceId &&
     sequence !== undefined &&
     total !== undefined &&
     Number.isInteger(sequence) &&
