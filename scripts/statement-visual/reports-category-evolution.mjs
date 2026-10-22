@@ -8,8 +8,8 @@ import { reportPageViewportExpression } from "./report-page-viewport.mjs";
 import {
   validateCashFlow,
   validateMobileStates,
-  validateMultiCurrency,
 } from "./reports-718-extra-browser.mjs";
+import { validateMultiCurrency } from "./reports-718-multicurrency-browser.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
