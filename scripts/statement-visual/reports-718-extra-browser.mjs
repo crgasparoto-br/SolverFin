@@ -192,7 +192,11 @@ export async function validateCashFlow(cdp, context) {
     // A opcao Todas preserva o contrato multimoedas; em modo comum so uma moeda aparece.
     for (const selectedCurrency of ["BRL", "USD"]) {
       const selectedRoute = `/relatorios?view=cash-flow&referenceDate=${referenceDate}&horizonDays=30&currency=${selectedCurrency}`;
-      await navigateWithRetry(cdp, `${baseUrl}${selectedRoute}`, `cash flow ${selectedCurrency} ${viewport}`);
+      await navigateWithRetry(
+        cdp,
+        `${baseUrl}${selectedRoute}`,
+        `cash flow ${selectedCurrency} ${viewport}`,
+      );
       await waitForState(cdp, "ready");
       const selected = await evaluate(
         cdp,
