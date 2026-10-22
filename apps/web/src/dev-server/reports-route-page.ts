@@ -12,6 +12,7 @@ import { renderCashFlowProjectionView } from "./cash-flow-projection-view.js";
 import { renderInstallmentsView } from "./reports-installments-view.js";
 import {
   escapeReportHtml as escapeHtml,
+  renderReportCurrencyOptions,
   renderReportHeading as renderHeading,
   renderReportState as renderState,
   renderReportsShell as renderShell,
@@ -432,7 +433,7 @@ function renderEvolutionFilterForm(
     .join("");
   const sourceInvalid =
     filters.invalid.accountId || filters.invalid.cardId || filters.invalid.sourceConflict;
-  const currencyOptions = renderEvolutionCurrencyOptions(filters.currency, currencies);
+  const currencyOptions = renderReportCurrencyOptions(filters.currency || "all", currencies);
 
   return `
     <section class="panel report-filter-panel" aria-label="Filtros da evolução por categoria">
@@ -458,7 +459,6 @@ function renderEvolutionFilterForm(
         <label for="report-periods">Período<input id="report-periods" type="${periodsInputType}"${periodsConstraints} name="periods" value="${escapeHtml(filters.periods)}"${filters.invalid.periods ? ' aria-invalid="true" data-invalid-filter="periods"' : ""} required /></label>
         <label class="report-currency-field" for="report-currency">Moeda
           <select id="report-currency" name="currency"${filters.invalid.currency ? ' aria-invalid="true" data-invalid-filter="currency"' : ""}>
-            <option value="all"${!filters.currency || filters.currency === "all" ? " selected" : ""}>Todas as moedas</option>
             ${currencyOptions}
           </select>
         </label>
@@ -466,25 +466,6 @@ function renderEvolutionFilterForm(
       </form>
       <p class="filter-hint">Todas as contas e cartões mantêm a visão geral. O estado de expansão da árvore reinicia ao aplicar filtros.</p>
     </section>`;
-}
-
-/** Options stay scoped to currencies returned for this report; keep a previous selection visible. */
-function renderEvolutionCurrencyOptions(
-  selectedCurrency: string,
-  currencies: readonly string[],
-): string {
-  const choices = [
-    ...new Set([
-      ...currencies,
-      ...(selectedCurrency && selectedCurrency !== "all" ? [selectedCurrency] : []),
-    ]),
-  ].sort((left, right) => left.localeCompare(right));
-  return choices
-    .map(
-      (code) =>
-        `<option value="${escapeHtml(code)}"${selectedCurrency.toUpperCase() === code.toUpperCase() ? " selected" : ""}>${escapeHtml(code)}</option>`,
-    )
-    .join("");
 }
 
 function intervalSwitchLink(
