@@ -26,17 +26,24 @@ function fixture() {
     },
     capturedSections: ["BRL", "USD"].flatMap((currency) =>
       ["summary", "visualization", "detail"].map((layer) => ({
-        currency, layer, screenshot: `cash-${viewport}-${currency}-${layer}.png`,
+        currency,
+        layer,
+        screenshot: `cash-${viewport}-${currency}-${layer}.png`,
         measurements: { visible: true, correctCurrency: true, hasContent: true },
       })),
     ),
   }));
   const mobileStates = ["390x844", "320x740"].flatMap((viewport) =>
     ["empty", "filter-error", "api-error"].map((state) => ({
-      viewport, state, route: `/relatorios?state=${state}`,
+      viewport,
+      state,
+      route: `/relatorios?state=${state}`,
       screenshot: `state-${viewport}-${state}.png`,
       measurements: {
-        state, visible: true, pageFitsViewport: true, hasReadyReport: false,
+        state,
+        visible: true,
+        pageFitsViewport: true,
+        hasReadyReport: false,
         invalidControls: 3,
         retryHref: state === "api-error" ? `/relatorios?state=${state}` : null,
       },
@@ -45,7 +52,9 @@ function fixture() {
   return {
     screenshots: [
       ...sections.map((section) => section.screenshot),
-      ...cashFlow.flatMap((scenario) => scenario.capturedSections.map((section) => section.screenshot)),
+      ...cashFlow.flatMap((scenario) =>
+        scenario.capturedSections.map((section) => section.screenshot),
+      ),
       ...mobileStates.map((scenario) => scenario.screenshot),
     ],
     cashFlow,
@@ -133,10 +142,16 @@ test("#718 adapter rejects a capture without visible monetary content or currenc
 test("#718 rejects missing cash-flow currency/layer and mobile state evidence", async () => {
   const missingCash = fixture();
   missingCash.cashFlow[1].capturedSections.pop();
-  await assert.rejects(collectReport718Evidence(async () => missingCash), /cash-flow lacks/);
+  await assert.rejects(
+    collectReport718Evidence(async () => missingCash),
+    /cash-flow lacks/,
+  );
   const missingState = fixture();
   missingState.mobileStates.pop();
-  await assert.rejects(collectReport718Evidence(async () => missingState), /mobile screenshot/);
+  await assert.rejects(
+    collectReport718Evidence(async () => missingState),
+    /mobile screenshot/,
+  );
 });
 
 test("#718 rejects cash-flow money mix, mobile overflow and broken recovery link", async () => {
@@ -148,5 +163,8 @@ test("#718 rejects cash-flow money mix, mobile overflow and broken recovery link
   await assert.rejects(collectReport718Evidence(async () => overflow));
   const brokenRetry = fixture();
   brokenRetry.mobileStates[2].measurements.retryHref = "/relatorios";
-  await assert.rejects(collectReport718Evidence(async () => brokenRetry), /Retry must preserve/);
+  await assert.rejects(
+    collectReport718Evidence(async () => brokenRetry),
+    /Retry must preserve/,
+  );
 });

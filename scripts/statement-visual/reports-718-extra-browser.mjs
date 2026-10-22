@@ -8,12 +8,18 @@ export async function validateCashFlow(cdp, context) {
   const referenceDate = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
   const route = `/relatorios?view=cash-flow&referenceDate=${referenceDate}&horizonDays=30`;
   const snapshots = [];
-  for (const [width, height] of [[1366, 768], [390, 844], [320, 740]]) {
+  for (const [width, height] of [
+    [1366, 768],
+    [390, 844],
+    [320, 740],
+  ]) {
     const viewport = `${width}x${height}`;
     await setViewport(cdp, width, height);
     await navigateWithRetry(cdp, `${baseUrl}${route}`, `cash flow ${viewport}`);
     await waitForState(cdp, "ready");
-    const measurements = await evaluate(cdp, `(() => {
+    const measurements = await evaluate(
+      cdp,
+      `(() => {
       const blocks = Array.from(document.querySelectorAll('.cash-flow-block'));
       const viewport = ${reportPageViewportExpression(".cash-flow-report-list")};
       return {
@@ -28,18 +34,32 @@ export async function validateCashFlow(cdp, context) {
           return trend?.tabIndex === 0 && (innerWidth > 390 || trend.scrollWidth > trend.clientWidth + 1);
         }),
       };
-    })()`);
+    })()`,
+    );
     check(measurements.pageFitsViewport, `Cash flow ${viewport} expands the page`, measurements);
-    check(["BRL", "USD"].every((currency) => measurements.blockCurrencies.includes(currency)),
-      `Cash flow ${viewport} does not isolate BRL and USD`, measurements);
+    check(
+      ["BRL", "USD"].every((currency) => measurements.blockCurrencies.includes(currency)),
+      `Cash flow ${viewport} does not isolate BRL and USD`,
+      measurements,
+    );
     if (width <= 390) {
-      check(measurements.tableScrollLocal, `Cash flow ${viewport} table cannot scroll locally`, measurements);
-      check(measurements.trendScrollLocal, `Cash flow ${viewport} trend cannot scroll locally`, measurements);
+      check(
+        measurements.tableScrollLocal,
+        `Cash flow ${viewport} table cannot scroll locally`,
+        measurements,
+      );
+      check(
+        measurements.trendScrollLocal,
+        `Cash flow ${viewport} trend cannot scroll locally`,
+        measurements,
+      );
     }
     const capturedSections = [];
     for (const currency of ["BRL", "USD"]) {
       for (const layer of ["summary", "visualization", "detail"]) {
-        const section = await evaluate(cdp, `(() => {
+        const section = await evaluate(
+          cdp,
+          `(() => {
           const block = document.getElementById(${JSON.stringify(`cash-flow-${currency.toLowerCase()}`)});
           const target = block?.querySelector('[data-analysis-layer="${layer}"]');
           if (!target) return { visible:false, correctCurrency:false, hasContent:false };
@@ -56,13 +76,22 @@ export async function validateCashFlow(cdp, context) {
               : money.length >= 2;
           return { visible: bounds.top >= -2 && bounds.top < innerHeight - 80 && visibleHeight >= 80,
             correctCurrency, hasContent, monetaryNodes: money.length };
-        })()`);
+        })()`,
+        );
         const screenshotName = `reports-cash-flow-${viewport}-${currency.toLowerCase()}-${layer}.png`;
         await screenshot(cdp, join(outputDir, screenshotName));
         screenshots.push(screenshotName);
-        check(section.visible && section.correctCurrency && section.hasContent,
-          `Cash flow ${viewport} ${currency} ${layer} is not inspectable`, section);
-        capturedSections.push({ currency, layer, screenshot: screenshotName, measurements: section });
+        check(
+          section.visible && section.correctCurrency && section.hasContent,
+          `Cash flow ${viewport} ${currency} ${layer} is not inspectable`,
+          section,
+        );
+        capturedSections.push({
+          currency,
+          layer,
+          screenshot: screenshotName,
+          measurements: section,
+        });
       }
     }
     snapshots.push({ viewport, route, measurements, capturedSections });
@@ -74,18 +103,33 @@ export async function validateCashFlow(cdp, context) {
 export async function validateMobileStates(cdp, context) {
   const { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState } = context;
   const scenarios = [
-    { state: "empty", route: "/relatorios?view=category-evolution&interval=monthly&start=2099-01&periods=1" },
-    { state: "filter-error", route: "/relatorios?view=category-evolution&interval=quarterly&start=2026-13&periods=abc" },
-    { state: "api-error", route: "/relatorios?view=category-evolution&interval=monthly&start=2099-01&periods=1&cardId=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" },
+    {
+      state: "empty",
+      route: "/relatorios?view=category-evolution&interval=monthly&start=2099-01&periods=1",
+    },
+    {
+      state: "filter-error",
+      route: "/relatorios?view=category-evolution&interval=quarterly&start=2026-13&periods=abc",
+    },
+    {
+      state: "api-error",
+      route:
+        "/relatorios?view=category-evolution&interval=monthly&start=2099-01&periods=1&cardId=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    },
   ];
   const snapshots = [];
-  for (const [width, height] of [[390, 844], [320, 740]]) {
+  for (const [width, height] of [
+    [390, 844],
+    [320, 740],
+  ]) {
     const viewport = `${width}x${height}`;
     for (const scenario of scenarios) {
       await setViewport(cdp, width, height);
       await navigateWithRetry(cdp, `${baseUrl}${scenario.route}`, `${scenario.state} ${viewport}`);
       await waitForState(cdp, scenario.state);
-      const measurements = await evaluate(cdp, `(() => {
+      const measurements = await evaluate(
+        cdp,
+        `(() => {
         const section = document.querySelector('.report-analysis-state [data-analysis-layer="summary"]');
         section?.scrollIntoView({ behavior:'instant', block:'start', inline:'nearest' });
         const bounds = section?.getBoundingClientRect();
@@ -98,28 +142,48 @@ export async function validateMobileStates(cdp, context) {
           retryHref: retry?.getAttribute('href') ?? null,
           invalidControls: document.querySelectorAll('[aria-invalid="true"], [data-invalid-filter]').length,
         };
-      })()`);
+      })()`,
+      );
       const screenshotName = `reports-${scenario.state}-${viewport}.png`;
       await screenshot(cdp, join(outputDir, screenshotName));
       screenshots.push(screenshotName);
-      check(measurements.state === scenario.state && measurements.pageFitsViewport && measurements.visible,
-        `${scenario.state} ${viewport} is not accessible inside the viewport`, measurements);
-      check(!measurements.hasReadyReport, `${scenario.state} ${viewport} leaks partial results`, measurements);
+      check(
+        measurements.state === scenario.state &&
+          measurements.pageFitsViewport &&
+          measurements.visible,
+        `${scenario.state} ${viewport} is not accessible inside the viewport`,
+        measurements,
+      );
+      check(
+        !measurements.hasReadyReport,
+        `${scenario.state} ${viewport} leaks partial results`,
+        measurements,
+      );
       if (scenario.state === "api-error") {
-        check(measurements.retryHref === scenario.route,
-          `API error ${viewport} lost its recoverable URL`, measurements);
+        check(
+          measurements.retryHref === scenario.route,
+          `API error ${viewport} lost its recoverable URL`,
+          measurements,
+        );
       }
       if (scenario.state === "filter-error") {
-        check(measurements.invalidControls >= 3,
-          `Invalid filter ${viewport} loses error descriptions`, measurements);
+        check(
+          measurements.invalidControls >= 3,
+          `Invalid filter ${viewport} loses error descriptions`,
+          measurements,
+        );
       }
-      snapshots.push({ viewport, state: scenario.state, route: scenario.route,
-        screenshot: screenshotName, measurements });
+      snapshots.push({
+        viewport,
+        state: scenario.state,
+        route: scenario.route,
+        screenshot: screenshotName,
+        measurements,
+      });
     }
   }
   return snapshots;
 }
-
 
 export async function validateMultiCurrency(cdp, month, context) {
   const { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState } = context;
@@ -252,4 +316,3 @@ export async function validateMultiCurrency(cdp, month, context) {
   }
   return snapshots;
 }
-

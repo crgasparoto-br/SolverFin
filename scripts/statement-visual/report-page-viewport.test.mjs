@@ -97,6 +97,12 @@ test("supports an explicit viewport boundary for cash-flow and SSR error states"
     innerWidth: 375,
     getComputedStyle: (item) => ({ overflowX: item.overflowX }),
   };
-  assert.equal(runInNewContext(reportPageViewportExpression(".cash-flow-report-list"), context).fits, true);
-  assert.equal(runInNewContext(reportPageViewportExpression(".report-analysis-state"), context).fits, false);
+  assert.equal(
+    runInNewContext(reportPageViewportExpression(".cash-flow-report-list"), context).fits,
+    true,
+  );
+  assert.equal(
+    runInNewContext(reportPageViewportExpression(".report-analysis-state"), context).fits,
+    false,
+  );
 });
