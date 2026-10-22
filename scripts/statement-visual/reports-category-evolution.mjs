@@ -203,7 +203,65 @@ async function validateReadyDesktop(cdp, month) {
     "Desktop currency filter is not aligned in the filter row",
     measurements,
   );
-  return { viewport: "1440x900", measurements, screenshot: screenshots.at(-1) };
+  measurements.categoryTreeHover = await validateCategoryTreeHover(cdp);
+  check(
+    measurements.categoryTreeHover?.matchesGoldenNeutral === true,
+    "Category hierarchy toggle hover is too dark or has unreadable text",
+    measurements.categoryTreeHover,
+  );
+  return { viewport: "1440x900", measurements, screenshot: "reports-category-evolution-desktop.png" };
+}
+
+async function validateCategoryTreeHover(cdp) {
+  const target = await evaluate(
+    cdp,
+    `(() => {
+      const button = document.querySelector('.evolution-table .category-tree-toggle');
+      if (!button) return null;
+      button.scrollIntoView({ block: 'center', inline: 'nearest' });
+      const rect = button.getBoundingClientRect();
+      return { x: Math.round(rect.left + rect.width / 2), y: Math.round(rect.top + rect.height / 2) };
+    })()`,
+  );
+  if (!target) return { matchesGoldenNeutral: false, reason: "Missing category toggle" };
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x: target.x,
+    y: target.y,
+  });
+  await sleep(160);
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const button = document.querySelector('.evolution-table .category-tree-toggle');
+      const sample = document.createElement('span');
+      sample.style.backgroundColor = 'var(--sf-color-neutral-control-hover)';
+      sample.style.borderColor = 'var(--sf-color-neutral-control-border-hover)';
+      sample.style.color = 'var(--sf-color-neutral-control-text-hover)';
+      document.body.appendChild(sample);
+      const actual = getComputedStyle(button);
+      const expected = getComputedStyle(sample);
+      const colors = {
+        background: actual.backgroundColor,
+        border: actual.borderTopColor,
+        text: actual.color,
+        expectedBackground: expected.backgroundColor,
+        expectedBorder: expected.borderTopColor,
+        expectedText: expected.color,
+      };
+      const matchesGoldenNeutral = button.matches(':hover')
+        && button.getAttribute('aria-expanded') === 'true'
+        && colors.background === colors.expectedBackground
+        && colors.border === colors.expectedBorder
+        && colors.text === colors.expectedText;
+      sample.remove();
+      return { matchesGoldenNeutral, colors, hovered: button.matches(':hover') };
+    })()`,
+  );
+  await screenshot(cdp, join(outputDir, "reports-category-tree-toggle-hover.png"));
+  screenshots.push("reports-category-tree-toggle-hover.png");
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 1, y: 1 });
+  return result;
 }
 
 async function validateReadyMobile(cdp, month) {
