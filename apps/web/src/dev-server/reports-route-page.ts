@@ -1,4 +1,5 @@
 import { renderMoney } from "../design-system/money.js";
+import { renderButton } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import {
   renderAnalysisHighlights,
@@ -426,7 +427,7 @@ function renderEvolutionFilterForm(
           ${intervalSwitchLink("rolling-year", "Anual com início móvel", filters)}
           ${filters.invalid.interval ? `<p class="filter-invalid-value" data-invalid-filter="interval">Valor informado: <code>${escapeHtml(filters.intervalValue)}</code></p>` : ""}
         </fieldset>
-        <label for="report-origin">Conta ou cartão
+        <label class="report-origin-filter" for="report-origin">Conta ou cartão
           <select id="report-origin" name="origin"${sourceInvalid ? ' aria-invalid="true" data-invalid-filter="origin"' : ""}>
             <option value=""${selectedOrigin ? "" : " selected"}>Todas as contas e cartões</option>
             <optgroup label="Contas">${unavailableAccountOption}${accountOptions}</optgroup>
@@ -435,7 +436,7 @@ function renderEvolutionFilterForm(
         </label>
         <label for="report-start">Início${startControl}</label>
         <label for="report-periods">Período<input id="report-periods" type="${periodsInputType}"${periodsConstraints} name="periods" value="${escapeHtml(filters.periods)}"${filters.invalid.periods ? ' aria-invalid="true" data-invalid-filter="periods"' : ""} required /></label>
-        <button type="submit">Carregar</button>
+        ${renderButton({ label: "Atualizar relatório", type: "submit", className: "report-apply-button" })}
       </form>
       <p class="filter-hint">Todas as contas e cartões mantêm a visão geral. O estado de expansão da árvore reinicia ao aplicar filtros.</p>
     </section>`;
