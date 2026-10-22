@@ -4,6 +4,7 @@ import { afterEach, describe, it } from "node:test";
 import { renderReportsRoutePage, resolveReportsView } from "./reports-route-page.js";
 
 const originalFetch = globalThis.fetch;
+const goldenSubmitAction = /class="sf-button sf-button-primary sf-focus-ring report-apply-button" type="submit"/;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
@@ -74,6 +75,8 @@ describe("reports route page", () => {
     assert.match(html, /name="view" value="category-evolution"/);
     assert.match(html, /name="profileId" value="profile-1"/);
     assert.match(html, /<select id="report-origin" name="origin"/);
+    assert.match(html, /class="report-origin-filter"/);
+    assert.match(html, goldenSubmitAction);
     assert.match(html, /<option value="" selected>Todas as contas e cartões<\/option>/);
     assert.match(html, /<optgroup label="Contas">/);
     assert.match(html, /<optgroup label="Cartões de crédito">/);
@@ -293,6 +296,7 @@ describe("reports route page", () => {
     assert.match(html, /Notebook/);
     assert.match(html, /3 registros/);
     assert.match(html, /name="view" value="installments"/);
+    assert.match(html, goldenSubmitAction);
     assert.match(html, /name="profileId" value="profile-1"/);
   });
 
@@ -409,6 +413,7 @@ describe("reports route page", () => {
     assert.match(html, /data-analysis-layer="detail"/);
     assert.match(html, /tabindex="0" aria-label="Saldo projetado em USD por data selecionada"/);
     assert.match(html, /Amostra de saldos diários em USD/);
+    assert.match(html, goldenSubmitAction);
     assert.match(html, /<table class="cash-flow-table">/);
     assert.match(html, /2026-10-18/);
     assert.match(html, /2026-10-19/);
