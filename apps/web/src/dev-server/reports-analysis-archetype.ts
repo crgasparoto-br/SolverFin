@@ -13,6 +13,7 @@ export interface ReportAnalysisBlockProps {
   id: string;
   currency: string;
   periodCount: number;
+  currencyFilterHtml?: string;
   summaryItems: readonly AnalysisSummaryItem[];
   summaryWrapperClassName?: string;
   summaryItemClassName?: string;
@@ -50,7 +51,7 @@ export function renderReportAnalysisBlock(props: ReportAnalysisBlockProps): stri
   const periodLabel = `${props.periodCount} período${props.periodCount === 1 ? "" : "s"}`;
   return `<section class="report-analysis-block" data-report-analysis="a5" data-currency="${renderText(props.currency)}" aria-labelledby="${renderText(props.id)}">
     <header class="report-analysis-heading">
-      <div><p class="eyebrow">Moeda</p><h2 id="${renderText(props.id)}">${renderText(props.currency)}</h2></div>
+      <div>${props.currencyFilterHtml ?? '<p class="eyebrow">Moeda</p>'}<h2 id="${renderText(props.id)}">${renderText(props.currency)}</h2></div>
       <span>${renderText(periodLabel)}</span>
     </header>
     <section class="report-analysis-layer" data-analysis-layer="summary" aria-label="Resumo em ${renderText(props.currency)}">
@@ -69,7 +70,7 @@ export function renderReportAnalysisBlock(props: ReportAnalysisBlockProps): stri
       ${props.highlightsHtml}
     </section>
     <section class="report-analysis-layer report-detail-layer" data-analysis-layer="detail" aria-label="Detalhe em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle)}</h3></div>
+      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle)} - ${renderText(props.currency)}</h3></div>
       ${props.detailHtml}
     </section>
   </section>`;
