@@ -531,7 +531,17 @@ describe("reports route page", () => {
                 date: "2026-10-18",
                 netMovementMinor: -100,
                 closingBalanceMinor: 9900,
-                movements: [],
+                movements: [
+                  {
+                    commitmentId: "commitment-1",
+                    effectId: "effect-1",
+                    description: "Fatura mensal C6",
+                    source: { kind: "invoice", id: "invoice-1" },
+                    amountMinor: -100,
+                    currency: "USD",
+                    cardId: "card-1",
+                  },
+                ],
               },
               {
                 date: "2026-10-19",
@@ -560,6 +570,15 @@ describe("reports route page", () => {
     assert.match(html, /class="report-trend" data-trend-layout="scroll"/);
     assert.match(html, goldenSubmitAction);
     assert.match(html, /<table class="cash-flow-table">/);
+    assert.match(html, /<colgroup><col class="cash-flow-col-date"/);
+    assert.match(html, /<tr class="cash-flow-day-row" data-movement-count="0">/);
+    assert.match(html, /<tr class="cash-flow-day-row" data-movement-count="1">/);
+    assert.match(html, /class="cash-flow-evidence-main"/);
+    assert.match(html, /Fatura mensal C6/);
+    assert.match(html, /Fatura prevista/);
+    assert.match(html, /class="text-link" href="\/cartoes">Ver origem/);
+    assert.match(html, /\.cash-flow-table th,\.cash-flow-table td \{[^}]*padding:5px 10px;/);
+    assert.match(html, /\.cash-flow-evidence \{[^}]*display:flex;/);
     assert.match(html, /2026-10-18/);
     assert.match(html, /2026-10-19/);
   });
