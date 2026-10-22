@@ -72,11 +72,12 @@ export async function renderCashFlowProjectionView(
 
   let filters: CashFlowFilters;
   try {
+    const requestedCurrency = parseReportCurrencyFilter(draftCurrency);
     filters = {
       referenceDate: parseReferenceDate(draftReferenceDate),
       horizonDays: parseHorizon(draftHorizon),
       ...(profileId ? { profileId } : {}),
-      ...(draftCurrency !== null ? { currency: parseReportCurrencyFilter(draftCurrency) } : {}),
+      ...(requestedCurrency ? { currency: requestedCurrency } : {}),
     };
   } catch (error) {
     return renderShell(
