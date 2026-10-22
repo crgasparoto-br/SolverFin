@@ -335,6 +335,76 @@ describe("reports route page", () => {
     assert.match(html, /name="profileId" value="profile-1"/);
   });
 
+  it("shows one installment currency by default and switches USD or all without mixing totals", async () => {
+    const dueOn = "2026-07-14";
+    const brl = installment("brl", "planned", dueOn, 10000, "Parcela BRL", "Principal", "Serviços");
+    const usd = {
+      ...installment("usd", "planned", dueOn, 5000, "Parcela USD", "Exterior", "Viagem"),
+      currency: "USD",
+    };
+    let apiCalls = 0;
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input));
+      if (url.pathname === "/api/installments") {
+        apiCalls += 1;
+        assert.equal(url.searchParams.get("profileId"), "profile-1");
+        assert.equal(url.searchParams.has("currency"), false);
+        return jsonResponse({ installments: [brl, usd] });
+      }
+      if (url.pathname === "/api/cards") return jsonResponse({ cards: [] });
+      if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
+      return jsonResponse({});
+    };
+
+    const base = "http://localhost/relatorios?view=installments&month=2026-07&profileId=profile-1";
+    const defaultHtml = await renderReportsRoutePage("token", new URL(base));
+    assert.equal((defaultHtml.match(/data-report-analysis="a5"/g) ?? []).length, 1);
+    assert.match(defaultHtml, /Leitura do período - BRL/);
+    assert.doesNotMatch(defaultHtml, /Leitura do período - USD/);
+    assert.match(defaultHtml, /<select id="installment-currency" name="currency">/);
+    assert.match(defaultHtml, /<option value="BRL" selected>BRL<\/option>/);
+    assert.match(defaultHtml, /<option value="USD">USD<\/option>/);
+    assert.match(defaultHtml, /Todas as moedas/);
+
+    const usdHtml = await renderReportsRoutePage("token", new URL(base + "&currency=USD"));
+    assert.equal((usdHtml.match(/data-report-analysis="a5"/g) ?? []).length, 1);
+    assert.match(usdHtml, /Leitura do período - USD/);
+    assert.doesNotMatch(usdHtml, /Leitura do período - BRL/);
+    assert.match(usdHtml, /Parcela USD/);
+    assert.doesNotMatch(usdHtml, /Parcela BRL/);
+    assert.match(usdHtml, /<option value="USD" selected>USD<\/option>/);
+    assert.match(usdHtml, /name="profileId" value="profile-1"/);
+    assert.match(usdHtml, /name="month" value="2026-07"/);
+    assert.match(usdHtml, /currency=USD/);
+
+    const allHtml = await renderReportsRoutePage("token", new URL(base + "&currency=all"));
+    assert.equal((allHtml.match(/data-report-analysis="a5"/g) ?? []).length, 2);
+    assert.match(allHtml, /Leitura do período - BRL/);
+    assert.match(allHtml, /Leitura do período - USD/);
+    assert.match(allHtml, /<option value="all" selected>Todas as moedas<\/option>/);
+    assert.equal(apiCalls, 3);
+
+    const absent = await renderReportsRoutePage("token", new URL(base + "&currency=EUR"));
+    assert.match(absent, /data-report-state="empty"/);
+    assert.match(absent, /Nenhuma parcela em EUR no recorte/);
+    assert.match(absent, /<option value="EUR" selected>EUR<\/option>/);
+  });
+
+  it("rejects invalid installment currency before querying financial data", async () => {
+    let calls = 0;
+    globalThis.fetch = async (): Promise<Response> => {
+      calls += 1;
+      return jsonResponse({});
+    };
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL("http://localhost/relatorios?view=installments&month=2026-07&currency=INVALID1"),
+    );
+    assert.equal(calls, 0);
+    assert.match(html, /data-report-state="filter-error"/);
+    assert.match(html, /Moeda inválida/);
+  });
+
   it("does not present a partial installment report when category filters fail", async () => {
     globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
       const path = new URL(String(input)).pathname;
