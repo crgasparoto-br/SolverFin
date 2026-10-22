@@ -296,7 +296,7 @@ async function renderCategoryEvolutionView(
     heading +
       navigation +
       form +
-      `<div data-report-state="ready" class="currency-report-list">${report.currencyBlocks
+      `<div data-report-state="ready" class="currency-report-list">${visibleCurrencyBlocks
         .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex,
           blockIndex === 0 ? renderEvolutionCurrencyFilter(filters, report.currencyBlocks.map((item) => item.currency)) : undefined))
         .join("")}</div>` +
