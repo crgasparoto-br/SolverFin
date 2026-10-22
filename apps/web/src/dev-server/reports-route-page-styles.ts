@@ -57,6 +57,13 @@ export function reportPageStyles(): string {
     .report-analysis-heading > div,.report-layer-heading { display:grid; gap:3px; }
     .report-analysis-heading > span { color:var(--muted); font-size:.75rem; font-weight:600; white-space:normal; }
     .report-analysis-layer { display:grid; gap:10px; grid-template-columns:minmax(0,1fr); min-width:0; }
+    .report-layer-topline { align-items:end; display:flex; gap:12px; justify-content:space-between; min-width:0; }
+    .report-layer-topline .report-layer-heading { min-width:0; }
+    .report-layer-topline h2 { font-size:1rem; line-height:1.35; margin:0; }
+    .report-period-count { color:var(--muted); flex-shrink:0; font-size:.75rem; font-weight:600; white-space:nowrap; }
+    /* Cada secao da moeda possui um titulo explicito. Repetir o codigo em cada valor
+       nao ajuda a leitura e aumenta a largura das grades; preserve Money e o simbolo. */
+    .currency-report-list .sf-money .sf-money-currency,.cash-flow-report-list .sf-money .sf-money-currency { display:none; }
     .report-analysis-layer > .sf-summary-grid:not(.summary-grid) { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); }
     .report-visual-legend { color:var(--muted); font-size:.75rem; line-height:1.55; margin:0; }
     .report-retry { align-items:center; border:1px solid var(--line); border-radius:8px; color:var(--primary); display:inline-flex; font-weight:700; justify-self:start; margin-top:6px; padding:8px 12px; text-decoration:none; }
@@ -83,7 +90,6 @@ export function reportPageStyles(): string {
     .report-trend-grid .report-trend-copy strong { font-size:.75rem; }
     .report-trend-grid .report-trend-copy .sf-money { flex-wrap:nowrap; }
     .report-trend-grid .report-trend-copy .sf-money-value { overflow-wrap:normal; white-space:nowrap; word-break:normal; }
-    .report-trend-grid .sf-money-currency { font-size:.6875rem; }
     .report-trend:focus-visible { border-radius:3px; outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
     .report-trend-point { border-right:1px solid var(--line); display:grid; gap:7px; min-width:0; padding:8px 12px; }
     .report-trend-point:first-child { padding-left:0; }
@@ -128,7 +134,6 @@ export function reportPageStyles(): string {
     .evolution-table td > span { color:var(--muted); display:inline-block; font-size:.6875rem; margin:0 0 0 6px; vertical-align:baseline; white-space:nowrap; }
     .evolution-table td .sf-money { display:inline-flex; gap:4px; justify-content:flex-end; white-space:nowrap; }
     .evolution-table td .sf-money span,.evolution-table td .sf-money small { display:inline; margin:0; }
-    .evolution-table td .sf-money .sf-money-currency { display:none; }
     .report-section-row th,.report-section-row td { background:var(--primary-soft); font-weight:700; }
     .report-row-result th,.report-row-result td { border-top:2px solid var(--primary); }
     .report-value-negative strong,.report-value-negative span { color:var(--danger); }
@@ -178,7 +183,7 @@ export function reportPageStyles(): string {
     .installment-table-row strong:last-child { text-align:right; white-space:nowrap; }
     .sr-only { clip:rect(0 0 0 0); clip-path:inset(50%); height:1px; overflow:hidden; position:absolute; white-space:nowrap; width:1px; }
     @media(max-width:1180px){.evolution-filters,.installment-filters,.cash-flow-filters{grid-template-columns:repeat(2,minmax(0,1fr));}.report-filters button[type="submit"]{grid-column:1/-1;}.summary-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.report-grid{grid-template-columns:1fr 1fr;}}
-    @media(max-width:760px){main{padding:14px 14px 24px;}.reports-heading,.section-heading,.report-analysis-heading{align-items:stretch;display:grid;}.report-filters{grid-template-columns:repeat(2,minmax(0,1fr));}.evolution-filters .interval-switcher,.evolution-filters .report-origin-filter,.report-filters button[type="submit"]{grid-column:1/-1;}.summary-grid,.report-grid,.cash-flow-summary-grid{grid-template-columns:1fr;}.readonly-pill,.report-analysis-heading>span{justify-self:start;}.evolution-table .sticky-description{min-width:12rem;}.report-analysis-block{padding:0 0 16px;}.report-trend{grid-auto-columns:minmax(14rem,72%);}.report-trend-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,7rem),1fr));}.report-highlights-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.report-highlights-grid > .sf-alert{grid-column:1/-1;}.report-view-tabs{gap:6px 12px;}.report-filter-panel{padding:12px;}}
+    @media(max-width:760px){main{padding:14px 14px 24px;}.reports-heading,.section-heading,.report-analysis-heading,.report-layer-topline{align-items:stretch;display:grid;}.report-filters{grid-template-columns:repeat(2,minmax(0,1fr));}.evolution-filters .interval-switcher,.evolution-filters .report-origin-filter,.report-filters button[type="submit"]{grid-column:1/-1;}.summary-grid,.report-grid,.cash-flow-summary-grid{grid-template-columns:1fr;}.readonly-pill,.report-analysis-heading>span{justify-self:start;}.evolution-table .sticky-description{min-width:12rem;}.report-analysis-block{padding:0 0 16px;}.report-trend{grid-auto-columns:minmax(14rem,72%);}.report-trend-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,7rem),1fr));}.report-highlights-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.report-highlights-grid > .sf-alert{grid-column:1/-1;}.report-view-tabs{gap:6px 12px;}.report-filter-panel{padding:12px;}}
     @media(max-width:360px){.report-filters{grid-template-columns:minmax(0,1fr);}.report-trend{grid-auto-columns:minmax(14rem,84%);}.report-view-tabs a{font-size:var(--sf-font-size-xs);}}
     @media(min-width:361px) and (max-width:440px){.report-trend{grid-auto-columns:minmax(14rem,84%);}}
   `;
