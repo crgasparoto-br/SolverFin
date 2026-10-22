@@ -98,7 +98,10 @@ describe("issue 611 reports analysis archetype", () => {
     assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
     assert.match(html, /data-currency="BRL"/);
     assert.match(html, /data-currency="USD"/);
-    assert.equal((html.match(/<table class="sf-table installment-detail-table">/g) ?? []).length, 2);
+    assert.equal(
+      (html.match(/<table class="sf-table installment-detail-table">/g) ?? []).length,
+      2,
+    );
     assert.match(html, /<th scope="col"[^>]*>Valor<\/th>/);
     assert.match(html, /data-money-availability="available"/);
     assert.match(html, /class="sf-summary-grid summary-grid installment-summary-grid"/);
