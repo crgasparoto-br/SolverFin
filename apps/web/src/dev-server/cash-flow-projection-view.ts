@@ -185,6 +185,7 @@ function renderCurrencyBlock(
         <div class="evolution-table-scroll" tabindex="0" aria-label="Projeção diária em ${escapeHtml(block.currency)}">
           <table class="cash-flow-table">
             <caption class="sr-only">Projeção diária completa em ${escapeHtml(block.currency)}, com movimento líquido, saldo e evidências</caption>
+            <colgroup><col class="cash-flow-col-date" /><col class="cash-flow-col-movement" /><col class="cash-flow-col-balance" /><col class="cash-flow-col-evidence" /></colgroup>
             <thead><tr><th scope="col">Data</th><th scope="col">Movimento líquido</th><th scope="col">Saldo projetado</th><th scope="col">Evidências</th></tr></thead>
             <tbody>${block.points.map((point) => renderPoint(point, block.currency)).join("")}</tbody>
           </table>
@@ -212,7 +213,7 @@ function renderCashFlowTrend(block: CashFlowProjectionCurrencyBlock): string {
 
 function renderPoint(point: CashFlowProjectionPoint, currency: string): string {
   return `
-    <tr>
+    <tr class="cash-flow-day-row" data-movement-count="${point.movements.length}">
       <th scope="row"><time datetime="${escapeHtml(point.date)}">${escapeHtml(formatDateOnly(point.date))}</time></th>
       <td>${renderMoney({ amountMinor: point.netMovementMinor, currency })}</td>
       <td><strong>${renderMoney({ amountMinor: point.closingBalanceMinor, currency })}</strong></td>
@@ -229,7 +230,7 @@ function renderEvidence(
   return movements
     .map((movement) => {
       const href = evidenceHref(movement, currency);
-      return `<div class="cash-flow-evidence" data-commitment-id="${escapeHtml(movement.commitmentId)}"><span><strong>${escapeHtml(movement.description)}</strong><small>${sourceLabel(movement.source.kind)}</small></span>${
+      return `<div class="cash-flow-evidence" data-commitment-id="${escapeHtml(movement.commitmentId)}"><span class="cash-flow-evidence-main"><strong>${escapeHtml(movement.description)}</strong><small>${sourceLabel(movement.source.kind)}</small></span>${
         href ? `<a class="text-link" href="${escapeHtml(href)}">Ver origem</a>` : ""
       }</div>`;
     })
