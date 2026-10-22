@@ -171,9 +171,11 @@ export function renderAnalysisSummaryGrid(
 export function renderResultTrend(
   points: readonly TrendPoint[],
   ariaLabel = "Resultado por período",
+  layout: "scroll" | "grid" = "scroll",
 ): string {
   const maxAbsolute = Math.max(1, ...points.map((point) => Math.abs(point.amountMinor)));
-  return `<ol class="report-trend" tabindex="0" aria-label="${renderText(ariaLabel)}">${points
+  const layoutClass = layout === "grid" ? " report-trend-grid" : "";
+  return `<ol class="report-trend${layoutClass}" data-trend-layout="${layout}" tabindex="0" aria-label="${renderText(ariaLabel)}">${points
     .map((point) => {
       const scale =
         point.amountMinor === 0
@@ -215,5 +217,5 @@ export function renderAnalysisHighlights(input: {
             "Use a matriz detalhada para entender quais categorias sustentam o resultado.",
         });
 
-  return `<div class="report-highlights-grid">${items}</div>${negativeAlert}`;
+  return `<div class="report-highlights-grid">${items}${negativeAlert}</div>`;
 }
