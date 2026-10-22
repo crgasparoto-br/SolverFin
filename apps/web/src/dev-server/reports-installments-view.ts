@@ -426,6 +426,7 @@ function buildInstallmentDrilldownHref(
     status: filters.status,
   });
   if (filters.profileId) params.set("profileId", filters.profileId);
+  if (filters.currency) params.set("currency", filters.currency);
   if (filters.cardId) params.set("cardId", filters.cardId);
   if (filters.categoryId) params.set("categoryId", filters.categoryId);
   params.set(kind === "card" ? "cardId" : "categoryId", filterId);
