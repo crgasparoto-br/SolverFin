@@ -34,6 +34,7 @@ interface EvolutionFilters {
   profileId?: string;
   accountId?: string;
   cardId?: string;
+  currency?: string;
 }
 
 interface EvolutionFilterFormValues {
@@ -44,6 +45,7 @@ interface EvolutionFilterFormValues {
   profileId?: string;
   accountId: string;
   cardId: string;
+  currency: string;
   invalid: {
     interval: boolean;
     start: boolean;
@@ -51,6 +53,7 @@ interface EvolutionFilterFormValues {
     accountId: boolean;
     cardId: boolean;
     sourceConflict: boolean;
+    currency: boolean;
   };
 }
 
@@ -268,15 +271,20 @@ async function renderCategoryEvolutionView(
   }
 
   const report = reportResult.data.report;
-  if (report.currencyBlocks.length === 0) {
+  const visibleCurrencyBlocks = filters.currency
+    ? report.currencyBlocks.filter((block) => block.currency === filters.currency)
+    : report.currencyBlocks;
+  if (visibleCurrencyBlocks.length === 0) {
     return renderShell(
       heading +
         navigation +
         form +
         renderState(
           "empty",
-          "Nenhum lançamento realizado no período",
-          "Os períodos continuam disponíveis. Ajuste o início, a quantidade, a conta ou o cartão para consultar outro recorte.",
+          filters.currency ? `Nenhum lançamento em ${filters.currency} no período` : "Nenhum lançamento realizado no período",
+          filters.currency
+            ? "Esta moeda não tem lançamentos no recorte. Selecione Todas as moedas ou ajuste os filtros para consultar outro período."
+            : "Os períodos continuam disponíveis. Ajuste o início, a quantidade, a conta ou o cartão para consultar outro recorte.",
         ) +
         renderEmptyEvolutionMatrix(report) +
         renderCategoryEvolutionRuntime(),
@@ -288,7 +296,8 @@ async function renderCategoryEvolutionView(
       navigation +
       form +
       `<div data-report-state="ready" class="currency-report-list">${report.currencyBlocks
-        .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex))
+        .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex,
+          blockIndex === 0 ? renderEvolutionCurrencyFilter(filters, report.currencyBlocks.map((item) => item.currency)) : undefined))
         .join("")}</div>` +
       renderCategoryEvolutionRuntime(),
   );
@@ -298,12 +307,14 @@ function renderCategoryEvolutionAnalysis(
   report: CategoryEvolutionReport,
   block: CategoryEvolutionReport["currencyBlocks"][number],
   blockIndex: number,
+  currencyFilterHtml?: string,
 ): string {
   const analysis = buildCategoryEvolutionAnalysisViewModel(report, block);
   return renderReportAnalysisBlock({
     id: `category-analysis-${blockIndex}-${safeId(analysis.currency)}`,
     currency: analysis.currency,
     periodCount: analysis.periodCount,
+    ...(currencyFilterHtml ? { currencyFilterHtml } : {}),
     summaryItems: [
       {
         label: "Receitas",
@@ -422,6 +433,7 @@ function renderEvolutionFilterForm(
         <input type="hidden" name="view" value="category-evolution" />
         ${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
         <input type="hidden" name="interval" value="${escapeHtml(filters.intervalValue)}" />
+        ${filters.currency && !filters.invalid.currency ? `<input type="hidden" name="currency" value="${escapeHtml(filters.currency)}" />` : ""}
         <fieldset class="interval-switcher"${filters.invalid.interval ? ' aria-invalid="true"' : ""}>
           <legend>Intervalo</legend>
           ${intervalSwitchLink("monthly", "Mensal", filters)}
@@ -457,6 +469,7 @@ function intervalSwitchLink(
   if (filters.cardId && !filters.invalid.cardId && !filters.invalid.sourceConflict) {
     params.set("cardId", filters.cardId);
   }
+  if (filters.currency && !filters.invalid.currency) params.set("currency", filters.currency);
   return `<a href="/relatorios?${params.toString()}"${
     !filters.invalid.interval && value === filters.interval ? ' aria-current="page"' : ""
   }>${escapeHtml(label)}</a>`;
@@ -645,6 +658,9 @@ function formatPercentage(value: number): string {
 
 function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
   const draft = readEvolutionFilterDraft(url, referenceDate);
+  if (draft.invalid.currency) {
+    throw new Error("Moeda inválida. Selecione uma moeda disponível ou Todas as moedas.");
+  }
   const requestedInterval = url.searchParams.get("interval");
   if (requestedInterval !== null && !isInterval(requestedInterval)) {
     throw new Error("Intervalo inválido. Escolha mensal, anual ou anual com início móvel.");
@@ -680,6 +696,7 @@ function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
     ...(draft.profileId ? { profileId: draft.profileId } : {}),
     ...(draft.accountId ? { accountId: draft.accountId.toLowerCase() } : {}),
     ...(draft.cardId ? { cardId: draft.cardId.toLowerCase() } : {}),
+    ...(draft.currency && draft.currency !== "all" ? { currency: draft.currency.toUpperCase() } : {}),
   };
 }
 
@@ -702,6 +719,7 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
   const profileId = nonEmpty(url.searchParams.get("profileId"));
   const requestedAccountId = url.searchParams.get("accountId");
   const requestedCardId = url.searchParams.get("cardId");
+  const requestedCurrency = url.searchParams.get("currency") ?? "";
   const accountId = nonEmpty(requestedAccountId) ?? "";
   const cardId = nonEmpty(requestedCardId) ?? "";
   const invalidStart =
@@ -718,6 +736,7 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
     ...(profileId ? { profileId } : {}),
     accountId,
     cardId,
+    currency: requestedCurrency,
     invalid: {
       interval: requestedInterval !== null && !isInterval(requestedInterval),
       start: invalidStart,
@@ -725,6 +744,7 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
       accountId: accountId !== "" && !UUID_PATTERN.test(accountId),
       cardId: cardId !== "" && !UUID_PATTERN.test(cardId),
       sourceConflict: requestedAccountId !== null && requestedCardId !== null,
+      currency: requestedCurrency !== "" && requestedCurrency !== "all" && !/^[A-Za-z]{3}$/.test(requestedCurrency),
     },
   };
 }
@@ -738,6 +758,7 @@ function formValuesFromFilters(filters: EvolutionFilters): EvolutionFilterFormVa
     ...(filters.profileId ? { profileId: filters.profileId } : {}),
     accountId: filters.accountId ?? "",
     cardId: filters.cardId ?? "",
+    currency: filters.currency ?? "",
     invalid: {
       interval: false,
       start: false,
@@ -745,6 +766,7 @@ function formValuesFromFilters(filters: EvolutionFilters): EvolutionFilterFormVa
       accountId: false,
       cardId: false,
       sourceConflict: false,
+      currency: false,
     },
   };
 }
