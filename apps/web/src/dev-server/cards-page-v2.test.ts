@@ -656,7 +656,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(byDay, /data-day="2026-08-19" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-18" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-20" open/);
-  assert.match(byDay, /class="installment-badge cards-installment-label" aria-label="Parcela 2 de 3"/);
+  assert.match(
+    byDay,
+    /class="installment-badge cards-installment-label" aria-label="Parcela 2 de 3"/,
+  );
   assert.match(byDay, /data-status-installment-id="installment-taxi-2"/);
   assert.equal((byDay.match(/data-cards-day-group data-day=/g) ?? []).length, 1);
 
