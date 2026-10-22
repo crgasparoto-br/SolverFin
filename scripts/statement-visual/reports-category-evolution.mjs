@@ -192,6 +192,9 @@ async function validateReadyDesktop(cdp, month) {
     measurements,
   );
   check(measurements.pageFitsViewport, "Reports desktop leaks horizontal overflow", measurements);
+  check(measurements.unifiedCurrencyForm, "Currency uses a separate form or action", measurements);
+  check(measurements.currencyAfterPeriod, "Currency does not follow the period filter", measurements);
+  check(measurements.currencyRowAligned, "Desktop currency filter is not aligned in the filter row", measurements);
   return { viewport: "1440x900", measurements, screenshot: screenshots.at(-1) };
 }
 
@@ -221,6 +224,8 @@ async function validateReadyMobile(cdp, month) {
     measurements,
   );
   check(measurements.filterColumns === 1, "Reports mobile filters are not stacked", measurements);
+  check(measurements.unifiedCurrencyForm, "Mobile currency uses a separate form or action", measurements);
+  check(measurements.currencyAfterPeriod, "Mobile currency does not follow the period filter", measurements);
   return { viewport: "390x844", measurements, screenshot: screenshots.at(-1) };
 }
 
@@ -326,6 +331,9 @@ function measurementExpression() {
     const scroller = document.querySelector('.evolution-table-scroll');
     const table = document.querySelector('.evolution-table');
     const form = document.querySelector('.evolution-filters');
+    const period = form?.querySelector('#report-periods');
+    const currency = form?.querySelector('#report-currency');
+    const action = form?.querySelector('button[type="submit"]');
     const style = form ? getComputedStyle(form) : null;
     const text = document.body.textContent || '';
     const pageViewport = ${reportPageViewportExpression()};
@@ -343,6 +351,16 @@ function measurementExpression() {
       scrollerFocused: document.activeElement === scroller,
       tableScrollable: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
       filterColumns: style ? style.gridTemplateColumns.split(' ').filter(Boolean).length : 0,
+      unifiedCurrencyForm: Boolean(form && period && currency && action
+        && document.querySelectorAll('#report-currency').length === 1
+        && document.querySelectorAll('.report-currency-filter').length === 0),
+      currencyAfterPeriod: Boolean(period && currency && action
+        && (period.compareDocumentPosition(currency) & Node.DOCUMENT_POSITION_FOLLOWING)
+        && (currency.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      currencyRowAligned: Boolean(period && currency && action
+        && Math.abs(period.getBoundingClientRect().top - currency.getBoundingClientRect().top) <= 2
+        && currency.getBoundingClientRect().left >= period.getBoundingClientRect().right - 2
+        && action.getBoundingClientRect().left >= currency.getBoundingClientRect().right - 2),
       hasAccessiblePeriod: Boolean(table?.querySelector('th[scope="col"] .sr-only')),
       hasCurrencySymbol: /R\\$|US\\$|€|£/.test(text),
       intervalValue: document.querySelector('input[name="interval"]')?.value || '',
