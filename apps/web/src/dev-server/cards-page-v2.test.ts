@@ -608,7 +608,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Táxi aeroporto/);
   // List rows are single-line: only a valid finite installment keeps n/total inline.
   const purchaseCells =
-    html.match(/<div role="cell" data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>/g) ?? [];
+    html.match(
+      /<div role="cell" data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>/g,
+    ) ?? [];
   const taxiCell = purchaseCells.find((cell) => cell.includes("Táxi aeroporto")) ?? "";
   const coffeeCell = purchaseCells.find((cell) => cell.includes("Café")) ?? "";
   assert.match(
