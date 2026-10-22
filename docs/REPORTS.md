@@ -58,6 +58,12 @@ Em Evolucao por categoria e Parcelas consolidadas, o titulo de cada camada (resu
 
 Somente no escopo dos relatorios, o codigo `small.sf-money-currency` redundante fica visualmente oculto, mas o componente `renderMoney` permanece inalterado: simbolo R$, US$, sinais, decimais, `data-currency` e contextos monetarios continuam disponiveis. O Chrome valida a identidade por moeda nos titulos e nos dados em cada viewport; CI verde nao substitui parecer de auditoria independente.
 
+## Hover e foco da hierarquia por categoria (22/10/2026, PR #729)
+
+O botao de expandir/recolher categorias da matriz conserva dimensoes compactas, icone de sinal e rotulo acessivel `aria-expanded`. Seu hover usa os tokens neutros da Golden Screen: `--sf-color-neutral-control-hover` (fundo claro), `--sf-color-neutral-control-border-hover` (borda fina) e `--sf-color-neutral-control-text-hover` (icone petroleo). O seletor `.evolution-table button.category-tree-toggle:hover:not(:disabled)` prevalece sobre o `button:hover:not(:disabled)` global, evitando fundo azul-escuro. O estado ativo mantem realce neutro, e `:focus-visible` aplica contorno visivel por teclado.
+
+Os testes SSR existentes verificam a especificidade do seletor e a acessibilidade do controle. A prova Chrome de evolucao por categoria fotografa o hover, compara os valores computados de fundo/borda/texto com os tokens canonicos e confirma que o estado expandido nao foi alterado pelo movimento do mouse. Essa verificacao complementa, sem duplicar, as capturas existentes da #718.
+
 ## Resultado ao longo do tempo: doze meses por linha no desktop (22/10/2026, PR #729)
 
 O grafico da Evolucao por categoria usa `container-type:inline-size` na camada de visualizacao para determinar o espaco efetivo, sem depender da largura bruta da janela. A partir de **1120px no proprio bloco**, a grid utiliza no maximo **12 colunas iguais**. Assim, o recorte padrao de 12 meses ocupa uma unica linha; 24 periodos podem ocupar duas linhas de 12. Padding e fonte dos valores sao levemente reduzidos, com `white-space:nowrap`, preservando integralmente valores, simbolos e sinais.
