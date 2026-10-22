@@ -14,6 +14,9 @@ import {
 } from "./reports-analysis-view-model.js";
 import {
   escapeReportHtml as escapeHtml,
+  parseReportCurrencyFilter,
+  renderReportCurrencyOptions,
+  selectReportCurrencyBlocks,
   renderReportHeading as renderHeading,
   renderReportState as renderState,
   renderReportsShell as renderShell,
@@ -28,6 +31,7 @@ interface InstallmentFilters {
   cardId?: string;
   categoryId?: string;
   profileId?: string;
+  currency?: string;
 }
 
 interface CardRecord {
@@ -64,6 +68,20 @@ type InstallmentDrilldownKind = "card" | "category";
 
 export async function renderInstallmentsView(token: string, url: URL): Promise<string> {
   const filters = readInstallmentFilters(url);
+  try {
+    filters.currency = parseReportCurrencyFilter(url.searchParams.get("currency"));
+  } catch (error) {
+    return renderShell(
+      renderHeading("Parcelas consolidadas", "Acompanhe o comprometimento mensal sem alterar lançamentos, faturas ou recorrências.") +
+        renderViewNavigation("installments", filters.profileId) +
+        renderInstallmentFilterForm(filters, [], []) +
+        renderState(
+          "filter-error",
+          "Revise os filtros",
+          error instanceof Error ? error.message : "Moeda inválida.",
+        ),
+    );
+  }
   const cardsParams = new URLSearchParams({ status: "all" });
   const categoriesParams = new URLSearchParams({ kind: "expense" });
   if (filters.profileId) {
@@ -107,10 +125,23 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     );
   }
 
+  const installments = installmentsSorted(installmentsResult.data.installments);
+  const currencyBlocks = buildInstallmentAnalysisViewModel(
+    installments,
+    todayDateOnly(),
+    formatMonthYear,
+  );
+  const selection = selectReportCurrencyBlocks(currencyBlocks, filters.currency);
   return renderShell(
     header +
-      form +
-      renderInstallments(installmentsSorted(installmentsResult.data.installments), filters),
+      renderInstallmentFilterForm(
+        filters,
+        cards,
+        categories,
+        selection.currency,
+        currencyBlocks.map((block) => block.currency),
+      ) +
+      renderInstallments(selection.visible, installments.length, filters),
   );
 }
 
@@ -146,6 +177,8 @@ function renderInstallmentFilterForm(
   filters: InstallmentFilters,
   cards: CardRecord[],
   categories: CategoryRecord[],
+  selectedCurrency = filters.currency ?? "all",
+  availableCurrencies: readonly string[] = [],
 ): string {
   return `<section class="panel report-filter-panel" aria-label="Filtros do relatório de parcelas"><form class="report-filters installment-filters" method="get" action="/relatorios">
     <input type="hidden" name="view" value="installments" />${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
@@ -167,15 +200,17 @@ function renderInstallmentFilterForm(
           `<option value="${escapeHtml(category.id)}"${filters.categoryId === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
       )
       .join("")}</select></label>
+    <label for="installment-currency">Moeda<select id="installment-currency" name="currency">${renderReportCurrencyOptions(selectedCurrency, availableCurrencies)}</select></label>
     ${renderButton({ label: "Atualizar relatório", type: "submit", className: "report-apply-button" })}
   </form></section>`;
 }
 
 function renderInstallments(
-  installments: InstallmentRecord[],
+  visibleBlocks: InstallmentCurrencyViewModel<InstallmentRecord>[],
+  installmentCount: number,
   filters: InstallmentFilters,
 ): string {
-  if (installments.length === 0) {
+  if (installmentCount === 0) {
     return renderState(
       "empty",
       `Nenhuma parcela em ${formatMonthYear(filters.month)}`,
@@ -183,12 +218,14 @@ function renderInstallments(
     );
   }
 
-  const currencyBlocks = buildInstallmentAnalysisViewModel(
-    installments,
-    todayDateOnly(),
-    formatMonthYear,
-  );
-  return `<div data-report-state="ready" class="currency-report-list">${currencyBlocks
+  if (visibleBlocks.length === 0) {
+    return renderState(
+      "empty",
+      `Nenhuma parcela em ${filters.currency ?? "esta moeda"} no recorte`,
+      "Selecione outra moeda ou Todas as moedas e atualize o relatório.",
+    );
+  }
+  return `<div data-report-state="ready" class="currency-report-list">${visibleBlocks
     .map((block, index) => renderInstallmentCurrencyBlock(block, filters, index))
     .join(
       "",
