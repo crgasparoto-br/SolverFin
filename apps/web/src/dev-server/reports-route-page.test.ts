@@ -460,7 +460,9 @@ describe("reports route page", () => {
         block.indexOf(`data-analysis-layer="${layer}"`),
       );
       assert.ok(
-        positions.every((position, index) => position >= 0 && (index === 0 || position > positions[index - 1]!)),
+        positions.every(
+          (position, index) => position >= 0 && (index === 0 || position > positions[index - 1]!),
+        ),
         `Invalid analytical layer order for ${currency}`,
       );
     }
