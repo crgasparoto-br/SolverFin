@@ -162,7 +162,10 @@ async function validateInstallmentEdit(fixture, label, width, height) {
         contextText: context?.textContent?.trim() || "",
         descriptionReadonly: Boolean(form?.querySelector('[name="description"]')?.readOnly),
         instrumentDisabled: Boolean(form?.querySelector('[name="cardInstrumentId"]')?.disabled),
-        rowText: row?.textContent?.replace(/\\s+/g, " ").trim() || "",
+        rowTitle: row?.querySelector('.cards-purchase-description strong')?.textContent?.replace(/\\s+/g, " ").trim() || "",
+        rowInstallmentLabel: row?.querySelector('.cards-installment-label')?.getAttribute('aria-label') || "",
+        rowHasSecondaryDetail: Boolean(row?.querySelector('.cards-purchase-description > span, .cards-purchase-description > small')),
+        rowCanonicalTotalMinor: JSON.parse(row?.querySelector('script[data-purchase]')?.textContent || '{}').purchaseTotalAmountMinor,
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
         dialogWithinViewport: Boolean(rect && rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1),
       };
@@ -176,13 +179,19 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     state,
   );
   check(
-    state.rowText.includes(`Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`),
-    `${label}: future invoice row does not identify the installment occurrence`,
+    state.rowTitle.endsWith(`${fixture.sequenceNumber}/${fixture.totalInstallments}`) &&
+      state.rowInstallmentLabel === `Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`,
+    `${label}: future invoice row must identify its installment inline with the description`,
     state,
   );
   check(
-    state.rowText.includes("Total da compra"),
-    `${label}: purchase total is not exposed as secondary information`,
+    !state.rowHasSecondaryDetail,
+    `${label}: purchase description must not show a secondary installment or total line`,
+    state,
+  );
+  check(
+    state.rowCanonicalTotalMinor === fixture.totalAmountMinor,
+    `${label}: the canonical purchase total must remain available for editing`,
     state,
   );
   check(
