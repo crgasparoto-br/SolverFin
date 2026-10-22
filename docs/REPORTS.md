@@ -33,7 +33,7 @@ Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por 
 
 A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
 
-O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px os filtros de Evolucao passam para uma coluna. Os filtros de Parcelas consolidadas e Projecao de caixa ja usam uma coluna em ate 480px, para preservar a exibicao integral de mes, cartao, categoria e moeda em celulares de 390px e 320px. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
 
 Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
 
@@ -57,6 +57,12 @@ Os titulos da analise identificam a moeda de modo explicito, como **Matriz por c
 Em Evolucao por categoria e Parcelas consolidadas, o titulo de cada camada (resumo, visualizacao, destaques e detalhe) termina com o codigo da moeda; nao existe sigla isolada entre filtros e resultado. O numero de periodos fica na mesma faixa do resumo. A Projecao de caixa segue o mesmo padrao para posicao de caixa, evolucao e serie diaria, preservando horizonte e datas.
 
 Somente no escopo dos relatorios, o codigo `small.sf-money-currency` redundante fica visualmente oculto, mas o componente `renderMoney` permanece inalterado: simbolo R$, US$, sinais, decimais, `data-currency` e contextos monetarios continuam disponiveis. O Chrome valida a identidade por moeda nos titulos e nos dados em cada viewport; CI verde nao substitui parecer de auditoria independente.
+
+## Responsividade dos filtros de parcelas (A718-04, PR #729)
+
+O filtro SSR de **Parcelas consolidadas** passa a ocupar uma coluna em telas de ate 480px; a Projecao de caixa utiliza o mesmo breakpoint sem alterar controles ou submetimento GET. Isso impede a truncagem do ano nativo do campo Mes e das opcoes selecionadas de Cartao e Categoria no celular. Entre 481px e 1180px continua a disposicao de duas colunas; desktop preserva sua grade compacta.
+
+A verificacao Chrome ja registrada em `reports-installments-regression.mjs` cobre 390x844 e 320x740, mede a largura disponivel frente ao texto selecionado, exige os cinco controles legiveis e executa um controle negativo que forca temporariamente a grade antiga de duas colunas para comprovar que o caso seria rejeitado. A evidência funcional completa exige o run Chrome no SHA final, nao apenas um teste isolado do CSS.
 
 ## Filtro monetario sem duplicacao de blocos (22/10/2026, PR #729)
 

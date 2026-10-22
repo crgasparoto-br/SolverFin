@@ -27,7 +27,8 @@ try {
 
   const fixture = await evaluate(browser.cdp, fixtureExpression());
   await validateDesktop(browser.cdp, fixture);
-  await validateMobile(browser.cdp, fixture);
+  await validateMobile(browser.cdp, fixture, 390, 844);
+  await validateMobile(browser.cdp, fixture, 320, 740);
 } catch (error) {
   failures.push({
     message: "Reports installments visual validation crashed",
@@ -123,19 +124,19 @@ async function validateDesktop(cdp, fixture) {
   });
 }
 
-async function validateMobile(cdp, fixture) {
-  await setViewport(cdp, 390, 844);
+async function validateMobile(cdp, fixture, width, height) {
+  await setViewport(cdp, width, height);
   const route = `/relatorios?view=installments&month=${fixture.month}`;
   await navigateWithRetry(cdp, `${baseUrl}${route}`, "reports installments mobile");
   await waitForState(cdp, "ready");
   const measurements = await evaluate(cdp, measurementExpression());
-  const filename = "reports-installments-mobile-390x844.png";
+  const filename = `reports-installments-mobile-${width}x${height}.png`;
   await screenshot(cdp, join(outputDir, filename));
   screenshots.push(filename);
 
   check(
-    measurements.viewportWidth === 390,
-    "Installment mobile viewport is not 390px",
+    measurements.viewportWidth === width,
+    "Installment mobile viewport does not match the requested width",
     measurements,
   );
   check(
@@ -159,12 +160,36 @@ async function validateMobile(cdp, fixture) {
     measurements,
   );
 
+  check(
+    measurements.filterFit.fits,
+    `Installment ${width}px mobile cuts selected filter values`,
+    measurements.filterFit,
+  );
+  // Refuta o antigo layout de duas colunas sem modificar o produto persistido.
+  const negativeControl = await evaluate(
+    cdp,
+    `(() => {
+      const form = document.querySelector('.installment-filters');
+      const before = form.style.gridTemplateColumns;
+      form.style.gridTemplateColumns = 'repeat(2,minmax(0,1fr))';
+      const invalid = ${installmentFilterFitExpression()};
+      form.style.gridTemplateColumns = before;
+      const restored = ${installmentFilterFitExpression()};
+      return { rejected: !invalid.fits, restored: restored.fits };
+    })()`,
+  );
+  check(
+    negativeControl.rejected && negativeControl.restored,
+    `Installment ${width}px negative control failed`,
+    negativeControl,
+  );
   scenarios.push({
     route,
-    viewport: "390x844",
+    viewport: `${width}x${height}`,
     state: "ready",
     screenshot: filename,
     measurements,
+    negativeControl,
   });
 }
 
@@ -296,6 +321,33 @@ function fixtureExpression() {
   })()`;
 }
 
+/** Mede legibilidade da selecao nativa, invisivel ao gate de overflow global. */
+function installmentFilterFitExpression() {
+  return `(() => {
+    const form = document.querySelector('.installment-filters');
+    if (!form) return { fits: false, reason: 'missing form' };
+    const columns = getComputedStyle(form).gridTemplateColumns.split(' ').filter(Boolean);
+    const controls = Array.from(form.querySelectorAll('input[type="month"], select')).map((node) => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      const label = node.tagName === 'SELECT'
+        ? (node.selectedOptions[0]?.textContent?.trim() || '')
+        : new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
+            .format(new Date(node.value + '-01T12:00:00'));
+      const context = document.createElement('canvas').getContext('2d');
+      context.font = style.font;
+      const labelWidth = context.measureText(label).width;
+      const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+      const available = rect.width - padding - 32;
+      return { name: node.name, label, width: rect.width, available,
+        labelWidth, fits: available >= labelWidth - 1 };
+    });
+    return { fits: columns.length === 1 && controls.length === 5
+      && controls.every((control) => control.width >= 230 && control.fits),
+      columns: columns.length, controls };
+  })()`;
+}
+
 function measurementExpression() {
   return `(() => {
     const summary = document.querySelector('.summary-grid');
@@ -319,7 +371,8 @@ function measurementExpression() {
       summaryColumns: summary ? getComputedStyle(summary).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
       reportColumns: reportGrid ? getComputedStyle(reportGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
       tableScrollable: Boolean(installmentTable && installmentTable.scrollWidth > installmentTable.clientWidth + 1),
-      pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1
+      pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      filterFit: ${installmentFilterFitExpression()}
     };
   })()`;
 }
