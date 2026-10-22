@@ -50,8 +50,10 @@ export async function collectReport718Evidence(readEvidence) {
     assert.equal(measurements.currenciesComplete, true);
     assert.equal(measurements.globalOverflow, false);
     assert.equal(measurements.longLabelsReadable, true);
+    assert.equal(measurements.trendFitsWithoutScroll, true);
+    assert.equal(measurements.matrixRowsCompact, true);
+    assert.equal(measurements.highlightsGrouped, true);
     if (viewport !== "1366x768") {
-      assert.equal(measurements.trendScrollLocal, true);
       assert.equal(measurements.tableScrollLocal, true);
     }
   }
