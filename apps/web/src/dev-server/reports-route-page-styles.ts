@@ -78,12 +78,20 @@ export function reportPageStyles(): string {
     .report-summary-secondary { color:var(--muted); font-size:.8125rem; }
     .report-summary-secondary .sf-money { font-size:.8125rem; }
     .report-trend { contain:inline-size; display:grid; gap:0; grid-auto-columns:minmax(12rem,1fr); grid-auto-flow:column; list-style:none; margin:0; max-width:100%; min-width:0; overflow-x:auto; overscroll-behavior-x:contain; padding:2px 0 8px; scrollbar-gutter:stable; width:100%; }
+    .report-analysis-layer[data-analysis-layer="visualization"] { container-type:inline-size; }
     /* Apenas Evolucao por categoria distribui todos os periodos sem barra horizontal. */
     .report-trend-grid { grid-auto-columns:auto; grid-auto-flow:row; grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr)); overflow-x:visible; padding:0; scrollbar-gutter:auto; }
     .report-trend-grid .report-trend-point { border-right:0; border-bottom:1px solid var(--line); gap:6px; padding:7px 10px; }
     .report-trend-grid .report-trend-point:first-child { padding-left:10px; }
     .report-trend-grid .report-trend-track { align-self:end; }
     .report-trend-grid .report-trend-copy strong { font-size:.75rem; }
+    /* Na largura que comporta os valores completos, 12 meses ocupam uma unica linha.
+       O fallback auto-fit e mantido no tablet/mobile, evitando overflow e truncamento. */
+    @container (min-width:1120px) {
+      .report-trend-grid { grid-template-columns:repeat(var(--report-trend-columns),minmax(0,1fr)); }
+      .report-trend-grid .report-trend-point { padding:6px 6px; }
+      .report-trend-grid .report-trend-copy strong { font-size:.6875rem; overflow-wrap:normal; white-space:nowrap; }
+    }
     .report-trend-grid .report-trend-copy .sf-money { flex-wrap:nowrap; }
     .report-trend-grid .report-trend-copy .sf-money-value { overflow-wrap:normal; white-space:nowrap; word-break:normal; }
     .report-trend:focus-visible { border-radius:3px; outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
