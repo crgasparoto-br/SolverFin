@@ -92,7 +92,7 @@ describe("issue 611 reports analysis archetype", () => {
 
     const html = await renderReportsRoutePage(
       "token",
-      new URL("http://localhost/relatorios?view=installments&month=2026-07"),
+      new URL("http://localhost/relatorios?view=installments&month=2026-07&currency=all"),
     );
 
     assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
