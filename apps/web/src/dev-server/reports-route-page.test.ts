@@ -4,7 +4,8 @@ import { afterEach, describe, it } from "node:test";
 import { renderReportsRoutePage, resolveReportsView } from "./reports-route-page.js";
 
 const originalFetch = globalThis.fetch;
-const goldenSubmitAction = /class="sf-button sf-button-primary sf-focus-ring report-apply-button" type="submit"/;
+const goldenSubmitAction =
+  /class="sf-button sf-button-primary sf-focus-ring report-apply-button" type="submit"/;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
