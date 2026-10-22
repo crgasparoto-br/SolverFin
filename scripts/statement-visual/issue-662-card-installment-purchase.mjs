@@ -186,11 +186,7 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     `${label}: installment must appear inline with accessible label`,
     state,
   );
-  check(
-    !state.rowHasSecondaryDetail,
-    `${label}: purchase row still displays extra detail`,
-    state,
-  );
+  check(!state.rowHasSecondaryDetail, `${label}: purchase row still displays extra detail`, state);
   check(
     state.rowCanonicalTotalMinor === fixture.totalAmountMinor,
     `${label}: canonical purchase total missing from editing model`,
