@@ -78,7 +78,7 @@ describe("reports route page", () => {
     assert.match(html, /<select id="report-origin" name="origin"/);
     assert.match(html, /class="report-origin-filter"/);
     assert.match(html, /Matriz por categoria - BRL/);
-    assert.match(html, /\.evolution-table td \.sf-money-currency \{ display:none; \}/);
+    assert.match(html, /\.evolution-table td \.sf-money \.sf-money-currency \{ display:none; \}/);
     assert.match(html, /<select id="report-currency" name="currency">/);
     assert.match(html, goldenSubmitAction);
     assert.match(html, /<option value="" selected>Todas as contas e cartões<\/option>/);
