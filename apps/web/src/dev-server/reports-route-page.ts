@@ -43,7 +43,6 @@ interface ViewResolution {
   error?: string;
 }
 
-
 interface EvolutionFilterFormValues {
   interval: ReportInterval;
   intervalValue: string;
@@ -799,4 +798,3 @@ function formValuesFromFilters(filters: EvolutionFilters): EvolutionFilterFormVa
     },
   };
 }
-

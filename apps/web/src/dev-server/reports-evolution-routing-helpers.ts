@@ -36,7 +36,11 @@ export function isEvolutionEndRepresentable(
   return addMonths(year, month, offset).year <= 9999;
 }
 
-export function validateEvolutionEnd(interval: ReportInterval, start: string, periods: number): void {
+export function validateEvolutionEnd(
+  interval: ReportInterval,
+  start: string,
+  periods: number,
+): void {
   if (!isEvolutionEndRepresentable(interval, start, periods)) {
     throw new Error("O período calculado ultrapassa o ano 9999.");
   }

@@ -56,4 +56,3 @@ export function formatInvoiceStatus(status: string): string {
   if (status === "cancelled") return "cancelada";
   return status;
 }
-

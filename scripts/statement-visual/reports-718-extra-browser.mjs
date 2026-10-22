@@ -1,6 +1,9 @@
 import { join } from "node:path";
 import { evaluate, screenshot, setViewport } from "./cdp.mjs";
-import { reportPageViewportExpression, trendMoneyTextFitExpression } from "./report-page-viewport.mjs";
+import {
+  reportPageViewportExpression,
+  trendMoneyTextFitExpression,
+} from "./report-page-viewport.mjs";
 
 /** Evidence from the real SSR cash-flow view, not category-evolution markup. */
 export async function validateCashFlow(cdp, context) {

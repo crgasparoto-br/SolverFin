@@ -66,4 +66,3 @@ export function trendMoneyTextFitExpression() {
     return { fits: values.length > 0 && violations.length === 0, checked: values.length, violations };
   })()`;
 }
-
