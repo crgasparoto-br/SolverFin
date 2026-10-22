@@ -181,8 +181,7 @@ async function validateInstallmentEdit(fixture, label, width, height) {
   const fraction = `${fixture.sequenceNumber}/${fixture.totalInstallments}`;
   const accessibleFraction = `Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`;
   check(
-    state.rowTitle.endsWith(fraction) &&
-      state.rowInstallmentLabel === accessibleFraction,
+    state.rowTitle.endsWith(fraction) && state.rowInstallmentLabel === accessibleFraction,
     `${label}: installment must appear inline with accessible label`,
     state,
   );
