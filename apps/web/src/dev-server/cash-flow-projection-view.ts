@@ -157,16 +157,9 @@ function renderCurrencyBlock(
   const key = escapeHtml(block.currency.toLowerCase());
   return `
     <section class="report-analysis-block cash-flow-block" id="cash-flow-${key}" aria-labelledby="cash-flow-title-${key}">
-      <div class="report-analysis-heading">
-        <div>
-          <p class="eyebrow">Moeda</p>
-          <h2 id="cash-flow-title-${key}">${escapeHtml(block.currency)}</h2>
-          <p class="muted">${projection.horizonDays} dias, de ${escapeHtml(formatDateOnly(projection.from))} a ${escapeHtml(formatDateOnly(projection.to))}.</p>
-        </div>
-        <span>Referência: ${escapeHtml(formatDateOnly(projection.referenceDate))}</span>
-      </div>
       <section class="report-analysis-layer" data-analysis-layer="summary" aria-label="Resumo projetado em ${escapeHtml(block.currency)}">
-        <div class="report-layer-heading"><p class="eyebrow">Resumo</p><h3>Posição de caixa</h3></div>
+        <div class="report-layer-topline"><div class="report-layer-heading"><p class="eyebrow">Resumo</p><h2 id="cash-flow-title-${key}">Posição de caixa - ${escapeHtml(block.currency)}</h2></div><span class="report-period-count">Referência: ${escapeHtml(formatDateOnly(projection.referenceDate))}</span></div>
+        <p class="report-visual-legend">${projection.horizonDays} dias, de ${escapeHtml(formatDateOnly(projection.from))} a ${escapeHtml(formatDateOnly(projection.to))}.</p>
         <div class="cash-flow-summary-grid">
         <article class="report-summary-metric" data-tone="information">
           <span>Saldo inicial</span>
@@ -179,14 +172,14 @@ function renderCurrencyBlock(
         </div>
       </section>
       <section class="report-analysis-layer" data-analysis-layer="visualization" aria-label="Visualização em ${escapeHtml(block.currency)}">
-        <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>Evolução do saldo projetado</h3></div>
-        <p class="report-visual-legend">Amostra de saldos diários em ${escapeHtml(block.currency)}. As barras representam a magnitude relativa; a tabela seguinte preserva todos os dias e movimentos.</p>
+        <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>Evolução do saldo projetado - ${escapeHtml(block.currency)}</h3></div>
+        <p class="report-visual-legend">Amostra de saldos diários. As barras representam a magnitude relativa; a tabela seguinte preserva todos os dias e movimentos.</p>
         ${renderCashFlowTrend(block)}
       </section>
       <div class="report-analysis-layer report-detail-layer" data-analysis-layer="detail" aria-label="Detalhe em ${escapeHtml(block.currency)}">
         <div class="report-layer-heading">
           <p class="eyebrow">Detalhe diário</p>
-          <h3>Série contínua</h3>
+          <h3>Série contínua - ${escapeHtml(block.currency)}</h3>
           <p class="muted">Dias sem movimento repetem o saldo anterior. Os valores abaixo vêm prontos do cálculo canônico.</p>
         </div>
         <div class="evolution-table-scroll" tabindex="0" aria-label="Projeção diária em ${escapeHtml(block.currency)}">
