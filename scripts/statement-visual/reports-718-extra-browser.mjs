@@ -27,7 +27,7 @@ export function trendMoneyTextFitExpression() {
 export async function validateCashFlow(cdp, context) {
   const { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState } = context;
   const referenceDate = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-  const route = `/relatorios?view=cash-flow&referenceDate=${referenceDate}&horizonDays=30`;
+  const route = `/relatorios?view=cash-flow&referenceDate=${referenceDate}&horizonDays=30&currency=all`;
   const snapshots = [];
   for (const [width, height] of [
     [1366, 768],
@@ -188,6 +188,36 @@ export async function validateCashFlow(cdp, context) {
         `Cash flow ${viewport} negative control missed monetary overlap`,
         moneyNegativeControl,
       );
+    }
+    // A opcao Todas preserva o contrato multimoedas; em modo comum so uma moeda aparece.
+    for (const selectedCurrency of ["BRL", "USD"]) {
+      const selectedRoute = `/relatorios?view=cash-flow&referenceDate=${referenceDate}&horizonDays=30&currency=${selectedCurrency}`;
+      await navigateWithRetry(cdp, `${baseUrl}${selectedRoute}`, `cash flow ${selectedCurrency} ${viewport}`);
+      await waitForState(cdp, "ready");
+      const selected = await evaluate(
+        cdp,
+        `(() => ({
+          blocks: Array.from(document.querySelectorAll('.cash-flow-block'))
+            .map((block) => block.querySelector('.report-layer-topline h2')?.textContent?.trim()),
+          selected: document.querySelector('#cash-flow-currency')?.value,
+          submit: Boolean(document.querySelector('.cash-flow-filters button[type="submit"]')),
+          noGlobalOverflow: ${reportPageViewportExpression(".cash-flow-report-list")}.fits,
+        }))()`,
+      );
+      check(
+        selected.blocks.length === 1 &&
+          selected.blocks[0]?.endsWith(` - ${selectedCurrency}`) &&
+          selected.selected === selectedCurrency &&
+          selected.submit &&
+          selected.noGlobalOverflow,
+        `Cash flow ${viewport} failed to isolate ${selectedCurrency}`,
+        selected,
+      );
+      if (width === 1366) {
+        const file = `reports-cash-flow-filter-${selectedCurrency.toLowerCase()}.png`;
+        await screenshot(cdp, join(outputDir, file));
+        screenshots.push(file);
+      }
     }
     snapshots.push({ viewport, route, measurements, capturedSections, moneyNegativeControl });
   }
