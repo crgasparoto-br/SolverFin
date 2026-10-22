@@ -40,11 +40,13 @@ export function reportPageStyles(): string {
     .cash-flow-table tbody tr:hover > th,.cash-flow-table tbody tr:hover > td { background:var(--sf-color-neutral-control-hover); }
     .cash-flow-table td:nth-child(2),.cash-flow-table td:nth-child(3),.cash-flow-table .sf-money { white-space:nowrap; }
     .cash-flow-table thead th { background:var(--surface-strong,#f8fafc); font-size:var(--sf-font-size-xs); font-weight:700; position:sticky; top:0; white-space:nowrap; z-index:2; }
-    .cash-flow-evidence-cell { min-width:15rem; white-space:normal; }
-    .cash-flow-evidence { align-items:start; display:grid; gap:3px; grid-template-columns:minmax(0,1fr) auto; padding:4px 0; }
-    .cash-flow-evidence + .cash-flow-evidence { border-top:1px dashed var(--line); margin-top:4px; padding-top:8px; }
-    .cash-flow-evidence > span { display:grid; gap:2px; }
-    .cash-flow-evidence small { color:var(--muted); font-size:.6875rem; }
+    .cash-flow-evidence-cell { min-width:0; white-space:normal; }
+    .cash-flow-evidence { align-items:center; display:flex; flex-wrap:wrap; gap:2px 10px; min-width:0; padding:0; }
+    .cash-flow-evidence + .cash-flow-evidence { border-top:1px dashed var(--line); margin-top:4px; padding-top:4px; }
+    .cash-flow-evidence-main { align-items:baseline; display:inline-flex; flex-wrap:wrap; gap:2px 8px; min-width:0; overflow-wrap:break-word; }
+    .cash-flow-evidence-main strong { font-size:var(--sf-font-size-sm); font-weight:600; }
+    .cash-flow-evidence > .text-link { margin-left:auto; white-space:nowrap; }
+    .cash-flow-evidence small { color:var(--muted); font-size:var(--sf-font-size-xs); white-space:nowrap; }
     .filter-hint { color:var(--muted); font-size:.75rem; margin-top:8px; }
     .filter-invalid-value { color:var(--danger,#b91c1c); font-size:.75rem; margin:2px 0 0; width:100%; }
     .filter-invalid-value code { font:inherit; font-weight:700; }
@@ -233,7 +235,6 @@ export function reportPageStyles(): string {
     .installment-table .installment-detail-table td:nth-child(3),.installment-table .installment-detail-table td:nth-child(4),.installment-table .installment-detail-table td:nth-child(5),.installment-table .installment-detail-table td:nth-child(6) { overflow-wrap:break-word; white-space:normal; word-break:normal; }
     .installment-table .installment-detail-table th:last-child,.installment-table .installment-detail-table td:last-child { text-align:right; white-space:nowrap; }
     .installment-table .installment-detail-table td .sf-money { display:inline-flex; justify-content:flex-end; white-space:nowrap; }
-    .cash-flow-evidence > span { min-width:0; overflow-wrap:anywhere; }
     @media(max-width:1180px){.sf-summary-grid.summary-grid.installment-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.installment-summary-grid .installment-summary-metric{border-bottom:1px solid var(--line);}.installment-distribution-grid{gap:14px;}}
     @media(max-width:760px){.sf-summary-grid.summary-grid.installment-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.installment-distribution-grid{grid-template-columns:minmax(0,1fr);}.installment-month-strip{grid-template-columns:minmax(0,1fr);gap:4px;}.installment-month-strip .aggregate-copy{justify-content:space-between;}}
     @media(max-width:480px){.sf-summary-grid.summary-grid.installment-summary-grid{grid-template-columns:minmax(0,1fr);}.installment-summary-grid .installment-summary-metric{align-items:center;grid-template-columns:minmax(0,1fr) auto auto;grid-template-rows:auto;padding:7px 10px;}.installment-summary-grid .installment-summary-metric > span{grid-column:1;}.installment-summary-grid .installment-summary-metric > strong{grid-column:2;}.installment-summary-grid .installment-summary-metric .report-summary-secondary{grid-column:3;}}
