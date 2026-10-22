@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 import { reportPageViewportExpression } from "./report-page-viewport.mjs";
-import { validateCashFlow, validateMobileStates } from "./reports-718-extra-browser.mjs";
+import { validateCashFlow, validateMobileStates, validateMultiCurrency } from "./reports-718-extra-browser.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -44,10 +44,10 @@ try {
   report.mobile = await validateReadyMobile(browser.cdp, seeded.month);
   report.empty = await validateEmptyState(browser.cdp);
   report.filterError = await validateFilterError(browser.cdp);
-  report.multiCurrency = await validateMultiCurrency(browser.cdp, seeded.month);
+  const extraContext = { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState };
+  report.multiCurrency = await validateMultiCurrency(browser.cdp, seeded.month, extraContext);
   report.negativeControl = await validateClippedCategoryNegativeControl(browser.cdp);
   report.viewportNegativeControl = await validateReportViewportNegativeControl(browser.cdp);
-  const extraContext = { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState };
   report.cashFlow = await validateCashFlow(browser.cdp, extraContext);
   report.mobileStates = await validateMobileStates(browser.cdp, extraContext);
 } catch (error) {
@@ -271,137 +271,6 @@ async function validateFilterError(cdp) {
     measurements,
   );
   return { viewport: "1024x700", measurements, screenshot: screenshots.at(-1) };
-}
-
-async function validateMultiCurrency(cdp, month) {
-  const snapshots = [];
-  for (const [width, height, label] of [
-    [1366, 768, "desktop"],
-    [390, 844, "mobile"],
-    [320, 740, "mobile-small"],
-  ]) {
-    await setViewport(cdp, width, height);
-    await navigateWithRetry(
-      cdp,
-      `${baseUrl}/relatorios?view=category-evolution&interval=monthly&start=${month}&periods=12`,
-      `reports multi-currency ${label}`,
-    );
-    await waitForState(cdp, "ready");
-    const measurements = await evaluate(
-      cdp,
-      `(() => {
-      const pageViewport = ${reportPageViewportExpression()};
-      const blocks = Array.from(document.querySelectorAll('[data-report-analysis="a5"][data-currency]'));
-      return {
-        currencies: blocks.map((block) => block.getAttribute('data-currency')),
-        currenciesComplete: ['BRL', 'USD'].every((currency) => {
-          const block = blocks.find((item) => item.getAttribute('data-currency') === currency);
-          if (!block) return false;
-          const layers = Array.from(block.querySelectorAll('[data-analysis-layer]'))
-            .map((layer) => layer.getAttribute('data-analysis-layer'));
-          const money = Array.from(block.querySelectorAll('.sf-money[data-currency]'));
-          return layers.join('|') === 'summary|visualization|highlights|detail'
-            && money.length > 0
-            && money.every((node) => node.getAttribute('data-currency') === currency)
-            && Boolean(block.querySelector('[data-emphasis="true"]'));
-        }),
-        globalOverflow: !pageViewport.fits,
-        pageViewport,
-        tableScrollLocal: Array.from(document.querySelectorAll('.evolution-table-scroll'))
-          .every((node) => node.scrollWidth > node.clientWidth && node.tabIndex === 0),
-        trendScrollLocal: Array.from(document.querySelectorAll('.report-trend'))
-          .every((node) => node.scrollWidth > node.clientWidth
-            && ['auto', 'scroll'].includes(getComputedStyle(node).overflowX)
-            && node.tabIndex === 0),
-        longLabelsReadable: Array.from(document.querySelectorAll('.report-category-label > span:last-child'))
-          .every((node) => getComputedStyle(node).textOverflow !== 'ellipsis'),
-      };
-    })()`,
-    );
-    // Preserve the opening viewport and independently capture every currency below
-    // the fold. A screenshot of filters alone cannot attest monetary readability.
-    const capturedSections = [];
-    for (const currency of ["BRL", "USD"]) {
-      for (const layer of ["summary", "visualization", "detail"]) {
-        const section = await evaluate(
-          cdp,
-          `(() => {
-            const block = Array.from(document.querySelectorAll('[data-report-analysis="a5"][data-currency]'))
-              .find((candidate) => candidate.getAttribute('data-currency') === ${JSON.stringify(currency)});
-            const target = block?.querySelector('[data-analysis-layer="${layer}"]');
-            if (!block || !target) return { visible: false, correctCurrency: false, hasContent: false };
-            target.scrollIntoView({ behavior: 'instant', block: 'start', inline: 'nearest' });
-            const bounds = target.getBoundingClientRect();
-            const viewportHeight = document.documentElement.clientHeight;
-            const visibleHeight = Math.max(0, Math.min(bounds.bottom, viewportHeight) - Math.max(bounds.top, 0));
-            const heading = block.querySelector('.report-analysis-heading');
-            const money = target.querySelectorAll('.sf-money[data-currency]');
-            const hasContent = '${layer}' === 'summary'
-              ? money.length > 0 && Array.from(money).every((item) => item.getAttribute('data-currency') === '${currency}')
-              : '${layer}' === 'visualization'
-                ? Boolean(target.querySelector('.report-trend'))
-                : Boolean(target.querySelector('table, .sf-table-wrap'));
-            return {
-              visible: bounds.top >= -2 && bounds.top <= viewportHeight - 100 && visibleHeight >= 100,
-              correctCurrency: heading?.textContent?.includes('${currency}') === true,
-              hasContent,
-              viewportTop: Math.round(bounds.top),
-              visibleHeight: Math.round(visibleHeight),
-            };
-          })()`,
-        );
-        const sectionScreenshot = `reports-${label}-${width}x${height}-${currency.toLowerCase()}-${layer}.png`;
-        await screenshot(cdp, join(outputDir, sectionScreenshot));
-        screenshots.push(sectionScreenshot);
-        check(section.visible, `${currency} ${layer} is not visible in ${label} evidence`, section);
-        check(section.correctCurrency, `${currency} ${layer} lost the currency heading`, section);
-        check(section.hasContent, `${currency} ${layer} has no inspectable content`, section);
-        capturedSections.push({
-          currency,
-          layer,
-          screenshot: sectionScreenshot,
-          measurements: section,
-        });
-      }
-    }
-    // Return to the top so the original reference capture remains comparable.
-    await evaluate(cdp, `window.scrollTo({ top: 0, behavior: 'instant' })`);
-    const filename = `reports-multicurrency-${label}-${width}x${height}.png`;
-    await screenshot(cdp, join(outputDir, filename));
-    screenshots.push(filename);
-    check(measurements.currencies.includes("BRL"), "Missing BRL block", measurements);
-    check(measurements.currencies.includes("USD"), "Missing USD block", measurements);
-    check(
-      measurements.currenciesComplete,
-      "Per-currency layers or Money values became mixed",
-      measurements,
-    );
-    check(
-      !measurements.globalOverflow,
-      "Reports multi-currency page leaks horizontal overflow",
-      measurements,
-    );
-    check(measurements.longLabelsReadable, "Reports category labels are truncated", measurements);
-    if (width <= 390) {
-      check(
-        measurements.trendScrollLocal,
-        "Multi-currency mobile trend lost local scroll",
-        measurements,
-      );
-      check(
-        measurements.tableScrollLocal,
-        "Multi-currency mobile table lost local scroll",
-        measurements,
-      );
-    }
-    snapshots.push({
-      viewport: `${width}x${height}`,
-      screenshot: filename,
-      measurements,
-      capturedSections,
-    });
-  }
-  return snapshots;
 }
 
 async function validateReportViewportNegativeControl(cdp) {
