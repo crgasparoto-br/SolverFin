@@ -80,6 +80,12 @@ describe("reports route page", () => {
     assert.match(html, /Matriz por categoria - BRL/);
     assert.match(
       html,
+      /\.evolution-table button\.category-tree-toggle:hover:not\(:disabled\) \{ background:var\(--sf-color-neutral-control-hover\); border-color:var\(--sf-color-neutral-control-border-hover\); color:var\(--sf-color-neutral-control-text-hover\); \}/,
+    );
+    assert.match(html, /\.evolution-table button\.category-tree-toggle:focus-visible/);
+    assert.match(html, /aria-expanded="true" aria-controls=/);
+    assert.match(
+      html,
       /\.currency-report-list \.sf-money \.sf-money-currency,\.cash-flow-report-list \.sf-money \.sf-money-currency \{ display:none; \}/,
     );
     assert.doesNotMatch(html, /class="report-analysis-heading"/);
