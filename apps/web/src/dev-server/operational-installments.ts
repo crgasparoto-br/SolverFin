@@ -283,8 +283,9 @@ export function operationalInstallmentsController(): string {
         if (!description || description.querySelector('[data-installment-badge="' + installment.id + '"]')) return;
         const label = installmentLabel(installment);
         const reasonText = installment.amountEditable ? "Valor da parcela editável. Outros dados podem estar protegidos." : blockReason(installment.editBlockedReason);
-        const badge = document.createElement("span");
-        badge.className = "installment-badge";
+        const existingBadge = row.querySelector(".cards-purchase-description .cards-installment-label");
+        const badge = existingBadge || document.createElement("span");
+        badge.classList.add("installment-badge");
         badge.dataset.installmentBadge = installment.id;
         badge.textContent = label;
         badge.setAttribute("aria-label", label);
@@ -300,7 +301,7 @@ export function operationalInstallmentsController(): string {
           badge.setAttribute("aria-describedby", reasonId);
           description.appendChild(reason);
         }
-        description.appendChild(badge);
+        if (!existingBadge) description.appendChild(badge);
       }
 
       async function fetchInstallments(path) {
@@ -408,7 +409,10 @@ export function operationalInstallmentsController(): string {
           const node = findNodeByData("script[data-purchase]", transactionId);
           const row = node && node.closest("article");
           if (!row) return;
-          addBadge(row, installment);
+          // Card recurrences already have the shared recurring icon; finite plans use one badge.
+          if (!installment.recurrenceId && Number(installment.totalInstallments) > 1) {
+            addBadge(row, installment);
+          }
           const editButton = row.querySelector('[data-edit-purchase="' + transactionId + '"]');
           if (editButton && installment.editBlockedReason === "invoice_linked") {
             editButton.title = editButton.disabled
