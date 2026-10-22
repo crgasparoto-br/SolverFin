@@ -29,6 +29,16 @@ A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, ca
 
 Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
 
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
 ## Propagacao visual Golden Screen (#718)
 
 A rota adota o nivel de acabamento da Golden Screen do Extrato, **sem copiar o arquetipo de listagem**. O arquetipo A5 continua sendo a referencia: contexto de visao e filtros no topo, indicador decisivo por moeda, visualizacao, destaques e detalhe. Navegacao entre visoes usa abas discretas; controles mantem altura e foco padronizados. Nos blocos multi-moedas, a moeda permanece identificada no cabecalho e em cada valor por `Money`; o destaque do resultado e do total mensal nunca une BRL e USD.
