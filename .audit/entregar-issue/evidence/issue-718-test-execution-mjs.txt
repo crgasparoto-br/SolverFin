@@ -1,0 +1,8 @@
+HEAD: 2ba22d2fad98f55fe88165c9f6dce096deaec0c0
+COMMAND: node --test scripts/statement-visual/report-page-viewport.test.mjs scripts/statement-visual/reports-718-behavior-evidence.test.mjs
+EXIT_CODE: 0
+SOURCE: Local Node test execution at exact HEAD
+RESULT: 15 tests passed, 0 failed
+REACHED: scripts/statement-visual/report-page-viewport.test.mjs
+REACHED: scripts/statement-visual/reports-718-behavior-evidence.test.mjs
+RAW_LOCAL_LOG_SHA256: 6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552

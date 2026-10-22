@@ -1,11 +1,11 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-10-22T10:57:45.052751+00:00",
+  "created_at": "2026-10-22T22:12:38.330912+00:00",
   "identity": {
-    "head_sha": "ff2b89908d61a42271d38482292d802d7b14ef08",
-    "material_head_sha": "ff2b89908d61a42271d38482292d802d7b14ef08",
-    "base_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
+    "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
+    "material_head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
+    "base_sha": "685aea17f732fea3553c9d0f5043462dc7f9d14f",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
   },
@@ -22,35 +22,8 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
-    "material_head_sha": "ff2b89908d61a42271d38482292d802d7b14ef08",
+    "material_head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
     "issue_changed_paths": [
-      ".github/workflows/delivery-v2-ci.yml",
-      "apps/web/src/dev-server/cash-flow-projection-view.ts",
-      "apps/web/src/dev-server/reports-analysis-archetype.ts",
-      "apps/web/src/dev-server/reports-installments-view.ts",
-      "apps/web/src/dev-server/reports-route-page-shared.ts",
-      "apps/web/src/dev-server/reports-route-page-styles.ts",
-      "apps/web/src/dev-server/reports-route-page.test.ts",
-      "apps/web/src/dev-server/reports-route-page.ts",
-      "docs/REPORTS.md",
-      "scripts/statement-visual/coverage-contract.mjs",
-      "scripts/statement-visual/issue-546-reports-category-controls.mjs",
-      "scripts/statement-visual/issue-606-behavior-claims.mjs",
-      "scripts/statement-visual/issue-606-semantic-interactions.mjs",
-      "scripts/statement-visual/report-page-viewport.mjs",
-      "scripts/statement-visual/report-page-viewport.test.mjs",
-      "scripts/statement-visual/reports-718-behavior-evidence.mjs",
-      "scripts/statement-visual/reports-718-behavior-evidence.test.mjs",
-      "scripts/statement-visual/reports-718-extra-browser.mjs",
-      "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
-      "scripts/statement-visual/reports-718-visual-acceptance.mjs",
-      "scripts/statement-visual/reports-category-evolution.mjs"
-    ],
-    "issue_delta_sha256": "4bbc6e95f90254856909ffa14f3e60fc15a153da3e8991953be0f3603516a204"
-  },
-  "certificate_commit_policy": {
-    "mode": "result-only-child",
-    "allowed_paths": [
       ".audit/entregar-issue/code-growth.json",
       ".audit/entregar-issue/codebase-grounding.json",
       ".audit/entregar-issue/handoff-ready.json",
@@ -58,6 +31,58 @@
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/specification-snapshot.json",
       ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
+      ".audit/entregar-issue/standard-evidence.json",
+      ".github/workflows/delivery-v2-ci.yml",
+      "apps/web/src/dev-server/cards-page-recurring-render.test.ts",
+      "apps/web/src/dev-server/cards-page-v2-styles.ts",
+      "apps/web/src/dev-server/cards-page-v2.test.ts",
+      "apps/web/src/dev-server/cards-page-v2.ts",
+      "apps/web/src/dev-server/cash-flow-projection-view.test.ts",
+      "apps/web/src/dev-server/cash-flow-projection-view.ts",
+      "apps/web/src/dev-server/operational-installments.test.ts",
+      "apps/web/src/dev-server/operational-installments.ts",
+      "apps/web/src/dev-server/reports-analysis-archetype.ts",
+      "apps/web/src/dev-server/reports-analysis-issue-611.test.ts",
+      "apps/web/src/dev-server/reports-analysis-state-issue-611.test.ts",
+      "apps/web/src/dev-server/reports-category-evolution-issue-546.test.ts",
+      "apps/web/src/dev-server/reports-evolution-routing-helpers.ts",
+      "apps/web/src/dev-server/reports-installments-format.ts",
+      "apps/web/src/dev-server/reports-installments-view.ts",
+      "apps/web/src/dev-server/reports-route-page-shared.ts",
+      "apps/web/src/dev-server/reports-route-page-styles.ts",
+      "apps/web/src/dev-server/reports-route-page.test.ts",
+      "apps/web/src/dev-server/reports-route-page.ts",
+      "docs/CARDS.md",
+      "docs/REPORTS.md",
+      "scripts/statement-visual/coverage-contract.mjs",
+      "scripts/statement-visual/issue-539-operational-installments.mjs",
+      "scripts/statement-visual/issue-546-reports-category-controls.mjs",
+      "scripts/statement-visual/issue-606-behavior-claims.mjs",
+      "scripts/statement-visual/issue-606-semantic-interactions.mjs",
+      "scripts/statement-visual/issue-662-card-installment-purchase.mjs",
+      "scripts/statement-visual/report-page-viewport.mjs",
+      "scripts/statement-visual/report-page-viewport.test.mjs",
+      "scripts/statement-visual/reports-718-behavior-evidence.mjs",
+      "scripts/statement-visual/reports-718-behavior-evidence.test.mjs",
+      "scripts/statement-visual/reports-718-extra-browser.mjs",
+      "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
+      "scripts/statement-visual/reports-718-visual-acceptance.mjs",
+      "scripts/statement-visual/reports-category-evolution.mjs",
+      "scripts/statement-visual/reports-installments-regression.mjs"
+    ],
+    "issue_delta_sha256": "e1614786e019517013c9e3b72e46b78ddf2cbf2c0c53620b16230bb7821557b1"
+  },
+  "certificate_commit_policy": {
+    "mode": "result-only-child",
+    "allowed_paths": [
+      ".audit/entregar-issue/code-growth.json",
+      ".audit/entregar-issue/codebase-grounding.json",
+      ".audit/entregar-issue/evidence/issue-718-test-execution-mjs.txt",
+      ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/negative-control-evidence-718.json",
+      ".audit/entregar-issue/requirement-closure.json",
+      ".audit/entregar-issue/specification-snapshot.json",
       ".audit/entregar-issue/standard-evidence.json"
     ]
   },
@@ -66,7 +91,7 @@
   "remediation_mode": null,
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "3491f0077eff338325c2257c900bd38560bb28596b592b669b5b101672155dfe"
+    "skill_sha256": "531963da10019de893ff82bbe8dd6e7709b24da2240494a9fcd381e7f201db3a"
   },
   "validators": {
     "validate_specification_coverage.py": "097d0d56edd5495f2a0fc3cc0606514a972d6995e6e8977d56e7595ceeb139e3",
@@ -101,8 +126,8 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "77d716d8d82195e356da32ca36688916d42bc0d74814296b9ff29498f3401fb6",
-      "logical_sha256": "77d716d8d82195e356da32ca36688916d42bc0d74814296b9ff29498f3401fb6",
+      "sha256": "6fad947dfcf1791df749bd82e65724b4d427608461ef59772705031ba7ac21ac",
+      "logical_sha256": "6fad947dfcf1791df749bd82e65724b4d427608461ef59772705031ba7ac21ac",
       "logical_size": 19365,
       "artifact_transport": {
         "format": "plain-json",
@@ -111,8 +136,8 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "6f46fca2f9e3b3b9dfe40905a68cf84df38822c94a6c1b7745c9a034e0f16e37",
-      "logical_sha256": "6f46fca2f9e3b3b9dfe40905a68cf84df38822c94a6c1b7745c9a034e0f16e37",
+      "sha256": "afa894cc1f0e72c25308b28f51dca36dd589ef2138f6b8bde071539101de5597",
+      "logical_sha256": "afa894cc1f0e72c25308b28f51dca36dd589ef2138f6b8bde071539101de5597",
       "logical_size": 17921,
       "artifact_transport": {
         "format": "plain-json",
@@ -121,9 +146,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "9017427e029249983b3442fc4efac18a8a5635781987525f76e8926a735f9b88",
-      "logical_sha256": "9017427e029249983b3442fc4efac18a8a5635781987525f76e8926a735f9b88",
-      "logical_size": 7339,
+      "sha256": "2c4b024320eff8c0618a4632c045222b37d812ffa58beb47cf5adf664ebcbc00",
+      "logical_sha256": "2c4b024320eff8c0618a4632c045222b37d812ffa58beb47cf5adf664ebcbc00",
+      "logical_size": 23890,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -131,9 +156,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "43bf5ab74d8836801ebc444371dc6cc2b9e50d1649b7e60c48c22aea6526594d",
-      "logical_sha256": "43bf5ab74d8836801ebc444371dc6cc2b9e50d1649b7e60c48c22aea6526594d",
-      "logical_size": 2701,
+      "sha256": "e697a5515899737d4e698f990a1ca6ebba7ca79c48edd3cbf88e3e8a7ccafa30",
+      "logical_sha256": "e697a5515899737d4e698f990a1ca6ebba7ca79c48edd3cbf88e3e8a7ccafa30",
+      "logical_size": 3808,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -151,7 +176,7 @@
       "applicable": true,
       "status": "passed",
       "checked": 87,
-      "subject_sha": "ff2b89908d61a42271d38482292d802d7b14ef08",
+      "subject_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
       "evidence_artifacts": [
         "requirement_closure",
         "standard_evidence"

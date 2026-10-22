@@ -1,0 +1,13 @@
+HEAD: 2ba22d2fad98f55fe88165c9f6dce096deaec0c0
+COMMAND: npm run test
+EXIT_CODE: 0
+SOURCE: Repository CI run 39858421080 / job 120102924264 (authenticated GitHub)
+RESULT: completed/success
+REACHED: apps/web/src/dev-server/cards-page-recurring-render.test.ts
+REACHED: apps/web/src/dev-server/cards-page-v2.test.ts
+REACHED: apps/web/src/dev-server/cash-flow-projection-view.test.ts
+REACHED: apps/web/src/dev-server/operational-installments.test.ts
+REACHED: apps/web/src/dev-server/reports-analysis-issue-611.test.ts
+REACHED: apps/web/src/dev-server/reports-analysis-state-issue-611.test.ts
+REACHED: apps/web/src/dev-server/reports-category-evolution-issue-546.test.ts
+REACHED: apps/web/src/dev-server/reports-route-page.test.ts
