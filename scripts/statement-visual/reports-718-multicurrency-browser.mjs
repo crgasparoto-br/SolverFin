@@ -154,5 +154,51 @@ export async function validateMultiCurrency(cdp, month, context) {
       capturedSections,
     });
   }
+  // Layout de 12 meses em uma única linha constitui um breakpoint diferente
+  // da prova mobile/tablet; reutilize a mesma fixture e navegador.
+  await setViewport(cdp, 1600, 900);
+  await navigateWithRetry(
+    cdp,
+    `${baseUrl}/relatorios?view=category-evolution&interval=monthly&start=${month}&periods=12`,
+    "reports wide desktop 12 months",
+  );
+  await waitForState(cdp, "ready");
+  const wideTrend = await evaluate(
+    cdp,
+    `(() => {
+      const trends = Array.from(document.querySelectorAll('.report-trend-grid'));
+      const details = trends.map((trend) => {
+        const points = Array.from(trend.querySelectorAll('.report-trend-point'));
+        const firstTop = points[0]?.getBoundingClientRect().top;
+        const columns = getComputedStyle(trend).gridTemplateColumns.split(' ').filter(Boolean).length;
+        const moneyFits = points.every((point) => {
+          const amount = point.querySelector('.sf-money-value');
+          if (!amount) return false;
+          const rect = amount.getBoundingClientRect();
+          const frame = point.getBoundingClientRect();
+          return rect.left >= frame.left - 1 && rect.right <= frame.right + 1;
+        });
+        return {
+          currency: trend.closest('[data-currency]')?.getAttribute('data-currency'),
+          columns,
+          points: points.length,
+          oneRow: points.every((point) => Math.abs(point.getBoundingClientRect().top - firstTop) < 1),
+          noOverflow: trend.scrollWidth <= trend.clientWidth + 1,
+          moneyFits,
+        };
+      });
+      return { fits: details.length === 2 && details.every((item) =>
+        item.points === 12 && item.columns === 12 && item.oneRow
+          && item.noOverflow && item.moneyFits), details };
+    })()`,
+  );
+  const wideScreenshot = "reports-wide-desktop-twelve-months.png";
+  await screenshot(cdp, join(outputDir, wideScreenshot));
+  screenshots.push(wideScreenshot);
+  check(
+    wideTrend.fits,
+    "The 12 monthly results wrap or their values overflow at 1600px",
+    wideTrend,
+  );
   return snapshots;
 }
