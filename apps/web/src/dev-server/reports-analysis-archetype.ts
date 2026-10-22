@@ -70,7 +70,7 @@ export function renderReportAnalysisBlock(props: ReportAnalysisBlockProps): stri
       ${props.highlightsHtml}
     </section>
     <section class="report-analysis-layer report-detail-layer" data-analysis-layer="detail" aria-label="Detalhe em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle)} - ${renderText(props.currency)}</h3></div>
+      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle)}</h3></div>
       ${props.detailHtml}
     </section>
   </section>`;
