@@ -426,6 +426,7 @@ describe("reports route page", () => {
     );
     assert.match(html, /data-report-state="empty"/);
     assert.match(html, /Nenhum lançamento em USD no período/);
+    assert.match(html, /Matriz por categoria - USD/);
     assert.match(html, /<select id="report-currency" name="currency">/);
     assert.match(html, /<option value="USD" selected>USD<\/option>/);
     assert.doesNotMatch(html, /data-report-analysis="a5" data-currency="BRL"/);
