@@ -79,7 +79,9 @@ function fixture() {
         currenciesComplete: true,
         globalOverflow: false,
         longLabelsReadable: true,
-        trendScrollLocal: true,
+        trendFitsWithoutScroll: true,
+        matrixRowsCompact: true,
+        highlightsGrouped: true,
         tableScrollLocal: true,
       },
     })),
@@ -92,6 +94,14 @@ test("#718 adapter validates original Chrome evidence and full viewport coverage
   const proof = await collectReport718Evidence(async () => fixture());
   assert.deepEqual(proof.assertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
   assert.deepEqual(proof.files, ["reports-category-evolution.json"]);
+});
+
+test("#718 adapter rejects category trend scrollbar, tall matrix rows or detached review alerts", async () => {
+  for (const field of ["trendFitsWithoutScroll", "matrixRowsCompact", "highlightsGrouped"]) {
+    const evidence = fixture();
+    evidence.multiCurrency[1].measurements[field] = false;
+    await assert.rejects(collectReport718Evidence(async () => evidence), { name: "AssertionError" });
+  }
 });
 
 test("#718 adapter rejects incomplete currency coverage or mobile overflow", async () => {
