@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
+  "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
   "base_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
   "policy": {
     "new_file_soft_limit": 300,
@@ -65,7 +65,7 @@
     {
       "path": "apps/web/src/dev-server/reports-route-page-styles.ts",
       "lines_before": 129,
-      "lines_after": 248
+      "lines_after": 250
     },
     {
       "path": "apps/web/src/dev-server/reports-route-page.ts",
@@ -135,7 +135,7 @@
     {
       "path": "scripts/statement-visual/reports-installments-regression.mjs",
       "lines_before": 369,
-      "lines_after": 369
+      "lines_after": 422
     }
   ],
   "blocking_files": []

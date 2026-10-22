@@ -3,10 +3,10 @@
   "repository": "crgasparoto-br/SolverFin",
   "issue_number": 718,
   "pull_request_number": 729,
-  "material_head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-  "chrome_run": 39858421103,
-  "chrome_artifact_id": 12461670374,
-  "chrome_raw_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
+  "material_head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+  "chrome_run": 39868576683,
+  "chrome_artifact_id": 12464744819,
+  "chrome_raw_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
   "local_test_command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
   "local_test_passed": 15,
   "independence": "internal-producer-evidence-only; independent review not asserted",
@@ -19,9 +19,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "15 local Node tests and exact-SHA Chrome passed; no independent visual approval is claimed",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-02",
@@ -31,9 +31,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "The adapter rejects omitted offscreen captures and Chrome emitted all expected layers",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-03",
@@ -43,9 +43,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Adapter rejects invalid retryHref; real API error has same canonical URL",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-04",
@@ -55,9 +55,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Chrome negativeControl observed=true and restored=true",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9"
     },
     {
       "id": "NC-718-05",
@@ -67,9 +67,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Chrome viewportNegativeControl observed=true and restored=true",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9"
     },
     {
       "id": "NC-718-06",
@@ -79,9 +79,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Adapter rejects absent summary screenshot and incorrect currency context",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-07",
@@ -91,9 +91,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Adapter rejects changed correctCurrency=false and requires independent BRL/USD blocks",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-08",
@@ -103,9 +103,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Adapter rejects missing mobile viewport/cash-flow layer",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-09",
@@ -115,9 +115,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Adapter requires hasContent=true, with 36 real Chrome captures",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-10",
@@ -127,9 +127,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Adapter rejects cash-flow mixed currencies and incomplete currency blocks",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-11",
@@ -139,9 +139,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Chrome moneyNegativeControl baseline=true observed=true restored=true",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9"
     },
     {
       "id": "NC-718-12",
@@ -151,9 +151,9 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Adapter rejects missing mobile states and broken recovery URL",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
     },
     {
       "id": "NC-718-13",
@@ -163,9 +163,21 @@
       "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
       "observed": "Adapter fails closed on absent/non-restored negative control; external independent review remains required",
       "status": "passed",
-      "head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-      "source_report_sha256": "fe062da822d8829b6967fb1727f7c84267df7e358aa816d814cf9b70fb63d620",
-      "raw_case_sha256": "6fb3d24944e2593dedffa68ae8d250885ba35c4e05ff777e1a9ce5b5c9765552"
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "81e377cf0fa743863ac82b85fd8f24c70cdc943afc7c1dc7d1547d249d7f8ec9",
+      "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04"
+    },
+    {
+      "id": "NC-718-MOBILE-FILTER-001",
+      "kind": "browser-mutation",
+      "plausible_wrong_implementation": "Two-column month/card/category controls are compressed without any global page overflow",
+      "procedure": "scripts/statement-visual/reports-installments-regression.mjs validateMobile 390x844 and 320x740 forces two columns and then restores",
+      "expected": "An artificial two-column grid fails filterFit on both widths; restoring one column passes, all 5 selected values fit",
+      "observed": "Raw Chrome reports-installments-regression.json shows both viewport scenarios filterFit.fits=true, negativeControl.rejected=true and restored=true, failures=[]",
+      "status": "passed",
+      "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_report_sha256": "9f7949db6a6ce54f51a4b47b31e33a5179db666cb5ec868ac5a8ee1c16a8f6b9",
+      "raw_case_sha256": "9f7949db6a6ce54f51a4b47b31e33a5179db666cb5ec868ac5a8ee1c16a8f6b9"
     }
   ]
 }

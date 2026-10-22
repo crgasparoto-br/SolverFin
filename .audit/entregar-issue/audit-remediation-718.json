@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:861cf81d-c9e5-458e-bd87-bfe98ca00e6b",
+    "audit_report_sha256": "add747cb17e8db34e994eeba19678a8354145cd892bcdbad8ed654f2cbc05a7d",
+    "audited_head_sha": "f06059fa91278f7caea412c220440d753fe1a085"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A718-04",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/reports-route-page-styles.ts",
+        "scripts/statement-visual/reports-installments-regression.mjs",
+        "docs/REPORTS.md"
+      ],
+      "evidence": [
+        "Visual Chrome 39868576683 artifact 12464744819 reports-installments-regression.json SHA256=9f7949db6a6ce54f51a4b47b31e33a5179db666cb5ec868ac5a8ee1c16a8f6b9",
+        "screenshots reports-installments-mobile-390x844.png, reports-installments-mobile-320x740.png",
+        "scripts/statement-visual/reports-installments-regression.mjs"
+      ],
+      "validations": [
+        "Chrome run 39868576683 success material SHA 49246114f5776e84871ee079b9c8191ea79bfe35, failures=[]",
+        "Repository CI run 39868576647 success at same SHA",
+        "Negative two-column mutation rejected and restored on both widths; selected card/category/month labels fit"
+      ]
+    }
+  ]
+}

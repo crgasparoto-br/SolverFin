@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A718-04",
+      "escape_class": "selected-filter-value-clipping-without-viewport-overflow",
+      "status": "passed",
+      "revalidated_head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:861cf81d-c9e5-458e-bd87-bfe98ca00e6b",
+        "audited_head_sha": "f06059fa91278f7caea412c220440d753fe1a085",
+        "finding_id": "A718-04",
+        "finding_ids": [
+          "A718-04"
+        ],
+        "audit_report_sha256": "add747cb17e8db34e994eeba19678a8354145cd892bcdbad8ed654f2cbc05a7d"
+      },
+      "plausible_wrong_implementation": "A two-column CSS grid at 390px produces month and select text clipping but passes global body overflow checks",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Run Chrome /relatorios?view=installments at 390x844 and verify month (2026), card and category visible and no clipping",
+        "observed": "Chrome run 39868576683 actual file reports-installments-regression.json: filterFit.fits and negativeControl both passed at 390x844"
+      },
+      "sibling_cases": [
+        {
+          "id": "A718-04-S1",
+          "surface": "mobile-installments-filter",
+          "dimension": "320px narrow viewport",
+          "status": "passed",
+          "evidence": "Chrome run 39868576683: filterFit at 320x740"
+        },
+        {
+          "id": "A718-04-S2",
+          "surface": "mobile-installments-filter",
+          "dimension": "forced 2-column negative mutation",
+          "status": "passed",
+          "evidence": "Chrome run 39868576683: negativeControl.rejected and restored at 390px and 320px"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "CSS reports-route-page-styles.ts: 480px breakpoint 1fr; Chrome artifact 12464744819"
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "reports-installments-regression.mjs measures selected label widths and rejects two-column layout without global overflow; artifacts verified",
+        "control_id": "NC-718-MOBILE-FILTER-001"
+      },
+      "required_risk_families": [
+        "visual-accessibility"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "visual-accessibility",
+          "surface": "mobile-installments-filter",
+          "dimension": "text clipping without global overflow"
+        },
+        {
+          "risk_family": "visual-accessibility",
+          "surface": "mobile-installments-filter",
+          "dimension": "narrow viewport 320px"
+        }
+      ],
+      "trigger_terms": [
+        "selected filter clipped",
+        "mobile filter widths",
+        "date month select overflow"
+      ]
+    }
+  ]
+}

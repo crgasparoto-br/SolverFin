@@ -21,7 +21,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39858421103; issue #714 baseline reference remains open for separate audit"
+      "rationale": "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39868576683; issue #714 baseline reference remains open for separate audit"
     },
     {
       "id": "OBL-002",
@@ -96,7 +96,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134, report-page-viewport.mjs:7-47; Chrome negative viewport control and all six mobile section captures per scenario"
+      "rationale": "scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134, report-page-viewport.mjs:7-47; Chrome negative viewport control and all six mobile section captures per scenario; A718-04 Chrome 39868576683 artifact 12464744819, filterFit at 390x844 and 320x740 verified with rejected negative control"
     },
     {
       "id": "OBL-006",
@@ -156,7 +156,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Chrome run 39858421103; artifact 12461670374; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file"
+      "rationale": "Chrome run 39868576683; artifact 12464744819; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file"
     },
     {
       "id": "OBL-009",
@@ -173,7 +173,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-route-page.test.ts:316-351 validates two emphasized result articles; report visual summary screenshot and DOM exact-SHA"
+      "rationale": "apps/web/src/dev-server/reports-route-page.test.ts:316-351 validates two emphasized result articles; report visual summary screenshot and DOM exact-SHA; A718-04 Chrome 39868576683 artifact 12464744819, filterFit at 390x844 and 320x740 verified with rejected negative control"
     },
     {
       "id": "OBL-010",
@@ -249,7 +249,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39858421103 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
+      "rationale": "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39868576683 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
     }
   ],
   "source_coverage": [
@@ -313,7 +313,8 @@
           "apps/web/src/dev-server/reports-analysis-archetype.ts:49-77"
         ],
         "visible_surface_evidence": [
-          "visual artifact 12461670374, 3 viewports x 2 currencies x 3 layers"
+          "visual artifact 12464744819 run 39868576683 / three viewports and BRL/USD",
+          "reports-installments-regression.json @ 49246114f5776e84871ee079b9c8191ea79bfe35 with 390x844 and 320x740 filterFit/negativeControl passed"
         ],
         "scenario_ids": [
           "BRL",
@@ -429,19 +430,19 @@
       "OBL-013"
     ],
     "evidence": [
-      "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39858421103; issue #714 baseline reference remains open for separate audit",
+      "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39868576683; issue #714 baseline reference remains open for separate audit",
       "apps/web/src/dev-server/reports-route-page.ts:125-302; reports-analysis-archetype.ts:49-77; Chrome report multiCurrency 1366x768,390x844,320x740 has 18 category captures and intact A5 layers",
       "apps/web/src/dev-server/reports-route-page.ts:150-304 + reports-installments-view.ts:65-251; reports-route-page.test.ts:13-400 and scripts/statement-visual/reports-category-evolution.mjs; CI 39719913719 success",
       "apps/web/src/dev-server/reports-route-page-styles.ts:1-153, no excessive card borders; screenshots reports-desktop-1366x768-brl-summary.png and reports-mobile-390x844-usd-summary.png inspected",
       "scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134, report-page-viewport.mjs:7-47; Chrome negative viewport control and all six mobile section captures per scenario",
       "apps/web/src/dev-server/reports-analysis-archetype.ts:49-77,149-207; Chrome 36 segment captures for category/cash flow; test validates summary-before-visualization-before-detail",
       "apps/web/src/dev-server/reports-route-page.ts:289-315, scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134; Chrome measurements currenciesComplete=true for BRL and USD",
-      "Chrome run 39858421103; artifact 12461670374; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file",
+      "Chrome run 39868576683; artifact 12464744819; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file",
       "apps/web/src/dev-server/reports-route-page.test.ts:316-351 validates two emphasized result articles; report visual summary screenshot and DOM exact-SHA",
       "apps/web/src/dev-server/reports-route-page.test.ts:316-351 and reports-718-behavior-evidence.test.mjs:97-105,160-172; Chrome has isolated BRL and USD blocks",
       "apps/web/src/dev-server/reports-analysis-archetype.ts:149-207, report view controls and visual browser proof; Chrome negative overflow and trend money overlap probes",
       "scripts/statement-visual/reports-718-extra-browser.mjs:164-247; Chrome 390x844 and 320x740 show empty/filter-error/api-error with valid retry URL, pageFitsViewport and no partial report",
-      "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39858421103 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
+      "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39868576683 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

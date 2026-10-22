@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:861cf81d-c9e5-458e-bd87-bfe98ca00e6b",
+    "finding_ids": [
+      "A718-04"
+    ],
+    "audit_report_sha256": "add747cb17e8db34e994eeba19678a8354145cd892bcdbad8ed654f2cbc05a7d"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The existing visual skill gates already require mobile extreme content, full control legibility and discriminating negative control. The scenario was added directly to the existing Chrome regression runner without requiring a new global rule."
+  },
+  "skill_changes": []
+}

@@ -1,8 +1,9 @@
-HEAD: 2ba22d2fad98f55fe88165c9f6dce096deaec0c0
+HEAD: 49246114f5776e84871ee079b9c8191ea79bfe35
 COMMAND: npm run test
 EXIT_CODE: 0
-SOURCE: Repository CI run 39858421080 / job 120102924264 (authenticated GitHub)
+SOURCE: Repository CI run 39868576647 / job 120137162363 (authenticated GitHub Actions)
 RESULT: completed/success
+RUNNER: apps/web/package.json tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/web --include .test.js
 REACHED: apps/web/src/dev-server/cards-page-recurring-render.test.ts
 REACHED: apps/web/src/dev-server/cards-page-v2.test.ts
 REACHED: apps/web/src/dev-server/cash-flow-projection-view.test.ts
