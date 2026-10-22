@@ -21,9 +21,9 @@ export function selectReportCurrencyBlocks<T extends { currency: string }>(
 ): { currency: string; visible: T[] } {
   const currency =
     requestedCurrency ??
-    (blocks.find((block) => block.currency.toUpperCase() === "BRL")?.currency ??
-      blocks[0]?.currency ??
-      "all");
+    blocks.find((block) => block.currency.toUpperCase() === "BRL")?.currency ??
+    blocks[0]?.currency ??
+    "all";
   return {
     currency,
     visible:
