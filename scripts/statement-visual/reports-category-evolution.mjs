@@ -209,7 +209,11 @@ async function validateReadyDesktop(cdp, month) {
     "Category hierarchy toggle hover is too dark or has unreadable text",
     measurements.categoryTreeHover,
   );
-  return { viewport: "1440x900", measurements, screenshot: "reports-category-evolution-desktop.png" };
+  return {
+    viewport: "1440x900",
+    measurements,
+    screenshot: "reports-category-evolution-desktop.png",
+  };
 }
 
 async function validateCategoryTreeHover(cdp) {
