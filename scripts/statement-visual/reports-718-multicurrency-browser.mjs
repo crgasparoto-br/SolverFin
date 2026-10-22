@@ -40,10 +40,24 @@ export async function validateMultiCurrency(cdp, month, context) {
         pageViewport,
         tableScrollLocal: Array.from(document.querySelectorAll('.evolution-table-scroll'))
           .every((node) => node.scrollWidth > node.clientWidth && node.tabIndex === 0),
-        trendScrollLocal: Array.from(document.querySelectorAll('.report-trend'))
-          .every((node) => node.scrollWidth > node.clientWidth
-            && ['auto', 'scroll'].includes(getComputedStyle(node).overflowX)
-            && node.tabIndex === 0),
+        trendFitsWithoutScroll: (() => {
+          const trends = Array.from(document.querySelectorAll('.report-trend-grid'));
+          return trends.length === 2 && trends.every((node) => {
+            const frame = node.getBoundingClientRect();
+            return node.tabIndex === 0 && node.scrollWidth <= node.clientWidth + 1
+              && Array.from(node.children).every((point) => {
+                const bounds = point.getBoundingClientRect();
+                return bounds.left >= frame.left - 1 && bounds.right <= frame.right + 1;
+              });
+          });
+        })(),
+        matrixRowsCompact: Array.from(document.querySelectorAll('.evolution-table .report-section-row'))
+          .every((row) => row.getBoundingClientRect().height <= 44),
+        highlightsGrouped: blocks.every((block) => {
+          const grid = block.querySelector('[data-analysis-layer="highlights"] .report-highlights-grid');
+          return grid && grid.querySelectorAll('.report-highlight').length === 2
+            && grid.querySelectorAll('.sf-alert').length === 1;
+        }),
         longLabelsReadable: Array.from(document.querySelectorAll('.report-category-label > span:last-child'))
           .every((node) => getComputedStyle(node).textOverflow !== 'ellipsis'),
       };
@@ -113,12 +127,10 @@ export async function validateMultiCurrency(cdp, month, context) {
       measurements,
     );
     check(measurements.longLabelsReadable, "Reports category labels are truncated", measurements);
+    check(measurements.trendFitsWithoutScroll, "Category trend still needs a horizontal scrollbar", measurements);
+    check(measurements.matrixRowsCompact, "Category matrix rows are too tall", measurements);
+    check(measurements.highlightsGrouped, "Review highlights are not in a compact strip", measurements);
     if (width <= 390) {
-      check(
-        measurements.trendScrollLocal,
-        "Multi-currency mobile trend lost local scroll",
-        measurements,
-      );
       check(
         measurements.tableScrollLocal,
         "Multi-currency mobile table lost local scroll",
