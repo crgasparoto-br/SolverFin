@@ -180,6 +180,9 @@ test("fixed recurring occurrences do not display finite installment badges", () 
   assert.ok(script.includes('return "Parcela " + installment.sequenceNumber + " de " + total;'));
   assert.ok(script.includes('findNodeByData("script[data-purchase]", transactionId)'));
   assert.ok(script.includes("addBadge(row, installment)"));
+  assert.ok(script.includes('row.querySelector(".cards-purchase-description .cards-installment-label")'));
+  assert.ok(script.includes("if (!existingBadge) description.appendChild(badge)"));
+  assert.ok(script.includes("!installment.recurrenceId && Number(installment.totalInstallments) > 1"));
 });
 
 test("installment scope selection follows Golden Screen neutral button states", () => {
