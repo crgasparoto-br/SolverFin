@@ -192,11 +192,7 @@ async function validateReadyDesktop(cdp, month) {
     measurements,
   );
   check(measurements.pageFitsViewport, "Reports desktop leaks horizontal overflow", measurements);
-  check(
-    measurements.unifiedCurrencyForm,
-    "Currency uses a separate form or action",
-    measurements,
-  );
+  check(measurements.unifiedCurrencyForm, "Currency uses a separate form or action", measurements);
   check(
     measurements.currencyAfterPeriod,
     "Currency does not follow the period filter",
