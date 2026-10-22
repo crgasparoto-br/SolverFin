@@ -24,7 +24,7 @@ export function reportPageStyles(): string {
     .report-filters button.sf-button-primary { border-radius:var(--sf-radius-md); }
     .report-filters button.sf-button-primary:focus-visible { box-shadow:var(--shadow-focus); }
     .report-view-tabs a:focus-visible,.interval-switcher a:focus-visible,.report-retry:focus-visible { border-radius:3px; outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:3px; }
-    .evolution-filters { grid-template-columns:minmax(12rem,1.2fr) minmax(11rem,1fr) minmax(10rem,.8fr) minmax(8rem,.55fr) auto; }
+    .evolution-filters { grid-template-columns:minmax(12rem,1.35fr) minmax(11rem,1.25fr) minmax(9rem,1fr) minmax(6rem,.55fr) minmax(9rem,.8fr) auto; }
     .installment-filters { grid-template-columns:minmax(9rem,.8fr) minmax(9rem,.8fr) minmax(11rem,1fr) minmax(11rem,1fr) auto; }
     .cash-flow-filters { grid-template-columns:minmax(12rem,1fr) minmax(10rem,.7fr) auto; }
     .cash-flow-report-list { display:grid; gap:20px; }
@@ -56,12 +56,6 @@ export function reportPageStyles(): string {
     .report-analysis-heading .muted { overflow-wrap:anywhere; }
     .report-analysis-heading > div,.report-layer-heading { display:grid; gap:3px; }
     .report-analysis-heading > span { color:var(--muted); font-size:.75rem; font-weight:600; white-space:normal; }
-    .report-currency-filter { align-items:end; display:flex; flex-wrap:wrap; gap:8px; min-width:0; }
-    .report-currency-filter label { color:var(--text); display:grid; font-size:.75rem; font-weight:700; gap:4px; min-width:0; }
-    .report-currency-filter select { background:var(--surface); border:1px solid var(--sf-color-border); border-radius:var(--sf-radius-md); color:var(--text); font:inherit; font-size:.8125rem; min-height:var(--sf-density-interactive-target-min); min-width:0; padding:6px 30px 6px 10px; }
-    .report-currency-filter select:hover { border-color:var(--sf-color-neutral-control-border-hover); }
-    .report-currency-filter select:focus-visible { outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
-    .report-currency-apply { min-height:var(--sf-density-interactive-target-min); }
     .report-analysis-layer { display:grid; gap:10px; grid-template-columns:minmax(0,1fr); min-width:0; }
     .report-analysis-layer > .sf-summary-grid:not(.summary-grid) { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); }
     .report-visual-legend { color:var(--muted); font-size:.75rem; line-height:1.55; margin:0; }
