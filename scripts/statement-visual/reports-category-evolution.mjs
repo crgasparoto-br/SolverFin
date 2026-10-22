@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 import { reportPageViewportExpression } from "./report-page-viewport.mjs";
+import { validateCashFlow, validateMobileStates } from "./reports-718-extra-browser.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -25,6 +26,8 @@ const report = {
   empty: null,
   filterError: null,
   multiCurrency: [],
+  cashFlow: [],
+  mobileStates: [],
   negativeControl: null,
   failures,
   screenshots,
@@ -42,6 +45,9 @@ try {
   report.empty = await validateEmptyState(browser.cdp);
   report.filterError = await validateFilterError(browser.cdp);
   report.multiCurrency = await validateMultiCurrency(browser.cdp, seeded.month);
+  const extraContext = { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState };
+  report.cashFlow = await validateCashFlow(browser.cdp, extraContext);
+  report.mobileStates = await validateMobileStates(browser.cdp, extraContext);
   report.negativeControl = await validateClippedCategoryNegativeControl(browser.cdp);
   report.viewportNegativeControl = await validateReportViewportNegativeControl(browser.cdp);
 } catch (error) {

@@ -39,6 +39,8 @@ Falha de consulta exibe um link de tentativa novamente para a propria URL, prese
 
 O cenário Chrome #718 agora fotografa separadamente as três camadas (resumo, visualização e detalhe) **de cada bloco BRL e USD**, rolando até o conteúdo antes da captura em cada viewport. Os metadados das 18 capturas comprovam visibilidade na viewport, contexto da moeda, existência do conteúdo financeiro e presença dos arquivos no relatório do run; não se aceita apenas uma fotografia da primeira dobra com filtros.
 
+O aceite ampliado da #718 também exercita a **projeção de caixa real** (`view=cash-flow`) em 1366×768, 390×844 e 320×740, com capturas independentes de resumo, visualização e detalhe de BRL e USD, validação de moeda por `Money`, tabela diária e rolagem local. Os estados `empty`, `filter-error` e `api-error` são capturados em 390×844 e 320×740; a prova semântica exige visibilidade, ausência de resultado financeiro parcial, filtros inválidos identificáveis e link de tentativa novamente preservando a URL. Essas verificações pertencem ao mesmo cenário Chrome exact-SHA e falham se qualquer cobertura/captura faltar.
+
 A aceitacao visual exige comparar capturas Chrome autenticadas e a arvore acessivel nos viewports desktop, 390px e 320px no SHA material desta PR, incluindo BRL/USD, recorte vazio, erro, tabela longa e controle negativo de truncamento. O cenário dedicado `reports-718-visual-acceptance` reutiliza `scripts/statement-visual/reports-category-evolution.mjs` por um módulo de entrada separado no workflow agregado, além dos controles legados de responsividade. Testes automatizados e CI verde sao requisitos distintos da aprovacao independente.
 
 ## Evolucao por categoria

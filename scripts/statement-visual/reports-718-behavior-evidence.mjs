@@ -56,6 +56,51 @@ export async function collectReport718Evidence(readEvidence) {
     }
   }
 
+  const cashFlow = report.cashFlow ?? [];
+  for (const viewport of expectedViewports) {
+    const proof = cashFlow.find((item) => item.viewport === viewport);
+    assert.ok(proof, `${fileName} lacks real cash-flow evidence for ${viewport}.`);
+    assert.match(proof.route, /view=cash-flow/);
+    assert.equal(proof.measurements?.pageFitsViewport, true);
+    assert.ok(proof.measurements?.blockCurrencies?.includes("BRL"));
+    assert.ok(proof.measurements?.blockCurrencies?.includes("USD"));
+    if (viewport !== "1366x768") {
+      assert.equal(proof.measurements?.tableScrollLocal, true);
+      assert.equal(proof.measurements?.trendScrollLocal, true);
+    }
+    for (const currency of ["BRL", "USD"]) {
+      for (const layer of ["summary", "visualization", "detail"]) {
+        const capture = proof.capturedSections?.find(
+          (section) => section.currency === currency && section.layer === layer,
+        );
+        assert.ok(capture, `${viewport} cash-flow lacks ${currency} ${layer}.`);
+        assert.ok(report.screenshots?.includes(capture.screenshot));
+        assert.equal(capture.measurements?.visible, true);
+        assert.equal(capture.measurements?.correctCurrency, true);
+        assert.equal(capture.measurements?.hasContent, true);
+      }
+    }
+  }
+
+  const mobileStates = report.mobileStates ?? [];
+  for (const viewport of ["390x844", "320x740"]) {
+    for (const state of ["empty", "filter-error", "api-error"]) {
+      const proof = mobileStates.find((item) => item.viewport === viewport && item.state === state);
+      assert.ok(proof, `${fileName} lacks ${state} mobile screenshot at ${viewport}.`);
+      assert.ok(report.screenshots?.includes(proof.screenshot));
+      assert.equal(proof.measurements?.state, state);
+      assert.equal(proof.measurements?.pageFitsViewport, true);
+      assert.equal(proof.measurements?.visible, true);
+      assert.equal(proof.measurements?.hasReadyReport, false);
+      if (state === "api-error") {
+        assert.equal(proof.measurements?.retryHref, proof.route, "Retry must preserve filters.");
+      }
+      if (state === "filter-error") {
+        assert.ok(proof.measurements?.invalidControls >= 3);
+      }
+    }
+  }
+
   for (const [name, proof] of [
     ["clipped-category", report.negativeControl],
     ["uncontained-viewport", report.viewportNegativeControl],
@@ -70,7 +115,8 @@ export async function collectReport718Evidence(readEvidence) {
     observations: {
       viewports: expectedViewports,
       currencies: ["BRL", "USD"],
-      visualSectionCaptures: expectedViewports.length * 2 * 3,
+      visualSectionCaptures: expectedViewports.length * 2 * 3 * 2,
+      mobileStateCaptures: 6,
       negativeControls: ["clipped-category", "uncontained-viewport"],
     },
   };

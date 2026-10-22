@@ -15,8 +15,41 @@ function fixture() {
       })),
     ),
   );
+  const cashFlow = ["1366x768", "390x844", "320x740"].map((viewport) => ({
+    viewport,
+    route: "/relatorios?view=cash-flow&horizonDays=30",
+    measurements: {
+      pageFitsViewport: true,
+      blockCurrencies: ["BRL", "USD"],
+      tableScrollLocal: true,
+      trendScrollLocal: true,
+    },
+    capturedSections: ["BRL", "USD"].flatMap((currency) =>
+      ["summary", "visualization", "detail"].map((layer) => ({
+        currency, layer, screenshot: `cash-${viewport}-${currency}-${layer}.png`,
+        measurements: { visible: true, correctCurrency: true, hasContent: true },
+      })),
+    ),
+  }));
+  const mobileStates = ["390x844", "320x740"].flatMap((viewport) =>
+    ["empty", "filter-error", "api-error"].map((state) => ({
+      viewport, state, route: `/relatorios?state=${state}`,
+      screenshot: `state-${viewport}-${state}.png`,
+      measurements: {
+        state, visible: true, pageFitsViewport: true, hasReadyReport: false,
+        invalidControls: 3,
+        retryHref: state === "api-error" ? `/relatorios?state=${state}` : null,
+      },
+    })),
+  );
   return {
-    screenshots: sections.map((section) => section.screenshot),
+    screenshots: [
+      ...sections.map((section) => section.screenshot),
+      ...cashFlow.flatMap((scenario) => scenario.capturedSections.map((section) => section.screenshot)),
+      ...mobileStates.map((scenario) => scenario.screenshot),
+    ],
+    cashFlow,
+    mobileStates,
     failures: [],
     desktop: { measurements: { pageFitsViewport: true } },
     mobile: {
@@ -95,4 +128,25 @@ test("#718 adapter rejects a capture without visible monetary content or currenc
     collectReport718Evidence(async () => wrongCurrency),
     /currency context/,
   );
+});
+
+test("#718 rejects missing cash-flow currency/layer and mobile state evidence", async () => {
+  const missingCash = fixture();
+  missingCash.cashFlow[1].capturedSections.pop();
+  await assert.rejects(collectReport718Evidence(async () => missingCash), /cash-flow lacks/);
+  const missingState = fixture();
+  missingState.mobileStates.pop();
+  await assert.rejects(collectReport718Evidence(async () => missingState), /mobile screenshot/);
+});
+
+test("#718 rejects cash-flow money mix, mobile overflow and broken recovery link", async () => {
+  const mixed = fixture();
+  mixed.cashFlow[0].capturedSections[2].measurements.correctCurrency = false;
+  await assert.rejects(collectReport718Evidence(async () => mixed));
+  const overflow = fixture();
+  overflow.mobileStates[0].measurements.pageFitsViewport = false;
+  await assert.rejects(collectReport718Evidence(async () => overflow));
+  const brokenRetry = fixture();
+  brokenRetry.mobileStates[2].measurements.retryHref = "/relatorios";
+  await assert.rejects(collectReport718Evidence(async () => brokenRetry), /Retry must preserve/);
 });
