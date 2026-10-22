@@ -6,6 +6,9 @@ import { apiGet } from "./api.js";
 import { renderResultTrend } from "./reports-analysis-archetype.js";
 import {
   escapeReportHtml as escapeHtml,
+  parseReportCurrencyFilter,
+  renderReportCurrencyOptions,
+  selectReportCurrencyBlocks,
   renderReportHeading as renderHeading,
   renderReportState as renderState,
   renderReportsShell as renderShell,
@@ -48,6 +51,7 @@ interface CashFlowFilters {
   referenceDate: string;
   horizonDays: 30 | 60 | 90;
   profileId?: string;
+  currency?: string;
 }
 
 export async function renderCashFlowProjectionView(
@@ -59,6 +63,7 @@ export async function renderCashFlowProjectionView(
     url.searchParams.get("referenceDate") ?? referenceDate.toISOString().slice(0, 10);
   const draftHorizon = url.searchParams.get("horizonDays") ?? "30";
   const profileId = url.searchParams.get("profileId") ?? undefined;
+  const draftCurrency = url.searchParams.get("currency");
   const heading = renderHeading(
     "Projeção de caixa",
     "Acompanhe o saldo projetado dia a dia, sempre separado por moeda.",
@@ -71,12 +76,13 @@ export async function renderCashFlowProjectionView(
       referenceDate: parseReferenceDate(draftReferenceDate),
       horizonDays: parseHorizon(draftHorizon),
       ...(profileId ? { profileId } : {}),
+      ...(draftCurrency !== null ? { currency: parseReportCurrencyFilter(draftCurrency) } : {}),
     };
   } catch (error) {
     return renderShell(
       heading +
         navigation +
-        renderFilters(draftReferenceDate, draftHorizon, profileId) +
+        renderFilters(draftReferenceDate, draftHorizon, profileId, draftCurrency ?? "all") +
         renderState(
           "filter-error",
           "Revise os filtros",
@@ -90,7 +96,7 @@ export async function renderCashFlowProjectionView(
     return renderShell(
       heading +
         navigation +
-        renderFilters(filters.referenceDate, String(filters.horizonDays), filters.profileId) +
+        renderFilters(filters.referenceDate, String(filters.horizonDays), filters.profileId, filters.currency) +
         renderState(
           "api-error",
           "Não foi possível carregar a projeção",
@@ -101,11 +107,19 @@ export async function renderCashFlowProjectionView(
   }
 
   const projection = result.data;
+  const selection = selectReportCurrencyBlocks(projection.currencyBlocks, filters.currency);
+  const form = renderFilters(
+    filters.referenceDate,
+    String(filters.horizonDays),
+    filters.profileId,
+    selection.currency,
+    projection.currencyBlocks.map((block) => block.currency),
+  );
   if (projection.currencyBlocks.length === 0) {
     return renderShell(
       heading +
         navigation +
-        renderFilters(filters.referenceDate, String(filters.horizonDays), filters.profileId) +
+        form +
         renderState(
           "empty",
           "Nenhuma posição financeira disponível",
@@ -114,17 +128,30 @@ export async function renderCashFlowProjectionView(
     );
   }
 
+  if (selection.visible.length === 0) {
+    return renderShell(
+      heading + navigation + form + renderState(
+        "empty",
+        `Nenhuma posição financeira em ${selection.currency}`,
+        "Selecione outra moeda ou Todas as moedas para comparar as projeções.",
+      ),
+    );
+  }
   return renderShell(
-    heading +
-      navigation +
-      renderFilters(filters.referenceDate, String(filters.horizonDays), filters.profileId) +
-      `<div data-report-state="ready" class="cash-flow-report-list">${projection.currencyBlocks
+    heading + navigation + form +
+      `<div data-report-state="ready" class="cash-flow-report-list">${selection.visible
         .map((block) => renderCurrencyBlock(projection, block))
         .join("")}</div>`,
   );
 }
 
-function renderFilters(referenceDate: string, horizonDays: string, profileId?: string): string {
+function renderFilters(
+  referenceDate: string,
+  horizonDays: string,
+  profileId?: string,
+  currency = "all",
+  availableCurrencies: readonly string[] = [],
+): string {
   return `
     <section class="panel report-filter-panel">
       <form class="report-filters cash-flow-filters" method="get" action="/relatorios">
@@ -142,6 +169,9 @@ function renderFilters(referenceDate: string, horizonDays: string, profileId?: s
               )
               .join("")}
           </select>
+        </label>
+        <label for="cash-flow-currency">Moeda
+          <select id="cash-flow-currency" name="currency">${renderReportCurrencyOptions(currency, availableCurrencies)}</select>
         </label>
         ${renderButton({ label: "Atualizar projeção", type: "submit", className: "report-apply-button" })}
       </form>
