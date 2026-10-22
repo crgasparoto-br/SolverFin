@@ -1,27 +1,6 @@
 import { join } from "node:path";
 import { evaluate, screenshot, setViewport } from "./cdp.mjs";
-import { reportPageViewportExpression } from "./report-page-viewport.mjs";
-
-/** Layout assertion: monetary text must not bleed into an adjacent trend point. */
-export function trendMoneyTextFitExpression() {
-  return `(() => {
-    const values = Array.from(document.querySelectorAll('.cash-flow-block .report-trend-point .sf-money-value'));
-    const violations = [];
-    for (const value of values) {
-      const point = value.closest('.report-trend-point');
-      if (!point) { violations.push({ text: value.textContent, reason: 'no point' }); continue; }
-      const bounds = point.getBoundingClientRect();
-      const range = document.createRange();
-      range.selectNodeContents(value);
-      const textRects = Array.from(range.getClientRects());
-      if (textRects.length === 0 || textRects.some((rect) => rect.left < bounds.left - 1 || rect.right > bounds.right - 8)) {
-        violations.push({ text: value.textContent, pointLeft: bounds.left, pointRight: bounds.right,
-          textRects: textRects.map((rect) => ({ left: rect.left, right: rect.right })) });
-      }
-    }
-    return { fits: values.length > 0 && violations.length === 0, checked: values.length, violations };
-  })()`;
-}
+import { reportPageViewportExpression, trendMoneyTextFitExpression } from "./report-page-viewport.mjs";
 
 /** Evidence from the real SSR cash-flow view, not category-evolution markup. */
 export async function validateCashFlow(cdp, context) {

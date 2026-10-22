@@ -23,6 +23,18 @@ import {
   renderReportViewNavigation as renderViewNavigation,
 } from "./reports-route-page-shared.js";
 
+import {
+  currentMonth,
+  formatInstallmentStatus,
+  formatInvoiceStatus,
+  formatMonthYear,
+  monthEnd,
+  nonEmpty,
+  normalizeMonth,
+  normalizeStatus,
+  todayDateOnly,
+} from "./reports-installments-format.js";
+
 interface InstallmentFilters {
   month: string;
   dueFrom: string;
@@ -460,65 +472,6 @@ function renderStatusOptions(selected: string): string {
         `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
     )
     .join("");
-}
-
-function normalizeMonth(value: string | null): string | undefined {
-  return value && /^\d{4}-(0[1-9]|1[0-2])$/.test(value) ? value : undefined;
-}
-
-function normalizeStatus(value: string | null): string {
-  return value && new Set(["all", "planned", "posted", "reconciled", "cancelled"]).has(value)
-    ? value
-    : "all";
-}
-
-function nonEmpty(value: string | null): string | undefined {
-  return value?.trim() || undefined;
-}
-
-function currentMonth(): string {
-  return todayDateOnly().slice(0, 7);
-}
-
-function todayDateOnly(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function monthEnd(month: string): string {
-  const year = Number(month.slice(0, 4));
-  const monthNumber = Number(month.slice(5, 7));
-  return `${month}-${String(new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()).padStart(
-    2,
-    "0",
-  )}`;
-}
-
-function formatMonthYear(month: string): string {
-  const year = Number(month.slice(0, 4));
-  const monthNumber = Number(month.slice(5, 7));
-  const label = new Date(Date.UTC(year, monthNumber - 1, 1)).toLocaleDateString("pt-BR", {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-  return label.charAt(0).toUpperCase() + label.slice(1);
-}
-
-function formatInstallmentStatus(status: string): string {
-  if (status === "planned") return "Planejada";
-  if (status === "posted") return "Postada";
-  if (status === "reconciled") return "Conciliada";
-  if (status === "cancelled") return "Cancelada";
-  return status;
-}
-
-function formatInvoiceStatus(status: string): string {
-  if (status === "open") return "aberta";
-  if (status === "closed") return "fechada";
-  if (status === "paid") return "paga";
-  if (status === "overdue") return "vencida";
-  if (status === "cancelled") return "cancelada";
-  return status;
 }
 
 function installmentsSorted(items: InstallmentRecord[]): InstallmentRecord[] {
