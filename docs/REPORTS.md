@@ -227,6 +227,12 @@ Desde a issue #611, as parcelas sao particionadas por `currency` antes do calcul
 
 Os agrupamentos **Por cartao** e **Por categoria** preservam a identidade canonica de cada recurso e oferecem drilldown para a propria visao de parcelas. O link mantem `view=installments`, mes, status, `profileId` e o filtro irmao compativel, substituindo somente o `cardId` ou `categoryId` correspondente. Recursos homonimos permanecem separados por ID; linhas sinteticas sem ID, como **Sem cartao informado** ou **Sem categoria**, nao fabricam um destino navegavel.
 
+### Densidade e filtros responsivos da Golden Screen
+
+Na Evolução por categoria, a matriz mantém rolagem **local** e reduz o padding vertical das células sem ocultar moeda, valor ou percentuais. O gráfico de períodos quebra em linhas, sem exigir rolagem horizontal. Em larguras de 361 a 760 px, o formulário usa duas colunas proporcionais (Início mais largo para mostrar o mês/ano completo); até 360 px utiliza uma coluna. Os testes Chrome validam os respectivos contratos e não devem exigir a disposição anterior após refatoração aprovada.
+
+Na Projeção de caixa, **Todas as moedas** pode apresentar mais de dois blocos quando houver outras moedas no conjunto; todos devem conservar seus valores, tabelas e unidade de origem, sem soma entre moedas.
+
 ## Estados
 
 - `ready`: camadas de analise e respectivo detalhe renderizados por moeda;

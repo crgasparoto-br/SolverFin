@@ -53,6 +53,8 @@ export async function validateMultiCurrency(cdp, month, context) {
         })(),
         matrixRowsCompact: Array.from(document.querySelectorAll('.evolution-table .report-section-row'))
           .every((row) => row.getBoundingClientRect().height <= 44),
+        matrixRowHeights: Array.from(document.querySelectorAll('.evolution-table .report-section-row'))
+          .map((row) => Math.round(row.getBoundingClientRect().height * 10) / 10),
         highlightsGrouped: blocks.every((block) => {
           const grid = block.querySelector('[data-analysis-layer="highlights"] .report-highlights-grid');
           return grid && grid.querySelectorAll('.report-highlight').length === 2
