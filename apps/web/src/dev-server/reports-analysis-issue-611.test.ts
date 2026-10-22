@@ -98,9 +98,12 @@ describe("issue 611 reports analysis archetype", () => {
     assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
     assert.match(html, /data-currency="BRL"/);
     assert.match(html, /data-currency="USD"/);
-    assert.equal((html.match(/<table class="sf-table">/g) ?? []).length, 2);
+    assert.equal((html.match(/<table class="sf-table installment-detail-table">/g) ?? []).length, 2);
     assert.match(html, /<th scope="col"[^>]*>Valor<\/th>/);
     assert.match(html, /data-money-availability="available"/);
+    assert.match(html, /class="sf-summary-grid summary-grid installment-summary-grid"/);
+    assert.match(html, /class="installment-distribution-grid"/);
+    assert.match(html, /<colgroup><col class="installment-col-due"/);
     assert.doesNotMatch(html, /class="report-analysis-heading"/);
     assert.match(html, /Leitura do período - BRL/);
     assert.match(html, /Pontos para revisar - USD/);
