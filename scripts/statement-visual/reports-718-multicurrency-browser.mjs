@@ -79,7 +79,9 @@ export async function validateMultiCurrency(cdp, month, context) {
             const bounds = target.getBoundingClientRect();
             const viewportHeight = document.documentElement.clientHeight;
             const visibleHeight = Math.max(0, Math.min(bounds.bottom, viewportHeight) - Math.max(bounds.top, 0));
-            const heading = block.querySelector('.report-analysis-heading');
+            const title = target.querySelector('.report-layer-heading h2, .report-layer-heading h3');
+            const duplicateCurrency = Array.from(target.querySelectorAll('.sf-money-currency'))
+              .some((item) => getComputedStyle(item).display !== 'none');
             const money = target.querySelectorAll('.sf-money[data-currency]');
             const hasContent = '${layer}' === 'summary'
               ? money.length > 0 && Array.from(money).every((item) => item.getAttribute('data-currency') === '${currency}')
@@ -88,7 +90,7 @@ export async function validateMultiCurrency(cdp, month, context) {
                 : Boolean(target.querySelector('table, .sf-table-wrap'));
             return {
               visible: bounds.top >= -2 && bounds.top <= viewportHeight - 100 && visibleHeight >= 100,
-              correctCurrency: heading?.textContent?.includes('${currency}') === true,
+              correctCurrency: title?.textContent?.endsWith(' - ${currency}') === true && !duplicateCurrency,
               hasContent,
               viewportTop: Math.round(bounds.top),
               visibleHeight: Math.round(visibleHeight),
