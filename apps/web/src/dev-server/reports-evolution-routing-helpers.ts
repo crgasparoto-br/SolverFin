@@ -10,6 +10,19 @@ export interface EvolutionFilters {
   currency?: string;
 }
 
+export function isEvolutionStartValid(interval: ReportInterval, start: string): boolean {
+  if (interval === "annual") return /^\d{4}$/.test(start) && Number(start) >= 1;
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(start) && Number(start.slice(0, 4)) >= 1;
+}
+
+export function validateEvolutionStart(interval: ReportInterval, start: string): void {
+  if (isEvolutionStartValid(interval, start)) return;
+  if (interval === "annual") {
+    throw new Error("Início inválido. Informe um ano no formato AAAA.");
+  }
+  throw new Error("Início inválido. Informe um mês no formato AAAA-MM.");
+}
+
 export function isEvolutionEndRepresentable(
   interval: ReportInterval,
   start: string,
