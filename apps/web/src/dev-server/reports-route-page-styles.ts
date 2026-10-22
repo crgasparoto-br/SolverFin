@@ -134,7 +134,7 @@ export function reportPageStyles(): string {
     .evolution-table td > span { color:var(--muted); display:inline-block; font-size:.6875rem; margin:0 0 0 6px; vertical-align:baseline; white-space:nowrap; }
     .evolution-table td .sf-money { display:inline-flex; gap:4px; justify-content:flex-end; white-space:nowrap; }
     .evolution-table td .sf-money span,.evolution-table td .sf-money small { display:inline; margin:0; }
-    .evolution-table td .sf-money-currency { display:none; }
+    .evolution-table td .sf-money .sf-money-currency { display:none; }
     .report-section-row th,.report-section-row td { background:var(--primary-soft); font-weight:700; }
     .report-row-result th,.report-row-result td { border-top:2px solid var(--primary); }
     .report-value-negative strong,.report-value-negative span { color:var(--danger); }
