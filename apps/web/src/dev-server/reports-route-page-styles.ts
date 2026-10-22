@@ -56,6 +56,12 @@ export function reportPageStyles(): string {
     .report-analysis-heading .muted { overflow-wrap:anywhere; }
     .report-analysis-heading > div,.report-layer-heading { display:grid; gap:3px; }
     .report-analysis-heading > span { color:var(--muted); font-size:.75rem; font-weight:600; white-space:normal; }
+    .report-currency-filter { align-items:end; display:flex; flex-wrap:wrap; gap:8px; min-width:0; }
+    .report-currency-filter label { color:var(--text); display:grid; font-size:.75rem; font-weight:700; gap:4px; min-width:0; }
+    .report-currency-filter select { background:var(--surface); border:1px solid var(--sf-color-border); border-radius:var(--sf-radius-md); color:var(--text); font:inherit; font-size:.8125rem; min-height:var(--sf-density-interactive-target-min); min-width:0; padding:6px 30px 6px 10px; }
+    .report-currency-filter select:hover { border-color:var(--sf-color-neutral-control-border-hover); }
+    .report-currency-filter select:focus-visible { outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
+    .report-currency-apply { min-height:var(--sf-density-interactive-target-min); }
     .report-analysis-layer { display:grid; gap:10px; grid-template-columns:minmax(0,1fr); min-width:0; }
     .report-analysis-layer > .sf-summary-grid:not(.summary-grid) { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); }
     .report-visual-legend { color:var(--muted); font-size:.75rem; line-height:1.55; margin:0; }
@@ -80,6 +86,10 @@ export function reportPageStyles(): string {
     .report-trend-grid .report-trend-point { border-right:0; border-bottom:1px solid var(--line); gap:6px; padding:7px 10px; }
     .report-trend-grid .report-trend-point:first-child { padding-left:10px; }
     .report-trend-grid .report-trend-track { align-self:end; }
+    .report-trend-grid .report-trend-copy strong { font-size:.75rem; }
+    .report-trend-grid .report-trend-copy .sf-money { flex-wrap:nowrap; }
+    .report-trend-grid .report-trend-copy .sf-money-value { overflow-wrap:normal; white-space:nowrap; word-break:normal; }
+    .report-trend-grid .sf-money-currency { font-size:.6875rem; }
     .report-trend:focus-visible { border-radius:3px; outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
     .report-trend-point { border-right:1px solid var(--line); display:grid; gap:7px; min-width:0; padding:8px 12px; }
     .report-trend-point:first-child { padding-left:0; }
@@ -109,21 +119,22 @@ export function reportPageStyles(): string {
     .evolution-table { border-collapse:separate; border-spacing:0; min-width:max(920px,100%); width:100%; }
     .evolution-table th,.evolution-table td { background:var(--surface); border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; line-height:1.25; padding:5px 8px; text-align:right; vertical-align:middle; white-space:nowrap; }
     .evolution-table thead th { background:var(--surface-strong,#f8fafc); font-size:.6875rem; position:sticky; top:0; z-index:3; }
-    .evolution-table .sticky-description { left:0; min-width:15rem; position:sticky; text-align:left; z-index:2; }
+    .evolution-table .sticky-description { font-size:.75rem; left:0; min-width:15rem; position:sticky; text-align:left; white-space:nowrap; z-index:2; }
     .evolution-table thead .sticky-description { z-index:4; }
     .evolution-table tbody th { padding-left:calc(8px + var(--report-depth,0) * 16px); }
     .evolution-table tbody th > span:not(.report-category-label) { display:block; }
     .report-category-label { align-items:center; display:flex; gap:6px; min-width:0; }
-    .report-category-label > span:last-child { display:block; overflow-wrap:anywhere; white-space:normal; }
+    .report-category-label > span:last-child { display:block; font-size:.75rem; overflow-wrap:normal; white-space:nowrap; }
     .category-tree-toggle { align-items:center; background:transparent; border:1px solid transparent; border-radius:5px; color:var(--text); display:inline-flex; flex:0 0 24px; font:inherit; height:24px; justify-content:center; padding:0; width:24px; }
     .category-tree-toggle:hover { background:var(--primary-soft); border-color:var(--line); }
     .category-tree-toggle:focus-visible { outline:3px solid color-mix(in srgb,var(--primary) 35%,transparent); outline-offset:1px; }
     .category-tree-spacer { display:inline-block; flex:0 0 24px; height:24px; width:24px; }
     .evolution-table tbody th small { color:var(--muted); display:inline; font-size:.6875rem; font-weight:500; margin-left:6px; }
-    .evolution-table td strong { display:inline; font-size:.8125rem; }
+    .evolution-table td strong { display:inline; font-size:.75rem; }
     .evolution-table td > span { color:var(--muted); display:inline-block; font-size:.6875rem; margin:0 0 0 6px; vertical-align:baseline; white-space:nowrap; }
     .evolution-table td .sf-money { display:inline-flex; gap:4px; justify-content:flex-end; white-space:nowrap; }
     .evolution-table td .sf-money span,.evolution-table td .sf-money small { display:inline; margin:0; }
+    .evolution-table td .sf-money-currency { display:none; }
     .report-section-row th,.report-section-row td { background:var(--primary-soft); font-weight:700; }
     .report-row-result th,.report-row-result td { border-top:2px solid var(--primary); }
     .report-value-negative strong,.report-value-negative span { color:var(--danger); }
