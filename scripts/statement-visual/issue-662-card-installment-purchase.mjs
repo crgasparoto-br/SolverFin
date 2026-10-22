@@ -178,20 +178,22 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     `${label}: canonical installment context was not recognized`,
     state,
   );
+  const fraction = `${fixture.sequenceNumber}/${fixture.totalInstallments}`;
+  const accessibleFraction = `Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`;
   check(
-    state.rowTitle.endsWith(`${fixture.sequenceNumber}/${fixture.totalInstallments}`) &&
-      state.rowInstallmentLabel === `Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`,
-    `${label}: future invoice row must identify its installment inline with the description`,
+    state.rowTitle.endsWith(fraction) &&
+      state.rowInstallmentLabel === accessibleFraction,
+    `${label}: installment must appear inline with accessible label`,
     state,
   );
   check(
     !state.rowHasSecondaryDetail,
-    `${label}: purchase description must not show a secondary installment or total line`,
+    `${label}: purchase row still displays extra detail`,
     state,
   );
   check(
     state.rowCanonicalTotalMinor === fixture.totalAmountMinor,
-    `${label}: the canonical purchase total must remain available for editing`,
+    `${label}: canonical purchase total missing from editing model`,
     state,
   );
   check(
