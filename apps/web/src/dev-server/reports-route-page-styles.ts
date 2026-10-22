@@ -29,7 +29,11 @@ export function reportPageStyles(): string {
     .cash-flow-filters { grid-template-columns:minmax(12rem,1fr) minmax(10rem,.7fr) auto; }
     .cash-flow-report-list { display:grid; gap:20px; }
     .cash-flow-summary-grid { display:grid; gap:10px; grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .cash-flow-table { border-collapse:separate; border-spacing:0; min-width:760px; width:100%; }
+    .cash-flow-table { border-collapse:collapse; font-variant-numeric:tabular-nums; min-width:760px; table-layout:fixed; width:100%; }
+    .cash-flow-table .cash-flow-col-date { width:15%; }
+    .cash-flow-table .cash-flow-col-movement { width:20%; }
+    .cash-flow-table .cash-flow-col-balance { width:20%; }
+    .cash-flow-table .cash-flow-col-evidence { width:45%; }
     .cash-flow-table th,.cash-flow-table td { background:var(--surface); border-bottom:1px solid var(--line); padding:9px 10px; text-align:right; vertical-align:top; }
     .cash-flow-table th:first-child,.cash-flow-table td:first-child,.cash-flow-table th:last-child,.cash-flow-table td:last-child { text-align:left; }
     .cash-flow-table thead th { background:var(--surface-strong,#f8fafc); font-size:.6875rem; position:sticky; top:0; z-index:2; }
