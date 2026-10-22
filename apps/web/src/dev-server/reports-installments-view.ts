@@ -304,7 +304,7 @@ function renderInstallmentHighlights(
           description:
             "O detalhe abaixo mantém as parcelas futuras, postadas e canceladas identificáveis.",
         });
-  return `<div class="report-highlights-grid">${highlight}</div>${alert}`;
+  return `<div class="report-highlights-grid">${highlight}${alert}</div>`;
 }
 
 function renderInstallmentDetail(block: InstallmentCurrencyViewModel<InstallmentRecord>): string {
