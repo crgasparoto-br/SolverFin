@@ -130,7 +130,7 @@ async function cardsPageRendersRecurringPurchaseOnce(): Promise<void> {
     assert.equal(countOccurrences(html, purchaseRowMarker), 1);
     assert.match(html, recurringPurchasePattern);
     assert.match(html, /class="recurrence-indicator" title="Lançamento recorrente"/);
-    assert.match(html, /data\.recurrenceIconOnly = "true"/);
+    assert.match(html, /indicator\.dataset\.recurrenceIconOnly = "true"/);
     assert.doesNotMatch(html, /class="installment-badge cards-installment-label"/);
     assert.match(html, /data-edit-purchase="purchase-1" data-recurrence-id="recurrence-1"/);
     assert.match(html, /form.dataset.currentPurchaseId = purchase.id/);
