@@ -1,7 +1,7 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { renderMoney } from "../design-system/money.js";
-import { renderAlert, renderText } from "../design-system/primitives.js";
+import { renderAlert, renderButton, renderText } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import {
   renderReportAnalysisBlock,
@@ -167,7 +167,7 @@ function renderInstallmentFilterForm(
           `<option value="${escapeHtml(category.id)}"${filters.categoryId === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
       )
       .join("")}</select></label>
-    <button type="submit">Atualizar relatório</button>
+    ${renderButton({ label: "Atualizar relatório", type: "submit", className: "report-apply-button" })}
   </form></section>`;
 }
 
