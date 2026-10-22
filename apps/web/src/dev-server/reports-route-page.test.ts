@@ -78,7 +78,15 @@ describe("reports route page", () => {
     assert.match(html, /<select id="report-origin" name="origin"/);
     assert.match(html, /class="report-origin-filter"/);
     assert.match(html, /Matriz por categoria - BRL/);
-    assert.match(html, /\.evolution-table td \.sf-money \.sf-money-currency \{ display:none; \}/);
+    assert.match(
+      html,
+      /\.currency-report-list \.sf-money \.sf-money-currency,\.cash-flow-report-list \.sf-money \.sf-money-currency \{ display:none; \}/,
+    );
+    assert.doesNotMatch(html, /class="report-analysis-heading"/);
+    assert.match(html, /Leitura do período - BRL/);
+    assert.match(html, /Resultado ao longo do tempo - BRL/);
+    assert.match(html, /Pontos para revisar - BRL/);
+    assert.equal((html.match(/Matriz por categoria - BRL/g) ?? []).length, 1);
     assert.match(html, /<select id="report-currency" name="currency">/);
     assert.match(html, goldenSubmitAction);
     assert.doesNotMatch(html, /class="report-currency-filter"/);
@@ -523,7 +531,11 @@ describe("reports route page", () => {
     assert.match(html, /data-analysis-layer="visualization"/);
     assert.match(html, /data-analysis-layer="detail"/);
     assert.match(html, /tabindex="0" aria-label="Saldo projetado em USD por data selecionada"/);
-    assert.match(html, /Amostra de saldos diários em USD/);
+    assert.match(html, /Amostra de saldos diários\./);
+    assert.doesNotMatch(html, /class="report-analysis-heading"/);
+    assert.match(html, /Posição de caixa - USD/);
+    assert.match(html, /Evolução do saldo projetado - USD/);
+    assert.match(html, /Série contínua - USD/);
     assert.match(html, /class="report-trend" data-trend-layout="scroll"/);
     assert.match(html, goldenSubmitAction);
     assert.match(html, /<table class="cash-flow-table">/);
