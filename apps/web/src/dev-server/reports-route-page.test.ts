@@ -81,6 +81,8 @@ describe("reports route page", () => {
     assert.match(html, /\.evolution-table td \.sf-money \.sf-money-currency \{ display:none; \}/);
     assert.match(html, /<select id="report-currency" name="currency">/);
     assert.match(html, goldenSubmitAction);
+    assert.doesNotMatch(html, /class="report-currency-filter"/);
+    assert.doesNotMatch(html, /class="report-currency-apply"/);
     assert.match(html, /<option value="" selected>Todas as contas e cartões<\/option>/);
     assert.match(html, /<optgroup label="Contas">/);
     assert.match(html, /<optgroup label="Cartões de crédito">/);
@@ -357,7 +359,7 @@ describe("reports route page", () => {
     assert.match(html, /tabindex="0" aria-label="Resultado por período"/);
   });
 
-  it("filters by available currency in the heading and preserves the financial scope", async () => {
+  it("applies currency with the primary date filters and preserves the financial scope", async () => {
     const report = readyReport();
     report.currencyBlocks.push({ ...report.currencyBlocks[0]!, currency: "USD" });
     const apiRequests: URL[] = [];
@@ -384,7 +386,15 @@ describe("reports route page", () => {
     assert.match(selected, /<option value="BRL">BRL<\/option>/);
     assert.match(selected, /<option value="all">Todas as moedas<\/option>/);
     assert.match(selected, /Matriz por categoria - USD/);
-    assert.match(selected, /name="currency" value="USD"/);
+    assert.doesNotMatch(selected, /<input[^>]+type="hidden"[^>]+name="currency"/);
+    const filterForm = selected.match(/<form class="report-filters evolution-filters"[^>]*>([^]*?)<\/form>/)?.[1];
+    assert.ok(filterForm);
+    assert.ok(filterForm.indexOf('name="periods"') < filterForm.indexOf('name="currency"'));
+    assert.ok(filterForm.indexOf('name="currency"') < filterForm.indexOf('type="submit"'));
+    assert.match(filterForm, goldenSubmitAction);
+    assert.equal((selected.match(/<form class="report-filters evolution-filters"/g) ?? []).length, 1);
+    assert.doesNotMatch(selected, /class="report-currency-filter"/);
+    assert.doesNotMatch(selected, /class="report-currency-apply"/);
     assert.match(selected, /name="profileId" value="profile-1"/);
     assert.match(selected, /name="start" value="2026-06"/);
     assert.match(selected, /name="periods" value="2"/);
@@ -429,6 +439,8 @@ describe("reports route page", () => {
     assert.match(html, /Matriz por categoria - USD/);
     assert.match(html, /<select id="report-currency" name="currency">/);
     assert.match(html, /<option value="USD" selected>USD<\/option>/);
+    assert.match(html, /<option value="all">Todas as moedas<\/option>/);
+    assert.match(html, goldenSubmitAction);
     assert.doesNotMatch(html, /data-report-analysis="a5" data-currency="BRL"/);
   });
 
