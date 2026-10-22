@@ -175,7 +175,10 @@ test("#718 rejects cash-flow money mix, mobile overflow and broken recovery link
 test("#718 rejects overlapping trend currency text and an ineffective negative control", async () => {
   const overlapping = fixture();
   overlapping.cashFlow[1].measurements.trendMoney.fits = false;
-  await assert.rejects(collectReport718Evidence(async () => overlapping), /overlapping money/);
+  await assert.rejects(
+    collectReport718Evidence(async () => overlapping),
+    /overlapping money/,
+  );
   const weakNegative = fixture();
   weakNegative.cashFlow[2].moneyNegativeControl.observed = false;
   await assert.rejects(collectReport718Evidence(async () => weakNegative));

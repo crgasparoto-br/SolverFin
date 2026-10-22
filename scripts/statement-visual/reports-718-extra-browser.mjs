@@ -148,7 +148,9 @@ export async function validateCashFlow(cdp, context) {
         : null;
     if (moneyNegativeControl) {
       check(
-        moneyNegativeControl.baseline && moneyNegativeControl.observed && moneyNegativeControl.restored,
+        moneyNegativeControl.baseline &&
+          moneyNegativeControl.observed &&
+          moneyNegativeControl.restored,
         `Cash flow ${viewport} negative control missed monetary overlap`,
         moneyNegativeControl,
       );
