@@ -387,7 +387,9 @@ describe("reports route page", () => {
     assert.match(selected, /<option value="all">Todas as moedas<\/option>/);
     assert.match(selected, /Matriz por categoria - USD/);
     assert.doesNotMatch(selected, /<input[^>]+type="hidden"[^>]+name="currency"/);
-    const filterForm = selected.match(/<form class="report-filters evolution-filters"[^>]*>([^]*?)<\/form>/)?.[1];
+    const filterForm = selected.match(
+      /<form class="report-filters evolution-filters"[^>]*>([^]*?)<\/form>/,
+    )?.[1];
     assert.ok(filterForm);
     assert.ok(filterForm.indexOf('name="periods"') < filterForm.indexOf('name="currency"'));
     assert.ok(filterForm.indexOf('name="currency"') < filterForm.indexOf('type="submit"'));
