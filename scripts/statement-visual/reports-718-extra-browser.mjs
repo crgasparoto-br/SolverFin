@@ -2,6 +2,27 @@ import { join } from "node:path";
 import { evaluate, screenshot, setViewport } from "./cdp.mjs";
 import { reportPageViewportExpression } from "./report-page-viewport.mjs";
 
+/** Layout assertion: monetary text must not bleed into an adjacent trend point. */
+export function trendMoneyTextFitExpression() {
+  return `(() => {
+    const values = Array.from(document.querySelectorAll('.cash-flow-block .report-trend-point .sf-money-value'));
+    const violations = [];
+    for (const value of values) {
+      const point = value.closest('.report-trend-point');
+      if (!point) { violations.push({ text: value.textContent, reason: 'no point' }); continue; }
+      const bounds = point.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(value);
+      const textRects = Array.from(range.getClientRects());
+      if (textRects.length === 0 || textRects.some((rect) => rect.left < bounds.left - 1 || rect.right > bounds.right - 8)) {
+        violations.push({ text: value.textContent, pointLeft: bounds.left, pointRight: bounds.right,
+          textRects: textRects.map((rect) => ({ left: rect.left, right: rect.right })) });
+      }
+    }
+    return { fits: values.length > 0 && violations.length === 0, checked: values.length, violations };
+  })()`;
+}
+
 /** Evidence from the real SSR cash-flow view, not category-evolution markup. */
 export async function validateCashFlow(cdp, context) {
   const { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState } = context;
@@ -24,6 +45,7 @@ export async function validateCashFlow(cdp, context) {
       const viewport = ${reportPageViewportExpression(".cash-flow-report-list")};
       return {
         pageFitsViewport: viewport.fits,
+        trendMoney: ${trendMoneyTextFitExpression()},
         blockCurrencies: blocks.map((block) => block.querySelector('.report-analysis-heading h2')?.textContent?.trim()),
         tableScrollLocal: blocks.every((block) => {
           const table = block.querySelector('.evolution-table-scroll');
@@ -37,6 +59,11 @@ export async function validateCashFlow(cdp, context) {
     })()`,
     );
     check(measurements.pageFitsViewport, `Cash flow ${viewport} expands the page`, measurements);
+    check(
+      measurements.trendMoney.fits,
+      `Cash flow ${viewport} trend values overlap adjacent columns`,
+      measurements.trendMoney,
+    );
     check(
       ["BRL", "USD"].every((currency) => measurements.blockCurrencies.includes(currency)),
       `Cash flow ${viewport} does not isolate BRL and USD`,
@@ -94,7 +121,39 @@ export async function validateCashFlow(cdp, context) {
         });
       }
     }
-    snapshots.push({ viewport, route, measurements, capturedSections });
+    const moneyNegativeControl =
+      width === 320
+        ? await evaluate(
+            cdp,
+            `(() => {
+              const target = document.querySelector('.cash-flow-block .report-trend-point .sf-money-value');
+              if (!target) return { observed: false, restored: false, baseline: false };
+              const before = target.getAttribute('style');
+              const originalText = target.textContent;
+              const baseline = ${trendMoneyTextFitExpression()}.fits;
+              target.textContent = originalText + ' 999999999999999999999999999999999999999';
+              target.style.display = 'inline-block';
+              target.style.minWidth = '1000px';
+              target.style.whiteSpace = 'nowrap';
+              target.style.wordBreak = 'normal';
+              target.style.overflowWrap = 'normal';
+              const observed = !${trendMoneyTextFitExpression()}.fits;
+              target.textContent = originalText;
+              if (before === null) target.removeAttribute('style');
+              else target.setAttribute('style', before);
+              const restored = ${trendMoneyTextFitExpression()}.fits;
+              return { baseline, observed, restored };
+            })()`,
+          )
+        : null;
+    if (moneyNegativeControl) {
+      check(
+        moneyNegativeControl.baseline && moneyNegativeControl.observed && moneyNegativeControl.restored,
+        `Cash flow ${viewport} negative control missed monetary overlap`,
+        moneyNegativeControl,
+      );
+    }
+    snapshots.push({ viewport, route, measurements, capturedSections, moneyNegativeControl });
   }
   return snapshots;
 }

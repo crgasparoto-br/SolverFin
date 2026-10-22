@@ -20,10 +20,13 @@ function fixture() {
     route: "/relatorios?view=cash-flow&horizonDays=30",
     measurements: {
       pageFitsViewport: true,
+      trendMoney: { fits: true, checked: 6, violations: [] },
       blockCurrencies: ["BRL", "USD"],
       tableScrollLocal: true,
       trendScrollLocal: true,
     },
+    moneyNegativeControl:
+      viewport === "320x740" ? { baseline: true, observed: true, restored: true } : null,
     capturedSections: ["BRL", "USD"].flatMap((currency) =>
       ["summary", "visualization", "detail"].map((layer) => ({
         currency,
@@ -167,4 +170,13 @@ test("#718 rejects cash-flow money mix, mobile overflow and broken recovery link
     collectReport718Evidence(async () => brokenRetry),
     /Retry must preserve/,
   );
+});
+
+test("#718 rejects overlapping trend currency text and an ineffective negative control", async () => {
+  const overlapping = fixture();
+  overlapping.cashFlow[1].measurements.trendMoney.fits = false;
+  await assert.rejects(collectReport718Evidence(async () => overlapping), /overlapping money/);
+  const weakNegative = fixture();
+  weakNegative.cashFlow[2].moneyNegativeControl.observed = false;
+  await assert.rejects(collectReport718Evidence(async () => weakNegative));
 });

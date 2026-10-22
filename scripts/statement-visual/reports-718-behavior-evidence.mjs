@@ -62,6 +62,7 @@ export async function collectReport718Evidence(readEvidence) {
     assert.ok(proof, `${fileName} lacks real cash-flow evidence for ${viewport}.`);
     assert.match(proof.route, /view=cash-flow/);
     assert.equal(proof.measurements?.pageFitsViewport, true);
+    assert.equal(proof.measurements?.trendMoney?.fits, true, `${viewport} has overlapping money`);
     assert.ok(proof.measurements?.blockCurrencies?.includes("BRL"));
     assert.ok(proof.measurements?.blockCurrencies?.includes("USD"));
     if (viewport !== "1366x768") {
@@ -81,6 +82,13 @@ export async function collectReport718Evidence(readEvidence) {
       }
     }
   }
+
+  const moneyNegativeControl = cashFlow.find(
+    (item) => item.viewport === "320x740",
+  )?.moneyNegativeControl;
+  assert.equal(moneyNegativeControl?.baseline, true);
+  assert.equal(moneyNegativeControl?.observed, true);
+  assert.equal(moneyNegativeControl?.restored, true);
 
   const mobileStates = report.mobileStates ?? [];
   for (const viewport of ["390x844", "320x740"]) {
@@ -117,7 +125,7 @@ export async function collectReport718Evidence(readEvidence) {
       currencies: ["BRL", "USD"],
       visualSectionCaptures: expectedViewports.length * 2 * 3 * 2,
       mobileStateCaptures: 6,
-      negativeControls: ["clipped-category", "uncontained-viewport"],
+      negativeControls: ["clipped-category", "uncontained-viewport", "overlapping-money"],
     },
   };
 }
