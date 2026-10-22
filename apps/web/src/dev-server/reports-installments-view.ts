@@ -239,8 +239,8 @@ function renderInstallmentCurrencyBlock(
     currency: block.currency,
     periodCount: 1,
     summaryItems,
-    summaryWrapperClassName: "summary-grid",
-    summaryItemClassName: "metric-card",
+    summaryWrapperClassName: "summary-grid installment-summary-grid",
+    summaryItemClassName: "metric-card installment-summary-metric",
     visualizationTitle: `Distribuição de ${formatMonthYear(filters.month)}`,
     visualizationHtml: renderInstallmentDistribution(block, filters),
     highlightsHtml: renderInstallmentHighlights(block),
@@ -268,19 +268,21 @@ function renderInstallmentDistribution(
   block: InstallmentCurrencyViewModel<InstallmentRecord>,
   filters: InstallmentFilters,
 ): string {
-  return `<div class="report-grid" aria-label="Agrupamentos de parcelas em ${escapeHtml(block.currency)}">
-      <section class="panel report-results">
-        <div class="section-heading"><h2>Comprometimento por mês</h2><span>${block.summary.activeCount} parcelas</span></div>
+  return `<div class="installment-distribution" aria-label="Agrupamentos de parcelas em ${escapeHtml(block.currency)}">
+      <section class="installment-month-strip" aria-label="Comprometimento por mês">
+        <div class="section-heading"><h2>Comprometimento por mês</h2></div>
         ${renderAggregateRows(block.groups.months, "month", block.currency)}
       </section>
-      <section class="panel report-results">
-        <div class="section-heading"><h2>Por cartão</h2><span>${block.summary.activeCount} parcelas</span></div>
-        ${renderAggregateRows(block.groups.cards, "card", block.currency, filters)}
-      </section>
-      <section class="panel report-results">
-        <div class="section-heading"><h2>Por categoria</h2><span>${block.summary.activeCount} parcelas</span></div>
-        ${renderAggregateRows(block.groups.categories, "category", block.currency, filters)}
-      </section>
+      <div class="installment-distribution-grid">
+        <section class="report-results" aria-label="Distribuição por categoria">
+          <div class="section-heading"><h2>Por categoria</h2><span>${block.groups.categories.length} grupos</span></div>
+          ${renderAggregateRows(block.groups.categories, "category", block.currency, filters)}
+        </section>
+        <section class="report-results" aria-label="Distribuição por cartão">
+          <div class="section-heading"><h2>Por cartão</h2><span>${block.groups.cards.length} grupos</span></div>
+          ${renderAggregateRows(block.groups.cards, "card", block.currency, filters)}
+        </section>
+      </div>
     </div>`;
 }
 
@@ -325,8 +327,9 @@ function renderInstallmentDetail(block: InstallmentCurrencyViewModel<Installment
 
   return `<div class="section-heading report-detail-count"><span>${countLabel}</span></div>
     <div class="installment-table" tabindex="0" aria-label="Parcelas do relatório em ${escapeHtml(block.currency)}">
-      <table class="sf-table">
+      <table class="sf-table installment-detail-table">
         <caption class="sr-only">Parcelas do relatório em ${escapeHtml(block.currency)}</caption>
+        <colgroup><col class="installment-col-due" /><col class="installment-col-number" /><col class="installment-col-origin" /><col class="installment-col-card" /><col class="installment-col-category" /><col class="installment-col-status" /><col class="installment-col-amount" /></colgroup>
         <thead><tr><th scope="col">Vencimento</th><th scope="col">Parcela</th><th scope="col">Origem</th><th scope="col">Cartão</th><th scope="col">Categoria</th><th scope="col">Status</th><th scope="col">Valor</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
