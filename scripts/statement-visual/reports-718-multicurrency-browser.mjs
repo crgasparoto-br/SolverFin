@@ -127,9 +127,17 @@ export async function validateMultiCurrency(cdp, month, context) {
       measurements,
     );
     check(measurements.longLabelsReadable, "Reports category labels are truncated", measurements);
-    check(measurements.trendFitsWithoutScroll, "Category trend still needs a horizontal scrollbar", measurements);
+    check(
+      measurements.trendFitsWithoutScroll,
+      "Category trend still needs a horizontal scrollbar",
+      measurements,
+    );
     check(measurements.matrixRowsCompact, "Category matrix rows are too tall", measurements);
-    check(measurements.highlightsGrouped, "Review highlights are not in a compact strip", measurements);
+    check(
+      measurements.highlightsGrouped,
+      "Review highlights are not in a compact strip",
+      measurements,
+    );
     if (width <= 390) {
       check(
         measurements.tableScrollLocal,
