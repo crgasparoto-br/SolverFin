@@ -77,6 +77,9 @@ describe("reports route page", () => {
     assert.match(html, /name="profileId" value="profile-1"/);
     assert.match(html, /<select id="report-origin" name="origin"/);
     assert.match(html, /class="report-origin-filter"/);
+    assert.match(html, /Matriz por categoria - BRL/);
+    assert.match(html, /\.evolution-table td \.sf-money-currency \{ display:none; \}/);
+    assert.match(html, /<select id="report-currency" name="currency">/);
     assert.match(html, goldenSubmitAction);
     assert.match(html, /<option value="" selected>Todas as contas e cartões<\/option>/);
     assert.match(html, /<optgroup label="Contas">/);
@@ -352,6 +355,82 @@ describe("reports route page", () => {
     const detail = html.indexOf('data-analysis-layer="detail"');
     assert.ok(summary < visualization && visualization < highlights && highlights < detail);
     assert.match(html, /tabindex="0" aria-label="Resultado por período"/);
+  });
+
+  it("filters by available currency in the heading and preserves the financial scope", async () => {
+    const report = readyReport();
+    report.currencyBlocks.push({ ...report.currencyBlocks[0]!, currency: "USD" });
+    const apiRequests: URL[] = [];
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const requested = new URL(String(input));
+      apiRequests.push(requested);
+      if (requested.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (requested.pathname === "/api/credit-card-accounts") {
+        return jsonResponse({ creditCardAccounts: [] });
+      }
+      return jsonResponse({ report });
+    };
+
+    const selected = await renderReportsRoutePage(
+      "token",
+      new URL("http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&profileId=profile-1&currency=USD"),
+    );
+    assert.equal((selected.match(/data-report-analysis="a5" data-currency=/g) ?? []).length, 1);
+    assert.match(selected, /data-report-analysis="a5" data-currency="USD"/);
+    assert.doesNotMatch(selected, /data-report-analysis="a5" data-currency="BRL"/);
+    assert.match(selected, /<option value="USD" selected>USD<\/option>/);
+    assert.match(selected, /<option value="BRL">BRL<\/option>/);
+    assert.match(selected, /<option value="all">Todas as moedas<\/option>/);
+    assert.match(selected, /Matriz por categoria - USD/);
+    assert.match(selected, /name="currency" value="USD"/);
+    assert.match(selected, /name="profileId" value="profile-1"/);
+    assert.match(selected, /name="start" value="2026-06"/);
+    assert.match(selected, /name="periods" value="2"/);
+    assert.match(selected, /href="\/relatorios\?view=category-evolution&interval=annual&profileId=profile-1&currency=USD"/);
+    assert.equal(apiRequests.filter((requested) => requested.pathname === "/api/reports/category-evolution").length, 1);
+    assert.ok(apiRequests.every((requested) => !requested.searchParams.has("currency")));
+
+    const all = await renderReportsRoutePage(
+      "token",
+      new URL("http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&currency=all"),
+    );
+    assert.equal((all.match(/data-report-analysis="a5" data-currency=/g) ?? []).length, 2);
+    assert.equal((all.match(/<select id="report-currency" name="currency">/g) ?? []).length, 1);
+  });
+
+  it("keeps the currency selector usable when a selected currency has no movements", async () => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input));
+      if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+      if (url.pathname === "/api/credit-card-accounts") {
+        return jsonResponse({ creditCardAccounts: [] });
+      }
+      return jsonResponse({ report: readyReport() });
+    };
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL("http://localhost/relatorios?view=category-evolution&start=2026-06&periods=2&currency=USD"),
+    );
+    assert.match(html, /data-report-state="empty"/);
+    assert.match(html, /Nenhum lançamento em USD no período/);
+    assert.match(html, /<select id="report-currency" name="currency">/);
+    assert.match(html, /<option value="USD" selected>USD<\/option>/);
+    assert.doesNotMatch(html, /data-report-analysis="a5" data-currency="BRL"/);
+  });
+
+  it("rejects malformed currency input before querying the API", async () => {
+    let calls = 0;
+    globalThis.fetch = async () => {
+      calls += 1;
+      return jsonResponse({});
+    };
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL("http://localhost/relatorios?view=category-evolution&currency=INVALID1"),
+    );
+    assert.equal(calls, 0);
+    assert.match(html, /data-report-state="filter-error"/);
+    assert.match(html, /Moeda inválida/);
   });
 
   it("offers a retry URL preserving the selected filters after an API failure", async () => {
