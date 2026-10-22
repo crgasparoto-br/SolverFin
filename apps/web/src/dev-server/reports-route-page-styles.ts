@@ -121,6 +121,12 @@ export function reportPageStyles(): string {
     .metric-card { display:grid; gap:5px; min-width:0; padding:10px 12px; }
     .metric-card span { color:var(--muted); font-size:.6875rem; font-weight:700; text-transform:uppercase; }
     .metric-card strong { color:var(--primary); font-size:1.25rem; }
+    /* Os cards resumem informacoes decisivas; rotulos e valores seguem a hierarquia do Extrato. */
+    .summary-grid .report-summary-metric > span { font-size:var(--sf-font-size-sm); text-transform:none; }
+    .summary-grid .report-summary-metric > strong { color:var(--text); font-size:1.125rem; }
+    .report-summary-metric[data-tone="positive"] > strong { color:var(--success); }
+    .report-summary-metric[data-tone="negative"] > strong { color:var(--danger); }
+    .report-summary-metric[data-emphasis="true"] > strong { font-size:1.25rem; }
     .metric-card p { color:var(--muted); font-size:.8125rem; }
     .metric-primary { background:var(--primary-soft); border-color:var(--sf-color-neutral-control-border-hover); }
     .metric-primary span,.metric-primary strong,.metric-primary p { color:var(--primary); }
