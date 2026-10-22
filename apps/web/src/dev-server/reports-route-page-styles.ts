@@ -219,7 +219,7 @@ export function reportPageStyles(): string {
     .installment-detail-table .installment-col-status { width:17%; }
     .installment-detail-table .installment-col-amount { width:11%; }
     .installment-table .installment-detail-table thead th { background:var(--surface-strong); color:var(--muted); font-size:.75rem; font-weight:700; text-align:left; white-space:nowrap; }
-    .installment-table .installment-detail-table th,.installment-table .installment-detail-table td { border-bottom:1px solid var(--line); font-size:.8125rem; font-variant-numeric:tabular-nums; line-height:1.35; padding:8px 10px; text-align:left; vertical-align:middle; }
+    .installment-table .installment-detail-table th,.installment-table .installment-detail-table td { border-top:0; border-bottom:1px solid var(--line); font-size:.8125rem; font-variant-numeric:tabular-nums; line-height:1.35; padding:8px 10px; text-align:left; vertical-align:middle; }
     .installment-table .installment-detail-table tbody tr { background:var(--surface); }
     .installment-table .installment-detail-table tbody tr:nth-child(even) { background:var(--surface-soft); }
     .installment-table .installment-detail-table tbody tr:hover { background:var(--sf-color-neutral-control-hover); }
