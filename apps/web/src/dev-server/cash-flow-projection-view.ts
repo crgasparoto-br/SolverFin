@@ -1,6 +1,7 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { renderMoney } from "../design-system/money.js";
+import { renderButton } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { renderResultTrend } from "./reports-analysis-archetype.js";
 import {
@@ -142,7 +143,7 @@ function renderFilters(referenceDate: string, horizonDays: string, profileId?: s
               .join("")}
           </select>
         </label>
-        <button type="submit">Atualizar projeção</button>
+        ${renderButton({ label: "Atualizar projeção", type: "submit", className: "report-apply-button" })}
       </form>
       <p class="filter-hint">A data de referência compõe o saldo inicial; a série começa no dia seguinte.</p>
     </section>
