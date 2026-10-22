@@ -34,9 +34,12 @@ export function reportPageStyles(): string {
     .cash-flow-table .cash-flow-col-movement { width:20%; }
     .cash-flow-table .cash-flow-col-balance { width:20%; }
     .cash-flow-table .cash-flow-col-evidence { width:45%; }
-    .cash-flow-table th,.cash-flow-table td { background:var(--surface); border-bottom:1px solid var(--line); padding:9px 10px; text-align:right; vertical-align:top; }
-    .cash-flow-table th:first-child,.cash-flow-table td:first-child,.cash-flow-table th:last-child,.cash-flow-table td:last-child { text-align:left; }
-    .cash-flow-table thead th { background:var(--surface-strong,#f8fafc); font-size:.6875rem; position:sticky; top:0; z-index:2; }
+    .cash-flow-table th,.cash-flow-table td { background:var(--surface); border-bottom:1px solid var(--line); font-size:var(--sf-font-size-sm); line-height:1.25; padding:5px 10px; text-align:right; vertical-align:middle; }
+    .cash-flow-table th:first-child,.cash-flow-table td:last-child { text-align:left; }
+    .cash-flow-table tbody th { font-weight:600; white-space:nowrap; }
+    .cash-flow-table tbody tr:hover > th,.cash-flow-table tbody tr:hover > td { background:var(--sf-color-neutral-control-hover); }
+    .cash-flow-table td:nth-child(2),.cash-flow-table td:nth-child(3),.cash-flow-table .sf-money { white-space:nowrap; }
+    .cash-flow-table thead th { background:var(--surface-strong,#f8fafc); font-size:var(--sf-font-size-xs); font-weight:700; position:sticky; top:0; white-space:nowrap; z-index:2; }
     .cash-flow-evidence-cell { min-width:15rem; white-space:normal; }
     .cash-flow-evidence { align-items:start; display:grid; gap:3px; grid-template-columns:minmax(0,1fr) auto; padding:4px 0; }
     .cash-flow-evidence + .cash-flow-evidence { border-top:1px dashed var(--line); margin-top:4px; padding-top:8px; }
