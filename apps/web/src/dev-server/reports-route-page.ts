@@ -292,7 +292,7 @@ async function renderCategoryEvolutionView(
           filters,
           report.currencyBlocks.map((block) => block.currency),
         ) +
-        renderEmptyEvolutionMatrix(report) +
+        renderEmptyEvolutionMatrix(report, filters.currency) +
         renderCategoryEvolutionRuntime(),
     );
   }
@@ -583,12 +583,18 @@ function renderPeriodHeader(period: CategoryEvolutionReport["periods"][number]):
   return `<th scope="col"><span aria-hidden="true">${escapeHtml(period.label)}</span><span class="sr-only">${escapeHtml(period.accessibleLabel)}</span></th>`;
 }
 
-function renderEmptyEvolutionMatrix(report: CategoryEvolutionReport): string {
+function renderEmptyEvolutionMatrix(
+  report: CategoryEvolutionReport,
+  selectedCurrency?: string,
+): string {
+  const heading = selectedCurrency
+    ? `Matriz por categoria - ${escapeHtml(selectedCurrency)}`
+    : "Matriz sem movimentos e sem moeda definida";
   return `
-    <section class="panel evolution-block" aria-label="Matriz sem movimentos e sem moeda definida">
-      <p class="sr-only">Não há moeda associada a movimentos neste período.</p>
-      <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução sem movimentos">
-        <table class="evolution-table"><caption class="sr-only">Evolução sem movimentos no recorte selecionado</caption><thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods.map(renderPeriodHeader).join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
+    <section class="panel evolution-block" aria-label="${heading}">
+      ${selectedCurrency ? `<h3 class="report-empty-matrix-heading">${heading}</h3>` : '<p class="sr-only">Não há moeda associada a movimentos neste período.</p>'}
+      <div class="evolution-table-scroll" tabindex="0" aria-label="${selectedCurrency ? `Matriz de evolução em ${escapeHtml(selectedCurrency)} sem movimentos` : "Matriz de evolução sem movimentos"}">
+        <table class="evolution-table"><caption class="sr-only">${selectedCurrency ? `Evolução por categoria em ${escapeHtml(selectedCurrency)} sem movimentos` : "Evolução sem movimentos no recorte selecionado"}</caption><thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods.map(renderPeriodHeader).join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
         <tbody>${renderNeutralSeriesRow("Receitas", report.periodCount, "income")}${renderNeutralSeriesRow("Despesas", report.periodCount, "expense")}${renderNeutralSeriesRow("Resultado", report.periodCount, "result")}</tbody></table>
       </div>
     </section>`;
