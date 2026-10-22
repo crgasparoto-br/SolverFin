@@ -215,6 +215,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             plannedOn: "2026-08-20",
             description: "Café",
             amountMinor: 1550,
+            purchaseTotalAmountMinor: 1550,
+            installmentSequenceNumber: 2,
+            totalInstallments: 0,
             currency: "USD",
             status: "planned",
           },
@@ -603,7 +606,19 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
 
   assert.match(html, /Hotel/);
   assert.match(html, /Táxi aeroporto/);
-  assert.match(html, /Parcela 2 de 3/);
+  // List rows are single-line: only a valid finite installment keeps n/total inline.
+  const purchaseCells =
+    html.match(/<div role="cell" data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>/g) ?? [];
+  const taxiCell = purchaseCells.find((cell) => cell.includes("Táxi aeroporto")) ?? "";
+  const coffeeCell = purchaseCells.find((cell) => cell.includes("Café")) ?? "";
+  assert.match(
+    taxiCell,
+    /<strong>Táxi aeroporto <span class="cards-installment-label" aria-label="Parcela 2 de 3">2\/3<\/span><\/strong>/,
+  );
+  assert.doesNotMatch(taxiCell, /<small>|Total da compra:/);
+  assert.match(coffeeCell, /<strong>Café<\/strong>/);
+  assert.doesNotMatch(coffeeCell, /2\/0|Parcela|<small>|Total da compra:/);
+  assert.equal(purchaseCells.length, 3);
   assert.match(html, /Total da compra:[\s\S]*USD[\s\S]*150,00/);
   assert.match(
     html,
@@ -638,7 +653,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(byDay, /data-day="2026-08-19" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-18" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-20" open/);
-  assert.match(byDay, /Parcela 2 de 3/);
+  assert.match(byDay, /aria-label="Parcela 2 de 3">2\/3<\/span>/);
   assert.match(byDay, /data-status-installment-id="installment-taxi-2"/);
   assert.equal((byDay.match(/data-cards-day-group data-day=/g) ?? []).length, 1);
 
