@@ -309,6 +309,15 @@ describe("reports route page", () => {
     assert.match(html, /data-aggregate-kind="month"/);
     assert.match(html, /data-aggregate-kind="card"/);
     assert.match(html, /data-aggregate-kind="category"/);
+    assert.match(html, /class="sf-summary-grid summary-grid installment-summary-grid"/);
+    assert.match(html, /class="installment-month-strip"/);
+    assert.match(html, /class="installment-distribution-grid"/);
+    assert.match(html, /class="sf-table installment-detail-table"/);
+    assert.match(html, /class="installment-col-amount"/);
+    assert.match(html, /class="installment-table-row"/);
+    assert.match(html, /\.installment-table \.installment-detail-table \{ border-collapse:collapse; display:table;/);
+    assert.doesNotMatch(html, /\.installment-table-head,\.installment-table-row \{/);
+    assert.match(html, /\.installment-table \.installment-detail-table th:last-child,\.installment-table \.installment-detail-table td:last-child \{ text-align:right;/);
     assert.match(html, /Principal/);
     assert.match(html, /Reserva/);
     assert.match(html, /Tecnologia/);
