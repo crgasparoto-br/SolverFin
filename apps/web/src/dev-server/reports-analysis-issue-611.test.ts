@@ -58,6 +58,8 @@ describe("issue 611 reports analysis archetype", () => {
       (html.match(/class="report-trend report-trend-grid" data-trend-layout="grid"/g) ?? []).length,
       2,
     );
+    assert.equal((html.match(/style="--report-trend-columns:12"/g) ?? []).length, 2);
+    assert.match(html, /@container \(min-width:1120px\)/);
     assert.match(html, /\.evolution-table td strong \{ display:inline;/);
     assert.match(html, /tabindex="0" aria-label="Matriz de evolução em BRL"/);
     assert.doesNotMatch(html, /class="report-analysis-heading"/);
