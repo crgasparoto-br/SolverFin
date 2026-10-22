@@ -604,18 +604,30 @@ describe("reports route page", () => {
         from: "2026-10-18",
         to: "2026-11-16",
         currencyBlocks: [
-          { currency: "USD", openingBalanceMinor: 20000, closingBalanceMinor: 20000,
-            points: [{ ...point, closingBalanceMinor: 20000 }] },
-          { currency: "BRL", openingBalanceMinor: 150000, closingBalanceMinor: 150000,
-            points: [point] },
+          {
+            currency: "USD",
+            openingBalanceMinor: 20000,
+            closingBalanceMinor: 20000,
+            points: [{ ...point, closingBalanceMinor: 20000 }],
+          },
+          {
+            currency: "BRL",
+            openingBalanceMinor: 150000,
+            closingBalanceMinor: 150000,
+            points: [point],
+          },
         ],
       });
     };
-    const base = "http://localhost/relatorios?view=cash-flow&referenceDate=2026-10-17&horizonDays=30&profileId=profile-1";
+    const base =
+      "http://localhost/relatorios?view=cash-flow&referenceDate=2026-10-17&horizonDays=30&profileId=profile-1";
     const reference = new Date("2026-10-17T12:00:00.000Z");
 
     const defaultHtml = await renderReportsRoutePage("token", new URL(base), reference);
-    assert.equal((defaultHtml.match(/class="report-analysis-block cash-flow-block"/g) ?? []).length, 1);
+    assert.equal(
+      (defaultHtml.match(/class="report-analysis-block cash-flow-block"/g) ?? []).length,
+      1,
+    );
     assert.match(defaultHtml, /Posição de caixa - BRL/);
     assert.doesNotMatch(defaultHtml, /Posição de caixa - USD/);
     assert.match(defaultHtml, /<option value="BRL" selected>BRL<\/option>/);
@@ -624,7 +636,11 @@ describe("reports route page", () => {
     assert.match(defaultHtml, /name="profileId" value="profile-1"/);
     assert.match(defaultHtml, /name="horizonDays"/);
 
-    const usdHtml = await renderReportsRoutePage("token", new URL(base + "&currency=USD"), reference);
+    const usdHtml = await renderReportsRoutePage(
+      "token",
+      new URL(base + "&currency=USD"),
+      reference,
+    );
     assert.equal((usdHtml.match(/class="report-analysis-block cash-flow-block"/g) ?? []).length, 1);
     assert.match(usdHtml, /Posição de caixa - USD/);
     assert.doesNotMatch(usdHtml, /Posição de caixa - BRL/);
@@ -632,13 +648,21 @@ describe("reports route page", () => {
     assert.match(usdHtml, /name="referenceDate" value="2026-10-17"/);
     assert.match(usdHtml, /data-currency="USD"/);
 
-    const allHtml = await renderReportsRoutePage("token", new URL(base + "&currency=all"), reference);
+    const allHtml = await renderReportsRoutePage(
+      "token",
+      new URL(base + "&currency=all"),
+      reference,
+    );
     assert.equal((allHtml.match(/class="report-analysis-block cash-flow-block"/g) ?? []).length, 2);
     assert.match(allHtml, /Posição de caixa - BRL/);
     assert.match(allHtml, /Posição de caixa - USD/);
     assert.match(allHtml, /<option value="all" selected>Todas as moedas<\/option>/);
 
-    const absent = await renderReportsRoutePage("token", new URL(base + "&currency=EUR"), reference);
+    const absent = await renderReportsRoutePage(
+      "token",
+      new URL(base + "&currency=EUR"),
+      reference,
+    );
     assert.match(absent, /data-report-state="empty"/);
     assert.match(absent, /Nenhuma posição financeira em EUR/);
     assert.match(absent, /<option value="EUR" selected>EUR<\/option>/);
