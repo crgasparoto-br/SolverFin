@@ -97,7 +97,12 @@ export async function renderCashFlowProjectionView(
     return renderShell(
       heading +
         navigation +
-        renderFilters(filters.referenceDate, String(filters.horizonDays), filters.profileId, filters.currency) +
+        renderFilters(
+          filters.referenceDate,
+          String(filters.horizonDays),
+          filters.profileId,
+          filters.currency,
+        ) +
         renderState(
           "api-error",
           "Não foi possível carregar a projeção",
@@ -131,15 +136,20 @@ export async function renderCashFlowProjectionView(
 
   if (selection.visible.length === 0) {
     return renderShell(
-      heading + navigation + form + renderState(
-        "empty",
-        `Nenhuma posição financeira em ${selection.currency}`,
-        "Selecione outra moeda ou Todas as moedas para comparar as projeções.",
-      ),
+      heading +
+        navigation +
+        form +
+        renderState(
+          "empty",
+          `Nenhuma posição financeira em ${selection.currency}`,
+          "Selecione outra moeda ou Todas as moedas para comparar as projeções.",
+        ),
     );
   }
   return renderShell(
-    heading + navigation + form +
+    heading +
+      navigation +
+      form +
       `<div data-report-state="ready" class="cash-flow-report-list">${selection.visible
         .map((block) => renderCurrencyBlock(projection, block))
         .join("")}</div>`,
