@@ -58,6 +58,14 @@ Em Evolucao por categoria e Parcelas consolidadas, o titulo de cada camada (resu
 
 Somente no escopo dos relatorios, o codigo `small.sf-money-currency` redundante fica visualmente oculto, mas o componente `renderMoney` permanece inalterado: simbolo R$, US$, sinais, decimais, `data-currency` e contextos monetarios continuam disponiveis. O Chrome valida a identidade por moeda nos titulos e nos dados em cada viewport; CI verde nao substitui parecer de auditoria independente.
 
+## Filtro monetario sem duplicacao de blocos (22/10/2026, PR #729)
+
+Em **Parcelas consolidadas** e **Projecao de caixa**, o seletor **Moeda** fica na barra primaria de filtros antes de **Atualizar relatorio/Atualizar projecao**, junto ao mes/status/cartao/categoria ou a data de referencia/horizonte. O filtro e SSR, submetido pelo mesmo GET: `currency=BRL`, `currency=USD` ou `currency=all`. O estado inicial e **BRL**, quando existente, ou a primeira moeda retornada. `Todas as moedas` e uma opcao explicita de comparacao, que volta a apresentar os blocos separados, sem nunca misturar valores. A **Evolucao por categoria** ja possui filtro proprio equivalente, preservado.
+
+As opcoes refletem as moedas presentes nos dados retornados, mantendo uma moeda solicitada fora do recorte para recuperacao. Caso nao existam lancamentos naquela moeda, um estado vazio orienta a troca sem apagar os demais filtros. Uma sigla malformada e recusada antes de consultas financeiras. Os dados continuam carregados das APIs financeiras canonicas **sem parametro de moeda**; a escolha filtra somente os blocos visiveis, sem recalcualr, converter, somar moedas distintas ou duplicar chamadas de API.
+
+Links de detalhe por cartao e categoria nas Parcelas preservam `currency`, mes, status, perfil e origem. A Projecao preserva `referenceDate`, `horizonDays`, `profileId` e os destinos de `Ver origem`. `renderReportCurrencyOptions`, `parseReportCurrencyFilter` e `selectReportCurrencyBlocks` ficam compartilhados em `reports-route-page-shared.ts`, evitando logica duplicada. Testes SSR existentes exercitam BRL inicial, USD isolado, todas, moeda sem dados, entrada invalida e escopo; prova Chrome da Projecao cobre BRL/USD com um bloco por vez e preserva prova comparativa no modo `currency=all`.
+
 ## Densidade da serie diaria da projecao de caixa (22/10/2026, PR #729)
 
 A tabela **Serie continua - BRL/USD** utiliza quatro colunas com `colgroup` proporcional (Data 15%, Movimento liquido 20%, Saldo projetado 20%, Evidencias 45%) e `table-layout:fixed`, preservando alinhamento entre `thead` e `tbody`. Cada celula passa a ter **padding vertical de 5px**, texto de tamanho `--sf-font-size-sm` e line-height 1.25; as linhas sem movimentos devem ter altura **de ate 36px** em desktop e mobile. Datas, movimento liquido e saldo permanecem em uma linha, com valores numericos tabulares e alinhamento a direita.
