@@ -584,6 +584,83 @@ describe("reports route page", () => {
     assert.match(html, /Tentar novamente/);
   });
 
+  it("switches cash-flow BRL and USD with the date/horizon form, retaining separated data", async () => {
+    const point = {
+      date: "2026-10-18",
+      netMovementMinor: 0,
+      closingBalanceMinor: 150000,
+      movements: [],
+    };
+    let apiCalls = 0;
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input));
+      apiCalls += 1;
+      assert.equal(url.pathname, "/api/cash-flow-projection");
+      assert.equal(url.searchParams.get("profileId"), "profile-1");
+      assert.equal(url.searchParams.has("currency"), false);
+      return jsonResponse({
+        referenceDate: "2026-10-17",
+        horizonDays: 30,
+        from: "2026-10-18",
+        to: "2026-11-16",
+        currencyBlocks: [
+          { currency: "USD", openingBalanceMinor: 20000, closingBalanceMinor: 20000,
+            points: [{ ...point, closingBalanceMinor: 20000 }] },
+          { currency: "BRL", openingBalanceMinor: 150000, closingBalanceMinor: 150000,
+            points: [point] },
+        ],
+      });
+    };
+    const base = "http://localhost/relatorios?view=cash-flow&referenceDate=2026-10-17&horizonDays=30&profileId=profile-1";
+    const reference = new Date("2026-10-17T12:00:00.000Z");
+
+    const defaultHtml = await renderReportsRoutePage("token", new URL(base), reference);
+    assert.equal((defaultHtml.match(/class="report-analysis-block cash-flow-block"/g) ?? []).length, 1);
+    assert.match(defaultHtml, /Posição de caixa - BRL/);
+    assert.doesNotMatch(defaultHtml, /Posição de caixa - USD/);
+    assert.match(defaultHtml, /<option value="BRL" selected>BRL<\/option>/);
+    assert.match(defaultHtml, /<option value="USD">USD<\/option>/);
+    assert.match(defaultHtml, /<select id="cash-flow-currency" name="currency">/);
+    assert.match(defaultHtml, /name="profileId" value="profile-1"/);
+    assert.match(defaultHtml, /name="horizonDays"/);
+
+    const usdHtml = await renderReportsRoutePage("token", new URL(base + "&currency=USD"), reference);
+    assert.equal((usdHtml.match(/class="report-analysis-block cash-flow-block"/g) ?? []).length, 1);
+    assert.match(usdHtml, /Posição de caixa - USD/);
+    assert.doesNotMatch(usdHtml, /Posição de caixa - BRL/);
+    assert.match(usdHtml, /<option value="USD" selected>USD<\/option>/);
+    assert.match(usdHtml, /name="referenceDate" value="2026-10-17"/);
+    assert.match(usdHtml, /data-currency="USD"/);
+
+    const allHtml = await renderReportsRoutePage("token", new URL(base + "&currency=all"), reference);
+    assert.equal((allHtml.match(/class="report-analysis-block cash-flow-block"/g) ?? []).length, 2);
+    assert.match(allHtml, /Posição de caixa - BRL/);
+    assert.match(allHtml, /Posição de caixa - USD/);
+    assert.match(allHtml, /<option value="all" selected>Todas as moedas<\/option>/);
+
+    const absent = await renderReportsRoutePage("token", new URL(base + "&currency=EUR"), reference);
+    assert.match(absent, /data-report-state="empty"/);
+    assert.match(absent, /Nenhuma posição financeira em EUR/);
+    assert.match(absent, /<option value="EUR" selected>EUR<\/option>/);
+    assert.equal(apiCalls, 4);
+  });
+
+  it("rejects invalid cash-flow currency before querying the projection", async () => {
+    let calls = 0;
+    globalThis.fetch = async (): Promise<Response> => {
+      calls += 1;
+      return jsonResponse({});
+    };
+    const html = await renderReportsRoutePage(
+      "token",
+      new URL("http://localhost/relatorios?view=cash-flow&currency=INVALID1"),
+      new Date("2026-10-17T12:00:00.000Z"),
+    );
+    assert.equal(calls, 0);
+    assert.match(html, /data-report-state="filter-error"/);
+    assert.match(html, /Moeda inválida/);
+  });
+
   it("shows cash flow overview, sampled accessible trend and full daily detail", async () => {
     globalThis.fetch = async (): Promise<Response> =>
       jsonResponse({
