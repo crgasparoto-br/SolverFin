@@ -48,15 +48,447 @@ O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen e
 
 ## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
 
-Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. O cabeçalho de cada bloco monetario mostra apenas seu codigo BRL/USD e a quantidade de periodos, sem outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
 
-O titulo do detalhamento da evolucao identifica explicitamente **Matriz por categoria - BRL** (ou outro codigo em exibicao). O sufixo redundante de codigo de moeda em cada celula fica **oculto apenas na matriz**, mantendo `Money`, o simbolo local, `data-currency`, o sinal, o valor e a identificacao da moeda no titulo/caption acessivel. A fonte numerica da matriz e a fonte das descricoes tornam-se mais compactas; nomes de categorias permanecem completos em uma unica linha, com rolagem horizontal local da matriz, sem truncamento. O grafico **Resultado ao longo do tempo** usa fonte monetaria menor, preservando todos os valores e o grid sem scroll horizontal.
+Os titulos de resumo, visualizacao, destaques e detalhe identificam cada moeda explicitamente, como **Leitura do período - BRL**, **Resultado ao longo do tempo - BRL**, **Pontos para revisar - BRL** e **Matriz por categoria - BRL**. Nao existe mais o `BRL` isolado entre filtros e resumo. O sufixo redundante de codigo de moeda fica oculto **em todos os valores do bloco**, incluindo cards, grafico, destaques e matriz, mantendo `Money`, o simbolo local (`R# Relatorios do SolverFin
+
+Este documento e a fonte funcional da area **Relatorios**. Os contratos tecnicos da evolucao ficam em [`API_REPORTS.md`](./API_REPORTS.md).
+
+## Objetivo
+
+A area transforma dados canonicos do perfil financeiro em consultas somente leitura, respeitando tenant, historico, moedas e ausencia de dupla contagem.
+
+## Visoes disponiveis
+
+A rota `/relatorios` possui tres visoes:
+
+- **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
+
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+
+/`US# Relatorios do SolverFin
+
+Este documento e a fonte funcional da area **Relatorios**. Os contratos tecnicos da evolucao ficam em [`API_REPORTS.md`](./API_REPORTS.md).
+
+## Objetivo
+
+A area transforma dados canonicos do perfil financeiro em consultas somente leitura, respeitando tenant, historico, moedas e ausencia de dupla contagem.
+
+## Visoes disponiveis
+
+A rota `/relatorios` possui tres visoes:
+
+- **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
+
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+
+), `data-currency`, o sinal, o valor e a identificacao da moeda nos titulos/captions acessiveis. A fonte numerica da matriz e a fonte das descricoes tornam-se mais compactas; nomes de categorias permanecem completos em uma unica linha, com rolagem horizontal local da matriz, sem truncamento. O grafico **Resultado ao longo do tempo** usa fonte monetaria menor, preservando todos os valores e o grid sem scroll horizontal.
 
 **Aceite:** confirmar no Chrome (1366x768, 390x844, 320x740) **um unico formulario**, moeda depois de periodo na ordem visual/DOM, botao Atualizar relatorio aplicado a todos os campos, selecao BRL, USD e Todas, o titulo da matriz, valores sem codigo redundante, texto sem sobreposicao, conteudo longo, navegacao e foco por teclado, URL/filtros preservados, estado vazio e moeda invalida. Testes SSR existentes cobrem o recorte sem somas combinadas; auditoria visual independente continua necessaria.
 
+## Desduplicacao integral da moeda nos relatorios (22/10/2026, PR #729)
+
+O marcador de moeda **nao fica solto** entre os filtros e a leitura financeira. Em toda composicao A5 de Evolucao por categoria e Parcelas consolidadas, o titulo de cada secao possui o sufixo `- BRL` ou `- USD`, incluindo resumo, visualizacao, destaques e detalhe. O numero de periodos foi movido para a mesma faixa do titulo do resumo, evitando uma linha de cabecalho exclusiva. Na Projecao de caixa, o titulo de resumo e as camadas de grafico e tabela tambem indicam a moeda, preservando as datas, horizonte e referencia com menor altura de composicao. Textos de apoio que apenas repetiam o codigo monetario foram abreviados.
+
+A regra `.currency-report-list .sf-money .sf-money-currency,.cash-flow-report-list .sf-money .sf-money-currency` oculta **somente a sigla suplementar** ao lado dos valores monetarios destes relatorios. As primitivas `renderMoney` nao foram alteradas, de forma que `R# Relatorios do SolverFin
+
+Este documento e a fonte funcional da area **Relatorios**. Os contratos tecnicos da evolucao ficam em [`API_REPORTS.md`](./API_REPORTS.md).
+
+## Objetivo
+
+A area transforma dados canonicos do perfil financeiro em consultas somente leitura, respeitando tenant, historico, moedas e ausencia de dupla contagem.
+
+## Visoes disponiveis
+
+A rota `/relatorios` possui tres visoes:
+
+- **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
+
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+
+Os titulos de resumo, visualizacao, destaques e detalhe identificam cada moeda explicitamente, como **Leitura do período - BRL**, **Resultado ao longo do tempo - BRL**, **Pontos para revisar - BRL** e **Matriz por categoria - BRL**. Nao existe mais o `BRL` isolado entre filtros e resumo. O sufixo redundante de codigo de moeda fica oculto **em todos os valores do bloco**, incluindo cards, grafico, destaques e matriz, mantendo `Money`, o simbolo local (`R# Relatorios do SolverFin
+
+Este documento e a fonte funcional da area **Relatorios**. Os contratos tecnicos da evolucao ficam em [`API_REPORTS.md`](./API_REPORTS.md).
+
+## Objetivo
+
+A area transforma dados canonicos do perfil financeiro em consultas somente leitura, respeitando tenant, historico, moedas e ausencia de dupla contagem.
+
+## Visoes disponiveis
+
+A rota `/relatorios` possui tres visoes:
+
+- **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
+
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+
+/`US# Relatorios do SolverFin
+
+Este documento e a fonte funcional da area **Relatorios**. Os contratos tecnicos da evolucao ficam em [`API_REPORTS.md`](./API_REPORTS.md).
+
+## Objetivo
+
+A area transforma dados canonicos do perfil financeiro em consultas somente leitura, respeitando tenant, historico, moedas e ausencia de dupla contagem.
+
+## Visoes disponiveis
+
+A rota `/relatorios` possui tres visoes:
+
+- **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
+
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+
+), `data-currency`, o sinal, o valor e a identificacao da moeda nos titulos/captions acessiveis. A fonte numerica da matriz e a fonte das descricoes tornam-se mais compactas; nomes de categorias permanecem completos em uma unica linha, com rolagem horizontal local da matriz, sem truncamento. O grafico **Resultado ao longo do tempo** usa fonte monetaria menor, preservando todos os valores e o grid sem scroll horizontal.
+
+**Aceite:** confirmar no Chrome (1366x768, 390x844, 320x740) **um unico formulario**, moeda depois de periodo na ordem visual/DOM, botao Atualizar relatorio aplicado a todos os campos, selecao BRL, USD e Todas, o titulo da matriz, valores sem codigo redundante, texto sem sobreposicao, conteudo longo, navegacao e foco por teclado, URL/filtros preservados, estado vazio e moeda invalida. Testes SSR existentes cobrem o recorte sem somas combinadas; auditoria visual independente continua necessaria.
+
+/`US# Relatorios do SolverFin
+
+Este documento e a fonte funcional da area **Relatorios**. Os contratos tecnicos da evolucao ficam em [`API_REPORTS.md`](./API_REPORTS.md).
+
+## Objetivo
+
+A area transforma dados canonicos do perfil financeiro em consultas somente leitura, respeitando tenant, historico, moedas e ausencia de dupla contagem.
+
+## Visoes disponiveis
+
+A rota `/relatorios` possui tres visoes:
+
+- **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
+
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+
+Os titulos de resumo, visualizacao, destaques e detalhe identificam cada moeda explicitamente, como **Leitura do período - BRL**, **Resultado ao longo do tempo - BRL**, **Pontos para revisar - BRL** e **Matriz por categoria - BRL**. Nao existe mais o `BRL` isolado entre filtros e resumo. O sufixo redundante de codigo de moeda fica oculto **em todos os valores do bloco**, incluindo cards, grafico, destaques e matriz, mantendo `Money`, o simbolo local (`R# Relatorios do SolverFin
+
+Este documento e a fonte funcional da area **Relatorios**. Os contratos tecnicos da evolucao ficam em [`API_REPORTS.md`](./API_REPORTS.md).
+
+## Objetivo
+
+A area transforma dados canonicos do perfil financeiro em consultas somente leitura, respeitando tenant, historico, moedas e ausencia de dupla contagem.
+
+## Visoes disponiveis
+
+A rota `/relatorios` possui tres visoes:
+
+- **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
+
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+
+/`US# Relatorios do SolverFin
+
+Este documento e a fonte funcional da area **Relatorios**. Os contratos tecnicos da evolucao ficam em [`API_REPORTS.md`](./API_REPORTS.md).
+
+## Objetivo
+
+A area transforma dados canonicos do perfil financeiro em consultas somente leitura, respeitando tenant, historico, moedas e ausencia de dupla contagem.
+
+## Visoes disponiveis
+
+A rota `/relatorios` possui tres visoes:
+
+- **Evolucao por categoria** (`view=category-evolution`), opcao inicial;
+- **Parcelas consolidadas** (`view=installments`), preservada com seus filtros atuais;
+- **Projecao de caixa** (`view=cash-flow`), com serie diaria canonica de 30, 60 ou 90 dias por moeda.
+
+Links e formularios gerados pela aplicacao informam `view` explicitamente e preservam `profileId`. Links antigos sem `view` continuam abrindo parcelas quando possuem somente `month`, `status`, `cardId` ou `categoryId`. Filtros `interval`, `start`, `periods` ou `accountId` selecionam evolucao. Como `cardId` tambem pertence ao contrato legado de parcelas, o filtro por cartao da evolucao sempre e emitido com `view=category-evolution`. Misturar as duas familias sem `view` produz erro orientado ao usuario.
+
+## Arquetipo de analise
+
+Desde a issue #611, as visoes prontas de `/relatorios` seguem o arquetipo A5 de analise sem alterar os contratos financeiros das fontes. Cada bloco monetario apresenta, nesta ordem:
+
+1. **Resumo** com os indicadores que ajudam a interpretar o recorte;
+2. **Visualizacao** do comportamento ou distribuicao relevante;
+3. **Destaques** e excecoes que merecem revisao;
+4. **Detalhe** com a matriz ou tabela completa.
+
+A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, cada codigo recebe um bloco independente antes de qualquer soma ou agrupamento. Nao existe conversao cambial implicita nem total unico entre moedas distintas.
+
+Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
+
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px todos passam para uma coluna para evitar corte do seletor de mes. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na **Evolucao por categoria**, o seletor funcional **Moeda** faz parte da **mesma barra de filtros** e vem imediatamente depois de **Periodo**, antes da acao primaria **Atualizar relatorio**. Ha somente um formulario GET SSR e um botao de aplicacao para intervalo, conta/cartao, inicio, quantidade de periodos e moeda, sem exigir JavaScript. As opcoes incluem as moedas presentes no resultado, a selecao anterior (se fora do recorte) e **Todas as moedas**. A atualizacao preserva `view`, `interval`, `start`, `periods`, `profileId` e origem (`accountId` ou `cardId`) no mesmo envio. A faixa de resumo mostra a quantidade de periodos junto ao titulo `Leitura do período - BRL`, sem um cabeçalho isolado de moeda, outro formulario ou botao `Aplicar`. O filtro `currency=XXX` limita apenas a apresentacao de blocos monetarios ja retornados pela API, sem alterar calculos, converter valores ou misturar moedas. Sem parametro ou com `currency=all`, todos os blocos continuam visiveis; entrada de moeda invalida e rejeitada antes da chamada da API. Se a moeda escolhida nao possui movimentos, exibe estado vazio orientado e conserva o controle para alternar para Todas as moedas. A troca de intervalo conserva o filtro de moeda.
+
+), `data-currency`, o sinal, o valor e a identificacao da moeda nos titulos/captions acessiveis. A fonte numerica da matriz e a fonte das descricoes tornam-se mais compactas; nomes de categorias permanecem completos em uma unica linha, com rolagem horizontal local da matriz, sem truncamento. O grafico **Resultado ao longo do tempo** usa fonte monetaria menor, preservando todos os valores e o grid sem scroll horizontal.
+
+**Aceite:** confirmar no Chrome (1366x768, 390x844, 320x740) **um unico formulario**, moeda depois de periodo na ordem visual/DOM, botao Atualizar relatorio aplicado a todos os campos, selecao BRL, USD e Todas, o titulo da matriz, valores sem codigo redundante, texto sem sobreposicao, conteudo longo, navegacao e foco por teclado, URL/filtros preservados, estado vazio e moeda invalida. Testes SSR existentes cobrem o recorte sem somas combinadas; auditoria visual independente continua necessaria.
+
+, sinal, precisao, dados `data-currency` e possivel contexto de conversao continuam preservados. Valores nao sao agregados entre moedas diferentes. Textos de acessibilidade, identificadores e captions continuam com a moeda explicita.
+
+Os testes SSR existentes verificam titulos e ausencia do cabecalho redundante; o Chrome da issue #718 valida, por BRL e USD e por camada, a moeda nos titulos, a ausencia da sigla repetida e a consistencia semantica de cada `Money`, em 1366x768, 390x844 e 320x740. A aprovacao visual e a auditoria independente continuam exigidas apos CI verde.
+
 ## Propagacao visual Golden Screen (#718)
 
-A rota adota o nivel de acabamento da Golden Screen do Extrato, **sem copiar o arquetipo de listagem**. O arquetipo A5 continua sendo a referencia: contexto de visao e filtros no topo, indicador decisivo por moeda, visualizacao, destaques e detalhe. Navegacao entre visoes usa abas discretas; controles mantem altura e foco padronizados. Nos blocos multi-moedas, a moeda permanece identificada no cabecalho e em cada valor por `Money`; o destaque do resultado e do total mensal nunca une BRL e USD.
+A rota adota o nivel de acabamento da Golden Screen do Extrato, **sem copiar o arquetipo de listagem**. O arquetipo A5 continua sendo a referencia: contexto de visao e filtros no topo, indicador decisivo por moeda, visualizacao, destaques e detalhe. Navegacao entre visoes usa abas discretas; controles mantem altura e foco padronizados. Nos blocos multi-moedas, cada secao apresenta o codigo BRL/USD em seu titulo (sem cabeçalho avulso) e os valores mantem `Money` com `data-currency`, mas sem repetir o codigo textual ao lado do numero; o destaque do resultado e do total mensal nunca une BRL e USD.
 
 A evolucao por categoria oferece barras de tendencia com rolagem local por teclado e rotulos/valores textuais acessiveis. A arvore e a matriz permanecem semanticamente tabulares, com cabecalhos e valores completos em scroll local; nomes extensos podem quebrar linha. As distribuicoes de parcelas preservam os links canonicos, mas evitam cards e bordas aninhadas. A projecao de caixa apresenta, entre resumo e tabela, uma **amostra visual** dos saldos diarios canonicos (ate aproximadamente oito datas, incluindo a ultima): nenhuma interpolacao, soma, nova formula financeira ou supressao da serie completa. A tabela continua mostrando todas as datas e evidencias. Os valores monetários no gráfico usam largura mínima legível e quebra controlada; a validação Chrome rejeita texto de um período que invada a coluna vizinha, com controle negativo executado.
 
