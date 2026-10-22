@@ -171,7 +171,8 @@ export function renderResultTrend(
 ): string {
   const maxAbsolute = Math.max(1, ...points.map((point) => Math.abs(point.amountMinor)));
   const layoutClass = layout === "grid" ? " report-trend-grid" : "";
-  return `<ol class="report-trend${layoutClass}" data-trend-layout="${layout}" tabindex="0" aria-label="${renderText(ariaLabel)}">${points
+  const layoutStyle = layout === "grid" ? ` style="--report-trend-columns:${Math.min(points.length || 1, 12)}"` : "";
+  return `<ol class="report-trend${layoutClass}" data-trend-layout="${layout}"${layoutStyle} tabindex="0" aria-label="${renderText(ariaLabel)}">${points
     .map((point) => {
       const scale =
         point.amountMinor === 0
