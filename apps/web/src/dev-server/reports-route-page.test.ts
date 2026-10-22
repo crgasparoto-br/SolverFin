@@ -373,7 +373,9 @@ describe("reports route page", () => {
 
     const selected = await renderReportsRoutePage(
       "token",
-      new URL("http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&profileId=profile-1&currency=USD"),
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&profileId=profile-1&currency=USD",
+      ),
     );
     assert.equal((selected.match(/data-report-analysis="a5" data-currency=/g) ?? []).length, 1);
     assert.match(selected, /data-report-analysis="a5" data-currency="USD"/);
@@ -386,13 +388,22 @@ describe("reports route page", () => {
     assert.match(selected, /name="profileId" value="profile-1"/);
     assert.match(selected, /name="start" value="2026-06"/);
     assert.match(selected, /name="periods" value="2"/);
-    assert.match(selected, /href="\/relatorios\?view=category-evolution&interval=annual&profileId=profile-1&currency=USD"/);
-    assert.equal(apiRequests.filter((requested) => requested.pathname === "/api/reports/category-evolution").length, 1);
+    assert.match(
+      selected,
+      /href="\/relatorios\?view=category-evolution&interval=annual&profileId=profile-1&currency=USD"/,
+    );
+    assert.equal(
+      apiRequests.filter((requested) => requested.pathname === "/api/reports/category-evolution")
+        .length,
+      1,
+    );
     assert.ok(apiRequests.every((requested) => !requested.searchParams.has("currency")));
 
     const all = await renderReportsRoutePage(
       "token",
-      new URL("http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&currency=all"),
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&interval=monthly&start=2026-06&periods=2&currency=all",
+      ),
     );
     assert.equal((all.match(/data-report-analysis="a5" data-currency=/g) ?? []).length, 2);
     assert.equal((all.match(/<select id="report-currency" name="currency">/g) ?? []).length, 1);
@@ -409,7 +420,9 @@ describe("reports route page", () => {
     };
     const html = await renderReportsRoutePage(
       "token",
-      new URL("http://localhost/relatorios?view=category-evolution&start=2026-06&periods=2&currency=USD"),
+      new URL(
+        "http://localhost/relatorios?view=category-evolution&start=2026-06&periods=2&currency=USD",
+      ),
     );
     assert.match(html, /data-report-state="empty"/);
     assert.match(html, /Nenhum lançamento em USD no período/);
