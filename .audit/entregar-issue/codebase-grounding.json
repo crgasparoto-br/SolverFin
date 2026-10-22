@@ -1,303 +1,172 @@
 {
   "schema_version": 1,
-  "subject_sha": "5e63423beefaf57598f3490365a5acee0e123526",
-  "base_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
+  "subject_sha": "ff2b89908d61a42271d38482292d802d7b14ef08",
+  "base_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
   "creations": [
     {
-      "path": "apps/web/src/dev-server/categories-page-assets.ts",
+      "path": "scripts/statement-visual/report-page-viewport.mjs",
       "kind": "file",
-      "name": "categories-page-assets.ts",
+      "name": "report-page-viewport",
       "search": {
         "queries": [
-          "rg -n \"function|state|pageCss|apiFormScript|validate\" apps/web/src/dev-server/categories-page.ts scripts/statement-visual/",
-          "git diff --name-only origin/develop HEAD"
+          "git diff --name-status develop..HEAD",
+          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
         ],
-        "scope": "SolverFin/src dev-server and scripts/statement-visual on material SHA",
+        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/categories-page.ts",
-            "reason_not_reused": "Existing monolithic implementation had CODE-GROWTH-001 violations; extracted helpers must live in cohesive smaller files, with the existing module retained as caller."
+            "path": "scripts/statement-visual/reports-category-evolution.mjs",
+            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
           }
         ]
       },
       "decision": "create",
-      "justification": "Extract existing logic without changing end-user semantics; must pass code-growth, typecheck, lint and browser gate."
+      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
     },
     {
-      "path": "scripts/statement-visual/accounts-visual-cdi.mjs",
+      "path": "scripts/statement-visual/reports-718-behavior-evidence.mjs",
       "kind": "file",
-      "name": "accounts-visual-cdi.mjs",
+      "name": "reports-718-behavior-evidence",
       "search": {
         "queries": [
-          "rg -n \"function|state|pageCss|apiFormScript|validate\" apps/web/src/dev-server/categories-page.ts scripts/statement-visual/",
-          "git diff --name-only origin/develop HEAD"
+          "git diff --name-status develop..HEAD",
+          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
         ],
-        "scope": "SolverFin/src dev-server and scripts/statement-visual on material SHA",
+        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
         "candidates": [
           {
-            "path": "scripts/statement-visual/accounts-cards-interface.mjs",
-            "reason_not_reused": "Existing monolithic implementation had CODE-GROWTH-001 violations; extracted helpers must live in cohesive smaller files, with the existing module retained as caller."
+            "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
+            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
           }
         ]
       },
       "decision": "create",
-      "justification": "Extract existing logic without changing end-user semantics; must pass code-growth, typecheck, lint and browser gate."
+      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
     },
     {
-      "path": "scripts/statement-visual/accounts-visual-state.mjs",
+      "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
       "kind": "file",
-      "name": "accounts-visual-state.mjs",
+      "name": "reports-718-extra-browser",
       "search": {
         "queries": [
-          "rg -n \"function|state|pageCss|apiFormScript|validate\" apps/web/src/dev-server/categories-page.ts scripts/statement-visual/",
-          "git diff --name-only origin/develop HEAD"
+          "git diff --name-status develop..HEAD",
+          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
         ],
-        "scope": "SolverFin/src dev-server and scripts/statement-visual on material SHA",
+        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
         "candidates": [
           {
-            "path": "scripts/statement-visual/accounts-cards-interface.mjs",
-            "reason_not_reused": "Existing monolithic implementation had CODE-GROWTH-001 violations; extracted helpers must live in cohesive smaller files, with the existing module retained as caller."
+            "path": "scripts/statement-visual/reports-category-evolution.mjs",
+            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
           }
         ]
       },
       "decision": "create",
-      "justification": "Extract existing logic without changing end-user semantics; must pass code-growth, typecheck, lint and browser gate."
+      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
     },
     {
-      "path": "scripts/statement-visual/categories-visual-desktop.mjs",
+      "path": "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
       "kind": "file",
-      "name": "categories-visual-desktop.mjs",
+      "name": "reports-718-multicurrency-browser",
       "search": {
         "queries": [
-          "rg -n \"function|state|pageCss|apiFormScript|validate\" apps/web/src/dev-server/categories-page.ts scripts/statement-visual/",
-          "git diff --name-only origin/develop HEAD"
+          "git diff --name-status develop..HEAD",
+          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
         ],
-        "scope": "SolverFin/src dev-server and scripts/statement-visual on material SHA",
+        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
         "candidates": [
           {
-            "path": "scripts/statement-visual/categories-interface.mjs",
-            "reason_not_reused": "Existing monolithic implementation had CODE-GROWTH-001 violations; extracted helpers must live in cohesive smaller files, with the existing module retained as caller."
+            "path": "scripts/statement-visual/reports-category-evolution.mjs",
+            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
           }
         ]
       },
       "decision": "create",
-      "justification": "Extract existing logic without changing end-user semantics; must pass code-growth, typecheck, lint and browser gate."
+      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
     },
     {
-      "path": "scripts/statement-visual/categories-visual-operations.mjs",
+      "path": "scripts/statement-visual/reports-718-visual-acceptance.mjs",
       "kind": "file",
-      "name": "categories-visual-operations.mjs",
+      "name": "reports-718-visual-acceptance",
       "search": {
         "queries": [
-          "rg -n \"function|state|pageCss|apiFormScript|validate\" apps/web/src/dev-server/categories-page.ts scripts/statement-visual/",
-          "git diff --name-only origin/develop HEAD"
+          "git diff --name-status develop..HEAD",
+          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
         ],
-        "scope": "SolverFin/src dev-server and scripts/statement-visual on material SHA",
+        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
         "candidates": [
           {
-            "path": "scripts/statement-visual/categories-interface.mjs",
-            "reason_not_reused": "Existing monolithic implementation had CODE-GROWTH-001 violations; extracted helpers must live in cohesive smaller files, with the existing module retained as caller."
+            "path": "scripts/statement-visual/reports-category-evolution.mjs",
+            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
           }
         ]
       },
       "decision": "create",
-      "justification": "Extract existing logic without changing end-user semantics; must pass code-growth, typecheck, lint and browser gate."
-    },
-    {
-      "path": "scripts/statement-visual/categories-visual-state.mjs",
-      "kind": "file",
-      "name": "categories-visual-state.mjs",
-      "search": {
-        "queries": [
-          "rg -n \"function|state|pageCss|apiFormScript|validate\" apps/web/src/dev-server/categories-page.ts scripts/statement-visual/",
-          "git diff --name-only origin/develop HEAD"
-        ],
-        "scope": "SolverFin/src dev-server and scripts/statement-visual on material SHA",
-        "candidates": [
-          {
-            "path": "scripts/statement-visual/categories-interface.mjs",
-            "reason_not_reused": "Existing monolithic implementation had CODE-GROWTH-001 violations; extracted helpers must live in cohesive smaller files, with the existing module retained as caller."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Extract existing logic without changing end-user semantics; must pass code-growth, typecheck, lint and browser gate."
-    },
-    {
-      "path": "scripts/statement-visual/categories-visual-mobile-evidence.mjs",
-      "kind": "file",
-      "name": "categories-visual-mobile-evidence.mjs",
-      "search": {
-        "queries": [
-          "rg -n \"captureMobileHierarchyEvidence|hierarchyScreenshots\" scripts/statement-visual/",
-          "git diff --name-only 2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d 5e63423beefaf57598f3490365a5acee0e123526"
-        ],
-        "scope": "SolverFin scripts/statement-visual at exact material SHA",
-        "candidates": [
-          {
-            "path": "scripts/statement-visual/categories-interface.mjs",
-            "reason_not_reused": "Extract dedicated screenshot and 320px long-name hierarchy assertions from existing monolithic category visual harness, retaining the same orchestrator and CDP primitives."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Mobile hierarchy evidence needs independently bounded logic and focused visual validation, reusing the existing categories scenario and CDP helpers."
+      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
     }
   ],
   "references": [
     {
-      "symbol": "apiFormScript",
+      "symbol": "reportPageViewportExpression",
       "kind": "local",
-      "used_in": "apps/web/src/dev-server/categories-page.ts",
+      "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
       "defined_at": {
-        "path": "apps/web/src/dev-server/categories-page-assets.ts",
-        "line": 1
+        "path": "scripts/statement-visual/report-page-viewport.mjs",
+        "line": 7
       },
       "verified_by": {
-        "command": "npm run build:packages && npm run typecheck --workspace @solverfin/web && npm run test --workspace @solverfin/web",
+        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
         "exit_code": 0
       }
     },
     {
-      "symbol": "pageCss",
+      "symbol": "collectReport718Evidence",
       "kind": "local",
-      "used_in": "apps/web/src/dev-server/categories-page.ts",
+      "used_in": "scripts/statement-visual/issue-606-behavior-claims.mjs",
       "defined_at": {
-        "path": "apps/web/src/dev-server/categories-page-assets.ts",
-        "line": 84
+        "path": "scripts/statement-visual/reports-718-behavior-evidence.mjs",
+        "line": 4
       },
       "verified_by": {
-        "command": "npm run build:packages && npm run typecheck --workspace @solverfin/web && npm run test --workspace @solverfin/web",
+        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
         "exit_code": 0
       }
     },
     {
-      "symbol": "sharedShellStyles",
+      "symbol": "validateMultiCurrency",
       "kind": "local",
-      "used_in": "apps/web/src/dev-server/categories-page.ts",
+      "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
       "defined_at": {
-        "path": "apps/web/src/dev-server/shared-styles.ts",
-        "line": 9
-      },
-      "verified_by": {
-        "command": "npm run build:packages && npm run typecheck --workspace @solverfin/web && npm run test --workspace @solverfin/web",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateDesktop",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/categories-interface.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/categories-visual-desktop.mjs",
-        "line": 14
-      },
-      "verified_by": {
-        "command": "node --check scripts/statement-visual/categories-interface.mjs && npx eslint scripts/statement-visual/categories-visual-desktop.mjs scripts/statement-visual/categories-visual-operations.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateDesktopModal",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/categories-interface.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/categories-visual-desktop.mjs",
-        "line": 222
-      },
-      "verified_by": {
-        "command": "node --check scripts/statement-visual/categories-interface.mjs && npx eslint scripts/statement-visual/categories-visual-desktop.mjs scripts/statement-visual/categories-visual-operations.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateCategoryCrud",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/categories-interface.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/categories-visual-operations.mjs",
-        "line": 130
-      },
-      "verified_by": {
-        "command": "node --check scripts/statement-visual/categories-interface.mjs && npx eslint scripts/statement-visual/categories-visual-desktop.mjs scripts/statement-visual/categories-visual-operations.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateCategoryMutationFailures",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/categories-interface.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/categories-visual-operations.mjs",
-        "line": 9
-      },
-      "verified_by": {
-        "command": "node --check scripts/statement-visual/categories-interface.mjs && npx eslint scripts/statement-visual/categories-visual-desktop.mjs scripts/statement-visual/categories-visual-operations.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateSidebarThemeParity",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/categories-interface.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/categories-visual-operations.mjs",
-        "line": 294
-      },
-      "verified_by": {
-        "command": "node --check scripts/statement-visual/categories-interface.mjs && npx eslint scripts/statement-visual/categories-visual-desktop.mjs scripts/statement-visual/categories-visual-operations.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateCdiSettings",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/accounts-cards-interface.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/accounts-visual-cdi.mjs",
-        "line": 9
-      },
-      "verified_by": {
-        "command": "node --check scripts/statement-visual/accounts-cards-interface.mjs && npx eslint scripts/statement-visual/accounts-visual-cdi.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateCdiRealPersistence",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/accounts-cards-interface.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/accounts-visual-cdi.mjs",
-        "line": 112
-      },
-      "verified_by": {
-        "command": "node --check scripts/statement-visual/accounts-cards-interface.mjs && npx eslint scripts/statement-visual/accounts-visual-cdi.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "state",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/categories-visual-desktop.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/categories-visual-state.mjs",
-        "line": 1
-      },
-      "verified_by": {
-        "command": "npx eslint scripts/statement-visual/categories-visual-desktop.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "captureMobileHierarchyEvidence",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/categories-interface.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/categories-visual-mobile-evidence.mjs",
+        "path": "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
         "line": 6
       },
       "verified_by": {
-        "command": "Repository CI #39603347505 (CRITICAL validation) and Chrome #39603346820 (categories-interface)",
+        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "validateCashFlow",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
+        "line": 27
+      },
+      "verified_by": {
+        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "validateMobileStates",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
+        "line": 164
+      },
+      "verified_by": {
+        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
         "exit_code": 0
       }
     }

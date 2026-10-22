@@ -2,8 +2,8 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "5e63423beefaf57598f3490365a5acee0e123526",
-  "base_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
+  "subject_sha": "ff2b89908d61a42271d38482292d802d7b14ef08",
+  "base_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -18,60 +18,84 @@
   },
   "files": [
     {
-      "path": "apps/web/src/dev-server/categories-page-assets.ts",
+      "path": "apps/web/src/dev-server/cash-flow-projection-view.ts",
+      "lines_before": 262,
+      "lines_after": 289
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-analysis-archetype.ts",
+      "lines_before": 215,
+      "lines_after": 219
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-installments-view.ts",
+      "lines_before": 474,
+      "lines_after": 489
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-route-page-shared.ts",
+      "lines_before": 62,
+      "lines_after": 68
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-route-page-styles.ts",
+      "lines_before": 129,
+      "lines_after": 154
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-route-page.ts",
+      "lines_before": 828,
+      "lines_after": 832
+    },
+    {
+      "path": "scripts/statement-visual/coverage-contract.mjs",
+      "lines_before": 447,
+      "lines_after": 448
+    },
+    {
+      "path": "scripts/statement-visual/issue-546-reports-category-controls.mjs",
+      "lines_before": 344,
+      "lines_after": 347
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
+      "lines_before": 685,
+      "lines_after": 689
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-semantic-interactions.mjs",
+      "lines_before": 705,
+      "lines_after": 716
+    },
+    {
+      "path": "scripts/statement-visual/report-page-viewport.mjs",
       "lines_before": null,
-      "lines_after": 237
+      "lines_after": 47
     },
     {
-      "path": "apps/web/src/dev-server/categories-page.ts",
-      "lines_before": 1023,
-      "lines_after": 787
-    },
-    {
-      "path": "scripts/statement-visual/accounts-cards-interface.mjs",
-      "lines_before": 1344,
-      "lines_after": 1145
-    },
-    {
-      "path": "scripts/statement-visual/accounts-visual-cdi.mjs",
+      "path": "scripts/statement-visual/reports-718-behavior-evidence.mjs",
       "lines_before": null,
-      "lines_after": 209
+      "lines_after": 131
     },
     {
-      "path": "scripts/statement-visual/accounts-visual-state.mjs",
+      "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
+      "lines_before": null,
+      "lines_after": 247
+    },
+    {
+      "path": "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
+      "lines_before": null,
+      "lines_after": 136
+    },
+    {
+      "path": "scripts/statement-visual/reports-718-visual-acceptance.mjs",
       "lines_before": null,
       "lines_after": 1
     },
     {
-      "path": "scripts/statement-visual/categories-interface.mjs",
-      "lines_before": 1027,
-      "lines_after": 503
-    },
-    {
-      "path": "scripts/statement-visual/categories-visual-desktop.mjs",
-      "lines_before": null,
-      "lines_after": 245
-    },
-    {
-      "path": "scripts/statement-visual/categories-visual-mobile-evidence.mjs",
-      "lines_before": null,
-      "lines_after": 100
-    },
-    {
-      "path": "scripts/statement-visual/categories-visual-operations.mjs",
-      "lines_before": null,
-      "lines_after": 331,
-      "justification": "Extracted existing category CRUD browser checks from monolithic categories-interface.mjs, preserving operation assertions while isolating a cohesive test module of 331 lines."
-    },
-    {
-      "path": "scripts/statement-visual/categories-visual-state.mjs",
-      "lines_before": null,
-      "lines_after": 1
-    },
-    {
-      "path": "scripts/statement-visual/statement-contextual-surfaces.mjs",
-      "lines_before": 674,
-      "lines_after": 694
+      "path": "scripts/statement-visual/reports-category-evolution.mjs",
+      "lines_before": 315,
+      "lines_after": 394
     }
   ],
   "blocking_files": []

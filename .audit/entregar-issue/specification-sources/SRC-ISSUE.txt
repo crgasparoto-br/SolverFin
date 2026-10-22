@@ -1,37 +1,37 @@
 **Parent epic:** #702
 **Fase:** 1 — propagação por superfície.
-**Rota:** `/categorias`.
-**Antecedente:** #615 (rotas secundárias da fase 3C) e #232 (categorias hierárquicas); não substituem comparação com o padrão aprovado.
+**Rota:** `/relatorios`.
+**Antecedente:** #611 (arquétipo resumo → visualização → detalhe); entregas antigas não atestam acabamento frente à Golden Screen recém-aprovada.
 **Dependência:** #714 — marco técnico da Golden Screen e referência validada na `develop`.
 
 ## Objetivo
-Elevar o acabamento da manutenção de categorias ao nível do Extrato, respeitando a estrutura hierárquica real e sem transformá-la em uma lista de cards.
+Alinhar os relatórios financeiros à hierarquia, densidade e iconografia da Golden Screen, respeitando o arquétipo analítico em vez de copiar a listagem do Extrato.
 
 ## Escopo
-- Refinar árvore/grupos/subcategorias: recuo, contraste tipográfico, ícones, expansão, ordenação, níveis e estado ativo.
-- Dar clareza a busca/filtros, categorias de receitas/despesas, edição/criação e ações por item, mantendo modais e confirmação existentes.
-- Reduzir bordas, superfícies e badges redundantes; tornar hierarquia legível por estrutura e não apenas cor.
-- Proteger navegação por teclado, leitor de tela, reflow mobile, estados vazio/erro e nomes longos.
+- Priorizar contexto de período, conta/cartão, moeda e indicadores de decisão; organizar resumo, visualização, destaques e detalhe.
+- Refinar filtros, estados ativos, hierarquia de categorias, tabelas, gráficos, ações de expansão e eventuais drilldowns existentes.
+- Reduzir cards/bordas em excesso, sem perder comparabilidade financeira ou rastreabilidade dos números.
+- Melhorar desktop/mobile, colunas/tabulação, overflow controlado, foco, teclado e descrição acessível de gráficos.
 
 <!-- review-702-2026-10-15 -->
 ## Cenários de aceite discriminantes — revisão de 15/10/2026
 
-- **Hierarquia real:** exibir pelo menos pai, filho e nível mais profundo quando suportado pelo domínio, com nome longo; recuo, expansão/contração e tipo de categoria permanecem compreensíveis sem depender apenas de cor ou bordas aninhadas.
-- **Operação:** filtrar por tipo, buscar, criar/editar dentro da hierarquia e usar ações autorizadas sem perder o contexto de parent e sem inventar novos campos/fluxos.
-- **Estados e acessibilidade:** comparar normal, sem resultado e nomes longos em desktop/mobile; exigir foco visível, rótulo acessível e alvo utilizável.
-- **Controle negativo:** o critério falha se uma alteração visual achatar níveis da árvore, fizer pai/filho indistinguíveis ou esconder a ação de manutenção em viewport reduzida.
+- **Análise:** em relatório disponível com dados, período, filtro, moeda, indicador decisivo, gráfico/tabela e detalhe devem ser identificáveis na ordem `resumo -> visualização -> detalhe`; usar apenas relatórios e drilldowns realmente existentes.
+- **Multi-moedas:** com BRL e USD no conjunto, não renderizar total combinado sem conversão explícita e auditável. Seleção/filtro e detalhamento mantêm unidade monetária e consistência com valores de origem.
+- **Estados e densidade:** demonstrar tabela larga/conteúdo longo, filtro sem resultado, legenda acessível e erro recuperável no desktop e mobile, com scroll local controlado e sem ampliar viewport horizontalmente.
+- **Controle negativo:** rejeitar regressão que oculta moeda, corta cabeçalhos/valores ou promove detalhes secundários acima da conclusão principal, ainda que testes de renderização estejam verdes.
 
-**Evidência de aceite:** capturas e testes de hierarquia reais no SHA material, sem deduzir equivalência visual da migração anterior #615.
+**Evidência de aceite:** prova funcional/visual real no SHA da PR, incluindo contraste de cenários por moeda, e avaliação independente do acabamento.
 
 ## Critérios de aceite
-- [ ] Categoria pai/filha, tipo e ação principal identificáveis; hierarquia não depende apenas de cor/caixas.
-- [ ] Filtros, expansão/seleção, CRUD e diálogos preservam funcionalidades e autorização existentes.
-- [ ] Composição desktop/mobile compatível com acabamento Golden Screen; conteúdo longo e vazio cobertos.
-- [ ] Evidências exact-SHA, testes de acessibilidade/regressão, CI verde e auditoria independente por subissue.
-- [ ] Documentação relevante atualizada.
+- [ ] Resumo e conclusão principal reconhecíveis rapidamente; dados analíticos legíveis em desktop/mobile.
+- [ ] Valores separados por moeda, exceto conversão explícita e auditável do domínio; totais e filtros não sofrem regressão.
+- [ ] Visualizações e tabelas preservam contexto, legenda acessível, drilldown e comportamentos existentes.
+- [ ] Estados vazios/erro/conteúdo longo, evidências Chrome exact-SHA e comparação visual contra nível de acabamento aprovado.
+- [ ] Regressões financeiras/SSR/a11y verificadas, CI verde, documentação pertinente e auditoria independente favorável.
 
 ## Fora de escopo
-Modificar o modelo de categorias, regras de categorização automática, agregados financeiros ou relatório.
+Novos indicadores de negócio, fórmulas, consultas, domínio ou redesign de Cartões/Extrato.
 
 Referências obrigatórias: épica [#702](https://github.com/crgasparoto-br/SolverFin/issues/702), Golden Screen aprovada pelo usuário em 14/10/2026, `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md`, `docs/GOLDEN_STATEMENT.md`, `AGENTS.md` e mockup `SolverFin Bank Statement UI Mockup.png`.
 
