@@ -394,7 +394,10 @@ describe("reports route page", () => {
     assert.ok(filterForm.indexOf('name="periods"') < filterForm.indexOf('name="currency"'));
     assert.ok(filterForm.indexOf('name="currency"') < filterForm.indexOf('type="submit"'));
     assert.match(filterForm, goldenSubmitAction);
-    assert.equal((selected.match(/<form class="report-filters evolution-filters"/g) ?? []).length, 1);
+    assert.equal(
+      (selected.match(/<form class="report-filters evolution-filters"/g) ?? []).length,
+      1,
+    );
     assert.doesNotMatch(selected, /class="report-currency-filter"/);
     assert.doesNotMatch(selected, /class="report-currency-apply"/);
     assert.match(selected, /name="profileId" value="profile-1"/);
