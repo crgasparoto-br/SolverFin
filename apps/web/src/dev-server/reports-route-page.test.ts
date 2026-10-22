@@ -450,11 +450,20 @@ describe("reports route page", () => {
       /<article class="report-summary-metric"[^>]*data-emphasis="true"/g,
     );
     assert.equal(emphasized?.length, 2);
-    const summary = html.indexOf('data-analysis-layer="summary"');
-    const visualization = html.indexOf('data-analysis-layer="visualization"');
-    const highlights = html.indexOf('data-analysis-layer="highlights"');
-    const detail = html.indexOf('data-analysis-layer="detail"');
-    assert.ok(summary < visualization && visualization < highlights && highlights < detail);
+    for (const currency of ["BRL", "USD"]) {
+      const marker = `<section class="report-analysis-block" data-report-analysis="a5" data-currency="${currency}"`;
+      const start = html.indexOf(marker);
+      assert.ok(start >= 0, `Missing analytical block for ${currency}`);
+      const next = html.indexOf('<section class="report-analysis-block"', start + marker.length);
+      const block = html.slice(start, next >= 0 ? next : undefined);
+      const positions = ["summary", "visualization", "highlights", "detail"].map((layer) =>
+        block.indexOf(`data-analysis-layer="${layer}"`),
+      );
+      assert.ok(
+        positions.every((position, index) => position >= 0 && (index === 0 || position > positions[index - 1]!)),
+        `Invalid analytical layer order for ${currency}`,
+      );
+    }
     assert.match(html, /tabindex="0" aria-label="Resultado por período"/);
   });
 
