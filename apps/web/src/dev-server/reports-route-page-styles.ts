@@ -129,9 +129,11 @@ export function reportPageStyles(): string {
     .evolution-table tbody th > span:not(.report-category-label) { display:block; }
     .report-category-label { align-items:center; display:flex; gap:6px; min-width:0; }
     .report-category-label > span:last-child { display:block; font-size:.75rem; overflow-wrap:normal; white-space:nowrap; }
-    .category-tree-toggle { align-items:center; background:transparent; border:1px solid transparent; border-radius:5px; color:var(--text); display:inline-flex; flex:0 0 24px; font:inherit; height:24px; justify-content:center; padding:0; width:24px; }
-    .category-tree-toggle:hover { background:var(--primary-soft); border-color:var(--line); }
-    .category-tree-toggle:focus-visible { outline:3px solid color-mix(in srgb,var(--primary) 35%,transparent); outline-offset:1px; }
+    .category-tree-toggle { align-items:center; background:transparent; border:1px solid transparent; border-radius:5px; color:var(--sf-color-primary); display:inline-flex; flex:0 0 24px; font:inherit; height:24px; justify-content:center; padding:0; transition:background var(--sf-motion-fast),border-color var(--sf-motion-fast),color var(--sf-motion-fast); width:24px; }
+    /* Mais especifico que button:hover:not(:disabled) do shell: hover nunca vira azul escuro. */
+    .evolution-table button.category-tree-toggle:hover:not(:disabled) { background:var(--sf-color-neutral-control-hover); border-color:var(--sf-color-neutral-control-border-hover); color:var(--sf-color-neutral-control-text-hover); }
+    .evolution-table button.category-tree-toggle:active:not(:disabled) { background:var(--sf-color-neutral-control-active-hover); border-color:var(--sf-color-neutral-control-border-hover); color:var(--sf-color-neutral-control-text-hover); }
+    .evolution-table button.category-tree-toggle:focus-visible { background:var(--sf-color-neutral-control-hover); border-color:var(--sf-color-neutral-control-border-hover); color:var(--sf-color-neutral-control-text-hover); outline:2px solid var(--sf-color-primary); outline-offset:2px; }
     .category-tree-spacer { display:inline-block; flex:0 0 24px; height:24px; width:24px; }
     .evolution-table tbody th small { color:var(--muted); display:inline; font-size:.6875rem; font-weight:500; margin-left:6px; }
     .evolution-table td strong { display:inline; font-size:.75rem; }
