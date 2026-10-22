@@ -73,7 +73,10 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
     if (requestedCurrency) filters.currency = requestedCurrency;
   } catch (error) {
     return renderShell(
-      renderHeading("Parcelas consolidadas", "Acompanhe o comprometimento mensal sem alterar lançamentos, faturas ou recorrências.") +
+      renderHeading(
+        "Parcelas consolidadas",
+        "Acompanhe o comprometimento mensal sem alterar lançamentos, faturas ou recorrências.",
+      ) +
         renderViewNavigation("installments", filters.profileId) +
         renderInstallmentFilterForm(filters, [], []) +
         renderState(
