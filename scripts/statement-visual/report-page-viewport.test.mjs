@@ -78,3 +78,25 @@ test("fails closed if the report boundary is absent", () => {
   });
   assert.equal(measured.fits, false);
 });
+
+test("supports an explicit viewport boundary for cash-flow and SSR error states", () => {
+  const elements = {
+    body: element(375),
+    ".app-shell": element(375),
+    ".main-area": element(375),
+    main: element(375),
+    ".cash-flow-report-list": element(347),
+  };
+  const document = {
+    documentElement: { clientWidth: 375, scrollWidth: 375 },
+    querySelector: (selector) => elements[selector] ?? null,
+    querySelectorAll: () => [],
+  };
+  const context = {
+    document,
+    innerWidth: 375,
+    getComputedStyle: (item) => ({ overflowX: item.overflowX }),
+  };
+  assert.equal(runInNewContext(reportPageViewportExpression(".cash-flow-report-list"), context).fits, true);
+  assert.equal(runInNewContext(reportPageViewportExpression(".report-analysis-state"), context).fits, false);
+});

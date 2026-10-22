@@ -45,11 +45,11 @@ try {
   report.empty = await validateEmptyState(browser.cdp);
   report.filterError = await validateFilterError(browser.cdp);
   report.multiCurrency = await validateMultiCurrency(browser.cdp, seeded.month);
+  report.negativeControl = await validateClippedCategoryNegativeControl(browser.cdp);
+  report.viewportNegativeControl = await validateReportViewportNegativeControl(browser.cdp);
   const extraContext = { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState };
   report.cashFlow = await validateCashFlow(browser.cdp, extraContext);
   report.mobileStates = await validateMobileStates(browser.cdp, extraContext);
-  report.negativeControl = await validateClippedCategoryNegativeControl(browser.cdp);
-  report.viewportNegativeControl = await validateReportViewportNegativeControl(browser.cdp);
 } catch (error) {
   failures.push({ message: "Reports visual validation crashed", details: serializeError(error) });
 } finally {

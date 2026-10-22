@@ -15,7 +15,7 @@ export async function validateCashFlow(cdp, context) {
     await waitForState(cdp, "ready");
     const measurements = await evaluate(cdp, `(() => {
       const blocks = Array.from(document.querySelectorAll('.cash-flow-block'));
-      const viewport = ${reportPageViewportExpression()};
+      const viewport = ${reportPageViewportExpression(".cash-flow-report-list")};
       return {
         pageFitsViewport: viewport.fits,
         blockCurrencies: blocks.map((block) => block.querySelector('.report-analysis-heading h2')?.textContent?.trim()),
@@ -92,7 +92,7 @@ export async function validateMobileStates(cdp, context) {
         const retry = document.querySelector('.report-retry');
         return {
           state: document.querySelector('[data-report-state]')?.getAttribute('data-report-state'),
-          pageFitsViewport: ${reportPageViewportExpression()}.fits,
+          pageFitsViewport: ${reportPageViewportExpression(".report-analysis-state")}.fits,
           visible: Boolean(bounds && bounds.top >= -2 && bounds.top < innerHeight - 60),
           hasReadyReport: Boolean(document.querySelector('[data-report-state="ready"]')),
           retryHref: retry?.getAttribute('href') ?? null,

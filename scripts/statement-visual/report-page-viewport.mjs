@@ -4,10 +4,10 @@
  * Inspect the visible layout boundaries, not the intrinsic width of the chart.
  * Local scrollers must remain scrollable, rather than hidden or clipped.
  */
-export function reportPageViewportExpression() {
+export function reportPageViewportExpression(listSelector = ".currency-report-list") {
   return `(() => {
     const viewportWidth = document.documentElement.clientWidth || innerWidth;
-    const selectors = ['body', '.app-shell', '.main-area', 'main', '.currency-report-list'];
+    const selectors = ['body', '.app-shell', '.main-area', 'main', ${JSON.stringify(listSelector)}];
     const boundaries = selectors.map((selector) => {
       const element = document.querySelector(selector);
       if (!element) return { selector, present: false, fits: false };
