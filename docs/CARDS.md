@@ -362,7 +362,7 @@ A cobertura automatizada deve proteger pelo menos:
 
 ## Parcelas canônicas na fatura
 
-A tela de Cartões consulta parcelas uma vez pelo `invoiceId` selecionado e associa cada ocorrência à compra por `transaction.id`. O indicador `Parcela X de Y` e o `Installment.amountMinor` aparecem na própria linha, sem reintroduzir blocos separados de parcelas ou histórico. `Transaction.amountMinor` permanece o total da compra e pode aparecer somente como `Total da compra`; contagens e subtotais da fatura usam a ocorrência.
+A tela de Cartões consulta parcelas uma vez pelo `invoiceId` selecionado e associa cada ocorrência à compra por `transaction.id`. O identificador de parcela finita valida (`totalInstallments > 1` e `1 <= sequenceNumber <= totalInstallments`) aparece **junto da descrição**, abreviado como `LG 1/12`, na mesma linha da compra, com `aria-label` descritivo para leitores de tela. Compras simples e recorrentes sem total finito valido exibem somente a descrição (ex.: `SKY Banda Larga`), nunca `2/0`. Os detalhes subordinados `Parcela X de Y` e `Total da compra` **não aparecem mais na listagem**, para preservar a densidade da Golden Screen. O valor da parcela (`Installment.amountMinor`) permanece na coluna Valor e `Transaction.amountMinor` continua sendo o total da compra no contrato e no modal de edição; contagens e subtotais da fatura continuam usando a ocorrência, sem alterar cálculos ou persistência.
 
 Novas compras parceladas persistem, em cada `Installment`, os vínculos `transactionId` da compra econômica e `invoiceId` da fatura que recebeu aquela parcela. Registros legados sem prova inequívoca permanecem sem esses vínculos; descrição, valor, instrumento, data aproximada e ordem visual não são usados como backfill.
 
