@@ -269,7 +269,11 @@ async function validateMobile(cdp, seeded) {
   check(measurements.viewportWidth === 390, "Mobile viewport is not 390px", measurements);
   check(measurements.pageFitsViewport, "Mobile page leaks horizontal overflow", measurements);
   check(measurements.tableScrollable, "Mobile matrix is not horizontally scrollable", measurements);
-  check(measurements.filterColumns === 2, "Mobile report filters must use the approved two-column compact grid", measurements);
+  check(
+    measurements.filterColumns === 2,
+    "Mobile report filters must use the approved two-column compact grid",
+    measurements,
+  );
   check(
     measurements.selectedOrigin === `card:${seeded.cardId}`,
     "Blocked card selection was lost on mobile",
