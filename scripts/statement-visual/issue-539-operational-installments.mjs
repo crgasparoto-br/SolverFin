@@ -663,8 +663,7 @@ function fixtureExpression() {
       cardId: card.id,
       invoiceId: cardInstallment.transaction.invoiceId,
       cardInstallmentId: cardInstallment.id,
-      cardTransactionId: cardInstallment.transaction.id,
-      cardBadge: "Parcela " + cardInstallment.sequenceNumber + " de " + cardInstallment.totalInstallments
+      cardTransactionId: cardInstallment.transaction.id
     };
   })()`;
 }
