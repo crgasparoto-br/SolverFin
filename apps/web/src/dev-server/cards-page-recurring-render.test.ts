@@ -46,6 +46,8 @@ const purchase = {
   invoiceId: "invoice-1",
   occurredOn: "2028-01-10",
   recurrenceId: "recurrence-1",
+  installmentSequenceNumber: 2,
+  totalInstallments: 3,
   status: "posted",
 };
 const invoiceSummary = {
