@@ -80,7 +80,7 @@ describe("cash flow projection report", () => {
     const html = await renderReportsRoutePage(
       "token",
       new URL(
-        "http://localhost/relatorios?view=cash-flow&referenceDate=2026-09-20&horizonDays=30&profileId=profile-1",
+        "http://localhost/relatorios?view=cash-flow&referenceDate=2026-09-20&horizonDays=30&profileId=profile-1&currency=all",
       ),
       new Date("2026-09-20T12:00:00.000Z"),
     );

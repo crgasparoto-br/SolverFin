@@ -585,7 +585,7 @@ async function validateReports(cdp) {
   const mobile = await inspectReportStructure(cdp, true);
   assert.equal(mobile.focused, true, "Reports matrix did not accept focus.");
   assert.equal(mobile.localOverflow, true, "Reports mobile matrix lost local overflow.");
-  assert.equal(mobile.trendLocalScroll, true, "Reports mobile trend lost local overflow.");
+  assert.equal(mobile.trendGridFits, true, "Reports mobile category trend must wrap without horizontal overflow.");
   assert.equal(
     mobile.pageFits,
     true,
@@ -611,9 +611,7 @@ async function inspectReportStructure(cdp, focusScroller) {
         viewportWidth: innerWidth,
         focused: document.activeElement === scroller,
         localOverflow: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
-        trendLocalScroll: Array.from(document.querySelectorAll('.report-trend'))
-          .every((element) => element.scrollWidth > element.clientWidth + 1
-            && ['auto', 'scroll'].includes(getComputedStyle(element).overflowX)),
+        trendGridFits: (() => { const trends = Array.from(document.querySelectorAll('.report-trend-grid')); return trends.length > 0 && trends.every((element) => element.scrollWidth <= element.clientWidth + 1 && getComputedStyle(element).gridAutoFlow === 'row'); })(),
         pageFits: pageViewport.fits,
         overflowDiagnostics: pageViewport.fits ? null : pageViewport,
         filterVisible: Boolean(formRect && formRect.width > 0 && formRect.height > 0),

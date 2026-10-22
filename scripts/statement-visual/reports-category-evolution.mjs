@@ -293,7 +293,7 @@ async function validateReadyMobile(cdp, month) {
     "Reports mobile matrix did not accept keyboard focus",
     measurements,
   );
-  check(measurements.filterColumns === 1, "Reports mobile filters are not stacked", measurements);
+  check(measurements.filterColumns === 2, "Reports mobile filters must use the compact two-column layout", measurements);
   check(
     measurements.unifiedCurrencyForm,
     "Mobile currency uses a separate form or action",

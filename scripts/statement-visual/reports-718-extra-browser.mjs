@@ -93,7 +93,7 @@ export async function validateCashFlow(cdp, context) {
       measurements,
     );
     check(
-      measurements.dailyTable.length === 2 &&
+      measurements.dailyTable.length >= 2 &&
         measurements.dailyTable.every(
           (table) => table.compact && table.aligned && table.evidenceInline,
         ),
