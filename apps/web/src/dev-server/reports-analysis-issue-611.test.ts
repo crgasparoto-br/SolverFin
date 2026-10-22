@@ -54,6 +54,8 @@ describe("issue 611 reports analysis archetype", () => {
     assert.match(html, /data-currency="BRL"/);
     assert.match(html, /data-currency="USD"/);
     assert.equal((html.match(/class="evolution-table"/g) ?? []).length, 2);
+    assert.equal((html.match(/class="report-trend report-trend-grid" data-trend-layout="grid"/g) ?? []).length, 2);
+    assert.match(html, /\.evolution-table td strong \{ display:inline;/);
     assert.match(html, /tabindex="0" aria-label="Matriz de evolução em BRL"/);
 
     const summary = html.indexOf('data-analysis-layer="summary"');
