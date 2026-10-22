@@ -271,6 +271,12 @@ async function renderCategoryEvolutionView(
   }
 
   const report = reportResult.data.report;
+  const readyForm = renderEvolutionFilterForm(
+    formValuesFromFilters(filters),
+    activeAccounts,
+    availableCards,
+    report.currencyBlocks.map((block) => block.currency),
+  );
   const visibleCurrencyBlocks = filters.currency
     ? report.currencyBlocks.filter((block) => block.currency === filters.currency)
     : report.currencyBlocks;
@@ -278,7 +284,7 @@ async function renderCategoryEvolutionView(
     return renderShell(
       heading +
         navigation +
-        form +
+        readyForm +
         renderState(
           "empty",
           filters.currency
@@ -288,10 +294,6 @@ async function renderCategoryEvolutionView(
             ? "Esta moeda não tem lançamentos no recorte. Selecione Todas as moedas ou ajuste os filtros para consultar outro período."
             : "Os períodos continuam disponíveis. Ajuste o início, a quantidade, a conta ou o cartão para consultar outro recorte.",
         ) +
-        renderEvolutionCurrencyFilter(
-          filters,
-          report.currencyBlocks.map((block) => block.currency),
-        ) +
         renderEmptyEvolutionMatrix(report, filters.currency) +
         renderCategoryEvolutionRuntime(),
     );
@@ -300,21 +302,9 @@ async function renderCategoryEvolutionView(
   return renderShell(
     heading +
       navigation +
-      form +
+      readyForm +
       `<div data-report-state="ready" class="currency-report-list">${visibleCurrencyBlocks
-        .map((block, blockIndex) =>
-          renderCategoryEvolutionAnalysis(
-            report,
-            block,
-            blockIndex,
-            blockIndex === 0
-              ? renderEvolutionCurrencyFilter(
-                  filters,
-                  report.currencyBlocks.map((item) => item.currency),
-                )
-              : undefined,
-          ),
-        )
+        .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex))
         .join("")}</div>` +
       renderCategoryEvolutionRuntime(),
   );
@@ -324,14 +314,12 @@ function renderCategoryEvolutionAnalysis(
   report: CategoryEvolutionReport,
   block: CategoryEvolutionReport["currencyBlocks"][number],
   blockIndex: number,
-  currencyFilterHtml?: string,
 ): string {
   const analysis = buildCategoryEvolutionAnalysisViewModel(report, block);
   return renderReportAnalysisBlock({
     id: `category-analysis-${blockIndex}-${safeId(analysis.currency)}`,
     currency: analysis.currency,
     periodCount: analysis.periodCount,
-    ...(currencyFilterHtml ? { currencyFilterHtml } : {}),
     summaryItems: [
       {
         label: "Receitas",
@@ -401,6 +389,7 @@ function renderEvolutionFilterForm(
   filters: EvolutionFilterFormValues,
   accounts: readonly ReportAccount[],
   cards: readonly ReportCreditCardAccount[],
+  currencies: readonly string[] = [],
 ): string {
   const startInputType = filters.invalid.start
     ? "text"
@@ -443,6 +432,7 @@ function renderEvolutionFilterForm(
     .join("");
   const sourceInvalid =
     filters.invalid.accountId || filters.invalid.cardId || filters.invalid.sourceConflict;
+  const currencyOptions = renderEvolutionCurrencyOptions(filters.currency, currencies);
 
   return `
     <section class="panel report-filter-panel" aria-label="Filtros da evolução por categoria">
@@ -450,7 +440,6 @@ function renderEvolutionFilterForm(
         <input type="hidden" name="view" value="category-evolution" />
         ${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
         <input type="hidden" name="interval" value="${escapeHtml(filters.intervalValue)}" />
-        ${filters.currency && !filters.invalid.currency ? `<input type="hidden" name="currency" value="${escapeHtml(filters.currency)}" />` : ""}
         <fieldset class="interval-switcher"${filters.invalid.interval ? ' aria-invalid="true"' : ""}>
           <legend>Intervalo</legend>
           ${intervalSwitchLink("monthly", "Mensal", filters)}
@@ -467,42 +456,32 @@ function renderEvolutionFilterForm(
         </label>
         <label for="report-start">Início${startControl}</label>
         <label for="report-periods">Período<input id="report-periods" type="${periodsInputType}"${periodsConstraints} name="periods" value="${escapeHtml(filters.periods)}"${filters.invalid.periods ? ' aria-invalid="true" data-invalid-filter="periods"' : ""} required /></label>
+        <label class="report-currency-field" for="report-currency">Moeda
+          <select id="report-currency" name="currency"${filters.invalid.currency ? ' aria-invalid="true" data-invalid-filter="currency"' : ""}>
+            <option value="all"${!filters.currency || filters.currency === "all" ? " selected" : ""}>Todas as moedas</option>
+            ${currencyOptions}
+          </select>
+        </label>
         ${renderButton({ label: "Atualizar relatório", type: "submit", className: "report-apply-button" })}
       </form>
       <p class="filter-hint">Todas as contas e cartões mantêm a visão geral. O estado de expansão da árvore reinicia ao aplicar filtros.</p>
     </section>`;
 }
 
-/** GET selector rendered in the first currency heading, without client-side JS. */
-function renderEvolutionCurrencyFilter(
-  filters: EvolutionFilters,
+/** Options stay scoped to currencies returned for this report; keep a previous selection visible. */
+function renderEvolutionCurrencyOptions(
+  selectedCurrency: string,
   currencies: readonly string[],
 ): string {
   const choices = [
-    ...new Set([...currencies, ...(filters.currency ? [filters.currency] : [])]),
+    ...new Set([...currencies, ...(selectedCurrency && selectedCurrency !== "all" ? [selectedCurrency] : [])]),
   ].sort((left, right) => left.localeCompare(right));
-  const options = choices
+  return choices
     .map(
       (code) =>
-        `<option value="${escapeHtml(code)}"${filters.currency === code ? " selected" : ""}>${escapeHtml(code)}</option>`,
+        `<option value="${escapeHtml(code)}"${selectedCurrency.toUpperCase() === code.toUpperCase() ? " selected" : ""}>${escapeHtml(code)}</option>`,
     )
     .join("");
-  return `<form class="report-currency-filter" method="get" action="/relatorios" aria-label="Filtrar evolução por moeda">
-    <input type="hidden" name="view" value="category-evolution" />
-    <input type="hidden" name="interval" value="${escapeHtml(filters.interval)}" />
-    <input type="hidden" name="start" value="${escapeHtml(filters.start)}" />
-    <input type="hidden" name="periods" value="${filters.periods}" />
-    ${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
-    ${filters.accountId ? `<input type="hidden" name="accountId" value="${escapeHtml(filters.accountId)}" />` : ""}
-    ${filters.cardId ? `<input type="hidden" name="cardId" value="${escapeHtml(filters.cardId)}" />` : ""}
-    <label for="report-currency">Moeda
-      <select id="report-currency" name="currency">
-        <option value="all"${filters.currency ? "" : " selected"}>Todas as moedas</option>
-        ${options}
-      </select>
-    </label>
-    ${renderButton({ label: "Aplicar", type: "submit", variant: "secondary", className: "report-currency-apply" })}
-  </form>`;
 }
 
 function intervalSwitchLink(
