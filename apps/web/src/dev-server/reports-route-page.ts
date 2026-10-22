@@ -474,7 +474,10 @@ function renderEvolutionCurrencyOptions(
   currencies: readonly string[],
 ): string {
   const choices = [
-    ...new Set([...currencies, ...(selectedCurrency && selectedCurrency !== "all" ? [selectedCurrency] : [])]),
+    ...new Set([
+      ...currencies,
+      ...(selectedCurrency && selectedCurrency !== "all" ? [selectedCurrency] : []),
+    ]),
   ].sort((left, right) => left.localeCompare(right));
   return choices
     .map(
