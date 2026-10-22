@@ -413,6 +413,7 @@ describe("reports route page", () => {
     assert.match(html, /data-analysis-layer="detail"/);
     assert.match(html, /tabindex="0" aria-label="Saldo projetado em USD por data selecionada"/);
     assert.match(html, /Amostra de saldos diários em USD/);
+    assert.match(html, /class="report-trend" data-trend-layout="scroll"/);
     assert.match(html, goldenSubmitAction);
     assert.match(html, /<table class="cash-flow-table">/);
     assert.match(html, /2026-10-18/);
