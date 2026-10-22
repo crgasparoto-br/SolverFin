@@ -58,6 +58,16 @@ Em Evolucao por categoria e Parcelas consolidadas, o titulo de cada camada (resu
 
 Somente no escopo dos relatorios, o codigo `small.sf-money-currency` redundante fica visualmente oculto, mas o componente `renderMoney` permanece inalterado: simbolo R$, US$, sinais, decimais, `data-currency` e contextos monetarios continuam disponiveis. O Chrome valida a identidade por moeda nos titulos e nos dados em cada viewport; CI verde nao substitui parecer de auditoria independente.
 
+## Densidade das parcelas consolidadas (22/10/2026, PR #729)
+
+Na visao **Parcelas consolidadas**, os cinco indicadores preservam a quantidade e o montante em cada status, porem utilizam uma **faixa compacta** com divisores discretos em vez de cinco cards altos. `Total mensal` recebe destaque suave, sem alterar o calculo canonico. A faixa se reorganiza em tres ou duas colunas por largura e vira cinco linhas compactas em telas estreitas, garantindo legibilidade dos montantes.
+
+O bloco `Distribuicao de <mes> - <moeda>` passou a apresentar o comprometimento mensal como **faixa contextual curta**, pois o mes ja esta selecionado no filtro. As composicoes **Por categoria** e **Por cartao** ficam lado a lado no desktop e empilhadas no mobile. Cada agrupamento exibe denominacao, quantidade, barra relativa e montante; links reais por categoria/cartao, `profileId` e filtros de recorte permanecem intactos. Nao ha novas somas nem mudanca de origem financeira.
+
+A tabela **Parcelas consideradas** utiliza exclusivamente o layout de tabela HTML nativa para alinhar `thead`, `tbody`, valores e datas. `<colgroup>` e `table-layout:fixed` definem sete colunas proporcionais, cabeçalhos nao quebrados, dinheiro e vencimento em linha unica e montantes a direita. Nomes e situacoes longas usam quebra natural sem estreitar outras colunas, as linhas sao densas e recebem divisores e alternancia sutis. Em viewports estreitos, rolagem horizontal local acessivel preserva todas as informacoes sem espremê-las ou ampliar a pagina.
+
+**Aceite:** verificar desktop 1440x900, 1366x768 e mobile 390x844/320x740, incluindo estados de vazio, textos longos, status compostos, montantes, hover/foco dos links e rolagem da tabela, com total BRL e USD isolados. Testes SSR existentes de `reports-route-page.test.ts` e `reports-analysis-issue-611.test.ts` garantem a permanencia de valores, agrupamentos, colunas e semantica; CI nao substitui screenshot e auditoria visual independentes.
+
 ## Hover e foco da hierarquia por categoria (22/10/2026, PR #729)
 
 O botao de expandir/recolher categorias da matriz conserva dimensoes compactas, icone de sinal e rotulo acessivel `aria-expanded`. Seu hover usa os tokens neutros da Golden Screen: `--sf-color-neutral-control-hover` (fundo claro), `--sf-color-neutral-control-border-hover` (borda fina) e `--sf-color-neutral-control-text-hover` (icone petroleo). O seletor `.evolution-table button.category-tree-toggle:hover:not(:disabled)` prevalece sobre o `button:hover:not(:disabled)` global, evitando fundo azul-escuro. O estado ativo mantem realce neutro, e `:focus-visible` aplica contorno visivel por teclado.
