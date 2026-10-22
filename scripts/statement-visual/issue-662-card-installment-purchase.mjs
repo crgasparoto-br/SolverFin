@@ -143,6 +143,8 @@ async function validateInstallmentEdit(fixture, label, width, height) {
       const installmentAmountField = form?.querySelector('[data-purchase-field="installmentAmountMinor"]');
       const context = form?.querySelector('[data-purchase-field="installmentContext"]');
       const row = document.querySelector('[data-edit-purchase="${fixture.transactionId}"]')?.closest('[data-purchase-item]');
+      const badge = row?.querySelector('.cards-purchase-description .installment-badge');
+      const badgeStyle = badge ? getComputedStyle(badge) : null;
       return {
         open: Boolean(dialog?.open),
         datasetInstallmentPurchase: form?.dataset.installmentPurchase || "",
@@ -164,6 +166,10 @@ async function validateInstallmentEdit(fixture, label, width, height) {
         instrumentDisabled: Boolean(form?.querySelector('[name="cardInstrumentId"]')?.disabled),
         rowTitle: row?.querySelector('.cards-purchase-description strong')?.textContent?.replace(/\\s+/g, " ").trim() || "",
         rowInstallmentLabel: row?.querySelector('.cards-installment-label')?.getAttribute('aria-label') || "",
+        rowInstallmentBadges: row?.querySelectorAll('.cards-purchase-description .installment-badge').length || 0,
+        rowBadgeBackground: badgeStyle?.backgroundColor || "",
+        rowBadgeBorder: badgeStyle?.borderTopColor || "",
+        rowBadgeForeground: badgeStyle?.color || "",
         rowHasSecondaryDetail: Boolean(row?.querySelector('.cards-purchase-description > span, .cards-purchase-description > small')),
         rowCanonicalTotalMinor: JSON.parse(row?.querySelector('script[data-purchase]')?.textContent || '{}').purchaseTotalAmountMinor,
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
@@ -178,11 +184,18 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     `${label}: canonical installment context was not recognized`,
     state,
   );
-  const fraction = `${fixture.sequenceNumber}/${fixture.totalInstallments}`;
   const accessibleFraction = `Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`;
   check(
-    state.rowTitle.includes(fraction) && state.rowInstallmentLabel === accessibleFraction,
-    `${label}: installment must appear inline with accessible label`,
+    state.rowTitle.includes(accessibleFraction) && state.rowInstallmentLabel === accessibleFraction,
+    `${label}: installment pill must match the Golden Screen text`,
+    state,
+  );
+  check(
+    state.rowInstallmentBadges === 1 &&
+      state.rowBadgeBackground === "rgb(236, 254, 255)" &&
+      state.rowBadgeBorder === "rgb(165, 243, 252)" &&
+      state.rowBadgeForeground === "rgb(15, 61, 76)",
+    `${label}: invoice must reuse one Golden Screen installment badge`,
     state,
   );
   check(!state.rowHasSecondaryDetail, `${label}: purchase row still displays extra detail`, state);
