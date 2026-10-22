@@ -286,6 +286,7 @@ async function renderCategoryEvolutionView(
             ? "Esta moeda não tem lançamentos no recorte. Selecione Todas as moedas ou ajuste os filtros para consultar outro período."
             : "Os períodos continuam disponíveis. Ajuste o início, a quantidade, a conta ou o cartão para consultar outro recorte.",
         ) +
+        renderEvolutionCurrencyFilter(filters, report.currencyBlocks.map((block) => block.currency)) +
         renderEmptyEvolutionMatrix(report) +
         renderCategoryEvolutionRuntime(),
     );
@@ -454,6 +455,37 @@ function renderEvolutionFilterForm(
       </form>
       <p class="filter-hint">Todas as contas e cartões mantêm a visão geral. O estado de expansão da árvore reinicia ao aplicar filtros.</p>
     </section>`;
+}
+
+/** GET selector rendered in the first currency heading, without client-side JS. */
+function renderEvolutionCurrencyFilter(
+  filters: EvolutionFilters,
+  currencies: readonly string[],
+): string {
+  const choices = [...new Set([...currencies, ...(filters.currency ? [filters.currency] : [])])]
+    .sort((left, right) => left.localeCompare(right));
+  const options = choices
+    .map(
+      (code) =>
+        `<option value="${escapeHtml(code)}"${filters.currency === code ? " selected" : ""}>${escapeHtml(code)}</option>`,
+    )
+    .join("");
+  return `<form class="report-currency-filter" method="get" action="/relatorios" aria-label="Filtrar evolução por moeda">
+    <input type="hidden" name="view" value="category-evolution" />
+    <input type="hidden" name="interval" value="${escapeHtml(filters.interval)}" />
+    <input type="hidden" name="start" value="${escapeHtml(filters.start)}" />
+    <input type="hidden" name="periods" value="${filters.periods}" />
+    ${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
+    ${filters.accountId ? `<input type="hidden" name="accountId" value="${escapeHtml(filters.accountId)}" />` : ""}
+    ${filters.cardId ? `<input type="hidden" name="cardId" value="${escapeHtml(filters.cardId)}" />` : ""}
+    <label for="report-currency">Moeda
+      <select id="report-currency" name="currency">
+        <option value="all"${filters.currency ? "" : " selected"}>Todas as moedas</option>
+        ${options}
+      </select>
+    </label>
+    ${renderButton({ label: "Aplicar", type: "submit", variant: "secondary", className: "report-currency-apply" })}
+  </form>`;
 }
 
 function intervalSwitchLink(
