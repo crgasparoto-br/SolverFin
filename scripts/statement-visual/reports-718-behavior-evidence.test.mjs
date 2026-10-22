@@ -100,7 +100,10 @@ test("#718 adapter rejects category trend scrollbar, tall matrix rows or detache
   for (const field of ["trendFitsWithoutScroll", "matrixRowsCompact", "highlightsGrouped"]) {
     const evidence = fixture();
     evidence.multiCurrency[1].measurements[field] = false;
-    await assert.rejects(collectReport718Evidence(async () => evidence), { name: "AssertionError" });
+    await assert.rejects(
+      collectReport718Evidence(async () => evidence),
+      { name: "AssertionError" },
+    );
   }
 });
 
