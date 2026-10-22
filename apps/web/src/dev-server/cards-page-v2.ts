@@ -964,13 +964,17 @@ function renderPurchaseRow(
     : undefined;
   const locked = ["closed", "paid", "cancelled"].includes(selectedInvoice.status);
   const otherPeriods = invoices.filter((invoice) => invoice.id !== selectedInvoice.id);
+  const sequence = purchase.installmentSequenceNumber;
+  const total = purchase.totalInstallments;
   const installmentLabel =
-    Number.isInteger(purchase.installmentSequenceNumber) &&
-    Number.isInteger(purchase.totalInstallments) &&
-    (purchase.totalInstallments ?? 0) > 1 &&
-    (purchase.installmentSequenceNumber ?? 0) >= 1 &&
-    (purchase.installmentSequenceNumber ?? 0) <= (purchase.totalInstallments ?? 0)
-      ? `${purchase.installmentSequenceNumber}/${purchase.totalInstallments}`
+    sequence !== undefined &&
+    total !== undefined &&
+    Number.isInteger(sequence) &&
+    Number.isInteger(total) &&
+    total > 1 &&
+    sequence >= 1 &&
+    sequence <= total
+      ? `${sequence}/${total}`
       : undefined;
   return `<article class="cards-purchase-row" role="row" data-purchase-item data-reconciliation="${purchase.status === "reconciled" ? "reconciled" : "unreconciled"}">
     <time role="cell" data-label="Data" datetime="${escapeHtml(purchase.occurredOn)}">${formatDate(purchase.occurredOn)}</time>
