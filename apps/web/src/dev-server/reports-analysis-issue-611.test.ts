@@ -60,6 +60,11 @@ describe("issue 611 reports analysis archetype", () => {
     );
     assert.match(html, /\.evolution-table td strong \{ display:inline;/);
     assert.match(html, /tabindex="0" aria-label="Matriz de evolução em BRL"/);
+    assert.doesNotMatch(html, /class="report-analysis-heading"/);
+    assert.match(html, /Leitura do período - BRL/);
+    assert.match(html, /Resultado ao longo do tempo - USD/);
+    assert.match(html, /Pontos para revisar - USD/);
+    assert.match(html, /Matriz por categoria - BRL/);
 
     const summary = html.indexOf('data-analysis-layer="summary"');
     const visualization = html.indexOf('data-analysis-layer="visualization"');
@@ -94,6 +99,11 @@ describe("issue 611 reports analysis archetype", () => {
     assert.equal((html.match(/<table class="sf-table">/g) ?? []).length, 2);
     assert.match(html, /<th scope="col"[^>]*>Valor<\/th>/);
     assert.match(html, /data-money-availability="available"/);
+    assert.doesNotMatch(html, /class="report-analysis-heading"/);
+    assert.match(html, /Leitura do período - BRL/);
+    assert.match(html, /Pontos para revisar - USD/);
+    assert.match(html, /Parcelas consideradas - BRL/);
+    assert.match(html, /Parcelas consideradas - USD/);
     assert.doesNotMatch(html, /data-currency="BRL"[^]*19\.500/);
   });
 });
