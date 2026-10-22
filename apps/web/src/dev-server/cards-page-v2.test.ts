@@ -615,9 +615,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   const coffeeCell = purchaseCells.find((cell) => cell.includes("Café")) ?? "";
   assert.match(
     taxiCell,
-    /<strong>Táxi aeroporto <span class="cards-installment-label" aria-label="Parcela 2 de 3">2\/3<\/span><\/strong>/,
+    /<strong>Táxi aeroporto <span class="installment-badge cards-installment-label" aria-label="Parcela 2 de 3" title="Parcela 2 de 3">Parcela 2 de 3<\/span><\/strong>/,
   );
   assert.doesNotMatch(taxiCell, /<small>|Total da compra:/);
+  assert.equal((taxiCell.match(/installment-badge/g) ?? []).length, 1);
   assert.match(coffeeCell, /<strong>Café<\/strong>/);
   assert.doesNotMatch(coffeeCell, /2\/0|Parcela|<small>|Total da compra:/);
   assert.equal(purchaseCells.length, 3);
@@ -655,7 +656,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(byDay, /data-day="2026-08-19" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-18" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-20" open/);
-  assert.match(byDay, /aria-label="Parcela 2 de 3">2\/3<\/span>/);
+  assert.match(byDay, /class="installment-badge cards-installment-label" aria-label="Parcela 2 de 3"/);
   assert.match(byDay, /data-status-installment-id="installment-taxi-2"/);
   assert.equal((byDay.match(/data-cards-day-group data-day=/g) ?? []).length, 1);
 
