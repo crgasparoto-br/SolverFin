@@ -49,27 +49,23 @@ interface AnalysisSummaryGridOptions {
 export function renderReportAnalysisBlock(props: ReportAnalysisBlockProps): string {
   const periodLabel = `${props.periodCount} período${props.periodCount === 1 ? "" : "s"}`;
   return `<section class="report-analysis-block" data-report-analysis="a5" data-currency="${renderText(props.currency)}" aria-labelledby="${renderText(props.id)}">
-    <header class="report-analysis-heading">
-      <div><h2 id="${renderText(props.id)}">${renderText(props.currency)}</h2></div>
-      <span>${renderText(periodLabel)}</span>
-    </header>
     <section class="report-analysis-layer" data-analysis-layer="summary" aria-label="Resumo em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Resumo</p><h3>Leitura do período</h3></div>
+      <div class="report-layer-topline"><div class="report-layer-heading"><p class="eyebrow">Resumo</p><h2 id="${renderText(props.id)}">Leitura do período - ${renderText(props.currency)}</h2></div><span class="report-period-count">${renderText(periodLabel)}</span></div>
       ${renderAnalysisSummaryGrid(props.summaryItems, {
         wrapperClassName: props.summaryWrapperClassName,
         itemClassName: props.summaryItemClassName,
       })}
     </section>
     <section class="report-analysis-layer" data-analysis-layer="visualization" aria-label="Visualização em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>${renderText(props.visualizationTitle)}</h3></div>
+      <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>${renderText(props.visualizationTitle)} - ${renderText(props.currency)}</h3></div>
       ${props.visualizationHtml}
     </section>
     <section class="report-analysis-layer" data-analysis-layer="highlights" aria-label="Destaques em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Destaques</p><h3>Pontos para revisar</h3></div>
+      <div class="report-layer-heading"><p class="eyebrow">Destaques</p><h3>Pontos para revisar - ${renderText(props.currency)}</h3></div>
       ${props.highlightsHtml}
     </section>
     <section class="report-analysis-layer report-detail-layer" data-analysis-layer="detail" aria-label="Detalhe em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle)}</h3></div>
+      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle)} - ${renderText(props.currency)}</h3></div>
       ${props.detailHtml}
     </section>
   </section>`;
