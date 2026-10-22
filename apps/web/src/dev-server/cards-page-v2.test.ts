@@ -520,7 +520,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /\.cards-dialog\{max-height:min\(90dvh/);
   assert.doesNotMatch(html, /\.cards-dialog\{overflow:hidden/);
   assert.doesNotMatch(html, /\.cards-dialog-panel\{[^}]*overflow-y:auto/);
-  assert.match(html, /Total da compra:[\s\S]*?data-currency="USD"/);
+  assert.match(html, /"purchaseTotalAmountMinor":15000/);
   assert.match(html, /Físico - Titular principal · final 4242/);
   assert.match(html, /Virtual - Titular principal · final 9001/);
   // Status icons and actions follow the Golden Screen; finite installments use a dedicated route.
@@ -619,7 +619,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(coffeeCell, /<strong>Café<\/strong>/);
   assert.doesNotMatch(coffeeCell, /2\/0|Parcela|<small>|Total da compra:/);
   assert.equal(purchaseCells.length, 3);
-  assert.match(html, /Total da compra:[\s\S]*USD[\s\S]*150,00/);
+  assert.match(html, /data-purchase="purchase-taxi">[^<]*"purchaseTotalAmountMinor":15000/);
   assert.match(
     html,
     /name="installmentValueMode"><option value="total" selected>Valor total da compra<\/option><option value="per_installment">Valor da parcela/,
