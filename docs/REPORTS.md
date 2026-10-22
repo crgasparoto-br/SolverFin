@@ -58,6 +58,14 @@ Em Evolucao por categoria e Parcelas consolidadas, o titulo de cada camada (resu
 
 Somente no escopo dos relatorios, o codigo `small.sf-money-currency` redundante fica visualmente oculto, mas o componente `renderMoney` permanece inalterado: simbolo R$, US$, sinais, decimais, `data-currency` e contextos monetarios continuam disponiveis. O Chrome valida a identidade por moeda nos titulos e nos dados em cada viewport; CI verde nao substitui parecer de auditoria independente.
 
+## Densidade da serie diaria da projecao de caixa (22/10/2026, PR #729)
+
+A tabela **Serie continua - BRL/USD** utiliza quatro colunas com `colgroup` proporcional (Data 15%, Movimento liquido 20%, Saldo projetado 20%, Evidencias 45%) e `table-layout:fixed`, preservando alinhamento entre `thead` e `tbody`. Cada celula passa a ter **padding vertical de 5px**, texto de tamanho `--sf-font-size-sm` e line-height 1.25; as linhas sem movimentos devem ter altura **de ate 36px** em desktop e mobile. Datas, movimento liquido e saldo permanecem em uma linha, com valores numericos tabulares e alinhamento a direita.
+
+A evidencia de movimento adota `display:flex` com descricao, rotulo da origem e link **Ver origem** na mesma linha quando couber. Em caso de multiplas evidencias ou descricoes longas, a quebra natural e permitida para preservar o conteudo completo, sem cortar informacoes financeiras ou retirar destinos reais dos links. Linhas inativas continuam a indicar `Sem movimento`; hover neutro e foco acessivel do scroller seguem a Golden Screen. No mobile, a rolagem horizontal e local e deliberada.
+
+Os testes ja existentes da rota verificam `colgroup`, metadados de linha, evidencias com origem e os estilos compactos; o validador Chrome #718 da Projecao de Caixa verifica **altura <=36px** para dias sem movimento, alinhamento das quatro colunas e evidencias inline em 1366x768, 390x844 e 320x740 para BRL e USD. Aprovacao de auditoria independente continua separada do CI.
+
 ## Densidade das parcelas consolidadas (22/10/2026, PR #729)
 
 Na visao **Parcelas consolidadas**, os cinco indicadores preservam a quantidade e o montante em cada status, porem utilizam uma **faixa compacta** com divisores discretos em vez de cinco cards altos. `Total mensal` recebe destaque suave, sem alterar o calculo canonico. A faixa se reorganiza em tres ou duas colunas por largura e vira cinco linhas compactas em telas estreitas, garantindo legibilidade dos montantes.
