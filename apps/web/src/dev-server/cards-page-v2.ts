@@ -1118,6 +1118,7 @@ function renderPurchaseModal(
         </div>
         <footer class="cards-purchase-dialog-actions">
           <button class="sf-button sf-button-secondary" type="button" data-close-modal>Cancelar</button>
+          <button class="sf-button sf-button-secondary" type="submit" data-save-continue${canSave ? "" : " disabled"}>Salvar e continuar</button>
           <button class="sf-button sf-button-primary" type="submit"${canSave ? "" : " disabled"}>Salvar compra</button>
         </footer>
       </form>
@@ -1832,6 +1833,8 @@ function clientScript(): string {
           purchaseForm.reportValidity();
           return;
         }
+        if (purchaseForm.dataset.submitting === "true") return;
+        const saveAndContinue = event.submitter?.hasAttribute("data-save-continue") === true;
         const data = new FormData(purchaseForm);
         const method = purchaseForm.dataset.method || "POST";
         const mode = method === "POST" ? String(data.get("repeatMode") || "single") : "single";
@@ -1919,7 +1922,22 @@ function clientScript(): string {
         }
         status.textContent = await responseMessage(response);
         status.className = response.ok ? "form-status success full" : "form-status error full";
-        if (response.ok) window.setTimeout(() => window.location.reload(), 350);
+        if (response.ok && saveAndContinue && method === "POST") {
+          const retainedInstrument = String(data.get("cardInstrumentId") || "");
+          const retainedCurrency = currency;
+          const retainedDate = String(data.get("occurredOn") || "");
+          purchaseForm.reset();
+          purchaseForm.querySelector('[name="currency"]').value = retainedCurrency;
+          purchaseForm.querySelector('[name="occurredOn"]').value = retainedDate;
+          if (retainedInstrument) purchaseForm.querySelector('[name="cardInstrumentId"]').value = retainedInstrument;
+          if (repeatMode) repeatMode.value = "single";
+          syncRepeatFields();
+          purchaseForm.querySelector('[name="description"]')?.focus();
+          status.textContent = "Compra salva. Informe a próxima compra.";
+          status.className = "form-status success full";
+        } else if (response.ok) {
+          window.setTimeout(() => window.location.reload(), 350);
+        }
       });
 
       document.querySelector("[data-payment-form]")?.addEventListener("submit", async (event) => {
