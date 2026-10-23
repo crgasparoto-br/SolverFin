@@ -17,7 +17,7 @@ import {
   resolveCanonicalCardPurchaseCurrency,
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import { reverseCardPurchaseForContext, updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   archiveCardInstrumentForContext,
@@ -64,6 +64,7 @@ route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, createCardInstrumentH
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCardInstrumentHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, updateCardPurchaseHandler);
+route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/reverse`, reverseCardPurchaseHandler);
 route(
   "POST",
   `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/move-invoice-period`,
@@ -359,6 +360,22 @@ async function registerCardPurchaseHandler(
   );
 
   return json(201, result);
+}
+
+async function reverseCardPurchaseHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const invoiceId = String(body.invoiceId ?? "");
+  if (!invoiceId) throw new TenantError("CARD_REVERSAL_INVOICE_REQUIRED", "Informe a fatura do lançamento.", 400);
+  const result = await reverseCardPurchaseForContext(
+    context, requireParam(match, "cardId"), requireParam(match, "transactionId"),
+    invoiceId,
+    body.installmentId ? String(body.installmentId) : undefined,
+  );
+  return json(201, { reversal: result });
 }
 
 async function updateCardPurchaseHandler(
