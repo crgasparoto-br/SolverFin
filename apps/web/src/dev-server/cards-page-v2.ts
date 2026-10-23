@@ -943,11 +943,15 @@ function renderPurchaseGroups(
         const totals = totalsByCurrency(purchases);
         return `<details class="cards-day-group" data-cards-day-group data-day="${escapeHtml(date)}" open>
           <summary><span class="cards-day-title"><time datetime="${escapeHtml(date)}">${formatDate(date)}</time><small>${formatPurchaseCount(purchases.length)}</small></span><strong>${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</strong></summary>
-          <div class="cards-day-content">${dayGroups
-            .map((group) =>
-              renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
-            )
-            .join("")}</div>
+          <div class="cards-day-content">
+            <div class="cards-purchase-table" role="table" aria-label="Compras de ${formatDate(date)}">
+              ${dayGroups.flatMap((group) =>
+                group.purchases.map((purchase) =>
+                  renderPurchaseRow(purchase, group.label, categories, recurrences, invoices, selectedInvoice),
+                ),
+              ).join("")}
+            </div>
+          </div>
         </details>`;
       })
       .join("")}
