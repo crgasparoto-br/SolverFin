@@ -479,6 +479,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
 
   assert.ok(html.includes(".cards-shared-table-head{position:sticky"));
   assert.ok(html.includes("--cards-purchase-columns:"));
+  assert.ok(html.includes(".cards-purchase-filter-form .cards-search-field input{width:100%"));
+  assert.ok(html.includes(".cards-purchase-filter-form .cards-purchase-day-filter{grid-column:2!important"));
+
   assert.ok(html.includes(".cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns)"));
 
 
