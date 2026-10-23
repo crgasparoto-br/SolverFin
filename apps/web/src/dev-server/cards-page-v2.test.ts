@@ -300,10 +300,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Parcelas e recorrências não serão copiadas/);
   assert.match(html, /data-purchase-field="recurrenceDateHint" hidden/);
   assert.ok(html.includes('setAttribute("data-editing", "true")'));
-  assert.ok(html.includes("setField(\"recurrenceDateHint\", Boolean(purchase.recurrenceId))"));
-  assert.ok(html.includes('if (scheduleSection) scheduleSection.hidden = true;'));
-  assert.ok(html.includes('.cards-installment-scope-actions [data-installment-scope]'));
-  assert.ok(!html.includes('Valor, data e estrutura do parcelamento são somente leitura.'));
+  assert.ok(html.includes('setField("recurrenceDateHint", Boolean(purchase.recurrenceId))'));
+  assert.ok(html.includes("if (scheduleSection) scheduleSection.hidden = true;"));
+  assert.ok(html.includes(".cards-installment-scope-actions [data-installment-scope]"));
+  assert.ok(!html.includes("Valor, data e estrutura do parcelamento são somente leitura."));
 
   assert.match(html, /data-open-modal="invoice-attachments"/);
   assert.ok(html.includes("<span>Documentos</span>"));
