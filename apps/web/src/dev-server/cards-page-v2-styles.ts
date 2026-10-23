@@ -97,6 +97,11 @@ export function cardsPageStyles(): string {
     @media(min-width:761px) and (max-width:1050px){.cards-purchase-table-head,.cards-purchase-row{gap:7px;grid-template-columns:5.5rem minmax(0,1.5fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
     @media(max-width:760px){.cards-purchase-row{grid-template-columns:minmax(0,1fr) auto}.cards-purchase-category{grid-column:1;min-width:0}.cards-purchase-actions{grid-column:2;grid-row:2 / span 3}.cards-purchase-status-cell{grid-column:1}}
 
+    /* Instrument is a dedicated compact column, after purchase, without limit/currency metadata. */
+    @media(min-width:1051px){.cards-purchase-table-head,.cards-purchase-row{grid-template-columns:6.5rem minmax(0,1.6fr) minmax(6rem,.7fr) minmax(7rem,.8fr) 5.4rem 9rem 3.5rem}}
+    @media(min-width:761px) and (max-width:1050px){.cards-purchase-table-head,.cards-purchase-row{grid-template-columns:5.5rem minmax(0,1.5fr) minmax(5.2rem,.65fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
+    .cards-purchase-instrument{color:var(--muted);font-size:.78rem;min-width:0;overflow-wrap:anywhere}
+    @media(max-width:760px){.cards-purchase-instrument{grid-column:1;min-width:0}.cards-purchase-actions{grid-row:2 / span 4}}
     /* #715 GS715-V03: match the approved light shell without modifying other routes. */
     .app-shell:has([data-cards-archetype="A3"]) .sidebar{background:var(--surface);border-right:1px solid var(--line);color:var(--text)}
     .app-shell:has([data-cards-archetype="A3"]) .sidebar .brand{color:var(--text)}
