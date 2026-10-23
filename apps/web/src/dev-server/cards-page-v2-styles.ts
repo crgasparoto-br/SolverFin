@@ -169,7 +169,7 @@ export function cardsPageStyles(): string {
       .cards-invoice-navigation .cards-month-picker>summary{font-size:.68rem;padding:4px 6px}
       .cards-invoice-navigation .cards-month-jump{left:0;right:auto;transform:none}
     }
-    /* Shared grid contract: header and entries use identical tracks across grouping modes. */
+    .cards-purchase-row .cards-purchase-amount.is-negative{color:#b42318}\n    /* Shared grid contract: header and entries use identical tracks across grouping modes. */
     .cards-purchase-groups{--cards-purchase-columns:minmax(5rem,6.5rem) minmax(0,1.6fr) minmax(0,.9fr) minmax(0,.9fr) minmax(3.5rem,.55fr) minmax(6.3rem,.8fr) 3rem;min-width:0}
     .cards-purchase-groups .cards-purchase-table-head,
     .cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns);min-width:0}
