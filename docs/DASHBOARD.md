@@ -48,7 +48,7 @@ Os estilos compartilhados são fornecidos por `sharedShellStyles()`, que inclui 
 
 ## Indicadores e drilldown
 
-Cada moeda tem cinco indicadores principais. O card navega primeiro para um índice de evidências da própria moeda no Dashboard. Esse índice apresenta uma entrada explícita para cada conta relacionada ao bloco; contas ativas abrem o Extrato já filtrado por `accountId` e moeda, enquanto contas inativas permanecem identificadas como evidência histórica sem oferecer uma ação operacional enganosa.
+Cada moeda preserva os cinco indicadores e seus cálculos: **saldo das contas** e **variação líquida** aparecem como os dois indicadores de decisão da primeira leitura; receitas, despesas e compromissos aparecem em uma faixa compacta, sem três cards extras. Todos os cinco oferecem o mesmo drilldown contextual por moeda. O índice de evidências foi movido para depois de ações, projeção, insights, ferramentas de decisão e itens recentes, evitando que cinco blocos de detalhes por moeda ocupem a dobra inicial. O link navega para o mesmo índice de evidências da própria moeda no Dashboard. Esse índice apresenta uma entrada explícita para cada conta relacionada ao bloco; contas ativas abrem o Extrato já filtrado por `accountId` e moeda, enquanto contas inativas permanecem identificadas como evidência histórica sem oferecer uma ação operacional enganosa.
 
 - Saldo das contas: posição atual das contas ativas da moeda, com acesso ao Extrato individual de cada conta;
 - Variação líquida do mês: contas da moeda relacionadas ao agregado, com `evidence=posted` nas contas ativas;
@@ -93,7 +93,8 @@ Quando existem mais itens ativos, a seção oferece **Ver todos os insights (N)*
 
 A composição preserva:
 
-- reflow da grade de indicadores nos breakpoints do cockpit;
+- reflow dos dois indicadores prioritários e da faixa de três indicadores secundários (colunas no desktop, linhas compactas no mobile);
+- posição e próxima ação acima do horizonte e de coleções de evidências;
 - navegação nativa por links para moedas e índices de evidência;
 - detalhes nativos (`details`/`summary`) para abrir as evidências de cada KPI;
 - links de contas ativas com foco visível e recorte determinístico do Extrato;
@@ -119,3 +120,23 @@ As regressões da rota cobrem, entre outros pontos:
 - rota canônica do Assistente Financeiro;
 - reflow, teclado e foco visível;
 - validação visual real da rota no workflow `Statement visual validation`.
+
+## Refinamento Golden Screen — Issue #724
+
+A observação inicial veio do Chrome autenticado (`Statement visual validation`, execução
+[39646109390](https://github.com/crgasparoto-br/SolverFin/actions/runs/39646109390),
+`issue-606-core-dashboard-1366.png`), capturado em `9af4e012c9672f828204c503d318f2fb17ee74bb`.
+Na comparação com a `develop` de 23/10/2026, `dashboard-page.ts`, `dashboard-presenter.ts`
+e `shared-styles.ts` preservavam os mesmos hashes. Essa captura é **baseline** e não certifica
+a revisão no novo SHA.
+
+A hierarquia SSR refinada é: contexto/qualidade dos dados, posições por moeda (saldo e
+variação com ênfase), receitas/despesas/compromissos em linhas compactas, próximas ações,
+projeção de 30 dias, insights, ferramentas de decisão, itens recentes e índice de evidências.
+O Dashboard não altera modelo, endpoints, totais ou moeda; os links para evidências continuam
+com a mesma identidade `#dashboard-evidence-*` e preservam as contas ativas/inativas.
+
+O aceite final exige Chrome autenticado em 1366×768, 390×844 e 320×740 no SHA material,
+cobrindo normal, multi-moeda, vazio, dados parciais, falha do resumo e conteúdo longo;
+revisão visual humana e auditoria técnica independentes não são substituídas pelo teste SSR.
+O teste de hierarquia deve rejeitar um painel de decisão intrusivo colocado antes das ações.
