@@ -513,6 +513,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes("Salvar e continuar"));
   assert.ok(html.includes("compra(s) registrada(s). Informe a próxima compra."));
   assert.ok(html.includes("dataset.savedDuringSession"));
+  // Distinguish actual busy-state activation from a guard that is never set.
+  assert.ok(html.includes('purchaseForm.dataset.submitting = "true"'));
+  assert.ok(html.includes('if (purchaseForm.dataset.submitting === "true") return;'));
+  assert.ok(html.includes('submitButtons.forEach((button) => { button.disabled = true; })'));
   assert.ok(html.includes('addEventListener("close"'));
   assert.ok(html.includes("[data-save-continue]{display:none}"));
   assert.ok(html.includes("data-reverse-purchase="));
