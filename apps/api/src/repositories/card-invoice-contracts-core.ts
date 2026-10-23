@@ -652,8 +652,12 @@ export async function adjustInvoiceInstallmentAmountForContext(
       [installmentId, invoiceId, context.organizationId, context.financialProfileId],
     );
     const selected = rows.find((row) => row.id === installmentId && row.invoiceId === invoiceId);
-    if (!selected || selected.recurrenceId !== null || selected.totalInstallments < 2 ||
-        selected.cardId !== selected.transactionCardId) {
+    if (
+      !selected ||
+      selected.recurrenceId !== null ||
+      selected.totalInstallments < 2 ||
+      selected.cardId !== selected.transactionCardId
+    ) {
       throw new InvoiceContractError(
         "CARD_INSTALLMENT_NOT_FOUND",
         "Parcela de compra parcelada não encontrada nesta fatura.",
@@ -677,9 +681,10 @@ export async function adjustInvoiceInstallmentAmountForContext(
         409,
       );
     }
-    const candidates = scope === "current"
-      ? [selected]
-      : rows.filter((row) => row.sequenceNumber >= selected.sequenceNumber);
+    const candidates =
+      scope === "current"
+        ? [selected]
+        : rows.filter((row) => row.sequenceNumber >= selected.sequenceNumber);
     const now = new Date().toISOString();
     for (const row of candidates) {
       if (!editable(row)) {
@@ -693,8 +698,15 @@ export async function adjustInvoiceInstallmentAmountForContext(
               "updatedByUserId" = $7
             where "id" = $1 and "invoiceId" = $2
               and "organizationId" = $3 and "financialProfileId" = $4`,
-          [row.id, row.invoiceId, context.organizationId, context.financialProfileId,
-            amountMinor, now, context.userId],
+          [
+            row.id,
+            row.invoiceId,
+            context.organizationId,
+            context.financialProfileId,
+            amountMinor,
+            now,
+            context.userId,
+          ],
         );
         const invoiceRows = await executeQuery<{ id: string }>(
           `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4,
