@@ -478,6 +478,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes('<option value="instrument">Instrumento</option>'));
 
   assert.ok(html.includes(".cards-shared-table-head{position:sticky"));
+  assert.ok(html.includes("--cards-purchase-columns:"));
+  assert.ok(html.includes(".cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns)"));
+
 
   assert.match(html, /role="cell" data-label="Instrumento" class="cards-purchase-instrument"/);
   assert.ok(!html.includes('data-label="Limite"'));
