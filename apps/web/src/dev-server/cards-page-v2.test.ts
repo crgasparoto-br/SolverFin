@@ -691,6 +691,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.match(byDay, /data-status-installment-id="installment-taxi-2"/);
   assert.equal((byDay.match(/data-cards-day-group data-day=/g) ?? []).length, 1);
+  assert.doesNotMatch(byDay, /data-instrument-purchase-group/);
+  assert.match(byDay, /class="cards-day-content">\s*<div class="cards-purchase-table"/);
+
 
   const sortedByAmount = await renderCardsPageV2(
     "session-token",
