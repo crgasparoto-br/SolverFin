@@ -109,6 +109,34 @@ export function cardsPageStyles(): string {
     @media(min-width:1051px){.cards-shared-table-head .cards-purchase-table-head{grid-template-columns:6.5rem minmax(0,1.6fr) minmax(6rem,.7fr) minmax(7rem,.8fr) 5.4rem 9rem 3.5rem}}
     @media(min-width:761px) and (max-width:1050px){.cards-shared-table-head .cards-purchase-table-head{grid-template-columns:5.5rem minmax(0,1.5fr) minmax(5.2rem,.65fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
     @media(max-width:760px){.cards-shared-table-head{display:none}}
+    /* Filter grid is a separate responsive layout: search must never push adjacent controls outside the panel. */
+    .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) minmax(7rem,9rem) minmax(9rem,11.5rem) auto auto;align-items:end;min-width:0}
+    .cards-purchase-filter-form>*{min-width:0;max-width:100%;box-sizing:border-box}
+    .cards-purchase-filter-form .cards-search-field{grid-column:auto;display:grid;min-width:0;width:100%;font-size:.76rem!important;line-height:normal!important;gap:5px!important}
+    .cards-purchase-filter-form .cards-search-field input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+    .cards-purchase-group-filter,.cards-purchase-day-filter{min-width:0;width:100%;max-width:100%}
+    .cards-purchase-group-filter select,.cards-purchase-day-filter input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+    @media(min-width:761px) and (max-width:1100px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) minmax(7rem,9rem) minmax(9rem,11.5rem)}
+      .cards-purchase-filter-form .cards-advanced-filters{grid-column:2}
+      .cards-purchase-filter-form>button[type="submit"]{grid-column:3}
+    }
+    @media(max-width:760px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+      .cards-purchase-filter-form .cards-search-field{grid-column:1/-1}
+      .cards-purchase-filter-form .cards-purchase-group-filter{grid-column:1}
+      .cards-purchase-filter-form .cards-purchase-day-filter{grid-column:2!important;max-width:100%}
+      .cards-purchase-filter-form .cards-advanced-filters{grid-column:1}
+      .cards-purchase-filter-form>button[type="submit"]{grid-column:2}
+    }
+    @media(max-width:430px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr)}
+      .cards-purchase-filter-form .cards-search-field,
+      .cards-purchase-filter-form .cards-purchase-group-filter,
+      .cards-purchase-filter-form .cards-purchase-day-filter,
+      .cards-purchase-filter-form .cards-advanced-filters,
+      .cards-purchase-filter-form>button[type="submit"]{grid-column:1!important;max-width:100%;width:100%}
+    }
     /* Shared grid contract: header and entries use identical tracks across grouping modes. */
     .cards-purchase-groups{--cards-purchase-columns:minmax(5rem,6.5rem) minmax(0,1.6fr) minmax(0,.9fr) minmax(0,.9fr) minmax(3.5rem,.55fr) minmax(6.3rem,.8fr) 3rem;min-width:0}
     .cards-purchase-groups .cards-purchase-table-head,
