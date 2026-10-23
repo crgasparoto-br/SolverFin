@@ -1,3 +1,17 @@
+describe("Golden Statement global semantic palette", () => {
+  it("publishes statement income, expense and neutral values from the canonical tokens", () => {
+    assert.equal(solverFinDesignTokens.colors.success, "#047857");
+    assert.equal(solverFinDesignTokens.colors.successSurface, "#ECFDF5");
+    assert.equal(solverFinDesignTokens.colors.danger, "#B91C1C");
+    assert.equal(solverFinDesignTokens.colors.dangerSurface, "#FEF2F2");
+    assert.equal(solverFinDesignTokens.colors.mutedText, "#475569");
+    const css = createSolverFinDesignSystemCss();
+    assert.ok(css.includes("--sf-color-success: #047857;"));
+    assert.ok(css.includes("--sf-color-danger: #B91C1C;"));
+    assert.ok(css.includes("--sf-color-muted-text: #475569;"));
+  });
+});
+
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
