@@ -146,7 +146,7 @@ export function cardsPageStyles(): string {
     .cards-purchase-filter-form .cards-purchase-group-filter{grid-column:2!important}
     .cards-purchase-filter-form .cards-purchase-day-filter{grid-column:3!important;max-width:none}
     .cards-purchase-filter-form .cards-advanced-filters{grid-column:4!important;min-width:0}
-    .cards-purchase-filter-form>button[type="submit"]{grid-column:5!important;justify-self:end;width:100%;max-width:6rem}
+    .cards-purchase-filter-form>button[type="submit"]{grid-column:5!important;justify-self:end;width:100%;max-width:6rem;height:44px;min-height:44px;box-sizing:border-box;padding:0 12px}
     @media(max-width:760px){
       .cards-purchase-filter-form{grid-template-columns:minmax(7rem,1fr) minmax(6rem,.75fr) minmax(8.5rem,.9fr) minmax(5.5rem,.65fr) 5.5rem;gap:5px;overflow-x:auto}
       .cards-purchase-filter-form .cards-search-field{grid-column:1!important}
