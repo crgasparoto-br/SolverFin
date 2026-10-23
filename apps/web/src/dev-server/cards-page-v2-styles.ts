@@ -102,6 +102,7 @@ export function cardsPageStyles(): string {
     @media(min-width:761px) and (max-width:1050px){.cards-purchase-table-head,.cards-purchase-row{grid-template-columns:5.5rem minmax(0,1.5fr) minmax(5.2rem,.65fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
     .cards-purchase-instrument{color:var(--muted);font-size:.78rem;min-width:0;overflow-wrap:anywhere}
     @media(max-width:760px){.cards-purchase-instrument{grid-column:1;min-width:0}.cards-purchase-actions{grid-row:2 / span 4}}
+    .cards-day-content>.cards-purchase-table{display:grid}
     /* One sticky header for all day/instrument groups; rows share its grid tracks. */
     .cards-shared-table-head{position:sticky;top:0;z-index:6;background:var(--surface);border-bottom:1px solid var(--line)}
     .cards-shared-table-head .cards-purchase-table-head{display:grid;border-bottom:0}
