@@ -53,8 +53,15 @@ try {
   for (const route of ["/dashboard", "/cartoes", "/contas"]) {
     const viewports =
       route === "/dashboard"
-        ? [[320, 740], [390, 844], [1366, 768]]
-        : [[390, 1000], [1366, 900]];
+        ? [
+            [320, 740],
+            [390, 844],
+            [1366, 768],
+          ]
+        : [
+            [390, 1000],
+            [1366, 900],
+          ];
     for (const [width, height] of viewports) {
       const evidence = await capturePage({
         name: `${route.slice(1)}-${width}`,
