@@ -1654,7 +1654,19 @@ function clientScript(): string {
               reverseButton.disabled = false;
               return;
             }
-            window.location.reload();
+            const reversal = result.reversal;
+            const editor = document.querySelector("[data-reversal-edit-form]");
+            if (!reversal?.transactionId || !editor) {
+              window.location.reload();
+              return;
+            }
+            editor.dataset.path = "/api/credit-card-accounts/" + encodeURIComponent(purchase.cardId) + "/reversals/" + encodeURIComponent(reversal.transactionId);
+            editor.querySelector('[name="description"]').value = "Estorno: " + purchase.description;
+            editor.querySelector('[name="amountMinor"]').value = minorToMoney(Math.abs(reversal.amountMinor));
+            editor.querySelector('[name="occurredOn"]').value = purchase.occurredOn;
+            if (purchase.cardInstrumentId) editor.querySelector('[name="cardInstrumentId"]').value = purchase.cardInstrumentId;
+            editor.querySelector("[data-reversal-edit-status]").textContent = "";
+            document.querySelector('dialog[data-modal="reversal-edit"]')?.showModal();
           } catch {
             window.alert("Falha de conexão ao registrar o estorno.");
             reverseButton.disabled = false;
@@ -1783,6 +1795,37 @@ function clientScript(): string {
           buttons.forEach((item) => { item.disabled = false; });
         }
       }));
+
+      document.querySelector("[data-reversal-edit-form]")?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        if (!form.reportValidity()) return;
+        const status = form.querySelector("[data-reversal-edit-status]");
+        status.textContent = "Salvando estorno...";
+        try {
+          const data = new FormData(form);
+          const response = await fetch(form.dataset.path, {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              description: String(data.get("description") || ""),
+              amountMinor: moneyToMinor(data.get("amountMinor")),
+              occurredOn: String(data.get("occurredOn") || ""),
+              cardInstrumentId: String(data.get("cardInstrumentId") || ""),
+            }),
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            status.textContent = result?.error?.message || "Não foi possível salvar o estorno.";
+            status.className = "form-status error";
+            return;
+          }
+          window.location.reload();
+        } catch {
+          status.textContent = "Falha de conexão ao salvar o estorno.";
+          status.className = "form-status error";
+        }
+      });
 
       purchaseForm?.addEventListener("submit", async (event) => {
         event.preventDefault();
