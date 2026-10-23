@@ -177,6 +177,7 @@ export function cardsPageStyles(): string {
     .cards-purchase-row .cards-purchase-amount.is-negative{color:var(--danger,#b91c1c)}
     /* Currency remains in data-currency and accessible labeling; omit BRL suffix. */
     .cards-layout .sf-money[data-currency="BRL"]>.sf-money-currency{display:none}
+    .cards-dialog[data-modal="purchase"][data-editing="true"] [data-save-continue]{display:none}
     /* Shared grid contract: header and entries use identical tracks across grouping modes. */
     .cards-purchase-groups{--cards-purchase-columns:minmax(5rem,6.5rem) minmax(0,1.6fr) minmax(0,.9fr) minmax(0,.9fr) minmax(3.5rem,.55fr) minmax(6.3rem,.8fr) 3rem;min-width:0}
     .cards-purchase-groups .cards-purchase-table-head,
