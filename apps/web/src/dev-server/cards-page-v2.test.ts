@@ -495,7 +495,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes('.cards-purchase-row .cards-purchase-category[data-category-direction="in"]'));
   assert.ok(html.includes('data-save-continue'));
   assert.ok(html.includes('Salvar e continuar'));
-  assert.ok(html.includes('Compra salva. Informe a próxima compra.'));
+  assert.ok(html.includes('compra(s) registrada(s). Informe a próxima compra.'));
+  assert.ok(html.includes('dataset.savedDuringSession'));
+  assert.ok(html.includes('addEventListener("close"'));
   assert.ok(html.includes('[data-save-continue]{display:none}'));
   assert.ok(html.includes('data-reverse-purchase='));
   assert.ok(html.includes('data-reversal-edit-form'));
