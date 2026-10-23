@@ -730,7 +730,11 @@ export async function reverseCardPurchaseForContext(
       [context.organizationId, context.financialProfileId],
     );
     if (!categories[0]) {
-      throw new InvoiceContractError("CARD_REVERSAL_CATEGORY_MISSING", "Cadastre a categoria de entrada Estornos para registrar o estorno.", 409);
+      throw new InvoiceContractError(
+        "CARD_REVERSAL_CATEGORY_MISSING",
+        "A categoria de entrada Estornos não foi encontrada. Cadastre-a antes de estornar.",
+        409,
+      );
     }
     createdId = randomUUID();
     reversedAmount = Number(origin.amountMinor);
