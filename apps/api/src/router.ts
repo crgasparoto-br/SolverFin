@@ -25,6 +25,7 @@ import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
 import { readCreateTransactionOccurredOn } from "./transaction-create-temporal-input.js";
 import {
+  adjustInvoiceInstallmentAmountForContext,
   closeInvoiceForContext,
   listCardPurchasesForContext,
   reconcileInvoiceInstallmentForContext,
@@ -172,6 +173,11 @@ route(
   "PATCH",
   "/api/invoices/:invoiceId/installments/:installmentId/reconciliation",
   reconcileInvoiceInstallmentHandler,
+);
+route(
+  "PATCH",
+  "/api/invoices/:invoiceId/installments/:installmentId/amount",
+  adjustInvoiceInstallmentAmountHandler,
 );
 route("POST", "/api/invoices/:invoiceId/close", closeInvoiceHandler);
 route("POST", "/api/invoices/:invoiceId/pay", payInvoiceHandler);
@@ -987,6 +993,34 @@ async function reconcileInvoiceInstallmentHandler(
     requireParam(match, "invoiceId"),
     requireParam(match, "installmentId"),
     body.status as "posted" | "reconciled",
+  );
+  return json(200, result);
+}
+
+async function adjustInvoiceInstallmentAmountHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  if (
+    Object.keys(body).some((key) => !["amountMinor", "scope"].includes(key)) ||
+    !Number.isSafeInteger(body.amountMinor) || Number(body.amountMinor) <= 0 ||
+    !["current", "current_and_future"].includes(String(body.scope))
+  ) {
+    return json(400, {
+      error: {
+        code: "CARD_INSTALLMENT_AMOUNT_INVALID",
+        message: "Informe valor positivo em centavos e escopo válido.",
+      },
+    });
+  }
+  const result = await adjustInvoiceInstallmentAmountForContext(
+    context,
+    requireParam(match, "invoiceId"),
+    requireParam(match, "installmentId"),
+    Number(body.amountMinor),
+    body.scope as "current" | "current_and_future",
   );
   return json(200, result);
 }
