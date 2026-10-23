@@ -1,24 +1,24 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+  "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
   "requirements": [
     {
       "requirement_id": "REQ-718-01",
       "positive_evidence": [
-        "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39868576683; issue #714 baseline reference remains open for separate audit"
+        "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39879361649; issue #714 baseline reference remains open for separate audit"
       ],
       "primary_negative_control": {
         "id": "NC-718-01",
         "status": "passed",
         "procedure": "reports-route-page.test.ts:316-351; expected two A5 blocks",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
-        "observed": "15 local Node tests and exact-SHA Chrome passed; no independent visual approval is claimed",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "observed": "19 local Node tests and exact-SHA Chrome passed; no independent visual approval is claimed",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "SSR tests ensure Golden visual hierarchy is not replaced by extrato list",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -38,11 +38,11 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:121-129",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "The adapter rejects omitted offscreen captures and Chrome emitted all expected layers",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Removing any BRL/USD summary screenshot must be rejected",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -62,11 +62,11 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:160-173",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Adapter rejects invalid retryHref; real API error has same canonical URL",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Changed recovery href drops URL filters",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -79,7 +79,7 @@
       "requirement_id": "REQ-718-04",
       "positive_evidence": [
         "apps/web/src/dev-server/reports-route-page-styles.ts:1-153, no excessive card borders; screenshots reports-desktop-1366x768-brl-summary.png and reports-mobile-390x844-usd-summary.png inspected",
-        "Actual Chrome exact material 49246114f5776e84871ee079b9c8191ea79bfe35 run 39868576683 artifact 12464744819: reports-installments-regression.json at 390x844 and 320x740 proves 5 filter controls fit and both 2-column negative controls rejected"
+        "Actual Chrome exact material 49246114f5776e84871ee079b9c8191ea79bfe35 run 39879361649 artifact 12464744819: reports-installments-regression.json at 390x844 and 320x740 proves 5 filter controls fit and both 2-column negative controls rejected"
       ],
       "primary_negative_control": {
         "id": "NC-718-04",
@@ -87,11 +87,11 @@
         "procedure": "reports-category-evolution.mjs:222-242",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Chrome negativeControl observed=true and restored=true",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Make label maxWidth 2px and text-overflow ellipsis",
         "evidence_scope_note": "Chrome runtime mutation"
@@ -105,7 +105,7 @@
       "requirement_id": "REQ-718-05",
       "positive_evidence": [
         "scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134, report-page-viewport.mjs:7-47; Chrome negative viewport control and all six mobile section captures per scenario",
-        "Actual Chrome exact material 49246114f5776e84871ee079b9c8191ea79bfe35 run 39868576683 artifact 12464744819: reports-installments-regression.json at 390x844 and 320x740 proves 5 filter controls fit and both 2-column negative controls rejected"
+        "Actual Chrome exact material 49246114f5776e84871ee079b9c8191ea79bfe35 run 39879361649 artifact 12464744819: reports-installments-regression.json at 390x844 and 320x740 proves 5 filter controls fit and both 2-column negative controls rejected"
       ],
       "primary_negative_control": {
         "id": "NC-718-05",
@@ -113,11 +113,11 @@
         "procedure": "reports-category-evolution.mjs:199-220",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Chrome viewportNegativeControl observed=true and restored=true",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Force main width calc(100vw + 64px)",
         "evidence_scope_note": "Chrome runtime mutation"
@@ -138,11 +138,11 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:121-143",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Adapter rejects absent summary screenshot and incorrect currency context",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Remove currency summary layer or offscreen capture",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -162,11 +162,11 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:130-144",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Adapter rejects changed correctCurrency=false and requires independent BRL/USD blocks",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Change currency metadata on captured layer",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -178,8 +178,8 @@
     {
       "requirement_id": "REQ-718-08",
       "positive_evidence": [
-        "Chrome run 39868576683; artifact 12464744819; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file",
-        "Actual Chrome exact material 49246114f5776e84871ee079b9c8191ea79bfe35 run 39868576683 artifact 12464744819: reports-installments-regression.json at 390x844 and 320x740 proves 5 filter controls fit and both 2-column negative controls rejected"
+        "Chrome run 39879361649; artifact 12464744819; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file",
+        "Actual Chrome exact material 49246114f5776e84871ee079b9c8191ea79bfe35 run 39879361649 artifact 12464744819: reports-installments-regression.json at 390x844 and 320x740 proves 5 filter controls fit and both 2-column negative controls rejected"
       ],
       "primary_negative_control": {
         "id": "NC-718-08",
@@ -187,11 +187,11 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:115-159",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Adapter rejects missing mobile viewport/cash-flow layer",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Drop a small mobile/cash-flow screenshot",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -212,11 +212,11 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:130-143",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Adapter requires hasContent=true, with 36 real Chrome captures",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Suppress summary financial values in currency layer",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -236,11 +236,11 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:97-105,160-165",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Adapter rejects cash-flow mixed currencies and incomplete currency blocks",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Change a cash-flow currency or remove complete currency block",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -253,7 +253,7 @@
       "requirement_id": "REQ-718-11",
       "positive_evidence": [
         "apps/web/src/dev-server/reports-analysis-archetype.ts:149-207, report view controls and visual browser proof; Chrome negative overflow and trend money overlap probes",
-        "Actual Chrome exact material 49246114f5776e84871ee079b9c8191ea79bfe35 run 39868576683 artifact 12464744819: reports-installments-regression.json at 390x844 and 320x740 proves 5 filter controls fit and both 2-column negative controls rejected"
+        "Actual Chrome exact material 49246114f5776e84871ee079b9c8191ea79bfe35 run 39879361649 artifact 12464744819: reports-installments-regression.json at 390x844 and 320x740 proves 5 filter controls fit and both 2-column negative controls rejected"
       ],
       "primary_negative_control": {
         "id": "NC-718-11",
@@ -261,11 +261,11 @@
         "procedure": "reports-718-extra-browser.mjs:118-155",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Chrome moneyNegativeControl baseline=true observed=true restored=true",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Force an overly long monetary token to overrun its trend column",
         "evidence_scope_note": "Chrome runtime mutation"
@@ -286,11 +286,11 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:145-173",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Adapter rejects missing mobile states and broken recovery URL",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Drop one mobile API error screenshot or its full retry URL",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
@@ -302,7 +302,7 @@
     {
       "requirement_id": "REQ-718-13",
       "positive_evidence": [
-        "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39868576683 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
+        "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39879361649 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
       ],
       "primary_negative_control": {
         "id": "NC-718-13",
@@ -310,17 +310,17 @@
         "procedure": "reports-718-behavior-evidence.test.mjs:106-113",
         "expected": "Malformed or incorrect scenario must be rejected by a discriminating check",
         "observed": "Adapter fails closed on absent/non-restored negative control; external independent review remains required",
-        "head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+        "head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
         "evidence_path": ".audit/entregar-issue/negative-control-evidence-718.json",
-        "evidence_sha256": "d7c0cefbd20a602bc44a80dd8aeece90d10b8414406a71d5cf42b91c7cae6047",
-        "raw_case_sha256": "d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04",
-        "run_id": 39868576683,
+        "evidence_sha256": "7f14bea11c2931b49c09262feedccb5c87ffce4544af6ee91f0f74b3aa233633",
+        "raw_case_sha256": "7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4",
+        "run_id": 39879361649,
         "job_id": 120136946828,
         "plausible_wrong_implementation": "Remove real Chrome evidence or force incomplete negative control",
         "evidence_scope_note": "Local executed negative fixture assertion; not a mutated production build"
       },
       "regression_evidence": [
-        "Repository CI 39719913719 + Statement visual validation 39868576683"
+        "Repository CI 39719913719 + Statement visual validation 39879361649"
       ]
     }
   ]

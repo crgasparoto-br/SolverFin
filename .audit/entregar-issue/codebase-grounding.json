@@ -1,6 +1,6 @@
 {
-  "schema_version": 2,
-  "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+  "schema_version": 1,
+  "subject_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
   "base_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
   "creations": [
     {
@@ -177,7 +177,7 @@
       "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
       "defined_at": {
         "path": "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
-        "line": 6
+        "line": 9
       },
       "verified_by": {
         "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
@@ -190,7 +190,7 @@
       "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
       "defined_at": {
         "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
-        "line": 9
+        "line": 10
       },
       "verified_by": {
         "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
@@ -203,7 +203,7 @@
       "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
       "defined_at": {
         "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
-        "line": 214
+        "line": 222
       },
       "verified_by": {
         "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
@@ -211,297 +211,5 @@
       }
     }
   ],
-  "replacements": [],
-  "test_decisions": [
-    {
-      "path": "apps/web/src/dev-server/cards-page-recurring-render.test.ts",
-      "operation": "modified",
-      "scenario": "Regression of Golden Screen financial report behavior / existing affected consumer",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "npm run test",
-        "candidates": []
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test coverage reused/extended to cover the #718 changes, instead of duplicating a new suite",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "apps/web/src/dev-server/cards-page-recurring-render.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
-        "evidence_sha256": "6b5f07ba8e9c99d139676e532df18307692e8f10625f4f8aab8b82ab9e3bb3ae"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2.test.ts",
-      "operation": "modified",
-      "scenario": "Regression of Golden Screen financial report behavior / existing affected consumer",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "npm run test",
-        "candidates": []
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test coverage reused/extended to cover the #718 changes, instead of duplicating a new suite",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "apps/web/src/dev-server/cards-page-v2.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
-        "evidence_sha256": "6b5f07ba8e9c99d139676e532df18307692e8f10625f4f8aab8b82ab9e3bb3ae"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/cash-flow-projection-view.test.ts",
-      "operation": "modified",
-      "scenario": "Regression of Golden Screen financial report behavior / existing affected consumer",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "npm run test",
-        "candidates": []
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test coverage reused/extended to cover the #718 changes, instead of duplicating a new suite",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "apps/web/src/dev-server/cash-flow-projection-view.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
-        "evidence_sha256": "6b5f07ba8e9c99d139676e532df18307692e8f10625f4f8aab8b82ab9e3bb3ae"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/operational-installments.test.ts",
-      "operation": "modified",
-      "scenario": "Regression of Golden Screen financial report behavior / existing affected consumer",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "npm run test",
-        "candidates": []
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test coverage reused/extended to cover the #718 changes, instead of duplicating a new suite",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "apps/web/src/dev-server/operational-installments.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
-        "evidence_sha256": "6b5f07ba8e9c99d139676e532df18307692e8f10625f4f8aab8b82ab9e3bb3ae"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/reports-analysis-issue-611.test.ts",
-      "operation": "modified",
-      "scenario": "Regression of Golden Screen financial report behavior / existing affected consumer",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "npm run test",
-        "candidates": []
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test coverage reused/extended to cover the #718 changes, instead of duplicating a new suite",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "apps/web/src/dev-server/reports-analysis-issue-611.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
-        "evidence_sha256": "6b5f07ba8e9c99d139676e532df18307692e8f10625f4f8aab8b82ab9e3bb3ae"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/reports-analysis-state-issue-611.test.ts",
-      "operation": "modified",
-      "scenario": "Regression of Golden Screen financial report behavior / existing affected consumer",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "npm run test",
-        "candidates": []
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test coverage reused/extended to cover the #718 changes, instead of duplicating a new suite",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "apps/web/src/dev-server/reports-analysis-state-issue-611.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
-        "evidence_sha256": "6b5f07ba8e9c99d139676e532df18307692e8f10625f4f8aab8b82ab9e3bb3ae"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/reports-category-evolution-issue-546.test.ts",
-      "operation": "modified",
-      "scenario": "Regression of Golden Screen financial report behavior / existing affected consumer",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "npm run test",
-        "candidates": []
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test coverage reused/extended to cover the #718 changes, instead of duplicating a new suite",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "apps/web/src/dev-server/reports-category-evolution-issue-546.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
-        "evidence_sha256": "6b5f07ba8e9c99d139676e532df18307692e8f10625f4f8aab8b82ab9e3bb3ae"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/reports-route-page.test.ts",
-      "operation": "modified",
-      "scenario": "Regression of Golden Screen financial report behavior / existing affected consumer",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "npm run test",
-        "candidates": []
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test coverage reused/extended to cover the #718 changes, instead of duplicating a new suite",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "apps/web/src/dev-server/reports-route-page.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-ts.txt",
-        "evidence_sha256": "6b5f07ba8e9c99d139676e532df18307692e8f10625f4f8aab8b82ab9e3bb3ae"
-      }
-    },
-    {
-      "path": "scripts/statement-visual/report-page-viewport.test.mjs",
-      "operation": "added",
-      "scenario": "Exact-SHA browser evidence guard and negative control for responsive multi-currency reports",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "node --test",
-        "candidates": []
-      },
-      "decision": "new-test-required",
-      "justification": "Dedicated portable assertion is needed to reject a visual regression not distinguishable by older tests",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "node --test scripts/statement-visual/report-page-viewport.test.mjs scripts/statement-visual/reports-718-behavior-evidence.test.mjs",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "scripts/statement-visual/report-page-viewport.test.mjs"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-mjs.txt",
-        "evidence_sha256": "e426d500f03fbf89cbe2fea251a991ef3e16d08f35b4377a5485e97b5f63f409"
-      }
-    },
-    {
-      "path": "scripts/statement-visual/reports-718-behavior-evidence.test.mjs",
-      "operation": "added",
-      "scenario": "Exact-SHA browser evidence guard and negative control for responsive multi-currency reports",
-      "requirement": "Issue #718: report hierarchy, financial currency integrity, and reusable regression controls",
-      "search": {
-        "queries": [
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
-          "rg -n \"reports|currency|cash-flow|viewport\" apps/web/src/dev-server scripts/statement-visual"
-        ],
-        "scope": "Existing SolverFin report / card / installment tests and visual suite",
-        "runner": "node --test",
-        "candidates": []
-      },
-      "decision": "new-test-required",
-      "justification": "Dedicated portable assertion is needed to reject a visual regression not distinguishable by older tests",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "node --test scripts/statement-visual/report-page-viewport.test.mjs scripts/statement-visual/reports-718-behavior-evidence.test.mjs",
-        "exit_code": 0,
-        "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
-        "reached_tests": [
-          "scripts/statement-visual/reports-718-behavior-evidence.test.mjs"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-718-test-execution-mjs.txt",
-        "evidence_sha256": "e426d500f03fbf89cbe2fea251a991ef3e16d08f35b4377a5485e97b5f63f409"
-      }
-    }
-  ]
+  "replacements": []
 }

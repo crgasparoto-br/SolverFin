@@ -1,8 +1,4 @@
-HEAD: 49246114f5776e84871ee079b9c8191ea79bfe35
-COMMAND: node --test scripts/statement-visual/report-page-viewport.test.mjs scripts/statement-visual/reports-718-behavior-evidence.test.mjs
-EXIT_CODE: 0
-SOURCE: Local execution on immutable GitHub CI restored checkout at exact HEAD
-RESULT: 15 tests passed, 0 failed
-REACHED: scripts/statement-visual/report-page-viewport.test.mjs
-REACHED: scripts/statement-visual/reports-718-behavior-evidence.test.mjs
-RAW_LOCAL_LOG_SHA256: d4b4a8aedb6c68cbd713af6a2819b63a01d21553f6a11ea255c02b2782804b04
+Issue #718 A718-05 - material 2d90c077aa6e25644c648b8e44d72e4516edcc71
+node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs
+19 tests passed, 0 failed, local exact source checkout.
+CI 39879361620: completed/success. Chrome 39879361649: completed/success; artifact 12470087005; failures=[].

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+  "subject_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
   "base_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
   "policy": {
     "new_file_soft_limit": 300,
@@ -65,7 +65,7 @@
     {
       "path": "apps/web/src/dev-server/reports-route-page-styles.ts",
       "lines_before": 129,
-      "lines_after": 250
+      "lines_after": 252
     },
     {
       "path": "apps/web/src/dev-server/reports-route-page.ts",
@@ -105,22 +105,23 @@
     {
       "path": "scripts/statement-visual/report-page-viewport.mjs",
       "lines_before": null,
-      "lines_after": 68
+      "lines_after": 98
     },
     {
       "path": "scripts/statement-visual/reports-718-behavior-evidence.mjs",
       "lines_before": null,
-      "lines_after": 133
+      "lines_after": 143
     },
     {
       "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
       "lines_before": null,
-      "lines_after": 297
+      "lines_after": 305,
+      "justification": "The existing integrated Chrome cash-flow scenario covers currency, SSR, local scrolling, keyboard-ready layouts and three analysis layers; five additional lines assert selected-filter legibility at a dedicated tablet viewport without creating a redundant second fixture, browser session or test file. Keep these checks co-located with the established end-to-end scenario."
     },
     {
       "path": "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
       "lines_before": null,
-      "lines_after": 206
+      "lines_after": 238
     },
     {
       "path": "scripts/statement-visual/reports-718-visual-acceptance.mjs",
@@ -135,7 +136,7 @@
     {
       "path": "scripts/statement-visual/reports-installments-regression.mjs",
       "lines_before": 369,
-      "lines_after": 422
+      "lines_after": 442
     }
   ],
   "blocking_files": []

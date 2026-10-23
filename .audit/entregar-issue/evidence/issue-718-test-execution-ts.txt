@@ -1,14 +1,2 @@
-HEAD: 49246114f5776e84871ee079b9c8191ea79bfe35
-COMMAND: npm run test
-EXIT_CODE: 0
-SOURCE: Repository CI run 39868576647 / job 120137162363 (authenticated GitHub Actions)
-RESULT: completed/success
-RUNNER: apps/web/package.json tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/web --include .test.js
-REACHED: apps/web/src/dev-server/cards-page-recurring-render.test.ts
-REACHED: apps/web/src/dev-server/cards-page-v2.test.ts
-REACHED: apps/web/src/dev-server/cash-flow-projection-view.test.ts
-REACHED: apps/web/src/dev-server/operational-installments.test.ts
-REACHED: apps/web/src/dev-server/reports-analysis-issue-611.test.ts
-REACHED: apps/web/src/dev-server/reports-analysis-state-issue-611.test.ts
-REACHED: apps/web/src/dev-server/reports-category-evolution-issue-546.test.ts
-REACHED: apps/web/src/dev-server/reports-route-page.test.ts
+Issue #718 A718-05 - material 2d90c077aa6e25644c648b8e44d72e4516edcc71
+CI CRITICAL 39879361620 completed/success: npm run test, npm run test:integration --workspace @solverfin/api, lint, typecheck, build passed on exact material SHA.

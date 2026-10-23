@@ -5,7 +5,7 @@
       "escape_id": "A718-04",
       "escape_class": "selected-filter-value-clipping-without-viewport-overflow",
       "status": "passed",
-      "revalidated_head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
+      "revalidated_head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:861cf81d-c9e5-458e-bd87-bfe98ca00e6b",
@@ -20,7 +20,7 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Run Chrome /relatorios?view=installments at 390x844 and verify month (2026), card and category visible and no clipping",
-        "observed": "Chrome run 39868576683 actual file reports-installments-regression.json: filterFit.fits and negativeControl both passed at 390x844"
+        "observed": "Chrome 39879361649: reports-installments-regression.json 390x844 and 320x740 filterFit true and negativeControl rejected/restored at material 2d90c077aa6e25644c648b8e44d72e4516edcc71"
       },
       "sibling_cases": [
         {
@@ -28,23 +28,23 @@
           "surface": "mobile-installments-filter",
           "dimension": "320px narrow viewport",
           "status": "passed",
-          "evidence": "Chrome run 39868576683: filterFit at 320x740"
+          "evidence": "Chrome 39879361649 reports-installments-regression.json exact material 2d90c077aa6e25644c648b8e44d72e4516edcc71"
         },
         {
           "id": "A718-04-S2",
           "surface": "mobile-installments-filter",
           "dimension": "forced 2-column negative mutation",
           "status": "passed",
-          "evidence": "Chrome run 39868576683: negativeControl.rejected and restored at 390px and 320px"
+          "evidence": "Chrome 39879361649 reports-installments-regression.json exact material 2d90c077aa6e25644c648b8e44d72e4516edcc71"
         }
       ],
       "prevention_change": {
         "status": "passed",
-        "evidence": "CSS reports-route-page-styles.ts: 480px breakpoint 1fr; Chrome artifact 12464744819"
+        "evidence": "480px single-column CSS preserved, Chrome 39879361649 artifact 12470087005"
       },
       "detection_change": {
         "status": "passed",
-        "evidence": "reports-installments-regression.mjs measures selected label widths and rejects two-column layout without global overflow; artifacts verified",
+        "evidence": "reports-installments-regression.mjs exact SHA 2d90c077aa6e25644c648b8e44d72e4516edcc71 checks mobile selected labels and forced two-column mutation",
         "control_id": "NC-718-MOBILE-FILTER-001"
       },
       "required_risk_families": [
@@ -66,6 +66,73 @@
         "selected filter clipped",
         "mobile filter widths",
         "date month select overflow"
+      ]
+    },
+    {
+      "escape_id": "A718-05",
+      "escape_class": "desktop-selected-filter-value-clipping-without-global-overflow",
+      "status": "passed",
+      "revalidated_head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:14498b49-3a8e-48e2-8284-9707a85cb77e",
+        "audited_head_sha": "31ff29fd2a3bb6b9836d2e156a379652d9737cb0",
+        "finding_id": "A718-05",
+        "finding_ids": [
+          "A718-05"
+        ],
+        "audit_report_sha256": "7f378c17733bbf463385097d6f63488acffe9e4ef0f28ecfb9500928df8bc878"
+      },
+      "plausible_wrong_implementation": "A six-column financial report filter form keeps the document within desktop viewport but clips month/year and selected category/account/currency values.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Chrome /relatorios?view=installments and category-evolution, 1366x768; inspect selected filter text measured by canvas and restore after forced six-column regression",
+        "observed": "Chrome 39879361649 artifact 12470087005: at desktop 1366x768 both selected filters fit and forced six-column grids clip, rejected and restored. Table and page never need global overflow."
+      },
+      "sibling_cases": [
+        {
+          "id": "A718-05-S1",
+          "surface": "tablet-report-filter",
+          "dimension": "1024x768 two-column breakpoint",
+          "status": "passed",
+          "evidence": "Chrome 39879361649: tablet and mobile filterFit true, reports-installments-regression.json and reports-category-evolution.json"
+        },
+        {
+          "id": "A718-05-S2",
+          "surface": "mobile-report-filter",
+          "dimension": "390px and 320px legacy regression",
+          "status": "passed",
+          "evidence": "Chrome 39879361649: tablet and mobile filterFit true, reports-installments-regression.json and reports-category-evolution.json"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "apps/web/src/dev-server/reports-route-page-styles.ts 1181px..1920px grouped 3-column filters"
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "reportSelectedFilterFitExpression and reports-installments-regression.mjs / reports-718-multicurrency-browser.mjs forced six-column mutation",
+        "control_id": "NC-718-DESKTOP-FILTER-001"
+      },
+      "required_risk_families": [
+        "visual-accessibility"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "visual-accessibility",
+          "surface": "desktop-installments-filter",
+          "dimension": "selected month/category clipping without page overflow"
+        },
+        {
+          "risk_family": "visual-accessibility",
+          "surface": "desktop-evolution-filter",
+          "dimension": "selected account/currency clipping and forced negative mutation"
+        }
+      ],
+      "trigger_terms": [
+        "selected filters clipped desktop",
+        "month native input full year",
+        "category/account currency select readability"
       ]
     }
   ]

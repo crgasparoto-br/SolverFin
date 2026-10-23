@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
   "verdict": "REPROVADA",
-  "rejection_id": "audit-rejection:861cf81d-c9e5-458e-bd87-bfe98ca00e6b",
-  "head_sha": "f06059fa91278f7caea412c220440d753fe1a085",
-  "material_head_sha": "2ba22d2fad98f55fe88165c9f6dce096deaec0c0",
+  "rejection_id": "audit-rejection:14498b49-3a8e-48e2-8284-9707a85cb77e",
+  "head_sha": "31ff29fd2a3bb6b9836d2e156a379652d9737cb0",
+  "material_head_sha": "49246114f5776e84871ee079b9c8191ea79bfe35",
   "findings": [
     {
-      "id": "A718-04",
+      "id": "A718-05",
       "disposition": "blocking",
       "status": "open",
       "remediation_mode": "targeted-remediation",
       "severity": "high",
-      "description": "At 390px Parcelas consolidadas month/card/category filter controls visibly truncate selected values"
+      "description": "At desktop 1366px, selected month/year, category, account/card and currency are clipped in consolidated installments and category evolution despite no viewport overflow"
     }
   ],
   "recommendations": [],
-  "source_report_sha256": "c335e25382927642b30cb0cec7aa3d2d70854c1d08c5e983640119007b73e752",
-  "source_report_path": "parecer_issue_718.md"
+  "source_report_sha256": "6fe2ca1cad9ef164c55f99fe78fac5b7769e931d68f414368c682ff3ba2182fb",
+  "source_report_path": "parecer_718.md"
 }
