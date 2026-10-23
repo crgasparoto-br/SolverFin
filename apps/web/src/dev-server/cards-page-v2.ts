@@ -1089,7 +1089,7 @@ function renderPurchaseRow(
     <strong role="cell" data-label="Valor" class="cards-purchase-amount${purchase.amountMinor < 0 ? " is-negative" : ""}">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
     <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}" title="Ações da compra">${icon("more-horizontal", 18)}</summary><div class="cards-purchase-menu actions-menu" role="menu">
       <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar</span></button>
-      <button type="button" class="actions-item" role="menuitem" data-clone-purchase="${escapeHtml(purchase.id)}"${locked ? " disabled" : ""}>${icon("copy", 16)}<span>Clonar</span></button>
+      <button type="button" class="actions-item" role="menuitem" data-clone-purchase="${escapeHtml(purchase.id)}" data-clone-source-locked="${locked ? "true" : "false"}"${purchase.amountMinor < 0 ? " disabled" : ""}>${icon("copy", 16)}<span>Clonar</span></button>
       ${installmentLabel && purchase.installmentId ? `<button type="button" class="actions-item" role="menuitem" data-edit-installment-amount="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar valor da parcela</span></button>` : ""}
       <button type="button" class="actions-item" role="menuitem" data-reverse-purchase="${escapeHtml(purchase.id)}"${locked || purchase.amountMinor <= 0 ? " disabled" : ""}>${icon("refresh-cw", 16)}<span>Estorno</span></button>
       <button type="button" class="actions-item" role="menuitem" data-delete-purchase="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" || Boolean(purchase.installmentId || purchase.recurrenceId) ? " disabled" : ""}>${icon("trash-2", 16)}<span>Excluir</span></button>
@@ -1656,7 +1656,10 @@ function clientScript(): string {
           if (cloneButton.disabled || !purchaseForm) return;
           resetPurchaseForm();
           purchaseForm.querySelector('[name="amountMinor"]').value = minorToMoney(purchase.amountMinor);
-          purchaseForm.querySelector('[name="occurredOn"]').value = purchase.occurredOn;
+          // Locked historical invoices must remain immutable, but cloning creates a new
+          // purchase. Suggest today's editable date instead of the closed period.
+          purchaseForm.querySelector('[name="occurredOn"]').value =
+            cloneButton.dataset.cloneSourceLocked === "true" ? localToday() : purchase.occurredOn;
           purchaseForm.querySelector('[name="description"]').value = purchase.description || "";
           purchaseForm.querySelector('[name="categoryId"]').value = purchase.categoryId || "";
           if (purchase.cardInstrumentId) purchaseForm.querySelector('[name="cardInstrumentId"]').value = purchase.cardInstrumentId;
