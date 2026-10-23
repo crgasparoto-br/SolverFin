@@ -1546,6 +1546,9 @@ function clientScript(): string {
       };
       repeatMode?.addEventListener("change", syncRepeatFields);
       purchaseForm?.querySelector('[name="installmentValueMode"]')?.addEventListener("change", syncRepeatFields);
+      document.querySelector('dialog[data-modal="purchase"]')?.addEventListener("close", () => {
+        if (purchaseForm?.dataset.savedDuringSession === "true") window.location.reload();
+      });
       const resetPurchaseForm = () => {
         if (!purchaseForm) return;
         purchaseForm.reset();
@@ -1920,9 +1923,17 @@ function clientScript(): string {
         } else {
           response = await request(path, method, payload);
         }
-        status.textContent = await responseMessage(response);
-        status.className = response.ok ? "form-status success full" : "form-status error full";
-        if (response.ok && saveAndContinue && method === "POST") {
+        const savedResponse = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          status.textContent = savedResponse?.error?.message || "Não foi possível gravar a compra.";
+          status.className = "form-status error full";
+          return;
+        }
+        status.textContent = "Compra registrada com sucesso.";
+        status.className = "form-status success full";
+        if (saveAndContinue && method === "POST") {
+          purchaseForm.dataset.savedDuringSession = "true";
+          purchaseForm.dataset.savedCount = String(Number(purchaseForm.dataset.savedCount || 0) + 1);
           const retainedInstrument = String(data.get("cardInstrumentId") || "");
           const retainedCurrency = currency;
           const retainedDate = String(data.get("occurredOn") || "");
@@ -1933,7 +1944,7 @@ function clientScript(): string {
           if (repeatMode) repeatMode.value = "single";
           syncRepeatFields();
           purchaseForm.querySelector('[name="description"]')?.focus();
-          status.textContent = "Compra salva. Informe a próxima compra.";
+          status.textContent = purchaseForm.dataset.savedCount + " compra(s) registrada(s). Informe a próxima compra. A lista será atualizada ao fechar.";
           status.className = "form-status success full";
         } else if (response.ok) {
           window.setTimeout(() => window.location.reload(), 350);
