@@ -637,7 +637,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   // #715: category is a real sixth column, not subordinate text inside the description.
   assert.match(
     html,
-    /role="columnheader">Compra<\/span><span role="columnheader">Categoria<\/span><span role="columnheader">Situação/,
+    /role="columnheader">Compra<\/span><span role="columnheader">Instrumento<\/span><span role="columnheader">Categoria<\/span><span role="columnheader">Situação/,
   );
   assert.match(
     html,
@@ -645,7 +645,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.match(
     html,
-    /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out">/,
+    /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Instrumento" class="cards-purchase-instrument">[\s\S]*?<\/span>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out">/,
   );
   assert.match(html, /\.cards-purchase-category\{[^}]*overflow-wrap:anywhere/);
   // The same semantic fill palette as Extrato: entry green, expense red, transfer gray.
