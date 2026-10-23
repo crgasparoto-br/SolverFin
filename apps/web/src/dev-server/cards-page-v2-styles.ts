@@ -137,6 +137,9 @@ export function cardsPageStyles(): string {
       .cards-purchase-filter-form .cards-advanced-filters,
       .cards-purchase-filter-form>button[type="submit"]{grid-column:1!important;max-width:100%;width:100%}
     }
+    /* Apply is a compact action, not a full-width field. */
+    .cards-purchase-filter-form>button[type="submit"]{justify-self:end;align-self:end;width:auto;min-width:5.5rem;max-width:7rem;min-height:36px;height:36px;padding:0 14px;white-space:nowrap}
+    @media(max-width:430px){.cards-purchase-filter-form>button[type="submit"]{width:auto!important;justify-self:end;grid-column:1!important}}
     /* Shared grid contract: header and entries use identical tracks across grouping modes. */
     .cards-purchase-groups{--cards-purchase-columns:minmax(5rem,6.5rem) minmax(0,1.6fr) minmax(0,.9fr) minmax(0,.9fr) minmax(3.5rem,.55fr) minmax(6.3rem,.8fr) 3rem;min-width:0}
     .cards-purchase-groups .cards-purchase-table-head,
