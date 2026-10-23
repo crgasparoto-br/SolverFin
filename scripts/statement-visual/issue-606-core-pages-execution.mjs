@@ -87,6 +87,7 @@ try {
       const readingOrder = await evaluate(browser.cdp, dashboardFirstReadExpression());
       assert.equal(readingOrder.hasPrimaryMetrics, true, "Dashboard has no two primary metrics");
       assert.equal(readingOrder.hasNextActions, true, "Dashboard has no next action");
+      assert.equal(readingOrder.amountsOnOneLine, true, "Dashboard primary amount wraps or overflows");
       assert.equal(
         readingOrder.supportingAfterActions,
         true,
@@ -178,6 +179,11 @@ function dashboardFirstReadExpression() {
     return {
       hasPrimaryMetrics: primary.length >= 2,
       hasNextActions: !!action,
+      amountsOnOneLine: [...document.querySelectorAll('.currency-summary .sf-metric-card-value')].every((value) => {
+        const range = document.createRange();
+        range.selectNodeContents(value);
+        return range.getClientRects().length === 1 && value.scrollWidth <= value.clientWidth + 1;
+      }),
       supportingAfterActions: !!action && !!supporting &&
         !!(action.compareDocumentPosition(supporting) & Node.DOCUMENT_POSITION_FOLLOWING),
       actionVisibleInFirstViewport: !!headline && headline.getBoundingClientRect().bottom <= innerHeight,

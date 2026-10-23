@@ -128,7 +128,8 @@ describe("dev-server dashboard page", () => {
       assert.ok(
         html.indexOf('class="next-actions"') < html.indexOf('class="dashboard-supporting-section"'),
       );
-      assert.match(html, /\.dashboard-metric \.sf-metric-card \{ align-items: center;/);
+      assert.match(html, /\.dashboard-metric \.sf-metric-card \{ display: grid;/);
+      assert.match(html, /text-align: left; white-space: nowrap;/);
       assert.equal((html.match(/class="evidence-detail"/g) ?? []).length, 5);
       const intrusive = html.replace(
         '<section class="next-actions"',

@@ -557,9 +557,9 @@ function dashboardStyles(): string {
       .currency-summary { gap: 5px; }
       .currency-summary .sf-summary-grid, .dashboard-supporting-metrics, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: 1fr; }
       .currency-summary .sf-summary-grid { gap: 6px; }
-      .dashboard-metric .sf-metric-card { align-items: center; column-gap: 8px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); padding: 9px 11px 30px; row-gap: 2px; }
+      .dashboard-metric .sf-metric-card { display: grid; grid-template-columns: minmax(0, 1fr); padding: 9px 11px 30px; row-gap: 2px; }
       .dashboard-metric .sf-metric-card-label { font-size: 0.75rem; }
-      .dashboard-metric .sf-metric-card-value { font-size: 1rem; text-align: right; }
+      .dashboard-metric .sf-metric-card-value { font-size: clamp(0.875rem, 4vw, 1rem); text-align: left; white-space: nowrap; }
       .dashboard-metric .sf-metric-card-detail { font-size: 0.75rem; grid-column: 1 / -1; line-height: 1.2; }
       .dashboard-metric .metric-drilldown { bottom: 8px; left: 11px; font-size: 0.75rem; }
       .next-actions { gap: 5px; padding-top: 6px; }
