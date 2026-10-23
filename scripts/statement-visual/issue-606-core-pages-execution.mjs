@@ -87,7 +87,7 @@ try {
       const readingOrder = await evaluate(browser.cdp, dashboardFirstReadExpression());
       assert.equal(readingOrder.hasPrimaryMetrics, true, "Dashboard has no two primary metrics");
       assert.equal(readingOrder.hasNextActions, true, "Dashboard has no next action");
-      assert.equal(readingOrder.amountsOnOneLine, true, "Dashboard primary amount wraps or overflows");
+      assert.equal(readingOrder.amountsOnOneLine, true, "Primary value wraps");
       assert.equal(
         readingOrder.supportingAfterActions,
         true,
