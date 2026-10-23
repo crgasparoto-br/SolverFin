@@ -359,9 +359,12 @@ function projectInvoicePurchases(
   const installmentTransactionIds = new Set(
     installments.map((installment) => installment.transaction?.id).filter(isDefined),
   );
-  const simpleAndRecurringPurchases = purchases.filter(
-    (purchase) => !installmentTransactionIds.has(purchase.id),
-  );
+  const simpleAndRecurringPurchases = purchases
+    .filter((purchase) => !installmentTransactionIds.has(purchase.id))
+    .map((purchase) => ({
+      ...purchase,
+      description: purchase.description.replace(/ \\[estorno:[^\\]]+\\]$/, ""),
+    }));
   const installmentOccurrences = installments.flatMap((installment) => {
     const purchase = installment.transaction;
     if (!purchase || !installment.invoice?.id || !purchase.cardId) return [];
