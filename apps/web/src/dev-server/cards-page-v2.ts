@@ -1950,7 +1950,15 @@ function clientScript(): string {
             return;
           }
         }
+        // One save operation at a time. A second click before the first response
+        // must not create an additional financial transaction.
+        const submitButtons = Array.from(purchaseForm.querySelectorAll('button[type="submit"]'));
+        const previouslyDisabled = submitButtons.map((button) => button.disabled);
+        purchaseForm.dataset.submitting = "true";
+        submitButtons.forEach((button) => { button.disabled = true; });
         status.textContent = "Salvando...";
+        let keepPendingUntilReload = false;
+        try {
         let response;
         if (mode === "fixed") {
           const cardId = /credit-card-accounts\\/([^/]+)/.exec(path)?.[1] || "";
@@ -2011,7 +2019,19 @@ function clientScript(): string {
           status.textContent = purchaseForm.dataset.savedCount + " compra(s) registrada(s). Informe a próxima compra. A lista será atualizada ao fechar.";
           status.className = "form-status success full";
         } else if (response.ok) {
+          keepPendingUntilReload = true;
           window.setTimeout(() => window.location.reload(), 350);
+        }
+        } catch {
+          status.textContent = "Falha de conexão ao salvar a compra. Tente novamente.";
+          status.className = "form-status error full";
+        } finally {
+          if (!keepPendingUntilReload) {
+            purchaseForm.dataset.submitting = "false";
+            submitButtons.forEach((button, index) => {
+              button.disabled = previouslyDisabled[index];
+            });
+          }
         }
       });
 
