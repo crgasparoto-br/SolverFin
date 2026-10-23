@@ -601,9 +601,16 @@ export async function deleteSimpleCardPurchaseForContext(
   let invoiceId: EntityId | undefined;
   await withTransaction(async (executeQuery) => {
     const rows = await executeQuery<{
-      id: string; invoiceId: string; amountMinor: number; status: string;
-      invoiceStatus: string; currency: string; invoiceCurrency: string;
-      recurrenceId: string | null; kind: string; description: string;
+      id: string;
+      invoiceId: string;
+      amountMinor: number;
+      status: string;
+      invoiceStatus: string;
+      currency: string;
+      invoiceCurrency: string;
+      recurrenceId: string | null;
+      kind: string;
+      description: string;
     }>(
       `select t."id", t."invoiceId", t."amountMinor", t."status",
               t."currency", t."recurrenceId", t."kind", t."description",
@@ -619,9 +626,14 @@ export async function deleteSimpleCardPurchaseForContext(
       [transactionId, cardId, context.organizationId, context.financialProfileId],
     );
     const source = rows[0];
-    if (!source) throw new InvoiceContractError("CARD_PURCHASE_NOT_FOUND", "Lançamento não encontrado.", 404);
+    if (!source)
+      throw new InvoiceContractError("CARD_PURCHASE_NOT_FOUND", "Lançamento não encontrado.", 404);
     if (source.invoiceStatus !== "OPEN" || source.status === "RECONCILED") {
-      throw new InvoiceContractError("CARD_PURCHASE_DELETE_LOCKED", "Não é possível excluir uma compra conciliada ou de fatura bloqueada.", 409);
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_DELETE_LOCKED",
+        "Não é possível excluir uma compra conciliada ou de fatura bloqueada.",
+        409,
+      );
     }
     const dependencies = await executeQuery<{ id: string }>(
       `select "id" from "Installment" where "transactionId" = $1
@@ -629,10 +641,18 @@ export async function deleteSimpleCardPurchaseForContext(
       [transactionId, context.organizationId, context.financialProfileId],
     );
     if (source.recurrenceId || dependencies.length) {
-      throw new InvoiceContractError("CARD_PURCHASE_DELETE_RESTRICTED", "Parcelas e recorrências exigem exclusão específica. Use Estorno para compensar este lançamento.", 409);
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_DELETE_RESTRICTED",
+        "Parcelas e recorrências exigem exclusão específica. Use Estorno para compensar este lançamento.",
+        409,
+      );
     }
     if (source.currency !== source.invoiceCurrency) {
-      throw new InvoiceContractError("CARD_PURCHASE_CURRENCY_MISMATCH", "Moeda divergente da fatura.", 409);
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_CURRENCY_MISMATCH",
+        "Moeda divergente da fatura.",
+        409,
+      );
     }
     const now = new Date().toISOString();
     const invoice = await executeQuery<{ id: string }>(
@@ -641,25 +661,42 @@ export async function deleteSimpleCardPurchaseForContext(
         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
           and "status" = 'OPEN'
         returning "id"`,
-      [source.invoiceId, context.organizationId, context.financialProfileId,
-       source.kind === "INCOME" ? Number(source.amountMinor) : -Number(source.amountMinor), now],
+      [
+        source.invoiceId,
+        context.organizationId,
+        context.financialProfileId,
+        source.kind === "INCOME" ? Number(source.amountMinor) : -Number(source.amountMinor),
+        now,
+      ],
     );
-    if (invoice.length !== 1) throw new InvoiceContractError("CARD_PURCHASE_DELETE_LOCKED", "Fatura bloqueada.", 409);
+    if (invoice.length !== 1)
+      throw new InvoiceContractError("CARD_PURCHASE_DELETE_LOCKED", "Fatura bloqueada.", 409);
     const deleted = await executeQuery<{ id: string }>(
       `delete from "Transaction" where "id" = $1 and "organizationId" = $2
          and "financialProfileId" = $3 returning "id"`,
       [transactionId, context.organizationId, context.financialProfileId],
     );
-    if (deleted.length !== 1) throw new InvoiceContractError("CARD_PURCHASE_DELETE_FAILED", "Não foi possível excluir.", 409);
+    if (deleted.length !== 1)
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_DELETE_FAILED",
+        "Não foi possível excluir.",
+        409,
+      );
     await insertAuditLogEntry(executeQuery, {
-      organizationId: context.organizationId, financialProfileId: context.financialProfileId,
-      occurredAt: now, actorKind: "user", actorId: context.userId,
-      action: "soft_delete", entityKind: "transaction", entityId: transactionId,
+      organizationId: context.organizationId,
+      financialProfileId: context.financialProfileId,
+      occurredAt: now,
+      actorKind: "user",
+      actorId: context.userId,
+      action: "soft_delete",
+      entityKind: "transaction",
+      entityId: transactionId,
       redactedChanges: { purchase: "removed" },
     });
     invoiceId = source.invoiceId;
   });
-  if (!invoiceId) throw new InvoiceContractError("CARD_PURCHASE_DELETE_FAILED", "Não foi possível excluir.", 409);
+  if (!invoiceId)
+    throw new InvoiceContractError("CARD_PURCHASE_DELETE_FAILED", "Não foi possível excluir.", 409);
   return { transactionId, invoiceId };
 }
 
@@ -681,11 +718,19 @@ export async function reverseCardPurchaseForContext(
       [invoiceId, cardId, context.organizationId, context.financialProfileId],
     );
     if (!invoices[0] || invoices[0].status !== "OPEN") {
-      throw new InvoiceContractError("CARD_REVERSAL_INVOICE_LOCKED", "Somente faturas abertas permitem estorno.", 409);
+      throw new InvoiceContractError(
+        "CARD_REVERSAL_INVOICE_LOCKED",
+        "Somente faturas abertas permitem estorno.",
+        409,
+      );
     }
     const source = await executeQuery<{
-      id: string; description: string; amountMinor: number; currency: string;
-      cardInstrumentId: string | null; occurredOn: Date;
+      id: string;
+      description: string;
+      amountMinor: number;
+      currency: string;
+      cardInstrumentId: string | null;
+      occurredOn: Date;
     }>(
       installmentId
         ? `select t."id", t."description", i."amountMinor", i."currency",
@@ -700,13 +745,28 @@ export async function reverseCardPurchaseForContext(
               and t."installmentId" is null and t."cardId" = $3
               and t."organizationId" = $4 and t."financialProfileId" = $5`,
       installmentId
-        ? [transactionId, installmentId, invoiceId, cardId, context.organizationId, context.financialProfileId]
+        ? [
+            transactionId,
+            installmentId,
+            invoiceId,
+            cardId,
+            context.organizationId,
+            context.financialProfileId,
+          ]
         : [transactionId, invoiceId, cardId, context.organizationId, context.financialProfileId],
     );
     const origin = source[0];
-    if (!origin || !Number.isSafeInteger(Number(origin.amountMinor)) || Number(origin.amountMinor) <= 0 ||
-        origin.currency !== invoices[0].currency) {
-      throw new InvoiceContractError("CARD_REVERSAL_INVALID_SOURCE", "Lançamento não elegível ao estorno.", 409);
+    if (
+      !origin ||
+      !Number.isSafeInteger(Number(origin.amountMinor)) ||
+      Number(origin.amountMinor) <= 0 ||
+      origin.currency !== invoices[0].currency
+    ) {
+      throw new InvoiceContractError(
+        "CARD_REVERSAL_INVALID_SOURCE",
+        "Lançamento não elegível ao estorno.",
+        409,
+      );
     }
     const marker = "[estorno:" + transactionId + ":" + (installmentId ?? "unico") + "]";
     const existing = await executeQuery<{ id: string }>(
@@ -715,7 +775,11 @@ export async function reverseCardPurchaseForContext(
       [context.organizationId, context.financialProfileId, cardId, "%" + marker],
     );
     if (existing.length) {
-      throw new InvoiceContractError("CARD_REVERSAL_DUPLICATE", "Este lançamento já foi estornado.", 409);
+      throw new InvoiceContractError(
+        "CARD_REVERSAL_DUPLICATE",
+        "Este lançamento já foi estornado.",
+        409,
+      );
     }
     const categories = await executeQuery<{ id: string }>(
       `select "id" from "Category" where "organizationId" = $1 and
@@ -742,8 +806,13 @@ export async function reverseCardPurchaseForContext(
            "createdByUserId", "updatedByUserId")
          values ($1, $2, $3, $4, 'Estornos', 'estornos', 'INCOME', 'ACTIVE',
                  now(), now(), $5, $5)`,
-        [reversalCategoryId, context.organizationId, context.financialProfileId,
-         parent[0]?.id ?? null, context.userId],
+        [
+          reversalCategoryId,
+          context.organizationId,
+          context.financialProfileId,
+          parent[0]?.id ?? null,
+          context.userId,
+        ],
       );
     }
     createdId = randomUUID();
@@ -756,10 +825,21 @@ export async function reverseCardPurchaseForContext(
          "occurredOn", "plannedOn", "description", "createdAt", "updatedAt",
          "createdByUserId", "updatedByUserId")
        values ($1,$2,$3,$4,$5,$6,$7,'INCOME','POSTED','MANUAL',$8,$9,$10,$10,$11,$12,$12,$13,$13)`,
-      [createdId, context.organizationId, context.financialProfileId, cardId,
-       origin.cardInstrumentId, invoiceId, reversalCategoryId, reversedAmount,
-       origin.currency, toDateOnly(origin.occurredOn),
-       "Estorno: " + origin.description + " " + marker, now, context.userId],
+      [
+        createdId,
+        context.organizationId,
+        context.financialProfileId,
+        cardId,
+        origin.cardInstrumentId,
+        invoiceId,
+        reversalCategoryId,
+        reversedAmount,
+        origin.currency,
+        toDateOnly(origin.occurredOn),
+        "Estorno: " + origin.description + " " + marker,
+        now,
+        context.userId,
+      ],
     );
     const updated = await executeQuery<{ id: string }>(
       `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" - $4,
@@ -768,11 +848,17 @@ export async function reverseCardPurchaseForContext(
            returning "id"`,
       [invoiceId, context.organizationId, context.financialProfileId, reversedAmount, now],
     );
-    if (updated.length !== 1) throw new InvoiceContractError("CARD_REVERSAL_INVOICE_LOCKED", "Fatura não editável.", 409);
+    if (updated.length !== 1)
+      throw new InvoiceContractError("CARD_REVERSAL_INVOICE_LOCKED", "Fatura não editável.", 409);
     await insertAuditLogEntry(executeQuery, {
-      organizationId: context.organizationId, financialProfileId: context.financialProfileId,
-      occurredAt: now, actorKind: "user", actorId: context.userId, action: "create",
-      entityKind: "transaction", entityId: createdId,
+      organizationId: context.organizationId,
+      financialProfileId: context.financialProfileId,
+      occurredAt: now,
+      actorKind: "user",
+      actorId: context.userId,
+      action: "create",
+      entityKind: "transaction",
+      entityId: createdId,
       redactedChanges: { reversalOf: "added" },
     });
   });
@@ -784,19 +870,34 @@ export async function updateCardReversalForContext(
   context: TenantContext,
   cardId: EntityId,
   reversalId: EntityId,
-  payload: { description: string; occurredOn: string; amountMinor: number; cardInstrumentId?: string },
+  payload: {
+    description: string;
+    occurredOn: string;
+    amountMinor: number;
+    cardInstrumentId?: string;
+  },
 ): Promise<{ transactionId: EntityId; invoiceId: EntityId }> {
   if (!Number.isSafeInteger(payload.amountMinor) || payload.amountMinor <= 0) {
-    throw new InvoiceContractError("CARD_REVERSAL_AMOUNT_INVALID", "Informe um valor positivo para o crédito.");
+    throw new InvoiceContractError(
+      "CARD_REVERSAL_AMOUNT_INVALID",
+      "Informe um valor positivo para o crédito.",
+    );
   }
   if (!isIsoDate(payload.occurredOn) || !payload.description.trim()) {
-    throw new InvoiceContractError("CARD_REVERSAL_DETAILS_INVALID", "Informe data e descrição válidas.");
+    throw new InvoiceContractError(
+      "CARD_REVERSAL_DETAILS_INVALID",
+      "Informe data e descrição válidas.",
+    );
   }
   let invoiceId: EntityId | undefined;
   await withTransaction(async (executeQuery) => {
     const rows = await executeQuery<{
-      invoiceId: string; amountMinor: number; description: string;
-      invoiceStatus: string; periodStartOn: Date; periodEndOn: Date;
+      invoiceId: string;
+      amountMinor: number;
+      description: string;
+      invoiceStatus: string;
+      periodStartOn: Date;
+      periodEndOn: Date;
     }>(
       `select t."invoiceId", t."amountMinor", t."description",
            inv."status" as "invoiceStatus", inv."periodStartOn", inv."periodEndOn"
@@ -811,43 +912,82 @@ export async function updateCardReversalForContext(
     );
     const current = rows[0];
     if (!current || current.invoiceStatus !== "OPEN") {
-      throw new InvoiceContractError("CARD_REVERSAL_EDIT_LOCKED", "O estorno não está disponível para edição.", 409);
+      throw new InvoiceContractError(
+        "CARD_REVERSAL_EDIT_LOCKED",
+        "O estorno não está disponível para edição.",
+        409,
+      );
     }
-    if (payload.occurredOn < toDateOnly(current.periodStartOn) ||
-        payload.occurredOn > toDateOnly(current.periodEndOn)) {
-      throw new InvoiceContractError("CARD_REVERSAL_DATE_INVALID", "A data deve pertencer à fatura.", 409);
+    if (
+      payload.occurredOn < toDateOnly(current.periodStartOn) ||
+      payload.occurredOn > toDateOnly(current.periodEndOn)
+    ) {
+      throw new InvoiceContractError(
+        "CARD_REVERSAL_DATE_INVALID",
+        "A data deve pertencer à fatura.",
+        409,
+      );
     }
     if (payload.cardInstrumentId) {
       await assertActiveCardInstrumentBelongsToCard(context, cardId, payload.cardInstrumentId);
     }
     const marker = current.description.match(/ \[estorno:[^\]]+\]$/)?.[0];
-    if (!marker) throw new InvoiceContractError("CARD_REVERSAL_MARKER_INVALID", "Estorno sem referência à compra.", 409);
+    if (!marker)
+      throw new InvoiceContractError(
+        "CARD_REVERSAL_MARKER_INVALID",
+        "Estorno sem referência à compra.",
+        409,
+      );
     const now = new Date().toISOString();
     await executeQuery(
       `update "Transaction" set "amountMinor" = $5, "occurredOn" = $6, "plannedOn" = $6,
           "description" = $7, "cardInstrumentId" = coalesce($8, "cardInstrumentId"),
           "updatedAt" = $9, "updatedByUserId" = $10
         where "id" = $1 and "cardId" = $2 and "organizationId" = $3 and "financialProfileId" = $4`,
-      [reversalId, cardId, context.organizationId, context.financialProfileId,
-       payload.amountMinor, payload.occurredOn, payload.description.trim() + marker,
-       payload.cardInstrumentId ?? null, now, context.userId],
+      [
+        reversalId,
+        cardId,
+        context.organizationId,
+        context.financialProfileId,
+        payload.amountMinor,
+        payload.occurredOn,
+        payload.description.trim() + marker,
+        payload.cardInstrumentId ?? null,
+        now,
+        context.userId,
+      ],
     );
     await executeQuery(
       `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4,
          "updatedAt" = $5
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [current.invoiceId, context.organizationId, context.financialProfileId,
-       Number(current.amountMinor) - payload.amountMinor, now],
+      [
+        current.invoiceId,
+        context.organizationId,
+        context.financialProfileId,
+        Number(current.amountMinor) - payload.amountMinor,
+        now,
+      ],
     );
     await insertAuditLogEntry(executeQuery, {
-      organizationId: context.organizationId, financialProfileId: context.financialProfileId,
-      occurredAt: now, actorKind: "user", actorId: context.userId,
-      action: "update", entityKind: "transaction", entityId: reversalId,
+      organizationId: context.organizationId,
+      financialProfileId: context.financialProfileId,
+      occurredAt: now,
+      actorKind: "user",
+      actorId: context.userId,
+      action: "update",
+      entityKind: "transaction",
+      entityId: reversalId,
       redactedChanges: { amountMinor: "changed", description: "changed" },
     });
     invoiceId = current.invoiceId;
   });
-  if (!invoiceId) throw new InvoiceContractError("CARD_REVERSAL_EDIT_FAILED", "Não foi possível atualizar o estorno.", 409);
+  if (!invoiceId)
+    throw new InvoiceContractError(
+      "CARD_REVERSAL_EDIT_FAILED",
+      "Não foi possível atualizar o estorno.",
+      409,
+    );
   return { transactionId: reversalId, invoiceId };
 }
 
