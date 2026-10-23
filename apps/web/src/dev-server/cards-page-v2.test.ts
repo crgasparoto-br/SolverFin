@@ -482,15 +482,17 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes('class="cards-invoice-period-row"'));
   assert.ok(html.includes('<details class="cards-month-picker"'));
   assert.ok(
+    html.includes(".cards-invoice-navigation{display:flex;align-items:center;justify-content:flex-start"),
+  );
   assert.ok(html.includes(".cards-invoice-navigation .cards-invoice-period-row{flex:0 1 480px"));
-    html.includes(
+  assert.ok(
+    html.includes(".cards-invoice-navigation .cards-month-picker{flex:0 0 auto;position:relative"),
+  );
   assert.ok(html.includes(".cards-shared-table-head{position:sticky"));
   assert.ok(html.includes("--cards-purchase-columns:"));
   assert.ok(html.includes(".cards-purchase-filter-form .cards-search-field input{width:100%"));
   assert.ok(html.includes(".cards-purchase-filter-form .cards-purchase-day-filter{grid-column:2!important"));
-
   assert.ok(html.includes(".cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns)"));
-
 
   assert.match(html, /role="cell" data-label="Instrumento" class="cards-purchase-instrument"/);
   assert.ok(html.includes('.cards-layout .sf-money[data-currency="BRL"]>.sf-money-currency{display:none}'));
