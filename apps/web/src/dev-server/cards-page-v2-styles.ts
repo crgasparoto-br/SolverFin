@@ -109,6 +109,26 @@ export function cardsPageStyles(): string {
     @media(min-width:1051px){.cards-shared-table-head .cards-purchase-table-head{grid-template-columns:6.5rem minmax(0,1.6fr) minmax(6rem,.7fr) minmax(7rem,.8fr) 5.4rem 9rem 3.5rem}}
     @media(min-width:761px) and (max-width:1050px){.cards-shared-table-head .cards-purchase-table-head{grid-template-columns:5.5rem minmax(0,1.5fr) minmax(5.2rem,.65fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
     @media(max-width:760px){.cards-shared-table-head{display:none}}
+    /* Shared grid contract: header and entries use identical tracks across grouping modes. */
+    .cards-purchase-groups{--cards-purchase-columns:minmax(5rem,6.5rem) minmax(0,1.6fr) minmax(0,.9fr) minmax(0,.9fr) minmax(3.5rem,.55fr) minmax(6.3rem,.8fr) 3rem;min-width:0}
+    .cards-purchase-groups .cards-purchase-table-head,
+    .cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns);min-width:0}
+    .cards-purchase-groups .cards-purchase-table,
+    .cards-purchase-groups .cards-day-content,
+    .cards-purchase-groups .cards-day-group,
+    .cards-purchase-groups .cards-instrument-group{min-width:0;width:100%;box-sizing:border-box}
+    .cards-purchase-groups .cards-day-group{border-left:0;border-right:0}
+    .cards-purchase-groups .cards-day-content>.cards-purchase-table{display:grid}
+    .cards-purchase-groups .cards-purchase-instrument{min-width:0;overflow-wrap:anywhere}
+    @media(min-width:761px) and (max-width:1050px){
+      .cards-purchase-groups{--cards-purchase-columns:4.8rem minmax(0,1.4fr) minmax(0,.8fr) minmax(0,.8fr) 3.5rem minmax(5.5rem,.8fr) 2.6rem}
+      .cards-purchase-groups .cards-purchase-row,
+      .cards-purchase-groups .cards-purchase-table-head{column-gap:6px}
+    }
+    @media(max-width:760px){
+      .cards-purchase-groups .cards-purchase-row{grid-template-columns:minmax(0,1fr) auto}
+      .cards-purchase-groups .cards-shared-table-head{display:none}
+    }
     /* #715 GS715-V03: match the approved light shell without modifying other routes. */
     .app-shell:has([data-cards-archetype="A3"]) .sidebar{background:var(--surface);border-right:1px solid var(--line);color:var(--text)}
     .app-shell:has([data-cards-archetype="A3"]) .sidebar .brand{color:var(--text)}
