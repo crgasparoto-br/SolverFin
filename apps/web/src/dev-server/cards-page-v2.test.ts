@@ -506,6 +506,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes('Estorno: " + purchase.description'));
 
   assert.ok(html.includes('data-delete-purchase='));
+  assert.ok(html.includes('purchase.status === "reconciled"'));
+  assert.ok(html.includes('purchase.installmentId || purchase.recurrenceId'));
+
   assert.ok(html.includes('>Excluir</span>'));
 
   assert.ok(html.includes('>Estorno</span>'));
