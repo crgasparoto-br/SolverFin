@@ -7,4 +7,9 @@ await runPilotEmptyState({
     "Cadastre uma conta ou um lançamento para iniciar o cockpit financeiro.",
   ],
   artifactStem: "issue-606-dashboard-empty",
+  viewports: [
+    [1366, 768],
+    [390, 844],
+    [320, 740],
+  ],
 });

@@ -148,7 +148,7 @@ function renderDashboard(model: DashboardScreenViewModel): string {
 
 function renderDashboardContent(content: DashboardContentViewModel): string {
   return `
-    <section class="panel dashboard-hero" aria-label="Situação financeira atual">
+    <section class="dashboard-hero" aria-label="Situação financeira atual">
       <div class="dashboard-heading">
         ${renderPageHeader({
           eyebrow: "Cockpit financeiro",
@@ -163,9 +163,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
     </section>
     ${renderCurrencyNavigator(content.currencySummaries)}
     ${renderCurrencySummaries(content.currencySummaries)}
-    ${renderCashFlowProjection(content.cashFlowProjection)}
-    ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
-    <section class="panel next-actions" aria-label="Próximas ações">
+    <section class="next-actions" aria-label="Próximas ações">
       <div class="section-heading">
         <div><p class="eyebrow">Ação</p><h2>Próximas ações</h2></div>
       </div>
@@ -176,8 +174,11 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         <a class="button-link secondary-link" href="/inbox" title="Inbox e revisão de sugestões">${icon("inbox", 14)} Inbox</a>
       </div>
     </section>
+    ${renderSupportingCurrencySummaries(content.currencySummaries)}
+    ${renderCashFlowProjection(content.cashFlowProjection)}
+    ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
     ${renderDecisionModules(content.decisionModules)}
-    <section class="panel list-panel">
+    <section class="list-panel">
       <div class="section-heading">
         <div><p class="eyebrow">Evidências</p><h2>Itens recentes</h2></div>
       </div>
@@ -185,6 +186,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         ${renderRecentItems(content.recentItems)}
       </div>
     </section>
+    ${renderCurrencyEvidenceIndex(content.currencySummaries)}
     ${dashboardEvidenceScript()}
   `;
 }
@@ -192,7 +194,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
 function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
   if (blocks.length < 2) return "";
 
-  return `<nav class="currency-nav panel" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
+  return `<nav class="currency-nav" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
     .map(
       (block) =>
         `<a class="currency-chip" href="#currency-${escapeHtml(block.currency)}">${escapeHtml(block.currency)}</a>`,
@@ -215,14 +217,62 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
           <div class="section-heading currency-heading">
             <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
           </div>
-          ${renderSummaryGrid({ childrenHtml: block.metrics.map(renderDashboardMetric).join("") })}
-          <div class="currency-evidence" aria-label="Evidências dos indicadores em ${escapeHtml(block.currency)}">
-            ${block.metrics.map(renderDashboardEvidence).join("")}
-          </div>
+          ${renderSummaryGrid({ childrenHtml: block.metrics.slice(0, 2).map(renderDashboardMetric).join("") })}
         </section>
       `,
     )
     .join("");
+}
+
+function renderSupportingCurrencySummaries(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+): string {
+  return blocks
+    .map(
+      (block) => `
+        <section class="dashboard-supporting-section" aria-label="Receitas, despesas e compromissos em ${escapeHtml(block.currency)}">
+          <h2 class="dashboard-supporting-title">Demais indicadores — ${escapeHtml(block.currency)}</h2>
+          <dl class="dashboard-supporting-metrics" aria-label="Demais indicadores em ${escapeHtml(block.currency)}">
+            ${block.metrics.slice(2).map(renderSupportingMetric).join("")}
+          </dl>
+        </section>
+      `,
+    )
+    .join("");
+}
+
+function renderSupportingMetric(metric: DashboardMetricViewModel): string {
+  return `
+    <div class="dashboard-supporting-metric">
+      <dt>${escapeHtml(metric.title)}</dt>
+      <dd>
+        <strong>${formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency })}</strong>
+        <a class="text-link sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">${escapeHtml(metric.linkLabel)}</a>
+      </dd>
+    </div>
+  `;
+}
+
+function renderCurrencyEvidenceIndex(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
+  if (blocks.length === 0) return "";
+
+  return `
+    <section class="dashboard-evidence-index" aria-labelledby="dashboard-evidence-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Detalhamento</p><h2 id="dashboard-evidence-title">Evidências dos indicadores</h2></div>
+      </div>
+      ${blocks
+        .map(
+          (block) => `
+            <div class="currency-evidence" aria-label="Evidências dos indicadores em ${escapeHtml(block.currency)}">
+              <h3>${escapeHtml(block.currency)}</h3>
+              ${block.metrics.map(renderDashboardEvidence).join("")}
+            </div>
+          `,
+        )
+        .join("")}
+    </section>
+  `;
 }
 
 function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
@@ -431,27 +481,38 @@ function dashboardStyles(): string {
     ${financialInsightQueueStyles()}
     main { display: grid; gap: 16px; padding: 20px 0; width: 100%; }
     .sf-page-container { display: grid; gap: 16px; }
-    .dashboard-hero { align-items: start; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); }
+    .dashboard-hero { align-items: center; display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) minmax(190px, 260px); }
     .dashboard-heading { display: grid; gap: 4px; min-width: 0; }
-    .data-quality { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; padding: 12px; }
+    .data-quality { display: grid; gap: 2px; padding: 6px 0 6px 12px; border-left: 2px solid var(--line); }
     .data-quality strong { color: var(--primary); font-size: 0.875rem; }
     .data-quality span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
-    .data-quality[data-quality="partial"] { border-style: dashed; }
+    .data-quality[data-quality="partial"] { border-color: var(--primary); border-left-style: dashed; }
     .secondary-link { background: var(--surface); border: 1px solid var(--line); color: var(--primary); }
     .secondary-link:hover { background: var(--primary-soft); border-color: #c8dde5; }
-    .currency-nav { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+    .currency-nav { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 0; }
     .currency-nav > span { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
     .currency-chip { border: 1px solid var(--line); border-radius: 999px; color: var(--primary); font-size: 0.8125rem; font-weight: 700; padding: 5px 10px; text-decoration: none; }
     .currency-chip:hover, .currency-chip:focus-visible { background: var(--primary-soft); }
     .currency-summary { display: grid; gap: 8px; scroll-margin-top: 20px; }
     .currency-heading h2 { color: var(--primary); font-size: 1rem; margin: 0; }
-    .currency-summary .sf-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .currency-summary .sf-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dashboard-supporting-section { display: grid; gap: 6px; }
+    .dashboard-supporting-title { color: var(--primary); font-size: 0.875rem; margin: 0; }
+    .dashboard-supporting-metrics { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
+    .dashboard-supporting-metric { display: grid; gap: 6px; min-width: 0; padding: 10px 14px 10px 0; }
+    .dashboard-supporting-metric + .dashboard-supporting-metric { border-left: 1px solid var(--line); padding-left: 14px; }
+    .dashboard-supporting-metric dt { color: var(--muted); font-size: 0.8125rem; }
+    .dashboard-supporting-metric dd { display: grid; gap: 4px; margin: 0; min-width: 0; }
+    .dashboard-supporting-metric dd strong { color: var(--primary); font-size: 1rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .dashboard-supporting-metric dd a { width: fit-content; }
     .dashboard-metric { min-width: 0; position: relative; }
     .dashboard-metric .sf-metric-card { height: 100%; padding-bottom: 42px; }
     .metric-drilldown, .text-link, .evidence-link { color: var(--primary); font-size: 0.8125rem; font-weight: 700; text-underline-offset: 3px; }
     .metric-drilldown { bottom: 14px; left: 16px; position: absolute; }
     .metric-drilldown:focus-visible, .text-link:focus-visible, .evidence-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+    .dashboard-evidence-index { border-top: 1px solid var(--line); display: grid; gap: 12px; padding-top: 12px; }
     .currency-evidence { display: grid; gap: 6px; }
+    .currency-evidence h3 { color: var(--primary); font-size: 0.875rem; margin: 6px 0 0; }
     .evidence-detail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); scroll-margin-top: 20px; }
     .evidence-detail > summary { cursor: pointer; font-size: 0.875rem; font-weight: 700; padding: 10px 12px; }
     .evidence-detail > p { padding: 0 12px; }
@@ -470,7 +531,7 @@ function dashboardStyles(): string {
     .cash-flow-dashboard-metric > span { color:var(--muted); font-size:0.8125rem; }
     .cash-flow-dashboard-metric > small { color:var(--muted); line-height:1.4; }
     .cash-flow-dashboard-value { color:var(--primary); font-size:1.15rem; }
-    .next-actions { gap: 12px; }
+    .next-actions { border-top: 1px solid var(--line); display: grid; gap: 10px; padding-top: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
     .quick-links { display: flex; flex-wrap: wrap; gap: 6px; }
     .decision-section { display: grid; gap: 10px; }
@@ -484,8 +545,32 @@ function dashboardStyles(): string {
     .row div > span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
     .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
     .row > strong { text-align: right; white-space: nowrap; }
-    @media (max-width: 1024px) { .currency-summary .sf-summary-grid, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } }
-    @media (max-width: 760px) { .currency-summary .sf-summary-grid, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: 1fr; } .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } .evidence-links { display: grid; } }
+    @media (max-width: 1024px) { .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } .data-quality { padding-left: 10px; } }
+    @media (max-width: 760px) {
+      main { gap: 10px; padding-top: 8px; }
+      .sf-page-container.dashboard-page { gap: 9px; }
+      .dashboard-hero { gap: 4px; }
+      .dashboard-hero .sf-page-header { gap: 2px; }
+      .dashboard-hero .sf-page-header-description { font-size: 0.75rem; line-height: 1.35; }
+      .data-quality { padding: 4px 0 4px 9px; }
+      .data-quality[data-quality="complete"] span { display: none; }
+      .currency-summary { gap: 5px; }
+      .currency-summary .sf-summary-grid, .dashboard-supporting-metrics, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: 1fr; }
+      .currency-summary .sf-summary-grid { gap: 6px; }
+      .dashboard-metric .sf-metric-card { display: grid; grid-template-columns: minmax(0, 1fr); padding: 9px 11px 30px; row-gap: 2px; }
+      .dashboard-metric .sf-metric-card-label { font-size: 0.75rem; }
+      .dashboard-metric .sf-metric-card-value { font-size: clamp(0.875rem, 4vw, 1rem); text-align: left; white-space: nowrap; }
+      .dashboard-metric .sf-metric-card-detail { font-size: 0.75rem; grid-column: 1 / -1; line-height: 1.2; }
+      .dashboard-metric .metric-drilldown { bottom: 8px; left: 11px; font-size: 0.75rem; }
+      .next-actions { gap: 5px; padding-top: 6px; }
+      .next-action-rows .row { padding: 6px 0; }
+      .dashboard-supporting-metric { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 8px 0; }
+      .dashboard-supporting-metric + .dashboard-supporting-metric { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
+      .dashboard-supporting-metric dd { justify-items: end; text-align: right; }
+      .row, .section-heading { align-items: stretch; display: grid; }
+      .row > strong { text-align: left; white-space: normal; }
+      .evidence-links { display: grid; }
+    }
   `;
 }
 

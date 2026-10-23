@@ -8,7 +8,15 @@ const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-export async function runPilotEmptyState({ route, expectedTexts, artifactStem }) {
+export async function runPilotEmptyState({
+  route,
+  expectedTexts,
+  artifactStem,
+  viewports = [
+    [1366, 900],
+    [390, 844],
+  ],
+}) {
   if (!chromePath) {
     throw new Error("CHROME_BIN is required for pilot empty-state validation.");
   }
@@ -37,10 +45,7 @@ export async function runPilotEmptyState({ route, expectedTexts, artifactStem })
       `Fresh profile registration failed with ${registration.status}.`,
     );
 
-    for (const [width, height] of [
-      [1366, 900],
-      [390, 844],
-    ]) {
+    for (const [width, height] of viewports) {
       await setViewport(browser.cdp, width, height);
       await navigate(browser.cdp, `${baseUrl}${route}`);
       await sleep(350);
