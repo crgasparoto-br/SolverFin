@@ -223,8 +223,8 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     state,
   );
   check(
-    state.installmentAmountVisible && state.installmentAmountReadonly,
-    `${label}: occurrence amount is not visible read-only`,
+    state.installmentAmountVisible && !state.installmentAmountReadonly,
+    `${label}: occurrence amount is not visible and editable`,
     state,
   );
   check(
