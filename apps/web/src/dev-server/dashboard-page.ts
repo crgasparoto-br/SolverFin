@@ -481,13 +481,13 @@ function dashboardStyles(): string {
     .currency-summary { display: grid; gap: 8px; scroll-margin-top: 20px; }
     .currency-heading h2 { color: var(--primary); font-size: 1rem; margin: 0; }
     .currency-summary .sf-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .dashboard-supporting-metrics { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
-        .dashboard-supporting-metric { display: grid; gap: 6px; min-width: 0; padding: 10px 14px 10px 0; }
-        .dashboard-supporting-metric + .dashboard-supporting-metric { border-left: 1px solid var(--line); padding-left: 14px; }
-        .dashboard-supporting-metric dt { color: var(--muted); font-size: 0.8125rem; }
-        .dashboard-supporting-metric dd { display: grid; gap: 4px; margin: 0; min-width: 0; }
-        .dashboard-supporting-metric dd strong { color: var(--primary); font-size: 1rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-        .dashboard-supporting-metric dd a { width: fit-content; }
+    .dashboard-supporting-metrics { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
+    .dashboard-supporting-metric { display: grid; gap: 6px; min-width: 0; padding: 10px 14px 10px 0; }
+    .dashboard-supporting-metric + .dashboard-supporting-metric { border-left: 1px solid var(--line); padding-left: 14px; }
+    .dashboard-supporting-metric dt { color: var(--muted); font-size: 0.8125rem; }
+    .dashboard-supporting-metric dd { display: grid; gap: 4px; margin: 0; min-width: 0; }
+    .dashboard-supporting-metric dd strong { color: var(--primary); font-size: 1rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .dashboard-supporting-metric dd a { width: fit-content; }
     .dashboard-metric { min-width: 0; position: relative; }
     .dashboard-metric .sf-metric-card { height: 100%; padding-bottom: 42px; }
     .metric-drilldown, .text-link, .evidence-link { color: var(--primary); font-size: 0.8125rem; font-weight: 700; text-underline-offset: 3px; }
