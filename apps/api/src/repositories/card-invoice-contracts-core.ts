@@ -729,11 +729,26 @@ export async function reverseCardPurchaseForContext(
          order by "createdAt" limit 1`,
       [context.organizationId, context.financialProfileId],
     );
-    if (!categories[0]) {
-      throw new InvoiceContractError(
-        "CARD_REVERSAL_CATEGORY_MISSING",
-        "A categoria de entrada Estornos não foi encontrada. Cadastre-a antes de estornar.",
-        409,
+    // Default category seeding may not have run for this profile. Provision it atomically.
+    let reversalCategoryId = categories[0]?.id;
+    if (!reversalCategoryId) {
+      reversalCategoryId = randomUUID();
+      const parent = await executeQuery<{ id: string }>(
+        `select "id" from "Category" where "organizationId" = $1
+           and "financialProfileId" = $2 and "kind" = 'INCOME'
+           and "normalizedName" = 'reembolsos' and "status" = 'ACTIVE'
+           limit 1`,
+        [context.organizationId, context.financialProfileId],
+      );
+      await executeQuery(
+        `insert into "Category"
+          ("id", "organizationId", "financialProfileId", "parentCategoryId",
+           "name", "normalizedName", "kind", "status", "createdAt", "updatedAt",
+           "createdByUserId", "updatedByUserId")
+         values ($1, $2, $3, $4, 'Estornos', 'estornos', 'INCOME', 'ACTIVE',
+                 now(), now(), $5, $5)`,
+        [reversalCategoryId, context.organizationId, context.financialProfileId,
+         parent[0]?.id ?? null, context.userId],
       );
     }
     createdId = randomUUID();
@@ -747,7 +762,7 @@ export async function reverseCardPurchaseForContext(
          "createdByUserId", "updatedByUserId")
        values ($1,$2,$3,$4,$5,$6,$7,'INCOME','POSTED','MANUAL',$8,$9,$10,$10,$11,$12,$12,$13,$13)`,
       [createdId, context.organizationId, context.financialProfileId, cardId,
-       origin.cardInstrumentId, invoiceId, categories[0].id, reversedAmount,
+       origin.cardInstrumentId, invoiceId, reversalCategoryId, reversedAmount,
        origin.currency, toDateOnly(origin.occurredOn),
        "Estorno: " + origin.description + " " + marker, now, context.userId],
     );
