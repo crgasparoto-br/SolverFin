@@ -587,6 +587,107 @@ export async function reconcileInvoiceInstallmentForContext(
  * A financed purchase has one origin Transaction shared by its schedule; updating
  * Transaction.amountMinor here would corrupt the base purchase and other invoices.
  */
+
+/**
+ * Register a one-off credit against exactly the selected purchase occurrence.
+ * The original purchase/instalment is never mutated. A deterministic origin
+ * marker prevents creating the same credit twice, even on client retries.
+ */
+export async function reverseCardPurchaseForContext(
+  context: TenantContext,
+  cardId: EntityId,
+  transactionId: EntityId,
+  invoiceId: EntityId,
+  installmentId?: EntityId,
+): Promise<{ transactionId: string; invoiceId: string; amountMinor: number }> {
+  const { randomUUID } = await import("node:crypto");
+  let createdId = "";
+  let reversedAmount = 0;
+  await withTransaction(async (executeQuery) => {
+    const invoices = await executeQuery<{ id: string; status: string; currency: string }>(
+      `select "id", "status", "currency" from "Invoice"
+        where "id" = $1 and "cardId" = $2 and "organizationId" = $3
+          and "financialProfileId" = $4 for update`,
+      [invoiceId, cardId, context.organizationId, context.financialProfileId],
+    );
+    if (!invoices[0] || invoices[0].status !== "OPEN") {
+      throw new InvoiceContractError("CARD_REVERSAL_INVOICE_LOCKED", "Somente faturas abertas permitem estorno.", 409);
+    }
+    const source = await executeQuery<{
+      id: string; description: string; amountMinor: number; currency: string;
+      cardInstrumentId: string | null; occurredOn: Date;
+    }>(
+      installmentId
+        ? `select t."id", t."description", i."amountMinor", i."currency",
+                  i."cardInstrumentId", i."dueOn" as "occurredOn"
+             from "Transaction" t join "Installment" i on i."transactionId" = t."id"
+            where t."id" = $1 and i."id" = $2 and i."invoiceId" = $3
+              and t."cardId" = $4 and t."organizationId" = $5 and t."financialProfileId" = $6
+              and i."organizationId" = $5 and i."financialProfileId" = $6`
+        : `select t."id", t."description", t."amountMinor", t."currency",
+                  t."cardInstrumentId", t."occurredOn"
+             from "Transaction" t where t."id" = $1 and t."invoiceId" = $3
+              and t."installmentId" is null and t."cardId" = $4
+              and t."organizationId" = $5 and t."financialProfileId" = $6`,
+      [transactionId, installmentId ?? null, invoiceId, cardId, context.organizationId, context.financialProfileId],
+    );
+    const origin = source[0];
+    if (!origin || !Number.isSafeInteger(Number(origin.amountMinor)) || Number(origin.amountMinor) <= 0 ||
+        origin.currency !== invoices[0].currency) {
+      throw new InvoiceContractError("CARD_REVERSAL_INVALID_SOURCE", "Lançamento não elegível ao estorno.", 409);
+    }
+    const marker = "[estorno:" + transactionId + ":" + (installmentId ?? "unico") + "]";
+    const existing = await executeQuery<{ id: string }>(
+      `select "id" from "Transaction" where "organizationId" = $1 and
+         "financialProfileId" = $2 and "cardId" = $3 and "description" like $4 limit 1`,
+      [context.organizationId, context.financialProfileId, cardId, "%" + marker],
+    );
+    if (existing.length) {
+      throw new InvoiceContractError("CARD_REVERSAL_DUPLICATE", "Este lançamento já foi estornado.", 409);
+    }
+    const categories = await executeQuery<{ id: string }>(
+      `select "id" from "Category" where "organizationId" = $1 and
+         "financialProfileId" = $2 and "normalizedName" = 'estornos'
+         and "kind" = 'INCOME' and "status" = 'ACTIVE'
+         order by "createdAt" limit 1`,
+      [context.organizationId, context.financialProfileId],
+    );
+    if (!categories[0]) {
+      throw new InvoiceContractError("CARD_REVERSAL_CATEGORY_MISSING", "Cadastre a categoria de entrada Estornos para registrar o estorno.", 409);
+    }
+    createdId = randomUUID();
+    reversedAmount = -Number(origin.amountMinor);
+    const now = new Date().toISOString();
+    await executeQuery(
+      `insert into "Transaction"
+        ("id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId",
+         "invoiceId", "categoryId", "kind", "status", "source", "amountMinor", "currency",
+         "occurredOn", "plannedOn", "description", "createdAt", "updatedAt",
+         "createdByUserId", "updatedByUserId")
+       values ($1,$2,$3,$4,$5,$6,$7,'EXPENSE','POSTED','MANUAL',$8,$9,$10,$10,$11,$12,$12,$13,$13)`,
+      [createdId, context.organizationId, context.financialProfileId, cardId,
+       origin.cardInstrumentId, invoiceId, categories[0].id, reversedAmount,
+       origin.currency, toDateOnly(origin.occurredOn),
+       "Estorno: " + origin.description + " " + marker, now, context.userId],
+    );
+    const updated = await executeQuery<{ id: string }>(
+      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4,
+           "updatedAt" = $5 where "id" = $1 and "organizationId" = $2
+           and "financialProfileId" = $3 and "status" = 'OPEN'
+           returning "id"`,
+      [invoiceId, context.organizationId, context.financialProfileId, reversedAmount, now],
+    );
+    if (updated.length !== 1) throw new InvoiceContractError("CARD_REVERSAL_INVOICE_LOCKED", "Fatura não editável.", 409);
+    await insertAuditLogEntry(executeQuery, {
+      organizationId: context.organizationId, financialProfileId: context.financialProfileId,
+      occurredAt: now, actorKind: "user", actorId: context.userId, action: "create",
+      entityKind: "transaction", entityId: createdId,
+      redactedChanges: { reversalOf: "recorded" },
+    });
+  });
+  return { transactionId: createdId, invoiceId, amountMinor: reversedAmount };
+}
+
 export async function adjustInvoiceInstallmentAmountForContext(
   context: TenantContext,
   invoiceId: EntityId,
