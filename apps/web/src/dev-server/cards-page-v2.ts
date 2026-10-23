@@ -898,8 +898,9 @@ function renderPurchaseGroups(
       description: "Ajuste os filtros ou registre uma compra para esta fatura.",
     })}</div>`;
   }
+  const sharedHead = `<div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Instrumento</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>`;
   if (sort !== "date_asc" && sort !== "date_desc") {
-    return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title">
+    return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title"><div class="cards-shared-table-head">${sharedHead}</div>
       ${groups
         .map((group) =>
           renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
@@ -923,7 +924,7 @@ function renderPurchaseGroups(
   const orderedDays = [...days.keys()].sort((left, right) =>
     sort === "date_asc" ? left.localeCompare(right) : right.localeCompare(left),
   );
-  return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title" data-cards-day-groups>
+  return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title" data-cards-day-groups><div class="cards-shared-table-head">${sharedHead}</div>
     ${orderedDays
       .map((date) => {
         const dayGroups = days.get(date) ?? [];
@@ -953,7 +954,6 @@ function renderInstrumentGroup(
   return `<details class="cards-instrument-group" data-instrument-purchase-group${group.id === "__unassigned__" ? "" : ` data-instrument-id="${escapeHtml(group.id)}"`} open>
     <summary><div><strong data-instrument-label>${escapeHtml(group.label)}</strong><span>${formatPurchaseCount(group.purchases.length)}</span></div><div class="cards-instrument-totals">${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</div></summary>
     <div class="cards-purchase-table" role="table" aria-label="Compras de ${escapeHtml(group.label)}">
-      <div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Instrumento</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>
       ${group.purchases
         .map((purchase) =>
           renderPurchaseRow(purchase, group.label, categories, recurrences, invoices, selectedInvoice),
