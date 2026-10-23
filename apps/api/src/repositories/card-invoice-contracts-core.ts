@@ -156,7 +156,7 @@ export async function summarizeInvoiceForContext(
   const card = await findCard(context, invoice.cardId);
   const [totals] = await query<PurchaseTotalsRow>(
     `with invoice_occurrences as (
-       select t."status"::text as "status", t."amountMinor"
+       select t."status"::text as "status", case when t."kind" = 'INCOME' and t."description" like '%[estorno:%' then -t."amountMinor" else t."amountMinor" end as "amountMinor"
          from "Transaction" t
         where t."organizationId" = $1 and t."financialProfileId" = $2
           and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
@@ -733,7 +733,7 @@ export async function reverseCardPurchaseForContext(
       throw new InvoiceContractError("CARD_REVERSAL_CATEGORY_MISSING", "Cadastre a categoria de entrada Estornos para registrar o estorno.", 409);
     }
     createdId = randomUUID();
-    reversedAmount = -Number(origin.amountMinor);
+    reversedAmount = Number(origin.amountMinor);
     const now = new Date().toISOString();
     await executeQuery(
       `insert into "Transaction"
@@ -748,7 +748,7 @@ export async function reverseCardPurchaseForContext(
        "Estorno: " + origin.description + " " + marker, now, context.userId],
     );
     const updated = await executeQuery<{ id: string }>(
-      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4,
+      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" - $4,
            "updatedAt" = $5 where "id" = $1 and "organizationId" = $2
            and "financialProfileId" = $3 and "status" = 'OPEN'
            returning "id"`,
@@ -762,7 +762,7 @@ export async function reverseCardPurchaseForContext(
       redactedChanges: { reversalOf: "added" },
     });
   });
-  return { transactionId: createdId, invoiceId, amountMinor: reversedAmount };
+  return { transactionId: createdId, invoiceId, amountMinor: -reversedAmount };
 }
 
 export async function adjustInvoiceInstallmentAmountForContext(
