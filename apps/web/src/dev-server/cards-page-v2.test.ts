@@ -752,6 +752,44 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.doesNotMatch(sortedByAmount, /data-cards-day-groups/);
   assert.match(sortedByAmount, /data-instrument-purchase-group/);
+
+  // #742: a locked invoice prevents editing the origin, not creating an independent clone.
+  // Use a paid invoice rather than changing the source purchase into an editable fixture.
+  const openInvoiceFetch = globalThis.fetch;
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const path = new URL(String(input)).pathname;
+    if (path === "/api/invoices" || path === "/api/invoices/invoice-aug/summary") {
+      const original = await openInvoiceFetch(input);
+      const body = await original.json();
+      if (path === "/api/invoices") {
+        body.invoices = body.invoices.map((invoice: { id: string; status: string }) =>
+          invoice.id === "invoice-aug" ? { ...invoice, status: "paid" } : invoice,
+        );
+      } else {
+        body.summary.status = "paid";
+      }
+      return jsonResponse(body);
+    }
+    return openInvoiceFetch(input);
+  };
+  try {
+    const paidInvoice = await renderCardsPageV2(
+      "session-token",
+      new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug"),
+    );
+    assert.match(paidInvoice, /data-edit-purchase="purchase-hotel" disabled/);
+    assert.match(
+      paidInvoice,
+      /data-clone-purchase="purchase-hotel" data-clone-source-locked="true">/,
+    );
+    assert.match(
+      paidInvoice,
+      /cloneButton\.dataset\.cloneSourceLocked === "true" \? localToday\(\) : purchase\.occurredOn/,
+    );
+    assert.match(paidInvoice, /data-delete-purchase="purchase-hotel" disabled/);
+  } finally {
+    globalThis.fetch = openInvoiceFetch;
+  }
 }
 
 async function cardsA3BlocksNewPurchasesUntilCardCurrencyIsConfigured(): Promise<void> {
