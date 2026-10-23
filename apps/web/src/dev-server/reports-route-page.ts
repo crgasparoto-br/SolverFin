@@ -1,4 +1,5 @@
 import { renderMoney } from "../design-system/money.js";
+import { renderButton } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import {
   renderAnalysisHighlights,
@@ -11,6 +12,7 @@ import { renderCashFlowProjectionView } from "./cash-flow-projection-view.js";
 import { renderInstallmentsView } from "./reports-installments-view.js";
 import {
   escapeReportHtml as escapeHtml,
+  renderReportCurrencyOptions,
   renderReportHeading as renderHeading,
   renderReportState as renderState,
   renderReportsShell as renderShell,
@@ -18,21 +20,27 @@ import {
   type ReportsView,
 } from "./reports-route-page-shared.js";
 
+import {
+  buildAccountsApiPath,
+  buildCreditCardAccountsApiPath,
+  buildEvolutionApiPath,
+  deriveEvolutionStart,
+  isEvolutionEndRepresentable,
+  isEvolutionStartValid,
+  isInterval,
+  nonEmpty,
+  safeId,
+  validateEvolutionEnd,
+  validateEvolutionStart,
+  type EvolutionFilters,
+  type ReportInterval,
+} from "./reports-evolution-routing-helpers.js";
+
 export type { ReportsView } from "./reports-route-page-shared.js";
-type ReportInterval = "monthly" | "annual" | "rolling-year";
 
 interface ViewResolution {
   view?: ReportsView;
   error?: string;
-}
-
-interface EvolutionFilters {
-  interval: ReportInterval;
-  start: string;
-  periods: number;
-  profileId?: string;
-  accountId?: string;
-  cardId?: string;
 }
 
 interface EvolutionFilterFormValues {
@@ -43,6 +51,7 @@ interface EvolutionFilterFormValues {
   profileId?: string;
   accountId: string;
   cardId: string;
+  currency: string;
   invalid: {
     interval: boolean;
     start: boolean;
@@ -50,6 +59,7 @@ interface EvolutionFilterFormValues {
     accountId: boolean;
     cardId: boolean;
     sourceConflict: boolean;
+    currency: boolean;
   };
 }
 
@@ -229,6 +239,7 @@ async function renderCategoryEvolutionView(
           "api-error",
           "Não foi possível carregar contas e cartões",
           `${sourceError} Tente novamente antes de consultar o relatório.`,
+          `${url.pathname}${url.search}`,
         ) +
         renderCategoryEvolutionRuntime(),
     );
@@ -259,23 +270,37 @@ async function renderCategoryEvolutionView(
           "api-error",
           "Não foi possível carregar o relatório",
           `${reportResult.error} Revise os filtros ou tente novamente.`,
+          `${url.pathname}${url.search}`,
         ) +
         renderCategoryEvolutionRuntime(),
     );
   }
 
   const report = reportResult.data.report;
-  if (report.currencyBlocks.length === 0) {
+  const readyForm = renderEvolutionFilterForm(
+    formValuesFromFilters(filters),
+    activeAccounts,
+    availableCards,
+    report.currencyBlocks.map((block) => block.currency),
+  );
+  const visibleCurrencyBlocks = filters.currency
+    ? report.currencyBlocks.filter((block) => block.currency === filters.currency)
+    : report.currencyBlocks;
+  if (visibleCurrencyBlocks.length === 0) {
     return renderShell(
       heading +
         navigation +
-        form +
+        readyForm +
         renderState(
           "empty",
-          "Nenhum lançamento realizado no período",
-          "Os períodos continuam disponíveis. Ajuste o início, a quantidade, a conta ou o cartão para consultar outro recorte.",
+          filters.currency
+            ? `Nenhum lançamento em ${filters.currency} no período`
+            : "Nenhum lançamento realizado no período",
+          filters.currency
+            ? "Esta moeda não tem lançamentos no recorte. Selecione Todas as moedas ou ajuste os filtros para consultar outro período."
+            : "Os períodos continuam disponíveis. Ajuste o início, a quantidade, a conta ou o cartão para consultar outro recorte.",
         ) +
-        renderEmptyEvolutionMatrix(report) +
+        renderEmptyEvolutionMatrix(report, filters.currency) +
         renderCategoryEvolutionRuntime(),
     );
   }
@@ -283,8 +308,8 @@ async function renderCategoryEvolutionView(
   return renderShell(
     heading +
       navigation +
-      form +
-      `<div data-report-state="ready" class="currency-report-list">${report.currencyBlocks
+      readyForm +
+      `<div data-report-state="ready" class="currency-report-list">${visibleCurrencyBlocks
         .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex))
         .join("")}</div>` +
       renderCategoryEvolutionRuntime(),
@@ -320,6 +345,7 @@ function renderCategoryEvolutionAnalysis(
       },
       {
         label: "Resultado",
+        emphasis: true,
         primaryHtml: renderMoney({
           amountMinor: analysis.summary.resultMinor,
           currency: analysis.currency,
@@ -341,6 +367,8 @@ function renderCategoryEvolutionAnalysis(
         ...point,
         currency: analysis.currency,
       })),
+      "Resultado por período",
+      "grid",
     ),
     highlightsHtml: renderAnalysisHighlights({
       currency: analysis.currency,
@@ -367,6 +395,7 @@ function renderEvolutionFilterForm(
   filters: EvolutionFilterFormValues,
   accounts: readonly ReportAccount[],
   cards: readonly ReportCreditCardAccount[],
+  currencies: readonly string[] = [],
 ): string {
   const startInputType = filters.invalid.start
     ? "text"
@@ -409,6 +438,7 @@ function renderEvolutionFilterForm(
     .join("");
   const sourceInvalid =
     filters.invalid.accountId || filters.invalid.cardId || filters.invalid.sourceConflict;
+  const currencyOptions = renderReportCurrencyOptions(filters.currency || "all", currencies);
 
   return `
     <section class="panel report-filter-panel" aria-label="Filtros da evolução por categoria">
@@ -423,7 +453,7 @@ function renderEvolutionFilterForm(
           ${intervalSwitchLink("rolling-year", "Anual com início móvel", filters)}
           ${filters.invalid.interval ? `<p class="filter-invalid-value" data-invalid-filter="interval">Valor informado: <code>${escapeHtml(filters.intervalValue)}</code></p>` : ""}
         </fieldset>
-        <label for="report-origin">Conta ou cartão
+        <label class="report-origin-filter" for="report-origin">Conta ou cartão
           <select id="report-origin" name="origin"${sourceInvalid ? ' aria-invalid="true" data-invalid-filter="origin"' : ""}>
             <option value=""${selectedOrigin ? "" : " selected"}>Todas as contas e cartões</option>
             <optgroup label="Contas">${unavailableAccountOption}${accountOptions}</optgroup>
@@ -432,7 +462,12 @@ function renderEvolutionFilterForm(
         </label>
         <label for="report-start">Início${startControl}</label>
         <label for="report-periods">Período<input id="report-periods" type="${periodsInputType}"${periodsConstraints} name="periods" value="${escapeHtml(filters.periods)}"${filters.invalid.periods ? ' aria-invalid="true" data-invalid-filter="periods"' : ""} required /></label>
-        <button type="submit">Carregar</button>
+        <label class="report-currency-field" for="report-currency">Moeda
+          <select id="report-currency" name="currency"${filters.invalid.currency ? ' aria-invalid="true" data-invalid-filter="currency"' : ""}>
+            ${currencyOptions}
+          </select>
+        </label>
+        ${renderButton({ label: "Atualizar relatório", type: "submit", className: "report-apply-button" })}
       </form>
       <p class="filter-hint">Todas as contas e cartões mantêm a visão geral. O estado de expansão da árvore reinicia ao aplicar filtros.</p>
     </section>`;
@@ -451,6 +486,7 @@ function intervalSwitchLink(
   if (filters.cardId && !filters.invalid.cardId && !filters.invalid.sourceConflict) {
     params.set("cardId", filters.cardId);
   }
+  if (filters.currency && !filters.invalid.currency) params.set("currency", filters.currency);
   return `<a href="/relatorios?${params.toString()}"${
     !filters.invalid.interval && value === filters.interval ? ' aria-current="page"' : ""
   }>${escapeHtml(label)}</a>`;
@@ -487,6 +523,7 @@ function renderCurrencyMatrix(
   return `<div class="evolution-block">
       <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução em ${escapeHtml(block.currency)}">
         <table class="evolution-table" data-category-tree="${blockIndex}">
+          <caption class="sr-only">Evolução por categoria em ${escapeHtml(block.currency)} por período, média e total</caption>
           <thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods
             .map(renderPeriodHeader)
             .join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
@@ -514,12 +551,18 @@ function renderPeriodHeader(period: CategoryEvolutionReport["periods"][number]):
   return `<th scope="col"><span aria-hidden="true">${escapeHtml(period.label)}</span><span class="sr-only">${escapeHtml(period.accessibleLabel)}</span></th>`;
 }
 
-function renderEmptyEvolutionMatrix(report: CategoryEvolutionReport): string {
+function renderEmptyEvolutionMatrix(
+  report: CategoryEvolutionReport,
+  selectedCurrency?: string,
+): string {
+  const heading = selectedCurrency
+    ? `Matriz por categoria - ${escapeHtml(selectedCurrency)}`
+    : "Matriz sem movimentos e sem moeda definida";
   return `
-    <section class="panel evolution-block" aria-label="Matriz sem movimentos e sem moeda definida">
-      <p class="sr-only">Não há moeda associada a movimentos neste período.</p>
-      <div class="evolution-table-scroll" tabindex="0" aria-label="Matriz de evolução sem movimentos">
-        <table class="evolution-table"><thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods.map(renderPeriodHeader).join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
+    <section class="panel evolution-block" aria-label="${heading}">
+      ${selectedCurrency ? `<h3 class="report-empty-matrix-heading">${heading}</h3>` : '<p class="sr-only">Não há moeda associada a movimentos neste período.</p>'}
+      <div class="evolution-table-scroll" tabindex="0" aria-label="${selectedCurrency ? `Matriz de evolução em ${escapeHtml(selectedCurrency)} sem movimentos` : "Matriz de evolução sem movimentos"}">
+        <table class="evolution-table"><caption class="sr-only">${selectedCurrency ? `Evolução por categoria em ${escapeHtml(selectedCurrency)} sem movimentos` : "Evolução sem movimentos no recorte selecionado"}</caption><thead><tr><th scope="col" class="sticky-description">Descrição</th>${report.periods.map(renderPeriodHeader).join("")}<th scope="col">Média</th><th scope="col">Total</th></tr></thead>
         <tbody>${renderNeutralSeriesRow("Receitas", report.periodCount, "income")}${renderNeutralSeriesRow("Despesas", report.periodCount, "expense")}${renderNeutralSeriesRow("Resultado", report.periodCount, "result")}</tbody></table>
       </div>
     </section>`;
@@ -638,6 +681,9 @@ function formatPercentage(value: number): string {
 
 function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
   const draft = readEvolutionFilterDraft(url, referenceDate);
+  if (draft.invalid.currency) {
+    throw new Error("Moeda inválida. Selecione uma moeda disponível ou Todas as moedas.");
+  }
   const requestedInterval = url.searchParams.get("interval");
   if (requestedInterval !== null && !isInterval(requestedInterval)) {
     throw new Error("Intervalo inválido. Escolha mensal, anual ou anual com início móvel.");
@@ -673,6 +719,9 @@ function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
     ...(draft.profileId ? { profileId: draft.profileId } : {}),
     ...(draft.accountId ? { accountId: draft.accountId.toLowerCase() } : {}),
     ...(draft.cardId ? { cardId: draft.cardId.toLowerCase() } : {}),
+    ...(draft.currency && draft.currency !== "all"
+      ? { currency: draft.currency.toUpperCase() }
+      : {}),
   };
 }
 
@@ -695,6 +744,7 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
   const profileId = nonEmpty(url.searchParams.get("profileId"));
   const requestedAccountId = url.searchParams.get("accountId");
   const requestedCardId = url.searchParams.get("cardId");
+  const requestedCurrency = url.searchParams.get("currency") ?? "";
   const accountId = nonEmpty(requestedAccountId) ?? "";
   const cardId = nonEmpty(requestedCardId) ?? "";
   const invalidStart =
@@ -711,6 +761,7 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
     ...(profileId ? { profileId } : {}),
     accountId,
     cardId,
+    currency: requestedCurrency,
     invalid: {
       interval: requestedInterval !== null && !isInterval(requestedInterval),
       start: invalidStart,
@@ -718,6 +769,10 @@ function readEvolutionFilterDraft(url: URL, referenceDate: Date): EvolutionFilte
       accountId: accountId !== "" && !UUID_PATTERN.test(accountId),
       cardId: cardId !== "" && !UUID_PATTERN.test(cardId),
       sourceConflict: requestedAccountId !== null && requestedCardId !== null,
+      currency:
+        requestedCurrency !== "" &&
+        requestedCurrency !== "all" &&
+        !/^[A-Za-z]{3}$/.test(requestedCurrency),
     },
   };
 }
@@ -731,6 +786,7 @@ function formValuesFromFilters(filters: EvolutionFilters): EvolutionFilterFormVa
     ...(filters.profileId ? { profileId: filters.profileId } : {}),
     accountId: filters.accountId ?? "",
     cardId: filters.cardId ?? "",
+    currency: filters.currency ?? "",
     invalid: {
       interval: false,
       start: false,
@@ -738,91 +794,7 @@ function formValuesFromFilters(filters: EvolutionFilters): EvolutionFilterFormVa
       accountId: false,
       cardId: false,
       sourceConflict: false,
+      currency: false,
     },
   };
-}
-
-function isEvolutionStartValid(interval: ReportInterval, start: string): boolean {
-  if (interval === "annual") return /^\d{4}$/.test(start) && Number(start) >= 1;
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(start) && Number(start.slice(0, 4)) >= 1;
-}
-
-function validateEvolutionStart(interval: ReportInterval, start: string): void {
-  if (isEvolutionStartValid(interval, start)) return;
-  if (interval === "annual") {
-    throw new Error("Início inválido. Informe um ano no formato AAAA.");
-  }
-  throw new Error("Início inválido. Informe um mês no formato AAAA-MM.");
-}
-
-function isEvolutionEndRepresentable(
-  interval: ReportInterval,
-  start: string,
-  periods: number,
-): boolean {
-  if (!isEvolutionStartValid(interval, start)) return false;
-  if (interval === "annual") return Number(start) + periods - 1 <= 9999;
-  const year = Number(start.slice(0, 4));
-  const month = Number(start.slice(5, 7));
-  const offset = interval === "monthly" ? periods - 1 : periods * 12 - 1;
-  return addMonths(year, month, offset).year <= 9999;
-}
-
-function validateEvolutionEnd(interval: ReportInterval, start: string, periods: number): void {
-  if (!isEvolutionEndRepresentable(interval, start, periods)) {
-    throw new Error("O período calculado ultrapassa o ano 9999.");
-  }
-}
-
-function deriveEvolutionStart(
-  interval: ReportInterval,
-  periods: number,
-  referenceDate: Date,
-): string {
-  const year = referenceDate.getUTCFullYear();
-  const month = referenceDate.getUTCMonth() + 1;
-  if (interval === "annual") return String(year - periods + 1).padStart(4, "0");
-  const offset = interval === "monthly" ? -(periods - 1) : -(periods * 12 - 1);
-  const result = addMonths(year, month, offset);
-  return `${String(result.year).padStart(4, "0")}-${String(result.month).padStart(2, "0")}`;
-}
-
-function addMonths(year: number, month: number, offset: number): { year: number; month: number } {
-  const absolute = year * 12 + month - 1 + offset;
-  return { year: Math.floor(absolute / 12), month: (((absolute % 12) + 12) % 12) + 1 };
-}
-
-function buildAccountsApiPath(profileId: string | undefined): string {
-  const params = new URLSearchParams({ status: "active" });
-  if (profileId) params.set("profileId", profileId);
-  return `/api/accounts?${params.toString()}`;
-}
-
-function buildCreditCardAccountsApiPath(profileId: string | undefined): string {
-  const params = new URLSearchParams({ status: "all" });
-  if (profileId) params.set("profileId", profileId);
-  return `/api/credit-card-accounts?${params.toString()}`;
-}
-
-function buildEvolutionApiPath(filters: EvolutionFilters): string {
-  return `/api/reports/category-evolution?${new URLSearchParams({
-    interval: filters.interval,
-    start: filters.start,
-    periods: String(filters.periods),
-    ...(filters.profileId ? { profileId: filters.profileId } : {}),
-    ...(filters.accountId ? { accountId: filters.accountId } : {}),
-    ...(filters.cardId ? { cardId: filters.cardId } : {}),
-  }).toString()}`;
-}
-
-function isInterval(value: string | null): value is ReportInterval {
-  return value === "monthly" || value === "annual" || value === "rolling-year";
-}
-
-function nonEmpty(value: string | null): string | undefined {
-  return value?.trim() || undefined;
-}
-
-function safeId(value: string): string {
-  return value.replace(/[^a-zA-Z0-9_-]/g, "-");
 }

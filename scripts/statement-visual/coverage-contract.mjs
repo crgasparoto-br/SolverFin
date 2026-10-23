@@ -362,6 +362,7 @@ const simpleScenarios = [
   ["non-idempotent-ambiguity", "scripts/statement-visual/issue-553-non-idempotent-ambiguity.mjs", "/lancamentos", "A2", "ambiguous", "dialog", "no-blind-retry", "non-idempotent"],
   ["reports-category-controls", "scripts/statement-visual/issue-546-reports-category-controls.mjs", "/relatorios", "A5", "filtered", "responsive", "filters", "category-controls"],
   ["reports-selected-view-navigation", "scripts/statement-visual/issue-546-selected-view-navigation.mjs", "/relatorios", "A5", "normal", "responsive", "navigation", "selected-view"],
+  ["reports-718-visual-acceptance", "scripts/statement-visual/reports-718-visual-acceptance.mjs", "/relatorios", "A5", "normal", "desktop-mobile", "currency-isolation-long-label-overflow", "BRL-USD-long-category"],
   ["reports-installments-regression", "scripts/statement-visual/reports-installments-regression.mjs", "/relatorios", "A5", "normal", "responsive", "regression", "installments"],
   ["settings-interface", "scripts/statement-visual/settings-interface.mjs", "/configuracoes", "A4", "normal", "desktop-mobile", "form-flow", "settings"],
   ["settings-interface-reservations", "scripts/statement-visual/settings-interface-reservations.mjs", "/configuracoes", "A4", "reserved", "responsive", "form-flow", "reserved-fields"],

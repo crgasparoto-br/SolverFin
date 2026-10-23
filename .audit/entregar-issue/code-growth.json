@@ -2,8 +2,8 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
-  "base_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
+  "subject_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
+  "base_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -18,19 +18,125 @@
   },
   "files": [
     {
-      "path": "apps/web/src/dev-server/statement-golden-refinements.ts",
-      "lines_before": 678,
-      "lines_after": 687
+      "path": "apps/web/src/dev-server/cards-page-v2-styles.ts",
+      "lines_before": 202,
+      "lines_after": 202
     },
     {
-      "path": "scripts/statement-visual/statement-contextual-assertions.mjs",
+      "path": "apps/web/src/dev-server/cards-page-v2.ts",
+      "lines_before": 1754,
+      "lines_after": 1763
+    },
+    {
+      "path": "apps/web/src/dev-server/cash-flow-projection-view.ts",
+      "lines_before": 262,
+      "lines_after": 325
+    },
+    {
+      "path": "apps/web/src/dev-server/operational-installments.ts",
+      "lines_before": 825,
+      "lines_after": 829
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-analysis-archetype.ts",
+      "lines_before": 215,
+      "lines_after": 219
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-evolution-routing-helpers.ts",
       "lines_before": null,
-      "lines_after": 75
+      "lines_after": 100
     },
     {
-      "path": "scripts/statement-visual/statement-contextual-surfaces.mjs",
-      "lines_before": 520,
-      "lines_after": 532
+      "path": "apps/web/src/dev-server/reports-installments-format.ts",
+      "lines_before": null,
+      "lines_after": 58
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-installments-view.ts",
+      "lines_before": 474,
+      "lines_after": 487
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-route-page-shared.ts",
+      "lines_before": 62,
+      "lines_after": 114
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-route-page-styles.ts",
+      "lines_before": 129,
+      "lines_after": 252
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-route-page.ts",
+      "lines_before": 828,
+      "lines_after": 800
+    },
+    {
+      "path": "scripts/statement-visual/coverage-contract.mjs",
+      "lines_before": 447,
+      "lines_after": 448
+    },
+    {
+      "path": "scripts/statement-visual/issue-539-operational-installments.mjs",
+      "lines_before": 685,
+      "lines_after": 674
+    },
+    {
+      "path": "scripts/statement-visual/issue-546-reports-category-controls.mjs",
+      "lines_before": 344,
+      "lines_after": 351
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
+      "lines_before": 685,
+      "lines_after": 689
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-semantic-interactions.mjs",
+      "lines_before": 705,
+      "lines_after": 718
+    },
+    {
+      "path": "scripts/statement-visual/issue-662-card-installment-purchase.mjs",
+      "lines_before": 401,
+      "lines_after": 420
+    },
+    {
+      "path": "scripts/statement-visual/report-page-viewport.mjs",
+      "lines_before": null,
+      "lines_after": 98
+    },
+    {
+      "path": "scripts/statement-visual/reports-718-behavior-evidence.mjs",
+      "lines_before": null,
+      "lines_after": 143
+    },
+    {
+      "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
+      "lines_before": null,
+      "lines_after": 305,
+      "justification": "The existing integrated Chrome cash-flow scenario covers currency, SSR, local scrolling, keyboard-ready layouts and three analysis layers; five additional lines assert selected-filter legibility at a dedicated tablet viewport without creating a redundant second fixture, browser session or test file. Keep these checks co-located with the established end-to-end scenario."
+    },
+    {
+      "path": "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
+      "lines_before": null,
+      "lines_after": 238
+    },
+    {
+      "path": "scripts/statement-visual/reports-718-visual-acceptance.mjs",
+      "lines_before": null,
+      "lines_after": 1
+    },
+    {
+      "path": "scripts/statement-visual/reports-category-evolution.mjs",
+      "lines_before": 315,
+      "lines_after": 494
+    },
+    {
+      "path": "scripts/statement-visual/reports-installments-regression.mjs",
+      "lines_before": 369,
+      "lines_after": 442
     }
   ],
   "blocking_files": []

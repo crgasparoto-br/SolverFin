@@ -1,9 +1,14 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { renderMoney } from "../design-system/money.js";
+import { renderButton } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
+import { renderResultTrend } from "./reports-analysis-archetype.js";
 import {
   escapeReportHtml as escapeHtml,
+  parseReportCurrencyFilter,
+  renderReportCurrencyOptions,
+  selectReportCurrencyBlocks,
   renderReportHeading as renderHeading,
   renderReportState as renderState,
   renderReportsShell as renderShell,
@@ -46,6 +51,7 @@ interface CashFlowFilters {
   referenceDate: string;
   horizonDays: 30 | 60 | 90;
   profileId?: string;
+  currency?: string;
 }
 
 export async function renderCashFlowProjectionView(
@@ -57,6 +63,7 @@ export async function renderCashFlowProjectionView(
     url.searchParams.get("referenceDate") ?? referenceDate.toISOString().slice(0, 10);
   const draftHorizon = url.searchParams.get("horizonDays") ?? "30";
   const profileId = url.searchParams.get("profileId") ?? undefined;
+  const draftCurrency = url.searchParams.get("currency");
   const heading = renderHeading(
     "Projeção de caixa",
     "Acompanhe o saldo projetado dia a dia, sempre separado por moeda.",
@@ -65,16 +72,18 @@ export async function renderCashFlowProjectionView(
 
   let filters: CashFlowFilters;
   try {
+    const requestedCurrency = parseReportCurrencyFilter(draftCurrency);
     filters = {
       referenceDate: parseReferenceDate(draftReferenceDate),
       horizonDays: parseHorizon(draftHorizon),
       ...(profileId ? { profileId } : {}),
+      ...(requestedCurrency ? { currency: requestedCurrency } : {}),
     };
   } catch (error) {
     return renderShell(
       heading +
         navigation +
-        renderFilters(draftReferenceDate, draftHorizon, profileId) +
+        renderFilters(draftReferenceDate, draftHorizon, profileId, draftCurrency ?? "all") +
         renderState(
           "filter-error",
           "Revise os filtros",
@@ -88,21 +97,35 @@ export async function renderCashFlowProjectionView(
     return renderShell(
       heading +
         navigation +
-        renderFilters(filters.referenceDate, String(filters.horizonDays), filters.profileId) +
+        renderFilters(
+          filters.referenceDate,
+          String(filters.horizonDays),
+          filters.profileId,
+          filters.currency,
+        ) +
         renderState(
           "api-error",
           "Não foi possível carregar a projeção",
           `${result.error} Tente novamente antes de tomar uma decisão financeira.`,
+          `${url.pathname}${url.search}`,
         ),
     );
   }
 
   const projection = result.data;
+  const selection = selectReportCurrencyBlocks(projection.currencyBlocks, filters.currency);
+  const form = renderFilters(
+    filters.referenceDate,
+    String(filters.horizonDays),
+    filters.profileId,
+    selection.currency,
+    projection.currencyBlocks.map((block) => block.currency),
+  );
   if (projection.currencyBlocks.length === 0) {
     return renderShell(
       heading +
         navigation +
-        renderFilters(filters.referenceDate, String(filters.horizonDays), filters.profileId) +
+        form +
         renderState(
           "empty",
           "Nenhuma posição financeira disponível",
@@ -111,17 +134,35 @@ export async function renderCashFlowProjectionView(
     );
   }
 
+  if (selection.visible.length === 0) {
+    return renderShell(
+      heading +
+        navigation +
+        form +
+        renderState(
+          "empty",
+          `Nenhuma posição financeira em ${selection.currency}`,
+          "Selecione outra moeda ou Todas as moedas para comparar as projeções.",
+        ),
+    );
+  }
   return renderShell(
     heading +
       navigation +
-      renderFilters(filters.referenceDate, String(filters.horizonDays), filters.profileId) +
-      `<div data-report-state="ready" class="cash-flow-report-list">${projection.currencyBlocks
+      form +
+      `<div data-report-state="ready" class="cash-flow-report-list">${selection.visible
         .map((block) => renderCurrencyBlock(projection, block))
         .join("")}</div>`,
   );
 }
 
-function renderFilters(referenceDate: string, horizonDays: string, profileId?: string): string {
+function renderFilters(
+  referenceDate: string,
+  horizonDays: string,
+  profileId?: string,
+  currency = "all",
+  availableCurrencies: readonly string[] = [],
+): string {
   return `
     <section class="panel report-filter-panel">
       <form class="report-filters cash-flow-filters" method="get" action="/relatorios">
@@ -140,7 +181,10 @@ function renderFilters(referenceDate: string, horizonDays: string, profileId?: s
               .join("")}
           </select>
         </label>
-        <button type="submit">Atualizar projeção</button>
+        <label for="cash-flow-currency">Moeda
+          <select id="cash-flow-currency" name="currency">${renderReportCurrencyOptions(currency, availableCurrencies)}</select>
+        </label>
+        ${renderButton({ label: "Atualizar projeção", type: "submit", className: "report-apply-button" })}
       </form>
       <p class="filter-hint">A data de referência compõe o saldo inicial; a série começa no dia seguinte.</p>
     </section>
@@ -154,15 +198,10 @@ function renderCurrencyBlock(
   const key = escapeHtml(block.currency.toLowerCase());
   return `
     <section class="report-analysis-block cash-flow-block" id="cash-flow-${key}" aria-labelledby="cash-flow-title-${key}">
-      <div class="report-analysis-heading">
-        <div>
-          <p class="eyebrow">Moeda</p>
-          <h2 id="cash-flow-title-${key}">${escapeHtml(block.currency)}</h2>
-          <p class="muted">${projection.horizonDays} dias, de ${escapeHtml(formatDateOnly(projection.from))} a ${escapeHtml(formatDateOnly(projection.to))}.</p>
-        </div>
-        <span>Referência: ${escapeHtml(formatDateOnly(projection.referenceDate))}</span>
-      </div>
-      <div class="cash-flow-summary-grid" aria-label="Resumo projetado em ${escapeHtml(block.currency)}">
+      <section class="report-analysis-layer" data-analysis-layer="summary" aria-label="Resumo projetado em ${escapeHtml(block.currency)}">
+        <div class="report-layer-topline"><div class="report-layer-heading"><p class="eyebrow">Resumo</p><h2 id="cash-flow-title-${key}">Posição de caixa - ${escapeHtml(block.currency)}</h2></div><span class="report-period-count">Referência: ${escapeHtml(formatDateOnly(projection.referenceDate))}</span></div>
+        <p class="report-visual-legend">${projection.horizonDays} dias, de ${escapeHtml(formatDateOnly(projection.from))} a ${escapeHtml(formatDateOnly(projection.to))}.</p>
+        <div class="cash-flow-summary-grid">
         <article class="report-summary-metric" data-tone="information">
           <span>Saldo inicial</span>
           <strong>${renderMoney({ amountMinor: block.openingBalanceMinor, currency: block.currency })}</strong>
@@ -171,15 +210,23 @@ function renderCurrencyBlock(
           <span>Saldo no fim do horizonte</span>
           <strong>${renderMoney({ amountMinor: block.closingBalanceMinor, currency: block.currency })}</strong>
         </article>
-      </div>
-      <div class="report-analysis-layer report-detail-layer">
+        </div>
+      </section>
+      <section class="report-analysis-layer" data-analysis-layer="visualization" aria-label="Visualização em ${escapeHtml(block.currency)}">
+        <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>Evolução do saldo projetado - ${escapeHtml(block.currency)}</h3></div>
+        <p class="report-visual-legend">Amostra de saldos diários. As barras representam a magnitude relativa; a tabela seguinte preserva todos os dias e movimentos.</p>
+        ${renderCashFlowTrend(block)}
+      </section>
+      <div class="report-analysis-layer report-detail-layer" data-analysis-layer="detail" aria-label="Detalhe em ${escapeHtml(block.currency)}">
         <div class="report-layer-heading">
           <p class="eyebrow">Detalhe diário</p>
-          <h3>Série contínua</h3>
+          <h3>Série contínua - ${escapeHtml(block.currency)}</h3>
           <p class="muted">Dias sem movimento repetem o saldo anterior. Os valores abaixo vêm prontos do cálculo canônico.</p>
         </div>
         <div class="evolution-table-scroll" tabindex="0" aria-label="Projeção diária em ${escapeHtml(block.currency)}">
           <table class="cash-flow-table">
+            <caption class="sr-only">Projeção diária completa em ${escapeHtml(block.currency)}, com movimento líquido, saldo e evidências</caption>
+            <colgroup><col class="cash-flow-col-date" /><col class="cash-flow-col-movement" /><col class="cash-flow-col-balance" /><col class="cash-flow-col-evidence" /></colgroup>
             <thead><tr><th scope="col">Data</th><th scope="col">Movimento líquido</th><th scope="col">Saldo projetado</th><th scope="col">Evidências</th></tr></thead>
             <tbody>${block.points.map((point) => renderPoint(point, block.currency)).join("")}</tbody>
           </table>
@@ -189,9 +236,25 @@ function renderCurrencyBlock(
   `;
 }
 
+function renderCashFlowTrend(block: CashFlowProjectionCurrencyBlock): string {
+  const step = Math.max(1, Math.ceil(block.points.length / 7));
+  const snapshots = block.points.filter(
+    (_, index) => index % step === 0 || index === block.points.length - 1,
+  );
+  return renderResultTrend(
+    snapshots.map((point) => ({
+      label: formatDateOnly(point.date),
+      accessibleLabel: formatDateOnly(point.date),
+      amountMinor: point.closingBalanceMinor,
+      currency: block.currency,
+    })),
+    `Saldo projetado em ${block.currency} por data selecionada`,
+  );
+}
+
 function renderPoint(point: CashFlowProjectionPoint, currency: string): string {
   return `
-    <tr>
+    <tr class="cash-flow-day-row" data-movement-count="${point.movements.length}">
       <th scope="row"><time datetime="${escapeHtml(point.date)}">${escapeHtml(formatDateOnly(point.date))}</time></th>
       <td>${renderMoney({ amountMinor: point.netMovementMinor, currency })}</td>
       <td><strong>${renderMoney({ amountMinor: point.closingBalanceMinor, currency })}</strong></td>
@@ -208,7 +271,7 @@ function renderEvidence(
   return movements
     .map((movement) => {
       const href = evidenceHref(movement, currency);
-      return `<div class="cash-flow-evidence" data-commitment-id="${escapeHtml(movement.commitmentId)}"><span><strong>${escapeHtml(movement.description)}</strong><small>${sourceLabel(movement.source.kind)}</small></span>${
+      return `<div class="cash-flow-evidence" data-commitment-id="${escapeHtml(movement.commitmentId)}"><span class="cash-flow-evidence-main"><strong>${escapeHtml(movement.description)}</strong><small>${sourceLabel(movement.source.kind)}</small></span>${
         href ? `<a class="text-link" href="${escapeHtml(href)}">Ver origem</a>` : ""
       }</div>`;
     })

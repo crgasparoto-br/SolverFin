@@ -191,8 +191,11 @@ jobs:
       - name: Diagnose Prettier drift without weakening formatting gate
         if: ${{ failure() && steps.formatting.outcome == 'failure' }}
         run: |
-          npx prettier apps/web/src/dev-server/transactions-page-v2.test.ts --write
-          git --no-pager diff -- apps/web/src/dev-server/transactions-page-v2.test.ts
+          # Diagnostic only: the strict formatting gate already failed above.
+          # Show the exact formatting diff, for any file, without committing changes.
+          npx prettier . --write >/dev/null
+          git --no-pager diff --stat
+          git --no-pager diff -- . | sed -n '1,500p'
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run prisma:generate
@@ -224,3 +227,15 @@ jobs:
         run: node --test scripts/ci-gate.test.mjs
       - name: Enforce exactly one risk path
         run: node scripts/ci-gate.mjs
+
+  repository_gate:
+    name: Repository CI gate
+    needs: [gate]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    env:
+      LEGACY_GATE_RESULT: ${{ needs.gate.result }}
+    steps:
+      - name: Require full deterministic CI success
+        run: test "$LEGACY_GATE_RESULT" = "success"

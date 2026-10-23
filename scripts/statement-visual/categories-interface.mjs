@@ -1,3 +1,15 @@
+import { state as categoryVisualState } from "./categories-visual-state.mjs";
+import {
+  validateDesktop,
+  validateSearch,
+  validateDesktopModal,
+} from "./categories-visual-desktop.mjs";
+import {
+  validateCategoryMutationFailures,
+  validateCategoryCrud,
+  validateSidebarThemeParity,
+} from "./categories-visual-operations.mjs";
+import { captureMobileHierarchyEvidence } from "./categories-visual-mobile-evidence.mjs";
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -16,21 +28,45 @@ let desktop;
 let desktopModal;
 let mobile;
 let mobileModal;
+let compactMobile;
+let mutationFailures;
+let categoryCrud;
+let sidebarParity;
 let browserVersion = "unknown";
 const completedScreenshots = [];
 
+Object.assign(categoryVisualState, {
+  check,
+  waitForCategories,
+  waitForModal,
+  closeModal,
+  navigateWithRetry,
+  loginAndOpenCategories,
+  pageMeasurementExpression,
+  modalMeasurementExpression,
+});
 await runViewportSession("desktop", 1440, 1000, async (cdp) => {
   desktop = await validateDesktop(cdp);
   completedScreenshots.push("categories-desktop.png");
   desktopModal = await validateDesktopModal(cdp);
   completedScreenshots.push("categories-modal-desktop.png");
+  mutationFailures = await validateCategoryMutationFailures(cdp);
+  categoryCrud = await validateCategoryCrud(cdp);
+  sidebarParity = await validateSidebarThemeParity(cdp);
 });
 
 await runViewportSession("mobile", 390, 844, async (cdp) => {
   mobile = await validateMobile(cdp);
   completedScreenshots.push("categories-mobile.png");
+  completedScreenshots.push(...mobile.hierarchyScreenshots);
   mobileModal = await validateMobileModal(cdp);
   completedScreenshots.push("categories-modal-mobile.png");
+});
+
+await runViewportSession("compact-mobile", 320, 740, async (cdp) => {
+  compactMobile = await validateCompactMobile(cdp);
+  completedScreenshots.push("categories-compact-mobile.png");
+  completedScreenshots.push(...compactMobile.hierarchyScreenshots);
 });
 
 const report = {
@@ -42,6 +78,10 @@ const report = {
   desktopModal,
   mobile,
   mobileModal,
+  compactMobile,
+  mutationFailures,
+  categoryCrud,
+  sidebarParity,
   screenshots: completedScreenshots,
 };
 
@@ -69,7 +109,10 @@ async function runViewportSession(label, width, height, validate) {
     await validate(browser.cdp);
   } catch (error) {
     const details = serializeError(error);
-    failures.push({ message: `Categories ${label} validation crashed`, details });
+    failures.push({
+      message: `Categories ${label} validation crashed`,
+      details,
+    });
     console.error(`Categories ${label} validation crashed:`, details);
   } finally {
     if (browser) await browser.close(outputDir);
@@ -79,7 +122,11 @@ async function runViewportSession(label, width, height, validate) {
 
 function serializeError(error) {
   if (error instanceof Error) {
-    return { name: error.name, message: error.message, stack: error.stack ?? "" };
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack ?? "",
+    };
   }
   return { name: "UnknownError", message: String(error), stack: "" };
 }
@@ -93,188 +140,17 @@ async function loginAndOpenCategories(cdp, width, height) {
   await waitForCategories(cdp);
 }
 
-async function validateDesktop(cdp) {
-  await setViewport(cdp, 1440, 1000);
-  await waitForCategories(cdp);
-  const measurements = await evaluate(cdp, pageMeasurementExpression());
-  await screenshot(cdp, join(outputDir, "categories-desktop.png"));
-
-  check(
-    measurements.viewport.width === 1440,
-    "Categories desktop viewport is not 1440px",
-    measurements,
-  );
-  check(
-    measurements.noHorizontalOverflow,
-    "Categories desktop page has horizontal overflow",
-    measurements,
-  );
-  check(
-    measurements.summaryCount === 4,
-    "Categories summary does not have four indicators",
-    measurements,
-  );
-  check(
-    measurements.filterCount === 5,
-    "Categories toolbar does not have five filters",
-    measurements,
-  );
-  check(measurements.search.visible, "Categories search is not visible on desktop", measurements);
-  check(
-    measurements.directory.visible,
-    "Categories directory is not visible on desktop",
-    measurements,
-  );
-  check(
-    measurements.allFilterPressed,
-    "All categories filter is not selected initially",
-    measurements,
-  );
-  check(measurements.rowCount > 0, "Categories hierarchy rendered no rows", measurements);
-  check(
-    measurements.minimumRowHeight >= 44,
-    "Category rows are smaller than the interaction target",
-    measurements,
-  );
-
-  const search = await validateSearch(cdp);
-  return { viewport: "1440x1000", measurements, search, screenshot: "categories-desktop.png" };
-}
-
-async function validateSearch(cdp) {
-  const firstName = await evaluate(
-    cdp,
-    `document.querySelector('[data-category-item] [data-edit-category]')?.dataset.categoryName || ''`,
-  );
-  assert.ok(firstName, "Expected at least one category name for search validation");
-  const query = firstName.slice(0, Math.min(4, firstName.length));
-
-  await evaluate(
-    cdp,
-    `(() => {
-      const input = document.querySelector('[data-category-search-input]');
-      input.value = ${JSON.stringify(query)};
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    })()`,
-  );
-  await sleep(100);
-
-  const result = await evaluate(
-    cdp,
-    `(() => {
-      const visibleItems = Array.from(document.querySelectorAll('[data-category-item]')).filter((item) => !item.hidden);
-      const status = document.querySelector('[data-category-results-status]')?.textContent?.trim() || '';
-      const clearVisible = !document.querySelector('[data-clear-category-search]')?.hidden;
-      return { visibleCount: visibleItems.length, status, clearVisible };
-    })()`,
-  );
-
-  check(result.visibleCount > 0, "Category search hid every category", { query, result });
-  check(result.status.includes("exibida"), "Category search did not announce its result count", {
-    query,
-    result,
-  });
-  check(result.clearVisible, "Category search clear action did not become visible", {
-    query,
-    result,
-  });
-
-  await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
-  await sleep(80);
-
-  const pathResult = await evaluate(
-    cdp,
-    `(() => {
-      const normalize = (value) => String(value || '')
-        .normalize('NFD')
-        .replace(/[\\u0300-\\u036f]/g, '')
-        .toLocaleLowerCase('pt-BR')
-        .trim();
-      const items = Array.from(document.querySelectorAll('[data-category-item]'));
-      let candidate = null;
-
-      for (const item of items) {
-        const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName?.trim() || '';
-        const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent?.trim() || '';
-        if (!name || !path || normalize(name) === normalize(path)) continue;
-        const ancestor = path
-          .split('>')
-          .map((part) => part.trim())
-          .find((part) => part && !normalize(name).includes(normalize(part)));
-        if (ancestor) {
-          candidate = { item, name, path, ancestor };
-          break;
-        }
-      }
-
-      if (!candidate) return { candidateFound: false };
-      const query = candidate.ancestor.slice(0, Math.min(4, candidate.ancestor.length));
-      const input = document.querySelector('[data-category-search-input]');
-      input.value = query;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-
-      const expectedMatchCount = items.filter((item) => {
-        const name = item.querySelector(':scope > .category-node-row [data-edit-category]')?.dataset.categoryName || '';
-        const path = item.querySelector(':scope > .category-node-row .category-path')?.textContent || '';
-        return normalize(name + ' ' + path).includes(normalize(query));
-      }).length;
-      const status = document.querySelector('[data-category-results-status]')?.textContent?.trim() || '';
-      const statusCount = Number(status.match(/\\d+/)?.[0] ?? -1);
-
-      return {
-        candidateFound: true,
-        name: candidate.name,
-        path: candidate.path,
-        query,
-        targetVisible: !candidate.item.hidden,
-        expectedMatchCount,
-        statusCount,
-        status,
-      };
-    })()`,
-  );
-
-  check(pathResult.candidateFound, "Expected nested category for path search", pathResult);
-  check(pathResult.targetVisible, "Category path search lost ancestor matching", pathResult);
-  check(
-    pathResult.statusCount === pathResult.expectedMatchCount,
-    "Category search count is not direct-match only",
-    pathResult,
-  );
-
-  await evaluate(cdp, `document.querySelector('[data-clear-category-search]')?.click()`);
-  await sleep(80);
-
-  return { query, ...result, pathResult };
-}
-
-async function validateDesktopModal(cdp) {
-  await evaluate(cdp, `document.querySelector('[data-open-category-modal]')?.click()`);
-  await waitForModal(cdp);
-  const measurements = await evaluate(cdp, modalMeasurementExpression());
-  await screenshot(cdp, join(outputDir, "categories-modal-desktop.png"));
-
-  check(measurements.visible, "Category modal did not open on desktop", measurements);
-  check(measurements.insideViewport, "Category modal exceeds the desktop viewport", measurements);
-  check(measurements.hasDescription, "Category modal has no accessible description", measurements);
-  check(
-    measurements.labelledControls === 3,
-    "Category modal controls are not fully labelled",
-    measurements,
-  );
-  check(measurements.nameFocused, "Category name did not receive initial focus", measurements);
-  check(measurements.closeTarget >= 34, "Category modal close action is too small", measurements);
-
-  await closeModal(cdp);
-  return { viewport: "1440x1000", measurements, screenshot: "categories-modal-desktop.png" };
-}
-
 async function validateMobile(cdp) {
   await setViewport(cdp, 390, 844);
   await waitForCategories(cdp);
   const measurements = await evaluate(cdp, pageMeasurementExpression());
   await screenshot(cdp, join(outputDir, "categories-mobile.png"));
 
+  check(
+    !measurements.columnHeadingsVisible,
+    "Mobile column headers should be hidden",
+    measurements,
+  );
   check(
     measurements.viewport.width === 390,
     "Categories mobile viewport is not 390px",
@@ -296,22 +172,112 @@ async function validateMobile(cdp) {
     measurements,
   );
   check(
+    measurements.search.width >= 100,
+    "Category search mobile input is squeezed by visible label",
+    measurements,
+  );
+  check(
+    measurements.overflowElements.length === 0,
+    "Mobile category text extends beyond the viewport",
+    measurements,
+  );
+  check(
     measurements.filterCount === 5,
     "Categories filters are incomplete on mobile",
     measurements,
   );
   check(
     measurements.summaryCount === 4,
-    "Categories summary is incomplete on mobile",
+    "Categories semantic overview is incomplete on mobile",
     measurements,
   );
   check(
-    measurements.minimumMenuTarget >= 40,
+    measurements.minimumMenuTarget >= 44,
     "Category row menu target is too small on mobile",
     measurements,
   );
 
-  return { viewport: "390x844", measurements, screenshot: "categories-mobile.png" };
+  check(
+    measurements.minimumFilterTarget >= 44,
+    "Mobile filter action is less than 44px",
+    measurements,
+  );
+  check(
+    measurements.minimumCollapseTarget >= 44,
+    "Mobile hierarchy expand action is less than 44px",
+    measurements,
+  );
+  check(
+    measurements.minimumCompactTarget >= 44,
+    "Mobile expand-all action is less than 44px",
+    measurements,
+  );
+  const hierarchy = await captureMobileHierarchyEvidence(cdp, "mobile", { outputDir, check });
+  return {
+    viewport: "390x844",
+    measurements,
+    screenshot: "categories-mobile.png",
+    ...hierarchy,
+  };
+}
+
+async function validateCompactMobile(cdp) {
+  await setViewport(cdp, 320, 740);
+  await waitForCategories(cdp);
+  const measurements = await evaluate(cdp, pageMeasurementExpression());
+  await screenshot(cdp, join(outputDir, "categories-compact-mobile.png"));
+  check(
+    measurements.viewport.width === 320,
+    "Category narrow mobile viewport is not 320px",
+    measurements,
+  );
+  check(
+    measurements.noHorizontalOverflow,
+    "Categories exceed narrow mobile viewport",
+    measurements,
+  );
+  check(
+    measurements.minimumMenuTarget >= 44,
+    "Narrow mobile action is less than 44px",
+    measurements,
+  );
+  check(measurements.minimumRowHeight >= 44, "Narrow mobile row is too small", measurements);
+  check(measurements.search.height >= 44, "Narrow mobile search input is too small", measurements);
+  check(
+    measurements.search.width >= 100,
+    "Narrow mobile search input has insufficient usable width",
+    measurements,
+  );
+  check(
+    measurements.overflowElements.length === 0,
+    "Narrow mobile category text extends beyond the viewport",
+    measurements,
+  );
+  check(
+    measurements.minimumFilterTarget >= 44,
+    "Narrow mobile filter action is less than 44px",
+    measurements,
+  );
+  check(
+    measurements.minimumCollapseTarget >= 44,
+    "Narrow mobile hierarchy expand action is less than 44px",
+    measurements,
+  );
+  check(
+    measurements.minimumCompactTarget >= 44,
+    "Narrow mobile expand-all action is less than 44px",
+    measurements,
+  );
+  const hierarchy = await captureMobileHierarchyEvidence(cdp, "compact-mobile", {
+    outputDir,
+    check,
+  });
+  return {
+    viewport: "320x740",
+    measurements,
+    screenshot: "categories-compact-mobile.png",
+    ...hierarchy,
+  };
 }
 
 async function validateMobileModal(cdp) {
@@ -330,7 +296,11 @@ async function validateMobileModal(cdp) {
   );
 
   await closeModal(cdp);
-  return { viewport: "390x844", measurements, screenshot: "categories-modal-mobile.png" };
+  return {
+    viewport: "390x844",
+    measurements,
+    screenshot: "categories-modal-mobile.png",
+  };
 }
 
 async function navigateWithRetry(cdp, url, label) {
@@ -409,18 +379,85 @@ function pageMeasurementExpression() {
     };
     const rows = Array.from(document.querySelectorAll('[data-category-item] > .category-node-row'));
     const menus = Array.from(document.querySelectorAll('[data-category-menu-button]'));
+    const filters = Array.from(document.querySelectorAll('[data-category-filter]'));
+    const collapses = Array.from(document.querySelectorAll('[data-toggle-category-children]'));
+    const compactActions = Array.from(document.querySelectorAll('.category-collapse-actions button'));
     const search = document.querySelector('[data-category-search-input]');
     const heroAction = document.querySelector('[data-open-category-modal]');
     const directory = document.querySelector('.category-directory');
     return {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
-      summaryCount: document.querySelectorAll('.category-summary-item').length,
+      documentScrollWidth: document.documentElement.scrollWidth,
+      bodyScrollWidth: document.body.scrollWidth,
+      pageScrollWidth: document.querySelector('.categories-page')?.scrollWidth || 0,
+      pageClientWidth: document.querySelector('.categories-page')?.clientWidth || 0,
+      pageScrollSources: Array.from(document.querySelectorAll('.categories-page *'))
+        .filter((element) => element.scrollWidth > element.clientWidth + 2 && element.clientWidth > 0)
+        .slice(0, 24)
+        .map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          className: String(element.className?.baseVal || element.className || '').slice(0, 90),
+          client: element.clientWidth,
+          scroll: element.scrollWidth,
+          left: Math.round(element.getBoundingClientRect().left),
+          right: Math.round(element.getBoundingClientRect().right),
+          overflowX: getComputedStyle(element).overflowX,
+        })),
+      structuralWidths: ['.app-shell', '.sidebar', '.sidebar nav', '.main-area', '.main-area main', '.categories-page', '.category-directory', '.category-toolbar', '.category-kind-group']
+        .map((selector) => {
+          const element = document.querySelector(selector);
+          return element ? { selector, client: element.clientWidth, scroll: element.scrollWidth, right: Math.round(element.getBoundingClientRect().right) } : null;
+        }).filter(Boolean),
+      globalOverflowElements: Array.from(document.querySelectorAll('body *'))
+        .filter((element) => {
+          const bounds = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return style.display !== 'none' && bounds.width > 0 &&
+            (bounds.right > window.innerWidth + 1 || bounds.left < -1);
+        })
+        .slice(0, 25)
+        .map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          className: String(element.className?.baseVal || element.className || '').slice(0, 100),
+          right: Math.round(element.getBoundingClientRect().right),
+          left: Math.round(element.getBoundingClientRect().left),
+        })),
+      summaryCount: document.querySelectorAll('.category-overview > div').length,
+      semanticLists: document.querySelectorAll('ul.category-tree-nodes').length,
+      nestedLists: document.querySelectorAll('ul.category-tree-children').length,
+      deepestRenderedLevel: Math.max(0, ...Array.from(document.querySelectorAll('[data-category-depth]'))
+        .map((item) => Number(item.dataset.categoryDepth) + 1)),
       filterCount: document.querySelectorAll('[data-category-filter]').length,
       allFilterPressed: document.querySelector('[data-category-filter="all"]')?.getAttribute('aria-pressed') === 'true',
       rowCount: rows.length,
+      headerCount: document.querySelectorAll('.category-column-headings').length,
+      columnHeadingsVisible: visible(document.querySelector('.category-column-headings')),
+      parentCellCount: document.querySelectorAll('.category-parent-cell').length,
+      levelCellCount: document.querySelectorAll('.category-level-cell').length,
+      statusCellCount: document.querySelectorAll('.category-status-cell').length,
+      compactRowHeight: Math.max(0, ...rows
+        .filter((row) => (row.querySelector('[data-edit-category]')?.dataset.categoryName || '').length < 25)
+        .map((row) => rect(row).height)),
       minimumRowHeight: rows.length ? Math.min(...rows.map((row) => rect(row).height)) : 0,
       minimumMenuTarget: menus.length ? Math.min(...menus.map((menu) => rect(menu).height)) : 0,
+      minimumFilterTarget: filters.length ? Math.min(...filters.map((filter) => rect(filter).height)) : 0,
+      minimumCollapseTarget: collapses.length ? Math.min(...collapses.map((button) => rect(button).height)) : 44,
+      minimumCompactTarget: compactActions.length ? Math.min(...compactActions.map((button) => rect(button).height)) : 0,
+      overflowElements: Array.from(document.querySelectorAll('.categories-page *'))
+        .filter((element) => {
+          const bounds = element.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          return style.display !== 'none' && bounds.width > 0 &&
+            (bounds.right > window.innerWidth + 1 || bounds.left < -1);
+        })
+        .slice(0, 12)
+        .map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          className: String(element.className?.baseVal || element.className || '').slice(0, 120),
+          right: Math.round(element.getBoundingClientRect().right),
+          left: Math.round(element.getBoundingClientRect().left),
+        })),
       search: { ...rect(search), visible: visible(search) },
       heroAction: rect(heroAction),
       directory: { ...rect(directory), visible: visible(directory) },
@@ -460,5 +497,7 @@ function check(condition, message, details) {
 function renderReport(report) {
   const status = report.failures.length === 0 ? "APROVADO" : "REPROVADO";
   const screenshot = (result) => result?.screenshot ?? "não gerada";
-  return `# Evidência visual — Categorias\n\n- Status: **${status}**\n- Commit: \`${report.commit}\`\n- Navegador: ${report.browser}\n- Desktop: \`${screenshot(report.desktop)}\`\n- Modal desktop: \`${screenshot(report.desktopModal)}\`\n- Mobile: \`${screenshot(report.mobile)}\`\n- Modal mobile: \`${screenshot(report.mobileModal)}\`\n\n## Falhas\n\n${report.failures.length === 0 ? "Nenhuma falha encontrada.\n" : report.failures.map((failure) => `- ${failure.message}`).join("\n") + "\n"}`;
+  const hierarchyScreenshots = (result) =>
+    result?.hierarchyScreenshots?.join(", ") ?? "não geradas";
+  return `# Evidência visual — Categorias\n\n- Status: **${status}**\n- Commit: \`${report.commit}\`\n- Navegador: ${report.browser}\n- Desktop: \`${screenshot(report.desktop)}\`\n- Modal desktop: \`${screenshot(report.desktopModal)}\`\n- Mobile: \`${screenshot(report.mobile)}\`\n- Modal mobile: \`${screenshot(report.mobileModal)}\`\n- Mobile estreito: \`${screenshot(report.compactMobile)}\`\n- Árvore e nomes longos 390px: \`${hierarchyScreenshots(report.mobile)}\`\n- Árvore e nomes longos 320px: \`${hierarchyScreenshots(report.compactMobile)}\`\n\n## Falhas\n\n${report.failures.length === 0 ? "Nenhuma falha encontrada.\n" : report.failures.map((failure) => `- ${failure.message}`).join("\n") + "\n"}`;
 }

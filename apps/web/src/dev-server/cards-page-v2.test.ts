@@ -215,6 +215,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
             plannedOn: "2026-08-20",
             description: "Café",
             amountMinor: 1550,
+            purchaseTotalAmountMinor: 1550,
+            installmentSequenceNumber: 2,
+            totalInstallments: 0,
             currency: "USD",
             status: "planned",
           },
@@ -517,7 +520,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /\.cards-dialog\{max-height:min\(90dvh/);
   assert.doesNotMatch(html, /\.cards-dialog\{overflow:hidden/);
   assert.doesNotMatch(html, /\.cards-dialog-panel\{[^}]*overflow-y:auto/);
-  assert.match(html, /Total da compra:[\s\S]*?data-currency="USD"/);
+  assert.match(html, /"purchaseTotalAmountMinor":15000/);
   assert.match(html, /Físico - Titular principal · final 4242/);
   assert.match(html, /Virtual - Titular principal · final 9001/);
   // Status icons and actions follow the Golden Screen; finite installments use a dedicated route.
@@ -603,8 +606,23 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
 
   assert.match(html, /Hotel/);
   assert.match(html, /Táxi aeroporto/);
-  assert.match(html, /Parcela 2 de 3/);
-  assert.match(html, /Total da compra:[\s\S]*USD[\s\S]*150,00/);
+  // List rows are single-line: only a valid finite installment keeps n/total inline.
+  const purchaseCells =
+    html.match(
+      /<div role="cell" data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>/g,
+    ) ?? [];
+  const taxiCell = purchaseCells.find((cell) => cell.includes("Táxi aeroporto")) ?? "";
+  const coffeeCell = purchaseCells.find((cell) => cell.includes("Café")) ?? "";
+  assert.match(
+    taxiCell,
+    /<strong>Táxi aeroporto <span class="installment-badge cards-installment-label" aria-label="Parcela 2 de 3" title="Parcela 2 de 3">Parcela 2 de 3<\/span><\/strong>/,
+  );
+  assert.doesNotMatch(taxiCell, /<small>|Total da compra:/);
+  assert.equal((taxiCell.match(/installment-badge/g) ?? []).length, 1);
+  assert.match(coffeeCell, /<strong>Café<\/strong>/);
+  assert.doesNotMatch(coffeeCell, /2\/0|Parcela|<small>|Total da compra:/);
+  assert.equal(purchaseCells.length, 3);
+  assert.match(html, /data-purchase="purchase-taxi">[^<]*"purchaseTotalAmountMinor":15000/);
   assert.match(
     html,
     /name="installmentValueMode"><option value="total" selected>Valor total da compra<\/option><option value="per_installment">Valor da parcela/,
@@ -638,7 +656,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(byDay, /data-day="2026-08-19" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-18" open/);
   assert.doesNotMatch(byDay, /data-day="2026-08-20" open/);
-  assert.match(byDay, /Parcela 2 de 3/);
+  assert.match(
+    byDay,
+    /class="installment-badge cards-installment-label" aria-label="Parcela 2 de 3"/,
+  );
   assert.match(byDay, /data-status-installment-id="installment-taxi-2"/);
   assert.equal((byDay.match(/data-cards-day-group data-day=/g) ?? []).length, 1);
 

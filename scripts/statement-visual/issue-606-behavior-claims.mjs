@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
+import { collectReport718Evidence } from "./reports-718-behavior-evidence.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -43,6 +44,9 @@ function parseRequiredAssertions() {
 
 async function collectEvidence() {
   if (sourceScenario === "core-pages") return collectCorePagesEvidence();
+  if (sourceScenario === "reports-718-visual-acceptance") {
+    return collectReport718Evidence(readEvidence);
+  }
   if (sourceScenario === "reports-category-evolution") {
     return collectSemanticEvidence("reports-category-evolution");
   }

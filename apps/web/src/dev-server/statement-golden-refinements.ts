@@ -76,13 +76,16 @@ export function statementGoldenRefinementRuntime(): string {
           '.statement-reconciliation-field', '.statement-category-field', '.statement-sort-field'];
         const fields = selectors.map((selector) => filterForm.querySelector(selector)).filter(Boolean);
         if (fields.length === selectors.length) {
+          const dayField = filterForm.querySelector('.statement-day-field');
+          const searchField = filterForm.querySelector('.statement-search-field');
+          const narrowPhone = window.matchMedia('(max-width: 360px)');
           const details = document.createElement('details');
           details.className = 'statement-mobile-advanced-filters';
           const trigger = document.createElement('summary');
           const activeCount = () => fields.filter((field) => {
             const select = field.querySelector('select');
             return select && select.value !== '' && !(select.name === 'sort' && select.value === 'date_asc');
-          }).length;
+          }).length + (dayField?.querySelector('input[name="day"]')?.value ? 1 : 0);
           const updateTrigger = () => {
             const count = activeCount();
             trigger.textContent = count ? 'Filtros ativos (' + count + ')' : 'Filtros e ordenação';
@@ -95,6 +98,13 @@ export function statementGoldenRefinementRuntime(): string {
           details.append(trigger, content);
           const compact = window.matchMedia('(max-width: 760px)');
           const sync = () => {
+            // At 320px the day input is a progressive filter, not a vanished
+            // control. Restore its canonical position when the viewport grows.
+            if (dayField && searchField) {
+              if (narrowPhone.matches) content.prepend(dayField);
+              else searchField.before(dayField);
+            }
+            updateTrigger();
             if (!compact.matches) {
               details.open = true;
               details.removeAttribute('data-mobile-initialized');
@@ -104,6 +114,8 @@ export function statementGoldenRefinementRuntime(): string {
             }
           };
           compact.addEventListener('change', sync);
+          narrowPhone.addEventListener('change', sync);
+          dayField?.querySelector('input[name="day"]')?.addEventListener('change', updateTrigger);
           for (const field of fields) field.addEventListener('change', updateTrigger);
           filterForm.addEventListener('reset', () => queueMicrotask(updateTrigger));
           sync();
@@ -324,13 +336,6 @@ export function statementGoldenRefinementStyles(): string {
     /* Mockup parity layer: route-scoped so the Golden Screen can evolve without changing other surfaces. */
     body:has(${root}){background:#f5f7fb}
     body:has(${root}) .app-shell{grid-template-columns:200px minmax(0,1fr)}
-    body:has(${root}) .sidebar{background:#fff;border-right:1px solid var(--line);box-shadow:none;color:var(--text);padding:14px 12px}
-    body:has(${root}) .brand{color:var(--text)}
-    body:has(${root}) .nav-section-label{color:#94a3b8}
-    body:has(${root}) .sidebar nav a{color:#334155}
-    body:has(${root}) .sidebar nav a:hover{background:#f1f5f9;color:#0f172a}
-    body:has(${root}) .sidebar nav a[aria-current="page"]{background:#eef4ff;color:#1d4ed8}
-    body:has(${root}) .sidebar .logout{background:transparent;border-color:transparent;color:#475569}
     body:has(${root}) .topbar{display:none}
     body:has(${root}) .main-area>main{box-sizing:border-box;margin:0;max-width:none;padding:18px 20px 32px;width:100%}
     ${root}{gap:${spacing[2]}}
@@ -466,6 +471,10 @@ export function statementGoldenRefinementStyles(): string {
     ${root} .statement-body .col-status{justify-self:center}
     ${root} .statement-body .statement-status-label{display:none}
     ${root} .statement-body .statement-status svg{flex:0 0 auto;height:14px;width:14px}
+    /* The row indicator is 32px, but the compact reconciliation popover uses
+       the canonical 26px circle and 15px glyph; do not enlarge its 44px target. */
+    ${root} .statement-body .statement-status-menu .statement-status{height:26px;min-width:26px;width:26px}
+    ${root} .statement-body .statement-status-menu .statement-status svg{height:15px;width:15px}
     ${root} .statement-body .statement-status-label{font-size:inherit;font-weight:inherit;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
     ${root} .statement-body .statement-status-ok{background:#dcfce7;border-color:#bbf7d0;color:#166534}
     ${root} .statement-body .statement-status-posted{background:#f1f5f9;border-color:#e2e8f0;color:#475569}
@@ -547,9 +556,6 @@ export function statementGoldenRefinementStyles(): string {
     }
     @media(max-width:1100px){
       body:has(${root}) .app-shell{grid-template-columns:1fr}
-      body:has(${root}) .sidebar{background:var(--primary);border-right:0;color:#fff}
-      body:has(${root}) .sidebar nav a{color:rgba(255,255,255,.78)}
-      body:has(${root}) .sidebar nav a[aria-current="page"]{background:rgba(34,211,238,.18);color:#fff}
       body:has(${root}) .main-area>main{padding:${spacing[2]} ${spacing[3]} ${spacing[6]}}
       ${root} .statement-breadcrumb{display:none}
       body:has(${root}) .sidebar{overflow-x:hidden}
@@ -664,15 +670,47 @@ export function statementGoldenRefinementStyles(): string {
       ${root} .statement-period-control{display:grid;grid-template-columns:minmax(0,1fr)}
       ${root} .statement-period-control [data-month-current]{justify-self:end}
     }
+    @media(min-width:361px) and (max-width:430px){
+      /* Preserve the month field's 240px readability floor. Recover mobile
+         density from excess spacing instead of squeezing its native controls. */
+      ${root} .statement-period-control{gap:4px;grid-template-columns:minmax(0,1fr)}
+      ${root} .statement-period-control .month-field{min-width:0}
+      ${root} .statement-period-control .month-nav{height:44px}
+      ${root} .statement-period-control [data-month-current]{height:44px;justify-self:end}
+      /* Recover vertical space at 390px without shrinking month navigation,
+         financial values, search or 44px interactive targets. */
+      ${root} .statement-toolbar{padding-block:0}
+      ${root} .statement-account-heading{gap:4px;padding-block:2px}
+      ${root} .statement-account-heading .summary-balance{padding-top:4px}
+      ${root} .account-summary[data-mockup-composition]{row-gap:2px;padding-block:4px}
+      ${root} .account-summary[data-mockup-composition] .summary-total{gap:2px;padding:2px 6px}
+      ${root} .account-summary[data-mockup-composition] .summary-total-copy{gap:1px}
+      ${root} .account-summary[data-mockup-composition] .summary-total-copy>strong{line-height:1.1}
+      ${root} .statement-query{padding:1px 4px}
+      ${root} .filter-form{row-gap:2px}
+    }
     @media(max-width:360px){
+      /* At 320px, an inline month shortcut clips the native year. Pin the
+         44px shortcut to the spare header corner so month navigation keeps
+         the full row and Movimentacoes still enters the first viewport. */
+      ${root} .statement-account-heading{position:relative}
+      ${root} .statement-period-control{display:block;min-width:0;position:static;width:100%}
+      ${root} .statement-period-control .month-field{min-width:0;width:100%}
+      ${root} .statement-period-control .month-nav{box-sizing:border-box;min-width:0;width:100%}
+      ${root} .statement-period-control [data-month-current]{font-size:0;height:44px;min-height:44px;min-width:44px;padding:0;position:absolute;right:6px;top:2px}
+      ${root} .statement-period-control [data-month-current]::before{content:"↻";font-size:20px;line-height:1}
       /* Keep the 320px first-viewport budget without truncating the selected account. */
       ${root} .statement-account-heading{gap:${spacing[1]}}
       ${root} .statement-account-control .account-field>label#account-picker-label{clip-path:inset(50%);height:1px;overflow:hidden;position:absolute;width:1px}
       ${root} .statement-account-heading .summary-balance{align-items:baseline;display:flex;gap:${spacing[1]};justify-content:space-between}
       ${root} .statement-account-heading .summary-balance strong{font-size:${typography.sizes.md};white-space:nowrap}
-      ${root} .account-summary[data-mockup-composition]{grid-template-columns:minmax(0,1fr);row-gap:0}
-      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:baseline;display:flex;flex-wrap:nowrap;gap:${spacing[1]};justify-content:space-between;padding:2px 0}
-      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:${typography.sizes.sm};line-height:${typography.lineHeights.compact};white-space:nowrap;word-break:normal;width:auto}
+      /* Four full-width financial rows push movements below the 320px viewport.
+         Keep all four values, but place them in two compact, self-contained rows. */
+      ${root} .account-summary[data-mockup-composition]{column-gap:4px;grid-template-columns:repeat(2,minmax(0,1fr));padding-block:6px;row-gap:4px}
+      ${root} .account-summary[data-mockup-composition] .summary-total{align-items:start;display:grid;gap:2px;min-width:0;padding:4px 6px}
+      ${root} .account-summary[data-mockup-composition] .summary-total-icon{display:none}
+      ${root} .account-summary[data-mockup-composition] .summary-total-copy{min-width:0}
+      ${root} .account-summary[data-mockup-composition] .summary-total strong{font-size:11px;line-height:1.2;max-width:100%;overflow-wrap:anywhere;white-space:normal;word-break:normal;width:auto}
     }
 
     /* F-702-04: in the two-column phone layout, a long amount needs its own
@@ -717,8 +755,8 @@ export function statementGoldenRefinementStyles(): string {
     @media(min-width:761px){
       ${root} .filter-form>.statement-day-field{max-width:11.5rem;width:100%}
     }
-    @media(min-width:1340px){
-      /* One balanced seven-track row: day, search, four selectors and actions.
+    @media(min-width:1600px){
+      /* One balanced seven-track row only when content width supports every selector: day, search, four selectors and actions.
          Match the higher-specificity Golden options grid; no implicit tracks. */
       ${root}[data-statement-options] .filter-form{
         align-items:end;
@@ -731,16 +769,34 @@ export function statementGoldenRefinementStyles(): string {
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:auto}
     }
     @media(min-width:1101px) and (max-width:1339px){
-      /* Reflow rather than squeeze a 7-column desktop bar into a narrow screen. */
-      ${root}[data-statement-options] .filter-form{grid-template-columns:minmax(10.5rem,11.5rem) repeat(2,minmax(0,1fr))}
+      /* Below 1340px, the six-field row would clip native selectors. */
+      ${root}[data-statement-options] .filter-form{grid-template-columns:repeat(3,minmax(0,1fr))}
       ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
       ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:1}
       ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:2/-1}
       ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
     }
+    @media(min-width:1101px) and (max-width:1599px){
+      /* Two intermediate-desktop filter rows must meet the 150px density budget
+         without clipping native controls or removing the action row. */
+      ${root}[data-statement-options] .filter-form{row-gap:0}
+    }
+    @media(min-width:1340px) and (max-width:1599px){
+      /* Keep the short day, search and four selectors on one row at 1366px.
+         Only the actions use a second row, preventing collision and excessive height. */
+      ${root}[data-statement-options] .filter-form{
+        grid-template-columns:minmax(10.5rem,11.5rem) minmax(11rem,1.35fr) repeat(4,minmax(7.5rem,1fr));
+      }
+      ${root}[data-statement-options] .filter-form>.statement-period-shortcuts{grid-column:1/-1}
+      ${root}[data-statement-options] .filter-form>.statement-day-field{grid-column:1}
+      ${root}[data-statement-options] .filter-form>.statement-search-field{grid-column:2}
+      ${root}[data-statement-options] .filter-form :is(.statement-kind-field,.statement-status-field,.statement-reconciliation-field,.statement-category-field){grid-column:auto}
+      ${root}[data-statement-options] .filter-form>.statement-filter-actions{grid-column:1/-1;justify-content:end}
+    }
     @media(min-width:1101px){
       ${root} .statement-row.statement-body{padding-block:4px;row-gap:0}
       ${root} .statement-body .statement-row-metadata{justify-content:center}
+      ${root} .statement-body .col-amount{font-size:1rem}
       ${root} .statement-body .col-balance{color:var(--text);font-size:.8rem}
     }
     @media(min-width:761px) and (max-width:1100px){

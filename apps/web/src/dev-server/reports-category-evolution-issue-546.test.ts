@@ -29,7 +29,7 @@ describe("reports category evolution issue 546", () => {
     );
 
     assert.equal(calls.length, 3);
-    assert.match(html, /<label for="report-origin">Conta ou cartão/);
+    assert.match(html, /<label[^>]*for="report-origin">Conta ou cartão/);
     assert.match(html, /<option value=""[^>]*>Todas as contas e cartões<\/option>/);
     assert.match(html, /<optgroup label="Contas">/);
     assert.match(html, /<optgroup label="Cartões de crédito">/);

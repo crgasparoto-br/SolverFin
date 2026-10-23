@@ -76,7 +76,8 @@ async function validateAccountDesktop(fixture) {
   check(modal.categoryLabel.includes("arquivada"), "Archived category is not identified", modal);
   check(modal.categoryOptionDisabled, "Archived historical option should be read-only", modal);
   check(
-    modal.visibleEditableNames.join(",") === "categoryId,description,note",
+    modal.visibleEditableNames.join(",") ===
+      "adjustedInstallmentAmount,categoryId,description,note",
     "Restricted modal exposes fields outside the allowlist",
     modal,
   );
@@ -355,34 +356,25 @@ async function validateCardDesktop(fixture) {
   const route = `/cartoes?cardId=${encodeURIComponent(fixture.cardId)}&invoiceId=${encodeURIComponent(fixture.invoiceId)}`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const line = await waitForCardLine(fixture.cardTransactionId);
-  check(line.badge === fixture.cardBadge, "Card installment badge is missing", line);
+  check(line.hasRecurringIcon, "Card recurring purchase must display its shared icon", line);
+  check(!line.hasFiniteBadge, "Card recurring purchase must not display a finite pill", line);
   check(line.purchaseEditEnabled, "Open invoice purchase was incorrectly blocked", line);
   check(!line.hasInstallmentEdit, "Card purchase was redirected to installment PATCH", line);
   check(
-    line.blockReason === "Esta parcela é alterada pela compra da fatura.",
-    "Invoice-linked installment exposed the wrong block reason",
-    line,
-  );
-  check(line.badgeTabIndex === 0, "Blocked installment badge is not keyboard focusable", line);
-  check(
-    line.accessibleDescription === line.blockReason,
-    "Blocked installment badge is missing an accessible description",
+    line.iconLabel === "Lançamento recorrente" && line.iconTooltip === line.iconLabel,
+    "Card recurrence icon lost its accessible tooltip",
     line,
   );
 
-  const badgeFocus = await evaluate(
+  const iconFocus = await evaluate(
     browser.cdp,
     `(() => {
-      const badge = document.querySelector('[data-installment-badge="${fixture.cardInstallmentId}"]');
-      badge.focus();
-      return {
-        focused: document.activeElement === badge,
-        tooltipVisible: getComputedStyle(badge, "::after").display !== "none"
-      };
+      const indicator = document.querySelector('.cards-purchase-description .recurrence-indicator');
+      indicator.focus();
+      return { focused: document.activeElement === indicator };
     })()`,
   );
-  check(badgeFocus.focused, "Blocked installment badge did not receive focus", badgeFocus);
-  check(badgeFocus.tooltipVisible, "Block reason tooltip did not open on focus", badgeFocus);
+  check(iconFocus.focused, "Recurring card icon did not receive keyboard focus", iconFocus);
 
   const installmentState = await evaluate(
     browser.cdp,
@@ -448,7 +440,7 @@ async function validateCardMobile(fixture) {
   scenarios.push({
     route,
     viewport: "390x844",
-    state: "installment badge",
+    state: "recurrence icon only",
     screenshot: filename,
     line,
   });
@@ -487,16 +479,15 @@ async function waitForCardLine(transactionId) {
         const node = document.querySelector('script[data-purchase="${transactionId}"]');
         const row = node?.closest("article");
         const edit = row?.querySelector('[data-edit-purchase="${transactionId}"]');
-        const badge = row?.querySelector("[data-installment-badge]");
-        if (row && edit && badge) {
-          const descriptionId = badge.getAttribute("aria-describedby") || "";
+        const indicator = row?.querySelector(".cards-purchase-description .recurrence-indicator");
+        if (row && edit && indicator?.dataset.recurrenceIconOnly === "true") {
           return {
-            badge: badge.textContent.trim(),
+            hasRecurringIcon: true,
+            hasFiniteBadge: Boolean(row.querySelector(".installment-badge")),
+            iconLabel: indicator.getAttribute("aria-label"),
+            iconTooltip: indicator.getAttribute("title"),
             purchaseEditEnabled: !edit.disabled,
             hasInstallmentEdit: Boolean(edit.dataset.installmentEdit),
-            blockReason: badge.dataset.installmentBlockReason || "",
-            badgeTabIndex: badge.tabIndex,
-            accessibleDescription: document.getElementById(descriptionId)?.textContent || "",
             globalOverflow: document.documentElement.scrollWidth > window.innerWidth
           };
         }
@@ -672,8 +663,7 @@ function fixtureExpression() {
       cardId: card.id,
       invoiceId: cardInstallment.transaction.invoiceId,
       cardInstallmentId: cardInstallment.id,
-      cardTransactionId: cardInstallment.transaction.id,
-      cardBadge: "Parcela " + cardInstallment.sequenceNumber + " de " + cardInstallment.totalInstallments
+      cardTransactionId: cardInstallment.transaction.id
     };
   })()`;
 }

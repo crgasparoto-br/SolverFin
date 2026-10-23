@@ -16,7 +16,7 @@ function fixture() {
     descriptionText: { font: 16 },
     category: { y: 620, x: 712, right: 860, width: 148, font: 12 },
     amount: { y: 600, x: 900, right: 1040, width: 140, font: 16 },
-    balance: { y: 630, font: 12 },
+    balance: { x: 1044, y: 630, font: 12 },
     rowIcon: { x: 272, y: 600, width: 36, height: 36 },
     date: { x: 320, y: 600, width: 88 },
     overflow: false,
@@ -33,6 +33,12 @@ test("excess vertical chrome cannot pass only because horizontal layout is corre
   const layout = fixture();
   layout.row.bottom = 814;
   assert.throws(() => assertGoldenStatement(layout), /first transaction out/);
+});
+
+test("desktop balance must not overlap the value column", () => {
+  const layout = fixture();
+  layout.balance.x = layout.amount.right - 16;
+  assert.throws(() => assertGoldenStatement(layout), /column after the amount/);
 });
 
 test("mobile reflow is not forced into a desktop height budget", () => {
@@ -86,6 +92,18 @@ test("visible elements outside the viewport fail the Golden Screen gate", () => 
   layout.viewport = { width: 320, height: 740 };
   layout.overflowElements = [{ tag: "A", right: 419 }];
   assert.throws(() => assertGoldenStatement(layout), /outside the viewport/);
+});
+
+test("filter action overlap is rejected", () => {
+  const layout = fixture();
+  layout.filterControlCollisions = ["Aplicar"];
+  assert.throws(() => assertGoldenStatement(layout), /filter actions overlap/);
+});
+
+test("exposed status text fails the icon-only contract", () => {
+  const layout = fixture();
+  layout.statusTextExposed = ['"Conciliado"'];
+  assert.throws(() => assertGoldenStatement(layout), /icons only/);
 });
 
 test("overlapping summary values fail the Golden Screen gate", () => {

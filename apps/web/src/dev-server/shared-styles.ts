@@ -287,12 +287,13 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
       min-height: 100vh;
     }
     .sidebar {
-      background: var(--primary);
-      color: white;
+      background: var(--surface);
+      border-right: 1px solid var(--line);
+      color: var(--text);
       display: flex;
       flex-direction: column;
       gap: 6px;
-      padding: 14px 10px;
+      padding: 14px 12px;
       position: sticky;
       top: 0;
       height: 100vh;
@@ -316,10 +317,10 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
 
     /* ── Nav ── */
     nav { display: grid; gap: 2px; flex: 1; }
-    nav a {
+    .sidebar nav a {
       align-items: center;
       border-radius: var(--radius);
-      color: rgba(255,255,255,.75);
+      color: #334155;
       display: flex;
       font-size: var(--sf-font-size-sm);
       font-weight: var(--sf-font-weight-medium);
@@ -329,18 +330,18 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
       text-decoration: none;
       transition: background var(--sf-motion-fast), color var(--sf-motion-fast);
     }
-    nav a:hover { background: rgba(255,255,255,.1); color: white; }
-    nav a[aria-current="page"] {
-      background: rgba(34,211,238,.18);
-      color: white;
+    .sidebar nav a:hover { background: #f1f5f9; color: #0f172a; }
+    .sidebar nav a[aria-current="page"] {
+      background: #eef4ff;
+      color: #1d4ed8;
       font-weight: var(--sf-font-weight-semibold);
     }
-    nav a svg { flex-shrink: 0; opacity: 0.85; }
-    nav a[aria-current="page"] svg { opacity: 1; }
+    .sidebar nav a svg { flex-shrink: 0; opacity: 0.85; }
+    .sidebar nav a[aria-current="page"] svg { opacity: 1; }
 
     /* ── Nav section headings ── */
     .nav-section-label {
-      color: rgba(255,255,255,.4);
+      color: #94a3b8;
       font-size: var(--sf-font-size-xs);
       font-weight: var(--sf-font-weight-bold);
       letter-spacing: 0.06em;
@@ -352,14 +353,14 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
 
     /* ── Logout ── */
     .logout {
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.12);
-      color: rgba(255,255,255,.8);
+      background: transparent;
+      border: 1px solid transparent;
+      color: #475569;
       font-size: var(--sf-font-size-sm);
       margin-top: auto;
       width: 100%;
     }
-    .logout:hover { background: rgba(255,255,255,.18); color: white; }
+    .sidebar .logout:hover { background: #f1f5f9; color: #0f172a; }
 
     /* ── Main area ── */
     .main-area { min-width: 0; display: flex; flex-direction: column; }
@@ -435,10 +436,10 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
       .nav-section-label { display: none; }
       .nav-more-toggle {
         align-items: center;
-        background: rgba(255,255,255,.1);
+        background: var(--surface-soft);
         border: 0;
         border-radius: var(--radius);
-        color: rgba(255,255,255,.82);
+        color: #334155;
         cursor: pointer;
         display: inline-flex;
         flex: 0 0 auto;
@@ -451,7 +452,7 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
         padding: 0 var(--sf-density-control-padding-inline);
         white-space: nowrap;
       }
-      .nav-more-toggle:hover, .nav-more-toggle[aria-expanded="true"] { background: rgba(34,211,238,.18); color: white; }
+      .nav-more-toggle:hover, .nav-more-toggle[aria-expanded="true"] { background: #eef4ff; color: #1d4ed8; }
 
       .topbar { min-height: 48px; padding: 0 var(--sf-layout-gutter-mobile); position: static; }
       .topbar > button { display: none; }

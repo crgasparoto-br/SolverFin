@@ -2,25 +2,36 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "status": "rejected",
-  "rejection_id": "audit-rejection:issuecomment-6189467904",
-  "head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
+  "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
+  "head_sha": "18b1a397be0edcc737ae0e8f9c03cc16ac4a974a",
   "identity": {
-    "head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
-    "material_head_sha": "38a498beae70e407920bf692c03f9b0b1edd7fcd",
+    "head_sha": "18b1a397be0edcc737ae0e8f9c03cc16ac4a974a",
+    "material_head_sha": "92410e63b75103c0f298f88fdd520160d48be333",
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 702,
-    "pull_request_number": 713
+    "issue_number": 717,
+    "pull_request_number": 731
+  },
+  "external_report": {
+    "sha256": "abd15b164a67edc01e7c8dc651efad579268cb70819560f153bece241a03da40"
   },
   "findings": [
     {
-      "id": "F-714-03",
+      "id": "A-717-03",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "visual-gate-false-positive",
-      "reason": "footer-actions-clipped-at-320",
-      "summary": "Cancel clipped at 320x740 in new/edit/clone despite visual gate passing; require explicit bounds and negative mutations."
+      "category": "stale-source-locations",
+      "summary": "Source anchor and run IDs were obsolete after refactoring"
+    },
+    {
+      "id": "A-717-04",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "per-control-raw-evidence",
+      "summary": "Negative control evidence lacked verifiable individual trace"
     }
   ],
   "recommendations": []

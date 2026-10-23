@@ -283,8 +283,9 @@ export function operationalInstallmentsController(): string {
         if (!description || description.querySelector('[data-installment-badge="' + installment.id + '"]')) return;
         const label = installmentLabel(installment);
         const reasonText = installment.amountEditable ? "Valor da parcela editável. Outros dados podem estar protegidos." : blockReason(installment.editBlockedReason);
-        const badge = document.createElement("span");
-        badge.className = "installment-badge";
+        const existingBadge = row.querySelector(".cards-purchase-description .cards-installment-label");
+        const badge = existingBadge || document.createElement("span");
+        badge.classList.add("installment-badge");
         badge.dataset.installmentBadge = installment.id;
         badge.textContent = label;
         badge.setAttribute("aria-label", label);
@@ -300,7 +301,7 @@ export function operationalInstallmentsController(): string {
           badge.setAttribute("aria-describedby", reasonId);
           description.appendChild(reason);
         }
-        description.appendChild(badge);
+        if (!existingBadge) description.appendChild(badge);
       }
 
       async function fetchInstallments(path) {
@@ -408,7 +409,10 @@ export function operationalInstallmentsController(): string {
           const node = findNodeByData("script[data-purchase]", transactionId);
           const row = node && node.closest("article");
           if (!row) return;
-          addBadge(row, installment);
+          // Card recurrences already have the shared recurring icon; finite plans use one badge.
+          if (!installment.recurrenceId && Number(installment.totalInstallments) > 1) {
+            addBadge(row, installment);
+          }
           const editButton = row.querySelector('[data-edit-purchase="' + transactionId + '"]');
           if (editButton && installment.editBlockedReason === "invoice_linked") {
             editButton.title = editButton.disabled
@@ -660,17 +664,20 @@ export function operationalInstallmentsController(): string {
         }
       }
 
-      function focusableInstallmentControls(modal) {
+    function focusableInstallmentControls(modal) {
       return Array.from(
         modal.querySelectorAll(
-          'button:not([disabled]), summary, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          'button:not([disabled]), summary, [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ),
-      ).filter(
-        (control) =>
-          !control.hidden &&
-          control.getAttribute("aria-hidden") !== "true" &&
-          control.getClientRects().length > 0,
-      );
+      ).filter((control) => {
+        if (control.hidden || control.getAttribute("aria-hidden") === "true") return false;
+        if (control.closest("[hidden], [inert], [aria-hidden='true']")) return false;
+        const closedDetails = control.closest("details:not([open])");
+        if (closedDetails && control !== closedDetails.querySelector(":scope > summary")) return false;
+        const style = getComputedStyle(control);
+        if (style.display === "none" || style.visibility !== "visible") return false;
+        return control.getClientRects().length > 0;
+      });
     }
 
     function keepInstallmentFocusInsideModal(event) {
@@ -681,7 +688,15 @@ export function operationalInstallmentsController(): string {
       const controls = focusableInstallmentControls(modal);
       if (controls.length === 0) return;
       const first = controls[0];
-      const last = controls[controls.length - 1];
+      // A closed attachment disclosure is the last actual Tab stop. Inputs
+      // inside its collapsed content must never let focus escape the dialog.
+      const attachments = modal.querySelector("[data-statement-attachments]");
+      const collapsedSummary = !attachments?.open
+        ? attachments?.querySelector(":scope > summary")
+        : null;
+      const last = collapsedSummary && controls.includes(collapsedSummary)
+        ? collapsedSummary
+        : controls[controls.length - 1];
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();

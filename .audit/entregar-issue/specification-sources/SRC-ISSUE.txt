@@ -1,34 +1,38 @@
-Parent epic: #590
-Depends on: #603, #604
+**Parent epic:** #702
+**Fase:** 1 — propagação por superfície.
+**Rota:** `/relatorios`.
+**Antecedente:** #611 (arquétipo resumo → visualização → detalhe); entregas antigas não atestam acabamento frente à Golden Screen recém-aprovada.
+**Dependência:** #714 — marco técnico da Golden Screen e referência validada na `develop`.
 
 ## Objetivo
-
-Reduzir o acoplamento e o tamanho dos módulos web mais extensos usando as fronteiras de componentes, layouts e view-models definidas na Fase 3B.
+Alinhar os relatórios financeiros à hierarquia, densidade e iconografia da Golden Screen, respeitando o arquétipo analítico em vez de copiar a listagem do Extrato.
 
 ## Escopo
+- Priorizar contexto de período, conta/cartão, moeda e indicadores de decisão; organizar resumo, visualização, destaques e detalhe.
+- Refinar filtros, estados ativos, hierarquia de categorias, tabelas, gráficos, ações de expansão e eventuais drilldowns existentes.
+- Reduzir cards/bordas em excesso, sem perder comparabilidade financeira ou rastreabilidade dos números.
+- Melhorar desktop/mobile, colunas/tabulação, overflow controlado, foco, teclado e descrição acessível de gráficos.
 
-- identificar arquivos com múltiplas responsabilidades em `apps/web/src/dev-server`;
-- separar preparação de dados, renderização, interação e estilos quando houver boundary real;
-- evitar apenas fragmentar arquivos sem reduzir acoplamento;
-- eliminar gerações paralelas/legadas de uma tela quando a migração permitir;
-- preservar imports, contratos SSR e testes.
+<!-- review-702-2026-10-15 -->
+## Cenários de aceite discriminantes — revisão de 15/10/2026
+
+- **Análise:** em relatório disponível com dados, período, filtro, moeda, indicador decisivo, gráfico/tabela e detalhe devem ser identificáveis na ordem `resumo -> visualização -> detalhe`; usar apenas relatórios e drilldowns realmente existentes.
+- **Multi-moedas:** com BRL e USD no conjunto, não renderizar total combinado sem conversão explícita e auditável. Seleção/filtro e detalhamento mantêm unidade monetária e consistência com valores de origem.
+- **Estados e densidade:** demonstrar tabela larga/conteúdo longo, filtro sem resultado, legenda acessível e erro recuperável no desktop e mobile, com scroll local controlado e sem ampliar viewport horizontalmente.
+- **Controle negativo:** rejeitar regressão que oculta moeda, corta cabeçalhos/valores ou promove detalhes secundários acima da conclusão principal, ainda que testes de renderização estejam verdes.
+
+**Evidência de aceite:** prova funcional/visual real no SHA da PR, incluindo contraste de cenários por moeda, e avaliação independente do acabamento.
 
 ## Critérios de aceite
-
-- [ ] módulos migrados possuem responsabilidade clara e coesa;
-- [ ] não há duplicação de implementação antiga e nova sem status de transição explícito;
-- [ ] extrações seguem boundaries reutilizáveis, não apenas limite de linhas;
-- [ ] testes focados continuam cobrindo comportamento;
-- [ ] documentação identifica qualquer legado ainda intencional.
+- [ ] Resumo e conclusão principal reconhecíveis rapidamente; dados analíticos legíveis em desktop/mobile.
+- [ ] Valores separados por moeda, exceto conversão explícita e auditável do domínio; totais e filtros não sofrem regressão.
+- [ ] Visualizações e tabelas preservam contexto, legenda acessível, drilldown e comportamentos existentes.
+- [ ] Estados vazios/erro/conteúdo longo, evidências Chrome exact-SHA e comparação visual contra nível de acabamento aprovado.
+- [ ] Regressões financeiras/SSR/a11y verificadas, CI verde, documentação pertinente e auditoria independente favorável.
 
 ## Fora de escopo
+Novos indicadores de negócio, fórmulas, consultas, domínio ou redesign de Cartões/Extrato.
 
-- refactor de todos os arquivos do monorepo;
-- mudanças de domínio financeiro não necessárias à separação.
+Referências obrigatórias: épica [#702](https://github.com/crgasparoto-br/SolverFin/issues/702), Golden Screen aprovada pelo usuário em 14/10/2026, `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md`, `docs/GOLDEN_STATEMENT.md`, `AGENTS.md` e mockup `SolverFin Bank Statement UI Mockup.png`.
 
-## Referências
-
-- #590
-- #603
-- #604
-- ADR 0014
+**Base de todas as PRs:** `develop`. Preservar arquitetura SSR, primitivas e contratos financeiros, acessibilidade, LGPD e responsividade. A referência é o **nível de acabamento** da Golden Screen, não uma cópia de seus componentes ou disposição. Exigir evidência Chrome/SSR desktop/mobile do **SHA material da entrega**, testes e checks relevantes verdes e auditoria independente por subissue. Não fazer merge automático.
