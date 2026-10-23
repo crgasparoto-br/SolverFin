@@ -476,7 +476,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(purchaseDialog, /name="currency"[^>]*readonly/);
   assert.ok(html.includes('data-purchase-section="schedule"]'));
   assert.ok(html.includes(".cards-purchase-dialog-panel{display:flex"));
-  assert.ok(html.includes(".cards-purchase-form-body{display:grid;flex:1"));
+  assert.ok(html.includes(".cards-purchase-form-body{display:grid;align-content:start;flex:1"));
   assert.ok(html.includes('@media(max-width:600px){.cards-dialog[data-modal="purchase"]'));
   assert.match(html, /aria-describedby="cards-payment-dialog-description"/);
   assert.match(
