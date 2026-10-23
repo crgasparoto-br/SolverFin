@@ -522,8 +522,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes('Estorno: " + purchase.description'));
 
   assert.ok(html.includes("data-delete-purchase="));
-  assert.ok(html.includes('purchase.status === "reconciled"'));
-  assert.ok(html.includes("purchase.installmentId || purchase.recurrenceId"));
+  // Assert actual rendered permissions, not implementation source code inside the page.
+  assert.match(html, /data-delete-purchase="purchase-hotel" disabled/);
+  assert.match(html, /data-delete-purchase="purchase-taxi" disabled/);
+  assert.match(html, /data-delete-purchase="purchase-coffee">/);
 
   assert.ok(html.includes(">Excluir</span>"));
 
