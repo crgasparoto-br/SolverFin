@@ -1581,11 +1581,13 @@ function clientScript(): string {
           document.querySelector('dialog[data-modal="purchase"]')?.setAttribute("data-editing", "true");
           purchaseForm.dataset.currentPurchaseId = purchase.id;
           purchaseForm.dataset.recurrenceId = purchase.recurrenceId || "";
-          const isInstallmentPurchase = Number.isInteger(purchase.installmentSequenceNumber) && Number.isInteger(purchase.totalInstallments);
+          const isInstallmentPurchase = !purchase.recurrenceId && Number.isInteger(purchase.installmentSequenceNumber) && Number.isInteger(purchase.totalInstallments) && purchase.totalInstallments > 1;
           purchaseForm.dataset.installmentPurchase = isInstallmentPurchase ? "true" : "false";
           purchaseForm.querySelector('[name="currentPurchaseId"]').value = purchase.id;
           purchaseForm.querySelector('[name="recurrenceId"]').value = purchase.recurrenceId || "";
-          purchaseForm.querySelector('[name="amountMinor"]').value = minorToMoney(isInstallmentPurchase ? purchase.purchaseTotalAmountMinor : purchase.amountMinor);
+          purchaseForm.querySelector('[name="amountMinor"]').value = minorToMoney(isInstallmentPurchase ? (purchase.purchaseTotalAmountMinor ?? purchase.amountMinor) : purchase.amountMinor);
+          purchaseForm.querySelector('[name="amountMinor"]').readOnly = isInstallmentPurchase;
+          purchaseForm.querySelector('[name="occurredOn"]').readOnly = isInstallmentPurchase;
           purchaseForm.querySelector('[name="occurredOn"]').value = purchase.occurredOn;
           purchaseForm.querySelector('[name="description"]').value = purchase.description || "";
           purchaseForm.querySelector('[name="categoryId"]').value = purchase.categoryId || "";
