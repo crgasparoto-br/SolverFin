@@ -703,10 +703,12 @@ export async function reverseCardPurchaseForContext(
               and i."organizationId" = $5 and i."financialProfileId" = $6`
         : `select t."id", t."description", t."amountMinor", t."currency",
                   t."cardInstrumentId", t."occurredOn"
-             from "Transaction" t where t."id" = $1 and t."invoiceId" = $3
-              and t."installmentId" is null and t."cardId" = $4
-              and t."organizationId" = $5 and t."financialProfileId" = $6`,
-      [transactionId, installmentId ?? null, invoiceId, cardId, context.organizationId, context.financialProfileId],
+             from "Transaction" t where t."id" = $1 and t."invoiceId" = $2
+              and t."installmentId" is null and t."cardId" = $3
+              and t."organizationId" = $4 and t."financialProfileId" = $5`,
+      installmentId
+        ? [transactionId, installmentId, invoiceId, cardId, context.organizationId, context.financialProfileId]
+        : [transactionId, invoiceId, cardId, context.organizationId, context.financialProfileId],
     );
     const origin = source[0];
     if (!origin || !Number.isSafeInteger(Number(origin.amountMinor)) || Number(origin.amountMinor) <= 0 ||
