@@ -140,6 +140,21 @@ export function cardsPageStyles(): string {
     /* Apply is a compact action, not a full-width field. */
     .cards-purchase-filter-form>button[type="submit"]{justify-self:end;align-self:end;width:auto;min-width:5.5rem;max-width:7rem;min-height:36px;height:36px;padding:0 14px;white-space:nowrap}
     @media(max-width:430px){.cards-purchase-filter-form>button[type="submit"]{width:auto!important;justify-self:end;grid-column:1!important}}
+    /* Single compact search/filter row. Apply stays at the far right. */
+    .cards-purchase-filter-form{display:grid;grid-template-columns:minmax(9rem,1fr) minmax(7rem,8.5rem) minmax(9rem,11rem) minmax(6rem,7rem) 6rem;align-items:end;gap:8px}
+    .cards-purchase-filter-form .cards-search-field{grid-column:1!important;min-width:0}
+    .cards-purchase-filter-form .cards-purchase-group-filter{grid-column:2!important}
+    .cards-purchase-filter-form .cards-purchase-day-filter{grid-column:3!important;max-width:none}
+    .cards-purchase-filter-form .cards-advanced-filters{grid-column:4!important;min-width:0}
+    .cards-purchase-filter-form>button[type="submit"]{grid-column:5!important;justify-self:end;width:100%;max-width:6rem}
+    @media(max-width:760px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(7rem,1fr) minmax(6rem,.75fr) minmax(8.5rem,.9fr) minmax(5.5rem,.65fr) 5.5rem;gap:5px;overflow-x:auto}
+      .cards-purchase-filter-form .cards-search-field{grid-column:1!important}
+      .cards-purchase-filter-form .cards-purchase-group-filter{grid-column:2!important}
+      .cards-purchase-filter-form .cards-purchase-day-filter{grid-column:3!important}
+      .cards-purchase-filter-form .cards-advanced-filters{grid-column:4!important}
+      .cards-purchase-filter-form>button[type="submit"]{grid-column:5!important;width:100%!important}
+    }
     /* Shared grid contract: header and entries use identical tracks across grouping modes. */
     .cards-purchase-groups{--cards-purchase-columns:minmax(5rem,6.5rem) minmax(0,1.6fr) minmax(0,.9fr) minmax(0,.9fr) minmax(3.5rem,.55fr) minmax(6.3rem,.8fr) 3rem;min-width:0}
     .cards-purchase-groups .cards-purchase-table-head,
