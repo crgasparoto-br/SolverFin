@@ -469,6 +469,11 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   for (const heading of ["Valores", "Dados da compra", "Classificação", "Repetição e parcelas"]) {
     assert.ok(purchaseDialog.includes("<legend>" + heading + "</legend>"));
   }
+  // Purchase rows expose instrument as a semantic column after Compra.
+  assert.match(html, /role="columnheader">Compra<\\/span><span role="columnheader">Instrumento/);
+  assert.match(html, /role="cell" data-label="Instrumento" class="cards-purchase-instrument"/);
+  assert.ok(!html.includes('data-label="Limite"'));
+  assert.ok(!html.includes('role="columnheader">Moeda'));
   assert.match(purchaseDialog, /class="cards-purchase-form-body"/);
   assert.match(purchaseDialog, /class="cards-purchase-dialog-actions"/);
   assert.ok(purchaseDialog.includes('type="button" data-close-modal>Cancelar</button>'));
