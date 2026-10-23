@@ -203,10 +203,16 @@ test("#718 rejects overlapping trend currency text and an ineffective negative c
 test("A718-05 adapter rejects clipped desktop selections despite no page overflow", async () => {
   const installments = fixture();
   installments.multiCurrency[0].measurements.filterFit.fits = false;
-  await assert.rejects(collectReport718Evidence(async () => installments), /cuts selected evolution filter/);
+  await assert.rejects(
+    collectReport718Evidence(async () => installments),
+    /cuts selected evolution filter/,
+  );
   const cashFlow = fixture();
   cashFlow.cashFlow[1].measurements.filterFit.fits = false;
-  await assert.rejects(collectReport718Evidence(async () => cashFlow), /cuts cash-flow filters/);
+  await assert.rejects(
+    collectReport718Evidence(async () => cashFlow),
+    /cuts cash-flow filters/,
+  );
   const weakControl = fixture();
   weakControl.multiCurrency[0].filterNegativeControl.rejected = false;
   await assert.rejects(collectReport718Evidence(async () => weakControl));
@@ -215,5 +221,8 @@ test("A718-05 adapter rejects clipped desktop selections despite no page overflo
 test("A718-05 adapter requires real tablet coverage", async () => {
   const missing = fixture();
   missing.multiCurrency.splice(1, 1);
-  await assert.rejects(collectReport718Evidence(async () => missing), /1024x768/);
+  await assert.rejects(
+    collectReport718Evidence(async () => missing),
+    /1024x768/,
+  );
 });

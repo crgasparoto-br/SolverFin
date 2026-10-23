@@ -49,7 +49,11 @@ export async function collectReport718Evidence(readEvidence) {
     assert.ok(measurements.currencies?.includes("USD"));
     assert.equal(measurements.currenciesComplete, true);
     assert.equal(measurements.globalOverflow, false);
-    assert.equal(measurements.filterFit?.fits, true, `${viewport} cuts selected evolution filter values`);
+    assert.equal(
+      measurements.filterFit?.fits,
+      true,
+      `${viewport} cuts selected evolution filter values`,
+    );
     if (viewport === "1366x768") {
       assert.equal(scenario.filterNegativeControl?.rejected, true);
       assert.equal(scenario.filterNegativeControl?.restored, true);

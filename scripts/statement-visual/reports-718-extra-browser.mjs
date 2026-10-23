@@ -29,7 +29,7 @@ export async function validateCashFlow(cdp, context) {
       const viewport = ${reportPageViewportExpression(".cash-flow-report-list")};
       return {
         pageFitsViewport: viewport.fits,
-        filterFit: ${reportSelectedFilterFitExpression('.cash-flow-filters')},
+        filterFit: ${reportSelectedFilterFitExpression(".cash-flow-filters")},
         trendMoney: ${trendMoneyTextFitExpression()},
         blockCurrencies: blocks.map((block) => block.querySelector('.report-layer-topline h2')?.textContent?.trim()?.split(' - ').at(-1)),
         dailyTable: blocks.map((block) => {
@@ -67,7 +67,11 @@ export async function validateCashFlow(cdp, context) {
     })()`,
     );
     check(measurements.pageFitsViewport, `Cash flow ${viewport} expands the page`, measurements);
-    check(measurements.filterFit.fits, `Cash flow ${viewport} clips selected filter values`, measurements.filterFit);
+    check(
+      measurements.filterFit.fits,
+      `Cash flow ${viewport} clips selected filter values`,
+      measurements.filterFit,
+    );
     check(
       measurements.trendMoney.fits,
       `Cash flow ${viewport} trend values overlap adjacent columns`,

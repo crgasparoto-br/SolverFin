@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 
-import { reportPageViewportExpression, reportSelectedFilterFitExpression } from "./report-page-viewport.mjs";
+import {
+  reportPageViewportExpression,
+  reportSelectedFilterFitExpression,
+} from "./report-page-viewport.mjs";
 
 function element(clientWidth, scrollWidth = clientWidth, overflowX = "clip") {
   return {
@@ -110,18 +113,26 @@ test("supports an explicit viewport boundary for cash-flow and SSR error states"
 function evaluateSelectedFilters(monthWidth, categoryWidth) {
   const fields = [
     { name: "month", tagName: "INPUT", type: "month", value: "2026-10", width: monthWidth },
-    { name: "categoryId", tagName: "SELECT", selectedOptions: [{ textContent: "Todas as categorias" }], width: categoryWidth },
+    {
+      name: "categoryId",
+      tagName: "SELECT",
+      selectedOptions: [{ textContent: "Todas as categorias" }],
+      width: categoryWidth,
+    },
   ];
   for (const field of fields) field.getBoundingClientRect = () => ({ width: field.width });
   const form = { querySelectorAll: () => fields };
   const context = {
     document: {
       querySelector: () => form,
-      createElement: () => ({ getContext: () => ({ measureText: (text) => ({ width: text.length * 7 }) }) }),
+      createElement: () => ({
+        getContext: () => ({ measureText: (text) => ({ width: text.length * 7 }) }),
+      }),
     },
-    getComputedStyle: (node) => node === form
-      ? { gridTemplateColumns: "280px 280px 280px" }
-      : { font: "14px Arial", paddingLeft: "12px", paddingRight: "12px" },
+    getComputedStyle: (node) =>
+      node === form
+        ? { gridTemplateColumns: "280px 280px 280px" }
+        : { font: "14px Arial", paddingLeft: "12px", paddingRight: "12px" },
   };
   return runInNewContext(reportSelectedFilterFitExpression(".installment-filters"), context);
 }

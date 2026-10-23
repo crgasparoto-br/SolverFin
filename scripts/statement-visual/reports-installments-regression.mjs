@@ -117,10 +117,20 @@ async function validateDesktop(cdp, fixture) {
     measurements,
   );
 
-  check(measurements.filterFit.fits, "Installment desktop cuts selected filter values", measurements.filterFit);
-  const negativeControl = await validateFilterNegativeControl(browser.cdp, 'repeat(6,minmax(0,1fr))');
-  check(negativeControl.rejected && negativeControl.restored,
-    "Installment desktop did not detect six-column clipping", negativeControl);
+  check(
+    measurements.filterFit.fits,
+    "Installment desktop cuts selected filter values",
+    measurements.filterFit,
+  );
+  const negativeControl = await validateFilterNegativeControl(
+    browser.cdp,
+    "repeat(6,minmax(0,1fr))",
+  );
+  check(
+    negativeControl.rejected && negativeControl.restored,
+    "Installment desktop did not detect six-column clipping",
+    negativeControl,
+  );
 
   scenarios.push({
     negativeControl,
@@ -141,9 +151,18 @@ async function validateTablet(cdp, fixture) {
   const filename = "reports-installments-tablet-1024x768.png";
   await screenshot(cdp, join(outputDir, filename));
   screenshots.push(filename);
-  check(measurements.filterFit.fits && measurements.pageFitsViewport,
-    "Installment tablet filter clips selected values or leaks overflow", measurements);
-  scenarios.push({ route, viewport: "1024x768", state: "ready", screenshot: filename, measurements });
+  check(
+    measurements.filterFit.fits && measurements.pageFitsViewport,
+    "Installment tablet filter clips selected values or leaks overflow",
+    measurements,
+  );
+  scenarios.push({
+    route,
+    viewport: "1024x768",
+    state: "ready",
+    screenshot: filename,
+    measurements,
+  });
 }
 
 async function validateMobile(cdp, fixture, width, height) {
@@ -188,7 +207,7 @@ async function validateMobile(cdp, fixture, width, height) {
     measurements.filterFit,
   );
   // Refuta o antigo layout de duas colunas sem modificar o produto persistido.
-  const negativeControl = await validateFilterNegativeControl(cdp, 'repeat(2,minmax(0,1fr))');
+  const negativeControl = await validateFilterNegativeControl(cdp, "repeat(2,minmax(0,1fr))");
   check(
     negativeControl.rejected && negativeControl.restored,
     `Installment ${width}px negative control failed`,
@@ -333,17 +352,20 @@ function fixtureExpression() {
 }
 
 async function validateFilterNegativeControl(cdp, brokenColumns) {
-  return evaluate(cdp, `(() => {
+  return evaluate(
+    cdp,
+    `(() => {
     const form = document.querySelector('.installment-filters');
     const before = form.style.gridTemplateColumns;
-    const baseline = ${reportSelectedFilterFitExpression('.installment-filters')};
+    const baseline = ${reportSelectedFilterFitExpression(".installment-filters")};
     form.style.gridTemplateColumns = ${JSON.stringify(brokenColumns)};
-    const invalid = ${reportSelectedFilterFitExpression('.installment-filters')};
+    const invalid = ${reportSelectedFilterFitExpression(".installment-filters")};
     form.style.gridTemplateColumns = before;
-    const restored = ${reportSelectedFilterFitExpression('.installment-filters')};
+    const restored = ${reportSelectedFilterFitExpression(".installment-filters")};
     return { baseline: baseline.fits, rejected: baseline.fits && !invalid.fits,
       restored: restored.fits, invalid };
-  })()`);
+  })()`,
+  );
 }
 
 function measurementExpression() {
