@@ -17,7 +17,7 @@ import {
   resolveCanonicalCardPurchaseCurrency,
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { InvoiceContractError, reverseCardPurchaseForContext, updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import { InvoiceContractError, deleteSimpleCardPurchaseForContext, reverseCardPurchaseForContext, updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   archiveCardInstrumentForContext,
@@ -65,6 +65,7 @@ route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCar
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, updateCardPurchaseHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/reverse`, reverseCardPurchaseHandler);
+route("DELETE", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, deleteCardPurchaseHandler);
 route(
   "POST",
   `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/move-invoice-period`,
@@ -360,6 +361,17 @@ async function registerCardPurchaseHandler(
   );
 
   return json(201, result);
+}
+
+async function deleteCardPurchaseHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const result = await deleteSimpleCardPurchaseForContext(
+    context, requireParam(match, "cardId"), requireParam(match, "transactionId"),
+  );
+  return json(200, { deleted: result });
 }
 
 async function reverseCardPurchaseHandler(
