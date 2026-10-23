@@ -115,7 +115,7 @@ async function validateLongContent(cdp) {
     `(() => {
       const groupName = document.querySelector('[data-instrument-label]');
       const description = document.querySelector('[data-purchase-item] .cards-purchase-description strong');
-      const category = document.querySelector('[data-purchase-item] .cards-purchase-description > span');
+      const category = document.querySelector('[data-purchase-item] .cards-purchase-category-label');
       const amount = document.querySelector('[data-purchase-item] .cards-purchase-amount');
       const values = {
         groupName: groupName?.textContent || '',
@@ -166,7 +166,7 @@ async function validateLongContent(cdp) {
     `((values) => {
       const groupName = document.querySelector('[data-instrument-label]');
       const description = document.querySelector('[data-purchase-item] .cards-purchase-description strong');
-      const category = document.querySelector('[data-purchase-item] .cards-purchase-description > span');
+      const category = document.querySelector('[data-purchase-item] .cards-purchase-category-label');
       const amount = document.querySelector('[data-purchase-item] .cards-purchase-amount');
       if (groupName) groupName.textContent = values.groupName;
       if (description) description.textContent = values.description;

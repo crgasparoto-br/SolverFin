@@ -276,7 +276,7 @@ export async function renderCardsPageV2(
     filterPurchases(canonicalPurchases, categories, presentation),
     presentation.sort,
   );
-  const groups = groupPurchasesByInstrument(visiblePurchases, instruments, invoiceCurrency);
+  const groups = groupPurchasesByInstrument(visiblePurchases, instruments);
   const matchingPaymentAccounts = invoiceCurrency
     ? accounts.filter(
         (account) =>
@@ -495,7 +495,6 @@ function sortPurchases(
 function groupPurchasesByInstrument(
   purchases: readonly CardPurchaseRecord[],
   instruments: readonly CardInstrumentRecord[],
-  currency: string | undefined,
 ): InstrumentPurchaseGroup[] {
   const groups = new Map<string, InstrumentPurchaseGroup>();
   const order: string[] = [];

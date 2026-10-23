@@ -169,11 +169,10 @@ export function cardsPageStyles(): string {
       .cards-invoice-navigation .cards-month-picker>summary{font-size:.68rem;padding:4px 6px}
       .cards-invoice-navigation .cards-month-jump{left:0;right:auto;transform:none}
     }
-    .cards-purchase-row .cards-purchase-amount.is-negative{color:#b42318}
     /* Statement palette: income green, expenses red, transfers neutral. */
     .cards-purchase-row .cards-purchase-category[data-category-direction="in"] .cards-purchase-category-badge{background:var(--sf-color-success-surface);color:var(--sf-color-success)}
     .cards-purchase-row .cards-purchase-category[data-category-direction="out"] .cards-purchase-category-badge{background:var(--sf-color-danger-surface);color:var(--sf-color-danger)}
-    .cards-purchase-row .cards-purchase-category[data-category-direction="transfer"] .cards-purchase-category-badge{background:#f1f5f9;color:var(--sf-color-muted-text)}
+    .cards-purchase-row .cards-purchase-category[data-category-direction="transfer"] .cards-purchase-category-badge{background:var(--neutral-control-hover);color:var(--sf-color-muted-text)}
     .cards-purchase-row .cards-purchase-amount.is-negative{color:var(--danger,#b91c1c)}
     /* Currency remains in data-currency and accessible labeling; omit BRL suffix. */
     .cards-layout .sf-money[data-currency="BRL"]>.sf-money-currency{display:none}
