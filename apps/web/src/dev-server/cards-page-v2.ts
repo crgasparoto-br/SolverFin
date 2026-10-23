@@ -1615,7 +1615,9 @@ function clientScript(): string {
           syncRepeatFields();
           if (isInstallmentPurchase) {
             setField("installmentValueMode", false);
-            setField("installmentAmountMinor", false);
+            // Keep the selected occurrence amount visible as read-only context.
+            // Edits remain exclusive to the dedicated installment amount dialog.
+            setField("installmentAmountMinor", true);
             setField("installmentContext", true);
             const context = purchaseForm.querySelector('[data-purchase-field="installmentContext"]');
             if (context) context.textContent = "Parcela " + purchase.installmentSequenceNumber + " de " + purchase.totalInstallments + ". Para corrigir o valor desta parcela, use a ação Editar valor da parcela no menu.";
