@@ -105,6 +105,12 @@ PATCH /api/credit-card-accounts/:cardId/default-instrument
 
 `POST /api/credit-card-accounts/:cardId/purchases` registra compra no agrupador. Quando `cardInstrumentId` e informado, a API carrega os instrumentos do agrupador, aplica as validacoes do dominio e persiste a origem da compra em `Transaction.cardInstrumentId` e nas parcelas.
 
+### Ajuste pontual ou futuro de valores de parcelas (#742)
+
+`PATCH /api/invoices/:invoiceId/installments/:installmentId/amount` é o endpoint operacional para corrigir o valor exibido de parcelas **finitas** de compras de cartão. Exige sessão/tenant/perfil, `amountMinor` inteiro seguro e positivo e `scope` igual a `current` ou `current_and_future`. O segundo escopo atualiza a parcela indicada e as posteriores elegíveis do mesmo cronograma; responde `updatedCount` e `skippedCount`. A resposta inclui a fatura escolhida atualizada.
+
+A mutação valida vínculo de parcela/compra/fatura, moeda nativa da fatura, status aberto de cada fatura e estado planejado ou efetivado não conciliado. Não reabre faturas bloqueadas, não altera parcelas conciliadas ou de recorrência, não edita `Transaction.amountMinor` da compra de origem e não altera datas, quantidade, instrumento ou vínculos. Atualiza atomicamente `Installment.amountMinor`, o total de cada fatura afetada e a trilha de auditoria minimizada. Ausência de parcela/tenant equivale a não encontrada; seleção bloqueada retorna conflito. A rota genérica `PATCH /api/installments/:id` continua sem permitir valor de parcelas de fatura.
+
 ## Modelo persistente alvo
 
 ### Cartao agrupador/fatura
