@@ -17,7 +17,7 @@ import {
   resolveCanonicalCardPurchaseCurrency,
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { InvoiceContractError, deleteSimpleCardPurchaseForContext, reverseCardPurchaseForContext, updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import { InvoiceContractError, deleteSimpleCardPurchaseForContext, reverseCardPurchaseForContext, updateCardReversalForContext, updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   archiveCardInstrumentForContext,
@@ -65,6 +65,7 @@ route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCar
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, updateCardPurchaseHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/reverse`, reverseCardPurchaseHandler);
+route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/reversals/:reversalId`, updateCardReversalHandler);
 route("DELETE", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, deleteCardPurchaseHandler);
 route(
   "POST",
@@ -372,6 +373,26 @@ async function deleteCardPurchaseHandler(
     context, requireParam(match, "cardId"), requireParam(match, "transactionId"),
   );
   return json(200, { deleted: result });
+}
+
+async function updateCardReversalHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const result = await updateCardReversalForContext(
+    context,
+    requireParam(match, "cardId"),
+    requireParam(match, "reversalId"),
+    {
+      description: String(body.description ?? ""),
+      occurredOn: String(body.occurredOn ?? ""),
+      amountMinor: Number(body.amountMinor),
+      ...(body.cardInstrumentId ? { cardInstrumentId: String(body.cardInstrumentId) } : {}),
+    },
+  );
+  return json(200, { reversal: result });
 }
 
 async function reverseCardPurchaseHandler(
