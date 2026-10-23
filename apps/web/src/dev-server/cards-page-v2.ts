@@ -466,10 +466,7 @@ function groupPurchasesByInstrument(
         label:
           id === "__unassigned__"
             ? "Sem instrumento identificado"
-            : formatInstrumentLabel(
-                instruments.find((instrument) => instrument.id === id),
-                currency,
-              ),
+            : formatInstrumentIdentity(instruments.find((instrument) => instrument.id === id)),
         purchases: [],
       };
       groups.set(id, group);
@@ -956,10 +953,10 @@ function renderInstrumentGroup(
   return `<details class="cards-instrument-group" data-instrument-purchase-group${group.id === "__unassigned__" ? "" : ` data-instrument-id="${escapeHtml(group.id)}"`} open>
     <summary><div><strong data-instrument-label>${escapeHtml(group.label)}</strong><span>${formatPurchaseCount(group.purchases.length)}</span></div><div class="cards-instrument-totals">${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</div></summary>
     <div class="cards-purchase-table" role="table" aria-label="Compras de ${escapeHtml(group.label)}">
-      <div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>
+      <div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Instrumento</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>
       ${group.purchases
         .map((purchase) =>
-          renderPurchaseRow(purchase, categories, recurrences, invoices, selectedInvoice),
+          renderPurchaseRow(purchase, group.label, categories, recurrences, invoices, selectedInvoice),
         )
         .join("")}
     </div>
@@ -968,6 +965,7 @@ function renderInstrumentGroup(
 
 function renderPurchaseRow(
   purchase: CardPurchaseRecord,
+  instrumentLabel: string,
   categories: readonly CategoryRecord[],
   recurrences: readonly RecurrenceRecord[],
   invoices: readonly InvoiceRecord[],
@@ -998,6 +996,7 @@ function renderPurchaseRow(
   return `<article class="cards-purchase-row" role="row" data-purchase-item data-reconciliation="${purchase.status === "reconciled" ? "reconciled" : "unreconciled"}">
     <time role="cell" data-label="Data" datetime="${escapeHtml(purchase.occurredOn)}">${formatDate(purchase.occurredOn)}</time>
     <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${installmentLabel ? ` <span class="installment-badge cards-installment-label" aria-label="${escapeHtml(installmentLabel)}" title="${escapeHtml(installmentLabel)}">${escapeHtml(installmentLabel)}</span>` : ""}${recurrence ? renderRecurrenceIndicator() : ""}</strong></div>
+    <span role="cell" data-label="Instrumento" class="cards-purchase-instrument">${escapeHtml(instrumentLabel)}</span>
     <span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out"><span class="cards-purchase-category-badge"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5v12"/><path d="m5.5 11 4.5 4.5L14.5 11"/></svg><span class="cards-purchase-category-label">${escapeHtml(category)}</span></span></span>
     <span role="cell" data-label="Situação" class="cards-purchase-status-cell">${renderPurchaseStatusControl(purchase, locked)}</span>
     <strong role="cell" data-label="Valor" class="cards-purchase-amount">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
