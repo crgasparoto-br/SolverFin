@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 import { pageMeasurementExpression } from "./measurements.mjs";
+import { reportPageViewportExpression } from "./report-page-viewport.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
 import { inspectStatementActionMenu } from "./statement-action-menu-visual.mjs";
 
@@ -584,7 +585,16 @@ async function validateReports(cdp) {
   const mobile = await inspectReportStructure(cdp, true);
   assert.equal(mobile.focused, true, "Reports matrix did not accept focus.");
   assert.equal(mobile.localOverflow, true, "Reports mobile matrix lost local overflow.");
-  assert.equal(mobile.pageFits, true, "Reports mobile page leaks horizontal overflow.");
+  assert.equal(
+    mobile.trendGridFits,
+    true,
+    "Reports mobile category trend must wrap without horizontal overflow.",
+  );
+  assert.equal(
+    mobile.pageFits,
+    true,
+    `Reports mobile page leaks horizontal overflow: ${JSON.stringify(mobile.overflowDiagnostics)}`,
+  );
   assert.equal(mobile.filterVisible, true, "Reports mobile filter bar is not visible.");
   assert.ok(mobile.tableCount >= 1, "Reports mobile has no semantic table.");
 
@@ -600,11 +610,14 @@ async function inspectReportStructure(cdp, focusScroller) {
       const form = document.querySelector('.evolution-filters');
       const formRect = form?.getBoundingClientRect();
       const tables = Array.from(document.querySelectorAll('table.evolution-table'));
+      const pageViewport = ${reportPageViewportExpression()};
       return {
         viewportWidth: innerWidth,
         focused: document.activeElement === scroller,
         localOverflow: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
-        pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        trendGridFits: (() => { const trends = Array.from(document.querySelectorAll('.report-trend-grid')); return trends.length > 0 && trends.every((element) => element.scrollWidth <= element.clientWidth + 1 && getComputedStyle(element).gridAutoFlow === 'row'); })(),
+        pageFits: pageViewport.fits,
+        overflowDiagnostics: pageViewport.fits ? null : pageViewport,
         filterVisible: Boolean(formRect && formRect.width > 0 && formRect.height > 0),
         filterControlCount: form?.querySelectorAll('input, select, button, a').length || 0,
         tableCount: tables.length,

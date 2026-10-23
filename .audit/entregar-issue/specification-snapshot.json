@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
-  "issue": 717,
-  "created_at": "2026-10-20T05:02:03.053695+00:00",
+  "issue": 718,
+  "created_at": "2026-10-22T10:49:48.401280+00:00",
   "primary_source_id": "SRC-ISSUE",
   "sources": [
     {
       "id": "SRC-ISSUE",
       "kind": "issue-body",
       "path": "specification-sources/SRC-ISSUE.txt",
-      "locator": "/vercel/work717/src/issue.md",
-      "sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "locator": "/mnt/data/solverfin718-work/issue718.txt",
+      "sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "textual": true,
       "extract_source_id": null,
       "required": true,

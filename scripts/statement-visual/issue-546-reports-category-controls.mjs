@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { reportPageViewportExpression } from "./report-page-viewport.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -268,7 +269,11 @@ async function validateMobile(cdp, seeded) {
   check(measurements.viewportWidth === 390, "Mobile viewport is not 390px", measurements);
   check(measurements.pageFitsViewport, "Mobile page leaks horizontal overflow", measurements);
   check(measurements.tableScrollable, "Mobile matrix is not horizontally scrollable", measurements);
-  check(measurements.filterColumns === 1, "Mobile report filters are not stacked", measurements);
+  check(
+    measurements.filterColumns === 2,
+    "Mobile report filters must use the approved two-column compact grid",
+    measurements,
+  );
   check(
     measurements.selectedOrigin === `card:${seeded.cardId}`,
     "Blocked card selection was lost on mobile",
@@ -290,11 +295,13 @@ function measurementExpression() {
     const form = document.querySelector('.evolution-filters');
     const style = form ? getComputedStyle(form) : null;
     const url = new URL(window.location.href);
+    const pageViewport = ${reportPageViewportExpression()};
     return {
       state: document.querySelector('[data-report-state]')?.getAttribute('data-report-state') || '',
       hasReadyReport: Boolean(document.querySelector('[data-report-state="ready"]')),
       viewportWidth: window.innerWidth,
-      pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      pageFitsViewport: pageViewport.fits,
+      pageViewport,
       tableScrollable: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
       filterColumns: style ? style.gridTemplateColumns.split(' ').filter(Boolean).length : 0,
       selectedOrigin: document.querySelector('select[name="origin"]')?.value || '',

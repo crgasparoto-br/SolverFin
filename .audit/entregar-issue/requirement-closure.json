@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/vercel/work717/artifacts/specification-snapshot.json",
-    "sha256": "09c200edb9c7adb4a6b87d1c6e2e459b6a7edc29ee6f737fa859b342cdb8aaa9"
+    "path": "/mnt/data/solverfin718-work/work718/.audit/entregar-issue/specification-snapshot.json",
+    "sha256": "120501d11698b789c52a012312e5a66cb205551ca66d67e32c0f203f540f3dbb"
   },
   "primary_issue_source_id": "SRC-ISSUE",
   "obligations": [
@@ -10,243 +10,252 @@
       "id": "OBL-001",
       "candidate_key": "d2ef4c04cca21c61dd85688d43bd3ddda86294f61ba2e28f50a54b744159a6bd",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 5,
       "source_text": "**Dependência:** #714 — marco técnico da Golden Screen e referência validada na `develop`.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-01"
+        "REQ-718-01"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:53-109 and docs/GOLDEN_STATEMENT.md; CI exact head 39603347505"
+      "rationale": "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39868576683; issue #714 baseline reference remains open for separate audit"
     },
     {
       "id": "OBL-002",
-      "candidate_key": "5f3ba84512ebfc3420f999e19117ceab94336fa888bec45e19fb02b66952ba2d",
+      "candidate_key": "940646a2d1be71dbd6453728fa7c5428b81639ee9a92b7a7a94a77389f6f481a",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 11,
-      "source_text": "Refinar árvore/grupos/subcategorias: recuo, contraste tipográfico, ícones, expansão, ordenação, níveis e estado ativo.",
-      "flags": [],
+      "source_text": "Priorizar contexto de período, conta/cartão, moeda e indicadores de decisão; organizar resumo, visualização, destaques e detalhe.",
+      "flags": [
+        "temporal",
+        "temporal-destination"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-02"
+        "REQ-718-02"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:180-269 and apps/web/src/dev-server/categories-page.ts:270-320; apps/web/src/dev-server/categories-golden-screen.test.ts; visual 39603346820"
+      "rationale": "apps/web/src/dev-server/reports-route-page.ts:125-302; reports-analysis-archetype.ts:49-77; Chrome report multiCurrency 1366x768,390x844,320x740 has 18 category captures and intact A5 layers"
     },
     {
       "id": "OBL-003",
-      "candidate_key": "c50a8a106047b501bd655409ef3b8a34ae105da43909f36b3cb5ca7991f13936",
+      "candidate_key": "43f44018944a663088aa539e65f9c49fe01599cc0287f8dd95b1cebbbf67554f",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 12,
-      "source_text": "Dar clareza a busca/filtros, categorias de receitas/despesas, edição/criação e ações por item, mantendo modais e confirmação existentes.",
+      "source_text": "Refinar filtros, estados ativos, hierarquia de categorias, tabelas, gráficos, ações de expansão e eventuais drilldowns existentes.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-718-03"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "apps/web/src/dev-server/reports-route-page.ts:150-304 + reports-installments-view.ts:65-251; reports-route-page.test.ts:13-400 and scripts/statement-visual/reports-category-evolution.mjs; CI 39719913719 success"
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "3cb5174cd2a48a8d31e36796b688385efe5aa34713dc18b69074267cbc21a3f1",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
+      "source_line": 13,
+      "source_text": "Reduzir cards/bordas em excesso, sem perder comparabilidade financeira ou rastreabilidade dos números.",
       "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-718-04"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "apps/web/src/dev-server/reports-route-page-styles.ts:1-153, no excessive card borders; screenshots reports-desktop-1366x768-brl-summary.png and reports-mobile-390x844-usd-summary.png inspected"
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "c77f81bcee623bba65b16d83420a2dc0ec173f0e3956115c7acc6788b1da5d85",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
+      "source_line": 14,
+      "source_text": "Melhorar desktop/mobile, colunas/tabulação, overflow controlado, foco, teclado e descrição acessível de gráficos.",
+      "flags": [
+        "observable"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-718-05"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134, report-page-viewport.mjs:7-47; Chrome negative viewport control and all six mobile section captures per scenario; A718-04 Chrome 39868576683 artifact 12464744819, filterFit at 390x844 and 320x740 verified with rejected negative control"
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "b8ec324458bfe88059352c6a388796611c3381d4371e53f982d193197463a7fb",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
+      "source_line": 19,
+      "source_text": "**Análise:** em relatório disponível com dados, período, filtro, moeda, indicador decisivo, gráfico/tabela e detalhe devem ser identificáveis na ordem `resumo -> visualização -> detalhe`; usar apenas relatórios e drilldowns realmente existentes.",
+      "flags": [
+        "negative",
+        "temporal",
+        "temporal-destination",
         "aftermath"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-03"
+        "REQ-718-06"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:69-143 and apps/web/src/dev-server/categories-page.ts:485-660; scripts/statement-visual/categories-visual-desktop.mjs:14-221"
-    },
-    {
-      "id": "OBL-004",
-      "candidate_key": "9cff79888db2f1e51ebb50f4309e5312ac018d91f235073e6f497ca4a9b064bc",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
-      "source_line": 13,
-      "source_text": "Reduzir bordas, superfícies e badges redundantes; tornar hierarquia legível por estrutura e não apenas cor.",
-      "flags": [
-        "observable",
-        "negative",
-        "structural"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-717-04"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page-assets.ts:134-190; apps/web/src/dev-server/categories-golden-screen.test.ts:17-45; Chrome 39603346820"
-    },
-    {
-      "id": "OBL-005",
-      "candidate_key": "c55f8f52b9b3f2dd89699d97d76859daaac5db8f7c6c6fe42bb133673e55124f",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
-      "source_line": 14,
-      "source_text": "Proteger navegação por teclado, leitor de tela, reflow mobile, estados vazio/erro e nomes longos.",
-      "flags": [],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-717-05"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:609-741; scripts/statement-visual/categories-interface.mjs:140-295"
-    },
-    {
-      "id": "OBL-006",
-      "candidate_key": "8cd12cdab5925f349ea299fc05a288908e2a9143eefed6f5b7f1b82a69e251c2",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
-      "source_line": 19,
-      "source_text": "**Hierarquia real:** exibir pelo menos pai, filho e nível mais profundo quando suportado pelo domínio, com nome longo; recuo, expansão/contração e tipo de categoria permanecem compreensíveis sem depender apenas de cor ou bordas aninhadas.",
-      "flags": [
-        "exhaustive",
-        "negative"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-717-06"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:180-269; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 and 100-113"
+      "rationale": "apps/web/src/dev-server/reports-analysis-archetype.ts:49-77,149-207; Chrome 36 segment captures for category/cash flow; test validates summary-before-visualization-before-detail"
     },
     {
       "id": "OBL-007",
-      "candidate_key": "e6941c68f612d1c14f7d943f02a5394141908ac874fff6b2af3d83b5094c7810",
+      "candidate_key": "d72152c076da5557038c627132366b8b247a0b65b7039131214cdeac4730e5d7",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 20,
-      "source_text": "**Operação:** filtrar por tipo, buscar, criar/editar dentro da hierarquia e usar ações autorizadas sem perder o contexto de parent e sem inventar novos campos/fluxos.",
+      "source_text": "**Multi-moedas:** com BRL e USD no conjunto, não renderizar total combinado sem conversão explícita e auditável. Seleção/filtro e detalhamento mantêm unidade monetária e consistência com valores de origem.",
       "flags": [
-        "negative"
+        "negative",
+        "aftermath",
+        "review-surface"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-07"
+        "REQ-718-07"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:511-526,717-733; scripts/statement-visual/categories-visual-operations.mjs:130-293"
+      "rationale": "apps/web/src/dev-server/reports-route-page.ts:289-315, scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134; Chrome measurements currenciesComplete=true for BRL and USD"
     },
     {
       "id": "OBL-008",
-      "candidate_key": "da5931f0c6b2db15ad1f25dada659c681a4d05ef46d8a9c72df7d98a8e772522",
+      "candidate_key": "d060ebc540fd33bcedece72b768abcb75ee920d44d3dd75b6a79badeefa12e42",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 24,
-      "source_text": "**Evidência de aceite:** capturas e testes de hierarquia reais no SHA material, sem deduzir equivalência visual da migração anterior #615.",
-      "flags": [
-        "negative"
-      ],
+      "source_text": "**Evidência de aceite:** prova funcional/visual real no SHA da PR, incluindo contraste de cenários por moeda, e avaliação independente do acabamento.",
+      "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-08"
+        "REQ-718-08"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions run 39603346820 exact material head 5e63423beefaf57598f3490365a5acee0e123526 artifact 12347248486"
+      "rationale": "Chrome run 39868576683; artifact 12464744819; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file"
     },
     {
       "id": "OBL-009",
-      "candidate_key": "b045c4926bb080a31ef2c0716b1007b56301e3958c5047b963099b57b76355c8",
+      "candidate_key": "7d691f37f4ef9866eaefac7247c9f59de7d15028779b61380047e17a7b052a4f",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 27,
-      "source_text": "[ ] Categoria pai/filha, tipo e ação principal identificáveis; hierarquia não depende apenas de cor/caixas.",
+      "source_text": "[ ] Resumo e conclusão principal reconhecíveis rapidamente; dados analíticos legíveis em desktop/mobile.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-718-09"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "apps/web/src/dev-server/reports-route-page.test.ts:316-351 validates two emphasized result articles; report visual summary screenshot and DOM exact-SHA; A718-04 Chrome 39868576683 artifact 12464744819, filterFit at 390x844 and 320x740 verified with rejected negative control"
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "3fc23836557a29105bd19ba36a73abdb96ab0252494d4f22e5c0afbb9b62e42c",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
+      "source_line": 28,
+      "source_text": "[ ] Valores separados por moeda, exceto conversão explícita e auditável do domínio; totais e filtros não sofrem regressão.",
       "flags": [
+        "exhaustive",
+        "observable",
         "negative"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-09"
+        "REQ-718-10"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:226-308; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57"
-    },
-    {
-      "id": "OBL-010",
-      "candidate_key": "299d719997cef81f61d5833e82ba1967d964ae9f70306ed699c14467f4aada3c",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
-      "source_line": 28,
-      "source_text": "[ ] Filtros, expansão/seleção, CRUD e diálogos preservam funcionalidades e autorização existentes.",
-      "flags": [],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-717-10"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; scripts/statement-visual/categories-visual-operations.mjs:9-293"
+      "rationale": "apps/web/src/dev-server/reports-route-page.test.ts:316-351 and reports-718-behavior-evidence.test.mjs:97-105,160-172; Chrome has isolated BRL and USD blocks"
     },
     {
       "id": "OBL-011",
-      "candidate_key": "897157ba5b29a5fbb69cd0ec039dc280b5cb14d3dbb0f8fb2935d4e4b7f67c15",
+      "candidate_key": "4ca7db07fc9e3a15b342bc5f2992c817c649b5cc702f54ef0fadc1d0863c4922",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 29,
-      "source_text": "[ ] Composição desktop/mobile compatível com acabamento Golden Screen; conteúdo longo e vazio cobertos.",
-      "flags": [],
+      "source_text": "[ ] Visualizações e tabelas preservam contexto, legenda acessível, drilldown e comportamentos existentes.",
+      "flags": [
+        "observable"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-11"
+        "REQ-718-11"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: apps/web/src/dev-server/categories-page-assets.ts:193-235; scripts/statement-visual/categories-interface.mjs:140-295; run 39603346820"
+      "rationale": "apps/web/src/dev-server/reports-analysis-archetype.ts:149-207, report view controls and visual browser proof; Chrome negative overflow and trend money overlap probes"
     },
     {
       "id": "OBL-012",
-      "candidate_key": "b7891b9fffce6ba671f21b933f193865aab389d97411161f44443f22bae631b9",
+      "candidate_key": "df5a559ce25a8bbbb9c0b6a6922f50c29cd9f207f0147da3b9f897fddab8f18f",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 30,
-      "source_text": "[ ] Evidências exact-SHA, testes de acessibilidade/regressão, CI verde e auditoria independente por subissue.",
-      "flags": [],
+      "source_text": "[ ] Estados vazios/erro/conteúdo longo, evidências Chrome exact-SHA e comparação visual contra nível de acabamento aprovado.",
+      "flags": [
+        "freshness"
+      ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-12"
+        "REQ-718-12"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: GitHub Actions 39603347505 Repository CI + 39603346820 Chrome success; independent audit after handoff is external gate"
+      "rationale": "scripts/statement-visual/reports-718-extra-browser.mjs:164-247; Chrome 390x844 and 320x740 show empty/filter-error/api-error with valid retry URL, pageFitsViewport and no partial report"
     },
     {
       "id": "OBL-013",
-      "candidate_key": "4f7071b0416fc3d2ecd7b28eb587be5d0cdf774979786f32f946b7966a87fafe",
+      "candidate_key": "d0be1036b02c0155d774bdef6c5ee5149b13646b6f487934b675b2f4c2f34d38",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "source_line": 31,
-      "source_text": "[ ] Documentação relevante atualizada.",
+      "source_text": "[ ] Regressões financeiras/SSR/a11y verificadas, CI verde, documentação pertinente e auditoria independente favorável.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-717-13"
+        "REQ-718-13"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Revisado diretamente no código, testes, documentação e runs externos exact-SHA: docs/DESIGN_SYSTEM.md + docs/VISUAL_VALIDATION.md changed on PR 731, documented issue717 constraints"
+      "rationale": "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39868576683 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
     }
   ],
   "source_coverage": [
     {
       "source_id": "SRC-ISSUE",
-      "source_sha256": "bbebcd990e2778722bc02de0cc387fcc45e1a78cb0460466d70e392ed51c947b",
+      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
       "candidate_count": 13,
       "obligation_ids": [
         "OBL-001",
@@ -269,77 +278,52 @@
   "domain_inventories": [],
   "observable_assertions": [],
   "structural_invariant_closures": {
-    "status": "passed",
-    "applicability_reason": "A árvore deve manter listas ul/li aninhadas; testes de três níveis e data-category-depth refutam achatamento.",
-    "entries": [
-      {
-        "id": "SIC-717",
-        "kind": "structural",
-        "requirement_ids": [
-          "REQ-717-06",
-          "REQ-717-04"
-        ],
-        "obligation_ids": [
-          "OBL-006",
-          "OBL-004"
-        ],
-        "plausible_wrong_implementation": "Renderizar todos os registros como linhas planas perdendo ancestrais e recuos.",
-        "canonical_path": "apps/web/src/dev-server/categories-page.ts:180-269",
-        "competing_paths": [
-          "flattened card list"
-        ],
-        "evidence_ids": [
-          "E-CAT-UL-LI",
-          "E-CAT-DEPTH"
-        ],
-        "scenario_ids": [
-          "three-level-parent-child-grandchild",
-          "long-name-orphan"
-        ],
-        "negative_control_evidence": [
-          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 rejects missing nested ul/li or data-category-depth"
-        ]
-      }
-    ],
+    "status": "not-applicable",
+    "applicability_reason": "The canonical extracted obligations contain no must-reuse/must-not structural implementation flags; accounting invariants are reviewed in canonical_source_consistency.",
+    "entries": [],
     "unresolved_invariants": []
   },
   "read_model_closures": {
     "status": "passed",
-    "applicability_reason": "SSR recebe categorias de /api/categories e renderiza coluna categoria superior, nível e estado sem excluir dados.",
+    "applicability_reason": "Existing read-only SSR report sources are consumed by category evolution, installments and cash flow; origin and monetary metadata remain visible.",
     "entries": [
       {
-        "id": "RMC-717",
+        "id": "RMC-718",
         "contract_kind": "read-model",
         "requirement_ids": [
-          "REQ-717-06",
-          "REQ-717-10"
+          "REQ-718-02",
+          "REQ-718-07",
+          "REQ-718-10"
         ],
         "required_fields": [
-          "id",
-          "name",
-          "kind",
-          "status",
-          "parentCategoryId"
+          "currency",
+          "periods",
+          "currencyBlocks",
+          "income",
+          "expense",
+          "result"
         ],
         "producer_evidence": [
-          "apps/web/src/dev-server/categories-page.ts:34-37 GET /api/categories?status=all"
+          "apps/web/src/dev-server/reports-route-page.ts:240-290"
         ],
         "public_projection_evidence": [
-          "apps/web/src/dev-server/categories-page.ts:12-18 CategoryRecord"
+          "apps/web/src/dev-server/reports-route-page.ts:289-315"
         ],
         "consumer_evidence": [
-          "apps/web/src/dev-server/categories-page.ts:180-269 hierarchy per kind"
+          "apps/web/src/dev-server/reports-analysis-archetype.ts:49-77"
         ],
         "visible_surface_evidence": [
-          "apps/web/src/dev-server/categories-page.ts:247-267 parent/type/level/status/actions"
+          "visual artifact 12464744819 run 39868576683 / three viewports and BRL/USD",
+          "reports-installments-regression.json @ 49246114f5776e84871ee079b9c8191ea79bfe35 with 390x844 and 320x740 filterFit/negativeControl passed"
         ],
         "scenario_ids": [
-          "category-grandchild",
-          "category-orphan",
-          "archived-category"
+          "BRL",
+          "USD",
+          "mixed-origin-data"
         ],
         "negative_control_evidence": [
-          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57,75-96 protects nesting, orphan parent, archived menu"
+          "NC-718-07",
+          "NC-718-10"
         ]
       }
     ],
@@ -348,38 +332,37 @@
   },
   "canonical_source_consistency": {
     "status": "passed",
-    "applicability_reason": "A fonte de categorias é apiGet e os mesmos registros alimentam summary, filtros e lista.",
+    "applicability_reason": "Reported income, expense, result and cash-flow series continue to come from existing canonical report API view models; no new financial formula in UI.",
     "entries": [
       {
-        "id": "CSC-717",
-        "semantic_field": "category parent and kind in shared SSR view",
-        "canonical_source": "categories.data.categories from GET /api/categories?status=all",
+        "id": "CSC-718",
+        "semantic_field": "financial amount and currency",
+        "canonical_source": "GET existing report APIs and typed currencyBlocks",
         "alternative_sources": [
-          "independent flat list derived from labels",
-          "hardcoded fake depth values"
+          "combined BRL+USD sum",
+          "frontend currency conversion"
         ],
         "surfaces": [
-          "renderCategoryTree",
-          "renderCategoryParentOptions",
-          "summarizeCategories"
+          "SSR summary",
+          "trend",
+          "table detail"
         ],
         "evidence_ids": [
-          "E-CAT-SOURCE",
-          "E-CAT-HIERARCHY"
+          "NC-718-07",
+          "NC-718-10"
         ],
         "scenario_ids": [
-          "three-level-hierarchy",
-          "orphan-category",
-          "cycle-protection"
+          "BRL result",
+          "USD result",
+          "mixed-currency separation"
         ],
         "negative_control_evidence": [
-          "apps/web/src/dev-server/categories-golden-screen.test.ts:17-57,83-103 verifies source-backed hierarchy and ancestors"
+          "scripts/statement-visual/reports-718-behavior-evidence.test.mjs:97-105,160-172"
         ],
         "divergent_fixture": {
-          "canonical_value": "grandchild parentCategoryId=child, child parentCategoryId=root",
+          "canonical_value": "BRL=260079 and USD=12345 separated",
           "alternative_values": [
-            "flattened parent=none",
-            "display depth=0 for grandchild"
+            "BRL+USD in one single cross-currency total"
           ]
         }
       }
@@ -389,20 +372,25 @@
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "Documentação Golden Screen e aceitação da rota categorias atualizadas na PR 731; conferidos DESIGN_SYSTEM e VISUAL_VALIDATION.",
-    "old_contract_terms": [],
+    "applicability_reason": "Golden Screen analytical A5 content is documented and checked against route implementations and normative design references.",
+    "old_contract_terms": [
+      "cards aninhados",
+      "visão da listagem do Extrato"
+    ],
     "new_contract_terms": [
-      "Golden Screen",
-      "categorias hierarquicas"
+      "A5 resumo visualizacao destaques detalhe",
+      "separação BRL USD"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
+      "docs/REPORTS.md",
       "docs/DESIGN_SYSTEM.md",
-      "docs/VISUAL_VALIDATION.md",
       "docs/SCREEN_ARCHETYPES.md",
-      "apps/web/src/dev-server/categories-page.ts"
+      "docs/VISUAL_VALIDATION.md",
+      "docs/GOLDEN_STATEMENT.md",
+      "apps/web/src/dev-server/reports-route-page.ts"
     ]
   },
   "scope_reduction_review": {
@@ -412,19 +400,19 @@
   "pass_c": {
     "status": "passed",
     "requirement_ids": [
-      "REQ-717-01",
-      "REQ-717-02",
-      "REQ-717-03",
-      "REQ-717-04",
-      "REQ-717-05",
-      "REQ-717-06",
-      "REQ-717-07",
-      "REQ-717-08",
-      "REQ-717-09",
-      "REQ-717-10",
-      "REQ-717-11",
-      "REQ-717-12",
-      "REQ-717-13"
+      "REQ-718-01",
+      "REQ-718-02",
+      "REQ-718-03",
+      "REQ-718-04",
+      "REQ-718-05",
+      "REQ-718-06",
+      "REQ-718-07",
+      "REQ-718-08",
+      "REQ-718-09",
+      "REQ-718-10",
+      "REQ-718-11",
+      "REQ-718-12",
+      "REQ-718-13"
     ],
     "obligation_ids": [
       "OBL-001",
@@ -442,19 +430,19 @@
       "OBL-013"
     ],
     "evidence": [
-      "apps/web/src/dev-server/categories-page.ts:53-109 and docs/GOLDEN_STATEMENT.md; CI exact head 39603347505",
-      "apps/web/src/dev-server/categories-page.ts:180-269 and apps/web/src/dev-server/categories-page.ts:270-320; apps/web/src/dev-server/categories-golden-screen.test.ts; visual 39603346820",
-      "apps/web/src/dev-server/categories-page.ts:69-143 and apps/web/src/dev-server/categories-page.ts:485-660; scripts/statement-visual/categories-visual-desktop.mjs:14-221",
-      "apps/web/src/dev-server/categories-page-assets.ts:134-190; apps/web/src/dev-server/categories-golden-screen.test.ts:17-45; Chrome 39603346820",
-      "apps/web/src/dev-server/categories-page.ts:609-741; scripts/statement-visual/categories-interface.mjs:140-295",
-      "apps/web/src/dev-server/categories-page.ts:180-269; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57 and 100-113",
-      "apps/web/src/dev-server/categories-page.ts:511-526,717-733; scripts/statement-visual/categories-visual-operations.mjs:130-293",
-      "GitHub Actions run 39603346820 exact material head 5e63423beefaf57598f3490365a5acee0e123526 artifact 12347248486",
-      "apps/web/src/dev-server/categories-page.ts:226-308; apps/web/src/dev-server/categories-golden-screen.test.ts:17-57",
-      "apps/web/src/dev-server/categories-page.ts:435-479,511-526,609-755; scripts/statement-visual/categories-visual-operations.mjs:9-293",
-      "apps/web/src/dev-server/categories-page-assets.ts:193-235; scripts/statement-visual/categories-interface.mjs:140-295; run 39603346820",
-      "GitHub Actions 39603347505 Repository CI + 39603346820 Chrome success; independent audit after handoff is external gate",
-      "docs/DESIGN_SYSTEM.md + docs/VISUAL_VALIDATION.md changed on PR 731, documented issue717 constraints"
+      "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39868576683; issue #714 baseline reference remains open for separate audit",
+      "apps/web/src/dev-server/reports-route-page.ts:125-302; reports-analysis-archetype.ts:49-77; Chrome report multiCurrency 1366x768,390x844,320x740 has 18 category captures and intact A5 layers",
+      "apps/web/src/dev-server/reports-route-page.ts:150-304 + reports-installments-view.ts:65-251; reports-route-page.test.ts:13-400 and scripts/statement-visual/reports-category-evolution.mjs; CI 39719913719 success",
+      "apps/web/src/dev-server/reports-route-page-styles.ts:1-153, no excessive card borders; screenshots reports-desktop-1366x768-brl-summary.png and reports-mobile-390x844-usd-summary.png inspected",
+      "scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134, report-page-viewport.mjs:7-47; Chrome negative viewport control and all six mobile section captures per scenario",
+      "apps/web/src/dev-server/reports-analysis-archetype.ts:49-77,149-207; Chrome 36 segment captures for category/cash flow; test validates summary-before-visualization-before-detail",
+      "apps/web/src/dev-server/reports-route-page.ts:289-315, scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134; Chrome measurements currenciesComplete=true for BRL and USD",
+      "Chrome run 39868576683; artifact 12464744819; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file",
+      "apps/web/src/dev-server/reports-route-page.test.ts:316-351 validates two emphasized result articles; report visual summary screenshot and DOM exact-SHA",
+      "apps/web/src/dev-server/reports-route-page.test.ts:316-351 and reports-718-behavior-evidence.test.mjs:97-105,160-172; Chrome has isolated BRL and USD blocks",
+      "apps/web/src/dev-server/reports-analysis-archetype.ts:149-207, report view controls and visual browser proof; Chrome negative overflow and trend money overlap probes",
+      "scripts/statement-visual/reports-718-extra-browser.mjs:164-247; Chrome 390x844 and 320x740 show empty/filter-error/api-error with valid retry URL, pageFitsViewport and no partial report",
+      "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39868576683 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

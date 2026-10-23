@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:14498b49-3a8e-48e2-8284-9707a85cb77e",
+    "finding_ids": [
+      "A718-05"
+    ],
+    "audit_report_sha256": "7f378c17733bbf463385097d6f63488acffe9e4ef0f28ecfb9500928df8bc878"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "Existing design-interface and visual-validation rules already forbid selected-value clipping at different breakpoints. The missing desktop-specific discriminator has been added to the existing Chrome flow, not a new global skill rule."
+  },
+  "skill_changes": []
+}

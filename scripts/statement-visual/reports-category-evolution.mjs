@@ -4,6 +4,9 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { reportPageViewportExpression } from "./report-page-viewport.mjs";
+import { validateCashFlow, validateMobileStates } from "./reports-718-extra-browser.mjs";
+import { validateMultiCurrency } from "./reports-718-multicurrency-browser.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -23,6 +26,10 @@ const report = {
   mobile: null,
   empty: null,
   filterError: null,
+  multiCurrency: [],
+  cashFlow: [],
+  mobileStates: [],
+  negativeControl: null,
   failures,
   screenshots,
 };
@@ -38,6 +45,12 @@ try {
   report.mobile = await validateReadyMobile(browser.cdp, seeded.month);
   report.empty = await validateEmptyState(browser.cdp);
   report.filterError = await validateFilterError(browser.cdp);
+  const extraContext = { baseUrl, outputDir, screenshots, check, navigateWithRetry, waitForState };
+  report.multiCurrency = await validateMultiCurrency(browser.cdp, seeded.month, extraContext);
+  report.negativeControl = await validateClippedCategoryNegativeControl(browser.cdp);
+  report.viewportNegativeControl = await validateReportViewportNegativeControl(browser.cdp);
+  report.cashFlow = await validateCashFlow(browser.cdp, extraContext);
+  report.mobileStates = await validateMobileStates(browser.cdp, extraContext);
 } catch (error) {
   failures.push({ message: "Reports visual validation crashed", details: serializeError(error) });
 } finally {
@@ -96,6 +109,15 @@ async function seedReportData(cdp) {
           method: 'POST',
           body: JSON.stringify({ name: 'Despesa visual ' + suffix, kind: 'expense' }),
         })).category;
+        const usdAccount = (await request('/api/accounts', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: 'Conta USD relatorio visual ' + suffix,
+            kind: 'checking',
+            openingBalanceMinor: 0,
+            currency: 'USD',
+          }),
+        })).account;
         const occurredOn = new Date().toISOString().slice(0, 10);
         const createTransaction = (payload) => request('/api/transactions', {
           method: 'POST',
@@ -117,7 +139,15 @@ async function seedReportData(cdp) {
           kind: 'expense',
           categoryId: expenseCategory.id,
           amountMinor: 87500,
-          description: 'Despesa visual ' + suffix,
+          description: 'Despesa visual de categoria com texto extenso ' + suffix,
+        });
+        await createTransaction({
+          kind: 'income',
+          categoryId: incomeCategory.id,
+          accountId: usdAccount.id,
+          amountMinor: 12345,
+          currency: 'USD',
+          description: 'Receita em USD para confirmar separacao monetaria ' + suffix,
         });
         return { month: occurredOn.slice(0, 7), incomeCategory: incomeCategory.name, expenseCategory: expenseCategory.name };
       };
@@ -162,7 +192,80 @@ async function validateReadyDesktop(cdp, month) {
     measurements,
   );
   check(measurements.pageFitsViewport, "Reports desktop leaks horizontal overflow", measurements);
-  return { viewport: "1440x900", measurements, screenshot: screenshots.at(-1) };
+  check(measurements.unifiedCurrencyForm, "Currency uses a separate form or action", measurements);
+  check(
+    measurements.currencyAfterPeriod,
+    "Currency does not follow the period filter",
+    measurements,
+  );
+  check(
+    measurements.currencyRowAligned,
+    "Desktop currency filter is not aligned in the filter row",
+    measurements,
+  );
+  measurements.categoryTreeHover = await validateCategoryTreeHover(cdp);
+  check(
+    measurements.categoryTreeHover?.matchesGoldenNeutral === true,
+    "Category hierarchy toggle hover is too dark or has unreadable text",
+    measurements.categoryTreeHover,
+  );
+  return {
+    viewport: "1440x900",
+    measurements,
+    screenshot: "reports-category-evolution-desktop.png",
+  };
+}
+
+async function validateCategoryTreeHover(cdp) {
+  const target = await evaluate(
+    cdp,
+    `(() => {
+      const button = document.querySelector('.evolution-table .category-tree-toggle');
+      if (!button) return null;
+      button.scrollIntoView({ block: 'center', inline: 'nearest' });
+      const rect = button.getBoundingClientRect();
+      return { x: Math.round(rect.left + rect.width / 2), y: Math.round(rect.top + rect.height / 2) };
+    })()`,
+  );
+  if (!target) return { matchesGoldenNeutral: false, reason: "Missing category toggle" };
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x: target.x,
+    y: target.y,
+  });
+  await sleep(160);
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const button = document.querySelector('.evolution-table .category-tree-toggle');
+      const sample = document.createElement('span');
+      sample.style.backgroundColor = 'var(--sf-color-neutral-control-hover)';
+      sample.style.borderColor = 'var(--sf-color-neutral-control-border-hover)';
+      sample.style.color = 'var(--sf-color-neutral-control-text-hover)';
+      document.body.appendChild(sample);
+      const actual = getComputedStyle(button);
+      const expected = getComputedStyle(sample);
+      const colors = {
+        background: actual.backgroundColor,
+        border: actual.borderTopColor,
+        text: actual.color,
+        expectedBackground: expected.backgroundColor,
+        expectedBorder: expected.borderTopColor,
+        expectedText: expected.color,
+      };
+      const matchesGoldenNeutral = button.matches(':hover')
+        && button.getAttribute('aria-expanded') === 'true'
+        && colors.background === colors.expectedBackground
+        && colors.border === colors.expectedBorder
+        && colors.text === colors.expectedText;
+      sample.remove();
+      return { matchesGoldenNeutral, colors, hovered: button.matches(':hover') };
+    })()`,
+  );
+  await screenshot(cdp, join(outputDir, "reports-category-tree-toggle-hover.png"));
+  screenshots.push("reports-category-tree-toggle-hover.png");
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 1, y: 1 });
+  return result;
 }
 
 async function validateReadyMobile(cdp, month) {
@@ -190,7 +293,21 @@ async function validateReadyMobile(cdp, month) {
     "Reports mobile matrix did not accept keyboard focus",
     measurements,
   );
-  check(measurements.filterColumns === 1, "Reports mobile filters are not stacked", measurements);
+  check(
+    measurements.filterColumns === 2,
+    "Reports mobile filters must use the compact two-column layout",
+    measurements,
+  );
+  check(
+    measurements.unifiedCurrencyForm,
+    "Mobile currency uses a separate form or action",
+    measurements,
+  );
+  check(
+    measurements.currencyAfterPeriod,
+    "Mobile currency does not follow the period filter",
+    measurements,
+  );
   return { viewport: "390x844", measurements, screenshot: screenshots.at(-1) };
 }
 
@@ -244,17 +361,69 @@ async function validateFilterError(cdp) {
   return { viewport: "1024x700", measurements, screenshot: screenshots.at(-1) };
 }
 
+async function validateReportViewportNegativeControl(cdp) {
+  const result = await evaluate(
+    cdp,
+    `(() => {
+      const main = document.querySelector('main');
+      if (!main) return { observed: false, restored: false };
+      const before = ${reportPageViewportExpression()};
+      const previous = main.getAttribute('style');
+      main.style.maxWidth = 'none';
+      main.style.width = 'calc(100vw + 64px)';
+      const observed = !${reportPageViewportExpression()}.fits;
+      if (previous === null) main.removeAttribute('style');
+      else main.setAttribute('style', previous);
+      const restored = ${reportPageViewportExpression()}.fits;
+      return { before: before.fits, observed, restored };
+    })()`,
+  );
+  check(result.before, "Report viewport negative control has an invalid baseline", result);
+  check(result.observed, "Report viewport negative control missed a real width expansion", result);
+  check(result.restored, "Report viewport negative control did not restore layout", result);
+  return result;
+}
+
+async function validateClippedCategoryNegativeControl(cdp) {
+  const checkClip = await evaluate(
+    cdp,
+    `(() => {
+    const label = document.querySelector('.report-category-label > span:last-child');
+    if (!label) return { observed: false, restored: false };
+    const previous = label.getAttribute('style');
+    label.style.maxWidth = '2px';
+    label.style.overflow = 'hidden';
+    label.style.whiteSpace = 'nowrap';
+    label.style.textOverflow = 'ellipsis';
+    const observed = getComputedStyle(label).textOverflow === 'ellipsis'
+      && label.scrollWidth > label.clientWidth;
+    if (previous === null) label.removeAttribute('style');
+    else label.setAttribute('style', previous);
+    const restored = getComputedStyle(label).textOverflow !== 'ellipsis';
+    return { observed, restored };
+  })()`,
+  );
+  check(checkClip.observed, "Negative control did not detect a clipped category", checkClip);
+  check(checkClip.restored, "Negative control did not restore readable category styles", checkClip);
+  return checkClip;
+}
+
 function measurementExpression() {
   return `(() => {
     const scroller = document.querySelector('.evolution-table-scroll');
     const table = document.querySelector('.evolution-table');
     const form = document.querySelector('.evolution-filters');
+    const period = form?.querySelector('#report-periods');
+    const currency = form?.querySelector('#report-currency');
+    const action = form?.querySelector('button[type="submit"]');
     const style = form ? getComputedStyle(form) : null;
     const text = document.body.textContent || '';
+    const pageViewport = ${reportPageViewportExpression()};
     return {
       state: document.querySelector('[data-report-state]')?.getAttribute('data-report-state') || '',
       viewportWidth: window.innerWidth,
-      pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      pageFitsViewport: pageViewport.fits,
+      pageViewport,
       tableCount: document.querySelectorAll('table.evolution-table').length,
       columnHeaders: table?.querySelectorAll('th[scope="col"]').length || 0,
       rowHeaders: table?.querySelectorAll('th[scope="row"]').length || 0,
@@ -264,6 +433,16 @@ function measurementExpression() {
       scrollerFocused: document.activeElement === scroller,
       tableScrollable: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
       filterColumns: style ? style.gridTemplateColumns.split(' ').filter(Boolean).length : 0,
+      unifiedCurrencyForm: Boolean(form && period && currency && action
+        && document.querySelectorAll('#report-currency').length === 1
+        && document.querySelectorAll('.report-currency-filter').length === 0),
+      currencyAfterPeriod: Boolean(period && currency && action
+        && (period.compareDocumentPosition(currency) & Node.DOCUMENT_POSITION_FOLLOWING)
+        && (currency.compareDocumentPosition(action) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      currencyRowAligned: Boolean(period && currency && action
+        && Math.abs(period.getBoundingClientRect().top - currency.getBoundingClientRect().top) <= 2
+        && currency.getBoundingClientRect().left >= period.getBoundingClientRect().right - 2
+        && action.getBoundingClientRect().left >= currency.getBoundingClientRect().right - 2),
       hasAccessiblePeriod: Boolean(table?.querySelector('th[scope="col"] .sr-only')),
       hasCurrencySymbol: /R\\$|US\\$|€|£/.test(text),
       intervalValue: document.querySelector('input[name="interval"]')?.value || '',
