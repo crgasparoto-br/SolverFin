@@ -5,6 +5,7 @@ import type { TenantContext } from "@solverfin/domain";
 import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import {
+  adjustInvoiceInstallmentAmountForContext,
   reconcileInvoiceInstallmentForContext,
   summarizeInvoiceForContext,
   updateCardPurchaseForContext,
@@ -151,6 +152,56 @@ async function assertInstallmentPurchaseEdit(
   assert.equal(posted.invoice.reconciledExpensesMinor, 0);
   assert.equal(posted.invoice.unreconciledExpensesMinor, 3_334);
 
+  // #742: amount adjustments affect invoice occurrences, never the base purchase.
+  await assert.rejects(
+    () => adjustInvoiceInstallmentAmountForContext(
+      OTHER_PROFILE_CONTEXT, firstInvoiceId, firstOccurrenceId, 3_500, "current",
+    ),
+    (error: unknown) => error instanceof Error && "code" in error &&
+      error.code === "CARD_INSTALLMENT_NOT_FOUND",
+  );
+  await assert.rejects(
+    () => adjustInvoiceInstallmentAmountForContext(
+      CONTEXT, invoices[1]!.id, firstOccurrenceId, 3_500, "current",
+    ),
+    (error: unknown) => error instanceof Error && "code" in error &&
+      error.code === "CARD_INSTALLMENT_NOT_FOUND",
+  );
+  await assert.rejects(
+    () => adjustInvoiceInstallmentAmountForContext(
+      CONTEXT, firstInvoiceId, firstOccurrenceId, 0, "current",
+    ),
+    (error: unknown) => error instanceof Error && "code" in error &&
+      error.code === "CARD_INSTALLMENT_AMOUNT_INVALID",
+  );
+  const singleAdjustment = await adjustInvoiceInstallmentAmountForContext(
+    CONTEXT, firstInvoiceId, firstOccurrenceId, 3_500, "current",
+  );
+  assert.equal(singleAdjustment.updatedCount, 1);
+  assert.equal(singleAdjustment.skippedCount, 0);
+  assert.equal(singleAdjustment.invoice.totalExpensesMinor, 3_500);
+  assert.deepEqual(
+    await Promise.all(invoices.map(async (invoice) =>
+      (await listInstallmentsForContext(CONTEXT, { invoiceId: invoice.id }))[0]?.amountMinor,
+    )),
+    [3_500, 3_333, 3_333],
+  );
+  const futureAdjustment = await adjustInvoiceInstallmentAmountForContext(
+    CONTEXT, invoices[1]!.id, occurrenceIds[1]!, 4_500, "current_and_future",
+  );
+  assert.equal(futureAdjustment.updatedCount, 2);
+  assert.equal(futureAdjustment.skippedCount, 0);
+  assert.deepEqual(
+    await Promise.all(invoices.map(async (invoice) =>
+      (await listInstallmentsForContext(CONTEXT, { invoiceId: invoice.id }))[0]?.amountMinor,
+    )),
+    [3_500, 4_500, 4_500],
+  );
+  assert.equal(
+    (await summarizeInvoiceForContext(CONTEXT, invoices[2]!.id)).totalExpensesMinor,
+    4_500,
+  );
+
   for (const forbiddenPayload of [
     { amountMinor: 12_000 },
     { occurredOn: "2028-05-09" },
@@ -188,6 +239,22 @@ async function assertInstallmentPurchaseEdit(
   assert.ok(rows.every((row) => row.transactionId === purchase.transaction.id && row.invoiceId));
 
   await query(`update "Invoice" set "status" = 'CLOSED' where "id" = $1`, [invoices[2]?.id]);
+  const partialAdjustment = await adjustInvoiceInstallmentAmountForContext(
+    CONTEXT, invoices[1]!.id, occurrenceIds[1]!, 4_800, "current_and_future",
+  );
+  assert.equal(partialAdjustment.updatedCount, 1);
+  assert.equal(partialAdjustment.skippedCount, 1);
+  assert.equal(
+    (await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[2]!.id }))[0]?.amountMinor,
+    4_500,
+  );
+  await assert.rejects(
+    () => adjustInvoiceInstallmentAmountForContext(
+      CONTEXT, invoices[2]!.id, occurrenceIds[2]!, 5_000, "current",
+    ),
+    (error: unknown) => error instanceof Error && "code" in error &&
+      error.code === "CARD_INSTALLMENT_AMOUNT_LOCKED",
+  );
   await assert.rejects(
     () =>
       reconcileInvoiceInstallmentForContext(
