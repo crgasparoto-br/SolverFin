@@ -106,7 +106,8 @@ O executor Chrome `scripts/statement-visual/categories-interface.mjs` produz `ca
 No Chrome autenticado, medir 1366×768, 390×844 e 320×740 no SHA material final.
 Registar cenários **normal, multi-moeda, vazio, dados parciais, falha do resumo e
 conteúdo longo**, identificando estado, screenshot e foco. Confirmar que a posição
-por moeda e a próxima ação precedem projeção detalhada, insights, cartões de decisão,
+por moeda e a próxima ação precedem os indicadores complementares (receitas,
+despesas e compromissos), projeção detalhada, insights, cartões de decisão,
 lista de movimentos e índice de evidências, sem perder saldos, variações, receitas,
 despesas, compromissos, nenhuma moeda e nenhum link de conta.
 
@@ -117,6 +118,10 @@ para a parte final da página. A falha parcial mantém os KPIs válidos visívei
 
 **Controle negativo:** antecipar artificialmente um painel/cartão secundário antes
 de "Próximas ações" reprova a verificação de ordem; restaurar a composição passa.
+No Chrome normal, um painel intrusivo de 600 px é inserido antes da seção; a próxima
+ação deve sair da primeira dobra em 320/390 px. A remoção deve restaurar a medição.
+Os cenários Chrome multi-moeda, parcial, erro e conteúdo longo ainda precisam de
+capturas próprias no SHA final; os testes SSR não substituem essa evidência.
 O teste SSR rejeita a alteração e a revisão visual deve rejeitar excesso de cartões
 mesmo que as verificações estruturais passem. Evidência Chrome de SHA anterior só
 serve como baseline, nunca como certificação da entrega.

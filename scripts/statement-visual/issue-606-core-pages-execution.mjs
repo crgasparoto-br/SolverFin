@@ -83,6 +83,20 @@ try {
       `${requestedRoute} has essential content outside the viewport at ${width}px.`,
     );
 
+    if (requestedRoute === "/dashboard") {
+      const readingOrder = await evaluate(browser.cdp, dashboardFirstReadExpression());
+      assert.equal(readingOrder.hasPrimaryMetrics, true, "Dashboard has no two primary metrics");
+      assert.equal(readingOrder.hasNextActions, true, "Dashboard has no next action");
+      assert.equal(readingOrder.supportingAfterActions, true, "Secondary metrics precede next action");
+      if (width <= 390) {
+        assert.equal(readingOrder.actionVisibleInFirstViewport, true, `Dashboard next action is below first fold at ${width}px`);
+        const negative = await evaluate(browser.cdp, dashboardIntrusivePanelProbeExpression());
+        assert.equal(negative.actionVisibleAfterIntrusion, false, "Intrusive panel negative control must fail the first-fold gate");
+        assert.equal(negative.actionVisibleAfterRemoval, true, "Removing intrusive panel must restore the first-fold gate");
+      }
+      measurements.dashboardFirstRead = readingOrder;
+    }
+
     if (requestedRoute === "/lancamentos") {
       assert.deepEqual(
         measurements.moneyProblems,
@@ -137,6 +151,39 @@ async function measurePage(cdp, attempts = 5) {
     }
   }
   throw lastError ?? new Error("Core-page measurement failed without a captured error.");
+}
+
+function dashboardFirstReadExpression() {
+  return `(() => {
+    const primary = document.querySelectorAll('.currency-summary .dashboard-metric');
+    const action = document.querySelector('.next-actions');
+    const supporting = document.querySelector('.dashboard-supporting-section');
+    const headline = action?.querySelector('h2');
+    return {
+      hasPrimaryMetrics: primary.length >= 2,
+      hasNextActions: !!action,
+      supportingAfterActions: !!action && !!supporting &&
+        !!(action.compareDocumentPosition(supporting) & Node.DOCUMENT_POSITION_FOLLOWING),
+      actionVisibleInFirstViewport: !!headline && headline.getBoundingClientRect().bottom <= innerHeight,
+      headlineBottom: headline?.getBoundingClientRect().bottom ?? null,
+    };
+  })()`;
+}
+
+function dashboardIntrusivePanelProbeExpression() {
+  return `(() => {
+    const target = document.querySelector('.next-actions');
+    const headline = target?.querySelector('h2');
+    if (!target || !headline) return { actionVisibleAfterIntrusion: true, actionVisibleAfterRemoval: false };
+    const intrusive = document.createElement('aside');
+    intrusive.style.height = '600px';
+    intrusive.setAttribute('aria-label', 'Painel secundário intrusivo - controle negativo');
+    target.parentElement.insertBefore(intrusive, target);
+    const actionVisibleAfterIntrusion = headline.getBoundingClientRect().bottom <= innerHeight;
+    intrusive.remove();
+    const actionVisibleAfterRemoval = headline.getBoundingClientRect().bottom <= innerHeight;
+    return { actionVisibleAfterIntrusion, actionVisibleAfterRemoval };
+  })()`;
 }
 
 function slug(value) {

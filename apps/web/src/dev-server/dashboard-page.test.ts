@@ -125,6 +125,8 @@ describe("dev-server dashboard page", () => {
       assertCockpitHierarchy(html);
       assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 2);
       assert.equal((html.match(/class="dashboard-supporting-metric"/g) ?? []).length, 3);
+      assert.ok(html.indexOf('class="next-actions"') < html.indexOf('class="dashboard-supporting-section"'));
+      assert.match(html, /\.dashboard-metric \.sf-metric-card \{ align-items: center;/);
       assert.equal((html.match(/class="evidence-detail"/g) ?? []).length, 5);
       const intrusive = html.replace(
         '<section class="next-actions"',
@@ -281,10 +283,12 @@ function assertCockpitHierarchy(html: string): void {
   const action = html.indexOf('<section class="next-actions"');
   const horizon = html.indexOf('class="cash-flow-section"');
   const secondary = html.indexOf('class="decision-section"');
+  const supporting = html.indexOf('class="dashboard-supporting-section"');
   const evidence = html.indexOf('class="dashboard-evidence-index"');
   assert.ok(position >= 0, "Posição por moeda deve existir");
   assert.ok(action > position, "Próxima ação deve seguir o saldo e a variação");
-  assert.ok(horizon > action, "Horizonte não pode encobrir a próxima ação");
+  assert.ok(supporting > action, "Indicadores complementares não podem preceder a próxima ação");
+  assert.ok(horizon > supporting, "Horizonte não pode encobrir os complementos");
   assert.ok(secondary > horizon, "Módulos secundários devem ficar após o horizonte");
   assert.ok(evidence > secondary, "Índice de evidências não pode ocupar a dobra inicial");
 }

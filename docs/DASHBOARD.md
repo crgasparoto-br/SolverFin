@@ -131,8 +131,9 @@ e `shared-styles.ts` preservavam os mesmos hashes. Essa captura é **baseline** 
 a revisão no novo SHA.
 
 A hierarquia SSR refinada é: contexto/qualidade dos dados, posições por moeda (saldo e
-variação com ênfase), receitas/despesas/compromissos em linhas compactas, próximas ações,
-projeção de 30 dias, insights, ferramentas de decisão, itens recentes e índice de evidências.
+variação com ênfase), **próximas ações**, receitas/despesas/compromissos agrupados por
+moeda em linhas compactas, projeção de 30 dias, insights, ferramentas de decisão,
+itens recentes e índice de evidências.
 O Dashboard não altera modelo, endpoints, totais ou moeda; os links para evidências continuam
 com a mesma identidade `#dashboard-evidence-*` e preservam as contas ativas/inativas.
 
@@ -140,3 +141,17 @@ O aceite final exige Chrome autenticado em 1366×768, 390×844 e 320×740 no SHA
 cobrindo normal, multi-moeda, vazio, dados parciais, falha do resumo e conteúdo longo;
 revisão visual humana e auditoria técnica independentes não são substituídas pelo teste SSR.
 O teste de hierarquia deve rejeitar um painel de decisão intrusivo colocado antes das ações.
+
+### Remediação da auditoria #724
+
+A leitura inicial de 320×740 e 390×844 passa a exigir que o título de **Próximas
+ações** esteja inteiramente visível sem rolagem. No mobile, os dois indicadores
+principais usam cartões compactos com valores e links preservados; qualidade parcial
+continua exibindo mensagem explicativa. O controle negativo Chrome insere temporariamente
+um painel intrusivo antes das ações, exige que a medição de primeira dobra falhe
+e comprova a restauração ao remover o painel.
+
+O runner canônico comprova o Dashboard autenticado real nos viewports de aceite
+(estado normal e vazio) e passa a medir a presença de "Próximas ações" na dobra
+inicial. Os demais cenários Chrome (multi-moeda, parcial/erro e conteúdo longo)
+continuam pendentes; seus testes SSR não substituem as capturas visuais.

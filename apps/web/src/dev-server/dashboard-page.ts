@@ -174,6 +174,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         <a class="button-link secondary-link" href="/inbox" title="Inbox e revisão de sugestões">${icon("inbox", 14)} Inbox</a>
       </div>
     </section>
+    ${renderSupportingCurrencySummaries(content.currencySummaries)}
     ${renderCashFlowProjection(content.cashFlowProjection)}
     ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
     ${renderDecisionModules(content.decisionModules)}
@@ -217,6 +218,20 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
             <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
           </div>
           ${renderSummaryGrid({ childrenHtml: block.metrics.slice(0, 2).map(renderDashboardMetric).join("") })}
+        </section>
+      `,
+    )
+    .join("");
+}
+
+function renderSupportingCurrencySummaries(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+): string {
+  return blocks
+    .map(
+      (block) => `
+        <section class="dashboard-supporting-section" aria-label="Receitas, despesas e compromissos em ${escapeHtml(block.currency)}">
+          <h2 class="dashboard-supporting-title">Demais indicadores — ${escapeHtml(block.currency)}</h2>
           <dl class="dashboard-supporting-metrics" aria-label="Demais indicadores em ${escapeHtml(block.currency)}">
             ${block.metrics.slice(2).map(renderSupportingMetric).join("")}
           </dl>
@@ -481,6 +496,8 @@ function dashboardStyles(): string {
     .currency-summary { display: grid; gap: 8px; scroll-margin-top: 20px; }
     .currency-heading h2 { color: var(--primary); font-size: 1rem; margin: 0; }
     .currency-summary .sf-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dashboard-supporting-section { display: grid; gap: 6px; }
+    .dashboard-supporting-title { color: var(--primary); font-size: 0.875rem; margin: 0; }
     .dashboard-supporting-metrics { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
     .dashboard-supporting-metric { display: grid; gap: 6px; min-width: 0; padding: 10px 14px 10px 0; }
     .dashboard-supporting-metric + .dashboard-supporting-metric { border-left: 1px solid var(--line); padding-left: 14px; }
@@ -529,7 +546,31 @@ function dashboardStyles(): string {
     .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
     .row > strong { text-align: right; white-space: nowrap; }
     @media (max-width: 1024px) { .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } .data-quality { padding-left: 10px; } }
-    @media (max-width: 760px) { .currency-summary .sf-summary-grid, .dashboard-supporting-metrics, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: 1fr; } .dashboard-supporting-metric { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 8px 0; } .dashboard-supporting-metric + .dashboard-supporting-metric { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; } .dashboard-supporting-metric dd { justify-items: end; text-align: right; } .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } .evidence-links { display: grid; } }
+    @media (max-width: 760px) {
+      main { gap: 10px; padding-top: 8px; }
+      .sf-page-container.dashboard-page { gap: 9px; }
+      .dashboard-hero { gap: 4px; }
+      .dashboard-hero .sf-page-header { gap: 2px; }
+      .dashboard-hero .sf-page-header-description { font-size: 0.75rem; line-height: 1.35; }
+      .data-quality { padding: 4px 0 4px 9px; }
+      .data-quality[data-quality="complete"] span { display: none; }
+      .currency-summary { gap: 5px; }
+      .currency-summary .sf-summary-grid, .dashboard-supporting-metrics, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: 1fr; }
+      .currency-summary .sf-summary-grid { gap: 6px; }
+      .dashboard-metric .sf-metric-card { align-items: center; column-gap: 8px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); padding: 9px 11px 30px; row-gap: 2px; }
+      .dashboard-metric .sf-metric-card-label { font-size: 0.75rem; }
+      .dashboard-metric .sf-metric-card-value { font-size: 1rem; text-align: right; }
+      .dashboard-metric .sf-metric-card-detail { font-size: 0.75rem; grid-column: 1 / -1; line-height: 1.2; }
+      .dashboard-metric .metric-drilldown { bottom: 8px; left: 11px; font-size: 0.75rem; }
+      .next-actions { gap: 5px; padding-top: 6px; }
+      .next-action-rows .row { padding: 6px 0; }
+      .dashboard-supporting-metric { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 8px 0; }
+      .dashboard-supporting-metric + .dashboard-supporting-metric { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
+      .dashboard-supporting-metric dd { justify-items: end; text-align: right; }
+      .row, .section-heading { align-items: stretch; display: grid; }
+      .row > strong { text-align: left; white-space: normal; }
+      .evidence-links { display: grid; }
+    }
   `;
 }
 
