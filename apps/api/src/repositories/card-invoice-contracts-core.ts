@@ -661,8 +661,8 @@ export async function deleteSimpleCardPurchaseForContext(
     await insertAuditLogEntry(executeQuery, {
       organizationId: context.organizationId, financialProfileId: context.financialProfileId,
       occurredAt: now, actorKind: "user", actorId: context.userId,
-      action: "delete", entityKind: "transaction", entityId: transactionId,
-      redactedChanges: { purchase: "deleted" },
+      action: "soft_delete", entityKind: "transaction", entityId: transactionId,
+      redactedChanges: { purchase: "removed" },
     });
     invoiceId = source.invoiceId;
   });
@@ -759,7 +759,7 @@ export async function reverseCardPurchaseForContext(
       organizationId: context.organizationId, financialProfileId: context.financialProfileId,
       occurredAt: now, actorKind: "user", actorId: context.userId, action: "create",
       entityKind: "transaction", entityId: createdId,
-      redactedChanges: { reversalOf: "recorded" },
+      redactedChanges: { reversalOf: "added" },
     });
   });
   return { transactionId: createdId, invoiceId, amountMinor: reversedAmount };
