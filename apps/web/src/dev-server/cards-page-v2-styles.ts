@@ -111,7 +111,12 @@ export function cardsPageStyles(): string {
     @media(max-width:760px){.cards-a3-page.cards-has-invoice .sf-page-header{display:none}.app-shell:has([data-cards-archetype="A3"]) .topbar{min-height:42px}}
     /* #715 REC-715-01: touch-accessible purchase menu instead of legacy 30px dots. */
     .cards-purchase-actions>summary{height:44px;min-height:44px;min-width:44px;width:44px}
-    .cards-purchase-actions .cards-purchase-menu{top:calc(100% + 4px)}
+    .cards-purchase-actions .cards-purchase-menu{top:calc(100% + 4px);min-width:220px;padding:6px}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item{align-items:center;display:flex;gap:10px;min-height:40px;text-align:left;width:100%}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item svg{flex:none}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item:disabled{cursor:not-allowed;opacity:.48}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item:hover:not(:disabled),.cards-purchase-actions .cards-purchase-menu>.actions-item:focus-visible{background:var(--primary-soft);color:var(--primary)}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
     .cards-advanced-filters>summary,.cards-month-picker>summary{min-height:44px;align-items:center;display:flex;justify-content:center}
     .cards-purchase-actions>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 
@@ -125,17 +130,26 @@ export function cardsPageStyles(): string {
     .cards-purchase-card-name{color:var(--muted);font-size:.8rem;overflow-wrap:anywhere}
     .cards-purchase-dialog-panel>.cards-dialog-description{flex-shrink:0;line-height:1.45;padding:2px 24px 16px}
     .cards-dialog[data-modal="purchase"] form{display:flex;flex:1;flex-direction:column;gap:0;min-height:0;min-width:0}
-    .cards-purchase-form-body{display:grid;flex:1;gap:18px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 24px 20px}
-    .cards-purchase-fieldset{border:0;display:grid;gap:10px;margin:0;min-width:0;padding:0}
-    .cards-purchase-fieldset legend{color:var(--text);font-size:.8rem;font-weight:750;line-height:1.4;margin:0 0 10px;padding:0}
+    .cards-purchase-form-body{display:grid;align-content:start;flex:1;gap:16px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px 24px 20px}
+    .cards-purchase-fieldset{border:0;border-top:1px solid var(--line);display:grid;gap:8px;margin:0;min-width:0;padding:12px 0 0}.cards-purchase-fieldset:first-child{border-top:0;padding-top:0}
+    .cards-purchase-fieldset legend{color:var(--primary);font-size:.76rem;font-weight:750;line-height:1.4;margin:0 0 8px;padding:0}
     .cards-purchase-field-grid{display:grid;gap:12px 16px;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
-    .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid>label{color:var(--text);font-size:.8rem;font-weight:550;min-width:0}
+    .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid>label,.cards-installment-amount-dialog .cards-purchase-field-grid>label{color:var(--text);display:grid;gap:5px;font-size:.8rem;font-weight:600;min-width:0}
     .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid>.full{grid-column:1/-1}
     .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid :is(input,select){font:inherit;font-size:.875rem;min-height:44px;min-width:0;width:100%}
     .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid :is(input[readonly],input:disabled,select:disabled){background:var(--bg);color:var(--muted);cursor:default;opacity:1}
     .cards-dialog[data-modal="purchase"] .cards-purchase-amounts [name="amountMinor"]{font-size:1.1rem;font-variant-numeric:tabular-nums;font-weight:750}
     .cards-purchase-amounts .cards-purchase-field-grid:has([data-purchase-field="installmentAmountMinor"][hidden])>label:first-child{max-width:330px}
     .cards-purchase-installment-note{background:var(--bg);border-radius:var(--radius);color:var(--muted);font-size:.79rem;line-height:1.5;margin:0;padding:10px 12px}
+    .cards-purchase-date-help{color:var(--muted);font-size:.78rem;line-height:1.45;margin:0}
+    .cards-dialog[data-modal="purchase"][data-editing="true"] .cards-purchase-amounts [name="amountMinor"]{background:var(--bg);color:var(--muted)}
+    .cards-installment-amount-dialog{max-width:min(560px,calc(100vw - 24px))}
+    .cards-installment-amount-dialog .cards-purchase-field-grid{grid-template-columns:minmax(0,1fr)}
+    .cards-installment-amount-dialog .cards-purchase-field-grid input{font-size:1.2rem;font-variant-numeric:tabular-nums;font-weight:700;min-height:48px}
+    .cards-installment-scope-actions{flex-wrap:wrap}
+    .cards-installment-scope-actions [data-installment-scope]{flex:1 1 auto}
+    .cards-installment-scope-actions [data-installment-scope]:hover:not(:disabled),.cards-installment-scope-actions [data-installment-scope]:focus-visible{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+    .cards-installment-scope-actions [data-installment-scope][hidden]{display:none}
     .cards-purchase-form-body>.form-status:empty{display:none}
     .cards-purchase-dialog-actions{align-items:center;border-top:1px solid var(--line);display:flex;flex-shrink:0;gap:10px;justify-content:flex-end;padding:14px 24px 18px}
     .cards-purchase-dialog-actions .sf-button{min-height:44px;min-width:120px}
