@@ -17,7 +17,7 @@ import {
   resolveCanonicalCardPurchaseCurrency,
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { reverseCardPurchaseForContext, updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import { InvoiceContractError, reverseCardPurchaseForContext, updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   archiveCardInstrumentForContext,
@@ -369,7 +369,7 @@ async function reverseCardPurchaseHandler(
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
   const invoiceId = String(body.invoiceId ?? "");
-  if (!invoiceId) throw new TenantError("CARD_REVERSAL_INVOICE_REQUIRED", "Informe a fatura do lançamento.", 400);
+  if (!invoiceId) throw new InvoiceContractError("CARD_REVERSAL_INVOICE_REQUIRED", "Informe a fatura do lançamento.", 400);
   const result = await reverseCardPurchaseForContext(
     context, requireParam(match, "cardId"), requireParam(match, "transactionId"),
     invoiceId,
