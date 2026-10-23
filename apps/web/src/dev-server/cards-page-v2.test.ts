@@ -491,6 +491,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
 
 
   assert.match(html, /role="cell" data-label="Instrumento" class="cards-purchase-instrument"/);
+  assert.ok(html.includes('.cards-layout .sf-money[data-currency="BRL"]>.sf-money-currency{display:none}'));
+  assert.ok(html.includes('.cards-purchase-row .cards-purchase-category[data-category-direction="in"]'));
   assert.ok(html.includes('data-reverse-purchase='));
   assert.ok(html.includes('data-reversal-edit-form'));
   assert.ok(html.includes('data-modal="reversal-edit"'));
