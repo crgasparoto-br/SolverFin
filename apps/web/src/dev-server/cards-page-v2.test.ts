@@ -289,6 +289,22 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Moeda da fatura<\/dt><dd>USD/);
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
+  // #742: clone is a new single purchase and installment amount uses its own safe API.
+  assert.match(html, /data-clone-purchase="purchase-taxi"/);
+  assert.match(html, /data-edit-installment-amount="purchase-taxi"/);
+  assert.match(html, /data-modal="installment-value"/);
+  assert.match(html, /data-installment-scope="current"/);
+  assert.match(html, /data-installment-scope="current_and_future"/);
+  assert.match(html, /\/installments\/[^"]*\/amount|installments\/" \+ encodeURIComponent\(installmentId\) \+ "\/amount"/);
+  assert.match(html, /Clonar compra/);
+  assert.match(html, /Parcelas e recorrências não serão copiadas/);
+  assert.match(html, /data-purchase-field="recurrenceDateHint" hidden/);
+  assert.match(html, /data-editing="true"/);
+  assert.ok(html.includes("setField(\"recurrenceDateHint\", Boolean(purchase.recurrenceId))"));
+  assert.ok(html.includes('if (scheduleSection) scheduleSection.hidden = true;'));
+  assert.ok(html.includes('.cards-installment-scope-actions [data-installment-scope]'));
+  assert.ok(!html.includes('Valor, data e estrutura do parcelamento são somente leitura.'));
+
   assert.match(html, /data-open-modal="invoice-attachments"/);
   assert.ok(html.includes("<span>Documentos</span>"));
   assert.match(html, /<dialog class="cards-dialog" data-modal="invoice-attachments"/);
