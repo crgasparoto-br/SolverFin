@@ -1005,7 +1005,8 @@ async function adjustInvoiceInstallmentAmountHandler(
   const body = requireObjectBody(request.body);
   if (
     Object.keys(body).some((key) => !["amountMinor", "scope"].includes(key)) ||
-    !Number.isSafeInteger(body.amountMinor) || Number(body.amountMinor) <= 0 ||
+    !Number.isSafeInteger(body.amountMinor) ||
+    Number(body.amountMinor) <= 0 ||
     !["current", "current_and_future"].includes(String(body.scope))
   ) {
     return json(400, {
