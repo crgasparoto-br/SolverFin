@@ -395,13 +395,7 @@ async function assertCommonCardPurchaseEdit(
   assert.equal(reversal.amountMinor, -2_500);
   const invoiceBefore = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
   await assert.rejects(
-    () =>
-      reverseCardPurchaseForContext(
-        CONTEXT,
-        cardId,
-        reversal.transactionId,
-        originalInvoiceId,
-      ),
+    () => reverseCardPurchaseForContext(CONTEXT, cardId, reversal.transactionId, originalInvoiceId),
     (error: unknown) =>
       error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_INVALID_SOURCE",
   );
