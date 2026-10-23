@@ -1018,6 +1018,7 @@ function renderPurchaseRow(
     <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}" title="Ações da compra">${icon("more-horizontal", 18)}</summary><div class="cards-purchase-menu actions-menu" role="menu">
       <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar</span></button>
       <button type="button" class="actions-item" role="menuitem" data-clone-purchase="${escapeHtml(purchase.id)}"${locked ? " disabled" : ""}>${icon("copy", 16)}<span>Clonar</span></button>
+      <button type="button" class="actions-item" role="menuitem" data-reverse-purchase="${escapeHtml(purchase.id)}"${locked || purchase.amountMinor <= 0 ? " disabled" : ""}>${icon("rotate-ccw", 16)}<span>Estorno</span></button>
       
       ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
       ${!locked && otherPeriods.length > 0 ? `<span class="cards-move-hint">Mover para outra fatura disponível no menu</span>` : ""}
@@ -1586,6 +1587,30 @@ function clientScript(): string {
           if (description) description.textContent = "Confira os dados e registre uma nova compra única. Parcelas e recorrências não serão copiadas.";
           lastDialogTrigger = cloneButton;
           document.querySelector('dialog[data-modal="purchase"]')?.showModal();
+        });
+
+        const reverseButton = document.querySelector('[data-reverse-purchase="' + purchase.id + '"]');
+        reverseButton?.addEventListener("click", async () => {
+          if (reverseButton.disabled || !purchase.invoiceId || purchase.amountMinor <= 0) return;
+          if (!window.confirm("Estornar " + purchase.description + " no valor de " + minorToMoney(purchase.amountMinor) + "? O crédito será lançado na mesma fatura.")) return;
+          reverseButton.disabled = true;
+          try {
+            const response = await fetch("/api/credit-card-accounts/" + encodeURIComponent(purchase.cardId) + "/purchases/" + encodeURIComponent(purchase.id) + "/reverse", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ invoiceId: purchase.invoiceId, ...(purchase.installmentId ? { installmentId: purchase.installmentId } : {}) }),
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              window.alert(result?.error?.message || "Não foi possível estornar o lançamento.");
+              reverseButton.disabled = false;
+              return;
+            }
+            window.location.reload();
+          } catch {
+            window.alert("Falha de conexão ao registrar o estorno.");
+            reverseButton.disabled = false;
+          }
         });
         const button = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
         if (!button || button.disabled || !purchaseForm) return;
