@@ -155,6 +155,19 @@ export function cardsPageStyles(): string {
       .cards-purchase-filter-form .cards-advanced-filters{grid-column:4!important}
       .cards-purchase-filter-form>button[type="submit"]{grid-column:5!important;width:100%!important}
     }
+    /* Month jump belongs to the selected month, not to the far edge of the navigation. */
+    .cards-invoice-navigation{display:block}
+    .cards-invoice-navigation .cards-invoice-period-row{max-width:780px;margin-inline:auto}
+    .cards-invoice-navigation .cards-invoice-current{position:relative;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;column-gap:9px;row-gap:2px}
+    .cards-invoice-navigation .cards-invoice-current>.cards-kicker{flex-basis:100%}
+    .cards-invoice-navigation .cards-month-picker{position:relative;display:inline-block;flex:0 0 auto}
+    .cards-invoice-navigation .cards-month-picker>summary{white-space:nowrap}
+    .cards-invoice-navigation .cards-month-jump{left:50%;right:auto;transform:translateX(-50%);min-width:230px;max-width:min(290px,calc(100vw - 36px))}
+    @media(max-width:760px){
+      .cards-invoice-navigation .cards-invoice-current{gap:2px 5px}
+      .cards-invoice-navigation .cards-month-picker>summary{font-size:.68rem;padding:4px 6px}
+      .cards-invoice-navigation .cards-month-jump{left:auto;right:0;transform:none}
+    }
     /* Shared grid contract: header and entries use identical tracks across grouping modes. */
     .cards-purchase-groups{--cards-purchase-columns:minmax(5rem,6.5rem) minmax(0,1.6fr) minmax(0,.9fr) minmax(0,.9fr) minmax(3.5rem,.55fr) minmax(6.3rem,.8fr) 3rem;min-width:0}
     .cards-purchase-groups .cards-purchase-table-head,
