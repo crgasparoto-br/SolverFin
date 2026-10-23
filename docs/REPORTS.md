@@ -58,6 +58,12 @@ Em Evolucao por categoria e Parcelas consolidadas, o titulo de cada camada (resu
 
 Somente no escopo dos relatorios, o codigo `small.sf-money-currency` redundante fica visualmente oculto, mas o componente `renderMoney` permanece inalterado: simbolo R$, US$, sinais, decimais, `data-currency` e contextos monetarios continuam disponiveis. O Chrome valida a identidade por moeda nos titulos e nos dados em cada viewport; CI verde nao substitui parecer de auditoria independente.
 
+## Legibilidade dos filtros desktop (A718-05, PR #729)
+
+Para impedir que o mes/ano nativo ou a selecao de conta/cartao, categoria e moeda sejam truncados **sem overflow global**, as visoes de Parcelas consolidadas e Evolucao por categoria usam tres colunas entre 1181px e 1920px, reagrupando seis controles em duas linhas no desktop comum (inclusive 1366x768). Ate 1180px mantem-se a grade tablet de duas colunas e, abaixo dos breakpoints mobile anteriores, os controles preservam sua distribuicao responsiva. Nao ha mudanca de URL, dados ou filtros selecionados.
+
+O Chrome dos cenarios existentes mede texto selecionado versus largura util do campo nativo em 1366x768, 1024x768, 390x844 e 320x740 nas tres visoes: a medicao leva em conta tipografia, padding e area reservada ao icone/seta nativo. Os cenarios desktop de Parcelas e Evolucao executam ainda controle negativo que forca a antiga grade comprimida, exige a deteccao do corte e restaura o estilo, mesmo que a pagina nao tenha overflow horizontal.
+
 ## Responsividade dos filtros de parcelas (A718-04, PR #729)
 
 O filtro SSR de **Parcelas consolidadas** passa a ocupar uma coluna em telas de ate 480px; a Projecao de caixa utiliza o mesmo breakpoint sem alterar controles ou submetimento GET. Isso impede a truncagem do ano nativo do campo Mes e das opcoes selecionadas de Cartao e Categoria no celular. Entre 481px e 1180px continua a disposicao de duas colunas; desktop preserva sua grade compacta.

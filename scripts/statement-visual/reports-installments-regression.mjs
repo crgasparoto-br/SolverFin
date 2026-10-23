@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { reportSelectedFilterFitExpression } from "./report-page-viewport.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -27,6 +28,7 @@ try {
 
   const fixture = await evaluate(browser.cdp, fixtureExpression());
   await validateDesktop(browser.cdp, fixture);
+  await validateTablet(browser.cdp, fixture);
   await validateMobile(browser.cdp, fixture, 390, 844);
   await validateMobile(browser.cdp, fixture, 320, 740);
 } catch (error) {
@@ -115,13 +117,33 @@ async function validateDesktop(cdp, fixture) {
     measurements,
   );
 
+  check(measurements.filterFit.fits, "Installment desktop cuts selected filter values", measurements.filterFit);
+  const negativeControl = await validateFilterNegativeControl(browser.cdp, 'repeat(6,minmax(0,1fr))');
+  check(negativeControl.rejected && negativeControl.restored,
+    "Installment desktop did not detect six-column clipping", negativeControl);
+
   scenarios.push({
+    negativeControl,
     route,
     viewport: "1366x768",
     state: "ready",
     screenshot: filename,
     measurements,
   });
+}
+
+async function validateTablet(cdp, fixture) {
+  await setViewport(cdp, 1024, 768);
+  const route = `/relatorios?view=installments&month=${fixture.month}`;
+  await navigateWithRetry(cdp, `${baseUrl}${route}`, "reports installments tablet");
+  await waitForState(cdp, "ready");
+  const measurements = await evaluate(cdp, measurementExpression());
+  const filename = "reports-installments-tablet-1024x768.png";
+  await screenshot(cdp, join(outputDir, filename));
+  screenshots.push(filename);
+  check(measurements.filterFit.fits && measurements.pageFitsViewport,
+    "Installment tablet filter clips selected values or leaks overflow", measurements);
+  scenarios.push({ route, viewport: "1024x768", state: "ready", screenshot: filename, measurements });
 }
 
 async function validateMobile(cdp, fixture, width, height) {
@@ -166,18 +188,7 @@ async function validateMobile(cdp, fixture, width, height) {
     measurements.filterFit,
   );
   // Refuta o antigo layout de duas colunas sem modificar o produto persistido.
-  const negativeControl = await evaluate(
-    cdp,
-    `(() => {
-      const form = document.querySelector('.installment-filters');
-      const before = form.style.gridTemplateColumns;
-      form.style.gridTemplateColumns = 'repeat(2,minmax(0,1fr))';
-      const invalid = ${installmentFilterFitExpression()};
-      form.style.gridTemplateColumns = before;
-      const restored = ${installmentFilterFitExpression()};
-      return { rejected: !invalid.fits, restored: restored.fits };
-    })()`,
-  );
+  const negativeControl = await validateFilterNegativeControl(cdp, 'repeat(2,minmax(0,1fr))');
   check(
     negativeControl.rejected && negativeControl.restored,
     `Installment ${width}px negative control failed`,
@@ -321,31 +332,18 @@ function fixtureExpression() {
   })()`;
 }
 
-/** Mede legibilidade da selecao nativa, invisivel ao gate de overflow global. */
-function installmentFilterFitExpression() {
-  return `(() => {
+async function validateFilterNegativeControl(cdp, brokenColumns) {
+  return evaluate(cdp, `(() => {
     const form = document.querySelector('.installment-filters');
-    if (!form) return { fits: false, reason: 'missing form' };
-    const columns = getComputedStyle(form).gridTemplateColumns.split(' ').filter(Boolean);
-    const controls = Array.from(form.querySelectorAll('input[type="month"], select')).map((node) => {
-      const rect = node.getBoundingClientRect();
-      const style = getComputedStyle(node);
-      const label = node.tagName === 'SELECT'
-        ? (node.selectedOptions[0]?.textContent?.trim() || '')
-        : new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
-            .format(new Date(node.value + '-01T12:00:00'));
-      const context = document.createElement('canvas').getContext('2d');
-      context.font = style.font;
-      const labelWidth = context.measureText(label).width;
-      const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
-      const available = rect.width - padding - 32;
-      return { name: node.name, label, width: rect.width, available,
-        labelWidth, fits: available >= labelWidth - 1 };
-    });
-    return { fits: columns.length === 1 && controls.length === 5
-      && controls.every((control) => control.width >= 230 && control.fits),
-      columns: columns.length, controls };
-  })()`;
+    const before = form.style.gridTemplateColumns;
+    const baseline = ${reportSelectedFilterFitExpression('.installment-filters')};
+    form.style.gridTemplateColumns = ${JSON.stringify(brokenColumns)};
+    const invalid = ${reportSelectedFilterFitExpression('.installment-filters')};
+    form.style.gridTemplateColumns = before;
+    const restored = ${reportSelectedFilterFitExpression('.installment-filters')};
+    return { baseline: baseline.fits, rejected: baseline.fits && !invalid.fits,
+      restored: restored.fits, invalid };
+  })()`);
 }
 
 function measurementExpression() {
@@ -372,7 +370,7 @@ function measurementExpression() {
       reportColumns: reportGrid ? getComputedStyle(reportGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
       tableScrollable: Boolean(installmentTable && installmentTable.scrollWidth > installmentTable.clientWidth + 1),
       pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1,
-      filterFit: ${installmentFilterFitExpression()}
+      filterFit: ${reportSelectedFilterFitExpression(".installment-filters")}
     };
   })()`;
 }

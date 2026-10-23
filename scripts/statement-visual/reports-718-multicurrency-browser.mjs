@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { evaluate, screenshot, setViewport } from "./cdp.mjs";
-import { reportPageViewportExpression } from "./report-page-viewport.mjs";
+import { reportPageViewportExpression, reportSelectedFilterFitExpression } from "./report-page-viewport.mjs";
 
 /** Chrome proof of independently scoped BRL and USD analytics across viewports. */
 export async function validateMultiCurrency(cdp, month, context) {
@@ -8,6 +8,7 @@ export async function validateMultiCurrency(cdp, month, context) {
   const snapshots = [];
   for (const [width, height, label] of [
     [1366, 768, "desktop"],
+    [1024, 768, "tablet"],
     [390, 844, "mobile"],
     [320, 740, "mobile-small"],
   ]) {
@@ -37,6 +38,7 @@ export async function validateMultiCurrency(cdp, month, context) {
             && Boolean(block.querySelector('[data-emphasis="true"]'));
         }),
         globalOverflow: !pageViewport.fits,
+        filterFit: ${reportSelectedFilterFitExpression('.evolution-filters')},
         pageViewport,
         tableScrollLocal: Array.from(document.querySelectorAll('.evolution-table-scroll'))
           .every((node) => node.scrollWidth > node.clientWidth && node.tabIndex === 0),
@@ -130,6 +132,18 @@ export async function validateMultiCurrency(cdp, month, context) {
       "Reports multi-currency page leaks horizontal overflow",
       measurements,
     );
+    check(measurements.filterFit.fits, `Evolution ${label} cuts selected filter values`, measurements.filterFit);
+    const filterNegativeControl = width === 1366 ? await evaluate(cdp, `(() => {
+      const form = document.querySelector('.evolution-filters');
+      const previous = form.style.gridTemplateColumns;
+      form.style.gridTemplateColumns = 'repeat(6,minmax(0,1fr))';
+      const invalid = ${reportSelectedFilterFitExpression('.evolution-filters')};
+      form.style.gridTemplateColumns = previous;
+      const restored = ${reportSelectedFilterFitExpression('.evolution-filters')};
+      return { rejected: !invalid.fits, restored: restored.fits, invalid };
+    })()`) : null;
+    if (filterNegativeControl) check(filterNegativeControl.rejected && filterNegativeControl.restored,
+      "Evolution desktop negative control missed selected-value clipping", filterNegativeControl);
     check(measurements.longLabelsReadable, "Reports category labels are truncated", measurements);
     check(
       measurements.trendFitsWithoutScroll,
@@ -154,6 +168,7 @@ export async function validateMultiCurrency(cdp, month, context) {
       screenshot: filename,
       measurements,
       capturedSections,
+      filterNegativeControl,
     });
   }
   // Layout de 12 meses em uma única linha constitui um breakpoint diferente

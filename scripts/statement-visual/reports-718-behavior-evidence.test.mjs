@@ -4,7 +4,7 @@ import test from "node:test";
 import { collectReport718Evidence } from "./reports-718-behavior-evidence.mjs";
 
 function fixture() {
-  const sections = ["1366x768", "390x844", "320x740"].flatMap((viewport) =>
+  const sections = ["1366x768", "1024x768", "390x844", "320x740"].flatMap((viewport) =>
     ["BRL", "USD"].flatMap((currency) =>
       ["summary", "visualization", "detail"].map((layer) => ({
         viewport,
@@ -15,11 +15,12 @@ function fixture() {
       })),
     ),
   );
-  const cashFlow = ["1366x768", "390x844", "320x740"].map((viewport) => ({
+  const cashFlow = ["1366x768", "1024x768", "390x844", "320x740"].map((viewport) => ({
     viewport,
     route: "/relatorios?view=cash-flow&horizonDays=30",
     measurements: {
       pageFitsViewport: true,
+      filterFit: { fits: true },
       trendMoney: { fits: true, checked: 6, violations: [] },
       blockCurrencies: ["BRL", "USD"],
       tableScrollLocal: true,
@@ -71,10 +72,12 @@ function fixture() {
         scrollerFocused: true,
       },
     },
-    multiCurrency: ["1366x768", "390x844", "320x740"].map((viewport) => ({
+    multiCurrency: ["1366x768", "1024x768", "390x844", "320x740"].map((viewport) => ({
       viewport,
       capturedSections: sections.filter((section) => section.viewport === viewport),
+      filterNegativeControl: viewport === "1366x768" ? { rejected: true, restored: true } : null,
       measurements: {
+        filterFit: { fits: true },
         currencies: ["BRL", "USD"],
         currenciesComplete: true,
         globalOverflow: false,
@@ -193,6 +196,24 @@ test("#718 rejects overlapping trend currency text and an ineffective negative c
     /overlapping money/,
   );
   const weakNegative = fixture();
-  weakNegative.cashFlow[2].moneyNegativeControl.observed = false;
+  weakNegative.cashFlow[3].moneyNegativeControl.observed = false;
   await assert.rejects(collectReport718Evidence(async () => weakNegative));
+});
+
+test("A718-05 adapter rejects clipped desktop selections despite no page overflow", async () => {
+  const installments = fixture();
+  installments.multiCurrency[0].measurements.filterFit.fits = false;
+  await assert.rejects(collectReport718Evidence(async () => installments), /cuts selected evolution filter/);
+  const cashFlow = fixture();
+  cashFlow.cashFlow[1].measurements.filterFit.fits = false;
+  await assert.rejects(collectReport718Evidence(async () => cashFlow), /cuts cash-flow filters/);
+  const weakControl = fixture();
+  weakControl.multiCurrency[0].filterNegativeControl.rejected = false;
+  await assert.rejects(collectReport718Evidence(async () => weakControl));
+});
+
+test("A718-05 adapter requires real tablet coverage", async () => {
+  const missing = fixture();
+  missing.multiCurrency.splice(1, 1);
+  await assert.rejects(collectReport718Evidence(async () => missing), /1024x768/);
 });

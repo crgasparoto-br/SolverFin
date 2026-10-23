@@ -10,7 +10,7 @@ export async function collectReport718Evidence(readEvidence) {
   assert.equal(report.mobile?.measurements?.tableScrollable, true);
   assert.equal(report.mobile?.measurements?.scrollerFocused, true);
 
-  const expectedViewports = ["1366x768", "390x844", "320x740"];
+  const expectedViewports = ["1366x768", "1024x768", "390x844", "320x740"];
   const scenarios = report.multiCurrency ?? [];
   for (const viewport of expectedViewports) {
     const scenario = scenarios.find((candidate) => candidate.viewport === viewport);
@@ -49,11 +49,16 @@ export async function collectReport718Evidence(readEvidence) {
     assert.ok(measurements.currencies?.includes("USD"));
     assert.equal(measurements.currenciesComplete, true);
     assert.equal(measurements.globalOverflow, false);
+    assert.equal(measurements.filterFit?.fits, true, `${viewport} cuts selected evolution filter values`);
+    if (viewport === "1366x768") {
+      assert.equal(scenario.filterNegativeControl?.rejected, true);
+      assert.equal(scenario.filterNegativeControl?.restored, true);
+    }
     assert.equal(measurements.longLabelsReadable, true);
     assert.equal(measurements.trendFitsWithoutScroll, true);
     assert.equal(measurements.matrixRowsCompact, true);
     assert.equal(measurements.highlightsGrouped, true);
-    if (viewport !== "1366x768") {
+    if (viewport === "390x844" || viewport === "320x740") {
       assert.equal(measurements.tableScrollLocal, true);
     }
   }
@@ -64,10 +69,11 @@ export async function collectReport718Evidence(readEvidence) {
     assert.ok(proof, `${fileName} lacks real cash-flow evidence for ${viewport}.`);
     assert.match(proof.route, /view=cash-flow/);
     assert.equal(proof.measurements?.pageFitsViewport, true);
+    assert.equal(proof.measurements?.filterFit?.fits, true, `${viewport} cuts cash-flow filters`);
     assert.equal(proof.measurements?.trendMoney?.fits, true, `${viewport} has overlapping money`);
     assert.ok(proof.measurements?.blockCurrencies?.includes("BRL"));
     assert.ok(proof.measurements?.blockCurrencies?.includes("USD"));
-    if (viewport !== "1366x768") {
+    if (viewport === "390x844" || viewport === "320x740") {
       assert.equal(proof.measurements?.tableScrollLocal, true);
       assert.equal(proof.measurements?.trendScrollLocal, true);
     }

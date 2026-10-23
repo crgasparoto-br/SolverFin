@@ -66,3 +66,33 @@ export function trendMoneyTextFitExpression() {
     return { fits: values.length > 0 && violations.length === 0, checked: values.length, violations };
   })()`;
 }
+
+/** Selected filter text fits the *visible native field*, not just its page boundary. */
+export function reportSelectedFilterFitExpression(selector) {
+  return `(() => {
+    const form = document.querySelector(${JSON.stringify(selector)});
+    if (!form) return { fits: false, reason: 'missing filter form', controls: [] };
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const controls = Array.from(form.querySelectorAll('input:not([type="hidden"]), select')).map((node) => {
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      let label = node.tagName === 'SELECT' ? (node.selectedOptions[0]?.textContent?.trim() || '') : node.value;
+      if (node.type === 'month' && /^\\d{4}-\\d{2}$/.test(node.value)) {
+        label = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' })
+          .format(new Date(node.value + '-01T12:00:00'));
+      } else if (node.type === 'date' && /^\\d{4}-\\d{2}-\\d{2}$/.test(node.value)) {
+        label = new Intl.DateTimeFormat('pt-BR').format(new Date(node.value + 'T12:00:00'));
+      }
+      context.font = style.font;
+      const labelWidth = context.measureText(label).width;
+      const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+      const nativeChrome = node.tagName === 'SELECT' || node.type === 'date' || node.type === 'month' ? 32 : 4;
+      const available = rect.width - padding - nativeChrome;
+      return { name: node.name, label, width: rect.width, labelWidth, available,
+        fits: Boolean(label) && rect.width > 0 && labelWidth <= available + 1 };
+    });
+    return { fits: controls.length > 0 && controls.every((control) => control.fits),
+      controls, columns: getComputedStyle(form).gridTemplateColumns.split(' ').filter(Boolean).length };
+  })()`;
+}
