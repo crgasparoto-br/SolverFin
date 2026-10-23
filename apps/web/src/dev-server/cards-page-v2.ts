@@ -312,7 +312,7 @@ export async function renderCardsPageV2(
   return renderShell(`
     <div class="cards-layout" data-cards-archetype="A3">
       ${content}
-      ${renderPurchaseModal(selectedCard, categories, activeInstruments, cardCurrency)}
+      ${renderPurchaseModal(selectedCard, categoriesResult.ok ? categoriesResult.data.categories : [], activeInstruments, cardCurrency)}
       ${selectedInvoice ? renderInstallmentAmountModal() : ""}
       ${selectedInvoice ? renderInvoiceAttachmentsDialog(selectedInvoice) : ""}
       ${renderPaymentModal(
