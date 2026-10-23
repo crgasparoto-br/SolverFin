@@ -71,6 +71,9 @@ jobs:
         if: needs.classify.outputs.code_changed == 'true' || (needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true')
       - name: Verify local CI policy on merge preview
         run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
+      - name: Build workspace packages for FAST merge preview
+        if: needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true'
+        run: npm run build:packages
       - name: FAST web type compatibility
         if: needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true'
         run: npm run typecheck --workspace @solverfin/web
@@ -102,6 +105,9 @@ jobs:
           cache-dependency-path: package-lock.json
       - run: npm ci --no-audit --no-fund
         if: needs.classify.outputs.web_changed == 'true'
+      - name: Build workspace packages for FAST web validation
+        if: needs.classify.outputs.web_changed == 'true'
+        run: npm run build:packages
       - name: Web typecheck
         if: needs.classify.outputs.web_changed == 'true'
         run: npm run typecheck --workspace @solverfin/web
@@ -140,6 +146,8 @@ jobs:
       - name: Enforce complete repository formatting
         run: npm run format:check
       - run: npm run lint --workspace @solverfin/web
+      - name: Build workspace packages for STANDARD web validation
+        run: npm run build:packages
       - run: npm run typecheck --workspace @solverfin/web
       - run: npm run test --workspace @solverfin/web
       - run: npm run build --workspace @solverfin/web
