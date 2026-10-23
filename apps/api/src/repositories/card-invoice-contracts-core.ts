@@ -737,13 +737,14 @@ export async function reverseCardPurchaseForContext(
                   i."cardInstrumentId", i."dueOn" as "occurredOn"
              from "Transaction" t join "Installment" i on i."transactionId" = t."id"
             where t."id" = $1 and i."id" = $2 and i."invoiceId" = $3
-              and t."cardId" = $4 and t."organizationId" = $5 and t."financialProfileId" = $6
+              and t."cardId" = $4 and t."kind" = 'EXPENSE'
+              and t."organizationId" = $5 and t."financialProfileId" = $6
               and i."organizationId" = $5 and i."financialProfileId" = $6`
         : `select t."id", t."description", t."amountMinor", t."currency",
                   t."cardInstrumentId", t."occurredOn"
              from "Transaction" t where t."id" = $1 and t."invoiceId" = $2
               and t."installmentId" is null and t."cardId" = $3
-              and t."organizationId" = $4 and t."financialProfileId" = $5`,
+              and t."kind" = 'EXPENSE' and t."organizationId" = $4 and t."financialProfileId" = $5`,
       installmentId
         ? [
             transactionId,

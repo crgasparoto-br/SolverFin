@@ -7,6 +7,7 @@ import { createCreditCardAccountForContext } from "./repositories/card-instrumen
 import {
   adjustInvoiceInstallmentAmountForContext,
   reconcileInvoiceInstallmentForContext,
+  reverseCardPurchaseForContext,
   summarizeInvoiceForContext,
   updateCardPurchaseForContext,
 } from "./repositories/card-invoice-contracts.js";
@@ -383,6 +384,29 @@ async function assertCommonCardPurchaseEdit(
   assert.equal(row.recurrenceId, null);
   assert.equal(row.installmentId, null);
   assert.equal(row.cardInstrumentId, virtualInstrument.id);
+
+  // Reject INCOME credits as reversal sources, even through direct API calls.
+  const reversal = await reverseCardPurchaseForContext(
+    CONTEXT,
+    cardId,
+    purchase.transaction.id,
+    originalInvoiceId,
+  );
+  assert.equal(reversal.amountMinor, -2_500);
+  const invoiceBefore = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
+  await assert.rejects(
+    () =>
+      reverseCardPurchaseForContext(
+        CONTEXT,
+        cardId,
+        reversal.transactionId,
+        originalInvoiceId,
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_INVALID_SOURCE",
+  );
+  const invoiceAfter = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
+  assert.equal(invoiceAfter.totalExpensesMinor, invoiceBefore.totalExpensesMinor);
 }
 
 async function assertRecurringCardPurchaseEdit(

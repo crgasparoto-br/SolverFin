@@ -32,7 +32,7 @@ try {
   await navigate(browser.cdp, `${baseUrl}/login`);
   const login = await evaluate(browser.cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
-  await navigate(browser.cdp, `${baseUrl}/cartoes?month=2026-06`);
+  await navigate(browser.cdp, `${baseUrl}/cartoes?month=2026-06&groupBy=instrument`);
   await waitFor(browser.cdp, '[data-cards-archetype="A3"] [data-purchase-item]');
 
   report.compactDesktop = await validateCompactDesktop(browser.cdp);

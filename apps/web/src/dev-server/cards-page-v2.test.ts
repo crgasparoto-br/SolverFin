@@ -482,7 +482,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes('class="cards-invoice-period-row"'));
   assert.ok(html.includes('<details class="cards-month-picker"'));
   assert.ok(
-    html.includes(".cards-invoice-navigation{display:flex;align-items:center;justify-content:flex-start"),
+    html.includes(
+      ".cards-invoice-navigation{display:flex;align-items:center;justify-content:flex-start",
+    ),
   );
   assert.ok(html.includes(".cards-invoice-navigation .cards-invoice-period-row{flex:0 1 480px"));
   assert.ok(
@@ -491,31 +493,41 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes(".cards-shared-table-head{position:sticky"));
   assert.ok(html.includes("--cards-purchase-columns:"));
   assert.ok(html.includes(".cards-purchase-filter-form .cards-search-field input{width:100%"));
-  assert.ok(html.includes(".cards-purchase-filter-form .cards-purchase-day-filter{grid-column:2!important"));
-  assert.ok(html.includes(".cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns)"));
+  assert.ok(
+    html.includes(".cards-purchase-filter-form .cards-purchase-day-filter{grid-column:2!important"),
+  );
+  assert.ok(
+    html.includes(
+      ".cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns)",
+    ),
+  );
 
   assert.match(html, /role="cell" data-label="Instrumento" class="cards-purchase-instrument"/);
-  assert.ok(html.includes('.cards-layout .sf-money[data-currency="BRL"]>.sf-money-currency{display:none}'));
-  assert.ok(html.includes('.cards-purchase-row .cards-purchase-category[data-category-direction="in"]'));
-  assert.ok(html.includes('data-save-continue'));
-  assert.ok(html.includes('Salvar e continuar'));
-  assert.ok(html.includes('compra(s) registrada(s). Informe a próxima compra.'));
-  assert.ok(html.includes('dataset.savedDuringSession'));
+  assert.ok(
+    html.includes('.cards-layout .sf-money[data-currency="BRL"]>.sf-money-currency{display:none}'),
+  );
+  assert.ok(
+    html.includes('.cards-purchase-row .cards-purchase-category[data-category-direction="in"]'),
+  );
+  assert.ok(html.includes("data-save-continue"));
+  assert.ok(html.includes("Salvar e continuar"));
+  assert.ok(html.includes("compra(s) registrada(s). Informe a próxima compra."));
+  assert.ok(html.includes("dataset.savedDuringSession"));
   assert.ok(html.includes('addEventListener("close"'));
-  assert.ok(html.includes('[data-save-continue]{display:none}'));
-  assert.ok(html.includes('data-reverse-purchase='));
-  assert.ok(html.includes('data-reversal-edit-form'));
+  assert.ok(html.includes("[data-save-continue]{display:none}"));
+  assert.ok(html.includes("data-reverse-purchase="));
+  assert.ok(html.includes("data-reversal-edit-form"));
   assert.ok(html.includes('data-modal="reversal-edit"'));
-  assert.ok(html.includes('reversal.transactionId'));
+  assert.ok(html.includes("reversal.transactionId"));
   assert.ok(html.includes('Estorno: " + purchase.description'));
 
-  assert.ok(html.includes('data-delete-purchase='));
+  assert.ok(html.includes("data-delete-purchase="));
   assert.ok(html.includes('purchase.status === "reconciled"'));
-  assert.ok(html.includes('purchase.installmentId || purchase.recurrenceId'));
+  assert.ok(html.includes("purchase.installmentId || purchase.recurrenceId"));
 
-  assert.ok(html.includes('>Excluir</span>'));
+  assert.ok(html.includes(">Excluir</span>"));
 
-  assert.ok(html.includes('>Estorno</span>'));
+  assert.ok(html.includes(">Estorno</span>"));
   assert.ok(!html.includes('data-label="Limite"'));
   assert.ok(!html.includes('role="columnheader">Moeda'));
   assert.match(purchaseDialog, /class="cards-purchase-form-body"/);
@@ -729,7 +741,6 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.equal((byDay.match(/data-cards-day-group data-day=/g) ?? []).length, 1);
   assert.doesNotMatch(byDay, /data-instrument-purchase-group/);
   assert.match(byDay, /class="cards-day-content">\s*<div class="cards-purchase-table"/);
-
 
   const sortedByAmount = await renderCardsPageV2(
     "session-token",

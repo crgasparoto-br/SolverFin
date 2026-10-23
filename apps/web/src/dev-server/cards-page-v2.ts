@@ -232,27 +232,38 @@ export async function renderCardsPageV2(
 
   const accounts = accountsResult.ok ? accountsResult.data.accounts : [];
   const reversalCategoriesResult = await apiGet<{ categories: CategoryRecord[] }>(
-    token, "/api/categories?kind=income",
+    token,
+    "/api/categories?kind=income",
   );
   const categories = categoriesResult.ok
-    ? [...categoriesResult.data.categories, ...(reversalCategoriesResult.ok
-        ? reversalCategoriesResult.data.categories.filter((category) => category.name.trim().toLocaleLowerCase("pt-BR") === "estornos")
-        : [])]
+    ? [
+        ...categoriesResult.data.categories,
+        ...(reversalCategoriesResult.ok
+          ? reversalCategoriesResult.data.categories.filter(
+              (category) => category.name.trim().toLocaleLowerCase("pt-BR") === "estornos",
+            )
+          : []),
+      ]
     : [];
   const summary = summaryResult.data.summary;
   // The original transaction amount is a historical base, not the effective total
   // after one or more installment amounts have been adjusted.
-  const allCardInstallments = selectedCard && selectedInvoice
-    ? await apiGet<{ installments: InvoiceInstallmentRecord[] }>(
-        token, `/api/installments?cardId=${encodeURIComponent(selectedCard.id)}&status=all`,
-      )
-    : null;
+  const allCardInstallments =
+    selectedCard && selectedInvoice
+      ? await apiGet<{ installments: InvoiceInstallmentRecord[] }>(
+          token,
+          `/api/installments?cardId=${encodeURIComponent(selectedCard.id)}&status=all`,
+        )
+      : null;
   const effectiveTotals = new Map<string, number>();
   if (allCardInstallments?.ok) {
     for (const installment of allCardInstallments.data.installments ?? []) {
       const transactionId = installment.transaction?.id;
       if (!transactionId || !Number.isSafeInteger(installment.amountMinor)) continue;
-      effectiveTotals.set(transactionId, (effectiveTotals.get(transactionId) ?? 0) + installment.amountMinor);
+      effectiveTotals.set(
+        transactionId,
+        (effectiveTotals.get(transactionId) ?? 0) + installment.amountMinor,
+      );
     }
   }
   const canonicalPurchases = projectInvoicePurchases(
@@ -379,7 +390,9 @@ function projectInvoicePurchases(
     .filter((purchase) => !installmentTransactionIds.has(purchase.id))
     .map((purchase) => ({
       ...purchase,
-      amountMinor: purchase.description.includes("[estorno:") ? -Math.abs(purchase.amountMinor) : purchase.amountMinor,
+      amountMinor: purchase.description.includes("[estorno:")
+        ? -Math.abs(purchase.amountMinor)
+        : purchase.amountMinor,
       description: purchase.description.replace(/ \[estorno:[^\]]+\]$/, ""),
     }));
   const installmentOccurrences = installments.flatMap((installment) => {
@@ -942,7 +955,23 @@ function renderPurchaseGroups(
     return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title"><div class="cards-shared-table-head">${sharedHead}</div>
       ${groups
         .map((group) =>
-          renderInstrumentGroup({ ...group, purchases: groupBy === "instrument" ? [...group.purchases].sort((a, b) => sort === "date_asc" ? a.occurredOn.localeCompare(b.occurredOn) : b.occurredOn.localeCompare(a.occurredOn)) : group.purchases }, categories, recurrences, invoices, selectedInvoice),
+          renderInstrumentGroup(
+            {
+              ...group,
+              purchases:
+                groupBy === "instrument"
+                  ? [...group.purchases].sort((a, b) =>
+                      sort === "date_asc"
+                        ? a.occurredOn.localeCompare(b.occurredOn)
+                        : b.occurredOn.localeCompare(a.occurredOn),
+                    )
+                  : group.purchases,
+            },
+            categories,
+            recurrences,
+            invoices,
+            selectedInvoice,
+          ),
         )
         .join("")}
     </section>`;
@@ -973,11 +1002,20 @@ function renderPurchaseGroups(
           <summary><span class="cards-day-title"><time datetime="${escapeHtml(date)}">${formatDate(date)}</time><small>${formatPurchaseCount(purchases.length)}</small></span><strong>${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</strong></summary>
           <div class="cards-day-content">
             <div class="cards-purchase-table" role="table" aria-label="Compras de ${formatDate(date)}">
-              ${dayGroups.flatMap((group) =>
-                group.purchases.map((purchase) =>
-                  renderPurchaseRow(purchase, group.label, categories, recurrences, invoices, selectedInvoice),
-                ),
-              ).join("")}
+              ${dayGroups
+                .flatMap((group) =>
+                  group.purchases.map((purchase) =>
+                    renderPurchaseRow(
+                      purchase,
+                      group.label,
+                      categories,
+                      recurrences,
+                      invoices,
+                      selectedInvoice,
+                    ),
+                  ),
+                )
+                .join("")}
             </div>
           </div>
         </details>`;
@@ -999,7 +1037,14 @@ function renderInstrumentGroup(
     <div class="cards-purchase-table" role="table" aria-label="Compras de ${escapeHtml(group.label)}">
       ${group.purchases
         .map((purchase) =>
-          renderPurchaseRow(purchase, group.label, categories, recurrences, invoices, selectedInvoice),
+          renderPurchaseRow(
+            purchase,
+            group.label,
+            categories,
+            recurrences,
+            invoices,
+            selectedInvoice,
+          ),
         )
         .join("")}
     </div>
