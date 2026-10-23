@@ -1,262 +1,351 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/solverfin718-work/work718/.audit/entregar-issue/specification-snapshot.json",
-    "sha256": "120501d11698b789c52a012312e5a66cb205551ca66d67e32c0f203f540f3dbb"
+    "path": "/mnt/data/solverfin-719-evidence/specification-snapshot.json",
+    "sha256": "983977913acd2823fc47178b214fc519b2d848c24f05449b76171db07a5692f7"
   },
   "primary_issue_source_id": "SRC-ISSUE",
   "obligations": [
     {
       "id": "OBL-001",
-      "candidate_key": "d2ef4c04cca21c61dd85688d43bd3ddda86294f61ba2e28f50a54b744159a6bd",
+      "candidate_key": "e9350725d9c8f074fdf57df35f483fdab8cf986e5c62dbfa7ee77af3a9be2caa",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 5,
-      "source_text": "**Dependência:** #714 — marco técnico da Golden Screen e referência validada na `develop`.",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 6,
+      "source_text": "Mapear rotas operacionais adicionais que precisam da qualidade visual da Golden Screen e abrir **issues específicas por superfície**, evitando uma implementação genérica de grande porte ou retrabalho com a épica histórica #591.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-718-01"
+        "REQ-719-01",
+        "REQ-719-04"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39868576683; issue #714 baseline reference remains open for separate audit"
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
     },
     {
       "id": "OBL-002",
-      "candidate_key": "940646a2d1be71dbd6453728fa7c5428b81639ee9a92b7a7a94a77389f6f481a",
+      "candidate_key": "12c1c511731417cca8e07e8ec02090a65a49f0f7f206836039b13da35fcd999a",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 11,
-      "source_text": "Priorizar contexto de período, conta/cartão, moeda e indicadores de decisão; organizar resumo, visualização, destaques e detalhe.",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 9,
+      "source_text": "Conferir catálogo real de rotas/estados disponíveis e `docs/SCREEN_ARCHETYPES.md` (por exemplo Dashboard, Orçamentos, Inbox e rotas secundárias quando pertinentes).",
       "flags": [
-        "temporal",
-        "temporal-destination"
+        "source-catalog"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-718-02"
+        "REQ-719-01"
       ],
-      "inventory_ids": [],
+      "inventory_ids": [
+        "INV-719"
+      ],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-route-page.ts:125-302; reports-analysis-archetype.ts:49-77; Chrome report multiCurrency 1366x768,390x844,320x740 has 18 category captures and intact A5 layers"
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
     },
     {
       "id": "OBL-003",
-      "candidate_key": "43f44018944a663088aa539e65f9c49fe01599cc0287f8dd95b1cebbbf67554f",
+      "candidate_key": "ae63bd83210b4e471f7ac116c4136f95878eb0a922ef3a9848d93d2d0220e6ab",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 12,
-      "source_text": "Refinar filtros, estados ativos, hierarquia de categorias, tabelas, gráficos, ações de expansão e eventuais drilldowns existentes.",
-      "flags": [],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-03"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-route-page.ts:150-304 + reports-installments-view.ts:65-251; reports-route-page.test.ts:13-400 and scripts/statement-visual/reports-category-evolution.mjs; CI 39719913719 success"
-    },
-    {
-      "id": "OBL-004",
-      "candidate_key": "3cb5174cd2a48a8d31e36796b688385efe5aa34713dc18b69074267cbc21a3f1",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 13,
-      "source_text": "Reduzir cards/bordas em excesso, sem perder comparabilidade financeira ou rastreabilidade dos números.",
-      "flags": [
-        "negative"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-04"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-route-page-styles.ts:1-153, no excessive card borders; screenshots reports-desktop-1366x768-brl-summary.png and reports-mobile-390x844-usd-summary.png inspected"
-    },
-    {
-      "id": "OBL-005",
-      "candidate_key": "c77f81bcee623bba65b16d83420a2dc0ec173f0e3956115c7acc6788b1da5d85",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 14,
-      "source_text": "Melhorar desktop/mobile, colunas/tabulação, overflow controlado, foco, teclado e descrição acessível de gráficos.",
-      "flags": [
-        "observable"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-05"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134, report-page-viewport.mjs:7-47; Chrome negative viewport control and all six mobile section captures per scenario; A718-04 Chrome 39868576683 artifact 12464744819, filterFit at 390x844 and 320x740 verified with rejected negative control"
-    },
-    {
-      "id": "OBL-006",
-      "candidate_key": "b8ec324458bfe88059352c6a388796611c3381d4371e53f982d193197463a7fb",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 19,
-      "source_text": "**Análise:** em relatório disponível com dados, período, filtro, moeda, indicador decisivo, gráfico/tabela e detalhe devem ser identificáveis na ordem `resumo -> visualização -> detalhe`; usar apenas relatórios e drilldowns realmente existentes.",
-      "flags": [
-        "negative",
-        "temporal",
-        "temporal-destination",
-        "aftermath"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-06"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-analysis-archetype.ts:49-77,149-207; Chrome 36 segment captures for category/cash flow; test validates summary-before-visualization-before-detail"
-    },
-    {
-      "id": "OBL-007",
-      "candidate_key": "d72152c076da5557038c627132366b8b247a0b65b7039131214cdeac4730e5d7",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 20,
-      "source_text": "**Multi-moedas:** com BRL e USD no conjunto, não renderizar total combinado sem conversão explícita e auditável. Seleção/filtro e detalhamento mantêm unidade monetária e consistência com valores de origem.",
-      "flags": [
-        "negative",
-        "aftermath",
-        "review-surface"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-07"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-route-page.ts:289-315, scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134; Chrome measurements currenciesComplete=true for BRL and USD"
-    },
-    {
-      "id": "OBL-008",
-      "candidate_key": "d060ebc540fd33bcedece72b768abcb75ee920d44d3dd75b6a79badeefa12e42",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 24,
-      "source_text": "**Evidência de aceite:** prova funcional/visual real no SHA da PR, incluindo contraste de cenários por moeda, e avaliação independente do acabamento.",
-      "flags": [],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-08"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Chrome run 39868576683; artifact 12464744819; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file"
-    },
-    {
-      "id": "OBL-009",
-      "candidate_key": "7d691f37f4ef9866eaefac7247c9f59de7d15028779b61380047e17a7b052a4f",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 27,
-      "source_text": "[ ] Resumo e conclusão principal reconhecíveis rapidamente; dados analíticos legíveis em desktop/mobile.",
-      "flags": [],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-09"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-route-page.test.ts:316-351 validates two emphasized result articles; report visual summary screenshot and DOM exact-SHA; A718-04 Chrome 39868576683 artifact 12464744819, filterFit at 390x844 and 320x740 verified with rejected negative control"
-    },
-    {
-      "id": "OBL-010",
-      "candidate_key": "3fc23836557a29105bd19ba36a73abdb96ab0252494d4f22e5c0afbb9b62e42c",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 28,
-      "source_text": "[ ] Valores separados por moeda, exceto conversão explícita e auditável do domínio; totais e filtros não sofrem regressão.",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 10,
+      "source_text": "Para cada superfície: identificar arquétipo, estado atual, delta visual real frente à Golden Screen aprovada, dependências, risco e prioridade; registrar se já está adequada.",
       "flags": [
         "exhaustive",
-        "observable",
-        "negative"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-10"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-route-page.test.ts:316-351 and reports-718-behavior-evidence.test.mjs:97-105,160-172; Chrome has isolated BRL and USD blocks"
-    },
-    {
-      "id": "OBL-011",
-      "candidate_key": "4ca7db07fc9e3a15b342bc5f2992c817c649b5cc702f54ef0fadc1d0863c4922",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 29,
-      "source_text": "[ ] Visualizações e tabelas preservam contexto, legenda acessível, drilldown e comportamentos existentes.",
-      "flags": [
-        "observable"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-718-11"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "apps/web/src/dev-server/reports-analysis-archetype.ts:149-207, report view controls and visual browser proof; Chrome negative overflow and trend money overlap probes"
-    },
-    {
-      "id": "OBL-012",
-      "candidate_key": "df5a559ce25a8bbbb9c0b6a6922f50c29cd9f207f0147da3b9f897fddab8f18f",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 30,
-      "source_text": "[ ] Estados vazios/erro/conteúdo longo, evidências Chrome exact-SHA e comparação visual contra nível de acabamento aprovado.",
-      "flags": [
         "freshness"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-718-12"
+        "REQ-719-02",
+        "REQ-719-08"
+      ],
+      "inventory_ids": [
+        "INV-719"
+      ],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "f44affb0aa7c836526a8849c649f3b3a1745d13da1b59fd8ece46a5d665f9bbf",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 11,
+      "source_text": "Relacionar entregas anteriores (#591, #608–#615) para evitar duplicação e não interpretar issues fechadas como validação da nova referência.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-03"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "scripts/statement-visual/reports-718-extra-browser.mjs:164-247; Chrome 390x844 and 320x740 show empty/filter-error/api-error with valid retry URL, pageFitsViewport and no partial report"
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
     },
     {
-      "id": "OBL-013",
-      "candidate_key": "d0be1036b02c0155d774bdef6c5ee5149b13646b6f487934b675b2f4c2f34d38",
+      "id": "OBL-005",
+      "candidate_key": "56bd680921411610e35948e62d0be9cc696c59af4b5e85f66adcfb0633bf9c7a",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "source_line": 31,
-      "source_text": "[ ] Regressões financeiras/SSR/a11y verificadas, CI verde, documentação pertinente e auditoria independente favorável.",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 12,
+      "source_text": "Criar issues derivadas específicas somente quando houver diferenças demonstráveis, com escopo fechado, critérios visuais e de regressão claros.",
+      "flags": [
+        "negative",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-04"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-719"
+      ],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "daec80ff5f063f54b82d62d78aa75393566b38e31b6ced32b4acd7718a04350d",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 13,
+      "source_text": "Publicar matriz de cobertura e links na #702.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-718-13"
+        "REQ-719-05"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-719"
+      ],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "dd9624564fe19a83ad6ca924a507678598f443a9c5f3134ded6c3177b28fac83",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 19,
+      "source_text": "**Matriz de triagem obrigatória:** `rota | arquétipo | prioridade | evidência atual | delta em relação à Golden Screen | antecedente #591/#608–#615 | decisão (aderente/issue/fora) | issue derivada | dependências`.",
+      "flags": [
+        "freshness",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-02"
+      ],
+      "inventory_ids": [
+        "INV-719"
+      ],
+      "assertion_ids": [
+        "OBS-719"
+      ],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "1585e924d4c8342c780339984732151d8733254df3f5682844d86c2ed3793cde",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 22,
+      "source_text": "**Regra de fechamento:** #719 encerra quando o inventário está completo e todas as issues derivadas necessárias estão abertas e rastreáveis. **Não** exigir a implementação delas dentro da #719; o encerramento da **épica #702** continua condicionado às issues obrigatórias derivadas.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-06"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39868576683 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "84f3f7f9c04ce3e037278e82343aa8e86827c2a58a43e3f0424f7459150dff77",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 26,
+      "source_text": "[x] Inventário de superfícies operacionais e respectivos arquétipos publicado na épica.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-01"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "1ef1565be7def8fb4e0063e3235fb46da8c5ff48e8dc077c06130e415fd2f801",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 27,
+      "source_text": "[x] Cada rota está classificada como aderente, requer subissue específica ou fora de escopo, com evidência/racional.",
+      "flags": [
+        "exhaustive"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-02"
+      ],
+      "inventory_ids": [
+        "INV-719"
+      ],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "3e8cd017905c02f96072b493374c85377c3602171aa8136d0210752b7aa24c0a",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 28,
+      "source_text": "[x] Issues necessárias foram abertas e vinculadas no checklist da #702, com precedência e critérios verificáveis.",
+      "flags": [
+        "precedence"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-05"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-719"
+      ],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "fd6a9f6867f7c04a6a116c7c547fdaf1e46f5c399331c59aa5485384908590a5",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 29,
+      "source_text": "[x] Nenhuma implementação funcional ou refatoração ampla foi embutida nesta atividade de triagem.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-06"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "989992d63aad1cc2ebba78a14b0ef4e0cc8986863995519f06832418cf71163a",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 30,
+      "source_text": "[ ] Revisão independente do inventário e documentação concluídas.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE",
+        "decision_source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+        "decision_locator": "github-issue-719#L30",
+        "target_issue": 719,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Independent reviewer approval remains required outside the delivery context; issue 719 explicitly stays open until approval."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "7a2546a44ddfa70c9b106959b90bff59abb099fb89b86540067e7613e0bc90e7",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 43,
+      "source_text": "[Matriz de 14 rotas](https://github.com/crgasparoto-br/SolverFin/blob/docs/719-golden-screen-phase2-inventory/docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md) proposta na [PR #730](https://github.com/crgasparoto-br/SolverFin/pull/730) (base `develop`, Draft, sem merge).",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-07"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-015",
+      "candidate_key": "b2a838cff62e2e837f0073c3e7887376832fa1d66fc1bb30290b68120a34b9c2",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 44,
+      "source_text": "Issues derivadas: #724 Dashboard, #725 Orçamentos, #726 Inbox, #727 Configurações, #728 Admin Instituições; links/checklist também na #702.",
+      "flags": [
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-719-04",
+        "REQ-719-05"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-719"
+      ],
+      "scope_decision": null,
+      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "295d0e356142e518ddb6e4eb5d5fe8ea5f593472b5a653c60c3441968d874814",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "source_line": 46,
+      "source_text": "**Não declarar #719 concluída até haver parecer independente favorável** sobre inventário, recorte temporal, prova dos deltas, ausência de duplicações e rastreabilidade; a #702 permanece aberta até as issues derivadas obrigatórias estarem aceitas.",
+      "flags": [
+        "negative",
+        "semantic-effect"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE",
+        "decision_source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+        "decision_locator": "github-issue-719#L46",
+        "target_issue": 719,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Independent reviewer approval remains required outside the delivery context; issue 719 explicitly stays open until approval."
     }
   ],
   "source_coverage": [
     {
       "source_id": "SRC-ISSUE",
-      "source_sha256": "2c50d20b57860a1125b80986a807b1d664ad4dd78b1fac2354bae1cb9887276e",
-      "candidate_count": 13,
+      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
+      "candidate_count": 16,
       "obligation_ids": [
         "OBL-001",
         "OBL-002",
@@ -270,60 +359,303 @@
         "OBL-010",
         "OBL-011",
         "OBL-012",
-        "OBL-013"
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016"
       ],
       "unmapped_candidate_keys": []
     }
   ],
-  "domain_inventories": [],
-  "observable_assertions": [],
+  "domain_inventories": [
+    {
+      "id": "INV-719",
+      "name": "Shell route inventory available snapshot",
+      "closed_world": true,
+      "producer_sources": [
+        "apps/web/src/app-shell/routes.ts",
+        "develop@45f516268ab5a51931bdd096c7a131fc3b8f73d8"
+      ],
+      "consumer_sources": [
+        "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md",
+        "docs/SCREEN_ARCHETYPES.md"
+      ],
+      "values": [
+        {
+          "value": "/dashboard",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-1"
+          ]
+        },
+        {
+          "value": "/lancamentos",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-2"
+          ]
+        },
+        {
+          "value": "/cartoes",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-3"
+          ]
+        },
+        {
+          "value": "/contas-cartoes",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-4"
+          ]
+        },
+        {
+          "value": "/remuneracao-contas",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-5"
+          ]
+        },
+        {
+          "value": "/categorias",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-6"
+          ]
+        },
+        {
+          "value": "/orcamentos",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-7"
+          ]
+        },
+        {
+          "value": "/assistente",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-8"
+          ]
+        },
+        {
+          "value": "/inbox",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-9"
+          ]
+        },
+        {
+          "value": "/relatorios",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-10"
+          ]
+        },
+        {
+          "value": "/configuracoes",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-11"
+          ]
+        },
+        {
+          "value": "/admin/instituicoes",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-12"
+          ]
+        },
+        {
+          "value": "/admin/indices-financeiros",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-13"
+          ]
+        },
+        {
+          "value": "/login",
+          "producer_evidence": [
+            "apps/web/src/app-shell/routes.ts"
+          ],
+          "consumer_evidence": [
+            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          ],
+          "scenario_ids": [
+            "route-14"
+          ]
+        }
+      ],
+      "unmapped_values": [],
+      "fallback_policy": "none",
+      "rationale": "All 14 available entries at the frozen catalogue SHA appear once in the document; catalog includes a public and legacy route."
+    }
+  ],
+  "observable_assertions": [
+    {
+      "id": "OBS-719",
+      "description": "Derived issue links and epic linkage are directly present in the candidate documentation and verified in GitHub issue bodies.",
+      "requirement_ids": [
+        "REQ-719-04",
+        "REQ-719-05",
+        "REQ-719-02"
+      ],
+      "obligation_ids": [
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-011",
+        "OBL-015"
+      ],
+      "evidence_ids": [
+        "NC-719-04",
+        "NC-719-05"
+      ],
+      "scenario_ids": [
+        "five-route-issue-links",
+        "epic-702-issue-checklist"
+      ],
+      "negative_control_evidence": [
+        "negative-control-evidence-719.json"
+      ]
+    }
+  ],
   "structural_invariant_closures": {
-    "status": "not-applicable",
-    "applicability_reason": "The canonical extracted obligations contain no must-reuse/must-not structural implementation flags; accounting invariants are reviewed in canonical_source_consistency.",
-    "entries": [],
+    "status": "passed",
+    "applicability_reason": "Issue derivation, reference reuse and preservation of the four phase-1 subissues are required structural invariants.",
+    "entries": [
+      {
+        "id": "SIC-719",
+        "kind": "precedence",
+        "requirement_ids": [
+          "REQ-719-05",
+          "REQ-719-06"
+        ],
+        "obligation_ids": [
+          "OBL-011"
+        ],
+        "plausible_wrong_implementation": "Treat historical issue acceptance as current and place broad implementation inside the inventory PR.",
+        "canonical_path": "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md",
+        "competing_paths": [
+          "refactor-all-routes-in-this-PR"
+        ],
+        "evidence_ids": [
+          "NC-719-05",
+          "NC-719-06"
+        ],
+        "scenario_ids": [
+          "phase1-versus-phase2"
+        ],
+        "negative_control_evidence": [
+          "negative-control-evidence-719.json"
+        ]
+      }
+    ],
     "unresolved_invariants": []
   },
   "read_model_closures": {
     "status": "passed",
-    "applicability_reason": "Existing read-only SSR report sources are consumed by category evolution, installments and cash flow; origin and monetary metadata remain visible.",
+    "applicability_reason": "The inventory is a read-model projection of the frozen route catalogue, mapping each route to its classification and issue.",
     "entries": [
       {
-        "id": "RMC-718",
-        "contract_kind": "read-model",
+        "id": "RMC-719",
+        "contract_kind": "collection",
         "requirement_ids": [
-          "REQ-718-02",
-          "REQ-718-07",
-          "REQ-718-10"
+          "REQ-719-01",
+          "REQ-719-02"
         ],
         "required_fields": [
-          "currency",
-          "periods",
-          "currencyBlocks",
-          "income",
-          "expense",
-          "result"
+          "route",
+          "archetype",
+          "priority",
+          "evidence",
+          "delta",
+          "history",
+          "decision",
+          "derived-issue",
+          "dependencies"
         ],
         "producer_evidence": [
-          "apps/web/src/dev-server/reports-route-page.ts:240-290"
+          "apps/web/src/app-shell/routes.ts"
         ],
         "public_projection_evidence": [
-          "apps/web/src/dev-server/reports-route-page.ts:289-315"
+          "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
         ],
         "consumer_evidence": [
-          "apps/web/src/dev-server/reports-analysis-archetype.ts:49-77"
+          "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
         ],
         "visible_surface_evidence": [
-          "visual artifact 12464744819 run 39868576683 / three viewports and BRL/USD",
-          "reports-installments-regression.json @ 49246114f5776e84871ee079b9c8191ea79bfe35 with 390x844 and 320x740 filterFit/negativeControl passed"
+          "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
         ],
         "scenario_ids": [
-          "BRL",
-          "USD",
-          "mixed-origin-data"
+          "all-14-route-inventory"
         ],
         "negative_control_evidence": [
-          "NC-718-07",
-          "NC-718-10"
+          "negative-control-evidence-719.json"
         ]
       }
     ],
@@ -331,66 +663,30 @@
     "unmapped_required_fields": []
   },
   "canonical_source_consistency": {
-    "status": "passed",
-    "applicability_reason": "Reported income, expense, result and cash-flow series continue to come from existing canonical report API view models; no new financial formula in UI.",
-    "entries": [
-      {
-        "id": "CSC-718",
-        "semantic_field": "financial amount and currency",
-        "canonical_source": "GET existing report APIs and typed currencyBlocks",
-        "alternative_sources": [
-          "combined BRL+USD sum",
-          "frontend currency conversion"
-        ],
-        "surfaces": [
-          "SSR summary",
-          "trend",
-          "table detail"
-        ],
-        "evidence_ids": [
-          "NC-718-07",
-          "NC-718-10"
-        ],
-        "scenario_ids": [
-          "BRL result",
-          "USD result",
-          "mixed-currency separation"
-        ],
-        "negative_control_evidence": [
-          "scripts/statement-visual/reports-718-behavior-evidence.test.mjs:97-105,160-172"
-        ],
-        "divergent_fixture": {
-          "canonical_value": "BRL=260079 and USD=12345 separated",
-          "alternative_values": [
-            "BRL+USD in one single cross-currency total"
-          ]
-        }
-      }
-    ],
+    "status": "not-applicable",
+    "applicability_reason": "This documentation-only PR does not introduce a runtime value, persistence rule or competing financial data source.",
+    "entries": [],
     "unverified_surfaces": [],
     "missing_divergent_tests": []
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "Golden Screen analytical A5 content is documented and checked against route implementations and normative design references.",
+    "applicability_reason": "The document explicitly separates historical Golden Screen delivery acceptance from current phase-2 inventory and excludes legacy routes.",
     "old_contract_terms": [
-      "cards aninhados",
-      "visão da listagem do Extrato"
+      "#591 history accepted"
     ],
     "new_contract_terms": [
-      "A5 resumo visualizacao destaques detalhe",
-      "separação BRL USD"
+      "phase-2 structural triage"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "docs/REPORTS.md",
-      "docs/DESIGN_SYSTEM.md",
       "docs/SCREEN_ARCHETYPES.md",
-      "docs/VISUAL_VALIDATION.md",
-      "docs/GOLDEN_STATEMENT.md",
-      "apps/web/src/dev-server/reports-route-page.ts"
+      "docs/DESIGN_SYSTEM.md",
+      "docs/APP_SHELL.md",
+      "docs/product/INTERFACE_INVENTORY.md",
+      "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
     ]
   },
   "scope_reduction_review": {
@@ -400,19 +696,14 @@
   "pass_c": {
     "status": "passed",
     "requirement_ids": [
-      "REQ-718-01",
-      "REQ-718-02",
-      "REQ-718-03",
-      "REQ-718-04",
-      "REQ-718-05",
-      "REQ-718-06",
-      "REQ-718-07",
-      "REQ-718-08",
-      "REQ-718-09",
-      "REQ-718-10",
-      "REQ-718-11",
-      "REQ-718-12",
-      "REQ-718-13"
+      "REQ-719-01",
+      "REQ-719-02",
+      "REQ-719-03",
+      "REQ-719-04",
+      "REQ-719-05",
+      "REQ-719-06",
+      "REQ-719-07",
+      "REQ-719-08"
     ],
     "obligation_ids": [
       "OBL-001",
@@ -427,22 +718,15 @@
       "OBL-010",
       "OBL-011",
       "OBL-012",
-      "OBL-013"
+      "OBL-014",
+      "OBL-015"
     ],
     "evidence": [
-      "docs/GOLDEN_STATEMENT.md + docs/SCREEN_ARCHETYPES.md at develop baseline; code reports A5 in reports-analysis-archetype.ts and screenshots from Chrome run 39868576683; issue #714 baseline reference remains open for separate audit",
-      "apps/web/src/dev-server/reports-route-page.ts:125-302; reports-analysis-archetype.ts:49-77; Chrome report multiCurrency 1366x768,390x844,320x740 has 18 category captures and intact A5 layers",
-      "apps/web/src/dev-server/reports-route-page.ts:150-304 + reports-installments-view.ts:65-251; reports-route-page.test.ts:13-400 and scripts/statement-visual/reports-category-evolution.mjs; CI 39719913719 success",
-      "apps/web/src/dev-server/reports-route-page-styles.ts:1-153, no excessive card borders; screenshots reports-desktop-1366x768-brl-summary.png and reports-mobile-390x844-usd-summary.png inspected",
-      "scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134, report-page-viewport.mjs:7-47; Chrome negative viewport control and all six mobile section captures per scenario",
-      "apps/web/src/dev-server/reports-analysis-archetype.ts:49-77,149-207; Chrome 36 segment captures for category/cash flow; test validates summary-before-visualization-before-detail",
-      "apps/web/src/dev-server/reports-route-page.ts:289-315, scripts/statement-visual/reports-718-multicurrency-browser.mjs:6-134; Chrome measurements currenciesComplete=true for BRL and USD",
-      "Chrome run 39868576683; artifact 12464744819; reports-category-evolution.json commit 2ba22d2f..., 36 full-currency layer screenshots + 6 state captures; adapter independently validated against raw file",
-      "apps/web/src/dev-server/reports-route-page.test.ts:316-351 validates two emphasized result articles; report visual summary screenshot and DOM exact-SHA",
-      "apps/web/src/dev-server/reports-route-page.test.ts:316-351 and reports-718-behavior-evidence.test.mjs:97-105,160-172; Chrome has isolated BRL and USD blocks",
-      "apps/web/src/dev-server/reports-analysis-archetype.ts:149-207, report view controls and visual browser proof; Chrome negative overflow and trend money overlap probes",
-      "scripts/statement-visual/reports-718-extra-browser.mjs:164-247; Chrome 390x844 and 320x740 show empty/filter-error/api-error with valid retry URL, pageFitsViewport and no partial report",
-      "Repository CI 39719913719 success including lint/typecheck/unit/integration/build; Chrome 39868576683 success; docs/REPORTS.md; independent visual auditor decision remains external and not claimed as completed"
+      "Offline bundle route catalogue 14/14 matched inventory",
+      "GitHub readbacks confirmed #724-#728 and epic #702",
+      "Repository CI #39889196325 terminal success on material SHA",
+      "Delivery audit workspace #39889196684 terminal success on material SHA",
+      "Mutation controls verified in negative-control-evidence-719.json"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

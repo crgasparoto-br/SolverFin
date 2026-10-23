@@ -1,38 +1,46 @@
 **Parent epic:** #702
-**Fase:** 1 — propagação por superfície.
-**Rota:** `/relatorios`.
-**Antecedente:** #611 (arquétipo resumo → visualização → detalhe); entregas antigas não atestam acabamento frente à Golden Screen recém-aprovada.
-**Dependência:** #714 — marco técnico da Golden Screen e referência validada na `develop`.
+**Fase:** 2 — expansão controlada depois das quatro rotas prioritárias.
+**Dependência:** #714 — marco do Extrato da fase 0; considerar resultados e padrões comprovados nas quatro subissues de fase 1.
 
 ## Objetivo
-Alinhar os relatórios financeiros à hierarquia, densidade e iconografia da Golden Screen, respeitando o arquétipo analítico em vez de copiar a listagem do Extrato.
+Mapear rotas operacionais adicionais que precisam da qualidade visual da Golden Screen e abrir **issues específicas por superfície**, evitando uma implementação genérica de grande porte ou retrabalho com a épica histórica #591.
 
 ## Escopo
-- Priorizar contexto de período, conta/cartão, moeda e indicadores de decisão; organizar resumo, visualização, destaques e detalhe.
-- Refinar filtros, estados ativos, hierarquia de categorias, tabelas, gráficos, ações de expansão e eventuais drilldowns existentes.
-- Reduzir cards/bordas em excesso, sem perder comparabilidade financeira ou rastreabilidade dos números.
-- Melhorar desktop/mobile, colunas/tabulação, overflow controlado, foco, teclado e descrição acessível de gráficos.
+- Conferir catálogo real de rotas/estados disponíveis e `docs/SCREEN_ARCHETYPES.md` (por exemplo Dashboard, Orçamentos, Inbox e rotas secundárias quando pertinentes).
+- Para cada superfície: identificar arquétipo, estado atual, delta visual real frente à Golden Screen aprovada, dependências, risco e prioridade; registrar se já está adequada.
+- Relacionar entregas anteriores (#591, #608–#615) para evitar duplicação e não interpretar issues fechadas como validação da nova referência.
+- Criar issues derivadas específicas somente quando houver diferenças demonstráveis, com escopo fechado, critérios visuais e de regressão claros.
+- Publicar matriz de cobertura e links na #702.
 
 <!-- review-702-2026-10-15 -->
-## Cenários de aceite discriminantes — revisão de 15/10/2026
+## Delimitação de inventário e encerramento — revisão de 15/10/2026
 
-- **Análise:** em relatório disponível com dados, período, filtro, moeda, indicador decisivo, gráfico/tabela e detalhe devem ser identificáveis na ordem `resumo -> visualização -> detalhe`; usar apenas relatórios e drilldowns realmente existentes.
-- **Multi-moedas:** com BRL e USD no conjunto, não renderizar total combinado sem conversão explícita e auditável. Seleção/filtro e detalhamento mantêm unidade monetária e consistência com valores de origem.
-- **Estados e densidade:** demonstrar tabela larga/conteúdo longo, filtro sem resultado, legenda acessível e erro recuperável no desktop e mobile, com scroll local controlado e sem ampliar viewport horizontalmente.
-- **Controle negativo:** rejeitar regressão que oculta moeda, corta cabeçalhos/valores ou promove detalhes secundários acima da conclusão principal, ainda que testes de renderização estejam verdes.
-
-**Evidência de aceite:** prova funcional/visual real no SHA da PR, incluindo contraste de cenários por moeda, e avaliação independente do acabamento.
+- **Universo de análise:** rotas operacionais `available` no catálogo canônico da `develop` no SHA de início do inventário; registrar quais foram analisadas, dispensadas ou consideradas fora do escopo. Não assumir que rotas antigas ainda existem.
+- **Matriz de triagem obrigatória:** `rota | arquétipo | prioridade | evidência atual | delta em relação à Golden Screen | antecedente #591/#608–#615 | decisão (aderente/issue/fora) | issue derivada | dependências`.
+- **Se já aderente:** registrar observação verificável que justifique a dispensa; não criar uma issue redundante por obrigação de cobertura.
+- **Se não aderente:** abrir uma issue de escopo coeso por rota/família independente com critérios observáveis, fonte canônica e vínculo documental à #702; registrar claramente prioridade e condição de início.
+- **Regra de fechamento:** #719 encerra quando o inventário está completo e todas as issues derivadas necessárias estão abertas e rastreáveis. **Não** exigir a implementação delas dentro da #719; o encerramento da **épica #702** continua condicionado às issues obrigatórias derivadas.
+- **Escopo temporal:** mudanças futuras de catálogo após o SHA congelado são novo escopo e precisam de decisão de incorporação à #702; não prolongar indefinidamente a #719.
 
 ## Critérios de aceite
-- [ ] Resumo e conclusão principal reconhecíveis rapidamente; dados analíticos legíveis em desktop/mobile.
-- [ ] Valores separados por moeda, exceto conversão explícita e auditável do domínio; totais e filtros não sofrem regressão.
-- [ ] Visualizações e tabelas preservam contexto, legenda acessível, drilldown e comportamentos existentes.
-- [ ] Estados vazios/erro/conteúdo longo, evidências Chrome exact-SHA e comparação visual contra nível de acabamento aprovado.
-- [ ] Regressões financeiras/SSR/a11y verificadas, CI verde, documentação pertinente e auditoria independente favorável.
+- [x] Inventário de superfícies operacionais e respectivos arquétipos publicado na épica.
+- [x] Cada rota está classificada como aderente, requer subissue específica ou fora de escopo, com evidência/racional.
+- [x] Issues necessárias foram abertas e vinculadas no checklist da #702, com precedência e critérios verificáveis.
+- [x] Nenhuma implementação funcional ou refatoração ampla foi embutida nesta atividade de triagem.
+- [ ] Revisão independente do inventário e documentação concluídas.
 
 ## Fora de escopo
-Novos indicadores de negócio, fórmulas, consultas, domínio ou redesign de Cartões/Extrato.
+Implementar todas as rotas no mesmo PR; reabrir fases concluídas sem discrepância atual comprovada.
 
 Referências obrigatórias: épica [#702](https://github.com/crgasparoto-br/SolverFin/issues/702), Golden Screen aprovada pelo usuário em 14/10/2026, `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md`, `docs/GOLDEN_STATEMENT.md`, `AGENTS.md` e mockup `SolverFin Bank Statement UI Mockup.png`.
 
 **Base de todas as PRs:** `develop`. Preservar arquitetura SSR, primitivas e contratos financeiros, acessibilidade, LGPD e responsividade. A referência é o **nível de acabamento** da Golden Screen, não uma cópia de seus componentes ou disposição. Exigir evidência Chrome/SSR desktop/mobile do **SHA material da entrega**, testes e checks relevantes verdes e auditoria independente por subissue. Não fazer merge automático.
+
+<!-- delivery-719-2026-10-17 -->
+## Entrega documental — 17/10/2026 (pendente revisão independente)
+
+- SHA congelado do catálogo: `develop@45f516268ab5a51931bdd096c7a131fc3b8f73d8`.
+- [Matriz de 14 rotas](https://github.com/crgasparoto-br/SolverFin/blob/docs/719-golden-screen-phase2-inventory/docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md) proposta na [PR #730](https://github.com/crgasparoto-br/SolverFin/pull/730) (base `develop`, Draft, sem merge).
+- Issues derivadas: #724 Dashboard, #725 Orçamentos, #726 Inbox, #727 Configurações, #728 Admin Instituições; links/checklist também na #702.
+- Dispensas justificadas no inventário: `/assistente`, `/admin/indices-financeiros`; rotas não operacionais e fases anteriores identificadas separadamente.
+- **Não declarar #719 concluída até haver parecer independente favorável** sobre inventário, recorte temporal, prova dos deltas, ausência de duplicações e rastreabilidade; a #702 permanece aberta até as issues derivadas obrigatórias estarem aceitas.

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A719-01",
+      "escape_class": "foreign-handoff-reuse",
+      "source_audit": {
+        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+        "rejection_id": "audit-rejection:aab741ac-4c6b-4b33-aea5-058ba7182ebb",
+        "finding_id": "A719-01",
+        "audit_report_sha256": "c88607fd254817e496be7f71c0259fb07ab4852d79b4f9f6ebc561cad3184072"
+      },
+      "plausible_wrong_implementation": "Treat an unchanged inherited certificate for a different issue and PR as if it certified this delivery because a file with the expected name already exists.",
+      "literal_case": {
+        "procedure": "Run delivery_target_binding.py on the source branch against the immutable base and issue 719/PR 730",
+        "observed": "inherited-base-artifact, reuse_allowed=false; original certificate belongs to issue 718/PR 729",
+        "status": "passed",
+        "evidence": "target-binding.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "foreign-target",
+          "surface": "certificate-identity",
+          "dimension": "changed-but-foreign-target",
+          "status": "passed",
+          "evidence": "target-binding-controls.json returns foreign-target and reuse_allowed=false"
+        },
+        {
+          "id": "partial-current-target",
+          "surface": "specification-identity",
+          "dimension": "current-issue-with-foreign-certificate",
+          "status": "passed",
+          "evidence": "target-binding-controls.json returns partial-current-target and reuse_allowed=false"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "documentation",
+          "surface": "certificate-identity",
+          "dimension": "inherited-foreign-target"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "certificate-identity",
+          "dimension": "changed-foreign-target"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "specification-identity",
+          "dimension": "partial-current-target"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "producer result-only target-specific certificate and source snapshot",
+        "evidence": "Current target evidence artifacts generated for issue 719 and PR 730 by official source/specification/closure tools; publication required before terminal status can be asserted."
+      },
+      "detection_change": {
+        "skill_or_gate": "delivery_target_binding.py and validate_terminal_handoff.py",
+        "control_id": "A719-01-TARGET-BINDING",
+        "evidence": "Original inherited certificate was rejected, and two distinct malformed sibling cases were also rejected by the official target binding classifier."
+      },
+      "trigger_terms": [
+        "inherited-base-artifact",
+        "foreign-target",
+        "stale certificate",
+        "result-only-child"
+      ],
+      "required_risk_families": [
+        "documentation"
+      ],
+      "revalidated_head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "status": "passed"
+    }
+  ]
+}

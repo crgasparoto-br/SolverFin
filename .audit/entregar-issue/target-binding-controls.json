@@ -1,0 +1,19 @@
+{
+  "material_head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+  "cases": [
+    {
+      "case": "foreign-target",
+      "exit_code": 3,
+      "status": "foreign-target",
+      "reuse_allowed": false,
+      "pass": true
+    },
+    {
+      "case": "partial-current-target",
+      "exit_code": 3,
+      "status": "partial-current-target",
+      "reuse_allowed": false,
+      "pass": true
+    }
+  ]
+}
