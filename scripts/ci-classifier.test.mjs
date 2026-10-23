@@ -140,7 +140,10 @@ test("web-only typechecks run after building workspace packages in all CI paths"
     const installAt = section.indexOf("npm ci --no-audit --no-fund");
     const buildAt = section.indexOf("run: npm run build:packages");
     const typecheckAt = section.indexOf(typecheck);
-    assert.ok(installAt >= 0 && installAt < buildAt && buildAt < typecheckAt, `${job}: build before typecheck`);
+    assert.ok(
+      installAt >= 0 && installAt < buildAt && buildAt < typecheckAt,
+      `${job}: build before typecheck`,
+    );
   }
 
   const preview = workflow.split("  merge_preview:\n")[1]?.split("  fast_validation:\n")[0];
