@@ -232,9 +232,25 @@ export async function renderCardsPageV2(
   const accounts = accountsResult.ok ? accountsResult.data.accounts : [];
   const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
   const summary = summaryResult.data.summary;
+  // The original transaction amount is a historical base, not the effective total
+  // after one or more installment amounts have been adjusted.
+  const allCardInstallments = selectedCard && selectedInvoice
+    ? await apiGet<{ installments: InvoiceInstallmentRecord[] }>(
+        token, `/api/installments?cardId=${encodeURIComponent(selectedCard.id)}&status=all`,
+      )
+    : null;
+  const effectiveTotals = new Map<string, number>();
+  if (allCardInstallments?.ok) {
+    for (const installment of allCardInstallments.data.installments ?? []) {
+      const transactionId = installment.transaction?.id;
+      if (!transactionId || !Number.isSafeInteger(installment.amountMinor)) continue;
+      effectiveTotals.set(transactionId, (effectiveTotals.get(transactionId) ?? 0) + installment.amountMinor);
+    }
+  }
   const canonicalPurchases = projectInvoicePurchases(
     purchasesResult.data.purchases,
     installmentsResult.data.installments ?? [],
+    effectiveTotals,
   );
   const invoiceCurrency = resolveInvoiceCurrency(selectedInvoice, canonicalPurchases);
   const visiblePurchases = sortPurchases(
@@ -330,6 +346,7 @@ function invoicesForCard(invoices: readonly InvoiceRecord[], cardId: string): In
 function projectInvoicePurchases(
   purchases: readonly CardPurchaseRecord[],
   installments: readonly InvoiceInstallmentRecord[],
+  effectiveTotals: ReadonlyMap<string, number> = new Map(),
 ): CardPurchaseRecord[] {
   const installmentTransactionIds = new Set(
     installments.map((installment) => installment.transaction?.id).filter(isDefined),
@@ -350,7 +367,7 @@ function projectInvoicePurchases(
         status: installment.status,
         amountMinor: installment.amountMinor,
         currency: installment.currency,
-        purchaseTotalAmountMinor: purchase.amountMinor,
+        purchaseTotalAmountMinor: effectiveTotals.get(purchase.id) ?? purchase.amountMinor,
         installmentSequenceNumber: installment.sequenceNumber,
         totalInstallments: installment.totalInstallments,
         installmentStart: installment.initialSequenceNumber ?? 1,
