@@ -1640,7 +1640,6 @@ function clientScript(): string {
         const reverseButton = document.querySelector('[data-reverse-purchase="' + purchase.id + '"]');
         reverseButton?.addEventListener("click", async () => {
           if (reverseButton.disabled || !purchase.invoiceId || purchase.amountMinor <= 0) return;
-          if (!window.confirm("Estornar " + purchase.description + " no valor de " + minorToMoney(purchase.amountMinor) + "? O crédito será lançado na mesma fatura.")) return;
           reverseButton.disabled = true;
           try {
             const response = await fetch("/api/credit-card-accounts/" + encodeURIComponent(purchase.cardId) + "/purchases/" + encodeURIComponent(purchase.id) + "/reverse", {
