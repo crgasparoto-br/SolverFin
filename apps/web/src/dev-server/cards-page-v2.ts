@@ -363,7 +363,7 @@ function projectInvoicePurchases(
     .filter((purchase) => !installmentTransactionIds.has(purchase.id))
     .map((purchase) => ({
       ...purchase,
-      description: purchase.description.replace(/ \\[estorno:[^\\]]+\\]$/, ""),
+      description: purchase.description.replace(/ \[estorno:[^\]]+\]$/, ""),
     }));
   const installmentOccurrences = installments.flatMap((installment) => {
     const purchase = installment.transaction;
