@@ -313,6 +313,22 @@ export async function renderCardsPageV2(
     <div class="cards-layout" data-cards-archetype="A3">
       ${content}
       ${renderPurchaseModal(selectedCard, categoriesResult.ok ? categoriesResult.data.categories : [], activeInstruments, cardCurrency)}
+      <dialog class="cards-dialog" data-modal="reversal-edit" aria-labelledby="cards-reversal-edit-title">
+        <section class="cards-dialog-panel cards-purchase-dialog-panel">
+          <header><div><span class="cards-kicker">Crédito na fatura</span><h2 id="cards-reversal-edit-title">Editar estorno</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+          <p class="cards-dialog-description">O estorno foi criado. Confira os dados e salve os ajustes desejados.</p>
+          <form data-reversal-edit-form>
+            <label>Descrição<input name="description" required maxlength="180"></label>
+            <label>Valor do estorno (${escapeHtml(cardCurrency ?? "")})<input name="amountMinor" data-money inputmode="decimal" required></label>
+            <label>Data<input name="occurredOn" type="date" required></label>
+            <label>Instrumento<select name="cardInstrumentId">${renderInstrumentOptions(activeInstruments, cardCurrency)}</select></label>
+            <label>Categoria<input value="Estornos" readonly aria-readonly="true"></label>
+            <p class="form-status" data-reversal-edit-status role="status"></p>
+            <div class="cards-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-close-modal>Fechar</button><button type="submit" class="sf-button sf-button-primary">Salvar</button></div>
+          </form>
+        </section>
+      </dialog>
+
       ${selectedInvoice ? renderInstallmentAmountModal() : ""}
       ${selectedInvoice ? renderInvoiceAttachmentsDialog(selectedInvoice) : ""}
       ${renderPaymentModal(
