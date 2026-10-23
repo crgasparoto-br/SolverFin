@@ -148,7 +148,7 @@ function renderDashboard(model: DashboardScreenViewModel): string {
 
 function renderDashboardContent(content: DashboardContentViewModel): string {
   return `
-    <header class="dashboard-hero" aria-label="Situação financeira atual">
+    <section class="dashboard-hero" aria-label="Situação financeira atual">
       <div class="dashboard-heading">
         ${renderPageHeader({
           eyebrow: "Cockpit financeiro",
@@ -160,7 +160,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         <strong>${escapeHtml(content.dataQuality.title)}</strong>
         <span>${escapeHtml(content.dataQuality.description)}</span>
       </div>
-    </header>
+    </section>
     ${renderCurrencyNavigator(content.currencySummaries)}
     ${renderCurrencySummaries(content.currencySummaries)}
     <section class="next-actions" aria-label="Próximas ações">
