@@ -1959,69 +1959,69 @@ function clientScript(): string {
         status.textContent = "Salvando...";
         let keepPendingUntilReload = false;
         try {
-        let response;
-        if (mode === "fixed") {
-          const cardId = /credit-card-accounts\\/([^/]+)/.exec(path)?.[1] || "";
-          const endOn = String(data.get("endOn") || "");
-          response = await request("/api/recurrences", "POST", {
-            frequency: String(data.get("frequency") || "monthly"),
-            interval: Math.max(1, Number(data.get("interval") || 1)),
-            startOn: payload.occurredOn,
-            ...(endOn ? { endOn } : {}),
-            amountMinor: payload.amountMinor,
-            currency,
-            description: payload.description,
-            cardId,
-            ...(cardInstrumentId ? { cardInstrumentId } : {}),
-            ...(categoryId ? { categoryId } : {}),
-          });
-        } else if (mode === "installment") {
-          const totalInstallments = Math.max(2, Number(data.get("totalInstallments") || 2));
-          const installmentStart = Math.min(
-            Math.max(1, Number(data.get("installmentStart") || 1)),
-            totalInstallments,
-          );
-          const amountMinor =
-            String(data.get("installmentValueMode")) === "per_installment"
-              ? payload.amountMinor * totalInstallments
-              : payload.amountMinor;
-          response = await request(path, "POST", {
-            ...payload,
-            amountMinor,
-            currency,
-            totalInstallments,
-            installmentStart,
-          });
-        } else {
-          response = await request(path, method, payload);
-        }
-        const savedResponse = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          status.textContent = savedResponse?.error?.message || "Não foi possível gravar a compra.";
-          status.className = "form-status error full";
-          return;
-        }
-        status.textContent = "Compra registrada com sucesso.";
-        status.className = "form-status success full";
-        if (saveAndContinue && method === "POST") {
-          purchaseForm.dataset.savedDuringSession = "true";
-          purchaseForm.dataset.savedCount = String(Number(purchaseForm.dataset.savedCount || 0) + 1);
-          const retainedInstrument = String(data.get("cardInstrumentId") || "");
-          const retainedCurrency = currency;
-          const retainedDate = String(data.get("occurredOn") || "");
-          purchaseForm.reset();
-          purchaseForm.querySelector('[name="currency"]').value = retainedCurrency;
-          purchaseForm.querySelector('[name="occurredOn"]').value = retainedDate;
-          if (retainedInstrument) purchaseForm.querySelector('[name="cardInstrumentId"]').value = retainedInstrument;
-          if (repeatMode) repeatMode.value = "single";
-          syncRepeatFields();
-          purchaseForm.querySelector('[name="description"]')?.focus();
-          status.textContent = purchaseForm.dataset.savedCount + " compra(s) registrada(s). Informe a próxima compra. A lista será atualizada ao fechar.";
+          let response;
+          if (mode === "fixed") {
+            const cardId = /credit-card-accounts\\/([^/]+)/.exec(path)?.[1] || "";
+            const endOn = String(data.get("endOn") || "");
+            response = await request("/api/recurrences", "POST", {
+              frequency: String(data.get("frequency") || "monthly"),
+              interval: Math.max(1, Number(data.get("interval") || 1)),
+              startOn: payload.occurredOn,
+              ...(endOn ? { endOn } : {}),
+              amountMinor: payload.amountMinor,
+              currency,
+              description: payload.description,
+              cardId,
+              ...(cardInstrumentId ? { cardInstrumentId } : {}),
+              ...(categoryId ? { categoryId } : {}),
+            });
+          } else if (mode === "installment") {
+            const totalInstallments = Math.max(2, Number(data.get("totalInstallments") || 2));
+            const installmentStart = Math.min(
+              Math.max(1, Number(data.get("installmentStart") || 1)),
+              totalInstallments,
+            );
+            const amountMinor =
+              String(data.get("installmentValueMode")) === "per_installment"
+                ? payload.amountMinor * totalInstallments
+                : payload.amountMinor;
+            response = await request(path, "POST", {
+              ...payload,
+              amountMinor,
+              currency,
+              totalInstallments,
+              installmentStart,
+            });
+          } else {
+            response = await request(path, method, payload);
+          }
+          const savedResponse = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            status.textContent = savedResponse?.error?.message || "Não foi possível gravar a compra.";
+            status.className = "form-status error full";
+            return;
+          }
+          status.textContent = "Compra registrada com sucesso.";
           status.className = "form-status success full";
-        } else if (response.ok) {
-          keepPendingUntilReload = true;
-          window.setTimeout(() => window.location.reload(), 350);
-        }
+          if (saveAndContinue && method === "POST") {
+            purchaseForm.dataset.savedDuringSession = "true";
+            purchaseForm.dataset.savedCount = String(Number(purchaseForm.dataset.savedCount || 0) + 1);
+            const retainedInstrument = String(data.get("cardInstrumentId") || "");
+            const retainedCurrency = currency;
+            const retainedDate = String(data.get("occurredOn") || "");
+            purchaseForm.reset();
+            purchaseForm.querySelector('[name="currency"]').value = retainedCurrency;
+            purchaseForm.querySelector('[name="occurredOn"]').value = retainedDate;
+            if (retainedInstrument) purchaseForm.querySelector('[name="cardInstrumentId"]').value = retainedInstrument;
+            if (repeatMode) repeatMode.value = "single";
+            syncRepeatFields();
+            purchaseForm.querySelector('[name="description"]')?.focus();
+            status.textContent = purchaseForm.dataset.savedCount + " compra(s) registrada(s). Informe a próxima compra. A lista será atualizada ao fechar.";
+            status.className = "form-status success full";
+          } else if (response.ok) {
+            keepPendingUntilReload = true;
+            window.setTimeout(() => window.location.reload(), 350);
+          }
         } catch {
           status.textContent = "Falha de conexão ao salvar a compra. Tente novamente.";
           status.className = "form-status error full";
