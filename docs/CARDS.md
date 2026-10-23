@@ -132,6 +132,14 @@ Compras de faturas `closed`, `paid` ou `cancelled` tem a acao de edicao desabili
 
 A `Installment` tecnica vinculada a uma compra recorrente materializada nao aparece em painel, historico ou linha separada na tela `Cartoes`. Quando o vinculo for canonico, o metadado `Parcela X de Y` e exibido na propria linha da compra, e a manutencao continua exclusivamente pelo endpoint operacional da compra.
 
+### Ações e ajuste de parcelas na tela Cartões (#742)
+
+O menu contextual da linha oferece **Editar** e **Clonar** com iconografia equivalente ao Extrato. Clonar abre o mesmo formulário centralizado como **nova compra única**, com valor, data, descrição, categoria e instrumento pré-preenchidos; não replica os IDs originais, nem vínculos de parcelamento ou recorrência. Não clonar em faturas bloqueadas.
+
+A edição padrão da compra parcelada mantém a **transação-base, total e calendário originais imutáveis**. Para alterar o valor exibido de uma parcela financeira, usar **Editar valor da parcela** na própria linha. A ação chama `PATCH /api/invoices/:invoiceId/installments/:installmentId/amount`, com `amountMinor` em centavos e escopo `current` ou `current_and_future`. O backend atualiza apenas a ocorrência de `Installment` e o total da fatura correspondente, sob transação e auditoria; não edita `Transaction.amountMinor` compartilhado, não redistribui o preço total nem recalcula câmbio. Parcelas futuras bloqueadas são contadas como ignoradas e nunca modificadas silenciosamente. Faturas fechadas/pagas/canceladas e parcelas conciliadas não são elegíveis.
+
+Em recorrências de cartão, a **data** é editável no modal da compra e segue o diálogo já existente de decisão entre a ocorrência selecionada e as próximas elegíveis. O backend preserva os limites de período da fatura e as restrições de histórico. O modal mostra apenas os campos aplicáveis durante edição, com ações alinhadas, estados de foco e rolagem interna mobile.
+
 ## Movimentacao de compra entre faturas/periodos
 
 A movimentacao de uma compra para outro periodo de fatura usa o contrato dedicado:
