@@ -17,7 +17,13 @@ import {
   resolveCanonicalCardPurchaseCurrency,
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import { InvoiceContractError, deleteSimpleCardPurchaseForContext, reverseCardPurchaseForContext, updateCardReversalForContext, updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import {
+  InvoiceContractError,
+  deleteSimpleCardPurchaseForContext,
+  reverseCardPurchaseForContext,
+  updateCardReversalForContext,
+  updateCardPurchaseForContext,
+} from "./repositories/card-invoice-contracts.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   archiveCardInstrumentForContext,
@@ -64,9 +70,17 @@ route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, createCardInstrumentH
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCardInstrumentHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, updateCardPurchaseHandler);
-route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/reverse`, reverseCardPurchaseHandler);
+route(
+  "POST",
+  `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/reverse`,
+  reverseCardPurchaseHandler,
+);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/reversals/:reversalId`, updateCardReversalHandler);
-route("DELETE", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, deleteCardPurchaseHandler);
+route(
+  "DELETE",
+  `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`,
+  deleteCardPurchaseHandler,
+);
 route(
   "POST",
   `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/move-invoice-period`,
@@ -370,7 +384,9 @@ async function deleteCardPurchaseHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const result = await deleteSimpleCardPurchaseForContext(
-    context, requireParam(match, "cardId"), requireParam(match, "transactionId"),
+    context,
+    requireParam(match, "cardId"),
+    requireParam(match, "transactionId"),
   );
   return json(200, { deleted: result });
 }
@@ -402,7 +418,12 @@ async function reverseCardPurchaseHandler(
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
   const invoiceId = String(body.invoiceId ?? "");
-  if (!invoiceId) throw new InvoiceContractError("CARD_REVERSAL_INVOICE_REQUIRED", "Informe a fatura do lançamento.", 400);
+  if (!invoiceId)
+    throw new InvoiceContractError(
+      "CARD_REVERSAL_INVOICE_REQUIRED",
+      "Informe a fatura do lançamento.",
+      400,
+    );
   try {
     const result = await reverseCardPurchaseForContext(
       context,
@@ -415,13 +436,18 @@ async function reverseCardPurchaseHandler(
   } catch (error) {
     if (error instanceof InvoiceContractError) throw error;
     // Reveal only SQLSTATE, never SQL text, parameters, or personal financial data.
-    const sqlstate = typeof error === "object" && error !== null &&
-      "code" in error && typeof error.code === "string"
-      ? error.code
-      : "UNKNOWN";
+    const sqlstate =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      typeof error.code === "string"
+        ? error.code
+        : "UNKNOWN";
     throw new InvoiceContractError(
       "CARD_REVERSAL_PERSISTENCE_ERROR",
-      "Falha ao registrar estorno (código técnico: " + sqlstate + "). Nenhum crédito foi gravado. Informe este código ao suporte.",
+      "Falha ao registrar estorno (código técnico: " +
+        sqlstate +
+        "). Nenhum crédito foi gravado. Informe este código ao suporte.",
       409,
     );
   }
