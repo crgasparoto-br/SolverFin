@@ -1029,6 +1029,7 @@ function renderPurchaseRow(
       <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar</span></button>
       <button type="button" class="actions-item" role="menuitem" data-clone-purchase="${escapeHtml(purchase.id)}"${locked ? " disabled" : ""}>${icon("copy", 16)}<span>Clonar</span></button>
       <button type="button" class="actions-item" role="menuitem" data-reverse-purchase="${escapeHtml(purchase.id)}"${locked || purchase.amountMinor <= 0 ? " disabled" : ""}>${icon("rotate-ccw", 16)}<span>Estorno</span></button>
+      <button type="button" class="actions-item" role="menuitem" data-delete-purchase="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" || Boolean(purchase.installmentId || purchase.recurrenceId) ? " disabled" : ""}>${icon("trash-2", 16)}<span>Excluir</span></button>
       
       ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
       ${!locked && otherPeriods.length > 0 ? `<span class="cards-move-hint">Mover para outra fatura disponível no menu</span>` : ""}
@@ -1599,6 +1600,25 @@ function clientScript(): string {
           document.querySelector('dialog[data-modal="purchase"]')?.showModal();
         });
 
+        const deleteButton = document.querySelector('[data-delete-purchase="' + purchase.id + '"]');
+        deleteButton?.addEventListener("click", async () => {
+          if (deleteButton.disabled) return;
+          if (!window.confirm("Excluir permanentemente o lançamento " + purchase.description + "? O total da fatura será recalculado. Esta ação não pode ser desfeita.")) return;
+          deleteButton.disabled = true;
+          try {
+            const response = await fetch("/api/credit-card-accounts/" + encodeURIComponent(purchase.cardId) + "/purchases/" + encodeURIComponent(purchase.id), { method: "DELETE" });
+            if (!response.ok) {
+              const body = await response.json().catch(() => ({}));
+              window.alert(body?.error?.message || "Não foi possível excluir este lançamento.");
+              deleteButton.disabled = false;
+              return;
+            }
+            window.location.reload();
+          } catch {
+            window.alert("Falha de conexão ao excluir lançamento.");
+            deleteButton.disabled = false;
+          }
+        });
         const reverseButton = document.querySelector('[data-reverse-purchase="' + purchase.id + '"]');
         reverseButton?.addEventListener("click", async () => {
           if (reverseButton.disabled || !purchase.invoiceId || purchase.amountMinor <= 0) return;
