@@ -231,7 +231,14 @@ export async function renderCardsPageV2(
   if (!installmentsResult.ok) return renderErrorPage(installmentsResult.error);
 
   const accounts = accountsResult.ok ? accountsResult.data.accounts : [];
-  const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
+  const reversalCategoriesResult = await apiGet<{ categories: CategoryRecord[] }>(
+    token, "/api/categories?kind=income",
+  );
+  const categories = categoriesResult.ok
+    ? [...categoriesResult.data.categories, ...(reversalCategoriesResult.ok
+        ? reversalCategoriesResult.data.categories.filter((category) => category.name.trim().toLocaleLowerCase("pt-BR") === "estornos")
+        : [])]
+    : [];
   const summary = summaryResult.data.summary;
   // The original transaction amount is a historical base, not the effective total
   // after one or more installment amounts have been adjusted.
