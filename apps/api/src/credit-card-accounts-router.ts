@@ -403,12 +403,28 @@ async function reverseCardPurchaseHandler(
   const body = requireObjectBody(request.body);
   const invoiceId = String(body.invoiceId ?? "");
   if (!invoiceId) throw new InvoiceContractError("CARD_REVERSAL_INVOICE_REQUIRED", "Informe a fatura do lançamento.", 400);
-  const result = await reverseCardPurchaseForContext(
-    context, requireParam(match, "cardId"), requireParam(match, "transactionId"),
-    invoiceId,
-    body.installmentId ? String(body.installmentId) : undefined,
-  );
-  return json(201, { reversal: result });
+  try {
+    const result = await reverseCardPurchaseForContext(
+      context,
+      requireParam(match, "cardId"),
+      requireParam(match, "transactionId"),
+      invoiceId,
+      body.installmentId ? String(body.installmentId) : undefined,
+    );
+    return json(201, { reversal: result });
+  } catch (error) {
+    if (error instanceof InvoiceContractError) throw error;
+    // Reveal only SQLSTATE, never SQL text, parameters, or personal financial data.
+    const sqlstate = typeof error === "object" && error !== null &&
+      "code" in error && typeof error.code === "string"
+      ? error.code
+      : "UNKNOWN";
+    throw new InvoiceContractError(
+      "CARD_REVERSAL_PERSISTENCE_ERROR",
+      "Falha ao registrar estorno (código técnico: " + sqlstate + "). Nenhum crédito foi gravado. Informe este código ao suporte.",
+      409,
+    );
+  }
 }
 
 async function updateCardPurchaseHandler(
