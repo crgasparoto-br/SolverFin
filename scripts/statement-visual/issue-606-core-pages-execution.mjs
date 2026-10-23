@@ -40,15 +40,29 @@ try {
   assert.equal(login.ok, true, `Demo login failed: ${login.status}`);
 
   let route = requestedRoute;
-  let widths = [390, 1366];
+  let viewports = [
+    [390, 1100],
+    [1366, 1000],
+  ];
+  if (requestedRoute === "/dashboard") {
+    viewports = [
+      [320, 740],
+      [390, 844],
+      [1366, 768],
+    ];
+  }
   if (requestedRoute === "/lancamentos") {
     const fixtureIds = await evaluate(browser.cdp, fixtureExpression());
     route = `/lancamentos?accountId=${encodeURIComponent(fixtureIds.longAccountId)}&month=2026-07`;
-    widths = [390, 768, 1366, 1920];
+    viewports = [
+      [390, 1100],
+      [768, 1100],
+      [1366, 1000],
+      [1920, 1000],
+    ];
   }
 
-  for (const width of widths) {
-    const height = width <= 768 ? 1100 : 1000;
+  for (const [width, height] of viewports) {
     await setViewport(browser.cdp, width, height);
     await navigate(browser.cdp, `${baseUrl}${route}`);
     await sleep(300);

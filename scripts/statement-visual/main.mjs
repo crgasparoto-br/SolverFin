@@ -51,23 +51,12 @@ try {
   check(centered.measurements.centerDelta <= 1.5, "Main is not centered at 2560px", centered);
 
   for (const route of ["/dashboard", "/cartoes", "/contas"]) {
-    const viewports =
-      route === "/dashboard"
-        ? [
-            [320, 740],
-            [390, 844],
-            [1366, 768],
-          ]
-        : [
-            [390, 1000],
-            [1366, 900],
-          ];
-    for (const [width, height] of viewports) {
+    for (const width of [390, 1366]) {
       const evidence = await capturePage({
         name: `${route.slice(1)}-${width}`,
         route,
         width,
-        height,
+        height: width === 390 ? 1000 : 900,
       });
       check(
         !evidence.measurements.globalOverflow,
