@@ -246,7 +246,7 @@ export async function listCardPurchasesForContext(
     `"financialProfileId" = $2`,
     `"cardId" is not null`,
     `"accountId" is null`,
-    `"kind" = 'EXPENSE'`,
+    `("kind" = 'EXPENSE' or ("kind" = 'INCOME' and "description" like '%[estorno:%'))`,
   ];
   const params: unknown[] = [context.organizationId, context.financialProfileId];
 
@@ -664,7 +664,7 @@ export async function reverseCardPurchaseForContext(
          "invoiceId", "categoryId", "kind", "status", "source", "amountMinor", "currency",
          "occurredOn", "plannedOn", "description", "createdAt", "updatedAt",
          "createdByUserId", "updatedByUserId")
-       values ($1,$2,$3,$4,$5,$6,$7,'EXPENSE','POSTED','MANUAL',$8,$9,$10,$10,$11,$12,$12,$13,$13)`,
+       values ($1,$2,$3,$4,$5,$6,$7,'INCOME','POSTED','MANUAL',$8,$9,$10,$10,$11,$12,$12,$13,$13)`,
       [createdId, context.organizationId, context.financialProfileId, cardId,
        origin.cardInstrumentId, invoiceId, categories[0].id, reversedAmount,
        origin.currency, toDateOnly(origin.occurredOn),
