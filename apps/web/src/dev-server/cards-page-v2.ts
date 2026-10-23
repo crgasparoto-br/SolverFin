@@ -140,6 +140,7 @@ interface InvoiceCardTotalRecord {
 interface CardPresentation {
   search: string;
   sort: CardSort;
+  groupBy: "day" | "instrument";
   reconciliation: ReconciliationFilter;
   day?: string;
 }
@@ -403,6 +404,7 @@ function resolvePresentation(url: URL, invoice: InvoiceRecord | undefined): Card
       .trim()
       .slice(0, 160),
     sort: SORTS.has(rawSort as CardSort) ? (rawSort as CardSort) : "date_desc",
+    groupBy: url.searchParams.get("groupBy") === "instrument" ? "instrument" : "day",
     reconciliation:
       rawReconciliation === "reconciled" || rawReconciliation === "unreconciled"
         ? rawReconciliation
@@ -643,6 +645,7 @@ function renderInvoiceDetail(input: {
       input.invoices,
       input.invoice,
       input.presentation.sort,
+      input.presentation.groupBy,
     )}
   </section>`;
 }
@@ -840,6 +843,7 @@ function renderPurchaseFilters(
   if (profileId) base.searchParams.set("profileId", profileId);
   if (presentation.search) base.searchParams.set("q", presentation.search);
   if (presentation.sort !== "date_desc") base.searchParams.set("sort", presentation.sort);
+  if (presentation.groupBy === "instrument") base.searchParams.set("groupBy", "instrument");
   if (presentation.day) base.searchParams.set("day", presentation.day);
   const controls = `<form method="get" action="/cartoes" class="cards-purchase-filter-form">
       <input type="hidden" name="cardId" value="${escapeHtml(cardId)}">
@@ -848,6 +852,12 @@ function renderPurchaseFilters(
       ${profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(profileId)}">` : ""}
       <label class="cards-search-field" for="cards-purchase-search">Buscar compras
         <input id="cards-purchase-search" type="search" name="q" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" data-purchase-search autocomplete="off">
+      </label>
+      <label class="cards-purchase-group-filter" for="cards-purchase-group">Agrupar por
+        <select id="cards-purchase-group" name="groupBy" aria-label="Agrupar lançamentos por">
+          <option value="day"${presentation.groupBy === "day" ? " selected" : ""}>Dia</option>
+          <option value="instrument"${presentation.groupBy === "instrument" ? " selected" : ""}>Instrumento</option>
+        </select>
       </label>
       <div class="cards-purchase-day-filter">
         <label for="cards-purchase-day">Dia da fatura
@@ -891,6 +901,7 @@ function renderPurchaseGroups(
   invoices: readonly InvoiceRecord[],
   selectedInvoice: InvoiceRecord,
   sort: CardSort,
+  groupBy: "day" | "instrument",
 ): string {
   if (groups.length === 0) {
     return `<div class="cards-purchase-empty" data-purchase-filter-empty>${renderEmptyState({
@@ -899,11 +910,11 @@ function renderPurchaseGroups(
     })}</div>`;
   }
   const sharedHead = `<div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Instrumento</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>`;
-  if (sort !== "date_asc" && sort !== "date_desc") {
+  if (groupBy === "instrument" || (sort !== "date_asc" && sort !== "date_desc")) {
     return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title"><div class="cards-shared-table-head">${sharedHead}</div>
       ${groups
         .map((group) =>
-          renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
+          renderInstrumentGroup({ ...group, purchases: groupBy === "instrument" ? [...group.purchases].sort((a, b) => sort === "date_asc" ? a.occurredOn.localeCompare(b.occurredOn) : b.occurredOn.localeCompare(a.occurredOn)) : group.purchases }, categories, recurrences, invoices, selectedInvoice),
         )
         .join("")}
     </section>`;
