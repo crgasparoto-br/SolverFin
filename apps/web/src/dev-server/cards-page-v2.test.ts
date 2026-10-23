@@ -477,8 +477,10 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.ok(html.includes('<option value="day" selected>Dia</option>'));
   assert.ok(html.includes('<option value="instrument">Instrumento</option>'));
 
-  assert.match(html, /class="cards-invoice-current"[^>]*>[\\s\\S]*?class="cards-month-picker"/);
-  assert.ok(html.includes(".cards-invoice-navigation .cards-month-picker{position:relative"));
+  assert.match(html, /class="cards-invoice-period-row"[\\s\\S]*?<\\/div>\\s*<details class="cards-month-picker"/);
+  assert.ok(html.includes(".cards-invoice-navigation{display:flex;align-items:center;justify-content:flex-start"));
+  assert.ok(html.includes(".cards-invoice-navigation .cards-invoice-period-row{flex:0 1 480px"));
+  assert.ok(html.includes(".cards-invoice-navigation .cards-month-picker{flex:0 0 auto;position:relative"));
   assert.ok(html.includes(".cards-shared-table-head{position:sticky"));
   assert.ok(html.includes("--cards-purchase-columns:"));
   assert.ok(html.includes(".cards-purchase-filter-form .cards-search-field input{width:100%"));
