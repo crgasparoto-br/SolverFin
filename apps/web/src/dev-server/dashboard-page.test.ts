@@ -125,7 +125,9 @@ describe("dev-server dashboard page", () => {
       assertCockpitHierarchy(html);
       assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 2);
       assert.equal((html.match(/class="dashboard-supporting-metric"/g) ?? []).length, 3);
-      assert.ok(html.indexOf('class="next-actions"') < html.indexOf('class="dashboard-supporting-section"'));
+      assert.ok(
+        html.indexOf('class="next-actions"') < html.indexOf('class="dashboard-supporting-section"'),
+      );
       assert.match(html, /\.dashboard-metric \.sf-metric-card \{ align-items: center;/);
       assert.equal((html.match(/class="evidence-detail"/g) ?? []).length, 5);
       const intrusive = html.replace(

@@ -87,12 +87,28 @@ try {
       const readingOrder = await evaluate(browser.cdp, dashboardFirstReadExpression());
       assert.equal(readingOrder.hasPrimaryMetrics, true, "Dashboard has no two primary metrics");
       assert.equal(readingOrder.hasNextActions, true, "Dashboard has no next action");
-      assert.equal(readingOrder.supportingAfterActions, true, "Secondary metrics precede next action");
+      assert.equal(
+        readingOrder.supportingAfterActions,
+        true,
+        "Secondary metrics precede next action",
+      );
       if (width <= 390) {
-        assert.equal(readingOrder.actionVisibleInFirstViewport, true, `Dashboard next action is below first fold at ${width}px`);
+        assert.equal(
+          readingOrder.actionVisibleInFirstViewport,
+          true,
+          `Dashboard next action is below first fold at ${width}px`,
+        );
         const negative = await evaluate(browser.cdp, dashboardIntrusivePanelProbeExpression());
-        assert.equal(negative.actionVisibleAfterIntrusion, false, "Intrusive panel negative control must fail the first-fold gate");
-        assert.equal(negative.actionVisibleAfterRemoval, true, "Removing intrusive panel must restore the first-fold gate");
+        assert.equal(
+          negative.actionVisibleAfterIntrusion,
+          false,
+          "Intrusive panel negative control must fail the first-fold gate",
+        );
+        assert.equal(
+          negative.actionVisibleAfterRemoval,
+          true,
+          "Removing intrusive panel must restore the first-fold gate",
+        );
       }
       measurements.dashboardFirstRead = readingOrder;
     }
