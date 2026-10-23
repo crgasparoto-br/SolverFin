@@ -1090,6 +1090,7 @@ function renderPurchaseRow(
     <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}" title="Ações da compra">${icon("more-horizontal", 18)}</summary><div class="cards-purchase-menu actions-menu" role="menu">
       <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar</span></button>
       <button type="button" class="actions-item" role="menuitem" data-clone-purchase="${escapeHtml(purchase.id)}"${locked ? " disabled" : ""}>${icon("copy", 16)}<span>Clonar</span></button>
+      ${installmentLabel && purchase.installmentId ? `<button type="button" class="actions-item" role="menuitem" data-edit-installment-amount="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar valor da parcela</span></button>` : ""}
       <button type="button" class="actions-item" role="menuitem" data-reverse-purchase="${escapeHtml(purchase.id)}"${locked || purchase.amountMinor <= 0 ? " disabled" : ""}>${icon("refresh-cw", 16)}<span>Estorno</span></button>
       <button type="button" class="actions-item" role="menuitem" data-delete-purchase="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" || Boolean(purchase.installmentId || purchase.recurrenceId) ? " disabled" : ""}>${icon("trash-2", 16)}<span>Excluir</span></button>
       
@@ -1666,6 +1667,22 @@ function clientScript(): string {
           document.querySelector('dialog[data-modal="purchase"]')?.showModal();
         });
 
+        const installmentEditButton = document.querySelector('[data-edit-installment-amount="' + purchase.id + '"]');
+        installmentEditButton?.addEventListener("click", () => {
+          if (installmentEditButton.disabled || !installmentDialog || !installmentAmountForm ||
+              !purchase.installmentId || !purchase.invoiceId) return;
+          installmentAmountForm.dataset.invoiceId = purchase.invoiceId;
+          installmentAmountForm.dataset.installmentId = purchase.installmentId;
+          installmentAmountForm.dataset.pendingPurchasePayload = "";
+          installmentAmountForm.dataset.pendingPurchasePath = "";
+          installmentAmountForm.querySelector('[name="amountMinor"]').value = minorToMoney(purchase.amountMinor);
+          installmentDialog.querySelector("[data-installment-purchase-name]").textContent = purchase.description;
+          installmentAmountForm.querySelector("[data-installment-scope-description]").textContent =
+            "Aplicar o novo valor somente nesta parcela ou também nas próximas elegíveis?";
+          installmentAmountForm.querySelector("[data-installment-amount-status]").textContent = "";
+          lastDialogTrigger = installmentEditButton;
+          installmentDialog.showModal();
+        });
         const deleteButton = document.querySelector('[data-delete-purchase="' + purchase.id + '"]');
         deleteButton?.addEventListener("click", async () => {
           if (deleteButton.disabled) return;
