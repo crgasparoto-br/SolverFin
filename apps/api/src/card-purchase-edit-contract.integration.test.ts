@@ -389,7 +389,7 @@ async function assertCommonCardPurchaseEdit(
 
   // A user-supplied text marker must never convert an EXPENSE into a credit.
   const markerOnly = await updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
-    description: `Compra comum [estorno:${purchase.transaction.id}:unico] ${suffix}`,
+    description: `Compra comum ${suffix} [estorno:${purchase.transaction.id}:unico]`,
   });
   assert.equal(markerOnly.transaction.kind, "expense");
   const invoiceBeforeReversal = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
