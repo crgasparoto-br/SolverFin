@@ -16,6 +16,8 @@ export interface CardPurchaseFilters {
 }
 
 export interface CardPurchaseContract {
+  /** Financial direction comes from Transaction.kind, never its description. */
+  kind: "expense" | "income";
   id: EntityId;
   financialProfileId: EntityId;
   cardId: EntityId;
@@ -105,6 +107,7 @@ interface CardContractRow {
 }
 
 interface CardPurchaseRow {
+  kind: "EXPENSE" | "INCOME";
   id: string;
   organizationId: string;
   financialProfileId: string;
@@ -156,7 +159,7 @@ export async function summarizeInvoiceForContext(
   const card = await findCard(context, invoice.cardId);
   const [totals] = await query<PurchaseTotalsRow>(
     `with invoice_occurrences as (
-       select t."status"::text as "status", case when t."kind" = 'INCOME' and t."description" like '%[estorno:%' then -t."amountMinor" else t."amountMinor" end as "amountMinor"
+       select t."status"::text as "status", case when t."kind" = 'INCOME' then -t."amountMinor" else t."amountMinor" end as "amountMinor"
          from "Transaction" t
         where t."organizationId" = $1 and t."financialProfileId" = $2
           and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
@@ -279,7 +282,7 @@ export async function listCardPurchasesForContext(
   const rows = await query<CardPurchaseRow>(
     `select "id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId",
             "categoryId", "recurrenceId", "installmentId", "occurredOn", "plannedOn", "description",
-            "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
+            "amountMinor", "currency", "kind", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where ${where.join(" and ")}
        order by "occurredOn" desc, "createdAt" desc`,
@@ -1230,7 +1233,7 @@ async function findCardPurchase(
   const rows = await query<CardPurchaseRow>(
     `select "id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId",
             "categoryId", "recurrenceId", "installmentId", "occurredOn", "plannedOn", "description",
-            "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
+            "amountMinor", "currency", "kind", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
          and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'`,
@@ -1306,6 +1309,7 @@ function calculateAmountDue(invoice: InvoiceContractRow): number {
 
 function mapPurchaseRow(row: CardPurchaseRow): CardPurchaseContract {
   return {
+    kind: row.kind === "INCOME" ? "income" : "expense",
     id: row.id,
     financialProfileId: row.financialProfileId,
     cardId: row.cardId,
