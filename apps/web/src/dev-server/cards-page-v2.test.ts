@@ -590,8 +590,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /name="day"/);
   assert.equal((html.match(/name="day"/g) ?? []).length, 1);
   assert.match(html, /class="cards-purchase-day-filter"/);
-  assert.doesNotMatch(html, /data-cards-day-groups/);
-  assert.doesNotMatch(html, /data-cards-day-group data-day="2026-08-19" open/);
+  // Even with non-date sorting, the selected default grouping remains by day.
+  assert.match(html, /data-cards-day-groups/);
+  assert.match(html, /data-cards-day-group data-day="2026-08-19" open/);
   assert.match(html, /Dia da fatura/);
   // Fail-closed CSS guards for long descriptions, explicit currencies and compact mobile.
   assert.match(
