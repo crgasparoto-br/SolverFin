@@ -17,13 +17,8 @@ import {
   resolveCanonicalCardPurchaseCurrency,
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
-import {
-  InvoiceContractError,
-  deleteSimpleCardPurchaseForContext,
-  reverseCardPurchaseForContext,
-  updateCardReversalForContext,
-  updateCardPurchaseForContext,
-} from "./repositories/card-invoice-contracts.js";
+import { updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import { deleteCardPurchaseHandler, reverseCardPurchaseHandler, updateCardReversalHandler } from "./card-purchase-extra-handlers.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   archiveCardInstrumentForContext,
@@ -378,81 +373,6 @@ async function registerCardPurchaseHandler(
   return json(201, result);
 }
 
-async function deleteCardPurchaseHandler(
-  _request: ApiRequest,
-  context: TenantContext,
-  match: Readonly<Record<string, string>>,
-): Promise<ApiResponse> {
-  const result = await deleteSimpleCardPurchaseForContext(
-    context,
-    requireParam(match, "cardId"),
-    requireParam(match, "transactionId"),
-  );
-  return json(200, { deleted: result });
-}
-
-async function updateCardReversalHandler(
-  request: ApiRequest,
-  context: TenantContext,
-  match: Readonly<Record<string, string>>,
-): Promise<ApiResponse> {
-  const body = requireObjectBody(request.body);
-  const result = await updateCardReversalForContext(
-    context,
-    requireParam(match, "cardId"),
-    requireParam(match, "reversalId"),
-    {
-      description: String(body.description ?? ""),
-      occurredOn: String(body.occurredOn ?? ""),
-      amountMinor: Number(body.amountMinor),
-      ...(body.cardInstrumentId ? { cardInstrumentId: String(body.cardInstrumentId) } : {}),
-    },
-  );
-  return json(200, { reversal: result });
-}
-
-async function reverseCardPurchaseHandler(
-  request: ApiRequest,
-  context: TenantContext,
-  match: Readonly<Record<string, string>>,
-): Promise<ApiResponse> {
-  const body = requireObjectBody(request.body);
-  const invoiceId = String(body.invoiceId ?? "");
-  if (!invoiceId)
-    throw new InvoiceContractError(
-      "CARD_REVERSAL_INVOICE_REQUIRED",
-      "Informe a fatura do lançamento.",
-      400,
-    );
-  try {
-    const result = await reverseCardPurchaseForContext(
-      context,
-      requireParam(match, "cardId"),
-      requireParam(match, "transactionId"),
-      invoiceId,
-      body.installmentId ? String(body.installmentId) : undefined,
-    );
-    return json(201, { reversal: result });
-  } catch (error) {
-    if (error instanceof InvoiceContractError) throw error;
-    // Reveal only SQLSTATE, never SQL text, parameters, or personal financial data.
-    const sqlstate =
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      typeof error.code === "string"
-        ? error.code
-        : "UNKNOWN";
-    throw new InvoiceContractError(
-      "CARD_REVERSAL_PERSISTENCE_ERROR",
-      "Falha ao registrar estorno (código técnico: " +
-        sqlstate +
-        "). Nenhum crédito foi gravado. Informe este código ao suporte.",
-      409,
-    );
-  }
-}
-
 async function updateCardPurchaseHandler(
   request: ApiRequest,
   context: TenantContext,
@@ -590,7 +510,7 @@ function readOptionalNumber(value: unknown): number | null {
   return Number(value);
 }
 
-function requireObjectBody(body: unknown): Record<string, unknown> {
+export function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
     throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
   }
@@ -598,7 +518,7 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
   return body as Record<string, unknown>;
 }
 
-function requireParam(match: Readonly<Record<string, string>>, key: string): string {
+export function requireParam(match: Readonly<Record<string, string>>, key: string): string {
   const value = match[key];
 
   if (!value) {
@@ -608,7 +528,7 @@ function requireParam(match: Readonly<Record<string, string>>, key: string): str
   return value;
 }
 
-function json(statusCode: number, body: unknown): ApiResponse {
+export function json(statusCode: number, body: unknown): ApiResponse {
   return {
     statusCode,
     headers: { "content-type": "application/json; charset=utf-8" },
