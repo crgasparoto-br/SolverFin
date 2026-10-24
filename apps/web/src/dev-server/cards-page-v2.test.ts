@@ -754,8 +754,87 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
       "http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc",
     ),
   );
-  assert.doesNotMatch(sortedByAmount, /data-cards-day-groups/);
-  assert.match(sortedByAmount, /data-instrument-purchase-group/);
+  // Sorting must never switch the explicitly selected grouping.
+  assert.match(sortedByAmount, /data-cards-day-groups/);
+  assert.doesNotMatch(sortedByAmount, /data-instrument-purchase-group/);
+
+  // Regression: an expense with an estorno-looking description remains a debit.
+  // An actual INCOME reversal becomes a negative credit, independently of its text.
+  const defaultFetch = globalThis.fetch;
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const response = await defaultFetch(input);
+    if (new URL(String(input)).pathname !== "/api/invoices/invoice-aug/purchases") {
+      return response;
+    }
+    const body = await response.json();
+    const hotel = body.purchases.find((purchase: { id: string }) => purchase.id === "purchase-hotel");
+    assert.ok(hotel);
+    hotel.kind = "expense";
+    hotel.description = "Hotel [estorno:apenas-texto]";
+    body.purchases.push({
+      ...hotel,
+      id: "purchase-credit",
+      kind: "income",
+      description: "Estorno: Hotel [estorno:purchase-hotel:unico]",
+      amountMinor: 4_000,
+      cardInstrumentId: "instrument-virtual",
+    });
+    body.purchases.push({
+      ...hotel,
+      id: "purchase-high",
+      description: "Maior valor",
+      amountMinor: 12_000,
+      cardInstrumentId: "instrument-virtual",
+    });
+    body.purchases.push({
+      ...hotel,
+      id: "purchase-low",
+      description: "Menor valor",
+      amountMinor: 1_000,
+      cardInstrumentId: "instrument-main",
+    });
+    return jsonResponse(body);
+  };
+  try {
+    const daySorted = await renderCardsPageV2(
+      "session-token",
+      new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc&groupBy=day"),
+    );
+    assert.match(daySorted, /data-cards-day-groups/);
+    assert.doesNotMatch(daySorted, /data-instrument-purchase-group/);
+    const purchaseRow = (page: string, name: string): string => {
+      const position = page.indexOf("<strong>" + name + "</strong>");
+      assert.ok(position > 0, "Missing purchase row: " + name);
+      const beginning = page.lastIndexOf('<article class="cards-purchase-row"', position);
+      const end = page.indexOf("</article>", position);
+      assert.ok(beginning >= 0 && end > position, "Incomplete purchase row: " + name);
+      return page.slice(beginning, end);
+    };
+    const debit = purchaseRow(daySorted, "Hotel [estorno:apenas-texto]");
+    const credit = purchaseRow(daySorted, "Estorno: Hotel");
+    assert.match(debit, /data-category-direction="out"/);
+    assert.doesNotMatch(debit, /cards-purchase-amount is-negative/);
+    assert.match(credit, /data-category-direction="in"/);
+    assert.match(credit, /cards-purchase-amount is-negative/);
+    const firstHigh = daySorted.indexOf("<strong>Maior valor</strong>");
+    const firstLow = daySorted.indexOf("<strong>Menor valor</strong>");
+    assert.ok(firstHigh > 0 && firstLow > firstHigh, "Day rows preserve amount descending across instruments");
+
+    const instrumentSorted = await renderCardsPageV2(
+      "session-token",
+      new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc&groupBy=instrument"),
+    );
+    assert.doesNotMatch(instrumentSorted, /data-cards-day-groups/);
+    assert.match(instrumentSorted, /data-instrument-purchase-group/);
+    const highInInstrument = instrumentSorted.indexOf("<strong>Maior valor</strong>");
+    const taxiInInstrument = instrumentSorted.indexOf("<strong>Táxi aeroporto");
+    assert.ok(
+      highInInstrument > 0 && taxiInInstrument > highInInstrument,
+      "Instrument rows preserve amount descending rather than force date order",
+    );
+  } finally {
+    globalThis.fetch = defaultFetch;
+  }
 
   // #742: a locked invoice prevents editing the origin, not creating an independent clone.
   // Use a paid invoice rather than changing the source purchase into an editable fixture.
