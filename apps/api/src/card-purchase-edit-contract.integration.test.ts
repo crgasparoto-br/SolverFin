@@ -6,6 +6,7 @@ import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import {
   adjustInvoiceInstallmentAmountForContext,
+  listCardPurchasesForContext,
   reconcileInvoiceInstallmentForContext,
   reverseCardPurchaseForContext,
   summarizeInvoiceForContext,
@@ -338,6 +339,7 @@ async function assertCommonCardPurchaseEdit(
     cardInstrumentId: virtualInstrument.id,
   });
 
+  assert.equal(result.transaction.kind, "expense");
   assert.equal(result.transaction.id, purchase.transaction.id);
   assert.equal(result.transaction.invoiceId, originalInvoiceId);
   assert.equal(result.transaction.cardId, cardId);
@@ -385,7 +387,19 @@ async function assertCommonCardPurchaseEdit(
   assert.equal(row.installmentId, null);
   assert.equal(row.cardInstrumentId, virtualInstrument.id);
 
-  // Reject INCOME credits as reversal sources, even through direct API calls.
+  // A user-supplied text marker must never convert an EXPENSE into a credit.
+  const markerOnly = await updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+    description: `Compra comum [estorno:apenas-texto] ${suffix}`,
+  });
+  assert.equal(markerOnly.transaction.kind, "expense");
+  const invoiceBeforeReversal = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
+  assert.equal(invoiceBeforeReversal.totalExpensesMinor, 2_500);
+  const ordinaryPurchase = (await listCardPurchasesForContext(CONTEXT, { invoiceId: originalInvoiceId }))
+    .find((item) => item.id === purchase.transaction.id);
+  assert.equal(ordinaryPurchase?.kind, "expense");
+  assert.equal(ordinaryPurchase?.amountMinor, 2_500);
+
+  // Genuine credits carry INCOME direction in the serialized API contract.
   const reversal = await reverseCardPurchaseForContext(
     CONTEXT,
     cardId,
@@ -393,7 +407,12 @@ async function assertCommonCardPurchaseEdit(
     originalInvoiceId,
   );
   assert.equal(reversal.amountMinor, -2_500);
+  const reversalRow = (await listCardPurchasesForContext(CONTEXT, { invoiceId: originalInvoiceId }))
+    .find((item) => item.id === reversal.transactionId);
+  assert.equal(reversalRow?.kind, "income");
+  assert.equal(reversalRow?.amountMinor, 2_500);
   const invoiceBefore = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
+  assert.equal(invoiceBefore.totalExpensesMinor, invoiceBeforeReversal.totalExpensesMinor - 2_500);
   await assert.rejects(
     () => reverseCardPurchaseForContext(CONTEXT, cardId, reversal.transactionId, originalInvoiceId),
     (error: unknown) =>
