@@ -394,8 +394,9 @@ async function assertCommonCardPurchaseEdit(
   assert.equal(markerOnly.transaction.kind, "expense");
   const invoiceBeforeReversal = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
   assert.equal(invoiceBeforeReversal.totalExpensesMinor, 2_500);
-  const ordinaryPurchase = (await listCardPurchasesForContext(CONTEXT, { invoiceId: originalInvoiceId }))
-    .find((item) => item.id === purchase.transaction.id);
+  const ordinaryPurchase = (
+    await listCardPurchasesForContext(CONTEXT, { invoiceId: originalInvoiceId })
+  ).find((item) => item.id === purchase.transaction.id);
   assert.equal(ordinaryPurchase?.kind, "expense");
   assert.equal(ordinaryPurchase?.amountMinor, 2_500);
 
@@ -407,8 +408,9 @@ async function assertCommonCardPurchaseEdit(
     originalInvoiceId,
   );
   assert.equal(reversal.amountMinor, -2_500);
-  const reversalRow = (await listCardPurchasesForContext(CONTEXT, { invoiceId: originalInvoiceId }))
-    .find((item) => item.id === reversal.transactionId);
+  const reversalRow = (
+    await listCardPurchasesForContext(CONTEXT, { invoiceId: originalInvoiceId })
+  ).find((item) => item.id === reversal.transactionId);
   assert.equal(reversalRow?.kind, "income");
   assert.equal(reversalRow?.amountMinor, 2_500);
   const invoiceBefore = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
