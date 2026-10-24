@@ -958,13 +958,7 @@ function renderPurchaseGroups(
     return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title"><div class="cards-shared-table-head">${sharedHead}</div>
       ${groups
         .map((group) =>
-          renderInstrumentGroup(
-            group,
-            categories,
-            recurrences,
-            invoices,
-            selectedInvoice,
-          ),
+          renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
         )
         .join("")}
     </section>`;
@@ -990,7 +984,10 @@ function renderPurchaseGroups(
     ${orderedDays
       .map((date) => {
         const dayGroups = days.get(date) ?? [];
-        const purchases = sortPurchases(dayGroups.flatMap((group) => group.purchases), sort);
+        const purchases = sortPurchases(
+          dayGroups.flatMap((group) => group.purchases),
+          sort,
+        );
         const totals = totalsByCurrency(purchases);
         return `<details class="cards-day-group" data-cards-day-group data-day="${escapeHtml(date)}" open>
           <summary><span class="cards-day-title"><time datetime="${escapeHtml(date)}">${formatDate(date)}</time><small>${formatPurchaseCount(purchases.length)}</small></span><strong>${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</strong></summary>
