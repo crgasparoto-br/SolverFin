@@ -77,6 +77,8 @@ interface CardInstrumentRecord {
   effectiveCreditLimitMinor?: number;
 }
 interface CardPurchaseRecord {
+  /** API financial direction (legacy mocked records without it remain expenses). */
+  kind?: "expense" | "income";
   id: string;
   financialProfileId?: string;
   cardId: string;
@@ -390,10 +392,12 @@ function projectInvoicePurchases(
     .filter((purchase) => !installmentTransactionIds.has(purchase.id))
     .map((purchase) => ({
       ...purchase,
-      amountMinor: purchase.description.includes("[estorno:")
-        ? -Math.abs(purchase.amountMinor)
-        : purchase.amountMinor,
-      description: purchase.description.replace(/ \[estorno:[^\]]+\]$/, ""),
+      amountMinor:
+        purchase.kind === "income" ? -Math.abs(purchase.amountMinor) : purchase.amountMinor,
+      description:
+        purchase.kind === "income"
+          ? purchase.description.replace(/ \[estorno:[^\]]+\]$/, "")
+          : purchase.description,
     }));
   const installmentOccurrences = installments.flatMap((installment) => {
     const purchase = installment.transaction;
@@ -950,22 +954,12 @@ function renderPurchaseGroups(
     })}</div>`;
   }
   const sharedHead = `<div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Instrumento</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>`;
-  if (groupBy === "instrument" || (sort !== "date_asc" && sort !== "date_desc")) {
+  if (groupBy === "instrument") {
     return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title"><div class="cards-shared-table-head">${sharedHead}</div>
       ${groups
         .map((group) =>
           renderInstrumentGroup(
-            {
-              ...group,
-              purchases:
-                groupBy === "instrument"
-                  ? [...group.purchases].sort((a, b) =>
-                      sort === "date_asc"
-                        ? a.occurredOn.localeCompare(b.occurredOn)
-                        : b.occurredOn.localeCompare(a.occurredOn),
-                    )
-                  : group.purchases,
-            },
+            group,
             categories,
             recurrences,
             invoices,
@@ -988,6 +982,7 @@ function renderPurchaseGroups(
       days.set(purchase.occurredOn, dayGroups);
     }
   }
+  const labelsByInstrument = new Map(groups.map((group) => [group.id, group.label]));
   const orderedDays = [...days.keys()].sort((left, right) =>
     sort === "date_asc" ? left.localeCompare(right) : right.localeCompare(left),
   );
@@ -995,23 +990,22 @@ function renderPurchaseGroups(
     ${orderedDays
       .map((date) => {
         const dayGroups = days.get(date) ?? [];
-        const purchases = dayGroups.flatMap((group) => group.purchases);
+        const purchases = sortPurchases(dayGroups.flatMap((group) => group.purchases), sort);
         const totals = totalsByCurrency(purchases);
         return `<details class="cards-day-group" data-cards-day-group data-day="${escapeHtml(date)}" open>
           <summary><span class="cards-day-title"><time datetime="${escapeHtml(date)}">${formatDate(date)}</time><small>${formatPurchaseCount(purchases.length)}</small></span><strong>${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</strong></summary>
           <div class="cards-day-content">
             <div class="cards-purchase-table" role="table" aria-label="Compras de ${formatDate(date)}">
-              ${dayGroups
-                .flatMap((group) =>
-                  group.purchases.map((purchase) =>
-                    renderPurchaseRow(
-                      purchase,
-                      group.label,
-                      categories,
-                      recurrences,
-                      invoices,
-                      selectedInvoice,
-                    ),
+              ${purchases
+                .map((purchase) =>
+                  renderPurchaseRow(
+                    purchase,
+                    labelsByInstrument.get(purchase.cardInstrumentId ?? "__unassigned__") ??
+                      "Sem instrumento identificado",
+                    categories,
+                    recurrences,
+                    invoices,
+                    selectedInvoice,
                   ),
                 )
                 .join("")}
