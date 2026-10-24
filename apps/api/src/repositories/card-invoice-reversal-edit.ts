@@ -1,7 +1,11 @@
 import type { EntityId, TenantContext } from "@solverfin/domain";
 import { withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
-import { assertActiveCardInstrumentBelongsToCard, InvoiceContractError, isIsoDate } from "./card-invoice-contracts-core.js";
+import {
+  assertActiveCardInstrumentBelongsToCard,
+  InvoiceContractError,
+  isIsoDate,
+} from "./card-invoice-contracts-core.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
 /** Update a credit while preserving its origin marker and recalculating the invoice. */

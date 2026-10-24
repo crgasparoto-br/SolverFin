@@ -1,7 +1,11 @@
 import type { EntityId, TenantContext } from "@solverfin/domain";
 import { withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
-import { InvoiceContractError, summarizeInvoiceForContext, type InvoiceSummaryContract } from "./card-invoice-contracts-core.js";
+import {
+  InvoiceContractError,
+  summarizeInvoiceForContext,
+  type InvoiceSummaryContract,
+} from "./card-invoice-contracts-core.js";
 
 /** Update the selected installment or eligible future occurrences without changing the base purchase. */
 export async function adjustInvoiceInstallmentAmountForContext(

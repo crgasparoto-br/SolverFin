@@ -31,4 +31,3 @@ export async function adjustInvoiceInstallmentAmountHandler(
   );
   return json(200, result);
 }
-
