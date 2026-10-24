@@ -97,6 +97,106 @@ export function cardsPageStyles(): string {
     @media(min-width:761px) and (max-width:1050px){.cards-purchase-table-head,.cards-purchase-row{gap:7px;grid-template-columns:5.5rem minmax(0,1.5fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
     @media(max-width:760px){.cards-purchase-row{grid-template-columns:minmax(0,1fr) auto}.cards-purchase-category{grid-column:1;min-width:0}.cards-purchase-actions{grid-column:2;grid-row:2 / span 3}.cards-purchase-status-cell{grid-column:1}}
 
+    /* Instrument is a dedicated compact column, after purchase, without limit/currency metadata. */
+    @media(min-width:1051px){.cards-purchase-table-head,.cards-purchase-row{grid-template-columns:6.5rem minmax(0,1.6fr) minmax(6rem,.7fr) minmax(7rem,.8fr) 5.4rem 9rem 3.5rem}}
+    @media(min-width:761px) and (max-width:1050px){.cards-purchase-table-head,.cards-purchase-row{grid-template-columns:5.5rem minmax(0,1.5fr) minmax(5.2rem,.65fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
+    .cards-purchase-instrument{color:var(--muted);font-size:.78rem;min-width:0;overflow-wrap:anywhere}
+    @media(max-width:760px){.cards-purchase-instrument{grid-column:1;min-width:0}.cards-purchase-actions{grid-row:2 / span 4}}
+    .cards-day-content>.cards-purchase-table{display:grid}
+    /* One sticky header for all day/instrument groups; rows share its grid tracks. */
+    .cards-shared-table-head{position:sticky;top:0;z-index:6;background:var(--surface);border-bottom:1px solid var(--line)}
+    .cards-shared-table-head .cards-purchase-table-head{display:grid;border-bottom:0}
+    @media(min-width:1051px){.cards-shared-table-head .cards-purchase-table-head{grid-template-columns:6.5rem minmax(0,1.6fr) minmax(6rem,.7fr) minmax(7rem,.8fr) 5.4rem 9rem 3.5rem}}
+    @media(min-width:761px) and (max-width:1050px){.cards-shared-table-head .cards-purchase-table-head{grid-template-columns:5.5rem minmax(0,1.5fr) minmax(5.2rem,.65fr) minmax(6rem,.7fr) 5.2rem 7.5rem 3rem}}
+    @media(max-width:760px){.cards-shared-table-head{display:none}}
+    /* Filter grid is a separate responsive layout: search must never push adjacent controls outside the panel. */
+    .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) minmax(7rem,9rem) minmax(9rem,11.5rem) auto auto;align-items:end;min-width:0}
+    .cards-purchase-filter-form>*{min-width:0;max-width:100%;box-sizing:border-box}
+    .cards-purchase-filter-form .cards-search-field{grid-column:auto;display:grid;min-width:0;width:100%;font-size:.76rem!important;line-height:normal!important;gap:5px!important}
+    .cards-purchase-filter-form .cards-search-field input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+    .cards-purchase-group-filter,.cards-purchase-day-filter{min-width:0;width:100%;max-width:100%}
+    .cards-purchase-group-filter select,.cards-purchase-day-filter input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+    @media(min-width:761px) and (max-width:1100px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) minmax(7rem,9rem) minmax(9rem,11.5rem)}
+      .cards-purchase-filter-form .cards-advanced-filters{grid-column:2}
+      .cards-purchase-filter-form>button[type="submit"]{grid-column:3}
+    }
+    @media(max-width:760px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+      .cards-purchase-filter-form .cards-search-field{grid-column:1/-1}
+      .cards-purchase-filter-form .cards-purchase-group-filter{grid-column:1}
+      .cards-purchase-filter-form .cards-purchase-day-filter{grid-column:2!important;max-width:100%}
+      .cards-purchase-filter-form .cards-advanced-filters{grid-column:1}
+      .cards-purchase-filter-form>button[type="submit"]{grid-column:2}
+    }
+    @media(max-width:430px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(0,1fr)}
+      .cards-purchase-filter-form .cards-search-field,
+      .cards-purchase-filter-form .cards-purchase-group-filter,
+      .cards-purchase-filter-form .cards-purchase-day-filter,
+      .cards-purchase-filter-form .cards-advanced-filters,
+      .cards-purchase-filter-form>button[type="submit"]{grid-column:1!important;max-width:100%;width:100%}
+    }
+    /* Apply is a compact action, not a full-width field. */
+    .cards-purchase-filter-form>button[type="submit"]{justify-self:end;align-self:end;width:auto;min-width:5.5rem;max-width:7rem;min-height:36px;height:36px;padding:0 14px;white-space:nowrap}
+    @media(max-width:430px){.cards-purchase-filter-form>button[type="submit"]{width:auto!important;justify-self:end;grid-column:1!important}}
+    /* Single compact search/filter row. Apply stays at the far right. */
+    .cards-purchase-filter-form{display:grid;grid-template-columns:minmax(9rem,1fr) minmax(7rem,8.5rem) minmax(9rem,11rem) minmax(6rem,7rem) 6rem;align-items:end;gap:8px}
+    .cards-purchase-filter-form .cards-search-field{grid-column:1!important;min-width:0}
+    .cards-purchase-filter-form .cards-purchase-group-filter{grid-column:2!important}
+    .cards-purchase-filter-form .cards-purchase-day-filter{grid-column:3!important;max-width:none}
+    .cards-purchase-filter-form .cards-advanced-filters{grid-column:4!important;min-width:0}
+    .cards-purchase-filter-form>button[type="submit"]{grid-column:5!important;justify-self:end;width:100%;max-width:6rem;height:44px;min-height:44px;box-sizing:border-box;padding:0 12px}
+    @media(max-width:760px){
+      .cards-purchase-filter-form{grid-template-columns:minmax(7rem,1fr) minmax(6rem,.75fr) minmax(8.5rem,.9fr) minmax(5.5rem,.65fr) 5.5rem;gap:5px;overflow-x:auto}
+      .cards-purchase-filter-form .cards-search-field{grid-column:1!important}
+      .cards-purchase-filter-form .cards-purchase-group-filter{grid-column:2!important}
+      .cards-purchase-filter-form .cards-purchase-day-filter{grid-column:3!important}
+      .cards-purchase-filter-form .cards-advanced-filters{grid-column:4!important}
+      .cards-purchase-filter-form>button[type="submit"]{grid-column:5!important;width:100%!important}
+    }
+    /* Keep the established month navigator at the left; chooser immediately beside it. */
+    .cards-invoice-navigation{display:flex;align-items:center;justify-content:flex-start;gap:6px;flex-wrap:wrap}
+    .cards-invoice-navigation .cards-invoice-period-row{flex:0 1 480px;width:min(100%,480px);max-width:480px;margin:0;min-width:0}
+    .cards-invoice-navigation .cards-invoice-current{display:grid;justify-items:center;position:static;min-width:0}
+    .cards-invoice-navigation .cards-month-picker{flex:0 0 auto;position:relative;justify-self:start}
+    .cards-invoice-navigation .cards-month-picker>summary{white-space:nowrap}
+    .cards-invoice-navigation .cards-month-jump{left:auto;right:0;transform:none;min-width:230px;max-width:min(290px,calc(100vw - 36px))}
+    @media(max-width:760px){
+      .cards-invoice-navigation{flex-wrap:wrap;gap:4px}
+      .cards-invoice-navigation .cards-invoice-period-row{flex:0 1 100%;width:100%;max-width:480px}
+      .cards-invoice-navigation .cards-month-picker{margin-left:0}
+      .cards-invoice-navigation .cards-month-picker>summary{font-size:.68rem;padding:4px 6px}
+      .cards-invoice-navigation .cards-month-jump{left:0;right:auto;transform:none}
+    }
+    /* Statement palette: income green, expenses red, transfers neutral. */
+    .cards-purchase-row .cards-purchase-category[data-category-direction="in"] .cards-purchase-category-badge{background:var(--sf-color-success-surface);color:var(--sf-color-success)}
+    .cards-purchase-row .cards-purchase-category[data-category-direction="out"] .cards-purchase-category-badge{background:var(--sf-color-danger-surface);color:var(--sf-color-danger)}
+    .cards-purchase-row .cards-purchase-category[data-category-direction="transfer"] .cards-purchase-category-badge{background:var(--neutral-control-hover);color:var(--sf-color-muted-text)}
+    .cards-purchase-row .cards-purchase-amount.is-negative{color:var(--danger,#b91c1c)}
+    /* Currency remains in data-currency and accessible labeling; omit BRL suffix. */
+    .cards-layout .sf-money[data-currency="BRL"]>.sf-money-currency{display:none}
+    .cards-dialog[data-modal="purchase"][data-editing="true"] [data-save-continue]{display:none}
+    /* Shared grid contract: header and entries use identical tracks across grouping modes. */
+    .cards-purchase-groups{--cards-purchase-columns:minmax(5rem,6.5rem) minmax(0,1.6fr) minmax(0,.9fr) minmax(0,.9fr) minmax(3.5rem,.55fr) minmax(6.3rem,.8fr) 3rem;min-width:0}
+    .cards-purchase-groups .cards-purchase-table-head,
+    .cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns);min-width:0}
+    .cards-purchase-groups .cards-purchase-table,
+    .cards-purchase-groups .cards-day-content,
+    .cards-purchase-groups .cards-day-group,
+    .cards-purchase-groups .cards-instrument-group{min-width:0;width:100%;box-sizing:border-box}
+    .cards-purchase-groups .cards-day-group{border-left:0;border-right:0}
+    .cards-purchase-groups .cards-day-content>.cards-purchase-table{display:grid}
+    .cards-purchase-groups .cards-purchase-instrument{min-width:0;overflow-wrap:anywhere}
+    @media(min-width:761px) and (max-width:1050px){
+      .cards-purchase-groups{--cards-purchase-columns:4.8rem minmax(0,1.4fr) minmax(0,.8fr) minmax(0,.8fr) 3.5rem minmax(5.5rem,.8fr) 2.6rem}
+      .cards-purchase-groups .cards-purchase-row,
+      .cards-purchase-groups .cards-purchase-table-head{column-gap:6px}
+    }
+    @media(max-width:760px){
+      .cards-purchase-groups .cards-purchase-row{grid-template-columns:minmax(0,1fr) auto}
+      .cards-purchase-groups .cards-shared-table-head{display:none}
+    }
     /* #715 GS715-V03: match the approved light shell without modifying other routes. */
     .app-shell:has([data-cards-archetype="A3"]) .sidebar{background:var(--surface);border-right:1px solid var(--line);color:var(--text)}
     .app-shell:has([data-cards-archetype="A3"]) .sidebar .brand{color:var(--text)}
@@ -111,7 +211,12 @@ export function cardsPageStyles(): string {
     @media(max-width:760px){.cards-a3-page.cards-has-invoice .sf-page-header{display:none}.app-shell:has([data-cards-archetype="A3"]) .topbar{min-height:42px}}
     /* #715 REC-715-01: touch-accessible purchase menu instead of legacy 30px dots. */
     .cards-purchase-actions>summary{height:44px;min-height:44px;min-width:44px;width:44px}
-    .cards-purchase-actions .cards-purchase-menu{top:calc(100% + 4px)}
+    .cards-purchase-actions .cards-purchase-menu{top:calc(100% + 4px);min-width:220px;padding:6px}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item{align-items:center;display:flex;gap:10px;min-height:40px;text-align:left;width:100%}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item svg{flex:none}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item:disabled{cursor:not-allowed;opacity:.48}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item:hover:not(:disabled),.cards-purchase-actions .cards-purchase-menu>.actions-item:focus-visible{background:var(--primary-soft);color:var(--primary)}
+    .cards-purchase-actions .cards-purchase-menu>.actions-item:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
     .cards-advanced-filters>summary,.cards-month-picker>summary{min-height:44px;align-items:center;display:flex;justify-content:center}
     .cards-purchase-actions>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 
@@ -125,17 +230,26 @@ export function cardsPageStyles(): string {
     .cards-purchase-card-name{color:var(--muted);font-size:.8rem;overflow-wrap:anywhere}
     .cards-purchase-dialog-panel>.cards-dialog-description{flex-shrink:0;line-height:1.45;padding:2px 24px 16px}
     .cards-dialog[data-modal="purchase"] form{display:flex;flex:1;flex-direction:column;gap:0;min-height:0;min-width:0}
-    .cards-purchase-form-body{display:grid;flex:1;gap:18px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 24px 20px}
-    .cards-purchase-fieldset{border:0;display:grid;gap:10px;margin:0;min-width:0;padding:0}
-    .cards-purchase-fieldset legend{color:var(--text);font-size:.8rem;font-weight:750;line-height:1.4;margin:0 0 10px;padding:0}
+    .cards-purchase-form-body{display:grid;align-content:start;flex:1;gap:16px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px 24px 20px}
+    .cards-purchase-fieldset{border:0;border-top:1px solid var(--line);display:grid;gap:8px;margin:0;min-width:0;padding:12px 0 0}.cards-purchase-fieldset:first-child{border-top:0;padding-top:0}
+    .cards-purchase-fieldset legend{color:var(--primary);font-size:.76rem;font-weight:750;line-height:1.4;margin:0 0 8px;padding:0}
     .cards-purchase-field-grid{display:grid;gap:12px 16px;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
-    .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid>label{color:var(--text);font-size:.8rem;font-weight:550;min-width:0}
+    .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid>label,.cards-installment-amount-dialog .cards-purchase-field-grid>label{color:var(--text);display:grid;gap:5px;font-size:.8rem;font-weight:600;min-width:0}
     .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid>.full{grid-column:1/-1}
     .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid :is(input,select){font:inherit;font-size:.875rem;min-height:44px;min-width:0;width:100%}
     .cards-dialog[data-modal="purchase"] .cards-purchase-field-grid :is(input[readonly],input:disabled,select:disabled){background:var(--bg);color:var(--muted);cursor:default;opacity:1}
     .cards-dialog[data-modal="purchase"] .cards-purchase-amounts [name="amountMinor"]{font-size:1.1rem;font-variant-numeric:tabular-nums;font-weight:750}
     .cards-purchase-amounts .cards-purchase-field-grid:has([data-purchase-field="installmentAmountMinor"][hidden])>label:first-child{max-width:330px}
     .cards-purchase-installment-note{background:var(--bg);border-radius:var(--radius);color:var(--muted);font-size:.79rem;line-height:1.5;margin:0;padding:10px 12px}
+    .cards-purchase-date-help{color:var(--muted);font-size:.78rem;line-height:1.45;margin:0}
+    .cards-dialog[data-modal="purchase"][data-editing="true"] .cards-purchase-amounts [name="amountMinor"]{background:var(--bg);color:var(--muted)}
+    .cards-installment-amount-dialog{max-width:min(560px,calc(100vw - 24px))}
+    .cards-installment-amount-dialog .cards-purchase-field-grid{grid-template-columns:minmax(0,1fr)}
+    .cards-installment-amount-dialog .cards-purchase-field-grid input{font-size:1.2rem;font-variant-numeric:tabular-nums;font-weight:700;min-height:48px}
+    .cards-installment-scope-actions{flex-wrap:wrap}
+    .cards-installment-scope-actions [data-installment-scope]{flex:1 1 auto}
+    .cards-installment-scope-actions [data-installment-scope]:hover:not(:disabled),.cards-installment-scope-actions [data-installment-scope]:focus-visible{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+    .cards-installment-scope-actions [data-installment-scope][hidden]{display:none}
     .cards-purchase-form-body>.form-status:empty{display:none}
     .cards-purchase-dialog-actions{align-items:center;border-top:1px solid var(--line);display:flex;flex-shrink:0;gap:10px;justify-content:flex-end;padding:14px 24px 18px}
     .cards-purchase-dialog-actions .sf-button{min-height:44px;min-width:120px}

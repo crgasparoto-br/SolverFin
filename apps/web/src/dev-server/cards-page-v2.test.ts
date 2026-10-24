@@ -289,6 +289,22 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Moeda da fatura<\/dt><dd>USD/);
   assert.match(html, /name="currency" value="USD"[^>]*readonly/);
   assert.match(html, /aria-describedby="cards-purchase-dialog-description"/);
+  // #742: clone is a new single purchase and installment amount uses its own safe API.
+  assert.match(html, /data-clone-purchase="purchase-taxi"/);
+  assert.match(html, /data-edit-installment-amount="purchase-taxi"/);
+  assert.match(html, /data-modal="installment-value"/);
+  assert.match(html, /data-installment-scope="current"/);
+  assert.match(html, /data-installment-scope="current_and_future"/);
+  assert.ok(html.includes('"/installments/" + encodeURIComponent(installmentId) + "/amount"'));
+  assert.match(html, /Clonar compra/);
+  assert.match(html, /Parcelas e recorrências não serão copiadas/);
+  assert.match(html, /data-purchase-field="recurrenceDateHint" hidden/);
+  assert.ok(html.includes('setAttribute("data-editing", "true")'));
+  assert.ok(html.includes('setField("recurrenceDateHint", Boolean(purchase.recurrenceId))'));
+  assert.ok(html.includes("if (scheduleSection) scheduleSection.hidden = true;"));
+  assert.ok(html.includes(".cards-installment-scope-actions [data-installment-scope]"));
+  assert.ok(!html.includes("Valor, data e estrutura do parcelamento são somente leitura."));
+
   assert.match(html, /data-open-modal="invoice-attachments"/);
   assert.ok(html.includes("<span>Documentos</span>"));
   assert.match(html, /<dialog class="cards-dialog" data-modal="invoice-attachments"/);
@@ -453,6 +469,73 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   for (const heading of ["Valores", "Dados da compra", "Classificação", "Repetição e parcelas"]) {
     assert.ok(purchaseDialog.includes("<legend>" + heading + "</legend>"));
   }
+  // Purchase rows expose instrument as a semantic column after Compra.
+  assert.ok(
+    html.includes('role="columnheader">Compra</span><span role="columnheader">Instrumento'),
+  );
+  assert.equal((html.match(/class="cards-purchase-table-head"/g) ?? []).length, 1);
+  assert.ok(html.includes('class="cards-shared-table-head"'));
+  assert.ok(html.includes('name="groupBy"'));
+  assert.ok(html.includes('<option value="day" selected>Dia</option>'));
+  assert.ok(html.includes('<option value="instrument">Instrumento</option>'));
+
+  assert.ok(html.includes('class="cards-invoice-period-row"'));
+  assert.ok(html.includes('<details class="cards-month-picker"'));
+  assert.ok(
+    html.includes(
+      ".cards-invoice-navigation{display:flex;align-items:center;justify-content:flex-start",
+    ),
+  );
+  assert.ok(html.includes(".cards-invoice-navigation .cards-invoice-period-row{flex:0 1 480px"));
+  assert.ok(
+    html.includes(".cards-invoice-navigation .cards-month-picker{flex:0 0 auto;position:relative"),
+  );
+  assert.ok(html.includes(".cards-shared-table-head{position:sticky"));
+  assert.ok(html.includes("--cards-purchase-columns:"));
+  assert.ok(html.includes(".cards-purchase-filter-form .cards-search-field input{width:100%"));
+  assert.ok(
+    html.includes(".cards-purchase-filter-form .cards-purchase-day-filter{grid-column:2!important"),
+  );
+  assert.ok(
+    html.includes(
+      ".cards-purchase-groups .cards-purchase-row{grid-template-columns:var(--cards-purchase-columns)",
+    ),
+  );
+
+  assert.match(html, /role="cell" data-label="Instrumento" class="cards-purchase-instrument"/);
+  assert.ok(
+    html.includes('.cards-layout .sf-money[data-currency="BRL"]>.sf-money-currency{display:none}'),
+  );
+  assert.ok(
+    html.includes('.cards-purchase-row .cards-purchase-category[data-category-direction="in"]'),
+  );
+  assert.ok(html.includes("data-save-continue"));
+  assert.ok(html.includes("Salvar e continuar"));
+  assert.ok(html.includes("compra(s) registrada(s). Informe a próxima compra."));
+  assert.ok(html.includes("dataset.savedDuringSession"));
+  // Distinguish actual busy-state activation from a guard that is never set.
+  assert.ok(html.includes('purchaseForm.dataset.submitting = "true"'));
+  assert.ok(html.includes('if (purchaseForm.dataset.submitting === "true") return;'));
+  assert.ok(html.includes("submitButtons.forEach((button) => { button.disabled = true; })"));
+  assert.ok(html.includes('addEventListener("close"'));
+  assert.ok(html.includes("[data-save-continue]{display:none}"));
+  assert.ok(html.includes("data-reverse-purchase="));
+  assert.ok(html.includes("data-reversal-edit-form"));
+  assert.ok(html.includes('data-modal="reversal-edit"'));
+  assert.ok(html.includes("reversal.transactionId"));
+  assert.ok(html.includes('Estorno: " + purchase.description'));
+
+  assert.ok(html.includes("data-delete-purchase="));
+  // Assert actual rendered permissions, not implementation source code inside the page.
+  assert.match(html, /data-delete-purchase="purchase-hotel" disabled/);
+  assert.match(html, /data-delete-purchase="purchase-taxi" disabled/);
+  assert.match(html, /data-delete-purchase="purchase-coffee">/);
+
+  assert.ok(html.includes(">Excluir</span>"));
+
+  assert.ok(html.includes(">Estorno</span>"));
+  assert.ok(!html.includes('data-label="Limite"'));
+  assert.ok(!html.includes('role="columnheader">Moeda'));
   assert.match(purchaseDialog, /class="cards-purchase-form-body"/);
   assert.match(purchaseDialog, /class="cards-purchase-dialog-actions"/);
   assert.ok(purchaseDialog.includes('type="button" data-close-modal>Cancelar</button>'));
@@ -460,7 +543,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(purchaseDialog, /name="currency"[^>]*readonly/);
   assert.ok(html.includes('data-purchase-section="schedule"]'));
   assert.ok(html.includes(".cards-purchase-dialog-panel{display:flex"));
-  assert.ok(html.includes(".cards-purchase-form-body{display:grid;flex:1"));
+  assert.ok(html.includes(".cards-purchase-form-body{display:grid;align-content:start;flex:1"));
   assert.ok(html.includes('@media(max-width:600px){.cards-dialog[data-modal="purchase"]'));
   assert.match(html, /aria-describedby="cards-payment-dialog-description"/);
   assert.match(
@@ -507,8 +590,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /name="day"/);
   assert.equal((html.match(/name="day"/g) ?? []).length, 1);
   assert.match(html, /class="cards-purchase-day-filter"/);
-  assert.doesNotMatch(html, /data-cards-day-groups/);
-  assert.doesNotMatch(html, /data-cards-day-group data-day="2026-08-19" open/);
+  // Even with non-date sorting, the selected default grouping remains by day.
+  assert.match(html, /data-cards-day-groups/);
+  assert.match(html, /data-cards-day-group data-day="2026-08-19" open/);
   assert.match(html, /Dia da fatura/);
   // Fail-closed CSS guards for long descriptions, explicit currencies and compact mobile.
   assert.match(
@@ -558,7 +642,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   // #715: category is a real sixth column, not subordinate text inside the description.
   assert.match(
     html,
-    /role="columnheader">Compra<\/span><span role="columnheader">Categoria<\/span><span role="columnheader">Situação/,
+    /role="columnheader">Compra<\/span><span role="columnheader">Instrumento<\/span><span role="columnheader">Categoria<\/span><span role="columnheader">Situação/,
   );
   assert.match(
     html,
@@ -566,7 +650,7 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.match(
     html,
-    /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out">/,
+    /data-label="Compra" class="cards-purchase-description description">[\s\S]*?<\/div>\s*<span role="cell" data-label="Instrumento" class="cards-purchase-instrument">[\s\S]*?<\/span>\s*<span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out">/,
   );
   assert.match(html, /\.cards-purchase-category\{[^}]*overflow-wrap:anywhere/);
   // The same semantic fill palette as Extrato: entry green, expense red, transfer gray.
@@ -662,6 +746,8 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
   assert.match(byDay, /data-status-installment-id="installment-taxi-2"/);
   assert.equal((byDay.match(/data-cards-day-group data-day=/g) ?? []).length, 1);
+  assert.doesNotMatch(byDay, /data-instrument-purchase-group/);
+  assert.match(byDay, /class="cards-day-content">\s*<div class="cards-purchase-table"/);
 
   const sortedByAmount = await renderCardsPageV2(
     "session-token",
@@ -669,8 +755,134 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
       "http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc",
     ),
   );
-  assert.doesNotMatch(sortedByAmount, /data-cards-day-groups/);
-  assert.match(sortedByAmount, /data-instrument-purchase-group/);
+  // Sorting must never switch the explicitly selected grouping.
+  assert.match(sortedByAmount, /data-cards-day-groups/);
+  assert.doesNotMatch(sortedByAmount, /data-instrument-purchase-group/);
+
+  // Regression: an expense with an estorno-looking description remains a debit.
+  // An actual INCOME reversal becomes a negative credit, independently of its text.
+  const defaultFetch = globalThis.fetch;
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const response = await defaultFetch(input);
+    if (new URL(String(input)).pathname !== "/api/invoices/invoice-aug/purchases") {
+      return response;
+    }
+    const body = await response.json();
+    const hotel = body.purchases.find(
+      (purchase: { id: string }) => purchase.id === "purchase-hotel",
+    );
+    assert.ok(hotel);
+    hotel.kind = "expense";
+    hotel.description = "Hotel [estorno:apenas-texto]";
+    body.purchases.push({
+      ...hotel,
+      id: "purchase-credit",
+      kind: "income",
+      description: "Estorno: Hotel [estorno:purchase-hotel:unico]",
+      amountMinor: 4_000,
+      cardInstrumentId: "instrument-virtual",
+    });
+    body.purchases.push({
+      ...hotel,
+      id: "purchase-high",
+      description: "Maior valor",
+      amountMinor: 12_000,
+      cardInstrumentId: "instrument-virtual",
+    });
+    body.purchases.push({
+      ...hotel,
+      id: "purchase-low",
+      description: "Menor valor",
+      amountMinor: 1_000,
+      cardInstrumentId: "instrument-main",
+    });
+    return jsonResponse(body);
+  };
+  try {
+    const daySorted = await renderCardsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc&groupBy=day",
+      ),
+    );
+    assert.match(daySorted, /data-cards-day-groups/);
+    assert.doesNotMatch(daySorted, /data-instrument-purchase-group/);
+    const purchaseRow = (page: string, name: string): string => {
+      const position = page.indexOf("<strong>" + name + "</strong>");
+      assert.ok(position > 0, "Missing purchase row: " + name);
+      const beginning = page.lastIndexOf('<article class="cards-purchase-row"', position);
+      const end = page.indexOf("</article>", position);
+      assert.ok(beginning >= 0 && end > position, "Incomplete purchase row: " + name);
+      return page.slice(beginning, end);
+    };
+    const debit = purchaseRow(daySorted, "Hotel [estorno:apenas-texto]");
+    const credit = purchaseRow(daySorted, "Estorno: Hotel");
+    assert.match(debit, /data-category-direction="out"/);
+    assert.doesNotMatch(debit, /cards-purchase-amount is-negative/);
+    assert.match(credit, /data-category-direction="in"/);
+    assert.match(credit, /cards-purchase-amount is-negative/);
+    const firstHigh = daySorted.indexOf("<strong>Maior valor</strong>");
+    const firstLow = daySorted.indexOf("<strong>Menor valor</strong>");
+    assert.ok(
+      firstHigh > 0 && firstLow > firstHigh,
+      "Day rows preserve amount descending across instruments",
+    );
+
+    const instrumentSorted = await renderCardsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc&groupBy=instrument",
+      ),
+    );
+    assert.doesNotMatch(instrumentSorted, /data-cards-day-groups/);
+    assert.match(instrumentSorted, /data-instrument-purchase-group/);
+    const highInInstrument = instrumentSorted.indexOf("<strong>Maior valor</strong>");
+    const taxiInInstrument = instrumentSorted.indexOf("<strong>Táxi aeroporto");
+    assert.ok(
+      highInInstrument > 0 && taxiInInstrument > highInInstrument,
+      "Instrument rows preserve amount descending rather than force date order",
+    );
+  } finally {
+    globalThis.fetch = defaultFetch;
+  }
+
+  // #742: a locked invoice prevents editing the origin, not creating an independent clone.
+  // Use a paid invoice rather than changing the source purchase into an editable fixture.
+  const openInvoiceFetch = globalThis.fetch;
+  globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+    const path = new URL(String(input)).pathname;
+    if (path === "/api/invoices" || path === "/api/invoices/invoice-aug/summary") {
+      const original = await openInvoiceFetch(input);
+      const body = await original.json();
+      if (path === "/api/invoices") {
+        body.invoices = body.invoices.map((invoice: { id: string; status: string }) =>
+          invoice.id === "invoice-aug" ? { ...invoice, status: "paid" } : invoice,
+        );
+      } else {
+        body.summary.status = "paid";
+      }
+      return jsonResponse(body);
+    }
+    return openInvoiceFetch(input);
+  };
+  try {
+    const paidInvoice = await renderCardsPageV2(
+      "session-token",
+      new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug"),
+    );
+    assert.match(paidInvoice, /data-edit-purchase="purchase-hotel" disabled/);
+    assert.match(
+      paidInvoice,
+      /data-clone-purchase="purchase-hotel" data-clone-source-locked="true">/,
+    );
+    assert.match(
+      paidInvoice,
+      /cloneButton\.dataset\.cloneSourceLocked === "true" \? localToday\(\) : purchase\.occurredOn/,
+    );
+    assert.match(paidInvoice, /data-delete-purchase="purchase-hotel" disabled/);
+  } finally {
+    globalThis.fetch = openInvoiceFetch;
+  }
 }
 
 async function cardsA3BlocksNewPurchasesUntilCardCurrencyIsConfigured(): Promise<void> {

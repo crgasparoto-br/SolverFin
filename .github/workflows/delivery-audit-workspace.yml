@@ -153,6 +153,29 @@ jobs:
           print("Official offline restorer: PASS")
           PY
 
+      # This independent archive enables exact-byte execution of the canonical Skill
+      # validators in a connector-only auditor, without egress from its runtime.
+      # Keep it separate from the strict manifest/repository.bundle transport.
+      - name: Export official Skill checkout as a Git bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C delivery-skill fsck --no-reflogs --connectivity-only
+          git -C delivery-skill update-ref refs/ci-verification/skill HEAD
+          mkdir -p audit-skill-bundle
+          git -C delivery-skill bundle create ../audit-skill-bundle/skill.bundle refs/ci-verification/skill
+          git -C delivery-skill bundle verify ../audit-skill-bundle/skill.bundle
+          git -C delivery-skill rev-parse HEAD > audit-skill-bundle/skill-head.txt
+          sha256sum audit-skill-bundle/skill.bundle > audit-skill-bundle/SHA256SUMS
+
+      - name: Upload official Skill bundle for offline validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-skill-git-bundle-${{ github.event.pull_request.head.sha || inputs.material_ref }}
+          path: audit-skill-bundle/
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Upload trusted offline audit Git Bundle
         uses: actions/upload-artifact@v4
         with:

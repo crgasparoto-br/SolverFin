@@ -23,6 +23,7 @@ import {
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
+import { adjustInvoiceInstallmentAmountHandler } from "./card-installment-amount-handler.js";
 import { readCreateTransactionOccurredOn } from "./transaction-create-temporal-input.js";
 import {
   closeInvoiceForContext,
@@ -172,6 +173,11 @@ route(
   "PATCH",
   "/api/invoices/:invoiceId/installments/:installmentId/reconciliation",
   reconcileInvoiceInstallmentHandler,
+);
+route(
+  "PATCH",
+  "/api/invoices/:invoiceId/installments/:installmentId/amount",
+  adjustInvoiceInstallmentAmountHandler,
 );
 route("POST", "/api/invoices/:invoiceId/close", closeInvoiceHandler);
 route("POST", "/api/invoices/:invoiceId/pay", payInvoiceHandler);
@@ -1153,7 +1159,7 @@ function readOptionalText(value: unknown): string | null {
   return text ? text : null;
 }
 
-function requireObjectBody(body: unknown): Record<string, unknown> {
+export function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null) {
     throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
   }
@@ -1161,7 +1167,7 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
   return body as Record<string, unknown>;
 }
 
-function requireParam(match: Readonly<Record<string, string>>, name: string): string {
+export function requireParam(match: Readonly<Record<string, string>>, name: string): string {
   const value = match[name];
 
   if (!value) {
@@ -1171,7 +1177,7 @@ function requireParam(match: Readonly<Record<string, string>>, name: string): st
   return value;
 }
 
-function json(statusCode: number, body: unknown): ApiResponse {
+export function json(statusCode: number, body: unknown): ApiResponse {
   return {
     statusCode,
     headers: { "content-type": "application/json; charset=utf-8" },

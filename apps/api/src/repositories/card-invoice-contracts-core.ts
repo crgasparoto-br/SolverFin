@@ -16,6 +16,8 @@ export interface CardPurchaseFilters {
 }
 
 export interface CardPurchaseContract {
+  /** Financial direction comes from Transaction.kind, never its description. */
+  kind: "expense" | "income";
   id: EntityId;
   financialProfileId: EntityId;
   cardId: EntityId;
@@ -105,6 +107,7 @@ interface CardContractRow {
 }
 
 interface CardPurchaseRow {
+  kind: "EXPENSE" | "INCOME";
   id: string;
   organizationId: string;
   financialProfileId: string;
@@ -156,7 +159,7 @@ export async function summarizeInvoiceForContext(
   const card = await findCard(context, invoice.cardId);
   const [totals] = await query<PurchaseTotalsRow>(
     `with invoice_occurrences as (
-       select t."status"::text as "status", t."amountMinor"
+       select t."status"::text as "status", case when t."kind" = 'INCOME' then -t."amountMinor" else t."amountMinor" end as "amountMinor"
          from "Transaction" t
         where t."organizationId" = $1 and t."financialProfileId" = $2
           and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
@@ -246,7 +249,7 @@ export async function listCardPurchasesForContext(
     `"financialProfileId" = $2`,
     `"cardId" is not null`,
     `"accountId" is null`,
-    `"kind" = 'EXPENSE'`,
+    `("kind" = 'EXPENSE' or ("kind" = 'INCOME' and "description" like '%[estorno:%'))`,
   ];
   const params: unknown[] = [context.organizationId, context.financialProfileId];
 
@@ -279,7 +282,7 @@ export async function listCardPurchasesForContext(
   const rows = await query<CardPurchaseRow>(
     `select "id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId",
             "categoryId", "recurrenceId", "installmentId", "occurredOn", "plannedOn", "description",
-            "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
+            "amountMinor", "currency", "kind", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where ${where.join(" and ")}
        order by "occurredOn" desc, "createdAt" desc`,
@@ -582,6 +585,11 @@ export async function reconcileInvoiceInstallmentForContext(
   };
 }
 
+export { deleteSimpleCardPurchaseForContext } from "./card-invoice-purchase-delete.js";
+export { reverseCardPurchaseForContext } from "./card-invoice-purchase-reverse.js";
+export { updateCardReversalForContext } from "./card-invoice-reversal-edit.js";
+export { adjustInvoiceInstallmentAmountForContext } from "./card-invoice-installment-amount.js";
+
 export async function closeInvoiceForContext(
   context: TenantContext,
   invoiceId: EntityId,
@@ -661,7 +669,7 @@ async function findCardPurchase(
   const rows = await query<CardPurchaseRow>(
     `select "id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId",
             "categoryId", "recurrenceId", "installmentId", "occurredOn", "plannedOn", "description",
-            "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
+            "amountMinor", "currency", "kind", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
          and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'`,
@@ -676,7 +684,7 @@ async function findCardPurchase(
   return row;
 }
 
-async function assertActiveCardInstrumentBelongsToCard(
+export async function assertActiveCardInstrumentBelongsToCard(
   context: TenantContext,
   cardId: EntityId,
   cardInstrumentId: EntityId,
@@ -737,6 +745,7 @@ function calculateAmountDue(invoice: InvoiceContractRow): number {
 
 function mapPurchaseRow(row: CardPurchaseRow): CardPurchaseContract {
   return {
+    kind: row.kind === "INCOME" ? "income" : "expense",
     id: row.id,
     financialProfileId: row.financialProfileId,
     cardId: row.cardId,
@@ -847,7 +856,7 @@ function mapTransactionStatusToInstallmentStatus(status: string): string {
   return "POSTED";
 }
 
-function isIsoDate(value: string): boolean {
+export function isIsoDate(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
