@@ -767,7 +767,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
       return response;
     }
     const body = await response.json();
-    const hotel = body.purchases.find((purchase: { id: string }) => purchase.id === "purchase-hotel");
+    const hotel = body.purchases.find(
+      (purchase: { id: string }) => purchase.id === "purchase-hotel",
+    );
     assert.ok(hotel);
     hotel.kind = "expense";
     hotel.description = "Hotel [estorno:apenas-texto]";
@@ -798,7 +800,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   try {
     const daySorted = await renderCardsPageV2(
       "session-token",
-      new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc&groupBy=day"),
+      new URL(
+        "http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc&groupBy=day",
+      ),
     );
     assert.match(daySorted, /data-cards-day-groups/);
     assert.doesNotMatch(daySorted, /data-instrument-purchase-group/);
@@ -818,11 +822,16 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
     assert.match(credit, /cards-purchase-amount is-negative/);
     const firstHigh = daySorted.indexOf("<strong>Maior valor</strong>");
     const firstLow = daySorted.indexOf("<strong>Menor valor</strong>");
-    assert.ok(firstHigh > 0 && firstLow > firstHigh, "Day rows preserve amount descending across instruments");
+    assert.ok(
+      firstHigh > 0 && firstLow > firstHigh,
+      "Day rows preserve amount descending across instruments",
+    );
 
     const instrumentSorted = await renderCardsPageV2(
       "session-token",
-      new URL("http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc&groupBy=instrument"),
+      new URL(
+        "http://solverfin.local/cartoes?cardId=card-usd&invoiceId=invoice-aug&sort=amount_desc&groupBy=instrument",
+      ),
     );
     assert.doesNotMatch(instrumentSorted, /data-cards-day-groups/);
     assert.match(instrumentSorted, /data-instrument-purchase-group/);
