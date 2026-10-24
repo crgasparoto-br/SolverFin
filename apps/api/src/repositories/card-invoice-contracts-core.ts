@@ -775,7 +775,8 @@ export async function reverseCardPurchaseForContext(
     const marker = "[estorno:" + transactionId + ":" + (installmentId ?? "unico") + "]";
     const existing = await executeQuery<{ id: string }>(
       `select "id" from "Transaction" where "organizationId" = $1 and
-         "financialProfileId" = $2 and "cardId" = $3 and "description" like $4 limit 1`,
+         "financialProfileId" = $2 and "cardId" = $3 and "kind" = 'INCOME'
+         and "description" like $4 limit 1`,
       [context.organizationId, context.financialProfileId, cardId, "%" + marker],
     );
     if (existing.length) {
