@@ -312,15 +312,13 @@ async function validateInstallmentScopeKeyboard(fixture, label) {
     );
     check(state.open, `${label}: Enter closed the installment scope dialog`, state);
     check(state.requests === 0, `${label}: Enter sent a financial request`, state);
-    check(state.instruction.includes("Escolha Somente esta"), `${label}: scope hint missing`, state);
+    check(
+      state.instruction.includes("Escolha Somente esta"),
+      `${label}: scope hint missing`,
+      state,
+    );
     check(state.scopeFocused === "current", `${label}: scope focus missing`, state);
-    scenarios.push({
-      route: invoiceRoute(fixture),
-      viewport: label,
-      state: "installment-keyboard-scope-required",
-      interaction: "Enter-in-amount-field",
-      observed: state,
-    });
+    scenarios.push({ observed: state, viewport: label, state: "installment-scope-Enter" });
   } finally {
     await evaluate(
       browser.cdp,
