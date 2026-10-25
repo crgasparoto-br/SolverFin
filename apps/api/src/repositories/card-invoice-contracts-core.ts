@@ -408,9 +408,18 @@ export async function updateCardPurchaseForContext(
 
   await withTransaction(async (executeQuery) => {
     if (isInstallmentPurchase) {
-      const lockedRows = await loadPurchaseInstallmentEditStates(executeQuery, context, current.id, true);
+      const lockedRows = await loadPurchaseInstallmentEditStates(
+        executeQuery,
+        context,
+        current.id,
+        true,
+      );
       if (lockedRows.length !== purchaseInstallments.length) {
-        throw new InvoiceContractError("CARD_INSTALLMENT_RECONCILED_LOCKED", "A serie foi alterada durante a edicao.", 409);
+        throw new InvoiceContractError(
+          "CARD_INSTALLMENT_RECONCILED_LOCKED",
+          "A serie foi alterada durante a edicao.",
+          409,
+        );
       }
       assertPurchaseInstallmentsEditable(lockedRows);
     }

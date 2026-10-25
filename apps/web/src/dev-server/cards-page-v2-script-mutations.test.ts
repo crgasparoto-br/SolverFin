@@ -94,7 +94,11 @@ function createInstallmentHarness(responses: FetchReply[], pendingMetadata = fal
 await (async function enterRequiresExplicitScopeAndNeverWrites() {
   const harness = createInstallmentHarness([]);
   let prevented = 0;
-  harness.submitListeners[0]!({ preventDefault() { prevented += 1; } });
+  harness.submitListeners[0]!({
+    preventDefault() {
+      prevented += 1;
+    },
+  });
   assert.equal(prevented, 1);
   assert.match(harness.status.textContent, /Escolha Somente esta ou Esta e as próximas/);
   assert.equal(harness.focusedScope, "current");
@@ -102,7 +106,11 @@ await (async function enterRequiresExplicitScopeAndNeverWrites() {
   assert.equal(harness.scheduledReloads, 0);
 
   harness.form.dataset.submitting = "true";
-  harness.submitListeners[0]!({ preventDefault() { prevented += 1; } });
+  harness.submitListeners[0]!({
+    preventDefault() {
+      prevented += 1;
+    },
+  });
   assert.equal(prevented, 2);
   assert.deepEqual(harness.requests, []);
 })();
