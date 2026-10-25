@@ -12,6 +12,7 @@ export function cardsPageMutationScript(): string {
       };
 
       installmentAmountForm?.querySelectorAll("[data-installment-scope]").forEach((button) => button.addEventListener("click", async () => {
+        if (installmentAmountForm.dataset.submitting === "true") return;
         const valueField = installmentAmountForm.querySelector('[name="amountMinor"]');
         const status = installmentAmountForm.querySelector("[data-installment-amount-status]");
         const amountMinor = moneyToMinor(valueField.value);
@@ -24,23 +25,33 @@ export function cardsPageMutationScript(): string {
         const invoiceId = installmentAmountForm.dataset.invoiceId;
         const installmentId = installmentAmountForm.dataset.installmentId;
         if (!invoiceId || !installmentId) return;
-        const buttons = installmentAmountForm.querySelectorAll("[data-installment-scope]");
+        const buttons = Array.from(installmentAmountForm.querySelectorAll("[data-installment-scope]"));
+        installmentAmountForm.dataset.submitting = "true";
         buttons.forEach((item) => { item.disabled = true; });
         status.textContent = "Atualizando valor...";
         status.className = "form-status";
+        let reloadScheduled = false;
         try {
-          const response = await request(
-            "/api/invoices/" + encodeURIComponent(invoiceId) + "/installments/" + encodeURIComponent(installmentId) + "/amount",
-            "PATCH",
-            { amountMinor, scope: button.dataset.installmentScope },
-          );
-          const result = await response.json().catch(() => ({}));
-          status.textContent = response.ok
-            ? "Valor atualizado. " + (result.updatedCount || 0) + " parcela(s) alterada(s)." +
-              (result.skippedCount ? " " + result.skippedCount + " parcela(s) bloqueada(s) preservada(s)." : "")
-            : (result.error?.message || "Não foi possível atualizar a parcela.");
-          status.className = response.ok ? "form-status success" : "form-status error";
-          if (response.ok && installmentAmountForm.dataset.pendingPurchasePayload) {
+          // A previous attempt may have saved the amount but failed to save
+          // the metadata. Retry only the failed step, not the financial write.
+          if (installmentAmountForm.dataset.savedAmountMinor !== String(amountMinor)) {
+            const response = await request(
+              "/api/invoices/" + encodeURIComponent(invoiceId) + "/installments/" + encodeURIComponent(installmentId) + "/amount",
+              "PATCH",
+              { amountMinor, scope: button.dataset.installmentScope },
+            );
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) {
+              status.textContent = result.error?.message || "Não foi possível atualizar a parcela.";
+              status.className = "form-status error";
+              return;
+            }
+            installmentAmountForm.dataset.savedAmountMinor = String(amountMinor);
+            status.textContent = "Valor atualizado. " + (result.updatedCount || 0) + " parcela(s) alterada(s)." +
+              (result.skippedCount ? " " + result.skippedCount + " parcela(s) bloqueada(s) preservada(s)." : "");
+            status.className = "form-status success";
+          }
+          if (installmentAmountForm.dataset.pendingPurchasePayload) {
             const metadataResponse = await request(installmentAmountForm.dataset.pendingPurchasePath, "PATCH", JSON.parse(installmentAmountForm.dataset.pendingPurchasePayload));
             if (!metadataResponse.ok) {
               status.textContent = "Valor atualizado, mas outros dados não foram salvos: " + await responseMessage(metadataResponse);
@@ -48,12 +59,18 @@ export function cardsPageMutationScript(): string {
               return;
             }
           }
-          if (response.ok) window.setTimeout(() => window.location.reload(), 350);
-          else buttons.forEach((item) => { item.disabled = false; });
+          reloadScheduled = true;
+          window.setTimeout(() => window.location.reload(), 350);
         } catch {
-          status.textContent = "Falha de conexão. Tente novamente.";
+          status.textContent = installmentAmountForm.dataset.savedAmountMinor === String(amountMinor)
+            ? "Valor atualizado, mas não foi possível salvar os outros dados. Tente novamente."
+            : "Falha de conexão ao atualizar a parcela. Tente novamente.";
           status.className = "form-status error";
-          buttons.forEach((item) => { item.disabled = false; });
+        } finally {
+          if (!reloadScheduled) {
+            installmentAmountForm.dataset.submitting = "false";
+            buttons.forEach((item) => { item.disabled = false; });
+          }
         }
       }));
 
@@ -187,6 +204,7 @@ export function cardsPageMutationScript(): string {
             installmentAmountForm.dataset.invoiceId = purchaseForm.dataset.invoiceId;
             installmentAmountForm.dataset.installmentId = purchaseForm.dataset.installmentId;
             installmentAmountForm.dataset.pendingPurchasePath = path;
+            installmentAmountForm.dataset.savedAmountMinor = "";
             installmentAmountForm.dataset.pendingPurchasePayload = JSON.stringify(payload);
             installmentAmountForm.querySelector('[name="amountMinor"]').value = minorToMoney(nextAmount);
             installmentDialog.querySelector("[data-installment-purchase-name]").textContent = payload.description;
