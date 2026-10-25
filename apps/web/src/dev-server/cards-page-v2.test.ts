@@ -299,6 +299,20 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   assert.match(html, /Clonar compra/);
   assert.match(html, /Parcelas e recorrências não serão copiadas/);
   assert.match(html, /data-purchase-field="recurrenceDateHint" hidden/);
+  // #742: recurring purchase dates require an explicit scope decision before PATCH.
+  assert.match(html, /data-modal="recurring-edit-scope"/);
+  assert.match(html, /data-recurring-edit-scope="current_only"/);
+  assert.match(html, /data-recurring-edit-scope="current_and_future"/);
+  assert.ok(html.includes('if (method === "PATCH" && purchaseForm.dataset.recurrenceId)'));
+  assert.ok(html.includes('pendingRecurringEdit = { path, payload }'));
+  assert.ok(html.includes('pendingRecurringEdit.path + "/current-only"'));
+  assert.ok(html.includes('editScope: scope'));
+  assert.ok(html.includes("recurringScopeDialog.showModal()"));
+  assert.ok(html.includes('if (scope !== "current_only" && scope !== "current_and_future") return;'));
+  assert.ok(html.includes('status.textContent = result?.error?.message || "Não foi possível editar a compra recorrente."'));
+  assert.ok(html.includes('recurringScopeDialog?.addEventListener("cancel"'));
+  assert.ok(html.includes('pendingRecurringEdit = null'));
+  assert.ok(html.includes('purchaseForm?.querySelector(\'[name="occurredOn"]\')?.focus()'));
   assert.ok(html.includes('setAttribute("data-editing", "true")'));
   assert.ok(html.includes('setField("recurrenceDateHint", Boolean(purchase.recurrenceId))'));
   assert.ok(html.includes("if (scheduleSection) scheduleSection.hidden = true;"));

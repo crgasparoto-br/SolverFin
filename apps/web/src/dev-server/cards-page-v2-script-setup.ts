@@ -106,6 +106,8 @@ export function cardsPageSetupScript(): string {
         if (event.target === dialog) closeDialog(dialog);
       }));
 
+      const recurringScopeDialog = document.querySelector('dialog[data-modal="recurring-edit-scope"]');
+      let pendingRecurringEdit = null;
       const installmentDialog = document.querySelector('dialog[data-modal="installment-value"]');
       const installmentAmountForm = installmentDialog?.querySelector("[data-installment-amount-form]");
 `;

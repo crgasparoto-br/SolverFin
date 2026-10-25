@@ -347,6 +347,7 @@ export async function renderCardsPageV2(
       </dialog>
 
       ${selectedInvoice ? renderInstallmentAmountModal() : ""}
+      ${renderRecurringEditScopeModal()}
       ${selectedInvoice ? renderInvoiceAttachmentsDialog(selectedInvoice) : ""}
       ${renderPaymentModal(
         selectedInvoice,
@@ -1162,6 +1163,21 @@ function renderPurchaseModal(
           <button class="sf-button sf-button-primary" type="submit"${canSave ? "" : " disabled"}>Salvar compra</button>
         </footer>
       </form>
+    </section>
+  </dialog>`;
+}
+
+function renderRecurringEditScopeModal(): string {
+  return `<dialog class="cards-dialog cards-recurring-edit-scope-dialog" data-modal="recurring-edit-scope" aria-labelledby="cards-recurring-scope-title" aria-describedby="cards-recurring-scope-description">
+    <section class="cards-dialog-panel cards-purchase-dialog-panel">
+      <header class="cards-purchase-dialog-header"><div><span class="cards-kicker">Compra recorrente</span><h2 id="cards-recurring-scope-title">Aplicar edição</h2><span class="cards-purchase-card-name" data-recurring-edit-purchase-name></span></div><button type="button" class="cards-dialog-close" data-cancel-recurring-scope aria-label="Voltar à edição">×</button></header>
+      <p class="cards-dialog-description" id="cards-recurring-scope-description">Deseja atualizar somente esta compra ou também as próximas ocorrências elegíveis? Faturas encerradas e lançamentos bloqueados serão preservados.</p>
+      <p class="form-status" data-recurring-edit-scope-status role="status" aria-live="polite"></p>
+      <footer class="cards-purchase-dialog-actions cards-installment-scope-actions">
+        <button type="button" class="sf-button sf-button-secondary" data-cancel-recurring-scope>Voltar</button>
+        <button type="button" class="sf-button sf-button-primary" data-recurring-edit-scope="current_only">Somente esta</button>
+        <button type="button" class="sf-button sf-button-secondary" data-recurring-edit-scope="current_and_future">Esta e as próximas</button>
+      </footer>
     </section>
   </dialog>`;
 }

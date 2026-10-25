@@ -57,6 +57,59 @@ export function cardsPageMutationScript(): string {
         }
       }));
 
+      recurringScopeDialog?.querySelectorAll("[data-recurring-edit-scope]").forEach((button) => button.addEventListener("click", async () => {
+        if (!pendingRecurringEdit || recurringScopeDialog.dataset.submitting === "true") return;
+        const scope = button.dataset.recurringEditScope;
+        if (scope !== "current_only" && scope !== "current_and_future") return;
+        const status = recurringScopeDialog.querySelector("[data-recurring-edit-scope-status]");
+        const buttons = Array.from(recurringScopeDialog.querySelectorAll("button"));
+        const previousDisabled = buttons.map((item) => item.disabled);
+        recurringScopeDialog.dataset.submitting = "true";
+        buttons.forEach((item) => { item.disabled = true; });
+        status.textContent = "Salvando edição recorrente...";
+        status.className = "form-status";
+        try {
+          const path = scope === "current_only"
+            ? pendingRecurringEdit.path + "/current-only"
+            : pendingRecurringEdit.path;
+          const response = await request(path, "PATCH", {
+            ...pendingRecurringEdit.payload,
+            editScope: scope,
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            status.textContent = result?.error?.message || "Não foi possível editar a compra recorrente.";
+            status.className = "form-status error";
+            return;
+          }
+          status.textContent = scope === "current_only"
+            ? "Apenas esta ocorrência foi atualizada."
+            : "Ocorrência e próximas elegíveis atualizadas." +
+              (result.skippedCount ? " " + result.skippedCount + " ocorrência(s) bloqueada(s) preservada(s)." : "");
+          status.className = "form-status success";
+          window.setTimeout(() => window.location.reload(), 350);
+        } catch {
+          status.textContent = "Falha de conexão ao editar a compra recorrente. Tente novamente.";
+          status.className = "form-status error";
+        } finally {
+          if (!status.classList.contains("success")) {
+            recurringScopeDialog.dataset.submitting = "false";
+            buttons.forEach((item, index) => { item.disabled = previousDisabled[index]; });
+          }
+        }
+      }));
+      recurringScopeDialog?.querySelectorAll("[data-cancel-recurring-scope]").forEach((button) => button.addEventListener("click", () => {
+        if (recurringScopeDialog.dataset.submitting !== "true") recurringScopeDialog.close();
+      }));
+      recurringScopeDialog?.addEventListener("cancel", (event) => {
+        if (recurringScopeDialog.dataset.submitting === "true") event.preventDefault();
+      });
+      recurringScopeDialog?.addEventListener("close", () => {
+        if (recurringScopeDialog.dataset.submitting === "true") return;
+        pendingRecurringEdit = null;
+        purchaseForm?.querySelector('[name="occurredOn"]')?.focus();
+      });
+
       document.querySelector("[data-reversal-edit-form]")?.addEventListener("submit", async (event) => {
         event.preventDefault();
         const form = event.currentTarget;
@@ -143,6 +196,20 @@ export function cardsPageMutationScript(): string {
             installmentDialog.showModal();
             return;
           }
+        }
+        if (method === "PATCH" && purchaseForm.dataset.recurrenceId) {
+          if (!recurringScopeDialog) {
+            status.textContent = "Não foi possível selecionar o alcance da edição recorrente.";
+            status.className = "form-status error full";
+            return;
+          }
+          pendingRecurringEdit = { path, payload };
+          recurringScopeDialog.querySelector("[data-recurring-edit-purchase-name]").textContent = payload.description;
+          const scopeStatus = recurringScopeDialog.querySelector("[data-recurring-edit-scope-status]");
+          scopeStatus.textContent = "";
+          scopeStatus.className = "form-status";
+          recurringScopeDialog.showModal();
+          return;
         }
         // One save operation at a time. A second click before the first response
         // must not create an additional financial transaction.
