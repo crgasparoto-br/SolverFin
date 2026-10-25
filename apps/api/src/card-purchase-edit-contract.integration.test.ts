@@ -201,6 +201,16 @@ async function assertInstallmentPurchaseEdit(
   assert.equal(singleAdjustment.updatedCount, 1);
   assert.equal(singleAdjustment.skippedCount, 0);
   assert.equal(singleAdjustment.invoice.totalExpensesMinor, 3_500);
+  const unchangedAdjustment = await adjustInvoiceInstallmentAmountForContext(
+    CONTEXT,
+    firstInvoiceId,
+    firstOccurrenceId,
+    3_500,
+    "current",
+  );
+  assert.equal(unchangedAdjustment.updatedCount, 0, "No-op must not count as a changed installment");
+  assert.equal(unchangedAdjustment.skippedCount, 0);
+  assert.equal(unchangedAdjustment.invoice.totalExpensesMinor, 3_500);
   assert.deepEqual(
     await Promise.all(
       invoices.map(
