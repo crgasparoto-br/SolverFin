@@ -2,6 +2,10 @@ import { TenantAuthorizationError, type EntityId, type TenantContext } from "@so
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import {
+  loadPurchaseInstallmentEditStates,
+  type PurchaseInstallmentEditState,
+} from "./card-invoice-purchase-edit-guard.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
 export type PurchaseReconciliationFilter = "all" | "reconciled" | "unreconciled";
@@ -150,6 +154,23 @@ export class InvoiceContractError extends Error {
 }
 
 const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
+
+function assertPurchaseInstallmentsEditable(rows: readonly PurchaseInstallmentEditState[]): void {
+  if (rows.some((row) => !["PLANNED", "POSTED"].includes(row.status))) {
+    throw new InvoiceContractError(
+      "CARD_INSTALLMENT_RECONCILED_LOCKED",
+      "Compras com parcelas conciliadas ou bloqueadas nao podem ter metadados alterados.",
+      409,
+    );
+  }
+  if (rows.some((row) => row.invoiceStatus !== "OPEN")) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_INVOICE_LOCKED",
+      "Compras parceladas com fatura fechada, paga ou cancelada nao podem ser editadas.",
+      409,
+    );
+  }
+}
 
 export async function summarizeInvoiceForContext(
   context: TenantContext,
@@ -325,38 +346,9 @@ export async function updateCardPurchaseForContext(
     );
   }
 
-  const purchaseInstallments = await query<{ id: string; status: string; invoiceStatus: string | null }>(
-    `select i."id", i."status", inv."status" as "invoiceStatus" from "Installment" i
-      left join "Invoice" inv
-        on inv."id" = i."invoiceId"
-       and inv."organizationId" = i."organizationId"
-       and inv."financialProfileId" = i."financialProfileId"
-      where i."transactionId" = $1 and i."organizationId" = $2 and i."financialProfileId" = $3`,
-    [current.id, context.organizationId, context.financialProfileId],
-  );
+  const purchaseInstallments = await loadPurchaseInstallmentEditStates(query, context, current.id);
   const isInstallmentPurchase = purchaseInstallments.length > 0;
-
-  if (purchaseInstallments.some((installment) => !["PLANNED", "POSTED"].includes(installment.status))) {
-    throw new InvoiceContractError(
-      "CARD_INSTALLMENT_RECONCILED_LOCKED",
-      "Compras com parcelas conciliadas ou bloqueadas nao podem ter metadados alterados.",
-      409,
-    );
-  }
-
-  if (
-    purchaseInstallments.some(
-      (installment) =>
-        installment.invoiceStatus !== null &&
-        LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(installment.invoiceStatus),
-    )
-  ) {
-    throw new InvoiceContractError(
-      "CARD_PURCHASE_INVOICE_LOCKED",
-      "Compras parceladas com fatura fechada, paga ou cancelada nao podem ser editadas.",
-      409,
-    );
-  }
+  assertPurchaseInstallmentsEditable(purchaseInstallments);
 
   if (
     isInstallmentPurchase &&
@@ -416,37 +408,11 @@ export async function updateCardPurchaseForContext(
 
   await withTransaction(async (executeQuery) => {
     if (isInstallmentPurchase) {
-      // Recheck and lock the entire series at the write boundary: reconciliation
-      // can change after the initial read and before metadata is persisted.
-      const lockedInstallments = await executeQuery<{ status: string; invoiceStatus: string }>(
-        `select i."status", inv."status" as "invoiceStatus"
-           from "Installment" i
-           join "Invoice" inv on inv."id" = i."invoiceId"
-             and inv."organizationId" = i."organizationId"
-             and inv."financialProfileId" = i."financialProfileId"
-          where i."transactionId" = $1 and i."organizationId" = $2
-            and i."financialProfileId" = $3
-          order by i."id"
-          for update of i, inv`,
-        [current.id, context.organizationId, context.financialProfileId],
-      );
-      if (
-        lockedInstallments.length !== purchaseInstallments.length ||
-        lockedInstallments.some((installment) => !["PLANNED", "POSTED"].includes(installment.status))
-      ) {
-        throw new InvoiceContractError(
-          "CARD_INSTALLMENT_RECONCILED_LOCKED",
-          "Compras com parcelas conciliadas ou bloqueadas nao podem ter metadados alterados.",
-          409,
-        );
+      const lockedRows = await loadPurchaseInstallmentEditStates(executeQuery, context, current.id, true);
+      if (lockedRows.length !== purchaseInstallments.length) {
+        throw new InvoiceContractError("CARD_INSTALLMENT_RECONCILED_LOCKED", "A serie foi alterada durante a edicao.", 409);
       }
-      if (lockedInstallments.some((installment) => installment.invoiceStatus !== "OPEN")) {
-        throw new InvoiceContractError(
-          "CARD_PURCHASE_INVOICE_LOCKED",
-          "Compras parceladas com fatura fechada, paga ou cancelada nao podem ser editadas.",
-          409,
-        );
-      }
+      assertPurchaseInstallmentsEditable(lockedRows);
     }
     await executeQuery(
       `update "Transaction" set
