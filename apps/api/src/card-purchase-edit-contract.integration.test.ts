@@ -330,6 +330,42 @@ async function assertInstallmentPurchaseEdit(
   );
   const unchanged = await readTransaction(purchase.transaction.id);
   assert.equal(unchanged.cardInstrumentId, virtualInstrument.id);
+
+  // A corrupt/incompatible currency in the occurrence must not silently be
+  // converted to the invoice currency or alter its financial totals.
+  const originalSecondAmount = (
+    await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id })
+  )[0]?.amountMinor;
+  const originalSecondTotal = await readInvoiceTotal(invoices[1]!.id);
+  await query(`update "Installment" set "currency" = 'USD' where "id" = $1`, [
+    occurrenceIds[1],
+  ]);
+  try {
+    await assert.rejects(
+      () =>
+        adjustInvoiceInstallmentAmountForContext(
+          CONTEXT,
+          invoices[1]!.id,
+          occurrenceIds[1]!,
+          5_200,
+          "current",
+        ),
+      (error: unknown) =>
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "CARD_INSTALLMENT_AMOUNT_LOCKED",
+    );
+    assert.equal(
+      (await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id }))[0]
+        ?.amountMinor,
+      originalSecondAmount,
+    );
+    assert.equal(await readInvoiceTotal(invoices[1]!.id), originalSecondTotal);
+  } finally {
+    await query(`update "Installment" set "currency" = 'BRL' where "id" = $1`, [
+      occurrenceIds[1],
+    ]);
+  }
 }
 
 async function assertCommonCardPurchaseEdit(

@@ -4,7 +4,9 @@ import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
-import { updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-dispatcher.js";
+import { handleMvpApiRequest } from "./mvp.js";
+import type { ApiRequest } from "./router.js";
 import {
   createRecurrenceForContext,
   generateInstallmentsForContext,
@@ -31,6 +33,17 @@ async function main(): Promise<void> {
     process.env.DATABASE_URL,
     "DATABASE_URL is required. Run the integration database before this test.",
   );
+
+  const login = await handleMvpApiRequest({
+    method: "POST",
+    path: "/api/session",
+    body: {
+      email: "demo@solverfin.example.invalid",
+      password: "SolverFinDemo!2026",
+    },
+  });
+  assert.equal(login.statusCode, 201);
+  const token = (login.body as { session: { token: string } }).session.token;
 
   const suffix = Date.now().toString(36);
   const account = await createCreditCardAccountForContext(CONTEXT, {
@@ -67,11 +80,14 @@ async function main(): Promise<void> {
   const selected = before[1];
   assert.ok(selected);
 
-  await updateCardPurchaseForContext(CONTEXT, account.id, selected.transactionId, {
+  const purchasePath = `/api/credit-card-accounts/${account.id}/purchases/${selected.transactionId}`;
+  const currentOnly = await authenticatedPatch(token, `${purchasePath}/current-only`, {
     amountMinor: 4_500,
     occurredOn: "2028-05-09",
     description: `Somente ocorrencia selecionada ${suffix}`,
+    editScope: "current_only",
   });
+  assert.equal(currentOnly.statusCode, 200);
 
   const after = await readOccurrences(recurrence.id);
   assert.equal(after.length, 3);
@@ -88,6 +104,54 @@ async function main(): Promise<void> {
   const recurrenceAfter = await readRecurrence(recurrence.id);
   assert.equal(recurrenceAfter.amountMinor, 3_000);
   assert.equal(recurrenceAfter.description, `Recorrencia original ${suffix}`);
+
+  // Exercise the production dispatcher, not the base router: current+future
+  // must apply only to the selected occurrence and later eligible invoices.
+  const expanded = await authenticatedPatch(token, purchasePath, {
+    amountMinor: 5_200,
+    occurredOn: "2028-05-10",
+    description: `Recorrencia escopo futuro ${suffix}`,
+    editScope: "current_and_future",
+  });
+  assert.equal(expanded.statusCode, 200);
+  const expandedBody = expanded.body as {
+    updatedCount: number;
+    skippedCount: number;
+  };
+  assert.equal(expandedBody.updatedCount, 1);
+  assert.equal(expandedBody.skippedCount, 0);
+
+  const expandedOccurrences = await readOccurrences(recurrence.id);
+  assertOccurrenceUnchanged(before[0], expandedOccurrences[0]);
+  assert.equal(expandedOccurrences[1]?.transactionAmountMinor, 5_200);
+  assert.equal(expandedOccurrences[1]?.transactionOccurredOn, "2028-05-10");
+  assert.equal(expandedOccurrences[1]?.installmentDueOn, "2028-05-10");
+  assert.equal(expandedOccurrences[2]?.transactionAmountMinor, 5_200);
+  assert.equal(expandedOccurrences[2]?.transactionOccurredOn, "2028-06-10");
+  assert.equal(expandedOccurrences[2]?.installmentDueOn, "2028-06-10");
+
+  // The source invoice is the authority for dates: reject attempts to shift
+  // the selected purchase outside its billing period without touching future data.
+  const rejected = await authenticatedPatch(token, purchasePath, {
+    occurredOn: "2028-05-25",
+    editScope: "current_and_future",
+  });
+  assert.equal(rejected.statusCode, 409);
+  assert.deepEqual(await readOccurrences(recurrence.id), expandedOccurrences);
+}
+
+async function authenticatedPatch(token: string, path: string, body: unknown) {
+  const url = new URL(path, "http://solverfin.integration.test");
+  const request: ApiRequest = {
+    method: "PATCH",
+    pathname: url.pathname,
+    query: url.searchParams,
+    headers: { authorization: `Bearer ${token}` },
+    body,
+  };
+  const response = await handleCreditCardAccountsApiRequest(request);
+  assert.ok(response, `Expected response for ${path}`);
+  return response;
 }
 
 function assertOccurrenceUnchanged(
