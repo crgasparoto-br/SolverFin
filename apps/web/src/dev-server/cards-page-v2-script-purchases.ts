@@ -31,6 +31,7 @@ export function cardsPagePurchaseActionsScript(): string {
           installmentAmountForm.dataset.pendingPurchasePayload = "";
           installmentAmountForm.dataset.pendingPurchasePath = "";
           installmentAmountForm.dataset.savedAmountMinor = "";
+          installmentAmountForm.dataset.savedAmountScope = "";
           installmentAmountForm.querySelector('[name="amountMinor"]').value = minorToMoney(purchase.amountMinor);
           installmentDialog.querySelector("[data-installment-purchase-name]").textContent = purchase.description;
           installmentAmountForm.querySelector("[data-installment-scope-description]").textContent =
