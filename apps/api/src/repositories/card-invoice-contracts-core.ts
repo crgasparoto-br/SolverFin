@@ -4,6 +4,7 @@ import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import {
   loadPurchaseInstallmentEditStates,
+  purchaseInstallmentEditViolation,
   type PurchaseInstallmentEditState,
 } from "./card-invoice-purchase-edit-guard.js";
 import { toDateOnly } from "./repository-date-utils.js";
@@ -156,20 +157,8 @@ export class InvoiceContractError extends Error {
 const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
 
 function assertPurchaseInstallmentsEditable(rows: readonly PurchaseInstallmentEditState[]): void {
-  if (rows.some((row) => !["PLANNED", "POSTED"].includes(row.status))) {
-    throw new InvoiceContractError(
-      "CARD_INSTALLMENT_RECONCILED_LOCKED",
-      "Compras com parcelas conciliadas ou bloqueadas nao podem ter metadados alterados.",
-      409,
-    );
-  }
-  if (rows.some((row) => row.invoiceStatus !== "OPEN")) {
-    throw new InvoiceContractError(
-      "CARD_PURCHASE_INVOICE_LOCKED",
-      "Compras parceladas com fatura fechada, paga ou cancelada nao podem ser editadas.",
-      409,
-    );
-  }
+  const violation = purchaseInstallmentEditViolation(rows);
+  if (violation) throw new InvoiceContractError(violation.code, violation.message, 409);
 }
 
 export async function summarizeInvoiceForContext(
