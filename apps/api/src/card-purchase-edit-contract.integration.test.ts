@@ -145,6 +145,39 @@ async function assertInstallmentPurchaseEdit(
     (error: unknown) =>
       error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
   );
+  // A reconciled sibling makes shared purchase metadata immutable, even if
+  // the edited occurrence is not reconciled. No transaction/series write is allowed.
+  const readSharedSeriesState = () =>
+    query<{
+      id: string;
+      status: string;
+      cardInstrumentId: string | null;
+      updatedAt: Date;
+      description: string;
+    }>(
+      `select i."id", i."status", i."cardInstrumentId", i."updatedAt", t."description"
+         from "Installment" i
+         join "Transaction" t on t."id" = i."transactionId"
+        where i."transactionId" = $1 and i."organizationId" = $2
+          and i."financialProfileId" = $3
+        order by i."sequenceNumber"`,
+      [purchase.transaction.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+    );
+  const beforeRejectedMetadata = await readSharedSeriesState();
+  for (const payload of [
+    { description: `Nao editar conciliada ${suffix}` },
+    { cardInstrumentId: virtualInstrument.id },
+    { description: `Nao propagar ${suffix}`, cardInstrumentId: virtualInstrument.id },
+  ]) {
+    await assert.rejects(
+      () => updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, payload),
+      (error: unknown) =>
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "CARD_INSTALLMENT_RECONCILED_LOCKED",
+    );
+    assert.deepEqual(await readSharedSeriesState(), beforeRejectedMetadata);
+  }
   const posted = await reconcileInvoiceInstallmentForContext(
     CONTEXT,
     firstInvoiceId,

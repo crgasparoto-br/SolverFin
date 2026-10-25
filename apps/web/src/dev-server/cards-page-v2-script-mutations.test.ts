@@ -14,10 +14,15 @@ function reply(status: number, body: unknown): Response {
 
 function createInstallmentHarness(responses: FetchReply[], pendingMetadata = false) {
   const listeners: Array<() => Promise<void>> = [];
+  const submitListeners: Array<(event: { preventDefault(): void }) => void> = [];
   const requests: string[] = [];
+  let focusedScope = "";
   const buttons = ["current", "current_and_future"].map((scope) => ({
     dataset: { installmentScope: scope },
     disabled: false,
+    focus() {
+      focusedScope = scope;
+    },
     addEventListener(_name: string, callback: () => Promise<void>) {
       listeners.push(callback);
     },
@@ -33,7 +38,11 @@ function createInstallmentHarness(responses: FetchReply[], pendingMetadata = fal
       savedAmountMinor: "",
       submitting: "false",
     },
+    addEventListener(name: string, callback: (event: { preventDefault(): void }) => void) {
+      if (name === "submit") submitListeners.push(callback);
+    },
     querySelector(selector: string) {
+      if (selector === '[data-installment-scope="current"]') return buttons[0];
       if (selector === '[name="amountMinor"]') return valueField;
       if (selector === "[data-installment-amount-status]") return status;
       return null;
@@ -65,8 +74,13 @@ function createInstallmentHarness(responses: FetchReply[], pendingMetadata = fal
     },
   });
   assert.equal(listeners.length, 2);
+  assert.equal(submitListeners.length, 1);
   return {
     listeners,
+    submitListeners,
+    get focusedScope() {
+      return focusedScope;
+    },
     requests,
     buttons,
     form,
@@ -76,6 +90,22 @@ function createInstallmentHarness(responses: FetchReply[], pendingMetadata = fal
     },
   };
 }
+
+await (async function enterRequiresExplicitScopeAndNeverWrites() {
+  const harness = createInstallmentHarness([]);
+  let prevented = 0;
+  harness.submitListeners[0]!({ preventDefault() { prevented += 1; } });
+  assert.equal(prevented, 1);
+  assert.match(harness.status.textContent, /Escolha Somente esta ou Esta e as próximas/);
+  assert.equal(harness.focusedScope, "current");
+  assert.deepEqual(harness.requests, []);
+  assert.equal(harness.scheduledReloads, 0);
+
+  harness.form.dataset.submitting = "true";
+  harness.submitListeners[0]!({ preventDefault() { prevented += 1; } });
+  assert.equal(prevented, 2);
+  assert.deepEqual(harness.requests, []);
+})();
 
 await (async function failedMetadataSaveAllowsRetryWithoutSecondFinancialWrite() {
   const harness = createInstallmentHarness(

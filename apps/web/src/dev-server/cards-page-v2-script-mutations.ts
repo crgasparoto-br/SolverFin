@@ -11,6 +11,15 @@ export function cardsPageMutationScript(): string {
         return response.ok ? "Ação concluída. Atualizando..." : (body?.error?.message || "Não foi possível concluir a ação.");
       };
 
+      // Enter in a text field must not submit the form without an explicit scope.
+      installmentAmountForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (installmentAmountForm.dataset.submitting === "true") return;
+        const status = installmentAmountForm.querySelector("[data-installment-amount-status]");
+        status.textContent = "Escolha Somente esta ou Esta e as próximas para confirmar o valor.";
+        status.className = "form-status";
+        installmentAmountForm.querySelector('[data-installment-scope="current"]')?.focus();
+      });
       installmentAmountForm?.querySelectorAll("[data-installment-scope]").forEach((button) => button.addEventListener("click", async () => {
         if (installmentAmountForm.dataset.submitting === "true") return;
         const valueField = installmentAmountForm.querySelector('[name="amountMinor"]');
