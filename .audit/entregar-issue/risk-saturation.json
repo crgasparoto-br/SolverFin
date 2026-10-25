@@ -1,250 +1,53 @@
 {
   "schema_version": 1,
-  "head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+  "head_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
   "families": [
     {
       "family": "authorization",
       "applicable": false,
-      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
+      "reason": "No current contract or diff signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
     },
     {
-      "family": "concurrency-atomicity",
+      "family": "tenant-isolation",
       "applicable": false,
-      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "documentation",
-      "applicable": true,
-      "reason": "Required by current obligations or retained historical independent audit escape proof.",
-      "control_ids": [
-        "NEG-714-01-001",
-        "NEG-714-01-002",
-        "NEG-714-01-003",
-        "NEG-714-01-004",
-        "NEG-714-01-005",
-        "NEG-714-01-006",
-        "NEG-714-02-003",
-        "NEG-714-02-004",
-        "NEG-714-02-005",
-        "NEG-714-04-001",
-        "NEG-714-05-001",
-        "NEG-714-05-004",
-        "NEG-714-05-005",
-        "NEG-714-05-006",
-        "NEG-714-05-010",
-        "NEG-714-05-011",
-        "NEG-714-05-012",
-        "NEG-714-ESCAPE-001"
-      ],
-      "dimensions": [
-        {
-          "surface": "canonical-claims",
-          "reason": "Documented exact-head negative control with two independent adversarial cases",
-          "control_ids": [
-            "NEG-714-01-001",
-            "NEG-714-01-002",
-            "NEG-714-01-003",
-            "NEG-714-01-004",
-            "NEG-714-01-005",
-            "NEG-714-01-006",
-            "NEG-714-02-003",
-            "NEG-714-02-004",
-            "NEG-714-02-005",
-            "NEG-714-04-001",
-            "NEG-714-05-001",
-            "NEG-714-05-004",
-            "NEG-714-05-005",
-            "NEG-714-05-006",
-            "NEG-714-05-010",
-            "NEG-714-05-011",
-            "NEG-714-05-012",
-            "NEG-714-ESCAPE-001"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "execution-state",
-      "applicable": true,
-      "reason": "Required by the existing exact-material-head requirement attack matrix, executed negative controls, and inherited controls where applicable.",
-      "control_ids": [
-        "NEG-714-ESCAPE-002",
-        "NEG-714-ESCAPE-003"
-      ],
-      "dimensions": [
-        {
-          "surface": "ci-observation",
-          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
-          "control_ids": [
-            "NEG-714-ESCAPE-002"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "post-write-barrier",
-          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
-          "control_ids": [
-            "NEG-714-ESCAPE-003"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "historical-immutability",
-      "applicable": false,
-      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "idempotency",
-      "applicable": false,
-      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
+      "reason": "No current contract or diff signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
     },
     {
       "family": "public-boundary",
-      "applicable": true,
-      "reason": "Current #714 issue obligations or inherited exact-head risk surface require this family.",
-      "control_ids": [
-        "NEG-714-INHERITED-PUBLIC-BOUNDARY",
-        "FREE-TO-SPEND-PUBLIC-001"
-      ],
-      "dimensions": [
-        {
-          "surface": "free-to-spend-contract",
-          "reason": "Documented exact-head negative control with two independent adversarial cases",
-          "control_ids": [
-            "NEG-714-INHERITED-PUBLIC-BOUNDARY",
-            "FREE-TO-SPEND-PUBLIC-001"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "reference-liveness",
-      "applicable": true,
-      "reason": "Current #714 issue obligations or inherited exact-head risk surface require this family.",
-      "control_ids": [
-        "NEG-714-02-001",
-        "NEG-714-03-002",
-        "NEG-714-05-002",
-        "NEG-714-05-003",
-        "NEG-714-05-007",
-        "NEG-714-05-008",
-        "NEG-714-05-009"
-      ],
-      "dimensions": [
-        {
-          "surface": "issue714-referenceliveness",
-          "reason": "Documented exact-head negative control with two independent adversarial cases",
-          "control_ids": [
-            "NEG-714-02-001",
-            "NEG-714-03-002",
-            "NEG-714-05-002",
-            "NEG-714-05-003",
-            "NEG-714-05-007",
-            "NEG-714-05-008",
-            "NEG-714-05-009"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "responsive-layout",
-      "applicable": true,
-      "reason": "Required by the existing exact-material-head requirement attack matrix, executed negative controls, and inherited controls where applicable.",
-      "control_ids": [
-        "NEG-714-ESCAPE-004"
-      ],
-      "dimensions": [
-        {
-          "surface": "transaction-group-layout",
-          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
-          "control_ids": [
-            "NEG-714-ESCAPE-004"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "rollback",
       "applicable": false,
-      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
+      "reason": "No current contract or diff signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
     },
     {
-      "family": "structural-contract",
+      "family": "reference-liveness",
       "applicable": true,
-      "reason": "Required by current obligations or retained historical independent audit escape proof.",
+      "reason": "Exact-head controls NEG-742-05-01, NEG-742-05-01-RB use the application source and CI / local adversarial harness; each material surface has a negative discriminator.",
       "control_ids": [
-        "NEG-714-02-002",
-        "NEG-714-03-001",
-        "NEG-714-ESCAPE-005",
-        "NEG-714-ESCAPE-006",
-        "NEG-714-ESCAPE-007",
-        "NEG-714-ESCAPE-008"
+        "NEG-742-05-01",
+        "NEG-742-05-01-RB"
       ],
       "dimensions": [
         {
-          "surface": "issue714-structuralcontract",
-          "reason": "Documented exact-head negative control with two independent adversarial cases",
+          "surface": "recurring-edit",
+          "reason": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
           "control_ids": [
-            "NEG-714-02-002",
-            "NEG-714-03-001"
+            "NEG-742-05-01"
           ],
           "status": "passed"
         },
         {
-          "surface": "canonical-source-consistency",
-          "reason": "Inherited audit escape revalidated on exact material head",
+          "surface": "recurring-edit-readback",
+          "reason": "Read-back of the invoice/occurrence after mutation independently verifies target and history in exact-SHA integration.",
           "control_ids": [
-            "NEG-714-ESCAPE-005"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-identity",
-          "reason": "Inherited audit escape revalidated on exact material head",
-          "control_ids": [
-            "NEG-714-ESCAPE-006"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-presence",
-          "reason": "Inherited audit escape revalidated on exact material head",
-          "control_ids": [
-            "NEG-714-ESCAPE-007"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-subject",
-          "reason": "Inherited audit escape revalidated on exact material head",
-          "control_ids": [
-            "NEG-714-ESCAPE-008"
+            "NEG-742-05-01-RB"
           ],
           "status": "passed"
         }
@@ -254,18 +57,43 @@
     {
       "family": "temporal-consistency",
       "applicable": true,
-      "reason": "Current #714 issue obligations or inherited exact-head risk surface require this family.",
+      "reason": "Exact-head controls NEG-742-05-02, NEG-742-05-02-RB, NEG-742-10-01, NEG-742-10-01-RB use the application source and CI / local adversarial harness; each material surface has a negative discriminator.",
       "control_ids": [
-        "NEG-714-EXTRA-03-temporal-consistency",
-        "NEG-714-EXTRA-05-temporal-consistency"
+        "NEG-742-05-02",
+        "NEG-742-05-02-RB",
+        "NEG-742-10-01",
+        "NEG-742-10-01-RB"
       ],
       "dimensions": [
         {
-          "surface": "issue714-temporalconsistency",
-          "reason": "Documented exact-head negative control with two independent adversarial cases",
+          "surface": "invoice-occurrence",
+          "reason": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
           "control_ids": [
-            "NEG-714-EXTRA-03-temporal-consistency",
-            "NEG-714-EXTRA-05-temporal-consistency"
+            "NEG-742-10-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "invoice-occurrence-readback",
+          "reason": "Read-back of the invoice/occurrence after mutation independently verifies target and history in exact-SHA integration.",
+          "control_ids": [
+            "NEG-742-10-01-RB"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "recurring-edit",
+          "reason": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
+          "control_ids": [
+            "NEG-742-05-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "recurring-edit-readback",
+          "reason": "Read-back of the invoice/occurrence after mutation independently verifies target and history in exact-SHA integration.",
+          "control_ids": [
+            "NEG-742-05-02-RB"
           ],
           "status": "passed"
         }
@@ -274,25 +102,44 @@
     },
     {
       "family": "temporal-destination",
-      "applicable": false,
-      "reason": "No current scoped #714 obligation materially invokes this risk family; other epic routes are deferred to separately audited issues.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "tenant-isolation",
       "applicable": true,
-      "reason": "Current #714 issue obligations or inherited exact-head risk surface require this family.",
+      "reason": "Exact-head controls NEG-742-05-03, NEG-742-05-03-RB, NEG-742-10-02, NEG-742-10-02-RB use the application source and CI / local adversarial harness; each material surface has a negative discriminator.",
       "control_ids": [
-        "NEG-714-EXTRA-03-tenant-isolation"
+        "NEG-742-05-03",
+        "NEG-742-05-03-RB",
+        "NEG-742-10-02",
+        "NEG-742-10-02-RB"
       ],
       "dimensions": [
         {
-          "surface": "issue714-tenantisolation",
-          "reason": "Documented exact-head negative control with two independent adversarial cases",
+          "surface": "invoice-occurrence",
+          "reason": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
           "control_ids": [
-            "NEG-714-EXTRA-03-tenant-isolation"
+            "NEG-742-10-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "invoice-occurrence-readback",
+          "reason": "Read-back of the invoice/occurrence after mutation independently verifies target and history in exact-SHA integration.",
+          "control_ids": [
+            "NEG-742-10-02-RB"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "recurring-edit",
+          "reason": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
+          "control_ids": [
+            "NEG-742-05-03"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "recurring-edit-readback",
+          "reason": "Read-back of the invoice/occurrence after mutation independently verifies target and history in exact-SHA integration.",
+          "control_ids": [
+            "NEG-742-05-03-RB"
           ],
           "status": "passed"
         }
@@ -300,31 +147,89 @@
       "status": "passed"
     },
     {
-      "family": "visual-validation",
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
       "applicable": true,
-      "reason": "Required by the existing exact-material-head requirement attack matrix, executed negative controls, and inherited controls where applicable.",
+      "reason": "Exact-head controls NEG-742-02-01, NEG-742-19-02, REL-SEM-001-01 use the application source and CI / local adversarial harness; each material surface has a negative discriminator.",
       "control_ids": [
-        "NEG-714-ESCAPE-009",
-        "NEG-714-05-FOOTER",
-        "NEG-714-ESCAPE-010",
-        "NEG-714-05-FOOTER-GATE"
+        "NEG-742-02-01",
+        "NEG-742-19-02",
+        "REL-SEM-001-01"
       ],
       "dimensions": [
         {
-          "surface": "statement-mobile",
-          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
+          "surface": "documentation-contract",
+          "reason": "A bespoke modal and financial route could diverge from Golden Statement shared tokens and existing recurring contracts.",
           "control_ids": [
-            "NEG-714-ESCAPE-009",
-            "NEG-714-05-FOOTER"
+            "NEG-742-19-02"
           ],
           "status": "passed"
         },
         {
-          "surface": "visual-artifact",
-          "reason": "Controls already documented and bound to exact material SHA in requirement-attack-matrix; preserve their observed negative-case and restoration evidence.",
+          "surface": "purchase-clone",
+          "reason": "Cloning a purchase could incorrectly preserve the original transaction identity or recurrence/parcel sequence.",
           "control_ids": [
-            "NEG-714-ESCAPE-010",
-            "NEG-714-05-FOOTER-GATE"
+            "NEG-742-02-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "control_ids": [
+            "REL-SEM-001-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Exact-head controls NEG-742-07-01, NEG-742-19-01 use the application source and CI / local adversarial harness; each material surface has a negative discriminator.",
+      "control_ids": [
+        "NEG-742-07-01",
+        "NEG-742-19-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "A bespoke modal and financial route could diverge from Golden Statement shared tokens and existing recurring contracts.",
+          "control_ids": [
+            "NEG-742-07-01",
+            "NEG-742-19-01"
           ],
           "status": "passed"
         }

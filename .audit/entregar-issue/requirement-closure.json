@@ -1,266 +1,263 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/solverfin-719-evidence/specification-snapshot.json",
-    "sha256": "983977913acd2823fc47178b214fc519b2d848c24f05449b76171db07a5692f7"
+    "path": "/mnt/data/audit743/work/specification-snapshot.json",
+    "sha256": "011923281e3e002d829b71925bfb230bad80202290d959d22ea222f5f1ee38a5"
   },
   "primary_issue_source_id": "SRC-ISSUE",
   "obligations": [
     {
       "id": "OBL-001",
-      "candidate_key": "e9350725d9c8f074fdf57df35f483fdab8cf986e5c62dbfa7ee77af3a9be2caa",
+      "candidate_key": "f0a1b6f69b2e2534ac8aeb7816aaab8306fdc367c6cf8a820c97cc90170de87c",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 6,
-      "source_text": "Mapear rotas operacionais adicionais que precisam da qualidade visual da Golden Screen e abrir **issues específicas por superfície**, evitando uma implementação genérica de grande porte ou retrabalho com a épica histórica #591.",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 2,
+      "source_text": "Na rota `/cartoes`, equiparar o menu de ações dos lançamentos ao Extrato e aprimorar edição de compras, preservando o contrato financeiro e Golden Screen #702.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-01",
-        "REQ-719-04"
+        "REQ-742-01"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1070-1209 and apps/api/src/card-purchase-edit-contract.integration.test.ts:155-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-002",
-      "candidate_key": "12c1c511731417cca8e07e8ec02090a65a49f0f7f206836039b13da35fcd999a",
+      "candidate_key": "12f313868e3f8df567290804f3b7ce6b69c1ec6b6578be6cbcd5d9f581d6340d",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 9,
-      "source_text": "Conferir catálogo real de rotas/estados disponíveis e `docs/SCREEN_ARCHETYPES.md` (por exemplo Dashboard, Orçamentos, Inbox e rotas secundárias quando pertinentes).",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 5,
+      "source_text": "Incluir **Clonar** nas ações da compra, reutilizando o modal de cadastro com dados copiados; clonar apenas como compra nova única, sem copiar vínculos de recorrência/parcelamento ou o identificador da compra.",
       "flags": [
-        "source-catalog"
+        "negative",
+        "atomicity",
+        "structural"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-01"
+        "REQ-742-02"
       ],
-      "inventory_ids": [
-        "INV-719"
-      ],
+      "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27 and apps/web/src/dev-server/cards-page-v2.test.ts:869-902; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-003",
-      "candidate_key": "ae63bd83210b4e471f7ac116c4136f95878eb0a922ef3a9848d93d2d0220e6ab",
+      "candidate_key": "05fd68b04f5ec9f74ab259cda373a80fa3fdd6a3e48f07b57cfc1e64f09c8a23",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 10,
-      "source_text": "Para cada superfície: identificar arquétipo, estado atual, delta visual real frente à Golden Screen aprovada, dependências, risco e prioridade; registrar se já está adequada.",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 6,
+      "source_text": "Preservar **Editar** e ações de recorrência existentes e tornar menus acessíveis com ícones e estados consistentes com Extrato.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-03"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1058-1097 and apps/web/src/dev-server/cards-page-v2.test.ts:630-666; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "355603eede9e41bbcd2d90b65981e524bc85e54e7cf1075549551c3cd1121887",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 7,
+      "source_text": "Permitir ajustar o **valor de uma parcela** de uma compra parcelada de forma dirigida à ocorrência, sem editar o total da compra como se fosse compra simples; oferecer decisão entre parcela selecionada e futuras elegíveis.",
       "flags": [
-        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-04"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:10-168 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "199c0f514f83a1f05bcdb656e4b4de46d72d182ced1735c9615c18d0a5e0e5b3",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 8,
+      "source_text": "Habilitar e preservar a **data da compra recorrente** no modal, usando o escopo atual versus atuais e futuras; validar o período da fatura no backend.",
+      "flags": [
+        "temporal",
+        "temporal-destination",
         "freshness"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-02",
-        "REQ-719-08"
-      ],
-      "inventory_ids": [
-        "INV-719"
-      ],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
-    },
-    {
-      "id": "OBL-004",
-      "candidate_key": "f44affb0aa7c836526a8849c649f3b3a1745d13da1b59fd8ece46a5d665f9bbf",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 11,
-      "source_text": "Relacionar entregas anteriores (#591, #608–#615) para evitar duplicação e não interpretar issues fechadas como validação da nova referência.",
-      "flags": [
-        "negative"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-719-03"
+        "REQ-742-05"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
-    },
-    {
-      "id": "OBL-005",
-      "candidate_key": "56bd680921411610e35948e62d0be9cc696c59af4b5e85f66adcfb0633bf9c7a",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 12,
-      "source_text": "Criar issues derivadas específicas somente quando houver diferenças demonstráveis, com escopo fechado, critérios visuais e de regressão claros.",
-      "flags": [
-        "negative",
-        "semantic-effect"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-719-04"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [
-        "OBS-719"
-      ],
-      "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at apps/api/src/current-only-recurring-edit.integration.test.ts:80-141 and apps/web/src/dev-server/cards-page-v2-script-mutations.ts:79-130; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-006",
-      "candidate_key": "daec80ff5f063f54b82d62d78aa75393566b38e31b6ced32b4acd7718a04350d",
+      "candidate_key": "ceaa0db2dcbbf45c00797b2f00b9cc3aee662e7dbc06a7343714b1e544d527e9",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 13,
-      "source_text": "Publicar matriz de cobertura e links na #702.",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 9,
+      "source_text": "Refatorar o modal de compras com hierarquia, densidade, campos editáveis evidentes, estados disabled/readonly adequados, ações alinhadas e layout desktop/mobile.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-05"
+        "REQ-742-06"
       ],
       "inventory_ids": [],
-      "assertion_ids": [
-        "OBS-719"
-      ],
+      "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1112-1208 and apps/web/src/dev-server/cards-page-v2.test.ts:480-571; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-007",
-      "candidate_key": "dd9624564fe19a83ad6ca924a507678598f443a9c5f3134ded6c3177b28fac83",
+      "candidate_key": "39ee01cb5d6b4fa43488b40cfdc088f5b2c67bd4bd3ded55591c8fe1624797d6",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 19,
-      "source_text": "**Matriz de triagem obrigatória:** `rota | arquétipo | prioridade | evidência atual | delta em relação à Golden Screen | antecedente #591/#608–#615 | decisão (aderente/issue/fora) | issue derivada | dependências`.",
-      "flags": [
-        "freshness",
-        "semantic-effect"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-719-02"
-      ],
-      "inventory_ids": [
-        "INV-719"
-      ],
-      "assertion_ids": [
-        "OBS-719"
-      ],
-      "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
-    },
-    {
-      "id": "OBL-008",
-      "candidate_key": "1585e924d4c8342c780339984732151d8733254df3f5682844d86c2ed3793cde",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 22,
-      "source_text": "**Regra de fechamento:** #719 encerra quando o inventário está completo e todas as issues derivadas necessárias estão abertas e rastreáveis. **Não** exigir a implementação delas dentro da #719; o encerramento da **épica #702** continua condicionado às issues obrigatórias derivadas.",
-      "flags": [
-        "exhaustive",
-        "negative",
-        "semantic-effect"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-719-06"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
-    },
-    {
-      "id": "OBL-009",
-      "candidate_key": "84f3f7f9c04ce3e037278e82343aa8e86827c2a58a43e3f0424f7459150dff77",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 26,
-      "source_text": "[x] Inventário de superfícies operacionais e respectivos arquétipos publicado na épica.",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 10,
+      "source_text": "Registrar regressões e documentação afetada.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-01"
+        "REQ-742-07"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at docs/CARDS.md:440-450 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "a53f24c8e66fa5ddf2c0c8e1485abcf7a21016b6e0fb4a7c643e7a8b69c438ad",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 13,
+      "source_text": "[ ] Menu de três pontos de `/cartoes` oferece Editar e Clonar com os mesmos padrões visuais e acessíveis do Extrato.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-08"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1058-1097 and apps/web/src/dev-server/cards-page-v2.test.ts:630-666; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "c0d96dc74e849abe4801a9a0827f6b9668de02b0159c9329662ec89db8f638f0",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 14,
+      "source_text": "[ ] Clonar abre o diálogo centralizado pré-preenchido como nova compra simples, sem copiar IDs/vínculos de série.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-09"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-setup.ts:56-96 and apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-010",
-      "candidate_key": "1ef1565be7def8fb4e0063e3235fb46da8c5ff48e8dc077c06130e415fd2f801",
+      "candidate_key": "5344872266835de645d862a2605f335bed2e0fb4048fc18b15d06623c93c7705",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 27,
-      "source_text": "[x] Cada rota está classificada como aderente, requer subissue específica ou fora de escopo, com evidência/racional.",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 15,
+      "source_text": "[ ] Alteração do valor de parcela selecionada usa identidade e fatura corretas; escopo futuro atualiza somente parcelas futuras elegíveis, reporta ignoradas e preserva histórico.",
       "flags": [
-        "exhaustive"
+        "negative",
+        "temporal",
+        "temporal-destination",
+        "review-surface"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-02"
+        "REQ-742-10"
       ],
-      "inventory_ids": [
-        "INV-719"
-      ],
+      "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:55-168 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-011",
-      "candidate_key": "3e8cd017905c02f96072b493374c85377c3602171aa8136d0210752b7aa24c0a",
+      "candidate_key": "2e680989b50cf1e13a3bd59ac437da1dc95620471c0ee04324c2957a3acc2e44",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 28,
-      "source_text": "[x] Issues necessárias foram abertas e vinculadas no checklist da #702, com precedência e critérios verificáveis.",
-      "flags": [
-        "precedence"
-      ],
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 16,
+      "source_text": "[ ] Parcelas conciliadas e faturas fechadas/pagas/canceladas bloqueiam alterações e a API recusa tentativas diretas.",
+      "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-05"
+        "REQ-742-11"
       ],
       "inventory_ids": [],
-      "assertion_ids": [
-        "OBS-719"
-      ],
+      "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-012",
-      "candidate_key": "fd6a9f6867f7c04a6a116c7c547fdaf1e46f5c399331c59aa5485384908590a5",
+      "candidate_key": "4c23acb94bdd0e4a889289e1513531bce7c84e3102838bc6c3dbd2afaec3c167",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 29,
-      "source_text": "[x] Nenhuma implementação funcional ou refatoração ampla foi embutida nesta atividade de triagem.",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 17,
+      "source_text": "[ ] Data da ocorrência recorrente pode ser editada por escopo, sem recalcular fatura fora das regras vigentes.",
       "flags": [
-        "exhaustive",
         "negative"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-06"
+        "REQ-742-12"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at apps/api/src/current-only-recurring-edit.integration.test.ts:80-141 and apps/web/src/dev-server/cards-page-v2-script-mutations.ts:79-130; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-013",
-      "candidate_key": "989992d63aad1cc2ebba78a14b0ef4e0cc8986863995519f06832418cf71163a",
+      "candidate_key": "e7451df7876a7972226f993d100aeaf402d161a2bc3966691de652e746da7f4e",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 30,
-      "source_text": "[ ] Revisão independente do inventário e documentação concluídas.",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 18,
+      "source_text": "[ ] Layout do formulário é responsivo, com foco/teclado, estados legíveis e sem cards excessivos.",
       "flags": [
-        "review-surface"
+        "observable",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-13"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1112-1208 and apps/web/src/dev-server/cards-page-v2.test.ts:480-571; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "bb9fe781e8b0a799aca21a4372b1317f3cce957c24453c514f6638e1fb656821",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 19,
+      "source_text": "[ ] Testes e evidência vinculados ao SHA; auditoria independente posterior, sem merge automático.",
+      "flags": [
+        "negative"
       ],
       "disposition": "deferred",
       "requirement_ids": [],
@@ -268,84 +265,132 @@
       "assertion_ids": [],
       "scope_decision": {
         "decision_source_id": "SRC-ISSUE",
-        "decision_source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-        "decision_locator": "github-issue-719#L30",
-        "target_issue": 719,
+        "decision_source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+        "decision_locator": "github-issue-742#L19",
+        "target_issue": 742,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Independent reviewer approval remains required outside the delivery context; issue 719 explicitly stays open until approval."
+      "rationale": "The issue explicitly requires independent audit after exact-SHA certified handoff; retain issue #742 open and do not treat this as approval."
     },
     {
-      "id": "OBL-014",
-      "candidate_key": "7a2546a44ddfa70c9b106959b90bff59abb099fb89b86540067e7613e0bc90e7",
+      "id": "OBL-015",
+      "candidate_key": "0b29e7c20ff762984a9c5873182a8a7c7a66fcd8915b94cf1ac0cd3ddf6bacb2",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 43,
-      "source_text": "[Matriz de 14 rotas](https://github.com/crgasparoto-br/SolverFin/blob/docs/719-golden-screen-phase2-inventory/docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md) proposta na [PR #730](https://github.com/crgasparoto-br/SolverFin/pull/730) (base `develop`, Draft, sem merge).",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 22,
+      "source_text": "Não alterar `Transaction.amountMinor` da compra-base para simular alteração de uma única parcela.",
+      "flags": [
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-15"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:115-159 and apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "9d813eae4b7352ff95f6b01ccc9b74e4721ecd11a260d397d37fad058a326445",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 23,
+      "source_text": "Não somar moedas diferentes ou inferir câmbio.",
       "flags": [
         "negative"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-07"
+        "REQ-742-16"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
-      "id": "OBL-015",
-      "candidate_key": "b2a838cff62e2e837f0073c3e7887376832fa1d66fc1bb30290b68120a34b9c2",
+      "id": "OBL-017",
+      "candidate_key": "5048f262f258e3968a78522c39360e69c570cef04eeda78c9b0643291d921fb4",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 44,
-      "source_text": "Issues derivadas: #724 Dashboard, #725 Orçamentos, #726 Inbox, #727 Configurações, #728 Admin Instituições; links/checklist também na #702.",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 24,
+      "source_text": "Não clonar identificadores, status financeiro nem associações de recorrência.",
       "flags": [
-        "semantic-effect"
+        "negative"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-719-04",
-        "REQ-719-05"
+        "REQ-742-17"
       ],
-      "inventory_ids": [],
-      "assertion_ids": [
-        "OBS-719"
-      ],
-      "scope_decision": null,
-      "rationale": "Material exact SHA 719 inventory independently cross-checked against route catalogue; local negative mutation cases and two terminal GitHub CI workflows."
-    },
-    {
-      "id": "OBL-016",
-      "candidate_key": "295d0e356142e518ddb6e4eb5d5fe8ea5f593472b5a653c60c3441968d874814",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "source_line": 46,
-      "source_text": "**Não declarar #719 concluída até haver parecer independente favorável** sobre inventário, recorte temporal, prova dos deltas, ausência de duplicações e rastreabilidade; a #702 permanece aberta até as issues derivadas obrigatórias estarem aceitas.",
-      "flags": [
-        "negative",
-        "semantic-effect"
-      ],
-      "disposition": "deferred",
-      "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
-      "scope_decision": {
-        "decision_source_id": "SRC-ISSUE",
-        "decision_source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-        "decision_locator": "github-issue-719#L46",
-        "target_issue": 719,
-        "parent_issue_must_remain_open": true
-      },
-      "rationale": "Independent reviewer approval remains required outside the delivery context; issue 719 explicitly stays open until approval."
+      "scope_decision": null,
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-setup.ts:56-96 and apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-018",
+      "candidate_key": "aed306aeecbdc221da0c5a193546262438278f96279fcbc8f59b1e21d5988d4d",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 25,
+      "source_text": "Não permitir alteração de parcelas de faturas bloqueadas ou reconciliadas.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-18"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-019",
+      "candidate_key": "7aa0da5b6654bfd9fbf55bcf3e480e382a085389261530e785044ae405296a2c",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 26,
+      "source_text": "Reutilizar `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md`, `docs/RECURRENCES_INSTALLMENTS_WEB.md` e APIs existentes.",
+      "flags": [
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-19"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at docs/DESIGN_SYSTEM.md:1-50 and docs/GOLDEN_STATEMENT.md:1-50; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+    },
+    {
+      "id": "OBL-020",
+      "candidate_key": "0d9cb33ad13bab14ce5d0c1a4b6beb6179c333102486769d017219a10d7a1a26",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "source_line": 27,
+      "source_text": "Base de branch e PR: `develop`.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-742-20"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Review evidence at .github/workflows/delivery-audit-workspace.yml:1-65 and docs/CARDS.md:440-450; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     }
   ],
   "source_coverage": [
     {
       "source_id": "SRC-ISSUE",
-      "source_sha256": "7c14a8c8dacfc035af164f1409575d95b2b2d42412965f6152ae4867acd42ed5",
-      "candidate_count": 16,
+      "source_sha256": "39b17842358aaa2fac3cae6a0fa87750fbe33f3ff84a3af16441257e66faa0e8",
+      "candidate_count": 20,
       "obligation_ids": [
         "OBL-001",
         "OBL-002",
@@ -362,256 +407,100 @@
         "OBL-013",
         "OBL-014",
         "OBL-015",
-        "OBL-016"
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020"
       ],
       "unmapped_candidate_keys": []
     }
   ],
-  "domain_inventories": [
-    {
-      "id": "INV-719",
-      "name": "Shell route inventory available snapshot",
-      "closed_world": true,
-      "producer_sources": [
-        "apps/web/src/app-shell/routes.ts",
-        "develop@45f516268ab5a51931bdd096c7a131fc3b8f73d8"
-      ],
-      "consumer_sources": [
-        "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md",
-        "docs/SCREEN_ARCHETYPES.md"
-      ],
-      "values": [
-        {
-          "value": "/dashboard",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-1"
-          ]
-        },
-        {
-          "value": "/lancamentos",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-2"
-          ]
-        },
-        {
-          "value": "/cartoes",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-3"
-          ]
-        },
-        {
-          "value": "/contas-cartoes",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-4"
-          ]
-        },
-        {
-          "value": "/remuneracao-contas",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-5"
-          ]
-        },
-        {
-          "value": "/categorias",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-6"
-          ]
-        },
-        {
-          "value": "/orcamentos",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-7"
-          ]
-        },
-        {
-          "value": "/assistente",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-8"
-          ]
-        },
-        {
-          "value": "/inbox",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-9"
-          ]
-        },
-        {
-          "value": "/relatorios",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-10"
-          ]
-        },
-        {
-          "value": "/configuracoes",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-11"
-          ]
-        },
-        {
-          "value": "/admin/instituicoes",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-12"
-          ]
-        },
-        {
-          "value": "/admin/indices-financeiros",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-13"
-          ]
-        },
-        {
-          "value": "/login",
-          "producer_evidence": [
-            "apps/web/src/app-shell/routes.ts"
-          ],
-          "consumer_evidence": [
-            "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
-          ],
-          "scenario_ids": [
-            "route-14"
-          ]
-        }
-      ],
-      "unmapped_values": [],
-      "fallback_policy": "none",
-      "rationale": "All 14 available entries at the frozen catalogue SHA appear once in the document; catalog includes a public and legacy route."
-    }
-  ],
-  "observable_assertions": [
-    {
-      "id": "OBS-719",
-      "description": "Derived issue links and epic linkage are directly present in the candidate documentation and verified in GitHub issue bodies.",
-      "requirement_ids": [
-        "REQ-719-04",
-        "REQ-719-05",
-        "REQ-719-02"
-      ],
-      "obligation_ids": [
-        "OBL-005",
-        "OBL-006",
-        "OBL-007",
-        "OBL-011",
-        "OBL-015"
-      ],
-      "evidence_ids": [
-        "NC-719-04",
-        "NC-719-05"
-      ],
-      "scenario_ids": [
-        "five-route-issue-links",
-        "epic-702-issue-checklist"
-      ],
-      "negative_control_evidence": [
-        "negative-control-evidence-719.json"
-      ]
-    }
-  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
   "structural_invariant_closures": {
     "status": "passed",
-    "applicability_reason": "Issue derivation, reference reuse and preservation of the four phase-1 subissues are required structural invariants.",
+    "applicability_reason": "Verified clone reset to POST and single repeat mode, occurrence-vs-base financial storage and shared canonical design-document references.",
     "entries": [
       {
-        "id": "SIC-719",
-        "kind": "precedence",
-        "requirement_ids": [
-          "REQ-719-05",
-          "REQ-719-06"
-        ],
+        "id": "SIC-001",
         "obligation_ids": [
-          "OBL-011"
+          "OBL-002",
+          "OBL-009",
+          "OBL-017"
         ],
-        "plausible_wrong_implementation": "Treat historical issue acceptance as current and place broad implementation inside the inventory PR.",
-        "canonical_path": "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md",
+        "kind": "structural",
+        "requirement_ids": [
+          "REQ-742-02",
+          "REQ-742-09",
+          "REQ-742-17"
+        ],
+        "plausible_wrong_implementation": "Clone could reuse the existing transaction identifier and recurrence series.",
+        "canonical_path": "apps/web/src/dev-server/cards-page-v2-script-setup.ts:56-96",
         "competing_paths": [
-          "refactor-all-routes-in-this-PR"
+          "apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27"
         ],
         "evidence_ids": [
-          "NC-719-05",
-          "NC-719-06"
+          "CI-742-STRUCT-1"
         ],
         "scenario_ids": [
-          "phase1-versus-phase2"
+          "742-struct-1"
         ],
         "negative_control_evidence": [
-          "negative-control-evidence-719.json"
+          "apps/web/src/dev-server/cards-page-v2.test.ts:292-325"
+        ]
+      },
+      {
+        "id": "SIC-002",
+        "obligation_ids": [
+          "OBL-004",
+          "OBL-015"
+        ],
+        "kind": "forbidden-implementation",
+        "requirement_ids": [
+          "REQ-742-04",
+          "REQ-742-15"
+        ],
+        "plausible_wrong_implementation": "Installment adjustment could mutate the base purchase total instead of the selected invoice occurrence.",
+        "canonical_path": "apps/api/src/repositories/card-invoice-installment-amount.ts:115-159",
+        "competing_paths": [
+          "apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270"
+        ],
+        "evidence_ids": [
+          "CI-742-STRUCT-2"
+        ],
+        "scenario_ids": [
+          "742-struct-2"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270"
+        ]
+      },
+      {
+        "id": "SIC-003",
+        "kind": "canonical-path-parity",
+        "requirement_ids": [
+          "REQ-742-19"
+        ],
+        "obligation_ids": [
+          "OBL-019"
+        ],
+        "plausible_wrong_implementation": "A copied style palette or alternative installment editing path could bypass existing shared Golden Statement sources and APIs.",
+        "canonical_path": "docs/DESIGN_SYSTEM.md:1-50",
+        "competing_paths": [
+          "docs/GOLDEN_STATEMENT.md:1-50",
+          "docs/RECURRENCES_INSTALLMENTS_WEB.md:1-50",
+          "apps/web/src/dev-server/cards-page-v2-styles.ts"
+        ],
+        "evidence_ids": [
+          "CI-742-DOC-CONTRACT"
+        ],
+        "scenario_ids": [
+          "cartao-style-parity",
+          "recurrence-existing-endpoint"
+        ],
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/cards-page-v2.test.ts:292-325"
         ]
       }
     ],
@@ -619,43 +508,40 @@
   },
   "read_model_closures": {
     "status": "passed",
-    "applicability_reason": "The inventory is a read-model projection of the frozen route catalogue, mapping each route to its classification and issue.",
+    "applicability_reason": "Invoice occurrence and historical neighbors have separate projection/readback, with source invoice summary and skip counts tested in real PostgreSQL integration.",
     "entries": [
       {
-        "id": "RMC-719",
-        "contract_kind": "collection",
+        "id": "RMC-001",
+        "contract_kind": "history",
         "requirement_ids": [
-          "REQ-719-01",
-          "REQ-719-02"
+          "REQ-742-10",
+          "REQ-742-11"
         ],
         "required_fields": [
-          "route",
-          "archetype",
-          "priority",
-          "evidence",
-          "delta",
-          "history",
-          "decision",
-          "derived-issue",
-          "dependencies"
+          "transactionId",
+          "invoiceId",
+          "amountMinor",
+          "sequenceNumber",
+          "skippedCount"
         ],
         "producer_evidence": [
-          "apps/web/src/app-shell/routes.ts"
+          "apps/api/src/repositories/card-invoice-installment-amount.ts:54-166"
         ],
         "public_projection_evidence": [
-          "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          "apps/api/src/card-installment-amount-handler.ts:25-32"
         ],
         "consumer_evidence": [
-          "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          "apps/web/src/dev-server/cards-page-v2-script-mutations.ts:39-54"
         ],
         "visible_surface_evidence": [
-          "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+          "apps/web/src/dev-server/cards-page-v2.ts:1185-1208"
         ],
         "scenario_ids": [
-          "all-14-route-inventory"
+          "current-future-readback",
+          "historical-unchanged"
         ],
         "negative_control_evidence": [
-          "negative-control-evidence-719.json"
+          "apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310"
         ]
       }
     ],
@@ -663,30 +549,70 @@
     "unmapped_required_fields": []
   },
   "canonical_source_consistency": {
-    "status": "not-applicable",
-    "applicability_reason": "This documentation-only PR does not introduce a runtime value, persistence rule or competing financial data source.",
-    "entries": [],
+    "status": "passed",
+    "applicability_reason": "Financial occurrence totals originate from Installment and Invoice rows; no clone transactionId/recurrenceId is reused; default currency from card, not arbitrary UI input.",
+    "entries": [
+      {
+        "id": "CSC-001",
+        "semantic_field": "amountMinor",
+        "canonical_source": "Installment.amountMinor",
+        "alternative_sources": [
+          "Transaction.amountMinor",
+          "purchaseForm amountMinor"
+        ],
+        "surfaces": [
+          "PATCH installment amount",
+          "invoice summary",
+          "web installment field"
+        ],
+        "evidence_ids": [
+          "CI-742-INTEGRATION"
+        ],
+        "scenario_ids": [
+          "selected-parcel-adjustment",
+          "base-unchanged"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270"
+        ],
+        "divergent_fixture": {
+          "canonical_value": "3_500",
+          "alternative_values": [
+            "10_000",
+            "3_333"
+          ]
+        }
+      }
+    ],
     "unverified_surfaces": [],
     "missing_divergent_tests": []
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "The document explicitly separates historical Golden Screen delivery acceptance from current phase-2 inventory and excludes legacy routes.",
+    "applicability_reason": "Reviewed nine changed API, cards, recurrence, UI and Golden Statement documents against executable code and tests on immutable checkout.",
     "old_contract_terms": [
-      "#591 history accepted"
+      "Editar compra",
+      "Compra parcelada",
+      "Compra recorrente"
     ],
     "new_contract_terms": [
-      "phase-2 structural triage"
+      "Clonar compra",
+      "Editar valor da parcela",
+      "Escopo current_and_future",
+      "Data recorrente editavel"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "docs/SCREEN_ARCHETYPES.md",
+      "docs/CARDS.md",
+      "docs/API_CREDIT_CARDS_INVOICES.md",
+      "docs/API_INSTALLMENTS.md",
+      "docs/RECURRENCES_INSTALLMENTS_WEB.md",
       "docs/DESIGN_SYSTEM.md",
-      "docs/APP_SHELL.md",
-      "docs/product/INTERFACE_INVENTORY.md",
-      "docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md"
+      "docs/GOLDEN_STATEMENT.md",
+      "apps/web/src/dev-server/cards-page-v2-script-purchases.ts",
+      "apps/api/src/repositories/card-invoice-installment-amount.ts"
     ]
   },
   "scope_reduction_review": {
@@ -696,14 +622,25 @@
   "pass_c": {
     "status": "passed",
     "requirement_ids": [
-      "REQ-719-01",
-      "REQ-719-02",
-      "REQ-719-03",
-      "REQ-719-04",
-      "REQ-719-05",
-      "REQ-719-06",
-      "REQ-719-07",
-      "REQ-719-08"
+      "REQ-742-01",
+      "REQ-742-02",
+      "REQ-742-03",
+      "REQ-742-04",
+      "REQ-742-05",
+      "REQ-742-06",
+      "REQ-742-07",
+      "REQ-742-08",
+      "REQ-742-09",
+      "REQ-742-10",
+      "REQ-742-11",
+      "REQ-742-12",
+      "REQ-742-13",
+      "REQ-742-15",
+      "REQ-742-16",
+      "REQ-742-17",
+      "REQ-742-18",
+      "REQ-742-19",
+      "REQ-742-20"
     ],
     "obligation_ids": [
       "OBL-001",
@@ -718,15 +655,29 @@
       "OBL-010",
       "OBL-011",
       "OBL-012",
-      "OBL-014",
-      "OBL-015"
+      "OBL-013",
+      "OBL-015",
+      "OBL-016",
+      "OBL-017",
+      "OBL-018",
+      "OBL-019",
+      "OBL-020"
     ],
     "evidence": [
-      "Offline bundle route catalogue 14/14 matched inventory",
-      "GitHub readbacks confirmed #724-#728 and epic #702",
-      "Repository CI #39889196325 terminal success on material SHA",
-      "Delivery audit workspace #39889196684 terminal success on material SHA",
-      "Mutation controls verified in negative-control-evidence-719.json"
+      "apps/web/src/dev-server/cards-page-v2.ts:1070-1209 and apps/api/src/card-purchase-edit-contract.integration.test.ts:155-361",
+      "apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27 and apps/web/src/dev-server/cards-page-v2.test.ts:869-902",
+      "apps/web/src/dev-server/cards-page-v2.ts:1058-1097 and apps/web/src/dev-server/cards-page-v2.test.ts:630-666",
+      "apps/api/src/repositories/card-invoice-installment-amount.ts:10-168 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310",
+      "apps/api/src/current-only-recurring-edit.integration.test.ts:80-141 and apps/web/src/dev-server/cards-page-v2-script-mutations.ts:79-130",
+      "apps/web/src/dev-server/cards-page-v2.ts:1112-1208 and apps/web/src/dev-server/cards-page-v2.test.ts:480-571",
+      "docs/CARDS.md:440-450 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361",
+      "apps/web/src/dev-server/cards-page-v2-script-setup.ts:56-96 and apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27",
+      "apps/api/src/repositories/card-invoice-installment-amount.ts:55-168 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310",
+      "apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361",
+      "apps/api/src/repositories/card-invoice-installment-amount.ts:115-159 and apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270",
+      "apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361",
+      "docs/DESIGN_SYSTEM.md:1-50 and docs/GOLDEN_STATEMENT.md:1-50",
+      ".github/workflows/delivery-audit-workspace.yml:1-65 and docs/CARDS.md:440-450"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

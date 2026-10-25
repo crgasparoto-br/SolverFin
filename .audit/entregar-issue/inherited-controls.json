@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
+  "head_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
@@ -21,42 +21,30 @@
       ]
     }
   ],
-  "controls": [
+  "controls": [],
+  "retired_controls": [
     {
       "id": "FREE-TO-SPEND-AVAIL-001",
-      "source_finding_id": "A-002",
-      "status": "passed",
-      "head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
-      "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
-      "control_type": "test",
-      "attack_control_id": "FREE-TO-SPEND-PUBLIC-001",
-      "risk_family": "public-boundary",
-      "surface": "free-to-spend-contract",
-      "dimension": "unavailable-omits-synthetic-numerics",
-      "procedure": "Inspect the public API payload for commitment-only EUR and real-zero JPY.",
-      "expected": "Missing-source EUR must expose unavailable with no numeric fields; JPY remains available at zero.",
-      "observed": "Exact-head integration distinguishes the two public states.",
-      "evidence": "evidence-714-controls.txt",
-      "evidence_sha256": "498ce6fd784cfad527af0f9be830adb316b49841c13e7d63f31ae1b9bf06493e"
+      "disposition": "not-applicable",
+      "reason": "Prior check concerns free-to-spend availability for EUR/JPY; issue 742 is exclusively card-purchase editing, and no free-to-spend source changed.",
+      "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+      "evidence": ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
+      "evidence_sha256": "386e79b9cd11fd661a090917f64c4409053cc8c71c81bd96145cd26e3a351347",
+      "procedure": "Compare git diff between immutable base and material SHA for free-to-spend/financial-summary sources; verify no matching changed files and that issue 742 scope is card purchase editing only.",
+      "expected": "A changed implementation file in the prior free-to-spend contract or Statement footer surface would reject not-applicable; the immutable diff must be checked for both surfaces.",
+      "observed": "Scope delta contains no free-to-spend/financial-summary module; the prior control is outside this delivery."
     },
     {
       "id": "AUD-714-03-FOOTER-CLIP",
-      "source_finding_id": "F-714-03",
-      "status": "passed",
-      "head_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
-      "subject_sha": "07fb199284a7f0bab38148f33d85331aa18403d0",
-      "control_type": "test",
-      "attack_control_id": "NEG-714-05-FOOTER",
-      "risk_family": "visual-validation",
-      "surface": "statement-mobile",
-      "dimension": "footer-horizontal-clipping",
-      "procedure": "At 320x740, 390x844 and desktop, shift Cancel -120px; require assertion failure, restore and assert both buttons within content and on one row.",
-      "expected": "All nine browser Chrome mutations rejected; both button bounds and text fully contained after restoration.",
-      "observed": "Evidence in Statement visual validation GitHub Actions run #38731099631, material 07fb199284a7f0bab38148f33d85331aa18403d0; re-run the same negative controls after extracted assertions.",
-      "evidence": "evidence-714-controls.txt",
-      "evidence_sha256": "823cfc0c0174f9cd7d0cf2e431b9180bd2e3a87bc3702c4b153010a5035158d2"
+      "disposition": "not-applicable",
+      "reason": "Prior check concerns Statement mobile footer clipping, not the cards purchase dialog; no statement page or /lancamentos implementation files changed.",
+      "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+      "evidence": ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
+      "evidence_sha256": "386e79b9cd11fd661a090917f64c4409053cc8c71c81bd96145cd26e3a351347",
+      "procedure": "Compare git diff between base and material HEAD for Statement rendering and footer components, and compare issue 742 route /cartoes against original statement route.",
+      "expected": "A changed implementation file in the prior free-to-spend contract or Statement footer surface would reject not-applicable; the immutable diff must be checked for both surfaces.",
+      "observed": "Changed-file scope is cards invoice UI/API only; Statement footer clipping check is not applicable to issue 742."
     }
   ],
-  "retired_controls": [],
   "unresolved_controls": []
 }

@@ -1,0 +1,10 @@
+MATERIAL_HEAD=33bfa3f2eb9f7b758ed1c019a541b1073c587e01
+BASE_SHA=c1f1fae1498ed24bf15771c16b20ee1c94b8ce77
+ISSUE=742
+PR=743
+METHOD=Compare the immutable work item scope diff against prior control surfaces; inspect issue 742 requirements and target files; this is an explicit not-applicable finding only for previous controls, not a regression pass.
+PREVIOUS_CONTROL_FREE_TO_SPEND=public-boundary:free-to-spend-contract, unrelated to card modal or invoice occurrence editing
+PREVIOUS_CONTROL_FOOTER=visual-validation:statement-mobile, unrelated to card purchase modal and its visual validation
+CHANGED_PATHS_RELEVANT_TO_PRIOR_SURFACES=[]
+CURRENT_SCOPE=card purchase clone, finite installment amount and recurring edit in /cartoes and its APIs
+NOTES=This does not claim to have re-executed prior checks. Preserve their source_audits and retirement history for future unrelated deliveries.

@@ -1,215 +1,405 @@
 {
-  "schema_version": 1,
-  "subject_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
-  "base_sha": "60d42d2b0db9a62f51d726aa5d659ff5a2483fa1",
+  "schema_version": 2,
+  "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+  "base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
   "creations": [
     {
-      "path": "scripts/statement-visual/report-page-viewport.mjs",
+      "path": "apps/api/src/card-installment-amount-handler.ts",
       "kind": "file",
-      "name": "report-page-viewport",
+      "name": "card-installment-amount-handler",
       "search": {
         "queries": [
-          "git diff --name-status develop..HEAD",
-          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
         ],
-        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
+        "scope": "Compare existing code in apps/api/src to avoid duplicating card domain and DOM handlers.",
         "candidates": [
           {
-            "path": "scripts/statement-visual/reports-category-evolution.mjs",
-            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
+            "path": "apps/api/src/credit-card-accounts-router.ts",
+            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/card-installment-amount-handler.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
           }
         ]
       },
       "decision": "create",
-      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
     },
     {
-      "path": "scripts/statement-visual/reports-718-behavior-evidence.mjs",
+      "path": "apps/api/src/card-purchase-extra-handlers.ts",
       "kind": "file",
-      "name": "reports-718-behavior-evidence",
+      "name": "card-purchase-extra-handlers",
       "search": {
         "queries": [
-          "git diff --name-status develop..HEAD",
-          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
         ],
-        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
+        "scope": "Compare existing code in apps/api/src to avoid duplicating card domain and DOM handlers.",
         "candidates": [
           {
-            "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
-            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
+            "path": "apps/api/src/credit-card-accounts-router.ts",
+            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/card-purchase-extra-handlers.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
           }
         ]
       },
       "decision": "create",
-      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
     },
     {
-      "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
+      "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
       "kind": "file",
-      "name": "reports-718-extra-browser",
+      "name": "card-invoice-installment-amount",
       "search": {
         "queries": [
-          "git diff --name-status develop..HEAD",
-          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
         ],
-        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
+        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
         "candidates": [
           {
-            "path": "scripts/statement-visual/reports-category-evolution.mjs",
-            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
+            "path": "apps/api/src/credit-card-accounts-router.ts",
+            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-installment-amount.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
           }
         ]
       },
       "decision": "create",
-      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
     },
     {
-      "path": "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
+      "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
       "kind": "file",
-      "name": "reports-718-multicurrency-browser",
+      "name": "card-invoice-purchase-delete",
       "search": {
         "queries": [
-          "git diff --name-status develop..HEAD",
-          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
         ],
-        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
+        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
         "candidates": [
           {
-            "path": "scripts/statement-visual/reports-category-evolution.mjs",
-            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
+            "path": "apps/api/src/credit-card-accounts-router.ts",
+            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-purchase-delete.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
           }
         ]
       },
       "decision": "create",
-      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
     },
     {
-      "path": "scripts/statement-visual/reports-718-visual-acceptance.mjs",
+      "path": "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
       "kind": "file",
-      "name": "reports-718-visual-acceptance",
+      "name": "card-invoice-purchase-reverse",
       "search": {
         "queries": [
-          "git diff --name-status develop..HEAD",
-          "rg -n \"report|viewport|currency|cash-flow|visual\" scripts/statement-visual"
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
         ],
-        "scope": "Existing visual Chrome validators for financial reports in SolverFin",
+        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
         "candidates": [
           {
-            "path": "scripts/statement-visual/reports-category-evolution.mjs",
-            "reason_not_reused": "Existing test harness remains consumer; new focused module isolates route-specific assertions and reduces growth of legacy runner."
+            "path": "apps/api/src/credit-card-accounts-router.ts",
+            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-purchase-reverse.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
           }
         ]
       },
       "decision": "create",
-      "justification": "Cohesive test/viewport helper for exact-SHA reports validation; existing runner imports this module; no duplicate production financial domain."
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
     },
     {
-      "path": "apps/web/src/dev-server/reports-evolution-routing-helpers.ts",
+      "path": "apps/api/src/repositories/card-invoice-reversal-edit.ts",
       "kind": "file",
-      "name": "report-evolution-routing-helpers",
+      "name": "card-invoice-reversal-edit",
       "search": {
         "queries": [
-          "rg -n \"report|installment|format|currency\" apps/web/src/dev-server",
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0"
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
         ],
-        "scope": "Report SSR and formatting modules, shared context in SolverFin",
+        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/reports-route-page.ts",
-            "reason_not_reused": "Separates existing route helpers from oversized entrypoint; avoids duplication and overgrowth."
+            "path": "apps/api/src/credit-card-accounts-router.ts",
+            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-reversal-edit.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
           }
         ]
       },
       "decision": "create",
-      "justification": "Separates existing route helpers from oversized entrypoint; avoids duplication and overgrowth."
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
     },
     {
-      "path": "apps/web/src/dev-server/reports-installments-format.ts",
+      "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.ts",
       "kind": "file",
-      "name": "reports-installments-format",
+      "name": "cards-page-v2-script-mutations",
       "search": {
         "queries": [
-          "rg -n \"report|installment|format|currency\" apps/web/src/dev-server",
-          "git diff --name-status 60d42d2b0db9a62f51d726aa5d659ff5a2483fa1..2ba22d2fad98f55fe88165c9f6dce096deaec0c0"
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
         ],
-        "scope": "Report SSR and formatting modules, shared context in SolverFin",
+        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/reports-installments-view.ts",
-            "reason_not_reused": "Extracts existing installment formatters rather than duplicating logic in report view."
+            "path": "apps/web/src/dev-server/cards-page-v2.ts",
+            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-mutations.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
           }
         ]
       },
       "decision": "create",
-      "justification": "Extracts existing installment formatters rather than duplicating logic in report view."
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2-script-other.ts",
+      "kind": "file",
+      "name": "cards-page-v2-script-other",
+      "search": {
+        "queries": [
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
+        ],
+        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/cards-page-v2.ts",
+            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-other.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2-script-purchases.ts",
+      "kind": "file",
+      "name": "cards-page-v2-script-purchases",
+      "search": {
+        "queries": [
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
+        ],
+        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/cards-page-v2.ts",
+            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-purchases.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2-script-setup.ts",
+      "kind": "file",
+      "name": "cards-page-v2-script-setup",
+      "search": {
+        "queries": [
+          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
+          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01"
+        ],
+        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/cards-page-v2.ts",
+            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-setup.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
     }
   ],
   "references": [
     {
-      "symbol": "reportPageViewportExpression",
+      "symbol": "adjustInvoiceInstallmentAmountForContext",
       "kind": "local",
-      "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
+      "used_in": "apps/api/src/card-installment-amount-handler.ts",
       "defined_at": {
-        "path": "scripts/statement-visual/report-page-viewport.mjs",
-        "line": 7
+        "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
+        "line": 11
       },
       "verified_by": {
-        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "collectReport718Evidence",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/issue-606-behavior-claims.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/reports-718-behavior-evidence.mjs",
-        "line": 4
-      },
-      "verified_by": {
-        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateMultiCurrency",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
-        "line": 9
-      },
-      "verified_by": {
-        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateCashFlow",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
-        "line": 10
-      },
-      "verified_by": {
-        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "validateMobileStates",
-      "kind": "local",
-      "used_in": "scripts/statement-visual/reports-category-evolution.mjs",
-      "defined_at": {
-        "path": "scripts/statement-visual/reports-718-extra-browser.mjs",
-        "line": 222
-      },
-      "verified_by": {
-        "command": "node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs",
+        "command": "git grep -n adjustInvoiceInstallmentAmountForContext 33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
         "exit_code": 0
       }
     }
   ],
-  "replacements": []
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Contract regression for card purchase #742 in card-purchase-edit-contract.integration.test",
+      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "search": {
+        "queries": [
+          "rg -n \"installment|clon|recurr|purchase\" apps/api/src/card-purchase-edit-contract.integration.test.ts",
+          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01 -- apps/api/src/card-purchase-edit-contract.integration.test.ts"
+        ],
+        "scope": "Compare canonical existing test suite in apps/api/src/card-purchase-edit-contract.integration.test.ts before extending",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+            "case": "Source path and modified assertions in current file",
+            "oracle": "Explicit assertions in compiled test run",
+            "comparison": "Existing tests extended rather than replaced"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+        "reached_tests": [
+          "apps/api/src/card-purchase-edit-contract.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-742-card-purchase-edit-contract-integration-test-execution.txt",
+        "evidence_sha256": "f6c9f42a6e96e4c8584e7e58980fdd9d21866ddaec3413d2f86846d78c072e87"
+      }
+    },
+    {
+      "path": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Contract regression for card purchase #742 in current-only-recurring-edit.integration.test",
+      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "search": {
+        "queries": [
+          "rg -n \"installment|clon|recurr|purchase\" apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01 -- apps/api/src/current-only-recurring-edit.integration.test.ts"
+        ],
+        "scope": "Compare canonical existing test suite in apps/api/src/current-only-recurring-edit.integration.test.ts before extending",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+            "case": "Source path and modified assertions in current file",
+            "oracle": "Explicit assertions in compiled test run",
+            "comparison": "Existing tests extended rather than replaced"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+        "reached_tests": [
+          "apps/api/src/current-only-recurring-edit.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-742-current-only-recurring-edit-integration-test-execution.txt",
+        "evidence_sha256": "26b2df67a3440724adc7b1f4bf5b396ea99a02f0e08e9adb92025c60faef442a"
+      }
+    },
+    {
+      "path": "apps/web/src/design-system/canonical-token-source.test.ts",
+      "operation": "modified",
+      "scenario": "Contract regression for card purchase #742 in canonical-token-source.test",
+      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "search": {
+        "queries": [
+          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/design-system/canonical-token-source.test.ts",
+          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01 -- apps/web/src/design-system/canonical-token-source.test.ts"
+        ],
+        "scope": "Compare canonical existing test suite in apps/web/src/design-system/canonical-token-source.test.ts before extending",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/design-system/canonical-token-source.test.ts",
+            "case": "Source path and modified assertions in current file",
+            "oracle": "Explicit assertions in compiled test run",
+            "comparison": "Existing tests extended rather than replaced"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+        "reached_tests": [
+          "apps/web/src/design-system/canonical-token-source.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-742-canonical-token-source-test-execution.txt",
+        "evidence_sha256": "bdc35633793dc43a8a257a5750017f8f42ba2fab867b7ff756dba69a2e553214"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
+      "operation": "added",
+      "scenario": "Contract regression for card purchase #742 in cards-page-v2-script-mutations.test",
+      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "search": {
+        "queries": [
+          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
+          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01 -- apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts"
+        ],
+        "scope": "Compare canonical existing test suite in apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts before extending",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
+            "case": "Source path and modified assertions in current file",
+            "oracle": "Explicit assertions in compiled test run",
+            "comparison": "Existing tests extended rather than replaced"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+        "reached_tests": [
+          "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-742-cards-page-v2-script-mutations-test-execution.txt",
+        "evidence_sha256": "2e400b992ed9005c1a6158ce5c51a4baba9cefb227995273e1d6ca99224046fa"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2.test.ts",
+      "operation": "modified",
+      "scenario": "Contract regression for card purchase #742 in cards-page-v2.test",
+      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "search": {
+        "queries": [
+          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/dev-server/cards-page-v2.test.ts",
+          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..33bfa3f2eb9f7b758ed1c019a541b1073c587e01 -- apps/web/src/dev-server/cards-page-v2.test.ts"
+        ],
+        "scope": "Compare canonical existing test suite in apps/web/src/dev-server/cards-page-v2.test.ts before extending",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/cards-page-v2.test.ts",
+            "case": "Source path and modified assertions in current file",
+            "oracle": "Explicit assertions in compiled test run",
+            "comparison": "Existing tests extended rather than replaced"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+        "reached_tests": [
+          "apps/web/src/dev-server/cards-page-v2.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-742-cards-page-v2-test-execution.txt",
+        "evidence_sha256": "51e04a92f11b15b6057829d40d79994a67d46ef7f4fa4624c9455d62dba7cd83"
+      }
+    }
+  ]
 }

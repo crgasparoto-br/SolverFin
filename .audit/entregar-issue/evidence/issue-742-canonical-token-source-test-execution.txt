@@ -1,0 +1,6 @@
+HEAD: 33bfa3f2eb9f7b758ed1c019a541b1073c587e01
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/design-system/canonical-token-source.test.ts
+SOURCE: https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010
+OBSERVATION: The exact-SHA GitHub CRITICAL validation completed successfully and reached its compiled test files. This metadata is a curated verifier record, not the raw runner log.
