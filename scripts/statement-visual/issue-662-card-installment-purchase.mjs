@@ -312,16 +312,8 @@ async function validateInstallmentScopeKeyboard(fixture, label) {
     );
     check(state.open, `${label}: Enter closed the installment scope dialog`, state);
     check(state.requests === 0, `${label}: Enter sent a financial request`, state);
-    check(
-      state.instruction.includes("Escolha Somente esta"),
-      `${label}: scope instruction was not announced`,
-      state,
-    );
-    check(
-      state.scopeFocused === "current",
-      `${label}: keyboard focus did not move to a scope action`,
-      state,
-    );
+    check(state.instruction.includes("Escolha Somente esta"), `${label}: scope hint missing`, state);
+    check(state.scopeFocused === "current", `${label}: scope focus missing`, state);
     scenarios.push({
       route: invoiceRoute(fixture),
       viewport: label,
