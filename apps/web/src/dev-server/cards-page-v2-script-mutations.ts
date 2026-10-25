@@ -34,7 +34,8 @@ export function cardsPageMutationScript(): string {
         try {
           // A previous attempt may have saved the amount but failed to save
           // the metadata. Retry only the failed step, not the financial write.
-          if (installmentAmountForm.dataset.savedAmountMinor !== String(amountMinor)) {
+          if (installmentAmountForm.dataset.savedAmountMinor !== String(amountMinor) ||
+              installmentAmountForm.dataset.savedAmountScope !== button.dataset.installmentScope) {
             const response = await request(
               "/api/invoices/" + encodeURIComponent(invoiceId) + "/installments/" + encodeURIComponent(installmentId) + "/amount",
               "PATCH",
@@ -47,6 +48,7 @@ export function cardsPageMutationScript(): string {
               return;
             }
             installmentAmountForm.dataset.savedAmountMinor = String(amountMinor);
+            installmentAmountForm.dataset.savedAmountScope = button.dataset.installmentScope;
             status.textContent = "Valor atualizado. " + (result.updatedCount || 0) + " parcela(s) alterada(s)." +
               (result.skippedCount ? " " + result.skippedCount + " parcela(s) bloqueada(s) preservada(s)." : "");
             status.className = "form-status success";
@@ -205,6 +207,7 @@ export function cardsPageMutationScript(): string {
             installmentAmountForm.dataset.installmentId = purchaseForm.dataset.installmentId;
             installmentAmountForm.dataset.pendingPurchasePath = path;
             installmentAmountForm.dataset.savedAmountMinor = "";
+            installmentAmountForm.dataset.savedAmountScope = "";
             installmentAmountForm.dataset.pendingPurchasePayload = JSON.stringify(payload);
             installmentAmountForm.querySelector('[name="amountMinor"]').value = minorToMoney(nextAmount);
             installmentDialog.querySelector("[data-installment-purchase-name]").textContent = payload.description;
