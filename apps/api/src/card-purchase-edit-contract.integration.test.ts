@@ -337,9 +337,7 @@ async function assertInstallmentPurchaseEdit(
     await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id })
   )[0]?.amountMinor;
   const originalSecondTotal = await readInvoiceTotal(invoices[1]!.id);
-  await query(`update "Installment" set "currency" = 'USD' where "id" = $1`, [
-    occurrenceIds[1],
-  ]);
+  await query(`update "Installment" set "currency" = 'USD' where "id" = $1`, [occurrenceIds[1]]);
   try {
     await assert.rejects(
       () =>
@@ -356,15 +354,12 @@ async function assertInstallmentPurchaseEdit(
         error.code === "CARD_INSTALLMENT_AMOUNT_LOCKED",
     );
     assert.equal(
-      (await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id }))[0]
-        ?.amountMinor,
+      (await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id }))[0]?.amountMinor,
       originalSecondAmount,
     );
     assert.equal(await readInvoiceTotal(invoices[1]!.id), originalSecondTotal);
   } finally {
-    await query(`update "Installment" set "currency" = 'BRL' where "id" = $1`, [
-      occurrenceIds[1],
-    ]);
+    await query(`update "Installment" set "currency" = 'BRL' where "id" = $1`, [occurrenceIds[1]]);
   }
 }
 
