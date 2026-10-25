@@ -208,7 +208,11 @@ async function assertInstallmentPurchaseEdit(
     3_500,
     "current",
   );
-  assert.equal(unchangedAdjustment.updatedCount, 0, "No-op must not count as a changed installment");
+  assert.equal(
+    unchangedAdjustment.updatedCount,
+    0,
+    "No-op must not count as a changed installment",
+  );
   assert.equal(unchangedAdjustment.skippedCount, 0);
   assert.equal(unchangedAdjustment.invoice.totalExpensesMinor, 3_500);
   assert.deepEqual(
