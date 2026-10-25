@@ -155,8 +155,8 @@ export async function adjustInvoiceInstallmentAmountForContext(
           entityId: row.id,
           redactedChanges: { amountMinor: "changed" },
         });
+        updatedCount += 1;
       }
-      updatedCount += 1;
     }
   });
   return {
