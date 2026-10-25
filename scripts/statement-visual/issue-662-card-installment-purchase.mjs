@@ -24,8 +24,10 @@ try {
 
   await validateCreateDefault(fixture, "desktop", 1366, 768);
   await validateInstallmentEdit(fixture, "desktop", 1366, 768);
+  await validateInstallmentScopeKeyboard(fixture, "desktop");
   await validateCreateDefault(fixture, "mobile", 390, 844);
   await validateInstallmentEdit(fixture, "mobile", 390, 844);
+  await validateInstallmentScopeKeyboard(fixture, "mobile");
   await validateAssistivePositionGuard(fixture);
 } finally {
   await browser.close(outputDir);
@@ -256,6 +258,80 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     `document.querySelector('dialog[data-modal="purchase"] [data-close-modal]')?.click()`,
   );
   await sleep(80);
+}
+
+async function validateInstallmentScopeKeyboard(fixture, label) {
+  await openInvoice(fixture);
+  await evaluate(
+    browser.cdp,
+    `document.querySelector('[data-edit-installment-amount="${fixture.transactionId}"]')?.click()`,
+  );
+  await waitFor('dialog[data-modal="installment-value"][open]');
+  await evaluate(
+    browser.cdp,
+    `(() => {
+      const input = document.querySelector('dialog[data-modal="installment-value"] [name="amountMinor"]');
+      input?.focus();
+      window.__installmentKeyboardFetch = window.fetch;
+      window.__installmentKeyboardRequests = 0;
+      window.fetch = (...args) => {
+        window.__installmentKeyboardRequests += 1;
+        throw new Error("Enter must not send a financial request");
+      };
+    })()`,
+  );
+  try {
+    await browser.cdp.send("Input.dispatchKeyEvent", {
+      type: "keyDown",
+      key: "Enter",
+      code: "Enter",
+      text: "\r",
+      unmodifiedText: "\r",
+      windowsVirtualKeyCode: 13,
+      nativeVirtualKeyCode: 13,
+    });
+    await browser.cdp.send("Input.dispatchKeyEvent", {
+      type: "keyUp",
+      key: "Enter",
+      code: "Enter",
+      windowsVirtualKeyCode: 13,
+      nativeVirtualKeyCode: 13,
+    });
+    await sleep(100);
+    const state = await evaluate(
+      browser.cdp,
+      `(() => {
+        const dialog = document.querySelector('dialog[data-modal="installment-value"]');
+        return {
+          open: Boolean(dialog?.open),
+          requests: window.__installmentKeyboardRequests,
+          instruction: dialog?.querySelector('[data-installment-amount-status]')?.textContent || "",
+          scopeFocused: document.activeElement?.getAttribute("data-installment-scope") || "",
+        };
+      })()`,
+    );
+    check(state.open, `${label}: Enter closed the installment scope dialog`, state);
+    check(state.requests === 0, `${label}: Enter sent a financial request`, state);
+    check(state.instruction.includes("Escolha Somente esta"), `${label}: scope instruction was not announced`, state);
+    check(state.scopeFocused === "current", `${label}: keyboard focus did not move to a scope action`, state);
+    scenarios.push({
+      route: invoiceRoute(fixture),
+      viewport: label,
+      state: "installment-keyboard-scope-required",
+      interaction: "Enter-in-amount-field",
+      observed: state,
+    });
+  } finally {
+    await evaluate(
+      browser.cdp,
+      `(() => {
+        window.fetch = window.__installmentKeyboardFetch;
+        delete window.__installmentKeyboardFetch;
+        delete window.__installmentKeyboardRequests;
+        document.querySelector('dialog[data-modal="installment-value"] [data-close-modal]')?.click();
+      })()`,
+    );
+  }
 }
 
 async function openInvoice(fixture) {
