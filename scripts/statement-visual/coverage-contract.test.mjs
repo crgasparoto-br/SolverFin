@@ -136,7 +136,8 @@ test("canonical structural real-flow mappings cover only critical components", (
 
 test("a foundation fixture cannot substitute a pilot route alternate state", () => {
   const scenarios = getVisualScenarioModules(visualScenarioModules).filter(
-    (scenario) => scenario.id !== "dashboard-empty-state" && !scenario.id.startsWith("dashboard-724-"),
+    (scenario) =>
+      scenario.id !== "dashboard-empty-state" && !scenario.id.startsWith("dashboard-724-"),
   );
   const dashboardPilot = pilotRoutes.find((pilot) => pilot.route === "/dashboard");
   assert.ok(dashboardPilot);
