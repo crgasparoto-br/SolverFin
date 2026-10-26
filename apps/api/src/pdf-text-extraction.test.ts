@@ -1,8 +1,14 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { describe, it } from "node:test";
 import { StructuredImportError } from "@solverfin/domain";
 
-import { classifyPopplerFailure, parsePopplerWordLayout } from "./pdf-text-extraction.js";
+import {
+  assertPdfCopyPermitted,
+  classifyPopplerFailure,
+  extractPdfWordLayout,
+  parsePopplerWordLayout,
+} from "./pdf-text-extraction.js";
 
 describe("Poppler text-position adapter", () => {
   it("extracts page boundaries, coordinates and HTML-escaped words", () => {
@@ -50,11 +56,76 @@ describe("Poppler text-position adapter", () => {
     );
   });
 
+  it("rejects copy-restricted PDFs, including documents with an empty user password", () => {
+    for (const encrypted of [
+      "Encrypted: yes (print:yes copy:no change:yes addNotes:yes algorithm:RC4)",
+      "Encrypted: yes",
+      "Title: Example PDF",
+    ]) {
+      assert.throws(
+        () => assertPdfCopyPermitted(encrypted),
+        (error: unknown) =>
+          error instanceof StructuredImportError &&
+          (error.code === "IMPORT_PDF_PROTECTED" || error.code === "IMPORT_PDF_INVALID"),
+      );
+    }
+    assert.doesNotThrow(() => assertPdfCopyPermitted("Encrypted: no"));
+    assert.doesNotThrow(() =>
+      assertPdfCopyPermitted(
+        "Encrypted: yes (print:no copy:yes change:no addNotes:no algorithm:RC4)",
+      ),
+    );
+  });
+
+  it("checks PDF copy permission before ever running pdftotext", () => {
+    const commands: string[] = [];
+    const mock = ((command: string) => {
+      commands.push(command);
+      return {
+        status: 0,
+        stderr: "",
+        stdout:
+          "Title: Synthetic\\nEncrypted: yes (print:yes copy:no change:no addNotes:no algorithm:RC4)\\n",
+      };
+    }) as unknown as typeof spawnSync;
+    assert.throws(
+      () => extractPdfWordLayout(Buffer.from("%PDF-1.4"), mock),
+      (error: unknown) =>
+        error instanceof StructuredImportError && error.code === "IMPORT_PDF_PROTECTED",
+    );
+    assert.deepEqual(commands, ["pdfinfo"]);
+  });
+
+  it("allows the Poppler text extraction only after permission is explicitly verified", () => {
+    const commands: string[] = [];
+    const mock = ((command: string) => {
+      commands.push(command);
+      return {
+        status: 0,
+        stderr: "",
+        stdout:
+          command === "pdfinfo"
+            ? "Encrypted: no\\n"
+            : '<html><body><doc><page><word xMin="10" yMin="20">TEST</word></page></doc></body></html>',
+      };
+    }) as unknown as typeof spawnSync;
+    const pages = extractPdfWordLayout(Buffer.from("%PDF-1.4"), mock);
+    assert.equal(pages.length, 1);
+    assert.equal(pages[0]?.words[0]?.text, "TEST");
+    assert.deepEqual(commands, ["pdfinfo", "pdftotext"]);
+  });
+
   it("distinguishes missing extractor, a password-protected PDF and invalid output", () => {
     const absent = Object.assign(new Error("spawn pdftotext ENOENT"), { code: "ENOENT" });
     const missing = classifyPopplerFailure({ status: null, stderr: "", error: absent });
     assert.equal(missing?.code, "IMPORT_PDF_EXTRACTOR_UNAVAILABLE");
     assert.equal(missing?.statusCode, 503);
+    const missingPdfInfo = classifyPopplerFailure(
+      { status: null, stderr: "", error: absent },
+      "pdfinfo",
+    );
+    assert.equal(missingPdfInfo?.code, "IMPORT_PDF_EXTRACTOR_UNAVAILABLE");
+    assert.match(missingPdfInfo?.message ?? "", /pdfinfo/);
     assert.equal(classifyPopplerFailure({ status: 3, stderr: "" })?.code, "IMPORT_PDF_PROTECTED");
     assert.equal(
       classifyPopplerFailure({ status: 1, stderr: "Incorrect password" })?.code,

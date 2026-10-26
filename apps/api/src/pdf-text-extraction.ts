@@ -67,15 +67,18 @@ export function parsePopplerWordLayout(xml: string): PdfExtractedPage[] {
   return pages;
 }
 
-export function classifyPopplerFailure(result: {
-  status: number | null;
-  stderr: string | Buffer;
-  error?: Error;
-}): StructuredImportError | undefined {
+export function classifyPopplerFailure(
+  result: {
+    status: number | null;
+    stderr: string | Buffer;
+    error?: Error;
+  },
+  executable: "pdftotext" | "pdfinfo" = "pdftotext",
+): StructuredImportError | undefined {
   if (result.error && "code" in result.error && result.error.code === "ENOENT") {
     return new StructuredImportError(
       "IMPORT_PDF_EXTRACTOR_UNAVAILABLE",
-      "O servidor precisa do utilitario pdftotext (Poppler) para ler extratos PDF.",
+      `O servidor precisa do utilitario ${executable} (Poppler) para ler extratos PDF.`,
       503,
     );
   }
@@ -98,11 +101,50 @@ export function classifyPopplerFailure(result: {
 }
 
 /**
- * Extracts a real text layer, not OCR. Only the default empty user password is
- * attempted; password-protected documents remain blocked. No raw PDF is saved.
+ * Rejects encrypted PDFs unless Poppler explicitly reports copy permission.
+ * pdftotext alone may succeed on a copy:no PDF when the user password is empty.
  */
-export function extractPdfWordLayout(bytes: Buffer): PdfExtractedPage[] {
-  const result = spawnSync(
+export function assertPdfCopyPermitted(pdfInfo: string): void {
+  const encryption = /^Encrypted:\s*(yes|no)\b([^\r\n]*)$/im.exec(pdfInfo);
+  if (!encryption) {
+    throw new StructuredImportError(
+      "IMPORT_PDF_INVALID",
+      "Nao foi possivel verificar as permissoes do PDF.",
+      422,
+    );
+  }
+  if (encryption[1]!.toLowerCase() === "yes" && !/\bcopy:\s*yes\b/i.test(encryption[2] ?? "")) {
+    throw new StructuredImportError(
+      "IMPORT_PDF_PROTECTED",
+      "Este PDF nao permite extracao de texto.",
+      422,
+    );
+  }
+}
+
+/**
+ * Extracts a real text layer, not OCR. Only the default empty user password is
+ * attempted; password-protected and copy-restricted documents remain blocked.
+ * No raw PDF is saved.
+ */
+export function extractPdfWordLayout(
+  bytes: Buffer,
+  run: typeof spawnSync = spawnSync,
+): PdfExtractedPage[] {
+  // pdfinfo and pdftotext ship together with Poppler. Reject denied or unknown
+  // permissions before attempting text extraction, including an empty user password.
+  const info = run("pdfinfo", ["-upw", "", "-"], {
+    input: bytes,
+    encoding: "utf8",
+    timeout: EXTRACTOR_TIMEOUT_MS,
+    maxBuffer: MAX_EXTRACTED_BYTES,
+    windowsHide: true,
+  });
+  const infoFailure = classifyPopplerFailure(info, "pdfinfo");
+  if (infoFailure) throw infoFailure;
+  assertPdfCopyPermitted(String(info.stdout ?? ""));
+
+  const result = run(
     "pdftotext",
     // Do not use -q: Poppler can exit with code 1 for a password and only
     // explain that failure on stderr. The output remains private.
