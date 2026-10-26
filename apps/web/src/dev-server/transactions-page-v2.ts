@@ -1262,6 +1262,9 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       if (typeof modal.requestClose === "function") modal.requestClose();
       else modal.close();
     });
+    modal.addEventListener("close", () => {
+      if (form.dataset.savedDuringSession === "true") window.location.reload();
+    });
     const statusButtons = Array.from(form.querySelectorAll("[data-status-option]"));
     const statusLabel = form.querySelector("[data-status-label]");
     const setStatus = (value) => { form.status.value = value; statusButtons.forEach((button) => { const active = button.dataset.statusOption === value; button.classList.toggle("active", active); button.setAttribute("aria-checked", String(active)); if (active && statusLabel) statusLabel.textContent = button.dataset.statusLabelText; }); };
@@ -1331,7 +1334,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     const payload = () => { const data = new FormData(form); return basePayload(String(data.get("plannedOn") || ""), String(data.get("effectiveOn") || ""), moneyToMinor(data.get("amountMinor")), String(data.get("description") || "")); };
     const newIdempotencyKey = () => window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
 
-    document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace); form.reset(); document.querySelector("[data-modal-title]").textContent = "Novo lançamento"; const today = currentLocalDate(); form.occurredOn.value = today; form.plannedOn.value = today; form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; const submitButton = form.querySelector('.save-row [type="submit"]'); if (submitButton) submitButton.disabled = !accountCurrencies.get(sourceAccountId()); setStatus("posted"); syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }));
+    document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace); form.reset(); const continueButton = form.querySelector("[data-statement-save-continue]"); if (continueButton) continueButton.hidden = false; document.querySelector("[data-modal-title]").textContent = "Novo lançamento"; const today = currentLocalDate(); form.occurredOn.value = today; form.plannedOn.value = today; form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; form.querySelectorAll('.statement-save-actions button[type="submit"]').forEach((submitButton) => { submitButton.disabled = !accountCurrencies.get(sourceAccountId()); }); setStatus("posted"); syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }));
     document.querySelectorAll("[data-transaction]").forEach((node) => {
       const transaction = JSON.parse(node.textContent);
       if (transaction.accountRemuneration) remunerationIds.add(transaction.id);
@@ -1340,8 +1343,9 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       form.accountId.value = rowSourceId;
       const accountDisplay = form.querySelector(".statement-entry-account input");
       if (accountDisplay) accountDisplay.value = accountLabels.get(rowSourceId) || "Conta indisponível";
-      const submitButton = form.querySelector('.save-row [type="submit"]');
-      if (submitButton) submitButton.disabled = false; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) { if (clone) window.SolverFinAttachments?.resetPending(attachmentWorkspace); else attachmentWorkspace.dataset.entityId = transaction.id; } document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
+      form.querySelectorAll('.statement-save-actions button[type="submit"]').forEach((submitButton) => { submitButton.disabled = false; });
+      const continueButton = form.querySelector("[data-statement-save-continue]");
+      if (continueButton) continueButton.hidden = !clone; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) { if (clone) window.SolverFinAttachments?.resetPending(attachmentWorkspace); else attachmentWorkspace.dataset.entityId = transaction.id; } document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
       hydrate('[data-edit="', false); hydrate('[data-clone="', true);
     });
     const positionActions = (details) => {
@@ -1404,10 +1408,13 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     form.addEventListener("submit", async (event) => {
       event.preventDefault(); if (form.dataset.submitting === "true") return;
       if (!form.checkValidity()) { form.reportValidity(); return; }
-      const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]');
+      const mode = form.repeatMode.value; const method = form.dataset.method || "POST";
+      const saveAndContinue = method === "POST" && event.submitter?.hasAttribute("data-statement-save-continue") === true;
+      const submitButtons = Array.from(form.querySelectorAll('.statement-save-actions button[type="submit"]'));
+      const previouslyDisabled = submitButtons.map((button) => button.disabled);
       const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); const queuedFile = attachmentWorkspace?.querySelector('[data-attachment-form] [name="file"]')?.files?.[0];
       if (queuedFile && method === "POST" && mode !== "single") { statusNode.className = "form-status error full"; statusNode.textContent = "Para anexar arquivos, salve um lançamento único. Em parcelas ou recorrências, anexe na edição de uma ocorrência."; return; }
-      form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
+      form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); submitButtons.forEach((button) => { button.disabled = true; }); statusNode.textContent = "Salvando...";
       let shouldReload = false;
       try {
         let response;
@@ -1432,9 +1439,42 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
             return;
           }
         }
-        if (response.ok) { shouldReload = true; setTimeout(() => location.reload(), 350); }
+        if (response.ok) {
+          if (saveAndContinue) {
+            form.dataset.savedDuringSession = "true";
+            form.dataset.savedCount = String(Number(form.dataset.savedCount || 0) + 1);
+            const accountId = form.accountId.value;
+            const currentKind = form.kind.value;
+            const currentStatus = form.status.value;
+            const occurredOn = form.occurredOn.value;
+            const plannedOn = form.plannedOn.value;
+            if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace);
+            form.reset();
+            form.dataset.method = "POST";
+            form.dataset.path = "/api/transactions";
+            form.accountId.value = accountId;
+            form.kind.value = currentKind;
+            form.occurredOn.value = occurredOn;
+            form.plannedOn.value = plannedOn;
+            const accountDisplay = form.querySelector(".statement-entry-account input");
+            if (accountDisplay) accountDisplay.value = accountLabels.get(accountId) || "Conta indisponível";
+            document.querySelector("[data-modal-title]").textContent = "Novo lançamento";
+            setStatus(currentStatus);
+            syncFieldVisibility();
+            statusNode.className = "form-status success full";
+            statusNode.textContent = form.dataset.savedCount + " lançamento(s) salvo(s). Informe o próximo. A lista será atualizada ao fechar.";
+            form.description.focus();
+          } else {
+            shouldReload = true;
+            setTimeout(() => location.reload(), 350);
+          }
+        }
       } catch { statusNode.className = "form-status error full"; statusNode.textContent = "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente."; }
-      finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit && !shouldReload) submit.disabled = false; }
+      finally {
+        delete form.dataset.submitting;
+        form.removeAttribute("aria-busy");
+        if (!shouldReload) submitButtons.forEach((button, index) => { button.disabled = previouslyDisabled[index]; });
+      }
     });
 
     document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async () => { if (button.dataset.confirm && !confirm(button.dataset.confirm)) return; const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {}); if (response.ok) setTimeout(() => location.reload(), 300); }));
