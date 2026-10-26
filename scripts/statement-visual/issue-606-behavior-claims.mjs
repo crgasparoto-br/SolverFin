@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { collectReport718Evidence } from "./reports-718-behavior-evidence.mjs";
+import { collectDashboard724Evidence } from "./dashboard-724-behavior-evidence.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -43,6 +44,13 @@ function parseRequiredAssertions() {
 }
 
 async function collectEvidence() {
+  if (sourceScenario.startsWith("dashboard-724-")) {
+    return collectDashboard724Evidence(
+      sourceScenario.slice("dashboard-724-".length),
+      readEvidence,
+      (fileName) => access(join(outputDir, fileName)),
+    );
+  }
   if (sourceScenario === "core-pages") return collectCorePagesEvidence();
   if (sourceScenario === "reports-718-visual-acceptance") {
     return collectReport718Evidence(readEvidence);
