@@ -134,7 +134,12 @@ export async function checkRecurringEdit(
          and i."financialProfileId" = r."financialProfileId"
       where r."id" = $1 and r."organizationId" = $2
         and r."financialProfileId" = $3`,
-    [purchase.recurrenceId, context.organizationId, context.financialProfileId, purchase.installmentId],
+    [
+      purchase.recurrenceId,
+      context.organizationId,
+      context.financialProfileId,
+      purchase.installmentId,
+    ],
   );
   const linked = rows[0];
   if (
