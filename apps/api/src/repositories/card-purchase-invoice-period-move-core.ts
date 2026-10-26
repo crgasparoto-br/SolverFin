@@ -467,6 +467,8 @@ function assertInvoiceEditable(invoice: InvoiceForMoveRow, code: string): void {
 
 function mapPurchaseForMove(row: PurchaseForMoveRow): CardPurchaseContract {
   return {
+    // findPurchaseForMove only selects Transaction.kind = EXPENSE.
+    kind: "expense",
     id: row.id,
     financialProfileId: row.financialProfileId,
     cardId: row.cardId,

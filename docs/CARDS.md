@@ -132,6 +132,16 @@ Compras de faturas `closed`, `paid` ou `cancelled` tem a acao de edicao desabili
 
 A `Installment` tecnica vinculada a uma compra recorrente materializada nao aparece em painel, historico ou linha separada na tela `Cartoes`. Quando o vinculo for canonico, o metadado `Parcela X de Y` e exibido na propria linha da compra, e a manutencao continua exclusivamente pelo endpoint operacional da compra.
 
+### Ações e ajuste de parcelas na tela Cartões (#742)
+
+O menu contextual da linha oferece **Editar** e **Clonar** com iconografia equivalente ao Extrato. Clonar abre o mesmo formulário centralizado como **nova compra única**, com valor, data, descrição, categoria e instrumento pré-preenchidos; não replica os IDs originais, nem vínculos de parcelamento ou recorrência. Compras históricas de faturas fechadas, pagas ou canceladas continuam clonáveis porque a operação não modifica a fatura de origem; nesse caso, a data sugerida é a data local atual, editável pelo usuário. Os bloqueios de edição e de lançamento no período encerrado permanecem ativos.
+
+**Sinal financeiro dos lançamentos:** a listagem de `/cartoes` determina débitos e créditos pelo campo estruturado `kind` da API (`expense` ou `income`), derivado de `Transaction.kind`. O marcador `[estorno:...]` é apenas referência de origem e não transforma uma despesa em crédito se aparecer na descrição digitada. Os agrupamentos por dia ou instrumento preservam a opção de ordenação escolhida, inclusive por valor ou descrição.
+
+A edição padrão da compra parcelada mantém a **transação-base, total e calendário originais imutáveis**. Para alterar o valor exibido de uma parcela financeira, usar **Editar valor da parcela** na própria linha. A ação chama `PATCH /api/invoices/:invoiceId/installments/:installmentId/amount`, com `amountMinor` em centavos e escopo `current` ou `current_and_future`. O backend atualiza apenas a ocorrência de `Installment` e o total da fatura correspondente, sob transação e auditoria; não edita `Transaction.amountMinor` compartilhado, não redistribui o preço total nem recalcula câmbio. Parcelas futuras bloqueadas são contadas como ignoradas e nunca modificadas silenciosamente. Faturas fechadas/pagas/canceladas e parcelas conciliadas não são elegíveis. Como descrição, categoria e instrumento da compra parcelada são compartilhados pela série, o PATCH de metadados rejeita toda a edição com `CARD_INSTALLMENT_RECONCILED_LOCKED` (409) se qualquer parcela vinculada já estiver conciliada ou bloqueada. A validação é repetida sob bloqueio transacional imediatamente antes da gravação, preservando o histórico. O campo de valor no diálogo não realiza envio com Enter: exige escolher explicitamente **Somente esta** ou **Esta e as próximas**.
+
+Em recorrências de cartão, a **data** é editável no modal da compra. Ao salvar uma ocorrência recorrente, um diálogo centralizado exige escolha explícita de **Somente esta** (rota `/current-only`) ou **Esta e as próximas** (`editScope: "current_and_future"`), sem aplicar mudanças antes da escolha. Cancelar ou pressionar Escape retorna à edição preservando os campos; tentativas com erro mantêm a decisão aberta para retry. O backend preserva os limites de período da fatura e as restrições de histórico. O modal mostra apenas os campos aplicáveis durante edição, com ações alinhadas, estados de foco e rolagem interna mobile.
+
 ## Movimentacao de compra entre faturas/periodos
 
 A movimentacao de uma compra para outro periodo de fatura usa o contrato dedicado:
@@ -438,6 +448,15 @@ O diálogo centralizado de **Registrar compra** e **Editar compra** reutiliza o 
 O valor principal tem prioridade tipográfica; valor da parcela aparece ao lado do total somente ao editar uma compra parcelada. Moeda e data permanecem visíveis, inclusive em modo somente leitura. Os controles usam alvos mínimos de 44 px, duas colunas em desktop e uma em mobile. O diálogo limita a altura a 90dvh, mantém cabeçalho e ações acessíveis e rola somente o corpo. **Cancelar** é secundário, e **Salvar compra** é a única ação primária, na mesma linha no desktop.
 
 Os estados de compra simples, compra parcelada, recorrência fixa, cartão sem moeda e indisponibilidade de edição preservam os contratos de campos, validações e API. Validar criação/edição em 1366×768, 390×844 e 320×740 com teclado, foco, rolagem, leitura de erros, estados de parcela e comparação visual com o Extrato antes de aprovar o gate independente.
+
+Na edicao de uma compra recorrente, a API bloqueia a propria ocorrencia
+selecionada quando sua transacao ou parcela estiver conciliada ou cancelada, tanto
+com escopo `current_only` quanto com `current_and_future`, mesmo em fatura aberta.
+Antes de alterar valores ou datas,
+o servidor exige moeda identica na recorrencia, compra, parcela e fatura. Ocorrencias
+futuras em moeda divergente nao sao convertidas nem sobrescritas: ficam intactas,
+contam em `skippedCount` e trazem o motivo `currency_mismatch` na resposta.
+A API recusa a divergencia da ocorrencia selecionada com erro HTTP 409.
 
 ## Fatura por dia e conciliação no padrão da Golden Screen — PR #720
 

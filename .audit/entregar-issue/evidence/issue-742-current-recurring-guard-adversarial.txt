@@ -1,0 +1,20 @@
+CONTROL: recurring edit selected/future financial guards (internal adversarial harness)
+SOURCE: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts
+MODE: TypeScript AST extraction, transpilation and VM call with explicit state fixtures
+EXPECTED: reconciled selected row rejected; mismatched currency skipped/rejected; deliberate mutant rejected
+PASS selected transaction status RECONCILED
+PASS selected transaction status VOIDED
+PASS selected transaction status CANCELLED
+PASS selected installment status RECONCILED
+PASS selected installment status CANCELLED
+PASS selected currency invoiceCurrency
+PASS selected currency recurrenceCurrency
+PASS selected currency installmentCurrency
+PASS status-only exception preserves currency validation
+PASS future currency transactionCurrency
+PASS future currency invoiceCurrency
+PASS future currency installmentCurrency
+PASS negative mutation rejected: selected reconciled guard removed
+PASS negative mutation rejected: future invoice currency guard removed
+HEAD: 19db954c9771ca3e45b821470eb9d4b54eaf27fd
+EXIT_CODE: 0

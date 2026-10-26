@@ -299,13 +299,14 @@ export async function validateCardsPage(
       const purchaseCategoryContract = rows.length > 0 && rows.every((row) => {
         const cells = Array.from(row.querySelectorAll(':scope > [role="cell"]'));
         const category = row.querySelector(':scope > .cards-purchase-category[role="cell"]');
+        const instrument = row.querySelector(':scope > .cards-purchase-instrument[role="cell"]');
         const description = row.querySelector(':scope > .cards-purchase-description[role="cell"]');
         const arrow = category?.querySelector('svg[aria-hidden="true"]');
         const label = category?.querySelector('.cards-purchase-category-label');
         return Boolean(
-          cells.length === 6 &&
-          category && description &&
-          category.dataset.categoryDirection === 'out' &&
+          cells.length === 7 &&
+          category && description && instrument && visible(instrument) &&
+          category.dataset.categoryDirection === (row.querySelector('.cards-purchase-amount.is-negative') ? 'in' : 'out') &&
           arrow?.querySelector('path[d="M10 3.5v12"]') &&
           visible(arrow) &&
           label?.textContent.trim() &&
@@ -326,7 +327,7 @@ export async function validateCardsPage(
       const backgroundByDirection = {
         in: tokenBackground('--success-bg'),
         out: tokenBackground('--danger-bg'),
-        transfer: tokenBackground('--surface-soft'),
+        transfer: tokenBackground('--neutral-control-hover'),
       };
       colorProbe.remove();
       const originalCategoryDirection = firstCategory?.dataset.categoryDirection;
@@ -345,12 +346,12 @@ export async function validateCardsPage(
       }
       const categoryToneContract = Boolean(
         purchaseCategoryContract &&
-        originalCategoryDirection === 'out' &&
+        originalCategoryDirection === (firstCategory?.closest('[data-purchase-item]')?.querySelector('.cards-purchase-amount.is-negative') ? 'in' : 'out') &&
         directionFillsMatch &&
-        categoryBadgeBackground() === backgroundByDirection.out &&
+        categoryBadgeBackground() === backgroundByDirection[originalCategoryDirection] &&
         rect(categoryBadge).width > 0 &&
         rect(categoryBadge).right <= rect(firstCategory).right + 1 &&
-        !getComputedStyle(firstCategory).backgroundColor.includes('254, 226, 226')
+        !getComputedStyle(firstCategory).backgroundColor.includes('254, 242, 242')
       );
       const invoiceCopy = document.querySelector('.cards-invoice-metadata')?.textContent || '';
       const settlementCopy = document.querySelector('.cards-settlement-note')?.textContent || '';

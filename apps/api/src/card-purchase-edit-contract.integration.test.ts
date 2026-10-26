@@ -5,7 +5,10 @@ import type { TenantContext } from "@solverfin/domain";
 import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import {
+  adjustInvoiceInstallmentAmountForContext,
+  listCardPurchasesForContext,
   reconcileInvoiceInstallmentForContext,
+  reverseCardPurchaseForContext,
   summarizeInvoiceForContext,
   updateCardPurchaseForContext,
 } from "./repositories/card-invoice-contracts.js";
@@ -142,6 +145,39 @@ async function assertInstallmentPurchaseEdit(
     (error: unknown) =>
       error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
   );
+  // A reconciled sibling makes shared purchase metadata immutable, even if
+  // the edited occurrence is not reconciled. No transaction/series write is allowed.
+  const readSharedSeriesState = () =>
+    query<{
+      id: string;
+      status: string;
+      cardInstrumentId: string | null;
+      updatedAt: Date;
+      description: string;
+    }>(
+      `select i."id", i."status", i."cardInstrumentId", i."updatedAt", t."description"
+         from "Installment" i
+         join "Transaction" t on t."id" = i."transactionId"
+        where i."transactionId" = $1 and i."organizationId" = $2
+          and i."financialProfileId" = $3
+        order by i."sequenceNumber"`,
+      [purchase.transaction.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+    );
+  const beforeRejectedMetadata = await readSharedSeriesState();
+  for (const payload of [
+    { description: `Nao editar conciliada ${suffix}` },
+    { cardInstrumentId: virtualInstrument.id },
+    { description: `Nao propagar ${suffix}`, cardInstrumentId: virtualInstrument.id },
+  ]) {
+    await assert.rejects(
+      () => updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, payload),
+      (error: unknown) =>
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "CARD_INSTALLMENT_RECONCILED_LOCKED",
+    );
+    assert.deepEqual(await readSharedSeriesState(), beforeRejectedMetadata);
+  }
   const posted = await reconcileInvoiceInstallmentForContext(
     CONTEXT,
     firstInvoiceId,
@@ -150,6 +186,99 @@ async function assertInstallmentPurchaseEdit(
   );
   assert.equal(posted.invoice.reconciledExpensesMinor, 0);
   assert.equal(posted.invoice.unreconciledExpensesMinor, 3_334);
+
+  // #742: amount adjustments affect invoice occurrences, never the base purchase.
+  await assert.rejects(
+    () =>
+      adjustInvoiceInstallmentAmountForContext(
+        OTHER_PROFILE_CONTEXT,
+        firstInvoiceId,
+        firstOccurrenceId,
+        3_500,
+        "current",
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
+  );
+  await assert.rejects(
+    () =>
+      adjustInvoiceInstallmentAmountForContext(
+        CONTEXT,
+        invoices[1]!.id,
+        firstOccurrenceId,
+        3_500,
+        "current",
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_NOT_FOUND",
+  );
+  await assert.rejects(
+    () =>
+      adjustInvoiceInstallmentAmountForContext(
+        CONTEXT,
+        firstInvoiceId,
+        firstOccurrenceId,
+        0,
+        "current",
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_AMOUNT_INVALID",
+  );
+  const singleAdjustment = await adjustInvoiceInstallmentAmountForContext(
+    CONTEXT,
+    firstInvoiceId,
+    firstOccurrenceId,
+    3_500,
+    "current",
+  );
+  assert.equal(singleAdjustment.updatedCount, 1);
+  assert.equal(singleAdjustment.skippedCount, 0);
+  assert.equal(singleAdjustment.invoice.totalExpensesMinor, 3_500);
+  const unchangedAdjustment = await adjustInvoiceInstallmentAmountForContext(
+    CONTEXT,
+    firstInvoiceId,
+    firstOccurrenceId,
+    3_500,
+    "current",
+  );
+  assert.equal(
+    unchangedAdjustment.updatedCount,
+    0,
+    "No-op must not count as a changed installment",
+  );
+  assert.equal(unchangedAdjustment.skippedCount, 0);
+  assert.equal(unchangedAdjustment.invoice.totalExpensesMinor, 3_500);
+  assert.deepEqual(
+    await Promise.all(
+      invoices.map(
+        async (invoice) =>
+          (await listInstallmentsForContext(CONTEXT, { invoiceId: invoice.id }))[0]?.amountMinor,
+      ),
+    ),
+    [3_500, 3_333, 3_333],
+  );
+  const futureAdjustment = await adjustInvoiceInstallmentAmountForContext(
+    CONTEXT,
+    invoices[1]!.id,
+    occurrenceIds[1]!,
+    4_500,
+    "current_and_future",
+  );
+  assert.equal(futureAdjustment.updatedCount, 2);
+  assert.equal(futureAdjustment.skippedCount, 0);
+  assert.deepEqual(
+    await Promise.all(
+      invoices.map(
+        async (invoice) =>
+          (await listInstallmentsForContext(CONTEXT, { invoiceId: invoice.id }))[0]?.amountMinor,
+      ),
+    ),
+    [3_500, 4_500, 4_500],
+  );
+  assert.equal(
+    (await summarizeInvoiceForContext(CONTEXT, invoices[2]!.id)).totalExpensesMinor,
+    4_500,
+  );
 
   for (const forbiddenPayload of [
     { amountMinor: 12_000 },
@@ -188,6 +317,31 @@ async function assertInstallmentPurchaseEdit(
   assert.ok(rows.every((row) => row.transactionId === purchase.transaction.id && row.invoiceId));
 
   await query(`update "Invoice" set "status" = 'CLOSED' where "id" = $1`, [invoices[2]?.id]);
+  const partialAdjustment = await adjustInvoiceInstallmentAmountForContext(
+    CONTEXT,
+    invoices[1]!.id,
+    occurrenceIds[1]!,
+    4_800,
+    "current_and_future",
+  );
+  assert.equal(partialAdjustment.updatedCount, 1);
+  assert.equal(partialAdjustment.skippedCount, 1);
+  assert.equal(
+    (await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[2]!.id }))[0]?.amountMinor,
+    4_500,
+  );
+  await assert.rejects(
+    () =>
+      adjustInvoiceInstallmentAmountForContext(
+        CONTEXT,
+        invoices[2]!.id,
+        occurrenceIds[2]!,
+        5_000,
+        "current",
+      ),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_INSTALLMENT_AMOUNT_LOCKED",
+  );
   await assert.rejects(
     () =>
       reconcileInvoiceInstallmentForContext(
@@ -209,6 +363,37 @@ async function assertInstallmentPurchaseEdit(
   );
   const unchanged = await readTransaction(purchase.transaction.id);
   assert.equal(unchanged.cardInstrumentId, virtualInstrument.id);
+
+  // A corrupt/incompatible currency in the occurrence must not silently be
+  // converted to the invoice currency or alter its financial totals.
+  const originalSecondAmount = (
+    await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id })
+  )[0]?.amountMinor;
+  const originalSecondTotal = await readInvoiceTotal(invoices[1]!.id);
+  await query(`update "Installment" set "currency" = 'USD' where "id" = $1`, [occurrenceIds[1]]);
+  try {
+    await assert.rejects(
+      () =>
+        adjustInvoiceInstallmentAmountForContext(
+          CONTEXT,
+          invoices[1]!.id,
+          occurrenceIds[1]!,
+          5_200,
+          "current",
+        ),
+      (error: unknown) =>
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "CARD_INSTALLMENT_AMOUNT_LOCKED",
+    );
+    assert.equal(
+      (await listInstallmentsForContext(CONTEXT, { invoiceId: invoices[1]!.id }))[0]?.amountMinor,
+      originalSecondAmount,
+    );
+    assert.equal(await readInvoiceTotal(invoices[1]!.id), originalSecondTotal);
+  } finally {
+    await query(`update "Installment" set "currency" = 'BRL' where "id" = $1`, [occurrenceIds[1]]);
+  }
 }
 
 async function assertCommonCardPurchaseEdit(
@@ -232,6 +417,7 @@ async function assertCommonCardPurchaseEdit(
     cardInstrumentId: virtualInstrument.id,
   });
 
+  assert.equal(result.transaction.kind, "expense");
   assert.equal(result.transaction.id, purchase.transaction.id);
   assert.equal(result.transaction.invoiceId, originalInvoiceId);
   assert.equal(result.transaction.cardId, cardId);
@@ -278,6 +464,42 @@ async function assertCommonCardPurchaseEdit(
   assert.equal(row.recurrenceId, null);
   assert.equal(row.installmentId, null);
   assert.equal(row.cardInstrumentId, virtualInstrument.id);
+
+  // A user-supplied text marker must never convert an EXPENSE into a credit.
+  const markerOnly = await updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+    description: `Compra comum ${suffix} [estorno:${purchase.transaction.id}:unico]`,
+  });
+  assert.equal(markerOnly.transaction.kind, "expense");
+  const invoiceBeforeReversal = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
+  assert.equal(invoiceBeforeReversal.totalExpensesMinor, 2_500);
+  const ordinaryPurchase = (
+    await listCardPurchasesForContext(CONTEXT, { invoiceId: originalInvoiceId })
+  ).find((item) => item.id === purchase.transaction.id);
+  assert.equal(ordinaryPurchase?.kind, "expense");
+  assert.equal(ordinaryPurchase?.amountMinor, 2_500);
+
+  // Genuine credits carry INCOME direction in the serialized API contract.
+  const reversal = await reverseCardPurchaseForContext(
+    CONTEXT,
+    cardId,
+    purchase.transaction.id,
+    originalInvoiceId,
+  );
+  assert.equal(reversal.amountMinor, -2_500);
+  const reversalRow = (
+    await listCardPurchasesForContext(CONTEXT, { invoiceId: originalInvoiceId })
+  ).find((item) => item.id === reversal.transactionId);
+  assert.equal(reversalRow?.kind, "income");
+  assert.equal(reversalRow?.amountMinor, 2_500);
+  const invoiceBefore = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
+  assert.equal(invoiceBefore.totalExpensesMinor, invoiceBeforeReversal.totalExpensesMinor - 2_500);
+  await assert.rejects(
+    () => reverseCardPurchaseForContext(CONTEXT, cardId, reversal.transactionId, originalInvoiceId),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_INVALID_SOURCE",
+  );
+  const invoiceAfter = await summarizeInvoiceForContext(CONTEXT, originalInvoiceId);
+  assert.equal(invoiceAfter.totalExpensesMinor, invoiceBefore.totalExpensesMinor);
 }
 
 async function assertRecurringCardPurchaseEdit(

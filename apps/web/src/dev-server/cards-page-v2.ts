@@ -1,3 +1,7 @@
+import { cardsPageSetupScript } from "./cards-page-v2-script-setup.js";
+import { cardsPagePurchaseActionsScript } from "./cards-page-v2-script-purchases.js";
+import { cardsPageMutationScript } from "./cards-page-v2-script-mutations.js";
+import { cardsPageRemainingActionsScript } from "./cards-page-v2-script-other.js";
 import { formatDateOnly } from "@solverfin/shared";
 
 import { renderMoney } from "../design-system/money.js";
@@ -77,6 +81,8 @@ interface CardInstrumentRecord {
   effectiveCreditLimitMinor?: number;
 }
 interface CardPurchaseRecord {
+  /** API financial direction (legacy mocked records without it remain expenses). */
+  kind?: "expense" | "income";
   id: string;
   financialProfileId?: string;
   cardId: string;
@@ -140,6 +146,7 @@ interface InvoiceCardTotalRecord {
 interface CardPresentation {
   search: string;
   sort: CardSort;
+  groupBy: "day" | "instrument";
   reconciliation: ReconciliationFilter;
   day?: string;
 }
@@ -230,18 +237,52 @@ export async function renderCardsPageV2(
   if (!installmentsResult.ok) return renderErrorPage(installmentsResult.error);
 
   const accounts = accountsResult.ok ? accountsResult.data.accounts : [];
-  const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
+  const reversalCategoriesResult = await apiGet<{ categories: CategoryRecord[] }>(
+    token,
+    "/api/categories?kind=income",
+  );
+  const categories = categoriesResult.ok
+    ? [
+        ...categoriesResult.data.categories,
+        ...(reversalCategoriesResult.ok
+          ? reversalCategoriesResult.data.categories.filter(
+              (category) => category.name.trim().toLocaleLowerCase("pt-BR") === "estornos",
+            )
+          : []),
+      ]
+    : [];
   const summary = summaryResult.data.summary;
+  // The original transaction amount is a historical base, not the effective total
+  // after one or more installment amounts have been adjusted.
+  const allCardInstallments =
+    selectedCard && selectedInvoice
+      ? await apiGet<{ installments: InvoiceInstallmentRecord[] }>(
+          token,
+          `/api/installments?cardId=${encodeURIComponent(selectedCard.id)}&status=all`,
+        )
+      : null;
+  const effectiveTotals = new Map<string, number>();
+  if (allCardInstallments?.ok) {
+    for (const installment of allCardInstallments.data.installments ?? []) {
+      const transactionId = installment.transaction?.id;
+      if (!transactionId || !Number.isSafeInteger(installment.amountMinor)) continue;
+      effectiveTotals.set(
+        transactionId,
+        (effectiveTotals.get(transactionId) ?? 0) + installment.amountMinor,
+      );
+    }
+  }
   const canonicalPurchases = projectInvoicePurchases(
     purchasesResult.data.purchases,
     installmentsResult.data.installments ?? [],
+    effectiveTotals,
   );
   const invoiceCurrency = resolveInvoiceCurrency(selectedInvoice, canonicalPurchases);
   const visiblePurchases = sortPurchases(
     filterPurchases(canonicalPurchases, categories, presentation),
     presentation.sort,
   );
-  const groups = groupPurchasesByInstrument(visiblePurchases, instruments, invoiceCurrency);
+  const groups = groupPurchasesByInstrument(visiblePurchases, instruments);
   const matchingPaymentAccounts = invoiceCurrency
     ? accounts.filter(
         (account) =>
@@ -288,7 +329,25 @@ export async function renderCardsPageV2(
   return renderShell(`
     <div class="cards-layout" data-cards-archetype="A3">
       ${content}
-      ${renderPurchaseModal(selectedCard, categories, activeInstruments, cardCurrency)}
+      ${renderPurchaseModal(selectedCard, categoriesResult.ok ? categoriesResult.data.categories : [], activeInstruments, cardCurrency)}
+      <dialog class="cards-dialog" data-modal="reversal-edit" aria-labelledby="cards-reversal-edit-title">
+        <section class="cards-dialog-panel cards-purchase-dialog-panel">
+          <header><div><span class="cards-kicker">Crédito na fatura</span><h2 id="cards-reversal-edit-title">Editar estorno</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+          <p class="cards-dialog-description">O estorno foi criado. Confira os dados e salve os ajustes desejados.</p>
+          <form data-reversal-edit-form>
+            <label>Descrição<input name="description" required maxlength="180"></label>
+            <label>Valor do estorno (${escapeHtml(cardCurrency ?? "")})<input name="amountMinor" data-money inputmode="decimal" required></label>
+            <label>Data<input name="occurredOn" type="date" required></label>
+            <label>Instrumento<select name="cardInstrumentId">${renderInstrumentOptions(activeInstruments, cardCurrency)}</select></label>
+            <label>Categoria<input value="Estornos" readonly aria-readonly="true"></label>
+            <p class="form-status" data-reversal-edit-status role="status"></p>
+            <div class="cards-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-close-modal>Fechar</button><button type="submit" class="sf-button sf-button-primary">Salvar</button></div>
+          </form>
+        </section>
+      </dialog>
+
+      ${selectedInvoice ? renderInstallmentAmountModal() : ""}
+      ${renderRecurringEditScopeModal()}
       ${selectedInvoice ? renderInvoiceAttachmentsDialog(selectedInvoice) : ""}
       ${renderPaymentModal(
         selectedInvoice,
@@ -329,13 +388,22 @@ function invoicesForCard(invoices: readonly InvoiceRecord[], cardId: string): In
 function projectInvoicePurchases(
   purchases: readonly CardPurchaseRecord[],
   installments: readonly InvoiceInstallmentRecord[],
+  effectiveTotals: ReadonlyMap<string, number> = new Map(),
 ): CardPurchaseRecord[] {
   const installmentTransactionIds = new Set(
     installments.map((installment) => installment.transaction?.id).filter(isDefined),
   );
-  const simpleAndRecurringPurchases = purchases.filter(
-    (purchase) => !installmentTransactionIds.has(purchase.id),
-  );
+  const simpleAndRecurringPurchases = purchases
+    .filter((purchase) => !installmentTransactionIds.has(purchase.id))
+    .map((purchase) => ({
+      ...purchase,
+      amountMinor:
+        purchase.kind === "income" ? -Math.abs(purchase.amountMinor) : purchase.amountMinor,
+      description:
+        purchase.kind === "income"
+          ? purchase.description.replace(/ \[estorno:[^\]]+\]$/, "")
+          : purchase.description,
+    }));
   const installmentOccurrences = installments.flatMap((installment) => {
     const purchase = installment.transaction;
     if (!purchase || !installment.invoice?.id || !purchase.cardId) return [];
@@ -349,7 +417,7 @@ function projectInvoicePurchases(
         status: installment.status,
         amountMinor: installment.amountMinor,
         currency: installment.currency,
-        purchaseTotalAmountMinor: purchase.amountMinor,
+        purchaseTotalAmountMinor: effectiveTotals.get(purchase.id) ?? purchase.amountMinor,
         installmentSequenceNumber: installment.sequenceNumber,
         totalInstallments: installment.totalInstallments,
         installmentStart: installment.initialSequenceNumber ?? 1,
@@ -385,6 +453,7 @@ function resolvePresentation(url: URL, invoice: InvoiceRecord | undefined): Card
       .trim()
       .slice(0, 160),
     sort: SORTS.has(rawSort as CardSort) ? (rawSort as CardSort) : "date_desc",
+    groupBy: url.searchParams.get("groupBy") === "instrument" ? "instrument" : "day",
     reconciliation:
       rawReconciliation === "reconciled" || rawReconciliation === "unreconciled"
         ? rawReconciliation
@@ -435,7 +504,6 @@ function sortPurchases(
 function groupPurchasesByInstrument(
   purchases: readonly CardPurchaseRecord[],
   instruments: readonly CardInstrumentRecord[],
-  currency: string | undefined,
 ): InstrumentPurchaseGroup[] {
   const groups = new Map<string, InstrumentPurchaseGroup>();
   const order: string[] = [];
@@ -448,10 +516,7 @@ function groupPurchasesByInstrument(
         label:
           id === "__unassigned__"
             ? "Sem instrumento identificado"
-            : formatInstrumentLabel(
-                instruments.find((instrument) => instrument.id === id),
-                currency,
-              ),
+            : formatInstrumentIdentity(instruments.find((instrument) => instrument.id === id)),
         purchases: [],
       };
       groups.set(id, group);
@@ -628,6 +693,7 @@ function renderInvoiceDetail(input: {
       input.invoices,
       input.invoice,
       input.presentation.sort,
+      input.presentation.groupBy,
     )}
   </section>`;
 }
@@ -710,6 +776,7 @@ function renderInvoiceNavigation(
         <span class="cards-kicker">Fatura</span>
         <strong>${escapeHtml(formatMonth(selectedMonth))}</strong>
         <span class="cards-invoice-period-status">${escapeHtml(status)}</span>
+
       </div>
       ${
         nextPeriod
@@ -825,6 +892,7 @@ function renderPurchaseFilters(
   if (profileId) base.searchParams.set("profileId", profileId);
   if (presentation.search) base.searchParams.set("q", presentation.search);
   if (presentation.sort !== "date_desc") base.searchParams.set("sort", presentation.sort);
+  if (presentation.groupBy === "instrument") base.searchParams.set("groupBy", "instrument");
   if (presentation.day) base.searchParams.set("day", presentation.day);
   const controls = `<form method="get" action="/cartoes" class="cards-purchase-filter-form">
       <input type="hidden" name="cardId" value="${escapeHtml(cardId)}">
@@ -833,6 +901,12 @@ function renderPurchaseFilters(
       ${profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(profileId)}">` : ""}
       <label class="cards-search-field" for="cards-purchase-search">Buscar compras
         <input id="cards-purchase-search" type="search" name="q" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" data-purchase-search autocomplete="off">
+      </label>
+      <label class="cards-purchase-group-filter" for="cards-purchase-group">Agrupar por
+        <select id="cards-purchase-group" name="groupBy" aria-label="Agrupar lançamentos por">
+          <option value="day"${presentation.groupBy === "day" ? " selected" : ""}>Dia</option>
+          <option value="instrument"${presentation.groupBy === "instrument" ? " selected" : ""}>Instrumento</option>
+        </select>
       </label>
       <div class="cards-purchase-day-filter">
         <label for="cards-purchase-day">Dia da fatura
@@ -876,6 +950,7 @@ function renderPurchaseGroups(
   invoices: readonly InvoiceRecord[],
   selectedInvoice: InvoiceRecord,
   sort: CardSort,
+  groupBy: "day" | "instrument",
 ): string {
   if (groups.length === 0) {
     return `<div class="cards-purchase-empty" data-purchase-filter-empty>${renderEmptyState({
@@ -883,8 +958,9 @@ function renderPurchaseGroups(
       description: "Ajuste os filtros ou registre uma compra para esta fatura.",
     })}</div>`;
   }
-  if (sort !== "date_asc" && sort !== "date_desc") {
-    return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title">
+  const sharedHead = `<div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Instrumento</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>`;
+  if (groupBy === "instrument") {
+    return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title"><div class="cards-shared-table-head">${sharedHead}</div>
       ${groups
         .map((group) =>
           renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
@@ -905,22 +981,38 @@ function renderPurchaseGroups(
       days.set(purchase.occurredOn, dayGroups);
     }
   }
+  const labelsByInstrument = new Map(groups.map((group) => [group.id, group.label]));
   const orderedDays = [...days.keys()].sort((left, right) =>
     sort === "date_asc" ? left.localeCompare(right) : right.localeCompare(left),
   );
-  return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title" data-cards-day-groups>
+  return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title" data-cards-day-groups><div class="cards-shared-table-head">${sharedHead}</div>
     ${orderedDays
       .map((date) => {
         const dayGroups = days.get(date) ?? [];
-        const purchases = dayGroups.flatMap((group) => group.purchases);
+        const purchases = sortPurchases(
+          dayGroups.flatMap((group) => group.purchases),
+          sort,
+        );
         const totals = totalsByCurrency(purchases);
         return `<details class="cards-day-group" data-cards-day-group data-day="${escapeHtml(date)}" open>
           <summary><span class="cards-day-title"><time datetime="${escapeHtml(date)}">${formatDate(date)}</time><small>${formatPurchaseCount(purchases.length)}</small></span><strong>${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</strong></summary>
-          <div class="cards-day-content">${dayGroups
-            .map((group) =>
-              renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
-            )
-            .join("")}</div>
+          <div class="cards-day-content">
+            <div class="cards-purchase-table" role="table" aria-label="Compras de ${formatDate(date)}">
+              ${purchases
+                .map((purchase) =>
+                  renderPurchaseRow(
+                    purchase,
+                    labelsByInstrument.get(purchase.cardInstrumentId ?? "__unassigned__") ??
+                      "Sem instrumento identificado",
+                    categories,
+                    recurrences,
+                    invoices,
+                    selectedInvoice,
+                  ),
+                )
+                .join("")}
+            </div>
+          </div>
         </details>`;
       })
       .join("")}
@@ -938,10 +1030,16 @@ function renderInstrumentGroup(
   return `<details class="cards-instrument-group" data-instrument-purchase-group${group.id === "__unassigned__" ? "" : ` data-instrument-id="${escapeHtml(group.id)}"`} open>
     <summary><div><strong data-instrument-label>${escapeHtml(group.label)}</strong><span>${formatPurchaseCount(group.purchases.length)}</span></div><div class="cards-instrument-totals">${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</div></summary>
     <div class="cards-purchase-table" role="table" aria-label="Compras de ${escapeHtml(group.label)}">
-      <div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>
       ${group.purchases
         .map((purchase) =>
-          renderPurchaseRow(purchase, categories, recurrences, invoices, selectedInvoice),
+          renderPurchaseRow(
+            purchase,
+            group.label,
+            categories,
+            recurrences,
+            invoices,
+            selectedInvoice,
+          ),
         )
         .join("")}
     </div>
@@ -950,6 +1048,7 @@ function renderInstrumentGroup(
 
 function renderPurchaseRow(
   purchase: CardPurchaseRecord,
+  instrumentLabel: string,
   categories: readonly CategoryRecord[],
   recurrences: readonly RecurrenceRecord[],
   invoices: readonly InvoiceRecord[],
@@ -980,11 +1079,17 @@ function renderPurchaseRow(
   return `<article class="cards-purchase-row" role="row" data-purchase-item data-reconciliation="${purchase.status === "reconciled" ? "reconciled" : "unreconciled"}">
     <time role="cell" data-label="Data" datetime="${escapeHtml(purchase.occurredOn)}">${formatDate(purchase.occurredOn)}</time>
     <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${installmentLabel ? ` <span class="installment-badge cards-installment-label" aria-label="${escapeHtml(installmentLabel)}" title="${escapeHtml(installmentLabel)}">${escapeHtml(installmentLabel)}</span>` : ""}${recurrence ? renderRecurrenceIndicator() : ""}</strong></div>
-    <span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="out"><span class="cards-purchase-category-badge"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5v12"/><path d="m5.5 11 4.5 4.5L14.5 11"/></svg><span class="cards-purchase-category-label">${escapeHtml(category)}</span></span></span>
+    <span role="cell" data-label="Instrumento" class="cards-purchase-instrument">${escapeHtml(instrumentLabel)}</span>
+    <span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="${purchase.amountMinor < 0 ? "in" : "out"}"><span class="cards-purchase-category-badge"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5v12"/><path d="m5.5 11 4.5 4.5L14.5 11"/></svg><span class="cards-purchase-category-label">${escapeHtml(category)}</span></span></span>
     <span role="cell" data-label="Situação" class="cards-purchase-status-cell">${renderPurchaseStatusControl(purchase, locked)}</span>
-    <strong role="cell" data-label="Valor" class="cards-purchase-amount">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
+    <strong role="cell" data-label="Valor" class="cards-purchase-amount${purchase.amountMinor < 0 ? " is-negative" : ""}">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
     <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}" title="Ações da compra">${icon("more-horizontal", 18)}</summary><div class="cards-purchase-menu actions-menu" role="menu">
-      <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked ? " disabled" : ""}>Editar compra</button>
+      <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked || (installmentLabel && purchase.status === "reconciled") ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar</span></button>
+      <button type="button" class="actions-item" role="menuitem" data-clone-purchase="${escapeHtml(purchase.id)}" data-clone-source-locked="${locked ? "true" : "false"}"${purchase.amountMinor < 0 ? " disabled" : ""}>${icon("copy", 16)}<span>Clonar</span></button>
+      ${installmentLabel && purchase.installmentId ? `<button type="button" class="actions-item" role="menuitem" data-edit-installment-amount="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar valor da parcela</span></button>` : ""}
+      <button type="button" class="actions-item" role="menuitem" data-reverse-purchase="${escapeHtml(purchase.id)}"${locked || purchase.amountMinor <= 0 ? " disabled" : ""}>${icon("refresh-cw", 16)}<span>Estorno</span></button>
+      <button type="button" class="actions-item" role="menuitem" data-delete-purchase="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" || Boolean(purchase.installmentId || purchase.recurrenceId) ? " disabled" : ""}>${icon("trash-2", 16)}<span>Excluir</span></button>
+      
       ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
       ${!locked && otherPeriods.length > 0 ? `<span class="cards-move-hint">Mover para outra fatura disponível no menu</span>` : ""}
     </div></details>
@@ -1013,7 +1118,7 @@ function renderPurchaseModal(
             <legend>Valores</legend>
             <div class="cards-purchase-field-grid">
         <label><span data-purchase-amount-label>Valor${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}</span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00"></label>
-        <label data-purchase-field="installmentAmountMinor" hidden>Valor desta parcela${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}<input name="installmentAmountMinor" data-money inputmode="decimal" readonly aria-readonly="true"></label>
+        <label data-purchase-field="installmentAmountMinor" hidden>Valor desta parcela${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}<input name="installmentAmountMinor" data-money inputmode="decimal"></label>
             </div>
           </fieldset>
           <fieldset class="cards-purchase-fieldset">
@@ -1021,6 +1126,7 @@ function renderPurchaseModal(
             <div class="cards-purchase-field-grid">
         <label>Moeda<input name="currency" value="${escapeHtml(cardCurrency ?? "")}" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" required readonly aria-readonly="true" autocomplete="off"></label>
         <label>Data<input name="occurredOn" type="date" required data-default-local-today></label>
+        <p class="cards-purchase-date-help full" data-purchase-field="recurrenceDateHint" hidden>A alteração da data da compra recorrente respeitará o período da fatura. Ao salvar, escolha entre somente esta ocorrência e as próximas elegíveis.</p>
         <label class="full">Descrição<input name="description" required placeholder="Descreva a compra"></label>
             </div>
           </fieldset>
@@ -1053,7 +1159,49 @@ function renderPurchaseModal(
         </div>
         <footer class="cards-purchase-dialog-actions">
           <button class="sf-button sf-button-secondary" type="button" data-close-modal>Cancelar</button>
+          <button class="sf-button sf-button-secondary" type="submit" data-save-continue${canSave ? "" : " disabled"}>Salvar e continuar</button>
           <button class="sf-button sf-button-primary" type="submit"${canSave ? "" : " disabled"}>Salvar compra</button>
+        </footer>
+      </form>
+    </section>
+  </dialog>`;
+}
+
+function renderRecurringEditScopeModal(): string {
+  return `<dialog class="cards-dialog cards-recurring-edit-scope-dialog" data-modal="recurring-edit-scope" aria-labelledby="cards-recurring-scope-title" aria-describedby="cards-recurring-scope-description">
+    <section class="cards-dialog-panel cards-purchase-dialog-panel">
+      <header class="cards-purchase-dialog-header"><div><span class="cards-kicker">Compra recorrente</span><h2 id="cards-recurring-scope-title">Aplicar edição</h2><span class="cards-purchase-card-name" data-recurring-edit-purchase-name></span></div><button type="button" class="cards-dialog-close" data-cancel-recurring-scope aria-label="Voltar à edição">×</button></header>
+      <p class="cards-dialog-description" id="cards-recurring-scope-description">Deseja atualizar somente esta compra ou também as próximas ocorrências elegíveis? Faturas encerradas e lançamentos bloqueados serão preservados.</p>
+      <p class="form-status" data-recurring-edit-scope-status role="status" aria-live="polite"></p>
+      <footer class="cards-purchase-dialog-actions cards-installment-scope-actions">
+        <button type="button" class="sf-button sf-button-secondary" data-cancel-recurring-scope>Voltar</button>
+        <button type="button" class="sf-button sf-button-primary" data-recurring-edit-scope="current_only">Somente esta</button>
+        <button type="button" class="sf-button sf-button-secondary" data-recurring-edit-scope="current_and_future">Esta e as próximas</button>
+      </footer>
+    </section>
+  </dialog>`;
+}
+
+function renderInstallmentAmountModal(): string {
+  return `<dialog class="cards-dialog cards-installment-amount-dialog" data-modal="installment-value" aria-labelledby="cards-installment-value-title" aria-describedby="cards-installment-value-help">
+    <section class="cards-dialog-panel cards-purchase-dialog-panel">
+      <header class="cards-purchase-dialog-header"><div><span class="cards-kicker">Ajuste de parcela</span><h2 id="cards-installment-value-title">Editar valor da parcela</h2><span class="cards-purchase-card-name" data-installment-purchase-name></span></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+      <p class="cards-dialog-description" id="cards-installment-value-help">Ajuste somente esta parcela ou também as próximas parcelas elegíveis. Faturas fechadas e parcelas conciliadas não serão alteradas.</p>
+      <form data-installment-amount-form>
+        <div class="cards-purchase-form-body">
+          <fieldset class="cards-purchase-fieldset cards-purchase-amounts">
+            <legend>Valor desta parcela</legend>
+            <div class="cards-purchase-field-grid">
+              <label>Valor na moeda da fatura<input name="amountMinor" data-money inputmode="decimal" required aria-label="Novo valor da parcela" placeholder="0,00"></label>
+            </div>
+            <p class="cards-purchase-installment-note" data-installment-scope-description aria-live="polite"></p>
+          </fieldset>
+          <p class="form-status" data-installment-amount-status role="status" aria-live="polite"></p>
+        </div>
+        <footer class="cards-purchase-dialog-actions cards-installment-scope-actions">
+          <button type="button" class="sf-button sf-button-secondary" data-close-modal>Cancelar</button>
+          <button type="button" class="sf-button sf-button-secondary" data-installment-scope="current">Somente esta</button>
+          <button type="button" class="sf-button sf-button-secondary" data-installment-scope="current_and_future">Esta e as próximas</button>
         </footer>
       </form>
     </section>
@@ -1405,346 +1553,12 @@ function renderErrorPage(error: string): string {
 }
 
 function clientScript(): string {
-  return `<script data-cards-a3-runtime="true">
-    (() => {
-      const moneyToMinor = (value) => {
-        const normalized = String(value || "").replace(/\\./g, "").replace(",", ".");
-        return Math.round(Number.parseFloat(normalized || "0") * 100);
-      };
-      const minorToMoney = (value) => (Number(value || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const localToday = () => {
-        const now = new Date();
-        return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-      };
-      document.querySelectorAll("[data-money]").forEach((input) => input.addEventListener("input", () => {
-        const digits = input.value.replace(/\\D/g, "");
-        input.value = minorToMoney(digits ? Number.parseInt(digits, 10) : 0);
-      }));
-      document.querySelector("[data-card-select]")?.addEventListener("change", (event) => event.target.form?.requestSubmit());
-      if (window.matchMedia("(max-width: 760px)").matches) {
-        document.querySelectorAll(".cards-master-details,.cards-instrument-nav").forEach((details) => { details.open = false; });
-      }
-
-      let lastDialogTrigger = null;
-      const closeDialog = (dialog) => {
-        if (!dialog?.open) return;
-        dialog.close();
-        if (lastDialogTrigger && typeof lastDialogTrigger.focus === "function") lastDialogTrigger.focus();
-        lastDialogTrigger = null;
-      };
-      const purchaseForm = document.querySelector("[data-purchase-form]");
-      const repeatMode = purchaseForm?.querySelector('[name="repeatMode"]');
-      const setField = (name, visible) => {
-        const field = purchaseForm?.querySelector('[data-purchase-field="' + name + '"]');
-        if (field) field.hidden = !visible;
-      };
-      const syncRepeatFields = () => {
-        const mode = repeatMode?.value || "single";
-        setField("totalInstallments", mode === "installment");
-        setField("installmentStart", mode === "installment");
-        setField("installmentValueMode", mode === "installment");
-        setField("interval", mode === "fixed");
-        setField("frequency", mode === "fixed");
-        setField("endOn", mode === "fixed");
-        const help = purchaseForm?.querySelector("[data-installment-value-help]");
-        const valueMode = purchaseForm?.querySelector('[name="installmentValueMode"]')?.value;
-        if (help) help.textContent = valueMode === "per_installment"
-          ? "O valor informado será aplicado a cada parcela e o total da compra será calculado."
-          : "O valor será dividido pelo total de parcelas.";
-      };
-      repeatMode?.addEventListener("change", syncRepeatFields);
-      purchaseForm?.querySelector('[name="installmentValueMode"]')?.addEventListener("change", syncRepeatFields);
-      const resetPurchaseForm = () => {
-        if (!purchaseForm) return;
-        purchaseForm.reset();
-        purchaseForm.dataset.method = "POST";
-        const defaultPath = purchaseForm.getAttribute("data-path") || "";
-        purchaseForm.dataset.path = defaultPath;
-        purchaseForm.dataset.currentPurchaseId = "";
-        purchaseForm.dataset.recurrenceId = "";
-        purchaseForm.dataset.installmentPurchase = "false";
-        purchaseForm.querySelector('[name="currentPurchaseId"]').value = "";
-        purchaseForm.querySelector('[name="recurrenceId"]').value = "";
-        const occurredOnField = purchaseForm.querySelector('[name="occurredOn"]');
-        if (occurredOnField) { occurredOnField.value = localToday(); occurredOnField.readOnly = false; }
-        const amountField = purchaseForm.querySelector('[name="amountMinor"]');
-        if (amountField) amountField.readOnly = false;
-        const amountLabel = purchaseForm.querySelector("[data-purchase-amount-label]");
-        const amountCurrency = purchaseForm.querySelector('[name="currency"]')?.value || "";
-        if (amountLabel) amountLabel.textContent = "Valor" + (amountCurrency ? " (" + amountCurrency + ")" : "");
-        ["totalInstallments", "installmentStart"].forEach((name) => {
-          const field = purchaseForm.querySelector('[name="' + name + '"]');
-          if (field) field.readOnly = false;
-        });
-        if (repeatMode) repeatMode.disabled = false;
-        if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = false;
-        const currencyField = purchaseForm.querySelector('[name="currency"]');
-        if (currencyField) currencyField.disabled = false;
-        document.querySelector("[data-purchase-modal-title]").textContent = "Registrar compra";
-        const purchaseDescription = document.querySelector("[data-purchase-modal-description]");
-        if (purchaseDescription) purchaseDescription.textContent = "Informe valor e dados da compra. A moeda segue a configuração do cartão.";
-        const scheduleSection = purchaseForm.querySelector('[data-purchase-section="schedule"]');
-        if (scheduleSection) scheduleSection.hidden = false;
-        setField("installmentAmountMinor", false);
-        setField("installmentContext", false);
-        syncRepeatFields();
-      };
-      document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => {
-        if (button.disabled) return;
-        const dialog = document.querySelector('dialog[data-modal="' + button.dataset.openModal + '"]');
-        if (!dialog) return;
-        lastDialogTrigger = button;
-        if (button.dataset.openModal === "purchase") resetPurchaseForm();
-        dialog.showModal();
-      }));
-      document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => closeDialog(button.closest("dialog"))));
-      document.querySelectorAll("dialog.cards-dialog").forEach((dialog) => dialog.addEventListener("click", (event) => {
-        if (event.target === dialog) closeDialog(dialog);
-      }));
-
-      document.querySelectorAll("[data-purchase]").forEach((node) => {
-        const purchase = JSON.parse(node.textContent || "{}");
-        const button = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
-        if (!button || button.disabled || !purchaseForm) return;
-        button.addEventListener("click", () => {
-          purchaseForm.reset();
-          purchaseForm.dataset.path = "/api/credit-card-accounts/" + purchase.cardId + "/purchases/" + purchase.id;
-          purchaseForm.dataset.method = "PATCH";
-          purchaseForm.dataset.currentPurchaseId = purchase.id;
-          purchaseForm.dataset.recurrenceId = purchase.recurrenceId || "";
-          const isInstallmentPurchase = Number.isInteger(purchase.installmentSequenceNumber) && Number.isInteger(purchase.totalInstallments);
-          purchaseForm.dataset.installmentPurchase = isInstallmentPurchase ? "true" : "false";
-          purchaseForm.querySelector('[name="currentPurchaseId"]').value = purchase.id;
-          purchaseForm.querySelector('[name="recurrenceId"]').value = purchase.recurrenceId || "";
-          purchaseForm.querySelector('[name="amountMinor"]').value = minorToMoney(isInstallmentPurchase ? purchase.purchaseTotalAmountMinor : purchase.amountMinor);
-          purchaseForm.querySelector('[name="occurredOn"]').value = purchase.occurredOn;
-          purchaseForm.querySelector('[name="description"]').value = purchase.description || "";
-          purchaseForm.querySelector('[name="categoryId"]').value = purchase.categoryId || "";
-          if (purchase.cardInstrumentId) purchaseForm.querySelector('[name="cardInstrumentId"]').value = purchase.cardInstrumentId;
-          const currencyField = purchaseForm.querySelector('[name="currency"]');
-          if (currencyField) {
-            currencyField.value = purchase.currency || currencyField.value;
-            currencyField.disabled = true;
-          }
-          if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = !isInstallmentPurchase;
-          const scheduleSection = purchaseForm.querySelector('[data-purchase-section="schedule"]');
-          if (scheduleSection) scheduleSection.hidden = !isInstallmentPurchase;
-          if (isInstallmentPurchase) {
-            repeatMode.value = "installment";
-            repeatMode.disabled = true;
-            purchaseForm.querySelector('[name="amountMinor"]').readOnly = true;
-            purchaseForm.querySelector('[name="occurredOn"]').readOnly = true;
-            purchaseForm.querySelector('[name="totalInstallments"]').value = purchase.totalInstallments;
-            purchaseForm.querySelector('[name="totalInstallments"]').readOnly = true;
-            purchaseForm.querySelector('[name="installmentStart"]').value = purchase.installmentStart || 1;
-            purchaseForm.querySelector('[name="installmentStart"]').readOnly = true;
-            purchaseForm.querySelector('[name="installmentAmountMinor"]').value = minorToMoney(purchase.amountMinor);
-          }
-          syncRepeatFields();
-          if (isInstallmentPurchase) {
-            setField("installmentValueMode", false);
-            setField("installmentAmountMinor", true);
-            setField("installmentContext", true);
-            const context = purchaseForm.querySelector('[data-purchase-field="installmentContext"]');
-            if (context) context.textContent = "Parcelado · Parcela " + purchase.installmentSequenceNumber + " de " + purchase.totalInstallments + ". Valor, data e estrutura do parcelamento são somente leitura.";
-            const amountLabel = purchaseForm.querySelector("[data-purchase-amount-label]");
-            const amountCurrency = purchaseForm.querySelector('[name="currency"]')?.value || "";
-            if (amountLabel) amountLabel.textContent = "Valor total da compra" + (amountCurrency ? " (" + amountCurrency + ")" : "");
-          } else {
-            setField("installmentAmountMinor", false);
-            setField("installmentContext", false);
-          }
-          document.querySelector("[data-purchase-modal-title]").textContent = "Editar compra";
-          const purchaseDescription = document.querySelector("[data-purchase-modal-description]");
-          if (purchaseDescription) purchaseDescription.textContent = isInstallmentPurchase
-            ? "A estrutura do parcelamento é somente leitura. Você pode atualizar descrição, categoria e instrumento."
-            : "Atualize os dados da compra e salve as alterações.";
-          lastDialogTrigger = button;
-          document.querySelector('dialog[data-modal="purchase"]')?.showModal();
-        });
-      });
-
-      const request = (path, method, body) => fetch(path, {
-        method,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const responseMessage = async (response) => {
-        const body = await response.json().catch(() => ({}));
-        return response.ok ? "Ação concluída. Atualizando..." : (body?.error?.message || "Não foi possível concluir a ação.");
-      };
-
-      purchaseForm?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (!purchaseForm.checkValidity()) {
-          purchaseForm.reportValidity();
-          return;
-        }
-        const data = new FormData(purchaseForm);
-        const method = purchaseForm.dataset.method || "POST";
-        const mode = method === "POST" ? String(data.get("repeatMode") || "single") : "single";
-        const path = purchaseForm.dataset.path || "";
-        const status = purchaseForm.querySelector("[data-form-status]");
-        const currency = String(data.get("currency") || purchaseForm.querySelector('[name="currency"]')?.value || "").trim().toUpperCase();
-        if (method === "POST" && !/^[A-Z]{3}$/.test(currency)) {
-          status.textContent = "Defina a moeda padrão do cartão em Contas e Cartões antes de salvar a compra.";
-          status.className = "form-status error full";
-          return;
-        }
-        const editingInstallment = method === "PATCH" && purchaseForm.dataset.installmentPurchase === "true";
-        const payload = { description: String(data.get("description") || "") };
-        if (!editingInstallment) {
-          payload.amountMinor = moneyToMinor(data.get("amountMinor"));
-          payload.occurredOn = String(data.get("occurredOn") || "");
-        }
-        const categoryId = String(data.get("categoryId") || "");
-        const cardInstrumentId = String(data.get("cardInstrumentId") || "");
-        if (categoryId) payload.categoryId = categoryId;
-        if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
-        if (method === "POST") payload.currency = currency;
-        status.textContent = "Salvando...";
-        let response;
-        if (mode === "fixed") {
-          const cardId = /credit-card-accounts\\/([^/]+)/.exec(path)?.[1] || "";
-          const endOn = String(data.get("endOn") || "");
-          response = await request("/api/recurrences", "POST", {
-            frequency: String(data.get("frequency") || "monthly"),
-            interval: Math.max(1, Number(data.get("interval") || 1)),
-            startOn: payload.occurredOn,
-            ...(endOn ? { endOn } : {}),
-            amountMinor: payload.amountMinor,
-            currency,
-            description: payload.description,
-            cardId,
-            ...(cardInstrumentId ? { cardInstrumentId } : {}),
-            ...(categoryId ? { categoryId } : {}),
-          });
-        } else if (mode === "installment") {
-          const totalInstallments = Math.max(2, Number(data.get("totalInstallments") || 2));
-          const installmentStart = Math.min(
-            Math.max(1, Number(data.get("installmentStart") || 1)),
-            totalInstallments,
-          );
-          const amountMinor =
-            String(data.get("installmentValueMode")) === "per_installment"
-              ? payload.amountMinor * totalInstallments
-              : payload.amountMinor;
-          response = await request(path, "POST", {
-            ...payload,
-            amountMinor,
-            currency,
-            totalInstallments,
-            installmentStart,
-          });
-        } else {
-          response = await request(path, method, payload);
-        }
-        status.textContent = await responseMessage(response);
-        status.className = response.ok ? "form-status success full" : "form-status error full";
-        if (response.ok) window.setTimeout(() => window.location.reload(), 350);
-      });
-
-      document.querySelector("[data-payment-form]")?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const form = event.currentTarget;
-        if (!form.checkValidity()) {
-          form.reportValidity();
-          return;
-        }
-        const data = new FormData(form);
-        const status = form.querySelector("[data-form-status]");
-        status.textContent = "Liquidando...";
-        const response = await request(form.dataset.path, "POST", {
-          paymentAccountId: String(data.get("paymentAccountId") || ""),
-          paidOn: String(data.get("paidOn") || ""),
-          amountMinor: moneyToMinor(data.get("amountMinor")),
-          description: String(data.get("description") || ""),
-        });
-        status.textContent = await responseMessage(response);
-        status.className = response.ok ? "form-status success full" : "form-status error full";
-        if (response.ok) window.setTimeout(() => window.location.reload(), 350);
-      });
-
-      // Status-only reconciliation follows the Golden Screen. For finite installments,
-      // use the occurrence-specific route so sibling invoices are unaffected.
-      document.querySelectorAll("[data-set-purchase-status]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          const control = button.closest("[data-purchase-status-control]");
-          const feedback = control?.querySelector(".cards-purchase-status-feedback");
-          const message = feedback?.querySelector("[data-cards-status-feedback-message]");
-          const targetStatus = button.dataset.setPurchaseStatus;
-          const purchaseId = button.dataset.statusPurchaseId;
-          const cardId = button.dataset.statusCardId;
-          if (!control || !feedback || !message || !purchaseId || !cardId ||
-              !["posted", "reconciled"].includes(targetStatus)) return;
-          const showFeedback = (text, tone) => {
-            feedback.hidden = false;
-            feedback.className = "cards-purchase-status-feedback" + (tone ? " " + tone : "");
-            message.textContent = text;
-            feedback.title = text;
-            feedback.dataset.tooltip = text;
-          };
-          const buttons = Array.from(control.querySelectorAll("[data-set-purchase-status]"));
-          buttons.forEach((item) => { item.disabled = true; });
-          showFeedback("Atualizando situação...", "");
-          try {
-            const installmentId = button.dataset.statusInstallmentId;
-            const invoiceId = button.dataset.statusInvoiceId;
-            const path = installmentId && invoiceId
-              ? "/api/invoices/" + encodeURIComponent(invoiceId) +
-                "/installments/" + encodeURIComponent(installmentId) + "/reconciliation"
-              : "/api/credit-card-accounts/" + encodeURIComponent(cardId) +
-                "/purchases/" + encodeURIComponent(purchaseId);
-            const response = await request(path, "PATCH", { status: targetStatus });
-            if (!response.ok) {
-              showFeedback(await responseMessage(response), "error");
-              buttons.forEach((item) => { item.disabled = false; });
-              return;
-            }
-            showFeedback("Situação atualizada. Atualizando fatura...", "success");
-            window.setTimeout(() => window.location.reload(), 350);
-          } catch {
-            showFeedback("Falha de conexão. Tente novamente.", "error");
-            buttons.forEach((item) => { item.disabled = false; });
-          }
-        });
-      });
-      document.querySelectorAll("[data-purchase-status-control]").forEach((control) => {
-        control.addEventListener("toggle", () => {
-          if (!control.open) return;
-          document.querySelectorAll("[data-purchase-status-control]").forEach((other) => {
-            if (other !== control) other.open = false;
-          });
-        });
-      });
-
-      document.querySelectorAll("[data-api-path]").forEach((button) => button.addEventListener("click", async () => {
-        if (button.dataset.confirm && !window.confirm(button.dataset.confirm)) return;
-        button.disabled = true;
-        const response = await request(button.dataset.apiPath, button.dataset.apiMethod || "POST", {});
-        if (!response.ok) {
-          window.alert(await responseMessage(response));
-          button.disabled = false;
-          return;
-        }
-        window.setTimeout(() => window.location.reload(), 350);
-      }));
-      document.addEventListener("click", (event) => {
-        document.querySelectorAll(".cards-purchase-actions[open],.cards-purchase-status-control[open]").forEach((details) => {
-          if (!details.contains(event.target)) details.removeAttribute("open");
-        });
-      });
-      document.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape") return;
-        document.querySelectorAll(".cards-purchase-actions[open],.cards-purchase-status-control[open]").forEach((details) => {
-          const summary = details.querySelector("summary");
-          details.removeAttribute("open");
-          summary?.focus();
-        });
-      });
-      syncRepeatFields();
-    })();
-  </script>`;
+  return (
+    cardsPageSetupScript() +
+    cardsPagePurchaseActionsScript() +
+    cardsPageMutationScript() +
+    cardsPageRemainingActionsScript()
+  );
 }
 
 function serializeScriptJson(value: unknown): string {
