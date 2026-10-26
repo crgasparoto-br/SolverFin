@@ -146,7 +146,10 @@ describe("Mercado Pago bank statement PDF layout", () => {
     const parsed = parseMercadoPagoStatement(threePages);
     assert.equal(parsed.state, "ready");
     assert.equal(parsed.rows.length, 38);
-    assert.equal(parsed.rows.reduce((sum, item) => sum + item.amountMinor, 0), 3800);
+    assert.equal(
+      parsed.rows.reduce((sum, item) => sum + item.amountMinor, 0),
+      3800,
+    );
     assert.equal(new Set(parsed.rows.map((item) => item.externalId)).size, 38);
   });
 
@@ -225,10 +228,8 @@ describe("Mercado Pago bank statement PDF layout", () => {
         "101,50",
         130,
       ).filter((word) => {
-        if (missing === "date-and-id")
-          return word.x >= 285 || (word.x >= 76 && word.x < 195);
-        if (missing === "date-and-amount")
-          return (word.x >= 195 && word.x < 285) || word.x >= 354;
+        if (missing === "date-and-id") return word.x >= 285 || (word.x >= 76 && word.x < 195);
+        if (missing === "date-and-amount") return (word.x >= 195 && word.x < 285) || word.x >= 354;
         return word.x >= 195 && word.x < 354;
       });
       modified[1] = { words: [...modified[1]!.words, ...candidate] };

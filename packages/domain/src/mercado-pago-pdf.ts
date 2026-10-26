@@ -140,28 +140,19 @@ function parsePageMovements(page: PdfExtractedPage): Movement[] | undefined {
   const isFinancialAnchor = (word: PdfExtractedWord): boolean =>
     rowWord(word) &&
     ((word.x >= 195 && word.x < 285 && /^\d{7,18}$/.test(word.text)) ||
-      (word.x >= 285 &&
-        word.x < 445 &&
-        (word.text === "R$" || /^-?\d[\d.,]*$/.test(word.text))));
+      (word.x >= 285 && word.x < 445 && (word.text === "R$" || /^-?\d[\d.,]*$/.test(word.text))));
   const dateWords = page.words.filter(
     (word) =>
-      rowWord(word) &&
-      Math.abs(word.x - header.x) < 6 &&
-      /^\d{2}-\d{2}-\d{4}$/.test(word.text),
+      rowWord(word) && Math.abs(word.x - header.x) < 6 && /^\d{2}-\d{2}-\d{4}$/.test(word.text),
   );
-  const anchors = [...dateWords, ...page.words.filter(isFinancialAnchor)].sort(
-    (a, b) => a.y - b.y,
-  );
+  const anchors = [...dateWords, ...page.words.filter(isFinancialAnchor)].sort((a, b) => a.y - b.y);
   const rowAnchors: number[] = [];
   for (const anchor of anchors) {
     const last = rowAnchors[rowAnchors.length - 1];
     if (last === undefined || Math.abs(anchor.y - last) > 3.5) rowAnchors.push(anchor.y);
   }
-  if (rowAnchors.length === 0 || rowAnchors.length !== dateWords.length)
-    return undefined;
-  const dates = rowAnchors.map((y) =>
-    dateWords.find((word) => Math.abs(word.y - y) <= 3.5),
-  );
+  if (rowAnchors.length === 0 || rowAnchors.length !== dateWords.length) return undefined;
+  const dates = rowAnchors.map((y) => dateWords.find((word) => Math.abs(word.y - y) <= 3.5));
   if (dates.some((date) => date === undefined)) return undefined;
 
   const movements: Movement[] = [];
