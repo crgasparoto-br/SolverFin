@@ -146,7 +146,7 @@ export async function checkRecurringEdit(
     linked === undefined ||
     (purchase.installmentId !== null &&
       (linked.installmentId !== purchase.installmentId ||
-        linked.installmentInvoiceId !== purchase.invoiceId))
+        (linked.installmentInvoiceId !== null && linked.installmentInvoiceId !== purchase.invoiceId)))
   ) {
     return {
       code: "CARD_PURCHASE_INVOICE_INVALID",
