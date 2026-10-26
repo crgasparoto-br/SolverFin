@@ -22,6 +22,8 @@ import { query, withTransaction, type QueryExecutor } from "../db.js";
 export interface AutomationRuleDraft {
   name: string;
   priority?: number | undefined;
+  /** Inactive entries are reusable form suggestions, not background automations. */
+  status?: "active" | "inactive";
   conditions: AutomationRuleConditions;
   actions: AutomationRuleActions;
   explanation?: string | undefined;
@@ -128,7 +130,7 @@ export async function createAutomationRuleForContext(
   const rule = normalizeAutomationRule(context, {
     id: randomUUID(),
     name: draft.name,
-    status: "active",
+    status: draft.status ?? "active",
     priority: draft.priority ?? 100,
     conditions: draft.conditions,
     actions: draft.actions,
