@@ -13,7 +13,11 @@ import {
 } from "./recurrences-section.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
-import { entryFillRuleScript, entryFillRuleStyles, renderEntryFillRuleControl } from "./entry-fill-rules.js";
+import {
+  entryFillRuleScript,
+  entryFillRuleStyles,
+  renderEntryFillRuleControl,
+} from "./entry-fill-rules.js";
 import {
   renderStatementListArchetype,
   statementListArchetypeStyles,
