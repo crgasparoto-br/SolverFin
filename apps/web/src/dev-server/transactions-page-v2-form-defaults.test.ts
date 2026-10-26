@@ -14,10 +14,26 @@ test("novo lançamento sugere datas locais e aplica fallbacks temporais seguros"
       new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
     );
 
-    assert.match(html, /data-statement-save-continue[^>]*>Salvar e continuar<\/button>/, "novo lançamento oferece salvar e continuar");
-    assert.match(html, /saveAndContinue = method === "POST"/, "edição não permite salvar e continuar");
-    assert.match(html, /if \(saveAndContinue\) \{[\s\S]*?form\.reset\(\);[\s\S]*?form\.dataset\.path = "\/api\/transactions"/, "criação precisa persistir antes de limpar o formulário");
-    assert.match(html, /data-fill-rule-save/, "extrato exibe o controle para salvar a associação de descrição e categoria");
+    assert.match(
+      html,
+      /data-statement-save-continue[^>]*>Salvar e continuar<\/button>/,
+      "novo lançamento oferece salvar e continuar",
+    );
+    assert.match(
+      html,
+      /saveAndContinue = method === "POST"/,
+      "edição não permite salvar e continuar",
+    );
+    assert.match(
+      html,
+      /if \(saveAndContinue\) \{[\s\S]*?form\.reset\(\);[\s\S]*?form\.dataset\.path = "\/api\/transactions"/,
+      "criação precisa persistir antes de limpar o formulário",
+    );
+    assert.match(
+      html,
+      /data-fill-rule-save/,
+      "extrato exibe o controle para salvar a associação de descrição e categoria",
+    );
     assert.match(
       html,
       /Data do evento<input name="occurredOn" type="date" required \/>/,
