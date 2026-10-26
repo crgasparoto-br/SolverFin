@@ -44,3 +44,118 @@ export function purchaseInstallmentEditViolation(
   }
   return null;
 }
+
+/** Shared pre-write invariant for both recurring purchase edit scopes. */
+export interface RecurringPurchaseGuardState {
+  status: string;
+  currency: string;
+  invoiceCurrency: string;
+  recurrenceCurrency: string;
+  installmentId: string | null;
+  installmentStatus: string | null;
+  installmentCurrency: string | null;
+}
+
+export function recurringSelectedEditViolation(
+  state: RecurringPurchaseGuardState,
+  statusOnly = false,
+): { code: string; message: string } | null {
+  if (
+    !statusOnly &&
+    (["RECONCILED", "VOIDED", "CANCELLED"].includes(state.status) ||
+      (state.installmentStatus !== null &&
+        ["RECONCILED", "CANCELLED"].includes(state.installmentStatus)))
+  ) {
+    return {
+      code: "CARD_PURCHASE_RECONCILED_LOCKED",
+      message: "Ocorrencias recorrentes conciliadas ou canceladas nao podem ser editadas.",
+    };
+  }
+  if (
+    state.currency !== state.invoiceCurrency ||
+    state.currency !== state.recurrenceCurrency ||
+    (state.installmentId !== null && state.installmentCurrency !== state.currency)
+  ) {
+    return {
+      code: "CARD_PURCHASE_CURRENCY_MISMATCH",
+      message: "Moedas divergentes entre compra, recorrencia, parcela e fatura.",
+    };
+  }
+  return null;
+}
+
+export function recurringFutureCurrencyMismatch(
+  row: {
+    transactionCurrency: string | null;
+    invoiceCurrency: string | null;
+    installmentId: string | null;
+    installmentCurrency: string | null;
+  },
+  currency: string,
+): boolean {
+  return (
+    row.transactionCurrency !== currency ||
+    row.invoiceCurrency !== currency ||
+    (row.installmentId !== null && row.installmentCurrency !== currency)
+  );
+}
+
+/** Resolve the current-only path through the same state guard as future edits. */
+export async function currentRecurringEditViolationForContext(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  purchase: {
+    status: string;
+    currency: string;
+    recurrenceId: string | null;
+    installmentId: string | null;
+    invoiceId: string | null;
+  },
+  invoiceCurrency: string,
+  statusOnly: boolean,
+): Promise<{ code: string; message: string } | null> {
+  if (purchase.recurrenceId === null) return null;
+
+  const rows = await executeQuery<{
+    recurrenceCurrency: string;
+    installmentId: string | null;
+    installmentStatus: string | null;
+    installmentCurrency: string | null;
+    installmentInvoiceId: string | null;
+  }>(
+    `select r."currency" as "recurrenceCurrency",
+            i."id" as "installmentId", i."status" as "installmentStatus",
+            i."currency" as "installmentCurrency", i."invoiceId" as "installmentInvoiceId"
+       from "Recurrence" r
+       left join "Installment" i on i."id" = $4
+         and i."organizationId" = r."organizationId"
+         and i."financialProfileId" = r."financialProfileId"
+      where r."id" = $1 and r."organizationId" = $2
+        and r."financialProfileId" = $3`,
+    [purchase.recurrenceId, context.organizationId, context.financialProfileId, purchase.installmentId],
+  );
+  const linked = rows[0];
+  if (
+    linked === undefined ||
+    (purchase.installmentId !== null &&
+      (linked.installmentId !== purchase.installmentId ||
+        linked.installmentInvoiceId !== purchase.invoiceId))
+  ) {
+    return {
+      code: "CARD_PURCHASE_INVOICE_INVALID",
+      message: "Parcela recorrente nao pertence a fatura informada.",
+    };
+  }
+  return recurringSelectedEditViolation(
+    {
+      status: purchase.status,
+      currency: purchase.currency,
+      invoiceCurrency,
+      recurrenceCurrency: linked.recurrenceCurrency,
+      installmentId: purchase.installmentId,
+      installmentStatus: linked.installmentStatus,
+      installmentCurrency: linked.installmentCurrency,
+    },
+    statusOnly,
+  );
+}

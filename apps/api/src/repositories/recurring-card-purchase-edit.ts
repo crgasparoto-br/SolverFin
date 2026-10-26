@@ -9,6 +9,10 @@ import {
 import { withTransaction, type query } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { InvoiceContractError, type UpdateCardPurchasePayload } from "./card-invoice-contracts.js";
+import {
+  recurringFutureCurrencyMismatch,
+  recurringSelectedEditViolation,
+} from "./card-invoice-purchase-edit-guard.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
 export type RecurringCardPurchaseSkipReason =
@@ -157,32 +161,9 @@ export async function updateRecurringCardPurchaseForContext(
       );
     }
 
-    // The selected occurrence is not covered by futureSkipReason. Enforce the
-    // same immutable financial states before any transaction/recurrence writes.
-    if (
-      LOCKED_TRANSACTION_STATUSES.has(selected.status) ||
-      (selected.installmentStatus !== null &&
-        LOCKED_INSTALLMENT_STATUSES.has(selected.installmentStatus))
-    ) {
-      throw new InvoiceContractError(
-        "CARD_PURCHASE_RECONCILED_LOCKED",
-        "Ocorrencias recorrentes conciliadas ou canceladas nao podem ser editadas.",
-        409,
-      );
-    }
-
-    // A recurrence, selected transaction, installment and invoice must agree
-    // on the native currency. Never relabel amounts or infer FX on edit.
-    if (
-      selected.currency !== selected.invoiceCurrency ||
-      selected.currency !== selected.recurrenceCurrency ||
-      (selected.installmentId !== null && selected.installmentCurrency !== selected.currency)
-    ) {
-      throw new InvoiceContractError(
-        "CARD_PURCHASE_CURRENCY_MISMATCH",
-        "Moedas divergentes entre compra, recorrencia, parcela e fatura.",
-        409,
-      );
+    const selectedViolation = recurringSelectedEditViolation(selected);
+    if (selectedViolation) {
+      throw new InvoiceContractError(selectedViolation.code, selectedViolation.message, 409);
     }
 
     if (payload.invoiceId !== undefined && payload.invoiceId !== selected.invoiceId) {
@@ -551,11 +532,7 @@ function futureSkipReason(
   if (LOCKED_INVOICE_STATUSES.has(row.invoiceStatus)) {
     return "invoice_locked";
   }
-  if (
-    row.transactionCurrency !== currency ||
-    row.invoiceCurrency !== currency ||
-    (row.installmentId !== null && row.installmentCurrency !== currency)
-  ) {
+  if (recurringFutureCurrencyMismatch(row, currency)) {
     return "currency_mismatch";
   }
   if (
