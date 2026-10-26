@@ -8,7 +8,8 @@ function fixture(state) {
   return {
     route: "/dashboard",
     state,
-    provenance: "real dashboard SSR renderer with controlled API responses; authenticated browser session",
+    provenance:
+      "real dashboard SSR renderer with controlled API responses; authenticated browser session",
     failures: [],
     viewports: [1366, 390, 320].map((width) => ({
       width,
@@ -57,7 +58,11 @@ test("Dashboard #724 rejects missing compact-mobile coverage", async () => {
   const input = fixture("partial");
   input.viewports.pop();
   await assert.rejects(
-    collectDashboard724Evidence("partial", async () => input, async () => {}),
+    collectDashboard724Evidence(
+      "partial",
+      async () => input,
+      async () => {},
+    ),
     /exact Desktop\/Mobile coverage/,
   );
 });
@@ -66,14 +71,22 @@ test("Dashboard #724 rejects an overwritten SSR and a missing Chrome screenshot"
   const input = fixture("multi-currency");
   input.viewports[1].measurements.documentUrl = "http://127.0.0.1:5173/dashboard";
   await assert.rejects(
-    collectDashboard724Evidence("multi-currency", async () => input, async () => {}),
+    collectDashboard724Evidence(
+      "multi-currency",
+      async () => input,
+      async () => {},
+    ),
     /Live page replaced controlled SSR/,
   );
   input.viewports[1].measurements.documentUrl = "about:blank";
   await assert.rejects(
-    collectDashboard724Evidence("multi-currency", async () => input, async (name) => {
-      if (name.endsWith("-390.png")) throw new Error("Screenshot not found");
-    }),
+    collectDashboard724Evidence(
+      "multi-currency",
+      async () => input,
+      async (name) => {
+        if (name.endsWith("-390.png")) throw new Error("Screenshot not found");
+      },
+    ),
     /Screenshot not found/,
   );
 });
@@ -82,7 +95,11 @@ test("Dashboard #724 rejects a missing keyboard action", async () => {
   const input = fixture("long-content");
   input.viewports[1].keyboard.open = false;
   await assert.rejects(
-    collectDashboard724Evidence("long-content", async () => input, async () => {}),
+    collectDashboard724Evidence(
+      "long-content",
+      async () => input,
+      async () => {},
+    ),
     /Enter failed to open currency evidence/,
   );
 });

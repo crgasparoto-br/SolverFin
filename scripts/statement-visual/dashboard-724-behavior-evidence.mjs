@@ -17,7 +17,11 @@ export async function collectDashboard724Evidence(state, readEvidence, requireAr
 
   const viewports = report.viewports ?? [];
   const widths = viewports.map((viewport) => viewport.width).sort((left, right) => left - right);
-  assert.deepEqual(widths, REQUIRED_VIEWPORTS, `${fileName} lacks the exact Desktop/Mobile coverage`);
+  assert.deepEqual(
+    widths,
+    REQUIRED_VIEWPORTS,
+    `${fileName} lacks the exact Desktop/Mobile coverage`,
+  );
   const artifacts = [fileName];
   for (const viewport of viewports) {
     const measurements = viewport.measurements ?? {};
@@ -34,10 +38,17 @@ export async function collectDashboard724Evidence(state, readEvidence, requireAr
     } else {
       assert.equal(measurements.hasError, false, "Dashboard unexpectedly rendered an error");
       assert.equal(measurements.hasNextActions, true, "Dashboard next action missing");
-      assert.equal(measurements.supportingAfterActions, true, "Supporting metrics precede decision");
+      assert.equal(
+        measurements.supportingAfterActions,
+        true,
+        "Supporting metrics precede decision",
+      );
       assert.equal(measurements.amountsSeparatedByCurrency, true, "Currency amounts are missing");
       assert.equal(measurements.primaryCount, state === "multi-currency" ? 4 : 2);
-      assert.deepEqual(measurements.currencies, state === "multi-currency" ? ["BRL", "USD"] : ["BRL"]);
+      assert.deepEqual(
+        measurements.currencies,
+        state === "multi-currency" ? ["BRL", "USD"] : ["BRL"],
+      );
       assert.equal(viewport.keyboard?.open, true, "Enter failed to open currency evidence");
       assert.equal(viewport.keyboard?.hash, "#dashboard-evidence-brl-available");
       if (state === "partial") {
