@@ -85,7 +85,7 @@ describe("Poppler text-position adapter", () => {
         status: 0,
         stderr: "",
         stdout:
-          "Title: Synthetic\\nEncrypted: yes (print:yes copy:no change:no addNotes:no algorithm:RC4)\\n",
+          "Title: Synthetic\nEncrypted: yes (print:yes copy:no change:no addNotes:no algorithm:RC4)\n",
       };
     }) as unknown as typeof spawnSync;
     assert.throws(
@@ -105,7 +105,7 @@ describe("Poppler text-position adapter", () => {
         stderr: "",
         stdout:
           command === "pdfinfo"
-            ? "Encrypted: no\\n"
+            ? "Encrypted: no\n"
             : '<html><body><doc><page><word xMin="10" yMin="20">TEST</word></page></doc></body></html>',
       };
     }) as unknown as typeof spawnSync;
