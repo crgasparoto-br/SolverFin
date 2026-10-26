@@ -1,424 +1,366 @@
 {
   "schema_version": 2,
-  "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-  "base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
+  "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+  "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
   "creations": [
     {
-      "path": "apps/api/src/card-installment-amount-handler.ts",
+      "path": "apps/web/src/dev-server/dashboard-styles.ts",
       "kind": "file",
-      "name": "card-installment-amount-handler",
+      "name": "dashboard-styles.ts",
       "search": {
         "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
+          "git grep -n \"dashboard\" apps/web/src/dev-server/shared-styles.ts",
+          "git diff --name-status a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3"
         ],
-        "scope": "Compare existing code in apps/api/src to avoid duplicating card domain and DOM handlers.",
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
         "candidates": [
           {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/card-installment-amount-handler.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+            "path": "apps/web/src/dev-server/shared-styles.ts",
+            "reason_not_reused": "Common design-system styles already exist; the extracted 101-line Dashboard-specific layout avoids duplicating canonical tokens or editing shared styling."
           }
         ]
       },
       "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+      "justification": "Common design-system styles already exist; the extracted 101-line Dashboard-specific layout avoids duplicating canonical tokens or editing shared styling."
     },
     {
-      "path": "apps/api/src/card-purchase-extra-handlers.ts",
+      "path": "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
       "kind": "file",
-      "name": "card-purchase-extra-handlers",
+      "name": "dashboard-724-behavior-evidence.mjs",
       "search": {
         "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3"
         ],
-        "scope": "Compare existing code in apps/api/src to avoid duplicating card domain and DOM handlers.",
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
         "candidates": [
           {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/card-purchase-extra-handlers.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
           }
         ]
       },
       "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-error.mjs",
       "kind": "file",
-      "name": "card-invoice-installment-amount",
+      "name": "issue-724-dashboard-error.mjs",
       "search": {
         "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3"
         ],
-        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
         "candidates": [
           {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-installment-amount.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
           }
         ]
       },
       "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-long-content.mjs",
       "kind": "file",
-      "name": "card-invoice-purchase-delete",
+      "name": "issue-724-dashboard-long-content.mjs",
       "search": {
         "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3"
         ],
-        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
         "candidates": [
           {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-purchase-delete.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
           }
         ]
       },
       "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-multi-currency.mjs",
       "kind": "file",
-      "name": "card-invoice-purchase-reverse",
+      "name": "issue-724-dashboard-multi-currency.mjs",
       "search": {
         "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3"
         ],
-        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
         "candidates": [
           {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-purchase-reverse.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
           }
         ]
       },
       "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-reversal-edit.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-partial.mjs",
       "kind": "file",
-      "name": "card-invoice-reversal-edit",
+      "name": "issue-724-dashboard-partial.mjs",
       "search": {
         "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3"
         ],
-        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
         "candidates": [
           {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-reversal-edit.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
           }
         ]
       },
       "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
     },
     {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
       "kind": "file",
-      "name": "cards-page-v2-script-mutations",
+      "name": "issue-724-dashboard-scenarios.mjs",
       "search": {
         "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-core-pages-execution.mjs",
+          "git diff --name-status a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3"
         ],
-        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/cards-page-v2.ts",
-            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-mutations.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
+            "path": "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+            "reason_not_reused": "Existing Chrome core-pages validates live normal Dashboard; distinct controlled SSR edge-state runner is required for multi-currency/partial/error/long-content."
           }
         ]
       },
       "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-other.ts",
-      "kind": "file",
-      "name": "cards-page-v2-script-other",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.ts",
-            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-other.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-purchases.ts",
-      "kind": "file",
-      "name": "cards-page-v2-script-purchases",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.ts",
-            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-purchases.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-setup.ts",
-      "kind": "file",
-      "name": "cards-page-v2-script-setup",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.ts",
-            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-setup.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/api/src/repositories/card-invoice-purchase-edit-guard.ts",
-      "kind": "file",
-      "name": "card-invoice-purchase-edit-guard",
-      "search": {
-        "queries": [
-          "git grep -n CARD_INSTALLMENT_RECONCILED_LOCKED 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/api/src/repositories"
-        ],
-        "scope": "Check existing invoice repository update and reconciliation guards for a shared lookup before introducing a separate mutation guard.",
-        "candidates": [
-          {
-            "path": "apps/api/src/repositories/card-invoice-contracts-core.ts",
-            "reason_not_reused": "The core editor already owns financial update transactions; extracting a narrowly scoped reusable shared-series policy guard avoids duplicating it across preflight and locked transaction checks."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Shared read-only status-policy helper for consistent preflight and locked-transaction assertions; consumed by existing purchase edit contract."
+      "justification": "Existing Chrome core-pages validates live normal Dashboard; distinct controlled SSR edge-state runner is required for multi-currency/partial/error/long-content."
     }
   ],
-  "references": [
-    {
-      "symbol": "adjustInvoiceInstallmentAmountForContext",
-      "kind": "local",
-      "used_in": "apps/api/src/card-installment-amount-handler.ts",
-      "defined_at": {
-        "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
-        "line": 11
-      },
-      "verified_by": {
-        "command": "git grep -n adjustInvoiceInstallmentAmountForContext 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-        "exit_code": 0
-      }
-    }
-  ],
+  "references": [],
   "replacements": [],
   "test_decisions": [
     {
-      "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "path": "apps/web/src/dev-server/dashboard-page-currency.test.ts",
       "operation": "modified",
-      "scenario": "Contract regression for card purchase #742 in card-purchase-edit-contract.integration.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
       "search": {
         "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/api/src/card-purchase-edit-contract.integration.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/api/src/card-purchase-edit-contract.integration.test.ts"
+          "git diff a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3 -- apps/web/src/dev-server/dashboard-page-currency.test.ts",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
         ],
-        "scope": "Compare canonical existing test suite in apps/api/src/card-purchase-edit-contract.integration.test.ts before extending",
-        "runner": "npm run test:integration --workspace @solverfin/api",
-        "candidates": [
-          {
-            "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
-          }
-        ]
-      },
-      "decision": "extend-existing",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test:integration --workspace @solverfin/api",
-        "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-        "reached_tests": [
-          "apps/api/src/card-purchase-edit-contract.integration.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-card-purchase-edit-contract-integration-test-execution.txt",
-        "evidence_sha256": "b794efd288ca0b161cb5b10c8a0a5d74367ae6f63e47b3fce69b8c298eb24ac5"
-      }
-    },
-    {
-      "path": "apps/api/src/current-only-recurring-edit.integration.test.ts",
-      "operation": "modified",
-      "scenario": "Contract regression for card purchase #742 in current-only-recurring-edit.integration.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
-      "search": {
-        "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/api/src/current-only-recurring-edit.integration.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/api/src/current-only-recurring-edit.integration.test.ts"
-        ],
-        "scope": "Compare canonical existing test suite in apps/api/src/current-only-recurring-edit.integration.test.ts before extending",
-        "runner": "npm run test:integration --workspace @solverfin/api",
-        "candidates": [
-          {
-            "path": "apps/api/src/current-only-recurring-edit.integration.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
-          }
-        ]
-      },
-      "decision": "extend-existing",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test:integration --workspace @solverfin/api",
-        "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-        "reached_tests": [
-          "apps/api/src/current-only-recurring-edit.integration.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-current-only-recurring-edit-integration-test-execution.txt",
-        "evidence_sha256": "20a0cc59f99531f9a6ad3fc4e519b3e5e679c5c02b69a0839ef9d15bda7fe2a4"
-      }
-    },
-    {
-      "path": "apps/web/src/design-system/canonical-token-source.test.ts",
-      "operation": "modified",
-      "scenario": "Contract regression for card purchase #742 in canonical-token-source.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
-      "search": {
-        "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/design-system/canonical-token-source.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/web/src/design-system/canonical-token-source.test.ts"
-        ],
-        "scope": "Compare canonical existing test suite in apps/web/src/design-system/canonical-token-source.test.ts before extending",
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
         "runner": "npm run test",
         "candidates": [
           {
-            "path": "apps/web/src/design-system/canonical-token-source.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
+            "path": "apps/web/src/dev-server/dashboard-page-currency.test.ts",
+            "case": "Dashboard SSR view, shared style and shell regression assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
         "reached_tests": [
-          "apps/web/src/design-system/canonical-token-source.test.ts"
+          "apps/web/src/dev-server/dashboard-page-currency.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-canonical-token-source-test-execution.txt",
-        "evidence_sha256": "9774da0aedb692e1966cedd0ca1c26a54004e1c01fb96ac56c0abc2892d78f84"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-page-currency.test.ts.execution.txt",
+        "evidence_sha256": "3e00878358061a2276f8b265b0ecfd80f28ba9219fde7a5e99f0bf655b770949"
       }
     },
     {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
-      "operation": "added",
-      "scenario": "Contract regression for card purchase #742 in cards-page-v2-script-mutations.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "path": "apps/web/src/dev-server/dashboard-page.test.ts",
+      "operation": "modified",
+      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
       "search": {
         "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts"
+          "git diff a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3 -- apps/web/src/dev-server/dashboard-page.test.ts",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
         ],
-        "scope": "Compare canonical existing test suite in apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts before extending",
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
         "runner": "npm run test",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
+            "path": "apps/web/src/dev-server/dashboard-page.test.ts",
+            "case": "Dashboard SSR view, shared style and shell regression assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "reached_tests": [
+          "apps/web/src/dev-server/dashboard-page.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-page.test.ts.execution.txt",
+        "evidence_sha256": "fe837e52a327253be44fd0e2438de3636afcf301ad6ba014678a92857599e762"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/shared-styles.test.ts",
+      "operation": "modified",
+      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3 -- apps/web/src/dev-server/shared-styles.test.ts",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/shared-styles.test.ts",
+            "case": "Dashboard SSR view, shared style and shell regression assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "reached_tests": [
+          "apps/web/src/dev-server/shared-styles.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-shared-styles.test.ts.execution.txt",
+        "evidence_sha256": "c600f8ff027a6ed6b77f2393f93c3536f8f2e4db751a870288c9c0d410d38e38"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/shell-pages.test.ts",
+      "operation": "modified",
+      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3 -- apps/web/src/dev-server/shell-pages.test.ts",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/shell-pages.test.ts",
+            "case": "Dashboard SSR view, shared style and shell regression assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "reached_tests": [
+          "apps/web/src/dev-server/shell-pages.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-shell-pages.test.ts.execution.txt",
+        "evidence_sha256": "bc355ea7a5a64bf8bc143bf4ef9d353f4c324ee85c743632eda76dd0aa02b357"
+      }
+    },
+    {
+      "path": "scripts/statement-visual/coverage-contract.test.mjs",
+      "operation": "modified",
+      "scenario": "Chrome scenario coverage and fingerprint assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3 -- scripts/statement-visual/coverage-contract.test.mjs",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "node --test scripts/statement-visual/*.test.mjs",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.test.mjs",
+            "case": "Chrome scenario coverage and fingerprint assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "node --test scripts/statement-visual/*.test.mjs",
+        "exit_code": 0,
+        "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "reached_tests": [
+          "scripts/statement-visual/coverage-contract.test.mjs"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-coverage-contract.test.mjs.execution.txt",
+        "evidence_sha256": "683905dd4d607f70e9764c39fc9b277cfa190331cf209391eec513ee52bd24b0"
+      }
+    },
+    {
+      "path": "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
+      "operation": "added",
+      "scenario": "Chrome scenario coverage and fingerprint assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f..d239e1829923264d7dd57bd62e146d57729b44e3 -- scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "node --test scripts/statement-visual/*.test.mjs",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.test.mjs",
+            "case": "Chrome scenario coverage and fingerprint assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
           }
         ]
       },
       "decision": "new-test-required",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "justification": "The added semantic-evidence adapter needs its own focused mutation tests; existing canonical tests cover existing components.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
         "reached_tests": [
-          "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts"
+          "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-cards-page-v2-script-mutations-test-execution.txt",
-        "evidence_sha256": "35c10b9eb3850ee4beba14c3d42df3359b39a7949388d1aa1a921db6ce70bc13"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2.test.ts",
-      "operation": "modified",
-      "scenario": "Contract regression for card purchase #742 in cards-page-v2.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
-      "search": {
-        "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/dev-server/cards-page-v2.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/web/src/dev-server/cards-page-v2.test.ts"
-        ],
-        "scope": "Compare canonical existing test suite in apps/web/src/dev-server/cards-page-v2.test.ts before extending",
-        "runner": "npm run test",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
-          }
-        ]
-      },
-      "decision": "extend-existing",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-        "reached_tests": [
-          "apps/web/src/dev-server/cards-page-v2.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-cards-page-v2-test-execution.txt",
-        "evidence_sha256": "3c577ad4b85501f6ad2509dd90d274810273a289ad4322245ba398a23666fb6b"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-724-behavior-evidence.test.mjs.execution.txt",
+        "evidence_sha256": "39730f40f2ea22a823bf3efcfd075c25f6c3d3c7e218fe773736d32d1d76a2f4"
       }
     }
   ]

@@ -1,198 +1,222 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+  "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
   "requirements": [
     {
-      "requirement_id": "REQ-719-01",
+      "requirement_id": "REQ-724-01",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "GitHub PR #744 uses develop base and remains Draft; epic #702 remains open",
+        "apps/web/src/dev-server/dashboard-page.ts and shared styles reuse existing design primitives"
       ],
       "primary_negative_control": {
-        "id": "NC-719-01",
+        "id": "NC-724-01",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-01",
-        "expected": "Removing a catalogued route must fail 14/14 coverage",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "e89afb61d40f448089d11b720d24df5843bfe421ed825159e90591f2ff116db7",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-01",
+        "expected": "An alternative main-based branch, or bypassing develop/merge approval, is rejected by the scope/base check.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "An alternative main-based branch, or bypassing develop/merge approval, is rejected by the scope/base check.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
       ]
     },
     {
-      "requirement_id": "REQ-719-02",
+      "requirement_id": "REQ-724-02",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "git diff --name-only a29730e2..d239e182 lists only Dashboard renderer, visual styles/tests and documentation",
+        "No apps/api or database files changed, as shown by exact Git diff"
       ],
       "primary_negative_control": {
-        "id": "NC-719-02",
+        "id": "NC-724-02",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-02",
-        "expected": "Priority categories must be preserved",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "75a4c77f9ac6f04b13caee176219afdbe30f67df605e7156925c7a446ecd61cd",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-02",
+        "expected": "Adding an API or financial persistence file fails the scoped presentation-only diff check.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "Adding an API or financial persistence file fails the scoped presentation-only diff check.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
       ]
     },
     {
-      "requirement_id": "REQ-719-03",
+      "requirement_id": "REQ-724-03",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "apps/web/src/dev-server/dashboard-page.ts renders currency summaries then next actions before supporting metrics, projection, insights and detail",
+        "scripts/statement-visual/issue-606-core-pages-execution.mjs tests first fold in Chrome"
       ],
       "primary_negative_control": {
-        "id": "NC-719-03",
+        "id": "NC-724-03",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-03",
-        "expected": "Legacy migration must not confer new visual acceptance",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "ce6dd240c3c945f5abe351dc8f1c286952301823492f9d9dbc92280c95114a5c",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-03",
+        "expected": "Moving projection before the next action fails the canonical reading-order check.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "Moving projection before the next action fails the canonical reading-order check.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
       ]
     },
     {
-      "requirement_id": "REQ-719-04",
+      "requirement_id": "REQ-724-04",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Dashboard uses two primary metric cards per currency; remaining three indicators use compact rows",
+        "Dashboard evidence index preserves drilldowns without five extra prominent cards per currency"
       ],
       "primary_negative_control": {
-        "id": "NC-719-04",
+        "id": "NC-724-04",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-04",
-        "expected": "Derivation must preserve one target issue for each distinct route",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "20ee9847125d4ddb820f248624646fcb3d0a7615d22b71475a13414b3f71eb80",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-04",
+        "expected": "Restoring five primary metric cards instead of two fails the compact presentation check.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "Restoring five primary metric cards instead of two fails the compact presentation check.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
       ]
     },
     {
-      "requirement_id": "REQ-719-05",
+      "requirement_id": "REQ-724-05",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "apps/web/src/dev-server/dashboard-page.ts retains SSR loading, error, empty and success branches",
+        "scripts/statement-visual/issue-724-dashboard-scenarios.mjs tests partial/error/long-content states"
       ],
       "primary_negative_control": {
-        "id": "NC-719-05",
+        "id": "NC-724-05",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-05",
-        "expected": "Epic link must point to 702",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "0d910e6c682913321ea2b5b23a854364f280871e939d7566f004549a194b5602",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-05",
+        "expected": "Removing the SSR error branch fails the explicit-state check.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "Removing the SSR error branch fails the explicit-state check.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
       ]
     },
     {
-      "requirement_id": "REQ-719-06",
+      "requirement_id": "REQ-724-06",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Chrome execution samples desktop 1366x768, mobile 390x844, compact 320x740 on normal/empty/multi-currency/partial/error/long-content",
+        "Chrome runner writes screenshots and JSON report for each state/viewport, with SHA and data provenance"
       ],
       "primary_negative_control": {
-        "id": "NC-719-06",
+        "id": "NC-724-06",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-06",
-        "expected": "Inventory may not silently include implementation work",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "aeeac8e71102d99597d0140e4ead2fefbc60da0daa6a4ddf9c30bfb68f2e1ab2",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-06",
+        "expected": "Removing the 320px viewport fails the three-size test.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "Removing the 320px viewport fails the three-size test.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
       ]
     },
     {
-      "requirement_id": "REQ-719-07",
+      "requirement_id": "REQ-724-07",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Desktop/mobile Chrome checks primary metrics and next action first-fold plus no horizontal overflow",
+        "Real Chrome intrusive 600px panel negative control must move next action beyond first fold"
       ],
       "primary_negative_control": {
-        "id": "NC-719-07",
+        "id": "NC-724-07",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-07",
-        "expected": "Frozen source SHA must not be replaced",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "92e4cbfa0d4ae84d73b4902d2b5ef24b1295f0dc811ba4764f8dad5a6d372a8c",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-07",
+        "expected": "Inserting a secondary decision panel ahead of the next action violates the first-read hierarchy.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "Inserting a secondary decision panel ahead of the next action violates the first-read hierarchy.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
       ]
     },
     {
-      "requirement_id": "REQ-719-08",
+      "requirement_id": "REQ-724-08",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "The SSR presenter preserves BRL and USD currency blocks, individual link labels and account drilldowns",
+        "Focus and Enter on evidence link are checked in controlled Chrome fixture, preserving proper hash and details open state"
       ],
       "primary_negative_control": {
-        "id": "NC-719-08",
+        "id": "NC-724-08",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-08",
-        "expected": "Waived routes cannot be silently reclassified",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "0923adc0f7210c99cddd620e827a6fb55064b5972dca055ec10976386b4982bc",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-08",
+        "expected": "Removing the Enter/focus action fails the keyboard assertion.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "Removing the Enter/focus action fails the keyboard assertion.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
+      ]
+    },
+    {
+      "requirement_id": "REQ-724-09",
+      "positive_evidence": [
+        "scripts/statement-visual/issue-606-core-pages-execution.mjs injects 600px intrusive panel then removes it",
+        "Chrome must reject intruded first fold and restore action visibility after removal"
+      ],
+      "primary_negative_control": {
+        "id": "NC-724-09",
+        "status": "passed",
+        "procedure": "python3 prepare_724_handoff.py against exact candidate Git bundle, mutate the inspected source in memory for control NC-724-09",
+        "expected": "Removing the Chrome intrusive panel probe fails the negative-control presence check.",
+        "observed": "Unmodified source passed; deliberately altered source failed the named check; see raw execution report.",
+        "head_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e",
+        "plausible_wrong_implementation": "Removing the Chrome intrusive panel probe fails the negative-control presence check.",
+        "evidence_scope_note": "Offline source mutation control; not equivalent to live Chrome integration; separate browser screenshots and actual first-fold probe remain mandatory."
+      },
+      "regression_evidence": [
+        "CI exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 (verify terminal success before publication)",
+        "Chrome exact material HEAD https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631869 (verify terminal success before publication)",
+        "node --test scripts/statement-visual/*.test.mjs includes seven adapter mutation tests (locally 110/110 PASS)"
       ]
     }
   ]

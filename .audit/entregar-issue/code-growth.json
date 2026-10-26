@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-  "base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
-  "comparison_base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
+  "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+  "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
+  "comparison_base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -19,125 +19,69 @@
   },
   "files": [
     {
-      "path": "apps/api/src/card-installment-amount-handler.ts",
+      "path": "apps/web/src/dev-server/dashboard-page.ts",
+      "lines_before": 499,
+      "lines_after": 482
+    },
+    {
+      "path": "apps/web/src/dev-server/dashboard-styles.ts",
       "lines_before": null,
-      "lines_after": 33
+      "lines_after": 101
     },
     {
-      "path": "apps/api/src/card-purchase-extra-handlers.ts",
+      "path": "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
       "lines_before": null,
-      "lines_after": 84
+      "lines_after": 76
     },
     {
-      "path": "apps/api/src/credit-card-accounts-router.ts",
-      "lines_before": 541,
-      "lines_after": 557
+      "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
+      "lines_before": 689,
+      "lines_after": 697
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-contracts-core.ts",
-      "lines_before": 868,
-      "lines_after": 886
+      "path": "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+      "lines_before": 134,
+      "lines_after": 217
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
+      "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+      "lines_before": 10,
+      "lines_after": 15
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
+      "lines_before": 129,
+      "lines_after": 134
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-remediation-contract.mjs",
+      "lines_before": 343,
+      "lines_after": 366
+    },
+    {
+      "path": "scripts/statement-visual/issue-724-dashboard-error.mjs",
       "lines_before": null,
-      "lines_after": 168
+      "lines_after": 1
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-long-content.mjs",
       "lines_before": null,
-      "lines_after": 112
+      "lines_after": 1
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-purchase-edit-guard.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-multi-currency.mjs",
       "lines_before": null,
-      "lines_after": 169
+      "lines_after": 1
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-partial.mjs",
       "lines_before": null,
-      "lines_after": 175
+      "lines_after": 1
     },
     {
-      "path": "apps/api/src/repositories/card-invoice-reversal-edit.ts",
+      "path": "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
       "lines_before": null,
-      "lines_after": 135
-    },
-    {
-      "path": "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
-      "lines_before": 498,
-      "lines_after": 500
-    },
-    {
-      "path": "apps/api/src/repositories/recurring-card-purchase-edit.ts",
-      "lines_before": 641,
-      "lines_after": 660
-    },
-    {
-      "path": "apps/api/src/router.ts",
-      "lines_before": 1194,
-      "lines_after": 1200
-    },
-    {
-      "path": "apps/web/src/design-system/tokens.ts",
-      "lines_before": 183,
-      "lines_after": 183
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.ts",
-      "lines_before": null,
-      "lines_after": 330,
-      "justification": "This single generated client-script fragment co-locates coupled asynchronous form mutation handlers sharing lexical scope (recurring edit, installment amount PATCH and metadata retry, reversals and purchase creation); it is already extracted from the cards-page-v2 base renderer. Splitting within the 330-line fragment would duplicate shared closure state and complicate the financial retry/partial-success invariants. No legacy >500-line file is expanded by this fragment."
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-other.ts",
-      "lines_before": null,
-      "lines_after": 105
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-purchases.ts",
-      "lines_before": null,
-      "lines_after": 165
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-setup.ts",
-      "lines_before": null,
-      "lines_after": 114
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-styles.ts",
-      "lines_before": 202,
-      "lines_after": 316
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2.ts",
-      "lines_before": 1763,
-      "lines_after": 1577
-    },
-    {
-      "path": "scripts/statement-visual/cards-interface-adversarial.mjs",
-      "lines_before": 340,
-      "lines_after": 340
-    },
-    {
-      "path": "scripts/statement-visual/cards-interface-measurements.mjs",
-      "lines_before": 801,
-      "lines_after": 802
-    },
-    {
-      "path": "scripts/statement-visual/issue-537-hover-states.mjs",
-      "lines_before": 275,
-      "lines_after": 275
-    },
-    {
-      "path": "scripts/statement-visual/issue-610-cards-semantic-interactions.mjs",
-      "lines_before": 332,
-      "lines_after": 332
-    },
-    {
-      "path": "scripts/statement-visual/issue-662-card-installment-purchase.mjs",
-      "lines_before": 420,
-      "lines_after": 494
+      "lines_after": 257
     }
   ],
   "blocking_files": []

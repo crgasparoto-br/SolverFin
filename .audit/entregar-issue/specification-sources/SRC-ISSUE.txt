@@ -1,27 +1,25 @@
-## Objetivo
-Na rota `/cartoes`, equiparar o menu de ações dos lançamentos ao Extrato e aprimorar edição de compras, preservando o contrato financeiro e Golden Screen #702.
+**Parent epic:** #702
+**Origin:** #719 — inventário de fase 2
+**Baseline do inventário:** `develop@45f516268ab5a51931bdd096c7a131fc3b8f73d8` (congelado em 17/10/2026)
+**Fonte visual:** Golden Screen de `/lancamentos` aprovada em 14/10/2026; `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md` e `AGENTS.md`.
+**Precedência:** consolidar evidência do marco técnico #714; aproveitar os componentes e verificações de #715–#718 quando aplicáveis. Não depender de merge automático.
 
-## Escopo
-- Incluir **Clonar** nas ações da compra, reutilizando o modal de cadastro com dados copiados; clonar apenas como compra nova única, sem copiar vínculos de recorrência/parcelamento ou o identificador da compra.
-- Preservar **Editar** e ações de recorrência existentes e tornar menus acessíveis com ícones e estados consistentes com Extrato.
-- Permitir ajustar o **valor de uma parcela** de uma compra parcelada de forma dirigida à ocorrência, sem editar o total da compra como se fosse compra simples; oferecer decisão entre parcela selecionada e futuras elegíveis.
-- Habilitar e preservar a **data da compra recorrente** no modal, usando o escopo atual versus atuais e futuras; validar o período da fatura no backend.
-- Refatorar o modal de compras com hierarquia, densidade, campos editáveis evidentes, estados disabled/readonly adequados, ações alinhadas e layout desktop/mobile.
-- Registrar regressões e documentação afetada.
+**Limites:** redesign apenas de apresentação, SSR e primitives atuais; nenhuma alteração de contratos financeiros, moedas, permissões, dados, API, IA ou navegação. Trabalhar em PR própria com base `develop` e auditoria independente exact-SHA. Antes de editar, comprovar a divergência no Chrome autenticado; se a divergência não persistir, registrar evidência e encerrar por não aplicabilidade, sem refatorar por obrigação.
 
-## Critérios de aceite
-- [ ] Menu de três pontos de `/cartoes` oferece Editar e Clonar com os mesmos padrões visuais e acessíveis do Extrato.
-- [ ] Clonar abre o diálogo centralizado pré-preenchido como nova compra simples, sem copiar IDs/vínculos de série.
-- [ ] Alteração do valor de parcela selecionada usa identidade e fatura corretas; escopo futuro atualiza somente parcelas futuras elegíveis, reporta ignoradas e preserva histórico.
-- [ ] Parcelas conciliadas e faturas fechadas/pagas/canceladas bloqueiam alterações e a API recusa tentativas diretas.
-- [ ] Data da ocorrência recorrente pode ser editada por escopo, sem recalcular fatura fora das regras vigentes.
-- [ ] Layout do formulário é responsivo, com foco/teclado, estados legíveis e sem cards excessivos.
-- [ ] Testes e evidência vinculados ao SHA; auditoria independente posterior, sem merge automático.
+**Rota / arquétipo:** `/dashboard`, A1 Cockpit. **Prioridade:** P1 (primeiro acesso / posição financeira).
+**Antecedentes:** #591, #608. A migração anterior não constitui aceite da Golden Screen.
 
-## Invariantes
-- Não alterar `Transaction.amountMinor` da compra-base para simular alteração de uma única parcela.
-- Não somar moedas diferentes ou inferir câmbio.
-- Não clonar identificadores, status financeiro nem associações de recorrência.
-- Não permitir alteração de parcelas de faturas bloqueadas ou reconciliadas.
-- Reutilizar `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md`, `docs/RECURRENCES_INSTALLMENTS_WEB.md` e APIs existentes.
-- Base de branch e PR: `develop`.
+### Delta observável na fonte
+Em `apps/web/src/dev-server/dashboard-page.ts`, `renderDashboardContent` (linhas ~150–189) apresenta sucessivamente `dashboard-hero.panel`, navegação de moedas `currency-nav.panel`, resumos individuais, projeção, insights, `next-actions.panel`, `decision-grid` de `renderCard` (~334–347) e `list-panel`. A composição privilegia múltiplas superfícies/coletâneas antes de uma leitura única de posição/variação/próxima decisão; confrontar a densidade real com A1 e a referência aprovada.
+
+### Escopo fechado
+- Comparar a dobra inicial e reordenar/hierarquizar indicadores, horizonte e próxima ação, preservando separação BRL/USD, drilldowns, projeção e insights existentes.
+- Reduzir envoltórios redundantes e competição entre cartões/ações **somente onde o Chrome comprovar excesso**, sem remover indicadores nem mudar cálculos.
+- Preservar estados de dados parciais, vazios e erros, inclusive metas de desempenho e fallback SSR.
+
+### Aceite / regressão
+- [ ] Capturas comparativas 1366×768, 390×844, 320×740 no SHA material, normal, multi-moeda, vazio, falha parcial e conteúdo longo.
+- [ ] Saldo/resultado por moeda e próxima ação distinguíveis na primeira leitura; listas/evidências secundárias; sem cards universais, sem recorte horizontal.
+- [ ] Ações e drilldowns existentes operáveis por teclado/foco; nenhum total somado entre moedas; contratos #608 preservados.
+- [ ] Controle negativo: introduzir card/painel intrusivo ou elevar módulo secundário acima da decisão principal deve reprovar avaliação de densidade/hierarquia; restauração passa.
+- [ ] Testes SSR, CI e gate Chrome relevantemente verdes exact-SHA; revisão visual e auditoria técnica **independentes**, com links de capturas/relatórios.

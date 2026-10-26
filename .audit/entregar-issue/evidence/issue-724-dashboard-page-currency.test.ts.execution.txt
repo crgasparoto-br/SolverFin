@@ -1,0 +1,7 @@
+HEAD: d239e1829923264d7dd57bd62e146d57729b44e3
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/dashboard-page-currency.test.ts
+SOURCE: https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883
+OBSERVED: The CRITICAL validation job reached and passed compiled JS test corresponding to apps/web/src/dev-server/dashboard-page-currency.test.ts
+RUNNER_RESULT: CRITICAL validation completed/success at the material SHA

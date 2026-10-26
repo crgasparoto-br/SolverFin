@@ -1,0 +1,7 @@
+HEAD: d239e1829923264d7dd57bd62e146d57729b44e3
+COMMAND: node --test scripts/statement-visual/*.test.mjs
+EXIT_CODE: 0
+REACHED: scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs
+SOURCE: https://github.com/crgasparoto-br/SolverFin/actions/runs/40366631883 ; /tmp/solverfin724-focused-test.log (local 110/110 PASS)
+OBSERVED: 110 visual contract tests passed; coverage 66 modules and 74 executions
+RUNNER_RESULT: CRITICAL validation completed/success at the material SHA

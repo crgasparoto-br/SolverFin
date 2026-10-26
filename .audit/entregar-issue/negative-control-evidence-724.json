@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
+  "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
+  "source": "offline Git bundle exported by exact-SHA Delivery audit workspace",
+  "executed_at": "2026-10-26T17:17:47.102556+00:00",
+  "controls": [
+    {
+      "id": "NC-724-01",
+      "description": "Draft base and no auto merge",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    },
+    {
+      "id": "NC-724-02",
+      "description": "Scoped diff excludes financial API changes",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    },
+    {
+      "id": "NC-724-03",
+      "description": "Decision order",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    },
+    {
+      "id": "NC-724-04",
+      "description": "Compact metrics",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    },
+    {
+      "id": "NC-724-05",
+      "description": "SSR states including error",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    },
+    {
+      "id": "NC-724-06",
+      "description": "Three viewports",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    },
+    {
+      "id": "NC-724-07",
+      "description": "No wrapping and proper reading order",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    },
+    {
+      "id": "NC-724-08",
+      "description": "Evidence keyboard and currency",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    },
+    {
+      "id": "NC-724-09",
+      "description": "Chrome intrusive panel control",
+      "positive_passed": true,
+      "mutated_candidate_passed": false,
+      "negative_passed": true
+    }
+  ],
+  "tests": "node --test scripts/statement-visual/*.test.mjs (plus CI exact SHA)",
+  "note": "Source-code mutant probes are not integration visual approval; Chrome positive/negative observations are recorded separately."
+}
