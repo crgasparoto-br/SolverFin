@@ -138,6 +138,135 @@ async function main(): Promise<void> {
   });
   assert.equal(rejected.statusCode, 409);
   assert.deepEqual(await readOccurrences(recurrence.id), expandedOccurrences);
+
+  await assertRecurringEditGuards(token, purchasePath, recurrence.id);
+}
+
+async function assertRecurringEditGuards(
+  token: string,
+  purchasePath: string,
+  recurrenceId: string,
+): Promise<void> {
+  const links = await query<{
+    transactionId: string;
+    invoiceId: string;
+    installmentId: string;
+    transactionStatus: string;
+    installmentStatus: string;
+  }>(
+    `select t."id" as "transactionId", t."invoiceId", t."installmentId",
+            t."status" as "transactionStatus", i."status" as "installmentStatus"
+       from "Transaction" t
+       join "Installment" i on i."id" = t."installmentId"
+      where t."recurrenceId" = $1 and t."organizationId" = $2
+        and t."financialProfileId" = $3
+      order by i."sequenceNumber"`,
+    [recurrenceId, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+  assert.equal(links.length, 3);
+  const selected = links[1]!;
+  const future = links[2]!;
+
+  const invoiceTotal = async (invoiceId: string): Promise<number> => {
+    const rows = await query<{ totalAmountMinor: string | number }>(
+      `select "totalAmountMinor" from "Invoice" where "id" = $1`,
+      [invoiceId],
+    );
+    assert.ok(rows[0]);
+    return Number(rows[0].totalAmountMinor);
+  };
+
+  const assertNoFinancialWrite = async (snapshot: OccurrenceRow[], total: number) => {
+    assert.deepEqual(await readOccurrences(recurrenceId), snapshot);
+    assert.equal(await invoiceTotal(selected.invoiceId), total);
+  };
+
+  // Wrong implementation: current+future edits the selected reconciled row
+  // because only future candidates have status guards.
+  for (const locked of [
+    { table: "Transaction", id: selected.transactionId, original: selected.transactionStatus },
+    { table: "Installment", id: selected.installmentId, original: selected.installmentStatus },
+  ] as const) {
+    const snapshot = await readOccurrences(recurrenceId);
+    const total = await invoiceTotal(selected.invoiceId);
+    await query(`update "${locked.table}" set "status" = 'RECONCILED' where "id" = $1`, [
+      locked.id,
+    ]);
+    try {
+      const rejected = await authenticatedPatch(token, purchasePath, {
+        amountMinor: 6_200,
+        editScope: "current_and_future",
+      });
+      assert.equal(rejected.statusCode, 409, `A selected ${locked.table} is reconciled`);
+      await assertNoFinancialWrite(snapshot, total);
+    } finally {
+      await query(`update "${locked.table}" set "status" = $2 where "id" = $1`, [
+        locked.id,
+        locked.original,
+      ]);
+    }
+  }
+
+  // Wrong implementation: the selected recurrence or invoice has a different
+  // currency, but the editor still applies native amounts without conversion.
+  for (const target of [
+    { table: "Invoice", id: selected.invoiceId },
+    { table: "Installment", id: selected.installmentId },
+    { table: "Recurrence", id: recurrenceId },
+  ] as const) {
+    const snapshot = await readOccurrences(recurrenceId);
+    const total = await invoiceTotal(selected.invoiceId);
+    await query(`update "${target.table}" set "currency" = 'USD' where "id" = $1`, [
+      target.id,
+    ]);
+    try {
+      const rejected = await authenticatedPatch(token, purchasePath, {
+        amountMinor: 6_300,
+        editScope: "current_and_future",
+      });
+      assert.equal(rejected.statusCode, 409, `Selected ${target.table} currency mismatches`);
+      await assertNoFinancialWrite(snapshot, total);
+    } finally {
+      await query(`update "${target.table}" set "currency" = 'BRL' where "id" = $1`, [
+        target.id,
+      ]);
+    }
+  }
+
+  // Future mismatches must be reported as skipped, never converted or relabelled.
+  for (const [index, target] of [
+    { table: "Transaction", id: future.transactionId },
+    { table: "Installment", id: future.installmentId },
+    { table: "Invoice", id: future.invoiceId },
+  ].entries()) {
+    const beforeFuture = (await readOccurrences(recurrenceId))[2];
+    const futureTotal = await invoiceTotal(future.invoiceId);
+    await query(`update "${target.table}" set "currency" = 'USD' where "id" = $1`, [
+      target.id,
+    ]);
+    try {
+      const result = await authenticatedPatch(token, purchasePath, {
+        amountMinor: 6_400 + index * 100,
+        editScope: "current_and_future",
+      });
+      assert.equal(result.statusCode, 200);
+      const body = result.body as {
+        updatedCount: number;
+        skippedCount: number;
+        skipped: Array<{ reason: string; transactionId?: string }>;
+      };
+      assert.equal(body.updatedCount, 0);
+      assert.equal(body.skippedCount, 1);
+      assert.equal(body.skipped[0]?.reason, "currency_mismatch");
+      assert.equal(body.skipped[0]?.transactionId, future.transactionId);
+      assertOccurrenceUnchanged(beforeFuture, (await readOccurrences(recurrenceId))[2]);
+      assert.equal(await invoiceTotal(future.invoiceId), futureTotal);
+    } finally {
+      await query(`update "${target.table}" set "currency" = 'BRL' where "id" = $1`, [
+        target.id,
+      ]);
+    }
+  }
 }
 
 async function authenticatedPatch(token: string, path: string, body: unknown) {

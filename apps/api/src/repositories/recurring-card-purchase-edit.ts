@@ -17,7 +17,8 @@ export type RecurringCardPurchaseSkipReason =
   | "transaction_locked"
   | "invoice_missing"
   | "invoice_locked"
-  | "invoice_period_mismatch";
+  | "invoice_period_mismatch"
+  | "currency_mismatch";
 
 export interface RecurringCardPurchaseSkippedItem {
   sequenceNumber?: number;
@@ -63,6 +64,9 @@ interface SelectedRecurringPurchaseRow {
   installmentId: string | null;
   amountMinor: number;
   currency: string;
+  invoiceCurrency: string;
+  installmentCurrency: string | null;
+  recurrenceCurrency: string;
   occurredOn: Date;
   plannedOn: Date;
   description: string;
@@ -81,12 +85,15 @@ interface FutureRecurringPurchaseRow {
   transactionId: string | null;
   transactionStatus: string | null;
   transactionAmountMinor: number | null;
+  transactionCurrency: string | null;
   transactionPlannedOn: Date | null;
   installmentId: string | null;
   installmentStatus: string | null;
+  installmentCurrency: string | null;
   sequenceNumber: number | null;
   invoiceId: string | null;
   invoiceStatus: string | null;
+  invoiceCurrency: string | null;
   periodStartOn: Date | null;
   periodEndOn: Date | null;
 }
@@ -146,6 +153,34 @@ export async function updateRecurringCardPurchaseForContext(
       throw new InvoiceContractError(
         "CARD_PURCHASE_INVOICE_LOCKED",
         "Compras de faturas fechadas, pagas ou canceladas nao podem ser editadas.",
+        409,
+      );
+    }
+
+    // The selected occurrence is not covered by futureSkipReason. Enforce the
+    // same immutable financial states before any transaction/recurrence writes.
+    if (
+      LOCKED_TRANSACTION_STATUSES.has(selected.status) ||
+      (selected.installmentStatus !== null &&
+        LOCKED_INSTALLMENT_STATUSES.has(selected.installmentStatus))
+    ) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_RECONCILED_LOCKED",
+        "Ocorrencias recorrentes conciliadas ou canceladas nao podem ser editadas.",
+        409,
+      );
+    }
+
+    // A recurrence, selected transaction, installment and invoice must agree
+    // on the native currency. Never relabel amounts or infer FX on edit.
+    if (
+      selected.currency !== selected.invoiceCurrency ||
+      selected.currency !== selected.recurrenceCurrency ||
+      (selected.installmentId !== null && selected.installmentCurrency !== selected.currency)
+    ) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_CURRENCY_MISMATCH",
+        "Moedas divergentes entre compra, recorrencia, parcela e fatura.",
         409,
       );
     }
@@ -225,7 +260,7 @@ export async function updateRecurringCardPurchaseForContext(
         row.sequenceNumber !== null
           ? addRecurrenceFrequency(recurrenceStartOn, frequency, row.sequenceNumber - 1, interval)
           : addRecurrenceFrequency(occurredOn, frequency, legacyOffset, interval);
-      const reason = futureSkipReason(row, dueOn);
+      const reason = futureSkipReason(row, dueOn, selected.currency);
 
       if (reason) {
         skipped.push(toSkippedItem(row, reason));
@@ -421,8 +456,11 @@ async function findSelectedPurchaseForUpdate(
        t."id", t."cardId", t."categoryId", t."cardInstrumentId", t."invoiceId",
        t."recurrenceId", t."installmentId", t."amountMinor", t."currency",
        t."occurredOn", t."plannedOn", t."description", t."status",
-       inv."status" as "invoiceStatus", inv."periodStartOn", inv."periodEndOn",
+       inv."status" as "invoiceStatus", inv."currency" as "invoiceCurrency",
+       inv."periodStartOn", inv."periodEndOn",
        i."sequenceNumber", i."status" as "installmentStatus",
+       i."currency" as "installmentCurrency",
+       r."currency" as "recurrenceCurrency",
        r."frequency" as "recurrenceFrequency", r."interval" as "recurrenceInterval",
        r."startOn" as "recurrenceStartOn"
      from "Transaction" t
@@ -459,9 +497,12 @@ async function listFutureOccurrencesForUpdate(
   return executeQuery<FutureRecurringPurchaseRow>(
     `select
        t."id" as "transactionId", t."status" as "transactionStatus",
-       t."amountMinor" as "transactionAmountMinor", t."plannedOn" as "transactionPlannedOn",
-       i."id" as "installmentId", i."status" as "installmentStatus", i."sequenceNumber",
-       t."invoiceId", inv."status" as "invoiceStatus", inv."periodStartOn", inv."periodEndOn"
+       t."amountMinor" as "transactionAmountMinor", t."currency" as "transactionCurrency",
+       t."plannedOn" as "transactionPlannedOn",
+       i."id" as "installmentId", i."status" as "installmentStatus",
+       i."currency" as "installmentCurrency", i."sequenceNumber",
+       t."invoiceId", inv."status" as "invoiceStatus", inv."currency" as "invoiceCurrency",
+       inv."periodStartOn", inv."periodEndOn"
      from "Transaction" t
      left join "Installment" i
        on i."id" = t."installmentId"
@@ -493,6 +534,7 @@ async function listFutureOccurrencesForUpdate(
 function futureSkipReason(
   row: FutureRecurringPurchaseRow,
   dueOn: string,
+  currency: string,
 ): RecurringCardPurchaseSkipReason | undefined {
   if (row.installmentStatus !== null && LOCKED_INSTALLMENT_STATUSES.has(row.installmentStatus)) {
     return "installment_locked";
@@ -508,6 +550,13 @@ function futureSkipReason(
   }
   if (LOCKED_INVOICE_STATUSES.has(row.invoiceStatus)) {
     return "invoice_locked";
+  }
+  if (
+    row.transactionCurrency !== currency ||
+    row.invoiceCurrency !== currency ||
+    (row.installmentId !== null && row.installmentCurrency !== currency)
+  ) {
+    return "currency_mismatch";
   }
   if (
     row.periodStartOn !== null &&
