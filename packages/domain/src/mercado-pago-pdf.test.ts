@@ -239,6 +239,121 @@ describe("Mercado Pago bank statement PDF layout", () => {
     }
   });
 
+  it("reconciles movements at and beyond the former vertical cutoff on every page", () => {
+    for (const pageIndex of [0, 1]) {
+      for (const y of [574, 575, 576, 590, 650]) {
+        const fixture = pages();
+        const added = row(
+          pageIndex === 0 ? "02-10-2026" : "04-10-2026",
+          ["Movimento de borda"],
+          "123456789099",
+          "1,00",
+          pageIndex === 0 ? "96,00" : "101,50",
+          y,
+        );
+        fixture[pageIndex] = {
+          words: [
+            ...fixture[pageIndex]!.words.map((word) =>
+              word.y === 600 ? { ...word, y: Math.max(600, y + 30) } : word,
+            ),
+            ...added,
+          ],
+        };
+        if (pageIndex === 0) {
+          fixture[1] = {
+            words: fixture[1]!.words.map((word) =>
+              word.text === "100,50" ? { ...word, text: "101,50" } : word,
+            ),
+          };
+        }
+        // Leaving the old summary must block, not produce an incomplete batch.
+        const invalid = parseMercadoPagoStatement(fixture);
+        assert.equal(invalid.state, "blocked", `page=${pageIndex + 1}, y=${y}`);
+        assert.deepEqual(invalid.rows, []);
+        fixture[0] = {
+          words: fixture[0]!.words.map((word) => {
+            if (word.text === "15,50") return { ...word, text: "16,50" };
+            if (word.text === "100,50") return { ...word, text: "101,50" };
+            return word;
+          }),
+        };
+        const valid = parseMercadoPagoStatement(fixture);
+        assert.equal(valid.state, "ready", `page=${pageIndex + 1}, y=${y}`);
+        assert.equal(valid.rows.length, 4);
+        assert.equal(valid.rows.filter((item) => item.externalId === "123456789099").length, 1);
+      }
+    }
+  });
+
+  it("blocks incomplete lower-page movements instead of discarding their financial anchors", () => {
+    for (const missing of ["date", "operation", "amount", "balance"]) {
+      const fixture = pages();
+      const added = row(
+        "04-10-2026",
+        ["Movimento incompleto"],
+        "123456789099",
+        "1,00",
+        "101,50",
+        576,
+      ).filter((word) => {
+        if (missing === "date") return word.x >= 76;
+        if (missing === "operation") return word.x < 195 || word.x >= 285;
+        if (missing === "amount") return word.x < 285 || word.x >= 354;
+        return word.x < 354;
+      });
+      fixture[1] = { words: [...fixture[1]!.words, ...added] };
+      const parsed = parseMercadoPagoStatement(fixture);
+      assert.equal(parsed.state, "blocked", missing);
+      assert.deepEqual(parsed.rows, []);
+      assert.equal(parsed.problems[0]?.code, "IMPORT_PDF_ROW_INVALID");
+    }
+  });
+
+  it("accepts rows close to the header but rejects overlapping financial fields", () => {
+    for (const y of [41, 44.5, 45, 52, 53]) {
+      const fixture = pages();
+      fixture[1] = {
+        words: fixture[1]!.words.map((word) => (word.y === 75 ? { ...word, y } : word)),
+      };
+      const parsed = parseMercadoPagoStatement(fixture);
+      assert.equal(parsed.state, y > 44.5 ? "ready" : "blocked", `y=${y}`);
+      assert.equal(parsed.rows.length, y > 44.5 ? 3 : 0);
+    }
+  });
+
+  it("ignores footer contact numbers but never hides financial fields behind a footer", () => {
+    const fixture = pages();
+    fixture[1] = {
+      words: [...fixture[1]!.words, w("3.003,", 302, 612), w("2/2", 398, 635)],
+    };
+    assert.equal(parseMercadoPagoStatement(fixture).state, "ready");
+    for (const extra of [
+      [w("R$", 300, 612), w("1,00", 315, 612)],
+      [w("1,00", 315, 612)],
+      [w("123456789099", 197, 612)],
+      [w("04-10-2026", 40, 612)],
+      row("04-10-2026", ["Movimento no rodape"], "123456789099", "1,00", "101,50", 612),
+    ]) {
+      const modified = [...fixture];
+      modified[1] = { words: [...fixture[1]!.words, ...extra] };
+      const parsed = parseMercadoPagoStatement(modified);
+      assert.equal(parsed.state, "blocked");
+      assert.deepEqual(parsed.rows, []);
+    }
+  });
+
+  it("does not confuse description text with a structural footer", () => {
+    const fixture = pages();
+    fixture[1] = {
+      words: fixture[1]!.words.map((word) =>
+        word.text === "Rendimentos" ? { ...word, text: "Data de geracao:" } : word,
+      ),
+    };
+    const parsed = parseMercadoPagoStatement(fixture);
+    assert.equal(parsed.state, "ready");
+    assert.equal(parsed.rows[2]?.description, "Data de geracao:");
+  });
+
   it("rejects duplicated operation IDs before financial proposals are built", () => {
     const duplicateId = pages();
     duplicateId[1] = {

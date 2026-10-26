@@ -114,6 +114,19 @@ function rowText(page: PdfExtractedPage, y: number, left: number, right: number)
     .trim();
 }
 
+function tableFooterY(page: PdfExtractedPage, headerY: number): number {
+  const markers = page.words.filter((word) => {
+    if (word.y <= headerY) return false;
+    if (word.x >= 380 && /^\d+\/\d+$/.test(word.text)) return true;
+    if (word.x >= 76 || !["data", "voce", "mercado"].includes(normalize(word.text))) return false;
+    const line = normalize(rowText(page, word.y, 0, 445));
+    return /^(?:data de geracao:|voce tem alguma duvida\?|mercado pago instituicao de pagamento\b)/.test(
+      line,
+    );
+  });
+  return Math.min(Infinity, ...markers.map((word) => word.y));
+}
+
 function parsePageMovements(page: PdfExtractedPage): Movement[] | undefined {
   const header = page.words.find(
     (word) => normalize(word.text) === "data" && word.x >= 25 && word.x < 65 && word.y < 220,
@@ -136,16 +149,26 @@ function parsePageMovements(page: PdfExtractedPage): Movement[] | undefined {
   // Derive row cardinality from the transaction columns, not just valid dates.
   // A malformed or missing date must never hide a financial movement from the
   // balance/total checks. Each row has an operation ID and monetary columns.
-  const rowWord = (word: PdfExtractedWord): boolean => word.y > header.y + 12 && word.y < 575;
+  // A table has no fixed vertical cutoff. Inspect financial anchors all the
+  // way down the page, including beyond the observed footer, before excluding
+  // any footer text. Otherwise a displaced row could disappear silently.
+  const footerY = tableFooterY(page, header.y);
+  const rowWord = (word: PdfExtractedWord): boolean => word.y >= header.y;
   const isFinancialAnchor = (word: PdfExtractedWord): boolean =>
     rowWord(word) &&
     ((word.x >= 195 && word.x < 285 && /^\d{7,18}$/.test(word.text)) ||
-      (word.x >= 285 && word.x < 445 && (word.text === "R$" || /^-?\d[\d.,]*$/.test(word.text))));
+      (word.x >= 285 &&
+        word.x < 445 &&
+        (word.text === "R$" ||
+          (/^-?\d[\d.,]*$/.test(word.text) && (word.y < footerY || /,\d{2}$/.test(word.text))))));
   const dateWords = page.words.filter(
     (word) =>
       rowWord(word) && Math.abs(word.x - header.x) < 6 && /^\d{2}-\d{2}-\d{4}$/.test(word.text),
   );
   const anchors = [...dateWords, ...page.words.filter(isFinancialAnchor)].sort((a, b) => a.y - b.y);
+  // Plain address/contact numbers in a recognized footer are not movements,
+  // but dates, operation IDs and monetary fields there make the layout unsafe.
+  if (anchors.some((word) => word.y <= header.y + 3.5 || word.y >= footerY - 3.5)) return undefined;
   const rowAnchors: number[] = [];
   for (const anchor of anchors) {
     const last = rowAnchors[rowAnchors.length - 1];
@@ -160,8 +183,8 @@ function parsePageMovements(page: PdfExtractedPage): Movement[] | undefined {
     const date = dates[i]!;
     const prev = dates[i - 1];
     const next = dates[i + 1];
-    const lowerY = prev ? (prev.y + date.y) / 2 : header.y + 10;
-    const upperY = next ? (date.y + next.y) / 2 : date.y + 18;
+    const lowerY = prev ? (prev.y + date.y) / 2 : header.y + 3.5;
+    const upperY = next ? (date.y + next.y) / 2 : Math.min(date.y + 18, footerY - 3.5);
     const description = rowDescription(page, lowerY, upperY);
     const externalId = rowText(page, date.y, 195, 285);
     const signed = parseMoney(rowText(page, date.y, 285, 354));
