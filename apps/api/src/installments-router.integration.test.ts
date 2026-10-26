@@ -145,12 +145,7 @@ async function assertRecurringInstallmentScopeUpdates(
   categoryId: string,
   suffix: string,
 ): Promise<void> {
-  const recurrence = await createRecurrence(
-    token,
-    "valor-futuro-" + suffix,
-    accountId,
-    categoryId,
-  );
+  const recurrence = await createRecurrence(token, "valor-futuro-" + suffix, accountId, categoryId);
   await generateInstallments(token, recurrence.id);
   const readSeries = async () => {
     const response = await apiRequest(
