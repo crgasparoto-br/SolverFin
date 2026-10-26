@@ -135,6 +135,7 @@ async function createAutomationRuleHandler(request: ApiRequest): Promise<ApiResp
   return json(201, {
     rule: await createAutomationRuleForContext(context, {
       name: String(body.name ?? ""),
+      ...(body.status !== undefined ? { status: parseStatus(body.status) } : {}),
       ...(priority !== undefined ? { priority } : {}),
       conditions: parseConditions(body),
       actions: parseActions(body),
