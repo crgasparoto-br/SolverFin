@@ -540,6 +540,13 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .statement-save-actions{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap;gap:8px;margin-left:auto;min-width:0}
     ${dialog} .statement-save-actions>button{flex:0 0 auto;grid-column:auto;min-width:0;min-height:44px;white-space:nowrap}
     ${dialog} .statement-save-actions>[data-transaction-cancel]{background:transparent;border:1px solid var(--line);color:var(--text)}
+    ${dialog} .statement-save-actions>[data-statement-save-continue]{background:var(--surface);border:1px solid var(--line);color:var(--primary)}
+    ${dialog} .statement-save-actions>[data-statement-save-continue]:hover:not(:disabled){background:var(--primary-soft);border-color:var(--primary)}
+    ${dialog} .statement-save-actions>[data-statement-save-continue]:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+    @media(max-width:600px){
+      ${dialog} .statement-save-actions{display:grid;flex:1 1 100%;grid-template-columns:minmax(0,1fr);margin-left:0;width:100%}
+      ${dialog} .statement-save-actions>button{box-sizing:border-box;white-space:normal;width:100%}
+    }
     @media(max-width:390px){
       ${dialog} .save-row .status-icons{width:100%}
       /* A 320px viewport leaves less space than the natural width of both action buttons.
