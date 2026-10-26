@@ -96,7 +96,9 @@ async function validateAccountDesktop(fixture) {
       return Boolean(document.querySelector(".installment-scope-dialog[open]"));
     })()`,
   );
-  check(scopeOpened, "Changing the value did not open the installment scope modal", { scopeOpened });
+  check(scopeOpened, "Changing the value did not open the installment scope modal", {
+    scopeOpened,
+  });
   const scope = await evaluate(
     browser.cdp,
     `(() => {
