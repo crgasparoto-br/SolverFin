@@ -258,12 +258,12 @@ function isLightNeutral(value) {
 
 function checkDestructive(state, styles) {
   check(
-    styles.backgroundColor === "rgb(254, 226, 226)",
+    styles.backgroundColor === "rgb(254, 242, 242)",
     `Issue 537 destructive action lost its semantic ${state} surface`,
     styles,
   );
   check(
-    styles.color === "rgb(220, 38, 38)",
+    styles.color === "rgb(185, 28, 28)",
     `Issue 537 destructive action lost its semantic ${state} text/icon color`,
     styles,
   );

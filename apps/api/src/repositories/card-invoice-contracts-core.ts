@@ -2,6 +2,12 @@ import { TenantAuthorizationError, type EntityId, type TenantContext } from "@so
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import {
+  checkRecurringEdit,
+  loadPurchaseInstallmentEditStates,
+  purchaseInstallmentEditViolation,
+  type PurchaseInstallmentEditState,
+} from "./card-invoice-purchase-edit-guard.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
 export type PurchaseReconciliationFilter = "all" | "reconciled" | "unreconciled";
@@ -16,6 +22,8 @@ export interface CardPurchaseFilters {
 }
 
 export interface CardPurchaseContract {
+  /** Financial direction comes from Transaction.kind, never its description. */
+  kind: "expense" | "income";
   id: EntityId;
   financialProfileId: EntityId;
   cardId: EntityId;
@@ -105,6 +113,7 @@ interface CardContractRow {
 }
 
 interface CardPurchaseRow {
+  kind: "EXPENSE" | "INCOME";
   id: string;
   organizationId: string;
   financialProfileId: string;
@@ -148,6 +157,11 @@ export class InvoiceContractError extends Error {
 
 const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
 
+function assertPurchaseInstallmentsEditable(rows: readonly PurchaseInstallmentEditState[]): void {
+  const violation = purchaseInstallmentEditViolation(rows);
+  if (violation) throw new InvoiceContractError(violation.code, violation.message, 409);
+}
+
 export async function summarizeInvoiceForContext(
   context: TenantContext,
   invoiceId: EntityId,
@@ -156,7 +170,7 @@ export async function summarizeInvoiceForContext(
   const card = await findCard(context, invoice.cardId);
   const [totals] = await query<PurchaseTotalsRow>(
     `with invoice_occurrences as (
-       select t."status"::text as "status", t."amountMinor"
+       select t."status"::text as "status", case when t."kind" = 'INCOME' then -t."amountMinor" else t."amountMinor" end as "amountMinor"
          from "Transaction" t
         where t."organizationId" = $1 and t."financialProfileId" = $2
           and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
@@ -246,7 +260,7 @@ export async function listCardPurchasesForContext(
     `"financialProfileId" = $2`,
     `"cardId" is not null`,
     `"accountId" is null`,
-    `"kind" = 'EXPENSE'`,
+    `("kind" = 'EXPENSE' or ("kind" = 'INCOME' and "description" like '%[estorno:%'))`,
   ];
   const params: unknown[] = [context.organizationId, context.financialProfileId];
 
@@ -279,7 +293,7 @@ export async function listCardPurchasesForContext(
   const rows = await query<CardPurchaseRow>(
     `select "id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId",
             "categoryId", "recurrenceId", "installmentId", "occurredOn", "plannedOn", "description",
-            "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
+            "amountMinor", "currency", "kind", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where ${where.join(" and ")}
        order by "occurredOn" desc, "createdAt" desc`,
@@ -322,30 +336,12 @@ export async function updateCardPurchaseForContext(
     );
   }
 
-  const purchaseInstallments = await query<{ id: string; invoiceStatus: string | null }>(
-    `select i."id", inv."status" as "invoiceStatus" from "Installment" i
-      left join "Invoice" inv
-        on inv."id" = i."invoiceId"
-       and inv."organizationId" = i."organizationId"
-       and inv."financialProfileId" = i."financialProfileId"
-      where i."transactionId" = $1 and i."organizationId" = $2 and i."financialProfileId" = $3`,
-    [current.id, context.organizationId, context.financialProfileId],
-  );
-  const isInstallmentPurchase = purchaseInstallments.length > 0;
+  const denied = await checkRecurringEdit(query, context, current, invoice.currency, payload);
+  if (denied) throw new InvoiceContractError(denied.code, denied.message, 409);
 
-  if (
-    purchaseInstallments.some(
-      (installment) =>
-        installment.invoiceStatus !== null &&
-        LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(installment.invoiceStatus),
-    )
-  ) {
-    throw new InvoiceContractError(
-      "CARD_PURCHASE_INVOICE_LOCKED",
-      "Compras parceladas com fatura fechada, paga ou cancelada nao podem ser editadas.",
-      409,
-    );
-  }
+  const purchaseInstallments = await loadPurchaseInstallmentEditStates(query, context, current.id);
+  const isInstallmentPurchase = purchaseInstallments.length > 0;
+  assertPurchaseInstallmentsEditable(purchaseInstallments);
 
   if (
     isInstallmentPurchase &&
@@ -404,6 +400,22 @@ export async function updateCardPurchaseForContext(
   const nextReconciledAt = resolveReconciledAt(nextStatus, current.reconciledAt, now);
 
   await withTransaction(async (executeQuery) => {
+    if (isInstallmentPurchase) {
+      const lockedRows = await loadPurchaseInstallmentEditStates(
+        executeQuery,
+        context,
+        current.id,
+        true,
+      );
+      if (lockedRows.length !== purchaseInstallments.length) {
+        throw new InvoiceContractError(
+          "CARD_INSTALLMENT_RECONCILED_LOCKED",
+          "A serie foi alterada durante a edicao.",
+          409,
+        );
+      }
+      assertPurchaseInstallmentsEditable(lockedRows);
+    }
     await executeQuery(
       `update "Transaction" set
         "categoryId" = $4, "cardInstrumentId" = $5, "status" = $6, "amountMinor" = $7,
@@ -582,6 +594,11 @@ export async function reconcileInvoiceInstallmentForContext(
   };
 }
 
+export { deleteSimpleCardPurchaseForContext } from "./card-invoice-purchase-delete.js";
+export { reverseCardPurchaseForContext } from "./card-invoice-purchase-reverse.js";
+export { updateCardReversalForContext } from "./card-invoice-reversal-edit.js";
+export { adjustInvoiceInstallmentAmountForContext } from "./card-invoice-installment-amount.js";
+
 export async function closeInvoiceForContext(
   context: TenantContext,
   invoiceId: EntityId,
@@ -661,7 +678,7 @@ async function findCardPurchase(
   const rows = await query<CardPurchaseRow>(
     `select "id", "organizationId", "financialProfileId", "cardId", "cardInstrumentId", "invoiceId",
             "categoryId", "recurrenceId", "installmentId", "occurredOn", "plannedOn", "description",
-            "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
+            "amountMinor", "currency", "kind", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
          and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'`,
@@ -676,7 +693,7 @@ async function findCardPurchase(
   return row;
 }
 
-async function assertActiveCardInstrumentBelongsToCard(
+export async function assertActiveCardInstrumentBelongsToCard(
   context: TenantContext,
   cardId: EntityId,
   cardInstrumentId: EntityId,
@@ -737,6 +754,7 @@ function calculateAmountDue(invoice: InvoiceContractRow): number {
 
 function mapPurchaseRow(row: CardPurchaseRow): CardPurchaseContract {
   return {
+    kind: row.kind === "INCOME" ? "income" : "expense",
     id: row.id,
     financialProfileId: row.financialProfileId,
     cardId: row.cardId,
@@ -847,7 +865,7 @@ function mapTransactionStatusToInstallmentStatus(status: string): string {
   return "POSTED";
 }
 
-function isIsoDate(value: string): boolean {
+export function isIsoDate(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 

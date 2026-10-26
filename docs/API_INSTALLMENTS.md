@@ -6,6 +6,8 @@ Este contrato adiciona leitura historica, atual e futura de parcelas e a criacao
 
 A manutencao direta continua controlada pelo backend e limitada a campos seguros da transacao vinculada. O cliente nao pode alterar fatura, cartao agrupador, instrumento, valor, vencimento, tenant ou perfil financeiro pela rota de manutencao.
 
+**Complemento de compras de cartão (#742):** a operação dedicada `PATCH /api/invoices/:invoiceId/installments/:installmentId/amount` corrige valores de ocorrências de compra parcelada quando a fatura está aberta e a parcela não está conciliada. Seu escopo `current` ou `current_and_future` e os totais ajustados estão documentados em `docs/API_CREDIT_CARDS_INVOICES.md`. Essa rota não altera o contrato genérico de `PATCH /api/installments/:installmentId` nem a transação-base da compra; não deve ser utilizada para recorrências.
+
 ## Endpoints
 
 ```http

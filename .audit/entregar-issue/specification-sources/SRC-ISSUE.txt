@@ -1,46 +1,27 @@
-**Parent epic:** #702
-**Fase:** 2 — expansão controlada depois das quatro rotas prioritárias.
-**Dependência:** #714 — marco do Extrato da fase 0; considerar resultados e padrões comprovados nas quatro subissues de fase 1.
-
 ## Objetivo
-Mapear rotas operacionais adicionais que precisam da qualidade visual da Golden Screen e abrir **issues específicas por superfície**, evitando uma implementação genérica de grande porte ou retrabalho com a épica histórica #591.
+Na rota `/cartoes`, equiparar o menu de ações dos lançamentos ao Extrato e aprimorar edição de compras, preservando o contrato financeiro e Golden Screen #702.
 
 ## Escopo
-- Conferir catálogo real de rotas/estados disponíveis e `docs/SCREEN_ARCHETYPES.md` (por exemplo Dashboard, Orçamentos, Inbox e rotas secundárias quando pertinentes).
-- Para cada superfície: identificar arquétipo, estado atual, delta visual real frente à Golden Screen aprovada, dependências, risco e prioridade; registrar se já está adequada.
-- Relacionar entregas anteriores (#591, #608–#615) para evitar duplicação e não interpretar issues fechadas como validação da nova referência.
-- Criar issues derivadas específicas somente quando houver diferenças demonstráveis, com escopo fechado, critérios visuais e de regressão claros.
-- Publicar matriz de cobertura e links na #702.
-
-<!-- review-702-2026-10-15 -->
-## Delimitação de inventário e encerramento — revisão de 15/10/2026
-
-- **Universo de análise:** rotas operacionais `available` no catálogo canônico da `develop` no SHA de início do inventário; registrar quais foram analisadas, dispensadas ou consideradas fora do escopo. Não assumir que rotas antigas ainda existem.
-- **Matriz de triagem obrigatória:** `rota | arquétipo | prioridade | evidência atual | delta em relação à Golden Screen | antecedente #591/#608–#615 | decisão (aderente/issue/fora) | issue derivada | dependências`.
-- **Se já aderente:** registrar observação verificável que justifique a dispensa; não criar uma issue redundante por obrigação de cobertura.
-- **Se não aderente:** abrir uma issue de escopo coeso por rota/família independente com critérios observáveis, fonte canônica e vínculo documental à #702; registrar claramente prioridade e condição de início.
-- **Regra de fechamento:** #719 encerra quando o inventário está completo e todas as issues derivadas necessárias estão abertas e rastreáveis. **Não** exigir a implementação delas dentro da #719; o encerramento da **épica #702** continua condicionado às issues obrigatórias derivadas.
-- **Escopo temporal:** mudanças futuras de catálogo após o SHA congelado são novo escopo e precisam de decisão de incorporação à #702; não prolongar indefinidamente a #719.
+- Incluir **Clonar** nas ações da compra, reutilizando o modal de cadastro com dados copiados; clonar apenas como compra nova única, sem copiar vínculos de recorrência/parcelamento ou o identificador da compra.
+- Preservar **Editar** e ações de recorrência existentes e tornar menus acessíveis com ícones e estados consistentes com Extrato.
+- Permitir ajustar o **valor de uma parcela** de uma compra parcelada de forma dirigida à ocorrência, sem editar o total da compra como se fosse compra simples; oferecer decisão entre parcela selecionada e futuras elegíveis.
+- Habilitar e preservar a **data da compra recorrente** no modal, usando o escopo atual versus atuais e futuras; validar o período da fatura no backend.
+- Refatorar o modal de compras com hierarquia, densidade, campos editáveis evidentes, estados disabled/readonly adequados, ações alinhadas e layout desktop/mobile.
+- Registrar regressões e documentação afetada.
 
 ## Critérios de aceite
-- [x] Inventário de superfícies operacionais e respectivos arquétipos publicado na épica.
-- [x] Cada rota está classificada como aderente, requer subissue específica ou fora de escopo, com evidência/racional.
-- [x] Issues necessárias foram abertas e vinculadas no checklist da #702, com precedência e critérios verificáveis.
-- [x] Nenhuma implementação funcional ou refatoração ampla foi embutida nesta atividade de triagem.
-- [ ] Revisão independente do inventário e documentação concluídas.
+- [ ] Menu de três pontos de `/cartoes` oferece Editar e Clonar com os mesmos padrões visuais e acessíveis do Extrato.
+- [ ] Clonar abre o diálogo centralizado pré-preenchido como nova compra simples, sem copiar IDs/vínculos de série.
+- [ ] Alteração do valor de parcela selecionada usa identidade e fatura corretas; escopo futuro atualiza somente parcelas futuras elegíveis, reporta ignoradas e preserva histórico.
+- [ ] Parcelas conciliadas e faturas fechadas/pagas/canceladas bloqueiam alterações e a API recusa tentativas diretas.
+- [ ] Data da ocorrência recorrente pode ser editada por escopo, sem recalcular fatura fora das regras vigentes.
+- [ ] Layout do formulário é responsivo, com foco/teclado, estados legíveis e sem cards excessivos.
+- [ ] Testes e evidência vinculados ao SHA; auditoria independente posterior, sem merge automático.
 
-## Fora de escopo
-Implementar todas as rotas no mesmo PR; reabrir fases concluídas sem discrepância atual comprovada.
-
-Referências obrigatórias: épica [#702](https://github.com/crgasparoto-br/SolverFin/issues/702), Golden Screen aprovada pelo usuário em 14/10/2026, `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md`, `docs/GOLDEN_STATEMENT.md`, `AGENTS.md` e mockup `SolverFin Bank Statement UI Mockup.png`.
-
-**Base de todas as PRs:** `develop`. Preservar arquitetura SSR, primitivas e contratos financeiros, acessibilidade, LGPD e responsividade. A referência é o **nível de acabamento** da Golden Screen, não uma cópia de seus componentes ou disposição. Exigir evidência Chrome/SSR desktop/mobile do **SHA material da entrega**, testes e checks relevantes verdes e auditoria independente por subissue. Não fazer merge automático.
-
-<!-- delivery-719-2026-10-17 -->
-## Entrega documental — 17/10/2026 (pendente revisão independente)
-
-- SHA congelado do catálogo: `develop@45f516268ab5a51931bdd096c7a131fc3b8f73d8`.
-- [Matriz de 14 rotas](https://github.com/crgasparoto-br/SolverFin/blob/docs/719-golden-screen-phase2-inventory/docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md) proposta na [PR #730](https://github.com/crgasparoto-br/SolverFin/pull/730) (base `develop`, Draft, sem merge).
-- Issues derivadas: #724 Dashboard, #725 Orçamentos, #726 Inbox, #727 Configurações, #728 Admin Instituições; links/checklist também na #702.
-- Dispensas justificadas no inventário: `/assistente`, `/admin/indices-financeiros`; rotas não operacionais e fases anteriores identificadas separadamente.
-- **Não declarar #719 concluída até haver parecer independente favorável** sobre inventário, recorte temporal, prova dos deltas, ausência de duplicações e rastreabilidade; a #702 permanece aberta até as issues derivadas obrigatórias estarem aceitas.
+## Invariantes
+- Não alterar `Transaction.amountMinor` da compra-base para simular alteração de uma única parcela.
+- Não somar moedas diferentes ou inferir câmbio.
+- Não clonar identificadores, status financeiro nem associações de recorrência.
+- Não permitir alteração de parcelas de faturas bloqueadas ou reconciliadas.
+- Reutilizar `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md`, `docs/RECURRENCES_INSTALLMENTS_WEB.md` e APIs existentes.
+- Base de branch e PR: `develop`.

@@ -14,6 +14,27 @@ Antes de propagar alteracoes em codigo nas issues #715–#719, consultar o marco
 publicado apos a integracao regular da #713; a #714, isoladamente, nao implementa
 qualquer tela de propagacao.
 
+## Paleta canonica obrigatoria (Golden Screen)
+
+A paleta de cores da Golden Screen do Extrato e o **padrao global** de todas as telas
+SolverFin, incluindo Cartoes, Contas, Relatorios, Categorias e dialogos. Os valores
+sao definidos em `apps/web/src/design-system/tokens.ts` e publicados pelo
+design system compartilhado; nenhuma tela deve manter cores semanticas paralelas.
+
+- **Entradas/receitas/creditos:** texto `#047857`, superficie `#ECFDF5`.
+- **Saidas/despesas/debitos/valores negativos:** texto `#B91C1C`, superficie `#FEF2F2`.
+- **Transferencias/estados neutros:** texto `#475569`, superficie `#F1F5F9`.
+- Acoes primarias preservam a identidade azul-petroleo; cores de estados
+  financeiros nao devem ser usadas como cores indiscriminadas de botoes.
+- Usar tokens CSS `--sf-color-success`, `--sf-color-danger`,
+  `--sf-color-muted-text` e respectivas superficies, sem valores hexadecimais
+  repetidos em componentes ou por rota.
+- Modos claro/escuro precisam preservar semantica e contraste; estado financeiro
+  nao pode depender apenas da cor (icone, sinal e rotulo acessivel).
+- A revisao de qualquer tela ou PR deve comparar cores com a Golden Screen e
+  bloquear divergencias injustificadas. Ajustes futuros de paleta acontecem nos
+  tokens compartilhados, nao por pagina.
+
 ## Composicao
 
 - Contexto da conta e resumo financeiro precedem a consulta e a lista.

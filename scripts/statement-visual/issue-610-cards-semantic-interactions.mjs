@@ -47,7 +47,7 @@ try {
 }
 
 async function validateCards(cdp) {
-  const baseRoute = "/cartoes?month=2026-06";
+  const baseRoute = "/cartoes?month=2026-06&groupBy=instrument";
   await setViewport(cdp, 1440, 900);
   await navigate(cdp, `${baseUrl}${baseRoute}`);
   await waitForCards(cdp);

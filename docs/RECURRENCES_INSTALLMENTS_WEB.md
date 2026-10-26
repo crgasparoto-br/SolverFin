@@ -70,6 +70,12 @@ Os anexos do lançamento ficam dentro de um `details` fechado inicialmente, com 
 
 Em Cartões, a parcela apenas identifica a compra. A manutenção continua usando o contrato da compra, respeitando o bloqueio da fatura. `invoice_linked` não cria bloqueio adicional sobre uma compra que já seja editável.
 
+## Ajuste de compras parceladas em Cartões (#742)
+
+A manutenção da descrição/categoria/instrumento da compra parcelada usa o contrato da compra-base e não modifica a estrutura financeira. **O valor de cada parcela** pode ser corrigido no menu contextual da linha por um modal de escopo, usando `PATCH /api/invoices/:invoiceId/installments/:installmentId/amount`. É uma operação distinta da manutenção de parcelas de conta e não deve substituir `Transaction.amountMinor` da compra de origem.
+
+Escopos: `current` modifica só a parcela indicada; `current_and_future` inclui as posteriores elegíveis do mesmo cronograma, informando itens ignorados. Alterações em faturas bloqueadas e parcelas conciliadas são recusadas; moeda e associações da compra são preservadas. **Clonar** faz uma nova compra única e não replica vínculos de recorrência ou de parcelas. Para uma compra fixa, a data da ocorrência permanece editável; ao salvar, o diálogo existente pergunta se a alteração vale somente para ela ou para as próximas elegíveis, com validação do período de fatura.
+
 ## Criação manual parcelada no Extrato (#553)
 
 `Repetição = Parcelado` representa um conjunto finito canônico, não uma recorrência. O modal envia uma única tentativa com UUID idempotente; mantém a chave em timeout ou falha ambígua, gera nova chave quando os dados materiais mudam depois de rejeição e a descarta após sucesso, cancelamento ou novo fluxo. O botão permanece bloqueado durante o envio e o modal preserva os valores em falhas.
