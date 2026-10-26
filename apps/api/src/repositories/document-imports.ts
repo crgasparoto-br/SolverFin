@@ -6,6 +6,7 @@ import {
   buildStructuredContentHash,
   decodeStructuredImportBase64,
   parsePdfImport,
+  StructuredImportError,
   parseXlsxImport,
   type AiSuggestion,
   type EntityId,
@@ -19,6 +20,7 @@ import {
 } from "@solverfin/domain";
 
 import { query, withSharedTransaction } from "../db.js";
+import { extractPdfWordLayout } from "../pdf-text-extraction.js";
 import { buildInsertAiSuggestionSql } from "./ai-suggestion-sql.js";
 import { insertAuditLogEntry } from "./audit.js";
 import {
@@ -57,6 +59,26 @@ interface InstrumentRow {
   maskedIdentifier: string | null;
 }
 
+function parsePdfWithTextLayer(
+  bytes: Buffer,
+  contentBase64: string,
+  documentClass: StructuredImportPayload["documentClass"],
+): StructuredImportPreview {
+  try {
+    // Preserve existing synthetic fixture PDFs and the cheap structural guard.
+    return parsePdfImport({ contentBase64, documentClass });
+  } catch (error) {
+    if (
+      !(error instanceof StructuredImportError) ||
+      (error.code !== "IMPORT_PDF_LAYOUT_UNSUPPORTED" && error.code !== "IMPORT_PDF_PROTECTED")
+    ) throw error;
+  }
+  // Only explicitly recognized layouts can produce financial proposals.
+  // Extractor has no access to persistence, and no password is provided.
+  const extractedPages = extractPdfWordLayout(bytes);
+  return parsePdfImport({ contentBase64, documentClass, extractedPages });
+}
+
 export async function previewStructuredImportForContext(
   context: TenantContext,
   sourceKind: Extract<ImportSourceKind, "xlsx" | "pdf">,
@@ -75,10 +97,7 @@ export async function previewStructuredImportForContext(
           ...(payload.xlsxMapping === undefined ? {} : { mapping: payload.xlsxMapping }),
           defaultCurrency: target.currency,
         })
-      : parsePdfImport({
-          contentBase64: payload.contentBase64,
-          documentClass: payload.documentClass,
-        });
+      : parsePdfWithTextLayer(bytes, payload.contentBase64, payload.documentClass);
 
   const problems: ImportProblemSnapshot[] = [...parsed.problems];
   const suggestions: AiSuggestion[] = [];

@@ -136,6 +136,33 @@ describe("document imports", () => {
     );
   });
 
+  it("does not mistake object 31 for the catalog object 1", () => {
+    const comment = "%PDF-1.4\n%SOLVERFIN:STATEMENT:V1\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\n";
+    const catalogOffset = Buffer.byteLength(comment, "latin1");
+    const catalog = "1 0 obj\n<< /Type /Catalog >>\nendobj\n";
+    const extraOffset = catalogOffset + Buffer.byteLength(catalog, "latin1");
+    const body = comment + catalog + "31 0 obj\n<< /Type /Font >>\nendobj\n";
+    const xrefOffset = Buffer.byteLength(body, "latin1");
+    const refs = Array.from({ length: 32 }, (_, i) =>
+      i === 1
+        ? `${String(catalogOffset).padStart(10, "0")} 00000 n `
+        : i === 31
+          ? `${String(extraOffset).padStart(10, "0")} 00000 n `
+          : "0000000000 65535 f ",
+    );
+    const data = body + [
+      "xref", "0 32", ...refs,
+      "trailer", "<< /Size 32 /Root 1 0 R >>",
+      "startxref", String(xrefOffset), "%%EOF",
+    ].join("\n");
+    const result = parsePdfImport({
+      contentBase64: Buffer.from(data, "latin1").toString("base64"),
+      documentClass: "bank_statement",
+    });
+    assert.equal(result.state, "ready");
+    assert.equal(result.rows.length, 1);
+  });
+
   it("requires explicit XLSX sheet and column mapping and never evaluates formulas", () => {
     const contentBase64 = xlsxFixture();
     const first = parseXlsxImport({

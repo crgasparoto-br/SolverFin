@@ -1,5 +1,8 @@
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
+import { parseMercadoPagoStatement, recognizeMercadoPagoStatement, type PdfExtractedPage } from "./mercado-pago-pdf.js";
+
+export type { PdfExtractedPage, PdfExtractedWord } from "./mercado-pago-pdf.js";
 
 import type { ImportLineDirection, ISODate, TransactionKind } from "./index.js";
 
@@ -66,8 +69,8 @@ export interface PdfParserDescriptor {
   version: string;
   institution: string;
   documentClass: ImportDocumentClass;
-  recognize: (text: string) => boolean;
-  parse: (text: string) => Omit<StructuredImportPreview, "pdf">;
+  recognize: (text: string, pages?: readonly PdfExtractedPage[]) => boolean;
+  parse: (text: string, pages?: readonly PdfExtractedPage[]) => Omit<StructuredImportPreview, "pdf">;
 }
 
 export class StructuredImportError extends Error {
@@ -245,6 +248,14 @@ export function parseXlsxImport(input: {
 
 export const PDF_PARSER_CATALOG: readonly PdfParserDescriptor[] = [
   {
+    id: "mercado-pago-bank-statement",
+    version: "1",
+    institution: "mercado-pago",
+    documentClass: "bank_statement",
+    recognize: (_text, pages) => pages !== undefined && recognizeMercadoPagoStatement(pages),
+    parse: (_text, pages) => parseMercadoPagoStatement(pages ?? []),
+  },
+  {
     id: "solverfin-fixture-bank-statement",
     version: "1",
     institution: "solverfin-fixture-bank",
@@ -273,10 +284,11 @@ export const PDF_PARSER_CATALOG: readonly PdfParserDescriptor[] = [
 export function parsePdfImport(input: {
   contentBase64: string;
   documentClass: ImportDocumentClass;
+  extractedPages?: readonly PdfExtractedPage[];
 }): StructuredImportPreview {
   const bytes = decodeStructuredImportBase64(input.contentBase64);
   const text = assertPdfStructure(bytes);
-  if (/\/Encrypt\b/.test(text)) {
+  if (/\/Encrypt\b/.test(text) && input.extractedPages === undefined) {
     throw new StructuredImportError(
       "IMPORT_PDF_PROTECTED",
       "PDF protegido por senha nao pode ser importado.",
@@ -285,7 +297,7 @@ export function parsePdfImport(input: {
   }
 
   const candidates = PDF_PARSER_CATALOG.filter(
-    (parser) => parser.documentClass === input.documentClass && parser.recognize(text),
+    (parser) => parser.documentClass === input.documentClass && parser.recognize(text, input.extractedPages),
   );
   if (candidates.length === 0) {
     throw new StructuredImportError(
@@ -303,7 +315,7 @@ export function parsePdfImport(input: {
   }
 
   const parser = candidates[0]!;
-  const parsed = parser.parse(text);
+  const parsed = parser.parse(text, input.extractedPages);
   return {
     ...parsed,
     pdf: {
@@ -342,9 +354,16 @@ function assertPdfStructure(bytes: Buffer): string {
     if (rootMatch === null) {
       throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
     }
-    const rootMarker = `${rootMatch[1]} ${rootMatch[2]} obj`;
-    const rootIndex = text.lastIndexOf(rootMarker, xrefOffset);
-    const rootEnd = rootIndex < 0 ? -1 : text.indexOf("endobj", rootIndex + rootMarker.length);
+    // An unanchored lastIndexOf("1 0 obj") also matches "31 0 obj".
+    // The catalog object must be a complete object header, not an identifier suffix.
+    const rootHeader = new RegExp(`(?:^|\\r?\\n)${rootMatch[1]}\\s+${rootMatch[2]}\\s+obj\\b`, "g");
+    let rootIndex = -1;
+    let rootHeaderLength = 0;
+    for (const match of text.slice(0, xrefOffset).matchAll(rootHeader)) {
+      rootIndex = match.index + (match[0].startsWith("\\n") ? 1 : 0);
+      rootHeaderLength = match[0].length;
+    }
+    const rootEnd = rootIndex < 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
     if (
       rootIndex < 0 ||
       rootEnd < 0 ||

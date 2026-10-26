@@ -348,6 +348,12 @@ PDF não usa OCR genérico nem heurística para “adivinhar” instituição/la
 
 Fixtures de teste usam layouts fictícios `solverfin-fixture-bank-statement@1` e `solverfin-fixture-card-invoice@1`. Um parser real novo deve ser registrado explicitamente, acompanhado de fixture sanitizada e testes de reconhecimento, rejeição de versão e ambiguidade.
 
+#### Mercado Pago (extrato bancário)
+
+O parser homologado `mercado-pago-bank-statement@1` aceita o extrato de conta Mercado Pago com texto selecionável e colunas `Data`, `Descrição`, `ID da operação`, `Valor` e `Saldo`. A extração posicionada é executada no backend por `pdftotext` (Poppler, opção `-bbox-layout`), instalado no servidor e disponível no `PATH`; não existe OCR ou reconhecimento genérico para documentos desconhecidos. Em ambientes Windows, instalar Poppler e configurar o `PATH` do processo da API. Se o binário não existir, o serviço retorna `IMPORT_PDF_EXTRACTOR_UNAVAILABLE` (503), sem armazenar o arquivo.
+
+Arquivos criptografados apenas com senha de usuário vazia e com permissão para extrair texto podem ser lidos; não se tenta descobrir, fornecer ou ignorar senhas reais nem substituir permissões do PDF. Um PDF com senha de leitura, restrição de extração ou texto ilegível continua bloqueado. O catálogo do domínio verifica o marcador institucional e o cabeçalho do layout, preserva a data, descrição integral inclusive quebras em linhas, ID da operação, direção, valor em centavos e `BRL`. Os saldos por linha, totais de entradas e saídas e saldos inicial e final devem fechar exatamente. Divergência ou linha sem campos obrigatórios bloqueia todo o preview, sem criar propostas parciais. O ID externo e a conta escolhida permanecem separados. O arquivo PDF original não é salvo.
+
 ### Extrato bancário
 
 O usuário escolhe a conta canônica; o parser nunca infere conta. Cada proposta preserva data, descrição, valor positivo em centavos, direção, moeda e identificador externo quando houver. Moeda divergente da conta bloqueia a linha. A aprovação reaplica isolamento de tenant/perfil e reutiliza o detector determinístico compartilhado de duplicidade/conciliação.
