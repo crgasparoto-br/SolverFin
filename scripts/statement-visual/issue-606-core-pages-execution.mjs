@@ -141,6 +141,83 @@ try {
       measurements,
     });
   }
+
+  if (requestedRoute === "/lancamentos") {
+    report.modalButtons = [];
+    for (const [width, height] of [
+      [320, 740],
+      [390, 844],
+      [1366, 768],
+    ]) {
+      await setViewport(browser.cdp, width, height);
+      await navigate(browser.cdp, `${baseUrl}${route}`);
+      await sleep(250);
+      const opened = await evaluate(
+        browser.cdp,
+        `(() => {
+          const trigger = document.querySelector('[data-open-modal][data-quick-kind="expense"]:not(:disabled)');
+          trigger?.click();
+          return Boolean(document.querySelector('dialog[data-modal][open]'));
+        })()`,
+      );
+      assert.equal(opened, true, `Novo lançamento não abre em ${width}px.`);
+      const buttons = await evaluate(
+        browser.cdp,
+        `(() => {
+          const dialog = document.querySelector('dialog[data-modal][open]');
+          const panel = dialog?.querySelector('.modal-panel');
+          const group = dialog?.querySelector('.statement-save-actions');
+          const status = dialog?.querySelector('.save-row .status-icons');
+          const actions = Array.from(group?.querySelectorAll(':scope > button') ?? [])
+            .filter((button) => !button.hidden);
+          const last = actions.at(-1);
+          last?.scrollIntoView({ block: 'nearest' });
+          last?.focus();
+          const bounds = (node) => node?.getBoundingClientRect();
+          const outer = bounds(panel);
+          const inner = bounds(group);
+          const statusRect = bounds(status);
+          const controls = actions.map((button) => ({
+            label: button.textContent.trim(),
+            rectangle: bounds(button).toJSON(),
+            visible: button.getClientRects().length > 0,
+          }));
+          const fits = controls.every((control) =>
+            control.visible && control.rectangle.width >= 44 &&
+            control.rectangle.left >= outer.left - 1 &&
+            control.rectangle.right <= outer.right + 1 &&
+            control.rectangle.left >= inner.left - 1 &&
+            control.rectangle.right <= inner.right + 1 &&
+            control.rectangle.top >= outer.top - 1 &&
+            control.rectangle.bottom <= outer.bottom + 1);
+          const separateRows = statusRect.bottom <= controls[0].rectangle.top + 1;
+          return {
+            labels: controls.map((control) => control.label),
+            panelWidth: outer.width,
+            groupWidth: inner.width,
+            layout: getComputedStyle(group).display,
+            horizontalOverflow: group.scrollWidth > group.clientWidth + 1,
+            fits,
+            separateRows,
+            focused: document.activeElement === last,
+          };
+        })()`,
+      );
+      assert.deepEqual(
+        buttons.labels,
+        ["Cancelar", "Salvar e continuar", "Salvar lançamento"],
+        `Os três botões precisam permanecer visíveis em ${width}px.`,
+      );
+      assert.equal(buttons.layout, "grid", `Rodapé não usa grade em ${width}px.`);
+      assert.equal(buttons.horizontalOverflow, false, `Botões transbordam em ${width}px.`);
+      assert.equal(buttons.fits, true, `Botões cortados em ${width}px: ${JSON.stringify(buttons)}`);
+      assert.equal(buttons.separateRows, true, `Ícones sobrepõem os botões em ${width}px.`);
+      assert.equal(buttons.focused, true, `Botão Salvar lançamento não é focável em ${width}px.`);
+      const screenshotName = `issue-606-statement-entry-buttons-${width}.png`;
+      await screenshot(browser.cdp, join(outputDir, screenshotName));
+      report.modalButtons.push({ width, height, screenshot: screenshotName, ...buttons });
+    }
+  }
 } catch (error) {
   report.failures.push({ message: serializeError(error) });
 } finally {
