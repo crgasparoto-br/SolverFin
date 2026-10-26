@@ -335,7 +335,6 @@ export async function updateCardPurchaseForContext(
     );
   }
 
-
   // Current-only edits must enforce the same recurrence invariants as future edits.
   if (current.recurrenceId !== null) {
     const [recurrence] = await query<{ currency: string }>(
