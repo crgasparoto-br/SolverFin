@@ -21,7 +21,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1070-1209 and apps/api/src/card-purchase-edit-contract.integration.test.ts:155-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1070-1209 and apps/api/src/card-purchase-edit-contract.integration.test.ts:155-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-002",
@@ -42,7 +42,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27 and apps/web/src/dev-server/cards-page-v2.test.ts:869-902; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27 and apps/web/src/dev-server/cards-page-v2.test.ts:869-902; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-003",
@@ -59,7 +59,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1058-1097 and apps/web/src/dev-server/cards-page-v2.test.ts:630-666; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1058-1097 and apps/web/src/dev-server/cards-page-v2.test.ts:630-666; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-004",
@@ -78,7 +78,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:10-168 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:10-168 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-005",
@@ -99,7 +99,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/api/src/current-only-recurring-edit.integration.test.ts:80-141 and apps/web/src/dev-server/cards-page-v2-script-mutations.ts:79-130; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/api/src/current-only-recurring-edit.integration.test.ts:80-141 and apps/web/src/dev-server/cards-page-v2-script-mutations.ts:79-130; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-006",
@@ -116,7 +116,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1112-1208 and apps/web/src/dev-server/cards-page-v2.test.ts:480-571; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1112-1208 and apps/web/src/dev-server/cards-page-v2.test.ts:480-571; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-007",
@@ -133,7 +133,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at docs/CARDS.md:440-450 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at docs/CARDS.md:440-450 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-008",
@@ -150,7 +150,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1058-1097 and apps/web/src/dev-server/cards-page-v2.test.ts:630-666; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1058-1097 and apps/web/src/dev-server/cards-page-v2.test.ts:630-666; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-009",
@@ -169,7 +169,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-setup.ts:56-96 and apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-setup.ts:56-96 and apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-010",
@@ -191,7 +191,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:55-168 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:55-168 and apps/api/src/card-purchase-edit-contract.integration.test.ts:157-310; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-011",
@@ -208,7 +208,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-012",
@@ -227,7 +227,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/api/src/current-only-recurring-edit.integration.test.ts:80-141 and apps/web/src/dev-server/cards-page-v2-script-mutations.ts:79-130; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/api/src/current-only-recurring-edit.integration.test.ts:80-141 and apps/web/src/dev-server/cards-page-v2-script-mutations.ts:79-130; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-013",
@@ -247,7 +247,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1112-1208 and apps/web/src/dev-server/cards-page-v2.test.ts:480-571; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2.ts:1112-1208 and apps/web/src/dev-server/cards-page-v2.test.ts:480-571; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-014",
@@ -290,7 +290,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:115-159 and apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:115-159 and apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-016",
@@ -309,7 +309,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-017",
@@ -328,7 +328,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-setup.ts:56-96 and apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/web/src/dev-server/cards-page-v2-script-setup.ts:56-96 and apps/web/src/dev-server/cards-page-v2-script-purchases.ts:5-27; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-018",
@@ -347,7 +347,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at apps/api/src/repositories/card-invoice-installment-amount.ts:88-103 and apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-019",
@@ -366,7 +366,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at docs/DESIGN_SYSTEM.md:1-50 and docs/GOLDEN_STATEMENT.md:1-50; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at docs/DESIGN_SYSTEM.md:1-50 and docs/GOLDEN_STATEMENT.md:1-50; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     },
     {
       "id": "OBL-020",
@@ -383,7 +383,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Review evidence at .github/workflows/delivery-audit-workspace.yml:1-65 and docs/CARDS.md:440-450; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390010, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40195390085 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
+      "rationale": "Review evidence at .github/workflows/delivery-audit-workspace.yml:1-65 and docs/CARDS.md:440-450; applicable CI run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, visual run https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 where relevant. This disposition is contingent on a verified adversarial matrix and terminal gates, not independent approval."
     }
   ],
   "source_coverage": [

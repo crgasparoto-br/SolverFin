@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "33bfa3f2eb9f7b758ed1c019a541b1073c587e01",
+  "subject_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
   "base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
   "comparison_base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
   "policy": {
@@ -36,7 +36,7 @@
     {
       "path": "apps/api/src/repositories/card-invoice-contracts-core.ts",
       "lines_before": 868,
-      "lines_after": 877
+      "lines_after": 882
     },
     {
       "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
@@ -47,6 +47,11 @@
       "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
       "lines_before": null,
       "lines_after": 112
+    },
+    {
+      "path": "apps/api/src/repositories/card-invoice-purchase-edit-guard.ts",
+      "lines_before": null,
+      "lines_after": 46
     },
     {
       "path": "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
@@ -76,8 +81,8 @@
     {
       "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.ts",
       "lines_before": null,
-      "lines_after": 321,
-      "justification": "This single generated client-script fragment co-locates coupled asynchronous form mutation handlers sharing lexical scope (recurring edit, installment amount PATCH and metadata retry, reversals and purchase creation); it is already extracted from the cards-page-v2 base renderer. Splitting within the 321-line fragment would duplicate shared closure state and complicate the financial retry/partial-success invariants. No legacy >500-line file is expanded by this fragment."
+      "lines_after": 330,
+      "justification": "This single generated client-script fragment co-locates coupled asynchronous form mutation handlers sharing lexical scope (recurring edit, installment amount PATCH and metadata retry, reversals and purchase creation); it is already extracted from the cards-page-v2 base renderer. Splitting within the 330-line fragment would duplicate shared closure state and complicate the financial retry/partial-success invariants. No legacy >500-line file is expanded by this fragment."
     },
     {
       "path": "apps/web/src/dev-server/cards-page-v2-script-other.ts",
@@ -127,7 +132,7 @@
     {
       "path": "scripts/statement-visual/issue-662-card-installment-purchase.mjs",
       "lines_before": 420,
-      "lines_after": 420
+      "lines_after": 494
     }
   ],
   "blocking_files": []
