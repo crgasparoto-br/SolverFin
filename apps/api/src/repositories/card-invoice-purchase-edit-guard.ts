@@ -101,7 +101,7 @@ export function recurringFutureCurrencyMismatch(
 }
 
 /** Resolve the current-only path through the same state guard as future edits. */
-export async function currentRecurringEditViolationForContext(
+export async function checkRecurringEdit(
   executeQuery: QueryExecutor,
   context: TenantContext,
   purchase: {
@@ -112,9 +112,11 @@ export async function currentRecurringEditViolationForContext(
     invoiceId: string | null;
   },
   invoiceCurrency: string,
-  statusOnly: boolean,
+  payload: { status?: string },
 ): Promise<{ code: string; message: string } | null> {
   if (purchase.recurrenceId === null) return null;
+  const statusOnly =
+    payload.status !== undefined && Object.keys(payload).every((key) => key === "status");
 
   const rows = await executeQuery<{
     recurrenceCurrency: string;

@@ -437,13 +437,9 @@ async function findSelectedPurchaseForUpdate(
        t."id", t."cardId", t."categoryId", t."cardInstrumentId", t."invoiceId",
        t."recurrenceId", t."installmentId", t."amountMinor", t."currency",
        t."occurredOn", t."plannedOn", t."description", t."status",
-       inv."status" as "invoiceStatus", inv."currency" as "invoiceCurrency",
-       inv."periodStartOn", inv."periodEndOn",
-       i."sequenceNumber", i."status" as "installmentStatus",
-       i."currency" as "installmentCurrency",
-       r."currency" as "recurrenceCurrency",
-       r."frequency" as "recurrenceFrequency", r."interval" as "recurrenceInterval",
-       r."startOn" as "recurrenceStartOn"
+       inv."status" as "invoiceStatus", inv."currency" as "invoiceCurrency", inv."periodStartOn", inv."periodEndOn",
+       i."sequenceNumber", i."status" as "installmentStatus", i."currency" as "installmentCurrency",
+       r."currency" as "recurrenceCurrency", r."frequency" as "recurrenceFrequency", r."interval" as "recurrenceInterval", r."startOn" as "recurrenceStartOn"
      from "Transaction" t
      join "Invoice" inv
        on inv."id" = t."invoiceId"
@@ -478,12 +474,9 @@ async function listFutureOccurrencesForUpdate(
   return executeQuery<FutureRecurringPurchaseRow>(
     `select
        t."id" as "transactionId", t."status" as "transactionStatus",
-       t."amountMinor" as "transactionAmountMinor", t."currency" as "transactionCurrency",
-       t."plannedOn" as "transactionPlannedOn",
-       i."id" as "installmentId", i."status" as "installmentStatus",
-       i."currency" as "installmentCurrency", i."sequenceNumber",
-       t."invoiceId", inv."status" as "invoiceStatus", inv."currency" as "invoiceCurrency",
-       inv."periodStartOn", inv."periodEndOn"
+       t."amountMinor" as "transactionAmountMinor", t."currency" as "transactionCurrency", t."plannedOn" as "transactionPlannedOn",
+       i."id" as "installmentId", i."status" as "installmentStatus", i."currency" as "installmentCurrency", i."sequenceNumber",
+       t."invoiceId", inv."status" as "invoiceStatus", inv."currency" as "invoiceCurrency", inv."periodStartOn", inv."periodEndOn"
      from "Transaction" t
      left join "Installment" i
        on i."id" = t."installmentId"

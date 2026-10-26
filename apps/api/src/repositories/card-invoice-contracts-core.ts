@@ -3,7 +3,7 @@ import { TenantAuthorizationError, type EntityId, type TenantContext } from "@so
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import {
-  currentRecurringEditViolationForContext,
+  checkRecurringEdit,
   loadPurchaseInstallmentEditStates,
   purchaseInstallmentEditViolation,
   type PurchaseInstallmentEditState,
@@ -336,16 +336,8 @@ export async function updateCardPurchaseForContext(
     );
   }
 
-  const recurringViolation = await currentRecurringEditViolationForContext(
-    query,
-    context,
-    current,
-    invoice.currency,
-    payload.status !== undefined && Object.keys(payload).every((key) => key === "status"),
-  );
-  if (recurringViolation) {
-    throw new InvoiceContractError(recurringViolation.code, recurringViolation.message, 409);
-  }
+  const denied = await checkRecurringEdit(query, context, current, invoice.currency, payload);
+  if (denied) throw new InvoiceContractError(denied.code, denied.message, 409);
 
   const purchaseInstallments = await loadPurchaseInstallmentEditStates(query, context, current.id);
   const isInstallmentPurchase = purchaseInstallments.length > 0;
