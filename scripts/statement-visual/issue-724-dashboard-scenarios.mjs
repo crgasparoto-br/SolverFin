@@ -40,11 +40,15 @@ try {
     [320, 740],
   ]) {
     await setViewport(browser.cdp, width, height);
-    await navigate(browser.cdp, baseUrl + "/dashboard");
+    // Start from a fresh, script-free document. The live Dashboard can return a
+    // loading shell whose pending 250ms retry would replace the injected SSR
+    // scenario before Chrome measures it, producing false state/count failures.
+    await navigate(browser.cdp, "about:blank");
     const tree = await browser.cdp.send("Page.getFrameTree");
     await browser.cdp.send("Page.setDocumentContent", { frameId: tree.frameTree.frame.id, html });
     await sleep(300);
     const measurements = await evaluate(browser.cdp, "(" + inspectDashboard.toString() + ")()");
+    assert.equal(measurements.documentUrl, "about:blank", "Synthetic SSR scenario was replaced");
     assert.equal(measurements.viewportWidth, width, "Viewport identity mismatch");
     assert.equal(measurements.noHorizontalOverflow, true, state + " overflow at " + width);
     assert.equal(measurements.mainPresent, true, "Dashboard main region missing");
@@ -210,6 +214,7 @@ function inspectDashboard() {
   const supporting = document.querySelector(".dashboard-supporting-section");
   return {
     viewportWidth: innerWidth,
+    documentUrl: location.href,
     noHorizontalOverflow: root.scrollWidth <= root.clientWidth + 1,
     mainPresent: Boolean(document.querySelector("main")),
     hasError: document.body.textContent.includes("Não foi possível carregar o Dashboard"),
