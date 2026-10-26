@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import type { spawnSync } from "node:child_process";
 import { describe, it } from "node:test";
 import { StructuredImportError } from "@solverfin/domain";
 
