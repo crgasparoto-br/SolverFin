@@ -1,10 +1,6 @@
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
-import {
-  parseMercadoPagoStatement,
-  recognizeMercadoPagoStatement,
-  type PdfExtractedPage,
-} from "./mercado-pago-pdf.js";
+import { MERCADO_PAGO_STATEMENT_PARSER, type PdfExtractedPage } from "./mercado-pago-pdf.js";
 
 export type { PdfExtractedPage, PdfExtractedWord } from "./mercado-pago-pdf.js";
 
@@ -254,14 +250,7 @@ export function parseXlsxImport(input: {
 }
 
 export const PDF_PARSER_CATALOG: readonly PdfParserDescriptor[] = [
-  {
-    id: "mercado-pago-bank-statement",
-    version: "1",
-    institution: "mercado-pago",
-    documentClass: "bank_statement",
-    recognize: (_text, pages) => pages !== undefined && recognizeMercadoPagoStatement(pages),
-    parse: (_text, pages) => parseMercadoPagoStatement(pages ?? []),
-  },
+  MERCADO_PAGO_STATEMENT_PARSER,
   {
     id: "solverfin-fixture-bank-statement",
     version: "1",

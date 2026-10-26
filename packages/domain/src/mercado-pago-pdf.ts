@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 
 import type { ISODate } from "./index.js";
 import type {
+  PdfParserDescriptor,
   StructuredImportPreview,
   StructuredImportProblem,
   StructuredImportRow,
@@ -24,6 +25,15 @@ type Movement = {
   externalId: string;
   signed: number;
   balance: number;
+};
+
+export const MERCADO_PAGO_STATEMENT_PARSER: PdfParserDescriptor = {
+  id: "mercado-pago-bank-statement",
+  version: "1",
+  institution: "mercado-pago",
+  documentClass: "bank_statement",
+  recognize: (_text, pages) => pages !== undefined && recognizeMercadoPagoStatement(pages),
+  parse: (_text, pages) => parseMercadoPagoStatement(pages ?? []),
 };
 
 function normalize(value: string): string {
