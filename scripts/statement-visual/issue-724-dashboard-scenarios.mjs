@@ -19,7 +19,8 @@ const report = {
   commit: process.env.GITHUB_SHA ?? "local",
   route: "/dashboard",
   state,
-  provenance: "real dashboard SSR renderer with controlled API responses; authenticated browser session",
+  provenance:
+    "real dashboard SSR renderer with controlled API responses; authenticated browser session",
   viewports: [],
   failures: [],
 };
@@ -33,7 +34,11 @@ try {
   await navigate(browser.cdp, baseUrl + "/login");
   const login = await evaluate(browser.cdp, loginExpression());
   assert.equal(login.ok, true, "Demo login failed");
-  for (const [width, height] of [[1366, 768], [390, 844], [320, 740]]) {
+  for (const [width, height] of [
+    [1366, 768],
+    [390, 844],
+    [320, 740],
+  ]) {
     await setViewport(browser.cdp, width, height);
     await navigate(browser.cdp, baseUrl + "/dashboard");
     const tree = await browser.cdp.send("Page.getFrameTree");
@@ -49,7 +54,11 @@ try {
     } else {
       assert.equal(measurements.hasNextActions, true, "Next actions missing");
       assert.equal(measurements.primaryCount, state === "multi-currency" ? 4 : 2);
-      assert.equal(measurements.supportingAfterActions, true, "Secondary indicators precede next action");
+      assert.equal(
+        measurements.supportingAfterActions,
+        true,
+        "Secondary indicators precede next action",
+      );
       assert.equal(measurements.amountsSeparatedByCurrency, true, "Mixed currencies in a summary");
       if (state === "multi-currency") {
         assert.deepEqual(measurements.currencies, ["BRL", "USD"]);
@@ -68,10 +77,16 @@ try {
       const focused = await evaluate(browser.cdp, "(" + focusEvidence.toString() + ")()");
       assert.equal(focused, true, "Evidence link cannot receive focus");
       await browser.cdp.send("Input.dispatchKeyEvent", {
-        type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13,
+        type: "keyDown",
+        key: "Enter",
+        code: "Enter",
+        windowsVirtualKeyCode: 13,
       });
       await browser.cdp.send("Input.dispatchKeyEvent", {
-        type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13,
+        type: "keyUp",
+        key: "Enter",
+        code: "Enter",
+        windowsVirtualKeyCode: 13,
       });
       await sleep(150);
       const keyboard = await evaluate(browser.cdp, "(" + inspectEvidence.toString() + ")()");
@@ -87,11 +102,16 @@ try {
     report.viewports.push(item);
   }
 } catch (error) {
-  report.failures.push({ message: error instanceof Error ? error.stack ?? error.message : String(error) });
+  report.failures.push({
+    message: error instanceof Error ? (error.stack ?? error.message) : String(error),
+  });
 } finally {
   if (browser) await browser.close(outputDir);
 }
-await writeFile(join(outputDir, "issue-724-dashboard-" + state + ".json"), JSON.stringify(report, null, 2) + "\n");
+await writeFile(
+  join(outputDir, "issue-724-dashboard-" + state + ".json"),
+  JSON.stringify(report, null, 2) + "\n",
+);
 if (report.failures.length > 0) {
   report.failures.forEach((x) => console.error(x.message));
   process.exitCode = 1;
@@ -104,27 +124,39 @@ async function renderScenario(variant) {
   globalThis.fetch = async (input) => {
     const path = new URL(String(input)).pathname;
     if (path === "/api/financial-summary") {
-      if (variant === "error") return response({ error: { message: "Falha controlada no resumo financeiro" } }, 503);
+      if (variant === "error")
+        return response({ error: { message: "Falha controlada no resumo financeiro" } }, 503);
       const blocks = [currencyBlock("BRL", variant)];
       if (variant === "multi-currency") blocks.push(currencyBlock("USD", variant));
       return response({
         currencyBlocks: blocks,
-        recentItems: variant === "long-content" ? [{
-          description: "QA " + "Descrição extensa de compromisso financeiro ".repeat(8),
-          kind: "expense",
-          amountMinor: 2500,
-          currency: "BRL",
-          occurredOn: "2026-07-12",
-          status: "posted",
-        }] : [],
+        recentItems:
+          variant === "long-content"
+            ? [
+                {
+                  description: "QA " + "Descrição extensa de compromisso financeiro ".repeat(8),
+                  kind: "expense",
+                  amountMinor: 2500,
+                  currency: "BRL",
+                  occurredOn: "2026-07-12",
+                  status: "posted",
+                },
+              ]
+            : [],
       });
     }
     if (path === "/api/cash-flow-projection") {
       return response({
-        referenceDate: "2026-07-01", horizonDays: 30, from: "2026-07-02", to: "2026-07-31",
-        currencyBlocks: (variant === "multi-currency" ? ["BRL", "USD"] : ["BRL"]).map((currency) => ({
-          currency, closingBalanceMinor: 10200,
-        })),
+        referenceDate: "2026-07-01",
+        horizonDays: 30,
+        from: "2026-07-02",
+        to: "2026-07-31",
+        currencyBlocks: (variant === "multi-currency" ? ["BRL", "USD"] : ["BRL"]).map(
+          (currency) => ({
+            currency,
+            closingBalanceMinor: 10200,
+          }),
+        ),
       });
     }
     if (path === "/api/bank-message-inbox") {
@@ -137,7 +169,8 @@ async function renderScenario(variant) {
   };
   try {
     const html = await renderDashboardPage("issue-724-visual-" + variant);
-    if (!html.includes("<!doctype html>")) throw new Error("Renderer returned an incomplete document");
+    if (!html.includes("<!doctype html>"))
+      throw new Error("Renderer returned an incomplete document");
     return html;
   } finally {
     globalThis.fetch = originalFetch;
@@ -148,20 +181,26 @@ function currencyBlock(currency, variant) {
   return {
     currency,
     availableBalanceMinor: currency === "USD" ? 420050 : 123450,
-    incomeMinor: 25000, expensesMinor: 10000,
-    netVariationMinor: 15000, plannedCommitmentsMinor: 5000,
-    accounts: [{
-      id: "visual-" + currency.toLowerCase(),
-      name: variant === "long-content"
-        ? "Conta com nome extenso " + "para testar reflow e detalhes ".repeat(7)
-        : "Conta de teste " + currency,
-      status: "active",
-    }],
+    incomeMinor: 25000,
+    expensesMinor: 10000,
+    netVariationMinor: 15000,
+    plannedCommitmentsMinor: 5000,
+    accounts: [
+      {
+        id: "visual-" + currency.toLowerCase(),
+        name:
+          variant === "long-content"
+            ? "Conta com nome extenso " + "para testar reflow e detalhes ".repeat(7)
+            : "Conta de teste " + currency,
+        status: "active",
+      },
+    ],
   };
 }
 function response(data, status = 200) {
   return new Response(JSON.stringify(data), {
-    status, headers: { "content-type": "application/json; charset=utf-8" },
+    status,
+    headers: { "content-type": "application/json; charset=utf-8" },
   });
 }
 function inspectDashboard() {
@@ -179,11 +218,19 @@ function inspectDashboard() {
     currencies: summaries.map((section) => section.id.replace("currency-", "")),
     primaryCount: document.querySelectorAll(".currency-summary .dashboard-metric").length,
     hasNextActions: Boolean(action),
-    supportingAfterActions: Boolean(action && supporting &&
-      (action.compareDocumentPosition(supporting) & Node.DOCUMENT_POSITION_FOLLOWING)),
+    supportingAfterActions: Boolean(
+      action &&
+      supporting &&
+      action.compareDocumentPosition(supporting) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ),
     amountsSeparatedByCurrency: summaries.every((section) =>
-      [...section.querySelectorAll(".sf-metric-card-value")].every((value) => value.textContent.trim().length > 0)),
-    longItemVisible: document.body.textContent.includes("Descrição extensa de compromisso financeiro"),
+      [...section.querySelectorAll(".sf-metric-card-value")].every(
+        (value) => value.textContent.trim().length > 0,
+      ),
+    ),
+    longItemVisible: document.body.textContent.includes(
+      "Descrição extensa de compromisso financeiro",
+    ),
   };
 }
 function focusEvidence() {

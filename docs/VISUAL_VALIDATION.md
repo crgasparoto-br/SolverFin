@@ -120,8 +120,14 @@ para a parte final da página. A falha parcial mantém os KPIs válidos visívei
 de "Próximas ações" reprova a verificação de ordem; restaurar a composição passa.
 No Chrome normal, um painel intrusivo de 600 px é inserido antes da seção; a próxima
 ação deve sair da primeira dobra em 320/390 px. A remoção deve restaurar a medição.
-Os cenários Chrome multi-moeda, parcial, erro e conteúdo longo ainda precisam de
-capturas próprias no SHA final; os testes SSR não substituem essa evidência.
+O runner cadastra cenários de Chrome para multi-moeda, parcial, erro e conteúdo longo,
+com capturas individuais em 1366×768, 390×844 e 320×740, métricas e prova de Enter
+em links de evidência. Esses quatro cenários usam o renderizador SSR real com respostas
+de API controladas injetadas em uma sessão Chrome autenticada: a procedência é
+explicitamente **SSR simulado**, não integração real com a API em produção. O fluxo
+normal e o vazio continuam verificações com dados reais do ambiente de teste.
+Cada execução deve vincular as capturas ao SHA material e passar por revisão visual
+independente; os testes SSR não substituem essa revisão.
 O teste SSR rejeita a alteração e a revisão visual deve rejeitar excesso de cartões
 mesmo que as verificações estruturais passem. Evidência Chrome de SHA anterior só
 serve como baseline, nunca como certificação da entrega.
