@@ -533,33 +533,26 @@ export function statementGoldenRefinementStyles(): string {
     ${dialog} .statement-entry-advanced>summary{color:var(--primary);cursor:pointer;font-size:${typography.sizes.sm};font-weight:${typography.weights.medium};min-height:${density.interactiveTargetMin}}
     ${dialog} .statement-entry-advanced-grid{display:grid;gap:${spacing[3]};grid-template-columns:repeat(2,minmax(0,1fr));padding-top:${spacing[2]}}
     ${dialog} .statement-entry-advanced-grid>.full{grid-column:1/-1}
-    ${dialog} .save-row{align-items:center;border-top:1px solid #eef2f7;justify-content:flex-end;padding-top:${spacing[3]}}
-    ${dialog} .save-row .status-icons{flex:0 0 auto;flex-wrap:nowrap;margin-right:auto}
+    /* The dialog is at most 440px wide even on desktop: viewport media queries
+       cannot decide whether its three actions fit. Keep status on a separate row
+       and size every action against the dialog's own content box. */
+    ${dialog} .save-row{align-items:start;border-top:1px solid var(--line);display:grid;gap:${spacing[3]};grid-template-columns:minmax(0,1fr);justify-content:stretch;max-width:100%;min-width:0;padding-top:${spacing[3]};width:100%}
+    ${dialog} .save-row .status-icons{flex-wrap:nowrap;justify-self:start;margin-right:0;min-width:0}
     ${dialog} .save-row .status-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-    ${dialog} .save-row{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;min-width:0}
-    ${dialog} .statement-save-actions{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap;gap:8px;margin-left:auto;min-width:0}
-    ${dialog} .statement-save-actions>button{flex:0 0 auto;grid-column:auto;min-width:0;min-height:44px;white-space:nowrap}
+    ${dialog} .statement-save-actions{box-sizing:border-box;display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr));margin-left:0;max-width:100%;min-width:0;width:100%}
+    ${dialog} .statement-save-actions>button{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:4px;grid-column:auto;max-width:100%;min-height:44px;min-width:0;overflow-wrap:anywhere;padding:8px;white-space:normal;width:100%}
+    ${dialog} .statement-save-actions>button[type=submit]:not([data-statement-save-continue]){grid-column:1/-1}
+    /* Edits show only Cancelar + Salvar lançamento; use one row for those. */
+    ${dialog} .statement-save-actions:has([data-statement-save-continue][hidden])>button[type=submit]:not([data-statement-save-continue]){grid-column:auto}
     ${dialog} .statement-save-actions>[data-transaction-cancel]{background:transparent;border:1px solid var(--line);color:var(--text)}
     ${dialog} .statement-save-actions>[data-statement-save-continue]{background:var(--surface);border:1px solid var(--line);color:var(--primary)}
     ${dialog} .statement-save-actions>[data-statement-save-continue]:hover:not(:disabled){background:var(--primary-soft);border-color:var(--primary)}
     ${dialog} .statement-save-actions>[data-statement-save-continue]:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-    @media(max-width:600px){
-      ${dialog} .statement-save-actions{display:grid;flex:1 1 100%;grid-template-columns:minmax(0,1fr);margin-left:0;width:100%}
-      ${dialog} .statement-save-actions>button{box-sizing:border-box;white-space:normal;width:100%}
-    }
-    @media(max-width:390px){
-      ${dialog} .save-row .status-icons{width:100%}
-      /* A 320px viewport leaves less space than the natural width of both action buttons.
-         Constrain the whole row to its content box instead of clipping Cancelar offscreen. */
-      ${dialog} .statement-save-actions{box-sizing:border-box;flex:1 1 100%;justify-content:stretch;margin-left:0;max-width:100%;width:100%}
-      ${dialog} .statement-save-actions>button{box-sizing:border-box;font-size:.8125rem;min-width:0;padding-inline:6px}
-      ${dialog} .statement-save-actions>[data-transaction-cancel]{flex:0 0 auto}
-      ${dialog} .statement-save-actions>button[type=submit]{flex:1 1 0}
-    }
     @media(max-width:360px){
-      /* Prioritize complete action labels over ornamental icons in the 320px dialog. */
+      /* 320px viewport: a single column protects full labels and 44px targets. */
+      ${dialog} .statement-save-actions{grid-template-columns:minmax(0,1fr)}
+      ${dialog} .statement-save-actions>button[type=submit]:not([data-statement-save-continue]){grid-column:auto}
       ${dialog} .statement-save-actions [data-popup-action-icon]{display:none!important}
-      ${dialog} .statement-save-actions>button{padding-inline:4px}
     }
     @media(max-width:1100px){
       body:has(${root}) .app-shell{grid-template-columns:1fr}
