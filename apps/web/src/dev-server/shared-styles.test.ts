@@ -250,6 +250,12 @@ describe("shared shell styles", () => {
         assert.match(extractedStyles, /sharedShellStyles\(\)/);
         return;
       }
+      if (moduleFileName === "dashboard-page.js" && source.includes("dashboardStyles()")) {
+        assert.match(source, /import \{ dashboardStyles \} from "\.\/dashboard-styles\.js"/);
+        const extractedStyles = readFileSync(join(currentDir, "dashboard-styles.js"), "utf8");
+        assert.match(extractedStyles, /sharedShellStyles\(\)/);
+        return;
+      }
       assert.match(source, /sharedShellStyles\(\)/);
     });
   }
