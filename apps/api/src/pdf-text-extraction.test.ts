@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { StructuredImportError } from "@solverfin/domain";
 
-import { parsePopplerWordLayout } from "./pdf-text-extraction.js";
+import { classifyPopplerFailure, parsePopplerWordLayout } from "./pdf-text-extraction.js";
 
 describe("Poppler text-position adapter", () => {
   it("extracts page boundaries, coordinates and HTML-escaped words", () => {
@@ -31,5 +31,39 @@ describe("Poppler text-position adapter", () => {
       () => parsePopplerWordLayout('<page><word xMin="bogus" yMin="2">Text</word></page>'),
       (e: unknown) => e instanceof StructuredImportError && e.code === "IMPORT_PDF_INVALID",
     );
+  });
+
+  it("rejects truncated Poppler pages and silently omitted words", () => {
+    const brokenPage =
+      '<page><word xMin="20" yMin="30">valid</word><word xMin="40" yMin="30">missing';
+    assert.throws(
+      () => parsePopplerWordLayout(brokenPage),
+      (error: unknown) =>
+        error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
+    );
+    const brokenWord =
+      '<page><word xMin="20" yMin="30">valid</word><word xMin="40" yMin="30">missing</page>';
+    assert.throws(
+      () => parsePopplerWordLayout(brokenWord),
+      (error: unknown) =>
+        error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
+    );
+  });
+
+  it("distinguishes missing extractor, a password-protected PDF and invalid output", () => {
+    const absent = Object.assign(new Error("spawn pdftotext ENOENT"), { code: "ENOENT" });
+    const missing = classifyPopplerFailure({ status: null, stderr: "", error: absent });
+    assert.equal(missing?.code, "IMPORT_PDF_EXTRACTOR_UNAVAILABLE");
+    assert.equal(missing?.statusCode, 503);
+    assert.equal(classifyPopplerFailure({ status: 3, stderr: "" })?.code, "IMPORT_PDF_PROTECTED");
+    assert.equal(
+      classifyPopplerFailure({ status: 1, stderr: "Incorrect password" })?.code,
+      "IMPORT_PDF_PROTECTED",
+    );
+    assert.equal(
+      classifyPopplerFailure({ status: 1, stderr: "Invalid file" })?.code,
+      "IMPORT_PDF_INVALID",
+    );
+    assert.equal(classifyPopplerFailure({ status: 0, stderr: "" }), undefined);
   });
 });

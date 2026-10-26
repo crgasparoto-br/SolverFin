@@ -51,16 +51,50 @@ export function parsePopplerWordLayout(xml: string): PdfExtractedPage[] {
       if (count > MAX_WORDS)
         throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF excede o limite de texto.");
     }
+    if (words.length !== (pageMatch[1]!.match(/<word\b/g) ?? []).length)
+      throw new StructuredImportError("IMPORT_PDF_INVALID", "Palavras do PDF incompletas.");
     pages.push({ words });
     if (pages.length > MAX_PAGES)
       throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF excede o limite de paginas.");
   }
+  if (pages.length !== (xml.match(/<page\b/g) ?? []).length)
+    throw new StructuredImportError("IMPORT_PDF_INVALID", "Paginas do PDF incompletas.");
   if (pages.length === 0 || count === 0)
     throw new StructuredImportError(
       "IMPORT_PDF_LAYOUT_UNSUPPORTED",
       "O PDF nao possui texto extraivel.",
     );
   return pages;
+}
+
+export function classifyPopplerFailure(result: {
+  status: number | null;
+  stderr: string | Buffer;
+  error?: Error;
+}): StructuredImportError | undefined {
+  if (result.error && "code" in result.error && result.error.code === "ENOENT") {
+    return new StructuredImportError(
+      "IMPORT_PDF_EXTRACTOR_UNAVAILABLE",
+      "O servidor precisa do utilitario pdftotext (Poppler) para ler extratos PDF.",
+      503,
+    );
+  }
+  if (result.status !== 0 || result.error) {
+    const stderr = String(result.stderr ?? "");
+    if (result.status === 3 || /password|senha|encrypted/i.test(stderr)) {
+      return new StructuredImportError(
+        "IMPORT_PDF_PROTECTED",
+        "Este PDF exige senha ou nao permite extracao de texto.",
+        422,
+      );
+    }
+    return new StructuredImportError(
+      "IMPORT_PDF_INVALID",
+      "Nao foi possivel extrair o texto do PDF.",
+      422,
+    );
+  }
+  return undefined;
 }
 
 /**
@@ -70,7 +104,9 @@ export function parsePopplerWordLayout(xml: string): PdfExtractedPage[] {
 export function extractPdfWordLayout(bytes: Buffer): PdfExtractedPage[] {
   const result = spawnSync(
     "pdftotext",
-    ["-q", "-bbox-layout", "-enc", "UTF-8", "-upw", "", "-", "-"],
+    // Do not use -q: Poppler can exit with code 1 for a password and only
+    // explain that failure on stderr. The output remains private.
+    ["-bbox-layout", "-enc", "UTF-8", "-upw", "", "-", "-"],
     {
       input: bytes,
       encoding: "utf8",
@@ -79,27 +115,7 @@ export function extractPdfWordLayout(bytes: Buffer): PdfExtractedPage[] {
       windowsHide: true,
     },
   );
-  if (result.error && "code" in result.error && result.error.code === "ENOENT") {
-    throw new StructuredImportError(
-      "IMPORT_PDF_EXTRACTOR_UNAVAILABLE",
-      "O servidor precisa do utilitario pdftotext (Poppler) para ler extratos PDF.",
-      503,
-    );
-  }
-  if (result.status !== 0 || result.error) {
-    const stderr = String(result.stderr ?? "");
-    if (result.status === 3 || /password|senha|encrypted/i.test(stderr)) {
-      throw new StructuredImportError(
-        "IMPORT_PDF_PROTECTED",
-        "Este PDF exige senha ou nao permite extracao de texto.",
-        422,
-      );
-    }
-    throw new StructuredImportError(
-      "IMPORT_PDF_INVALID",
-      "Nao foi possivel extrair o texto do PDF.",
-      422,
-    );
-  }
+  const failure = classifyPopplerFailure(result);
+  if (failure) throw failure;
   return parsePopplerWordLayout(String(result.stdout ?? ""));
 }

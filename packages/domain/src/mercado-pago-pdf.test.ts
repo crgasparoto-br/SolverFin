@@ -102,6 +102,54 @@ describe("Mercado Pago bank statement PDF layout", () => {
     assert.notEqual(parsed.rows[0]!.sourceHash, parsed.rows[1]!.sourceHash);
   });
 
+  it("validates exactly 38 synthetic movements spread across three pages", () => {
+    const fixture = pages();
+    const firstPage = fixture[0]!.words
+      .filter((word) => word.y < 200)
+      .map((word) => {
+        if (word.text === "15,50") return { ...word, text: "38,00" };
+        if (word.text === "-15,00") return { ...word, text: "0,00" };
+        if (word.text === "100,50") return { ...word, text: "138,00" };
+        return word;
+      });
+    const continuationHeader = fixture[1]!.words.filter((word) => word.y < 60);
+    const institution = fixture[1]!.words.filter((word) => word.y > 575);
+    const threePages: PdfExtractedPage[] = [
+      { words: firstPage },
+      { words: continuationHeader },
+      { words: [...continuationHeader, ...institution] },
+    ];
+    for (let i = 0; i < 38; i += 1) {
+      const day = new Date(Date.UTC(2026, 9, 1 + i));
+      const date = [
+        String(day.getUTCDate()).padStart(2, "0"),
+        String(day.getUTCMonth() + 1).padStart(2, "0"),
+        String(day.getUTCFullYear()),
+      ].join("-");
+      const pageIndex = i < 13 ? 0 : i < 26 ? 1 : 2;
+      const position = pageIndex === 0 ? i : pageIndex === 1 ? i - 13 : i - 26;
+      const y = (pageIndex === 0 ? 212 : 72) + position * 27;
+      threePages[pageIndex] = {
+        words: [
+          ...threePages[pageIndex]!.words,
+          ...row(
+            date,
+            ["Operação sintética"],
+            String(123456789000 + i),
+            "1,00",
+            `${101 + i},00`,
+            y,
+          ),
+        ],
+      };
+    }
+    const parsed = parseMercadoPagoStatement(threePages);
+    assert.equal(parsed.state, "ready");
+    assert.equal(parsed.rows.length, 38);
+    assert.equal(parsed.rows.reduce((sum, item) => sum + item.amountMinor, 0), 3800);
+    assert.equal(new Set(parsed.rows.map((item) => item.externalId)).size, 38);
+  });
+
   it("fails closed when bank identity, a row, a balance, or totals are tampered", () => {
     const missingIdentity = pages();
     missingIdentity[1] = {
@@ -139,6 +187,55 @@ describe("Mercado Pago bank statement PDF layout", () => {
       parseMercadoPagoStatement(wrongTotals).problems[0]?.code,
       "IMPORT_PDF_TOTAL_MISMATCH",
     );
+  });
+
+  it("rejects every candidate financial row even when its date is absent or malformed", () => {
+    // Deliberately keep the previous totals unchanged: the old parser silently
+    // ignored the fourth movement and returned ready with three proposals.
+    for (const invalidDate of ["04/10/2026", "SEM-DATA", ""]) {
+      const modified = pages();
+      modified[1] = {
+        words: [
+          ...modified[1]!.words,
+          ...row(
+            invalidDate,
+            ["Movimento adicional"],
+            "123456789015",
+            "1,00",
+            "101,50",
+            130,
+          ).filter((word) => word.text.length > 0),
+        ],
+      };
+      const parsed = parseMercadoPagoStatement(modified);
+      assert.equal(parsed.state, "blocked", `invalid date: ${invalidDate}`);
+      assert.deepEqual(parsed.rows, []);
+      assert.equal(parsed.problems[0]?.code, "IMPORT_PDF_ROW_INVALID");
+    }
+  });
+
+  it("rejects orphan financial fields and never hides a partially redacted row", () => {
+    for (const missing of ["date-and-id", "date-and-amount", "date-and-balance"]) {
+      const modified = pages();
+      const candidate = row(
+        "04-10-2026",
+        ["Entrada de teste"],
+        "123456789015",
+        "1,00",
+        "101,50",
+        130,
+      ).filter((word) => {
+        if (missing === "date-and-id")
+          return word.x >= 285 || (word.x >= 76 && word.x < 195);
+        if (missing === "date-and-amount")
+          return (word.x >= 195 && word.x < 285) || word.x >= 354;
+        return word.x >= 195 && word.x < 354;
+      });
+      modified[1] = { words: [...modified[1]!.words, ...candidate] };
+      const parsed = parseMercadoPagoStatement(modified);
+      assert.equal(parsed.state, "blocked", missing);
+      assert.deepEqual(parsed.rows, []);
+    }
   });
 
   it("rejects duplicated operation IDs before financial proposals are built", () => {
