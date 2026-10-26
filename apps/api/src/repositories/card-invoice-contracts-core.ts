@@ -335,6 +335,54 @@ export async function updateCardPurchaseForContext(
     );
   }
 
+
+  // Current-only edits must enforce the same recurrence invariants as future edits.
+  if (current.recurrenceId !== null) {
+    const [recurrence] = await query<{ currency: string }>(
+      `select "currency" from "Recurrence"
+        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [current.recurrenceId, context.organizationId, context.financialProfileId],
+    );
+    const [linkedInstallment] =
+      current.installmentId === null
+        ? []
+        : await query<{ status: string; currency: string; invoiceId: string | null }>(
+            `select "status", "currency", "invoiceId" from "Installment"
+              where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+            [current.installmentId, context.organizationId, context.financialProfileId],
+          );
+
+    if (
+      recurrence?.currency !== current.currency ||
+      invoice.currency !== current.currency ||
+      (current.installmentId !== null &&
+        (linkedInstallment?.currency !== current.currency ||
+          linkedInstallment?.invoiceId !== invoice.id))
+    ) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_CURRENCY_MISMATCH",
+        "Moedas divergentes entre compra, recorrencia, parcela e fatura.",
+        409,
+      );
+    }
+
+    // Status-only changes preserve the existing conciliate/unconciliate action.
+    const statusOnly =
+      payload.status !== undefined && Object.keys(payload).every((key) => key === "status");
+    if (
+      !statusOnly &&
+      (["RECONCILED", "VOIDED", "CANCELLED"].includes(current.status) ||
+        (linkedInstallment !== undefined &&
+          ["RECONCILED", "CANCELLED"].includes(linkedInstallment.status)))
+    ) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_RECONCILED_LOCKED",
+        "Ocorrencias recorrentes conciliadas ou canceladas nao podem ser editadas.",
+        409,
+      );
+    }
+  }
+
   const purchaseInstallments = await loadPurchaseInstallmentEditStates(query, context, current.id);
   const isInstallmentPurchase = purchaseInstallments.length > 0;
   assertPurchaseInstallmentsEditable(purchaseInstallments);

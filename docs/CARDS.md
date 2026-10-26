@@ -450,8 +450,9 @@ O valor principal tem prioridade tipográfica; valor da parcela aparece ao lado 
 Os estados de compra simples, compra parcelada, recorrência fixa, cartão sem moeda e indisponibilidade de edição preservam os contratos de campos, validações e API. Validar criação/edição em 1366×768, 390×844 e 320×740 com teclado, foco, rolagem, leitura de erros, estados de parcela e comparação visual com o Extrato antes de aprovar o gate independente.
 
 Na edicao de uma compra recorrente, a API bloqueia a propria ocorrencia
-selecionada quando sua transacao ou parcela estiver conciliada ou cancelada, mesmo
-com fatura aberta e escopo `current_and_future`. Antes de alterar valores ou datas,
+selecionada quando sua transacao ou parcela estiver conciliada ou cancelada, tanto
+com escopo `current_only` quanto com `current_and_future`, mesmo em fatura aberta.
+Antes de alterar valores ou datas,
 o servidor exige moeda identica na recorrencia, compra, parcela e fatura. Ocorrencias
 futuras em moeda divergente nao sao convertidas nem sobrescritas: ficam intactas,
 contam em `skippedCount` e trazem o motivo `currency_mismatch` na resposta.

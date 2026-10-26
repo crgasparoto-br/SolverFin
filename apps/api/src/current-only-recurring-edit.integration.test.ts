@@ -193,11 +193,13 @@ async function assertRecurringEditGuards(
       locked.id,
     ]);
     try {
-      const rejected = await authenticatedPatch(token, purchasePath, {
-        amountMinor: 6_200,
-        editScope: "current_and_future",
-      });
-      assert.equal(rejected.statusCode, 409, `A selected ${locked.table} is reconciled`);
+      for (const path of [purchasePath, `${purchasePath}/current-only`]) {
+        const rejected = await authenticatedPatch(token, path, {
+          amountMinor: 6_200,
+          editScope: path === purchasePath ? "current_and_future" : "current_only",
+        });
+        assert.equal(rejected.statusCode, 409, `A selected ${locked.table} is reconciled`);
+      }
       await assertNoFinancialWrite(snapshot, total);
     } finally {
       await query(`update "${locked.table}" set "status" = $2 where "id" = $1`, [
@@ -216,20 +218,18 @@ async function assertRecurringEditGuards(
   ] as const) {
     const snapshot = await readOccurrences(recurrenceId);
     const total = await invoiceTotal(selected.invoiceId);
-    await query(`update "${target.table}" set "currency" = 'USD' where "id" = $1`, [
-      target.id,
-    ]);
+    await query(`update "${target.table}" set "currency" = 'USD' where "id" = $1`, [target.id]);
     try {
-      const rejected = await authenticatedPatch(token, purchasePath, {
-        amountMinor: 6_300,
-        editScope: "current_and_future",
-      });
-      assert.equal(rejected.statusCode, 409, `Selected ${target.table} currency mismatches`);
+      for (const path of [purchasePath, `${purchasePath}/current-only`]) {
+        const rejected = await authenticatedPatch(token, path, {
+          amountMinor: 6_300,
+          editScope: path === purchasePath ? "current_and_future" : "current_only",
+        });
+        assert.equal(rejected.statusCode, 409, `Selected ${target.table} currency mismatches`);
+      }
       await assertNoFinancialWrite(snapshot, total);
     } finally {
-      await query(`update "${target.table}" set "currency" = 'BRL' where "id" = $1`, [
-        target.id,
-      ]);
+      await query(`update "${target.table}" set "currency" = 'BRL' where "id" = $1`, [target.id]);
     }
   }
 
@@ -241,9 +241,7 @@ async function assertRecurringEditGuards(
   ].entries()) {
     const beforeFuture = (await readOccurrences(recurrenceId))[2];
     const futureTotal = await invoiceTotal(future.invoiceId);
-    await query(`update "${target.table}" set "currency" = 'USD' where "id" = $1`, [
-      target.id,
-    ]);
+    await query(`update "${target.table}" set "currency" = 'USD' where "id" = $1`, [target.id]);
     try {
       const result = await authenticatedPatch(token, purchasePath, {
         amountMinor: 6_400 + index * 100,
@@ -262,9 +260,7 @@ async function assertRecurringEditGuards(
       assertOccurrenceUnchanged(beforeFuture, (await readOccurrences(recurrenceId))[2]);
       assert.equal(await invoiceTotal(future.invoiceId), futureTotal);
     } finally {
-      await query(`update "${target.table}" set "currency" = 'BRL' where "id" = $1`, [
-        target.id,
-      ]);
+      await query(`update "${target.table}" set "currency" = 'BRL' where "id" = $1`, [target.id]);
     }
   }
 }
