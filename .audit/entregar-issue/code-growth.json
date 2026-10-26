@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+  "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
   "base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
   "comparison_base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
   "policy": {
@@ -36,7 +36,7 @@
     {
       "path": "apps/api/src/repositories/card-invoice-contracts-core.ts",
       "lines_before": 868,
-      "lines_after": 882
+      "lines_after": 886
     },
     {
       "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
@@ -51,7 +51,7 @@
     {
       "path": "apps/api/src/repositories/card-invoice-purchase-edit-guard.ts",
       "lines_before": null,
-      "lines_after": 46
+      "lines_after": 169
     },
     {
       "path": "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
@@ -67,6 +67,11 @@
       "path": "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
       "lines_before": 498,
       "lines_after": 500
+    },
+    {
+      "path": "apps/api/src/repositories/recurring-card-purchase-edit.ts",
+      "lines_before": 641,
+      "lines_after": 660
     },
     {
       "path": "apps/api/src/router.ts",

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+  "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
@@ -27,9 +27,9 @@
       "id": "FREE-TO-SPEND-AVAIL-001",
       "disposition": "not-applicable",
       "reason": "Prior check concerns free-to-spend availability for EUR/JPY; issue 742 is exclusively card-purchase editing, and no free-to-spend source changed.",
-      "subject_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+      "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
       "evidence": ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
-      "evidence_sha256": "f9e427965fae6a5fb7e13a6daf9e55ef7f2d7a4c55ddcead54f0c1303486a6ee",
+      "evidence_sha256": "4594fb881a0ca22d44c49103858b8ced380604aeaa0bd2523fefd4964fc89438",
       "procedure": "Compare git diff between immutable base and material SHA for free-to-spend/financial-summary sources; verify no matching changed files and that issue 742 scope is card purchase editing only.",
       "expected": "A changed implementation file in the prior free-to-spend contract or Statement footer surface would reject not-applicable; the immutable diff must be checked for both surfaces.",
       "observed": "Scope delta contains no free-to-spend/financial-summary module; the prior control is outside this delivery."
@@ -38,9 +38,9 @@
       "id": "AUD-714-03-FOOTER-CLIP",
       "disposition": "not-applicable",
       "reason": "Prior check concerns Statement mobile footer clipping, not the cards purchase dialog; no statement page or /lancamentos implementation files changed.",
-      "subject_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+      "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
       "evidence": ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
-      "evidence_sha256": "f9e427965fae6a5fb7e13a6daf9e55ef7f2d7a4c55ddcead54f0c1303486a6ee",
+      "evidence_sha256": "4594fb881a0ca22d44c49103858b8ced380604aeaa0bd2523fefd4964fc89438",
       "procedure": "Compare git diff between base and material HEAD for Statement rendering and footer components, and compare issue 742 route /cartoes against original statement route.",
       "expected": "A changed implementation file in the prior free-to-spend contract or Statement footer surface would reject not-applicable; the immutable diff must be checked for both surfaces.",
       "observed": "Changed-file scope is cards invoice UI/API only; Statement footer clipping check is not applicable to issue 742."

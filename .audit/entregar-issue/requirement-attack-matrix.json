@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+  "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
   "requirements": [
     {
       "requirement_id": "REQ-742-01",
@@ -16,25 +16,25 @@
       "plausible_wrong_implementation": "Card menus could diverge from the Extrato and change unrelated financial states when an edit is reopened.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:292-325 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:292-325 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-01-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "public-modal",
           "dimension": "bad-public-modal-mutation",
           "failure_mode": "Card menus could diverge from the Extrato and change unrelated financial states when an edit is reopened.",
           "plausible_wrong_implementation": "Card menus could diverge from the Extrato and change unrelated financial states when an edit is reopened.",
-          "procedure": "Inspect exact source apps/web/src/dev-server/cards-page-v2.test.ts:292-325 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source apps/web/src/dev-server/cards-page-v2.test.ts:292-325 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-001 must be rejected, with previous financial values and identification unchanged.",
           "observed": "SSR assertions reached in Repository CI on exact SHA for shared modal/actions and invoice data.",
-          "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:292-325 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:292-325 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "41b0ac52d42ab1e9efe296776e6ff5271008e919c7bd2e93b02663d7c8bc95d8",
           "sibling_cases": [
             {
@@ -56,8 +56,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test apps/web/src/dev-server/cards-page-v2.test.ts:292-325; SSR assertions reached in Repository CI on exact SHA for shared modal/actions and invoice data.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test apps/web/src/dev-server/cards-page-v2.test.ts:292-325; SSR assertions reached in Repository CI on exact SHA for shared modal/actions and invoice data.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -90,25 +90,25 @@
       "plausible_wrong_implementation": "Cloning a purchase could incorrectly preserve the original transaction identity or recurrence/parcel sequence.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-02-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "structural-contract",
           "surface": "purchase-clone",
           "dimension": "bad-purchase-clone-mutation",
           "failure_mode": "Cloning a purchase could incorrectly preserve the original transaction identity or recurrence/parcel sequence.",
           "plausible_wrong_implementation": "Cloning a purchase could incorrectly preserve the original transaction identity or recurrence/parcel sequence.",
-          "procedure": "Inspect exact source work/clone-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/clone-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-002 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Isolated runtime clone harness created POST with empty IDs and rejected removed reset call.",
-          "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "7b24ab7e9eda9a8bace0cc2b8c3390b6fe8d2a26bb915740935e8d1b526753ea",
           "sibling_cases": [
             {
@@ -130,8 +130,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test work/clone-adversarial.txt; Isolated runtime clone harness created POST with empty IDs and rejected removed reset call.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test work/clone-adversarial.txt; Isolated runtime clone harness created POST with empty IDs and rejected removed reset call.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -164,25 +164,25 @@
       "plausible_wrong_implementation": "Rendering accessible action buttons without keeping the Edit or recurring-scope operations wired to their event handlers.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:630-666 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:630-666 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-03-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "public-modal",
           "dimension": "bad-public-modal-mutation",
           "failure_mode": "Rendering accessible action buttons without keeping the Edit or recurring-scope operations wired to their event handlers.",
           "plausible_wrong_implementation": "Rendering accessible action buttons without keeping the Edit or recurring-scope operations wired to their event handlers.",
-          "procedure": "Inspect exact source apps/web/src/dev-server/cards-page-v2.test.ts:630-666 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source apps/web/src/dev-server/cards-page-v2.test.ts:630-666 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-003 must be rejected, with previous financial values and identification unchanged.",
           "observed": "SSR action menu assertions passed in exact-SHA Repository CI.",
-          "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:630-666 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:630-666 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "41b0ac52d42ab1e9efe296776e6ff5271008e919c7bd2e93b02663d7c8bc95d8",
           "sibling_cases": [
             {
@@ -204,8 +204,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test apps/web/src/dev-server/cards-page-v2.test.ts:630-666; SSR action menu assertions passed in exact-SHA Repository CI.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test apps/web/src/dev-server/cards-page-v2.test.ts:630-666; SSR action menu assertions passed in exact-SHA Repository CI.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -238,25 +238,25 @@
       "plausible_wrong_implementation": "Updating Transaction.amountMinor instead of Installment.amountMinor would overwrite every occurrence of an installment purchase.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-04-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "invoice-occurrence",
           "dimension": "bad-invoice-occurrence-mutation",
           "failure_mode": "Updating Transaction.amountMinor instead of Installment.amountMinor would overwrite every occurrence of an installment purchase.",
           "plausible_wrong_implementation": "Updating Transaction.amountMinor instead of Installment.amountMinor would overwrite every occurrence of an installment purchase.",
-          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-004 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Isolated installment function harness preserved older invoice, changed future eligible rows, rejected inverted future selector.",
-          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "53e02a57077f0b69cb5a36ecddeed41ec20d528a76938dbb3cb3990b78ae5313",
           "sibling_cases": [
             {
@@ -278,8 +278,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test work/installment-adversarial.txt; Isolated installment function harness preserved older invoice, changed future eligible rows, rejected inverted future selector.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test work/installment-adversarial.txt; Isolated installment function harness preserved older invoice, changed future eligible rows, rejected inverted future selector.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -314,25 +314,25 @@
       "plausible_wrong_implementation": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983 | Current exact-head adverse proof: .audit/entregar-issue/evidence/issue-742-current-recurring-guard-adversarial.txt; integration run 40333637104.",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-05-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "reference-liveness",
           "surface": "recurring-edit",
           "dimension": "bad-recurring-edit-mutation",
           "failure_mode": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
           "plausible_wrong_implementation": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
-          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-005 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Authenticated dispatcher integration exercised current-only/current-and-future; isolated runtime scope harness rejected missing editScope.",
-          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "00020050a20709c5b8c5c3dd1caad62cfe57ff359031333b00e01a02455d4571",
           "sibling_cases": [
             {
@@ -353,17 +353,17 @@
         {
           "id": "NEG-742-05-02",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "temporal-consistency",
           "surface": "recurring-edit",
           "dimension": "bad-recurring-edit-mutation",
           "failure_mode": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
           "plausible_wrong_implementation": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
-          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-005 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Authenticated dispatcher integration exercised current-only/current-and-future; isolated runtime scope harness rejected missing editScope.",
-          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "00020050a20709c5b8c5c3dd1caad62cfe57ff359031333b00e01a02455d4571",
           "sibling_cases": [
             {
@@ -384,17 +384,17 @@
         {
           "id": "NEG-742-05-03",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "temporal-destination",
           "surface": "recurring-edit",
           "dimension": "bad-recurring-edit-mutation",
           "failure_mode": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
           "plausible_wrong_implementation": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
-          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-005 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Authenticated dispatcher integration exercised current-only/current-and-future; isolated runtime scope harness rejected missing editScope.",
-          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "00020050a20709c5b8c5c3dd1caad62cfe57ff359031333b00e01a02455d4571",
           "sibling_cases": [
             {
@@ -415,17 +415,17 @@
         {
           "id": "NEG-742-05-01-RB",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "reference-liveness",
           "surface": "recurring-edit-readback",
           "dimension": "readback-boundary",
           "failure_mode": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
           "plausible_wrong_implementation": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
-          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
+          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
           "expected": "Behavior violating criterion OBL-005 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Authenticated dispatcher integration exercised current-only/current-and-future; isolated runtime scope harness rejected missing editScope. The readback checks show previous financial state unchanged.",
-          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "00020050a20709c5b8c5c3dd1caad62cfe57ff359031333b00e01a02455d4571",
           "sibling_cases": [
             {
@@ -446,17 +446,17 @@
         {
           "id": "NEG-742-05-02-RB",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "temporal-consistency",
           "surface": "recurring-edit-readback",
           "dimension": "readback-boundary",
           "failure_mode": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
           "plausible_wrong_implementation": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
-          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
+          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
           "expected": "Behavior violating criterion OBL-005 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Authenticated dispatcher integration exercised current-only/current-and-future; isolated runtime scope harness rejected missing editScope. The readback checks show previous financial state unchanged.",
-          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "00020050a20709c5b8c5c3dd1caad62cfe57ff359031333b00e01a02455d4571",
           "sibling_cases": [
             {
@@ -477,17 +477,17 @@
         {
           "id": "NEG-742-05-03-RB",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "temporal-destination",
           "surface": "recurring-edit-readback",
           "dimension": "readback-boundary",
           "failure_mode": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
           "plausible_wrong_implementation": "Recurring date edit might update occurrences outside their original invoice billing period or omit explicit scope.",
-          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
+          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
           "expected": "Behavior violating criterion OBL-005 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Authenticated dispatcher integration exercised current-only/current-and-future; isolated runtime scope harness rejected missing editScope. The readback checks show previous financial state unchanged.",
-          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "00020050a20709c5b8c5c3dd1caad62cfe57ff359031333b00e01a02455d4571",
           "sibling_cases": [
             {
@@ -509,8 +509,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test work/recurring-scope-adversarial.txt; Authenticated dispatcher integration exercised current-only/current-and-future; isolated runtime scope harness rejected missing editScope.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test work/recurring-scope-adversarial.txt; Authenticated dispatcher integration exercised current-only/current-and-future; isolated runtime scope harness rejected missing editScope.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -568,15 +568,15 @@
       "plausible_wrong_implementation": "A form might render compactly on desktop but hide required currency/date controls or crop actions on narrow mobile viewports.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "visual/cards-modal-desktop.png ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "visual/cards-modal-desktop.png ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-06-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "public-modal",
@@ -586,7 +586,7 @@
           "procedure": "Inspect exact source visual/cards-modal-desktop.png and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-006 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Chrome desktop modal image shows centralized form, all financial controls and single-row actions; visual job successful.",
-          "evidence": "visual/cards-modal-desktop.png ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "visual/cards-modal-desktop.png ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "c423476a9aa7ae7ae82161f650e1b6d5b71af82ca3928ad7f0d623f84438b0e5",
           "sibling_cases": [
             {
@@ -608,8 +608,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737, fixture/test visual/cards-modal-desktop.png; Chrome desktop modal image shows centralized form, all financial controls and single-row actions; visual job successful.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737, fixture/test visual/cards-modal-desktop.png; Chrome desktop modal image shows centralized form, all financial controls and single-row actions; visual job successful.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -642,25 +642,25 @@
       "plausible_wrong_implementation": "Documentation could advertise a different route or schema than the executable API and the compiled integration tests.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "structural"
       },
       "negative_controls": [
         {
           "id": "NEG-742-07-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "documentation",
           "surface": "canonical-claims",
           "dimension": "bad-canonical-claims-mutation",
           "failure_mode": "Documentation could advertise a different route or schema than the executable API and the compiled integration tests.",
           "plausible_wrong_implementation": "Documentation could advertise a different route or schema than the executable API and the compiled integration tests.",
-          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-007 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Repository CI ran tests and documentation references matched existing files and handler names in local checkout.",
-          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "570cc44156b4f47443d3f7c9a14b91b9af4c580892fa1b88edadddb9c58e3c1e",
           "sibling_cases": [
             {
@@ -682,8 +682,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361; Repository CI ran tests and documentation references matched existing files and handler names in local checkout.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:157-361; Repository CI ran tests and documentation references matched existing files and handler names in local checkout.",
           "evidence_kind": "structural"
         }
       ],
@@ -716,25 +716,25 @@
       "plausible_wrong_implementation": "The three-dot action menu might show Clone but hide Edit, or lose the shared icon and accessible menu labels.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:630-666 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:630-666 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-08-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "public-modal",
           "dimension": "bad-public-modal-mutation",
           "failure_mode": "The three-dot action menu might show Clone but hide Edit, or lose the shared icon and accessible menu labels.",
           "plausible_wrong_implementation": "The three-dot action menu might show Clone but hide Edit, or lose the shared icon and accessible menu labels.",
-          "procedure": "Inspect exact source apps/web/src/dev-server/cards-page-v2.test.ts:630-666 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source apps/web/src/dev-server/cards-page-v2.test.ts:630-666 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-008 must be rejected, with previous financial values and identification unchanged.",
           "observed": "SSR menu assertions checked shared SVG/labels and preserved Edit/Clone entries.",
-          "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:630-666 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "apps/web/src/dev-server/cards-page-v2.test.ts:630-666 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "41b0ac52d42ab1e9efe296776e6ff5271008e919c7bd2e93b02663d7c8bc95d8",
           "sibling_cases": [
             {
@@ -756,8 +756,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test apps/web/src/dev-server/cards-page-v2.test.ts:630-666; SSR menu assertions checked shared SVG/labels and preserved Edit/Clone entries.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test apps/web/src/dev-server/cards-page-v2.test.ts:630-666; SSR menu assertions checked shared SVG/labels and preserved Edit/Clone entries.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -790,25 +790,25 @@
       "plausible_wrong_implementation": "Clone could submit PATCH with old ID or preserve the recurring series even when the copied fields look correct.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-09-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "purchase-clone",
           "dimension": "bad-purchase-clone-mutation",
           "failure_mode": "Clone could submit PATCH with old ID or preserve the recurring series even when the copied fields look correct.",
           "plausible_wrong_implementation": "Clone could submit PATCH with old ID or preserve the recurring series even when the copied fields look correct.",
-          "procedure": "Inspect exact source work/clone-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/clone-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-009 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Clone harness demonstrated empty identity and recurrence fields, rejected reset removal.",
-          "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "7b24ab7e9eda9a8bace0cc2b8c3390b6fe8d2a26bb915740935e8d1b526753ea",
           "sibling_cases": [
             {
@@ -830,8 +830,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test work/clone-adversarial.txt; Clone harness demonstrated empty identity and recurrence fields, rejected reset removal.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test work/clone-adversarial.txt; Clone harness demonstrated empty identity and recurrence fields, rejected reset removal.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -865,25 +865,25 @@
       "plausible_wrong_implementation": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-10-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "temporal-consistency",
           "surface": "invoice-occurrence",
           "dimension": "bad-invoice-occurrence-mutation",
           "failure_mode": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
           "plausible_wrong_implementation": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
-          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-010 must be rejected, with previous financial values and identification unchanged.",
           "observed": "PostgreSQL integration and isolated function harness showed future-only modification with locked future skip.",
-          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "53e02a57077f0b69cb5a36ecddeed41ec20d528a76938dbb3cb3990b78ae5313",
           "sibling_cases": [
             {
@@ -904,17 +904,17 @@
         {
           "id": "NEG-742-10-02",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "temporal-destination",
           "surface": "invoice-occurrence",
           "dimension": "bad-invoice-occurrence-mutation",
           "failure_mode": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
           "plausible_wrong_implementation": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
-          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-010 must be rejected, with previous financial values and identification unchanged.",
           "observed": "PostgreSQL integration and isolated function harness showed future-only modification with locked future skip.",
-          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "53e02a57077f0b69cb5a36ecddeed41ec20d528a76938dbb3cb3990b78ae5313",
           "sibling_cases": [
             {
@@ -935,17 +935,17 @@
         {
           "id": "NEG-742-10-01-RB",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "temporal-consistency",
           "surface": "invoice-occurrence-readback",
           "dimension": "readback-boundary",
           "failure_mode": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
           "plausible_wrong_implementation": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
-          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
+          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
           "expected": "Behavior violating criterion OBL-010 must be rejected, with previous financial values and identification unchanged.",
           "observed": "PostgreSQL integration and isolated function harness showed future-only modification with locked future skip. The readback checks show previous financial state unchanged.",
-          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "53e02a57077f0b69cb5a36ecddeed41ec20d528a76938dbb3cb3990b78ae5313",
           "sibling_cases": [
             {
@@ -966,17 +966,17 @@
         {
           "id": "NEG-742-10-02-RB",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "temporal-destination",
           "surface": "invoice-occurrence-readback",
           "dimension": "readback-boundary",
           "failure_mode": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
           "plausible_wrong_implementation": "The current-and-future selector could walk backwards into older invoices or alter blocked successors without an ignored count.",
-          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
+          "procedure": "Inspect exact source work/installment-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative. Verify the transaction and invoice readback after rejected mutation.",
           "expected": "Behavior violating criterion OBL-010 must be rejected, with previous financial values and identification unchanged.",
           "observed": "PostgreSQL integration and isolated function harness showed future-only modification with locked future skip. The readback checks show previous financial state unchanged.",
-          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "work/installment-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "53e02a57077f0b69cb5a36ecddeed41ec20d528a76938dbb3cb3990b78ae5313",
           "sibling_cases": [
             {
@@ -998,8 +998,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test work/installment-adversarial.txt; PostgreSQL integration and isolated function harness showed future-only modification with locked future skip.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test work/installment-adversarial.txt; PostgreSQL integration and isolated function harness showed future-only modification with locked future skip.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -1047,25 +1047,25 @@
       "plausible_wrong_implementation": "Invoice finalization or reconciliation could be bypassed via a direct PATCH of the installment amount.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-11-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "invoice-occurrence",
           "dimension": "bad-invoice-occurrence-mutation",
           "failure_mode": "Invoice finalization or reconciliation could be bypassed via a direct PATCH of the installment amount.",
           "plausible_wrong_implementation": "Invoice finalization or reconciliation could be bypassed via a direct PATCH of the installment amount.",
-          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-011 must be rejected, with previous financial values and identification unchanged.",
           "observed": "PostgreSQL integration rejected direct amount update to CLOSED invoice and mismatched USD occurrence.",
-          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "570cc44156b4f47443d3f7c9a14b91b9af4c580892fa1b88edadddb9c58e3c1e",
           "sibling_cases": [
             {
@@ -1087,8 +1087,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; PostgreSQL integration rejected direct amount update to CLOSED invoice and mismatched USD occurrence.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; PostgreSQL integration rejected direct amount update to CLOSED invoice and mismatched USD occurrence.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -1121,25 +1121,25 @@
       "plausible_wrong_implementation": "The recurring edit might submit before scope choice, silently updating the whole series or losing the occurrence date.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | Current exact-head adverse proof: .audit/entregar-issue/evidence/issue-742-current-recurring-guard-adversarial.txt; integration run 40333637104.",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-12-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "recurring-edit",
           "dimension": "bad-recurring-edit-mutation",
           "failure_mode": "The recurring edit might submit before scope choice, silently updating the whole series or losing the occurrence date.",
           "plausible_wrong_implementation": "The recurring edit might submit before scope choice, silently updating the whole series or losing the occurrence date.",
-          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/recurring-scope-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-012 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Isolated runtime harness confirmed no PATCH until decision and transmitted date + explicit current_and_future.",
-          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "work/recurring-scope-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "00020050a20709c5b8c5c3dd1caad62cfe57ff359031333b00e01a02455d4571",
           "sibling_cases": [
             {
@@ -1161,8 +1161,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test work/recurring-scope-adversarial.txt; Isolated runtime harness confirmed no PATCH until decision and transmitted date + explicit current_and_future.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test work/recurring-scope-adversarial.txt; Isolated runtime harness confirmed no PATCH until decision and transmitted date + explicit current_and_future.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -1195,15 +1195,15 @@
       "plausible_wrong_implementation": "A responsive modal might overflow at 320 pixels or truncate the save controls while keyboard focus moves.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "visual/cards-modal-mobile.png ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "visual/cards-modal-mobile.png ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-13-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "public-modal",
@@ -1235,8 +1235,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737, fixture/test visual/cards-modal-mobile.png; Chrome mobile modal captured scrollable compact form with visible cancel and save controls; visual job successful.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944737, fixture/test visual/cards-modal-mobile.png; Chrome mobile modal captured scrollable compact form with visible cancel and save controls; visual job successful.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -1269,25 +1269,25 @@
       "plausible_wrong_implementation": "The shared Transaction.amountMinor could be overwritten for a single installment and break the total economic purchase.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-15-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "invoice-occurrence",
           "dimension": "bad-invoice-occurrence-mutation",
           "failure_mode": "The shared Transaction.amountMinor could be overwritten for a single installment and break the total economic purchase.",
           "plausible_wrong_implementation": "The shared Transaction.amountMinor could be overwritten for a single installment and break the total economic purchase.",
-          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-015 must be rejected, with previous financial values and identification unchanged.",
           "observed": "PostgreSQL integration asserted base purchase remained at amountMinor 10000 after changing occurrence amounts.",
-          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "570cc44156b4f47443d3f7c9a14b91b9af4c580892fa1b88edadddb9c58e3c1e",
           "sibling_cases": [
             {
@@ -1309,8 +1309,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270; PostgreSQL integration asserted base purchase remained at amountMinor 10000 after changing occurrence amounts.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:247-270; PostgreSQL integration asserted base purchase remained at amountMinor 10000 after changing occurrence amounts.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -1343,25 +1343,25 @@
       "plausible_wrong_implementation": "Incompatible installment USD and invoice BRL currencies could be silently aggregated as if they were equivalent values.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | Current exact-head adverse proof: .audit/entregar-issue/evidence/issue-742-current-recurring-guard-adversarial.txt; integration run 40333637104.",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "REL-SEM-001-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "structural-contract",
           "surface": "relational-semantic-integrity",
           "dimension": "bad-relational-semantic-integrity-mutation",
           "failure_mode": "Incompatible installment USD and invoice BRL currencies could be silently aggregated as if they were equivalent values.",
           "plausible_wrong_implementation": "Incompatible installment USD and invoice BRL currencies could be silently aggregated as if they were equivalent values.",
-          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative. First mutate the linked Installment producer fixture directly with SQL UPDATE currency USD while the Invoice retains BRL; invoke the canonical repository write/update boundary.",
+          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative. First mutate the linked Installment producer fixture directly with SQL UPDATE currency USD while the Invoice retains BRL; invoke the canonical repository write/update boundary.",
           "expected": "Behavior violating criterion OBL-016 must be rejected, with previous financial values and identification unchanged.",
           "observed": "PostgreSQL integration injected USD installment into BRL invoice and observed CARD_INSTALLMENT_AMOUNT_LOCKED and unchanged totals. The fixture producer SQL update created an incompatible related pair, and the repository update rejected it.",
-          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "570cc44156b4f47443d3f7c9a14b91b9af4c580892fa1b88edadddb9c58e3c1e",
           "sibling_cases": [
             {
@@ -1383,8 +1383,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361; PostgreSQL integration injected USD installment into BRL invoice and observed CARD_INSTALLMENT_AMOUNT_LOCKED and unchanged totals.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:334-361; PostgreSQL integration injected USD installment into BRL invoice and observed CARD_INSTALLMENT_AMOUNT_LOCKED and unchanged totals.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -1417,25 +1417,25 @@
       "plausible_wrong_implementation": "A clone might reuse original recurrenceId, installmentId or status even if the POST method is correct.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983 | Current exact-head adverse proof: .audit/entregar-issue/evidence/issue-742-current-recurring-guard-adversarial.txt; integration run 40333637104.",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-17-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "purchase-clone",
           "dimension": "bad-purchase-clone-mutation",
           "failure_mode": "A clone might reuse original recurrenceId, installmentId or status even if the POST method is correct.",
           "plausible_wrong_implementation": "A clone might reuse original recurrenceId, installmentId or status even if the POST method is correct.",
-          "procedure": "Inspect exact source work/clone-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source work/clone-adversarial.txt and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-017 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Isolated clone harness rejected preserving old transaction/recurrence/instalment identifiers.",
-          "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121330544533",
+          "evidence": "work/clone-adversarial.txt ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 | current guards: apps/api/src/repositories/card-invoice-purchase-edit-guard.ts:1-45 ; apps/api/src/card-purchase-edit-contract.integration.test.ts:155-205 ; apps/web/src/dev-server/cards-page-v2-script-mutations.ts:1-26 ; apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts:1-95 ; CI job 121610101983",
           "evidence_sha256": "7b24ab7e9eda9a8bace0cc2b8c3390b6fe8d2a26bb915740935e8d1b526753ea",
           "sibling_cases": [
             {
@@ -1457,8 +1457,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test work/clone-adversarial.txt; Isolated clone harness rejected preserving old transaction/recurrence/instalment identifiers.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test work/clone-adversarial.txt; Isolated clone harness rejected preserving old transaction/recurrence/instalment identifiers.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -1491,25 +1491,25 @@
       "plausible_wrong_implementation": "A reconciled installment or a closed invoice could be mutated by using a direct amount endpoint.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd | Current exact-head adverse proof: .audit/entregar-issue/evidence/issue-742-current-recurring-guard-adversarial.txt; integration run 40333637104.",
         "evidence_kind": "behavioral"
       },
       "negative_controls": [
         {
           "id": "NEG-742-18-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "test",
           "risk_family": "semantic-effect",
           "surface": "invoice-occurrence",
           "dimension": "bad-invoice-occurrence-mutation",
           "failure_mode": "A reconciled installment or a closed invoice could be mutated by using a direct amount endpoint.",
           "plausible_wrong_implementation": "A reconciled installment or a closed invoice could be mutated by using a direct amount endpoint.",
-          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-018 must be rejected, with previous financial values and identification unchanged.",
           "observed": "PostgreSQL tests asserted locked invoice update rejection and unchanged financial record.",
-          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "570cc44156b4f47443d3f7c9a14b91b9af4c580892fa1b88edadddb9c58e3c1e",
           "sibling_cases": [
             {
@@ -1531,8 +1531,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; PostgreSQL tests asserted locked invoice update rejection and unchanged financial record.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test apps/api/src/card-purchase-edit-contract.integration.test.ts:286-361; PostgreSQL tests asserted locked invoice update rejection and unchanged financial record.",
           "evidence_kind": "behavioral"
         }
       ],
@@ -1566,25 +1566,25 @@
       "plausible_wrong_implementation": "A bespoke modal and financial route could diverge from Golden Statement shared tokens and existing recurring contracts.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": "docs/CARDS.md:440-450 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": "docs/CARDS.md:440-450 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "structural"
       },
       "negative_controls": [
         {
           "id": "NEG-742-19-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "gate",
           "risk_family": "documentation",
           "surface": "canonical-claims",
           "dimension": "bad-canonical-claims-mutation",
           "failure_mode": "A bespoke modal and financial route could diverge from Golden Statement shared tokens and existing recurring contracts.",
           "plausible_wrong_implementation": "A bespoke modal and financial route could diverge from Golden Statement shared tokens and existing recurring contracts.",
-          "procedure": "Inspect exact source docs/CARDS.md:440-450 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source docs/CARDS.md:440-450 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-019 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Documentation and shared Golden Screen references reviewed against code; no product-visual tokens introduced outside their canonical source.",
-          "evidence": "docs/CARDS.md:440-450 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "docs/CARDS.md:440-450 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "f3a92fabf9f7ec8e04bc59989f62dbb0e2d0f3e40703d2a3f69900c9625c97df",
           "sibling_cases": [
             {
@@ -1605,17 +1605,17 @@
         {
           "id": "NEG-742-19-02",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "gate",
           "risk_family": "structural-contract",
           "surface": "documentation-contract",
           "dimension": "bad-documentation-contract-mutation",
           "failure_mode": "A bespoke modal and financial route could diverge from Golden Statement shared tokens and existing recurring contracts.",
           "plausible_wrong_implementation": "A bespoke modal and financial route could diverge from Golden Statement shared tokens and existing recurring contracts.",
-          "procedure": "Inspect exact source docs/CARDS.md:440-450 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source docs/CARDS.md:440-450 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-019 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Documentation and shared Golden Screen references reviewed against code; no product-visual tokens introduced outside their canonical source.",
-          "evidence": "docs/CARDS.md:440-450 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": "docs/CARDS.md:440-450 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "f3a92fabf9f7ec8e04bc59989f62dbb0e2d0f3e40703d2a3f69900c9625c97df",
           "sibling_cases": [
             {
@@ -1637,8 +1637,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test docs/CARDS.md:440-450; Documentation and shared Golden Screen references reviewed against code; no product-visual tokens introduced outside their canonical source.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test docs/CARDS.md:440-450; Documentation and shared Golden Screen references reviewed against code; no product-visual tokens introduced outside their canonical source.",
           "evidence_kind": "structural"
         }
       ],
@@ -1676,25 +1676,25 @@
       "plausible_wrong_implementation": "The delivery could target main or rely on an unverified branch ref rather than the develop base and exact material SHA.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-        "evidence": ".github/workflows/delivery-audit-workspace.yml:1-110 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 ; exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255",
+        "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "evidence": ".github/workflows/delivery-audit-workspace.yml:1-110 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 ; exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
         "evidence_kind": "structural"
       },
       "negative_controls": [
         {
           "id": "NEG-742-20-01",
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
           "control_type": "gate",
           "risk_family": "semantic-effect",
           "surface": "exact-head-source",
           "dimension": "bad-exact-head-source-mutation",
           "failure_mode": "The delivery could target main or rely on an unverified branch ref rather than the develop base and exact material SHA.",
           "plausible_wrong_implementation": "The delivery could target main or rely on an unverified branch ref rather than the develop base and exact material SHA.",
-          "procedure": "Inspect exact source .github/workflows/delivery-audit-workspace.yml:1-110 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769 with the immutable material head; verify the rejected alternative.",
+          "procedure": "Inspect exact source .github/workflows/delivery-audit-workspace.yml:1-110 and execute its negative test or adversarial harness, cross-checking https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104 with the immutable material head; verify the rejected alternative.",
           "expected": "Behavior violating criterion OBL-020 must be rejected, with previous financial values and identification unchanged.",
           "observed": "Immutable bundle manifest confirmed baseRef develop, baseSha c1f1fae and headSha 33bfa3f; CI exact HEAD terminal successful.",
-          "evidence": ".github/workflows/delivery-audit-workspace.yml:1-110 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769",
+          "evidence": ".github/workflows/delivery-audit-workspace.yml:1-110 ; https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104",
           "evidence_sha256": "8829d902aeeda3d9c0dc93ee55300331587eb3be0addc6f16134b89edaf34822",
           "sibling_cases": [
             {
@@ -1716,8 +1716,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-          "evidence": "Exact SHA 9898f4c0fde40a24fe8a9586979789cd90972255: https://github.com/crgasparoto-br/SolverFin/actions/runs/40246944769, fixture/test .github/workflows/delivery-audit-workspace.yml:1-110; Immutable bundle manifest confirmed baseRef develop, baseSha c1f1fae and headSha 33bfa3f; CI exact HEAD terminal successful.",
+          "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+          "evidence": "Exact SHA 19db954c9771ca3e45b821470eb9d4b54eaf27fd: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104, fixture/test .github/workflows/delivery-audit-workspace.yml:1-110; Immutable bundle manifest confirmed baseRef develop, baseSha c1f1fae and headSha 33bfa3f; CI exact HEAD terminal successful.",
           "evidence_kind": "structural"
         }
       ],

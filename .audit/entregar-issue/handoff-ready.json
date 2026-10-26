@@ -1,13 +1,13 @@
 {
   "schema_version": 2,
   "status": "ready",
-  "created_at": "2026-10-26T10:52:57.032126+00:00",
+  "created_at": "2026-10-26T13:57:49.328692+00:00",
   "identity": {
-    "head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
-    "material_head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+    "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+    "material_head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
     "base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
-    "merge_preview_sha": "e6c30043cb4dda904b3ea2d709673d5b01e4513f",
-    "material_merge_preview_sha": "e6c30043cb4dda904b3ea2d709673d5b01e4513f"
+    "merge_preview_sha": "4efc75c29b967d1e6242303bc35b591d2e423384",
+    "material_merge_preview_sha": "4efc75c29b967d1e6242303bc35b591d2e423384"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -22,7 +22,7 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
-    "material_head_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+    "material_head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
     "issue_changed_paths": [
       ".audit/entregar-issue/code-growth.json",
       ".audit/entregar-issue/codebase-grounding.json",
@@ -52,6 +52,7 @@
       "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
       "apps/api/src/repositories/card-invoice-reversal-edit.ts",
       "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
+      "apps/api/src/repositories/recurring-card-purchase-edit.ts",
       "apps/api/src/router.ts",
       "apps/web/src/design-system/canonical-token-source.test.ts",
       "apps/web/src/design-system/tokens.ts",
@@ -75,7 +76,7 @@
       "scripts/statement-visual/issue-610-cards-semantic-interactions.mjs",
       "scripts/statement-visual/issue-662-card-installment-purchase.mjs"
     ],
-    "issue_delta_sha256": "21181702f3a558920aadd303096f7c49e254a884ab80b1b4087061a868b5bea4"
+    "issue_delta_sha256": "ce97b55fea684de622a018aae1e4d203d78df3b84cfa885712f032538b9e3812"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -87,6 +88,7 @@
       ".audit/entregar-issue/evidence/issue-742-cards-page-v2-script-mutations-test-execution.txt",
       ".audit/entregar-issue/evidence/issue-742-cards-page-v2-test-execution.txt",
       ".audit/entregar-issue/evidence/issue-742-current-only-recurring-edit-integration-test-execution.txt",
+      ".audit/entregar-issue/evidence/issue-742-current-recurring-guard-adversarial.txt",
       ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/inherited-controls.json",
@@ -136,9 +138,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "c7e31369c313fba42ec2055b7910bf421dd11d3f1712e8d64338c40265bb1bcb",
-      "logical_sha256": "c7e31369c313fba42ec2055b7910bf421dd11d3f1712e8d64338c40265bb1bcb",
-      "logical_size": 32232,
+      "sha256": "fe70a1d160296ab598fff3bf447e67a0d7dd788d2ab996c15d00c412b51ecb07",
+      "logical_sha256": "fe70a1d160296ab598fff3bf447e67a0d7dd788d2ab996c15d00c412b51ecb07",
+      "logical_size": 33182,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -146,9 +148,9 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "aaf10910096fb7acc851c49990d810439662bb2fad9a8f8de62c6bafe4911d0f",
-      "logical_sha256": "aaf10910096fb7acc851c49990d810439662bb2fad9a8f8de62c6bafe4911d0f",
-      "logical_size": 98555,
+      "sha256": "6588e09bc8be2f6fa34e7792744bc19cfef3a28f9dc2168eec52644dc95eee60",
+      "logical_sha256": "6588e09bc8be2f6fa34e7792744bc19cfef3a28f9dc2168eec52644dc95eee60",
+      "logical_size": 99290,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -156,8 +158,8 @@
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "d7397bcdcd4b455a391e02813823f0d69adf7237818d61850e6fdd9479c8e391",
-      "logical_sha256": "d7397bcdcd4b455a391e02813823f0d69adf7237818d61850e6fdd9479c8e391",
+      "sha256": "7f37b0a7dcb0f23c5fd0f8b6e20d843187611a554aa614e402bd7c9a4b1479fc",
+      "logical_sha256": "7f37b0a7dcb0f23c5fd0f8b6e20d843187611a554aa614e402bd7c9a4b1479fc",
       "logical_size": 8358,
       "artifact_transport": {
         "format": "plain-json",
@@ -166,8 +168,8 @@
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "80c81bb42582eb1dfbf94646a086d752f07224829a24cb5afb5094710ea6bde6",
-      "logical_sha256": "80c81bb42582eb1dfbf94646a086d752f07224829a24cb5afb5094710ea6bde6",
+      "sha256": "888caba3740ac8372687c2a04bf8373a717ee8f416780a43cdc365c4cd66581d",
+      "logical_sha256": "888caba3740ac8372687c2a04bf8373a717ee8f416780a43cdc365c4cd66581d",
       "logical_size": 2656,
       "artifact_transport": {
         "format": "plain-json",
@@ -176,8 +178,8 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "41a4ce0c8da0a26f902d1a583d9186eb893e8b538e603dfe61cc801816cb224f",
-      "logical_sha256": "41a4ce0c8da0a26f902d1a583d9186eb893e8b538e603dfe61cc801816cb224f",
+      "sha256": "e696a5928e086870a6300e8ce29cd5b09bb160a05770f0d109d11b4142574228",
+      "logical_sha256": "e696a5928e086870a6300e8ce29cd5b09bb160a05770f0d109d11b4142574228",
       "logical_size": 23003,
       "artifact_transport": {
         "format": "plain-json",
@@ -186,9 +188,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "bb685d7a6ab8dab9d5627404a676420d4692eff6df6d2fd50796de5fb6f7ab83",
-      "logical_sha256": "bb685d7a6ab8dab9d5627404a676420d4692eff6df6d2fd50796de5fb6f7ab83",
-      "logical_size": 4204,
+      "sha256": "5762a5e027efcc1319324bdfc9aac2deb01815ed70f7947885c6a56e69671dd2",
+      "logical_sha256": "5762a5e027efcc1319324bdfc9aac2deb01815ed70f7947885c6a56e69671dd2",
+      "logical_size": 4345,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -206,7 +208,7 @@
       "applicable": true,
       "status": "passed",
       "checked": 192,
-      "subject_sha": "9898f4c0fde40a24fe8a9586979789cd90972255",
+      "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
       "evidence_artifacts": [
         "requirement_closure",
         "requirement_attack_matrix",
