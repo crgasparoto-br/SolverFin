@@ -71,7 +71,8 @@ function parsePdfWithTextLayer(
     if (
       !(error instanceof StructuredImportError) ||
       (error.code !== "IMPORT_PDF_LAYOUT_UNSUPPORTED" && error.code !== "IMPORT_PDF_PROTECTED")
-    ) throw error;
+    )
+      throw error;
   }
   // Only explicitly recognized layouts can produce financial proposals.
   // Extractor has no access to persistence, and no password is provided.

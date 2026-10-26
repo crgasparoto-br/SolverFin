@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
-import { parseMercadoPagoStatement, recognizeMercadoPagoStatement, type PdfExtractedPage } from "./mercado-pago-pdf.js";
+import {
+  parseMercadoPagoStatement,
+  recognizeMercadoPagoStatement,
+  type PdfExtractedPage,
+} from "./mercado-pago-pdf.js";
 
 export type { PdfExtractedPage, PdfExtractedWord } from "./mercado-pago-pdf.js";
 
@@ -70,7 +74,10 @@ export interface PdfParserDescriptor {
   institution: string;
   documentClass: ImportDocumentClass;
   recognize: (text: string, pages?: readonly PdfExtractedPage[]) => boolean;
-  parse: (text: string, pages?: readonly PdfExtractedPage[]) => Omit<StructuredImportPreview, "pdf">;
+  parse: (
+    text: string,
+    pages?: readonly PdfExtractedPage[],
+  ) => Omit<StructuredImportPreview, "pdf">;
 }
 
 export class StructuredImportError extends Error {
@@ -297,7 +304,8 @@ export function parsePdfImport(input: {
   }
 
   const candidates = PDF_PARSER_CATALOG.filter(
-    (parser) => parser.documentClass === input.documentClass && parser.recognize(text, input.extractedPages),
+    (parser) =>
+      parser.documentClass === input.documentClass && parser.recognize(text, input.extractedPages),
   );
   if (candidates.length === 0) {
     throw new StructuredImportError(

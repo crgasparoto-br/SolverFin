@@ -22,9 +22,14 @@ describe("Poppler text-position adapter", () => {
   });
 
   it("does not accept missing pages or invalid coordinates", () => {
-    assert.throws(() => parsePopplerWordLayout("<html>empty</html>"), (e: unknown) =>
-      e instanceof StructuredImportError && e.code === "IMPORT_PDF_LAYOUT_UNSUPPORTED");
-    assert.throws(() => parsePopplerWordLayout('<page><word xMin="bogus" yMin="2">Text</word></page>'), (e: unknown) =>
-      e instanceof StructuredImportError && e.code === "IMPORT_PDF_INVALID");
+    assert.throws(
+      () => parsePopplerWordLayout("<html>empty</html>"),
+      (e: unknown) =>
+        e instanceof StructuredImportError && e.code === "IMPORT_PDF_LAYOUT_UNSUPPORTED",
+    );
+    assert.throws(
+      () => parsePopplerWordLayout('<page><word xMin="bogus" yMin="2">Text</word></page>'),
+      (e: unknown) => e instanceof StructuredImportError && e.code === "IMPORT_PDF_INVALID",
+    );
   });
 });

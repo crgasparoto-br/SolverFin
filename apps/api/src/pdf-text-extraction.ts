@@ -10,11 +10,16 @@ const MAX_WORDS = 40_000;
 function decodeXmlText(value: string): string {
   return value.replace(/&(#x[\da-fA-F]+|#\d+|amp|lt|gt|quot|apos);/g, (entity, key: string) => {
     switch (key) {
-      case "amp": return "&";
-      case "lt": return "<";
-      case "gt": return ">";
-      case "quot": return '"';
-      case "apos": return "'";
+      case "amp":
+        return "&";
+      case "lt":
+        return "<";
+      case "gt":
+        return ">";
+      case "quot":
+        return '"';
+      case "apos":
+        return "'";
       default: {
         const hex = key.startsWith("#x");
         const number = Number.parseInt(key.slice(hex ? 2 : 1), hex ? 16 : 10);
@@ -37,7 +42,8 @@ export function parsePopplerWordLayout(xml: string): PdfExtractedPage[] {
       const x = /\bxMin="([\d.]+)"/.exec(match[1]!);
       const y = /\byMin="([\d.]+)"/.exec(match[1]!);
       if (!x || !y) throw new StructuredImportError("IMPORT_PDF_INVALID", "Texto do PDF invalido.");
-      const xx = Number(x[1]), yy = Number(y[1]);
+      const xx = Number(x[1]),
+        yy = Number(y[1]);
       if (!Number.isFinite(xx) || !Number.isFinite(yy) || xx < 0 || yy < 0)
         throw new StructuredImportError("IMPORT_PDF_INVALID", "Coordenadas do PDF invalidas.");
       words.push({ text: decodeXmlText(match[2]!), x: xx, y: yy });
@@ -50,7 +56,10 @@ export function parsePopplerWordLayout(xml: string): PdfExtractedPage[] {
       throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF excede o limite de paginas.");
   }
   if (pages.length === 0 || count === 0)
-    throw new StructuredImportError("IMPORT_PDF_LAYOUT_UNSUPPORTED", "O PDF nao possui texto extraivel.");
+    throw new StructuredImportError(
+      "IMPORT_PDF_LAYOUT_UNSUPPORTED",
+      "O PDF nao possui texto extraivel.",
+    );
   return pages;
 }
 
@@ -86,7 +95,11 @@ export function extractPdfWordLayout(bytes: Buffer): PdfExtractedPage[] {
         422,
       );
     }
-    throw new StructuredImportError("IMPORT_PDF_INVALID", "Nao foi possivel extrair o texto do PDF.", 422);
+    throw new StructuredImportError(
+      "IMPORT_PDF_INVALID",
+      "Nao foi possivel extrair o texto do PDF.",
+      422,
+    );
   }
   return parsePopplerWordLayout(String(result.stdout ?? ""));
 }

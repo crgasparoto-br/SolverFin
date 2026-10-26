@@ -150,11 +150,18 @@ describe("document imports", () => {
           ? `${String(extraOffset).padStart(10, "0")} 00000 n `
           : "0000000000 65535 f ",
     );
-    const data = body + [
-      "xref", "0 32", ...refs,
-      "trailer", "<< /Size 32 /Root 1 0 R >>",
-      "startxref", String(xrefOffset), "%%EOF",
-    ].join("\n");
+    const data =
+      body +
+      [
+        "xref",
+        "0 32",
+        ...refs,
+        "trailer",
+        "<< /Size 32 /Root 1 0 R >>",
+        "startxref",
+        String(xrefOffset),
+        "%%EOF",
+      ].join("\n");
     const result = parsePdfImport({
       contentBase64: Buffer.from(data, "latin1").toString("base64"),
       documentClass: "bank_statement",

@@ -18,15 +18,27 @@ export interface PdfExtractedPage {
 }
 
 type ParsedStatement = Omit<StructuredImportPreview, "pdf">;
-type Movement = { date: string; description: string; externalId: string; signed: number; balance: number };
+type Movement = {
+  date: string;
+  description: string;
+  externalId: string;
+  signed: number;
+  balance: number;
+};
 
 function normalize(value: string): string {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 export function recognizeMercadoPagoStatement(pages: readonly PdfExtractedPage[]): boolean {
   if (pages.length === 0 || pages.length > 30) return false;
-  const allText = normalize(pages.map((page) => page.words.map((word) => word.text).join(" ")).join(" "));
+  const allText = normalize(
+    pages.map((page) => page.words.map((word) => word.text).join(" ")).join(" "),
+  );
   return (
     allText.includes("extrato de conta") &&
     allText.includes("detalhe dos movimentos") &&
@@ -51,11 +63,19 @@ function findSummaryAmount(
 ): number | undefined {
   const key = normalize(label);
   const target = page.words.find(
-    (word) => normalize(word.text).replace(/:$/, "") === key && word.x >= minX && word.x < maxX && word.y >= 85 && word.y < 140,
+    (word) =>
+      normalize(word.text).replace(/:$/, "") === key &&
+      word.x >= minX &&
+      word.x < maxX &&
+      word.y >= 85 &&
+      word.y < 140,
   );
   if (!target) return undefined;
   const text = page.words
-    .filter((word) => word.y >= target.y - 3 && word.y <= target.y + 3 && word.x > target.x && word.x < maxX)
+    .filter(
+      (word) =>
+        word.y >= target.y - 3 && word.y <= target.y + 3 && word.x > target.x && word.x < maxX,
+    )
     .sort((a, b) => a.x - b.x)
     .map((word) => word.text)
     .join(" ");
@@ -63,11 +83,7 @@ function findSummaryAmount(
   return amount ? parseMoney(amount[0]) : undefined;
 }
 
-function rowDescription(
-  page: PdfExtractedPage,
-  lowerY: number,
-  upperY: number,
-): string {
+function rowDescription(page: PdfExtractedPage, lowerY: number, upperY: number): string {
   const words = page.words
     .filter((word) => word.x >= 76 && word.x < 195 && word.y >= lowerY && word.y < upperY)
     .sort((a, b) => a.y - b.y || a.x - b.x);
@@ -78,7 +94,12 @@ function rowDescription(
     else last.push(word);
   }
   return lines
-    .map((line) => line.sort((a, b) => a.x - b.x).map((word) => word.text).join(" "))
+    .map((line) =>
+      line
+        .sort((a, b) => a.x - b.x)
+        .map((word) => word.text)
+        .join(" "),
+    )
     .join(" ")
     .replace(/\s+/g, " ")
     .trim();
@@ -99,9 +120,18 @@ function parsePageMovements(page: PdfExtractedPage): Movement[] | undefined {
   );
   if (
     !header ||
-    !page.words.some((word) => normalize(word.text) === "descricao" && Math.abs(word.y - header.y) < 3 && word.x >= 70 && word.x < 185) ||
-    !page.words.some((word) => normalize(word.text) === "saldo" && Math.abs(word.y - header.y) < 3 && word.x > 350)
-  ) return undefined;
+    !page.words.some(
+      (word) =>
+        normalize(word.text) === "descricao" &&
+        Math.abs(word.y - header.y) < 3 &&
+        word.x >= 70 &&
+        word.x < 185,
+    ) ||
+    !page.words.some(
+      (word) => normalize(word.text) === "saldo" && Math.abs(word.y - header.y) < 3 && word.x > 350,
+    )
+  )
+    return undefined;
 
   const dates = page.words
     .filter(
@@ -131,7 +161,8 @@ function parsePageMovements(page: PdfExtractedPage): Movement[] | undefined {
       signed === undefined ||
       signed === 0 ||
       balance === undefined
-    ) return undefined;
+    )
+      return undefined;
     movements.push({ date: date.text, description, externalId, signed, balance });
   }
   return dates.length === 0 ? undefined : movements;
@@ -178,7 +209,8 @@ export function parseMercadoPagoStatement(pages: readonly PdfExtractedPage[]): P
       Number.isNaN(date.getTime()) ||
       date.toISOString().slice(0, 10) !== occurredOn ||
       ids.has(movement.externalId)
-    ) return block("IMPORT_PDF_ROW_INVALID", rows.length + 1);
+    )
+      return block("IMPORT_PDF_ROW_INVALID", rows.length + 1);
     ids.add(movement.externalId);
     balance += movement.signed;
     if (!Number.isSafeInteger(balance) || balance !== movement.balance)
@@ -195,9 +227,18 @@ export function parseMercadoPagoStatement(pages: readonly PdfExtractedPage[]): P
       amountMinor: Math.abs(movement.signed),
       currency: "BRL",
       externalId: movement.externalId,
-      sourceHash: `sha256-${createHash("sha256").update(
-        [String(rowNumber), occurredOn, movement.externalId, String(movement.signed), String(movement.balance), movement.description].join("\u001f"),
-      ).digest("hex")}`,
+      sourceHash: `sha256-${createHash("sha256")
+        .update(
+          [
+            String(rowNumber),
+            occurredOn,
+            movement.externalId,
+            String(movement.signed),
+            String(movement.balance),
+            movement.description,
+          ].join("\u001f"),
+        )
+        .digest("hex")}`,
     });
   }
   if (balance !== closing || credits !== incoming || debits !== outgoing)
