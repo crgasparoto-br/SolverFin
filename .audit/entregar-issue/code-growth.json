@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
-  "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
-  "comparison_base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
+  "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+  "base_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
+  "comparison_base_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -20,23 +20,18 @@
   "files": [
     {
       "path": "apps/api/src/pdf-text-extraction.ts",
-      "lines_before": null,
-      "lines_after": 163
-    },
-    {
-      "path": "apps/api/src/repositories/document-imports.ts",
-      "lines_before": 512,
-      "lines_after": 532
+      "lines_before": 163,
+      "lines_after": 177
     },
     {
       "path": "packages/domain/src/document-imports.ts",
-      "lines_before": 925,
-      "lines_after": 941
+      "lines_before": 941,
+      "lines_after": 946
     },
     {
       "path": "packages/domain/src/mercado-pago-pdf.ts",
-      "lines_before": null,
-      "lines_after": 292
+      "lines_before": 292,
+      "lines_after": 333
     }
   ],
   "blocking_files": []

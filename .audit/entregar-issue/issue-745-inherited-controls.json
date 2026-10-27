@@ -1,1 +1,144 @@
-{"schema_version":1,"head_sha":"c696281f6dcbc802098d05786266c26ace9e7765","source_audits":[{"rejection_id":"audit-rejection:37d3aa00-bf5f-4649-82f5-541b5ed66509","audit_report_sha256":"2a0572ef42deb432dafd3754a0b5682cdfd3355062a96a1b3aad8d9164315e24","audited_head_sha":"d9a76d3756a25a444165a153113dcd8c9517e055"},{"rejection_id":"audit-rejection:09f34f1a-79b0-4130-a5de-bc9c1e8fa715","audit_report_sha256":"9f55bf422885d0850bc91182034ab204d1370522bc3449ba78a5540df0f09874","audited_head_sha":"4773a7b63d671c9ee876c320319bd466f7c69798"}],"controls":[{"id":"REGRESSION-A-001","head_sha":"c696281f6dcbc802098d05786266c26ace9e7765","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","status":"passed","attack_control_id":"NEG-05-1","risk_family":"semantic-effect","surface":"financial-field-fidelity","dimension":"original-operation-id-removed","control_type":"test","procedure":"Compare every original row field using the independent oracle; remove an actual original operation ID and corrupt its date in private extracted pages.","expected":"All seven field types match on 38 rows; missing actual ID and invalid date block all proposals.","observed":"All seven field types match on 38 rows; missing actual ID and invalid date block all proposals.","evidence":"evidence/original-negative.json","evidence_sha256":"3f4faef0ec720e16fcd31859d25657a19ce47b95e9324178904140866f5115cd"},{"id":"REGRESSION-A-004","head_sha":"c696281f6dcbc802098d05786266c26ace9e7765","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","status":"passed","attack_control_id":"NEG-03-1","risk_family":"semantic-effect","surface":"pdf-copy-permission","dimension":"unknown-copy-permission-rejected","control_type":"test","procedure":"Run extractor permission tests with empty user password copy:no, copy:yes, missing encryption metadata and required-password stderr.","expected":"copy:no is rejected before pdftotext; permitted empty-password original is accepted.","observed":"copy:no is rejected before pdftotext; permitted empty-password original is accepted.","evidence":"evidence/focused-tests.log","evidence_sha256":"d622c2127646b959da452d29533d5db025713deb885f0e07d19e42a32f375e96"},{"id":"REGRESSION-A-005","head_sha":"c696281f6dcbc802098d05786266c26ace9e7765","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","status":"passed","attack_control_id":"NEG-07-1","risk_family":"semantic-effect","surface":"header-footer-boundary","dimension":"header-overlap-rejected","control_type":"test","procedure":"Run all five near-header/footer/lower-boundary controls and the three old-behavior mutations.","expected":"Complete reconciled rows are retained; overlapping/incomplete financial anchors block, contact numbers are ignored.","observed":"Complete reconciled rows are retained; overlapping/incomplete financial anchors block, contact numbers are ignored.","evidence":"evidence/final-mutations.json","evidence_sha256":"3bda9103c5ec12abcc5a1f38b027c258d51c68deed22b7cc1838b6d2805c7f90"},{"id":"REGRESSION-A-006","head_sha":"c696281f6dcbc802098d05786266c26ace9e7765","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","status":"passed","attack_control_id":"NEG-13-2","risk_family":"semantic-effect","surface":"certified-risk-family-coverage","dimension":"missing-active-family-rejected","control_type":"test","procedure":"Replay the exact official saturation command from A-006. In ephemeral copies remove the semantic-effect family and separately set applicable=false, keeping inherited controls unchanged.","expected":"Complete coverage returns exit 0; omission and deactivation return exit 2 for all three original inherited controls.","observed":"Complete coverage returned exit 0; both independent packet mutations returned exit 2 for REGRESSION-A-001, REGRESSION-A-004 and REGRESSION-A-005.","evidence":"evidence/a006-saturation-regression.log","evidence_sha256":"50084253dce1f543723845a9df1e6c018333d88456f10d137f2095701ef0e27b"}],"unresolved_controls":[]}
+{
+  "schema_version": 1,
+  "head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+  "source_audits": [
+    {
+      "rejection_id": "audit-rejection:37d3aa00-bf5f-4649-82f5-541b5ed66509",
+      "audit_report_sha256": "2a0572ef42deb432dafd3754a0b5682cdfd3355062a96a1b3aad8d9164315e24",
+      "audited_head_sha": "d9a76d3756a25a444165a153113dcd8c9517e055"
+    },
+    {
+      "rejection_id": "audit-rejection:09f34f1a-79b0-4130-a5de-bc9c1e8fa715",
+      "audit_report_sha256": "9f55bf422885d0850bc91182034ab204d1370522bc3449ba78a5540df0f09874",
+      "audited_head_sha": "4773a7b63d671c9ee876c320319bd466f7c69798"
+    },
+    {
+      "rejection_id": "audit-rejection:cef27706-4a2a-4a21-92c1-b2d8c524fb89",
+      "audit_report_sha256": "e7353aa45b5566e853223073ae45f941c412840c735dcf8dcd04ead9026bc8dc",
+      "audited_head_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743"
+    }
+  ],
+  "controls": [
+    {
+      "id": "REGRESSION-A-001",
+      "head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "status": "passed",
+      "attack_control_id": "NEG-05-1",
+      "risk_family": "semantic-effect",
+      "surface": "financial-field-fidelity",
+      "dimension": "original-operation-id-removed",
+      "control_type": "test",
+      "procedure": "Compare every original row field using the independent oracle; remove an actual original operation ID and corrupt its date in private extracted pages.",
+      "expected": "All seven field types match on 38 rows; missing actual ID and invalid date block all proposals.",
+      "observed": "All 266 original field comparisons match. Actual-ID removal and invalid date block; four real synthetic PDFs preserve complete descriptions in parser and preview, with ambiguous/unassigned text blocked by focused tests.",
+      "evidence": "evidence/original-and-boundaries.json",
+      "evidence_sha256": "ce54ea679e9ea53ad20be7d168d1dd76478e8c88b9cf641949241e8d75e8bbdb",
+      "evidence_locator": {
+        "original_path": "evidence/original-negative.json",
+        "raw_sha256": "6a652268973d32f5f8609bea5ed29e1b6e1f59edf5dde4276c8d4f4fefd67829"
+      }
+    },
+    {
+      "id": "REGRESSION-A-004",
+      "head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "status": "passed",
+      "attack_control_id": "NEG-03-1",
+      "risk_family": "semantic-effect",
+      "surface": "pdf-copy-permission",
+      "dimension": "unknown-copy-permission-rejected",
+      "control_type": "test",
+      "procedure": "Run extractor permission tests with empty user password copy:no, copy:yes, missing encryption metadata and required-password stderr. Reproduce forged multiline Title, Author and Subject fields with both fake Encrypted:no and fake copy:yes before the authoritative copy:no field; assert no pdftotext invocation.",
+      "expected": "copy:no is rejected before pdftotext; permitted empty-password original is accepted.",
+      "observed": "Real copy:no and password PDFs reject PROTECTED before pdftotext; Title/Author/Subject permission forgeries reject INVALID before pdftotext. Permitted copy:yes remains ready.",
+      "evidence": "evidence/issue-745-focused-execution.txt",
+      "evidence_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6",
+      "evidence_locator": {
+        "original_path": "evidence/focused-tests.log",
+        "raw_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6"
+      }
+    },
+    {
+      "id": "REGRESSION-A-005",
+      "head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "status": "passed",
+      "attack_control_id": "NEG-07-1",
+      "risk_family": "semantic-effect",
+      "surface": "header-footer-boundary",
+      "dimension": "header-overlap-rejected",
+      "control_type": "test",
+      "procedure": "Run all five near-header/footer/lower-boundary controls and the three old-behavior mutations.",
+      "expected": "Complete reconciled rows are retained; overlapping/incomplete financial anchors block, contact numbers are ignored.",
+      "observed": "Five current-material boundary tests pass. Reintroduced lower cutoff, footer clipping and header-gap behavior each fail functional assertions after compiling isolated exact-source variants.",
+      "evidence": "evidence/inherited-regressions.json",
+      "evidence_sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "evidence_locator": {
+        "original_path": "evidence/final-mutations.json",
+        "raw_sha256": "7a6f729b06854eae54ecf71310c5b68283fda3d67dd7425c3b6412bac396b7ff"
+      }
+    },
+    {
+      "id": "REGRESSION-A-006",
+      "head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "status": "passed",
+      "attack_control_id": "NEG-13-2",
+      "risk_family": "semantic-effect",
+      "surface": "certified-risk-family-coverage",
+      "dimension": "missing-active-family-rejected",
+      "control_type": "test",
+      "procedure": "Replay the exact official saturation command from A-006. In ephemeral copies remove the semantic-effect family and separately set applicable=false, keeping inherited controls unchanged.",
+      "expected": "Complete coverage returns exit 0; omission and deactivation return exit 2 for all three original inherited controls.",
+      "observed": "Measured official auditor gate on an explicitly isolated hypothetical complete packet returned 0; removing semantic-effect returned 2 and deactivating it returned 2. Both negatives named all three original inherited controls REGRESSION-A-001/A-004/A-005. The active self-control was pending until these executions completed.",
+      "evidence": "evidence/inherited-regressions.json",
+      "evidence_sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "evidence_locator": {
+        "original_path": "evidence/a006-saturation-regression.log",
+        "raw_sha256": "22608c24d1717e35834146f586237e9cebfd684c2bc480e2bdee2f34bfd271f2"
+      }
+    },
+    {
+      "id": "REGRESSION-A-007",
+      "head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "status": "passed",
+      "attack_control_id": "NEG-05-2",
+      "risk_family": "semantic-effect",
+      "surface": "description-word-completeness",
+      "dimension": "last-row-multiline-tail",
+      "control_type": "test",
+      "procedure": "Replay the audit's real synthetic PDF and layout controls at the frozen material: final row, header-adjacent first row, non-final page and ambiguous row association.",
+      "expected": "Every accepted row preserves the entire description; unresolvable word association blocks the batch without partial proposals.",
+      "observed": "All 266 original field comparisons match. Actual-ID removal and invalid date block; four real synthetic PDFs preserve complete descriptions in parser and preview, with ambiguous/unassigned text blocked by focused tests.",
+      "evidence": "evidence/product-replays.json",
+      "evidence_sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "evidence_locator": {
+        "original_path": "evidence/a007-description-replay.json",
+        "raw_sha256": "cbfd9ed7dad32f2fe0b0e22e5fecf2833689aa3e9c5ba5affeb258a4573966d9"
+      }
+    },
+    {
+      "id": "REGRESSION-A-008",
+      "head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "status": "passed",
+      "attack_control_id": "NEG-01-1",
+      "risk_family": "semantic-effect",
+      "surface": "catalog-object-identity",
+      "dimension": "single-cr-before-root-object",
+      "control_type": "test",
+      "procedure": "Run the existing object-31/catalog-1 regression together with corrupt-catalog controls. Extend the same fixture to single-CR, LF/CRLF headers, permitted horizontal PDF whitespace and inline comment/literal lookalikes.",
+      "expected": "Valid CR/LF/CRLF object headers are accepted, while complete root identity and inline-lookalike rejection are preserved.",
+      "observed": "Exact-source Catalog suite passes whitespace variants, complete object-ID and inline-lookalike rejection; real LF and one-byte CR PDFs both return ready with one row.",
+      "evidence": "evidence/product-replays.json",
+      "evidence_sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "evidence_locator": {
+        "original_path": "evidence/a008-catalog-replay.json",
+        "raw_sha256": "d40ef8b85510a3e82299f3691d261a829cd4ceacc70774bf8de0785a40c0facc"
+      }
+    }
+  ],
+  "unresolved_controls": []
+}

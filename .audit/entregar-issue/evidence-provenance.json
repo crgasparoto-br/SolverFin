@@ -1,1 +1,615 @@
-{"schema_version":1,"material_head_sha":"c696281f6dcbc802098d05786266c26ace9e7765","base_sha":"a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f","evidence":[{"evidence_id":"EV-documentation-check.json","kind":"behavioral","path":"evidence/documentation-check.json","sha256":"084b8f51bbe82decebee38853c193d5572824beb8147e4fcc5474b962b874b82","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-final-mutations.json","kind":"behavioral","path":"evidence/final-mutations.json","sha256":"3bda9103c5ec12abcc5a1f38b027c258d51c68deed22b7cc1838b6d2805c7f90","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-final-remote-ci.json","kind":"behavioral","path":"evidence/final-remote-ci.json","sha256":"9d70bfca5335f76dad1fd4db6baf4614ac1f0ae9f202bd50821af4c341e886e4","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-focused-tests.log","kind":"behavioral","path":"evidence/focused-tests.log","sha256":"d622c2127646b959da452d29533d5db025713deb885f0e07d19e42a32f375e96","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-governance-selected.log","kind":"behavioral","path":"evidence/governance-selected.log","sha256":"004aa8054e556b07f515e664bea95795546a2d505fe27ec01699d0cd4393ac16","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-identity.json","kind":"behavioral","path":"evidence/identity.json","sha256":"77530e89cf7ac37bc2aa0764c324b7009124bcc031673ed0743035d6c9e49209","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-original-homologation.json","kind":"quantitative","path":"evidence/original-homologation.json","sha256":"0877c570542729de533b41f01d2c65c96856d1d11f99063753cff15fb027b8e5","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-original-negative.json","kind":"behavioral","path":"evidence/original-negative.json","sha256":"3f4faef0ec720e16fcd31859d25657a19ce47b95e9324178904140866f5115cd","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-original-parser.log","kind":"behavioral","path":"evidence/original-parser.log","sha256":"3e0a4d81339bcd6b37b572da646804acf4c71d3a38edc47df1b21fe909cdbd1e","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-original-preview.json","kind":"behavioral","path":"evidence/original-preview.json","sha256":"27986fcf19bcbf0a9fbbe23a995db7060111326a2cbd0131c7cabc79768c76b7","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-privacy-check.json","kind":"behavioral","path":"evidence/privacy-check.json","sha256":"153e12ff9042b974c1c6e82a71070b6f6b4a6d3309ecef27eeaa5335abeb33cd","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-release-boundary.json","kind":"behavioral","path":"evidence/release-boundary.json","sha256":"b0ed97e5f22d211a88cb022a5c094dfc461e9f0aa2a70145fbee449c1dddd4da","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"local production code execution or authenticated GitHub exact-head evidence; boundary limitations declared in the raw evidence","status":"passed"},{"evidence_id":"EV-a006-saturation-regression.log","kind":"behavioral","path":"evidence/a006-saturation-regression.log","sha256":"50084253dce1f543723845a9df1e6c018333d88456f10d137f2095701ef0e27b","subject_sha":"c696281f6dcbc802098d05786266c26ace9e7765","freshness_policy":"exact-material-head","producer":"Current remediation: official auditor saturation command executed against preserved material and packet-only mutations. Not independent approval.","status":"passed"}]}
+{
+  "schema_version": 1,
+  "material_head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+  "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
+  "evidence": [
+    {
+      "evidence_id": "EV-documentation-check.json",
+      "kind": "documentation",
+      "path": "evidence/documentation-and-code.json",
+      "sha256": "9fb5985dbca07abd234b42776581eb1caef2fe9351297bfd88ea2a56e0847ae4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/documentation-check.json",
+        "raw_sha256": "bada8845f5e40ad19eddfee86aa25e4e034cd86595933cfebe914af97397c496"
+      }
+    },
+    {
+      "evidence_id": "EV-final-mutations.json",
+      "kind": "behavioral",
+      "path": "evidence/inherited-regressions.json",
+      "sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/final-mutations.json",
+        "raw_sha256": "7a6f729b06854eae54ecf71310c5b68283fda3d67dd7425c3b6412bac396b7ff"
+      }
+    },
+    {
+      "evidence_id": "EV-final-remote-ci.json",
+      "kind": "behavioral",
+      "path": "evidence/remote-ci.json",
+      "sha256": "19157dc3a90b125e9148034519d475c5afc77115bc313003076aa7fe2f1b4b0b",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Authenticated sole CI-owner observations and Actions logs at exact material; canonical metadata and explicitly sanitized public logs, no independent approval.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/final-remote-ci.json",
+        "raw_sha256": "afa8680165b22a915b8a6250eaa5c2f681beec46393ba8132d66f4ff2d8c1dca"
+      }
+    },
+    {
+      "evidence_id": "EV-focused-tests.log",
+      "kind": "behavioral",
+      "path": "evidence/issue-745-focused-execution.txt",
+      "sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/focused-tests.log",
+        "raw_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6"
+      }
+    },
+    {
+      "evidence_id": "EV-governance-selected.log",
+      "kind": "behavioral",
+      "path": "evidence/governance-and-identity.json",
+      "sha256": "b104b69b670be30439df291052ad426ffb7c6cfc6d1be74ad15f2b6e40573db4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/governance-selected.log",
+        "raw_sha256": "e127acb00446685b9b6d409275da050f36c91d2594bc1c3f5cbd759ef4dc6867"
+      }
+    },
+    {
+      "evidence_id": "EV-identity.json",
+      "kind": "structural",
+      "path": "evidence/governance-and-identity.json",
+      "sha256": "b104b69b670be30439df291052ad426ffb7c6cfc6d1be74ad15f2b6e40573db4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Authenticated sole CI-owner observations and Actions logs at exact material; canonical metadata and explicitly sanitized public logs, no independent approval.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/identity.json",
+        "raw_sha256": "6fb29f31eb1a3602a001ae3bd478d7e688400f75c56db994375b69de8ca4db9f"
+      }
+    },
+    {
+      "evidence_id": "EV-original-homologation.json",
+      "kind": "quantitative",
+      "path": "evidence/original-and-boundaries.json",
+      "sha256": "ce54ea679e9ea53ad20be7d168d1dd76478e8c88b9cf641949241e8d75e8bbdb",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/original-homologation.json",
+        "raw_sha256": "6e234e203e5e473a486a21bafd1471bc01c93652eb20550e0246d7306a549b20"
+      }
+    },
+    {
+      "evidence_id": "EV-original-negative.json",
+      "kind": "behavioral",
+      "path": "evidence/original-and-boundaries.json",
+      "sha256": "ce54ea679e9ea53ad20be7d168d1dd76478e8c88b9cf641949241e8d75e8bbdb",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/original-negative.json",
+        "raw_sha256": "6a652268973d32f5f8609bea5ed29e1b6e1f59edf5dde4276c8d4f4fefd67829"
+      }
+    },
+    {
+      "evidence_id": "EV-original-preview.json",
+      "kind": "quantitative",
+      "path": "evidence/original-and-boundaries.json",
+      "sha256": "ce54ea679e9ea53ad20be7d168d1dd76478e8c88b9cf641949241e8d75e8bbdb",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/original-preview.json",
+        "raw_sha256": "5aa5588059191b4c1789bfcfe0f804819c9d37883cacd0e706b8a24a18736288"
+      }
+    },
+    {
+      "evidence_id": "EV-privacy-check.json",
+      "kind": "quantitative",
+      "path": "evidence/original-and-boundaries.json",
+      "sha256": "ce54ea679e9ea53ad20be7d168d1dd76478e8c88b9cf641949241e8d75e8bbdb",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/privacy-check.json",
+        "raw_sha256": "f656672933257cd533c0e1122dcde3a7088a59157327428756ffc79b48d78014"
+      }
+    },
+    {
+      "evidence_id": "EV-release-boundary.json",
+      "kind": "behavioral",
+      "path": "evidence/governance-and-identity.json",
+      "sha256": "b104b69b670be30439df291052ad426ffb7c6cfc6d1be74ad15f2b6e40573db4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/release-boundary.json",
+        "raw_sha256": "b44d19b2daa5952c2e0d85ca4e9e82647a544d2e4c641c54b11a12dcd745c29b"
+      }
+    },
+    {
+      "evidence_id": "EV-a006-saturation-regression.log",
+      "kind": "behavioral",
+      "path": "evidence/inherited-regressions.json",
+      "sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Three actual official auditor gate executions on isolated and explicitly hypothetical metadata fixtures. Exit codes 0/2/2, with required inherited-control rejections verified.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a006-saturation-regression.log",
+        "raw_sha256": "22608c24d1717e35834146f586237e9cebfd684c2bc480e2bdee2f34bfd271f2"
+      }
+    },
+    {
+      "evidence_id": "EV-a004-permission-replay.json",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a004-permission-replay.json",
+        "raw_sha256": "3060be0a5a75841caa56fa643c92b00246a810b743ab60d71b8b3d0688309beb"
+      }
+    },
+    {
+      "evidence_id": "EV-a007-description-replay.json",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a007-description-replay.json",
+        "raw_sha256": "cbfd9ed7dad32f2fe0b0e22e5fecf2833689aa3e9c5ba5affeb258a4573966d9"
+      }
+    },
+    {
+      "evidence_id": "EV-a008-catalog-replay.json",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a008-catalog-replay.json",
+        "raw_sha256": "d40ef8b85510a3e82299f3691d261a829cd4ceacc70774bf8de0785a40c0facc"
+      }
+    },
+    {
+      "evidence_id": "EV-documentation-search.txt",
+      "kind": "behavioral",
+      "path": "evidence/documentation-and-code.json",
+      "sha256": "9fb5985dbca07abd234b42776581eb1caef2fe9351297bfd88ea2a56e0847ae4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/documentation-search.txt",
+        "raw_sha256": "73ebbba0759852c5b017195103f11b7e293f308bc6d05fb840d3076415cdd0c9"
+      }
+    },
+    {
+      "evidence_id": "EV-local-material-identity.json",
+      "kind": "behavioral",
+      "path": "evidence/governance-and-identity.json",
+      "sha256": "b104b69b670be30439df291052ad426ffb7c6cfc6d1be74ad15f2b6e40573db4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/local-material-identity.json",
+        "raw_sha256": "d5c39231ba19f3ad16706de63da47188c79b45b612d6b8ce96b219e5217f6f30"
+      }
+    },
+    {
+      "evidence_id": "EV-source-search.txt",
+      "kind": "behavioral",
+      "path": "evidence/documentation-and-code.json",
+      "sha256": "9fb5985dbca07abd234b42776581eb1caef2fe9351297bfd88ea2a56e0847ae4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/source-search.txt",
+        "raw_sha256": "e92ead87bca8d21d151f8e19bdc9c791e1bdc23d0eb8500c5b81bbbc3cf16321"
+      }
+    },
+    {
+      "evidence_id": "EV-internal-code-review.json",
+      "kind": "behavioral",
+      "path": "evidence/documentation-and-code.json",
+      "sha256": "9fb5985dbca07abd234b42776581eb1caef2fe9351297bfd88ea2a56e0847ae4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/internal-code-review.json",
+        "raw_sha256": "43538b2fdd39bf9e73f12f7b533d4e11fcdb756ecf151fcb5bc3c02f1b913d62"
+      }
+    },
+    {
+      "evidence_id": "EV-code-growth-source.json",
+      "kind": "behavioral",
+      "path": "evidence/documentation-and-code.json",
+      "sha256": "9fb5985dbca07abd234b42776581eb1caef2fe9351297bfd88ea2a56e0847ae4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/code-growth-source.json",
+        "raw_sha256": "900378ef8e63ec6938086a9e2937ba47f6f906389324e8fd3b420c0c5052e904"
+      }
+    },
+    {
+      "evidence_id": "EV-preview-boundary-controls.json",
+      "kind": "quantitative",
+      "path": "evidence/original-and-boundaries.json",
+      "sha256": "ce54ea679e9ea53ad20be7d168d1dd76478e8c88b9cf641949241e8d75e8bbdb",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/preview-boundary-controls.json",
+        "raw_sha256": "c01143bcc470fbbc7a953250ac4ce3e92188c3aee5089bd7d3bed6f3995bb244"
+      }
+    },
+    {
+      "evidence_id": "EV-local-verification-summary.json",
+      "kind": "behavioral",
+      "path": "evidence/documentation-and-code.json",
+      "sha256": "9fb5985dbca07abd234b42776581eb1caef2fe9351297bfd88ea2a56e0847ae4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/local-verification-summary.json",
+        "raw_sha256": "2cf7d89bc8fb9fe730099411b88d43164b17bde2f5705265c287b490d4b87acd"
+      }
+    },
+    {
+      "evidence_id": "EV-issue-745-focused-execution.txt",
+      "kind": "behavioral",
+      "path": "evidence/issue-745-focused-execution.txt",
+      "sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EV-a005-summary.json",
+      "kind": "behavioral",
+      "path": "evidence/inherited-regressions.json",
+      "sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a005/summary.json",
+        "raw_sha256": "6c6134ab0daa2f08c30752ca8b5a0a0d7b3313e9fdd252df44c2f86a93c00977"
+      }
+    },
+    {
+      "evidence_id": "EV-a005-old-header-gap.log",
+      "kind": "behavioral",
+      "path": "evidence/inherited-regressions.json",
+      "sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a005/old-header-gap.log",
+        "raw_sha256": "3b1a7d83ee4e5a295bd5f35b532cb7c758a35c3a8c35e2f08e20aa135d477ddf"
+      }
+    },
+    {
+      "evidence_id": "EV-a005-silent-footer-clipping.log",
+      "kind": "behavioral",
+      "path": "evidence/inherited-regressions.json",
+      "sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a005/silent-footer-clipping.log",
+        "raw_sha256": "e44a2e35fdd5535f66c0dfd64a7414301760fbf1a4bef8b97f3d47d43ac9b20d"
+      }
+    },
+    {
+      "evidence_id": "EV-a005-old-lower-page-cutoff.log",
+      "kind": "behavioral",
+      "path": "evidence/inherited-regressions.json",
+      "sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a005/old-lower-page-cutoff.log",
+        "raw_sha256": "df62ad50651edacea7d2e388bc65faa875c1a9eae6d49b5ec3b510891cc83a87"
+      }
+    },
+    {
+      "evidence_id": "EV-a005-material.log",
+      "kind": "behavioral",
+      "path": "evidence/inherited-regressions.json",
+      "sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a005/material.log",
+        "raw_sha256": "3a5867bc61b2c125eca912db6b791d3584a1a448dfa254d0f5461cd8894344d2"
+      }
+    },
+    {
+      "evidence_id": "EV-parser-summary.json",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/parser/summary.json",
+        "raw_sha256": "647a86e1c51bac29bc75c80660ec5594bd48e40b7b3af4d2d01e81091dae5d38"
+      }
+    },
+    {
+      "evidence_id": "EV-parser-binary.log",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/parser/binary.log",
+        "raw_sha256": "d37d1c7ce56489379b3d22f783e6e6ff8c540cfa43cadac160e4764a99555a66"
+      }
+    },
+    {
+      "evidence_id": "EV-parser-tests.log",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/parser/tests.log",
+        "raw_sha256": "91cc6993f704b2deb3d50ae860d5e9b67fe617ad4c9258b58ee884918095cb49"
+      }
+    },
+    {
+      "evidence_id": "EV-parser-compile.log",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/parser/compile.log",
+        "raw_sha256": "aae3fbe4dbf20210919e5aa8c133b708f7f43d654a271ac5397feda35734b287"
+      }
+    },
+    {
+      "evidence_id": "EV-extractor-focused-tests.log",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/extractor/focused-tests.log",
+        "raw_sha256": "9f354b7e8d6a5af70d6e3f2a40e7471cdf46e0ffc7f185711d4c8e485694dff7"
+      }
+    },
+    {
+      "evidence_id": "EV-extractor-sources.json",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/extractor/sources.json",
+        "raw_sha256": "55b0254c2f9ef59f7001a52808ce6f9ef61d8b32e4de90f5a10ee4735cf78e19"
+      }
+    },
+    {
+      "evidence_id": "EV-extractor-real-replay.json",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/extractor/real-replay.json",
+        "raw_sha256": "c851d38c30e077ac79bf3763c12871b4e8afae98314ac626f21fa93e462076bd"
+      }
+    },
+    {
+      "evidence_id": "EV-extractor-fixtures.json",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/extractor/fixtures.json",
+        "raw_sha256": "1615b73304acf523071083b3c02013937ddfc66e14c45376bfe41476056e05b8"
+      }
+    },
+    {
+      "evidence_id": "EV-extractor-result.json",
+      "kind": "behavioral",
+      "path": "evidence/product-replays.json",
+      "sha256": "d0ececed0f70f74f91c7babfb1c2ef71776ea32a54a7cb3bd86509801c5b6bf8",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Exact-material execution or read-only source inspection; raw source artifacts and explicit boundaries preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/extractor/result.json",
+        "raw_sha256": "6097f8a97c29af268b2d34629c79aeee072e7d54c5176ef4a930298290d44e58"
+      }
+    },
+    {
+      "evidence_id": "EV-remote-ci-public-logs.json.gz",
+      "kind": "behavioral",
+      "path": "evidence/remote-ci-public-logs.json.gz",
+      "sha256": "d4c6f0c38a9615b66115ca59ab933bed6223a329c82a5c89e3b5b76a55b5181f",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "status": "passed",
+      "producer": "Authenticated sole CI-owner observations and Actions logs at exact material; canonical metadata and explicitly sanitized public logs, no independent approval."
+    },
+    {
+      "evidence_id": "EV-remote-ci-excerpts.log",
+      "kind": "behavioral",
+      "path": "evidence/remote-ci.json",
+      "sha256": "19157dc3a90b125e9148034519d475c5afc77115bc313003076aa7fe2f1b4b0b",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "status": "passed",
+      "producer": "Authenticated sole CI-owner observations and Actions logs at exact material; canonical metadata and explicitly sanitized public logs, no independent approval.",
+      "evidence_locator": {
+        "original_path": "evidence/remote-ci-excerpts.log",
+        "raw_sha256": "73d38a807fbd3a66845e43d2e6f581d07f1b4802109fbd16b164b63735c69f23"
+      }
+    },
+    {
+      "evidence_id": "EV-ci-public-archive-verification.json",
+      "kind": "behavioral",
+      "path": "evidence/remote-ci.json",
+      "sha256": "19157dc3a90b125e9148034519d475c5afc77115bc313003076aa7fe2f1b4b0b",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "status": "passed",
+      "producer": "Authenticated sole CI-owner observations and Actions logs at exact material; canonical metadata and explicitly sanitized public logs, no independent approval.",
+      "evidence_locator": {
+        "original_path": "evidence/ci-public-archive-verification.json",
+        "raw_sha256": "feca15bf0f7d2b77b61e68c8a79f8e7256956aa72b034175897397d00a3b425e"
+      }
+    },
+    {
+      "evidence_id": "EV-a006-active-packet.log",
+      "kind": "behavioral",
+      "path": "evidence/inherited-regressions.json",
+      "sha256": "042c75d36642045cbb9257df6d998b23a64ebc8f981e2765095d7bb6be54b10c",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Official auditor saturation executed on the actual active packet after measured 0/2/2 results were bound; input hashes and exit 0 preserved.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/a006-active-packet.log",
+        "raw_sha256": "6dba6e6c005185037926099013354aa231d96de541d34c372eceb5619b650b42"
+      }
+    },
+    {
+      "evidence_id": "EV-runtime-consumers-resolution.json",
+      "kind": "structural",
+      "path": "evidence/documentation-and-code.json",
+      "sha256": "9fb5985dbca07abd234b42776581eb1caef2fe9351297bfd88ea2a56e0847ae4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Real TypeScript NodeNext resolution supplement for four relevant .js-to-.ts edges at M; global official graph remains incomplete.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/runtime-consumers-resolution.json",
+        "raw_sha256": "4c77ca714bf388baed1519b4cfd250615b442305126c3717cc724a25ee42a192"
+      }
+    },
+    {
+      "evidence_id": "EV-controller-contracts.log",
+      "kind": "behavioral",
+      "path": "evidence/governance-and-identity.json",
+      "sha256": "b104b69b670be30439df291052ad426ffb7c6cfc6d1be74ad15f2b6e40573db4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Actual official controller contracts validation.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/controller-contracts.log",
+        "raw_sha256": "d033b875430cc33e0ad16e7e29838692d6e5bf33be19b6704d9f6a7cfbd203ae"
+      }
+    },
+    {
+      "evidence_id": "EV-delivery-obligations-regression.log",
+      "kind": "behavioral",
+      "path": "evidence/governance-and-identity.json",
+      "sha256": "b104b69b670be30439df291052ad426ffb7c6cfc6d1be74ad15f2b6e40573db4",
+      "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+      "freshness_policy": "exact-material-head",
+      "producer": "Actual official six-case delivery obligations regression run.",
+      "status": "passed",
+      "evidence_locator": {
+        "original_path": "evidence/delivery-obligations-regression.log",
+        "raw_sha256": "d5be81bbe49b412357ba177be7fae47b32ba70b563d2a01ec6ee15df362cc215"
+      }
+    }
+  ]
+}

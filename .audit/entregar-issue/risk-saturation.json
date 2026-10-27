@@ -1,1 +1,363 @@
-{"schema_version":1,"head_sha":"c696281f6dcbc802098d05786266c26ace9e7765","families":[{"family":"authorization","applicable":true,"reason":"All declared surfaces are covered by executed controls at the material SHA; evidence scope and explicit DB-boundary double are retained.","control_ids":["NEG-03-2","NEG-08-1"],"dimensions":[{"surface":"consent-before-read","reason":"Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.","control_ids":["NEG-08-1"],"status":"passed"},{"surface":"copy-permission-before-extraction","reason":"The adapter trusts successful pdftotext on an encrypted copy:no PDF and reads a restricted document.","control_ids":["NEG-03-2"],"status":"passed"}],"status":"passed"},{"family":"tenant-isolation","applicable":true,"reason":"All declared surfaces are covered by executed controls at the material SHA; evidence scope and explicit DB-boundary double are retained.","control_ids":["NEG-08-4"],"dimensions":[{"surface":"tenant-scope-isolation","reason":"Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.","control_ids":["NEG-08-4"],"status":"passed"}],"status":"passed"},{"family":"public-boundary","applicable":true,"reason":"All declared surfaces are covered by executed controls at the material SHA; evidence scope and explicit DB-boundary double are retained.","control_ids":["NEG-08-5","NEG-15-2"],"dimensions":[{"surface":"artifact-export","reason":"A developer publishes raw original PDF bytes or real operation identifiers inside fixtures or evidence.","control_ids":["NEG-15-2"],"status":"passed"},{"surface":"review-only-preview","reason":"Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.","control_ids":["NEG-08-5"],"status":"passed"}],"status":"passed"},{"family":"reference-liveness","applicable":true,"reason":"All declared surfaces are covered by executed controls at the material SHA; evidence scope and explicit DB-boundary double are retained.","control_ids":["NEG-08-3"],"dimensions":[{"surface":"active-context-target","reason":"Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.","control_ids":["NEG-08-3"],"status":"passed"}],"status":"passed"},{"family":"temporal-consistency","applicable":true,"reason":"All declared surfaces are covered by executed controls at the material SHA; evidence scope and explicit DB-boundary double are retained.","control_ids":["NEG-12-1","NEG-13-1"],"dimensions":[{"surface":"exact-sha-evidence","reason":"Evidence from a different material SHA or a same-context approval is accepted as final release authorization.","control_ids":["NEG-13-1"],"status":"passed"},{"surface":"invalid-input-rejection","reason":"A malformed date, invalid catalog, protected document or altered financial row is ignored as if it were harmless text.","control_ids":["NEG-12-1"],"status":"passed"}],"status":"passed"},{"family":"temporal-destination","applicable":false,"reason":"The issue changes deterministic PDF preview/extraction only; no new temporal-destination mechanism or persistence path is introduced. Existing API/PostgreSQL integration remains green at exact head.","control_ids":[],"dimensions":[],"status":"not-applicable"},{"family":"concurrency-atomicity","applicable":false,"reason":"The issue changes deterministic PDF preview/extraction only; no new concurrency-atomicity mechanism or persistence path is introduced. Existing API/PostgreSQL integration remains green at exact head.","control_ids":[],"dimensions":[],"status":"not-applicable"},{"family":"idempotency","applicable":true,"reason":"All declared surfaces are covered by executed controls at the material SHA; evidence scope and explicit DB-boundary double are retained.","control_ids":["NEG-08-2"],"dimensions":[{"surface":"duplicate-processing","reason":"Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.","control_ids":["NEG-08-2"],"status":"passed"}],"status":"passed"},{"family":"rollback","applicable":false,"reason":"The issue changes deterministic PDF preview/extraction only; no new rollback mechanism or persistence path is introduced. Existing API/PostgreSQL integration remains green at exact head.","control_ids":[],"dimensions":[],"status":"not-applicable"},{"family":"historical-immutability","applicable":false,"reason":"The issue changes deterministic PDF preview/extraction only; no new historical-immutability mechanism or persistence path is introduced. Existing API/PostgreSQL integration remains green at exact head.","control_ids":[],"dimensions":[],"status":"not-applicable"},{"family":"structural-contract","applicable":true,"reason":"All declared surfaces are covered by executed controls at the material SHA; evidence scope and explicit DB-boundary double are retained.","control_ids":["NEG-07-2"],"dimensions":[{"surface":"transaction-region-cardinality","reason":"Fixed header/footer clipping discards genuine financial anchors while allowing the remaining rows through.","control_ids":["NEG-07-2"],"status":"passed"}],"status":"passed"},{"family":"documentation","applicable":true,"reason":"All declared surfaces are covered by executed controls at the material SHA; evidence scope and explicit DB-boundary double are retained.","control_ids":["NEG-16-2"],"dimensions":[{"surface":"canonical-claims","reason":"A same-context handoff with green CI is labeled independent approval and used to permit merge.","control_ids":["NEG-16-2"],"status":"passed"}],"status":"passed"},{"family":"semantic-effect","applicable":true,"reason":"Coverage of existing exact-material-head controls, plus the executed A-006 packet regression. Evidence is reused without changing measurements or treating producer original-PDF evidence as an independent replay.","control_ids":["NEG-01-1","NEG-02-1","NEG-03-1","NEG-04-1","NEG-05-1","NEG-06-1","NEG-07-1","NEG-09-1","NEG-10-1","NEG-11-1","NEG-13-2","NEG-14-1","NEG-15-1","NEG-16-1"],"dimensions":[{"surface":"balance-reconciliation","reason":"The parser validates only the final net balance and misses altered row balances or gross credit/debit totals.","control_ids":["NEG-06-1"],"status":"passed"},{"surface":"catalog-object-identity","reason":"Suffix lookup confuses root object 1 with object 31 and rejects a structurally valid PDF.","control_ids":["NEG-01-1"],"status":"passed"},{"surface":"certified-risk-family-coverage","reason":"A producer builds a certificate while omitting semantic-effect from saturation even though active inherited controls require it.","control_ids":["NEG-13-2"],"status":"passed"},{"surface":"development-base-binding","reason":"A foreign issue or branch certificate is reused merely because its files exist in the target branch.","control_ids":["NEG-14-1"],"status":"passed"},{"surface":"diagnostic-classification","reason":"All Poppler failures become generic layout errors so unavailable tools and password restrictions cannot be distinguished.","control_ids":["NEG-09-1"],"status":"passed"},{"surface":"financial-field-fidelity","reason":"The parser loses an ID or multiline description, uses balance instead of amount, or reverses the sign.","control_ids":["NEG-05-1"],"status":"passed"},{"surface":"header-footer-boundary","reason":"Fixed header/footer clipping discards genuine financial anchors while allowing the remaining rows through.","control_ids":["NEG-07-1"],"status":"passed"},{"surface":"independent-release-boundary","reason":"A same-context handoff with green CI is labeled independent approval and used to permit merge.","control_ids":["NEG-16-1"],"status":"passed"},{"surface":"multipage-completeness","reason":"Only the first page is parsed, or a fixed lower coordinate cutoff silently omits a financial row.","control_ids":["NEG-02-1"],"status":"passed"},{"surface":"original-binary-homologation","reason":"A synthetic 38-row fixture or a different real 42-row statement is substituted for the required original binary.","control_ids":["NEG-10-1"],"status":"passed"},{"surface":"pdf-copy-permission","reason":"The adapter trusts successful pdftotext on an encrypted copy:no PDF and reads a restricted document.","control_ids":["NEG-03-1"],"status":"passed"},{"surface":"private-artifact-leakage","reason":"A developer publishes raw original PDF bytes or real operation identifiers inside fixtures or evidence.","control_ids":["NEG-15-1"],"status":"passed"},{"surface":"synthetic-regression-corpus","reason":"Fixtures cover only a happy-path credit and cannot detect duplicate operation IDs, multiline loss or debit reversal.","control_ids":["NEG-11-1"],"status":"passed"},{"surface":"text-layer-integrity","reason":"The XML adapter silently drops an unclosed page or word and accepts an incomplete text layer.","control_ids":["NEG-04-1"],"status":"passed"}],"status":"passed"}],"material_families_missing_controls":[]}
+{
+  "schema_version": 1,
+  "head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-03-2",
+        "NEG-08-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "consent-before-read",
+          "reason": "Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.",
+          "control_ids": [
+            "NEG-08-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "copy-permission-before-extraction",
+          "reason": "The adapter trusts successful pdftotext on an encrypted copy:no PDF and reads a restricted document.",
+          "control_ids": [
+            "NEG-03-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-08-4"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.",
+          "control_ids": [
+            "NEG-08-4"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-08-5",
+        "NEG-15-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "artifact-export",
+          "reason": "A developer publishes raw original PDF bytes or real operation identifiers inside fixtures or evidence.",
+          "control_ids": [
+            "NEG-15-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "review-only-preview",
+          "reason": "Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.",
+          "control_ids": [
+            "NEG-08-5"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-08-3"
+      ],
+      "dimensions": [
+        {
+          "surface": "active-context-target",
+          "reason": "Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.",
+          "control_ids": [
+            "NEG-08-3"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-12-1",
+        "NEG-13-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "exact-sha-evidence",
+          "reason": "Evidence from a different material SHA or a same-context approval is accepted as final release authorization.",
+          "control_ids": [
+            "NEG-13-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "invalid-input-rejection",
+          "reason": "A malformed date, invalid catalog, protected document or altered financial row is ignored as if it were harmless text.",
+          "control_ids": [
+            "NEG-12-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "The issue changes deterministic PDF preview/extraction only; no new temporal-destination mechanism or persistence path is introduced. Existing API/PostgreSQL integration remains green at exact head.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "The issue changes deterministic PDF preview/extraction only; no new concurrency-atomicity mechanism or persistence path is introduced. Existing API/PostgreSQL integration remains green at exact head.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-08-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Preview ignores consent or tenant/profile target scope, or produces immediate financial effects rather than review proposals.",
+          "control_ids": [
+            "NEG-08-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "The issue changes deterministic PDF preview/extraction only; no new rollback mechanism or persistence path is introduced. Existing API/PostgreSQL integration remains green at exact head.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "The issue changes deterministic PDF preview/extraction only; no new historical-immutability mechanism or persistence path is introduced. Existing API/PostgreSQL integration remains green at exact head.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-07-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "transaction-region-cardinality",
+          "reason": "Fixed header/footer clipping discards genuine financial anchors while allowing the remaining rows through.",
+          "control_ids": [
+            "NEG-07-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-16-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "A same-context handoff with green CI is labeled independent approval and used to permit merge.",
+          "control_ids": [
+            "NEG-16-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "semantic-effect",
+      "applicable": true,
+      "reason": "All declared material surfaces remain present. Status is derived from their bound exact-material controls, not from previous certificates.",
+      "control_ids": [
+        "NEG-01-1",
+        "NEG-02-1",
+        "NEG-03-1",
+        "NEG-04-1",
+        "NEG-05-1",
+        "NEG-06-1",
+        "NEG-07-1",
+        "NEG-09-1",
+        "NEG-10-1",
+        "NEG-11-1",
+        "NEG-13-2",
+        "NEG-14-1",
+        "NEG-15-1",
+        "NEG-16-1",
+        "NEG-05-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "balance-reconciliation",
+          "reason": "The parser validates only the final net balance and misses altered row balances or gross credit/debit totals.",
+          "control_ids": [
+            "NEG-06-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "catalog-object-identity",
+          "reason": "Suffix lookup confuses root object 1 with object 31 and rejects a structurally valid PDF.",
+          "control_ids": [
+            "NEG-01-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "certified-risk-family-coverage",
+          "reason": "A producer builds a certificate while omitting semantic-effect from saturation even though active inherited controls require it.",
+          "control_ids": [
+            "NEG-13-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "development-base-binding",
+          "reason": "A foreign issue or branch certificate is reused merely because its files exist in the target branch.",
+          "control_ids": [
+            "NEG-14-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "diagnostic-classification",
+          "reason": "All Poppler failures become generic layout errors so unavailable tools and password restrictions cannot be distinguished.",
+          "control_ids": [
+            "NEG-09-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "financial-field-fidelity",
+          "reason": "The parser loses an ID or multiline description, uses balance instead of amount, or reverses the sign.",
+          "control_ids": [
+            "NEG-05-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "header-footer-boundary",
+          "reason": "Fixed header/footer clipping discards genuine financial anchors while allowing the remaining rows through.",
+          "control_ids": [
+            "NEG-07-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "independent-release-boundary",
+          "reason": "A same-context handoff with green CI is labeled independent approval and used to permit merge.",
+          "control_ids": [
+            "NEG-16-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "multipage-completeness",
+          "reason": "Only the first page is parsed, or a fixed lower coordinate cutoff silently omits a financial row.",
+          "control_ids": [
+            "NEG-02-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "original-binary-homologation",
+          "reason": "A synthetic 38-row fixture or a different real 42-row statement is substituted for the required original binary.",
+          "control_ids": [
+            "NEG-10-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "pdf-copy-permission",
+          "reason": "The adapter trusts successful pdftotext on an encrypted copy:no PDF and reads a restricted document.",
+          "control_ids": [
+            "NEG-03-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "private-artifact-leakage",
+          "reason": "A developer publishes raw original PDF bytes or real operation identifiers inside fixtures or evidence.",
+          "control_ids": [
+            "NEG-15-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "synthetic-regression-corpus",
+          "reason": "Fixtures cover only a happy-path credit and cannot detect duplicate operation IDs, multiline loss or debit reversal.",
+          "control_ids": [
+            "NEG-11-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "text-layer-integrity",
+          "reason": "The XML adapter silently drops an unclosed page or word and accepts an incomplete text layer.",
+          "control_ids": [
+            "NEG-04-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "description-word-completeness",
+          "reason": "Fixed row windows drop description words while returning ready or review suggestions.",
+          "control_ids": [
+            "NEG-05-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

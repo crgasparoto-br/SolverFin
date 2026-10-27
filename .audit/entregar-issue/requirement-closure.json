@@ -1,1 +1,814 @@
-{"schema_version":3,"specification_snapshot":{"path":"specification-snapshot.json","sha256":"13359bd6854628afb371a1b4375386d0b2ff96134f2465a6faa1ccca0930acbd"},"primary_issue_source_id":"SRC-ISSUE","obligations":[{"id":"OBL-001","candidate_key":"8eae8ad17a5a015d67eee2d1f98bc805b74edc727433da36e392af3578e7c413","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":2,"source_text":"Corrigir falso erro `IMPORT_PDF_INVALID` causado por busca de objetos PDF por sufixo de identificador.","flags":[],"disposition":"covered","requirement_ids":["R01"],"inventory_ids":[],"assertion_ids":["OBS-001"],"scope_decision":null,"rationale":"Anchored PDF catalog object lookup is exercised with object 1 and object 31; invalid catalogs are rejected."},{"id":"OBL-002","candidate_key":"8b8852bf688f6afa9b643d7a87d66d9aa20d3514a4b843a140e6ec84c6c6b13a","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":3,"source_text":"Homologar layout de extrato de conta Mercado Pago com colunas Data, Descri\u00e7\u00e3o, ID da opera\u00e7\u00e3o, Valor e Saldo, em m\u00faltiplas p\u00e1ginas.","flags":[],"disposition":"covered","requirement_ids":["R02"],"inventory_ids":[],"assertion_ids":["OBS-002"],"scope_decision":null,"rationale":"Original uploaded binary produces 38 rows across pages 11/14/13; an independent text-layout oracle compares all normalized fields."},{"id":"OBL-003","candidate_key":"aa80f0b1017b9860c67d75b87ada2740ca59d793cdf3f23a4273e1d03d5357fc","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":4,"source_text":"Permitir extra\u00e7\u00e3o de PDF com senha de leitura vazia e permiss\u00f5es de leitura/c\u00f3pia, mantendo bloqueio dos PDFs que exigem senha.","flags":[],"disposition":"covered","requirement_ids":["R03"],"inventory_ids":[],"assertion_ids":["OBS-003"],"scope_decision":null,"rationale":"Original empty-password copy:yes PDF is accepted; extractor tests reject copy:no, missing permissions, and required passwords before text extraction."},{"id":"OBL-004","candidate_key":"40a4dba6d3839438f409546b79dee83f0ae3735302a20e537932b6e560a0e893","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":7,"source_text":"Extrair texto e posicionamento de modo determin\u00edstico, sem OCR gen\u00e9rico.","flags":["negative"],"disposition":"covered","requirement_ids":["R04"],"inventory_ids":[],"assertion_ids":["OBS-004"],"scope_decision":null,"rationale":"Production uses pdfinfo and pdftotext bbox text only; adapter tests reject empty/truncated extraction without an OCR fallback."},{"id":"OBL-005","candidate_key":"dc0597e1de79ffd57f8612d728ca73c89507ce6c9f7b86899ca0c9190f093f6c","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":8,"source_text":"Reconstruir descri\u00e7\u00f5es multilineares e preservar data, ID de opera\u00e7\u00e3o, sinal, moeda BRL e valor inteiro em centavos.","flags":[],"disposition":"covered","requirement_ids":["R05"],"inventory_ids":[],"assertion_ids":["OBS-005"],"scope_decision":null,"rationale":"All original dates, descriptions, operation IDs, signs, BRL, cent values and row numbers match the independently reconstructed 38 rows."},{"id":"OBL-006","candidate_key":"b3e4f3c2042c4406bc68a7a4b088716079fcbc497443c41b2c00d10034067304","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":9,"source_text":"Validar continuidade de saldos, saldo inicial/final e totais de entradas/sa\u00eddas; falha bloqueia o lote integralmente.","flags":["exhaustive"],"disposition":"covered","requirement_ids":["R06"],"inventory_ids":[],"assertion_ids":["OBS-006"],"scope_decision":null,"rationale":"All 38 running balances and the opening/closing/credit/debit summaries reconcile; tampered balance and total tests block the whole batch."},{"id":"OBL-007","candidate_key":"091f0b4b3fd778633f261060b5a9d579966da1ee6b921379662c99011e698ca6","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":10,"source_text":"Ignorar cabe\u00e7alhos, rodap\u00e9s, sum\u00e1rios e saldos como movimenta\u00e7\u00f5es.","flags":[],"disposition":"covered","requirement_ids":["R07"],"inventory_ids":[],"assertion_ids":["OBS-007"],"scope_decision":null,"rationale":"Footer and near-header controls retain true movements and ignore contact numbers; financial anchors outside the table block instead of disappearing."},{"id":"OBL-008","candidate_key":"32adbb9869ce3170cdcefff797218cabb0fea21c92a8c58e197319fe574d9011","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":11,"source_text":"Preservar consentimento, idempot\u00eancia, revis\u00e3o humana, isolamento tenant/perfil e aus\u00eancia de armazenamento do PDF original.","flags":["freshness","review-surface"],"disposition":"covered","requirement_ids":["R08"],"inventory_ids":[],"assertion_ids":["OBS-008"],"scope_decision":null,"rationale":"Production preview service preserves explicit consent and tenant/profile lookup, returns pending_review suggestions and performs no writes; repeat hashes stay stable. Real database regression is covered by exact-head CI, not claimed by the local lookup double."},{"id":"OBL-009","candidate_key":"f9c70990f081317d9a449c22645752dc6e51c20d23f585ce9ae5b253ccf3ee37","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":12,"source_text":"Erros diferenciados para extrator ausente, PDF bloqueado e layout n\u00e3o homologado.","flags":["negative"],"disposition":"covered","requirement_ids":["R09"],"inventory_ids":[],"assertion_ids":["OBS-009"],"scope_decision":null,"rationale":"Adapter and domain tests distinguish unavailable extractor, protected/permission-denied document and unsupported layout using stable codes."},{"id":"OBL-010","candidate_key":"fb54ee3cfdc3c5f0964c368ad70c451eaae9d2a03146262c7ae63735fb13b08d","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":15,"source_text":"Pr\u00e9-visualiza\u00e7\u00e3o real com m\u00faltiplas p\u00e1ginas e 38 movimenta\u00e7\u00f5es, sem publica\u00e7\u00e3o de conte\u00fado financeiro pessoal em fixtures.","flags":["negative"],"disposition":"covered","requirement_ids":["R10"],"inventory_ids":[],"assertion_ids":["OBS-010"],"scope_decision":null,"rationale":"Original uploaded 61469-byte PDF runs through production extraction and preview service: ready, 38 proposals, 3 pages, no raw document published. Database boundary is a synthetic double, not a browser or HTTP session."},{"id":"OBL-011","candidate_key":"80d22b3173bec4809304b7290ce99d62ad13c185364d1ddfba5ca38ecd501abc","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":16,"source_text":"Testes sint\u00e9ticos reproduzem entradas/sa\u00eddas, opera\u00e7\u00f5es repetidas, campos em m\u00faltiplas linhas, saldos e totais exatos.","flags":[],"disposition":"covered","requirement_ids":["R11"],"inventory_ids":[],"assertion_ids":["OBS-011"],"scope_decision":null,"rationale":"Synthetic suites exercise signed credits/debits, duplicate IDs, multiline descriptions, exactly 38 rows, balances and summary totals; 23 focused tests pass."},{"id":"OBL-012","candidate_key":"e2d7f7ace55bdeb344d47ed807b8e7802a88c9d7dc3af7f9ba89e9cb9c6a73b4","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":17,"source_text":"Testes negativos abrangem PDF truncado, cat\u00e1logo inv\u00e1lido, senha requerida, layout incompat\u00edvel e conte\u00fados adulterados.","flags":["source-catalog"],"disposition":"covered","requirement_ids":["R12"],"inventory_ids":[],"assertion_ids":["OBS-012"],"scope_decision":null,"rationale":"Corrupt structure, catalog suffix ambiguity, password, missing layout, altered row/date/ID/balance/totals are rejected in the executed focused suites."},{"id":"OBL-013","candidate_key":"e73aee0557fc5f762bba324ca882604296cd9ef9995b685a7cbdba6fc6943c29","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":18,"source_text":"CI e testes no SHA exato, evid\u00eancia de execu\u00e7\u00e3o com documento real fora do reposit\u00f3rio e auditoria independente antes de aprovar.","flags":["temporal"],"disposition":"covered","requirement_ids":["R13"],"inventory_ids":[],"assertion_ids":["OBS-013"],"scope_decision":null,"rationale":"Remote Repository CI is terminal success for the material SHA and original private execution is tied to that SHA. Independent approval remains a separate mandatory release gate; this handoff does not claim it."},{"id":"OBL-014","candidate_key":"38de0e0c8a6831a93dec6d775c5b4d87b60b45792bc29ff4a8e3b7dbd71f8a62","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":21,"source_text":"Altera\u00e7\u00f5es partem da `develop` e PR tem `develop` como base.","flags":[],"disposition":"covered","requirement_ids":["R14"],"inventory_ids":[],"assertion_ids":["OBS-014"],"scope_decision":null,"rationale":"Fresh GitHub metadata targets develop; trusted Git bundle and ancestry show base is ancestor of current material HEAD; no merge has been performed."},{"id":"OBL-015","candidate_key":"b5c3fc798a9eacbcfc6360e17b6b185783d09a4b7ec74ed3e7d59e64077e0142","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":22,"source_text":"N\u00e3o versionar documento real nem dados pessoais, identificadores ou valores de contas do cliente.","flags":["negative"],"disposition":"covered","requirement_ids":["R15"],"inventory_ids":[],"assertion_ids":["OBS-015"],"scope_decision":null,"rationale":"Raw binary, extracted values and rendered originals remain outside the repository. Only sanitized counts, booleans, source hashes and synthetic logs enter this package."},{"id":"OBL-016","candidate_key":"2e6203b44d2e861970e4f11668e1cb69d1570ed46bf8210cc3662d0fda7a690f","source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","source_line":23,"source_text":"CI verde n\u00e3o substitui aprova\u00e7\u00e3o de auditoria independente.","flags":["negative"],"disposition":"covered","requirement_ids":["R16"],"inventory_ids":[],"assertion_ids":["OBS-016"],"scope_decision":null,"rationale":"Readiness certification and CI results are not independent approval. The package explicitly forbids merge/release until a separate auditor validates the material SHA."}],"source_coverage":[{"source_id":"SRC-ISSUE","source_sha256":"9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8","candidate_count":16,"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015","OBL-016"],"unmapped_candidate_keys":[]}],"domain_inventories":[],"observable_assertions":[{"id":"OBS-001","description":"Anchored PDF catalog object lookup is exercised with object 1 and object 31; invalid catalogs are rejected.","requirement_ids":["R01"],"obligation_ids":["OBL-001"],"evidence_ids":["evidence/focused-tests.log"],"scenario_ids":["SCENARIO-01"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-002","description":"Original uploaded binary produces 38 rows across pages 11/14/13; an independent text-layout oracle compares all normalized fields.","requirement_ids":["R02"],"obligation_ids":["OBL-002"],"evidence_ids":["evidence/original-homologation.json"],"scenario_ids":["SCENARIO-02"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-003","description":"Original empty-password copy:yes PDF is accepted; extractor tests reject copy:no, missing permissions, and required passwords before text extraction.","requirement_ids":["R03"],"obligation_ids":["OBL-003"],"evidence_ids":["evidence/focused-tests.log"],"scenario_ids":["SCENARIO-03"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-004","description":"Production uses pdfinfo and pdftotext bbox text only; adapter tests reject empty/truncated extraction without an OCR fallback.","requirement_ids":["R04"],"obligation_ids":["OBL-004"],"evidence_ids":["evidence/focused-tests.log"],"scenario_ids":["SCENARIO-04"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-005","description":"All original dates, descriptions, operation IDs, signs, BRL, cent values and row numbers match the independently reconstructed 38 rows.","requirement_ids":["R05"],"obligation_ids":["OBL-005"],"evidence_ids":["evidence/original-homologation.json"],"scenario_ids":["SCENARIO-05"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-006","description":"All 38 running balances and the opening/closing/credit/debit summaries reconcile; tampered balance and total tests block the whole batch.","requirement_ids":["R06"],"obligation_ids":["OBL-006"],"evidence_ids":["evidence/focused-tests.log"],"scenario_ids":["SCENARIO-06"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-007","description":"Footer and near-header controls retain true movements and ignore contact numbers; financial anchors outside the table block instead of disappearing.","requirement_ids":["R07"],"obligation_ids":["OBL-007"],"evidence_ids":["evidence/focused-tests.log"],"scenario_ids":["SCENARIO-07"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-008","description":"Production preview service preserves explicit consent and tenant/profile lookup, returns pending_review suggestions and performs no writes; repeat hashes stay stable. Real database regression is covered by exact-head CI, not claimed by the local lookup double.","requirement_ids":["R08"],"obligation_ids":["OBL-008"],"evidence_ids":["evidence/original-preview.json"],"scenario_ids":["SCENARIO-08"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-009","description":"Adapter and domain tests distinguish unavailable extractor, protected/permission-denied document and unsupported layout using stable codes.","requirement_ids":["R09"],"obligation_ids":["OBL-009"],"evidence_ids":["evidence/focused-tests.log"],"scenario_ids":["SCENARIO-09"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-010","description":"Original uploaded 61469-byte PDF runs through production extraction and preview service: ready, 38 proposals, 3 pages, no raw document published. Database boundary is a synthetic double, not a browser or HTTP session.","requirement_ids":["R10"],"obligation_ids":["OBL-010"],"evidence_ids":["evidence/original-preview.json"],"scenario_ids":["SCENARIO-10"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-011","description":"Synthetic suites exercise signed credits/debits, duplicate IDs, multiline descriptions, exactly 38 rows, balances and summary totals; 23 focused tests pass.","requirement_ids":["R11"],"obligation_ids":["OBL-011"],"evidence_ids":["evidence/focused-tests.log"],"scenario_ids":["SCENARIO-11"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-012","description":"Corrupt structure, catalog suffix ambiguity, password, missing layout, altered row/date/ID/balance/totals are rejected in the executed focused suites.","requirement_ids":["R12"],"obligation_ids":["OBL-012"],"evidence_ids":["evidence/focused-tests.log"],"scenario_ids":["SCENARIO-12"],"negative_control_evidence":["evidence/focused-tests.log"]},{"id":"OBS-013","description":"Remote Repository CI is terminal success for the material SHA and original private execution is tied to that SHA. Independent approval remains a separate mandatory release gate; this handoff does not claim it.","requirement_ids":["R13"],"obligation_ids":["OBL-013"],"evidence_ids":["evidence/final-remote-ci.json"],"scenario_ids":["SCENARIO-13"],"negative_control_evidence":["evidence/governance-selected.log"]},{"id":"OBS-014","description":"Fresh GitHub metadata targets develop; trusted Git bundle and ancestry show base is ancestor of current material HEAD; no merge has been performed.","requirement_ids":["R14"],"obligation_ids":["OBL-014"],"evidence_ids":["evidence/identity.json"],"scenario_ids":["SCENARIO-14"],"negative_control_evidence":["evidence/governance-selected.log"]},{"id":"OBS-015","description":"Raw binary, extracted values and rendered originals remain outside the repository. Only sanitized counts, booleans, source hashes and synthetic logs enter this package.","requirement_ids":["R15"],"obligation_ids":["OBL-015"],"evidence_ids":["evidence/privacy-check.json"],"scenario_ids":["SCENARIO-15"],"negative_control_evidence":["evidence/governance-selected.log"]},{"id":"OBS-016","description":"Readiness certification and CI results are not independent approval. The package explicitly forbids merge/release until a separate auditor validates the material SHA.","requirement_ids":["R16"],"obligation_ids":["OBL-016"],"evidence_ids":["evidence/release-boundary.json"],"scenario_ids":["SCENARIO-16"],"negative_control_evidence":["evidence/governance-selected.log"]}],"structural_invariant_closures":{"status":"not-applicable","applicability_reason":"No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.","entries":[],"unresolved_invariants":[]},"read_model_closures":{"status":"not-applicable","applicability_reason":"No history, pagination, versioned read model or new public collection contract is introduced; existing structured import preview is preserved.","entries":[],"unconsumed_outputs":[],"unmapped_required_fields":[]},"canonical_source_consistency":{"status":"not-applicable","applicability_reason":"The specification introduces one institution-specific parser; no canonical catalog/seed parity or competing source-of-truth requirement is introduced.","entries":[],"unverified_surfaces":[],"missing_divergent_tests":[]},"documentation_consistency":{"status":"passed","applicability_reason":"PDF permission policy and supported layout change are documented in docs/IMPORTS.md and checked against production extractor and parser; release remains independently gated.","old_contract_terms":["IMPORT_PDF_PROTECTED","PDF protegido"],"new_contract_terms":["Mercado Pago","pdfinfo","copy:no"],"occurrences":[],"unresolved_contradictions":[],"searched_outside_diff":true,"search_evidence":["evidence/documentation-check.json"]},"scope_reduction_review":{"status":"passed","matches":[]},"pass_c":{"status":"passed","requirement_ids":["R01","R02","R03","R04","R05","R06","R07","R08","R09","R10","R11","R12","R13","R14","R15","R16"],"obligation_ids":["OBL-001","OBL-002","OBL-003","OBL-004","OBL-005","OBL-006","OBL-007","OBL-008","OBL-009","OBL-010","OBL-011","OBL-012","OBL-013","OBL-014","OBL-015","OBL-016"],"evidence":["evidence/original-homologation.json","evidence/original-preview.json","evidence/focused-tests.log","evidence/final-remote-ci.json"],"rederived_without_pr_description":true,"reviewed_user_visible_semantics":true,"reviewed_producer_consumer_parity":true,"reviewed_all_specification_sources":true}}
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "specification-snapshot.json",
+    "sha256": "13359bd6854628afb371a1b4375386d0b2ff96134f2465a6faa1ccca0930acbd"
+  },
+  "primary_issue_source_id": "SRC-ISSUE",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "8eae8ad17a5a015d67eee2d1f98bc805b74edc727433da36e392af3578e7c413",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 2,
+      "source_text": "Corrigir falso erro `IMPORT_PDF_INVALID` causado por busca de objetos PDF por sufixo de identificador.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R01"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-001"
+      ],
+      "scope_decision": null,
+      "rationale": "Exact-source Catalog suite passes whitespace variants, complete object-ID and inline-lookalike rejection; real LF and one-byte CR PDFs both return ready with one row."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "8b8852bf688f6afa9b643d7a87d66d9aa20d3514a4b843a140e6ec84c6c6b13a",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 3,
+      "source_text": "Homologar layout de extrato de conta Mercado Pago com colunas Data, Descrição, ID da operação, Valor e Saldo, em múltiplas páginas.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R02"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-002"
+      ],
+      "scope_decision": null,
+      "rationale": "Original three-page binary returns 38 rows (11/14/13) and 266 matching fields; original omission/duplication page controls block with no partial rows."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "aa80f0b1017b9860c67d75b87ada2740ca59d793cdf3f23a4273e1d03d5357fc",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 4,
+      "source_text": "Permitir extração de PDF com senha de leitura vazia e permissões de leitura/cópia, mantendo bloqueio dos PDFs que exigem senha.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R03"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-003"
+      ],
+      "scope_decision": null,
+      "rationale": "Real copy:no and password PDFs reject PROTECTED before pdftotext; Title/Author/Subject permission forgeries reject INVALID before pdftotext. Permitted copy:yes remains ready."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "40a4dba6d3839438f409546b79dee83f0ae3735302a20e537932b6e560a0e893",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 7,
+      "source_text": "Extrair texto e posicionamento de modo determinístico, sem OCR genérico.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R04"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-004"
+      ],
+      "scope_decision": null,
+      "rationale": "Exact-source extractor suite rejects incomplete positioned words/pages and invalid coordinates; valid complete words remain intact."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "dc0597e1de79ffd57f8612d728ca73c89507ce6c9f7b86899ca0c9190f093f6c",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 8,
+      "source_text": "Reconstruir descrições multilineares e preservar data, ID de operação, sinal, moeda BRL e valor inteiro em centavos.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R05"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-005"
+      ],
+      "scope_decision": null,
+      "rationale": "All 266 original field comparisons match. Actual-ID removal and invalid date block; four real synthetic PDFs preserve complete descriptions in parser and preview, with ambiguous/unassigned text blocked by focused tests."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "b3e4f3c2042c4406bc68a7a4b088716079fcbc497443c41b2c00d10034067304",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 9,
+      "source_text": "Validar continuidade de saldos, saldo inicial/final e totais de entradas/saídas; falha bloqueia o lote integralmente.",
+      "flags": [
+        "exhaustive"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R06"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-006"
+      ],
+      "scope_decision": null,
+      "rationale": "All 38 original balance transitions and summary totals match; amount/balance/summary mutations block with no partial rows."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "091f0b4b3fd778633f261060b5a9d579966da1ee6b921379662c99011e698ca6",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 10,
+      "source_text": "Ignorar cabeçalhos, rodapés, sumários e saldos como movimentações.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R07"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-007"
+      ],
+      "scope_decision": null,
+      "rationale": "Five current-material boundary tests pass. Reintroduced lower cutoff, footer clipping and header-gap behavior each fail functional assertions after compiling isolated exact-source variants."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "32adbb9869ce3170cdcefff797218cabb0fea21c92a8c58e197319fe574d9011",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 11,
+      "source_text": "Preservar consentimento, idempotência, revisão humana, isolamento tenant/perfil e ausência de armazenamento do PDF original.",
+      "flags": [
+        "freshness",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R08"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-008"
+      ],
+      "scope_decision": null,
+      "rationale": "Original preview yields 38 pending_review suggestions, persisted=false and zero writes. Eight synthetic service-boundary controls exercise separate organizations/profiles, missing/inactive account, currency mismatch, missing consent and stable repeated content/source hashes. SELECT is an explicit filtering double; database uniqueness and HTTP are outside this probe."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "f9c70990f081317d9a449c22645752dc6e51c20d23f585ce9ae5b253ccf3ee37",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 12,
+      "source_text": "Erros diferenciados para extrator ausente, PDF bloqueado e layout não homologado.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R09"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-009"
+      ],
+      "scope_decision": null,
+      "rationale": "Exact-source extractor suite preserves typed missing-binary, password and invalid-PDF classifications; real password denial remains PROTECTED."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "fb54ee3cfdc3c5f0964c368ad70c451eaae9d2a03146262c7ae63735fb13b08d",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 15,
+      "source_text": "Pré-visualização real com múltiplas páginas e 38 movimentações, sem publicação de conteúdo financeiro pessoal em fixtures.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R10"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-010"
+      ],
+      "scope_decision": null,
+      "rationale": "Exact private original digest and 61,469 bytes produce 3 pages/38 rows with independent all-field oracle; truncated original is INVALID before extraction, and original-ID removal blocks."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "80d22b3173bec4809304b7290ce99d62ad13c185364d1ddfba5ca38ecd501abc",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 16,
+      "source_text": "Testes sintéticos reproduzem entradas/saídas, operações repetidas, campos em múltiplas linhas, saldos e totais exatos.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R11"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-011"
+      ],
+      "scope_decision": null,
+      "rationale": "The three extended suites execute 26 tests, retaining historical cases including the synthetic 38-row/three-page corpus and duplicate-ID rejection."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "e2d7f7ace55bdeb344d47ed807b8e7802a88c9d7dc3af7f9ba89e9cb9c6a73b4",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 17,
+      "source_text": "Testes negativos abrangem PDF truncado, catálogo inválido, senha requerida, layout incompatível e conteúdos adulterados.",
+      "flags": [
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R12"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-012"
+      ],
+      "scope_decision": null,
+      "rationale": "Original invalid/missing calendar date mutations block all rows; exact-source domain tests retain fail-closed field validation."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "e73aee0557fc5f762bba324ca882604296cd9ef9995b685a7cbdba6fc6943c29",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 18,
+      "source_text": "CI e testes no SHA exato, evidência de execução com documento real fora do repositório e auditoria independente antes de aprovar.",
+      "flags": [
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R13"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-013"
+      ],
+      "scope_decision": null,
+      "rationale": "Both applicable remote workflows and operative checks succeeded at exact material M. All 26 focused cases were declared, reached and passed; main execution reported 261 compiled files and 729 cases in 100 TAP summaries (not a complete case total). PostgreSQL integration executed 123 declared files, including 21 CSV/OFX/import files; no individual case count or dedicated PDF HTTP/DB proof is claimed. Original private replay is bound to M. Independent approval remains a separate release gate."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "38de0e0c8a6831a93dec6d775c5b4d87b60b45792bc29ff4a8e3b7dbd71f8a62",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 21,
+      "source_text": "Alterações partem da `develop` e PR tem `develop` como base.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R14"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-014"
+      ],
+      "scope_decision": null,
+      "rationale": "Six official target-binding cases pass, including current target acceptance as reuse candidate, foreign target rejection and exact-base inherited artifact classification. Authenticated PR read binds published M to issue745/PR746/develop."
+    },
+    {
+      "id": "OBL-015",
+      "candidate_key": "b5c3fc798a9eacbcfc6360e17b6b185783d09a4b7ec74ed3e7d59e64077e0142",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 22,
+      "source_text": "Não versionar documento real nem dados pessoais, identificadores ou valores de contas do cliente.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R15"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-015"
+      ],
+      "scope_decision": null,
+      "rationale": "The exact-material 50-blob scan finds no known private IDs/descriptions or PDF headers. In-memory detector controls detect all 38 real IDs and 16 descriptions and ignore all 38 numeric-boundary decoys; final packet rescan remains a publication guard."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "2e6203b44d2e861970e4f11668e1cb69d1570ed46bf8210cc3662d0fda7a690f",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "source_line": 23,
+      "source_text": "CI verde não substitui aprovação de auditoria independente.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "R16"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-016"
+      ],
+      "scope_decision": null,
+      "rationale": "Changed PDF documentation agrees with exact-source permission, object-header and complete-description behavior; release boundary explicitly disclaims independent approval. Six official target-binding regressions pass."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "candidate_count": 16,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [
+    {
+      "id": "OBS-001",
+      "description": "Exact-source Catalog suite passes whitespace variants, complete object-ID and inline-lookalike rejection; real LF and one-byte CR PDFs both return ready with one row.",
+      "requirement_ids": [
+        "R01"
+      ],
+      "obligation_ids": [
+        "OBL-001"
+      ],
+      "evidence_ids": [
+        "evidence/issue-745-focused-execution.txt"
+      ],
+      "scenario_ids": [
+        "SCENARIO-01"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-002",
+      "description": "Original three-page binary returns 38 rows (11/14/13) and 266 matching fields; original omission/duplication page controls block with no partial rows.",
+      "requirement_ids": [
+        "R02"
+      ],
+      "obligation_ids": [
+        "OBL-002"
+      ],
+      "evidence_ids": [
+        "evidence/original-and-boundaries.json"
+      ],
+      "scenario_ids": [
+        "SCENARIO-02"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-003",
+      "description": "Real copy:no and password PDFs reject PROTECTED before pdftotext; Title/Author/Subject permission forgeries reject INVALID before pdftotext. Permitted copy:yes remains ready.",
+      "requirement_ids": [
+        "R03"
+      ],
+      "obligation_ids": [
+        "OBL-003"
+      ],
+      "evidence_ids": [
+        "evidence/issue-745-focused-execution.txt"
+      ],
+      "scenario_ids": [
+        "SCENARIO-03"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-004",
+      "description": "Exact-source extractor suite rejects incomplete positioned words/pages and invalid coordinates; valid complete words remain intact.",
+      "requirement_ids": [
+        "R04"
+      ],
+      "obligation_ids": [
+        "OBL-004"
+      ],
+      "evidence_ids": [
+        "evidence/issue-745-focused-execution.txt"
+      ],
+      "scenario_ids": [
+        "SCENARIO-04"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-005",
+      "description": "All 266 original field comparisons match. Actual-ID removal and invalid date block; four real synthetic PDFs preserve complete descriptions in parser and preview, with ambiguous/unassigned text blocked by focused tests.",
+      "requirement_ids": [
+        "R05"
+      ],
+      "obligation_ids": [
+        "OBL-005"
+      ],
+      "evidence_ids": [
+        "evidence/original-and-boundaries.json"
+      ],
+      "scenario_ids": [
+        "SCENARIO-05"
+      ],
+      "negative_control_evidence": [
+        "evidence/original-and-boundaries.json",
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-006",
+      "description": "All 38 original balance transitions and summary totals match; amount/balance/summary mutations block with no partial rows.",
+      "requirement_ids": [
+        "R06"
+      ],
+      "obligation_ids": [
+        "OBL-006"
+      ],
+      "evidence_ids": [
+        "evidence/issue-745-focused-execution.txt"
+      ],
+      "scenario_ids": [
+        "SCENARIO-06"
+      ],
+      "negative_control_evidence": [
+        "evidence/original-and-boundaries.json",
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-007",
+      "description": "Five current-material boundary tests pass. Reintroduced lower cutoff, footer clipping and header-gap behavior each fail functional assertions after compiling isolated exact-source variants.",
+      "requirement_ids": [
+        "R07"
+      ],
+      "obligation_ids": [
+        "OBL-007"
+      ],
+      "evidence_ids": [
+        "evidence/issue-745-focused-execution.txt"
+      ],
+      "scenario_ids": [
+        "SCENARIO-07"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-008",
+      "description": "Original preview yields 38 pending_review suggestions, persisted=false and zero writes. Eight synthetic service-boundary controls exercise separate organizations/profiles, missing/inactive account, currency mismatch, missing consent and stable repeated content/source hashes. SELECT is an explicit filtering double; database uniqueness and HTTP are outside this probe.",
+      "requirement_ids": [
+        "R08"
+      ],
+      "obligation_ids": [
+        "OBL-008"
+      ],
+      "evidence_ids": [
+        "evidence/original-and-boundaries.json"
+      ],
+      "scenario_ids": [
+        "SCENARIO-08"
+      ],
+      "negative_control_evidence": [
+        "evidence/original-and-boundaries.json",
+        "evidence/remote-ci.json"
+      ]
+    },
+    {
+      "id": "OBS-009",
+      "description": "Exact-source extractor suite preserves typed missing-binary, password and invalid-PDF classifications; real password denial remains PROTECTED.",
+      "requirement_ids": [
+        "R09"
+      ],
+      "obligation_ids": [
+        "OBL-009"
+      ],
+      "evidence_ids": [
+        "evidence/issue-745-focused-execution.txt"
+      ],
+      "scenario_ids": [
+        "SCENARIO-09"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-010",
+      "description": "Exact private original digest and 61,469 bytes produce 3 pages/38 rows with independent all-field oracle; truncated original is INVALID before extraction, and original-ID removal blocks.",
+      "requirement_ids": [
+        "R10"
+      ],
+      "obligation_ids": [
+        "OBL-010"
+      ],
+      "evidence_ids": [
+        "evidence/original-and-boundaries.json"
+      ],
+      "scenario_ids": [
+        "SCENARIO-10"
+      ],
+      "negative_control_evidence": [
+        "evidence/original-and-boundaries.json",
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-011",
+      "description": "The three extended suites execute 26 tests, retaining historical cases including the synthetic 38-row/three-page corpus and duplicate-ID rejection.",
+      "requirement_ids": [
+        "R11"
+      ],
+      "obligation_ids": [
+        "OBL-011"
+      ],
+      "evidence_ids": [
+        "evidence/issue-745-focused-execution.txt"
+      ],
+      "scenario_ids": [
+        "SCENARIO-11"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-012",
+      "description": "Original invalid/missing calendar date mutations block all rows; exact-source domain tests retain fail-closed field validation.",
+      "requirement_ids": [
+        "R12"
+      ],
+      "obligation_ids": [
+        "OBL-012"
+      ],
+      "evidence_ids": [
+        "evidence/issue-745-focused-execution.txt"
+      ],
+      "scenario_ids": [
+        "SCENARIO-12"
+      ],
+      "negative_control_evidence": [
+        "evidence/original-and-boundaries.json",
+        "evidence/issue-745-focused-execution.txt"
+      ]
+    },
+    {
+      "id": "OBS-013",
+      "description": "Both applicable remote workflows and operative checks succeeded at exact material M. All 26 focused cases were declared, reached and passed; main execution reported 261 compiled files and 729 cases in 100 TAP summaries (not a complete case total). PostgreSQL integration executed 123 declared files, including 21 CSV/OFX/import files; no individual case count or dedicated PDF HTTP/DB proof is claimed. Original private replay is bound to M. Independent approval remains a separate release gate.",
+      "requirement_ids": [
+        "R13"
+      ],
+      "obligation_ids": [
+        "OBL-013"
+      ],
+      "evidence_ids": [
+        "evidence/remote-ci.json"
+      ],
+      "scenario_ids": [
+        "SCENARIO-13"
+      ],
+      "negative_control_evidence": [
+        "evidence/governance-and-identity.json"
+      ]
+    },
+    {
+      "id": "OBS-014",
+      "description": "Six official target-binding cases pass, including current target acceptance as reuse candidate, foreign target rejection and exact-base inherited artifact classification. Authenticated PR read binds published M to issue745/PR746/develop.",
+      "requirement_ids": [
+        "R14"
+      ],
+      "obligation_ids": [
+        "OBL-014"
+      ],
+      "evidence_ids": [
+        "evidence/governance-and-identity.json"
+      ],
+      "scenario_ids": [
+        "SCENARIO-14"
+      ],
+      "negative_control_evidence": [
+        "evidence/governance-and-identity.json"
+      ]
+    },
+    {
+      "id": "OBS-015",
+      "description": "The exact-material 50-blob scan finds no known private IDs/descriptions or PDF headers. In-memory detector controls detect all 38 real IDs and 16 descriptions and ignore all 38 numeric-boundary decoys; final packet rescan remains a publication guard.",
+      "requirement_ids": [
+        "R15"
+      ],
+      "obligation_ids": [
+        "OBL-015"
+      ],
+      "evidence_ids": [
+        "evidence/original-and-boundaries.json"
+      ],
+      "scenario_ids": [
+        "SCENARIO-15"
+      ],
+      "negative_control_evidence": [
+        "evidence/original-and-boundaries.json"
+      ]
+    },
+    {
+      "id": "OBS-016",
+      "description": "Changed PDF documentation agrees with exact-source permission, object-header and complete-description behavior; release boundary explicitly disclaims independent approval. Six official target-binding regressions pass.",
+      "requirement_ids": [
+        "R16"
+      ],
+      "obligation_ids": [
+        "OBL-016"
+      ],
+      "evidence_ids": [
+        "evidence/governance-and-identity.json"
+      ],
+      "scenario_ids": [
+        "SCENARIO-16"
+      ],
+      "negative_control_evidence": [
+        "evidence/governance-and-identity.json"
+      ]
+    }
+  ],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "No history, pagination, versioned read model or new public collection contract is introduced; existing structured import preview is preserved.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "The specification introduces one institution-specific parser; no canonical catalog/seed parity or competing source-of-truth requirement is introduced.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "PDF permission policy and supported layout change are documented in docs/IMPORTS.md and checked against production extractor and parser; release remains independently gated.",
+    "old_contract_terms": [
+      "IMPORT_PDF_PROTECTED",
+      "PDF protegido"
+    ],
+    "new_contract_terms": [
+      "Mercado Pago",
+      "pdfinfo",
+      "copy:no"
+    ],
+    "occurrences": [
+      {
+        "path": "docs/IMPORTS.md",
+        "line": 347,
+        "text": "PDF não usa OCR genérico nem heurística para “adivinhar” instituição/layout. Antes do catálogo, a fronteira valida cabeçalho PDF, término `%%EOF`, `startxref`, alvo de xref/xref-stream e raiz de catálogo; marcador de layout dentro de arquivo truncado ou com referência estrutural inválida não chega ao parser homologado. A referência da raiz exige o identificador inteiro do objeto e reconhece as quebras de linha CR, LF e CRLF antes do cabeçalho do objeto, sem confundir o identificador com o sufixo de outro objeto ou com um catálogo falso em comentário na mesma linha. O domínio mantém catálogo explícito de parsers determinísticos com `id`, `version`, instituição e classe de documento. O lote persiste o parser e sua versão. PDF protegido, estruturalmente inválido, layout não homologado ou reconhecimento ambíguo é bloqueado; alteração incompatível de versão não cai silenciosamente em parser anterior.",
+        "term": "PDF protegido",
+        "classification": "current-contract",
+        "evidence_ids": [
+          "evidence/documentation-and-code.json"
+        ]
+      },
+      {
+        "path": "docs/IMPORTS.md",
+        "line": 353,
+        "text": "O parser homologado `mercado-pago-bank-statement@1` aceita o extrato de conta Mercado Pago com texto selecionável e colunas `Data`, `Descrição`, `ID da operação`, `Valor` e `Saldo`. A extração posicionada é executada no backend por `pdftotext` (Poppler, opção `-bbox-layout`), precedida obrigatoriamente pela verificação de permissões com `pdfinfo`, ambos do pacote Poppler instalados no servidor e disponíveis no `PATH`; não existe OCR ou reconhecimento genérico para documentos desconhecidos. Em ambientes Windows, instalar Poppler e configurar o `PATH` do processo da API. Se o binário não existir, o serviço retorna `IMPORT_PDF_EXTRACTOR_UNAVAILABLE` (503), sem armazenar o arquivo.",
+        "term": "pdfinfo",
+        "classification": "current-contract",
+        "evidence_ids": [
+          "evidence/documentation-and-code.json"
+        ]
+      },
+      {
+        "path": "docs/IMPORTS.md",
+        "line": 355,
+        "text": "Arquivos criptografados apenas com senha de usuário vazia e com permissão para extrair texto podem ser lidos; não se tenta descobrir, fornecer ou ignorar senhas reais nem substituir permissões do PDF. Um PDF com senha de leitura, restrição de extração (`copy:no`) ou texto ilegível continua bloqueado. A restrição é verificada antes de chamar `pdftotext`, mesmo quando a senha de usuário está vazia. Informação de permissão ausente, duplicada ou ambígua também bloqueia a importação; uma linha inserida no título, assunto ou autor do PDF não autoriza a extração.",
+        "term": "copy:no",
+        "classification": "current-contract",
+        "evidence_ids": [
+          "evidence/documentation-and-code.json"
+        ]
+      },
+      {
+        "path": "docs/IMPORTS.md",
+        "line": 357,
+        "text": "O catálogo do domínio verifica o marcador institucional e o cabeçalho do layout, preserva a data, descrição integral inclusive quebras em linhas, ID da operação, direção, valor em centavos e `BRL`. No layout homologado, o centro vertical do bloco de descrição se alinha à data e aos campos financeiros. Toda linha descritiva precisa pertencer de forma inequívoca a uma movimentação, inclusive no início e no fim de cada página. Texto descritivo sem associação segura ou sobreposto aos limites da tabela bloqueia o lote, em vez de produzir uma descrição parcial.",
+        "term": "descrição",
+        "classification": "current-contract",
+        "evidence_ids": [
+          "evidence/documentation-and-code.json"
+        ]
+      }
+    ],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "evidence/documentation-and-code.json"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": [
+      {
+        "path": "docs/IMPORTS.md",
+        "line": 357,
+        "text": "O catálogo do domínio verifica o marcador institucional e o cabeçalho do layout, preserva a data, descrição integral inclusive quebras em linhas, ID da operação, direção, valor em centavos e `BRL`. No layout homologado, o centro vertical do bloco de descrição se alinha à data e aos campos financeiros. Toda linha descritiva precisa pertencer de forma inequívoca a uma movimentação, inclusive no início e no fim de cada página. Texto descritivo sem associação segura ou sobreposto aos limites da tabela bloqueia o lote, em vez de produzir uma descrição parcial.",
+        "disposition": "not-a-reduction",
+        "decision_source_id": "SRC-ISSUE",
+        "rationale": "The issue specifies one homologated Mercado Pago layout and complete multiline descriptions. Unique block assignment and rejection of ambiguous/unassigned text preserve that contract; the actual 38-row original and four real synthetic layouts pass with every description field intact."
+      }
+    ]
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "R05",
+      "R06",
+      "R07",
+      "R08",
+      "R09",
+      "R10",
+      "R11",
+      "R12",
+      "R13",
+      "R14",
+      "R15",
+      "R16"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013",
+      "OBL-014",
+      "OBL-015",
+      "OBL-016"
+    ],
+    "evidence": [
+      "evidence/original-and-boundaries.json",
+      "evidence/issue-745-focused-execution.txt",
+      "evidence/remote-ci.json",
+      "evidence/documentation-and-code.json",
+      "evidence/inherited-regressions.json"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}
