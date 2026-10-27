@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
-import { MERCADO_PAGO_STATEMENT_PARSER, type PdfExtractedPage } from "./mercado-pago-pdf.js";
+import { MERCADO_PAGO_STATEMENT_PARSER, type PdfExtractedPage } from "./mercado-pago-pdf.js";\nimport { resolveClassicXrefObjectOffset } from "./pdf-xref.js";
 
 export type { PdfExtractedPage, PdfExtractedWord } from "./mercado-pago-pdf.js";
 
@@ -351,37 +351,13 @@ function assertPdfStructure(bytes: Buffer): string {
     if (rootMatch === null) {
       throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
     }
-    const rootObjectNumber = Number(rootMatch[1]);
-    const rootGeneration = Number(rootMatch[2]);
-    const xrefLines = xrefSection
-      .slice(4, trailerIndex)
-      .split(/\r\n|\r|\n/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    let rootIndex = -1;
-    for (let lineIndex = 0; lineIndex < xrefLines.length; ) {
-      const header = /^(\d+)\s+(\d+)$/.exec(xrefLines[lineIndex]);
-      if (header === null) {
-        throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-      }
-      const firstObject = Number(header[1]);
-      const entryCount = Number(header[2]);
-      const entries = xrefLines.slice(lineIndex + 1, lineIndex + 1 + entryCount);
-      if (
-        !Number.isSafeInteger(firstObject) ||
-        !Number.isSafeInteger(entryCount) ||
-        entries.length !== entryCount ||
-        entries.some((entry) => !/^\d{10}\s+\d{5}\s+[nf]\b/.test(entry))
-      ) {
-        throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-      }
-      const rootEntry = entries[rootObjectNumber - firstObject];
-      const rootEntryMatch = rootEntry && /^(\d{10})\s+(\d{5})\s+n\b/.exec(rootEntry);
-      if (rootEntryMatch && Number(rootEntryMatch[2]) === rootGeneration) {
-        rootIndex = Number(rootEntryMatch[1]);
-      }
-      lineIndex += entryCount + 1;
-    }
+    const rootIndex =
+      resolveClassicXrefObjectOffset(
+        xrefSection,
+        trailerIndex,
+        Number(rootMatch[1]),
+        Number(rootMatch[2]),
+      ) ?? -1;
 
     const rootHeader = new RegExp(
       `^${rootMatch[1]}[\\0\\t\\n\\f\\r ]+${rootMatch[2]}[\\0\\t\\n\\f\\r ]+obj\\b`,
