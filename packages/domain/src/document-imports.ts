@@ -367,7 +367,11 @@ function assertPdfStructure(bytes: Buffer): string {
       }
       const firstObject = Number(header[1]);
       const entryCount = Number(header[2]);
-      if (!Number.isSafeInteger(firstObject) || !Number.isSafeInteger(entryCount) || entryCount < 0) {
+      if (
+        !Number.isSafeInteger(firstObject) ||
+        !Number.isSafeInteger(entryCount) ||
+        entryCount < 0
+      ) {
         throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
       }
       lineIndex += 1;
