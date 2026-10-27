@@ -136,27 +136,32 @@ describe("document imports", () => {
     );
   });
 
-  it("does not mistake object 31 for the catalog object 1", () => {
-    const comment = "%PDF-1.4\n%SOLVERFIN:STATEMENT:V1\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\n";
+  it("resolves the catalog by xref offset across every PDF whitespace separator", () => {
+    const comment =
+      "%PDF-1.4\\n%SOLVERFIN:STATEMENT:V1\\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\\n";
+    const leadingObject = "2 0 obj\\n<< /Type /Font >>\\nendobj";
     const extraObjects = [
-      "31 0 obj\n<< /Type /Font >>\nendobj\n",
-      "31 0 obj\n<< /Type /Font >>\nendobj\n% 1 0 obj << /Type /Catalog >> endobj\n",
-      "31 0 obj\n<< /Type /Font /Title (1 0 obj << /Type /Catalog >> endobj) >>\nendobj\n",
+      "31 0 obj\\n<< /Type /Font >>\\nendobj\\n",
+      "31 0 obj\\n<< /Type /Font >>\\nendobj\\n% 1 0 obj << /Type /Catalog >> endobj\\n",
+      "31 0 obj\\n<< /Type /Font /Title ( 1 0 obj << /Type /Catalog >> endobj) >>\\nendobj\\n",
     ];
-    for (const separator of ["\n", "\r", "\r\n", "\t", "\f", "\0", " "]) {
+    for (const separator of ["\\n", "\\r", "\\r\\n", "\\t", "\\f", "\\0", " "]) {
       for (const extraObject of extraObjects) {
-        const prefix = comment + separator;
+        const leadingOffset = Buffer.byteLength(comment, "latin1");
+        const prefix = comment + leadingObject + separator;
         const catalogOffset = Buffer.byteLength(prefix, "latin1");
-        const catalog = "1 0 obj\n<< /Type /Catalog >>\nendobj\n";
+        const catalog = "1 0 obj\\n<< /Type /Catalog >>\\nendobj\\n";
         const extraOffset = catalogOffset + Buffer.byteLength(catalog, "latin1");
         const body = prefix + catalog + extraObject;
         const xrefOffset = Buffer.byteLength(body, "latin1");
         const refs = Array.from({ length: 32 }, (_, i) =>
           i === 1
             ? `${String(catalogOffset).padStart(10, "0")} 00000 n `
-            : i === 31
-              ? `${String(extraOffset).padStart(10, "0")} 00000 n `
-              : "0000000000 65535 f ",
+            : i === 2
+              ? `${String(leadingOffset).padStart(10, "0")} 00000 n `
+              : i === 31
+                ? `${String(extraOffset).padStart(10, "0")} 00000 n `
+                : "0000000000 65535 f ",
         );
         const data =
           body +
@@ -169,17 +174,21 @@ describe("document imports", () => {
             "startxref",
             String(xrefOffset),
             "%%EOF",
-          ].join("\n");
+          ].join("\\n");
         const result = parsePdfImport({
           contentBase64: Buffer.from(data, "latin1").toString("base64"),
           documentClass: "bank_statement",
         });
         assert.equal(result.state, "ready", JSON.stringify(separator));
         assert.equal(result.rows.length, 1);
-        for (const invalid of [
-          data.replace("1 0 obj\n", "2 0 obj\n"),
-          data.replace("/Catalog", "/Font   "),
-        ]) {
+
+        const wrongObjectOffset = data.replace(
+          `${String(catalogOffset).padStart(10, "0")} 00000 n `,
+          `${String(leadingOffset).padStart(10, "0")} 00000 n `,
+        );
+        const wrongGeneration = data.replace("/Root 1 0 R", "/Root 1 1 R");
+        const missingCatalogType = data.replace("/Type /Catalog", "/Type /Font   ");
+        for (const invalid of [wrongObjectOffset, wrongGeneration, missingCatalogType]) {
           assert.throws(
             () =>
               parsePdfImport({
