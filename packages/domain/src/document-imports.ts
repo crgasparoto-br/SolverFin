@@ -351,21 +351,52 @@ function assertPdfStructure(bytes: Buffer): string {
     if (rootMatch === null) {
       throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
     }
-    // An unanchored lastIndexOf("1 0 obj") also matches "31 0 obj".
-    // The catalog object must be a complete object header, not an identifier suffix.
-    // Accept CR/LF and indentation without interpreting inline comments or strings.
+    // Resolve the catalog from the classic xref table instead of searching the raw PDF.
+    // Object headers may be separated by any PDF whitespace byte, while comments/strings can
+    // contain lookalike text that must never be treated as a structural object.
+    const rootObjectNumber = Number(rootMatch[1]);
+    const rootGeneration = Number(rootMatch[2]);
+    const xrefLines = xrefSection.slice(4, trailerIndex).split(/\\r\\n|\\r|\\n/);
+    let rootIndex = -1;
+    let lineIndex = 0;
+    while (lineIndex < xrefLines.length) {
+      const header = /^(\\d+)\\s+(\\d+)\\s*$/.exec(xrefLines[lineIndex]?.trim() ?? "");
+      if (header === null) {
+        lineIndex += 1;
+        continue;
+      }
+      const firstObject = Number(header[1]);
+      const entryCount = Number(header[2]);
+      if (!Number.isSafeInteger(firstObject) || !Number.isSafeInteger(entryCount) || entryCount < 0) {
+        throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+      }
+      lineIndex += 1;
+      for (let entryIndex = 0; entryIndex < entryCount; entryIndex += 1, lineIndex += 1) {
+        const entry = /^(\\d{10})\\s+(\\d{5})\\s+([nf])\\b/.exec(
+          xrefLines[lineIndex]?.trim() ?? "",
+        );
+        if (entry === null) {
+          throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
+        }
+        if (
+          firstObject + entryIndex === rootObjectNumber &&
+          Number(entry[2]) === rootGeneration &&
+          entry[3] === "n"
+        ) {
+          rootIndex = Number(entry[1]);
+        }
+      }
+    }
+
     const pdfWhitespace = "[\\0\\t\\n\\f\\r ]";
     const rootHeader = new RegExp(
-      `(?:^|[\\r\\n])[\\0\\t\\f ]*(${rootMatch[1]}${pdfWhitespace}+${rootMatch[2]}${pdfWhitespace}+obj)\\b`,
-      "g",
+      `^${rootMatch[1]}${pdfWhitespace}+${rootMatch[2]}${pdfWhitespace}+obj\\b`,
     );
-    let rootIndex = -1;
-    let rootHeaderLength = 0;
-    for (const match of text.slice(0, xrefOffset).matchAll(rootHeader)) {
-      rootHeaderLength = match[1]!.length;
-      rootIndex = match.index + match[0].length - rootHeaderLength;
-    }
-    const rootEnd = rootIndex < 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
+    const rootSlice = rootIndex < 0 ? "" : text.slice(rootIndex, xrefOffset);
+    const rootHeaderMatch = rootHeader.exec(rootSlice);
+    const rootHeaderLength = rootHeaderMatch?.[0].length ?? 0;
+    const rootEnd =
+      rootHeaderLength === 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
     if (
       rootIndex < 0 ||
       rootEnd < 0 ||
