@@ -7,6 +7,11 @@ import type {
 } from "@solverfin/domain";
 
 import { query, withSharedTransaction } from "../db.js";
+import {
+  assertUncancelledRecurringInstallment,
+  throwInstallmentEditBlocked,
+  updateRecurringInstallmentFutureScope,
+} from "./recurring-installment-update.js";
 import { updateTransactionForContext } from "./transactions.js";
 
 export interface ListInstallmentsFilters {
@@ -36,6 +41,7 @@ export interface UpdateInstallmentPayload {
 export type InstallmentEditBlockedReason =
   | "linked_transaction_missing"
   | "installment_status_locked"
+  | "recurrence_cancelled"
   | "transaction_status_locked"
   | "invoice_linked";
 
@@ -291,6 +297,13 @@ export async function updateInstallmentForContext(
   installmentId: EntityId,
   payload: UpdateInstallmentPayload,
 ): Promise<InstallmentUpdateResult> {
+  const recurring = await updateRecurringInstallmentFutureScope(
+    context,
+    installmentId,
+    payload,
+    getInstallmentForMutation,
+  );
+  if (recurring) return recurring;
   return withSharedTransaction(async () => {
     const isFutureScope = payload.scope === "current_and_future";
     const family = isFutureScope
@@ -308,6 +321,9 @@ export async function updateInstallmentForContext(
     }
     await lockInstallmentMutationRows(context, installmentId);
     const current = await getInstallmentForMutation(context, installmentId);
+    if (current.recurrenceId) {
+      await assertUncancelledRecurringInstallment(context, current.recurrenceId);
+    }
     const metadataChanged =
       payload.description !== undefined ||
       payload.note !== undefined ||
@@ -519,13 +535,6 @@ function throwInstallmentsFilterInvalid(message: string): never {
   });
 }
 
-function throwInstallmentEditBlocked(reason: InstallmentEditBlockedReason): never {
-  throw Object.assign(new Error(`Parcela bloqueada para edicao: ${reason}.`), {
-    code: "INSTALLMENT_EDIT_BLOCKED",
-    statusCode: 409,
-  });
-}
-
 function mapInstallmentHistoryRow(row: Row): InstallmentHistoryItem {
   const blockedReason = resolveEditBlockedReason(row);
   const installment: InstallmentHistoryItem = {
@@ -665,7 +674,8 @@ export function canEditInstallmentAmount(row: Readonly<Record<string, unknown>>)
     !row.transactionStatus ||
     row.invoiceId ||
     row.cardId ||
-    row.transactionCardId
+    row.transactionCardId ||
+    lower(row.recurrenceStatus) === "cancelled"
   )
     return false;
   const installmentStatus = lower(row.status);
@@ -685,6 +695,10 @@ export function resolveEditBlockedReason(
 
   if (row.invoiceId) {
     return "invoice_linked";
+  }
+
+  if (lower(row.recurrenceStatus) === "cancelled") {
+    return "recurrence_cancelled";
   }
 
   if (lower(row.status) !== "planned") {

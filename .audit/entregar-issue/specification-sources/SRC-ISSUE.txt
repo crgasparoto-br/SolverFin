@@ -1,23 +1,26 @@
+## Contexto
+Separação dos ajustes de parcelas recorrentes que foram adicionados à PR #741 depois de `6b546c7a37c7545aa8bbbb516350a4717420f8fa`. A issue #724 não abrange contratos financeiros de recorrência.
+
 ## Escopo
-- Corrigir falso erro `IMPORT_PDF_INVALID` causado por busca de objetos PDF por sufixo de identificador.
-- Homologar layout de extrato de conta Mercado Pago com colunas Data, Descrição, ID da operação, Valor e Saldo, em múltiplas páginas.
-- Permitir extração de PDF com senha de leitura vazia e permissões de leitura/cópia, mantendo bloqueio dos PDFs que exigem senha.
+- Exibir o escopo Esta e as próximas no ajuste de valor de parcela de recorrência de conta não cancelada.
+- Preservar apenas um botão Salvar parcela na edição e ocultar Salvar e continuar quando presente.
+- Propagar o valor autorizado para ocorrência atual, futuras planejadas e regra canônica usada em novas materializações.
+- Preservar a implementação de parcelamento manual finito com elegibilidade por posição.
 
 ## Requisitos
-- Extrair texto e posicionamento de modo determinístico, sem OCR genérico.
-- Reconstruir descrições multilineares e preservar data, ID de operação, sinal, moeda BRL e valor inteiro em centavos.
-- Validar continuidade de saldos, saldo inicial/final e totais de entradas/saídas; falha bloqueia o lote integralmente.
-- Ignorar cabeçalhos, rodapés, sumários e saldos como movimentações.
-- Preservar consentimento, idempotência, revisão humana, isolamento tenant/perfil e ausência de armazenamento do PDF original.
-- Erros diferenciados para extrator ausente, PDF bloqueado e layout não homologado.
+- Recorrência cancelada, cartão/fatura, dados fora do perfil financeiro e payloads inválidos não podem sofrer alteração.
+- Descrição, categoria, observação, conta, datas, status, conciliação e histórico são preservados na alteração de valor futuramente aplicável.
+- Erros e escolhas canceladas não produzem mudanças parciais.
 
 ## Critérios de aceite
-- Pré-visualização real com múltiplas páginas e 38 movimentações, sem publicação de conteúdo financeiro pessoal em fixtures.
-- Testes sintéticos reproduzem entradas/saídas, operações repetidas, campos em múltiplas linhas, saldos e totais exatos.
-- Testes negativos abrangem PDF truncado, catálogo inválido, senha requerida, layout incompatível e conteúdos adulterados.
-- CI e testes no SHA exato, evidência de execução com documento real fora do repositório e auditoria independente antes de aprovar.
+- [ ] Testes do endpoint, persistência e UI comprovam ocorrência atual, futuras e materializadas posteriormente.
+- [ ] Teste negativo protege recorrências canceladas e outro perfil/tenant.
+- [ ] Chrome comprova escopo, foco, botões e ausência de cortes nos viewports aplicáveis.
+- [ ] CI exact-SHA e auditoria independente passam antes de merge.
 
 ## Invariantes
-- Alterações partem da `develop` e PR tem `develop` como base.
-- Não versionar documento real nem dados pessoais, identificadores ou valores de contas do cliente.
-- CI verde não substitui aprovação de auditoria independente.
+- Não importar mudanças de Dashboard da #724 nem regras de preenchimento de #741 para esta PR.
+- Reusar serviço canônico de recorrências, sem duplicar cálculo ou persistência.
+- Não realizar merge automático.
+
+Referências: #724, PR #741, docs/API_INSTALLMENTS.md, docs/RECURRENCES_INSTALLMENTS_WEB.md.
