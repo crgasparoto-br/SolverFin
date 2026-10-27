@@ -7,6 +7,7 @@ import type {
 } from "@solverfin/domain";
 
 import { query, withSharedTransaction } from "../db.js";
+import { updateRecurringAccountTransactionForContext } from "./recurring-account-transaction-edit.js";
 import { updateTransactionForContext } from "./transactions.js";
 
 export interface ListInstallmentsFilters {
@@ -291,6 +292,37 @@ export async function updateInstallmentForContext(
   installmentId: EntityId,
   payload: UpdateInstallmentPayload,
 ): Promise<InstallmentUpdateResult> {
+  // Recurring installments have no finite totalInstallments count. Their expanded
+  // amount scope is maintained through the canonical recurrence update service,
+  // which synchronizes the rule, eligible future occurrences and installment rows.
+  // Keep this outside the manual-plan transaction to avoid nesting transactions.
+  if (payload.scope === "current_and_future") {
+    const current = await getInstallmentForMutation(context, installmentId);
+    if (current.recurrenceId) {
+      const transactionId = readNestedId(current.transaction);
+      if (
+        !current.amountEditable ||
+        current.card ||
+        current.invoice ||
+        !transactionId ||
+        payload.amountMinor === undefined ||
+        payload.description !== undefined ||
+        payload.note !== undefined ||
+        payload.categoryId !== undefined ||
+        current.recurrence?.status === "cancelled"
+      ) {
+        throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
+      }
+      const updated = await updateRecurringAccountTransactionForContext(context, transactionId, {
+        amountMinor: payload.amountMinor,
+      });
+      return {
+        installment: await getInstallmentForMutation(context, installmentId),
+        updatedCount: updated.updatedCount + 1,
+        skippedCount: updated.skippedCount,
+      };
+    }
+  }
   return withSharedTransaction(async () => {
     const isFutureScope = payload.scope === "current_and_future";
     const family = isFutureScope

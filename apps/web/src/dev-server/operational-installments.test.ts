@@ -218,7 +218,19 @@ test("amount edit requires an explicit current or future scope before the PATCH"
   assert.ok(script.includes("data-scope-cancel>Voltar sem salvar"));
   assert.ok(script.includes("const scope = await chooseInstallmentScope(installment)"));
   assert.ok(script.includes("patch.scope = scope"));
-  assert.ok(script.includes("const hasFuture = !installment.recurrenceId"));
+  assert.ok(script.includes("const isRecurring = Boolean(installment.recurrenceId)"));
+  assert.ok(script.includes('installment.recurrence?.status !== "cancelled"'));
+  assert.ok(
+    script.includes("Number(installment.totalInstallments) > Number(installment.sequenceNumber)"),
+  );
+  assert.ok(script.includes("const hasFuture = isRecurring"));
+  assert.ok(
+    script.includes(
+      '.statement-save-actions button[type="submit"]:not([data-statement-save-continue])',
+    ),
+    "only the canonical save button is repurposed in installment mode",
+  );
+  assert.ok(script.includes('rememberAndSet(continueButton, "hidden", true)'));
   assert.ok(script.includes("if (!scope) {"));
   assert.ok(script.includes('Object.keys(patch).some((field) => field !== "amountMinor")'));
   assert.ok(script.includes("body: JSON.stringify(patch)"));

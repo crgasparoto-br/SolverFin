@@ -436,7 +436,7 @@ export function operationalInstallmentsController(): string {
           + '<div data-installment-amount-readonly><dt>Valor</dt><dd data-installment-amount></dd></div>'
           + '</dl><label class="installment-amount-editor" data-installment-amount-editor hidden>Valor desta parcela <span data-installment-amount-currency></span>'
           + '<input type="text" name="adjustedInstallmentAmount" data-installment-amount-input inputmode="decimal" autocomplete="off" aria-label="Novo valor desta parcela">'
-          + '<span class="installment-amount-hint">Altera somente esta parcela, sem redistribuir as demais.</span></label>'
+          + '<span class="installment-amount-hint">Informe o novo valor e escolha se deve valer somente para esta parcela ou também para as próximas.</span></label>'
           + '<p data-installment-reason hidden></p>';
         const saveRow = form.querySelector(".save-row");
         form.insertBefore(details, saveRow || form.firstChild);
@@ -476,7 +476,7 @@ export function operationalInstallmentsController(): string {
         form.querySelector("[data-installment-details]")?.remove();
         form.querySelector("[data-installment-status-message]")?.remove();
         form.querySelector("[data-installment-reload]")?.remove();
-        const saveButton = form.querySelector('.save-row button[type="submit"]');
+        const saveButton = form.querySelector('.statement-save-actions button[type="submit"]:not([data-statement-save-continue])');
         if (saveButton && form.dataset.installmentOriginalSaveLabel) saveButton.textContent = form.dataset.installmentOriginalSaveLabel;
         delete form.dataset.installmentOriginalSaveLabel;
         delete form.dataset.installmentMode;
@@ -556,7 +556,7 @@ export function operationalInstallmentsController(): string {
         reason.textContent = reasonText;
 
         const status = createStatus(form);
-        status.textContent = editable ? "Atualize os dados e/ou o valor desta parcela." : amountEditable ? "Ajuste somente o valor desta parcela; a situação permanece efetivada." : reasonText;
+        status.textContent = editable ? "Atualize os dados e/ou o valor desta parcela." : amountEditable ? "Ajuste somente o valor desta parcela, sem redistribuir as demais, ou escolha Esta e as próximas ao salvar; a situação permanece efetivada." : reasonText;
         status.className = anyEditable ? "installment-form-status" : "installment-form-status error";
 
         const modalTitle = document.querySelector("[data-modal-title]");
@@ -564,7 +564,12 @@ export function operationalInstallmentsController(): string {
           if (!modalTitle.dataset.installmentOriginalTitle) modalTitle.dataset.installmentOriginalTitle = modalTitle.textContent || "Lançamento";
           modalTitle.textContent = editable ? "Editar parcela" : amountEditable ? "Ajustar valor da parcela" : "Detalhes da parcela";
         }
-        const saveButton = form.querySelector('.save-row button[type="submit"]');
+        const continueButton = form.querySelector("[data-statement-save-continue]");
+        if (continueButton) {
+          continueButton.dataset.installmentManaged = "";
+          rememberAndSet(continueButton, "hidden", true);
+        }
+        const saveButton = form.querySelector('.statement-save-actions button[type="submit"]:not([data-statement-save-continue])');
         if (saveButton) {
           if (!form.dataset.installmentOriginalSaveLabel) form.dataset.installmentOriginalSaveLabel = saveButton.textContent || "Salvar lançamento";
           saveButton.dataset.installmentManaged = "";
@@ -579,8 +584,12 @@ export function operationalInstallmentsController(): string {
           const dialog = document.createElement("dialog");
           dialog.className = "installment-scope-dialog";
           dialog.setAttribute("aria-labelledby", "installment-scope-title");
-          const hasFuture = !installment.recurrenceId &&
-            Number(installment.totalInstallments) > Number(installment.sequenceNumber);
+          // Finite plans rely on their sequence range. Recurrences have no fixed
+          // final sequence: the API can change the rule and later planned items.
+          const isRecurring = Boolean(installment.recurrenceId);
+          const hasFuture = isRecurring
+            ? installment.recurrence?.status !== "cancelled"
+            : Number(installment.totalInstallments) > Number(installment.sequenceNumber);
           dialog.innerHTML = '<section class="installment-scope-panel">' +
             '<h3 id="installment-scope-title">Onde aplicar o novo valor?</h3>' +
             '<p>Escolha quais parcelas receberão o valor informado.</p>' +
@@ -784,7 +793,7 @@ export function operationalInstallmentsController(): string {
           form.description.focus();
           return;
         }
-        const saveButton = form.querySelector('.save-row button[type="submit"]');
+        const saveButton = form.querySelector('.statement-save-actions button[type="submit"]:not([data-statement-save-continue])');
         if (saveButton) saveButton.disabled = true;
         status.textContent = "Salvando...";
         status.className = "installment-form-status";

@@ -57,6 +57,7 @@ async function main(): Promise<void> {
   await assertFiltersTenantProfile(token, recurrence.id);
   await assertRejectsInvalidFilters(token);
   await assertManualInstallmentScopeUpdates(token, account.id, category.id, suffix);
+  await assertRecurringInstallmentScopeUpdates(token, account.id, category.id, suffix);
 }
 
 async function assertManualInstallmentScopeUpdates(
@@ -133,6 +134,75 @@ async function assertManualInstallmentScopeUpdates(
       scope: "current_and_future",
       amountMinor: 15000,
     },
+  );
+  assert.equal(wrongProfile.statusCode, 404);
+  assert.equal(readErrorCode(wrongProfile), "TENANT_RESOURCE_NOT_FOUND");
+}
+
+async function assertRecurringInstallmentScopeUpdates(
+  token: string,
+  accountId: string,
+  categoryId: string,
+  suffix: string,
+): Promise<void> {
+  const recurrence = await createRecurrence(token, "valor-futuro-" + suffix, accountId, categoryId);
+  await generateInstallments(token, recurrence.id);
+  const readSeries = async () => {
+    const response = await apiRequest(
+      token,
+      "GET",
+      `/api/installments?accountId=${accountId}&recurrenceId=${recurrence.id}&status=all&dueFrom=2026-06-01&dueTo=2026-12-31`,
+    );
+    assert.equal(response.statusCode, 200);
+    return readBody<{ installments: ApiInstallmentHistory[] }>(response).installments.sort(
+      (left, right) => Number(left.sequenceNumber) - Number(right.sequenceNumber),
+    );
+  };
+  const original = await readSeries();
+  assert.ok(original.length >= 3);
+  const [first, second, third] = original;
+  assert.ok(first && second && third);
+  assert.ok(first.recurrence?.id === recurrence.id);
+
+  const updated = await apiRequest(token, "PATCH", `/api/installments/${first.id}`, {
+    scope: "current_and_future",
+    amountMinor: 17230,
+  });
+  assert.equal(updated.statusCode, 200, "recurring installments support a future-value scope");
+  const result = readBody<{ updatedCount: number; skippedCount: number }>(updated);
+  assert.equal(result.updatedCount, 3);
+  assert.equal(result.skippedCount, 0);
+  for (const row of [first, second, third]) {
+    const saved = await readInstallment(token, row.id);
+    assert.equal(saved.amountMinor, 17230, "the installment is synchronized");
+    assert.equal(saved.transaction?.amountMinor, 17230, "the transaction is synchronized");
+  }
+
+  // New occurrences are materialized using the changed recurrence rule.
+  const generated = await apiRequest(
+    token,
+    "POST",
+    `/api/recurrences/${recurrence.id}/generate-installments`,
+    { through: "2026-10-05" },
+  );
+  assert.equal(generated.statusCode, 201);
+  const future = await readSeries();
+  assert.ok(future.length > original.length);
+  assert.equal(future.at(-1)?.amountMinor, 17230);
+
+  const invalid = await apiRequest(token, "PATCH", `/api/installments/${first.id}`, {
+    scope: "current_and_future",
+    amountMinor: 18000,
+    description: "não deve ser propagada",
+  });
+  assert.equal(invalid.statusCode, 400);
+  assert.equal(readErrorCode(invalid), "INSTALLMENT_PAYLOAD_INVALID");
+
+  const wrongProfile = await apiRequest(
+    token,
+    "PATCH",
+    `/api/installments/${first.id}?profileId=${MEI_PROFILE_ID}`,
+    { scope: "current_and_future", amountMinor: 18100 },
   );
   assert.equal(wrongProfile.statusCode, 404);
   assert.equal(readErrorCode(wrongProfile), "TENANT_RESOURCE_NOT_FOUND");
@@ -638,6 +708,7 @@ interface ApiInstallmentHistory {
   id: string;
   financialProfileId: string;
   amountMinor: number;
+  sequenceNumber?: number;
   recurrence?: { id: string };
   transaction?: {
     id?: string;
