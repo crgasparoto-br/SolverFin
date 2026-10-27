@@ -137,8 +137,7 @@ describe("document imports", () => {
   });
 
   it("resolves the catalog by xref offset across every PDF whitespace separator", () => {
-    const comment =
-      "%PDF-1.4\n%SOLVERFIN:STATEMENT:V1\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\n";
+    const comment = "%PDF-1.4\n%SOLVERFIN:STATEMENT:V1\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\n";
     const leadingObject = "2 0 obj\n<< /Type /Font >>\nendobj";
     const extraObjects = [
       "31 0 obj\n<< /Type /Font >>\nendobj\n",
