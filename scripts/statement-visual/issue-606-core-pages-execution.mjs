@@ -172,6 +172,92 @@ try {
       await screenshot(browser.cdp, join(outputDir, screenshotName));
       report.modalButtons.push({ width, height, screenshot: screenshotName, ...buttons });
     }
+
+    // Replay a committed-but-unacknowledged write and prove a single financial effect.
+    await setViewport(browser.cdp, 390, 844);
+    await navigate(browser.cdp, `${baseUrl}${route}`);
+    await sleep(300);
+    const replayEvidence = await evaluate(
+      browser.cdp,
+      `(async () => {
+        const trigger = document.querySelector('[data-open-modal][data-quick-kind="expense"]:not(:disabled)');
+        if (!trigger) return { error: 'missing open-modal trigger' };
+        trigger.click();
+        const dialog = document.querySelector('dialog[data-modal][open]');
+        const form = dialog?.querySelector('form[data-form]');
+        const continueButton = form?.querySelector('[data-statement-save-continue]');
+        if (!form || !continueButton) return { error: 'missing form or continue action' };
+        const description = 'Issue 747 Chrome idempotency ' + Date.now();
+        form.description.value = description;
+        form.amountMinor.value = '12,34';
+        const originalFetch = window.fetch.bind(window);
+        const attempts = [];
+        let dropFirstResponse = true;
+        window.fetch = (input, options) => {
+          const isTransactionPost = String(input).startsWith('/api/transactions') && options?.method === 'POST';
+          if (!isTransactionPost) return originalFetch(input, options);
+          attempts.push({ path: String(input), body: JSON.parse(options.body) });
+          const response = originalFetch(input, options);
+          if (dropFirstResponse) {
+            dropFirstResponse = false;
+            return response.then((value) => {
+              if (value.ok) throw new Error('simulated lost response after commit');
+              return value;
+            });
+          }
+          return response;
+        };
+        const until = async (test) => {
+          for (let attempt = 0; attempt < 100; attempt += 1) {
+            if (test()) return true;
+            await new Promise((resolve) => setTimeout(resolve, 100));
+          }
+          return false;
+        };
+        form.requestSubmit(continueButton);
+        const firstSettled = await until(() => attempts.length === 1 && form.dataset.submitting !== 'true');
+        if (!firstSettled) return { error: 'first request did not settle', attempts: attempts.length };
+        form.requestSubmit(continueButton);
+        const secondSettled = await until(() => attempts.length === 2 && form.dataset.savedCount === '1');
+        if (!secondSettled) return { error: 'retry did not settle', attempts: attempts.length, status: dialog?.querySelector('.form-status')?.textContent };
+        const response = await originalFetch('/api/transactions', { headers: { accept: 'application/json' } });
+        const data = await response.json();
+        return {
+          attempts: attempts.length,
+          sameAttemptKey: attempts[0].body.idempotencyKey === attempts[1].body.idempotencyKey,
+          distinctAttemptKeyPresent: typeof attempts[0].body.idempotencyKey === 'string',
+          status: response.status,
+          records: (data.transactions || []).filter((item) => item.description === description).length,
+          dialogOpen: dialog.open,
+          formCleared: form.description.value === '',
+          savedCount: form.dataset.savedCount,
+        };
+      })()`,
+    );
+    assert.deepEqual(
+      {
+        attempts: replayEvidence.attempts,
+        sameAttemptKey: replayEvidence.sameAttemptKey,
+        distinctAttemptKeyPresent: replayEvidence.distinctAttemptKeyPresent,
+        status: replayEvidence.status,
+        records: replayEvidence.records,
+        dialogOpen: replayEvidence.dialogOpen,
+        formCleared: replayEvidence.formCleared,
+        savedCount: replayEvidence.savedCount,
+      },
+      {
+        attempts: 2,
+        sameAttemptKey: true,
+        distinctAttemptKeyPresent: true,
+        status: 200,
+        records: 1,
+        dialogOpen: true,
+        formCleared: true,
+        savedCount: '1',
+      },
+      `Salvar e continuar must replay lost acknowledgements without duplicates: ${JSON.stringify(replayEvidence)}`,
+    );
+    report.saveAndContinueReplay = replayEvidence;
   }
 } catch (error) {
   report.failures.push({ message: serializeError(error) });

@@ -289,8 +289,15 @@ export async function createTransactionIdempotentlyForContext(
        ("id", "organizationId", "financialProfileId", "idempotencyKey", "requestFingerprint",
         "response", "createdAt", "updatedAt")
        values ($1, $2, $3, $4, $5, $6::jsonb, $7, $7)`,
-      [randomUUID(), context.organizationId, context.financialProfileId, key, fingerprint,
-       JSON.stringify(transaction), now],
+      [
+        randomUUID(),
+        context.organizationId,
+        context.financialProfileId,
+        key,
+        fingerprint,
+        JSON.stringify(transaction),
+        now,
+      ],
     );
     return { transaction, idempotentReplay: false };
   });

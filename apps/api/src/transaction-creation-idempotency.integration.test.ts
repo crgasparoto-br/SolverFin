@@ -43,7 +43,10 @@ async function main(): Promise<void> {
     request(token, "POST", pathA, payloadA),
   ]);
   assert.deepEqual(responses.map((r) => r.statusCode).sort(), [200, 201]);
-  const [first, duplicate] = responses.map((r) => body<TransactionResult>(r)) as [TransactionResult, TransactionResult];
+  const [first, duplicate] = responses.map((r) => body<TransactionResult>(r)) as [
+    TransactionResult,
+    TransactionResult,
+  ];
   assert.equal(first.transaction.id, duplicate.transaction.id);
   assert.equal(first.transaction.financialProfileId, profileA);
 
@@ -73,7 +76,10 @@ async function main(): Promise<void> {
   assert.notEqual(otherId, first.transaction.id);
   assert.equal(body<TransactionResult>(other).transaction.financialProfileId, profileB);
 
-  const invalidKey = await request(token, "POST", pathA, { ...payloadA, idempotencyKey: "bad-key" });
+  const invalidKey = await request(token, "POST", pathA, {
+    ...payloadA,
+    idempotencyKey: "bad-key",
+  });
   assert.equal(invalidKey.statusCode, 400);
   assert.equal(errorCode(invalidKey), "TRANSACTION_IDEMPOTENCY_KEY_INVALID");
 

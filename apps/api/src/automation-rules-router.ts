@@ -156,11 +156,7 @@ async function upsertManualEntryFillRuleHandler(request: ApiRequest): Promise<Ap
     );
   }
   return json(200, {
-    rule: await upsertManualEntryFillRuleForContext(
-      context,
-      body.description,
-      body.categoryId,
-    ),
+    rule: await upsertManualEntryFillRuleForContext(context, body.description, body.categoryId),
   });
 }
 

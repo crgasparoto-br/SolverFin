@@ -37,13 +37,20 @@ async function main(): Promise<void> {
     request(token, "POST", saveA, payload),
     request(token, "POST", saveA, { ...payload, description: "fíat POR assinatura" }),
   ]);
-  assert.deepEqual(responses.map((r) => r.statusCode), [200, 200]);
+  assert.deepEqual(
+    responses.map((r) => r.statusCode),
+    [200, 200],
+  );
   const [first, second] = responses.map((r) => body<SavedRule>(r)) as [SavedRule, SavedRule];
   assert.equal(first.rule.id, second.rule.id);
   assert.equal(first.rule.status, "inactive");
   assert.equal(second.rule.status, "inactive");
 
-  const list = await request(token, "GET", `/api/automation-rules?profileId=${profileA}&status=all`);
+  const list = await request(
+    token,
+    "GET",
+    `/api/automation-rules?profileId=${profileA}&status=all`,
+  );
   assert.equal(list.statusCode, 200);
   const entries = body<{ rules: SavedRule["rule"][] }>(list).rules.filter(
     (rule) => rule.id === first.rule.id,
