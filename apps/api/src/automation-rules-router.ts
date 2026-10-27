@@ -14,9 +14,9 @@ import {
   archiveAutomationRuleForContext,
   createAutomationRuleForContext,
   listAutomationRulesForContext,
-  upsertManualEntryFillRuleForContext,
   updateAutomationRuleForContext,
 } from "./repositories/automation-rules.js";
+import { upsertManualEntryFillRuleForContext } from "./repositories/manual-entry-fill-rules.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 

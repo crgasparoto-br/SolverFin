@@ -129,33 +129,16 @@ export async function validateStatementContextualSurfaces(
         documentScrollLocked: getComputedStyle(document.documentElement).overflowY === 'hidden',
         dialogOverflowHidden: !!surface && getComputedStyle(surface).overflowY === 'hidden',
         panelScrollControlled: !!panel && getComputedStyle(panel).overflowY === 'auto',
-        footerActionColumns: footerGroup
-          ? getComputedStyle(footerGroup).gridTemplateColumns.split(" ").length
-          : null,
+        footerActionColumns: footerGroup ? getComputedStyle(footerGroup).gridTemplateColumns.split(" ").length : null,
         footerActionRowDelta: footerCancel && footerSave
           ? Math.abs(footerCancel.getBoundingClientRect().top - footerSave.getBoundingClientRect().top)
           : null,
-        footerContinueRowDelta: footerCancel && footerContinue
-          ? Math.abs(footerCancel.getBoundingClientRect().top - footerContinue.getBoundingClientRect().top)
-          : null,
-        footerContinueHidden:
-          !footerContinue || footerContinue.hidden || footerContinue.getClientRects().length === 0,
-        footerContinueAfterCancel:
-          !!footerCancel &&
-          !!footerContinue &&
-          footerContinue.getBoundingClientRect().top >= footerCancel.getBoundingClientRect().bottom - 1,
-        footerSaveAfterCancel:
-          !!footerSave &&
-          !!footerCancel &&
-          footerSave.getBoundingClientRect().top >= footerCancel.getBoundingClientRect().bottom - 1,
-        footerPrimaryBelowContinue:
-          !!footerSave &&
-          !!footerContinue &&
-          footerSave.getBoundingClientRect().top >= footerContinue.getBoundingClientRect().bottom - 1,
-        footerActionsContained:
-          footerButtonFits(footerCancel) &&
-          footerButtonFits(footerSave) &&
-          (!footerContinue || footerContinue.hidden || footerButtonFits(footerContinue)),
+        footerContinueRowDelta: footerCancel && footerContinue ? Math.abs(footerCancel.getBoundingClientRect().top - footerContinue.getBoundingClientRect().top) : null,
+        footerContinueHidden: !footerContinue || footerContinue.hidden || footerContinue.getClientRects().length === 0,
+        footerContinueAfterCancel: !!footerCancel && !!footerContinue && footerContinue.getBoundingClientRect().top >= footerCancel.getBoundingClientRect().bottom - 1,
+        footerSaveAfterCancel: !!footerSave && !!footerCancel && footerSave.getBoundingClientRect().top >= footerCancel.getBoundingClientRect().bottom - 1,
+        footerPrimaryBelowContinue: !!footerSave && !!footerContinue && footerSave.getBoundingClientRect().top >= footerContinue.getBoundingClientRect().bottom - 1,
+        footerActionsContained: footerButtonFits(footerCancel) && footerButtonFits(footerSave) && (!footerContinue || footerContinue.hidden || footerButtonFits(footerContinue)),
         footerActionHeights: {
           cancel: footerCancel?.getBoundingClientRect().height ?? null,
           save: footerSave?.getBoundingClientRect().height ?? null,

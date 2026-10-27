@@ -14,6 +14,15 @@ import {
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import {
+  statementAttemptKeyScript,
+  statementCloseProtectionScript,
+  statementContinueSaveScript,
+  statementContinueVisibilityScript,
+  statementResponseConfirmationScript,
+  statementSubmitPreparationScript,
+  statementTransactionPostScript,
+} from "./statement-save-flow-scripts.js";
+import {
   entryFillRuleScript,
   entryFillRuleStyles,
   renderEntryFillRuleControl,
@@ -1250,12 +1259,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       ["installments", "installmentStart", "installmentValueMode"].forEach((name) => setFieldVisible(name, repeatMode === "installment"));
       ["interval", "frequency", "endOn"].forEach((name) => setFieldVisible(name, repeatMode === "fixed"));
       syncCategoryOptions();
-      const continueButton = form.querySelector("[data-statement-save-continue]");
-      if (continueButton && form.dataset.installmentMode !== "true") {
-        const allowed = repeatMode === "single" && form.dataset.method !== "PATCH";
-        continueButton.hidden = !allowed;
-        continueButton.disabled = !allowed || !accountCurrencies.get(sourceAccountId());
-      }
+${statementContinueVisibilityScript}
     };
     form.addEventListener("change", (event) => {
       if (event.target.name === "destinationAccountId" && destinationMoneyInput) {
@@ -1272,17 +1276,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       if (typeof modal.requestClose === "function") modal.requestClose();
       else modal.close();
     });
-    modal.addEventListener("cancel", (event) => {
-      if (form.dataset.submitting === "true") event.preventDefault();
-    });
-    modal.querySelector(".close-form")?.addEventListener("submit", (event) => {
-      if (form.dataset.submitting === "true") event.preventDefault();
-    });
-    modal.addEventListener("close", () => {
-      if (form.dataset.savedDuringSession === "true" || form.dataset.saveAttempted === "true") {
-        window.location.reload();
-      }
-    });
+${statementCloseProtectionScript}
     const statusButtons = Array.from(form.querySelectorAll("[data-status-option]"));
     const statusLabel = form.querySelector("[data-status-label]");
     const setStatus = (value) => { form.status.value = value; statusButtons.forEach((button) => { const active = button.dataset.statusOption === value; button.classList.toggle("active", active); button.setAttribute("aria-checked", String(active)); if (active && statusLabel) statusLabel.textContent = button.dataset.statusLabelText; }); };
@@ -1350,20 +1344,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       if (categoryId) result.categoryId = categoryId; if (note) result.note = note; return result;
     };
     const payload = () => { const data = new FormData(form); return basePayload(String(data.get("plannedOn") || ""), String(data.get("effectiveOn") || ""), moneyToMinor(data.get("amountMinor")), String(data.get("description") || "")); };
-    const newIdempotencyKey = () => window.crypto?.randomUUID ? window.crypto.randomUUID() :
-      "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (char) => {
-        const value = Math.floor(Math.random() * 16);
-        return (char === "x" ? value : (value & 3) | 8).toString(16);
-      });
-    const attemptKeyFor = (path, body) => {
-      const fingerprint = path + ":" + JSON.stringify(body);
-      if (form.dataset.attemptFingerprint !== fingerprint || !form.dataset.attemptKey) {
-        form.dataset.attemptFingerprint = fingerprint;
-        form.dataset.attemptKey = newIdempotencyKey();
-      }
-      return form.dataset.attemptKey;
-    };
-
+${statementAttemptKeyScript}
     document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace); form.reset(); const continueButton = form.querySelector("[data-statement-save-continue]"); if (continueButton) continueButton.hidden = false; document.querySelector("[data-modal-title]").textContent = "Novo lançamento"; const today = currentLocalDate(); form.occurredOn.value = today; form.plannedOn.value = today; form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; form.querySelectorAll('.statement-save-actions button[type="submit"]').forEach((submitButton) => { submitButton.disabled = !accountCurrencies.get(sourceAccountId()); }); setStatus("posted"); syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }));
     document.querySelectorAll("[data-transaction]").forEach((node) => {
       const transaction = JSON.parse(node.textContent);
@@ -1438,13 +1419,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     form.addEventListener("submit", async (event) => {
       event.preventDefault(); if (form.dataset.submitting === "true") return;
       if (!form.checkValidity()) { form.reportValidity(); return; }
-      const mode = form.repeatMode.value; const method = form.dataset.method || "POST";
-      const saveAndContinue = method === "POST" && mode === "single" && event.submitter?.hasAttribute("data-statement-save-continue") === true;
-      const submitButtons = Array.from(form.querySelectorAll('.statement-save-actions button[type="submit"]'));
-      const previouslyDisabled = submitButtons.map((button) => button.disabled);
-      const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); const queuedFile = attachmentWorkspace?.querySelector('[data-attachment-form] [name="file"]')?.files?.[0];
-      if (queuedFile && method === "POST" && mode !== "single") { statusNode.className = "form-status error full"; statusNode.textContent = "Para anexar arquivos, salve um lançamento único. Em parcelas ou recorrências, anexe na edição de uma ocorrência."; return; }
-      form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); submitButtons.forEach((button) => { button.disabled = true; }); statusNode.textContent = "Salvando...";
+${statementSubmitPreparationScript}
       let shouldReload = false;
       if (method === "POST") form.dataset.saveAttempted = "true";
       try {
@@ -1453,17 +1428,9 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
           const item = payload(); response = await send("/api/recurrences", "POST", { frequency: form.frequency.value, interval: Math.max(1, Number(form.interval.value || 1)), startOn: item.plannedOn, endOn: form.endOn.value || undefined, amountMinor: item.amountMinor, description: item.description, kind: item.kind, accountId: item.accountId, destinationAccountId: item.destinationAccountId, categoryId: item.categoryId });
         } else if (mode === "installment" && method === "POST") {
           const data = new FormData(form); const item = payload(); const draft = { accountId: String(data.get("accountId")), destinationAccountId: String(data.get("destinationAccountId") || "") || null, categoryId: String(data.get("categoryId") || "") || null, kind: String(data.get("kind")), status: String(data.get("status")), description: String(data.get("description") || "").trim(), note: String(data.get("note") || "").trim() || null, plannedOn: item.plannedOn, effectiveOn: item.effectiveOn, amountMinor: moneyToMinor(data.get("amountMinor")), amountMode: String(data.get("installmentValueMode") || "per_installment"), totalInstallments: Math.max(2, Number(data.get("installments") || 2)), initialSequenceNumber: Math.max(1, Number(data.get("installmentStart") || 1)) }; response = await send("/api/installments", "POST", { ...draft, idempotencyKey: attemptKeyFor("/api/installments", draft) });
-        } else {
-          const draft = payload();
-          const path = form.dataset.path || "/api/transactions";
-          response = await send(path, method, method === "POST" ? { ...draft, idempotencyKey: attemptKeyFor(path, draft) } : draft);
-        }
+${statementTransactionPostScript}
         const created = response.ok && queuedFile && method === "POST" ? await response.clone().json().catch(() => ({})) : null;
-        if (response.ok) {
-          form.dataset.savedDuringSession = "true";
-          delete form.dataset.attemptKey;
-          delete form.dataset.attemptFingerprint;
-        }
+${statementResponseConfirmationScript}
         statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response);
         if (response.ok && queuedFile) {
           const linkedId = method === "POST" ? created?.transaction?.id : attachmentWorkspace?.dataset.entityId;
@@ -1479,36 +1446,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
             return;
           }
         }
-        if (response.ok) {
-          if (saveAndContinue) {
-            form.dataset.savedDuringSession = "true";
-            form.dataset.savedCount = String(Number(form.dataset.savedCount || 0) + 1);
-            const accountId = form.accountId.value;
-            const currentKind = form.kind.value;
-            const currentStatus = form.status.value;
-            const occurredOn = form.occurredOn.value;
-            const plannedOn = form.plannedOn.value;
-            if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace);
-            form.reset();
-            form.dataset.method = "POST";
-            form.dataset.path = "/api/transactions";
-            form.accountId.value = accountId;
-            form.kind.value = currentKind;
-            form.occurredOn.value = occurredOn;
-            form.plannedOn.value = plannedOn;
-            const accountDisplay = form.querySelector(".statement-entry-account input");
-            if (accountDisplay) accountDisplay.value = accountLabels.get(accountId) || "Conta indisponível";
-            document.querySelector("[data-modal-title]").textContent = "Novo lançamento";
-            setStatus(currentStatus);
-            syncFieldVisibility();
-            statusNode.className = "form-status success full";
-            statusNode.textContent = form.dataset.savedCount + " lançamento(s) salvo(s). Informe o próximo. A lista será atualizada ao fechar.";
-            form.description.focus();
-          } else {
-            shouldReload = true;
-            setTimeout(() => location.reload(), 350);
-          }
-        }
+${statementContinueSaveScript}
       } catch { statusNode.className = "form-status error full"; statusNode.textContent = "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente."; }
       finally {
         delete form.dataset.submitting;

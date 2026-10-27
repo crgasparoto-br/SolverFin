@@ -80,7 +80,6 @@ import {
 } from "./repositories/recurrences.js";
 import {
   createTransactionForContext,
-  createTransactionIdempotentlyForContext,
   getTransactionForContext,
   listTransactionsForContext,
   updateTransactionForContext,
@@ -92,6 +91,7 @@ import {
   listTransactionGroupsForContext,
   ungroupTransactionsForContext,
 } from "./repositories/transaction-groups.js";
+import { createTransactionIdempotentlyForContext } from "./repositories/transaction-idempotency.js";
 import { loadFinancialProfilesForUser, resolveRequestTenantContext } from "./tenant-context.js";
 
 export interface ApiRequest {
