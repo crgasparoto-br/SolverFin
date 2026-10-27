@@ -356,11 +356,11 @@ function assertPdfStructure(bytes: Buffer): string {
     // contain lookalike text that must never be treated as a structural object.
     const rootObjectNumber = Number(rootMatch[1]);
     const rootGeneration = Number(rootMatch[2]);
-    const xrefLines = xrefSection.slice(4, trailerIndex).split(/\\r\\n|\\r|\\n/);
+    const xrefLines = xrefSection.slice(4, trailerIndex).split(/\r\n|\r|\n/);
     let rootIndex = -1;
     let lineIndex = 0;
     while (lineIndex < xrefLines.length) {
-      const header = /^(\\d+)\\s+(\\d+)\\s*$/.exec(xrefLines[lineIndex]?.trim() ?? "");
+      const header = /^(\d+)\s+(\d+)\s*$/.exec(xrefLines[lineIndex]?.trim() ?? "");
       if (header === null) {
         lineIndex += 1;
         continue;
@@ -376,7 +376,7 @@ function assertPdfStructure(bytes: Buffer): string {
       }
       lineIndex += 1;
       for (let entryIndex = 0; entryIndex < entryCount; entryIndex += 1, lineIndex += 1) {
-        const entry = /^(\\d{10})\\s+(\\d{5})\\s+([nf])\\b/.exec(
+        const entry = /^(\d{10})\s+(\d{5})\s+([nf])\b/.exec(
           xrefLines[lineIndex]?.trim() ?? "",
         );
         if (entry === null) {
