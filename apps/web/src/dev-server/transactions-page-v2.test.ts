@@ -344,20 +344,31 @@ test("A2 transaction modal exposes status through tooltips and keeps Cancel and 
     );
     // Integration contract: the rendered dialog uses the responsive grid rather
     // than the legacy nowrap flex footer that clipped buttons at 440px.
-    assert.ok(html.includes('data-statement-save-continue'));
+    assert.ok(html.includes("data-statement-save-continue"));
     assert.ok(html.includes('>Salvar e continuar</button><button type="submit"'));
     assert.ok(
-      html.includes(".statement-save-actions{box-sizing:border-box;display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))"),
-    );
-    assert.ok(html.includes(".save-row{align-items:start;border-top:1px solid var(--line);display:grid"));
-    assert.ok(
-      html.includes(".statement-save-actions>button[type=submit]:not([data-statement-save-continue]){grid-column:1/-1}"),
+      html.includes(
+        ".statement-save-actions{box-sizing:border-box;display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))",
+      ),
     );
     assert.ok(
-      html.includes("max-width:100%;min-height:44px;min-width:0;overflow-wrap:anywhere;padding:8px;white-space:normal;width:100%"),
+      html.includes(".save-row{align-items:start;border-top:1px solid var(--line);display:grid"),
+    );
+    assert.ok(
+      html.includes(
+        ".statement-save-actions>button[type=submit]:not([data-statement-save-continue]){grid-column:1/-1}",
+      ),
+    );
+    assert.ok(
+      html.includes(
+        "max-width:100%;min-height:44px;min-width:0;overflow-wrap:anywhere;padding:8px;white-space:normal;width:100%",
+      ),
     );
     assert.ok(html.includes(".statement-save-actions{grid-template-columns:minmax(0,1fr)}"));
-    assert.doesNotMatch(html, /\.statement-save-actions\{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap/);
+    assert.doesNotMatch(
+      html,
+      /\.statement-save-actions\{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap/,
+    );
     assert.match(
       html,
       /\.statement-save-actions \[data-popup-action-icon\]\{display:none!important\}/,
