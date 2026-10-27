@@ -43,7 +43,7 @@ async function main(): Promise<void> {
     request(token, "POST", pathA, payloadA),
   ]);
   assert.deepEqual(responses.map((r) => r.statusCode).sort(), [200, 201]);
-  const [first, duplicate] = responses.map((r) => body<TransactionResult>(r));
+  const [first, duplicate] = responses.map((r) => body<TransactionResult>(r)) as [TransactionResult, TransactionResult];
   assert.equal(first.transaction.id, duplicate.transaction.id);
   assert.equal(first.transaction.financialProfileId, profileA);
 

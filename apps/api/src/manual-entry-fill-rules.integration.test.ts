@@ -38,7 +38,7 @@ async function main(): Promise<void> {
     request(token, "POST", saveA, { ...payload, description: "fíat POR assinatura" }),
   ]);
   assert.deepEqual(responses.map((r) => r.statusCode), [200, 200]);
-  const [first, second] = responses.map((r) => body<SavedRule>(r));
+  const [first, second] = responses.map((r) => body<SavedRule>(r)) as [SavedRule, SavedRule];
   assert.equal(first.rule.id, second.rule.id);
   assert.equal(first.rule.status, "inactive");
   assert.equal(second.rule.status, "inactive");
