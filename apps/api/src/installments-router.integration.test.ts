@@ -58,6 +58,8 @@ async function main(): Promise<void> {
   await assertRejectsInvalidFilters(token);
   await assertManualInstallmentScopeUpdates(token, account.id, category.id, suffix);
   await assertRecurringInstallmentScopeUpdates(token, account.id, category.id, suffix);
+  await assertRecurringInstallmentProtectedFuture(token, account.id, category.id, suffix);
+  await assertRecurringInstallmentCancellationRace(token, account.id, category.id, suffix);
 }
 
 async function assertManualInstallmentScopeUpdates(
@@ -163,6 +165,30 @@ async function assertRecurringInstallmentScopeUpdates(
   const [first, second, third] = original;
   assert.ok(first && second && third);
   assert.ok(first.recurrence?.id === recurrence.id);
+  const firstTransactionId = first.transaction?.id;
+  const secondTransactionId = second.transaction?.id;
+  assert.ok(firstTransactionId && secondTransactionId);
+
+  // Deliberately diverge each occurrence from the recurrence rule. A full
+  // recurring edit would incorrectly copy the first occurrence onto the rest.
+  const otherAccount = await createAccount(token, "metadata-" + suffix);
+  const otherCategory = await createCategory(token, "metadata-" + suffix);
+  await getPool().query(
+    `update "Transaction" set "accountId" = $2, "categoryId" = $3,
+       "description" = $4, "note" = $5 where "id" = $1`,
+    [firstTransactionId, otherAccount.id, otherCategory.id, "Primeira diferente", "Nota somente primeira"],
+  );
+  await getPool().query(
+    `update "Transaction" set "description" = $2, "note" = $3,
+       "plannedOn" = '2026-07-15', "occurredOn" = '2026-07-16'
+       where "id" = $1`,
+    [secondTransactionId, "Segunda personalizada", "Nota da segunda"],
+  );
+  await getPool().query(
+    `update "Installment" set "dueOn" = '2026-07-15' where "id" = $1`,
+    [second.id],
+  );
+  const before = await readRecurringFinancialSnapshot(recurrence.id);
 
   const updated = await apiRequest(token, "PATCH", `/api/installments/${first.id}`, {
     scope: "current_and_future",
@@ -172,6 +198,10 @@ async function assertRecurringInstallmentScopeUpdates(
   const result = readBody<{ updatedCount: number; skippedCount: number }>(updated);
   assert.equal(result.updatedCount, 3);
   assert.equal(result.skippedCount, 0);
+  const after = await readRecurringFinancialSnapshot(recurrence.id);
+  assert.deepEqual(unchangedRecurringMetadata(after), unchangedRecurringMetadata(before),
+    "amount scope must preserve all occurrence and recurrence metadata");
+  assert.equal(after.recurrence.amountMinor, 17230, "new occurrences use the updated rule");
   for (const row of [first, second, third]) {
     const saved = await readInstallment(token, row.id);
     assert.equal(saved.amountMinor, 17230, "the installment is synchronized");
@@ -190,6 +220,7 @@ async function assertRecurringInstallmentScopeUpdates(
   assert.ok(future.length > original.length);
   assert.equal(future.at(-1)?.amountMinor, 17230);
 
+  const beforeInvalid = await readRecurringFinancialSnapshot(recurrence.id);
   const invalid = await apiRequest(token, "PATCH", `/api/installments/${first.id}`, {
     scope: "current_and_future",
     amountMinor: 18000,
@@ -197,6 +228,8 @@ async function assertRecurringInstallmentScopeUpdates(
   });
   assert.equal(invalid.statusCode, 400);
   assert.equal(readErrorCode(invalid), "INSTALLMENT_PAYLOAD_INVALID");
+  assert.deepEqual(await readRecurringFinancialSnapshot(recurrence.id), beforeInvalid,
+    "invalid payload cannot partially mutate a series");
 
   const wrongProfile = await apiRequest(
     token,
@@ -206,6 +239,133 @@ async function assertRecurringInstallmentScopeUpdates(
   );
   assert.equal(wrongProfile.statusCode, 404);
   assert.equal(readErrorCode(wrongProfile), "TENANT_RESOURCE_NOT_FOUND");
+  assert.deepEqual(await readRecurringFinancialSnapshot(recurrence.id), beforeInvalid);
+
+  const cancelled = await apiRequest(token, "POST", `/api/recurrences/${recurrence.id}/cancel`);
+  assert.equal(cancelled.statusCode, 200);
+  const cancelledSnapshot = await readRecurringFinancialSnapshot(recurrence.id);
+  const blocked = await apiRequest(token, "PATCH", `/api/installments/${first.id}`, {
+    scope: "current_and_future", amountMinor: 22200,
+  });
+  assert.equal(blocked.statusCode, 409, "cancelled recurrence cannot be edited");
+  assert.equal(readErrorCode(blocked), "INSTALLMENT_EDIT_BLOCKED");
+  assert.deepEqual(await readRecurringFinancialSnapshot(recurrence.id), cancelledSnapshot);
+}
+
+async function assertRecurringInstallmentProtectedFuture(
+  token: string, accountId: string, categoryId: string, suffix: string,
+): Promise<void> {
+  const recurrence = await createRecurrence(token, "protected-" + suffix, accountId, categoryId);
+  await generateInstallments(token, recurrence.id);
+  const response = await apiRequest(token, "GET", `/api/installments?recurrenceId=${recurrence.id}&status=all`);
+  assert.equal(response.statusCode, 200);
+  const rows = readBody<{ installments: ApiInstallmentHistory[] }>(response).installments
+    .sort((a, b) => Number(a.sequenceNumber) - Number(b.sequenceNumber));
+  const [first, second, third] = rows;
+  assert.ok(first && second && third);
+  const thirdTransactionId = third.transaction?.id;
+  assert.ok(thirdTransactionId);
+
+  // A future reconciled occurrence must be excluded without changing its
+  // status, amount, metadata or audit history.
+  const reconcile = await apiRequest(token, "PATCH", `/api/transactions/${thirdTransactionId}`, {
+    status: "reconciled",
+  });
+  assert.equal(reconcile.statusCode, 200);
+  const before = await readRecurringFinancialSnapshot(recurrence.id);
+  const updated = await apiRequest(token, "PATCH", `/api/installments/${first.id}`, {
+    scope: "current_and_future", amountMinor: 24400,
+  });
+  assert.equal(updated.statusCode, 200);
+  const result = readBody<{ updatedCount: number; skippedCount: number }>(updated);
+  assert.equal(result.updatedCount, 2);
+  assert.equal(result.skippedCount, 1);
+  assert.equal((await readInstallment(token, second.id)).amountMinor, 24400);
+  assert.equal((await readInstallment(token, third.id)).amountMinor, third.amountMinor);
+  assert.equal((await readInstallment(token, third.id)).transaction?.status, "reconciled");
+  const after = await readRecurringFinancialSnapshot(recurrence.id);
+  assert.deepEqual(unchangedRecurringMetadata(after), unchangedRecurringMetadata(before));
+}
+
+async function assertRecurringInstallmentCancellationRace(
+  token: string, accountId: string, categoryId: string, suffix: string,
+): Promise<void> {
+  const recurrence = await createRecurrence(token, "race-" + suffix, accountId, categoryId);
+  await generateInstallments(token, recurrence.id);
+  const response = await apiRequest(token, "GET", `/api/installments?recurrenceId=${recurrence.id}&status=all`);
+  assert.equal(response.statusCode, 200);
+  const first = readBody<{ installments: ApiInstallmentHistory[] }>(response).installments[0];
+  assert.ok(first);
+
+  const client = await getPool().connect();
+  let transactionOpen = false;
+  try {
+    await client.query("BEGIN");
+    transactionOpen = true;
+    await client.query(`update "Recurrence" set "status" = 'CANCELLED' where "id" = $1`, [recurrence.id]);
+    // The endpoint may see ACTIVE during its optimistic read, but the locked
+    // read must see CANCELLED after this transaction commits.
+    const patchPromise = apiRequest(token, "PATCH", `/api/installments/${first.id}`, {
+      scope: "current_and_future", amountMinor: 55500,
+    });
+    await delay(150);
+    await client.query("COMMIT");
+    transactionOpen = false;
+    const cancelled = await readRecurringFinancialSnapshot(recurrence.id);
+    const patched = await patchPromise;
+    assert.equal(patched.statusCode, 409, "in-flight cancel blocks the amount mutation");
+    assert.equal(readErrorCode(patched), "INSTALLMENT_EDIT_BLOCKED");
+    assert.deepEqual(await readRecurringFinancialSnapshot(recurrence.id), cancelled,
+      "a rejected concurrent edit must have no partial effects");
+  } finally {
+    if (transactionOpen) await client.query("ROLLBACK");
+    client.release();
+  }
+}
+
+interface RecurringSnapshot {
+  occurrences: Array<Record<string, unknown>>;
+  recurrence: Record<string, unknown>;
+}
+
+async function readRecurringFinancialSnapshot(recurrenceId: string): Promise<RecurringSnapshot> {
+  const occurrences = await getPool().query<Record<string, unknown>>(
+    `select i."id" as "installmentId", i."status" as "installmentStatus",
+       i."amountMinor" as "installmentAmountMinor", i."currency" as "installmentCurrency",
+       i."dueOn"::text as "dueOn", i."updatedAt"::text as "installmentUpdatedAt",
+       t."id" as "transactionId", t."status" as "transactionStatus",
+       t."amountMinor" as "transactionAmountMinor", t."currency" as "transactionCurrency",
+       t."accountId", t."destinationAccountId", t."categoryId", t."kind",
+       t."plannedOn"::text as "plannedOn", t."occurredOn"::text as "occurredOn",
+       t."effectiveOn"::text as "effectiveOn", t."reconciledAt"::text as "reconciledAt",
+       t."voidedAt"::text as "voidedAt", t."description", t."note",
+       t."invoiceId", t."cardId", t."updatedAt"::text as "transactionUpdatedAt"
+     from "Installment" i
+     join "Transaction" t on t."installmentId" = i."id"
+     where i."recurrenceId" = $1 order by i."sequenceNumber"`,
+    [recurrenceId],
+  );
+  const rule = await getPool().query<Record<string, unknown>>(
+    `select "id", "status", "accountId", "destinationAccountId", "categoryId",
+       "cardId", "cardInstrumentId", "kind", "frequency", "interval", "startOn"::text as "startOn",
+       "endOn"::text as "endOn", "amountMinor", "currency", "description",
+       "updatedAt"::text as "updatedAt" from "Recurrence" where "id" = $1`,
+    [recurrenceId],
+  );
+  assert.equal(rule.rows.length, 1);
+  return { occurrences: occurrences.rows, recurrence: rule.rows[0]! };
+}
+
+function unchangedRecurringMetadata(snapshot: RecurringSnapshot): RecurringSnapshot {
+  const withoutAmountAndAudit = (row: Record<string, unknown>) =>
+    Object.fromEntries(Object.entries(row).filter(([key]) => ![
+      "amountMinor", "transactionAmountMinor", "installmentAmountMinor", "updatedAt",
+      "transactionUpdatedAt", "installmentUpdatedAt",
+    ].includes(key)));
+  return {
+    occurrences: snapshot.occurrences.map(withoutAmountAndAudit),
+    recurrence: withoutAmountAndAudit(snapshot.recurrence),
+  };
 }
 
 async function createAccount(token: string, suffix: string): Promise<ApiAccount> {

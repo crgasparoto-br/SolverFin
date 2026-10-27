@@ -313,9 +313,12 @@ export async function updateInstallmentForContext(
       ) {
         throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
       }
-      const updated = await updateRecurringAccountTransactionForContext(context, transactionId, {
-        amountMinor: payload.amountMinor,
-      });
+      const updated = await updateRecurringAccountTransactionForContext(
+        context,
+        transactionId,
+        { amountMinor: payload.amountMinor },
+        { amountOnly: true },
+      );
       return {
         installment: await getInstallmentForMutation(context, installmentId),
         updatedCount: updated.updatedCount + 1,

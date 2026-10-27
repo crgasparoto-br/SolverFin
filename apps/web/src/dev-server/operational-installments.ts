@@ -186,7 +186,7 @@ const OPERATIONAL_INSTALLMENTS_CSS = `
   .installment-form-status.error { color: #b91c1c; }
   .installment-form-status.success { color: #166534; }
   .installment-reload { justify-self: start; }
-  .installment-scope-dialog { border: 0; border-radius: var(--radius-lg); box-shadow: 0 24px 70px rgba(6,25,35,.23); color: var(--text); max-width: min(460px, calc(100vw - 32px)); padding: 0; width: 100%; }
+  .installment-scope-dialog { border: 0; border-radius: var(--radius-lg); box-shadow: 0 24px 70px rgba(6,25,35,.23); color: var(--text); max-width: min(460px, calc(100vw - 32px)); max-height: calc(100dvh - 24px); overflow-y: auto; padding: 0; width: 100%; }
   .installment-scope-dialog::backdrop { background: rgba(6,25,35,.38); }
   .installment-scope-panel { display: grid; gap: 12px; padding: 22px; }
   .installment-scope-panel h3 { font-size: 1.1rem; margin: 0; }
