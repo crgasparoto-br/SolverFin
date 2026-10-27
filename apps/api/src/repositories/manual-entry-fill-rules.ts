@@ -69,4 +69,3 @@ export async function upsertManualEntryFillRuleForContext(
     return createAutomationRuleForContext(context, ruleDraft);
   });
 }
-
