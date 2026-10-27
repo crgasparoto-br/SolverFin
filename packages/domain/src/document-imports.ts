@@ -351,54 +351,43 @@ function assertPdfStructure(bytes: Buffer): string {
     if (rootMatch === null) {
       throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
     }
-    // Resolve the catalog from the classic xref table instead of searching the raw PDF.
-    // Object headers may be separated by any PDF whitespace byte, while comments/strings can
-    // contain lookalike text that must never be treated as a structural object.
     const rootObjectNumber = Number(rootMatch[1]);
     const rootGeneration = Number(rootMatch[2]);
-    const xrefLines = xrefSection.slice(4, trailerIndex).split(/\r\n|\r|\n/);
+    const xrefLines = xrefSection
+      .slice(4, trailerIndex)
+      .split(/\r\n|\r|\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
     let rootIndex = -1;
-    let lineIndex = 0;
-    while (lineIndex < xrefLines.length) {
-      const header = /^(\d+)\s+(\d+)\s*$/.exec(xrefLines[lineIndex]?.trim() ?? "");
+    for (let lineIndex = 0; lineIndex < xrefLines.length; ) {
+      const header = /^(\d+)\s+(\d+)$/.exec(xrefLines[lineIndex]);
       if (header === null) {
-        lineIndex += 1;
-        continue;
+        throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
       }
       const firstObject = Number(header[1]);
       const entryCount = Number(header[2]);
+      const entries = xrefLines.slice(lineIndex + 1, lineIndex + 1 + entryCount);
       if (
         !Number.isSafeInteger(firstObject) ||
         !Number.isSafeInteger(entryCount) ||
-        entryCount < 0
+        entries.length !== entryCount ||
+        entries.some((entry) => !/^\d{10}\s+\d{5}\s+[nf]\b/.test(entry))
       ) {
         throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
       }
-      lineIndex += 1;
-      for (let entryIndex = 0; entryIndex < entryCount; entryIndex += 1, lineIndex += 1) {
-        const entry = /^(\d{10})\s+(\d{5})\s+([nf])\b/.exec(xrefLines[lineIndex]?.trim() ?? "");
-        if (entry === null) {
-          throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-        }
-        if (
-          firstObject + entryIndex === rootObjectNumber &&
-          Number(entry[2]) === rootGeneration &&
-          entry[3] === "n"
-        ) {
-          rootIndex = Number(entry[1]);
-        }
+      const rootEntry = entries[rootObjectNumber - firstObject];
+      const rootEntryMatch = rootEntry && /^(\d{10})\s+(\d{5})\s+n\b/.exec(rootEntry);
+      if (rootEntryMatch && Number(rootEntryMatch[2]) === rootGeneration) {
+        rootIndex = Number(rootEntryMatch[1]);
       }
+      lineIndex += entryCount + 1;
     }
 
-    const pdfWhitespace = "[\\0\\t\\n\\f\\r ]";
     const rootHeader = new RegExp(
-      `^${rootMatch[1]}${pdfWhitespace}+${rootMatch[2]}${pdfWhitespace}+obj\\b`,
+      `^${rootMatch[1]}[\\0\\t\\n\\f\\r ]+${rootMatch[2]}[\\0\\t\\n\\f\\r ]+obj\\b`,
     );
-    const rootSlice = rootIndex < 0 ? "" : text.slice(rootIndex, xrefOffset);
-    const rootHeaderMatch = rootHeader.exec(rootSlice);
-    const rootHeaderLength = rootHeaderMatch?.[0].length ?? 0;
-    const rootEnd =
-      rootHeaderLength === 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
+    const rootHeaderLength = rootIndex < 0 ? 0 : rootHeader.exec(text.slice(rootIndex, xrefOffset))?.[0].length ?? 0;
+    const rootEnd = rootHeaderLength === 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
     if (
       rootIndex < 0 ||
       rootEnd < 0 ||
