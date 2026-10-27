@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
-import { MERCADO_PAGO_STATEMENT_PARSER, type PdfExtractedPage } from "./mercado-pago-pdf.js";\nimport { resolveClassicXrefObjectOffset } from "./pdf-xref.js";
+import { MERCADO_PAGO_STATEMENT_PARSER, type PdfExtractedPage } from "./mercado-pago-pdf.js";
+import { resolveClassicXrefObjectOffset } from "./pdf-xref.js";
 
 export type { PdfExtractedPage, PdfExtractedWord } from "./mercado-pago-pdf.js";
 
