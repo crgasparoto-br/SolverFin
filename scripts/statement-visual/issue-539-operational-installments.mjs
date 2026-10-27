@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { validateRecurringScopeViewport } from "./issue-748-recurring-scope-responsive.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -284,91 +285,17 @@ async function validateAccountMobile(fixture) {
 }
 
 async function validateResponsiveRecurringScope(fixture, width, height) {
-  await setViewport(browser.cdp, width, height);
-  const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07`;
-  await navigate(browser.cdp, `${baseUrl}${route}`);
-  await waitForAccountLine(fixture.accountTransactionId);
-  await evaluate(
-    browser.cdp,
-    `document.querySelector('[data-edit="${fixture.accountTransactionId}"]').click()`,
-  );
-  await sleep(250);
-  const opened = await evaluate(
-    browser.cdp,
-    `(() => {
-      const form = document.querySelector("[data-form]");
-      form.querySelector("[data-installment-amount-input]").value = "987,65";
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-      return Boolean(document.querySelector(".installment-scope-dialog[open]"));
-    })()`,
-  );
-  check(opened, `Recurring scope did not open at ${width}x${height}`, { opened });
-  const state = await evaluate(
-    browser.cdp,
-    `(() => {
-      const dialog = document.querySelector(".installment-scope-dialog[open]");
-      const form = document.querySelector("[data-form]");
-      const bounds = (element) => {
-        const rect = element.getBoundingClientRect();
-        return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
-      };
-      const controls = Array.from(dialog.querySelectorAll("[data-scope], [data-scope-cancel]"));
-      const edges = controls.map(bounds);
-      return {
-        dialog: bounds(dialog),
-        controls: edges,
-        choices: controls.filter((element) => element.dataset.scope).map((element) => element.textContent.trim()),
-        focused: document.activeElement?.dataset.scope,
-        saveButtons: Array.from(form.querySelectorAll('.statement-save-actions button[type="submit"]'))
-          .filter((element) => !element.hidden).map((element) => element.textContent.trim()),
-        horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
-        viewport: { width: innerWidth, height: innerHeight },
-      };
-    })()`,
-  );
-  const inside = (rect) => rect.left >= -1 && rect.right <= state.viewport.width + 1 &&
-    rect.top >= -1 && rect.bottom <= state.viewport.height + 1;
-  check(inside(state.dialog), `Scope dialog clipped at ${width}x${height}`, state);
-  check(state.controls.every(inside), `Scope actions clipped at ${width}x${height}`, state);
-  check(!state.horizontalOverflow, `Scope causes horizontal overflow at ${width}x${height}`, state);
-  check(state.choices.join(",") === "Somente esta parcela,Esta e as próximas", "Future scope was hidden", state);
-  check(state.saveButtons.join(",") === "Salvar parcela", "Unexpected extra save action", state);
-  check(state.focused === "current", "Scope dialog did not focus first option", state);
-
-  await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9,
+  return validateRecurringScopeViewport({
+    fixture,
+    width,
+    height,
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+    scenarios,
+    check,
+    waitForAccountLine,
   });
-  await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9,
-  });
-  const nextFocus = await evaluate(browser.cdp, `document.activeElement?.dataset.scope`);
-  check(nextFocus === "current_and_future", "Tab did not reach future scope", { nextFocus, width });
-  await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown", key: "Tab", code: "Tab", modifiers: 8,
-    windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9,
-  });
-  await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp", key: "Tab", code: "Tab", modifiers: 8,
-    windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9,
-  });
-  const previousFocus = await evaluate(browser.cdp, `document.activeElement?.dataset.scope`);
-  check(previousFocus === "current", "Shift+Tab did not return to first scope", { previousFocus, width });
-
-  const filename = `issue-748-account-recurring-scope-${width}x${height}.png`;
-  await screenshot(browser.cdp, join(outputDir, filename));
-  scenarios.push({ route, viewport: `${width}x${height}`, state: "recurring installment scope focus and bounds", screenshot: filename, ...state });
-
-  await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27,
-  });
-  await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27, nativeVirtualKeyCode: 27,
-  });
-  await sleep(120);
-  const cancelled = await evaluate(browser.cdp,
-    `!document.querySelector(".installment-scope-dialog[open]") && document.querySelector("[data-modal]").open`);
-  check(cancelled, `Escape did not preserve parent modal at ${width}x${height}`, { cancelled });
-  await evaluate(browser.cdp, `document.querySelector("[data-modal]").close()`);
 }
 
 async function validateBlockedAccountDesktop(fixture) {

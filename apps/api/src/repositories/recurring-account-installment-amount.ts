@@ -28,16 +28,22 @@ export async function updateRecurringInstallmentAmountOnly(
   selected: SelectedTransactionRow,
   payload: RecurringAccountTransactionEditPayload,
   findFutureForUpdate: (
-    query: QueryExecutor, context: TenantContext, recurrenceId: EntityId,
-    transactionId: EntityId, sequenceNumber: number | null, plannedOn: string,
+    query: QueryExecutor,
+    context: TenantContext,
+    recurrenceId: EntityId,
+    transactionId: EntityId,
+    sequenceNumber: number | null,
+    plannedOn: string,
   ) => Promise<FutureTransactionRow[]>,
   buildSkipped: (
-    row: FutureTransactionRow, reason: "transaction_not_planned" | "transaction_voided",
+    row: FutureTransactionRow,
+    reason: "transaction_not_planned" | "transaction_voided",
   ) => RecurringAccountTransactionEditResult["skipped"][number],
 ): Promise<RecurringAccountTransactionEditResult> {
   const blocked = (): never => {
     throw Object.assign(new Error("A parcela ou a recorrencia nao permite ajuste de valor."), {
-      code: "INSTALLMENT_EDIT_BLOCKED", statusCode: 409,
+      code: "INSTALLMENT_EDIT_BLOCKED",
+      statusCode: 409,
     });
   };
 
@@ -50,7 +56,8 @@ export async function updateRecurringInstallmentAmountOnly(
     selected.transactionInvoiceId !== null ||
     installmentId === null ||
     !["PLANNED", "POSTED"].includes(selected.status)
-  ) return blocked();
+  )
+    return blocked();
 
   // A linked installment can be reconciled, cancelled or invoiced after the
   // endpoint's optimistic eligibility check. Recheck while holding its lock.
@@ -61,11 +68,13 @@ export async function updateRecurringInstallmentAmountOnly(
     installment.invoiceId !== null ||
     installment.cardId !== null ||
     installment.cardInstrumentId !== null
-  ) blocked();
+  )
+    blocked();
 
   if (!Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
     throw Object.assign(new Error("Valor da parcela invalido."), {
-      code: "INSTALLMENT_PAYLOAD_INVALID", statusCode: 400,
+      code: "INSTALLMENT_PAYLOAD_INVALID",
+      statusCode: 400,
     });
   }
   const futureRows = await findFutureForUpdate(
@@ -110,7 +119,14 @@ export async function updateRecurringInstallmentAmountOnly(
       `update "Transaction"
           set "amountMinor" = $4, "updatedAt" = $5, "updatedByUserId" = $6
         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [transactionId, context.organizationId, context.financialProfileId, amountMinor, now, context.userId],
+      [
+        transactionId,
+        context.organizationId,
+        context.financialProfileId,
+        amountMinor,
+        now,
+        context.userId,
+      ],
     );
     if (installmentId !== null) {
       await executeQuery(
@@ -125,7 +141,14 @@ export async function updateRecurringInstallmentAmountOnly(
   await executeQuery(
     `update "Recurrence" set "amountMinor" = $4, "updatedAt" = $5, "updatedByUserId" = $6
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-    [selected.recurrenceId, context.organizationId, context.financialProfileId, amountMinor, now, context.userId],
+    [
+      selected.recurrenceId,
+      context.organizationId,
+      context.financialProfileId,
+      amountMinor,
+      now,
+      context.userId,
+    ],
   );
   for (const row of eligible) await saveAmount(row.id, row.installmentId);
 

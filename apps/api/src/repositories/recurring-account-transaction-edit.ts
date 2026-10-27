@@ -136,7 +136,12 @@ export async function updateRecurringAccountTransactionForContext(
 
     if (options.amountOnly)
       return updateRecurringInstallmentAmountOnly(
-        executeQuery, context, selected, payload, findFutureForUpdate, buildSkipped,
+        executeQuery,
+        context,
+        selected,
+        payload,
+        findFutureForUpdate,
+        buildSkipped,
       );
 
     const accountId = payload.accountId ?? selected.accountId;
