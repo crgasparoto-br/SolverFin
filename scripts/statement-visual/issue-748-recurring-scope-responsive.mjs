@@ -125,3 +125,72 @@ export async function validateRecurringScopeViewport(options) {
   });
   await evaluate(cdp, `document.querySelector("[data-modal]").close()`);
 }
+
+export async function validateRecurringScopeDesktop({ cdp, outputDir, scenarios, check, route }) {
+  // Recurring installments must expose the expanded scope even though their
+  // totalInstallments is not a finite sequence. Do not post on Cancel.
+  const scopeOpened = await evaluate(
+    cdp,
+    `(() => {
+      const form = document.querySelector("[data-form]");
+      const field = form.querySelector("[data-installment-amount-input]");
+      field.dataset.previousValue = field.value;
+      field.value = "432,10";
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      return Boolean(document.querySelector(".installment-scope-dialog[open]"));
+    })()`,
+  );
+  check(scopeOpened, "Changing the value did not open the installment scope modal", {
+    scopeOpened,
+  });
+  const scope = await evaluate(
+    cdp,
+    `(() => {
+      const form = document.querySelector("[data-form]");
+      const modal = document.querySelector(".installment-scope-dialog[open]");
+      return {
+        labels: Array.from(modal?.querySelectorAll("[data-scope]") || []).map((node) => node.textContent.trim()),
+        visibleSaveButtons: Array.from(form.querySelectorAll('.statement-save-actions button[type="submit"]'))
+          .filter((button) => !button.hidden).map((button) => button.textContent.trim()),
+        hasCancel: Boolean(modal?.querySelector("[data-scope-cancel]")),
+      };
+    })()`,
+  );
+  check(
+    scope.labels.join(",") === "Somente esta parcela,Esta e as próximas",
+    "Recurring account scope must offer current and future choices",
+    scope,
+  );
+  check(
+    scope.visibleSaveButtons.join(",") === "Salvar parcela",
+    "Installment editor must show exactly one save action",
+    scope,
+  );
+  check(scope.hasCancel, "Scope modal must allow going back without saving", scope);
+  await screenshot(cdp, join(outputDir, "issue-539-account-recurring-scope-desktop.png"));
+  scenarios.push({
+    route,
+    viewport: "1366x768",
+    state: "recurring installment amount scope",
+    screenshot: "issue-539-account-recurring-scope-desktop.png",
+    scope,
+  });
+  const cancelled = await evaluate(
+    cdp,
+    `(() => {
+      const button = document.querySelector(".installment-scope-dialog [data-scope-cancel]");
+      button.click();
+      const field = document.querySelector("[data-form] [data-installment-amount-input]");
+      field.value = field.dataset.previousValue;
+      delete field.dataset.previousValue;
+      return !document.querySelector(".installment-scope-dialog[open]");
+    })()`,
+  );
+  check(cancelled, "Voltar sem salvar should dismiss the scope modal", { cancelled });
+}
+
+export async function validateRecurringScopeViewports(options) {
+  for (const [width, height] of [[390, 844], [768, 1024], [320, 568]]) {
+    await validateRecurringScopeViewport({ ...options, width, height });
+  }
+}

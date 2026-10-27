@@ -7,7 +7,11 @@ import type {
 } from "@solverfin/domain";
 
 import { query, withSharedTransaction } from "../db.js";
-import { updateRecurringAccountTransactionForContext } from "./recurring-account-transaction-edit.js";
+import {
+  assertUncancelledRecurringInstallment,
+  throwInstallmentEditBlocked,
+  updateRecurringInstallmentFutureScope,
+} from "./recurring-installment-update.js";
 import { updateTransactionForContext } from "./transactions.js";
 
 export interface ListInstallmentsFilters {
@@ -293,40 +297,13 @@ export async function updateInstallmentForContext(
   installmentId: EntityId,
   payload: UpdateInstallmentPayload,
 ): Promise<InstallmentUpdateResult> {
-  // Recurring installments have no finite totalInstallments count. Their expanded
-  // amount scope is maintained through the canonical recurrence update service,
-  // which synchronizes the rule, eligible future occurrences and installment rows.
-  // Keep this outside the manual-plan transaction to avoid nesting transactions.
-  if (payload.scope === "current_and_future") {
-    const current = await getInstallmentForMutation(context, installmentId);
-    if (current.recurrenceId) {
-      const transactionId = readNestedId(current.transaction);
-      if (
-        !current.amountEditable ||
-        current.card ||
-        current.invoice ||
-        !transactionId ||
-        payload.amountMinor === undefined ||
-        payload.description !== undefined ||
-        payload.note !== undefined ||
-        payload.categoryId !== undefined ||
-        current.recurrence?.status === "cancelled"
-      ) {
-        throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
-      }
-      const updated = await updateRecurringAccountTransactionForContext(
-        context,
-        transactionId,
-        { amountMinor: payload.amountMinor },
-        { amountOnly: true },
-      );
-      return {
-        installment: await getInstallmentForMutation(context, installmentId),
-        updatedCount: updated.updatedCount + 1,
-        skippedCount: updated.skippedCount,
-      };
-    }
-  }
+  const recurring = await updateRecurringInstallmentFutureScope(
+    context,
+    installmentId,
+    payload,
+    getInstallmentForMutation,
+  );
+  if (recurring) return recurring;
   return withSharedTransaction(async () => {
     const isFutureScope = payload.scope === "current_and_future";
     const family = isFutureScope
@@ -345,17 +322,7 @@ export async function updateInstallmentForContext(
     await lockInstallmentMutationRows(context, installmentId);
     const current = await getInstallmentForMutation(context, installmentId);
     if (current.recurrenceId) {
-      // Cancellation can commit after the listing/optimistic eligibility read.
-      // Hold the recurrence lock until the installment mutation commits.
-      const rows = await query<{ status: string }>(
-        `select "status" from "Recurrence"
-          where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-          for update`,
-        [current.recurrenceId, context.organizationId, context.financialProfileId],
-      );
-      if (rows.length !== 1 || rows[0]?.status === "CANCELLED") {
-        throwInstallmentEditBlocked("recurrence_cancelled");
-      }
+      await assertUncancelledRecurringInstallment(context, current.recurrenceId);
     }
     const metadataChanged =
       payload.description !== undefined ||
@@ -565,13 +532,6 @@ function throwInstallmentsFilterInvalid(message: string): never {
   throw Object.assign(new Error(message), {
     code: "INSTALLMENTS_FILTER_INVALID",
     statusCode: 400,
-  });
-}
-
-function throwInstallmentEditBlocked(reason: InstallmentEditBlockedReason): never {
-  throw Object.assign(new Error(`Parcela bloqueada para edicao: ${reason}.`), {
-    code: "INSTALLMENT_EDIT_BLOCKED",
-    statusCode: 409,
   });
 }
 

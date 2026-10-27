@@ -4,7 +4,10 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
-import { validateRecurringScopeViewport } from "./issue-748-recurring-scope-responsive.mjs";
+import {
+  validateRecurringScopeDesktop,
+  validateRecurringScopeViewports,
+} from "./issue-748-recurring-scope-responsive.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -25,9 +28,15 @@ try {
 
   await validateAccountDesktop(fixture);
   await validateAccountMobile(fixture);
-  await validateResponsiveRecurringScope(fixture, 390, 844);
-  await validateResponsiveRecurringScope(fixture, 768, 1024);
-  await validateResponsiveRecurringScope(fixture, 320, 568);
+  await validateRecurringScopeViewports({
+    fixture,
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+    scenarios,
+    check,
+    waitForAccountLine,
+  });
   await validateBlockedAccountDesktop(fixture);
   await validateConflictAccountDesktop(fixture);
   await validateCardDesktop(fixture);
@@ -87,67 +96,13 @@ async function validateAccountDesktop(fixture) {
   );
   check(modal.focusName === "description", "Initial focus did not move to description", modal);
 
-  // Recurring installments must expose the expanded scope even though their
-  // totalInstallments is not a finite sequence. Do not post on Cancel.
-  const scopeOpened = await evaluate(
-    browser.cdp,
-    `(() => {
-      const form = document.querySelector("[data-form]");
-      const field = form.querySelector("[data-installment-amount-input]");
-      field.dataset.previousValue = field.value;
-      field.value = "432,10";
-      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-      return Boolean(document.querySelector(".installment-scope-dialog[open]"));
-    })()`,
-  );
-  check(scopeOpened, "Changing the value did not open the installment scope modal", {
-    scopeOpened,
-  });
-  const scope = await evaluate(
-    browser.cdp,
-    `(() => {
-      const form = document.querySelector("[data-form]");
-      const modal = document.querySelector(".installment-scope-dialog[open]");
-      return {
-        labels: Array.from(modal?.querySelectorAll("[data-scope]") || []).map((node) => node.textContent.trim()),
-        visibleSaveButtons: Array.from(form.querySelectorAll('.statement-save-actions button[type="submit"]'))
-          .filter((button) => !button.hidden).map((button) => button.textContent.trim()),
-        hasCancel: Boolean(modal?.querySelector("[data-scope-cancel]")),
-      };
-    })()`,
-  );
-  check(
-    scope.labels.join(",") === "Somente esta parcela,Esta e as próximas",
-    "Recurring account scope must offer current and future choices",
-    scope,
-  );
-  check(
-    scope.visibleSaveButtons.join(",") === "Salvar parcela",
-    "Installment editor must show exactly one save action",
-    scope,
-  );
-  check(scope.hasCancel, "Scope modal must allow going back without saving", scope);
-  await screenshot(browser.cdp, join(outputDir, "issue-539-account-recurring-scope-desktop.png"));
-  scenarios.push({
+  await validateRecurringScopeDesktop({
+    cdp: browser.cdp,
+    outputDir,
+    scenarios,
+    check,
     route,
-    viewport: "1366x768",
-    state: "recurring installment amount scope",
-    screenshot: "issue-539-account-recurring-scope-desktop.png",
-    scope,
   });
-  const cancelled = await evaluate(
-    browser.cdp,
-    `(() => {
-      const button = document.querySelector(".installment-scope-dialog [data-scope-cancel]");
-      button.click();
-      const field = document.querySelector("[data-form] [data-installment-amount-input]");
-      field.value = field.dataset.previousValue;
-      delete field.dataset.previousValue;
-      return !document.querySelector(".installment-scope-dialog[open]");
-    })()`,
-  );
-  check(cancelled, "Voltar sem salvar should dismiss the scope modal", { cancelled });
-
   const filename = "issue-539-account-installment-desktop-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, filename));
   scenarios.push({
@@ -282,20 +237,6 @@ async function validateAccountMobile(fixture) {
   await sleep(120);
   const closed = await evaluate(browser.cdp, `!document.querySelector("[data-modal]").open`);
   check(closed, "Escape did not close the installment modal", { closed });
-}
-
-async function validateResponsiveRecurringScope(fixture, width, height) {
-  return validateRecurringScopeViewport({
-    fixture,
-    width,
-    height,
-    cdp: browser.cdp,
-    baseUrl,
-    outputDir,
-    scenarios,
-    check,
-    waitForAccountLine,
-  });
 }
 
 async function validateBlockedAccountDesktop(fixture) {
