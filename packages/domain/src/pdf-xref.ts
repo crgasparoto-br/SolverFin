@@ -139,12 +139,17 @@ function nameIs(value: PdfValue | undefined, expected: string): boolean {
   return value?.kind === "name" && value.value === expected;
 }
 
-function rootReference(dict: Map<string, PdfValue>): { object: number; generation: number } | undefined {
+function rootReference(
+  dict: Map<string, PdfValue>,
+): { object: number; generation: number } | undefined {
   const root = dict.get("Root");
   return root?.kind === "reference" ? root : undefined;
 }
 
-function indirectObject(text: string, offset: number): { object: number; generation: number; cursor: Cursor } | undefined {
+function indirectObject(
+  text: string,
+  offset: number,
+): { object: number; generation: number; cursor: Cursor } | undefined {
   const header = /^(\d+)[\0\t\n\f\r ]+(\d+)[\0\t\n\f\r ]+obj\b/.exec(text.slice(offset));
   if (!header) return undefined;
   const object = Number(header[1]);
@@ -153,10 +158,16 @@ function indirectObject(text: string, offset: number): { object: number; generat
   return { object, generation, cursor: { text, index: offset + header[0].length } };
 }
 
-function validCatalog(text: string, offset: number | undefined, root: { object: number; generation: number }, bound: number): boolean {
+function validCatalog(
+  text: string,
+  offset: number | undefined,
+  root: { object: number; generation: number },
+  bound: number,
+): boolean {
   if (offset === undefined || offset < 0 || offset >= bound) return false;
   const indirect = indirectObject(text, offset);
-  if (!indirect || indirect.object !== root.object || indirect.generation !== root.generation) return false;
+  if (!indirect || indirect.object !== root.object || indirect.generation !== root.generation)
+    return false;
   const dict = pdfDictionary(indirect.cursor);
   if (!dict || !nameIs(dict.get("Type"), "Catalog")) return false;
   skipSpace(indirect.cursor);
@@ -186,7 +197,8 @@ export function resolveClassicXrefObjectOffset(
       !Number.isSafeInteger(count) ||
       entries.length !== count ||
       entries.some((entry) => !/^\d{10}\s+\d{5}\s+[nf]\b/.test(entry))
-    ) return undefined;
+    )
+      return undefined;
     const entry = entries[objectNumber - first];
     const match = entry && /^(\d{10})\s+(\d{5})\s+n\b/.exec(entry);
     if (match && Number(match[2]) === generation) resolved = Number(match[1]);
@@ -195,7 +207,10 @@ export function resolveClassicXrefObjectOffset(
   return resolved;
 }
 
-function xrefStreamRootOffset(text: string, offset: number): { root: { object: number; generation: number }; location: number } | undefined {
+function xrefStreamRootOffset(
+  text: string,
+  offset: number,
+): { root: { object: number; generation: number }; location: number } | undefined {
   const indirect = indirectObject(text, offset);
   if (!indirect) return undefined;
   const dictionary = pdfDictionary(indirect.cursor);
@@ -205,16 +220,29 @@ function xrefStreamRootOffset(text: string, offset: number): { root: { object: n
   const length = nonnegative(dictionary.get("Length"));
   const widthsValue = dictionary.get("W");
   const indexValue = dictionary.get("Index");
-  if (!root || size === undefined || size === 0 || root.object >= size || length === undefined ||
-      widthsValue?.kind !== "array" || widthsValue.values.length !== 3) return undefined;
+  if (
+    !root ||
+    size === undefined ||
+    size === 0 ||
+    root.object >= size ||
+    length === undefined ||
+    widthsValue?.kind !== "array" ||
+    widthsValue.values.length !== 3
+  )
+    return undefined;
   const widths = widthsValue.values.map(nonnegative);
   if (widths.some((value) => value === undefined || value > 8)) return undefined;
   const [typeWidth, offsetWidth, generationWidth] = widths as number[];
   const entryWidth = typeWidth! + offsetWidth! + generationWidth!;
   if (entryWidth === 0 || entryWidth > 24) return undefined;
-  const segments = indexValue === undefined ? [0, size] :
-    indexValue.kind === "array" ? indexValue.values.map(nonnegative) : [];
-  if (segments.length === 0 || segments.length % 2 !== 0 || segments.some((n) => n === undefined)) return undefined;
+  const segments =
+    indexValue === undefined
+      ? [0, size]
+      : indexValue.kind === "array"
+        ? indexValue.values.map(nonnegative)
+        : [];
+  if (segments.length === 0 || segments.length % 2 !== 0 || segments.some((n) => n === undefined))
+    return undefined;
   let total = 0;
   for (let i = 0; i < segments.length; i += 2) {
     const first = segments[i]!;
@@ -233,13 +261,18 @@ function xrefStreamRootOffset(text: string, offset: number): { root: { object: n
   const streamEnd = streamStart + length;
   if (streamEnd > text.length) return undefined;
   const filter = dictionary.get("Filter");
-  const flate = nameIs(filter, "FlateDecode") ||
-    (filter?.kind === "array" && filter.values.length === 1 && nameIs(filter.values[0], "FlateDecode"));
-  if (filter !== undefined && !flate || dictionary.has("DecodeParms")) return undefined;
+  const flate =
+    nameIs(filter, "FlateDecode") ||
+    (filter?.kind === "array" &&
+      filter.values.length === 1 &&
+      nameIs(filter.values[0], "FlateDecode"));
+  if ((filter !== undefined && !flate) || dictionary.has("DecodeParms")) return undefined;
   let data = Buffer.from(text.slice(streamStart, streamEnd), "latin1");
   try {
     if (flate) data = inflateSync(data, { maxOutputLength: MAX_XREF_BYTES });
-  } catch { return undefined; }
+  } catch {
+    return undefined;
+  }
   const end = { text, index: streamEnd };
   if (text.startsWith("\r\n", end.index)) end.index += 2;
   else if (/[\r\n]/.test(text[end.index] ?? "")) end.index++;
@@ -248,7 +281,8 @@ function xrefStreamRootOffset(text: string, offset: number): { root: { object: n
   if (!text.startsWith("endstream", end.index)) return undefined;
   end.index += 9;
   skipSpace(end);
-  if (!text.startsWith("endobj", end.index) || data.length !== total * entryWidth!) return undefined;
+  if (!text.startsWith("endobj", end.index) || data.length !== total * entryWidth!)
+    return undefined;
   let position = 0;
   let location: number | undefined;
   function read(width: number): number | undefined {
@@ -274,7 +308,11 @@ function xrefStreamRootOffset(text: string, offset: number): { root: { object: n
   return location === undefined ? undefined : { root, location };
 }
 
-export function hasValidPdfCatalog(text: string, xrefOffset: number, startxrefIndex: number): boolean {
+export function hasValidPdfCatalog(
+  text: string,
+  xrefOffset: number,
+  startxrefIndex: number,
+): boolean {
   const section = text.slice(xrefOffset, startxrefIndex);
   if (section.startsWith("xref")) {
     const trailerIndex = section.lastIndexOf("trailer");
@@ -283,7 +321,12 @@ export function hasValidPdfCatalog(text: string, xrefOffset: number, startxrefIn
     const dict = pdfDictionary(cursor);
     const root = dict && rootReference(dict);
     if (!root) return false;
-    const offset = resolveClassicXrefObjectOffset(section, trailerIndex, root.object, root.generation);
+    const offset = resolveClassicXrefObjectOffset(
+      section,
+      trailerIndex,
+      root.object,
+      root.generation,
+    );
     return validCatalog(text, offset, root, xrefOffset);
   }
   const stream = xrefStreamRootOffset(text, xrefOffset);

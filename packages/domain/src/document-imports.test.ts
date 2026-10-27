@@ -31,16 +31,18 @@ function pdf(lines: readonly string[], rootDictionary = "<< /Type /Catalog >>"):
   return Buffer.from(document, "latin1").toString("base64");
 }
 
-function pdfWithXrefStream(options: {
-  rootDictionary?: string;
-  rootNumber?: number;
-  rootOffset?: number;
-  rootGeneration?: number;
-  rootEntryType?: number;
-  compression?: "flate" | "none";
-  xrefDictionary?: string;
-  truncateStream?: boolean;
-} = {}): string {
+function pdfWithXrefStream(
+  options: {
+    rootDictionary?: string;
+    rootNumber?: number;
+    rootOffset?: number;
+    rootGeneration?: number;
+    rootEntryType?: number;
+    compression?: "flate" | "none";
+    xrefDictionary?: string;
+    truncateStream?: boolean;
+  } = {},
+): string {
   const prefix = "%PDF-1.5\n%SOLVERFIN:STATEMENT:V1\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\n";
   const rootOffset = Buffer.byteLength(prefix, "latin1");
   const body = prefix + `1 0 obj\n${options.rootDictionary ?? "<< /Type /Catalog >>"}\nendobj\n`;
@@ -52,7 +54,12 @@ function pdfWithXrefStream(options: {
     records.writeUInt16BE(generation, index * 7 + 5);
   };
   entry(0, 0, 0, 65535);
-  entry(1, options.rootEntryType ?? 1, options.rootOffset ?? rootOffset, options.rootGeneration ?? 0);
+  entry(
+    1,
+    options.rootEntryType ?? 1,
+    options.rootOffset ?? rootOffset,
+    options.rootGeneration ?? 0,
+  );
   entry(2, 1, xrefOffset, 0);
   const payload = options.compression === "flate" ? deflateSync(records) : records;
   const data = options.truncateStream ? payload.subarray(0, payload.length - 1) : payload;
@@ -61,13 +68,16 @@ function pdfWithXrefStream(options: {
     `/Length ${payload.length} ${options.compression === "flate" ? "/Filter /FlateDecode " : ""}` +
     `${options.xrefDictionary ?? ""}>>`;
   const stream = `2 0 obj\n${dictionary}\nstream\n${data.toString("latin1")}\nendstream\nendobj\n`;
-  return Buffer.from(body + stream + `startxref\n${xrefOffset}\n%%EOF`, "latin1").toString("base64");
+  return Buffer.from(body + stream + `startxref\n${xrefOffset}\n%%EOF`, "latin1").toString(
+    "base64",
+  );
 }
 
 function expectInvalidPdf(contentBase64: string, label = ""): void {
   assert.throws(
     () => parsePdfImport({ contentBase64, documentClass: "bank_statement" }),
-    (error: unknown) => error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
+    (error: unknown) =>
+      error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
     label,
   );
 }
@@ -256,7 +266,8 @@ describe("document imports", () => {
       "<< /Type /Font /Type /Catalog >>",
       "<< /Title (marker) /Type (Catalog) >>",
       "<< /Title /Catalog /Type /Font >>",
-    ]) expectInvalidPdf(pdf(statement, dict));
+    ])
+      expectInvalidPdf(pdf(statement, dict));
 
     for (const dict of [
       "<< /Type /Catalog /Title (another /Type /Font) >>",
@@ -264,7 +275,10 @@ describe("document imports", () => {
       "<< /Ty#70e /Cata#6Cog >>",
       "<< /Type % detached comment\n /Catalog >>",
     ]) {
-      const result = parsePdfImport({ contentBase64: pdf(statement, dict), documentClass: "bank_statement" });
+      const result = parsePdfImport({
+        contentBase64: pdf(statement, dict),
+        documentClass: "bank_statement",
+      });
       assert.equal(result.state, "ready", dict);
       assert.equal(result.rows.length, 1);
     }
@@ -273,7 +287,8 @@ describe("document imports", () => {
   it("requires a resolved Catalog root in xref-stream PDFs", () => {
     for (const compression of ["none", "flate"] as const) {
       const result = parsePdfImport({
-        contentBase64: pdfWithXrefStream({ compression }), documentClass: "bank_statement",
+        contentBase64: pdfWithXrefStream({ compression }),
+        documentClass: "bank_statement",
       });
       assert.equal(result.state, "ready", compression);
       assert.equal(result.rows.length, 1);
@@ -285,7 +300,8 @@ describe("document imports", () => {
         { compression, rootDictionary: "<< /Type /Font /Title (/Type /Catalog) >>" },
         { compression, xrefDictionary: "/Type /XRef " },
         { compression, truncateStream: true },
-      ]) expectInvalidPdf(pdfWithXrefStream(invalid), JSON.stringify(invalid));
+      ])
+        expectInvalidPdf(pdfWithXrefStream(invalid), JSON.stringify(invalid));
     }
   });
 
